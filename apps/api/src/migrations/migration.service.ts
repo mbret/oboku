@@ -2,6 +2,7 @@ import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { CouchService } from "src/couch/couch.service"
 import { listUserDatabases } from "src/lib/couch/listUserDatabases"
+import { tolerateMissingUserDb } from "./tolerateMissingUserDb"
 import { CoversService } from "src/covers/covers.service"
 import {
   CopyObjectCommand,
@@ -287,75 +288,91 @@ export class MigrationService {
     let usersMigrated = 0
     let connectorsCreated = 0
 
-    for (const { dbName: userDbName } of userDbs) {
-      const userDbInstance = db.use<SettingsDoc>(userDbName)
+    for (let i = 0; i < userDbs.length; i++) {
+      const userEntry = userDbs[i]
+      if (!userEntry) continue
+      const { dbName: userDbName, email } = userEntry
+      const progress = `[${i + 1}/${userDbs.length}]`
 
-      // Step 2: Load the user's settings document (skip if missing)
-      let settings: SettingsDoc
-      try {
-        settings = await userDbInstance.get("settings")
-      } catch (err: unknown) {
-        if (
-          typeof err === "object" &&
-          err !== null &&
-          "statusCode" in err &&
-          (err as { statusCode: number }).statusCode === 404
-        ) {
-          continue
-        }
-        throw err
-      }
+      await tolerateMissingUserDb(email, async () => {
+        const userDbInstance = db.use<SettingsDoc>(userDbName)
 
-      // Step 3: Skip users that have nothing to migrate
-      const webdavConnectors = settings.webdavConnectors
-      if (
-        !webdavConnectors ||
-        !Array.isArray(webdavConnectors) ||
-        webdavConnectors.length === 0
-      ) {
-        continue
-      }
-
-      // Step 4: Build new connector entries from webdavConnectors that have an id (skip
-      // entries without id—they can't be linked from datasources/books). Reuse the same ID
-      // so existing references keep working. Skip any webdav entry whose ID already exists
-      // in connectors (idempotent re-run).
-      const existingConnectorIds = new Set(
-        (settings.connectors ?? []).map((c) => c.id),
-      )
-
-      const newConnectors = webdavConnectors
-        .filter((w): w is WebdavConnectorLegacy & { id: string } => {
-          if (!w.id) {
-            logger.warn(
-              `${userDbName}: skipping webdav connector without id (url: ${w.url})`,
-            )
-            return false
+        // Step 2: Load the user's settings document (skip if missing)
+        let settings: SettingsDoc
+        try {
+          settings = await userDbInstance.get("settings")
+        } catch (err: unknown) {
+          if (
+            typeof err === "object" &&
+            err !== null &&
+            "statusCode" in err &&
+            (err as { statusCode: number }).statusCode === 404
+          ) {
+            logger.log(`${progress} ${email}: skipped (no settings doc)`)
+            return
           }
-          return !existingConnectorIds.has(w.id)
-        })
-        .map((w) => ({
-          id: w.id,
-          type: "webdav" as const,
-          url: w.url,
-          username: w.username,
-          passwordAsSecretId: w.passwordAsSecretId,
-        }))
+          throw err
+        }
 
-      // Step 5: Merge new connectors into settings and remove deprecated webdavConnectors
-      const updated: SettingsDoc = {
-        ...settings,
-        connectors: [...(settings.connectors ?? []), ...newConnectors],
-      }
-      delete updated.webdavConnectors
+        // Step 3: Skip users that have nothing to migrate
+        const webdavConnectors = settings.webdavConnectors
+        if (
+          !webdavConnectors ||
+          !Array.isArray(webdavConnectors) ||
+          webdavConnectors.length === 0
+        ) {
+          logger.log(`${progress} ${email}: skipped (no webdavConnectors)`)
+          return
+        }
 
-      // Step 6: Write back in a single update (CouchDB update via insert with _rev)
-      await userDbInstance.insert(updated)
-      usersMigrated++
-      connectorsCreated += newConnectors.length
-      logger.log(
-        `${userDbName}: migrated ${newConnectors.length} webdav connector(s)`,
-      )
+        // Step 4: Build new connector entries from webdavConnectors that have an id (skip
+        // entries without id—they can't be linked from datasources/books). Reuse the same ID
+        // so existing references keep working. Skip any webdav entry whose ID already exists
+        // in connectors (idempotent re-run).
+        const existingConnectorIds = new Set(
+          (settings.connectors ?? []).map((c) => c.id),
+        )
+
+        const newConnectors = webdavConnectors
+          .filter((w): w is WebdavConnectorLegacy & { id: string } => {
+            if (!w.id) {
+              logger.warn(
+                `${progress} ${email}: skipping webdav connector without id (url: ${w.url})`,
+              )
+              return false
+            }
+            return !existingConnectorIds.has(w.id)
+          })
+          .map((w) => ({
+            id: w.id,
+            type: "webdav" as const,
+            url: w.url,
+            username: w.username,
+            passwordAsSecretId: w.passwordAsSecretId,
+          }))
+
+        if (newConnectors.length === 0) {
+          logger.log(
+            `${progress} ${email}: skipped (all webdavConnectors already migrated)`,
+          )
+          return
+        }
+
+        // Step 5: Merge new connectors into settings and remove deprecated webdavConnectors
+        const updated: SettingsDoc = {
+          ...settings,
+          connectors: [...(settings.connectors ?? []), ...newConnectors],
+        }
+        delete updated.webdavConnectors
+
+        // Step 6: Write back in a single update (CouchDB update via insert with _rev)
+        await userDbInstance.insert(updated)
+        usersMigrated++
+        connectorsCreated += newConnectors.length
+        logger.log(
+          `${progress} ${email}: migrated ${newConnectors.length} webdav connector(s)`,
+        )
+      })
     }
 
     logger.log(
@@ -428,84 +445,88 @@ export class MigrationService {
       const userEntry = userDbs[i]
       if (!userEntry) continue
       const { dbName: userDbName, email } = userEntry
-      const userDbInstance = db.use<LinkDoc | CollectionDoc>(userDbName)
-      const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
-      let userLinksUpdated = 0
-      let userCollectionsUpdated = 0
+      await tolerateMissingUserDb(email, async () => {
+        const userDbInstance = db.use<LinkDoc | CollectionDoc>(userDbName)
+        const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
+        let userLinksUpdated = 0
+        let userCollectionsUpdated = 0
 
-      const links = await userDbInstance.find({
-        selector: {
-          rx_model: "link",
-          type: "webdav",
-          resourceId: { $exists: true },
-        },
-        limit: 99999,
-      })
-
-      for (const link of links.docs) {
-        if (typeof link.resourceId !== "string") {
-          continue
-        }
-
-        const canonicalResourceId = toCanonicalWebdavResourceId(link.resourceId)
-
-        if (!canonicalResourceId || canonicalResourceId === link.resourceId) {
-          continue
-        }
-
-        docsToUpdate.push({
-          ...link,
-          resourceId: canonicalResourceId,
+        const links = await userDbInstance.find({
+          selector: {
+            rx_model: "link",
+            type: "webdav",
+            resourceId: { $exists: true },
+          },
+          limit: 99999,
         })
-        userLinksUpdated += 1
-      }
 
-      const collections = await userDbInstance.find({
-        selector: {
-          rx_model: "obokucollection",
-          linkType: "webdav",
-          linkResourceId: { $exists: true },
-        },
-        limit: 99999,
-      })
+        for (const link of links.docs) {
+          if (typeof link.resourceId !== "string") {
+            continue
+          }
 
-      for (const collection of collections.docs) {
-        if (typeof collection.linkResourceId !== "string") {
-          continue
+          const canonicalResourceId = toCanonicalWebdavResourceId(
+            link.resourceId,
+          )
+
+          if (!canonicalResourceId || canonicalResourceId === link.resourceId) {
+            continue
+          }
+
+          docsToUpdate.push({
+            ...link,
+            resourceId: canonicalResourceId,
+          })
+          userLinksUpdated += 1
         }
 
-        const canonicalResourceId = toCanonicalWebdavResourceId(
-          collection.linkResourceId,
-        )
-
-        if (
-          !canonicalResourceId ||
-          canonicalResourceId === collection.linkResourceId
-        ) {
-          continue
-        }
-
-        docsToUpdate.push({
-          ...collection,
-          linkResourceId: canonicalResourceId,
+        const collections = await userDbInstance.find({
+          selector: {
+            rx_model: "obokucollection",
+            linkType: "webdav",
+            linkResourceId: { $exists: true },
+          },
+          limit: 99999,
         })
-        userCollectionsUpdated += 1
-      }
 
-      linksUpdated += userLinksUpdated
-      collectionsUpdated += userCollectionsUpdated
+        for (const collection of collections.docs) {
+          if (typeof collection.linkResourceId !== "string") {
+            continue
+          }
 
-      if (docsToUpdate.length > 0) {
-        await userDbInstance.bulk({ docs: docsToUpdate })
-        usersMigrated += 1
-        logger.log(
-          `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
-        )
-      } else {
-        logger.log(
-          `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
-        )
-      }
+          const canonicalResourceId = toCanonicalWebdavResourceId(
+            collection.linkResourceId,
+          )
+
+          if (
+            !canonicalResourceId ||
+            canonicalResourceId === collection.linkResourceId
+          ) {
+            continue
+          }
+
+          docsToUpdate.push({
+            ...collection,
+            linkResourceId: canonicalResourceId,
+          })
+          userCollectionsUpdated += 1
+        }
+
+        linksUpdated += userLinksUpdated
+        collectionsUpdated += userCollectionsUpdated
+
+        if (docsToUpdate.length > 0) {
+          await userDbInstance.bulk({ docs: docsToUpdate })
+          usersMigrated += 1
+          logger.log(
+            `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+          )
+        } else {
+          logger.log(
+            `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
+          )
+        }
+      })
     }
 
     logger.log(
@@ -559,82 +580,84 @@ export class MigrationService {
       const userEntry = userDbs[i]
       if (!userEntry) continue
       const { dbName: userDbName, email } = userEntry
-      const userDb = db.use<LinkDoc | CollectionDoc>(userDbName)
-      const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
-      let userLinksUpdated = 0
-      let userCollectionsUpdated = 0
+      await tolerateMissingUserDb(email, async () => {
+        const userDb = db.use<LinkDoc | CollectionDoc>(userDbName)
+        const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
+        let userLinksUpdated = 0
+        let userCollectionsUpdated = 0
 
-      const links = await userDb.find({
-        selector: { rx_model: "link", resourceId: { $exists: true } },
-        limit: 99999,
-      })
+        const links = await userDb.find({
+          selector: { rx_model: "link", resourceId: { $exists: true } },
+          limit: 99999,
+        })
 
-      for (const link of links.docs) {
-        if (typeof link.resourceId !== "string") {
-          continue
+        for (const link of links.docs) {
+          if (typeof link.resourceId !== "string") {
+            continue
+          }
+
+          const newData = migrateResourceIdToData(
+            String(link.type ?? ""),
+            link.resourceId,
+            normalizeDataField(link.data),
+          )
+
+          if (!newData) continue
+
+          const { resourceId: _, ...rest } = link
+
+          docsToUpdate.push({
+            ...rest,
+            data: newData,
+          })
+          userLinksUpdated += 1
         }
 
-        const newData = migrateResourceIdToData(
-          String(link.type ?? ""),
-          link.resourceId,
-          normalizeDataField(link.data),
-        )
-
-        if (!newData) continue
-
-        const { resourceId: _, ...rest } = link
-
-        docsToUpdate.push({
-          ...rest,
-          data: newData,
+        const collections = await userDb.find({
+          selector: {
+            rx_model: "obokucollection",
+            linkResourceId: { $exists: true },
+          },
+          limit: 99999,
         })
-        userLinksUpdated += 1
-      }
 
-      const collections = await userDb.find({
-        selector: {
-          rx_model: "obokucollection",
-          linkResourceId: { $exists: true },
-        },
-        limit: 99999,
-      })
+        for (const collection of collections.docs) {
+          if (typeof collection.linkResourceId !== "string") {
+            continue
+          }
 
-      for (const collection of collections.docs) {
-        if (typeof collection.linkResourceId !== "string") {
-          continue
+          const newLinkData = migrateResourceIdToData(
+            String(collection.linkType ?? ""),
+            collection.linkResourceId,
+            normalizeDataField(collection.linkData),
+          )
+
+          if (!newLinkData) continue
+
+          const { linkResourceId: _, ...rest } = collection
+
+          docsToUpdate.push({
+            ...rest,
+            linkData: newLinkData,
+          })
+          userCollectionsUpdated += 1
         }
 
-        const newLinkData = migrateResourceIdToData(
-          String(collection.linkType ?? ""),
-          collection.linkResourceId,
-          normalizeDataField(collection.linkData),
-        )
+        linksUpdated += userLinksUpdated
+        collectionsUpdated += userCollectionsUpdated
 
-        if (!newLinkData) continue
-
-        const { linkResourceId: _, ...rest } = collection
-
-        docsToUpdate.push({
-          ...rest,
-          linkData: newLinkData,
-        })
-        userCollectionsUpdated += 1
-      }
-
-      linksUpdated += userLinksUpdated
-      collectionsUpdated += userCollectionsUpdated
-
-      if (docsToUpdate.length > 0) {
-        await userDb.bulk({ docs: docsToUpdate })
-        usersMigrated += 1
-        logger.log(
-          `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
-        )
-      } else {
-        logger.log(
-          `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
-        )
-      }
+        if (docsToUpdate.length > 0) {
+          await userDb.bulk({ docs: docsToUpdate })
+          usersMigrated += 1
+          logger.log(
+            `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+          )
+        } else {
+          logger.log(
+            `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
+          )
+        }
+      })
     }
 
     logger.log(
@@ -684,6 +707,10 @@ export class MigrationService {
     const db = await this.couchService.createAdminNanoInstance()
     const userDbs = await listUserDatabases(db)
 
+    logger.log(
+      `Renaming legacy collection covers for ${userDbs.length} user databases (storage: ${storageStrategy})`,
+    )
+
     // Build a single rename function so the per-collection loop below is
     // identical regardless of storage backend.
     const renameLegacyCover =
@@ -695,31 +722,57 @@ export class MigrationService {
     let skippedDestinationExists = 0
     let skippedSourceMissing = 0
 
-    for (const userDb of userDbs) {
-      const userDbInstance = db.use<Pick<CollectionDocType, "_id">>(
-        userDb.dbName,
-      )
+    for (let i = 0; i < userDbs.length; i++) {
+      const userDb = userDbs[i]
+      if (!userDb) continue
+      const progress = `[${i + 1}/${userDbs.length}]`
 
-      const collections = await userDbInstance.find({
-        selector: { rx_model: "obokucollection" },
-        fields: ["_id"],
-        limit: 99999,
-      })
+      await tolerateMissingUserDb(userDb.email, async () => {
+        const userDbInstance = db.use<Pick<CollectionDocType, "_id">>(
+          userDb.dbName,
+        )
 
-      for (const collection of collections.docs) {
-        const oldKey = `collection-${collection._id}`
-        const newKey = getCollectionCoverKey(userDb.userNameHex, collection._id)
+        const collections = await userDbInstance.find({
+          selector: { rx_model: "obokucollection" },
+          fields: ["_id"],
+          limit: 99999,
+        })
 
-        const result = await renameLegacyCover(oldKey, newKey)
-
-        if (result === "renamed") {
-          renamed++
-        } else if (result === "destination-exists") {
-          skippedDestinationExists++
-        } else {
-          skippedSourceMissing++
+        if (collections.docs.length === 0) {
+          logger.log(`${progress} ${userDb.email}: skipped (no collections)`)
+          return
         }
-      }
+
+        let userRenamed = 0
+        let userSkippedDestinationExists = 0
+        let userSkippedSourceMissing = 0
+
+        for (const collection of collections.docs) {
+          const oldKey = `collection-${collection._id}`
+          const newKey = getCollectionCoverKey(
+            userDb.userNameHex,
+            collection._id,
+          )
+
+          const result = await renameLegacyCover(oldKey, newKey)
+
+          if (result === "renamed") {
+            userRenamed++
+          } else if (result === "destination-exists") {
+            userSkippedDestinationExists++
+          } else {
+            userSkippedSourceMissing++
+          }
+        }
+
+        renamed += userRenamed
+        skippedDestinationExists += userSkippedDestinationExists
+        skippedSourceMissing += userSkippedSourceMissing
+
+        logger.log(
+          `${progress} ${userDb.email}: ${collections.docs.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
+        )
+      })
     }
 
     logger.log(
