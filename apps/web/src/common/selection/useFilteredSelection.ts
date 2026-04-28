@@ -36,7 +36,7 @@ export type UseFilteredSelectionOptions<T extends ListFilterItem> = {
 
 /**
  * Combined state for a "manage X" page that selects items, batches the
- * user's edits, and commits via a Save button (see `BookSelectionPage`,
+ * user's edits, and commits via a Save button (see `BookSelectionView`,
  * `BookTagsScreen`, `BookCollectionsScreen`).
  *
  * Composes {@link useListFilter} for fuzzy filtering and

@@ -6,6 +6,8 @@ import { IconButton } from "@mui/material"
 import type { TagsDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
+import { Page } from "../../../../common/Page"
+import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
 import {
   useAddTagToBook,
   useRemoveTagFromBook,
@@ -14,7 +16,7 @@ import { useBook } from "../../../../books/states"
 import { useTags } from "../../../../tags/helpers"
 import { SelectableTagList } from "../../../../tags/tagList/SelectableTagList"
 import { openAddTagDialog } from "../../../../tags/AddTagDialog"
-import { EntitySelectionPage } from "../../../../common/selection"
+import { EntitySelectionView } from "../../../../common/selection"
 import { notify, notifyError } from "../../../../notifications/toasts"
 
 const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
@@ -57,36 +59,38 @@ export const BookTagsScreen = memo(function BookTagsScreen() {
   if (!bookId || book === null) return <NotFoundPage />
 
   return (
-    <EntitySelectionPage
-      title="Manage tags"
-      searchPlaceholder="Search tags…"
-      searchAriaLabel="Search tags"
-      items={tags}
-      persistedIds={book?.tags}
-      entityKey={bookId}
-      getSearchableText={getTagSearchableText}
-      isSaving={isSaving}
-      onSave={save}
-      toolbarActions={
-        <IconButton
-          onClick={openAddTagDialog}
-          color="primary"
-          disabled={isSaving}
-          aria-label="Create a new tag"
-        >
-          <AddRounded />
-        </IconButton>
-      }
-      renderList={({ filteredIds, selectedItems, toggleSelection }) => (
-        <SelectableTagList
-          style={listStyle}
-          data={filteredIds}
-          selected={selectedItems}
-          onItemClick={({ id: tagId }: { id: string; selected: boolean }) => {
-            toggleSelection(tagId)
-          }}
-        />
-      )}
-    />
+    <Page sx={{ overflow: "hidden" }} bottomGutter={false}>
+      <TopBarNavigation title="Manage tags" showBack />
+      <EntitySelectionView
+        searchPlaceholder="Search tags…"
+        searchAriaLabel="Search tags"
+        items={tags}
+        persistedIds={book?.tags}
+        entityKey={bookId}
+        getSearchableText={getTagSearchableText}
+        isSaving={isSaving}
+        onSave={save}
+        toolbarActions={
+          <IconButton
+            onClick={openAddTagDialog}
+            color="primary"
+            disabled={isSaving}
+            aria-label="Create a new tag"
+          >
+            <AddRounded />
+          </IconButton>
+        }
+        renderList={({ filteredIds, selectedItems, toggleSelection }) => (
+          <SelectableTagList
+            style={listStyle}
+            data={filteredIds}
+            selected={selectedItems}
+            onItemClick={({ id: tagId }: { id: string; selected: boolean }) => {
+              toggleSelection(tagId)
+            }}
+          />
+        )}
+      />
+    </Page>
   )
 })

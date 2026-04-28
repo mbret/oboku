@@ -51,7 +51,7 @@ export type UseSelectionStateOptions<ItemId extends string> = {
    * from the visible set should also disappear from the selection).
    *
    * Set to `false` for **persisted-baseline** Save-button screens
-   * (e.g. `BookSelectionPage`, `BookTagsScreen`,
+   * (e.g. `BookSelectionView`, `BookTagsScreen`,
    * `BookCollectionsScreen`). In that mode the user's in-progress
    * selection is the live diff against `initialSelectedIds` and must
    * survive visible-items churn — e.g. items briefly returning `[]`

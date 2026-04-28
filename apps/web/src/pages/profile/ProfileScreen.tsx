@@ -38,6 +38,7 @@ import {
   libraryStateSignal,
   selectIsLibraryUnlocked,
 } from "../../library/books/states"
+import { lockLibrary, unlockLibrary } from "../../library/libraryLock"
 import packageJson from "../../../package.json"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
@@ -49,7 +50,6 @@ import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { createDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
-import { authorizeAction } from "../../auth/AuthorizeActionDialog"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
@@ -82,17 +82,9 @@ export const ProfileScreen = () => {
         <ListItemButton
           onClick={() => {
             if (isLibraryUnlocked) {
-              libraryStateSignal.update((state) => ({
-                ...state,
-                isLibraryUnlocked: false,
-              }))
+              lockLibrary()
             } else {
-              authorizeAction(() => {
-                libraryStateSignal.update((state) => ({
-                  ...state,
-                  isLibraryUnlocked: true,
-                }))
-              })
+              unlockLibrary()
             }
           }}
         >

@@ -4,7 +4,7 @@ import type { DeepReadonlyObject } from "rxdb"
 import { BookList } from "./lists"
 import { EmptyList } from "../common/lists/EmptyList"
 import {
-  EntitySelectionPage,
+  EntitySelectionView,
   type EntitySelectionSaveChanges,
 } from "../common/selection"
 import { useBooks } from "./states"
@@ -25,8 +25,7 @@ const getBookSearchableText = (book: DeepReadonlyObject<BookDocType>) => {
 
 export type BookSelectionSaveChanges = EntitySelectionSaveChanges
 
-export type BookSelectionPageProps = {
-  title: string
+export type BookSelectionViewProps = {
   /**
    * Persisted baseline book ids for the target entity. Pass `undefined`
    * while the entity is still resolving so the selection is not seeded
@@ -46,11 +45,15 @@ export type BookSelectionPageProps = {
 }
 
 /**
- * Shared page for associating a set of books with a parent entity
+ * Shared body for associating a set of books with a parent entity
  * (e.g. a tag or a collection). The parent-specific data fetching and
  * save mutation live in the caller; this component owns the books data
  * source, the searchable text projection, and the empty-state rendering
- * around the {@link EntitySelectionPage} chrome.
+ * around the {@link EntitySelectionView} body.
+ *
+ * Renders as a flex column intended to fill its parent. Page chrome
+ * (`Page`, `TopBarNavigation`) is the host's responsibility — see
+ * `EntitySelectionView` for the rationale.
  *
  * Per-entity writes go straight to the local RxDB instance from the
  * caller's `onSave` and are fired in parallel. React Query does not
@@ -64,18 +67,16 @@ export type BookSelectionPageProps = {
  * button are disabled via `isSaving`, but navigating away is safe and
  * we rely on optimistic-update semantics instead of intercepting it.
  */
-export const BookSelectionPage = memo(function BookSelectionPage({
-  title,
+export const BookSelectionView = memo(function BookSelectionView({
   persistedBookIds,
   entityKey,
   isSaving,
   onSave,
-}: BookSelectionPageProps) {
+}: BookSelectionViewProps) {
   const { data: books = EMPTY_BOOKS } = useBooks()
 
   return (
-    <EntitySelectionPage
-      title={title}
+    <EntitySelectionView
       searchPlaceholder="Search books…"
       searchAriaLabel="Search books"
       items={books}
