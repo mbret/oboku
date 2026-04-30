@@ -1,15 +1,7 @@
-import {
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-} from "@mui/material"
-import { CloudDownloadOutlined } from "@mui/icons-material"
-import { memo, useState } from "react"
+import { List, ListSubheader } from "@mui/material"
+import { memo } from "react"
 import type { MetadataFetchOverride } from "@oboku/shared"
-import { MetadataFetchPolicyDialog } from "./MetadataFetchPolicyDialog"
-import { formatMetadataFetchSecondary } from "./useResolvedMetadataFetchEnabled"
+import { MetadataFetchPolicyListItem } from "./MetadataFetchPolicyListItem"
 
 type Props = {
   override: MetadataFetchOverride
@@ -18,43 +10,16 @@ type Props = {
   onChange: (next: MetadataFetchOverride) => void
 }
 
-export const MetadataFetchPolicyPane = memo(function MetadataFetchPolicyPane({
-  override,
-  isProtected,
-  resolved,
-  onChange,
-}: Props) {
-  const [dialogOpen, setDialogOpen] = useState(false)
-
+export const MetadataFetchPolicyPane = memo(function MetadataFetchPolicyPane(
+  props: Props,
+) {
   return (
-    <>
-      <List
-        dense
-        subheader={<ListSubheader>Metadata fetching</ListSubheader>}
-        disablePadding
-      >
-        <ListItemButton onClick={() => setDialogOpen(true)}>
-          <ListItemIcon>
-            <CloudDownloadOutlined />
-          </ListItemIcon>
-          <ListItemText
-            primary="External providers"
-            secondary={formatMetadataFetchSecondary({
-              override,
-              isProtected,
-              resolved,
-            })}
-          />
-        </ListItemButton>
-      </List>
-      <MetadataFetchPolicyDialog
-        open={dialogOpen}
-        onClose={() => setDialogOpen(false)}
-        override={override}
-        isProtected={isProtected}
-        resolved={resolved}
-        onChange={onChange}
-      />
-    </>
+    <List
+      dense
+      subheader={<ListSubheader>Metadata fetching</ListSubheader>}
+      disablePadding
+    >
+      <MetadataFetchPolicyListItem {...props} />
+    </List>
   )
 })

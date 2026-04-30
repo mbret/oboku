@@ -4,6 +4,7 @@ import {
   type BookMetadata,
   directives,
   resolveMetadataFetchEnabled,
+  resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
 import type nano from "nano"
 import type { Extractor } from "node-unrar-js"
@@ -53,6 +54,9 @@ export const retrieveMetadataAndSaveCover = async (
     const externalFetchEnabled = resolveMetadataFetchEnabled(
       ctx.book.metadataFetchEnabled,
       bookIsProtected,
+    )
+    const fileDownloadEnabled = resolveMetadataFileDownloadEnabled(
+      ctx.book.metadataFileDownloadEnabled,
     )
 
     // try to pre-fetch metadata before trying to download the file
@@ -104,8 +108,14 @@ export const retrieveMetadataAndSaveCover = async (
 
     const metadataList = [linkMetadata, ...sourcesMetadata]
 
+    if (canDownload && isMaybeExtractAble && !fileDownloadEnabled) {
+      logger.log(
+        `Skipping file download for ${ctx.book._id} (metadataFileDownloadEnabled=false)`,
+      )
+    }
+
     const { filepath: tmpFilePath } =
-      canDownload && isMaybeExtractAble
+      canDownload && isMaybeExtractAble && fileDownloadEnabled
         ? await downloadToTmpFolder(
             ctx.book,
             ctx.link,
