@@ -22,7 +22,7 @@
     "start:admin": "lerna run start --scope=@oboku/admin",
     "build": "lerna run build",
     "build:web": "lerna run build --scope=@oboku/web",
-    "build:api": "lerna run build --scope=@oboku/api-legacy",
+    "build:api": "lerna run build --scope=@oboku/api",
     "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",

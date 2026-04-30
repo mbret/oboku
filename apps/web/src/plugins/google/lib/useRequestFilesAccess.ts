@@ -7,6 +7,7 @@ import { useHasFilesAccess } from "./useHasFilesAccess"
 import { useQueryClient } from "@tanstack/react-query"
 import { getUseDriveFileQueryKey } from "../../../google/useDriveFile"
 import { isDefined } from "reactjrx"
+import { GOOGLE_DRIVE_FILE_SCOPES } from "./constants"
 
 export const useRequestFilesAccess = ({
   requestPopup,
@@ -18,7 +19,7 @@ export const useRequestFilesAccess = ({
     requestPopup,
   })
   const { pick } = useDrivePicker({
-    scope: ["https://www.googleapis.com/auth/drive.file"],
+    scope: GOOGLE_DRIVE_FILE_SCOPES,
     requestPopup,
   })
 

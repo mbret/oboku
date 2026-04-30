@@ -3,10 +3,11 @@ import { finalize, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
 import { configuration } from "../../../config/configuration"
+import { GOOGLE_DRIVE_FILE_SCOPES } from "./constants"
 
 export const useDrivePicker = ({
   requestPopup,
-  scope = ["https://www.googleapis.com/auth/drive.file"],
+  scope = GOOGLE_DRIVE_FILE_SCOPES,
 }: {
   requestPopup: () => Promise<boolean>
   scope?: string[]

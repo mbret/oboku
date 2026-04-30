@@ -10,21 +10,21 @@ const StyledRoot = styled(Stack, {
   paddingBottom: bottomGutter ? theme.spacing(4) : 0,
 }))
 
-export const Page = memo(
-  ({
-    children,
-    bottomGutter = true,
-    ref,
-    ...props
-  }: {
-    children: React.ReactNode
-    bottomGutter?: boolean
-    ref?: Ref<HTMLDivElement>
-  } & StackProps) => {
-    return (
-      <StyledRoot ref={ref} bottomGutter={bottomGutter} {...props}>
-        {children}
-      </StyledRoot>
-    )
-  },
-)
+function PageComponent({
+  children,
+  bottomGutter = true,
+  ref,
+  ...props
+}: {
+  children: React.ReactNode
+  bottomGutter?: boolean
+  ref?: Ref<HTMLDivElement>
+} & StackProps) {
+  return (
+    <StyledRoot ref={ref} bottomGutter={bottomGutter} {...props}>
+      {children}
+    </StyledRoot>
+  )
+}
+
+export const Page = memo(PageComponent)

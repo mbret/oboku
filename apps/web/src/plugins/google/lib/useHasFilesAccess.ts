@@ -10,6 +10,7 @@ import {
 } from "rxjs"
 import { useRequestToken } from "./useRequestToken"
 import { isDefined } from "reactjrx"
+import { GOOGLE_DRIVE_FILE_SCOPES } from "./constants"
 
 /**
  * @returns list of files with access
@@ -28,7 +29,7 @@ export const useHasFilesAccess = ({
       fileIds: readonly string[],
     ): Observable<gapi.client.Response<gapi.client.drive.File>[]> => {
       return requestToken({
-        scope: ["https://www.googleapis.com/auth/drive.file"],
+        scope: GOOGLE_DRIVE_FILE_SCOPES,
       }).pipe(
         switchMap(() => {
           const files$ = combineLatest(
