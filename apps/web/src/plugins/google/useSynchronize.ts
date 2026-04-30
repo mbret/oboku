@@ -2,6 +2,7 @@ import { useRequestToken } from "./lib/useRequestToken"
 import type { UseSynchronizeHook } from "../types"
 import { firstValueFrom } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
+import { GOOGLE_DRIVE_FILE_SCOPES } from "./lib/constants"
 
 export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
   requestPopup,
@@ -12,7 +13,7 @@ export const useSynchronize: UseSynchronizeHook<"DRIVE"> = ({
     mutationFn: async () => {
       const token = await firstValueFrom(
         requestToken({
-          scope: ["https://www.googleapis.com/auth/drive.file"],
+          scope: GOOGLE_DRIVE_FILE_SCOPES,
         }),
       )
 

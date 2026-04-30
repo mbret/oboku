@@ -9,6 +9,7 @@ import {
   DeleteObjectCommand,
   HeadObjectCommand,
   S3Client,
+  S3ServiceException,
 } from "@aws-sdk/client-s3"
 import fs from "node:fs"
 import path from "node:path"
@@ -858,12 +859,14 @@ export class MigrationService {
         )
         return true
       } catch (e) {
+        // Any 404 from S3 means the object isn't there for the purposes of
+        // this idempotent migration; non-404 failures still bubble up.
         if (
-          (e as { $metadata?: { httpStatusCode?: number } }).$metadata
-            ?.httpStatusCode === 404
-        )
+          e instanceof S3ServiceException &&
+          e.$metadata.httpStatusCode === 404
+        ) {
           return false
-        if ((e as { code?: string }).code === "NotFound") return false
+        }
         throw e
       }
     }

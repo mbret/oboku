@@ -261,34 +261,40 @@ export type SettingsDocType = {
   readerDesktopFontScale?: number | null
 }
 
+function hasRxModel(document: unknown): document is { rx_model: unknown } {
+  return (
+    typeof document === "object" && document !== null && "rx_model" in document
+  )
+}
+
 export function isTag(
   document: TagsDocType | unknown,
 ): document is TagsDocType {
-  return (document as TagsDocType).rx_model === "tag"
+  return hasRxModel(document) && document.rx_model === "tag"
 }
 
 export function isBook(
   document: BookDocType | unknown,
 ): document is BookDocType {
-  return (document as BookDocType).rx_model === "book"
+  return hasRxModel(document) && document.rx_model === "book"
 }
 
 export function isLink(
   document: LinkDocType | unknown,
 ): document is LinkDocType {
-  return (document as LinkDocType).rx_model === "link"
+  return hasRxModel(document) && document.rx_model === "link"
 }
 
 export function isDataSource(
   document: DataSourceDocType | unknown,
 ): document is DataSourceDocType {
-  return (document as DataSourceDocType).rx_model === "datasource"
+  return hasRxModel(document) && document.rx_model === "datasource"
 }
 
 export function isCollection(
   document: CollectionDocType | unknown,
 ): document is CollectionDocType {
-  return (document as CollectionDocType).rx_model === "obokucollection"
+  return hasRxModel(document) && document.rx_model === "obokucollection"
 }
 
 /**

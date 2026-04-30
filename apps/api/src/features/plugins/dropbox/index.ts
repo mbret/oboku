@@ -91,10 +91,13 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       path: `${fileId}`,
     })
 
-    const results = response.result
-    // @todo fix the type and check it exists, its weird
-    const fileBinary: Buffer =
-      (results as any).fileBinary || Buffer.from("", "binary")
+    // The Dropbox SDK types the result as `files.FileMetadata`, but on Node
+    // the runtime response also includes a `fileBinary` Buffer with the file
+    // contents. The typings don't expose it, so we narrow it locally.
+    const results = response.result as files.FileMetadata & {
+      fileBinary?: Buffer
+    }
+    const fileBinary: Buffer = results.fileBinary || Buffer.from("", "binary")
 
     const stream = new Readable({
       read() {

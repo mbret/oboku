@@ -1,6 +1,6 @@
 export const bytesToMb = (value: number) => (value / 1e6).toFixed(2)
 
-export const isMobileDetected = () => {
+const isMobileDetected = () => {
   try {
     // @ts-expect-error Expected
     const checkAgainst = navigator.userAgent || navigator.vendor || window.opera

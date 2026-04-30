@@ -91,5 +91,7 @@ export const getDataSourceData = async <T extends DataSourceDocType["type"]>({
 
   const data = getDataFromDataSource(dataSource as DataSourceDocType)
 
+  // Same Extract-distribution limitation as `getDataFromDataSource`: the
+  // generic `T` prevents TS from collapsing the per-provider union members.
   return data as any
 }

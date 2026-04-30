@@ -4,6 +4,7 @@ import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { useGoogleScripts } from "./lib/scripts"
+import { GOOGLE_DRIVE_FILE_SCOPES } from "./lib/constants"
 
 export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
   requestPopup,
@@ -24,7 +25,7 @@ export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
       }
 
       const token$ = requestToken({
-        scope: ["https://www.googleapis.com/auth/drive.file"],
+        scope: GOOGLE_DRIVE_FILE_SCOPES,
       })
 
       const token = await firstValueFrom(

@@ -1,4 +1,4 @@
-import { useCallback, useMemo } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import {
   ListItem,
@@ -13,6 +13,7 @@ import {
   Divider,
   ListItemButton,
 } from "@mui/material"
+import { Page } from "../../../common/Page"
 import {
   DeleteRounded,
   ImageRounded,
@@ -31,6 +32,8 @@ import { useRemoveCoversInCache } from "../../../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../../../download/useDownloadedBooks"
 import { useBooks } from "../../../books/states"
 import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
+
+const bookListStyle = { width: "100%" }
 
 export const ManageStorageScreen = () => {
   const books = useDownloadedBooks()
@@ -64,6 +67,7 @@ export const ManageStorageScreen = () => {
       refetchDownloadedFilesInfo()
     },
   })
+  const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null)
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(
@@ -90,7 +94,7 @@ export const ManageStorageScreen = () => {
   }, [books, refreshStorageEstimate, refetchDownloadedFilesInfo])
 
   return (
-    <>
+    <Page ref={setScrollerEl} bottomGutter={false}>
       <TopBarNavigation title={"Manage storage"} />
       <List>
         <ListItem>
@@ -164,12 +168,10 @@ export const ManageStorageScreen = () => {
         data={bookIdsToDisplay}
         density="dense"
         withDrawerActions={false}
-        style={{
-          height: "100%",
-          overflow: "hidden",
-        }}
+        style={bookListStyle}
+        customScrollParent={scrollerEl ?? undefined}
         onItemClick={onItemClick}
       />
-    </>
+    </Page>
   )
 }

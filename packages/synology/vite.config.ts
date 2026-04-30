@@ -1,16 +1,3 @@
-import { defineConfig } from "vite"
-import dts from "unplugin-dts/vite"
+import { definePackageLibConfig } from "../../config/vite.lib"
 
-export default defineConfig(({ mode }) => ({
-  build: {
-    lib: {
-      entry: "./src/index.ts",
-      name: "oboku-synology",
-      fileName: `index`,
-      formats: ["es", "cjs"],
-    },
-    emptyOutDir: mode !== "development",
-    sourcemap: true,
-  },
-  plugins: [dts({ bundleTypes: true })],
-}))
+export default definePackageLibConfig("oboku-synology")
