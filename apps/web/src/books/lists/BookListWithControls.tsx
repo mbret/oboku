@@ -1,7 +1,6 @@
 import type React from "react"
 import { memo, useCallback, type ComponentProps } from "react"
 import { ListActionsToolbar } from "../../common/lists/ListActionsToolbar"
-import { useBookIdsSortedBy } from "../helpers"
 import { BookList } from "./BookList"
 import { Stack } from "@mui/material"
 import { useLiveRef } from "reactjrx"
@@ -30,7 +29,6 @@ export const BookListWithControls = memo(function BookListWithControls({
   "viewMode" | "onViewModeChange" | "sorting" | "onSortingChange"
 > &
   ComponentProps<typeof BookList>) {
-  const sortedData = useBookIdsSortedBy(data, sorting)
   const onViewModeChangeRef = useLiveRef(onViewModeChange)
   const onSortingChangeRef = useLiveRef(onSortingChange)
 
@@ -66,15 +64,15 @@ export const BookListWithControls = memo(function BookListWithControls({
         flex: 1,
       }}
     >
-      {sortedData.length === 0 && !!renderEmptyList && (
+      {data.length === 0 && !!renderEmptyList && (
         <>
           {_renderHeader()}
           {renderEmptyList}
         </>
       )}
-      {sortedData.length > 0 && (
+      {data.length > 0 && (
         <BookList
-          data={sortedData}
+          data={data}
           viewMode={viewMode}
           renderHeader={_renderHeader}
           style={style}
