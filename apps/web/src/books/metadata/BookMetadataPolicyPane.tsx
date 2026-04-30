@@ -61,9 +61,6 @@ export const BookMetadataPolicyPane = memo(function BookMetadataPolicyPane({
             onChange={(_e, checked) =>
               onFileDownloadChange(checked ? null : false)
             }
-            inputProps={{
-              "aria-label": "Allow file download during metadata refresh",
-            }}
           />
         }
       >
