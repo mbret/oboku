@@ -5,6 +5,7 @@ WORKDIR /usr/src/app
 # their own scope.
 COPY package*.json ./
 COPY packages ./packages
+COPY config ./config
 COPY lerna.json ./
 COPY nx.json ./
 RUN npm ci
