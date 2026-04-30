@@ -2,8 +2,10 @@ import {
   DeleteObjectsCommand,
   GetObjectCommand,
   HeadObjectCommand,
+  NoSuchKey,
   PutObjectCommand,
   S3Client,
+  S3ServiceException,
 } from "@aws-sdk/client-s3"
 import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "src/config/AppConfigService"
@@ -54,10 +56,7 @@ export class CoversS3Service {
 
       return await response.Body.transformToByteArray()
     } catch (e) {
-      if (
-        (e as any)?.code === "NoSuchKey" ||
-        (e as any)?.Code === "NoSuchKey"
-      ) {
+      if (e instanceof NoSuchKey) {
         return null
       }
 
@@ -90,8 +89,15 @@ export class CoversS3Service {
 
       return true
     } catch (e) {
-      if ((e as any)?.$metadata?.httpStatusCode === 404) return false
-      if ((e as any).code === "NotFound") return false
+      // Any 404 from S3 (NotFound / NoSuchKey / NoSuchBucket / etc.) is
+      // treated as "cover absent" to preserve prior behaviour. Non-404
+      // failures still propagate so configuration issues surface.
+      if (
+        e instanceof S3ServiceException &&
+        e.$metadata.httpStatusCode === 404
+      ) {
+        return false
+      }
       throw e
     }
   }

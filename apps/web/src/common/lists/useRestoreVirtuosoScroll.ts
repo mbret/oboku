@@ -58,7 +58,7 @@ export const useRestoreVirtuosoScroll = ({
                 gap: { column: 0, row: 0 },
                 item: { height: 0, width: 0 },
                 viewport: { height: 0, width: 0 },
-                scrollTop: (scrollEvent.target as HTMLDivElement).scrollTop,
+                scrollTop: scrollEvent.currentTarget.scrollTop,
               },
               type: "grid" as const,
             },
@@ -69,8 +69,8 @@ export const useRestoreVirtuosoScroll = ({
             [restoreScrollId]: {
               state: {
                 ranges: [],
-                scrollTop: (scrollEvent.target as HTMLDivElement).scrollTop,
-                scrollLeft: (scrollEvent.target as HTMLDivElement).scrollLeft,
+                scrollTop: scrollEvent.currentTarget.scrollTop,
+                scrollLeft: scrollEvent.currentTarget.scrollLeft,
               },
               type: "list" as const,
             },

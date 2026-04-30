@@ -117,10 +117,20 @@ export const authUser = ({
 
               if (timedOut) return
 
-              const { result } = response as any
+              // The Dropbox SDK types `result` as `object`; the OAuth token
+              // exchange returns these fields. `refresh_token` is only
+              // present when `tokenAccessType === "offline"` — we currently
+              // request `online`, so it's optional in practice.
+              const result = response.result as {
+                access_token: string
+                refresh_token?: string
+                expires_in: number
+              }
 
               dropboxAuth.setAccessToken(result.access_token)
-              dropboxAuth.setRefreshToken(result.refresh_token)
+              if (result.refresh_token) {
+                dropboxAuth.setRefreshToken(result.refresh_token)
+              }
               dropboxAuth.setAccessTokenExpiresAt(
                 new Date(Date.now() + result.expires_in * 1000),
               )
