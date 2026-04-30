@@ -121,6 +121,16 @@ export type BaseDataSourceDocType = CommonBase & {
    * The tag reference may be invalid eventually.
    */
   tags?: string[]
+  /**
+   * Default `metadataFileDownloadEnabled` policy applied to NEW books detected
+   * during sync. Mirrors the per-book override but only takes effect when set
+   * to `false` (i.e. user explicitly opted out at the datasource level): in
+   * that case any newly-detected book will be created with
+   * `metadataFileDownloadEnabled = false`. When `undefined` / `null` / `true`
+   * the datasource uses the default behaviour (file download allowed) and
+   * never overrides the per-book value. Existing books are never modified.
+   */
+  metadataFileDownloadEnabled?: boolean | null
 }
 
 export type DataSourceDocType =

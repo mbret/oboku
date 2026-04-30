@@ -31,7 +31,7 @@ export const dataSourceSchema: RxJsonSchema<
   }
 > = {
   title: "dataSourceSchema",
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -48,12 +48,15 @@ export const dataSourceSchema: RxJsonSchema<
     isProtected: { type: ["boolean"], final: false },
     name: { type: ["string", "null"] },
     tags: { type: ["array", "null"] },
+    metadataFileDownloadEnabled: { type: ["boolean", "null"] },
     ...getReplicationProperties(`datasource`),
   },
   required: [],
 }
 
-export const migrationStrategies: MigrationStrategies = {}
+export const migrationStrategies: MigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => oldDoc,
+}
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {

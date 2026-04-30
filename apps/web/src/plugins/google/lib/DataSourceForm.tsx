@@ -16,6 +16,10 @@ import { useMemo, useState } from "react"
 import { buildTree } from "../../../common/FileTreeView"
 import { useUnmountSubject } from "../../../common/rxjs/useUnmountSubject"
 import { DataSourceFormLayout } from "../../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../../common/dataSourceFormHelpers"
 import { PickItemsSection } from "../../common/PickItemsSection"
 import { TreeActionsSection } from "../../common/TreeActionsSection"
 import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
@@ -37,8 +41,7 @@ export const DataSourceForm = ({
   const { control, handleSubmit } = useForm<GoogleDriveFormData>({
     mode: "onChange",
     defaultValues: {
-      name: dataSource?.name ?? "",
-      tags: [...(dataSource?.tags ?? [])],
+      ...getDataSourceFormBaseDefaults(dataSource),
       items: [...(dataSource?.data_v2?.items ?? [])],
     },
   })
@@ -90,11 +93,7 @@ export const DataSourceForm = ({
     <DataSourceFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
-        onSubmit({
-          name: data.name,
-          tags: data.tags,
-          data_v2: { items: data.items },
-        }),
+        onSubmit(buildDataSourceSubmitPayload(data, { items: data.items })),
       )}
       submitLabel={submitLabel}
     >

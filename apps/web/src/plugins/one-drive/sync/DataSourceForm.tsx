@@ -3,6 +3,10 @@ import { Stack } from "@mui/material"
 import { memo, useCallback, useState } from "react"
 import { useController, useForm } from "react-hook-form"
 import { DataSourceFormLayout } from "../../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../../common/dataSourceFormHelpers"
 import { PickItemsSection } from "../../common/PickItemsSection"
 import type { OneDriveDataSourceDocType, OneDriveLinkData } from "@oboku/shared"
 import type {
@@ -50,8 +54,7 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit } = useForm<OneDriveFormData>({
     mode: "onChange",
     defaultValues: {
-      name: dataSource?.name ?? "",
-      tags: [...(dataSource?.tags ?? [])],
+      ...getDataSourceFormBaseDefaults(dataSource),
       items: [...(dataSource?.data_v2?.items ?? [])],
     },
   })
@@ -100,11 +103,7 @@ export const DataSourceForm = memo(function DataSourceForm({
       <DataSourceFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit({
-            name: data.name,
-            tags: data.tags,
-            data_v2: { items: data.items },
-          }),
+          onSubmit(buildDataSourceSubmitPayload(data, { items: data.items })),
         )}
         submitLabel={submitLabel}
       >

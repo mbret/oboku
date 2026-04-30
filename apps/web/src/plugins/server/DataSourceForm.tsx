@@ -3,6 +3,10 @@ import { Controller, useForm } from "react-hook-form"
 import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { ConnectorSelector } from "../../connectors/ConnectorSelector"
 import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../common/dataSourceFormHelpers"
 import type { ServerDataSourceDocType } from "@oboku/shared"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
@@ -19,8 +23,7 @@ export const DataSourceForm = memo(
     const { control, handleSubmit } = useForm<ServerFormData>({
       mode: "onChange",
       defaultValues: {
-        name: dataSource?.name ?? "",
-        tags: [...(dataSource?.tags ?? [])],
+        ...getDataSourceFormBaseDefaults(dataSource),
         connectorId: dataSource?.data_v2?.connectorId ?? "",
       },
     })
@@ -29,11 +32,11 @@ export const DataSourceForm = memo(
       <DataSourceFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit({
-            name: data.name,
-            tags: data.tags,
-            data_v2: { connectorId: data.connectorId },
-          }),
+          onSubmit(
+            buildDataSourceSubmitPayload(data, {
+              connectorId: data.connectorId,
+            }),
+          ),
         )}
         submitLabel={submitLabel}
       >

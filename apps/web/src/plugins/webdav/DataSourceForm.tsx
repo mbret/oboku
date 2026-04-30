@@ -10,6 +10,10 @@ import { TestConnection } from "../../connectors/TestConnection"
 import { useConnector } from "../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
 import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../common/dataSourceFormHelpers"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
 type WebDAVFormData = DataSourceFormData<{
@@ -26,8 +30,7 @@ export const DataSourceForm = memo(
     const { control, handleSubmit, watch } = useForm<WebDAVFormData>({
       mode: "onChange",
       defaultValues: {
-        name: dataSource?.name ?? "",
-        tags: [...(dataSource?.tags ?? [])],
+        ...getDataSourceFormBaseDefaults(dataSource),
         connectorId: dataSource?.data_v2?.connectorId ?? "",
         directory: dataSource?.data_v2?.directory ?? "",
       },
@@ -43,14 +46,12 @@ export const DataSourceForm = memo(
       <DataSourceFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit({
-            name: data.name,
-            tags: data.tags,
-            data_v2: {
+          onSubmit(
+            buildDataSourceSubmitPayload(data, {
               connectorId: data.connectorId,
               directory: data.directory,
-            },
-          }),
+            }),
+          ),
         )}
         submitLabel={submitLabel}
       >

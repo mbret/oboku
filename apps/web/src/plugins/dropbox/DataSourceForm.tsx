@@ -2,6 +2,10 @@ import { Button, Stack, Typography } from "@mui/material"
 import { useController, useForm } from "react-hook-form"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../common/dataSourceFormHelpers"
 import type { DropboxDataSourceDocType } from "@oboku/shared"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
@@ -17,8 +21,7 @@ export const DataSourceForm = ({
   const { control, handleSubmit } = useForm<DropboxFormData>({
     mode: "onChange",
     defaultValues: {
-      name: dataSource?.name ?? "",
-      tags: [...(dataSource?.tags ?? [])],
+      ...getDataSourceFormBaseDefaults(dataSource),
       folderId: dataSource?.data_v2?.folderId ?? "",
     },
   })
@@ -41,11 +44,9 @@ export const DataSourceForm = ({
     <DataSourceFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
-        onSubmit({
-          name: data.name,
-          tags: data.tags,
-          data_v2: { folderId: data.folderId },
-        }),
+        onSubmit(
+          buildDataSourceSubmitPayload(data, { folderId: data.folderId }),
+        ),
       )}
       submitLabel={submitLabel}
     >
