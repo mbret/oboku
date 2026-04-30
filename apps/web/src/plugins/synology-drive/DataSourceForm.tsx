@@ -23,6 +23,10 @@ import {
 } from "./browsing/tree"
 import { useSelectionTreeData } from "./browsing/useSelectionTreeData"
 import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../common/dataSourceFormHelpers"
 import type { DataSourceFormData, DataSourceFormInternalProps } from "../types"
 
 type SynologyDriveFormData = DataSourceFormData<{
@@ -39,8 +43,7 @@ export const DataSourceForm = memo(
     const { control, handleSubmit } = useForm<SynologyDriveFormData>({
       mode: "onChange",
       defaultValues: {
-        name: dataSource?.name ?? "",
-        tags: [...(dataSource?.tags ?? [])],
+        ...getDataSourceFormBaseDefaults(dataSource),
         connectorId: dataSource?.data_v2?.connectorId ?? "",
         items: [...(dataSource?.data_v2?.items ?? [])],
       },
@@ -152,11 +155,12 @@ export const DataSourceForm = memo(
       <DataSourceFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit({
-            name: data.name,
-            tags: data.tags,
-            data_v2: { connectorId: data.connectorId, items: data.items },
-          }),
+          onSubmit(
+            buildDataSourceSubmitPayload(data, {
+              connectorId: data.connectorId,
+              items: data.items,
+            }),
+          ),
         )}
         submitLabel={submitLabel}
       >

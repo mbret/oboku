@@ -16,6 +16,7 @@ export const NewDataSourceScreen = memo(() => {
   const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
   const PluginForm = plugin?.DataSourceCreateForm
   const { mutate: createDataSource } = useCreateDataSource()
+
   const handleSubmit = (payload: DataSourceSubmitPayload) => {
     if (!plugin?.type) return
 
@@ -25,6 +26,7 @@ export const NewDataSourceScreen = memo(() => {
         data_v2: payload.data_v2,
         name: payload.name,
         tags: payload.tags,
+        metadataFileDownloadEnabled: payload.metadataFileDownloadEnabled,
       },
       {
         onSuccess: () => {

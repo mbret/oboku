@@ -130,6 +130,18 @@ export const createOrUpdateBook = async ({
           `createOrUpdateBook "${item.name}": new file detected, creating book`,
         )
 
+        /**
+         * Datasource-level default for `metadataFileDownloadEnabled`. We only
+         * apply it to brand-new books, and only when the user explicitly
+         * opted out at the datasource level (`false`). Any other value
+         * (`undefined`, `null`, `true`) is treated as "no override" so the
+         * book keeps the system default.
+         */
+        const dataSourceFileDownloadOverride =
+          ctx.dataSource.metadataFileDownloadEnabled === false
+            ? { metadataFileDownloadEnabled: false as const }
+            : {}
+
         const insertedBook = await createBook(db, {
           isAttachedToDataSource: true,
           metadata: [
@@ -138,6 +150,7 @@ export const createOrUpdateBook = async ({
               type: "link",
             },
           ],
+          ...dataSourceFileDownloadOverride,
         })
         bookId = insertedBook.id
 

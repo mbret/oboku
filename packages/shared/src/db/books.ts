@@ -52,4 +52,15 @@ export type BookDocType = CouchDBMeta &
      * Only gates calls to third-party providers; does not affect local extraction.
      */
     metadataFetchEnabled?: boolean | null
+    /**
+     * User override controlling whether the API may download the book's source
+     * file during a metadata refresh in order to extract local information
+     * (cover, embedded metadata, content type, ...).
+     * - `undefined` / `null` / `true`: download allowed (default behaviour)
+     * - `false`: never download the file when refreshing metadata
+     *
+     * Use {@link resolveMetadataFileDownloadEnabled} to collapse this to a
+     * boolean. Does not affect user-initiated downloads (reading the book).
+     */
+    metadataFileDownloadEnabled?: boolean | null
   }

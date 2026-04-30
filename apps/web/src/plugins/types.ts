@@ -5,6 +5,7 @@ import type {
   LinkData,
   LinkDataForProvider,
   LinkDocTypeForProvider,
+  MetadataFileDownloadOverride,
   ProviderApiCredentials,
 } from "@oboku/shared"
 import type {
@@ -138,6 +139,7 @@ export type UseLinkInfo = (data: {
 export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
   name: string
   tags: string[]
+  metadataFileDownloadEnabled: MetadataFileDownloadOverride
 } & PluginFields
 
 export type DataSourceFormInternalProps<
@@ -152,6 +154,7 @@ export type DataSourceSubmitPayload = {
   name: string
   tags: string[]
   data_v2: Record<string, unknown>
+  metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
 export type DataSourceCreateFormProps = {

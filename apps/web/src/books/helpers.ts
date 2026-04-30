@@ -2,7 +2,7 @@ import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
-import { type BookQueryResult, useBooks } from "./states"
+import type { BookQueryResult } from "./states"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
 import { useMutation } from "@tanstack/react-query"
@@ -156,21 +156,6 @@ export const useAddBook = () => {
   return [addBook] as [typeof addBook]
 }
 
-export const useBookIdsSortedBy = (
-  ids: string[],
-  sorting: "date" | "activity" | "alpha" | undefined,
-) => {
-  const { data: books } = useBooks()
-
-  return useMemo(() => {
-    const filteredBooks = ids
-      .map((id) => books?.find((book) => book._id === id))
-      .filter((maybeBook) => !!maybeBook) as BookQueryResult[]
-
-    return sortBooksBy(filteredBooks, sorting).map(({ _id }) => _id)
-  }, [books, ids, sorting])
-}
-
 export const useBooksSortedBy = (
   books: BookQueryResult[] | undefined,
   sorting: "date" | "activity" | "alpha" | undefined,
@@ -178,7 +163,7 @@ export const useBooksSortedBy = (
   return useMemo(() => sortBooksBy(books ?? [], sorting), [books, sorting])
 }
 
-const sortBooksBy = (
+export const sortBooksBy = (
   books: BookQueryResult[],
   sorting: "date" | "activity" | "alpha" | undefined,
 ) => {
@@ -199,7 +184,7 @@ const sortBooksBy = (
       })
     }
     case "alpha": {
-      return books.sort((a, b) =>
+      return [...books].sort((a, b) =>
         sortByTitleComparator(
           getMetadataFromBook(a).title?.toString() ?? "",
           getMetadataFromBook(b).title?.toString() ?? "",

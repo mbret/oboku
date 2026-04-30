@@ -9,9 +9,10 @@ import type {
 } from "../../../common/lists/ListActionsToolbar"
 import { useCollectionActionsDrawer } from "../../../collections/CollectionActionsDrawer/useCollectionActionsDrawer"
 import { useCollection } from "../../../collections/useCollection"
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useBooks } from "../../../books/states"
-import { selectIds } from "../../../queries/selectors"
+import { sortBooksBy } from "../../../books/helpers"
+import type { BookQueryResult } from "../../../books/states"
 import { Logger } from "../../../debug/logger.shared"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
 import { configuration } from "../../../config/configuration"
@@ -82,9 +83,14 @@ export const CollectionDetailsScreen = () => {
   const { data: collection } = useCollection({
     id,
   })
+  const selectSortedIds = useCallback(
+    (books: BookQueryResult[]) =>
+      sortBooksBy(books, sorting).map(({ _id }) => _id),
+    [sorting],
+  )
   const { data: visibleBookIds = EMPTY_BOOK_IDS } = useBooks({
     ids: collection?.books ?? [],
-    select: selectIds,
+    select: selectSortedIds,
   })
 
   const metadata = useCollectionComputedMetadata(collection)

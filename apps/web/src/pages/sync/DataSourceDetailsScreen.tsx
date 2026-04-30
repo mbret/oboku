@@ -50,6 +50,7 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
             name: payload.name,
             tags: payload.tags,
             data_v2: payload.data_v2,
+            metadataFileDownloadEnabled: payload.metadataFileDownloadEnabled,
           }) as typeof doc,
       },
       {

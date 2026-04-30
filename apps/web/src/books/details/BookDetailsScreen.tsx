@@ -16,7 +16,7 @@ import { DataSourceSection } from "./DataSourceSection"
 import { useBookDownloadState } from "../../download/states"
 import { useMetadataFromBook } from "../metadata"
 import { MetadataSourcePane } from "./MetadataSourcePane"
-import { MetadataFetchPolicyPane } from "../../metadata/MetadataFetchPolicyPane"
+import { BookMetadataPolicyPane } from "../metadata/BookMetadataPolicyPane"
 import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { CoverPane } from "./CoverPane"
@@ -200,7 +200,7 @@ export const BookDetailsScreen = memo(() => {
           </SectionInnerStack>
         </SectionStack>
         <MetadataSourcePane bookId={id} />
-        <MetadataFetchPolicyPane
+        <BookMetadataPolicyPane
           override={metadataFetchOverride}
           isProtected={metadataFetchIsProtected}
           resolved={metadataFetchResolved}
@@ -209,6 +209,14 @@ export const BookDetailsScreen = memo(() => {
             incrementalBookPatch({
               doc: book._id,
               patch: { metadataFetchEnabled: next },
+            })
+          }}
+          fileDownloadOverride={book?.metadataFileDownloadEnabled}
+          onFileDownloadChange={(next) => {
+            if (!book) return
+            incrementalBookPatch({
+              doc: book._id,
+              patch: { metadataFileDownloadEnabled: next },
             })
           }}
         />
