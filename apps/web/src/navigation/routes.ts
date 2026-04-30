@@ -1,8 +1,10 @@
+const BOOKS_ROOT = "/books"
+
 export const ROUTES = {
   HOME: "/",
-  BOOK_DETAILS: "/book/:id",
-  BOOK_TAGS: "/book/:id/tags",
-  BOOK_COLLECTIONS: "/book/:id/collections",
+  BOOK_DETAILS: `${BOOKS_ROOT}/:id`,
+  BOOK_TAGS: `${BOOKS_ROOT}/:id/tags`,
+  BOOK_COLLECTIONS: `${BOOKS_ROOT}/:id/collections`,
   COLLECTION_DETAILS: "/collections/:id",
   PROFILE: "/profile",
   NOTIFICATIONS: "/profile/notifications",
