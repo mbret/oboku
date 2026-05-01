@@ -90,8 +90,18 @@ const RowListItemButton = styled(ListItemButton)({
 
 // Tighten the default IconButton padding so two buttons stack vertically
 // without inflating the row height beyond a normal `dense` list row.
+//
+// Override MUI's default `pointer-events: none` on the disabled state so
+// clicks on a disabled arrow are absorbed by the button itself instead
+// of falling through to the underlying link (the row's `ListItemButton`
+// sits beneath this absolutely-positioned overlay). The native
+// `<button disabled>` still won't fire `click`, so this is purely a
+// hit-testing fix — the no-op stays a no-op.
 const ReorderIconButton = styled(IconButton)({
   padding: 2,
+  "&.Mui-disabled": {
+    pointerEvents: "auto",
+  },
 })
 
 /**
