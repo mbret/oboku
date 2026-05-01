@@ -113,6 +113,42 @@ export type BookMetadata =
   | DeprecatedMetadata
 
 /**
+ * Canonical set of metadata sources whose relative priority can be
+ * reordered by the user. `user` is pinned to the highest priority and
+ * `link` to the lowest, so they are intentionally excluded.
+ *
+ * Single source of truth for the reorderable subset:
+ *  - {@link ReorderableBookMetadataSource} is derived from this list
+ *  - {@link BookDocType.metadataSourcePriority} references that type
+ *  - {@link DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES} aliases this
+ *    constant for the default fill order
+ *
+ * Adding a new reorderable source therefore requires editing exactly
+ * this array — type, persistence shape, and runtime checks all follow.
+ */
+export const REORDERABLE_BOOK_METADATA_SOURCES = [
+  "file",
+  "googleBookApi",
+] as const
+
+export type ReorderableBookMetadataSource =
+  (typeof REORDERABLE_BOOK_METADATA_SOURCES)[number]
+
+/**
+ * Default merge/display order for the reorderable middle of the
+ * priority list, used when the user has not customized it. Identical
+ * to {@link REORDERABLE_BOOK_METADATA_SOURCES} on purpose: declaration
+ * order doubles as the default order.
+ */
+export const DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES: ReadonlyArray<ReorderableBookMetadataSource> =
+  REORDERABLE_BOOK_METADATA_SOURCES
+
+export const isReorderableBookMetadataSource = (
+  value: string,
+): value is ReorderableBookMetadataSource =>
+  (REORDERABLE_BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
+
+/**
  * Runtime mirror of each variant's writable field set, used by UIs that
  * render per-source field lists. Pinned to the type with `satisfies` so
  * the two cannot drift.
