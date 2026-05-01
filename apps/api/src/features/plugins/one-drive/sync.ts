@@ -1,12 +1,12 @@
 import {
   buildDriveItemUrl,
+  fetchMicrosoftGraphJson,
   getOneDriveItemKey,
   type GraphDriveItem,
   type OneDriveLinkData,
 } from "@oboku/shared"
 import type { SynchronizeAbleItem } from "src/features/plugins/types"
 import { createThrottler } from "src/lib/utils"
-import { fetchOneDriveJson } from "./graph"
 
 type OneDriveSyncDriveItem = GraphDriveItem & {
   id: string
@@ -130,7 +130,7 @@ export async function getSynchronizeAbleDataSourceFromItems({
   const throttle = createThrottler(50)
 
   const getFileMetadata = throttle(async (item: OneDriveLinkData) => {
-    const response = await fetchOneDriveJson<OneDriveSyncDriveItem>(
+    const response = await fetchMicrosoftGraphJson<OneDriveSyncDriveItem>(
       accessToken,
       `${buildDriveItemUrl(item.driveId, item.fileId)}?$select=id,name,lastModifiedDateTime,parentReference,file,folder,package`,
     )

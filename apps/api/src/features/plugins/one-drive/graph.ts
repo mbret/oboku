@@ -1,13 +1,6 @@
-import {
-  fetchMicrosoftGraphJson,
-  getMicrosoftGraphDriveItem,
-} from "@oboku/shared"
+import { getMicrosoftGraphDriveItem } from "@oboku/shared"
 import { Readable } from "node:stream"
 import type { ReadableStream as NodeReadableStream } from "node:stream/web"
-
-export async function fetchOneDriveJson<T>(accessToken: string, url: string) {
-  return await fetchMicrosoftGraphJson<T>(accessToken, url)
-}
 
 export async function getOneDriveDriveItem({
   accessToken,

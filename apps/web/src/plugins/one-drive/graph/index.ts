@@ -51,10 +51,6 @@ export function fetchOneDriveJson$<T>(accessToken: string, url: string) {
   })
 }
 
-export async function fetchOneDriveJson<T>(accessToken: string, url: string) {
-  return await fetchMicrosoftGraphJson<T>(accessToken, url)
-}
-
 function buildOneDriveItemSummaryUrl(driveId: string, fileId: string) {
   const url = new URL(buildDriveItemUrl(driveId, fileId))
 
@@ -72,14 +68,14 @@ export async function getOneDriveItemSummary({
   driveId: string
   fileId: string
 }) {
-  return await fetchOneDriveJson<OneDriveDriveItemSummary>(
+  return await fetchMicrosoftGraphJson<OneDriveDriveItemSummary>(
     accessToken,
     buildOneDriveItemSummaryUrl(driveId, fileId),
   )
 }
 
 export async function getOneDrivePickerBaseUrl(accessToken: string) {
-  const drive = await fetchOneDriveJson<CurrentUserDrive>(
+  const drive = await fetchMicrosoftGraphJson<CurrentUserDrive>(
     accessToken,
     MICROSOFT_GRAPH_ME_DRIVE_URL,
   )
