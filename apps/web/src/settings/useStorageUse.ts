@@ -9,6 +9,11 @@ interface ChromeStorageEstimate extends StorageEstimate {
 
 const STORAGE_ESTIMATE_INTERVAL_MS = 2000
 
+/**
+ * Returns raw byte counts and a usage ratio. Callers are expected to
+ * format with the shared {@link formatBytes} helper so the unit choice
+ * (KB vs MB vs GB) lives in one place.
+ */
 export const useStorageUse = ({
   intervalMs = STORAGE_ESTIMATE_INTERVAL_MS,
 }: {
@@ -49,16 +54,13 @@ export const useStorageUse = ({
   }, [intervalMs, refreshStorageEstimate])
 
   const { data: coversSize } = useCoversCacheInformation()
-  const coversWightInMb = ((coversSize?.weight ?? 0) / 1e6).toFixed(2)
   const quotaUsed = usage / (quota || 1)
-  const usedInMb = (usage / 1e6).toFixed(2)
-  const quotaInGb = (quota / 1e9).toFixed(2)
 
   return {
+    quota,
+    usage,
     quotaUsed,
-    usedInMb,
-    quotaInGb,
-    coversWightInMb,
+    coversWeightBytes: coversSize?.weight ?? 0,
     covers: coversSize?.size,
     refreshStorageEstimate,
   }

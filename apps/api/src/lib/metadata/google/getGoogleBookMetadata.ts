@@ -1,4 +1,4 @@
-import type { Metadata } from "../types"
+import type { GoogleBookApiMetadata } from "@oboku/shared"
 import { parseGoogleMetadata } from "./parseGoogleMetadata"
 import { refineTitle } from "../refineTitle"
 import {
@@ -8,32 +8,44 @@ import {
 } from "src/lib/google/googleBooksApi"
 import { AppConfigService } from "src/config/AppConfigService"
 
+/**
+ * Lookup input for the Google Books API. ISBN/`googleVolumeId` come from
+ * caller-parsed filename directives — they are no longer carried on
+ * `LinkMetadata`.
+ */
+export type GoogleBookLookupInput = {
+  title?: string
+  isbn?: string
+  googleVolumeId?: string
+}
+
 export const getGoogleBookMetadata = async (
-  metadata: Metadata,
+  input: GoogleBookLookupInput,
   apiKey: string,
   config: AppConfigService,
-): Promise<Metadata | undefined> => {
-  let titleRefined = metadata.title?.toString() ?? ""
-  let response = metadata.isbn
-    ? await findByISBN(metadata.isbn, apiKey, config)
-    : metadata.googleVolumeId
-      ? await findByVolumeId(metadata.googleVolumeId, apiKey, config)
+): Promise<GoogleBookApiMetadata | undefined> => {
+  const { isbn, googleVolumeId, title } = input
+  let titleRefined = title ?? ""
+  let response = isbn
+    ? await findByISBN(isbn, apiKey, config)
+    : googleVolumeId
+      ? await findByVolumeId(googleVolumeId, apiKey, config)
       : await findByTitle(titleRefined, apiKey, config)
 
   console.log("[google] [getGoogleBookMetadata]", { response })
 
   if (!response.items?.length) {
-    titleRefined = refineTitle(metadata.title?.toString() ?? "", 1)
+    titleRefined = refineTitle(title ?? "", 1)
 
     console.log(
       `[getGoogleBookMetadata]`,
-      `was unable to find result for isbn:${metadata.isbn} or title:${metadata.title} or volumeId:${metadata.googleVolumeId}. Trying to refine title with 1 deepness ${titleRefined}`,
+      `was unable to find result for isbn:${isbn} or title:${title} or volumeId:${googleVolumeId}. Trying to refine title with 1 deepness ${titleRefined}`,
     )
 
     response = await findByTitle(titleRefined, apiKey, config)
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title?.toString() ?? "", 2)
+      titleRefined = refineTitle(title ?? "", 2)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -44,7 +56,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title?.toString() ?? "", 3)
+      titleRefined = refineTitle(title ?? "", 3)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -55,7 +67,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title?.toString() ?? "", 4)
+      titleRefined = refineTitle(title ?? "", 4)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -66,7 +78,7 @@ export const getGoogleBookMetadata = async (
     }
 
     if (!response.items?.length) {
-      titleRefined = refineTitle(metadata.title?.toString() ?? "", 5)
+      titleRefined = refineTitle(title ?? "", 5)
 
       console.log(
         `[getGoogleBookMetadata]`,
@@ -78,7 +90,7 @@ export const getGoogleBookMetadata = async (
   }
 
   console.log(
-    `${response.items?.length ?? 0} items found from google book API for title "${metadata.title}" & isbn "${metadata.isbn}" thanks to refined title "${titleRefined}"`,
+    `${response.items?.length ?? 0} items found from google book API for title "${title}" & isbn "${isbn}" thanks to refined title "${titleRefined}"`,
   )
 
   const parsedMetadata = parseGoogleMetadata(response)

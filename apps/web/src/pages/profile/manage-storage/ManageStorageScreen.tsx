@@ -24,7 +24,7 @@ import { BookList } from "../../../books/lists"
 import { bookActionDrawerSignal } from "../../../books/drawer/BookActionsDrawer"
 import { useDownloadedFilesInfo } from "../../../download/useDownloadedFilesInfo"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
-import { difference } from "@oboku/shared"
+import { difference, formatBytes } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
 import { Logger } from "../../../debug/logger.shared"
 import { useEffect } from "react"
@@ -45,10 +45,10 @@ export const ManageStorageScreen = () => {
   )
   const {
     quotaUsed,
-    quotaInGb,
-    usedInMb,
+    quota,
+    usage,
     covers,
-    coversWightInMb,
+    coversWeightBytes,
     refreshStorageEstimate,
   } = useStorageUse()
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
@@ -119,9 +119,7 @@ export const ManageStorageScreen = () => {
                 <Typography
                   gutterBottom
                   variant="body2"
-                >{`${usedInMb} MB used of ${quotaInGb} GB (${(
-                  quotaUsed * 100
-                ).toFixed(2)}%)`}</Typography>
+                >{`${formatBytes(usage)} used of ${formatBytes(quota)} (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
               </div>
             }
           />
@@ -132,7 +130,7 @@ export const ManageStorageScreen = () => {
           </ListItemIcon>
           <ListItemText
             primary="Delete all covers cached"
-            secondary={`${covers} covers are cached for a total of ${coversWightInMb} MB`}
+            secondary={`${covers} covers are cached for a total of ${formatBytes(coversWeightBytes)}`}
           />
         </ListItemButton>
         {bookIdsToDisplay.length > 0 && (

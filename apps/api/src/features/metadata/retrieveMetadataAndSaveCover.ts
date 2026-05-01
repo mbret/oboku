@@ -2,6 +2,7 @@ import fs from "node:fs"
 import path from "node:path"
 import {
   type BookMetadata,
+  type LinkMetadata,
   directives,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -71,12 +72,16 @@ export const retrieveMetadataAndSaveCover = async (
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
       directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
-    const linkMetadata: BookMetadata = {
+    /**
+     * The filename (with directives still embedded) IS the canonical title:
+     * directives like `[oboku~isbn~…]` are parsed on demand at consumption
+     * sites, so renaming the file in the provider remains the single source
+     * of truth — no stale ISBN/volumeId stored alongside.
+     */
+    const linkMetadata: LinkMetadata = {
       type: "link",
-      isbn,
       title: linkResourceMetadata.name,
       contentType: linkResourceMetadata.contentType,
-      googleVolumeId,
       ...linkResourceMetadata.bookMetadata,
     }
 
@@ -95,9 +100,11 @@ export const retrieveMetadataAndSaveCover = async (
         ? []
         : await getBookSourcesMetadata(
             {
-              ...linkMetadata,
-              // some plugins returns filename and not title
+              // Some plugins return the filename (with extension) instead
+              // of a clean title; strip the extension for the lookup.
               title: path.parse(linkMetadata.title?.toString() ?? "").name,
+              isbn,
+              googleVolumeId,
             },
             {
               googleApiKey: ctx.googleApiKey,
@@ -106,7 +113,7 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
-    const metadataList = [linkMetadata, ...sourcesMetadata]
+    const metadataList: BookMetadata[] = [linkMetadata, ...sourcesMetadata]
 
     if (canDownload && isMaybeExtractAble && !fileDownloadEnabled) {
       logger.log(

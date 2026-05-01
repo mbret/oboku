@@ -1,5 +1,4 @@
-import type { Metadata } from "src/lib/metadata/types"
-import type { OPF } from "@oboku/shared"
+import type { FileMetadata, OPF } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents"
 
 const extractLanguage = (
@@ -62,7 +61,7 @@ const findCoverPathFromOpf = (opf: OPF) => {
   return href
 }
 
-export const parseOpfMetadata = (opf: OPF): Omit<Metadata, "type"> => {
+export const parseOpfMetadata = (opf: OPF): Omit<FileMetadata, "type"> => {
   const metadata = opf.package?.metadata || {}
   const creatrawCreator = metadata["dc:creator"]
 

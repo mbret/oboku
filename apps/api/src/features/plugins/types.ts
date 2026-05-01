@@ -1,6 +1,6 @@
 import {
-  type BookMetadata,
   type CollectionDocType,
+  type LinkMetadata,
   DataSourceDocType,
   type DataSourceType,
   type DocType,
@@ -141,7 +141,15 @@ export type DataSourcePlugin<
     modifiedAt?: string
     canDownload?: boolean
     contentType?: string
-    bookMetadata?: Partial<Omit<BookMetadata, "type">>
+    /**
+     * Restricted to {@link LinkMetadata}'s advertised fields on purpose:
+     * provider-specific identifiers like `isbn` / `googleVolumeId` are
+     * NOT accepted here — they belong in the filename as oboku
+     * directives (e.g. `[oboku~isbn~…]`), so the storage provider
+     * stays the single source of truth and we never persist a stale
+     * duplicate.
+     */
+    bookMetadata?: Partial<Omit<LinkMetadata, "type">>
   }>
   download: (
     link: LinkDocTypeForProvider<TProvider>,
