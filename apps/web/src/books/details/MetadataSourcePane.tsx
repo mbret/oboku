@@ -1,4 +1,5 @@
 import {
+  IconButton,
   List,
   ListItem,
   ListItemButton,
@@ -9,8 +10,13 @@ import {
   Typography,
   styled,
 } from "@mui/material"
-import { ChevronRightRounded, LocalOfferOutlined } from "@mui/icons-material"
-import { Fragment, type FC, useMemo } from "react"
+import {
+  ChevronRightRounded,
+  KeyboardArrowDownRounded,
+  KeyboardArrowUpRounded,
+  LocalOfferOutlined,
+} from "@mui/icons-material"
+import { Fragment, type ReactNode, useMemo } from "react"
 import { Link } from "react-router"
 import { BOOK_METADATA_FIELDS_BY_SOURCE, directives } from "@oboku/shared"
 import { useBook } from "../states"
@@ -18,11 +24,18 @@ import { useLink } from "../../links/states"
 import { pluginsByType } from "../../plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import {
-  BOOK_METADATA_SOURCES,
+  type BookMetadataSource,
   getBookMetadataSourceIcon,
   getBookMetadataSourceLabel,
+  getOrderedBookMetadataSources,
 } from "../metadata/sources"
+import {
+  isReorderableBookMetadataSource,
+  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
+  type ReorderableBookMetadataSource,
+} from "@oboku/shared"
 import { formatBookMetadataField } from "./metadataSource/formatters"
+import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
 // Cast preserves Typography's polymorphic `component` prop, which MUI's
 // `styled` otherwise erases.
@@ -38,6 +51,59 @@ const TrailingIconStack = styled(Stack)({
   width: 50,
   alignItems: "center",
   flexShrink: 0,
+})
+
+/**
+ * Width of the leading column reserved for the reorder buttons. Applied
+ * as left padding on every {@link ListItemButton} so source icons and
+ * labels line up across rows whether or not the row is reorderable.
+ */
+const LEADING_COLUMN_WIDTH = 36
+
+/**
+ * Vertical stepper of up/down reorder buttons, overlaid on top of the
+ * row's {@link ListItemButton} via absolute positioning. Sitting on top
+ * (rather than as a flex sibling) lets the underlying `ListItemButton`
+ * span the entire row, so its native `:hover` background paints behind
+ * the buttons too — no manual hover plumbing required.
+ *
+ * The icon buttons themselves remain interactive (clicking them does not
+ * fall through to the link), and `:hover` is cursor-position based, so
+ * hovering an icon button still paints the row's hover background
+ * underneath because the cursor is inside the `ListItemButton`'s
+ * bounding box.
+ */
+const ReorderActionsStack = styled(Stack)({
+  position: "absolute",
+  left: 0,
+  top: 0,
+  bottom: 0,
+  width: LEADING_COLUMN_WIDTH,
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+})
+
+// Cast preserves ListItemButton's polymorphic `component` prop (used to
+// render as a react-router `Link`), which MUI's `styled` otherwise erases.
+const RowListItemButton = styled(ListItemButton)({
+  paddingLeft: LEADING_COLUMN_WIDTH,
+}) as typeof ListItemButton
+
+// Tighten the default IconButton padding so two buttons stack vertically
+// without inflating the row height beyond a normal `dense` list row.
+//
+// Override MUI's default `pointer-events: none` on the disabled state so
+// clicks on a disabled arrow are absorbed by the button itself instead
+// of falling through to the underlying link (the row's `ListItemButton`
+// sits beneath this absolutely-positioned overlay). The native
+// `<button disabled>` still won't fire `click`, so this is purely a
+// hit-testing fix — the no-op stays a no-op.
+const ReorderIconButton = styled(IconButton)({
+  padding: 2,
+  "&.Mui-disabled": {
+    pointerEvents: "auto",
+  },
 })
 
 /**
@@ -58,11 +124,17 @@ const SAMPLE_PREVIEW_LIMIT = 2
  * pass a deep fallback list (e.g. `[title, authors, isbn, publisher]`)
  * without worrying about which fields are populated.
  */
-const SourceRowSecondary: FC<{
+type SourceRowSecondaryProps = {
   count: number
   sampleValues: ReadonlyArray<string | number | undefined>
   emptyMessage: string
-}> = ({ count, sampleValues, emptyMessage }) => {
+}
+
+function SourceRowSecondary({
+  count,
+  sampleValues,
+  emptyMessage,
+}: SourceRowSecondaryProps) {
   if (count === 0) {
     return <WarningTypography variant="body2">{emptyMessage}</WarningTypography>
   }
@@ -88,16 +160,75 @@ const SourceRowSecondary: FC<{
 const SECONDARY_SLOT_PROPS = { secondary: { component: "div" } } as const
 
 /**
+ * Shared row shell for every entry in the metadata sources list. Owns
+ * the `<ListItem><RowListItemButton/></ListItem>` shape, the chevron,
+ * and the count/preview rendering — call sites only supply the
+ * source-specific bits (icon, label, link target, preview values).
+ *
+ * Optional `overlay` children are rendered as siblings of the
+ * `RowListItemButton` (so they can be absolutely positioned on top
+ * without nesting interactive elements). Used for the reorder controls
+ * on swappable rows.
+ */
+type SourceRowProps = {
+  to: string
+  icon: ReactNode
+  primary: ReactNode
+  count: number
+  sampleValues: ReadonlyArray<string | number | undefined>
+  emptyMessage: string
+  overlay?: ReactNode
+}
+
+function SourceRow({
+  to,
+  icon,
+  primary,
+  count,
+  sampleValues,
+  emptyMessage,
+  overlay,
+}: SourceRowProps) {
+  return (
+    <ListItem disablePadding>
+      <RowListItemButton component={Link} to={to}>
+        <ListItemIcon>{icon}</ListItemIcon>
+        <ListItemText
+          primary={primary}
+          secondary={
+            <SourceRowSecondary
+              count={count}
+              sampleValues={sampleValues}
+              emptyMessage={emptyMessage}
+            />
+          }
+          slotProps={SECONDARY_SLOT_PROPS}
+        />
+        <TrailingIconStack>
+          <ChevronRightRounded />
+        </TrailingIconStack>
+      </RowListItemButton>
+      {overlay}
+    </ListItem>
+  )
+}
+
+const buildSourceRoute = (bookId: string, source: string) =>
+  ROUTES.BOOK_METADATA_SOURCE.replace(":id", bookId).replace(":source", source)
+
+/**
  * Synthetic row in the metadata sources list. Directives are not a real
  * metadata variant — they live inside the link's filename and are parsed
  * on the fly. This row exists so the user can discover them and see they
  * sit just below "user" in the merge priority. Clicking jumps to the
  * link source detail screen, where directives are surfaced.
  */
-const DirectivesRow: FC<{
+type DirectivesRowProps = {
   bookId: string
   linkTitle: string | number | undefined
-}> = ({ bookId, linkTitle }) => {
+}
+
+function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
   const parsed = useMemo(
     () =>
       linkTitle
@@ -111,39 +242,115 @@ const DirectivesRow: FC<{
   )
 
   return (
-    <ListItemButton
-      component={Link}
-      to={ROUTES.BOOK_METADATA_SOURCE.replace(":id", bookId).replace(
-        ":source",
-        "link",
-      )}
-    >
-      <ListItemIcon>
-        <LocalOfferOutlined />
-      </ListItemIcon>
-      <ListItemText
-        primary="Directives"
-        secondary={
-          <SourceRowSecondary
-            count={detectedValues.length}
-            sampleValues={detectedValues}
-            emptyMessage="No directives in filename"
-          />
-        }
-        slotProps={SECONDARY_SLOT_PROPS}
-      />
-      <TrailingIconStack>
-        <ChevronRightRounded />
-      </TrailingIconStack>
-    </ListItemButton>
+    <SourceRow
+      to={buildSourceRoute(bookId, "link")}
+      icon={<LocalOfferOutlined />}
+      primary="Directives"
+      count={detectedValues.length}
+      sampleValues={detectedValues}
+      emptyMessage="No directives in filename"
+    />
   )
 }
 
-export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
+/**
+ * Reorder controls for a swappable source row. Rendered as an absolute
+ * overlay on top of the row's {@link RowListItemButton} (which extends
+ * under the leading column thanks to its left padding). The icon
+ * buttons are siblings of the underlying anchor in the DOM — never
+ * nested inside it — so HTML stays valid; clicks land on the icon
+ * button without bubbling navigation, while the row's hover background
+ * still paints behind the buttons because `:hover` fires whenever the
+ * cursor is inside the `ListItemButton`'s bounding box.
+ */
+type SourceReorderActionsProps = {
+  source: ReorderableBookMetadataSource
+  middle: ReadonlyArray<ReorderableBookMetadataSource>
+  onChange: (next: ReorderableBookMetadataSource[]) => void
+}
+
+function SourceReorderActions({
+  source,
+  middle,
+  onChange,
+}: SourceReorderActionsProps) {
+  const index = middle.indexOf(source)
+  const canMoveUp = index > 0
+  const canMoveDown = index >= 0 && index < middle.length - 1
+
+  const swap = (a: number, b: number) => {
+    const aValue = middle[a]
+    const bValue = middle[b]
+    if (aValue === undefined || bValue === undefined) return
+
+    const next = middle.map((source, i) => {
+      if (i === a) return bValue
+      if (i === b) return aValue
+
+      return source
+    })
+
+    onChange(next)
+  }
+
+  return (
+    <ReorderActionsStack>
+      <ReorderIconButton
+        edge={false}
+        size="small"
+        disabled={!canMoveUp}
+        onClick={() => swap(index, index - 1)}
+        aria-label={`Move ${getBookMetadataSourceLabel(source)} up`}
+      >
+        <KeyboardArrowUpRounded fontSize="small" />
+      </ReorderIconButton>
+      <ReorderIconButton
+        edge={false}
+        size="small"
+        disabled={!canMoveDown}
+        onClick={() => swap(index, index + 1)}
+        aria-label={`Move ${getBookMetadataSourceLabel(source)} down`}
+      >
+        <KeyboardArrowDownRounded fontSize="small" />
+      </ReorderIconButton>
+    </ReorderActionsStack>
+  )
+}
+
+export function MetadataSourcePane({ bookId }: { bookId: string }) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = link?.type ? pluginsByType[link?.type] : undefined
   const linkTitle = book?.metadata?.find((item) => item.type === "link")?.title
+  const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
+
+  const orderedSources: BookMetadataSource[] = useMemo(
+    () => getOrderedBookMetadataSources(book?.metadataSourcePriority),
+    [book?.metadataSourcePriority],
+  )
+
+  // Sanitized middle subset, used by the reorder controls so they always
+  // operate on a known-good list (matches what the merge actually uses).
+  const middle = useMemo(
+    () => orderedSources.filter(isReorderableBookMetadataSource),
+    [orderedSources],
+  )
+
+  const handleReorder = (next: ReorderableBookMetadataSource[]) => {
+    if (!bookId) return
+
+    // Drop the patch when it matches the default — keeps the document
+    // free of redundant fields and lets the default ever evolve without
+    // existing books overriding it.
+    const matchesDefault =
+      next.length === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES.length &&
+      next.every((s, i) => s === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES[i])
+
+    incrementalBookPatch({
+      doc: bookId,
+      patch: { metadataSourcePriority: matchesDefault ? undefined : next },
+    })
+  }
 
   return (
     <List
@@ -152,9 +359,9 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
       disablePadding
     >
       <ListItem>
-        <ListItemText secondary="Ordered by display priority" />
+        <ListItemText secondary="Ordered by display priority. Use the arrows to swap File and Google Book API." />
       </ListItem>
-      {BOOK_METADATA_SOURCES.map((source) => {
+      {orderedSources.map((source) => {
         const metadata = book?.metadata?.find((item) => item.type === source)
 
         // `type` is the variant discriminator, not a real property.
@@ -172,44 +379,38 @@ export const MetadataSourcePane: FC<{ bookId: string }> = ({ bookId }) => {
           (field) => formatBookMetadataField(metadata, field),
         )
 
+        const reorderable = isReorderableBookMetadataSource(source)
+
         return (
           <Fragment key={source}>
-            <ListItemButton
-              component={Link}
-              to={ROUTES.BOOK_METADATA_SOURCE.replace(":id", bookId).replace(
-                ":source",
-                source,
-              )}
-            >
-              <ListItemIcon>{getBookMetadataSourceIcon(source)}</ListItemIcon>
-              <ListItemText
-                primary={
-                  <Typography>
-                    {getBookMetadataSourceLabel(source)}
-                    {source === "link" && (
-                      <PluginNameTypography component="span" variant="body2">
-                        ({plugin?.name})
-                      </PluginNameTypography>
-                    )}
-                  </Typography>
-                }
-                secondary={
-                  <SourceRowSecondary
-                    count={numberOfProperties}
-                    sampleValues={sampleValues}
-                    emptyMessage={
-                      source === "user"
-                        ? "No information entered yet"
-                        : "No data yet"
-                    }
+            <SourceRow
+              to={buildSourceRoute(bookId, source)}
+              icon={getBookMetadataSourceIcon(source)}
+              primary={
+                <Typography>
+                  {getBookMetadataSourceLabel(source)}
+                  {source === "link" && (
+                    <PluginNameTypography component="span" variant="body2">
+                      ({plugin?.name})
+                    </PluginNameTypography>
+                  )}
+                </Typography>
+              }
+              count={numberOfProperties}
+              sampleValues={sampleValues}
+              emptyMessage={
+                source === "user" ? "No information entered yet" : "No data yet"
+              }
+              overlay={
+                reorderable ? (
+                  <SourceReorderActions
+                    source={source}
+                    middle={middle}
+                    onChange={handleReorder}
                   />
-                }
-                slotProps={SECONDARY_SLOT_PROPS}
-              />
-              <TrailingIconStack>
-                <ChevronRightRounded />
-              </TrailingIconStack>
-            </ListItemButton>
+                ) : undefined
+              }
+            />
             {source === "user" && (
               <DirectivesRow bookId={bookId} linkTitle={linkTitle} />
             )}

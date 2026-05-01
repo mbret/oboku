@@ -1,4 +1,4 @@
-import type { BookMetadata } from "../metadata"
+import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
 
@@ -63,4 +63,14 @@ export type BookDocType = CouchDBMeta &
      * boolean. Does not affect user-initiated downloads (reading the book).
      */
     metadataFileDownloadEnabled?: boolean | null
+    /**
+     * User-defined priority for the swappable middle of the metadata-source
+     * merge order. The full effective priority is:
+     * `["user", ...metadataSourcePriority, "link"]` (highest → lowest).
+     *
+     * `user` is always highest and `link` always lowest, so only the
+     * reorderable subset is persisted here. When omitted, the default order
+     * `["file", "googleBookApi"]` is used.
+     */
+    metadataSourcePriority?: ReorderableBookMetadataSource[]
   }

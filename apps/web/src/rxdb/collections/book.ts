@@ -40,13 +40,16 @@ export const bookCollectionMethods: BookCollectionMethods = {
 export const bookSchemaMigrationStrategies: MigrationStrategies = {
   1: (oldDoc: Record<string, unknown>) => oldDoc,
   2: (oldDoc: Record<string, unknown>) => oldDoc,
+  // v3: added optional `metadataSourcePriority`; nothing to backfill since
+  // the field is optional and the merge falls back to the default order.
+  3: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "books",
-  version: 2,
+  version: 3,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -81,6 +84,7 @@ export const bookSchema: RxJsonSchema<
     metadata: { type: ["array"] },
     metadataFetchEnabled: { type: ["boolean", "null"] },
     metadataFileDownloadEnabled: { type: ["boolean", "null"] },
+    metadataSourcePriority: { type: ["array"], items: { type: "string" } },
     ...getReplicationProperties(`book`),
   },
   required: [],
