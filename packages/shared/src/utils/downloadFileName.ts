@@ -6,9 +6,7 @@ const decodeFileName = (value: string) => {
   }
 }
 
-export const getFileNameFromContentDisposition = (
-  contentDisposition?: string,
-) => {
+const getFileNameFromContentDisposition = (contentDisposition?: string) => {
   if (!contentDisposition) {
     return undefined
   }
@@ -28,7 +26,7 @@ export const getFileNameFromContentDisposition = (
   return undefined
 }
 
-export const getFileNameFromUrl = (url: string) => {
+const getFileNameFromUrl = (url: string) => {
   try {
     const pathname = new URL(url).pathname
     const fileName = pathname.split("/").filter(Boolean).pop()
