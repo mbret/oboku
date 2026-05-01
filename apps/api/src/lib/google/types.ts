@@ -20,11 +20,12 @@ export type Item = {
     readingModes?: ReadingMode[]
     description?: string
     imageLinks?: {
+      smallThumbnail?: string
       thumbnail?: string
-      smallThumbnails?: string
       small?: string
       medium?: string
       large?: string
+      extraLarge?: string
     }
     maturityRating?: "NOT_MATURE"
     seriesInfo?: {

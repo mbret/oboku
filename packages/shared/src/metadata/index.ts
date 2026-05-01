@@ -1,4 +1,12 @@
-export type BookMetadata = {
+/**
+ * Every property a book metadata entry can carry across all sources.
+ *
+ * This is the single source of truth for field shape. Each per-source
+ * variant below picks the subset it can actually advertise. Fields not
+ * supported by a given source are typed as `?: never` so reads still
+ * compile (yielding `undefined`) but writes are caught at compile time.
+ */
+type BookMetadataFields = {
   title?: string | number
   authors?: string[]
   description?: string
@@ -16,17 +24,131 @@ export type BookMetadata = {
   publisher?: string | undefined
   rights?: string | undefined
   googleVolumeId?: string | undefined
-  /**
-   * googleBookApi: Metadata scrapped through google book api
-   * link: metadata scrapped from the current link
-   * file: metadata scrapped from the file itself.
-   * user: metadata from user. highest priority
-   *
-   * priority order:
-   * [user, file, ..., link]
-   */
-  type: "googleBookApi" | "link" | "file" | "user" | "deprecated"
 }
+
+type BookMetadataField = keyof BookMetadataFields
+
+type BookMetadataVariant<
+  TType extends string,
+  TKeys extends BookMetadataField,
+> = { type: TType } & Pick<BookMetadataFields, TKeys> & {
+    [K in Exclude<BookMetadataField, TKeys>]?: never
+  }
+
+/**
+ * Metadata extracted by querying the Google Books API. Cannot advertise
+ * provider-specific identifiers (`isbn`, `googleVolumeId`), local-archive
+ * fields (`contentType`, `size`), or `rights`.
+ */
+export type GoogleBookApiMetadata = BookMetadataVariant<
+  "googleBookApi",
+  | "title"
+  | "authors"
+  | "description"
+  | "formatType"
+  | "rating"
+  | "coverLink"
+  | "pageCount"
+  | "date"
+  | "publisher"
+  | "languages"
+  | "subjects"
+>
+
+/**
+ * Metadata extracted from the file's contents (EPUB OPF or RAR/ZIP scan).
+ * No descriptions, ratings, format types, or remote identifiers — those
+ * are not embedded in the file itself.
+ */
+export type FileMetadata = BookMetadataVariant<
+  "file",
+  | "title"
+  | "authors"
+  | "publisher"
+  | "rights"
+  | "languages"
+  | "date"
+  | "subjects"
+  | "coverLink"
+  | "pageCount"
+  | "contentType"
+>
+
+/**
+ * Metadata exposed by the storage provider for the link, before/without
+ * downloading the file. Different providers populate different subsets,
+ * but the shape is shared (e.g. Dropbox/Drive add `size`, all derive
+ * `title` from the filename).
+ *
+ * Filename directives (`[oboku~isbn~…]`, `[oboku~google-volume-id~…]`,
+ * …) are NOT stored as separate fields — they live in `title` and are
+ * parsed on demand, so renaming the file in the provider remains the
+ * single source of truth.
+ */
+export type LinkMetadata = BookMetadataVariant<
+  "link",
+  "title" | "contentType" | "size"
+>
+
+/**
+ * Metadata supplied directly by the end user. Currently only ISBN is
+ * exposed for editing; expand the variant as new fields become editable.
+ */
+export type UserMetadata = BookMetadataVariant<"user", "isbn">
+
+/**
+ * Catch-all for documents persisted before the typed sources existed.
+ * Permissive on purpose — never produced by new code.
+ */
+export type DeprecatedMetadata = BookMetadataVariant<
+  "deprecated",
+  BookMetadataField
+>
+
+export type BookMetadata =
+  | GoogleBookApiMetadata
+  | FileMetadata
+  | LinkMetadata
+  | UserMetadata
+  | DeprecatedMetadata
+
+/**
+ * Runtime mirror of each variant's writable field set, used by UIs that
+ * render per-source field lists. Pinned to the type with `satisfies` so
+ * the two cannot drift.
+ */
+export const BOOK_METADATA_FIELDS_BY_SOURCE = {
+  googleBookApi: [
+    "title",
+    "authors",
+    "description",
+    "formatType",
+    "rating",
+    "coverLink",
+    "pageCount",
+    "date",
+    "publisher",
+    "languages",
+    "subjects",
+  ],
+  file: [
+    "title",
+    "authors",
+    "publisher",
+    "rights",
+    "languages",
+    "date",
+    "subjects",
+    "coverLink",
+    "pageCount",
+    "contentType",
+  ],
+  link: ["title", "contentType", "size"],
+  user: ["isbn"],
+} as const satisfies Record<
+  Exclude<BookMetadata["type"], "deprecated">,
+  readonly BookMetadataField[]
+>
 
 export type CollectionMetadata = {
   title?:

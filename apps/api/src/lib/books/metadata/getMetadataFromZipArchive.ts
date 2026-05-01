@@ -1,4 +1,4 @@
-import type { BookMetadata, OPF } from "@oboku/shared"
+import type { FileMetadata, OPF } from "@oboku/shared"
 import fs from "node:fs"
 import path from "node:path"
 import unzipper from "unzipper"
@@ -13,7 +13,7 @@ export const getMetadataFromZipArchive = async (
   tmpFilePath: string,
   contentType: string,
   config: AppConfigService,
-): Promise<BookMetadata> => {
+): Promise<FileMetadata> => {
   let contentLength = 0
   const files: string[] = []
   let opfBasePath = ""

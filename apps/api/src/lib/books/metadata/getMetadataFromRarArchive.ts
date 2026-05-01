@@ -1,4 +1,4 @@
-import type { BookMetadata } from "@oboku/shared"
+import type { FileMetadata } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import path from "node:path"
 import type { AppConfigService } from "src/config/AppConfigService"
@@ -7,7 +7,7 @@ export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,
   contentType: string,
   config: AppConfigService,
-): Promise<BookMetadata> => {
+): Promise<FileMetadata> => {
   const list = extractor.getFileList()
   const fileHeaders = [...list.fileHeaders]
 

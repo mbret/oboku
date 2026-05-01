@@ -1,23 +1,8 @@
 import { Button, Code, Group, List, Paper, Stack, Text } from "@mantine/core"
+import { formatBytes } from "@oboku/shared"
 import { useCoverCleanupStats } from "../useCoverCleanupStats"
 import { useDeleteAllCovers } from "../useDeleteAllCovers"
 import { ConfirmButton } from "@/components/ConfirmButton"
-
-const formatBytes = (value: number) => {
-  if (value < 1024) {
-    return `${value} B`
-  }
-
-  if (value < 1024 * 1024) {
-    return `${(value / 1024).toFixed(1)} KB`
-  }
-
-  if (value < 1024 * 1024 * 1024) {
-    return `${(value / (1024 * 1024)).toFixed(1)} MB`
-  }
-
-  return `${(value / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
 
 export const AdminCoversSection = () => {
   const coverCleanupStats = useCoverCleanupStats({

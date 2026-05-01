@@ -1,6 +1,6 @@
 import type {
-  BookMetadata,
   DataSourceDocType,
+  LinkMetadata,
   DataSourceDocTypeFor,
   LinkData,
   LinkDataForProvider,
@@ -26,7 +26,7 @@ type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
 
 /** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
 type PostBook = {
-  metadata?: Array<Pick<BookMetadata, "type" | "title">>
+  metadata?: Array<Pick<LinkMetadata, "type" | "title">>
   title?: string
 }
 

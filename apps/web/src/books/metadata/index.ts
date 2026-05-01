@@ -52,6 +52,17 @@ export const getMetadataFromBook = (
     a.type === "link" ? -1 : 1,
   )
 
+  /**
+   * Filename directives are the canonical source for `isbn` and
+   * `googleVolumeId` — they live in the link's title and are parsed on
+   * demand here so consumers see the effective values without us
+   * persisting a duplicate that could go stale.
+   */
+  const linkEntry = list.find((item) => item.type === "link")
+  const linkDirectives = linkEntry?.title
+    ? directives.extractDirectivesFromName(linkEntry.title.toString())
+    : undefined
+
   const reducedMetadata = orderedList.reduce((acc, item) => {
     const mergedValue = mergeObjects(acc, item) as Return
 
@@ -77,6 +88,9 @@ export const getMetadataFromBook = (
 
   return {
     ...reducedMetadata,
+    isbn: reducedMetadata.isbn ?? linkDirectives?.isbn,
+    googleVolumeId:
+      reducedMetadata.googleVolumeId ?? linkDirectives?.googleVolumeId,
     title: directives.removeDirectiveFromString(
       reducedMetadata.title?.toString() ?? "",
     ),

@@ -1,10 +1,28 @@
+import type { GoogleBookApiMetadata } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents"
-import type { Metadata } from "../types"
 import type { GoogleBooksApiVolumesResponseData } from "src/lib/google/googleBooksApi"
+
+/**
+ * Google Books cover URLs look like:
+ *   http://books.google.com/books/content?id=XXX&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api
+ *
+ * - `zoom=0` returns the largest version Google has (often ~1200px tall vs
+ *   ~200px for `zoom=1`).
+ * - Removing `&edge=curl` drops the fake page-curl shadow.
+ * - The API serves http by default; force https to avoid mixed-content issues.
+ */
+const upgradeGoogleCoverUrl = (url: string | undefined) => {
+  if (!url) return url
+
+  return url
+    .replace(/^http:\/\//, "https://")
+    .replace(/([?&])zoom=\d+/, "$1zoom=0")
+    .replace(/&edge=curl/, "")
+}
 
 export const parseGoogleMetadata = (
   response: Pick<GoogleBooksApiVolumesResponseData, "items">,
-): Omit<Metadata, "type"> => {
+): Omit<GoogleBookApiMetadata, "type"> => {
   let coverLink: string | undefined
 
   if (Array.isArray(response.items) && response.items.length > 0) {
@@ -12,14 +30,18 @@ export const parseGoogleMetadata = (
 
     if (!item) return {}
 
-    // lookup highest required resolution
+    // lookup highest available resolution, then upgrade the URL to ask
+    // Google for the largest version it has (zoom=0) without the page-curl
+    // overlay. This works even when only `thumbnail` is provided.
     const imageLinks = item.volumeInfo.imageLinks ?? {}
-    coverLink =
+    const rawCover =
+      imageLinks.extraLarge ??
       imageLinks.large ??
       imageLinks.medium ??
-      imageLinks.thumbnail ??
       imageLinks.small ??
-      imageLinks.smallThumbnails
+      imageLinks.thumbnail ??
+      imageLinks.smallThumbnail
+    coverLink = upgradeGoogleCoverUrl(rawCover)
 
     let title = item.volumeInfo.title
 

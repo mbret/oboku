@@ -32,6 +32,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
+import { formatBytes } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -60,7 +61,7 @@ export const ProfileScreen = () => {
     useState(false)
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
-  const { quotaUsed, quotaInGb, usedInMb } = useStorageUse({ intervalMs: 5000 })
+  const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const auth = useSignalValue(authStateSignal)
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
@@ -166,9 +167,7 @@ export const ProfileScreen = () => {
           </ListItemIcon>
           <ListItemText
             primary="Storage"
-            secondary={`${usedInMb} MB (${(quotaUsed * 100).toFixed(
-              2,
-            )}%) used of ${quotaInGb} GB`}
+            secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
           />
         </ListItemButton>
       </List>

@@ -6,23 +6,23 @@ import {
   MoreVertOutlined,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Typography, Container, Stack, IconButton, styled } from "@mui/material"
-import { useNavigate, useParams } from "react-router"
-import { Alert } from "@mui/material"
+import {
+  Typography,
+  Container,
+  Stack,
+  IconButton,
+  styled,
+  Tab,
+  Tabs,
+} from "@mui/material"
+import { useNavigate, useParams, useSearchParams } from "react-router"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
-import { DataSourceSection } from "./DataSourceSection"
 import { useBookDownloadState } from "../../download/states"
 import { useMetadataFromBook } from "../metadata"
-import { MetadataSourcePane } from "./MetadataSourcePane"
-import { BookMetadataPolicyPane } from "../metadata/BookMetadataPolicyPane"
-import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
-import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { CoverPane } from "./CoverPane"
-import { MetadataPane } from "./MetadataPane"
 import { DebugInfo } from "../../debug/DebugInfo"
-import { CollectionsPane } from "./CollectionsPane"
 import { useBookActionDrawer } from "../drawer/BookActionsDrawer"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
@@ -30,10 +30,20 @@ import { Logger } from "../../debug/logger.shared"
 import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { NotFoundPage } from "../../common/NotFoundPage"
+import { BookDetailsTabPane } from "./BookDetailsTabPane"
+import { BookMetadataTabPane } from "./BookMetadataTabPane"
 
 type ScreenParams = {
   id: string
 }
+
+const TAB_PARAM = "tab"
+const TABS = ["details", "metadata"] as const
+type BookDetailsTab = (typeof TABS)[number]
+const DEFAULT_TAB: BookDetailsTab = "details"
+
+const isBookDetailsTab = (value: string | null): value is BookDetailsTab =>
+  TABS.includes(value as BookDetailsTab)
 
 const PageContainer = styled(Container)(({ theme }) => ({
   display: "flex",
@@ -86,16 +96,7 @@ const ActionButton = styled(Button)(({ theme }) => ({
   },
 }))
 
-const SectionStack = styled(Stack)(({ theme }) => ({
-  paddingLeft: theme.spacing(2),
-  paddingRight: theme.spacing(2),
-}))
-
-const SectionInnerStack = styled(Stack)(({ theme }) => ({
-  gap: theme.spacing(1),
-}))
-
-export const BookDetailsScreen = memo(() => {
+export const BookDetailsScreen = memo(function BookDetailsScreen() {
   const navigate = useNavigate()
   const { mutate: downloadFile } = useDownloadBook()
   const cancelDownload = useCancelBookDownload()
@@ -110,12 +111,11 @@ export const BookDetailsScreen = memo(() => {
       goBack()
     },
   })
-  const {
-    override: metadataFetchOverride,
-    isProtected: metadataFetchIsProtected,
-    resolved: metadataFetchResolved,
-  } = useResolvedMetadataFetchEnabled({ kind: "book", book })
-  const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const rawTab = searchParams.get(TAB_PARAM)
+  const currentTab: BookDetailsTab = isBookDetailsTab(rawTab)
+    ? rawTab
+    : DEFAULT_TAB
 
   if (isDebugEnabled()) {
     Logger.info(`BookDetailsScreen`, { book, link })
@@ -188,39 +188,23 @@ export const BookDetailsScreen = memo(() => {
             <MoreVertOutlined />
           </IconButton>
         </ActionsStack>
-        <SectionStack>
-          <SectionInnerStack>
-            {book?.metadataUpdateStatus === "fetching" && (
-              <Alert severity="warning">
-                Retrieving metadata information...
-              </Alert>
-            )}
-            <MetadataPane bookId={book?._id} />
-            <CollectionsPane bookId={book?._id} />
-          </SectionInnerStack>
-        </SectionStack>
-        <MetadataSourcePane bookId={id} />
-        <BookMetadataPolicyPane
-          override={metadataFetchOverride}
-          isProtected={metadataFetchIsProtected}
-          resolved={metadataFetchResolved}
-          onChange={(next) => {
-            if (!book) return
-            incrementalBookPatch({
-              doc: book._id,
-              patch: { metadataFetchEnabled: next },
-            })
+        <Tabs
+          value={currentTab}
+          indicatorColor="primary"
+          onChange={(_e, value: BookDetailsTab) => {
+            const next = new URLSearchParams(searchParams)
+            next.set(TAB_PARAM, value)
+            setSearchParams(next, { replace: true })
           }}
-          fileDownloadOverride={book?.metadataFileDownloadEnabled}
-          onFileDownloadChange={(next) => {
-            if (!book) return
-            incrementalBookPatch({
-              doc: book._id,
-              patch: { metadataFileDownloadEnabled: next },
-            })
-          }}
-        />
-        <DataSourceSection bookId={id} />
+        >
+          <Tab label="Details" value="details" />
+          <Tab label="Metadata" value="metadata" />
+        </Tabs>
+        {currentTab === "details" ? (
+          <BookDetailsTabPane bookId={id} />
+        ) : (
+          <BookMetadataTabPane bookId={id} />
+        )}
       </PageContainer>
     </Page>
   )
