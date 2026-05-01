@@ -1,16 +1,21 @@
 import type React from "react"
-import type { FC } from "react"
 import { Box, Typography, useTheme } from "@mui/material"
 import { MenuBookRounded } from "@mui/icons-material"
 import { useMeasure } from "react-use"
 
-export const ReadingProgress: FC<{
+type ReadingProgressProps = {
   style?: React.CSSProperties
   progress: number
   className?: string
-}> = ({ style, progress, className }) => {
+}
+
+export function ReadingProgress({
+  style,
+  progress,
+  className,
+}: ReadingProgressProps) {
   const theme = useTheme()
-  const [ref, layout] = useMeasure()
+  const [ref, layout] = useMeasure<HTMLDivElement>()
   let width = 0
 
   if ("width" in layout) {
@@ -19,7 +24,7 @@ export const ReadingProgress: FC<{
 
   return (
     <Box
-      ref={ref as any}
+      ref={ref}
       className={className}
       style={{
         width: "100%",
