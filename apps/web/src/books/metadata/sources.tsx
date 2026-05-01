@@ -14,15 +14,6 @@ import type { ReactNode } from "react"
 
 export type BookMetadataSource = Exclude<BookMetadata["type"], "deprecated">
 
-// Re-exported so consumers in the web app keep importing source-related
-// symbols from a single module, even though the canonical definitions
-// live in `@oboku/shared` (where the persistence shape references them).
-export {
-  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
-  isReorderableBookMetadataSource,
-  type ReorderableBookMetadataSource,
-}
-
 /**
  * Builds the full, ordered list of metadata sources from the user-defined
  * middle. Returned highest → lowest priority — i.e. the order rendered in
@@ -31,6 +22,9 @@ export {
  * Defends against malformed persisted values by:
  *  - stripping anything that isn't a reorderable source (no `user`/`link`
  *    sneaking into the middle)
+ *  - de-duplicating the input while preserving first occurrence, so a
+ *    persisted `['file','file']` doesn't surface the same source twice
+ *    (and break `key={source}` rendering downstream)
  *  - re-adding any reorderable source missing from the input, preserving
  *    the default relative order, so the result always covers every source
  *    exactly once.
@@ -38,14 +32,17 @@ export {
 export const getOrderedBookMetadataSources = (
   middle: ReadonlyArray<string> | undefined,
 ): BookMetadataSource[] => {
-  const sanitized = (middle ?? []).filter(isReorderableBookMetadataSource)
-  const seen = new Set(sanitized)
-  const completed: ReorderableBookMetadataSource[] = [
-    ...sanitized,
-    ...DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES.filter((s) => !seen.has(s)),
-  ]
+  // Set gives dedupe + insertion-order iteration for free; appending the
+  // defaults afterwards backfills any missing entries (existing keys are
+  // a no-op) so every reorderable source appears exactly once.
+  const ordered = new Set<ReorderableBookMetadataSource>(
+    (middle ?? []).filter(isReorderableBookMetadataSource),
+  )
+  for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES) {
+    ordered.add(source)
+  }
 
-  return ["user", ...completed, "link"]
+  return ["user", ...ordered, "link"]
 }
 
 export const BOOK_METADATA_SOURCES: BookMetadataSource[] =

@@ -25,13 +25,15 @@ import { pluginsByType } from "../../plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import {
   type BookMetadataSource,
-  type ReorderableBookMetadataSource,
-  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
   getBookMetadataSourceIcon,
   getBookMetadataSourceLabel,
   getOrderedBookMetadataSources,
-  isReorderableBookMetadataSource,
 } from "../metadata/sources"
+import {
+  isReorderableBookMetadataSource,
+  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
+  type ReorderableBookMetadataSource,
+} from "@oboku/shared"
 import { formatBookMetadataField } from "./metadataSource/formatters"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
