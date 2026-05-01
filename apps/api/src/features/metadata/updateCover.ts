@@ -2,6 +2,7 @@ import {
   type BookDocType,
   type BookMetadata,
   getBookCoverKey,
+  getOrderedBookMetadataSources,
 } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket"
@@ -10,6 +11,35 @@ import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCo
 import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
 import { CoversService } from "../../covers/covers.service"
 import { firstValueFrom } from "rxjs"
+
+/**
+ * Picks the metadata entry that should provide the cover, honoring the
+ * user-defined source priority persisted on the book
+ * (`metadataSourcePriority`). Sources are walked highest → lowest
+ * priority; the first entry that actually carries a `coverLink` wins.
+ *
+ * Mirrors the merge precedence used on the web in
+ * {@link getMetadataFromBook} so the cached cover image stays consistent
+ * with the metadata fields surfaced in the UI.
+ */
+const pickCoverMetadata = (
+  metadataList: ReadonlyArray<BookMetadata> | undefined,
+  priority: BookDocType["metadataSourcePriority"],
+): BookMetadata | undefined => {
+  if (!metadataList?.length) return undefined
+
+  const orderedSources = getOrderedBookMetadataSources(priority)
+
+  for (const source of orderedSources) {
+    const match = metadataList.find(
+      (metadata) => metadata.type === source && metadata.coverLink,
+    )
+
+    if (match) return match
+  }
+
+  return undefined
+}
 
 export const updateCover = async ({
   metadataList,
@@ -26,11 +56,15 @@ export const updateCover = async ({
   tmpFilePath?: string
   coversService: CoversService
 }) => {
-  const currentMetadaForCover = book.metadata?.find(
-    (metadata) => metadata.coverLink,
+  const currentMetadaForCover = pickCoverMetadata(
+    book.metadata,
+    book.metadataSourcePriority,
   )
   const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
-  const metadataForCover = metadataList.find((metadata) => metadata.coverLink)
+  const metadataForCover = pickCoverMetadata(
+    metadataList,
+    book.metadataSourcePriority,
+  )
 
   if (
     metadataForCover?.type === currentMetadaForCover?.type &&

@@ -5,8 +5,14 @@
  * variant below picks the subset it can actually advertise. Fields not
  * supported by a given source are typed as `?: never` so reads still
  * compile (yielding `undefined`) but writes are caught at compile time.
+ *
+ * Also doubles as the shape of the **merged** view returned by consumers
+ * (e.g. `getMetadataFromBook`): once values from each source are
+ * collapsed by priority, the result is source-agnostic and any field can
+ * be present, including filename-directive-only fields like
+ * `googleVolumeId` that no concrete variant owns.
  */
-type BookMetadataFields = {
+export type BookMetadataFields = {
   title?: string | number
   authors?: string[]
   description?: string
@@ -96,21 +102,11 @@ export type LinkMetadata = BookMetadataVariant<
  */
 export type UserMetadata = BookMetadataVariant<"user", "isbn">
 
-/**
- * Catch-all for documents persisted before the typed sources existed.
- * Permissive on purpose — never produced by new code.
- */
-export type DeprecatedMetadata = BookMetadataVariant<
-  "deprecated",
-  BookMetadataField
->
-
 export type BookMetadata =
   | GoogleBookApiMetadata
   | FileMetadata
   | LinkMetadata
   | UserMetadata
-  | DeprecatedMetadata
 
 /**
  * Canonical set of metadata sources whose relative priority can be
@@ -149,6 +145,55 @@ export const isReorderableBookMetadataSource = (
   (REORDERABLE_BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
 
 /**
+ * Every metadata source whose entries can appear on a book document —
+ * also the union of values surfaced in the user-facing priority pane.
+ */
+export type BookMetadataSource = BookMetadata["type"]
+
+/**
+ * Builds the full, ordered list of metadata sources from the user-defined
+ * middle. Returned highest → lowest priority — i.e. both the order
+ * rendered in the UI and the order from which the merge / cover-pick
+ * derives its precedence.
+ *
+ * Defends against malformed persisted values by:
+ *  - stripping anything that isn't a reorderable source (no `user`/`link`
+ *    sneaking into the middle)
+ *  - de-duplicating the input while preserving first occurrence, so a
+ *    persisted `['file','file']` doesn't surface the same source twice
+ *  - re-adding any reorderable source missing from the input, preserving
+ *    the default relative order, so the result always covers every source
+ *    exactly once.
+ *
+ * `user` is pinned at the highest priority and `link` at the lowest, so
+ * only the reorderable middle is configurable by the user.
+ */
+export const getOrderedBookMetadataSources = (
+  middle: ReadonlyArray<string> | undefined,
+): BookMetadataSource[] => {
+  const ordered = new Set<ReorderableBookMetadataSource>(
+    (middle ?? []).filter(isReorderableBookMetadataSource),
+  )
+  for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES) {
+    ordered.add(source)
+  }
+
+  return ["user", ...ordered, "link"]
+}
+
+export const BOOK_METADATA_SOURCES: BookMetadataSource[] =
+  getOrderedBookMetadataSources(undefined)
+
+export const isBookMetadataSource = (
+  value: string | undefined,
+): value is BookMetadataSource =>
+  // Widen the array element type to `string` rather than narrowing `value`
+  // to `BookMetadataSource`, so the runtime guard does the type narrowing
+  // and we don't lie about the input type.
+  value !== undefined &&
+  (BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
+
+/**
  * Runtime mirror of each variant's writable field set, used by UIs that
  * render per-source field lists. Pinned to the type with `satisfies` so
  * the two cannot drift.
@@ -181,10 +226,7 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
   ],
   link: ["title", "contentType", "size"],
   user: ["isbn"],
-} as const satisfies Record<
-  Exclude<BookMetadata["type"], "deprecated">,
-  readonly BookMetadataField[]
->
+} as const satisfies Record<BookMetadataSource, readonly BookMetadataField[]>
 
 export type CollectionMetadata = {
   title?:
