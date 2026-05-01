@@ -1,14 +1,13 @@
 import {
   type BookDocType,
-  type DeprecatedBookDocType,
-  type BookMetadata,
+  type BookMetadataFields,
   directives,
 } from "@oboku/shared"
 import { useMemo } from "react"
 import type { DeepReadonlyObject, RxDocument } from "rxdb"
 import { getOrderedBookMetadataSources } from "./sources"
 
-type Return = DeepReadonlyObject<Omit<BookMetadata, "type">> & {
+type Return = DeepReadonlyObject<BookMetadataFields> & {
   language?: string
   displayableDate?: string
 }
@@ -30,33 +29,22 @@ function mergeObjects(a: GenericObject, b: GenericObject): GenericObject {
 export const getMetadataFromBook = (
   book?:
     | DeepReadonlyObject<
-        Pick<BookDocType, "metadata" | "metadataSourcePriority"> &
-          Partial<Pick<DeprecatedBookDocType, "title" | "creator">>
+        Pick<BookDocType, "metadata" | "metadataSourcePriority">
       >
     | null
-    | RxDocument<
-        BookDocType & Partial<Pick<DeprecatedBookDocType, "title" | "creator">>
-      >,
+    | RxDocument<BookDocType>,
 ): Return => {
-  const medataList = book?.metadata
-  const list = medataList ?? []
-  const deprecated: BookMetadata = {
-    type: "deprecated",
-    title: book?.title || undefined,
-    authors: book?.creator ? [book.creator] : undefined,
-  }
+  const list = book?.metadata ?? []
 
   /**
-   * Effective merge priority, lowest → highest. Later items override earlier
-   * ones in the reduce below, so the first entries are the weakest sources.
+   * Effective merge priority, lowest → highest. Later items override
+   * earlier ones in the reduce below, so the first entries are the
+   * weakest sources.
    *
-   * Order:
-   *  - `deprecated` first: legacy fallback, always overridden when any
-   *    typed source carries the same field.
-   *  - then the typed sources in **reverse** of the user-defined display
-   *    order returned by {@link getOrderedBookMetadataSources}, so that
-   *    `user` ends up last (winning) and `link` second (losing to every
-   *    typed source).
+   * Sources are ordered in **reverse** of the user-defined display
+   * priority returned by {@link getOrderedBookMetadataSources}, so that
+   * `user` ends up last (winning) and `link` first (losing to every
+   * typed source).
    */
   const displayPriority = getOrderedBookMetadataSources(
     book?.metadataSourcePriority,
@@ -64,10 +52,7 @@ export const getMetadataFromBook = (
   const sourceWeight = new Map<string, number>(
     displayPriority.map((source, index) => [source, index]),
   )
-  const orderedList = [deprecated, ...list].sort((a, b) => {
-    if (a.type === "deprecated") return -1
-    if (b.type === "deprecated") return 1
-
+  const orderedList = [...list].sort((a, b) => {
     // Unknown types fall back to the weakest position (sorted first, reduced
     // first, overridden by every known source) for forward-compat with docs
     // written by newer clients that introduced a source we don't know about.
@@ -125,18 +110,11 @@ export const getMetadataFromBook = (
 }
 
 export const useMetadataFromBook = (
-  book?: DeepReadonlyObject<
-    BookDocType & Partial<DeprecatedBookDocType>
-  > | null,
+  book?: DeepReadonlyObject<BookDocType> | null,
 ) => {
-  const { metadata, title, creator, metadataSourcePriority } = book ?? {}
+  const { metadata, metadataSourcePriority } = book ?? {}
 
   return useMemo(() => {
-    return getMetadataFromBook({
-      creator: creator ?? null,
-      title: title ?? null,
-      metadata,
-      metadataSourcePriority,
-    })
-  }, [metadata, title, creator, metadataSourcePriority])
+    return getMetadataFromBook({ metadata, metadataSourcePriority })
+  }, [metadata, metadataSourcePriority])
 }
