@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.227.2",
+  "version": "0.228.0",
   "private": true,
   "dependencies": {
     "@azure/msal-browser": "^5.6.3",
