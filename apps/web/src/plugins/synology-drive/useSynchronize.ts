@@ -1,4 +1,8 @@
-import type { SynologyDriveDataSourceDocType } from "@oboku/shared"
+import {
+  ObokuErrorCode,
+  ObokuSharedError,
+  type SynologyDriveDataSourceDocType,
+} from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
 import type { UseSynchronizeHook } from "../types"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
@@ -13,7 +17,9 @@ export const useSynchronize: UseSynchronizeHook<"synology-drive"> = () => {
       const connectorId = dataSource.data_v2?.connectorId
 
       if (!connectorId) {
-        throw new Error("No connector id")
+        throw new ObokuSharedError(
+          ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED,
+        )
       }
 
       const result = await extractConnectorData({ connectorId })
