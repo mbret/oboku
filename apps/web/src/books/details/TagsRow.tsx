@@ -20,13 +20,7 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
   })
 
   return (
-    <Stack
-      sx={{
-        flexDirection: "row",
-        gap: 1,
-        alignItems: "center",
-      }}
-    >
+    <Stack direction="row" gap={1} alignItems="center">
       {tags?.map((tag) => (
         <Chip label={tag.name} size="small" key={tag._id} onClick={() => {}} />
       ))}
