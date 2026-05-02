@@ -10,7 +10,6 @@ import { useMemo } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS } from "./fieldLabels"
-import { formatBookMetadataDate } from "./formatters"
 
 type Props = {
   metadata: DeepReadonlyObject<LinkMetadata> | undefined
