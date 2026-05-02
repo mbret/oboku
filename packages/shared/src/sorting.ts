@@ -19,3 +19,21 @@ const titleCollator = new Intl.Collator(undefined, {
 
 export const sortByTitleComparator = (a: string, b: string): number =>
   titleCollator.compare(a, b)
+
+/**
+ * Comparator that orders any naturally-comparable primitive (numbers, ISO-8601
+ * strings, `Date` instances) in descending order — i.e. greatest / most recent
+ * first.
+ *
+ * Useful for "latest first" lists where the underlying field is already an ISO
+ * timestamp string, a millisecond number, or a `Date` (which coerces via
+ * `valueOf()`), so a per-comparison `new Date(...)` parse is unnecessary.
+ */
+export const compareDesc = <T extends string | number | Date>(
+  a: T,
+  b: T,
+): number => {
+  if (a === b) return 0
+
+  return a < b ? 1 : -1
+}

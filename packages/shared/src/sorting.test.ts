@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { sortByTitleComparator } from "./sorting"
+import { compareDesc, sortByTitleComparator } from "./sorting"
 
 describe(`sortByTitleComparator`, () => {
   it(`sorts plain strings alphabetically`, () => {
@@ -47,5 +47,31 @@ describe(`sortByTitleComparator`, () => {
   it(`is case- and accent-insensitive`, () => {
     expect(sortByTitleComparator(`abc`, `ABC`)).toBe(0)
     expect(sortByTitleComparator(`café`, `cafe`)).toBe(0)
+  })
+})
+
+describe(`compareDesc`, () => {
+  it(`orders ISO timestamps with the most recent first`, () => {
+    const older = `2024-01-01T00:00:00.000Z`
+    const newer = `2024-06-15T12:00:00.000Z`
+
+    expect([older, newer].sort(compareDesc)).toEqual([newer, older])
+    expect([newer, older].sort(compareDesc)).toEqual([newer, older])
+  })
+
+  it(`orders numbers with the largest first`, () => {
+    expect([1, 3, 2].sort(compareDesc)).toEqual([3, 2, 1])
+  })
+
+  it(`orders Date instances with the most recent first`, () => {
+    const older = new Date(`2024-01-01T00:00:00.000Z`)
+    const newer = new Date(`2024-06-15T12:00:00.000Z`)
+
+    expect([older, newer].sort(compareDesc)).toEqual([newer, older])
+  })
+
+  it(`returns 0 for equal values`, () => {
+    expect(compareDesc(`2024-01-01`, `2024-01-01`)).toBe(0)
+    expect(compareDesc(42, 42)).toBe(0)
   })
 })
