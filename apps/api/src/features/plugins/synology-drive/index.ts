@@ -1,6 +1,9 @@
 import { isCollectionOfType, PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
-import type { DataSourcePlugin } from "src/features/plugins/types"
+import {
+  type DataSourcePlugin,
+  MODIFIED_AT_UNSUPPORTED,
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 import {
@@ -135,7 +138,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
       canDownload: metadata.type === "file",
       contentType: metadata.contentType,
-      modifiedAt: metadata.modifiedAt,
+      modifiedAt: metadata.modifiedAt ?? MODIFIED_AT_UNSUPPORTED,
       name: metadata.name,
     }
   },

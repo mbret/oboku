@@ -4,9 +4,10 @@
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
-import type {
-  DataSourcePlugin,
-  SynchronizeAbleItem,
+import {
+  type DataSourcePlugin,
+  type SynchronizeAbleItem,
+  MODIFIED_AT_UNSUPPORTED,
 } from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { createThrottler } from "src/lib/utils"
@@ -72,9 +73,20 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       path: `${fileId}`,
     })
 
+    /**
+     * `filesGetMetadata` returns `FileMetadata | FolderMetadata |
+     * DeletedMetadata`; only the file variant carries `server_modified`.
+     * We only ever query a file path here, but type narrow defensively
+     * and fall back to the unsupported sentinel rather than poisoning
+     * the fingerprint with a synthetic timestamp.
+     */
+    const fileResult =
+      response.result[".tag"] === "file" ? response.result : undefined
+
     return {
       name: response.result.name,
       canDownload: true,
+      modifiedAt: fileResult?.server_modified ?? MODIFIED_AT_UNSUPPORTED,
     }
   },
   /**

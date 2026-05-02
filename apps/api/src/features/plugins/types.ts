@@ -125,6 +125,20 @@ export type PluginMetadataParams<T extends DataSourceType = DataSourceType> = {
 }
 
 /**
+ * Sentinel a plugin MUST return from `getFileMetadata` when the
+ * provider has no usable "last modified" for this resource. Using a
+ * `unique symbol` (instead of `string | undefined` or a string literal)
+ * keeps the union from collapsing to `string`, so the consumer is
+ * forced to narrow via `=== MODIFIED_AT_UNSUPPORTED` before the value
+ * can flow into the persisted {@link LinkMetadata.modifiedAt} slot.
+ */
+export const MODIFIED_AT_UNSUPPORTED: unique symbol = Symbol(
+  "oboku.modifiedAt.unsupported",
+)
+
+export type ProviderModifiedAt = string | typeof MODIFIED_AT_UNSUPPORTED
+
+/**
  * Data source plugin, generic in the provider type. Each method receives
  * strongly-typed params for that provider (e.g. DRIVE plugin gets
  * LinkWithCredentials<"DRIVE"> and DriveApiCredentials).
@@ -138,7 +152,8 @@ export type DataSourcePlugin<
   ) => Promise<{ name?: string; modifiedAt?: string }>
   getFileMetadata: (data: PluginMetadataParams<TProvider>) => Promise<{
     name?: string
-    modifiedAt?: string
+    /** Provider timestamp (ISO 8601 preferred) or {@link MODIFIED_AT_UNSUPPORTED}. */
+    modifiedAt: ProviderModifiedAt
     canDownload?: boolean
     contentType?: string
     /**

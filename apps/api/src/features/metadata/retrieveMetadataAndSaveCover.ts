@@ -2,8 +2,10 @@ import fs from "node:fs"
 import path from "node:path"
 import {
   type BookMetadata,
+  type FileMetadata,
   type LinkMetadata,
   directives,
+  getBookCoverKey,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
@@ -24,8 +26,44 @@ import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
+import { pickCoverMetadata } from "./pickCoverMetadata"
+import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
+
+/**
+ * Decides whether the file's bytes still match what we extracted on a
+ * previous run, so we can reuse the cached `type:"file"` metadata entry
+ * (and the cover blob already in S3) instead of re-downloading.
+ *
+ * The primary fingerprint is the provider-reported `modifiedAt` on the
+ * `link` source — both sides MUST report it, otherwise we refuse to
+ * reuse. (Providers that don't expose `modifiedAt` — currently `file`
+ * and `uri` — therefore never participate in this cache, by design.)
+ *
+ * `size` is then used as an opportunistic secondary check against
+ * providers that fail to bump `modifiedAt` on a content change. It is
+ * only meaningful when at least one side reports a value:
+ *  - both defined + equal     ⇒ stronger confidence, reuse
+ *  - both defined + different ⇒ invalidate
+ *  - exactly one defined      ⇒ invalidate (provider went from
+ *                                reporting size to not, or vice
+ *                                versa — treat as suspicious)
+ *  - both undefined           ⇒ no signal, fall back to `modifiedAt`
+ *                                alone (intentional; this is the only
+ *                                path some providers can take)
+ */
+const isCachedFileMetadataReusable = (
+  previousLink: LinkMetadata | undefined,
+  currentLink: LinkMetadata,
+): boolean => {
+  if (!previousLink?.modifiedAt || !currentLink.modifiedAt) return false
+  if (previousLink.modifiedAt !== currentLink.modifiedAt) return false
+  if (previousLink.size !== currentLink.size) return false
+
+  return true
+}
 
 export const retrieveMetadataAndSaveCover = async (
   ctx: Context & {
@@ -63,14 +101,20 @@ export const retrieveMetadataAndSaveCover = async (
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
     const { canDownload = false, ...linkResourceMetadata } =
-      (await pluginFacade.getFileMetadata({
+      await pluginFacade.getFileMetadata({
         link: ctx.link,
         providerCredentials: ctx.providerCredentials,
         db: ctx.db,
-      })) ?? {}
+      })
 
     const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
       directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
+
+    // Collapse the in-memory sentinel back to `undefined` for persistence.
+    const persistedModifiedAt =
+      linkResourceMetadata.modifiedAt === MODIFIED_AT_UNSUPPORTED
+        ? undefined
+        : linkResourceMetadata.modifiedAt
 
     /**
      * The filename (with directives still embedded) IS the canonical title:
@@ -80,9 +124,10 @@ export const retrieveMetadataAndSaveCover = async (
      */
     const linkMetadata: LinkMetadata = {
       type: "link",
+      ...linkResourceMetadata.bookMetadata,
       title: linkResourceMetadata.name,
       contentType: linkResourceMetadata.contentType,
-      ...linkResourceMetadata.bookMetadata,
+      modifiedAt: persistedModifiedAt,
     }
 
     let contentType = linkMetadata.contentType
@@ -113,6 +158,77 @@ export const retrieveMetadataAndSaveCover = async (
             config,
           )
 
+    /**
+     * Try to reuse the previously-extracted `type:"file"` entry when the
+     * provider reports the file is unchanged (same `modifiedAt` + `size`
+     * on the `link` source). This avoids re-downloading the whole file
+     * just to re-derive identical metadata. Reuse is gated on:
+     *  - the user not having added an `[oboku~ignore-metadata-file~…]`
+     *    directive since the previous run (in which case the cached
+     *    entry must be dropped);
+     *  - having a previous `link` entry to compare against;
+     *  - having a previous `file` entry to actually reuse.
+     * If we reuse the file metadata, we also need to make sure the cover
+     * blob is still in S3 when the resolved cover source is `file`,
+     * otherwise we must download to regenerate it.
+     */
+    const previousLinkMetadata = ctx.book.metadata?.find(
+      (entry): entry is LinkMetadata => entry.type === "link",
+    )
+    const previousFileMetadata = ctx.book.metadata?.find(
+      (entry): entry is FileMetadata => entry.type === "file",
+    )
+    const fileUnchanged = isCachedFileMetadataReusable(
+      previousLinkMetadata,
+      linkMetadata,
+    )
+    const canReuseFileMetadata =
+      fileUnchanged && !ignoreMetadataFile && !!previousFileMetadata
+
+    const candidateMetadataList: BookMetadata[] = [
+      linkMetadata,
+      ...sourcesMetadata,
+      ...(canReuseFileMetadata ? [previousFileMetadata] : []),
+    ]
+    /**
+     * Determine which source would supply the cover for this run if we
+     * skipped the download. If that source is `file`, we can only reuse
+     * the cached cover blob when (a) the previous run also picked a
+     * `file` cover (so the blob currently in S3 was extracted from the
+     * file, not pulled from another provider whose priority has since
+     * been demoted) and (b) the blob still exists in S3. Otherwise we
+     * must download to regenerate it.
+     */
+    const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
+    const projectedCoverSource = pickCoverMetadata(
+      candidateMetadataList,
+      ctx.book.metadataSourcePriority,
+    )?.type
+    const previousCoverSource = pickCoverMetadata(
+      ctx.book.metadata,
+      ctx.book.metadataSourcePriority,
+    )?.type
+    /**
+     * Short-circuit the S3 head request when we already know we won't
+     * reuse the cached file metadata: the result is only consumed via
+     * `skipDownload` below, which itself requires `canReuseFileMetadata`.
+     * `updateCover` will run its own existence check later for the
+     * download path, so skipping here avoids a redundant round-trip.
+     */
+    const coverFromFileNeedsDownload =
+      canReuseFileMetadata &&
+      projectedCoverSource === "file" &&
+      (previousCoverSource !== "file" ||
+        !(await firstValueFrom(coversService.isCoverExist(coverObjectKey))))
+
+    const skipDownload = canReuseFileMetadata && !coverFromFileNeedsDownload
+
+    if (skipDownload) {
+      logger.log(
+        `Skipping file download for ${ctx.book._id} (link.modifiedAt unchanged, reusing cached file metadata)`,
+      )
+    }
+
     const metadataList: BookMetadata[] = [linkMetadata, ...sourcesMetadata]
 
     if (canDownload && isMaybeExtractAble && !fileDownloadEnabled) {
@@ -122,7 +238,7 @@ export const retrieveMetadataAndSaveCover = async (
     }
 
     const { filepath: tmpFilePath } =
-      canDownload && isMaybeExtractAble && fileDownloadEnabled
+      canDownload && isMaybeExtractAble && fileDownloadEnabled && !skipDownload
         ? await downloadToTmpFolder(
             ctx.book,
             ctx.link,
@@ -143,6 +259,16 @@ export const retrieveMetadataAndSaveCover = async (
             }
           })
         : { filepath: undefined }
+
+    /**
+     * When skipping the download we keep the previously-extracted
+     * `type:"file"` entry in the merged metadata so the merge preserves
+     * authors, publisher, date, etc. Otherwise the on-disk extraction
+     * below will append a fresh entry.
+     */
+    if (skipDownload && previousFileMetadata) {
+      metadataList.push(previousFileMetadata)
+    }
 
     let fileContentLength = 0
 
@@ -229,9 +355,14 @@ export const retrieveMetadataAndSaveCover = async (
       }
     })
 
+    /**
+     * Only report a length when we actually downloaded the file —
+     * otherwise the caller would overwrite the previously-recorded
+     * link.contentLength with 0 on every cached refresh.
+     */
     return {
       link: {
-        contentLength: fileContentLength,
+        contentLength: tmpFilePath ? fileContentLength : undefined,
       },
     }
   } catch (e) {

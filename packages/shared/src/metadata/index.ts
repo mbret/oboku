@@ -30,6 +30,16 @@ export type BookMetadataFields = {
   publisher?: string | undefined
   rights?: string | undefined
   googleVolumeId?: string | undefined
+  /**
+   * Provider-reported file modification timestamp (ISO 8601). Only the
+   * `link` source can advertise it — it describes the linked resource on
+   * the storage provider, not the merged book. Used as a cheap fingerprint
+   * to skip re-downloading the file when its metadata is still valid.
+   * Plugins MUST return the provider's real timestamp here, or omit the
+   * field entirely; never substitute a synthetic `Date.now()` value, which
+   * would defeat the cache.
+   */
+  modifiedAt?: string
 }
 
 type BookMetadataField = keyof BookMetadataFields
@@ -93,7 +103,7 @@ export type FileMetadata = BookMetadataVariant<
  */
 export type LinkMetadata = BookMetadataVariant<
   "link",
-  "title" | "contentType" | "size"
+  "title" | "contentType" | "size" | "modifiedAt"
 >
 
 /**
@@ -224,7 +234,7 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
     "pageCount",
     "contentType",
   ],
-  link: ["title", "contentType", "size"],
+  link: ["title", "contentType", "size", "modifiedAt"],
   user: ["isbn"],
 } as const satisfies Record<BookMetadataSource, readonly BookMetadataField[]>
 

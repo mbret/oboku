@@ -121,6 +121,14 @@ export const LinkSourceContent = ({ metadata }: Props) => {
           label={BOOK_METADATA_FIELD_LABELS.size}
           value={formatBytes(metadata?.size) ?? metadata?.size}
         />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.modifiedAt}
+          value={
+            metadata?.modifiedAt
+              ? new Date(metadata?.modifiedAt).toLocaleString()
+              : undefined
+          }
+        />
       </List>
       <DirectivesSection title={metadata?.title} />
     </Stack>

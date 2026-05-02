@@ -4,12 +4,10 @@ import { AppService } from "./app.service"
 import { ConfigModule } from "@nestjs/config"
 import path from "node:path"
 import Joi from "joi"
-import { BooksController } from "./features/books/books.controller"
 import { EventEmitterModule } from "@nestjs/event-emitter"
 import { CollectionsController } from "./features/collections/collections.controller"
 import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
-import { BooksMetadataService } from "./features/books/BooksMetadataService"
-import { InMemoryTaskQueueService } from "./features/queue/InMemoryTaskQueueService"
+import { QueueModule } from "./queue/queue.module"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
 import { PostgresModule } from "./features/postgres/postgres.module"
@@ -25,6 +23,7 @@ import { DataSourceModule } from "./datasource/datasource.module"
 import { StorageModule } from "./storage/storage.module"
 import { WebDavModule } from "./webdav/webdav.module"
 import { NotificationsModule } from "./notifications/notifications.module"
+import { BooksModule } from "./books/books.module"
 
 @Module({
   imports: [
@@ -89,6 +88,7 @@ import { NotificationsModule } from "./notifications/notifications.module"
     }),
     ScheduleModule.forRoot(),
     EventEmitterModule.forRoot(),
+    QueueModule,
     PostgresModule,
     AppConfigModule,
     StorageModule,
@@ -100,19 +100,9 @@ import { NotificationsModule } from "./notifications/notifications.module"
     DataSourceModule,
     NotificationsModule,
     WebDavModule,
+    BooksModule,
   ],
-  providers: [
-    AppService,
-    SyncReportPostgresService,
-    CollectionMetadataService,
-    InMemoryTaskQueueService,
-    BooksMetadataService,
-  ],
-  controllers: [
-    AppController,
-    BooksController,
-    CollectionsController,
-    WebController,
-  ],
+  providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
+  controllers: [AppController, CollectionsController, WebController],
 })
 export class AppModule {}

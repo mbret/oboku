@@ -1,4 +1,7 @@
-import type { DataSourcePlugin } from "src/features/plugins/types"
+import {
+  type DataSourcePlugin,
+  MODIFIED_AT_UNSUPPORTED,
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 
@@ -45,6 +48,7 @@ export const plugin: DataSourcePlugin<"file"> = {
     return {
       name: filename as string,
       canDownload: false,
+      modifiedAt: MODIFIED_AT_UNSUPPORTED,
       bookMetadata: {
         title: filename as string,
       },

@@ -80,6 +80,7 @@ export const formatBookMetadataField = (
     case "isbn":
     case "publisher":
     case "rights":
+    case "modifiedAt":
       return formatScalar(metadata[field])
     default:
       // Adding a field to BOOK_METADATA_FIELDS_BY_SOURCE without a branch

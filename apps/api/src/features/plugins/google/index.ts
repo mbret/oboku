@@ -4,7 +4,10 @@
  */
 import { authorize } from "./helpers"
 import { google } from "googleapis"
-import type { DataSourcePlugin } from "src/features/plugins/types"
+import {
+  type DataSourcePlugin,
+  MODIFIED_AT_UNSUPPORTED,
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
@@ -85,7 +88,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     return {
       name: metadata.name ?? "",
       contentType: metadata.mimeType || undefined,
-      modifiedAt: metadata.modifiedTime || undefined,
+      modifiedAt: metadata.modifiedTime || MODIFIED_AT_UNSUPPORTED,
       canDownload: true,
       bookMetadata: {
         size: metadata.size || undefined,

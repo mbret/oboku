@@ -9,7 +9,7 @@ import {
   StreamableFile,
 } from "@nestjs/common"
 import { defer, map, mergeMap, type Observable } from "rxjs"
-import { InMemoryTaskQueueService } from "src/features/queue/InMemoryTaskQueueService"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
 import { CoversService } from "./covers.service"
 import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { emailToNameHex } from "src/couch/couch.service"
