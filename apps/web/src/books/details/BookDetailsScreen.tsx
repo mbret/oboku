@@ -22,7 +22,6 @@ import { useLink } from "../../links/states"
 import { useBookDownloadState } from "../../download/states"
 import { useMetadataFromBook } from "../metadata"
 import { CoverPane } from "./CoverPane"
-import { DebugInfo } from "../../debug/DebugInfo"
 import { useBookActionDrawer } from "../drawer/BookActionsDrawer"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
@@ -127,12 +126,6 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
     <Page>
       <TopBarNavigation color="transparent" showBack={true} />
       <PageContainer disableGutters>
-        <DebugInfo
-          info={{
-            id: book?._id || ``,
-            linkId: book?.links[0] ?? "",
-          }}
-        />
         <HeaderStack>
           <CoverPane bookId={book?._id} />
           <HeaderTextStack>
