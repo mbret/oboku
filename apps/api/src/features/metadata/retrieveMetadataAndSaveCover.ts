@@ -266,12 +266,19 @@ export const retrieveMetadataAndSaveCover = async (
         : { filepath: undefined }
 
     /**
-     * When skipping the download we keep the previously-extracted
-     * `type:"file"` entry in the merged metadata so the merge preserves
-     * authors, publisher, date, etc. Otherwise the on-disk extraction
-     * below will append a fresh entry.
+     * Preserve the previously-extracted `type:"file"` entry whenever we
+     * trust it (`canReuseFileMetadata`) AND no fresh extraction will
+     * happen on this run (no `tmpFilePath`). Tying this to
+     * `!tmpFilePath` rather than `skipDownload` matters when the cover
+     * blob is missing/mismatched (forcing `skipDownload=false`) but the
+     * download is then skipped anyway — e.g. `fileDownloadEnabled` is
+     * false, `canDownload` is false, the content type isn't extractable,
+     * or the download itself failed. Without this, legacy books without
+     * a `bucketCoverKey` marker would silently drop their cached
+     * authors/publisher/date/coverLink fields under
+     * `metadataFileDownloadEnabled=false`.
      */
-    if (skipDownload && previousFileMetadata) {
+    if (canReuseFileMetadata && !tmpFilePath && previousFileMetadata) {
       metadataList.push(previousFileMetadata)
     }
 
