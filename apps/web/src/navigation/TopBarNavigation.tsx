@@ -74,7 +74,9 @@ export const TopBarNavigation: FC<
     return (
       <AppBar
         position={position}
-        {...(paletteMode === "light" && { elevation: 0 })}
+        {...((paletteMode === "light" || color === "transparent") && {
+          elevation: 0,
+        })}
         color={color}
         {...rest}
       >
