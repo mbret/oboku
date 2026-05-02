@@ -52,7 +52,7 @@ export type GraphDriveItem = {
   "@microsoft.graph.downloadUrl"?: string
 }
 
-export async function parseMicrosoftGraphError(response: Response) {
+async function parseMicrosoftGraphError(response: Response) {
   let payload: { error?: { code?: string; message?: string } } | undefined
 
   try {
