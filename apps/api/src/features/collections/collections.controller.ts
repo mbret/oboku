@@ -3,7 +3,7 @@ import { OnEvent } from "@nestjs/event-emitter"
 import { CollectionMetadataRefreshEvent, Events } from "../../events"
 import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
-import { InMemoryTaskQueueService } from "../queue/InMemoryTaskQueueService"
+import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service"
 import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
 import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
 

@@ -2,7 +2,7 @@ import { Test, TestingModule } from "@nestjs/testing"
 import {
   InMemoryTaskQueueService,
   TaskRejectionError,
-} from "./InMemoryTaskQueueService"
+} from "./in-memory-task-queue.service"
 import { defer, firstValueFrom, lastValueFrom, timer } from "rxjs"
 import { finalize, map } from "rxjs/operators"
 

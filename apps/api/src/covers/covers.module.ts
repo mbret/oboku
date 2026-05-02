@@ -1,6 +1,5 @@
 import { Module } from "@nestjs/common"
 import { CoversController } from "./covers.controller"
-import { InMemoryTaskQueueService } from "src/features/queue/InMemoryTaskQueueService"
 import { AppConfigModule } from "src/config/config.module"
 import { CoversService } from "./covers.service"
 import { CoversFsService } from "./covers-fs.service"
@@ -10,7 +9,6 @@ import { CouchModule } from "src/couch/couch.module"
 
 @Module({
   providers: [
-    InMemoryTaskQueueService,
     CoversFsService,
     CoversS3Service,
     CoversService,

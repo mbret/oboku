@@ -6,7 +6,7 @@ import {
   OnModuleInit,
   Post,
 } from "@nestjs/common"
-import { InMemoryTaskQueueService } from "../features/queue/InMemoryTaskQueueService"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { DataSourceService } from "./datasource.service"

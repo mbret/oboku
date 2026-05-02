@@ -10,6 +10,7 @@ import { useMemo } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS } from "./fieldLabels"
+import { formatBookMetadataDate } from "./formatters"
 
 type Props = {
   metadata: DeepReadonlyObject<LinkMetadata> | undefined
@@ -120,6 +121,14 @@ export const LinkSourceContent = ({ metadata }: Props) => {
         <MetadataFieldRow
           label={BOOK_METADATA_FIELD_LABELS.size}
           value={formatBytes(metadata?.size) ?? metadata?.size}
+        />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.modifiedAt}
+          value={
+            metadata?.modifiedAt
+              ? new Date(metadata?.modifiedAt).toLocaleString()
+              : undefined
+          }
         />
       </List>
       <DirectivesSection title={metadata?.title} />

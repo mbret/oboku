@@ -1,6 +1,6 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
 import { find } from "src/lib/couch/dbHelpers"
-import type { DataSourcePlugin } from "../types"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types"
 import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
@@ -65,7 +65,7 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
     return {
       name: item.name ?? "",
       contentType: item.file?.mimeType || undefined,
-      modifiedAt: item.lastModifiedDateTime || undefined,
+      modifiedAt: item.lastModifiedDateTime || MODIFIED_AT_UNSUPPORTED,
       canDownload: !!item["@microsoft.graph.downloadUrl"],
       bookMetadata: {
         size: item.size?.toString(),

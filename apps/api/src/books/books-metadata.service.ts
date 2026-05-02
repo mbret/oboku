@@ -1,14 +1,16 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
-import { retrieveMetadataAndSaveCover } from "../metadata/retrieveMetadataAndSaveCover"
+import { retrieveMetadataAndSaveCover } from "../features/metadata/retrieveMetadataAndSaveCover"
 import { CouchService, emailToNameHex } from "src/couch/couch.service"
-import { AppConfigService } from "../../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
 
 @Injectable()
 export class BooksMetadataService {
+  private readonly logger = new Logger(BooksMetadataService.name)
+
   constructor(
     private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
@@ -75,11 +77,13 @@ export class BooksMetadataService {
       throw e
     }
 
-    await atomicUpdate(db, "link", link._id, (old) => ({
-      ...old,
-      contentLength: _data.link.contentLength,
-    }))
+    if (_data.link.contentLength !== undefined) {
+      await atomicUpdate(db, "link", link._id, (old) => ({
+        ...old,
+        contentLength: _data.link.contentLength,
+      }))
+    }
 
-    Logger.log(`lambda executed with success for ${book._id}`)
+    this.logger.log(`lambda executed with success for ${book._id}`)
   }
 }

@@ -1,4 +1,7 @@
-import type { DataSourcePlugin } from "src/features/plugins/types"
+import {
+  type DataSourcePlugin,
+  MODIFIED_AT_UNSUPPORTED,
+} from "src/features/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"
@@ -54,7 +57,11 @@ export const dataSource: DataSourcePlugin<"URI"> = {
   getFileMetadata: async ({ link }) => {
     const url = resolveUrl(link)
 
-    return { name: extractNameFromUrl(url), canDownload: true }
+    return {
+      name: extractNameFromUrl(url),
+      canDownload: true,
+      modifiedAt: MODIFIED_AT_UNSUPPORTED,
+    }
   },
   download: async (link) => {
     const url = resolveUrl(link)

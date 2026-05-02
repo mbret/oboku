@@ -8,6 +8,21 @@ export async function getWebdavModule(): Promise<{
   return await import("webdav")
 }
 
+/**
+ * Webdav's `lastmod` is an HTTP-date (RFC 1123, e.g.
+ * "Wed, 21 Oct 2015 07:28:00 GMT") while the rest of the codebase — and
+ * `LinkMetadata.modifiedAt` in particular — expects ISO 8601. Normalize
+ * here so downstream consumers (cache fingerprinting, UI formatting)
+ * see a single, comparable shape across providers. Falls back to the
+ * raw value if the string can't be parsed, to preserve the
+ * "stable provider-supplied timestamp" cache property rather than
+ * synthesizing a `Date.now()`.
+ */
+const normalizeLastmod = (lastmod: string): string => {
+  const parsed = new Date(lastmod)
+  return Number.isNaN(parsed.getTime()) ? lastmod : parsed.toISOString()
+}
+
 export type DirectoryWalkItem = {
   type: "file" | "folder"
   name: string
@@ -42,7 +57,7 @@ export async function walkDirectoryContents(
         ...(await acc),
         {
           type: file.type,
-          modifiedAt: file.lastmod,
+          modifiedAt: normalizeLastmod(file.lastmod),
           name: file.basename,
           linkData: { connectorId, filePath: file.filename },
         },
@@ -59,7 +74,7 @@ export async function walkDirectoryContents(
       ...(await acc),
       {
         type: "folder" as const,
-        modifiedAt: file.lastmod,
+        modifiedAt: normalizeLastmod(file.lastmod),
         name: file.basename,
         linkData: { connectorId, filePath: file.filename },
         items: childItems,
@@ -79,7 +94,7 @@ export async function getFileMetadataFromWebdav(
       canDownload: true,
       contentType: response.data.mime,
       name: response.data.basename,
-      modifiedAt: response.data.lastmod,
+      modifiedAt: normalizeLastmod(response.data.lastmod),
     }
   }
 
@@ -95,7 +110,7 @@ export async function getFolderMetadataFromWebdav(
   if ("data" in response) {
     return {
       name: response.data.basename,
-      modifiedAt: response.data.lastmod,
+      modifiedAt: normalizeLastmod(response.data.lastmod),
     }
   }
 
