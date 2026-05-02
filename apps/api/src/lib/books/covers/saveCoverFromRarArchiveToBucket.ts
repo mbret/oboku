@@ -10,7 +10,7 @@ export const saveCoverFromRarArchiveToBucket = async (
   extractor: Extractor<Uint8Array>,
   fileName: string,
   coversService: CoversService,
-) => {
+): Promise<boolean> => {
   try {
     logger.log(`prepare to save cover ${coverObjectKey}`)
 
@@ -23,8 +23,14 @@ export const saveCoverFromRarArchiveToBucket = async (
       await firstValueFrom(coversService.saveCover(coverBuffer, coverObjectKey))
 
       logger.log(`cover ${coverObjectKey} has been saved/updated`)
+
+      return true
     }
+
+    return false
   } catch (e) {
     logger.error(e)
+
+    return false
   }
 }

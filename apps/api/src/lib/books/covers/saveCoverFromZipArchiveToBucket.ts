@@ -12,10 +12,10 @@ export const saveCoverFromZipArchiveToBucket = async (
   epubFilepath: string,
   coverPath: string,
   coversService: CoversService,
-) => {
+): Promise<boolean> => {
   if (coverPath === ``) {
     logger.error(`coverPath is empty string, ignoring process`, coverObjectKey)
-    return
+    return false
   }
 
   logger.log(`prepare to save cover ${coverObjectKey}`)
@@ -23,6 +23,8 @@ export const saveCoverFromZipArchiveToBucket = async (
   const zip = fs
     .createReadStream(epubFilepath)
     .pipe(unzipper.Parse({ forceStream: true }))
+
+  let saved = false
 
   try {
     for await (const entry of zip) {
@@ -34,18 +36,26 @@ export const saveCoverFromZipArchiveToBucket = async (
         )
 
         logger.log(`cover ${coverObjectKey} has been saved/updated`)
+
+        saved = true
       } else {
         entry.autodrain()
       }
     }
+
+    return saved
   } catch (e) {
     const { message } = asError(e)
     if (message === `Input buffer contains unsupported image format`) {
-      return logger.error(
+      logger.error(
         `It seems input is not a valid image. This can happens when for example the file is encrypted or something else went wrong during archive extraction`,
         e,
       )
+
+      return false
     }
     logger.error(e)
+
+    return false
   }
 }

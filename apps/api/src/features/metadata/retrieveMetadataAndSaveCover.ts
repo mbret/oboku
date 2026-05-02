@@ -5,6 +5,7 @@ import {
   type FileMetadata,
   type LinkMetadata,
   directives,
+  getBookBucketCoverKeyType,
   getBookCoverKey,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -193,21 +194,25 @@ export const retrieveMetadataAndSaveCover = async (
     /**
      * Determine which source would supply the cover for this run if we
      * skipped the download. If that source is `file`, we can only reuse
-     * the cached cover blob when (a) the previous run also picked a
-     * `file` cover (so the blob currently in S3 was extracted from the
-     * file, not pulled from another provider whose priority has since
-     * been demoted) and (b) the blob still exists in S3. Otherwise we
-     * must download to regenerate it.
+     * the cached cover blob when (a) the bucket image was actually
+     * uploaded from a `file` source on the previous successful run (so
+     * the blob currently in S3 came from the file, not from another
+     * provider whose priority has since been demoted) and (b) the blob
+     * still exists in S3. Otherwise we must download to regenerate it.
+     *
+     * `bucketCoverKey` is the source of truth here, NOT a freshly
+     * recomputed pick from `metadata` + current priority — the latter
+     * drifts when the user reorders sources or edits metadata and would
+     * incorrectly let us reuse a stale blob.
      */
     const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
     const projectedCoverSource = pickCoverMetadata(
       candidateMetadataList,
       ctx.book.metadataSourcePriority,
     )?.type
-    const previousCoverSource = pickCoverMetadata(
-      ctx.book.metadata,
-      ctx.book.metadataSourcePriority,
-    )?.type
+    const bucketCoverSource = ctx.book.bucketCoverKey
+      ? getBookBucketCoverKeyType(ctx.book.bucketCoverKey)
+      : undefined
     /**
      * Short-circuit the S3 head request when we already know we won't
      * reuse the cached file metadata: the result is only consumed via
@@ -218,7 +223,7 @@ export const retrieveMetadataAndSaveCover = async (
     const coverFromFileNeedsDownload =
       canReuseFileMetadata &&
       projectedCoverSource === "file" &&
-      (previousCoverSource !== "file" ||
+      (bucketCoverSource !== "file" ||
         !(await firstValueFrom(coversService.isCoverExist(coverObjectKey))))
 
     const skipDownload = canReuseFileMetadata && !coverFromFileNeedsDownload
@@ -331,7 +336,7 @@ export const retrieveMetadataAndSaveCover = async (
       }
     }
 
-    await updateCover({
+    const { bucketCoverKey: nextBucketCoverKey } = await updateCover({
       book: ctx.book,
       ctx,
       metadataList,
@@ -349,6 +354,7 @@ export const retrieveMetadataAndSaveCover = async (
       return {
         ...old,
         metadata: metadataList,
+        bucketCoverKey: nextBucketCoverKey ?? old.bucketCoverKey,
         lastMetadataUpdatedAt: Date.now(),
         metadataUpdateStatus: null,
         lastMetadataUpdateError: null,
