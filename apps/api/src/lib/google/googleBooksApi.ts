@@ -12,6 +12,32 @@ export type GoogleBooksApiVolumesResponseData = {
 export type GoogleBooksApiVolumeResponseData = Item
 
 /**
+ * Predicate for {@link performWithBackoff} that captures every error
+ * worth retrying against the Google Books API:
+ *
+ *  - `429 Too Many Requests`: rate-limited, will pass after a backoff.
+ *  - `5xx` server errors: Google's infrastructure hiccups (e.g. 503
+ *    `backendFailed`, 502 `Bad Gateway`, 504 `Gateway Timeout`). These
+ *    are transient by definition and routinely succeed on retry.
+ *  - Network-level errors (no `response` because the request never
+ *    completed): DNS blips, socket resets, connect timeouts.
+ *
+ * Anything 4xx other than 429 (bad query, missing key, etc.) is
+ * deterministic and NOT retried — repeating the same request would just
+ * burn rate-limit budget for the same failure.
+ */
+const isRetryableGoogleBooksError = (error: unknown): boolean => {
+  if (!isAxiosError(error)) return false
+
+  const status = error.response?.status
+
+  // Network failure / no response received — typically transient.
+  if (status === undefined) return true
+
+  return status === 429 || status >= 500
+}
+
+/**
  * Supports formats like: [9782413023470, 978-1-947804-36-4]
  */
 export const findByISBN = async (
@@ -25,10 +51,7 @@ export const findByISBN = async (
 
   const response = await performWithBackoff({
     asyncFunction: () => axios.get<GoogleBooksApiVolumesResponseData>(url),
-    retry: (error: unknown) => {
-      // we retry on Too many request error
-      return isAxiosError(error) && error.response?.status === 429
-    },
+    retry: isRetryableGoogleBooksError,
   })
 
   if (response.status === 200) {
@@ -52,10 +75,7 @@ export const findByTitle = async (
 
   const response = await performWithBackoff({
     asyncFunction: () => axios.get<GoogleBooksApiVolumesResponseData>(uri),
-    retry: (error: unknown) => {
-      // we retry on Too many request error
-      return isAxiosError(error) && error.response?.status === 429
-    },
+    retry: isRetryableGoogleBooksError,
   })
 
   if (response.status === 200) {
@@ -78,10 +98,7 @@ export const findByVolumeId = async (
 
   const response = await performWithBackoff({
     asyncFunction: () => axios.get<GoogleBooksApiVolumeResponseData>(uri),
-    retry: (error: unknown) => {
-      // we retry on Too many request error
-      return isAxiosError(error) && error.response?.status === 429
-    },
+    retry: isRetryableGoogleBooksError,
   })
 
   if (response.status === 200) {
@@ -103,10 +120,7 @@ export const findSeriesByTitle = async (
       axios.get<GoogleBooksApiVolumesResponseData>(
         `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${name}&key=${apiKey}`,
       ),
-    retry: (error: unknown) => {
-      // we retry on Too many request error
-      return isAxiosError(error) && error.response?.status === 429
-    },
+    retry: isRetryableGoogleBooksError,
   })
 
   if (response.status === 200) {
