@@ -474,6 +474,17 @@ export const parseSynologyDriveGetItemPayload = (payload: unknown) => {
 export const parseSynologyDriveDownloadErrorPayload = (payload: unknown) =>
   synologyDriveDownloadErrorSchema.parse(payload)
 
+/**
+ * Predicate used by Synology Drive download flows to detect when the NAS has
+ * returned a JSON error envelope instead of the requested binary blob/stream.
+ *
+ * Lives here so the web (`fetch`/blob) and api (`axios`/stream) clients agree
+ * on the content-type heuristic.
+ */
+export const isSynologyDriveJsonContentType = (
+  contentType: string | null | undefined,
+) => !!contentType && contentType.toLowerCase().includes("json")
+
 export const buildSynologyDriveRootBrowseItems = ({
   hasTeamFolders,
 }: {

@@ -9,6 +9,7 @@ import {
   getSynologyDriveItemFileId,
   getSynologyDriveItemName,
   getSynologyDriveItemType,
+  isSynologyDriveJsonContentType,
   listAllSynologyDriveFolderItems,
   mapSynologyDriveItemToMetadata,
   parseSynologyDriveDownloadErrorPayload,
@@ -267,9 +268,6 @@ export const getSynologyDriveItemMetadata = async ({
     }),
   )
 
-const isJsonContentType = (contentType: string | null | undefined) =>
-  !!contentType && contentType.toLowerCase().includes("json")
-
 const throwDownloadError = (payload: unknown) => {
   const parsedPayload = parseSynologyDriveDownloadErrorPayload(payload)
 
@@ -339,7 +337,7 @@ export const downloadSynologyDriveStream = async ({
       ? contentTypeHeader[0]
       : contentTypeHeader
 
-    if (isJsonContentType(contentType)) {
+    if (isSynologyDriveJsonContentType(contentType)) {
       throwDownloadError(JSON.parse(await readText(response.data)))
     }
 

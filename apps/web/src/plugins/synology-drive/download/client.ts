@@ -1,3 +1,4 @@
+import { isSynologyDriveJsonContentType } from "@oboku/synology"
 import {
   httpClientWeb,
   isXMLHttpResponseError,
@@ -8,10 +9,9 @@ import {
   type SynologyDriveSession,
 } from "../client"
 
-const isJsonContentType = (contentType: string | null | undefined) =>
-  !!contentType && contentType.toLowerCase().includes("json")
-
 const extractDownloadError = async (blob: Blob) => {
+  // Synology returns this envelope when the file id is invalid; the body is
+  // text/json even though the request asked for a binary download.
   const response = JSON.parse(await blob.text()) as {
     error?: {
       code?: number
@@ -55,7 +55,7 @@ const downloadBlobFromUrl = async ({
 
   const contentType = response.headers["content-type"] ?? response.data.type
 
-  if (isJsonContentType(contentType)) {
+  if (isSynologyDriveJsonContentType(contentType)) {
     await extractDownloadError(response.data)
   }
 
