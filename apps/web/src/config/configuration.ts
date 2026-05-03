@@ -1,14 +1,41 @@
 import { BehaviorSubject, filter, first } from "rxjs"
 import { Logger } from "../debug/logger.shared"
 import { httpClientApi } from "../http/httpClientApi.web"
-import type { GetWebConfigResponse } from "@oboku/shared"
+import {
+  getWebConfigResponseSchema,
+  type GetWebConfigResponse,
+} from "@oboku/shared"
 
-const restoreConfig = () => {
-  const config = localStorage.getItem("config")
+const restoredConfigSchema = getWebConfigResponseSchema.partial()
 
-  return config
-    ? (JSON.parse(config) as Partial<GetWebConfigResponse>)
-    : undefined
+const restoreConfig = (): Partial<GetWebConfigResponse> | undefined => {
+  const raw = localStorage.getItem("config")
+
+  if (!raw) return undefined
+
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch (error) {
+    Logger.error("Failed to parse cached web config; clearing cache", error)
+    localStorage.removeItem("config")
+
+    return undefined
+  }
+
+  const result = restoredConfigSchema.safeParse(parsed)
+
+  if (!result.success) {
+    Logger.error(
+      "Cached web config does not match expected schema; clearing cache",
+      result.error,
+    )
+    localStorage.removeItem("config")
+
+    return undefined
+  }
+
+  return result.data
 }
 
 /**
