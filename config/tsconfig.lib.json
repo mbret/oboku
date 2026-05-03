@@ -1,0 +1,25 @@
+{
+  "//": "Shared TypeScript compiler options for internal `packages/*` libraries. Each leaf `tsconfig.json` extends this and sets its own `include` so paths stay relative to the package root. Keep this file next to `vite.lib.ts` — both drive the same set of packages.",
+  "compilerOptions": {
+    "sourceMap": true,
+    "module": "ESNext",
+    "target": "ESNext",
+    "allowJs": true,
+    "noEmit": true,
+    "moduleResolution": "Bundler",
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "exactOptionalPropertyTypes": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUncheckedIndexedAccess": true,
+    "useUnknownInCatchVariables": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
+  }
+}

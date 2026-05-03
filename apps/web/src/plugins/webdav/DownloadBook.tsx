@@ -1,15 +1,12 @@
 import type { SettingsConnectorDocType } from "@oboku/shared"
 import { createClient } from "webdav"
-import { memo, useEffect } from "react"
+import { memo } from "react"
 import {
   from,
-  fromEvent,
   merge,
   mergeMap,
   of,
-  ReplaySubject,
   takeUntil,
-  tap,
   throwIfEmpty,
   type Observable,
 } from "rxjs"
@@ -17,7 +14,10 @@ import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../types"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
-import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
+import { CancelError } from "../../errors/errors.shared"
+import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
+import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
+import { scheduleDelayedEffect } from "../../common/useDelayEffect"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {
   connectorType: SettingsConnectorDocType["type"]
@@ -51,25 +51,8 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
     }: {
       connectorId: string
       onUnmount$: Observable<void>
-    }) => {
-      let cancelReason: "user" | "lifecycle" | null = null
-      const userCancel$: Observable<unknown> = signal.aborted
-        ? of(null)
-        : fromEvent(signal, "abort")
-
-      const userCancelWithFlag$ = userCancel$.pipe(
-        tap(() => {
-          cancelReason = "user"
-        }),
-      )
-
-      const lifecycleCancelWithFlag$ = onUnmount$.pipe(
-        tap(() => {
-          cancelReason = "lifecycle"
-        }),
-      )
-
-      return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
+    }) =>
+      from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
         mergeMap(({ data }) => {
           const url = webdavUrl ?? data.url
 
@@ -98,43 +81,26 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
             fileName: filePath.split("/").pop() ?? filePath,
           })
         }),
-        takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
-        throwIfEmpty(() =>
-          cancelReason === "lifecycle"
-            ? new LifecycleCancelError()
-            : new CancelError(),
-        ),
-      )
-    },
+        takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
+        throwIfEmpty(() => new CancelError()),
+      ),
     onSuccess: onResolve,
-    onError: (error) => {
-      if (error instanceof LifecycleCancelError) {
-        return
-      }
-
-      onError(error)
-    },
+    onError,
   })
 
-  useEffect(() => {
-    if (!connectorId) {
-      onErrorRef.current(ObokuErrorCode.ERROR_LINK_INVALID)
+  useEffectWithUnmount$(
+    (onUnmount$) =>
+      scheduleDelayedEffect(() => {
+        if (!connectorId) {
+          onErrorRef.current(ObokuErrorCode.ERROR_LINK_INVALID)
 
-      return
-    }
+          return
+        }
 
-    const onUnmount$ = new ReplaySubject<void>(1)
-
-    download({
-      connectorId,
-      onUnmount$,
-    })
-
-    return () => {
-      onUnmount$.next()
-      onUnmount$.complete()
-    }
-  }, [connectorId, download, onErrorRef])
+        download({ connectorId, onUnmount$ })
+      }, 1),
+    [connectorId, download, onErrorRef],
+  )
 
   return null
 })

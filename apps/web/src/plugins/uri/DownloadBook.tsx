@@ -1,11 +1,8 @@
-import { memo, useEffect } from "react"
+import { memo } from "react"
 import {
   from,
-  fromEvent,
   map,
   merge,
-  of,
-  ReplaySubject,
   takeUntil,
   tap,
   throwIfEmpty,
@@ -14,8 +11,11 @@ import {
 import { useMutation$ } from "reactjrx"
 import { resolveDownloadFileName } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../types"
-import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
+import { CancelError } from "../../errors/errors.shared"
 import { httpClientWeb } from "../../http/httpClient.web"
+import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
+import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
+import { scheduleDelayedEffect } from "../../common/useDelayEffect"
 
 export const DownloadBook = memo(
   ({
@@ -28,23 +28,9 @@ export const DownloadBook = memo(
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
         const abortController = new AbortController()
-        let cancelReason: "user" | "lifecycle" | null = null
-        const userCancel$: Observable<unknown> = signal.aborted
-          ? of(null)
-          : fromEvent(signal, "abort")
 
-        const userCancelWithFlag$ = userCancel$.pipe(
-          tap(() => {
-            cancelReason = "user"
-            abortController.abort()
-          }),
-        )
-
-        const lifecycleCancelWithFlag$ = onUnmount$.pipe(
-          tap(() => {
-            cancelReason = "lifecycle"
-            abortController.abort()
-          }),
+        const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
+          tap(() => abortController.abort()),
         )
 
         const downloadLink = link.data.url
@@ -71,36 +57,18 @@ export const DownloadBook = memo(
                 }) || bookIdFromUrl(downloadLink),
             }
           }),
-          takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
-          throwIfEmpty(() =>
-            cancelReason === "lifecycle"
-              ? new LifecycleCancelError()
-              : new CancelError(),
-          ),
+          takeUntil(cancel$),
+          throwIfEmpty(() => new CancelError()),
         )
       },
       onSuccess: onResolve,
-      onError: (error) => {
-        if (error instanceof LifecycleCancelError) {
-          return
-        }
-
-        onError(error)
-      },
+      onError,
     })
 
-    useEffect(() => {
-      const onUnmount$ = new ReplaySubject<void>(1)
-
-      download({
-        onUnmount$,
-      })
-
-      return () => {
-        onUnmount$.next()
-        onUnmount$.complete()
-      }
-    }, [download])
+    useEffectWithUnmount$(
+      (onUnmount$) => scheduleDelayedEffect(() => download({ onUnmount$ }), 1),
+      [download],
+    )
 
     return null
   },

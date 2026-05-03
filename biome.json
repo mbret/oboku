@@ -34,6 +34,20 @@
       "complexity": {
         "noForEach": "off"
       },
+      "correctness": {
+        "useExhaustiveDependencies": {
+          "level": "error",
+          "options": {
+            "hooks": [
+              {
+                "name": "useEffectWithUnmount$",
+                "closureIndex": 0,
+                "dependenciesIndex": 1
+              }
+            ]
+          }
+        }
+      },
       "style": {
         "noUnusedTemplateLiteral": "off",
         "useImportType": "warn",

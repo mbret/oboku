@@ -1,12 +1,8 @@
 import { useMutation } from "@tanstack/react-query"
-import { memo, useCallback } from "react"
+import { memo } from "react"
 import {
   from,
-  fromEvent,
-  map,
   merge,
-  of,
-  ReplaySubject,
   switchMap,
   takeUntil,
   throwIfEmpty,
@@ -14,12 +10,14 @@ import {
 } from "rxjs"
 import { type DownloadParams, httpClientWeb } from "../../http/httpClient.web"
 import { CancelError } from "../../errors/errors.shared"
+import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
+import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
+import { scheduleDelayedEffect } from "../../common/useDelayEffect"
 import type { DownloadBookComponentProps } from "../types"
 import { useMutation$ } from "reactjrx"
 import { requestMicrosoftAccessToken } from "./auth/auth"
 import { getOneDriveDownloadInfo$ } from "./graph"
 import { useRequestPopupDialog } from "../useRequestPopupDialog"
-import { useDelayEffect } from "../../common/useDelayEffect"
 import { ONE_DRIVE_GRAPH_SCOPES, ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
 export const DownloadBook = memo(function DownloadBook({
@@ -92,23 +90,17 @@ export const DownloadBook = memo(function DownloadBook({
     onError,
   })
 
-  const startResolve = useCallback(() => {
-    const onUnmount$ = new ReplaySubject<void>(1)
-    const userCancel$: Observable<void> = signal.aborted
-      ? of(undefined)
-      : fromEvent(signal, "abort").pipe(map(() => undefined))
-
-    resolve({
-      cancel$: merge(userCancel$, onUnmount$),
-    })
-
-    return () => {
-      onUnmount$.next()
-      onUnmount$.complete()
-    }
-  }, [resolve, signal])
-
-  useDelayEffect(startResolve, 1)
+  useEffectWithUnmount$(
+    (onUnmount$) =>
+      scheduleDelayedEffect(
+        () =>
+          resolve({
+            cancel$: merge(fromAbortSignal(signal), onUnmount$),
+          }),
+        1,
+      ),
+    [resolve, signal],
+  )
 
   return null
 })
