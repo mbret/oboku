@@ -26,14 +26,23 @@ export const sortByTitleComparator = (a: string, b: string): number =>
  * first.
  *
  * Useful for "latest first" lists where the underlying field is already an ISO
- * timestamp string, a millisecond number, or a `Date` (which coerces via
- * `valueOf()`), so a per-comparison `new Date(...)` parse is unnecessary.
+ * timestamp string, a millisecond number, or a `Date`, so a per-comparison
+ * `new Date(...)` parse is unnecessary.
+ *
+ * Implementation note: equality is decided via `valueOf()` so that two
+ * different `Date` instances representing the same moment compare equal
+ * (returning 0). Using `a === b` would only catch reference equality and
+ * could leave the comparator returning -1 in both directions for equal
+ * `Date`s, breaking `Array#sort`'s anti-symmetry requirement.
  */
 export const compareDesc = <T extends string | number | Date>(
   a: T,
   b: T,
 ): number => {
-  if (a === b) return 0
+  const aValue = a.valueOf()
+  const bValue = b.valueOf()
 
-  return a < b ? 1 : -1
+  if (aValue === bValue) return 0
+
+  return aValue < bValue ? 1 : -1
 }

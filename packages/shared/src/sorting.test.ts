@@ -74,4 +74,14 @@ describe(`compareDesc`, () => {
     expect(compareDesc(`2024-01-01`, `2024-01-01`)).toBe(0)
     expect(compareDesc(42, 42)).toBe(0)
   })
+
+  it(`treats distinct Date instances of the same moment as equal`, () => {
+    const moment = `2024-06-15T12:00:00.000Z`
+    const a = new Date(moment)
+    const b = new Date(moment)
+
+    expect(a).not.toBe(b)
+    expect(compareDesc(a, b)).toBe(0)
+    expect(compareDesc(b, a)).toBe(0)
+  })
 })
