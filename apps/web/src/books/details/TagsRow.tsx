@@ -1,9 +1,15 @@
-import { Button, Chip, Stack } from "@mui/material"
+import { Button, Chip, Stack, styled } from "@mui/material"
 import { useNavigate } from "react-router"
 import { useTags } from "../../tags/helpers"
 import { useBook } from "../states"
 import { EditOutlined } from "@mui/icons-material"
 import { ROUTES } from "../../navigation/routes"
+
+const TagsRowStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: theme.spacing(1),
+}))
 
 export const TagsRow = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
@@ -20,13 +26,7 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
   })
 
   return (
-    <Stack
-      sx={{
-        flexDirection: "row",
-        gap: 1,
-        alignItems: "center",
-      }}
-    >
+    <TagsRowStack>
       {tags?.map((tag) => (
         <Chip label={tag.name} size="small" key={tag._id} onClick={() => {}} />
       ))}
@@ -42,6 +42,6 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
       >
         Edit tags
       </Button>
-    </Stack>
+    </TagsRowStack>
   )
 }

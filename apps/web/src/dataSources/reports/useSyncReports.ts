@@ -1,5 +1,8 @@
 import { httpClientApi } from "../../http/httpClientApi.web"
-import type { SyncReportPostgresEntitiesShared } from "@oboku/shared"
+import {
+  compareDesc,
+  type SyncReportPostgresEntitiesShared,
+} from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { configuration } from "../../config/configuration"
 export const useSyncReports = () =>
@@ -82,7 +85,7 @@ export const useSyncReports = () =>
             },
           )
         })
-        .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+        .sort((a, b) => compareDesc(a.createdAt, b.createdAt))
 
       return entries
     },
