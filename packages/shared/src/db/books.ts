@@ -2,9 +2,6 @@ import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
 import type { RxDbMeta } from "./rxdb"
 
-export const getBookCoverKey = (userNameHex: string, bookId: string) =>
-  `cover-${userNameHex}-${bookId}`
-
 export enum ReadingStateState {
   Finished = "FINISHED",
   NotStarted = "NOT_STARTED",
@@ -73,4 +70,20 @@ export type BookDocType = CouchDBMeta &
      * `["file", "googleBookApi"]` is used.
      */
     metadataSourcePriority?: ReorderableBookMetadataSource[]
+    /**
+     * Opaque key identifying the cover image currently stored in the
+     * bucket for this book. Built via {@link buildBookBucketCoverKey} on
+     * every successful upload (in `updateCover`) and used as the source
+     * of truth when deciding whether the bucket image is already up to
+     * date — independent from the live merge of `metadata` +
+     * `metadataSourcePriority`, which can drift (priority changes,
+     * metadata edits, out-of-band overwrites) and is therefore unreliable
+     * as a "what's actually in the bucket" signal.
+     *
+     * `undefined` / `null` means we don't know what's in the bucket
+     * (legacy books pre-dating this field, or never-uploaded covers); in
+     * that case the skip-equality check fails and we re-upload once to
+     * repopulate.
+     */
+    bucketCoverKey?: string | null
   }

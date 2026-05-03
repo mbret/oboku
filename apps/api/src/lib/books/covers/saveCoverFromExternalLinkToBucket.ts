@@ -9,7 +9,7 @@ export const saveCoverFromExternalLinkToBucket = async (
   coverKey: string,
   coverUrl: string,
   coversService: CoversService,
-) => {
+): Promise<boolean> => {
   logger.log(`prepare to save cover ${coverKey}`)
 
   try {
@@ -21,7 +21,11 @@ export const saveCoverFromExternalLinkToBucket = async (
     await firstValueFrom(coversService.saveCover(entryAsBuffer, coverKey))
 
     logger.log(`cover ${coverKey} has been saved/updated`)
+
+    return true
   } catch (e) {
     logger.error(e)
+
+    return false
   }
 }

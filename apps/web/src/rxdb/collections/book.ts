@@ -43,13 +43,17 @@ export const bookSchemaMigrationStrategies: MigrationStrategies = {
   // v3: added optional `metadataSourcePriority`; nothing to backfill since
   // the field is optional and the merge falls back to the default order.
   3: (oldDoc: Record<string, unknown>) => oldDoc,
+  // v4: added optional `bucketCoverKey` marker recording what was last
+  // uploaded to the bucket; left undefined for existing docs so the next
+  // metadata refresh re-uploads once and populates it.
+  4: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "books",
-  version: 3,
+  version: 4,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -85,6 +89,7 @@ export const bookSchema: RxJsonSchema<
     metadataFetchEnabled: { type: ["boolean", "null"] },
     metadataFileDownloadEnabled: { type: ["boolean", "null"] },
     metadataSourcePriority: { type: ["array"], items: { type: "string" } },
+    bucketCoverKey: { type: ["string", "null"] },
     ...getReplicationProperties(`book`),
   },
   required: [],

@@ -56,6 +56,7 @@ export * as directives from "./directives"
 export * from "./db/docTypes"
 export * from "./db/books"
 
+export * from "./covers"
 export * from "./dataSources"
 export * from "./sorting"
 
