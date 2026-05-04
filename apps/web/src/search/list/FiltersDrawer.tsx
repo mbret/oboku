@@ -22,10 +22,8 @@ export const FiltersDrawer: FC<{
       case "with":
         return "Yes"
       default:
-        ;("None")
+        return "None"
     }
-
-    return "None"
   }
 
   return (
