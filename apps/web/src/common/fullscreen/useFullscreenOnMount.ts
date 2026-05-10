@@ -12,7 +12,7 @@ import {
   timer,
 } from "rxjs"
 import { useSubscribe } from "reactjrx"
-import { createDialog } from "../dialogs/createDialog"
+import { fromCreateDialog } from "../dialogs/fromCreateDialog"
 import { CancelError } from "../../errors/errors.shared"
 
 const isPermissionCheckFailedError = (error: unknown): error is TypeError =>
@@ -39,13 +39,13 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
                   // we avoid double dialog because of strict mode
                   screenfull.isFullscreen
                     ? throwError(() => error)
-                    : createDialog({
+                    : fromCreateDialog({
                         title: "Fullscreen request",
-                        content:
+                        message:
                           "Your browser does not allow automatic fullscreen without an interaction",
                         confirmTitle: "Fullscreen",
                         cancellable: true,
-                      }).$,
+                      }),
                 ),
               )
             }

@@ -13,7 +13,7 @@ import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
-import { createDialog } from "../../common/dialogs/createDialog"
+import { showDialog } from "../../common/dialogs/createDialog"
 import { useUpsertBookLink } from "../useUpdateBookLink"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
@@ -49,7 +49,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             key={link?._id}
             onClick={() => {
               if (!dataSourcePlugin?.SelectItemComponent) {
-                createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
+                showDialog({ preset: "NOT_IMPLEMENTED" })
               } else {
                 setIsSelectItemOpened(true)
               }

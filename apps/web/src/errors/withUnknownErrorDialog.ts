@@ -1,6 +1,6 @@
 import { type Observable, catchError } from "rxjs"
 import { CancelError, OfflineError } from "./errors.shared"
-import { createDialog } from "../common/dialogs/createDialog"
+import { showDialog } from "../common/dialogs/createDialog"
 
 export function withUnknownErrorDialog() {
   return function operator<T>(stream: Observable<T>) {
@@ -9,7 +9,7 @@ export function withUnknownErrorDialog() {
         if (error instanceof CancelError) throw error
         if (error instanceof OfflineError) throw error
 
-        createDialog({ preset: "UNKNOWN_ERROR", autoStart: true })
+        showDialog({ preset: "UNKNOWN_ERROR" })
 
         throw error
       }),

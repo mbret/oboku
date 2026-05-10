@@ -14,13 +14,13 @@ import { Box } from "@mui/material"
 import { useLoadReader } from "./useLoadReader"
 import type { Manifest } from "@prose-reader/shared"
 import { ReactReader } from "@prose-reader/react-reader"
-import { useShowRemoveBookOnExitDialog } from "./navigation/useShowRemoveBookOnExitDialog"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useMoreDialog } from "./navigation/MoreDialog"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { useSettingsFormValues } from "./settings/useSettingsFormValues"
+import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 
-export const Reader = memo(({ bookId }: { bookId: string }) => {
+export const Reader = memo(function Reader({ bookId }: { bookId: string }) {
   const reader = useSignalValue(readerSignal)
   const { data: readerState } = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
@@ -37,11 +37,9 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const { goBack } = useSafeGoBack()
   const { toggle: toggleMoreDialog } = useMoreDialog()
-  const { mutate } = useShowRemoveBookOnExitDialog({
+  const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
     bookId,
-    onSettled: () => {
-      goBack()
-    },
+    onClose: goBack,
   })
 
   const onItemClick = useCallback(
@@ -54,10 +52,10 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
         toggleMoreDialog()
       }
       if (item === "back") {
-        mutate()
+        showBookFinishedDialogOnClose()
       }
     },
-    [toggleMoreDialog, mutate],
+    [toggleMoreDialog, showBookFinishedDialogOnClose],
   )
 
   if (isBookError) {
@@ -108,26 +106,24 @@ export const Reader = memo(({ bookId }: { bookId: string }) => {
   )
 })
 
-const Effects = memo(
-  ({
+const Effects = memo(function Effects({
+  bookId,
+  isUsingWebStreamer,
+  manifest,
+  containerElement,
+}: {
+  bookId: string
+  isUsingWebStreamer?: boolean
+  manifest?: Manifest
+  containerElement?: HTMLElement | null
+}) {
+  useCreateReader({ bookId, isUsingWebStreamer })
+  useLoadReader({
     bookId,
-    isUsingWebStreamer,
-    manifest,
     containerElement,
-  }: {
-    bookId: string
-    isUsingWebStreamer?: boolean
-    manifest?: Manifest
-    containerElement?: HTMLElement | null
-  }) => {
-    useCreateReader({ bookId, isUsingWebStreamer })
-    useLoadReader({
-      bookId,
-      containerElement,
-      manifest,
-    })
-    useSyncBookProgress(bookId)
+    manifest,
+  })
+  useSyncBookProgress(bookId)
 
-    return null
-  },
-)
+  return null
+})

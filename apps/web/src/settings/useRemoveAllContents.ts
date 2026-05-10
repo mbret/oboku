@@ -12,7 +12,8 @@ import {
 import { lock } from "../common/locks/utils"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Logger } from "../debug/logger.shared"
-import { createDialog } from "../common/dialogs/createDialog"
+import { showDialog } from "../common/dialogs/createDialog"
+import { fromCreateDialog } from "../common/dialogs/fromCreateDialog"
 import { CancelError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
@@ -32,13 +33,13 @@ export const useRemoveAllContents = () => {
           ]),
         ),
         mergeMap(([database, bookCount, collectionCount, tagCount]) => {
-          const confirmed$ = createDialog({
+          const confirmed$ = fromCreateDialog({
             title: "Account reset",
-            content: `This action will remove all of your content (except data sources). Here is a breakdown of everything that will be removed:\n 
+            message: `This action will remove all of your content (except data sources). Here is a breakdown of everything that will be removed:\n 
             ${bookCount} books, ${collectionCount} collections, ${tagCount} tags. \n\nThis operation can take a long time and you NEED to be connected to internet`,
             dismissible: true,
             cancellable: true,
-          }).$
+          })
 
           return confirmed$.pipe(
             withAuthorization,
@@ -85,10 +86,9 @@ export const useRemoveAllContents = () => {
 
           Logger.error(e)
 
-          createDialog({
-            autoStart: true,
+          showDialog({
             title: "Something went wrong!",
-            content:
+            message:
               "Something went wrong during the process. No need to panic since you already wanted to destroy everything anyway. If everything is gone, you should not worry too much, if you still have contents, try to do it again",
           })
 

@@ -1,5 +1,5 @@
 import { useSignalValue } from "reactjrx"
-import { type DialogType, dialogSignal } from "./state"
+import { type DialogTemplateType, dialogSignal } from "./state"
 import { removeDialog } from "./removeDialog"
 import { memo, type ReactNode, useCallback } from "react"
 import {
@@ -12,8 +12,8 @@ import {
 } from "@mui/material"
 
 const enrichDialogWithPreset = (
-  dialog?: DialogType<unknown>,
-): DialogType<unknown> | undefined => {
+  dialog?: DialogTemplateType<unknown>,
+): DialogTemplateType<unknown> | undefined => {
   if (!dialog) return undefined
 
   switch (dialog.preset) {
@@ -21,19 +21,19 @@ const enrichDialogWithPreset = (
       return {
         ...dialog,
         title: "Not implemented",
-        content: "Sorry this feature is not yet implemented",
+        message: "Sorry this feature is not yet implemented",
         dismissible: true,
       }
     case "OFFLINE":
       return {
         ...dialog,
         title: "Offline is great but...",
-        content: "You need to be online to proceed with this action",
+        message: "You need to be online to proceed with this action",
       }
     case "UNKNOWN_ERROR":
       return {
         title: "Oups, something went wrong!",
-        content:
+        message:
           "Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?",
         ...dialog,
       }
@@ -41,8 +41,8 @@ const enrichDialogWithPreset = (
       return {
         ...dialog,
         title: dialog.title || "Hold on a minute!",
-        content:
-          dialog.content ||
+        message:
+          dialog.message ||
           "Are you sure you want to proceed with this action?",
         cancellable:
           dialog.cancellable !== undefined ? dialog.cancellable : true,
@@ -52,10 +52,8 @@ const enrichDialogWithPreset = (
   }
 }
 
-const InnerDialog = () => {
-  const dialogs = useSignalValue(dialogSignal)
-
-  const currentDialog = enrichDialogWithPreset(dialogs[0])
+function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
+  const currentDialog = enrichDialogWithPreset(dialog)
   const isDismissible = currentDialog?.dismissible !== false
 
   const handleClose = useCallback(() => {
@@ -82,18 +80,14 @@ const InnerDialog = () => {
       type: "confirm",
     },
   ]
-  const content = currentDialog?.content
+  const message = currentDialog?.message
 
   return (
     <Dialog open={!!currentDialog} transitionDuration={0} onClose={onCancel}>
       <DialogTitle>{currentDialog?.title}</DialogTitle>
-      {content !== undefined && (
+      {message !== undefined && (
         <DialogContent>
-          {typeof content === "string" ? (
-            <DialogContentText>{content}</DialogContentText>
-          ) : (
-            content
-          )}
+          <DialogContentText>{message}</DialogContentText>
         </DialogContent>
       )}
       <DialogActions>
@@ -123,7 +117,23 @@ const InnerDialog = () => {
   )
 }
 
-export const DialogProvider = memo(({ children }: { children: ReactNode }) => {
+const InnerDialog = () => {
+  const dialogs = useSignalValue(dialogSignal)
+
+  const queuedDialog = dialogs[0]
+
+  if (queuedDialog?.type === "custom") {
+    return queuedDialog.render()
+  }
+
+  return <TemplateDialog dialog={queuedDialog} />
+}
+
+export const DialogProvider = memo(function DialogProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   return (
     <>
       {children}

@@ -49,7 +49,7 @@ import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
-import { createDialog } from "../../common/dialogs/createDialog"
+import { showDialog } from "../../common/dialogs/createDialog"
 import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
@@ -187,9 +187,7 @@ export const ProfileScreen = () => {
           <ListItemText primary={`Documentation Page`} />
         </ListItemButton>
         <ListItemButton
-          onClick={() =>
-            createDialog({ preset: "NOT_IMPLEMENTED", autoStart: true })
-          }
+          onClick={() => showDialog({ preset: "NOT_IMPLEMENTED" })}
         >
           <ListItemIcon>
             <GavelRounded />
