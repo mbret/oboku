@@ -1,4 +1,8 @@
-import { ReadingStateState, sortByTitleComparator } from "@oboku/shared"
+import {
+  compareDesc,
+  ReadingStateState,
+  sortByTitleComparator,
+} from "@oboku/shared"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
@@ -169,8 +173,7 @@ export const sortBooksBy = (
 ) => {
   switch (sorting) {
     case "date": {
-      // descend
-      return [...books].sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
+      return [...books].sort((a, b) => compareDesc(a.createdAt, b.createdAt))
     }
     case "activity": {
       return [...books].sort((a, b) => {

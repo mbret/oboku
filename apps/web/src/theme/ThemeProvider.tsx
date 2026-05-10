@@ -1,7 +1,9 @@
 import {
   CssBaseline,
   ThemeProvider as MuiThemeProvider,
+  type ThemeProviderProps,
   useColorScheme,
+  useMediaQuery,
 } from "@mui/material"
 import { eInkTheme, theme } from "./theme"
 import { type ReactNode, memo, useEffect } from "react"
@@ -9,6 +11,29 @@ import { useLocalSettings } from "../settings/useLocalSettings"
 import { ChakraProvider } from "@chakra-ui/react"
 import { ThemeProvider as NextThemes } from "next-themes"
 import { defaultSystem, einkSystem } from "./chakra"
+
+type AppThemeMode = NonNullable<ThemeProviderProps["defaultMode"]> | "e-ink"
+type ResolvedChakraThemeMode = "light" | "dark"
+
+const getResolvedChakraThemeMode = ({
+  prefersDarkMode,
+  systemMode,
+  themeMode,
+}: {
+  prefersDarkMode: boolean
+  systemMode?: ResolvedChakraThemeMode
+  themeMode: AppThemeMode
+}): ResolvedChakraThemeMode => {
+  if (themeMode === "light" || themeMode === "dark") {
+    return themeMode
+  }
+
+  if (themeMode === "system") {
+    return systemMode ?? (prefersDarkMode ? "dark" : "light")
+  }
+
+  return "light"
+}
 
 const ColorModeSwitcher = () => {
   const { mode, setMode } = useColorScheme()
@@ -24,11 +49,21 @@ const ColorModeSwitcher = () => {
   return null
 }
 
-const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
+const ChakraThemeProvider = memo(function ChakraThemeProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   const { themeMode = "system" } = useLocalSettings()
-  const isSystemTheme = themeMode === "system"
-  const forcedTheme =
-    themeMode === "e-ink" ? "light" : isSystemTheme ? undefined : themeMode
+  const { systemMode } = useColorScheme()
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)", {
+    noSsr: true,
+  })
+  const forcedTheme = getResolvedChakraThemeMode({
+    prefersDarkMode,
+    systemMode,
+    themeMode,
+  })
 
   /* Chakra seems to be very well scoped so it's okay to wrap it on app level even if it's used 
       only by the reader. We may as well use chakra components here and there when needed */
@@ -37,8 +72,8 @@ const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
       <NextThemes
         attribute="class"
         disableTransitionOnChange
-        enableSystem={isSystemTheme}
-        {...(forcedTheme && { forcedTheme })}
+        enableSystem={false}
+        forcedTheme={forcedTheme}
       >
         {children}
       </NextThemes>
@@ -46,7 +81,11 @@ const ChakraThemeProvider = memo(({ children }: { children: ReactNode }) => {
   )
 })
 
-export const ThemeProvider = memo(({ children }: { children: ReactNode }) => {
+export const ThemeProvider = memo(function ThemeProvider({
+  children,
+}: {
+  children: ReactNode
+}) {
   const { themeMode = "system" } = useLocalSettings()
   const muiMode =
     themeMode === "system"

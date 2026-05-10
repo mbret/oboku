@@ -1,18 +1,18 @@
-import { memo, useEffect } from "react"
+import { memo } from "react"
 import {
   from,
-  fromEvent,
   merge,
   mergeMap,
-  of,
-  ReplaySubject,
   takeUntil,
   tap,
   throwIfEmpty,
   type Observable,
 } from "rxjs"
 import { ObokuErrorCode } from "@oboku/shared"
-import { CancelError, LifecycleCancelError } from "../../errors/errors.shared"
+import { CancelError } from "../../errors/errors.shared"
+import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
+import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
+import { scheduleDelayedEffect } from "../../common/useDelayEffect"
 import type { DownloadBookComponentProps } from "../types"
 import { useLiveRef, useMutation$ } from "reactjrx"
 import {
@@ -45,23 +45,9 @@ export const DownloadBook = memo(
       }) => {
         const { fileId } = link.data
         const abortController = new AbortController()
-        let cancelReason: "user" | "lifecycle" | null = null
-        const userCancel$: Observable<unknown> = signal.aborted
-          ? of(null)
-          : fromEvent(signal, "abort")
 
-        const userCancelWithFlag$ = userCancel$.pipe(
-          tap(() => {
-            cancelReason = "user"
-            abortController.abort()
-          }),
-        )
-
-        const lifecycleCancelWithFlag$ = onUnmount$.pipe(
-          tap(() => {
-            cancelReason = "lifecycle"
-            abortController.abort()
-          }),
+        const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
+          tap(() => abortController.abort()),
         )
 
         return from(
@@ -77,20 +63,12 @@ export const DownloadBook = memo(
               signal: abortController.signal,
             })
           }),
-          takeUntil(merge(userCancelWithFlag$, lifecycleCancelWithFlag$)),
-          throwIfEmpty(() =>
-            cancelReason === "lifecycle"
-              ? new LifecycleCancelError()
-              : new CancelError(),
-          ),
+          takeUntil(cancel$),
+          throwIfEmpty(() => new CancelError()),
         )
       },
       onSuccess: onResolve,
       onError: (error) => {
-        if (error instanceof LifecycleCancelError) {
-          return
-        }
-
         if (error instanceof CancelError) {
           onError(error)
 
@@ -115,25 +93,19 @@ export const DownloadBook = memo(
       },
     })
 
-    useEffect(() => {
-      if (!connectorId) {
-        onErrorRef.current(ObokuErrorCode.ERROR_LINK_INVALID)
+    useEffectWithUnmount$(
+      (onUnmount$) =>
+        scheduleDelayedEffect(() => {
+          if (!connectorId) {
+            onErrorRef.current(ObokuErrorCode.ERROR_LINK_INVALID)
 
-        return
-      }
+            return
+          }
 
-      const onUnmount$ = new ReplaySubject<void>(1)
-
-      download({
-        connectorId,
-        onUnmount$,
-      })
-
-      return () => {
-        onUnmount$.next()
-        onUnmount$.complete()
-      }
-    }, [connectorId, download, onErrorRef])
+          download({ connectorId, onUnmount$ })
+        }, 1),
+      [connectorId, download, onErrorRef],
+    )
 
     return null
   },

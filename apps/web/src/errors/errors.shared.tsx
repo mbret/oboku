@@ -18,13 +18,6 @@ export class UnsupportedMethodError extends Error {
   }
 }
 
-/** Usually used with lifecycle such as unmount on mutations$ */
-export class LifecycleCancelError extends CancelError {
-  constructor() {
-    super("LifecycleCancelError")
-  }
-}
-
 export class OfflineError extends Error {
   constructor() {
     super("OfflineError")
