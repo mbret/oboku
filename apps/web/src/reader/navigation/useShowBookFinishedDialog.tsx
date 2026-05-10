@@ -9,6 +9,7 @@ import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import { useReader } from "../states"
 import { BookFinishedDialog } from "./BookFinishedDialog"
 import { createCustomDialog } from "../../common/dialogs/createCustomDialog"
+import { catchCancelError } from "../../errors/catchCancelError"
 
 type BookFinishedDialogState = {
   bookId: string
@@ -96,6 +97,7 @@ export const useShowBookFinishedDialog = ({
 
         return createBookFinishedDialog().promise
       }),
+      catchCancelError<boolean | null>(() => of(null)),
     )
   }, [
     markDialogAsShown,
