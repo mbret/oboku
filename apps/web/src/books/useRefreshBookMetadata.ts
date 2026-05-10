@@ -4,7 +4,7 @@ import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
-import { createDialog } from "../common/dialogs/createDialog"
+import { showDialog } from "../common/dialogs/createDialog"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
@@ -18,7 +18,9 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string) => {
     try {
       if (!network.online) {
-        return createDialog({ preset: "OFFLINE", autoStart: true })
+        showDialog({ preset: "OFFLINE" })
+
+        return
       }
 
       const book = await database?.book

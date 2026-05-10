@@ -2,7 +2,7 @@ import { ObokuErrorCode } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
-import { createDialog } from "../common/dialogs/createDialog"
+import { fromCreateDialog } from "../common/dialogs/fromCreateDialog"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
@@ -20,7 +20,7 @@ export const useSynchronizeDataSource = () => {
   return useMutation$({
     mutationFn: (_id: string) => {
       if (!network.online) {
-        return createDialog({ preset: "OFFLINE" }).$
+        return fromCreateDialog({ preset: "OFFLINE" })
       }
 
       if (!database) {

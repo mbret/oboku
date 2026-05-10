@@ -1,68 +1,96 @@
-import { Observable, share } from "rxjs"
-import { type DialogType, dialogSignal } from "./state"
+import { type DialogTemplateType, dialogSignal } from "./state"
+import { removeDialog } from "./removeDialog"
 import { CancelError } from "../../errors/errors.shared"
+import { getNextDialogId } from "./getNextDialogId"
 
-let generatedId = 0
+export type CreateDialogOptions<Result> = Omit<
+  DialogTemplateType<Result>,
+  "id" | "type"
+>
+
+export type DialogHandle<Result> = {
+  id: string
+  close: () => void
+  promise: Promise<Result | null>
+}
 
 export const createDialog = <Result = undefined>({
-  autoStart = false,
   ...dialog
-}: Omit<DialogType<Result>, "id"> & {
-  autoStart?: boolean
-}) => {
-  generatedId++
-  const id = generatedId.toString()
+}: CreateDialogOptions<Result>): DialogHandle<Result> => {
+  const id = getNextDialogId()
+  let isSettled = false
+  let resolveDialog: ((result: Result | null) => void) | undefined
+  let rejectDialog: ((error: CancelError) => void) | undefined
 
-  const $ = new Observable<Result | null>((observer) => {
-    let isClosed = false
+  const closeDialog = () => {
+    removeDialog(id)
+  }
 
-    const wrappedDialog: DialogType<Result> = {
+  const settle = (cb: () => void) => {
+    if (isSettled) return
+
+    isSettled = true
+    cb()
+    closeDialog()
+  }
+
+  const close = () => {
+    settle(() => {
+      dialog.onCancel?.()
+      rejectDialog?.(new CancelError())
+    })
+  }
+
+  const confirmDialog = (getResult?: () => Result | null) => {
+    if (isSettled) return null
+
+    const data = getResult?.() ?? null
+
+    settle(() => {
+      resolveDialog?.(data)
+    })
+
+    return data
+  }
+
+  const promise = new Promise<Result | null>((resolve, reject) => {
+    resolveDialog = resolve
+    rejectDialog = reject
+
+    const wrappedDialog: DialogTemplateType<Result> = {
       ...dialog,
       id,
-      onCancel: () => {
-        isClosed = true
-        dialog.onCancel?.()
-        observer.error(new CancelError())
-        observer.complete()
-      },
-      onConfirm: () => {
-        isClosed = true
-        const data = dialog.onConfirm?.()
-        observer.next(data ?? null)
-        observer.complete()
-
-        return data as Result
-      },
+      type: "template",
+      onCancel: close,
+      onConfirm: () => confirmDialog(dialog.onConfirm),
       actions: dialog.actions?.map((action) => ({
         ...action,
-        onConfirm: () => {
-          isClosed = true
-          const data = action.onConfirm?.()
-
-          observer.next(data)
-          observer.complete()
-
-          return data as Result
-        },
+        onConfirm: () => confirmDialog(action.onConfirm),
       })),
     }
 
     dialogSignal.setValue((old) => [...old, wrappedDialog])
+  })
 
-    return () => {
-      /**
-       * Make sure to close the dialog if there are no more subscribers
-       * and if the dialog is cancellable
-       */
-      if (!isClosed && dialog.cancellable !== false) {
-        dialog.onCancel?.()
-      }
-    }
-  }).pipe(share())
-
-  if (autoStart) {
-    $.subscribe()
+  return {
+    id,
+    close,
+    promise,
   }
+}
 
-  return { id, $ }
+const throwUnexpectedDialogError = (error: unknown) => {
+  if (error instanceof CancelError) return
+
+  throw error
+}
+
+export const showDialog = <Result = undefined>(
+  options: CreateDialogOptions<Result>,
+) => {
+  const dialog = createDialog(options)
+
+  void dialog.promise.catch(throwUnexpectedDialogError)
+
+  return dialog
 }

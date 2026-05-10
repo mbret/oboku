@@ -2,6 +2,7 @@ import { memo, useEffect } from "react"
 import { type Database, createDatabase } from "./databases.shared"
 import { isDefined, signal, useMutation$, useSignalValue } from "reactjrx"
 import { filter, first, from, map, of, switchMap, tap } from "rxjs"
+import { Logger } from "./logger"
 
 const databaseSignal = signal<Database | undefined>({
   key: "databaseState",
@@ -20,6 +21,8 @@ export const useReCreateDb = () => {
     mutationFn: ({ overwrite = true }: { overwrite?: boolean } = {}) => {
       const db = databaseSignal.getValue()
 
+      Logger.log(`Recreating database`, { overwrite, dbExists: !!db })
+
       // soft create
       if (!overwrite && db) return of(null)
 
@@ -33,6 +36,16 @@ export const useReCreateDb = () => {
       return start$.pipe(
         switchMap(() => createDatabase({})),
         tap((newDb) => {
+          const clearSignalWhenDatabaseCloses = () => {
+            Logger.log(`Database onClose event received`)
+
+            if (databaseSignal.getValue() !== newDb) return
+
+            databaseSignal.update(undefined)
+          }
+
+          newDb.onClose.push(clearSignalWhenDatabaseCloses)
+
           databaseSignal.update(newDb)
         }),
       )

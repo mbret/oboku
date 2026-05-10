@@ -1,6 +1,6 @@
 import { type Observable, tap } from "rxjs"
 import { useNetworkState } from "react-use"
-import { createDialog } from "../dialogs/createDialog"
+import { showDialog } from "../dialogs/createDialog"
 import { OfflineError } from "../../errors/errors.shared"
 
 export const useWithNetwork = () => {
@@ -10,7 +10,7 @@ export const useWithNetwork = () => {
     stream.pipe(
       tap(() => {
         if (!networkState.online) {
-          createDialog({ preset: "OFFLINE", autoStart: true })
+          showDialog({ preset: "OFFLINE" })
 
           throw new OfflineError()
         }
