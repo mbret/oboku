@@ -13,10 +13,17 @@ export const defaultSystem = createSystem(defaultConfig)
  *   we keep `shadow="md"`'s semantic role (separating elevated panels
  *   from content) but express it as a hard border. Uses `box-shadow`
  *   instead of `border` to avoid reflow and to follow `border-radius`.
+ * - Disabled opacity dropped to `0.25`: Chakra's default (~0.4) quantizes
+ *   to a shade nearly identical to enabled on 16-grayscale e-ink panels.
  */
 export const einkSystem = createSystem(
   defaultConfig,
   defineConfig({
+    globalCss: {
+      "button:disabled, [aria-disabled='true']": {
+        opacity: "0.25 !important",
+      },
+    },
     theme: {
       tokens: {
         durations: {
