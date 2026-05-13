@@ -12,6 +12,15 @@ export const einkSystem = createSystem(
         durations: {
           moderate: { value: "0ms" },
         },
+        shadows: {
+          xs: { value: "none" },
+          sm: { value: "none" },
+          md: { value: "none" },
+          lg: { value: "none" },
+          xl: { value: "none" },
+          "2xl": { value: "none" },
+          inset: { value: "none" },
+        },
       },
     },
   }),
