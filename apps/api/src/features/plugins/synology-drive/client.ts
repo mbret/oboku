@@ -335,9 +335,11 @@ export const downloadSynologyDriveStream = async ({
     }
 
     const contentTypeHeader = response.headers["content-type"]
-    const contentType = Array.isArray(contentTypeHeader)
+    const rawContentType = Array.isArray(contentTypeHeader)
       ? contentTypeHeader[0]
       : contentTypeHeader
+    const contentType =
+      typeof rawContentType === "string" ? rawContentType : undefined
 
     if (isJsonContentType(contentType)) {
       throwDownloadError(JSON.parse(await readText(response.data)))

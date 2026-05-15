@@ -8,10 +8,14 @@ import {
 } from "./archives.shared"
 import { StreamerFileNotFoundError } from "../../errors/errors.shared"
 import { onResourceError } from "./onResourceError.shared"
-import { onManifestSuccess } from "./onManifestSuccess.shared"
 import { createArchiveFromPdf } from "@prose-reader/enhancer-pdf"
 import * as pdfjsLib from "pdfjs-dist"
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url"
+import { streamerHooks as cbzStreamerHooks } from "@prose-reader/cbz"
+import {
+  readingDirectionManifestHook,
+  webtoonManifestHook,
+} from "./manifestHooks.shared"
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
   pdfWorkerUrl,
@@ -19,6 +23,14 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 ).toString()
 
 export const webStreamer = new Streamer({
+  hooks: {
+    manifest: {
+      content: [readingDirectionManifestHook],
+      spine: cbzStreamerHooks.manifest.spine,
+      presentation: [webtoonManifestHook],
+    },
+    resource: cbzStreamerHooks.resource,
+  },
   /**
    * Some formats like PDF hold non-serializable resources (e.g. PDFDocumentProxy)
    * that must stay alive for the entire reading session. The streamer is pruned
@@ -45,5 +57,4 @@ export const webStreamer = new Streamer({
     return archive
   },
   onError: onResourceError,
-  onManifestSuccess,
 })

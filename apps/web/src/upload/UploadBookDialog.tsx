@@ -12,6 +12,8 @@ import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDia
 import type { ObokuPlugin, UploadBookToAddPayload } from "../plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
+import { Logger } from "../debug/logger.shared"
+import { isCancelError } from "../errors/errors.shared"
 
 type UploadBookComponentProps = ComponentProps<
   NonNullable<ObokuPlugin[`UploadBookComponent`]>
@@ -19,24 +21,30 @@ type UploadBookComponentProps = ComponentProps<
 
 export const uploadBookDialogOpenedSignal = signal<string | undefined>({})
 
-export const UploadBookDialog = memo(
-  ({
-    openWith,
-    onClose: onFinalClose,
-    ...rest
-  }: {
-    openWith: string | undefined
-    onClose: () => void
-  } & DOMAttributes<any>) => {
-    const [addBook] = useAddBook()
-    const { mutateAsync: downloadFile } = useDownloadBook()
-    const dataSource = useDataSourcePlugin(openWith)
-    const createRequestPopup = useCreateRequestPopupDialog()
+export const UploadBookDialog = memo(function UploadBookDialog({
+  openWith,
+  onClose: onFinalClose,
+  ...rest
+}: {
+  openWith: string | undefined
+  onClose: () => void
+} & DOMAttributes<any>) {
+  const [addBook] = useAddBook()
+  const { mutateAsync: downloadFile } = useDownloadBook()
+  const dataSource = useDataSourcePlugin(openWith)
+  const createRequestPopup = useCreateRequestPopupDialog()
 
-    const onClose: UploadBookComponentProps[`onClose`] = useCallback(
-      async (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => {
-        if (dataSource && booksToAdd?.length) {
-          for (const bookToAdd of booksToAdd) {
+  const onClose: UploadBookComponentProps[`onClose`] = useCallback(
+    (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => {
+      onFinalClose()
+
+      if (!dataSource || !booksToAdd?.length) {
+        return
+      }
+
+      const addBooksInBackground = async () => {
+        for (const bookToAdd of booksToAdd) {
+          try {
             const result = await addBook({
               book: {
                 ...bookToAdd.book,
@@ -62,27 +70,32 @@ export const UploadBookDialog = memo(
                 file: bookToAdd.file,
               })
             }
+          } catch (error) {
+            if (!isCancelError(error)) {
+              Logger.error(error)
+            }
           }
         }
-        onFinalClose()
-      },
-      [onFinalClose, addBook, downloadFile, dataSource],
-    )
+      }
 
-    if (!dataSource) return null
+      void addBooksInBackground()
+    },
+    [onFinalClose, addBook, downloadFile, dataSource],
+  )
 
-    return (
-      <>
-        {dataSource.UploadBookComponent && (
-          <dataSource.UploadBookComponent
-            title={`Add a book with plugin ${capitalize(dataSource.name)}`}
-            TagsSelector={TagsSelector}
-            onClose={onClose}
-            requestPopup={createRequestPopup({ name: dataSource.name })}
-            {...rest}
-          />
-        )}
-      </>
-    )
-  },
-)
+  if (!dataSource) return null
+
+  return (
+    <>
+      {dataSource.UploadBookComponent && (
+        <dataSource.UploadBookComponent
+          title={`Add a book with plugin ${capitalize(dataSource.name)}`}
+          TagsSelector={TagsSelector}
+          onClose={onClose}
+          requestPopup={createRequestPopup({ name: dataSource.name })}
+          {...rest}
+        />
+      )}
+    </>
+  )
+})

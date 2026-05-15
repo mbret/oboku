@@ -7,9 +7,21 @@ import {
   StreamerFileNotSupportedError,
 } from "../../errors/errors.shared"
 import { onResourceError } from "./onResourceError.shared"
-import { onManifestSuccess } from "./onManifestSuccess.shared"
+import { streamerHooks as cbzStreamerHooks } from "@prose-reader/cbz"
+import {
+  readingDirectionManifestHook,
+  webtoonManifestHook,
+} from "./manifestHooks.shared"
 
 export const swStreamer = new ServiceWorkerStreamer({
+  hooks: {
+    manifest: {
+      content: [readingDirectionManifestHook],
+      spine: cbzStreamerHooks.manifest.spine,
+      presentation: [webtoonManifestHook],
+    },
+    resource: cbzStreamerHooks.resource,
+  },
   cleanArchiveAfter: 5 * 60 * 1000, // 5mn
   getUriInfo: (event) => {
     const url = new URL(event.request.url)
@@ -35,5 +47,4 @@ export const swStreamer = new ServiceWorkerStreamer({
     return await getArchiveForZipFile(file)
   },
   onError: onResourceError,
-  onManifestSuccess,
 })
