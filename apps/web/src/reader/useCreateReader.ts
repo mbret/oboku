@@ -13,11 +13,14 @@ import { refitEnhancer } from "@prose-reader/enhancer-refit"
 import { audioEnhancer } from "@prose-reader/enhancer-audio"
 import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
+import { cbzEnhancer } from "@prose-reader/cbz"
 
 export const createAppReader = pdfEnhancer(
   audioEnhancer(
     refitEnhancer(
-      galleryEnhancer(gesturesEnhancer(searchEnhancer(createReader))),
+      galleryEnhancer(
+        gesturesEnhancer(searchEnhancer(cbzEnhancer(createReader))),
+      ),
     ),
   ),
 )

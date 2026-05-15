@@ -95,9 +95,13 @@ export const useShowBookFinishedDialog = ({
       switchMap(() => {
         if (!markDialogAsShown()) return of(null)
 
-        return createBookFinishedDialog().promise
+        return createBookFinishedDialog().promise.then(() => {
+          onClose()
+
+          return null
+        })
       }),
-      catchCancelError<boolean | null>(() => of(null)),
+      catchCancelError(() => of(null)),
     )
   }, [
     markDialogAsShown,
@@ -105,6 +109,7 @@ export const useShowBookFinishedDialog = ({
     wasDialogShown,
     wasFinishedWhenOpened,
     createBookFinishedDialog,
+    onClose,
   ])
 
   useSubscribe(subscribeToBookBoundaryReached)
