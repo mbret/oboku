@@ -1,5 +1,6 @@
 import { defineConfig, type UserConfigFnObject } from "vite"
 import dts from "unplugin-dts/vite"
+import externals from "rollup-plugin-node-externals"
 
 /**
  * Shared Vite config factory for internal `packages/*` libraries.
@@ -20,5 +21,8 @@ export const definePackageLibConfig = (name: string): UserConfigFnObject =>
       emptyOutDir: mode !== "development",
       sourcemap: true,
     },
-    plugins: [dts({ bundleTypes: true })],
+    plugins: [
+      externals({ peerDeps: true, deps: true, devDeps: true }),
+      dts({ bundleTypes: true }),
+    ],
   }))
