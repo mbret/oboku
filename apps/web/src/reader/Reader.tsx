@@ -21,7 +21,13 @@ import { localSettingsSignal } from "../settings/useLocalSettings"
 import { useSettingsFormValues } from "./settings/useSettingsFormValues"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 
-export const Reader = memo(function Reader({ bookId }: { bookId: string }) {
+export const Reader = memo(function Reader({
+  bookId,
+  isPreview,
+}: {
+  bookId: string
+  isPreview: boolean
+}) {
   const reader = useSignalValue(readerSignal)
   const { data: readerState } = useObserve(() => reader?.state$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
@@ -41,6 +47,7 @@ export const Reader = memo(function Reader({ bookId }: { bookId: string }) {
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
     bookId,
     onClose: goBack,
+    enabled: !isPreview,
   })
 
   const onItemClick = useCallback(
@@ -99,6 +106,7 @@ export const Reader = memo(function Reader({ bookId }: { bookId: string }) {
       {readerState !== "ready" && <BookLoading />}
       <Effects
         bookId={bookId}
+        isPreview={isPreview}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
         containerElement={readerContainerRef.current}
@@ -109,11 +117,13 @@ export const Reader = memo(function Reader({ bookId }: { bookId: string }) {
 
 const Effects = memo(function Effects({
   bookId,
+  isPreview,
   isUsingWebStreamer,
   manifest,
   containerElement,
 }: {
   bookId: string
+  isPreview: boolean
   isUsingWebStreamer?: boolean
   manifest?: Manifest
   containerElement?: HTMLElement | null
@@ -122,9 +132,10 @@ const Effects = memo(function Effects({
   useLoadReader({
     bookId,
     containerElement,
+    isPreview,
     manifest,
   })
-  useSyncBookProgress(bookId)
+  useSyncBookProgress(bookId, { enabled: !isPreview })
 
   return null
 })

@@ -11,49 +11,8 @@ import {
   DialogTitle,
 } from "@mui/material"
 
-const enrichDialogWithPreset = (
-  dialog?: DialogTemplateType<unknown>,
-): DialogTemplateType<unknown> | undefined => {
-  if (!dialog) return undefined
-
-  switch (dialog.preset) {
-    case "NOT_IMPLEMENTED":
-      return {
-        ...dialog,
-        title: "Not implemented",
-        message: "Sorry this feature is not yet implemented",
-        dismissible: true,
-      }
-    case "OFFLINE":
-      return {
-        ...dialog,
-        title: "Offline is great but...",
-        message: "You need to be online to proceed with this action",
-      }
-    case "UNKNOWN_ERROR":
-      return {
-        title: "Oups, something went wrong!",
-        message:
-          "Something unexpected happened and oboku could not proceed with your action. Maybe you can try again?",
-        ...dialog,
-      }
-    case "CONFIRM":
-      return {
-        ...dialog,
-        title: dialog.title || "Hold on a minute!",
-        message:
-          dialog.message ||
-          "Are you sure you want to proceed with this action?",
-        cancellable:
-          dialog.cancellable !== undefined ? dialog.cancellable : true,
-      }
-    default:
-      return dialog
-  }
-}
-
 function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
-  const currentDialog = enrichDialogWithPreset(dialog)
+  const currentDialog = dialog
   const isDismissible = currentDialog?.dismissible !== false
 
   const handleClose = useCallback(() => {
@@ -73,13 +32,7 @@ function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
     [handleClose, currentDialog, isDismissible],
   )
 
-  const actions = currentDialog?.actions || [
-    {
-      title: currentDialog?.confirmTitle || "Ok",
-      onConfirm: currentDialog?.onConfirm,
-      type: "confirm",
-    },
-  ]
+  const actions = currentDialog?.actions ?? []
   const message = currentDialog?.message
 
   return (
@@ -92,7 +45,12 @@ function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
       )}
       <DialogActions>
         {currentDialog?.cancellable === true && (
-          <Button onClick={onCancel} color="primary">
+          <Button
+            onClick={onCancel}
+            color="primary"
+            variant={currentDialog.cancelButtonVariant ?? "text"}
+            autoFocus={currentDialog.cancelButtonAutoFocus ?? false}
+          >
             {currentDialog.cancelTitle || "Cancel"}
           </Button>
         )}
@@ -100,14 +58,15 @@ function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
           <Button
             key={id}
             onClick={() => {
-              action.onConfirm?.()
+              action.onAction()
               handleClose()
             }}
             color="primary"
+            variant={action.variant ?? "text"}
             style={{
               whiteSpace: "nowrap",
             }}
-            autoFocus
+            autoFocus={action.autoFocus ?? true}
           >
             {action.title}
           </Button>

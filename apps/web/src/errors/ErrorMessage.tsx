@@ -6,6 +6,7 @@ import {
   isApiError,
 } from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
+import { HttpClientNetworkError } from "../http/httpClient.web"
 import { Alert } from "@mui/material"
 
 export const ErrorMessage = ({ error }: { error: unknown }) => {
@@ -33,8 +34,6 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return ERROR_LINK_INVALID_MESSAGE
     case ObokuErrorCode.ERROR_NO_LINK:
       return ERROR_NO_LINK_MESSAGE
-    case ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE:
-      return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
     case ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID:
       return "This sign up link is invalid or expired. Please request a new one."
     case ObokuErrorCode.ERROR_SIGNUP_LINK_MISSING_TOKEN:
@@ -61,6 +60,10 @@ export const errorToMessage = (error: unknown) => {
 
   if (error instanceof HttpClientError && error.response?.status === 401) {
     return "Invalid credentials"
+  }
+
+  if (error instanceof HttpClientNetworkError) {
+    return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
   }
 
   if (

@@ -24,6 +24,7 @@ export const updateCover = async ({
   ctx,
   tmpFilePath,
   coversService,
+  force = false,
 }: {
   ctx: Context
   book: BookDocType
@@ -31,6 +32,11 @@ export const updateCover = async ({
   archiveExtractor?: Extractor<Uint8Array> | undefined
   tmpFilePath?: string
   coversService: CoversService
+  /**
+   * Hard refresh: regenerate the cover even when the bucket key
+   * already matches the picked source and the blob exists.
+   */
+  force?: boolean
 }): Promise<UpdateCoverResult> => {
   const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
   const metadataForCover = pickCoverMetadata(
@@ -45,6 +51,7 @@ export const updateCover = async ({
     : undefined
 
   if (
+    !force &&
     expectedBucketCoverKey !== undefined &&
     expectedBucketCoverKey === book.bucketCoverKey &&
     (await firstValueFrom(coversService.isCoverExist(coverObjectKey)))

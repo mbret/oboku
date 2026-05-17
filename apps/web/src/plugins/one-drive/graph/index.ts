@@ -7,6 +7,8 @@ import {
 } from "@oboku/shared"
 import { map } from "rxjs"
 import { fromFetch } from "rxjs/fetch"
+import { httpClientWeb } from "../../../http/httpClient.web"
+import { toProgressRatioHandler } from "../../../http/toProgressRatioHandler"
 import { ONE_DRIVE_CONSUMER_PICKER_BASE_URL } from "../constants"
 
 const MICROSOFT_GRAPH_ME_DRIVE_URL =
@@ -61,6 +63,10 @@ function buildOneDriveItemSummaryUrl(driveId: string, fileId: string) {
   url.searchParams.set("$select", ONE_DRIVE_ITEM_SUMMARY_FIELDS.join(","))
 
   return url.toString()
+}
+
+function buildOneDriveItemContentUrl(driveId: string, fileId: string) {
+  return `${buildDriveItemUrl(driveId, fileId)}/content`
 }
 
 export async function getOneDriveItemSummary({
@@ -130,4 +136,31 @@ export function getOneDriveDownloadInfo$({
       }
     }),
   )
+}
+
+export function updateOneDriveDriveItemContent({
+  accessToken,
+  contentType,
+  driveId,
+  file,
+  fileId,
+  onProgress,
+}: {
+  accessToken: string
+  contentType?: string
+  driveId: string
+  file: Blob | File
+  fileId: string
+  onProgress?: (progress: number) => void
+}) {
+  return httpClientWeb.upload$({
+    url: buildOneDriveItemContentUrl(driveId, fileId),
+    method: "PUT",
+    headers: {
+      ...getMicrosoftGraphAuthorizationHeaders(accessToken),
+      "Content-Type": contentType || file.type || "application/octet-stream",
+    },
+    body: file,
+    onUploadProgress: toProgressRatioHandler(onProgress),
+  })
 }

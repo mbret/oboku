@@ -8,16 +8,20 @@ export const useLoadReader = ({
   manifest,
   containerElement,
   bookId,
+  isPreview,
 }: {
   manifest?: Manifest
   containerElement?: HTMLElement | null
   bookId?: string
+  isPreview: boolean
 }) => {
   const reader = useSignalValue(readerSignal)
   const isBookLoadedRef = useRef(false)
   const { data: book } = useBook({
     id: bookId,
     enabled: (query) => {
+      if (isPreview) return false
+
       const hasNoResultYet = query.state.data === undefined
 
       return hasNoResultYet
@@ -30,15 +34,18 @@ export const useLoadReader = ({
       reader &&
       manifest &&
       containerElement &&
-      book
+      (isPreview || book)
     ) {
       isBookLoadedRef.current = true
+      const cfi = isPreview
+        ? undefined
+        : book?.readingStateCurrentBookmarkLocation || undefined
 
       reader.load({
         containerElement,
         manifest,
-        cfi: book.readingStateCurrentBookmarkLocation || undefined,
+        ...(cfi ? { cfi } : {}),
       })
     }
-  }, [manifest, book, containerElement, reader])
+  }, [manifest, book, containerElement, reader, isPreview])
 }

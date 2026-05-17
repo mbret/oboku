@@ -24,12 +24,12 @@ describe("createDialog", () => {
     dialogSignal.setValue([])
   })
 
-  it("queues a template dialog and resolves with the confirm result", async () => {
-    const onConfirm = vi.fn(() => "confirmed")
+  it("queues a template dialog and resolves with the action result", async () => {
+    const onAction = vi.fn(() => "confirmed")
     const dialog = createDialog<string>({
       title: "Confirm",
       message: "Are you sure?",
-      onConfirm,
+      actions: [{ title: "Confirm", onAction }],
     })
 
     const queuedDialog = getOnlyTemplateDialog()
@@ -40,40 +40,39 @@ describe("createDialog", () => {
       title: "Confirm",
       message: "Are you sure?",
     })
-    const confirm = queuedDialog.onConfirm
-    if (!confirm) {
-      throw new Error("Expected a confirm handler")
+    const action = queuedDialog.actions?.[0]
+    if (!action) {
+      throw new Error("Expected a dialog action")
     }
 
-    expect(confirm()).toBe("confirmed")
+    expect(action.onAction()).toBe("confirmed")
 
     await expect(dialog.promise).resolves.toBe("confirmed")
-    expect(onConfirm).toHaveBeenCalledTimes(1)
+    expect(onAction).toHaveBeenCalledTimes(1)
     expect(dialogSignal.getValue()).toEqual([])
   })
 
-  it("resolves with null when confirming without a custom result", async () => {
+  it("resolves with null when using the default action", async () => {
     const dialog = createDialog({ title: "Notice" })
     const queuedDialog = getOnlyTemplateDialog()
-    const confirm = queuedDialog.onConfirm
-    if (!confirm) {
-      throw new Error("Expected a confirm handler")
+    const action = queuedDialog.actions?.[0]
+    if (!action) {
+      throw new Error("Expected a dialog action")
     }
 
-    expect(confirm()).toBeNull()
+    expect(action.onAction()).toBeNull()
 
     await expect(dialog.promise).resolves.toBeNull()
     expect(dialogSignal.getValue()).toEqual([])
   })
 
-  it("wraps action confirm callbacks with the dialog settlement behavior", async () => {
-    const onConfirm = vi.fn(() => "archived")
+  it("wraps action callbacks with the dialog settlement behavior", async () => {
+    const onAction = vi.fn(() => "archived")
     const dialog = createDialog<string>({
       actions: [
         {
           title: "Archive",
-          type: "confirm",
-          onConfirm,
+          onAction,
         },
       ],
     })
@@ -84,10 +83,10 @@ describe("createDialog", () => {
       throw new Error("Expected a dialog action")
     }
 
-    expect(action.onConfirm()).toBe("archived")
+    expect(action.onAction()).toBe("archived")
 
     await expect(dialog.promise).resolves.toBe("archived")
-    expect(onConfirm).toHaveBeenCalledTimes(1)
+    expect(onAction).toHaveBeenCalledTimes(1)
     expect(dialogSignal.getValue()).toEqual([])
   })
 
@@ -104,6 +103,22 @@ describe("createDialog", () => {
     cancel()
 
     await rejection
+    expect(onCancel).toHaveBeenCalledTimes(1)
+    expect(dialogSignal.getValue()).toEqual([])
+  })
+
+  it("resolves with the configured cancellation result", async () => {
+    const onCancel = vi.fn()
+    const dialog = createDialog<boolean>({ cancelResult: false, onCancel })
+    const queuedDialog = getOnlyTemplateDialog()
+    const cancel = queuedDialog.onCancel
+    if (!cancel) {
+      throw new Error("Expected a cancel handler")
+    }
+
+    cancel()
+
+    await expect(dialog.promise).resolves.toBe(false)
     expect(onCancel).toHaveBeenCalledTimes(1)
     expect(dialogSignal.getValue()).toEqual([])
   })

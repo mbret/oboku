@@ -73,8 +73,9 @@ export type GoogleBookApiMetadata = BookMetadataVariant<
 
 /**
  * Metadata extracted from the file's contents (EPUB OPF or RAR/ZIP scan).
- * No descriptions, ratings, format types, or remote identifiers — those
- * are not embedded in the file itself.
+ * No descriptions, ratings, format types, or remote identifiers (other
+ * than `isbn`, which EPUB's `dc:identifier` and CBZ's ComicInfo `<GTIN>`
+ * both embed in the file itself).
  */
 export type FileMetadata = BookMetadataVariant<
   "file",
@@ -88,6 +89,7 @@ export type FileMetadata = BookMetadataVariant<
   | "coverLink"
   | "pageCount"
   | "contentType"
+  | "isbn"
 >
 
 /**
@@ -104,7 +106,7 @@ export type FileMetadata = BookMetadataVariant<
 export type LinkMetadata = BookMetadataVariant<
   "link",
   "title" | "contentType" | "size" | "modifiedAt"
->
+> & { title?: string }
 
 /**
  * Metadata supplied directly by the end user. Currently only ISBN is
@@ -233,6 +235,7 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
     "coverLink",
     "pageCount",
     "contentType",
+    "isbn",
   ],
   link: ["title", "contentType", "size", "modifiedAt"],
   user: ["isbn"],

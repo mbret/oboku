@@ -28,17 +28,17 @@ export class BooksController implements OnModuleInit {
 
   @Post("metadata/refresh")
   async metadataRefresh(
-    @Body() { bookId, providerCredentials }: RefreshBookMetadataRequest,
+    @Body() { bookId, providerCredentials, force }: RefreshBookMetadataRequest,
     @WithAuthUser() user: AuthUser,
   ) {
-    this.logger.log("metadataRefresh", bookId)
+    this.logger.log("metadataRefresh", bookId, { force })
 
     this.taskQueueService.enqueue(
       this.BOOKS_METADATA_REFRESH_QUEUE,
       () =>
         from(
           this.booksMetadataService.refreshMetadata(
-            { bookId },
+            { bookId, force },
             providerCredentials,
             user.email,
           ),

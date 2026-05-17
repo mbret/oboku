@@ -37,7 +37,6 @@ export const useHasFilesAccess = ({
               getDriveFile(_gapi, {
                 fileId,
                 supportsAllDrives: true,
-                supportsTeamDrives: true,
                 fields: "capabilities, id",
               }).pipe(catchError(() => of(null))),
             ),

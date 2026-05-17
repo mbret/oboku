@@ -38,7 +38,6 @@ export const DownloadBook = memo(
         return from(
           httpClientWeb.download<Blob>({
             responseType: "blob",
-            mode: "cors",
             signal: abortController.signal,
             url: downloadLink,
             onDownloadProgress: (event) => {

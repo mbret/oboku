@@ -1,8 +1,23 @@
 # AGENTS.md
 
-## Engineering principles for Codex in this repository
+## Engineering principles in this repository
 
-When implementing changes in this codebase, prioritize consistency and consolidation over novelty.
+- When implementing changes in this codebase, prioritize consistency and consolidation over novelty.
+
+### Code comments
+
+- **Default to no comments.** Code, names, and types are the documentation. Add a comment only when a future reader cannot recover the intent from the code itself.
+- **Never restate what the code does.** If the comment paraphrases the next line, delete it.
+- **Never explain a change you are making.** Comments are about the resulting code, not about the diff or the review that produced it.
+- **Never narrate trivial mechanics** ("seed the form", "fall back to default", "guard for unmount", "cleanup on success", "preserves siblings", etc.). If the function/variable name doesn't already say that, rename instead of commenting.
+- **No "why" boilerplate.** Don't write comments like "we do X so that Y" unless Y is genuinely surprising and not visible from reading the function. A two-word identifier (`safeFallback`, `corsHeaders`, …) usually beats a three-line comment.
+- **Allowed comments** (rare, deliberate):
+    - Workarounds for third-party bugs, with a link or version reference.
+    - Non-obvious invariants or ordering constraints that aren't enforced by the type system.
+    - Explanations *required* by another rule in this file (e.g. the `as` rule, the MUI polymorphic-strip cast rule).
+    - Spec citations when the code implements a non-trivial part of an external spec.
+- **JSDoc on exported APIs is fine** when it documents the *contract* (parameters, return shape, edge cases) — not when it restates the implementation.
+- **Delete stale comments aggressively.** A comment that lies is worse than no comment.
 
 ### Reuse before creating
 

@@ -5,16 +5,23 @@ import {
 } from "./states"
 import { SIGNAL_RESET } from "reactjrx"
 
-export const useTrackBookBeingRead = (bookId: string | undefined) => {
+export const useTrackBookBeingRead = (
+  bookId: string | undefined,
+  { enabled = true }: { enabled?: boolean } = {},
+) => {
   useEffect(() => {
+    if (!enabled) return
+
     bookBeingReadStateSignal.setValue(bookId)
     hasOpenedReaderAlreadyStateSignal.setValue(true)
-  }, [bookId])
+  }, [bookId, enabled])
 
   useEffect(
     () => () => {
+      if (!enabled) return
+
       bookBeingReadStateSignal.setValue(SIGNAL_RESET)
     },
-    [],
+    [enabled],
   )
 }

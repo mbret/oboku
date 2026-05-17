@@ -1,29 +1,18 @@
-import { useTheme, Box, type BoxProps } from "@mui/material"
+import { styled } from "@mui/material"
 import { Cover } from "../Cover"
 
-export const CoverPane = ({
-  bookId,
-  ...rest
-}: { bookId?: string } & BoxProps) => {
-  const theme = useTheme()
+const BookDetailsCover = styled(Cover)(({ theme }) => ({
+  alignSelf: "center",
+  width: "60%",
+  maxWidth: theme.custom.maxWidthCenteredContent,
+  aspectRatio: theme.custom.coverAverageRatio,
+  [theme.breakpoints.up("sm")]: {
+    width: 200,
+  },
+}))
 
-  return (
-    <Box
-      style={{
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-      {...rest}
-    >
-      <Box
-        sx={{
-          width: ["60%", 200],
-          maxWidth: theme.custom.maxWidthCenteredContent,
-        }}
-      >
-        {!!bookId && <Cover bookId={bookId} blurIfNeeded={false} />}
-      </Box>
-    </Box>
-  )
+export const CoverPane = ({ bookId }: { bookId?: string }) => {
+  if (!bookId) return null
+
+  return <BookDetailsCover bookId={bookId} blurIfNeeded={false} />
 }
