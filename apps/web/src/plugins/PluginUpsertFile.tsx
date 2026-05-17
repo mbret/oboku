@@ -30,6 +30,12 @@ export const PluginUpsertFile = memo(function PluginUpsertFile({
 
       return <UpsertFileComponent {...props} link={link} />
     }
+    case "one-drive": {
+      const { UpsertFileComponent } = pluginsByType["one-drive"]
+      if (!UpsertFileComponent) break
+
+      return <UpsertFileComponent {...props} link={link} />
+    }
     default: {
       break
     }

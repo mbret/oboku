@@ -113,4 +113,67 @@ describe("getOneDrivePickerBaseUrl", () => {
       },
     )
   })
+
+  it("updates drive item content through Microsoft Graph", async () => {
+    type UploadProgressEvent = Pick<
+      ProgressEvent<EventTarget>,
+      "lengthComputable" | "loaded" | "total"
+    >
+    type UploadRequest = {
+      body: Blob | File
+      headers: Record<string, string>
+      method: string
+      onUploadProgress?: (event: UploadProgressEvent) => void
+      url: string
+    }
+    let uploadRequest: UploadRequest | undefined
+    const upload$ = vi.fn((request: UploadRequest) => {
+      uploadRequest = request
+
+      return "upload-result"
+    })
+
+    vi.doMock("../../../http/httpClient.web", () => ({
+      httpClientWeb: {
+        upload$,
+      },
+    }))
+
+    const { updateOneDriveDriveItemContent } = await import("./index")
+    const file = new File(["contents"], "Book.epub", {
+      type: "application/epub+zip",
+    })
+    const onProgress = vi.fn()
+
+    expect(
+      updateOneDriveDriveItemContent({
+        accessToken: "graph-token",
+        driveId: "drive/id",
+        file,
+        fileId: "file id",
+        onProgress,
+      }),
+    ).toBe("upload-result")
+
+    expect(upload$).toHaveBeenCalledWith({
+      url: "https://graph.microsoft.com/v1.0/drives/drive%2Fid/items/file%20id/content",
+      method: "PUT",
+      headers: {
+        Authorization: "Bearer graph-token",
+        "Content-Type": "application/epub+zip",
+      },
+      body: file,
+      onUploadProgress: expect.any(Function),
+    })
+
+    expect(uploadRequest?.onUploadProgress).toEqual(expect.any(Function))
+
+    uploadRequest?.onUploadProgress?.({
+      lengthComputable: true,
+      loaded: 1,
+      total: 4,
+    })
+
+    expect(onProgress).toHaveBeenCalledWith(0.25)
+  })
 })

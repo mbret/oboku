@@ -9,6 +9,7 @@ import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
+import { UpsertFile } from "./UpsertFile"
 import { useLinkInfo } from "./useLinkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
@@ -29,6 +30,7 @@ const useRemoveResource: ObokuPlugin<"one-drive">["useRemoveResource"] = () => {
 
 export const plugin: ObokuPlugin<"one-drive"> = {
   canSynchronize: true,
+  canUpsertFile: true,
   canRemoveResource: false,
   description: "Manage contents from Microsoft OneDrive",
   DataSourceCreateForm,
@@ -39,6 +41,7 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   Provider,
   type: PLUGIN_ONE_DRIVE_TYPE,
   UploadBookComponent: UploadBook,
+  UpsertFileComponent: UpsertFile,
   InfoScreen,
   useLinkInfo,
   useRefreshMetadata,

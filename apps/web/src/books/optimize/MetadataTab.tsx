@@ -1,9 +1,10 @@
 import { CloudUploadOutlined, SaveOutlined } from "@mui/icons-material"
 import { Button, Stack, styled } from "@mui/material"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import type { DeepReadonlyObject } from "rxdb"
+import { showDialog } from "../../common/dialogs/createDialog"
 import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
 import { useApplyMetadataFix } from "./metadata/useApplyMetadataFix"
@@ -50,8 +51,6 @@ export function MetadataTab({
   const metadataFormKey = `${book._id}:${link._id}`
   const metadataFormKeyRef = useRef(metadataFormKey)
   const isMetadataFormCurrent = metadataFormKeyRef.current === metadataFormKey
-  const [hasAppliedLocalMetadataChanges, setHasAppliedLocalMetadataChanges] =
-    useState(false)
   const { data: inspectionData, refetch: refetchInspection } =
     useFileInspection({
       bookId: book._id,
@@ -87,7 +86,6 @@ export function MetadataTab({
   useEffect(() => {
     if (!isMetadataFormCurrent) {
       metadataFormKeyRef.current = metadataFormKey
-      setHasAppliedLocalMetadataChanges(false)
       reset(resolvedFormValues)
       return
     }
@@ -128,7 +126,6 @@ export function MetadataTab({
         onSuccess: () => {
           if (metadataFormKeyRef.current !== metadataFormKey) return
 
-          setHasAppliedLocalMetadataChanges(!uploadToDataSource)
           reset(trimmedValues)
           void refetchInspection()
           notify({
@@ -162,10 +159,9 @@ export function MetadataTab({
   const canUploadMetadata =
     isMetadataFormCurrent &&
     inspectionReady &&
-    !isDirty &&
     !isApplying &&
     canUploadToDataSource &&
-    hasAppliedLocalMetadataChanges
+    isValid
   const applyLocallyVariant = canUploadMetadata ? "outlined" : "contained"
   const uploadVariant = canUploadMetadata ? "contained" : "outlined"
 
@@ -175,8 +171,20 @@ export function MetadataTab({
     applyMetadata(values, { uploadToDataSource: false })
   }
 
-  function uploadMetadataToDataSource(values: MetadataFixerFormValues) {
+  async function uploadMetadataToDataSource(values: MetadataFixerFormValues) {
     if (!canUploadMetadata) return
+
+    try {
+      await showDialog({
+        preset: "CONFIRM",
+        message:
+          "This will overwrite the file on the remote data source with the current local file.",
+      }).promise
+    } catch (error) {
+      if (error instanceof CancelError) return
+
+      throw error
+    }
 
     applyMetadata(values, { uploadToDataSource: true })
   }
