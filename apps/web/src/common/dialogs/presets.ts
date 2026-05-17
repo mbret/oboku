@@ -1,4 +1,4 @@
-import type { CreateDialogOptions } from "./createDialog"
+import { type CreateDialogOptions, showDialog } from "./createDialog"
 
 type ConfirmDialogAction = Omit<
   NonNullable<CreateDialogOptions<boolean>["actions"]>[number],
@@ -31,6 +31,11 @@ export const createConfirmDialogOptions = (
     })),
   }
 }
+
+export const showConfirmDialog = async (
+  options: ConfirmDialogOptions = {},
+): Promise<boolean> =>
+  (await showDialog(createConfirmDialogOptions(options)).promise) ?? false
 
 export const createNotImplementedDialogOptions = (
   options: CreateDialogOptions = {},

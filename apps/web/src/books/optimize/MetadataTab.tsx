@@ -4,8 +4,7 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import type { DeepReadonlyObject } from "rxdb"
-import { showDialog } from "../../common/dialogs/createDialog"
-import { createConfirmDialogOptions } from "../../common/dialogs/presets"
+import { showConfirmDialog } from "../../common/dialogs/presets"
 import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
 import { useApplyMetadataFix } from "./metadata/useApplyMetadataFix"
@@ -175,12 +174,10 @@ export function MetadataTab({
   async function uploadMetadataToDataSource(values: MetadataFixerFormValues) {
     if (!canUploadMetadata) return
 
-    const isConfirmed = await showDialog(
-      createConfirmDialogOptions({
-        message:
-          "This will overwrite the file on the remote data source with the current local file.",
-      }),
-    ).promise
+    const isConfirmed = await showConfirmDialog({
+      message:
+        "This will overwrite the file on the remote data source with the current local file.",
+    })
 
     if (!isConfirmed) return
 
