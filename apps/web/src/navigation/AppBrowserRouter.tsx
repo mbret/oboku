@@ -29,6 +29,7 @@ import { CollectionBooksScreen } from "../pages/collections/$id/books/Collection
 import { BookTagsScreen } from "../pages/books/$id/tags/BookTagsScreen"
 import { BookCollectionsScreen } from "../pages/books/$id/collections/BookCollectionsScreen"
 import { BookMetadataSourceScreen } from "../pages/books/$id/metadata/$source/BookMetadataSourceScreen"
+import { BookOptimizeScreen } from "../pages/books/$id/optimize/BookOptimizeScreen"
 import { memo, useEffect, useRef, type ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
@@ -119,6 +120,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.BOOK_COLLECTIONS.slice(1)}
                 element={<BookCollectionsScreen />}
+              />
+              <Route
+                path={ROUTES.BOOK_OPTIMIZE.slice(1)}
+                element={<BookOptimizeScreen />}
               />
               <Route
                 path={ROUTES.BOOK_METADATA_SOURCE.slice(1)}

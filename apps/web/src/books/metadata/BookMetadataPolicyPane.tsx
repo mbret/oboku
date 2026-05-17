@@ -1,12 +1,13 @@
 import {
   List,
   ListItem,
+  ListItemButton,
   ListItemIcon,
   ListItemText,
   ListSubheader,
   Switch,
 } from "@mui/material"
-import { FileDownloadOutlined } from "@mui/icons-material"
+import { FileDownloadOutlined, RefreshRounded } from "@mui/icons-material"
 import { memo } from "react"
 import type {
   MetadataFetchOverride,
@@ -21,6 +22,8 @@ type Props = {
   onChange: (next: MetadataFetchOverride) => void
   fileDownloadOverride: MetadataFileDownloadOverride
   onFileDownloadChange: (next: MetadataFileDownloadOverride) => void
+  onForceRefresh: () => void
+  forceRefreshDisabled: boolean
 }
 
 /**
@@ -38,6 +41,8 @@ export const BookMetadataPolicyPane = memo(function BookMetadataPolicyPane({
   onChange,
   fileDownloadOverride,
   onFileDownloadChange,
+  onForceRefresh,
+  forceRefreshDisabled,
 }: Props) {
   const fileDownloadEnabled = fileDownloadOverride !== false
 
@@ -75,6 +80,20 @@ export const BookMetadataPolicyPane = memo(function BookMetadataPolicyPane({
               : "Disabled — the file is never downloaded during a metadata refresh."
           }
         />
+      </ListItem>
+      <ListItem disablePadding>
+        <ListItemButton
+          onClick={onForceRefresh}
+          disabled={forceRefreshDisabled}
+        >
+          <ListItemIcon>
+            <RefreshRounded />
+          </ListItemIcon>
+          <ListItemText
+            primary="Force metadata refresh"
+            secondary="Bypass any eventual cache"
+          />
+        </ListItemButton>
       </ListItem>
     </List>
   )

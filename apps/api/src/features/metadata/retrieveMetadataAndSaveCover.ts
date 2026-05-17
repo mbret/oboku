@@ -3,6 +3,7 @@ import path from "node:path"
 import {
   type BookMetadata,
   type FileMetadata,
+  type GoogleBookApiMetadata,
   type LinkMetadata,
   directives,
   getBookBucketCoverKeyType,
@@ -70,6 +71,15 @@ export const retrieveMetadataAndSaveCover = async (
   ctx: Context & {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
+    /**
+     * Hard refresh: bypass every reuse cache (cached file metadata,
+     * cover blob match) so the file is re-downloaded (when allowed)
+     * and the cover regenerated even when nothing changed. Useful as
+     * a recovery hatch when a previous run was corrupted or after a
+     * fix has been shipped that should be re-applied to existing
+     * books.
+     */
+    force?: boolean
   },
   config: AppConfigService,
   coversService: CoversService,
@@ -141,24 +151,6 @@ export const retrieveMetadataAndSaveCover = async (
       (contentType &&
         config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
-    const sourcesMetadata =
-      ignoreMetadataSources || !externalFetchEnabled
-        ? []
-        : await getBookSourcesMetadata(
-            {
-              // Some plugins return the filename (with extension) instead
-              // of a clean title; strip the extension for the lookup.
-              title: path.parse(linkMetadata.title?.toString() ?? "").name,
-              isbn,
-              googleVolumeId,
-            },
-            {
-              googleApiKey: ctx.googleApiKey,
-              withExternalSources: externalFetchEnabled,
-            },
-            config,
-          )
-
     /**
      * Try to reuse the previously-extracted `type:"file"` entry when the
      * provider reports the file is unchanged (same `modifiedAt` + `size`
@@ -179,12 +171,54 @@ export const retrieveMetadataAndSaveCover = async (
     const previousFileMetadata = ctx.book.metadata?.find(
       (entry): entry is FileMetadata => entry.type === "file",
     )
+
+    const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
+    /**
+     * Pick the best ISBN we have before touching Google Books. The
+     * filename directive (`[oboku~isbn~…]`) is the user's explicit
+     * override and always wins; otherwise we fall back to the ISBN
+     * previously extracted from the file itself (OPF `dc:identifier`
+     * or ComicInfo `<GTIN>`). That fallback means an unchanged file
+     * whose metadata we don't re-extract this run still feeds its ISBN
+     * to Google — without it, the embedded identifier would be ignored
+     * except on the run that first extracted it.
+     */
+    const preDownloadLookupIsbn = isbn ?? previousFileMetadata?.isbn
+
+    const runSourcesLookup = (lookupIsbn: string | undefined) =>
+      ignoreMetadataSources || !externalFetchEnabled
+        ? Promise.resolve<GoogleBookApiMetadata[]>([])
+        : getBookSourcesMetadata(
+            {
+              // Some plugins return the filename (with extension) instead
+              // of a clean title; strip the extension for the lookup.
+              title: lookupTitle,
+              isbn: lookupIsbn,
+              googleVolumeId,
+            },
+            {
+              googleApiKey: ctx.googleApiKey,
+              withExternalSources: externalFetchEnabled,
+            },
+            config,
+          )
+
+    const sourcesMetadata = await runSourcesLookup(preDownloadLookupIsbn)
     const fileUnchanged = isCachedFileMetadataReusable(
       previousLinkMetadata,
       linkMetadata,
     )
+    /**
+     * `force` short-circuits every reuse path: even if the link's
+     * fingerprint matches and a previous `file` entry exists, we
+     * pretend nothing is cached so the file gets re-downloaded
+     * (when downloads are allowed) and metadata re-extracted.
+     */
     const canReuseFileMetadata =
-      fileUnchanged && !ignoreMetadataFile && !!previousFileMetadata
+      !ctx.force &&
+      fileUnchanged &&
+      !ignoreMetadataFile &&
+      !!previousFileMetadata
 
     const candidateMetadataList: BookMetadata[] = [
       linkMetadata,
@@ -302,6 +336,7 @@ export const retrieveMetadataAndSaveCover = async (
 
     const isRarArchive = contentType === "application/x-rar"
     let archiveExtractor: Extractor<Uint8Array> | undefined
+    let freshFileMetadata: FileMetadata | undefined
 
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -313,34 +348,66 @@ export const retrieveMetadataAndSaveCover = async (
       if (!ignoreMetadataFile) {
         if (isRarArchive) {
           archiveExtractor = await getRarArchive(tmpFilePath)
-          const fileMetadata = await getMetadataFromRarArchive(
+          freshFileMetadata = await getMetadataFromRarArchive(
             archiveExtractor,
             contentType ?? ``,
-            config,
           )
 
           logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
-          metadataList.push(fileMetadata)
+          metadataList.push(freshFileMetadata)
         } else if (
           contentType &&
           config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
         ) {
-          const fileMetadata = await getMetadataFromZipArchive(
+          freshFileMetadata = await getMetadataFromZipArchive(
             tmpFilePath,
             contentType,
-            config,
           )
 
           logger.log(`Pushing file metadata for book ${ctx.book._id}`)
 
-          metadataList.push(fileMetadata)
+          metadataList.push(freshFileMetadata)
         } else {
           logger.log(
             `${contentType} cannot be extracted to retrieve information (cover, etc)`,
           )
         }
       }
+    }
+
+    /**
+     * Re-run the Google Books lookup when file extraction surfaced an
+     * ISBN we didn't know about before the download (typical after a
+     * first sync, or after the user embeds/edits the ISBN inside the
+     * file). We skip this when the filename directive already pinned
+     * the ISBN — that's the explicit user override and we don't want a
+     * possibly-stale embedded value to undo it.
+     */
+    const freshFileIsbn = freshFileMetadata?.isbn
+    const shouldRefetchSources =
+      !isbn &&
+      freshFileIsbn !== undefined &&
+      freshFileIsbn !== preDownloadLookupIsbn &&
+      !ignoreMetadataSources &&
+      externalFetchEnabled
+
+    if (shouldRefetchSources) {
+      logger.log(
+        `Re-running metadata sources lookup for ${ctx.book._id} with ISBN extracted from file`,
+      )
+
+      const refreshed = await runSourcesLookup(freshFileIsbn)
+      const refreshedTypes = new Set(refreshed.map((entry) => entry.type))
+      const previousIndex = metadataList.findIndex(
+        (entry) => entry.type === "googleBookApi",
+      )
+
+      if (previousIndex >= 0 && refreshedTypes.has("googleBookApi")) {
+        metadataList.splice(previousIndex, 1)
+      }
+
+      metadataList.push(...refreshed)
     }
 
     const { bucketCoverKey: nextBucketCoverKey } = await updateCover({
@@ -350,6 +417,7 @@ export const retrieveMetadataAndSaveCover = async (
       archiveExtractor,
       tmpFilePath,
       coversService,
+      force: ctx.force,
     })
 
     console.log(

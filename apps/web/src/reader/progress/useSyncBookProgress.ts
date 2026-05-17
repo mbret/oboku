@@ -31,11 +31,15 @@ const normalizeProgress = (progress: number | undefined) => {
   return Number(progress.toFixed(4))
 }
 
-export const useSyncBookProgress = (bookId: string) => {
+export const useSyncBookProgress = (
+  bookId: string,
+  { enabled = true }: { enabled?: boolean } = {},
+) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
 
   useEffect(() => {
+    if (!enabled) return
     if (!reader) return
 
     // Signals that the hook is unmounting. When it emits, takeUntil()
@@ -154,5 +158,5 @@ export const useSyncBookProgress = (bookId: string) => {
       unmount$.complete()
       sub.unsubscribe()
     }
-  }, [reader, bookId, incrementalBookModify])
+  }, [reader, bookId, incrementalBookModify, enabled])
 }

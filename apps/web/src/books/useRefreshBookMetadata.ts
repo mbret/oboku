@@ -1,5 +1,4 @@
 import { useNetworkState } from "react-use"
-import { from, switchMap, catchError, map, of, EMPTY } from "rxjs"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
@@ -15,7 +14,7 @@ export const useRefreshBookMetadata = () => {
   const network = useNetworkState()
   const refreshPluginMetadata = usePluginRefreshMetadata()
 
-  return async (bookId: string) => {
+  return async (bookId: string, { force }: { force?: boolean } = {}) => {
     try {
       if (!network.online) {
         showDialog({ preset: "OFFLINE" })
@@ -23,11 +22,13 @@ export const useRefreshBookMetadata = () => {
         return
       }
 
-      const book = await database?.book
+      if (!database) return
+
+      const book = await database.book
         .findOne({ selector: { _id: bookId } })
         .exec()
 
-      const firstLink = await database?.link
+      const firstLink = await database.link
         .findOne({ selector: { _id: book?.links[0] } })
         .exec()
 
@@ -43,49 +44,30 @@ export const useRefreshBookMetadata = () => {
         linkData: firstLink.data,
       })
 
-      if (!database) return
+      await incrementalPatchBook({
+        doc: bookId,
+        patch: {
+          metadataUpdateStatus: "fetching",
+        },
+      })
 
-      from(
-        incrementalPatchBook({
+      try {
+        await httpClientApi.refreshBookMetadata({
+          bookId,
+          providerCredentials,
+          force,
+        })
+      } catch (e) {
+        await incrementalPatchBook({
           doc: bookId,
           patch: {
-            metadataUpdateStatus: "fetching",
+            metadataUpdateStatus: null,
+            lastMetadataUpdateError: "unknown",
           },
-        }),
-      )
-        .pipe(
-          switchMap(() =>
-            httpClientApi.refreshBookMetadata({
-              bookId,
-              providerCredentials: providerCredentials,
-            }),
-          ),
-          catchError((e) =>
-            from(
-              incrementalPatchBook({
-                doc: bookId,
-                patch: {
-                  metadataUpdateStatus: null,
-                  lastMetadataUpdateError: "unknown",
-                },
-              }),
-            ).pipe(
-              map((_) => {
-                throw e
-              }),
-            ),
-          ),
-          catchError((e) => {
-            if (e instanceof CancelError) return EMPTY
+        })
 
-            notifyError(e)
-
-            Logger.error(e)
-
-            return of(null)
-          }),
-        )
-        .subscribe()
+        throw e
+      }
     } catch (e) {
       if (e instanceof CancelError) return
 

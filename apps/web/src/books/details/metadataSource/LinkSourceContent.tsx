@@ -97,7 +97,7 @@ const DirectivesSection = ({
  * Directive-derived metadata fields are exposed in their own section.
  */
 export const LinkSourceContent = ({ metadata }: Props) => {
-  const rawTitle = metadata?.title?.toString()
+  const rawTitle = metadata?.title
   const cleanTitle = rawTitle
     ? directives.removeDirectiveFromString(rawTitle)
     : undefined

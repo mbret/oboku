@@ -13,6 +13,7 @@ import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { UpsertFile } from "./UpsertFile"
 
 const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -30,6 +31,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   type: `dropbox`,
   name: PLUGIN_NAME,
   canRemoveResource: false,
+  canUpsertFile: true,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
   DataSourceCreateForm: (props) => (
@@ -39,6 +41,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
     <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
   ),
   DownloadBookComponent: DownloadBook,
+  UpsertFileComponent: UpsertFile,
   useRemoveResource,
   useLinkInfo,
   useSyncSourceInfo,
