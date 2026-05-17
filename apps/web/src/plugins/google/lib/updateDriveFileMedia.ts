@@ -17,7 +17,7 @@ export const updateDriveFileMedia = ({
   onProgress,
 }: Params) =>
   httpClientWeb.upload$({
-    url: `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media`,
+    url: `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`,
     method: "PATCH",
     headers: {
       Authorization: `Bearer ${accessToken}`,

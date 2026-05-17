@@ -3,11 +3,9 @@ import path from "node:path"
 import {
   type BookMetadata,
   type FileMetadata,
-  type GoogleBookApiMetadata,
   type LinkMetadata,
+  type UserMetadata,
   directives,
-  getBookBucketCoverKeyType,
-  getBookCoverKey,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
@@ -28,8 +26,6 @@ import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
-import { firstValueFrom } from "rxjs"
-import { pickCoverMetadata } from "./pickCoverMetadata"
 import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
@@ -37,7 +33,7 @@ const logger = new Logger("retrieveMetadataAndSaveCover")
 /**
  * Decides whether the file's bytes still match what we extracted on a
  * previous run, so we can reuse the cached `type:"file"` metadata entry
- * (and the cover blob already in S3) instead of re-downloading.
+ * instead of re-downloading.
  *
  * The primary fingerprint is the provider-reported `modifiedAt` on the
  * `link` source — both sides MUST report it, otherwise we refuse to
@@ -73,11 +69,11 @@ export const retrieveMetadataAndSaveCover = async (
     db: nano.DocumentScope<unknown>
     /**
      * Hard refresh: bypass every reuse cache (cached file metadata,
-     * cover blob match) so the file is re-downloaded (when allowed)
-     * and the cover regenerated even when nothing changed. Useful as
-     * a recovery hatch when a previous run was corrupted or after a
-     * fix has been shipped that should be re-applied to existing
-     * books.
+     * cover blob match) so the file is re-downloaded (when allowed),
+     * metadata re-extracted, and the cover regenerated even when
+     * nothing changed. Useful as a recovery hatch when a previous run
+     * was corrupted, when an S3 blob has gone missing, or after a fix
+     * has been shipped that should be re-applied to existing books.
      */
     force?: boolean
   },
@@ -151,124 +147,30 @@ export const retrieveMetadataAndSaveCover = async (
       (contentType &&
         config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType))
 
-    /**
-     * Try to reuse the previously-extracted `type:"file"` entry when the
-     * provider reports the file is unchanged (same `modifiedAt` + `size`
-     * on the `link` source). This avoids re-downloading the whole file
-     * just to re-derive identical metadata. Reuse is gated on:
-     *  - the user not having added an `[oboku~ignore-metadata-file~…]`
-     *    directive since the previous run (in which case the cached
-     *    entry must be dropped);
-     *  - having a previous `link` entry to compare against;
-     *  - having a previous `file` entry to actually reuse.
-     * If we reuse the file metadata, we also need to make sure the cover
-     * blob is still in S3 when the resolved cover source is `file`,
-     * otherwise we must download to regenerate it.
-     */
     const previousLinkMetadata = ctx.book.metadata?.find(
       (entry): entry is LinkMetadata => entry.type === "link",
     )
     const previousFileMetadata = ctx.book.metadata?.find(
       (entry): entry is FileMetadata => entry.type === "file",
     )
+    const previousUserMetadata = ctx.book.metadata?.find(
+      (entry): entry is UserMetadata => entry.type === "user",
+    )
 
-    const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
-    /**
-     * Pick the best ISBN we have before touching Google Books. The
-     * filename directive (`[oboku~isbn~…]`) is the user's explicit
-     * override and always wins; otherwise we fall back to the ISBN
-     * previously extracted from the file itself (OPF `dc:identifier`
-     * or ComicInfo `<GTIN>`). That fallback means an unchanged file
-     * whose metadata we don't re-extract this run still feeds its ISBN
-     * to Google — without it, the embedded identifier would be ignored
-     * except on the run that first extracted it.
-     */
-    const preDownloadLookupIsbn = isbn ?? previousFileMetadata?.isbn
-
-    const runSourcesLookup = (lookupIsbn: string | undefined) =>
-      ignoreMetadataSources || !externalFetchEnabled
-        ? Promise.resolve<GoogleBookApiMetadata[]>([])
-        : getBookSourcesMetadata(
-            {
-              // Some plugins return the filename (with extension) instead
-              // of a clean title; strip the extension for the lookup.
-              title: lookupTitle,
-              isbn: lookupIsbn,
-              googleVolumeId,
-            },
-            {
-              googleApiKey: ctx.googleApiKey,
-              withExternalSources: externalFetchEnabled,
-            },
-            config,
-          )
-
-    const sourcesMetadata = await runSourcesLookup(preDownloadLookupIsbn)
     const fileUnchanged = isCachedFileMetadataReusable(
       previousLinkMetadata,
       linkMetadata,
     )
-    /**
-     * `force` short-circuits every reuse path: even if the link's
-     * fingerprint matches and a previous `file` entry exists, we
-     * pretend nothing is cached so the file gets re-downloaded
-     * (when downloads are allowed) and metadata re-extracted.
-     */
-    const canReuseFileMetadata =
+
+    const skipDownload =
       !ctx.force &&
-      fileUnchanged &&
-      !ignoreMetadataFile &&
-      !!previousFileMetadata
-
-    const candidateMetadataList: BookMetadata[] = [
-      linkMetadata,
-      ...sourcesMetadata,
-      ...(canReuseFileMetadata ? [previousFileMetadata] : []),
-    ]
-    /**
-     * Determine which source would supply the cover for this run if we
-     * skipped the download. If that source is `file`, we can only reuse
-     * the cached cover blob when (a) the bucket image was actually
-     * uploaded from a `file` source on the previous successful run (so
-     * the blob currently in S3 came from the file, not from another
-     * provider whose priority has since been demoted) and (b) the blob
-     * still exists in S3. Otherwise we must download to regenerate it.
-     *
-     * `bucketCoverKey` is the source of truth here, NOT a freshly
-     * recomputed pick from `metadata` + current priority — the latter
-     * drifts when the user reorders sources or edits metadata and would
-     * incorrectly let us reuse a stale blob.
-     */
-    const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
-    const projectedCoverSource = pickCoverMetadata(
-      candidateMetadataList,
-      ctx.book.metadataSourcePriority,
-    )?.type
-    const bucketCoverSource = ctx.book.bucketCoverKey
-      ? getBookBucketCoverKeyType(ctx.book.bucketCoverKey)
-      : undefined
-    /**
-     * Short-circuit the S3 head request when we already know we won't
-     * reuse the cached file metadata: the result is only consumed via
-     * `skipDownload` below, which itself requires `canReuseFileMetadata`.
-     * `updateCover` will run its own existence check later for the
-     * download path, so skipping here avoids a redundant round-trip.
-     */
-    const coverFromFileNeedsDownload =
-      canReuseFileMetadata &&
-      projectedCoverSource === "file" &&
-      (bucketCoverSource !== "file" ||
-        !(await firstValueFrom(coversService.isCoverExist(coverObjectKey))))
-
-    const skipDownload = canReuseFileMetadata && !coverFromFileNeedsDownload
+      (ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
 
     if (skipDownload) {
       logger.log(
         `Skipping file download for ${ctx.book._id} (link.modifiedAt unchanged, reusing cached file metadata)`,
       )
     }
-
-    const metadataList: BookMetadata[] = [linkMetadata, ...sourcesMetadata]
 
     if (canDownload && isMaybeExtractAble && !fileDownloadEnabled) {
       logger.log(
@@ -298,23 +200,6 @@ export const retrieveMetadataAndSaveCover = async (
             }
           })
         : { filepath: undefined }
-
-    /**
-     * Preserve the previously-extracted `type:"file"` entry whenever we
-     * trust it (`canReuseFileMetadata`) AND no fresh extraction will
-     * happen on this run (no `tmpFilePath`). Tying this to
-     * `!tmpFilePath` rather than `skipDownload` matters when the cover
-     * blob is missing/mismatched (forcing `skipDownload=false`) but the
-     * download is then skipped anyway — e.g. `fileDownloadEnabled` is
-     * false, `canDownload` is false, the content type isn't extractable,
-     * or the download itself failed. Without this, legacy books without
-     * a `bucketCoverKey` marker would silently drop their cached
-     * authors/publisher/date/coverLink fields under
-     * `metadataFileDownloadEnabled=false`.
-     */
-    if (canReuseFileMetadata && !tmpFilePath && previousFileMetadata) {
-      metadataList.push(previousFileMetadata)
-    }
 
     let fileContentLength = 0
 
@@ -352,10 +237,6 @@ export const retrieveMetadataAndSaveCover = async (
             archiveExtractor,
             contentType ?? ``,
           )
-
-          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
-
-          metadataList.push(freshFileMetadata)
         } else if (
           contentType &&
           config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
@@ -364,10 +245,6 @@ export const retrieveMetadataAndSaveCover = async (
             tmpFilePath,
             contentType,
           )
-
-          logger.log(`Pushing file metadata for book ${ctx.book._id}`)
-
-          metadataList.push(freshFileMetadata)
         } else {
           logger.log(
             `${contentType} cannot be extracted to retrieve information (cover, etc)`,
@@ -377,38 +254,60 @@ export const retrieveMetadataAndSaveCover = async (
     }
 
     /**
-     * Re-run the Google Books lookup when file extraction surfaced an
-     * ISBN we didn't know about before the download (typical after a
-     * first sync, or after the user embeds/edits the ISBN inside the
-     * file). We skip this when the filename directive already pinned
-     * the ISBN — that's the explicit user override and we don't want a
-     * possibly-stale embedded value to undo it.
+     * Carry the previously-extracted `type:"file"` entry forward when
+     * the file is unchanged and no fresh extraction happened — without
+     * this, the cached `authors`/`publisher`/`date`/`coverLink` would
+     * silently disappear under `metadataFileDownloadEnabled=false`,
+     * unsupported content types, or download failures.
      */
-    const freshFileIsbn = freshFileMetadata?.isbn
-    const shouldRefetchSources =
-      !isbn &&
-      freshFileIsbn !== undefined &&
-      freshFileIsbn !== preDownloadLookupIsbn &&
-      !ignoreMetadataSources &&
-      externalFetchEnabled
+    const reusedFileMetadata =
+      !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
+        ? previousFileMetadata
+        : undefined
 
-    if (shouldRefetchSources) {
-      logger.log(
-        `Re-running metadata sources lookup for ${ctx.book._id} with ISBN extracted from file`,
-      )
+    /**
+     * Single Google Books lookup — runs after extraction so it sees the
+     * most authoritative ISBN we have. Priority mirrors the global
+     * `user > directive > file > …` chain.
+     */
+    const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
+    const lookupIsbn =
+      previousUserMetadata?.isbn ??
+      isbn ??
+      freshFileMetadata?.isbn ??
+      reusedFileMetadata?.isbn
 
-      const refreshed = await runSourcesLookup(freshFileIsbn)
-      const refreshedTypes = new Set(refreshed.map((entry) => entry.type))
-      const previousIndex = metadataList.findIndex(
-        (entry) => entry.type === "googleBookApi",
-      )
+    const sourcesMetadata =
+      ignoreMetadataSources || !externalFetchEnabled
+        ? []
+        : await getBookSourcesMetadata(
+            {
+              // Some plugins return the filename (with extension) instead
+              // of a clean title; strip the extension for the lookup.
+              title: lookupTitle,
+              isbn: lookupIsbn,
+              googleVolumeId,
+            },
+            {
+              googleApiKey: ctx.googleApiKey,
+              withExternalSources: externalFetchEnabled,
+            },
+            config,
+          )
 
-      if (previousIndex >= 0 && refreshedTypes.has("googleBookApi")) {
-        metadataList.splice(previousIndex, 1)
-      }
-
-      metadataList.push(...refreshed)
+    if (freshFileMetadata) {
+      logger.log(`Pushing file metadata for book ${ctx.book._id}`)
     }
+
+    const metadataList: BookMetadata[] = [
+      linkMetadata,
+      ...sourcesMetadata,
+      ...(freshFileMetadata
+        ? [freshFileMetadata]
+        : reusedFileMetadata
+          ? [reusedFileMetadata]
+          : []),
+    ]
 
     const { bucketCoverKey: nextBucketCoverKey } = await updateCover({
       book: ctx.book,

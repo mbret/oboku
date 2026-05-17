@@ -12,6 +12,13 @@ type Return = DeepReadonlyObject<BookMetadataFields> & {
   displayableDate?: string
 }
 
+type DirectiveEntry = { type: "directive" } & Pick<
+  BookMetadataFields,
+  "isbn" | "googleVolumeId"
+> & {
+    [K in Exclude<keyof BookMetadataFields, "isbn" | "googleVolumeId">]?: never
+  }
+
 type GenericObject = { [key: string]: any }
 
 function mergeObjects(a: GenericObject, b: GenericObject): GenericObject {
@@ -36,44 +43,35 @@ export const getMetadataFromBook = (
 ): Return => {
   const list = book?.metadata ?? []
 
-  /**
-   * Effective merge priority, lowest → highest. Later items override
-   * earlier ones in the reduce below, so the first entries are the
-   * weakest sources.
-   *
-   * Sources are ordered in **reverse** of the user-defined display
-   * priority returned by {@link getOrderedBookMetadataSources}, so that
-   * `user` ends up last (winning) and `link` first (losing to every
-   * typed source).
-   */
-  const displayPriority = getOrderedBookMetadataSources(
-    book?.metadataSourcePriority,
-  )
-  const sourceWeight = new Map<string, number>(
-    displayPriority.map((source, index) => [source, index]),
-  )
-  const orderedList = [...list].sort((a, b) => {
-    // Unknown types fall back to the weakest position (sorted first, reduced
-    // first, overridden by every known source) for forward-compat with docs
-    // written by newer clients that introduced a source we don't know about.
-    const aWeight = sourceWeight.get(a.type) ?? Number.POSITIVE_INFINITY
-    const bWeight = sourceWeight.get(b.type) ?? Number.POSITIVE_INFINITY
-
-    // Higher displayPriority index === lower priority, so it comes first
-    // (gets overridden by later entries).
-    return bWeight - aWeight
-  })
-
-  /**
-   * Filename directives are the canonical source for `isbn` and
-   * `googleVolumeId` — they live in the link's title and are parsed on
-   * demand here so consumers see the effective values without us
-   * persisting a duplicate that could go stale.
-   */
   const linkEntry = list.find((item) => item.type === "link")
   const linkDirectives = linkEntry?.title
     ? directives.extractDirectivesFromName(linkEntry.title.toString())
     : undefined
+  const directiveEntry: DirectiveEntry | undefined =
+    linkDirectives?.isbn !== undefined ||
+    linkDirectives?.googleVolumeId !== undefined
+      ? {
+          type: "directive",
+          isbn: linkDirectives?.isbn,
+          googleVolumeId: linkDirectives?.googleVolumeId,
+        }
+      : undefined
+
+  const priorityLowestFirst: string[] = [
+    ...getOrderedBookMetadataSources(book?.metadataSourcePriority)
+      .filter((source) => source !== "user")
+      .toReversed(),
+    "directive",
+    "user",
+  ]
+
+  const orderedList = [
+    ...list,
+    ...(directiveEntry ? [directiveEntry] : []),
+  ].toSorted(
+    (a, b) =>
+      priorityLowestFirst.indexOf(a.type) - priorityLowestFirst.indexOf(b.type),
+  )
 
   const reducedMetadata = orderedList.reduce((acc, item) => {
     const mergedValue = mergeObjects(acc, item) as Return
@@ -100,9 +98,6 @@ export const getMetadataFromBook = (
 
   return {
     ...reducedMetadata,
-    isbn: reducedMetadata.isbn ?? linkDirectives?.isbn,
-    googleVolumeId:
-      reducedMetadata.googleVolumeId ?? linkDirectives?.googleVolumeId,
     title: directives.removeDirectiveFromString(
       reducedMetadata.title?.toString() ?? "",
     ),

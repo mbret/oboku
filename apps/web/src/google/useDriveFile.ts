@@ -37,7 +37,6 @@ export const useCreateDriveFileQuery = () => {
           getFile(gapi, {
             fileId: id ?? "",
             supportsAllDrives: true,
-            supportsTeamDrives: true,
             fields: "id, size, name, kind, parents, mimeType, modifiedTime",
           }),
         )
