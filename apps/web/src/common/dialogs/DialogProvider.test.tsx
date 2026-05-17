@@ -12,7 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createCustomDialog } from "./createCustomDialog"
 import { createDialog } from "./createDialog"
 import { DialogProvider } from "./DialogProvider"
-import { createConfirmDialogOptions } from "./presets"
+import { createConfirmDialogOptions, showConfirmDialog } from "./presets"
 import { dialogSignal } from "./state"
 
 const renderDialogProvider = () => {
@@ -102,6 +102,24 @@ describe("DialogProvider", () => {
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
 
     await expect(dialog.promise).resolves.toBe(false)
+  })
+
+  it("shows confirm dialogs through the async wrapper", async () => {
+    renderDialogProvider()
+
+    let result: Promise<boolean> | undefined
+    act(() => {
+      result = showConfirmDialog({ actions: [{ title: "Continue" }] })
+    })
+    if (!result) {
+      throw new Error("Expected a dialog result")
+    }
+
+    expect(await screen.findByRole("dialog")).not.toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Continue" }))
+
+    await expect(result).resolves.toBe(true)
   })
 
   it("renders custom dialogs created programmatically", async () => {
