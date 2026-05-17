@@ -22,6 +22,15 @@ export function MetadataDetectionSummary({
     return <Typography variant="body2">Waiting for the file…</Typography>
   }
 
+  if (metadataReadFailed) {
+    return (
+      <Alert severity="error">
+        This file could not be opened. Metadata cannot be edited for this format
+        or the file is corrupted.
+      </Alert>
+    )
+  }
+
   return (
     <Stack spacing={1}>
       {detectedContainers.length > 0 ? (
@@ -49,11 +58,6 @@ export function MetadataDetectionSummary({
           />{" "}
           will be used as the default metadata container.
         </Typography>
-      )}
-      {metadataReadFailed && (
-        <Alert severity="warning">
-          The existing embedded metadata could not be read and looks malformed.
-        </Alert>
       )}
     </Stack>
   )

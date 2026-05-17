@@ -150,15 +150,17 @@ export function MetadataTab({
   const isApplyingLocally =
     isApplying && applyMetadataFixVariables?.uploadToDataSource === false
   const inspectionReady = inspection !== undefined
+  const metadataReadFailed = inspection?.metadataReadFailed ?? false
+  const canEditMetadata = inspectionReady && !metadataReadFailed
   const canApplyLocally =
     isMetadataFormCurrent &&
-    inspectionReady &&
+    canEditMetadata &&
     !isApplying &&
     isDirty &&
     isValid
   const canUploadMetadata =
     isMetadataFormCurrent &&
-    inspectionReady &&
+    canEditMetadata &&
     !isApplying &&
     canUploadToDataSource &&
     isValid
@@ -191,9 +193,9 @@ export function MetadataTab({
         <MetadataDetectionSummary
           inspectionReady={inspectionReady}
           detectedContainers={detectedContainers}
-          metadataReadFailed={inspection?.metadataReadFailed ?? false}
+          metadataReadFailed={metadataReadFailed}
         />
-        {inspectionReady && (
+        {canEditMetadata && (
           <MetadataForm
             control={control}
             sections={formSections}
