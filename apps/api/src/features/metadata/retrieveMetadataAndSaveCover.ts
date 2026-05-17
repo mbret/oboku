@@ -317,6 +317,7 @@ export const retrieveMetadataAndSaveCover = async (
         : reusedFileMetadata
           ? [reusedFileMetadata]
           : []),
+      ...(previousUserMetadata ? [previousUserMetadata] : []),
     ]
 
     const { bucketCoverKey: nextBucketCoverKey } = await updateCover({
