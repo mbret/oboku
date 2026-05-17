@@ -18,6 +18,7 @@ export type DialogTemplateType<T = undefined> = {
   cancellable?: boolean
   dismissible?: boolean
   cancelTitle?: string
+  cancelResult?: T | null
   cancelButtonVariant?: DialogButtonVariant
   cancelButtonAutoFocus?: boolean
   actions?: DialogAction<T>[]

@@ -1,5 +1,5 @@
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { defaultIfEmpty, first, from, mergeMap } from "rxjs"
+import { defaultIfEmpty, filter, first, from, mergeMap } from "rxjs"
 import { withDialog } from "../common/dialogs/withDialog"
 import { createConfirmDialogOptions } from "../common/dialogs/presets"
 import { observeDataSourceById } from "./dbHelpers"
@@ -11,6 +11,7 @@ export const useRemoveDataSource = () => {
     mutationFn: ({ id }: { id: string }) =>
       getLatestDatabase().pipe(
         withDialog(createConfirmDialogOptions()),
+        filter(([, isConfirmed]) => isConfirmed === true),
         mergeMap(([db]) =>
           observeDataSourceById(db, id).pipe(
             first(),

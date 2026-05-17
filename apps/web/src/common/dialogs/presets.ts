@@ -1,8 +1,17 @@
 import type { CreateDialogOptions } from "./createDialog"
 
-export const createConfirmDialogOptions = <Result = undefined>(
-  options: CreateDialogOptions<Result> = {},
-): CreateDialogOptions<Result> => {
+type ConfirmDialogAction = Omit<
+  NonNullable<CreateDialogOptions<boolean>["actions"]>[number],
+  "onAction"
+>
+
+type ConfirmDialogOptions = Omit<CreateDialogOptions<boolean>, "actions"> & {
+  actions?: ConfirmDialogAction[]
+}
+
+export const createConfirmDialogOptions = (
+  options: ConfirmDialogOptions = {},
+): CreateDialogOptions<boolean> => {
   const actions = options.actions?.length ? options.actions : [{ title: "Ok" }]
 
   return {
@@ -11,12 +20,14 @@ export const createConfirmDialogOptions = <Result = undefined>(
     message:
       options.message || "Are you sure you want to proceed with this action?",
     cancellable: options.cancellable ?? true,
+    cancelResult: options.cancelResult ?? false,
     cancelButtonVariant: options.cancelButtonVariant ?? "contained",
     cancelButtonAutoFocus: options.cancelButtonAutoFocus ?? true,
     actions: actions.map((action) => ({
       ...action,
       variant: action.variant ?? "outlined",
       autoFocus: action.autoFocus ?? false,
+      onAction: () => true,
     })),
   }
 }

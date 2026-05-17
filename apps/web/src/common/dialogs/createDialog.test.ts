@@ -107,6 +107,22 @@ describe("createDialog", () => {
     expect(dialogSignal.getValue()).toEqual([])
   })
 
+  it("resolves with the configured cancellation result", async () => {
+    const onCancel = vi.fn()
+    const dialog = createDialog<boolean>({ cancelResult: false, onCancel })
+    const queuedDialog = getOnlyTemplateDialog()
+    const cancel = queuedDialog.onCancel
+    if (!cancel) {
+      throw new Error("Expected a cancel handler")
+    }
+
+    cancel()
+
+    await expect(dialog.promise).resolves.toBe(false)
+    expect(onCancel).toHaveBeenCalledTimes(1)
+    expect(dialogSignal.getValue()).toEqual([])
+  })
+
   it("lets callers close the dialog externally", async () => {
     const onCancel = vi.fn()
     const dialog = createDialog({ onCancel })

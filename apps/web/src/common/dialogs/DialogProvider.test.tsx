@@ -63,11 +63,15 @@ describe("DialogProvider", () => {
   it("renders confirm preset actions with the safe action emphasized", async () => {
     renderDialogProvider()
 
+    let dialog: ReturnType<typeof createDialog<boolean>> | undefined
     act(() => {
-      createDialog(
+      dialog = createDialog(
         createConfirmDialogOptions({ actions: [{ title: "Overwrite" }] }),
       )
     })
+    if (!dialog) {
+      throw new Error("Expected a dialog handle")
+    }
 
     expect(await screen.findByRole("dialog")).not.toBeNull()
 
@@ -76,6 +80,28 @@ describe("DialogProvider", () => {
 
     expect(cancelButton.className).toContain("MuiButton-contained")
     expect(actionButton.className).toContain("MuiButton-outlined")
+
+    fireEvent.click(actionButton)
+
+    await expect(dialog.promise).resolves.toBe(true)
+  })
+
+  it("resolves confirm preset cancellation as false", async () => {
+    renderDialogProvider()
+
+    let dialog: ReturnType<typeof createDialog<boolean>> | undefined
+    act(() => {
+      dialog = createDialog(createConfirmDialogOptions())
+    })
+    if (!dialog) {
+      throw new Error("Expected a dialog handle")
+    }
+
+    expect(await screen.findByRole("dialog")).not.toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+
+    await expect(dialog.promise).resolves.toBe(false)
   })
 
   it("renders custom dialogs created programmatically", async () => {

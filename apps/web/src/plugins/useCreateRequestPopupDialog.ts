@@ -5,16 +5,13 @@ import { createConfirmDialogOptions } from "../common/dialogs/presets"
 export const useCreateRequestPopupDialog = () => {
   return useCallback(
     ({ name }: { name: string }) =>
-      async () => {
-        return createDialog(
+      async () =>
+        (await createDialog(
           createConfirmDialogOptions({
             title: `Plugin ${name} requires some actions`,
             message: `To proceed, the plugin ${name} requires some action from you which involve opening a popup`,
           }),
-        )
-          .promise.then(() => true)
-          .catch(() => false)
-      },
+        ).promise) ?? false,
     [],
   )
 }

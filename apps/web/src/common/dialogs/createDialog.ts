@@ -47,6 +47,11 @@ export const createDialog = <Result = undefined>({
   const close = () => {
     settle(() => {
       dialog.onCancel?.()
+      if ("cancelResult" in dialog) {
+        resolveDialog?.(dialog.cancelResult ?? null)
+        return
+      }
+
       rejectDialog?.(new CancelError())
     })
   }

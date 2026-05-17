@@ -175,18 +175,14 @@ export function MetadataTab({
   async function uploadMetadataToDataSource(values: MetadataFixerFormValues) {
     if (!canUploadMetadata) return
 
-    try {
-      await showDialog(
-        createConfirmDialogOptions({
-          message:
-            "This will overwrite the file on the remote data source with the current local file.",
-        }),
-      ).promise
-    } catch (error) {
-      if (error instanceof CancelError) return
+    const isConfirmed = await showDialog(
+      createConfirmDialogOptions({
+        message:
+          "This will overwrite the file on the remote data source with the current local file.",
+      }),
+    ).promise
 
-      throw error
-    }
+    if (!isConfirmed) return
 
     applyMetadata(values, { uploadToDataSource: true })
   }
