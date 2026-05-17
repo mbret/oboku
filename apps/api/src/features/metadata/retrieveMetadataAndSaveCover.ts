@@ -6,6 +6,8 @@ import {
   type LinkMetadata,
   type UserMetadata,
   directives,
+  getBookBucketCoverKeyType,
+  getBookCoverKey,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
@@ -26,6 +28,7 @@ import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
+import { firstValueFrom } from "rxjs"
 import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
@@ -162,8 +165,15 @@ export const retrieveMetadataAndSaveCover = async (
       linkMetadata,
     )
 
+    const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
+    const fileCoverGone =
+      !!ctx.book.bucketCoverKey &&
+      getBookBucketCoverKeyType(ctx.book.bucketCoverKey) === "file" &&
+      !(await firstValueFrom(coversService.isCoverExist(coverObjectKey)))
+
     const skipDownload =
       !ctx.force &&
+      !fileCoverGone &&
       (ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
 
     if (skipDownload) {
