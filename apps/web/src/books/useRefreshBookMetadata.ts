@@ -4,6 +4,7 @@ import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { showDialog } from "../common/dialogs/createDialog"
+import { createOfflineDialogOptions } from "../common/dialogs/presets"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
@@ -17,7 +18,7 @@ export const useRefreshBookMetadata = () => {
   return async (bookId: string, { force }: { force?: boolean } = {}) => {
     try {
       if (!network.online) {
-        showDialog({ preset: "OFFLINE" })
+        showDialog(createOfflineDialogOptions())
 
         return
       }

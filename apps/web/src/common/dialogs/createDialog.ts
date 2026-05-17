@@ -1,12 +1,22 @@
-import { type DialogTemplateType, dialogSignal } from "./state"
+import {
+  type DialogAction,
+  type DialogTemplateType,
+  dialogSignal,
+} from "./state"
 import { removeDialog } from "./removeDialog"
 import { CancelError } from "../../errors/errors.shared"
 import { getNextDialogId } from "./getNextDialogId"
 
-export type CreateDialogOptions<Result> = Omit<
+type CreateDialogAction<Result> = Omit<DialogAction<Result>, "onAction"> & {
+  onAction?: () => Result | null
+}
+
+export type CreateDialogOptions<Result = undefined> = Omit<
   DialogTemplateType<Result>,
-  "id" | "type"
->
+  "actions" | "id" | "type"
+> & {
+  actions?: CreateDialogAction<Result>[]
+}
 
 export type DialogHandle<Result> = {
   id: string
@@ -41,7 +51,7 @@ export const createDialog = <Result = undefined>({
     })
   }
 
-  const confirmDialog = (getResult?: () => Result | null) => {
+  const completeDialog = (getResult?: () => Result | null) => {
     if (isSettled) return null
 
     const data = getResult?.() ?? null
@@ -53,6 +63,21 @@ export const createDialog = <Result = undefined>({
     return data
   }
 
+  const createActions = (): DialogAction<Result>[] => {
+    const actions = dialog.actions?.length
+      ? dialog.actions
+      : [
+          {
+            title: "Ok",
+          },
+        ]
+
+    return actions.map((action) => ({
+      ...action,
+      onAction: () => completeDialog(action.onAction),
+    }))
+  }
+
   const promise = new Promise<Result | null>((resolve, reject) => {
     resolveDialog = resolve
     rejectDialog = reject
@@ -62,11 +87,7 @@ export const createDialog = <Result = undefined>({
       id,
       type: "template",
       onCancel: close,
-      onConfirm: () => confirmDialog(dialog.onConfirm),
-      actions: dialog.actions?.map((action) => ({
-        ...action,
-        onConfirm: () => confirmDialog(action.onConfirm),
-      })),
+      actions: createActions(),
     }
 
     dialogSignal.setValue((old) => [...old, wrappedDialog])

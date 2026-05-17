@@ -12,6 +12,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { createCustomDialog } from "./createCustomDialog"
 import { createDialog } from "./createDialog"
 import { DialogProvider } from "./DialogProvider"
+import { createConfirmDialogOptions } from "./presets"
 import { dialogSignal } from "./state"
 
 const renderDialogProvider = () => {
@@ -40,8 +41,7 @@ describe("DialogProvider", () => {
       dialog = createDialog<string>({
         title: "Remove books",
         message: "This cannot be undone.",
-        confirmTitle: "Remove",
-        onConfirm: () => "removed",
+        actions: [{ title: "Remove", onAction: () => "removed" }],
       })
     })
     if (!dialog) {
@@ -58,6 +58,24 @@ describe("DialogProvider", () => {
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull()
     })
+  })
+
+  it("renders confirm preset actions with the safe action emphasized", async () => {
+    renderDialogProvider()
+
+    act(() => {
+      createDialog(
+        createConfirmDialogOptions({ actions: [{ title: "Overwrite" }] }),
+      )
+    })
+
+    expect(await screen.findByRole("dialog")).not.toBeNull()
+
+    const cancelButton = screen.getByRole("button", { name: "Cancel" })
+    const actionButton = screen.getByRole("button", { name: "Overwrite" })
+
+    expect(cancelButton.className).toContain("MuiButton-contained")
+    expect(actionButton.className).toContain("MuiButton-outlined")
   })
 
   it("renders custom dialogs created programmatically", async () => {

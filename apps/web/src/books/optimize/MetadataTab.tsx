@@ -5,6 +5,7 @@ import { useEffect, useMemo, useRef } from "react"
 import { useForm } from "react-hook-form"
 import type { DeepReadonlyObject } from "rxdb"
 import { showDialog } from "../../common/dialogs/createDialog"
+import { createConfirmDialogOptions } from "../../common/dialogs/presets"
 import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
 import { useApplyMetadataFix } from "./metadata/useApplyMetadataFix"
@@ -175,11 +176,12 @@ export function MetadataTab({
     if (!canUploadMetadata) return
 
     try {
-      await showDialog({
-        preset: "CONFIRM",
-        message:
-          "This will overwrite the file on the remote data source with the current local file.",
-      }).promise
+      await showDialog(
+        createConfirmDialogOptions({
+          message:
+            "This will overwrite the file on the remote data source with the current local file.",
+        }),
+      ).promise
     } catch (error) {
       if (error instanceof CancelError) return
 
