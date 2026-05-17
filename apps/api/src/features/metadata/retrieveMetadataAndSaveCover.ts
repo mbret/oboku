@@ -5,8 +5,8 @@ import {
   type FileMetadata,
   type LinkMetadata,
   type UserMetadata,
+  buildBookBucketCoverKey,
   directives,
-  getBookBucketCoverKeyType,
   getBookCoverKey,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -24,6 +24,7 @@ import { getMetadataFromZipArchive } from "../../lib/books/metadata/getMetadataF
 import { detectMimeTypeFromContent } from "../../lib/utils"
 import { downloadToTmpFolder } from "../../lib/archives/downloadToTmpFolder"
 import { updateCover } from "./updateCover"
+import { pickCoverMetadata } from "./pickCoverMetadata"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
 import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
@@ -166,14 +167,30 @@ export const retrieveMetadataAndSaveCover = async (
     )
 
     const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
-    const fileCoverGone =
-      !!ctx.book.bucketCoverKey &&
-      getBookBucketCoverKeyType(ctx.book.bucketCoverKey) === "file" &&
-      !(await firstValueFrom(coversService.isCoverExist(coverObjectKey)))
+
+    const predictedCoverMetadata = pickCoverMetadata(
+      [
+        linkMetadata,
+        ...(previousFileMetadata ? [previousFileMetadata] : []),
+        ...(previousUserMetadata ? [previousUserMetadata] : []),
+      ],
+      ctx.book.metadataSourcePriority,
+    )
+    const predictedBucketCoverKey = predictedCoverMetadata?.coverLink
+      ? buildBookBucketCoverKey({
+          type: predictedCoverMetadata.type,
+          value: predictedCoverMetadata.coverLink,
+        })
+      : undefined
+    const fileCoverNeedsRefresh =
+      predictedCoverMetadata?.type === "file" &&
+      !!predictedCoverMetadata.coverLink &&
+      (predictedBucketCoverKey !== ctx.book.bucketCoverKey ||
+        !(await firstValueFrom(coversService.isCoverExist(coverObjectKey))))
 
     const skipDownload =
       !ctx.force &&
-      !fileCoverGone &&
+      !fileCoverNeedsRefresh &&
       (ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
 
     if (skipDownload) {
