@@ -43,7 +43,7 @@ export const useFullscreenOnMount = ({ enabled }: { enabled: boolean }) => {
                         title: "Fullscreen request",
                         message:
                           "Your browser does not allow automatic fullscreen without an interaction",
-                        confirmTitle: "Fullscreen",
+                        actions: [{ title: "Fullscreen" }],
                         cancellable: true,
                       }),
                 ),

@@ -18,11 +18,11 @@ export class BooksMetadataService {
   ) {}
 
   public refreshMetadata = async (
-    body: { bookId: string },
+    body: { bookId: string; force?: boolean },
     providerCredentials: ProviderApiCredentials<DataSourceType>,
     userEmail: string,
   ) => {
-    const { bookId } = body
+    const { bookId, force } = body
 
     const userNameHex = emailToNameHex(userEmail)
 
@@ -63,6 +63,7 @@ export class BooksMetadataService {
           link,
           googleApiKey: this.appConfigService.GOOGLE_API_KEY,
           db,
+          force,
         },
         this.appConfigService,
         this.coversService,

@@ -3,6 +3,7 @@ import { useNetworkState } from "react-use"
 import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { fromCreateDialog } from "../common/dialogs/fromCreateDialog"
+import { createOfflineDialogOptions } from "../common/dialogs/presets"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
@@ -20,7 +21,7 @@ export const useSynchronizeDataSource = () => {
   return useMutation$({
     mutationFn: (_id: string) => {
       if (!network.online) {
-        return fromCreateDialog({ preset: "OFFLINE" })
+        return fromCreateDialog(createOfflineDialogOptions())
       }
 
       if (!database) {

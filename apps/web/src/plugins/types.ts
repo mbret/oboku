@@ -116,6 +116,35 @@ type UseRemoveResource<
   links: readonly LinkDocTypeForProvider<T>[],
 ) => Promise<RemoveResourceResult<T>>
 
+export type UpsertFileComponentProps<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  link: LinkDocTypeForProvider<T>
+  file: Blob | File
+  fileName: string
+  contentType?: string
+  onProgress: (progress: number) => void
+  onError: (error: unknown) => void
+  onSuccess: () => void
+  signal: AbortSignal
+}
+
+export type UpsertFileComponent<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = ComponentType<UpsertFileComponentProps<T>>
+
+type UpsertFileCapability<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> =
+  | {
+      canUpsertFile: true
+      UpsertFileComponent: UpsertFileComponent<T>
+    }
+  | {
+      canUpsertFile?: false
+      UpsertFileComponent?: undefined
+    }
+
 export type UseSyncSourceInfo<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (data: {
@@ -174,7 +203,7 @@ export type DataSourceEditFormProps<
   onSubmit: (payload: DataSourceSubmitPayload) => void
 }
 
-export type ObokuPlugin<
+type ObokuPluginBase<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
   name: string
@@ -216,3 +245,7 @@ export type ObokuPlugin<
   useSyncSourceInfo: UseSyncSourceInfo<T>
   useSignOut: () => () => void
 }
+
+export type ObokuPlugin<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = ObokuPluginBase<T> & UpsertFileCapability<T>

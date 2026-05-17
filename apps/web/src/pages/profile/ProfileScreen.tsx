@@ -50,6 +50,7 @@ import { useSignalValue } from "reactjrx"
 import { authStateSignal } from "../../auth/states.web"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { showDialog } from "../../common/dialogs/createDialog"
+import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
 import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
@@ -187,7 +188,7 @@ export const ProfileScreen = () => {
           <ListItemText primary={`Documentation Page`} />
         </ListItemButton>
         <ListItemButton
-          onClick={() => showDialog({ preset: "NOT_IMPLEMENTED" })}
+          onClick={() => showDialog(createNotImplementedDialogOptions())}
         >
           <ListItemIcon>
             <GavelRounded />

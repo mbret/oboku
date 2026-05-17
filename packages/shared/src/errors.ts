@@ -16,7 +16,6 @@ export enum ObokuErrorCode {
   ERROR_RESOURCE_NOT_FOUND = "5000",
   ERROR_LINK_INVALID = "6000",
   ERROR_NO_LINK = "6001",
-  ERROR_RESOURCE_NOT_REACHABLE = "6002",
   ERROR_CONNECTOR_NOT_CONFIGURED = "7000",
 }
 
@@ -40,7 +39,6 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND]: "user",
   [ObokuErrorCode.ERROR_LINK_INVALID]: "user",
   [ObokuErrorCode.ERROR_NO_LINK]: "user",
-  [ObokuErrorCode.ERROR_RESOURCE_NOT_REACHABLE]: "user",
   [ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED]: "user",
 }
 

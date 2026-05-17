@@ -20,9 +20,11 @@ type BookFinishedDialogState = {
 export const useShowBookFinishedDialog = ({
   bookId,
   onClose,
+  enabled = true,
 }: {
   bookId: string
   onClose: () => void
+  enabled?: boolean
 }) => {
   const reader = useReader()
   const { mutate: removeDownloadFile } = useRemoveDownloadFile()
@@ -32,6 +34,7 @@ export const useShowBookFinishedDialog = ({
 
   useEffect(
     function setBookFinishedDialogStateEffect() {
+      if (!enabled) return
       if (!book || bookFinishedDialogState?.bookId === bookId) {
         return
       }
@@ -43,7 +46,7 @@ export const useShowBookFinishedDialog = ({
         wasDialogShown: false,
       })
     },
-    [book, bookFinishedDialogState?.bookId, bookId],
+    [book, bookFinishedDialogState?.bookId, bookId, enabled],
   )
 
   const createBookFinishedDialog = useCallback(() => {
@@ -86,6 +89,7 @@ export const useShowBookFinishedDialog = ({
   }, [bookFinishedDialogState, bookId])
 
   const subscribeToBookBoundaryReached = useCallback(() => {
+    if (!enabled) return
     if (!reader || wasFinishedWhenOpened !== false) return
     if (wasDialogShown) return
 
@@ -106,6 +110,7 @@ export const useShowBookFinishedDialog = ({
   }, [
     markDialogAsShown,
     reader,
+    enabled,
     wasDialogShown,
     wasFinishedWhenOpened,
     createBookFinishedDialog,
@@ -116,6 +121,7 @@ export const useShowBookFinishedDialog = ({
 
   const { mutate: showBookFinishedDialogOnClose } = useMutation({
     mutationFn: async () => {
+      if (!enabled) return null
       if (wasFinishedWhenOpened !== false) return null
       if (wasDialogShown) return null
       if (book?.readingStateCurrentState !== ReadingStateState.Finished) {

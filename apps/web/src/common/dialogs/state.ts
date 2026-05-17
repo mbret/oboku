@@ -1,20 +1,27 @@
 import type { ReactNode } from "react"
 import { signal } from "reactjrx"
 
-type Preset = "NOT_IMPLEMENTED" | "OFFLINE" | "CONFIRM" | "UNKNOWN_ERROR"
+type DialogButtonVariant = "text" | "outlined" | "contained"
+
+export type DialogAction<T = undefined> = {
+  title: string
+  variant?: DialogButtonVariant
+  autoFocus?: boolean
+  onAction: () => T | null
+}
 
 export type DialogTemplateType<T = undefined> = {
   type?: "template"
   title?: string
   message?: string
   id: string
-  preset?: Preset
   cancellable?: boolean
   dismissible?: boolean
   cancelTitle?: string
-  confirmTitle?: string
-  actions?: { title: string; type: "confirm"; onConfirm: () => T | null }[]
-  onConfirm?: () => T | null
+  cancelResult?: T | null
+  cancelButtonVariant?: DialogButtonVariant
+  cancelButtonAutoFocus?: boolean
+  actions?: DialogAction<T>[]
   onClose?: () => void
   onCancel?: () => void
 }

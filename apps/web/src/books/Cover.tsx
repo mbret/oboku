@@ -51,6 +51,12 @@ const CoverImg = styled(`img`)<{
   }),
 }))
 
+const CoverRootBox = styled(Box)({
+  width: "100%",
+  height: "100%",
+  overflow: "hidden",
+})
+
 export const Cover = memo(
   ({
     bookId,
@@ -59,10 +65,12 @@ export const Cover = memo(
     withShadow = false,
     rounded = true,
     blurIfNeeded = true,
+    className,
     sx,
     ...rest
   }: {
     bookId: string
+    className?: string
     style?: React.CSSProperties
     fullWidth?: boolean
     withShadow?: boolean
@@ -90,17 +98,7 @@ export const Cover = memo(
     }, [coverSrc])
 
     return (
-      <Box
-        style={style}
-        sx={[
-          {
-            width: "100%",
-            height: "100%",
-            overflow: "hidden",
-          },
-          ...(Array.isArray(sx) ? sx : [sx]),
-        ]}
-      >
+      <CoverRootBox className={className} style={style} sx={sx}>
         {isLoading && (
           <CoverImg
             alt="img"
@@ -150,7 +148,7 @@ export const Cover = memo(
             {...rest}
           />
         </picture>
-      </Box>
+      </CoverRootBox>
     )
   },
 )

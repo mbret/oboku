@@ -9,11 +9,6 @@ type Props = {
   metadata: DeepReadonlyObject<FileMetadata> | undefined
 }
 
-/**
- * Read-only content extracted from the file itself (EPUB OPF or RAR/ZIP
- * scan). The advertised fields mirror what `parseOpfMetadata` and the
- * archive scanners can produce.
- */
 export const FileSourceContent = ({ metadata }: Props) => (
   <List dense subheader={<ListSubheader disableGutters>Fields</ListSubheader>}>
     <MetadataFieldRow label={L.title} value={metadata?.title?.toString()} />
@@ -40,5 +35,6 @@ export const FileSourceContent = ({ metadata }: Props) => (
       }
     />
     <MetadataFieldRow label={L.contentType} value={metadata?.contentType} />
+    <MetadataFieldRow label={L.isbn} value={metadata?.isbn} />
   </List>
 )

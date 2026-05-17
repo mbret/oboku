@@ -104,10 +104,6 @@ export class AppConfigService {
    * ------------------------------------------------------------
    */
 
-  get COVERS_ALLOWED_EXT() {
-    return [".jpg", ".jpeg", ".png"]
-  }
-
   get COVERS_BUCKET_NAME() {
     return this.config.get("COVERS_BUCKET_NAME", { infer: true })
   }

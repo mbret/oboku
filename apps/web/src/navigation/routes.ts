@@ -3,6 +3,7 @@ const BOOKS_ROOT = "/books"
 export const ROUTES = {
   HOME: "/",
   BOOK_DETAILS: `${BOOKS_ROOT}/:id`,
+  BOOK_OPTIMIZE: `${BOOKS_ROOT}/:id/optimize`,
   BOOK_TAGS: `${BOOKS_ROOT}/:id/tags`,
   BOOK_COLLECTIONS: `${BOOKS_ROOT}/:id/collections`,
   BOOK_METADATA_SOURCE: `${BOOKS_ROOT}/:id/metadata/:source`,

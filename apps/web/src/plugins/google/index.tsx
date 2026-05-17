@@ -18,6 +18,7 @@ import { InfoScreen } from "./InfoScreen"
 import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
 import { useLinkInfo } from "./useLinkInfo"
+import { UpsertFile } from "./UpsertFile"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -35,10 +36,12 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   type: `DRIVE`,
   name: PLUGIN_NAME,
   canRemoveResource: false,
+  canUpsertFile: true,
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,
   DownloadBookComponent: DownloadBook,
+  UpsertFileComponent: UpsertFile,
   DataSourceCreateForm: DataSourceForm,
   DataSourceEditForm: DataSourceDetails,
   SelectItemComponent,
