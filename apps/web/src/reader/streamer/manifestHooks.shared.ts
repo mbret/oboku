@@ -1,28 +1,10 @@
 import { directives } from "@oboku/shared"
 import type {
-  Archive,
   Manifest,
   StreamerManifestHookFactory,
 } from "@prose-reader/streamer"
 
 type SpineItem = Manifest["spineItems"][number]
-
-const isCbzArchive = (archive: Archive) =>
-  archive.filename.toLowerCase().endsWith(".cbz")
-
-const getReadingDirection = ({
-  archive,
-  manifest,
-}: {
-  archive: Archive
-  manifest: Manifest
-}): Manifest["readingDirection"] => {
-  const { direction } = directives.extractDirectivesFromName(archive.filename)
-
-  return (
-    direction ?? (isCbzArchive(archive) ? "rtl" : manifest.readingDirection)
-  )
-}
 
 const setWebtoonRenditionLayout = (spineItem: SpineItem): SpineItem => ({
   ...spineItem,
@@ -32,15 +14,14 @@ const setWebtoonRenditionLayout = (spineItem: SpineItem): SpineItem => ({
 export const readingDirectionManifestHook: StreamerManifestHookFactory =
   ({ archive }) =>
   (manifest) => {
-    const readingDirection = getReadingDirection({ archive, manifest })
+    const { direction } = directives.extractDirectivesFromName(archive.filename)
 
-    if (readingDirection === manifest.readingDirection) {
-      return manifest
-    }
+    if (direction === undefined) return manifest
+    if (direction === manifest.readingDirection) return manifest
 
     return {
       ...manifest,
-      readingDirection,
+      readingDirection: direction,
     }
   }
 

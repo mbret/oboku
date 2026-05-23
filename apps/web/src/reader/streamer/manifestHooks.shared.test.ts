@@ -35,22 +35,26 @@ const createManifest = ({
 })
 
 describe("readingDirectionManifestHook", () => {
-  it("defaults CBZ archives to RTL before spine hooks run", async () => {
-    const manifest = await readingDirectionManifestHook({
-      archive: createArchive("Book.CBZ"),
-      baseUrl: "",
-    })(createManifest())
-
-    expect(manifest.readingDirection).toBe("rtl")
-  })
-
-  it("uses explicit direction directives before CBZ defaults", async () => {
+  it("applies an explicit direction directive over the current manifest value", async () => {
     const manifest = await readingDirectionManifestHook({
       archive: createArchive("Book [oboku~direction~ltr].cbz"),
       baseUrl: "",
     })(createManifest({ readingDirection: "rtl" }))
 
     expect(manifest.readingDirection).toBe("ltr")
+  })
+
+  it("returns the manifest unchanged when no direction directive is present", async () => {
+    const input = createManifest({
+      filename: "Book.cbz",
+      readingDirection: undefined,
+    })
+    const manifest = await readingDirectionManifestHook({
+      archive: createArchive("Book.cbz"),
+      baseUrl: "",
+    })(input)
+
+    expect(manifest).toBe(input)
   })
 
   it("preserves existing direction for non-CBZ archives without directives", async () => {
@@ -60,6 +64,16 @@ describe("readingDirectionManifestHook", () => {
     })(createManifest({ filename: "Book.epub", readingDirection: "rtl" }))
 
     expect(manifest.readingDirection).toBe("rtl")
+  })
+
+  it("returns the manifest unchanged when the directive matches the current value", async () => {
+    const input = createManifest({ readingDirection: "ltr" })
+    const manifest = await readingDirectionManifestHook({
+      archive: createArchive("Book [oboku~direction~ltr].cbz"),
+      baseUrl: "",
+    })(input)
+
+    expect(manifest).toBe(input)
   })
 })
 

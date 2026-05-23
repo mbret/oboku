@@ -53,11 +53,16 @@ export const isPdfFile = (
   )
 }
 
+const getEncodingFormat = (
+  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+) => (file.data.type.length > 0 ? file.data.type : undefined)
+
 export const getArchiveForZipFile = async (
   file: NonNullable<PromiseReturnType<typeof getBookFile>>,
 ): Promise<Archive> => {
   try {
     const normalizedName = file.data.name.toLowerCase()
+    const encodingFormat = getEncodingFormat(file)
 
     if (
       isPotentialZipFile({ name: file.data.name, mimeType: file.data.type })
@@ -68,6 +73,7 @@ export const getArchiveForZipFile = async (
         return createArchiveFromJszip(jszip, {
           orderByAlpha: true,
           name: file.data.name,
+          encodingFormat,
         })
       } catch (e) {
         Logger.error(
@@ -80,7 +86,9 @@ export const getArchiveForZipFile = async (
     }
 
     if (normalizedName.endsWith(`.txt`)) {
-      return createArchiveFromText(file.data)
+      return createArchiveFromText(file.data, {
+        mimeType: encodingFormat ?? "text/plain",
+      })
     }
 
     throw new StreamerFileNotSupportedError(`FileNotSupportedError`)
@@ -107,5 +115,6 @@ export const getArchiveForRarFile = async (
   return createArchiveFromLibArchive(archive, {
     orderByAlpha: true,
     name: file.data.name,
+    encodingFormat: getEncodingFormat(file),
   })
 }
