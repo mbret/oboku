@@ -16,7 +16,10 @@ import {
 export const swStreamer = new ServiceWorkerStreamer({
   hooks: {
     manifest: {
-      content: [readingDirectionManifestHook],
+      content: [
+        readingDirectionManifestHook,
+        ...cbzStreamerHooks.manifest.content,
+      ],
       spine: cbzStreamerHooks.manifest.spine,
       presentation: [webtoonManifestHook],
     },
