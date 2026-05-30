@@ -22,24 +22,26 @@ export const useLinks = () => {
   })
 }
 
-export const useLink = ({ id }: { id?: string }) => {
-  return useQuery$({
-    ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "single", "link", id],
-    enabled: !!id,
-    queryFn: () =>
-      latestDatabase$.pipe(
-        switchMap(
-          (db) =>
-            db.collections.link.findOne({
-              selector: {
-                _id: id,
-              },
-            }).$,
-        ),
-        map((entry) => entry?.toJSON() ?? null),
+export const createLinkQueryOptions = ({ id }: { id?: string }) => ({
+  ...createRxdbQueryDefaultOptions(),
+  queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "single", "link", id],
+  enabled: !!id,
+  queryFn: () =>
+    latestDatabase$.pipe(
+      switchMap(
+        (db) =>
+          db.collections.link.findOne({
+            selector: {
+              _id: id,
+            },
+          }).$,
       ),
-  })
+      map((entry) => entry?.toJSON() ?? null),
+    ),
+})
+
+export const useLink = ({ id }: { id?: string }) => {
+  return useQuery$(createLinkQueryOptions({ id }))
 }
 
 export const getLinkStateAsync = async ({

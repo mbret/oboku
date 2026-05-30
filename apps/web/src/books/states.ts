@@ -1,10 +1,11 @@
 import { intersection } from "@oboku/shared"
 import { useProtectedTagIds } from "../tags/helpers"
-import { useLink } from "../links/states"
+import { createLinkQueryOptions, useLink } from "../links/states"
+import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
 import { map, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { useQuery$, useSignalValue } from "reactjrx"
+import { useQueries$, useQuery$, useSignalValue } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -122,6 +123,30 @@ export const useIsBookLocal = ({ id }: { id?: string }) => {
   const isLocal = link && link?.type === localPlugin.type
 
   return { data: isLocal }
+}
+
+const combineBooksRemovableFromSource = (
+  results: ReturnType<typeof useLink>[],
+) => ({
+  data: results.some((result) =>
+    isRemovableFromDataSource({ link: result.data }),
+  ),
+})
+
+export const useHasBooksRemovableFromSource = ({
+  ids,
+}: {
+  ids?: DeepReadonlyArray<string>
+}) => {
+  const { data: books } = useBooks({ ids, includeProtected: true })
+
+  return useQueries$({
+    queries:
+      books?.flatMap((book) =>
+        book.links[0] ? [createLinkQueryOptions({ id: book.links[0] })] : [],
+      ) ?? [],
+    combine: combineBooksRemovableFromSource,
+  })
 }
 
 export const useIsBookProtected = (
