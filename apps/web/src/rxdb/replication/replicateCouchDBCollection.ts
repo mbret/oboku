@@ -1,5 +1,5 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
-import type { RxCollection } from "rxdb"
+import type { RxCollection, WithDeleted } from "rxdb"
 import { configuration } from "../../config/configuration"
 import { httpCouchClient } from "../../http/httpClientCouch.web"
 /**
@@ -16,7 +16,9 @@ import { httpCouchClient } from "../../http/httpClientCouch.web"
  * This modifier can be removed once the stale tombstones have been purged
  * from CouchDB via the `_purge` endpoint.
  */
-function stripLegacyResourceIdFromDeletedDoc(docData: Record<string, unknown>) {
+function stripLegacyResourceIdFromDeletedDoc(
+  docData: WithDeleted<Record<string, unknown>>,
+): WithDeleted<Record<string, unknown>> {
   if (!docData._deleted) return docData
 
   const { linkResourceId, resourceId, ...rest } = docData
