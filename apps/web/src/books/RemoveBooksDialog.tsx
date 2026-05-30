@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material"
 import { useState } from "react"
+import { useHasBooksRemovableFromSource } from "./states"
 import type { RemoveBookMode, RemoveBooksPayload } from "./useRemoveBooks"
 
 const RemoveBooksStack = styled(Stack)(({ theme }) => ({
@@ -23,10 +24,12 @@ function RemoveBooksDialogContent({
   bookCount,
   removeFromSource,
   onRemoveFromSourceChange,
+  canRemoveFromSource,
 }: {
   bookCount: number
   removeFromSource: boolean
   onRemoveFromSourceChange: (value: boolean) => void
+  canRemoveFromSource: boolean
 }) {
   const countLabel = bookCount === 1 ? "this book" : `${bookCount} books`
 
@@ -35,37 +38,39 @@ function RemoveBooksDialogContent({
       <DialogContentText>
         {`You are about to remove ${countLabel} from your library, are you sure ?`}
       </DialogContentText>
-      <Alert
-        severity="error"
-        variant="outlined"
-        action={
-          <MuiCheckbox
-            checked={removeFromSource}
-            color="error"
-            onChange={(_, checked) => {
-              onRemoveFromSourceChange(checked)
-            }}
-            slotProps={{
-              input: {
-                "aria-label":
-                  bookCount === 1
-                    ? "Also delete the original file from its source"
-                    : "Also delete the original files from their sources",
-              },
-            }}
-          />
-        }
-      >
-        <AlertTitle>
-          {bookCount === 1
-            ? "Permanently delete the original file from its source"
-            : "Permanently delete the original files from their sources"}
-        </AlertTitle>
-        <Typography variant="body2" color="error">
-          This only applies to items linked to remote providers and may remove
-          the original files permanently.
-        </Typography>
-      </Alert>
+      {canRemoveFromSource && (
+        <Alert
+          severity="error"
+          variant="outlined"
+          action={
+            <MuiCheckbox
+              checked={removeFromSource}
+              color="error"
+              onChange={(_, checked) => {
+                onRemoveFromSourceChange(checked)
+              }}
+              slotProps={{
+                input: {
+                  "aria-label":
+                    bookCount === 1
+                      ? "Also delete the original file from its source"
+                      : "Also delete the original files from their sources",
+                },
+              }}
+            />
+          }
+        >
+          <AlertTitle>
+            {bookCount === 1
+              ? "Permanently delete the original file from its source"
+              : "Permanently delete the original files from their sources"}
+          </AlertTitle>
+          <Typography variant="body2" color="error">
+            This only applies to items linked to remote providers and may remove
+            the original files permanently.
+          </Typography>
+        </Alert>
+      )}
     </RemoveBooksStack>
   )
 }
@@ -80,9 +85,13 @@ export function RemoveBooksDialog({
   onConfirm: (payload: RemoveBooksPayload) => void
 }) {
   const [removeFromSource, setRemoveFromSource] = useState(false)
-  const mode: RemoveBookMode = removeFromSource
-    ? "library-and-source"
-    : "library-only"
+  const { data: canRemoveFromSource } = useHasBooksRemovableFromSource({
+    ids: bookIds,
+  })
+  const mode: RemoveBookMode =
+    removeFromSource && canRemoveFromSource
+      ? "library-and-source"
+      : "library-only"
 
   return (
     <Dialog open transitionDuration={0} onClose={() => onCancel()}>
@@ -94,6 +103,7 @@ export function RemoveBooksDialog({
           bookCount={bookIds.length}
           removeFromSource={removeFromSource}
           onRemoveFromSourceChange={setRemoveFromSource}
+          canRemoveFromSource={!!canRemoveFromSource}
         />
       </DialogContent>
       <DialogActions>
