@@ -25,7 +25,7 @@ jobs:
     name: 'Deploy ${{ inputs.deployment_name }}'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           ref: master
       # This is mostly used to have vercel cli, but we may as well just install everything
