@@ -46,7 +46,7 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
   const doc = parseXml(xml, OPF_LABEL)
   const root = doc.documentElement
 
-  if (!root || root.tagName !== "package") {
+  if (root?.tagName !== "package") {
     throw new Error("OPF root element is not <package>")
   }
 
