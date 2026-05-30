@@ -1,4 +1,4 @@
-import type { WorkerPoolEnvelope } from "./types.shared"
+import type { WorkerPoolEnvelope, WorkerPoolResult } from "./types.shared"
 
 export type WorkerPool<Request, Response> = {
   run: (request: Request, transfer?: Transferable[]) => Promise<Response>
@@ -10,6 +10,7 @@ type PendingTask<Request, Response> = {
   request: Request
   transfer: Transferable[]
   resolve: (response: Response) => void
+  reject: (error: Error) => void
 }
 
 /**
@@ -47,12 +48,21 @@ export const createWorkerPool = <Request, Response>({
     }
   }
 
-  const handle = (worker: Worker, envelope: WorkerPoolEnvelope<Response>) => {
-    const task = pending.get(envelope.id)
-    pending.delete(envelope.id)
+  const handle = (worker: Worker, result: WorkerPoolResult<Response>) => {
+    const task = pending.get(result.id)
+    pending.delete(result.id)
     idle.push(worker)
 
-    task?.resolve(envelope.payload)
+    if (task) {
+      if (result.error) {
+        const error = new Error(result.error.message)
+        error.name = result.error.name
+        error.stack = result.error.stack
+        task.reject(error)
+      } else {
+        task.resolve(result.payload)
+      }
+    }
 
     pump()
   }
@@ -60,7 +70,7 @@ export const createWorkerPool = <Request, Response>({
   const workers = Array.from({ length: Math.max(1, size) }, () => {
     const worker = createWorker()
 
-    worker.onmessage = (event: MessageEvent<WorkerPoolEnvelope<Response>>) => {
+    worker.onmessage = (event: MessageEvent<WorkerPoolResult<Response>>) => {
       handle(worker, event.data)
     }
 
@@ -73,11 +83,11 @@ export const createWorkerPool = <Request, Response>({
     request: Request,
     transfer: Transferable[] = [],
   ): Promise<Response> =>
-    new Promise((resolve) => {
+    new Promise((resolve, reject) => {
       const id = nextId
       nextId += 1
 
-      queue.push({ id, request, transfer, resolve })
+      queue.push({ id, request, transfer, resolve, reject })
       pump()
     })
 

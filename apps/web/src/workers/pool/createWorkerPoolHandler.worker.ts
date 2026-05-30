@@ -1,4 +1,8 @@
-import type { WorkerPoolEnvelope } from "./types.shared"
+import type {
+  WorkerPoolEnvelope,
+  WorkerPoolErrorPayload,
+  WorkerPoolResult,
+} from "./types.shared"
 
 export type WorkerPoolHandlerResult<Response> = {
   response: Response
@@ -8,10 +12,15 @@ export type WorkerPoolHandlerResult<Response> = {
 type WorkerScope<Request, Response> = {
   onmessage: ((event: MessageEvent<WorkerPoolEnvelope<Request>>) => void) | null
   postMessage: (
-    message: WorkerPoolEnvelope<Response>,
+    message: WorkerPoolResult<Response>,
     transfer: Transferable[],
   ) => void
 }
+
+const toErrorPayload = (error: unknown): WorkerPoolErrorPayload =>
+  error instanceof Error
+    ? { name: error.name, message: error.message, stack: error.stack }
+    : { name: "Error", message: String(error) }
 
 /**
  * Worker-side counterpart of {@link createWorkerPool}. Unwraps the pool
@@ -33,10 +42,15 @@ export const createWorkerPoolHandler = <Request, Response>(
   ctx.onmessage = (event) => {
     const { id, payload } = event.data
 
-    void Promise.resolve(handler(payload)).then(
-      ({ response, transfer = [] }) => {
-        ctx.postMessage({ id, payload: response }, transfer)
-      },
-    )
+    void Promise.resolve()
+      .then(() => handler(payload))
+      .then(
+        ({ response, transfer = [] }) => {
+          ctx.postMessage({ id, payload: response }, transfer)
+        },
+        (error: unknown) => {
+          ctx.postMessage({ id, error: toErrorPayload(error) }, [])
+        },
+      )
   }
 }
