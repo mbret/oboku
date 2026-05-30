@@ -2,7 +2,7 @@ import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
 import {
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
 import {
@@ -17,7 +17,7 @@ import type { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
 import { deleteDanglingLinks } from "./deleteDanglingLinks"
 import { logger } from "./logger"
-import type { LinkCandidate } from "src/features/plugins/types"
+import type { LinkCandidate } from "src/plugins/types"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]

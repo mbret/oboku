@@ -1,7 +1,7 @@
 import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 

@@ -16,7 +16,7 @@ import type { Extractor } from "node-unrar-js"
 import { Logger } from "@nestjs/common"
 import type { Context } from "./types"
 import { isBookProtected } from "../../lib/couch/isBookProtected"
-import { pluginFacade } from "../plugins/facade"
+import { pluginFacade } from "src/plugins/facade"
 import { reduceMetadata } from "../../lib/metadata/reduceMetadata"
 import { getBookSourcesMetadata } from "../../lib/metadata/getBookSourcesMetadata"
 import { getMetadataFromRarArchive } from "../../lib/books/metadata/getMetadataFromRarArchive"
@@ -30,7 +30,7 @@ import { atomicUpdate } from "../../lib/couch/dbHelpers"
 import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
-import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types"
+import { MODIFIED_AT_UNSUPPORTED } from "src/plugins/types"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 

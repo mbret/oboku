@@ -7,7 +7,7 @@ import { google } from "googleapis"
 import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"

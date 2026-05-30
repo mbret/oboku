@@ -6,10 +6,10 @@ import {
   ObokuSharedError,
   parseProviderApiCredentials,
 } from "@oboku/shared"
-import { createHelpers } from "src/features/plugins/helpers"
+import { createHelpers } from "src/plugins/helpers"
 import { atomicUpdate } from "../couch/dbHelpers"
 import { emailToNameHex } from "src/couch/couch.service"
-import { getPlugin } from "src/features/plugins/plugins"
+import { getPlugin } from "src/plugins/plugins"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
 import { EventEmitter2 } from "@nestjs/event-emitter"
@@ -22,7 +22,7 @@ import type { AuthUser } from "src/auth/auth.guard"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 
 export const sync = async ({
   dataSourceId,

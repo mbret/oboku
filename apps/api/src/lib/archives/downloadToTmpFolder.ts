@@ -7,7 +7,8 @@ import type {
 } from "@oboku/shared"
 import path from "node:path"
 import fs from "node:fs"
-import { pluginFacade } from "src/features/plugins/facade"
+import { pipeline } from "node:stream"
+import { pluginFacade } from "src/plugins/facade"
 import { AppConfigService } from "src/config/AppConfigService"
 
 export const downloadToTmpFolder = (
@@ -27,15 +28,14 @@ export const downloadToTmpFolder = (
         const filepath = path.join(config.TMP_DIR_BOOKS, filename)
         const fileWriteStream = fs.createWriteStream(filepath, { flags: "w" })
 
-        stream
-          .on("error", reject)
-          .pipe(fileWriteStream)
-          .on("finish", () =>
-            resolve({
-              filepath,
-            }),
-          )
-          .on("error", reject)
+        pipeline(stream, fileWriteStream, (error) => {
+          if (error) {
+            reject(error)
+            return
+          }
+
+          resolve({ filepath })
+        })
       })
       .catch((e) => {
         reject(e)
