@@ -9,7 +9,8 @@ import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
 import { configuration } from "../../config/configuration"
-import type { RxCouchDBReplicationState } from "rxdb/plugins/replication-couchdb"
+
+type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
@@ -24,7 +25,7 @@ export const useBackgroundReplication = () => {
   const replicateSecret = useReplicateCollection()
   const isAuthenticated = !!token
   const [replicationStates, setReplicationStates] = useState<
-    RxCouchDBReplicationState<unknown>[]
+    ReplicationState[]
   >([])
 
   useWatchAndFixConflicts()

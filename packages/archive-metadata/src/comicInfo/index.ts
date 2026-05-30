@@ -85,7 +85,7 @@ const serializeComicInfoXml = (
 
   const root = doc.documentElement
 
-  if (!root || root.tagName !== "ComicInfo") {
+  if (root?.tagName !== "ComicInfo") {
     throw new Error("ComicInfo.xml root element is not <ComicInfo>")
   }
 

@@ -1,4 +1,4 @@
-FROM node:22 AS base
+FROM node:25 AS base
 WORKDIR /usr/src/app
 # @todo use upcoming exclude option to filter out stuff we don't need
 # ideally we want to at least strip `apps` so that sub target build
@@ -12,7 +12,7 @@ RUN npm ci
 
 # We will work with the monorepo entirely since
 # we have sub packages that need to be built
-FROM node:22 AS api
+FROM node:25 AS api
 WORKDIR /usr/src/app
 # @todo use exclude to remove lot of stuff
 COPY --from=base /usr/src/app .
@@ -23,7 +23,7 @@ RUN npx lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 CMD ["node", "dist/main"]
 
-FROM node:22 AS admin-build
+FROM node:25 AS admin-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/admin ./apps/admin
@@ -41,7 +41,7 @@ COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
-FROM node:22 AS web-build
+FROM node:25 AS web-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/web ./apps/web

@@ -1,8 +1,5 @@
 import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
-import type {
-  DataSourcePlugin,
-  PluginMetadataParams,
-} from "src/features/plugins/types"
+import type { DataSourcePlugin, PluginMetadataParams } from "src/plugins/types"
 import type { WebDAVClient } from "webdav"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 import { getDataSourceData } from "../helpers"

@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common"
 import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 import {

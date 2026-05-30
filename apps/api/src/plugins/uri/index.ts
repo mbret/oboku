@@ -1,7 +1,7 @@
 import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"

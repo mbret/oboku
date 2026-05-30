@@ -11,13 +11,13 @@ import type nano from "nano"
 import { saveOrUpdateCover } from "./saveOrUpdateCover"
 import { from, lastValueFrom, of, switchMap } from "rxjs"
 import { markCollectionAsFetching } from "./collections"
-import { pluginFacade } from "src/features/plugins/facade"
 import { Logger } from "@nestjs/common"
 import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
 import { isCollectionProtected } from "src/lib/couch/isCollectionProtected"
 import { CoversService } from "src/covers/covers.service"
+import { PluginsService } from "src/plugins/plugins.service"
 
 export const processRefreshMetadata = async (
   collection: CollectionDocType,
@@ -36,6 +36,7 @@ export const processRefreshMetadata = async (
     userNameHex: string
   },
   coversService: CoversService,
+  pluginsService: PluginsService,
 ) => {
   const { isCollectionAlreadyUpdatedFromLink, linkMetadataInfo } =
     await lastValueFrom(
@@ -45,7 +46,7 @@ export const processRefreshMetadata = async (
         switchMap(() =>
           collection.linkData && collection.linkType
             ? from(
-                pluginFacade.getFolderMetadata({
+                pluginsService.getFolderMetadata({
                   link: {
                     type: collection.linkType,
                     data: collection.linkData,

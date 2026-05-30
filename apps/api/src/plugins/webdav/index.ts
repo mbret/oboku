@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import type { DataSourcePlugin } from "src/features/plugins/types"
+import type { DataSourcePlugin } from "src/plugins/types"
 import { type WebDAVDataSourceDocType } from "@oboku/shared"
 import { getDataSourceData } from "../helpers"
 import { getHttpsAgent } from "src/lib/http/httpsAgent"

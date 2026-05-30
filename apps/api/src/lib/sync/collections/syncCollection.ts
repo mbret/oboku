@@ -5,7 +5,7 @@ import { updateCollection } from "./updateCollection"
 import {
   type DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "src/features/plugins/types"
+} from "src/plugins/types"
 import { Logger } from "@nestjs/common"
 import type { CollectionRefreshQueue } from "../synchronizeFromDataSource"
 
