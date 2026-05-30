@@ -106,8 +106,8 @@ export type GetCollectionCandidatesForItem<
 ) => Promise<{ collections: CollectionCandidate[] }>
 
 /**
- * Params shape for the facade's public API only. Callers pass this to
- * pluginFacade.getFolderMetadata / getFileMetadata. The facade narrows by
+ * Params shape for the service's public API only. Callers pass this to
+ * PluginsService.getFolderMetadata / getFileMetadata. The service narrows by
  * link.type and calls the plugin with strongly-typed per-provider params.
  * Plugins never see this type; they receive only their provider's types.
  */

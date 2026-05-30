@@ -16,13 +16,11 @@ import type { Extractor } from "node-unrar-js"
 import { Logger } from "@nestjs/common"
 import type { Context } from "./types"
 import { isBookProtected } from "../../lib/couch/isBookProtected"
-import { pluginFacade } from "src/plugins/facade"
 import { reduceMetadata } from "../../lib/metadata/reduceMetadata"
 import { getBookSourcesMetadata } from "../../lib/metadata/getBookSourcesMetadata"
 import { getMetadataFromRarArchive } from "../../lib/books/metadata/getMetadataFromRarArchive"
 import { getMetadataFromZipArchive } from "../../lib/books/metadata/getMetadataFromZipArchive"
 import { detectMimeTypeFromContent } from "../../lib/utils"
-import { downloadToTmpFolder } from "../../lib/archives/downloadToTmpFolder"
 import { updateCover } from "./updateCover"
 import { pickCoverMetadata } from "./pickCoverMetadata"
 import { getRarArchive } from "../../lib/archives/getRarArchive"
@@ -31,6 +29,7 @@ import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
 import { MODIFIED_AT_UNSUPPORTED } from "src/plugins/types"
+import { PluginsService } from "src/plugins/plugins.service"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
 
@@ -83,6 +82,7 @@ export const retrieveMetadataAndSaveCover = async (
   },
   config: AppConfigService,
   coversService: CoversService,
+  pluginsService: PluginsService,
 ) => {
   console.log(
     `[retrieveMetadataAndSaveCover]`,
@@ -112,7 +112,7 @@ export const retrieveMetadataAndSaveCover = async (
     // try to pre-fetch metadata before trying to download the file
     // in case some directive are needed to prevent downloading huge file.
     const { canDownload = false, ...linkResourceMetadata } =
-      await pluginFacade.getFileMetadata({
+      await pluginsService.getFileMetadata({
         link: ctx.link,
         providerCredentials: ctx.providerCredentials,
         db: ctx.db,
@@ -207,25 +207,26 @@ export const retrieveMetadataAndSaveCover = async (
 
     const { filepath: tmpFilePath } =
       canDownload && isMaybeExtractAble && fileDownloadEnabled && !skipDownload
-        ? await downloadToTmpFolder(
-            ctx.book,
-            ctx.link,
-            config,
-            ctx.providerCredentials,
-            ctx.db,
-          ).catch((error) => {
-            /**
-             * We have several reason for failing download but the most common one
-             * is no more space left. We have about 500mb of space. In case of failure
-             * we don't fail the entire process, we just keep the file metadata
-             */
-            logger.error(error)
+        ? await pluginsService
+            .downloadLinkToTmp({
+              book: ctx.book,
+              link: ctx.link,
+              providerCredentials: ctx.providerCredentials,
+              db: ctx.db,
+            })
+            .catch((error) => {
+              /**
+               * We have several reason for failing download but the most common one
+               * is no more space left. We have about 500mb of space. In case of failure
+               * we don't fail the entire process, we just keep the file metadata
+               */
+              logger.error(error)
 
-            return {
-              filepath: undefined,
-              metadata: { contentType: undefined },
-            }
-          })
+              return {
+                filepath: undefined,
+                metadata: { contentType: undefined },
+              }
+            })
         : { filepath: undefined }
 
     let fileContentLength = 0

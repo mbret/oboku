@@ -6,6 +6,7 @@ import { AppConfigService } from "../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
+import { PluginsService } from "src/plugins/plugins.service"
 
 @Injectable()
 export class BooksMetadataService {
@@ -15,6 +16,7 @@ export class BooksMetadataService {
     private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
+    private readonly pluginsService: PluginsService,
   ) {}
 
   public refreshMetadata = async (
@@ -67,6 +69,7 @@ export class BooksMetadataService {
         },
         this.appConfigService,
         this.coversService,
+        this.pluginsService,
       )
     } catch (e) {
       await atomicUpdate(db, "book", book._id, (old) => ({

@@ -24,6 +24,7 @@ import { StorageModule } from "./storage/storage.module"
 import { WebDavModule } from "./webdav/webdav.module"
 import { NotificationsModule } from "./notifications/notifications.module"
 import { BooksModule } from "./books/books.module"
+import { PluginsModule } from "./plugins/plugins.module"
 
 @Module({
   imports: [
@@ -101,6 +102,7 @@ import { BooksModule } from "./books/books.module"
     NotificationsModule,
     WebDavModule,
     BooksModule,
+    PluginsModule,
   ],
   providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
   controllers: [AppController, CollectionsController, WebController],

@@ -13,6 +13,7 @@ import { AppConfigService } from "../../config/AppConfigService"
 import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
+import { PluginsService } from "src/plugins/plugins.service"
 
 @Injectable()
 export class CollectionMetadataService {
@@ -22,6 +23,7 @@ export class CollectionMetadataService {
     private appConfigService: AppConfigService,
     private couchService: CouchService,
     private coversService: CoversService,
+    private pluginsService: PluginsService,
   ) {}
 
   refreshMetadata({
@@ -70,6 +72,7 @@ export class CollectionMetadataService {
                   userNameHex: emailToNameHex(email),
                 },
                 this.coversService,
+                this.pluginsService,
               ),
             )
           }),
