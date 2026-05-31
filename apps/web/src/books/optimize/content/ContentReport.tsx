@@ -1,6 +1,6 @@
 import { Stack, Typography, styled } from "@mui/material"
 import { formatBytes } from "@oboku/shared"
-import type { FileInspection } from "../useFileInspection"
+import { useBookOptimize } from "../BookOptimizeProvider"
 
 const ReportGridStack = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
@@ -16,52 +16,40 @@ const ReportRowStack = styled(Stack)({
   gap: 8,
 })
 
-type ReportRow = {
-  label: string
-  value: string
+function ReportRow({ label, value }: { label: string; value: string }) {
+  return (
+    <ReportRowStack>
+      <Typography variant="body2" color="text.secondary">
+        {label}
+      </Typography>
+      <Typography variant="body2">{value}</Typography>
+    </ReportRowStack>
+  )
 }
 
-const buildRows = (inspection: FileInspection): ReportRow[] => {
-  const rows: ReportRow[] = [
-    { label: "File size", value: formatBytes(inspection.fileSize) ?? "—" },
-    { label: "Images", value: String(inspection.imageCount) },
-  ]
+export function ContentReport() {
+  const { inspection } = useBookOptimize()
+  const { fileSize, imageCount, imageBytes, averageImageResolution } =
+    inspection
 
-  if (inspection.imageBytes > 0) {
-    rows.push({
-      label: "Images total size",
-      value: formatBytes(inspection.imageBytes) ?? "—",
-    })
-  }
-
-  if (inspection.averageImageResolution) {
-    const { width, height } = inspection.averageImageResolution
-    rows.push({
-      label: "Average resolution",
-      value: `${width} × ${height} px`,
-    })
-  }
-
-  return rows
-}
-
-type Props = {
-  inspection: FileInspection
-}
-
-export function ContentReport({ inspection }: Props) {
   return (
     <Stack spacing={1}>
       <Typography variant="subtitle2">Content report</Typography>
       <ReportGridStack>
-        {buildRows(inspection).map((row) => (
-          <ReportRowStack key={row.label}>
-            <Typography variant="body2" color="text.secondary">
-              {row.label}
-            </Typography>
-            <Typography variant="body2">{row.value}</Typography>
-          </ReportRowStack>
-        ))}
+        <ReportRow label="File size" value={formatBytes(fileSize) ?? "—"} />
+        <ReportRow label="Images" value={String(imageCount)} />
+        {imageBytes > 0 && (
+          <ReportRow
+            label="Images total size"
+            value={formatBytes(imageBytes) ?? "—"}
+          />
+        )}
+        {averageImageResolution && (
+          <ReportRow
+            label="Average resolution"
+            value={`${averageImageResolution.width} × ${averageImageResolution.height} px`}
+          />
+        )}
       </ReportGridStack>
     </Stack>
   )

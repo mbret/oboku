@@ -6,9 +6,10 @@ import {
   Typography,
   styled,
 } from "@mui/material"
-import { useController, type Control } from "react-hook-form"
+import { useController } from "react-hook-form"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { hasCompressionDimension, type BookOptimizeFormValues } from "../form"
+import { useBookOptimize } from "../BookOptimizeProvider"
 
 const OptionStack = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
@@ -30,12 +31,8 @@ const getScreenResolution = (): string => {
   )} px`
 }
 
-type Props = {
-  control: Control<BookOptimizeFormValues>
-  disabled: boolean
-}
-
-export function ImageCompressionOption({ control, disabled }: Props) {
+export function ImageCompressionOption() {
+  const { control, isApplying } = useBookOptimize()
   const {
     field: { value: enabled, onChange },
     fieldState: { error },
@@ -57,7 +54,7 @@ export function ImageCompressionOption({ control, disabled }: Props) {
         control={
           <Checkbox
             checked={enabled}
-            disabled={disabled}
+            disabled={isApplying}
             onChange={(event) => onChange(event.target.checked)}
           />
         }
@@ -84,7 +81,7 @@ export function ImageCompressionOption({ control, disabled }: Props) {
               type="number"
               size="small"
               fullWidth
-              disabled={disabled}
+              disabled={isApplying}
             />
             <ControlledTextField<BookOptimizeFormValues>
               control={control}
@@ -94,7 +91,7 @@ export function ImageCompressionOption({ control, disabled }: Props) {
               type="number"
               size="small"
               fullWidth
-              disabled={disabled}
+              disabled={isApplying}
             />
           </DimensionsStack>
           {error && (
