@@ -6,7 +6,7 @@ import {
   styled,
 } from "@mui/material"
 import type { BookDocType } from "@oboku/shared"
-import { useCallback, useEffect } from "react"
+import { useEffect } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { useBookDownloadState } from "../../download/states"
@@ -32,12 +32,12 @@ export function DownloadBookStep({ book, displayFileName }: Props) {
   const isDownloading = downloadState?.isDownloading ?? false
   const downloadProgress = downloadState?.downloadProgress ?? 0
 
-  const handleDownload = useCallback(() => {
+  const handleDownload = () => {
     downloadBook({
       _id: book._id,
       links: [...book.links],
     })
-  }, [book._id, book.links, downloadBook])
+  }
 
   useEffect(
     () => () => {
