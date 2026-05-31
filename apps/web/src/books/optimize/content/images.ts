@@ -72,26 +72,34 @@ export const measureAverageImageResolution = async (
     .filter((_, index) => index % step === 0)
     .slice(0, sampleSize)
 
-  let totalWidth = 0
-  let totalHeight = 0
-  let measured = 0
+  const resolutions = await Promise.all(
+    sample.map(async (record): Promise<ImageResolution | undefined> => {
+      try {
+        const bitmap = await createImageBitmap(await record.blob())
+        const resolution = { width: bitmap.width, height: bitmap.height }
+        bitmap.close()
 
-  for (const record of sample) {
-    try {
-      const bitmap = await createImageBitmap(await record.blob())
-      totalWidth += bitmap.width
-      totalHeight += bitmap.height
-      bitmap.close()
-      measured += 1
-    } catch {
-      // Undecodable formats (e.g. AVIF on some browsers) are skipped.
-    }
-  }
+        return resolution
+      } catch {
+        // Undecodable formats (e.g. AVIF on some browsers) are skipped.
+        return undefined
+      }
+    }),
+  )
 
-  if (measured === 0) return undefined
+  const measured = resolutions.filter(
+    (resolution): resolution is ImageResolution => resolution !== undefined,
+  )
+
+  if (measured.length === 0) return undefined
 
   return {
-    width: Math.round(totalWidth / measured),
-    height: Math.round(totalHeight / measured),
+    width: Math.round(
+      measured.reduce((total, { width }) => total + width, 0) / measured.length,
+    ),
+    height: Math.round(
+      measured.reduce((total, { height }) => total + height, 0) /
+        measured.length,
+    ),
   }
 }
