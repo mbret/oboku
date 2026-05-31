@@ -5,25 +5,19 @@ import {
   useEffect,
   useMemo,
   useRef,
-  useState,
   type ReactNode,
 } from "react"
 import { useForm, type Control } from "react-hook-form"
-import {
-  PLUGIN_FILE_TYPE,
-  type BookDocType,
-  type LinkDocType,
-} from "@oboku/shared"
+import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import type { Observable } from "rxjs"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
-import { useDownloadBook } from "../../download"
-import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import type { FileInspection } from "./useFileInspection"
 import { useApplyLocalOptimizations } from "./apply/useApplyLocalOptimizations"
-import { useUploadToDataSource } from "./upload/useUploadToDataSource"
+import { useUploadToDataSource } from "./actions/useUploadToDataSource"
+import { useRevertLocalChanges } from "./actions/useRevertLocalChanges"
 import {
   EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
   resolveBookOptimizeFormValues,
@@ -69,13 +63,10 @@ export function BookOptimizeProvider({
 }: Props) {
   const bookId = book._id
 
-  const [isReverting, setIsReverting] = useState(false)
-  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const { mutate: downloadBook } = useDownloadBook()
-  const bookLinks = useMemo(() => [...book.links], [book.links])
-  // Local-only books have no data source to re-download from, so reverting
-  // (which deletes the local file) would lose it permanently.
-  const canRevert = link.type !== PLUGIN_FILE_TYPE
+  const { revertLocalChanges, isReverting, canRevert } = useRevertLocalChanges({
+    book,
+    link,
+  })
 
   const {
     control,
@@ -184,34 +175,6 @@ export function BookOptimizeProvider({
       },
     )
   }, [bookId, canUpload, link, uploadFile])
-
-  const revertLocalChanges = useCallback(async () => {
-    if (isReverting || !canRevert) return
-
-    const isConfirmed = await showConfirmDialog({
-      message:
-        "This will discard your local changes and re-download the original file from the data source.",
-    })
-
-    if (!isConfirmed) return
-
-    setIsReverting(true)
-    try {
-      await removeDownloadFile({ bookId })
-      downloadBook({ _id: bookId, links: bookLinks })
-    } catch (error) {
-      notifyError(error)
-    } finally {
-      setIsReverting(false)
-    }
-  }, [
-    bookId,
-    bookLinks,
-    canRevert,
-    downloadBook,
-    isReverting,
-    removeDownloadFile,
-  ])
 
   const value = useMemo<BookOptimizeContextValue>(
     () => ({
