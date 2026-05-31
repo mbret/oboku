@@ -26,6 +26,8 @@ export const useApplyLocalOptimizations = () => {
 
   const mutation = useMutation({
     mutationFn: async ({ bookId, operations }: ApplyLocalVariables) => {
+      compressionProgress$.next(0)
+
       const cached = await getBookFile(bookId)
 
       if (!cached) {

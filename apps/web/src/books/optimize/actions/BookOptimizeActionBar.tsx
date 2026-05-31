@@ -54,7 +54,7 @@ export function BookOptimizeActionBar() {
   const uploadVariant = canUpload ? "contained" : "outlined"
 
   const isApplying = isApplyingLocally || isUploading
-  const showCompressionProgress = isApplying && compressionProgress > 0
+  const showCompressionProgress = isApplyingLocally && compressionProgress > 0
   const compressionPercent = toPercent(compressionProgress)
   const uploadPercent = toPercent(uploadProgress)
 
