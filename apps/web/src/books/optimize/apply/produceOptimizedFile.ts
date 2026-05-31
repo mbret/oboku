@@ -1,13 +1,21 @@
-import {
-  applyMetadataPatchesToZip,
-  loadArchive,
-  resolvePatchedMimeType,
-} from "../metadata/archiveFile"
+import { applyMetadataPatchesToZip } from "../metadata/archiveFile"
+import { loadArchive } from "../loadArchive"
 import { compressArchiveImages } from "../content/compressArchiveImages"
 import type { OptimizeOperation } from "./operations"
 
 const archiveHasOpf = (paths: string[]): boolean =>
   paths.some((path) => path.toLowerCase().endsWith(".opf"))
+
+const resolvePatchedMimeType = (
+  file: Blob | File,
+  { hasOpf }: { hasOpf: boolean },
+): string => {
+  if (file.type) return file.type
+
+  if (hasOpf) return "application/epub+zip"
+
+  return "application/x-cbz"
+}
 
 /**
  * Applies the curated operations to the book file and returns the resulting

@@ -1,4 +1,4 @@
-import JSZip from "jszip"
+import type JSZip from "jszip"
 import {
   type Archive,
   type ArchiveMetadata,
@@ -10,15 +10,6 @@ import {
 import { createArchiveFromJszip } from "@prose-reader/streamer/archives/createArchiveFromJszip"
 import { Logger } from "../../../debug/logger.shared"
 import type { ArchiveMetadataPatchPlan } from "./targets"
-
-export const loadArchive = async (
-  file: Blob | File,
-): Promise<{ zip: JSZip; archive: Archive }> => {
-  const zip = await JSZip.loadAsync(file)
-  const archive = await createArchiveFromJszip(zip)
-
-  return { zip, archive }
-}
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
 
@@ -48,17 +39,6 @@ export const readArchiveMetadataFromSource = async (
       })
     },
   })
-
-export const resolvePatchedMimeType = (
-  file: Blob | File,
-  { hasOpf }: { hasOpf: boolean },
-): string => {
-  if (file.type) return file.type
-
-  if (hasOpf) return "application/epub+zip"
-
-  return "application/x-cbz"
-}
 
 export const applyMetadataPatchesToZip = async (
   zip: JSZip,

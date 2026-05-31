@@ -1,10 +1,8 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
-import {
-  loadArchive,
-  readArchiveMetadataFromSource,
-} from "./metadata/archiveFile"
+import { loadArchive } from "./loadArchive"
+import { readArchiveMetadataFromSource } from "./metadata/archiveFile"
 import {
   listImageEntries,
   measureAverageImageResolution,
