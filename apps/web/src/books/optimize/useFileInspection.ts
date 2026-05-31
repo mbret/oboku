@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query"
+import { skipToken, useQuery } from "@tanstack/react-query"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
 import {
@@ -32,50 +32,46 @@ const inspectContent = (
   imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
-export const useFileInspection = ({
-  bookId,
-  enabled,
-}: {
-  bookId: string | undefined
-  enabled: boolean
-}) =>
+export const useFileInspection = (bookId: string | undefined) =>
   useQuery({
     queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId] as const,
-    enabled: enabled && !!bookId,
     networkMode: "always",
     staleTime: 0,
-    queryFn: async (): Promise<FileInspection | null> => {
-      if (!bookId) return null
+    queryFn: bookId
+      ? async (): Promise<FileInspection> => {
+          const result = await getBookFile(bookId)
 
-      const result = await getBookFile(bookId)
-      if (!result) return null
+          if (!result) {
+            throw new Error(`No cached file for book ${bookId}`)
+          }
 
-      const file = result.data
+          const file = result.data
 
-      Logger.info("[metadataFixer] file inspection", {
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        lastModified: file.lastModified,
-      })
+          Logger.info("[metadataFixer] file inspection", {
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            lastModified: file.lastModified,
+          })
 
-      const { archive } = await loadArchive(file)
-      const imageRecords = listImageEntries(archive)
-      const { imageCount, imageBytes } = inspectContent(imageRecords)
-      const averageImageResolution =
-        await measureAverageImageResolution(imageRecords)
-      const metadata = await readArchiveMetadataFromSource(archive)
+          const { archive } = await loadArchive(file)
+          const imageRecords = listImageEntries(archive)
+          const { imageCount, imageBytes } = inspectContent(imageRecords)
+          const averageImageResolution =
+            await measureAverageImageResolution(imageRecords)
+          const metadata = await readArchiveMetadataFromSource(archive)
 
-      return {
-        fileName: file.name,
-        fileSize: file.size,
-        imageCount,
-        imageBytes,
-        averageImageResolution,
-        hasComicInfo: metadata.hasComicInfo,
-        hasOpf: metadata.hasOpf,
-        comicInfoIsbn: metadata.comicInfo?.isbn,
-        opfIsbn: metadata.opf?.isbn,
-      }
-    },
+          return {
+            fileName: file.name,
+            fileSize: file.size,
+            imageCount,
+            imageBytes,
+            averageImageResolution,
+            hasComicInfo: metadata.hasComicInfo,
+            hasOpf: metadata.hasOpf,
+            comicInfoIsbn: metadata.comicInfo?.isbn,
+            opfIsbn: metadata.opf?.isbn,
+          }
+        }
+      : skipToken,
   })

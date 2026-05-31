@@ -21,12 +21,9 @@ export function OptimizeStep({
   canUploadToDataSource,
   currentTab,
 }: Props) {
-  const { data: inspection, isError } = useFileInspection({
-    bookId: book._id,
-    enabled: true,
-  })
+  const { data: inspection, isError } = useFileInspection(book._id)
 
-  if (isError || inspection === null) {
+  if (isError) {
     return (
       <Alert severity="error">
         This book file could not be read. It may be corrupted or in an
