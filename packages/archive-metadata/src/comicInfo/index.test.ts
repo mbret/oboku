@@ -4,38 +4,52 @@ import {
   parseComicInfo,
   resolveArchiveMetadata,
 } from "@prose-reader/archive-parser"
-import type { ArchiveEntry, ArchiveSource } from "../archive/types"
+import { arrayBufferFileAccessors, createArchive } from "@prose-reader/streamer"
+import type { Archive, ArchiveRecord } from "../archive/types"
 import {
   COMIC_INFO_FILENAME,
   buildPatchedComicInfoXml,
   findComicInfoEntry,
 } from "./index"
 
+const basename = (uri: string): string =>
+  uri.split("/").filter(Boolean).pop() ?? uri
+
+const toArrayBuffer = (body: string): ArrayBuffer => {
+  const bytes = new TextEncoder().encode(body)
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+
+  return buffer
+}
+
 const makeArchive = (
   files: Record<string, string>,
   options: { directories?: string[] } = {},
-): ArchiveSource => {
-  const directoryEntries: ArchiveEntry[] = (options.directories ?? []).map(
-    (path) => ({
-      path,
-      isDir: true,
-      readAsString: () => Promise.reject(new Error("dir entry")),
-      readAsUint8Array: () => Promise.reject(new Error("dir entry")),
+): Archive => {
+  const directoryRecords = (options.directories ?? []).map(
+    (uri): ArchiveRecord => ({
+      dir: true,
+      basename: basename(uri),
+      uri,
     }),
   )
 
-  const fileEntries: ArchiveEntry[] = Object.entries(files).map(
-    ([path, body]) => ({
-      path,
-      isDir: false,
-      readAsString: () => Promise.resolve(body),
-      readAsUint8Array: () => Promise.resolve(new TextEncoder().encode(body)),
+  const fileRecords = Object.entries(files).map(
+    ([uri, body]): ArchiveRecord => ({
+      dir: false,
+      basename: basename(uri),
+      uri,
+      size: body.length,
+      ...arrayBufferFileAccessors(() => Promise.resolve(toArrayBuffer(body))),
     }),
   )
 
-  return {
-    listEntries: () => Promise.resolve([...directoryEntries, ...fileEntries]),
-  }
+  return createArchive({
+    filename: "test.zip",
+    records: [...directoryRecords, ...fileRecords],
+    close: () => Promise.resolve(),
+  })
 }
 
 const minimalComicInfo = (body = "") =>
@@ -53,17 +67,17 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       "page-001.jpg": "binary",
     })
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
-    expect(entry?.path).toBe("ComicInfo.xml")
+    expect(entry?.uri).toBe("ComicInfo.xml")
   })
 
   it("matches the filename case-insensitively", async () => {
     const archive = makeArchive({ "ComicInfo.XML": minimalComicInfo() })
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
-    expect(entry?.path).toBe("ComicInfo.XML")
+    expect(entry?.uri).toBe("ComicInfo.XML")
   })
 
   it("ignores ComicInfo files nested inside sub-folders", async () => {
@@ -72,7 +86,7 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       "deep/nested/comicinfo.xml": minimalComicInfo(),
     })
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
     expect(entry).toBeUndefined()
   })
@@ -83,7 +97,7 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       "page-002.jpg": "binary",
     })
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
     expect(entry).toBeUndefined()
   })
@@ -94,7 +108,7 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       { directories: ["ComicInfo.xml/"] },
     )
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
     expect(entry).toBeUndefined()
   })
@@ -105,9 +119,9 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       "comicinfo.xml": minimalComicInfo("<Title>second</Title>"),
     })
 
-    const entry = await findComicInfoEntry(archive)
+    const entry = findComicInfoEntry(archive)
 
-    expect(entry?.path).toBe("ComicInfo.xml")
+    expect(entry?.uri).toBe("ComicInfo.xml")
   })
 })
 

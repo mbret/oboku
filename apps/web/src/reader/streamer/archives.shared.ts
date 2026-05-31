@@ -1,9 +1,6 @@
-import {
-  type Archive,
-  createArchiveFromJszip,
-  createArchiveFromLibArchive,
-  createArchiveFromText,
-} from "@prose-reader/streamer"
+import { type Archive, createArchiveFromText } from "@prose-reader/streamer"
+import { createArchiveFromJszip } from "@prose-reader/streamer/archives/createArchiveFromJszip"
+import { createArchiveFromLibArchive } from "@prose-reader/streamer/archives/createArchiveFromLibArchive"
 import { loadAsync as jszipLoadAsync } from "jszip"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"

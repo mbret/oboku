@@ -1,16 +1,37 @@
 import { useQuery } from "@tanstack/react-query"
-import { getBookFile } from "../../../download/getBookFile.shared"
-import { Logger } from "../../../debug/logger.shared"
-import { readArchiveMetadataFromFile } from "./archiveFile"
+import { getBookFile } from "../../download/getBookFile.shared"
+import { Logger } from "../../debug/logger.shared"
+import {
+  loadArchive,
+  readArchiveMetadataFromSource,
+} from "./metadata/archiveFile"
+import {
+  listImageEntries,
+  measureAverageImageResolution,
+  type ImageResolution,
+} from "./content/images"
+
+export const FILE_INSPECTION_QUERY_KEY = ["metadataFixer", "fileInspection"]
 
 export type FileInspection = {
   fileName: string
+  fileSize: number
+  imageCount: number
+  imageBytes: number
+  averageImageResolution: ImageResolution | undefined
   hasComicInfo: boolean
   hasOpf: boolean
   comicInfoIsbn: string | undefined
   opfIsbn: string | undefined
   metadataReadFailed: boolean
 }
+
+const inspectContent = (
+  entries: ReturnType<typeof listImageEntries>,
+): { imageCount: number; imageBytes: number } => ({
+  imageCount: entries.length,
+  imageBytes: entries.reduce((total, { size }) => total + (size ?? 0), 0),
+})
 
 export const useFileInspection = ({
   bookId,
@@ -20,7 +41,7 @@ export const useFileInspection = ({
   enabled: boolean
 }) =>
   useQuery({
-    queryKey: ["metadataFixer", "fileInspection", bookId] as const,
+    queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId] as const,
     enabled: enabled && !!bookId,
     networkMode: "always",
     staleTime: 0,
@@ -39,11 +60,21 @@ export const useFileInspection = ({
         lastModified: file.lastModified,
       })
 
+      const { zip, archive } = await loadArchive(file)
+      const imageEntries = listImageEntries(zip)
+      const { imageCount, imageBytes } = inspectContent(imageEntries)
+      const averageImageResolution =
+        await measureAverageImageResolution(imageEntries)
+
       try {
-        const metadata = await readArchiveMetadataFromFile(file)
+        const metadata = await readArchiveMetadataFromSource(archive)
 
         return {
           fileName: file.name,
+          fileSize: file.size,
+          imageCount,
+          imageBytes,
+          averageImageResolution,
           hasComicInfo: metadata.hasComicInfo,
           hasOpf: metadata.hasOpf,
           comicInfoIsbn: metadata.comicInfo?.isbn,
@@ -53,6 +84,10 @@ export const useFileInspection = ({
       } catch {
         return {
           fileName: file.name,
+          fileSize: file.size,
+          imageCount,
+          imageBytes,
+          averageImageResolution,
           hasComicInfo: false,
           hasOpf: false,
           comicInfoIsbn: undefined,

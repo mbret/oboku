@@ -1,14 +1,11 @@
-import {
-  type ArchiveSource,
-  readArchiveMetadata,
-} from "@oboku/archive-metadata"
+import { type Archive, readArchiveMetadata } from "@oboku/archive-metadata"
 import type { FileMetadata } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 
 const logger = new Logger("getMetadataFromArchive")
 
 export const getMetadataFromArchive = async (
-  archive: ArchiveSource,
+  archive: Archive,
   contentType: string,
 ): Promise<FileMetadata> => {
   const metadata = await readArchiveMetadata(archive)

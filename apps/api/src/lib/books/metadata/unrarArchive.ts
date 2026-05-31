@@ -1,5 +1,16 @@
-import type { ArchiveEntry, ArchiveSource } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata"
+import { arrayBufferFileAccessors, createArchive } from "@prose-reader/streamer"
 import type { Extractor } from "node-unrar-js"
+
+const basename = (uri: string): string =>
+  uri.split(/[\\/]/).filter(Boolean).pop() ?? uri
+
+const toArrayBuffer = (bytes: Uint8Array): ArrayBuffer => {
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+
+  return buffer
+}
 
 /**
  * Extract a single entry's bytes from a `node-unrar-js` extractor. The
@@ -11,17 +22,25 @@ import type { Extractor } from "node-unrar-js"
 const extractEntryBytes = (
   extractor: Extractor<Uint8Array>,
   fileName: string,
-): Uint8Array | undefined => {
+): Uint8Array => {
   const extracted = extractor.extract({ files: [fileName] })
   const files = [...extracted.files]
-  const file = files[0]
+  const bytes = files[0]?.extraction
 
-  return file?.extraction
+  if (!bytes) {
+    throw new Error(
+      `node-unrar-js failed to extract entry "${fileName}" from the RAR archive`,
+    )
+  }
+
+  return bytes
 }
 
 /**
- * Adapt a `node-unrar-js` extractor to the runtime-agnostic
- * `ArchiveSource` interface consumed by `@oboku/archive-metadata`.
+ * Adapt a `node-unrar-js` extractor to the {@link Archive} interface
+ * consumed by `@oboku/archive-metadata`. There is no prose-reader helper
+ * for RAR, so records are assembled by hand and handed to `createArchive`
+ * (which derives the `recordsByUri` lookup index).
  *
  * Ownership stays with the caller: the extractor is created upstream
  * (see {@link getRarArchive}) and reused for both metadata parsing
@@ -34,39 +53,32 @@ const extractEntryBytes = (
  */
 export const createUnrarArchiveSource = (
   extractor: Extractor<Uint8Array>,
-): ArchiveSource => {
+): Archive => {
   const list = extractor.getFileList()
   const headers = [...list.fileHeaders]
 
-  const entries: ArchiveEntry[] = headers.map((header) => ({
-    path: header.name,
-    isDir: header.flags.directory,
-    size: header.unpSize,
-    readAsUint8Array: async () => {
-      const bytes = extractEntryBytes(extractor, header.name)
+  return createArchive({
+    records: headers.map((header): Archive["records"][number] => {
+      const uri = header.name
 
-      if (!bytes) {
-        throw new Error(
-          `node-unrar-js failed to extract entry "${header.name}" from the RAR archive`,
-        )
+      if (header.flags.directory) {
+        return {
+          dir: true,
+          basename: basename(uri),
+          uri,
+        }
       }
 
-      return bytes
-    },
-    readAsString: async () => {
-      const bytes = extractEntryBytes(extractor, header.name)
-
-      if (!bytes) {
-        throw new Error(
-          `node-unrar-js failed to extract entry "${header.name}" from the RAR archive`,
-        )
+      return {
+        dir: false,
+        basename: basename(uri),
+        uri,
+        size: header.unpSize,
+        ...arrayBufferFileAccessors(async () =>
+          toArrayBuffer(extractEntryBytes(extractor, uri)),
+        ),
       }
-
-      return new TextDecoder("utf-8").decode(bytes)
-    },
-  }))
-
-  return {
-    listEntries: async () => entries,
-  }
+    }),
+    close: () => Promise.resolve(),
+  })
 }

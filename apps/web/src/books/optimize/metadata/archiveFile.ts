@@ -1,26 +1,24 @@
 import JSZip from "jszip"
 import {
-  type ArchiveEntry,
+  type Archive,
   type ArchiveMetadata,
   type ArchivePatchedEntry,
   type ArchiveMetadataTargets,
-  type ArchiveSource,
   patchArchiveMetadata,
   readArchiveMetadata,
 } from "@oboku/archive-metadata"
+import { createArchiveFromJszip } from "@prose-reader/streamer/archives/createArchiveFromJszip"
 import { Logger } from "../../../debug/logger.shared"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 
-const toArchiveEntry = (entry: JSZip.JSZipObject): ArchiveEntry => ({
-  path: entry.name,
-  isDir: entry.dir,
-  readAsString: () => entry.async("string"),
-  readAsUint8Array: () => entry.async("uint8array"),
-})
+export const loadArchive = async (
+  file: Blob | File,
+): Promise<{ zip: JSZip; archive: Archive }> => {
+  const zip = await JSZip.loadAsync(file)
+  const archive = await createArchiveFromJszip(zip)
 
-const createJszipArchiveSource = (zip: JSZip): ArchiveSource => ({
-  listEntries: async () => Object.values(zip.files).map(toArchiveEntry),
-})
+  return { zip, archive }
+}
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
 
@@ -31,22 +29,10 @@ const previewXml = (xml: string): string =>
     ? `${xml.slice(0, XML_LOG_PREVIEW_BYTES)}…`
     : xml
 
-export const readArchiveMetadataFromFile = async (
-  file: Blob | File,
-): Promise<ArchiveMetadata> => {
-  const zip = await JSZip.loadAsync(file)
-  const archive = createJszipArchiveSource(zip)
-
-  Logger.info("[metadataFixer] archive structure", {
-    entryCount: Object.keys(zip.files).length,
-    entries: Object.values(zip.files).map((entry) => ({
-      name: entry.name,
-      dir: entry.dir,
-      date: entry.date,
-    })),
-  })
-
-  return readArchiveMetadata(archive, {
+export const readArchiveMetadataFromSource = async (
+  archive: Archive,
+): Promise<ArchiveMetadata> =>
+  readArchiveMetadata(archive, {
     onOpfRead: ({ path, xml }) => {
       Logger.info("[metadataFixer] OPF read", {
         path,
@@ -62,25 +48,23 @@ export const readArchiveMetadataFromFile = async (
       })
     },
   })
-}
 
-const resolvePatchedMimeType = (
+export const resolvePatchedMimeType = (
   file: Blob | File,
-  patches: ArchiveMetadataPatchPlan[],
+  { hasOpf }: { hasOpf: boolean },
 ): string => {
   if (file.type) return file.type
 
-  if (patches.some(({ targets }) => targets.opf)) return "application/epub+zip"
+  if (hasOpf) return "application/epub+zip"
 
   return "application/x-cbz"
 }
 
-export const patchArchiveFile = async (
-  file: Blob | File,
+export const applyMetadataPatchesToZip = async (
+  zip: JSZip,
   patches: ArchiveMetadataPatchPlan[],
-): Promise<Blob> => {
-  const zip = await JSZip.loadAsync(file)
-  const archive = createJszipArchiveSource(zip)
+): Promise<void> => {
+  const archive = await createArchiveFromJszip(zip)
   const entries: ArchivePatchedEntry[] = []
 
   for (const { patch, targets } of patches) {
@@ -91,9 +75,4 @@ export const patchArchiveFile = async (
   for (const entry of entries) {
     zip.file(entry.path, entry.xml)
   }
-
-  return zip.generateAsync({
-    type: "blob",
-    mimeType: resolvePatchedMimeType(file, patches),
-  })
 }

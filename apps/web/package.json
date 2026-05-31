@@ -26,7 +26,7 @@
     "@prose-reader/enhancer-search": "^1.291.0",
     "@prose-reader/react-reader": "^1.291.0",
     "@prose-reader/shared": "^1.291.0",
-    "@prose-reader/streamer": "^1.291.0",
+    "@prose-reader/streamer": "^1.307.0",
     "@sentry/react": "^10.25.0",
     "@tanstack/react-query": "^5.62.8",
     "@tanstack/react-query-persist-client": "^5.96.2",

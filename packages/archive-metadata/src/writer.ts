@@ -1,4 +1,4 @@
-import type { ArchiveSource } from "./archive/types"
+import type { Archive } from "./archive/types"
 import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "./comicInfo"
 import { findOpfEntry } from "./opf/read"
 import { buildPatchedOpfXml } from "./opf/write"
@@ -71,7 +71,7 @@ export type ArchivePatch = {
  * {@link readArchiveMetadata} makes for reads.
  */
 export const patchArchiveMetadata = async (
-  source: ArchiveSource,
+  archive: Archive,
   patch: ArchiveMetadataPatch,
   targets: ArchiveMetadataTargets,
 ): Promise<ArchivePatch> => {
@@ -84,12 +84,12 @@ export const patchArchiveMetadata = async (
   const entries: ArchivePatchedEntry[] = []
 
   if (targets.comicInfo) {
-    const xml = await buildPatchedComicInfoXml(source, { isbn: patch.isbn })
+    const xml = await buildPatchedComicInfoXml(archive, { isbn: patch.isbn })
     entries.push({ path: COMIC_INFO_FILENAME, xml })
   }
 
   if (targets.opf) {
-    const opfEntry = await findOpfEntry(source)
+    const opfEntry = findOpfEntry(archive)
 
     if (!opfEntry) {
       throw new Error(
@@ -98,7 +98,7 @@ export const patchArchiveMetadata = async (
     }
 
     const xml = await buildPatchedOpfXml(opfEntry, { isbn: patch.isbn })
-    entries.push({ path: opfEntry.path, xml })
+    entries.push({ path: opfEntry.uri, xml })
   }
 
   return { entries }

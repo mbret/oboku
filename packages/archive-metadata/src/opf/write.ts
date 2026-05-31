@@ -1,4 +1,5 @@
-import type { ArchiveEntry } from "../archive/types"
+import { readRecordAsText } from "@prose-reader/streamer"
+import type { ArchiveFileRecord } from "../archive/types"
 import {
   type XmlDocument,
   type XmlElement,
@@ -34,10 +35,10 @@ const OPF_LABEL = "OPF"
  * {@link ArchiveMetadata.hasOpf} before requesting an OPF target.
  */
 export const buildPatchedOpfXml = async (
-  entry: ArchiveEntry,
+  entry: ArchiveFileRecord,
   patch: OpfMetadataPatch,
 ): Promise<string> => {
-  const xml = await entry.readAsString()
+  const xml = await readRecordAsText(entry)
 
   return serializeOpfXml(xml, patch)
 }

@@ -1,14 +1,13 @@
-import { LinearProgress, Stack, Typography, styled } from "@mui/material"
-import type { SubmitEventHandler } from "react"
+import { Stack, Typography, styled } from "@mui/material"
 import type { Control } from "react-hook-form"
-import { useObserve } from "reactjrx"
-import { EMPTY, type Observable } from "rxjs"
 import { normalizeIsbn } from "@oboku/archive-metadata"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
+import type { BookOptimizeFormValues } from "../form"
 import type { MetadataFormSection } from "./targets"
-import type { MetadataFixerFormValues } from "./types"
 
-const validateIsbn = (raw: string): true | string => {
+const validateIsbn = (raw: string | boolean): true | string => {
+  if (typeof raw !== "string") return true
+
   const trimmed = raw.trim()
 
   if (trimmed === "") return true
@@ -30,37 +29,18 @@ const getHelperText = (section: MetadataFormSection): string | undefined => {
 }
 
 type Props = {
-  control: Control<MetadataFixerFormValues>
+  control: Control<BookOptimizeFormValues>
   sections: MetadataFormSection[]
-  isApplying: boolean
-  isUploading: boolean
-  uploadProgress$: Observable<number> | undefined
-  onSubmit: SubmitEventHandler<HTMLFormElement>
+  disabled: boolean
 }
 
-export function MetadataForm({
-  control,
-  sections,
-  isApplying,
-  isUploading,
-  uploadProgress$,
-  onSubmit,
-}: Props) {
-  const { data: uploadProgress = 0 } = useObserve(
-    () => uploadProgress$ ?? EMPTY,
-    [uploadProgress$],
-  )
-  const uploadPercent = Math.min(
-    100,
-    Math.max(0, Math.round(uploadProgress * 100)),
-  )
-
+export function MetadataForm({ control, sections, disabled }: Props) {
   return (
-    <Stack component="form" spacing={2} onSubmit={onSubmit} noValidate>
+    <Stack spacing={2}>
       {sections.map((section) => (
         <MetadataSectionStack key={section.key}>
           <Typography variant="subtitle2">{section.label}</Typography>
-          <ControlledTextField<MetadataFixerFormValues>
+          <ControlledTextField<BookOptimizeFormValues>
             name={section.fieldName}
             control={control}
             rules={{ validate: validateIsbn }}
@@ -68,19 +48,10 @@ export function MetadataForm({
             size="small"
             fullWidth
             helperText={getHelperText(section)}
-            disabled={isApplying}
+            disabled={disabled}
           />
         </MetadataSectionStack>
       ))}
-      {isUploading && (
-        <Stack spacing={1}>
-          <Typography variant="body2">Uploading… {uploadPercent}%</Typography>
-          <LinearProgress
-            variant={uploadPercent > 0 ? "determinate" : "indeterminate"}
-            value={uploadPercent}
-          />
-        </Stack>
-      )}
     </Stack>
   )
 }

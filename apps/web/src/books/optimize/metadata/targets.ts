@@ -2,7 +2,7 @@ import type {
   ArchiveMetadataPatch,
   ArchiveMetadataTargets,
 } from "@oboku/archive-metadata"
-import type { FileInspection } from "./useFileInspection"
+import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 
 type ContainerKey = "comicInfo" | "opf"
