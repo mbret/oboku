@@ -10,6 +10,9 @@ import { useController } from "react-hook-form"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { hasCompressionDimension, type BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
+import { CONVERTIBLE_IMAGE_FORMAT_NAMES } from "./images"
+
+const convertibleFormats = CONVERTIBLE_IMAGE_FORMAT_NAMES.join(", ")
 
 const OptionStack = styled(Stack)(({ theme }) => ({
   border: `1px solid ${theme.palette.divider}`,
@@ -101,8 +104,9 @@ export function ImageCompressionOption() {
             </Typography>
           )}
           <Alert severity="info">
-            Images will be converted to WebP for the best size and every
-            reference to them inside the book will be updated.
+            Only {convertibleFormats} images are converted to WebP for the best
+            size, and every reference to them inside the book is updated.
+            Animated GIFs and other formats are left unchanged.
           </Alert>
         </>
       )}

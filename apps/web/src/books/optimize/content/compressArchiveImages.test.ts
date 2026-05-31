@@ -145,7 +145,23 @@ describe("compressArchiveImages", () => {
       "existing-webp",
     )
     expect(zip.file("cover.png")).not.toBeNull()
-    expect(result).toMatchObject({ totalImages: 2, compressedCount: 0 })
+    expect(result).toMatchObject({ totalImages: 1, compressedCount: 0 })
+  })
+
+  it("never converts gif entries, to avoid flattening animations", async () => {
+    compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
+
+    const zip = new JSZip()
+    zip.file("images/animation.gif", bytesOf("GIF-larger-payload"))
+    zip.file("images/photo.jpg", bytesOf("CONVERT-larger-payload"))
+
+    const result = await compressArchiveImages(zip, config)
+
+    expect(result.totalImages).toBe(1)
+    expect(zip.file("images/animation.gif")).not.toBeNull()
+    expect(zip.file("images/animation.webp")).toBeNull()
+    expect(zip.file("images/photo.webp")).not.toBeNull()
+    expect(compress).toHaveBeenCalledOnce()
   })
 
   it("reports progress for every processed image", async () => {

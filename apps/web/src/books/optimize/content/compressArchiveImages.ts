@@ -1,6 +1,6 @@
 import type JSZip from "jszip"
 import { Logger } from "../../../debug/logger.shared"
-import { isImagePath, replaceExtensionWithWebp } from "./images"
+import { isConvertibleImagePath, replaceExtensionWithWebp } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"
 import { mapWithConcurrency } from "./mapWithConcurrency"
 import { rewriteImageReferences } from "./rewriteImageReferences"
@@ -64,7 +64,7 @@ export const compressArchiveImages = async (
   }: { onProgress?: (completed: number, total: number) => void } = {},
 ): Promise<ImageCompressionResult> => {
   const images = Object.values(zip.files).filter(
-    (entry) => !entry.dir && isImagePath(entry.name),
+    (entry) => !entry.dir && isConvertibleImagePath(entry.name),
   )
   const total = images.length
 
