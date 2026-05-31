@@ -3,7 +3,7 @@ import { Logger } from "../../../debug/logger.shared"
 import {
   getBasename,
   getExtension,
-  listImageEntries,
+  isImagePath,
   replaceExtensionWithWebp,
 } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"
@@ -140,7 +140,9 @@ export const compressArchiveImages = async (
     onProgress,
   }: { onProgress?: (completed: number, total: number) => void } = {},
 ): Promise<ImageCompressionResult> => {
-  const images = listImageEntries(zip)
+  const images = Object.values(zip.files).filter(
+    (entry) => !entry.dir && isImagePath(entry.name),
+  )
   const total = images.length
 
   if (total === 0)
@@ -155,7 +157,7 @@ export const compressArchiveImages = async (
     await mapWithConcurrency(
       images,
       navigator.hardwareConcurrency || 4,
-      async ({ path, entry }) => {
+      async (entry) => {
         const original = await entry.async("arraybuffer")
         const originalByteLength = original.byteLength
         const result = await pool.compress(
@@ -169,8 +171,8 @@ export const compressArchiveImages = async (
 
         if (result.status === "ok" && isSmaller) {
           renames.push({
-            oldPath: path,
-            newPath: replaceExtensionWithWebp(path),
+            oldPath: entry.name,
+            newPath: replaceExtensionWithWebp(entry.name),
             bytes: result.bytes,
           })
         } else {

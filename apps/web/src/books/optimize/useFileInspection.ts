@@ -27,10 +27,10 @@ export type FileInspection = {
 }
 
 const inspectContent = (
-  entries: ReturnType<typeof listImageEntries>,
+  records: ReturnType<typeof listImageEntries>,
 ): { imageCount: number; imageBytes: number } => ({
-  imageCount: entries.length,
-  imageBytes: entries.reduce((total, { size }) => total + (size ?? 0), 0),
+  imageCount: records.length,
+  imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
 export const useFileInspection = ({
@@ -60,11 +60,11 @@ export const useFileInspection = ({
         lastModified: file.lastModified,
       })
 
-      const { zip, archive } = await loadArchive(file)
-      const imageEntries = listImageEntries(zip)
-      const { imageCount, imageBytes } = inspectContent(imageEntries)
+      const { archive } = await loadArchive(file)
+      const imageRecords = listImageEntries(archive)
+      const { imageCount, imageBytes } = inspectContent(imageRecords)
       const averageImageResolution =
-        await measureAverageImageResolution(imageEntries)
+        await measureAverageImageResolution(imageRecords)
 
       try {
         const metadata = await readArchiveMetadataFromSource(archive)

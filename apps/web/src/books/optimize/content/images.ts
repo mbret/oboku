@@ -1,4 +1,8 @@
-import type JSZip from "jszip"
+import {
+  isFileRecord,
+  type Archive,
+  type ArchiveFileRecord,
+} from "@oboku/archive-metadata"
 
 export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
   ".jpg",
@@ -40,40 +44,10 @@ export const replaceExtensionWithWebp = (path: string): string => {
   return `${path.substring(0, path.length - extension.length)}${WEBP_EXTENSION}`
 }
 
-/**
- * JSZip keeps the uncompressed size on a private `_data` field that its
- * published types deliberately omit. Reading it avoids decoding every entry
- * just to measure a content report, which would be prohibitive for large
- * comic archives.
- */
-type JSZipObjectWithData = JSZip.JSZipObject & {
-  _data?: { uncompressedSize?: number }
-}
-
-export const getUncompressedSize = (
-  entry: JSZip.JSZipObject,
-): number | undefined => {
-  // Accessing JSZip's untyped private `_data` to read the uncompressed size
-  // without decoding the entry; see JSZipObjectWithData above.
-  const withData = entry as JSZipObjectWithData
-
-  return withData._data?.uncompressedSize
-}
-
-export type ArchiveImageEntry = {
-  path: string
-  size: number | undefined
-  entry: JSZip.JSZipObject
-}
-
-export const listImageEntries = (zip: JSZip): ArchiveImageEntry[] =>
-  Object.values(zip.files)
-    .filter((entry) => !entry.dir && isImagePath(entry.name))
-    .map((entry) => ({
-      path: entry.name,
-      size: getUncompressedSize(entry),
-      entry,
-    }))
+export const listImageEntries = (archive: Archive): ArchiveFileRecord[] =>
+  archive.records
+    .filter(isFileRecord)
+    .filter((record) => isImagePath(record.uri))
 
 export type ImageResolution = {
   width: number
@@ -88,13 +62,13 @@ const RESOLUTION_SAMPLE_SIZE = 24
  * of pages.
  */
 export const measureAverageImageResolution = async (
-  entries: ArchiveImageEntry[],
+  records: ArchiveFileRecord[],
   sampleSize: number = RESOLUTION_SAMPLE_SIZE,
 ): Promise<ImageResolution | undefined> => {
-  if (entries.length === 0) return undefined
+  if (records.length === 0) return undefined
 
-  const step = Math.max(1, Math.floor(entries.length / sampleSize))
-  const sample = entries
+  const step = Math.max(1, Math.floor(records.length / sampleSize))
+  const sample = records
     .filter((_, index) => index % step === 0)
     .slice(0, sampleSize)
 
@@ -102,9 +76,9 @@ export const measureAverageImageResolution = async (
   let totalHeight = 0
   let measured = 0
 
-  for (const { entry } of sample) {
+  for (const record of sample) {
     try {
-      const bitmap = await createImageBitmap(await entry.async("blob"))
+      const bitmap = await createImageBitmap(await record.blob())
       totalWidth += bitmap.width
       totalHeight += bitmap.height
       bitmap.close()
