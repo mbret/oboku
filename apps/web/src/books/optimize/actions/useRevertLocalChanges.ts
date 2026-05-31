@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react"
+import { useCallback, useMemo } from "react"
+import { useMutation } from "@tanstack/react-query"
 import {
   PLUGIN_FILE_TYPE,
   type BookDocType,
@@ -18,13 +19,22 @@ export const useRevertLocalChanges = ({
   link: DeepReadonlyObject<LinkDocType>
 }) => {
   const bookId = book._id
-  const [isReverting, setIsReverting] = useState(false)
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
   const { mutate: downloadBook } = useDownloadBook()
   const bookLinks = useMemo(() => [...book.links], [book.links])
   // Local-only books have no data source to re-download from, so reverting
   // (which deletes the local file) would lose it permanently.
   const canRevert = link.type !== PLUGIN_FILE_TYPE
+
+  const { mutate: revert, isPending: isReverting } = useMutation({
+    mutationFn: async () => {
+      await removeDownloadFile({ bookId })
+      downloadBook({ _id: bookId, links: bookLinks })
+    },
+    onError: (error) => {
+      notifyError(error)
+    },
+  })
 
   const revertLocalChanges = useCallback(async () => {
     if (isReverting || !canRevert) return
@@ -36,23 +46,8 @@ export const useRevertLocalChanges = ({
 
     if (!isConfirmed) return
 
-    setIsReverting(true)
-    try {
-      await removeDownloadFile({ bookId })
-      downloadBook({ _id: bookId, links: bookLinks })
-    } catch (error) {
-      notifyError(error)
-    } finally {
-      setIsReverting(false)
-    }
-  }, [
-    bookId,
-    bookLinks,
-    canRevert,
-    downloadBook,
-    isReverting,
-    removeDownloadFile,
-  ])
+    revert()
+  }, [canRevert, isReverting, revert])
 
   return { revertLocalChanges, isReverting, canRevert }
 }

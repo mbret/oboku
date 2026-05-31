@@ -11,7 +11,6 @@ import { useForm, type Control } from "react-hook-form"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import type { Observable } from "rxjs"
-import { showConfirmDialog } from "../../common/dialogs/presets"
 import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
 import type { FileInspection } from "./useFileInspection"
@@ -26,9 +25,7 @@ import {
 import { buildOptimizeOperations } from "./apply/buildOptimizeOperations"
 
 type BookOptimizeContextValue = {
-  bookId: string
   control: Control<BookOptimizeFormValues>
-  canUploadToDataSource: boolean
   inspection: FileInspection
   isApplying: boolean
   isApplyingLocally: boolean
@@ -101,12 +98,15 @@ export function BookOptimizeProvider({
     isPending: isApplyingLocally,
     compressionProgress$,
   } = useApplyLocalOptimizations()
-  const {
-    mutate: uploadFile,
-    isPending: isUploading,
-    slot,
-    uploadProgress$,
-  } = useUploadToDataSource()
+
+  // Upload pushes the current local file as-is; pending (un-applied) edits must
+  // be applied locally first so the remote matches what the form describes.
+  const { uploadToDataSource, isUploading, canUpload, slot, uploadProgress$ } =
+    useUploadToDataSource({
+      book,
+      link,
+      enabled: canUploadToDataSource && !isDirty && !isApplyingLocally,
+    })
 
   const isBusy = isApplyingLocally || isUploading
 
@@ -114,9 +114,6 @@ export function BookOptimizeProvider({
   // `isDirty` signal so a dirty-but-no-op edit can never leave the user stuck
   // (unable to apply and unable to upload).
   const canApplyLocally = isValid && isDirty && !isBusy
-  // Upload pushes the current local file as-is; pending (un-applied) edits must
-  // be applied locally first so the remote matches what the form describes.
-  const canUpload = canUploadToDataSource && !isDirty && !isBusy
 
   const applyLocally = useCallback(() => {
     if (!canApplyLocally) return
@@ -148,39 +145,9 @@ export function BookOptimizeProvider({
     reset,
   ])
 
-  const uploadToDataSource = useCallback(async () => {
-    if (!canUpload) return
-
-    const isConfirmed = await showConfirmDialog({
-      message:
-        "This will overwrite the file on the remote data source with the current local file.",
-    })
-
-    if (!isConfirmed) return
-
-    uploadFile(
-      { bookId, link },
-      {
-        onSuccess: () => {
-          notify({
-            title: "Upload complete",
-            description: "The file was uploaded to the data source.",
-            severity: "success",
-          })
-        },
-        onError: (error) => {
-          if (error instanceof CancelError) return
-          notifyError(error)
-        },
-      },
-    )
-  }, [bookId, canUpload, link, uploadFile])
-
   const value = useMemo<BookOptimizeContextValue>(
     () => ({
-      bookId,
       control,
-      canUploadToDataSource,
       inspection,
       isApplying: isBusy,
       isApplyingLocally,
@@ -196,9 +163,7 @@ export function BookOptimizeProvider({
       compressionProgress$,
     }),
     [
-      bookId,
       control,
-      canUploadToDataSource,
       inspection,
       isBusy,
       isApplyingLocally,
