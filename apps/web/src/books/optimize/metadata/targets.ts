@@ -84,7 +84,6 @@ export const resolveMetadataFormSections = (
   inspection: FileInspection | undefined,
 ): MetadataFormSection[] => {
   if (!inspection) return []
-  if (inspection.metadataReadFailed) return []
 
   if (!inspection.hasComicInfo && !inspection.hasOpf) {
     return [
@@ -125,7 +124,6 @@ export const resolveArchiveMetadataPatchPlans = (
   inspection: FileInspection | undefined,
 ): ArchiveMetadataPatchPlan[] => {
   if (!inspection) return []
-  if (inspection.metadataReadFailed) return []
 
   if (!inspection.hasComicInfo && !inspection.hasOpf) {
     return [

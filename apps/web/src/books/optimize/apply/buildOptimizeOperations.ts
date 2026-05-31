@@ -13,10 +13,8 @@ import type { OptimizeOperation } from "./operations"
 
 const resolveMetadataPatchOperation = (
   values: BookOptimizeFormValues,
-  inspection: FileInspection | undefined,
+  inspection: FileInspection,
 ): OptimizeOperation | undefined => {
-  if (!inspection || inspection.metadataReadFailed) return undefined
-
   const trimmed = trimMetadataFixerFormValues(values)
   const resolved = resolveMetadataFixerFormValues(inspection)
   const metadataChanged =
@@ -48,7 +46,7 @@ const resolveCompressOperation = (
 
 export const buildOptimizeOperations = (
   values: BookOptimizeFormValues,
-  inspection: FileInspection | undefined,
+  inspection: FileInspection,
 ): OptimizeOperation[] =>
   [
     resolveMetadataPatchOperation(values, inspection),

@@ -33,7 +33,7 @@ export const hasCompressionDimension = (
   parseDimension(values.maxHeight) !== undefined
 
 export const resolveBookOptimizeFormValues = (
-  inspection: FileInspection | undefined,
+  inspection: FileInspection,
 ): BookOptimizeFormValues => ({
   ...resolveMetadataFixerFormValues(inspection),
   compressImages: false,

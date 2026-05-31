@@ -1,3 +1,4 @@
+import { Alert, Typography } from "@mui/material"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { BookOptimizeProvider } from "./BookOptimizeProvider"
@@ -5,6 +6,7 @@ import { MetadataTab } from "./MetadataTab"
 import { ContentTab } from "./ContentTab"
 import { BookOptimizeActionBar } from "./actions/BookOptimizeActionBar"
 import { BOOK_OPTIMIZE_TABS, type BookOptimizeTab } from "./tabs"
+import { useFileInspection } from "./useFileInspection"
 
 type Props = {
   book: DeepReadonlyObject<BookDocType>
@@ -19,11 +21,34 @@ export function OptimizeStep({
   canUploadToDataSource,
   currentTab,
 }: Props) {
+  const { data: inspection, isError } = useFileInspection({
+    bookId: book._id,
+    enabled: true,
+  })
+
+  if (isError || inspection === null) {
+    return (
+      <Alert severity="error">
+        This book file could not be read. It may be corrupted or in an
+        unsupported format.
+      </Alert>
+    )
+  }
+
+  if (!inspection) {
+    return (
+      <Typography variant="body2" color="text.secondary">
+        Inspecting the book…
+      </Typography>
+    )
+  }
+
   return (
     <BookOptimizeProvider
       book={book}
       link={link}
       canUploadToDataSource={canUploadToDataSource}
+      inspection={inspection}
     >
       <MetadataTab hidden={currentTab !== BOOK_OPTIMIZE_TABS.METADATA} />
 

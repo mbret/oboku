@@ -23,7 +23,6 @@ export type FileInspection = {
   hasOpf: boolean
   comicInfoIsbn: string | undefined
   opfIsbn: string | undefined
-  metadataReadFailed: boolean
 }
 
 const inspectContent = (
@@ -65,35 +64,18 @@ export const useFileInspection = ({
       const { imageCount, imageBytes } = inspectContent(imageRecords)
       const averageImageResolution =
         await measureAverageImageResolution(imageRecords)
+      const metadata = await readArchiveMetadataFromSource(archive)
 
-      try {
-        const metadata = await readArchiveMetadataFromSource(archive)
-
-        return {
-          fileName: file.name,
-          fileSize: file.size,
-          imageCount,
-          imageBytes,
-          averageImageResolution,
-          hasComicInfo: metadata.hasComicInfo,
-          hasOpf: metadata.hasOpf,
-          comicInfoIsbn: metadata.comicInfo?.isbn,
-          opfIsbn: metadata.opf?.isbn,
-          metadataReadFailed: false,
-        }
-      } catch {
-        return {
-          fileName: file.name,
-          fileSize: file.size,
-          imageCount,
-          imageBytes,
-          averageImageResolution,
-          hasComicInfo: false,
-          hasOpf: false,
-          comicInfoIsbn: undefined,
-          opfIsbn: undefined,
-          metadataReadFailed: true,
-        }
+      return {
+        fileName: file.name,
+        fileSize: file.size,
+        imageCount,
+        imageBytes,
+        averageImageResolution,
+        hasComicInfo: metadata.hasComicInfo,
+        hasOpf: metadata.hasOpf,
+        comicInfoIsbn: metadata.comicInfo?.isbn,
+        opfIsbn: metadata.opf?.isbn,
       }
     },
   })

@@ -21,7 +21,7 @@ import { CancelError } from "../../errors/errors.shared"
 import { notify, notifyError } from "../../notifications/toasts"
 import { useDownloadBook } from "../../download"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
-import { useFileInspection, type FileInspection } from "./useFileInspection"
+import type { FileInspection } from "./useFileInspection"
 import { useApplyLocalOptimizations } from "./apply/useApplyLocalOptimizations"
 import { useUploadToDataSource } from "./upload/useUploadToDataSource"
 import {
@@ -35,8 +35,7 @@ type BookOptimizeContextValue = {
   bookId: string
   control: Control<BookOptimizeFormValues>
   canUploadToDataSource: boolean
-  inspection: FileInspection | undefined
-  inspectionReady: boolean
+  inspection: FileInspection
   isApplying: boolean
   isApplyingLocally: boolean
   isUploading: boolean
@@ -57,6 +56,7 @@ type Props = {
   book: DeepReadonlyObject<BookDocType>
   link: DeepReadonlyObject<LinkDocType>
   canUploadToDataSource: boolean
+  inspection: FileInspection
   children: ReactNode
 }
 
@@ -64,12 +64,10 @@ export function BookOptimizeProvider({
   book,
   link,
   canUploadToDataSource,
+  inspection,
   children,
 }: Props) {
   const bookId = book._id
-  const { data: inspectionData } = useFileInspection({ bookId, enabled: true })
-  const inspection = inspectionData ?? undefined
-  const inspectionReady = inspectionData !== undefined
 
   const [isReverting, setIsReverting] = useState(false)
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
@@ -132,11 +130,10 @@ export function BookOptimizeProvider({
   // A pending, valid change is enough to apply. Both gates key off the same
   // `isDirty` signal so a dirty-but-no-op edit can never leave the user stuck
   // (unable to apply and unable to upload).
-  const canApplyLocally = inspectionReady && isValid && isDirty && !isBusy
+  const canApplyLocally = isValid && isDirty && !isBusy
   // Upload pushes the current local file as-is; pending (un-applied) edits must
   // be applied locally first so the remote matches what the form describes.
-  const canUpload =
-    inspectionReady && canUploadToDataSource && !isDirty && !isBusy
+  const canUpload = canUploadToDataSource && !isDirty && !isBusy
 
   const applyLocally = useCallback(() => {
     if (!canApplyLocally) return
@@ -230,7 +227,6 @@ export function BookOptimizeProvider({
       control,
       canUploadToDataSource,
       inspection,
-      inspectionReady,
       isApplying: isBusy,
       isApplyingLocally,
       isUploading,
@@ -249,7 +245,6 @@ export function BookOptimizeProvider({
       control,
       canUploadToDataSource,
       inspection,
-      inspectionReady,
       isBusy,
       isApplyingLocally,
       isUploading,

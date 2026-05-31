@@ -46,14 +46,10 @@ const buildRows = (inspection: FileInspection): ReportRow[] => {
 }
 
 type Props = {
-  inspection: FileInspection | undefined
+  inspection: FileInspection
 }
 
 export function ContentReport({ inspection }: Props) {
-  if (!inspection) {
-    return <Typography variant="body2">Waiting for the file…</Typography>
-  }
-
   return (
     <Stack spacing={1}>
       <Typography variant="subtitle2">Content report</Typography>

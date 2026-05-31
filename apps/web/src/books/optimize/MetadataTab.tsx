@@ -19,35 +19,23 @@ type Props = {
 export function MetadataTab({ hidden }: Props) {
   const { inspection, isApplying, control } = useBookOptimize()
 
-  const detectedContainers = inspection
-    ? collectDetectedContainers({
-        hasOpf: inspection.hasOpf,
-        hasComicInfo: inspection.hasComicInfo,
-      })
-    : []
+  const detectedContainers = collectDetectedContainers({
+    hasOpf: inspection.hasOpf,
+    hasComicInfo: inspection.hasComicInfo,
+  })
   const formSections = useMemo(
     () => resolveMetadataFormSections(inspection),
     [inspection],
   )
 
-  const inspectionReady = inspection !== undefined
-  const metadataReadFailed = inspection?.metadataReadFailed ?? false
-  const canEditMetadata = inspectionReady && !metadataReadFailed
-
   return (
     <MetadataTabRootStack hidden={hidden}>
-      <MetadataDetectionSummary
-        inspectionReady={inspectionReady}
-        detectedContainers={detectedContainers}
-        metadataReadFailed={metadataReadFailed}
+      <MetadataDetectionSummary detectedContainers={detectedContainers} />
+      <MetadataForm
+        control={control}
+        sections={formSections}
+        disabled={isApplying}
       />
-      {canEditMetadata && (
-        <MetadataForm
-          control={control}
-          sections={formSections}
-          disabled={isApplying}
-        />
-      )}
     </MetadataTabRootStack>
   )
 }

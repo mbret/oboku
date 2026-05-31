@@ -1,4 +1,4 @@
-import { Alert, Chip, Stack, Typography, styled } from "@mui/material"
+import { Chip, Stack, Typography, styled } from "@mui/material"
 import type { DetectedContainer } from "./targets"
 
 const ContainersChipStack = styled(Stack)(({ theme }) => ({
@@ -8,29 +8,10 @@ const ContainersChipStack = styled(Stack)(({ theme }) => ({
 }))
 
 type Props = {
-  inspectionReady: boolean
   detectedContainers: DetectedContainer[]
-  metadataReadFailed: boolean
 }
 
-export function MetadataDetectionSummary({
-  inspectionReady,
-  detectedContainers,
-  metadataReadFailed,
-}: Props) {
-  if (!inspectionReady) {
-    return <Typography variant="body2">Waiting for the file…</Typography>
-  }
-
-  if (metadataReadFailed) {
-    return (
-      <Alert severity="error">
-        This file could not be opened. Metadata cannot be edited for this format
-        or the file is corrupted.
-      </Alert>
-    )
-  }
-
+export function MetadataDetectionSummary({ detectedContainers }: Props) {
   return (
     <Stack spacing={1}>
       {detectedContainers.length > 0 ? (
