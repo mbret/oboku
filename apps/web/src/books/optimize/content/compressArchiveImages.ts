@@ -6,12 +6,6 @@ import { mapWithConcurrency } from "./mapWithConcurrency"
 import { rewriteImageReferences } from "./rewriteImageReferences"
 import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
 
-type Rename = {
-  oldPath: string
-  newPath: string
-  bytes: ArrayBuffer
-}
-
 /**
  * Identifies images whose `.webp` target would clash with another archive
  * entry — either because two originals collapse to the same name (e.g.
@@ -74,8 +68,9 @@ export const compressArchiveImages = async (
   const collidingNames = findCollidingWebpTargets(zip, images)
 
   const pool = createImageCompressionPool()
-  const renames: Rename[] = []
+  const renamedPaths = new Set<string>()
   let completed = 0
+  let compressedCount = 0
   let skippedCount = 0
 
   try {
@@ -103,11 +98,16 @@ export const compressArchiveImages = async (
           result.status === "ok" && result.bytes.byteLength < originalByteLength
 
         if (result.status === "ok" && isSmaller) {
-          renames.push({
-            oldPath: entry.name,
-            newPath: replaceExtensionWithWebp(entry.name),
-            bytes: result.bytes,
-          })
+          const oldPath = entry.name
+          const newPath = replaceExtensionWithWebp(oldPath)
+
+          if (newPath !== oldPath) {
+            zip.remove(oldPath)
+            renamedPaths.add(oldPath)
+          }
+
+          zip.file(newPath, new Uint8Array(result.bytes))
+          compressedCount += 1
         } else {
           skippedCount += 1
         }
@@ -120,28 +120,17 @@ export const compressArchiveImages = async (
     pool.terminate()
   }
 
-  const renamedPaths = new Set<string>()
-
-  for (const { oldPath, newPath, bytes } of renames) {
-    if (newPath !== oldPath) {
-      zip.remove(oldPath)
-      renamedPaths.add(oldPath)
-    }
-
-    zip.file(newPath, new Uint8Array(bytes))
-  }
-
   await rewriteImageReferences(zip, renamedPaths)
 
   Logger.info("[contentOptimizer] image compression", {
     totalImages: total,
-    compressedCount: renames.length,
+    compressedCount,
     skippedCount,
   })
 
   return {
     totalImages: total,
-    compressedCount: renames.length,
+    compressedCount,
     skippedCount,
   }
 }
