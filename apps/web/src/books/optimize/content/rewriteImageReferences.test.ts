@@ -33,6 +33,26 @@ describe("rewriteImageReferences", () => {
     )
   })
 
+  it("rewrites percent-encoded references against unescaped archive entry names", async () => {
+    const zip = new JSZip()
+    zip.file("OEBPS/text/chapter.xhtml", `<img src="../images/page%201.jpg"/>`)
+    zip.file(
+      "OEBPS/content.opf",
+      `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="a" href="images/page%201.jpg" media-type="image/jpeg"/></manifest></package>`,
+    )
+
+    await rewriteImageReferences(zip, new Set(["OEBPS/images/page 1.jpg"]))
+
+    expect(await zip.file("OEBPS/text/chapter.xhtml")?.async("string")).toBe(
+      `<img src="../images/page%201.webp"/>`,
+    )
+
+    const opf = await zip.file("OEBPS/content.opf")?.async("string")
+
+    expect(opf).toContain(`href="images/page%201.webp"`)
+    expect(opf).toContain(`media-type="image/webp"`)
+  })
+
   it("rewrites href and media-type of converted OPF manifest items only", async () => {
     const zip = new JSZip()
     zip.file(

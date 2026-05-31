@@ -24,11 +24,26 @@ const getDirname = (path: string): string => {
   return lastSlash === -1 ? "" : path.substring(0, lastSlash)
 }
 
+const decodeSegment = (segment: string): string => {
+  try {
+    return decodeURIComponent(segment)
+  } catch {
+    return segment
+  }
+}
+
+/**
+ * Document references may be percent-encoded (e.g. `images/page%201.jpg`) while
+ * JSZip entry names — and therefore `renamedPaths` — are stored unescaped. We
+ * decode per segment so the resolved path can match the archive entry without
+ * turning an encoded slash (`%2F`) into a path separator.
+ */
 const resolveArchivePath = (baseDir: string, reference: string): string => {
+  const decodedReference = reference.split("/").map(decodeSegment).join("/")
   const combined =
-    reference.startsWith("/") || baseDir === ""
-      ? reference
-      : `${baseDir}/${reference}`
+    decodedReference.startsWith("/") || baseDir === ""
+      ? decodedReference
+      : `${baseDir}/${decodedReference}`
   const stack: string[] = []
 
   for (const segment of combined.split("/")) {

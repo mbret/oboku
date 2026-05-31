@@ -27,7 +27,6 @@ import { buildOptimizeOperations } from "./apply/buildOptimizeOperations"
 type BookOptimizeContextValue = {
   control: Control<BookOptimizeFormValues>
   inspection: FileInspection
-  isApplying: boolean
   isApplyingLocally: boolean
   isUploading: boolean
   canApplyLocally: boolean
@@ -149,7 +148,6 @@ export function BookOptimizeProvider({
     () => ({
       control,
       inspection,
-      isApplying: isBusy,
       isApplyingLocally,
       isUploading,
       canApplyLocally,
@@ -165,7 +163,6 @@ export function BookOptimizeProvider({
     [
       control,
       inspection,
-      isBusy,
       isApplyingLocally,
       isUploading,
       canApplyLocally,

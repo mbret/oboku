@@ -32,7 +32,8 @@ const getScreenResolution = (): string => {
 }
 
 export function ImageCompressionOption() {
-  const { control, isApplying } = useBookOptimize()
+  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+  const isApplying = isApplyingLocally || isUploading
   const {
     field: { value: enabled, onChange },
     fieldState: { error },

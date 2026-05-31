@@ -32,7 +32,8 @@ type IsbnSectionProps = {
 }
 
 function IsbnSection({ label, fieldName, detectedIsbn }: IsbnSectionProps) {
-  const { control, isApplying } = useBookOptimize()
+  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+  const isApplying = isApplyingLocally || isUploading
 
   return (
     <MetadataSectionStack>
