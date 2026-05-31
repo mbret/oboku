@@ -112,6 +112,42 @@ describe("compressArchiveImages", () => {
     )
   })
 
+  it("skips images whose webp targets collide instead of overwriting each other", async () => {
+    compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
+
+    const zip = new JSZip()
+    zip.file("cover.jpg", bytesOf("jpg-larger-payload"))
+    zip.file("cover.png", bytesOf("png-larger-payload"))
+
+    const result = await compressArchiveImages(zip, config)
+
+    expect(result).toEqual({
+      totalImages: 2,
+      compressedCount: 0,
+      skippedCount: 2,
+    })
+    expect(zip.file("cover.jpg")).not.toBeNull()
+    expect(zip.file("cover.png")).not.toBeNull()
+    expect(zip.file("cover.webp")).toBeNull()
+    expect(compress).not.toHaveBeenCalled()
+  })
+
+  it("skips an image whose webp target already exists in the archive", async () => {
+    compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
+
+    const zip = new JSZip()
+    zip.file("cover.png", bytesOf("png-larger-payload"))
+    zip.file("cover.webp", bytesOf("existing-webp"))
+
+    const result = await compressArchiveImages(zip, config)
+
+    expect(decode(await zip.file("cover.webp")!.async("arraybuffer"))).toBe(
+      "existing-webp",
+    )
+    expect(zip.file("cover.png")).not.toBeNull()
+    expect(result).toMatchObject({ totalImages: 2, compressedCount: 0 })
+  })
+
   it("reports progress for every processed image", async () => {
     compress.mockResolvedValue({ status: "skipped" })
     const onProgress = vi.fn()

@@ -12,6 +12,50 @@ type Rename = {
   bytes: ArrayBuffer
 }
 
+/**
+ * Identifies images whose `.webp` target would clash with another archive
+ * entry — either because two originals collapse to the same name (e.g.
+ * `cover.jpg` and `cover.png` both becoming `cover.webp`) or because the target
+ * already exists in the archive (e.g. a pre-existing `cover.webp`).
+ *
+ * Converting such images would overwrite a different file and rewrite both
+ * references to the same surviving bytes, corrupting those pages. We do not yet
+ * resolve collisions by generating unique names, so for now we deliberately
+ * skip every entry involved in a clash and leave the originals untouched.
+ *
+ * TODO: resolve collisions by generating unique `.webp` targets (and updating
+ * references accordingly) instead of skipping the conversion entirely.
+ */
+const findCollidingWebpTargets = (
+  zip: JSZip,
+  images: JSZip.JSZipObject[],
+): Set<string> => {
+  const existingNames = new Set(Object.keys(zip.files))
+  const targetToSources = new Map<string, string[]>()
+
+  for (const entry of images) {
+    const target = replaceExtensionWithWebp(entry.name)
+    const sources = targetToSources.get(target) ?? []
+
+    sources.push(entry.name)
+    targetToSources.set(target, sources)
+  }
+
+  const colliding = new Set<string>()
+
+  for (const [target, sources] of targetToSources) {
+    const overwritesUnrelatedEntry = sources.some(
+      (source) => source !== target && existingNames.has(target),
+    )
+
+    if (sources.length > 1 || overwritesUnrelatedEntry) {
+      for (const source of sources) colliding.add(source)
+    }
+  }
+
+  return colliding
+}
+
 export const compressArchiveImages = async (
   zip: JSZip,
   config: ImageCompressionConfig,
@@ -27,6 +71,8 @@ export const compressArchiveImages = async (
   if (total === 0)
     return { totalImages: 0, compressedCount: 0, skippedCount: 0 }
 
+  const collidingNames = findCollidingWebpTargets(zip, images)
+
   const pool = createImageCompressionPool()
   const renames: Rename[] = []
   let completed = 0
@@ -37,6 +83,14 @@ export const compressArchiveImages = async (
       images,
       navigator.hardwareConcurrency || 4,
       async (entry) => {
+        if (collidingNames.has(entry.name)) {
+          skippedCount += 1
+          completed += 1
+          onProgress?.(completed, total)
+
+          return
+        }
+
         const original = await entry.async("arraybuffer")
         const originalByteLength = original.byteLength
         const result = await pool.compress(
