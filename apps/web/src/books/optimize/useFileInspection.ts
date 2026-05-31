@@ -30,6 +30,21 @@ const inspectContent = (
   imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
+/**
+ * Inspects the locally cached book file in a single pass: file stats, image
+ * stats, and embedded metadata (OPF / ComicInfo).
+ *
+ * Inspection is intentionally all-or-nothing. A malformed OPF or ComicInfo.xml
+ * makes `readArchiveMetadataFromSource` reject, which fails the whole query and
+ * surfaces the file as unsupported/corrupt in `OptimizeStep` — even though
+ * image counting and compression could technically still run. We treat an
+ * archive whose declared metadata cannot be parsed as untrustworthy rather than
+ * presenting an optimize UI built on partially-read data.
+ *
+ * Before isolating metadata parse failures into the metadata fields here, also
+ * design the partial-state UX (`MetadataTab`, `MetadataForm`, the action bar),
+ * otherwise the recovered content path has nowhere to surface.
+ */
 export const useFileInspection = (bookId: string | undefined) =>
   useQuery({
     queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId] as const,
