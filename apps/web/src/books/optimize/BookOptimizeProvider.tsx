@@ -93,25 +93,17 @@ export function BookOptimizeProvider({
   )
 
   const formKey = `${book._id}:${link._id}`
-  const formKeyRef = useRef(formKey)
+  const seededFormKeyRef = useRef<string | null>(null)
 
-  useEffect(() => {
-    if (formKeyRef.current !== formKey) {
-      formKeyRef.current = formKey
+  useEffect(
+    function seedFormPerBookLink() {
+      if (seededFormKeyRef.current === formKey) return
+
+      seededFormKeyRef.current = formKey
       reset(resolvedValues)
-      return
-    }
-
-    if (
-      getValues("compressImages") ||
-      getValues("maxWidth") ||
-      getValues("maxHeight")
-    ) {
-      return
-    }
-
-    reset(resolvedValues)
-  }, [formKey, getValues, reset, resolvedValues])
+    },
+    [formKey, reset, resolvedValues],
+  )
 
   const {
     mutate: applyLocalOptimizations,
