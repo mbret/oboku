@@ -1,136 +1,15 @@
 import type JSZip from "jszip"
 import { Logger } from "../../../debug/logger.shared"
-import {
-  getBasename,
-  getExtension,
-  isImagePath,
-  replaceExtensionWithWebp,
-} from "./images"
+import { isImagePath, replaceExtensionWithWebp } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"
+import { mapWithConcurrency } from "./mapWithConcurrency"
+import { rewriteImageReferences } from "./rewriteImageReferences"
 import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
-
-const TEXT_REFERENCE_EXTENSIONS: ReadonlySet<string> = new Set([
-  ".xhtml",
-  ".html",
-  ".htm",
-  ".xml",
-  ".ncx",
-  ".css",
-  ".svg",
-])
-
-const OPF_EXTENSION = ".opf"
-const WEBP_MEDIA_TYPE = "image/webp"
 
 type Rename = {
   oldPath: string
   newPath: string
   bytes: ArrayBuffer
-}
-
-const mapWithConcurrency = async <T>(
-  items: T[],
-  limit: number,
-  task: (item: T, index: number) => Promise<void>,
-): Promise<void> => {
-  let cursor = 0
-
-  const run = async (): Promise<void> => {
-    while (cursor < items.length) {
-      const index = cursor
-      cursor += 1
-      const item = items[index]
-      if (item === undefined) return
-      await task(item, index)
-    }
-  }
-
-  await Promise.all(
-    Array.from({ length: Math.max(1, Math.min(limit, items.length)) }, run),
-  )
-}
-
-const escapeRegExp = (value: string): string =>
-  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-
-const rewriteTextReferences = (
-  content: string,
-  renames: ReadonlyArray<[string, string]>,
-): string =>
-  renames.reduce((current, [oldBasename, newBasename]) => {
-    const pattern = new RegExp(
-      `(?<![\\w.\\-])${escapeRegExp(oldBasename)}(?![\\w])`,
-      "g",
-    )
-
-    return current.replace(pattern, newBasename)
-  }, content)
-
-const rewriteOpfManifest = (
-  xml: string,
-  basenameMap: Map<string, string>,
-): string | undefined => {
-  const doc = new DOMParser().parseFromString(xml, "application/xml")
-
-  if (doc.getElementsByTagName("parsererror").length > 0) return undefined
-
-  const items = doc.getElementsByTagNameNS("*", "item")
-  let changed = false
-
-  for (const item of Array.from(items)) {
-    const href = item.getAttribute("href")
-    if (!href) continue
-
-    const basename = getBasename(href)
-    const newBasename = basenameMap.get(basename)
-    if (!newBasename) continue
-
-    item.setAttribute(
-      "href",
-      `${href.substring(0, href.length - basename.length)}${newBasename}`,
-    )
-    item.setAttribute("media-type", WEBP_MEDIA_TYPE)
-    changed = true
-  }
-
-  if (!changed) return undefined
-
-  return new XMLSerializer().serializeToString(doc)
-}
-
-const rewriteReferences = async (
-  zip: JSZip,
-  basenameMap: Map<string, string>,
-): Promise<void> => {
-  if (basenameMap.size === 0) return
-
-  const renames = [...basenameMap.entries()].sort(
-    ([a], [b]) => b.length - a.length,
-  )
-
-  for (const entry of Object.values(zip.files)) {
-    if (entry.dir) continue
-
-    const extension = getExtension(entry.name)
-    const isOpf = extension === OPF_EXTENSION
-
-    if (!isOpf && !TEXT_REFERENCE_EXTENSIONS.has(extension)) continue
-
-    const content = await entry.async("string")
-
-    if (isOpf) {
-      const manifestRewritten = rewriteOpfManifest(content, basenameMap)
-      const next = rewriteTextReferences(manifestRewritten ?? content, renames)
-
-      if (next !== content) zip.file(entry.name, next)
-
-      continue
-    }
-
-    const next = rewriteTextReferences(content, renames)
-
-    if (next !== content) zip.file(entry.name, next)
-  }
 }
 
 export const compressArchiveImages = async (
@@ -187,18 +66,18 @@ export const compressArchiveImages = async (
     pool.terminate()
   }
 
-  const basenameMap = new Map<string, string>()
+  const renamedPaths = new Set<string>()
 
   for (const { oldPath, newPath, bytes } of renames) {
     if (newPath !== oldPath) {
       zip.remove(oldPath)
-      basenameMap.set(getBasename(oldPath), getBasename(newPath))
+      renamedPaths.add(oldPath)
     }
 
     zip.file(newPath, new Uint8Array(bytes))
   }
 
-  await rewriteReferences(zip, basenameMap)
+  await rewriteImageReferences(zip, renamedPaths)
 
   Logger.info("[contentOptimizer] image compression", {
     totalImages: total,
