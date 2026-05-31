@@ -58,10 +58,23 @@ const resolveArchivePath = (baseDir: string, reference: string): string => {
   return stack.join("/")
 }
 
+const EXTENSION_ALTERNATION = [...IMAGE_EXTENSIONS]
+  .map((extension) => extension.slice(1))
+  .join("|")
+
+/**
+ * Two ways an image path can appear in a document:
+ *  1. delimited by a quote or `url(` on both sides (`src="…"`, `url(…)`), which
+ *     lets the path legally contain spaces — `src="images/page 1.jpg"`;
+ *  2. bare, bounded by whitespace/punctuation, where a space terminates it.
+ *
+ * The delimited branch is tried first so a quoted path keeps its spaces instead
+ * of being truncated to the trailing segment by the bare branch.
+ */
 const IMAGE_REFERENCE_PATTERN = new RegExp(
-  `(?<![^\\s"'()<>=,])([^\\s"'()<>?#,]*\\.(?:${[...IMAGE_EXTENSIONS]
-    .map((extension) => extension.slice(1))
-    .join("|")})(?![\\w]))((?:[?#][^\\s"'()<>,]*)?)`,
+  `(?<=["'(])([^"'()<>?#]*\\.(?:${EXTENSION_ALTERNATION}))((?:[?#][^"'()<>]*)?)(?=["')])` +
+    "|" +
+    `(?<![^\\s"'()<>=,])([^\\s"'()<>?#,]*\\.(?:${EXTENSION_ALTERNATION})(?![\\w]))((?:[?#][^\\s"'()<>,]*)?)`,
   "gi",
 )
 
@@ -72,7 +85,17 @@ const rewriteTextReferences = (
 ): string =>
   content.replace(
     IMAGE_REFERENCE_PATTERN,
-    (match, reference: string, suffix: string) => {
+    (
+      match: string,
+      delimitedReference: string | undefined,
+      delimitedSuffix: string | undefined,
+      bareReference: string | undefined,
+      bareSuffix: string | undefined,
+    ) => {
+      const reference = delimitedReference ?? bareReference
+      const suffix = delimitedSuffix ?? bareSuffix ?? ""
+
+      if (reference === undefined) return match
       if (!renamedPaths.has(resolveArchivePath(baseDir, reference)))
         return match
 

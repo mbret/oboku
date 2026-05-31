@@ -53,6 +53,31 @@ describe("rewriteImageReferences", () => {
     expect(opf).toContain(`media-type="image/webp"`)
   })
 
+  it("rewrites quoted references whose paths contain spaces", async () => {
+    const zip = new JSZip()
+    zip.file("OEBPS/text/chapter.xhtml", `<img src="../images/page 1.jpg"/>`)
+    zip.file(
+      "OEBPS/styles/main.css",
+      `.cover { background: url("../images/page 1.jpg"); }`,
+    )
+    zip.file(
+      "OEBPS/styles/bare.css",
+      `.bg { background: url(../images/page 1.jpg); }`,
+    )
+
+    await rewriteImageReferences(zip, new Set(["OEBPS/images/page 1.jpg"]))
+
+    expect(await zip.file("OEBPS/text/chapter.xhtml")?.async("string")).toBe(
+      `<img src="../images/page 1.webp"/>`,
+    )
+    expect(await zip.file("OEBPS/styles/main.css")?.async("string")).toBe(
+      `.cover { background: url("../images/page 1.webp"); }`,
+    )
+    expect(await zip.file("OEBPS/styles/bare.css")?.async("string")).toBe(
+      `.bg { background: url(../images/page 1.webp); }`,
+    )
+  })
+
   it("rewrites href and media-type of converted OPF manifest items only", async () => {
     const zip = new JSZip()
     zip.file(
