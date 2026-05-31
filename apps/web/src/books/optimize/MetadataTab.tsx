@@ -2,10 +2,7 @@ import { Stack, styled } from "@mui/material"
 import { useMemo } from "react"
 import { MetadataDetectionSummary } from "./metadata/MetadataDetectionSummary"
 import { MetadataForm } from "./metadata/MetadataForm"
-import {
-  collectDetectedContainers,
-  resolveMetadataFormSections,
-} from "./metadata/targets"
+import { resolveMetadataFormSections } from "./metadata/targets"
 import { useBookOptimize } from "./BookOptimizeProvider"
 
 const MetadataTabRootStack = styled(Stack)(({ theme }) => ({
@@ -19,10 +16,6 @@ type Props = {
 export function MetadataTab({ hidden }: Props) {
   const { inspection, isApplying, control } = useBookOptimize()
 
-  const detectedContainers = collectDetectedContainers({
-    hasOpf: inspection.hasOpf,
-    hasComicInfo: inspection.hasComicInfo,
-  })
   const formSections = useMemo(
     () => resolveMetadataFormSections(inspection),
     [inspection],
@@ -30,7 +23,7 @@ export function MetadataTab({ hidden }: Props) {
 
   return (
     <MetadataTabRootStack hidden={hidden}>
-      <MetadataDetectionSummary detectedContainers={detectedContainers} />
+      <MetadataDetectionSummary />
       <MetadataForm
         control={control}
         sections={formSections}

@@ -5,7 +5,7 @@ import type {
 import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 
-type ContainerKey = "comicInfo" | "opf"
+export type ContainerKey = "comicInfo" | "opf"
 type FieldName = keyof MetadataFixerFormValues
 
 export type DetectedContainer = {
@@ -25,12 +25,10 @@ export type ArchiveMetadataPatchPlan = {
   targets: ArchiveMetadataTargets
 }
 
-const CONTAINER_LABELS: Record<ContainerKey, string> = {
+export const CONTAINER_LABELS: Record<ContainerKey, string> = {
   comicInfo: "ComicInfo.xml",
   opf: "OPF package document",
 }
-
-const CONTAINER_ORDER: readonly ContainerKey[] = ["comicInfo", "opf"]
 
 export const EMPTY_METADATA_FIXER_FORM_VALUES: MetadataFixerFormValues = {
   comicInfoIsbn: "",
@@ -60,24 +58,6 @@ export const resolveMetadataFixerFormValues = (
     comicInfoIsbn: inspection.comicInfoIsbn ?? "",
     opfIsbn: inspection.opfIsbn ?? "",
   }
-}
-
-export const collectDetectedContainers = ({
-  hasOpf,
-  hasComicInfo,
-}: {
-  hasOpf: boolean
-  hasComicInfo: boolean
-}): DetectedContainer[] => {
-  const present: Record<ContainerKey, boolean> = {
-    comicInfo: hasComicInfo,
-    opf: hasOpf,
-  }
-
-  return CONTAINER_ORDER.filter((key) => present[key]).map((key) => ({
-    key,
-    label: CONTAINER_LABELS[key],
-  }))
 }
 
 export const resolveMetadataFormSections = (
