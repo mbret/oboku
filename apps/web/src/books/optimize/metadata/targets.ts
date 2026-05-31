@@ -6,18 +6,10 @@ import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 
 export type ContainerKey = "comicInfo" | "opf"
-type FieldName = keyof MetadataFixerFormValues
 
 export type DetectedContainer = {
   key: ContainerKey
   label: string
-}
-
-export type MetadataFormSection = {
-  key: ContainerKey
-  label: string
-  fieldName: FieldName
-  isbn: string | undefined
 }
 
 export type ArchiveMetadataPatchPlan = {
@@ -58,45 +50,6 @@ export const resolveMetadataFixerFormValues = (
     comicInfoIsbn: inspection.comicInfoIsbn ?? "",
     opfIsbn: inspection.opfIsbn ?? "",
   }
-}
-
-export const resolveMetadataFormSections = (
-  inspection: FileInspection | undefined,
-): MetadataFormSection[] => {
-  if (!inspection) return []
-
-  if (!inspection.hasComicInfo && !inspection.hasOpf) {
-    return [
-      {
-        key: "comicInfo",
-        label: CONTAINER_LABELS.comicInfo,
-        fieldName: "comicInfoIsbn",
-        isbn: undefined,
-      },
-    ]
-  }
-
-  const sections: MetadataFormSection[] = []
-
-  if (inspection.hasComicInfo) {
-    sections.push({
-      key: "comicInfo",
-      label: CONTAINER_LABELS.comicInfo,
-      fieldName: "comicInfoIsbn",
-      isbn: inspection.comicInfoIsbn,
-    })
-  }
-
-  if (inspection.hasOpf) {
-    sections.push({
-      key: "opf",
-      label: CONTAINER_LABELS.opf,
-      fieldName: "opfIsbn",
-      isbn: inspection.opfIsbn,
-    })
-  }
-
-  return sections
 }
 
 export const resolveArchiveMetadataPatchPlans = (

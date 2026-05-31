@@ -1,9 +1,10 @@
 import { Stack, Typography, styled } from "@mui/material"
-import type { Control } from "react-hook-form"
 import { normalizeIsbn } from "@oboku/archive-metadata"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
-import type { MetadataFormSection } from "./targets"
+import { useBookOptimize } from "../BookOptimizeProvider"
+import { CONTAINER_LABELS } from "./targets"
+import type { MetadataFixerFormValues } from "./types"
 
 const validateIsbn = (raw: string | boolean): true | string => {
   if (typeof raw !== "string") return true
@@ -24,34 +25,53 @@ const MetadataSectionStack = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5),
 }))
 
-const getHelperText = (section: MetadataFormSection): string | undefined => {
-  return section.isbn ? undefined : "No ISBN found."
+type IsbnSectionProps = {
+  label: string
+  fieldName: keyof MetadataFixerFormValues
+  detectedIsbn: string | undefined
 }
 
-type Props = {
-  control: Control<BookOptimizeFormValues>
-  sections: MetadataFormSection[]
-  disabled: boolean
+function IsbnSection({ label, fieldName, detectedIsbn }: IsbnSectionProps) {
+  const { control, isApplying } = useBookOptimize()
+
+  return (
+    <MetadataSectionStack>
+      <Typography variant="subtitle2">{label}</Typography>
+      <ControlledTextField<BookOptimizeFormValues>
+        name={fieldName}
+        control={control}
+        rules={{ validate: validateIsbn }}
+        label="ISBN"
+        size="small"
+        fullWidth
+        helperText={detectedIsbn ? undefined : "No ISBN found."}
+        disabled={isApplying}
+      />
+    </MetadataSectionStack>
+  )
 }
 
-export function MetadataForm({ control, sections, disabled }: Props) {
+export function MetadataForm() {
+  const { inspection } = useBookOptimize()
+  const { hasComicInfo, hasOpf, comicInfoIsbn, opfIsbn } = inspection
+  const hasNoContainer = !hasComicInfo && !hasOpf
+
   return (
     <Stack spacing={2}>
-      {sections.map((section) => (
-        <MetadataSectionStack key={section.key}>
-          <Typography variant="subtitle2">{section.label}</Typography>
-          <ControlledTextField<BookOptimizeFormValues>
-            name={section.fieldName}
-            control={control}
-            rules={{ validate: validateIsbn }}
-            label="ISBN"
-            size="small"
-            fullWidth
-            helperText={getHelperText(section)}
-            disabled={disabled}
-          />
-        </MetadataSectionStack>
-      ))}
+      {(hasComicInfo || hasNoContainer) && (
+        <IsbnSection
+          label={CONTAINER_LABELS.comicInfo}
+          fieldName="comicInfoIsbn"
+          detectedIsbn={hasNoContainer ? undefined : comicInfoIsbn}
+        />
+      )}
+      {hasOpf && (
+        <IsbnSection
+          label={CONTAINER_LABELS.opf}
+          fieldName="opfIsbn"
+          detectedIsbn={opfIsbn}
+        />
+      )}
     </Stack>
   )
 }
