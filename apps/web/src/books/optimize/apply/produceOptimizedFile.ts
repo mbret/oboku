@@ -1,7 +1,11 @@
+import type JSZip from "jszip"
 import { applyMetadataPatchesToZip } from "../metadata/archiveFile"
 import { loadArchive } from "../loadArchive"
 import { compressArchiveImages } from "../content/compressArchiveImages"
 import type { OptimizeOperation } from "./operations"
+
+const EPUB_MIME_TYPE = "application/epub+zip"
+const MIMETYPE_ENTRY = "mimetype"
 
 const archiveHasOpf = (paths: string[]): boolean =>
   paths.some((path) => path.toLowerCase().endsWith(".opf"))
@@ -12,9 +16,31 @@ const resolvePatchedMimeType = (
 ): string => {
   if (file.type) return file.type
 
-  if (hasOpf) return "application/epub+zip"
+  if (hasOpf) return EPUB_MIME_TYPE
 
   return "application/x-cbz"
+}
+
+/**
+ * EPUB OCF requires the `mimetype` entry to be the archive's first record and
+ * stored uncompressed. JSZip preserves neither across a load/generate
+ * round-trip on its own, so we rewrite the entry as STORED and move it to the
+ * front before packaging to keep the output valid for strict readers.
+ */
+const enforceEpubMimetypeFirst = (zip: JSZip): void => {
+  zip.file(MIMETYPE_ENTRY, EPUB_MIME_TYPE, { compression: "STORE" })
+
+  const mimetype = zip.files[MIMETYPE_ENTRY]
+
+  if (!mimetype) return
+
+  const reordered: typeof zip.files = { [MIMETYPE_ENTRY]: mimetype }
+
+  for (const [name, entry] of Object.entries(zip.files)) {
+    if (name !== MIMETYPE_ENTRY) reordered[name] = entry
+  }
+
+  zip.files = reordered
 }
 
 /**
@@ -51,6 +77,9 @@ export const produceOptimizedFile = async (
   }
 
   const hasOpf = archiveHasOpf(Object.keys(zip.files))
+
+  if (hasOpf) enforceEpubMimetypeFirst(zip)
+
   const mimeType = resolvePatchedMimeType(file, { hasOpf })
   const blob = await zip.generateAsync({ type: "blob", mimeType })
 
