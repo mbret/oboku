@@ -11,10 +11,10 @@ const archiveHasOpf = (paths: string[]): boolean =>
   paths.some((path) => path.toLowerCase().endsWith(".opf"))
 
 const resolvePatchedMimeType = (
-  file: Blob | File,
+  type: string,
   { hasOpf }: { hasOpf: boolean },
 ): string => {
-  if (file.type) return file.type
+  if (type) return type
 
   if (hasOpf) return EPUB_MIME_TYPE
 
@@ -55,6 +55,7 @@ export const produceOptimizedFile = async (
     onCompressionProgress,
   }: { onCompressionProgress?: (ratio: number) => void } = {},
 ): Promise<File> => {
+  const { name, type } = file
   const { zip } = await loadArchive(file)
 
   for (const operation of operations) {
@@ -80,8 +81,8 @@ export const produceOptimizedFile = async (
 
   if (hasOpf) enforceEpubMimetypeFirst(zip)
 
-  const mimeType = resolvePatchedMimeType(file, { hasOpf })
+  const mimeType = resolvePatchedMimeType(type, { hasOpf })
   const blob = await zip.generateAsync({ type: "blob", mimeType })
 
-  return new File([blob], file.name, { type: blob.type || mimeType })
+  return new File([blob], name, { type: blob.type || mimeType })
 }
