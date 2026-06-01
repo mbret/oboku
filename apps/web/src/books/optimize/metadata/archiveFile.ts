@@ -114,8 +114,13 @@ export const patchArchiveFile = async (
       patchedEntries.map((entry) => [entry.path, entry.xml]),
     )
 
+    // EPUB OCF requires the `mimetype` entry to be first, stored uncompressed,
+    // and free of extra fields. Storing every entry (level 0, no data
+    // descriptor, no extended timestamp) preserves the original (preserved)
+    // entry order and keeps that guarantee, matching jszip's prior STORE output.
     const zipWriter = new ZipWriter(
       new BlobWriter(resolvePatchedMimeType(file, patches)),
+      { level: 0, dataDescriptor: false, extendedTimestamp: false },
     )
 
     for (const entry of originalEntries) {
