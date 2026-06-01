@@ -8,6 +8,7 @@ import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEnt
 
 const manualChunkGroups = [
   ["dropbox", ["dropbox"]],
+  ["zipjs", ["@zip.js/zip.js"]],
   ["xmldoc", ["xmldoc"]],
   ["firebase", ["firebase/app", "firebase/analytics"]],
   ["prosereader", ["@prose-reader/core"]],
