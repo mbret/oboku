@@ -7,8 +7,8 @@ import path from "node:path"
 import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared"
 
 const manualChunkGroups = [
-  ["jszip", ["jszip"]],
   ["dropbox", ["dropbox"]],
+  ["zipjs", ["@zip.js/zip.js"]],
   ["xmldoc", ["xmldoc"]],
   ["firebase", ["firebase/app", "firebase/analytics"]],
   ["prosereader", ["@prose-reader/core"]],

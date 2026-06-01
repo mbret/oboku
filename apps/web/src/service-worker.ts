@@ -12,6 +12,7 @@ import { ExpirationPlugin } from "workbox-expiration"
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
+import { configure } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "./workers/constants.shared"
 import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
@@ -26,6 +27,8 @@ import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
 import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
 
 declare const self: ServiceWorkerGlobalScope
+
+configure({ enableReport: !import.meta.env.PROD })
 
 clientsClaim()
 

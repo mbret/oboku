@@ -44,14 +44,8 @@ type SelectionError = {
   originalError?: any
 }
 
-export type StreamValue = {
-  baseUri: string
-  response: Response
-  progress: number
-}
-
 export type DownloadBookResult = {
-  data: File | Blob | ReadableStream<StreamValue>
+  data: File | Blob
   fileName: string
 }
 
