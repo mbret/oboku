@@ -14,7 +14,9 @@ const setWebtoonRenditionLayout = (spineItem: SpineItem): SpineItem => ({
 export const readingDirectionManifestHook: StreamerManifestHookFactory =
   ({ archive }) =>
   (manifest) => {
-    const { direction } = directives.extractDirectivesFromName(archive.filename)
+    const { direction } = directives.extractDirectivesFromName(
+      archive.filename ?? "",
+    )
 
     if (direction === undefined) return manifest
     if (direction === manifest.readingDirection) return manifest
@@ -28,7 +30,9 @@ export const readingDirectionManifestHook: StreamerManifestHookFactory =
 export const webtoonManifestHook: StreamerManifestHookFactory =
   ({ archive }) =>
   (manifest) => {
-    const { isWebtoon } = directives.extractDirectivesFromName(archive.filename)
+    const { isWebtoon } = directives.extractDirectivesFromName(
+      archive.filename ?? "",
+    )
 
     if (!isWebtoon) {
       return manifest

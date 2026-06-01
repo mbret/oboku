@@ -1,4 +1,13 @@
-import JSZip from "jszip"
+import {
+  BlobReader,
+  BlobWriter,
+  type Entry,
+  TextReader,
+  TextWriter,
+  Uint8ArrayWriter,
+  ZipReader,
+  ZipWriter,
+} from "@zip.js/zip.js"
 import {
   type ArchiveEntry,
   type ArchiveMetadata,
@@ -11,15 +20,19 @@ import {
 import { Logger } from "../../../debug/logger.shared"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 
-const toArchiveEntry = (entry: JSZip.JSZipObject): ArchiveEntry => ({
-  path: entry.name,
-  isDir: entry.dir,
-  readAsString: () => entry.async("string"),
-  readAsUint8Array: () => entry.async("uint8array"),
+const toArchiveEntry = (entry: Entry): ArchiveEntry => ({
+  path: entry.filename,
+  isDir: entry.directory,
+  readAsString: () =>
+    entry.directory ? Promise.resolve("") : entry.getData(new TextWriter()),
+  readAsUint8Array: () =>
+    entry.directory
+      ? Promise.resolve(new Uint8Array())
+      : entry.getData(new Uint8ArrayWriter()),
 })
 
-const createJszipArchiveSource = (zip: JSZip): ArchiveSource => ({
-  listEntries: async () => Object.values(zip.files).map(toArchiveEntry),
+const createZipJsArchiveSource = (entries: Entry[]): ArchiveSource => ({
+  listEntries: async () => entries.map(toArchiveEntry),
 })
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
@@ -34,34 +47,40 @@ const previewXml = (xml: string): string =>
 export const readArchiveMetadataFromFile = async (
   file: Blob | File,
 ): Promise<ArchiveMetadata> => {
-  const zip = await JSZip.loadAsync(file)
-  const archive = createJszipArchiveSource(zip)
+  const zipReader = new ZipReader(new BlobReader(file))
 
-  Logger.info("[metadataFixer] archive structure", {
-    entryCount: Object.keys(zip.files).length,
-    entries: Object.values(zip.files).map((entry) => ({
-      name: entry.name,
-      dir: entry.dir,
-      date: entry.date,
-    })),
-  })
+  try {
+    const entries = await zipReader.getEntries()
+    const archive = createZipJsArchiveSource(entries)
 
-  return readArchiveMetadata(archive, {
-    onOpfRead: ({ path, xml }) => {
-      Logger.info("[metadataFixer] OPF read", {
-        path,
-        length: xml.length,
-        preview: previewXml(xml),
-      })
-    },
-    onComicInfoRead: ({ path, xml }) => {
-      Logger.info("[metadataFixer] ComicInfo.xml read", {
-        path,
-        length: xml.length,
-        preview: previewXml(xml),
-      })
-    },
-  })
+    Logger.info("[metadataFixer] archive structure", {
+      entryCount: entries.length,
+      entries: entries.map((entry) => ({
+        name: entry.filename,
+        dir: entry.directory,
+        date: entry.lastModDate,
+      })),
+    })
+
+    return await readArchiveMetadata(archive, {
+      onOpfRead: ({ path, xml }) => {
+        Logger.info("[metadataFixer] OPF read", {
+          path,
+          length: xml.length,
+          preview: previewXml(xml),
+        })
+      },
+      onComicInfoRead: ({ path, xml }) => {
+        Logger.info("[metadataFixer] ComicInfo.xml read", {
+          path,
+          length: xml.length,
+          preview: previewXml(xml),
+        })
+      },
+    })
+  } finally {
+    await zipReader.close()
+  }
 }
 
 const resolvePatchedMimeType = (
@@ -79,21 +98,50 @@ export const patchArchiveFile = async (
   file: Blob | File,
   patches: ArchiveMetadataPatchPlan[],
 ): Promise<Blob> => {
-  const zip = await JSZip.loadAsync(file)
-  const archive = createJszipArchiveSource(zip)
-  const entries: ArchivePatchedEntry[] = []
+  const zipReader = new ZipReader(new BlobReader(file))
 
-  for (const { patch, targets } of patches) {
-    const result = await patchArchiveMetadata(archive, patch, targets)
-    entries.push(...result.entries)
+  try {
+    const originalEntries = await zipReader.getEntries()
+    const archive = createZipJsArchiveSource(originalEntries)
+    const patchedEntries: ArchivePatchedEntry[] = []
+
+    for (const { patch, targets } of patches) {
+      const result = await patchArchiveMetadata(archive, patch, targets)
+      patchedEntries.push(...result.entries)
+    }
+
+    const patchedByPath = new Map(
+      patchedEntries.map((entry) => [entry.path, entry.xml]),
+    )
+
+    const zipWriter = new ZipWriter(
+      new BlobWriter(resolvePatchedMimeType(file, patches)),
+    )
+
+    for (const entry of originalEntries) {
+      if (entry.directory) {
+        await zipWriter.add(entry.filename, undefined, { directory: true })
+        continue
+      }
+
+      const patchedXml = patchedByPath.get(entry.filename)
+
+      if (patchedXml !== undefined) {
+        patchedByPath.delete(entry.filename)
+        await zipWriter.add(entry.filename, new TextReader(patchedXml))
+        continue
+      }
+
+      const data = await entry.getData(new BlobWriter())
+      await zipWriter.add(entry.filename, new BlobReader(data))
+    }
+
+    for (const [path, xml] of patchedByPath) {
+      await zipWriter.add(path, new TextReader(xml))
+    }
+
+    return await zipWriter.close()
+  } finally {
+    await zipReader.close()
   }
-
-  for (const entry of entries) {
-    zip.file(entry.path, entry.xml)
-  }
-
-  return zip.generateAsync({
-    type: "blob",
-    mimeType: resolvePatchedMimeType(file, patches),
-  })
 }

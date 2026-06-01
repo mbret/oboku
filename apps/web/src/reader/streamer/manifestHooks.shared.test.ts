@@ -9,6 +9,7 @@ const createArchive = (filename: string): Archive => ({
   filename,
   records: [],
   close: async () => undefined,
+  recordsByUri: new Map(),
 })
 
 const createManifest = ({
