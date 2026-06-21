@@ -7,7 +7,6 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { useId } from "react"
 import { ListItemSwitch } from "../../common/lists"
 import {
   localSettingsSignal,
@@ -20,9 +19,6 @@ export const SettingsList = () => {
     "readerFloatingProgress",
     "readerFloatingTime",
   ])
-  const readerFloatingTimeId = useId()
-  const readerFloatingProgressId = useId()
-  const readerWakeLockEnabledId = useId()
 
   return (
     <List>
@@ -53,7 +49,6 @@ export const SettingsList = () => {
           }))
         }}
         checked={readerSettings.readerFloatingTime === "bottom"}
-        id={readerFloatingTimeId}
       />
       <ListItemSwitch
         primary="Show current progress"
@@ -68,7 +63,6 @@ export const SettingsList = () => {
           }))
         }}
         checked={readerSettings.readerFloatingProgress === "bottom"}
-        id={readerFloatingProgressId}
       />
       <ListItemSwitch
         primary="Keep screen on"
@@ -80,7 +74,6 @@ export const SettingsList = () => {
           }))
         }}
         checked={!!readerSettings.readerWakeLockEnabled}
-        id={readerWakeLockEnabledId}
       />
     </List>
   )

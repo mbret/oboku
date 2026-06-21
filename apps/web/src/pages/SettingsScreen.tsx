@@ -1,4 +1,4 @@
-import { type ComponentProps, memo, useId, useState } from "react"
+import { type ComponentProps, memo, useState } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import {
   Drawer,
@@ -41,11 +41,6 @@ export const SettingsScreen = memo(() => {
   const [isShowCollectionDrawerOpened, setIsShowCollectionDrawerOpened] =
     useState(false)
   const [isThemeDrawerOpened, setIsThemeDrawerOpened] = useState(false)
-  const hideDirectivesFromCollectionNameId = useId()
-  const unBlurWhenProtectedVisibleId = useId()
-  const readerFloatingTimeId = useId()
-  const readerFloatingProgressId = useId()
-  const readerWakeLockEnabledId = useId()
 
   return (
     <>
@@ -67,7 +62,6 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.hideDirectivesFromCollectionName}
-            id={hideDirectivesFromCollectionNameId}
           />
         </List>
         <List>
@@ -98,7 +92,6 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.unBlurWhenProtectedVisible}
-            id={unBlurWhenProtectedVisibleId}
           />
         </List>
         <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
@@ -129,7 +122,6 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.readerFloatingTime === "bottom"}
-            id={readerFloatingTimeId}
           />
           <ListItemSwitch
             primary="Show current progress"
@@ -144,7 +136,6 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={localSettings.readerFloatingProgress === "bottom"}
-            id={readerFloatingProgressId}
           />
           <ListItemSwitch
             primary="Keep screen on"
@@ -156,7 +147,6 @@ export const SettingsScreen = memo(() => {
               }))
             }}
             checked={!!localSettings.readerWakeLockEnabled}
-            id={readerWakeLockEnabledId}
           />
         </List>
         <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
