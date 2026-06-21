@@ -87,6 +87,7 @@ export const useWakeLock = ({ enabled = true }: { enabled?: boolean } = {}) => {
 
         if (currentWakeLock) {
           currentWakeLock.removeEventListener("release", onWakeLockReleasedByOs)
+          Logger.info("wakeLock: released")
           currentWakeLock.release().catch(Logger.error)
         }
       }
