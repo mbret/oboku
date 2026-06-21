@@ -5,6 +5,7 @@
     "module": "ESNext",
     /* Bundler mode */
     "moduleResolution": "bundler",
+    "customConditions": ["source"],
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",

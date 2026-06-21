@@ -7,6 +7,7 @@ import { MoreDialog } from "./navigation/MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import { isMenuShownStateSignal, readerSignal } from "./states"
 import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
+import { useLocalSettings } from "../settings/useLocalSettings"
 
 export const READER_MODE_PARAM = "mode"
 export const READER_PREVIEW_MODE = "preview"
@@ -19,7 +20,7 @@ export const ReaderScreen = memo(() => {
   return (
     <SignalContextProvider>
       {bookId && <Reader bookId={bookId} isPreview={isPreview} />}
-      <MoreDialog bookId={bookId} />
+      <MoreDialog />
       <Effects bookId={bookId} isPreview={isPreview} />
     </SignalContextProvider>
   )
@@ -32,8 +33,10 @@ const Effects = memo(function Effects({
   bookId?: string
   isPreview: boolean
 }) {
+  const isWakeLockEnabled = useLocalSettings("readerWakeLockEnabled")
+
   useTrackBookBeingRead(bookId, { enabled: !isPreview })
-  useWakeLock()
+  useWakeLock({ enabled: isWakeLockEnabled })
   useFullscreenAutoSwitch()
 
   useEffect(

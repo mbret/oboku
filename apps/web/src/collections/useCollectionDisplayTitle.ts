@@ -1,11 +1,9 @@
-import { useSignalValue } from "reactjrx"
-import { localSettingsSignal } from "../settings/useLocalSettings"
+import { useLocalSettings } from "../settings/useLocalSettings"
 import { directives } from "@oboku/shared"
 
 export const useCollectionDisplayTitle = (title?: string) => {
-  const hideDirectivesFromCollectionName = useSignalValue(
-    localSettingsSignal,
-    (state) => state.hideDirectivesFromCollectionName,
+  const hideDirectivesFromCollectionName = useLocalSettings(
+    "hideDirectivesFromCollectionName",
   )
 
   if (title === undefined) return title

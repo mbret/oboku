@@ -86,6 +86,17 @@ export default defineConfig(({ mode }) => ({
    * require('events') uses package events which is a web polyfill
    */
   resolve: {
+    /**
+     * Resolve internal @oboku/* packages to their TypeScript sources (via the
+     * "source" export condition) instead of dist. Gives HMR on package edits
+     * and removes the need to pre-build them for the web app. The API uses
+     * NodeNext resolution and does not request this condition, so it keeps
+     * resolving to the compiled dist output.
+     *
+     * The trailing conditions re-add Vite's defaults, which are otherwise
+     * replaced when this option is set.
+     */
+    conditions: ["source", "module", "browser", "development|production"],
     alias: {
       stream: path.resolve(__dirname, "./stream-shim.js"),
     },

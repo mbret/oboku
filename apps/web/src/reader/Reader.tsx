@@ -16,8 +16,8 @@ import type { Manifest } from "@prose-reader/shared"
 import { ReactReader } from "@prose-reader/react-reader"
 import "@prose-reader/react-reader/index.css"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
-import { useMoreDialog } from "./navigation/MoreDialog"
-import { localSettingsSignal } from "../settings/useLocalSettings"
+import { useOpenMoreDialog } from "./navigation/MoreDialog"
+import { useLocalSettings } from "../settings/useLocalSettings"
 import { useSettingsFormValues } from "./settings/useSettingsFormValues"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 
@@ -34,16 +34,13 @@ export const Reader = memo(function Reader({
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
   const isBookError = !!manifestError
-  const localSettings = useSignalValue(
-    localSettingsSignal,
-    ({ readerFloatingProgress, readerFloatingTime }) => ({
-      readerFloatingProgress,
-      readerFloatingTime,
-    }),
-  )
+  const localSettings = useLocalSettings([
+    "readerFloatingProgress",
+    "readerFloatingTime",
+  ])
   const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
   const { goBack } = useSafeGoBack()
-  const { toggle: toggleMoreDialog } = useMoreDialog()
+  const openMoreDialog = useOpenMoreDialog()
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
     bookId,
     onClose: goBack,
@@ -57,13 +54,13 @@ export const Reader = memo(function Reader({
       >[0],
     ) => {
       if (item === "more") {
-        toggleMoreDialog()
+        openMoreDialog()
       }
       if (item === "back") {
         showBookFinishedDialogOnClose()
       }
     },
-    [toggleMoreDialog, showBookFinishedDialogOnClose],
+    [openMoreDialog, showBookFinishedDialogOnClose],
   )
 
   if (isBookError) {

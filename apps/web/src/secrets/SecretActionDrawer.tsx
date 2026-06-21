@@ -11,7 +11,7 @@ import {
   useMediaQuery,
 } from "@mui/material"
 import { signal, useLiveRef } from "reactjrx"
-import { useModalNavigationControl } from "../navigation/useModalNavigationControl"
+import { useDismissibleOverlay } from "../navigation/modalHistory"
 import { setupSecretDialogSignal } from "./SetupSecretDialog"
 import { useRemoveSecret } from "./useRemoveSecret"
 import { notify } from "../notifications/toasts"
@@ -63,28 +63,23 @@ export const SecretActionDrawer = memo(
         notify("actionSuccess")
       },
     })
-    const opened = !!openWidth
     const theme = useTheme()
     const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
-    const { closeModalWithNavigation } = useModalNavigationControl(
-      {
-        onExit: () => {
-          onClose?.()
-        },
-      },
-      openWidth,
-    )
+    const { close } = useDismissibleOverlay({
+      open: !!openWidth,
+      onClose: () => onClose?.(),
+    })
 
     return (
       <Drawer
         anchor={isMobile ? "bottom" : "left"}
-        open={opened}
-        onClose={() => closeModalWithNavigation()}
+        open={!!openWidth}
+        onClose={() => close()}
       >
         <List>
           <ListItemButton
             onClick={() => {
-              closeModalWithNavigation(() => {
+              close(() => {
                 setupSecretDialogSignal.update({
                   openWith: openWidth ?? "-1",
                   masterKey,
@@ -107,7 +102,7 @@ export const SecretActionDrawer = memo(
               )
 
               if (confirmed) {
-                closeModalWithNavigation(() => {
+                close(() => {
                   openWidth && removeSecret(openWidth)
                 })
               }
