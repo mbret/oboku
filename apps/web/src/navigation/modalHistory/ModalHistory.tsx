@@ -59,10 +59,14 @@ export const ModalHistoryProvider = ({ children }: { children: ReactNode }) => {
   const modalHash = state?.__oboku_modal
 
   const controllersRef = useRef<Set<ModalController>>(new Set())
-  // Each ghost is popped exactly once. `navigate(-1)` is async, so without this
-  // guard React StrictMode (double-invoked mount effects) would fire two
-  // `go(-1)` calls for one hash and skip the page beneath the modal too.
-  const poppedGhostRef = useRef<string | undefined>(undefined)
+  // True once the app has rested on a real (non-ghost) entry. We only discard
+  // ghosts seen *before* this — i.e. the one we boot onto after a reload — so
+  // the back button is never blank. See the guard below.
+  const hasSettledRef = useRef(false)
+  // The hash a boot-time ghost-pop is in flight for. `navigate(-1)` is async,
+  // so without this React StrictMode (double-invoked mount effects) would fire
+  // two `go(-1)` calls for one hash and skip the page beneath the modal too.
+  const pendingGhostPopRef = useRef<string | undefined>(undefined)
 
   const value = useMemo<ModalHistoryContextValue>(
     () => ({
@@ -121,13 +125,25 @@ export const ModalHistoryProvider = ({ children }: { children: ReactNode }) => {
         }
       }
 
-      if (
-        modalHash &&
-        !someControllerOwnsCurrent &&
-        poppedGhostRef.current !== modalHash
-      ) {
-        poppedGhostRef.current = modalHash
-        navigate(-1)
+      if (modalHash && !someControllerOwnsCurrent) {
+        // A modal hash no mounted controller backs: a ghost. We discard it only
+        // while booting (before resting on any real entry) — that is the entry
+        // that survived a page reload, and popping it keeps the back button
+        // from being blank. Cascades through stacked boot-time ghosts (distinct
+        // hashes); the pending ref absorbs StrictMode's double invoke.
+        //
+        // Ghosts reached *later* via forward navigation are deliberately left
+        // alone: landing on a stale modal entry is harmless and not worth the
+        // complexity of preventing.
+        if (
+          !hasSettledRef.current &&
+          pendingGhostPopRef.current !== modalHash
+        ) {
+          pendingGhostPopRef.current = modalHash
+          navigate(-1)
+        }
+      } else {
+        hasSettledRef.current = true
       }
     },
     [modalHash, navigate],

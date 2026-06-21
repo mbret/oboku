@@ -279,7 +279,27 @@ describe("useDismissibleOverlay", () => {
   })
 })
 
-describe("ModalHistoryProvider — ghost entries", () => {
+describe("forward navigation into a dismissed modal entry", () => {
+  it("is left alone (not bounced) once the app has settled", async () => {
+    // We deliberately do not prevent forward navigation into a stale modal
+    // entry — only blank *back* (the reload case) matters. After a normal
+    // open/back, forwarding into the dead entry simply lands there.
+    const { open, back, onClose, atBase } = setup()
+
+    await open()
+    await back()
+    expect(atBase()).toBe(true)
+
+    act(() => latestNavigate(1))
+
+    await waitFor(() => expect(modalToken()).toBeTruthy())
+    expect(atBase()).toBe(false)
+    // Forwarding into a dead entry is not a dismissal of a live overlay.
+    expect(onClose).toHaveBeenCalledTimes(1)
+  })
+})
+
+describe("ModalHistoryProvider — ghost entries (reload)", () => {
   it("pops a modal entry that no overlay backs (e.g. survived a reload)", async () => {
     // Post-reload stack: a base entry plus a leftover modal entry whose hash was
     // never registered this session (the registry is wiped on reload). Both
