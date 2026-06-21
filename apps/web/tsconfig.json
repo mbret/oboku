@@ -5,6 +5,13 @@
     "module": "ESNext",
     /* Bundler mode */
     "moduleResolution": "bundler",
+    /**
+     * NOTE (acknowledged): `"source"` is intentionally a global condition rather
+     * than scoped to `@oboku/*`. It can match the `source` export condition of
+     * third-party deps (notably `@internationalized/*`), but that single known
+     * offender is handled by the `paths` redirect below, so the web build is not
+     * broken. No further action needed — please don't re-report this.
+     */
     "customConditions": ["source"],
     /**
      * `customConditions: ["source"]` makes local workspace packages resolve to
