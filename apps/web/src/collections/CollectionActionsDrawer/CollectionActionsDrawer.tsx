@@ -24,7 +24,7 @@ import {
 } from "./useCollectionActionsDrawer"
 import { RenameCollectionDialog } from "./RenameCollectionDialog"
 import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
-import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
+import { useDismissibleOverlay } from "../../navigation/modalHistory"
 import { ROUTES } from "../../navigation/routes"
 import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
@@ -52,19 +52,17 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
   const { mutate: markBooksAsFinished } = useMarkBooksAsFinished()
-  const { closeModalWithNavigation } = useModalNavigationControl(
-    {
-      onExit: () => {
-        collectionActionDrawerState.setValue({
-          openedWith: undefined,
-          lastId: collectionId,
-        })
+  const { close: closeModalWithNavigation } = useDismissibleOverlay({
+    open: !!openedWith,
+    onClose: () => {
+      collectionActionDrawerState.setValue({
+        openedWith: undefined,
+        lastId: collectionId,
+      })
 
-        setIsEditCollectionDialogOpenedWithId(undefined)
-      },
+      setIsEditCollectionDialogOpenedWithId(undefined)
     },
-    openedWith,
-  )
+  })
   const { data: collection } = useCollection({ id: collectionId })
   const collectionReadingProgress = useCollectionReadingProgress({
     id: collectionId,

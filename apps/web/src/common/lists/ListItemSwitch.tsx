@@ -13,29 +13,22 @@ export const ListItemSwitch = memo(
     secondary,
     onClick,
     checked,
-    id,
-  }: { onClick: () => void; checked: boolean; id: string } & Pick<
+  }: { onClick: () => void; checked: boolean } & Pick<
     ListItemTextProps,
     "primary" | "secondary"
   >) => {
     return (
-      <ListItem
-        secondaryAction={
+      <ListItem disablePadding>
+        <ListItemButton onClick={onClick} role="switch" aria-checked={checked}>
+          <ListItemText primary={primary} secondary={secondary} />
           <Switch
             edge="end"
-            onChange={onClick}
             checked={checked}
-            slotProps={{
-              input: {
-                "aria-labelledby": id,
-              },
-            }}
+            tabIndex={-1}
+            disableRipple
+            aria-hidden
+            slotProps={{ input: { tabIndex: -1 } }}
           />
-        }
-        disablePadding
-      >
-        <ListItemButton onClick={onClick}>
-          <ListItemText id={id} primary={primary} secondary={secondary} />
         </ListItemButton>
       </ListItem>
     )

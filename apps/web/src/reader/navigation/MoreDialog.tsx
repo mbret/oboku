@@ -1,160 +1,37 @@
-import {
-  Collapse,
-  Dialog,
-  DialogContent,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Tab,
-  useTheme,
-} from "@mui/material"
-import { TabContext, TabList, TabPanel } from "@mui/lab"
-import { FiberManualRecordRounded } from "@mui/icons-material"
-import React, { memo } from "react"
-import { DialogTopBar } from "../../navigation/DialogTopBar"
-import { usePagination, readerSignal } from "../states"
+import { Dialog, DialogContent, useMediaQuery, useTheme } from "@mui/material"
+import { memo, useCallback } from "react"
+import { DialogHeader } from "../../common/dialogs/DialogHeader"
+import { useDismissibleOverlay } from "../../navigation/modalHistory"
 import { SettingsList } from "../settings/SettingsList"
-import {
-  useObserve,
-  useSetSignal,
-  useSignalValue,
-  virtualSignal,
-} from "reactjrx"
-import { useCurrentPages } from "../pagination/useCurrentPages"
+import { useSetSignal, useSignalValue, virtualSignal } from "reactjrx"
 
 const isContentsDialogOpenedStateSignal = virtualSignal<boolean>({
   key: "isContentsDialogOpenedState",
   default: false,
 })
 
-export const useMoreDialog = () => {
+export const useOpenMoreDialog = () => {
   const update = useSetSignal(isContentsDialogOpenedStateSignal)
 
-  return {
-    toggle: () => update((val) => !val),
-  }
+  return useCallback(() => update(true), [update])
 }
 
-export const MoreDialog = memo(({ bookId }: { bookId?: string }) => {
-  const isContentsDialogOpened = useSignalValue(
-    isContentsDialogOpenedStateSignal,
-  )
-  const { toggle: toggleMoreDialog } = useMoreDialog()
+export const MoreDialog = memo(() => {
+  const theme = useTheme()
+  const fullScreen = useMediaQuery(theme.breakpoints.down("sm"))
+  const isOpen = useSignalValue(isContentsDialogOpenedStateSignal)
+  const setIsOpen = useSetSignal(isContentsDialogOpenedStateSignal)
+  const { close } = useDismissibleOverlay({
+    open: isOpen,
+    onClose: () => setIsOpen(false),
+  })
 
   return (
-    <Dialog onClose={toggleMoreDialog} open={isContentsDialogOpened} fullScreen>
-      {isContentsDialogOpened && (
-        <MoreDialogInner bookId={bookId} toggleMoreDialog={toggleMoreDialog} />
-      )}
+    <Dialog open={isOpen} onClose={() => close()} fullScreen={fullScreen}>
+      <DialogHeader title="More" onClose={() => close()} />
+      <DialogContent dividers sx={{ p: 0 }}>
+        <SettingsList />
+      </DialogContent>
     </Dialog>
   )
 })
-
-const MoreDialogInner = memo(
-  ({
-    bookId,
-    toggleMoreDialog,
-  }: {
-    bookId?: string
-    toggleMoreDialog: () => void
-  }) => {
-    const theme = useTheme()
-    const [value, setValue] = React.useState("toc")
-    const reader = useSignalValue(readerSignal)
-    const { data: pagination } = usePagination()
-    const { data: { manifest } = {} } =
-      useObserve(() => reader?.context, [reader]) || {}
-    const { title, nav } = manifest ?? {}
-    const chapterInfo = pagination?.beginChapterInfo
-    const [currentPage] = useCurrentPages({ bookId }) || 0
-    const toc = nav?.toc || []
-
-    let currentSubChapter = chapterInfo
-
-    while (currentSubChapter?.subChapter) {
-      currentSubChapter = currentSubChapter?.subChapter
-    }
-
-    const handleChange = (_event: React.SyntheticEvent, newValue: string) => {
-      setValue(newValue)
-    }
-
-    const buildTocForItem = (
-      tocItem: (typeof toc)[number],
-      index: number,
-      lvl: number,
-    ) => (
-      <React.Fragment key={index}>
-        <ListItemButton style={{}}>
-          <ListItemIcon>
-            {currentSubChapter?.path === tocItem.path && (
-              <FiberManualRecordRounded color="primary" />
-            )}
-          </ListItemIcon>
-          <ListItemText
-            primary={tocItem.title}
-            {...{
-              ...(currentSubChapter?.path === tocItem.path && {
-                secondary: `Currently on page ${(currentPage ?? 0) + 1}`,
-              }),
-            }}
-            color="primary"
-            onClick={() => {
-              toggleMoreDialog()
-              reader?.navigation.goToUrl(tocItem.href)
-            }}
-            style={{
-              paddingLeft: theme.spacing(lvl * 2),
-            }}
-          />
-          {/* {tocItem.contents.length > 0 && (
-          <ExpandLessRounded />
-        )} */}
-        </ListItemButton>
-        {tocItem.contents.length > 0 && (
-          <Collapse in={true} timeout="auto" unmountOnExit>
-            <List component="div" disablePadding>
-              {tocItem.contents.map((tocItem, index) =>
-                buildTocForItem(tocItem, index, lvl + 1),
-              )}
-            </List>
-          </Collapse>
-        )}
-      </React.Fragment>
-    )
-
-    return (
-      <TabContext value={value}>
-        <DialogTopBar title={title} onClose={toggleMoreDialog} />
-        <TabList
-          style={{
-            border: `1px solid ${theme.palette.primary.light}`,
-            borderTop: "none",
-            borderLeft: "none",
-            borderRight: "none",
-          }}
-          onChange={handleChange}
-          indicatorColor="primary"
-        >
-          <Tab label="Chapters" value="toc" />
-          <Tab label="Settings" value="settings" />
-        </TabList>
-        <DialogContent
-          style={{
-            padding: 0,
-          }}
-        >
-          <TabPanel value="toc" sx={{ padding: 0 }}>
-            <List component="nav">
-              {toc.map((tocItem, index) => buildTocForItem(tocItem, index, 0))}
-            </List>
-          </TabPanel>
-          <TabPanel value="settings" sx={{ padding: 0 }}>
-            <SettingsList />
-          </TabPanel>
-        </DialogContent>
-      </TabContext>
-    )
-  },
-)

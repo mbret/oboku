@@ -51,6 +51,7 @@ import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 import { NotificationsScreen } from "../notifications/inbox/NotificationsScreen"
+import { ModalHistoryProvider } from "./modalHistory"
 
 const AppShell = ({ children }: { children: ReactNode }) => {
   const theme = useTheme()
@@ -91,7 +92,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
   const isAuthenticated = !!auth?.accessToken
 
   const content = (
-    <>
+    <ModalHistoryProvider>
       <Routes>
         <Route
           path={ROUTES.LOGIN_MAGIC_LINK}
@@ -238,7 +239,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
       </Routes>
       {children}
       <TrackHistoryCanGoBack />
-    </>
+    </ModalHistoryProvider>
   )
 
   return (
