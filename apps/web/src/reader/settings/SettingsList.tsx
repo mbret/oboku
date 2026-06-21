@@ -6,6 +6,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  ListSubheader,
 } from "@mui/material"
 import {
   localSettingsSignal,
@@ -34,6 +35,7 @@ export const SettingsList = () => {
           />
         </ListItemButton>
       </ListItem>
+      <ListSubheader sx={{ bgcolor: "transparent" }}>Device</ListSubheader>
       <ListItem
         disablePadding
         secondaryAction={
