@@ -20,18 +20,20 @@ export const ListItemSwitch = memo(
   >) => {
     return (
       <ListItem disablePadding>
-        <ListItemButton onClick={onClick}>
+        <ListItemButton
+          onClick={onClick}
+          role="switch"
+          aria-checked={checked}
+          aria-labelledby={id}
+        >
           <ListItemText id={id} primary={primary} secondary={secondary} />
           <Switch
             edge="end"
             checked={checked}
             tabIndex={-1}
             disableRipple
-            slotProps={{
-              input: {
-                "aria-labelledby": id,
-              },
-            }}
+            aria-hidden
+            slotProps={{ input: { tabIndex: -1 } }}
           />
         </ListItemButton>
       </ListItem>

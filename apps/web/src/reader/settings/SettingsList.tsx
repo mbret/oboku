@@ -8,7 +8,7 @@ import {
   ListSubheader,
 } from "@mui/material"
 import { useId } from "react"
-import { ListItemSwitch } from "../../common/ListItemSwitch"
+import { ListItemSwitch } from "../../common/lists"
 import {
   localSettingsSignal,
   useLocalSettings,
