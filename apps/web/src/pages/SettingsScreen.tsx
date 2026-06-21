@@ -43,6 +43,9 @@ export const SettingsScreen = memo(() => {
   const [isThemeDrawerOpened, setIsThemeDrawerOpened] = useState(false)
   const hideDirectivesFromCollectionNameId = useId()
   const unBlurWhenProtectedVisibleId = useId()
+  const readerFloatingTimeId = useId()
+  const readerFloatingProgressId = useId()
+  const readerWakeLockEnabledId = useId()
 
   return (
     <>
@@ -111,6 +114,50 @@ export const SettingsScreen = memo(() => {
               }
             />
           </ListItemButton>
+        </List>
+        <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
+          <ListItemSwitch
+            primary="Show current time"
+            secondary="Display the current time on overlay of the book (not in comics)"
+            onClick={() => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                readerFloatingTime:
+                  old.readerFloatingTime === "bottom"
+                    ? ("off" as const)
+                    : ("bottom" as const),
+              }))
+            }}
+            checked={localSettings.readerFloatingTime === "bottom"}
+            id={readerFloatingTimeId}
+          />
+          <ListItemSwitch
+            primary="Show current progress"
+            secondary="Display the current book progress on overlay of the book (not in comics)"
+            onClick={() => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                readerFloatingProgress:
+                  old.readerFloatingProgress === "bottom"
+                    ? ("off" as const)
+                    : ("bottom" as const),
+              }))
+            }}
+            checked={localSettings.readerFloatingProgress === "bottom"}
+            id={readerFloatingProgressId}
+          />
+          <ListItemSwitch
+            primary="Keep screen on"
+            secondary="Prevent the device screen from turning off while reading"
+            onClick={() => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                readerWakeLockEnabled: !old.readerWakeLockEnabled,
+              }))
+            }}
+            checked={!!localSettings.readerWakeLockEnabled}
+            id={readerWakeLockEnabledId}
+          />
         </List>
         <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
           <ListItemButton
