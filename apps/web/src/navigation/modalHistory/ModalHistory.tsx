@@ -14,22 +14,15 @@ import { useLocation, useNavigate } from "react-router"
  * across renders without re-registering.
  */
 export type ModalController = {
-  /** The reserved `__oboku_modal` hash while an entry is live, else undefined. */
   hash: string | undefined
-  /** True once the location has actually reached this controller's entry. */
   synced: boolean
-  /** Called when the entry is popped by navigation (back button or `close`). */
   onExit: () => void
-  /** Ran right after `onExit` for a single dismissal, then cleared. */
   afterClose: (() => void) | undefined
 }
 
 type ModalHistoryContextValue = {
-  /** Track a controller for this provider's lifetime. Returns an unregister fn. */
   register: (controller: ModalController) => () => void
-  /** Push a dedicated history entry and assign the controller its hash. */
   reserve: (controller: ModalController) => void
-  /** Dismiss the controller's entry (pops history), optionally running a cb. */
   close: (controller: ModalController, afterClose?: () => void) => void
 }
 
