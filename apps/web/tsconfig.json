@@ -6,6 +6,20 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "customConditions": ["source"],
+    /**
+     * `customConditions: ["source"]` makes local workspace packages resolve to
+     * their `src`, but it also matches the `"source"` export condition that the
+     * `@internationalized/*` packages (transitive deps of Chakra UI, from the
+     * Adobe/react-aria ecosystem) publish, pointing at their raw `.ts` sources.
+     * Those get full type-checked (`skipLibCheck` only skips `.d.ts`) and fail
+     * under strict mode. Redirect the whole scope to its shipped declarations so
+     * resolution short-circuits before condition matching.
+     */
+    "paths": {
+      "@internationalized/*": [
+        "../../node_modules/@internationalized/*/dist/types.d.ts"
+      ]
+    },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",
