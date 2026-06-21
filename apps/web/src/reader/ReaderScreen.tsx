@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react"
 import { useParams, useSearchParams } from "react-router"
-import { useWakeLock } from "../common/useWakeLock"
+import { useWakeLock } from "../common/browser"
 import { useFullscreenAutoSwitch } from "./settings/fullScreen"
 import { Reader } from "./Reader"
 import { MoreDialog } from "./navigation/MoreDialog"
