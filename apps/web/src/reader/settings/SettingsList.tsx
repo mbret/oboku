@@ -7,19 +7,9 @@ import {
   ListItemText,
   ListSubheader,
 } from "@mui/material"
-import { ListItemSwitch } from "../../common/lists"
-import {
-  localSettingsSignal,
-  useLocalSettings,
-} from "../../settings/useLocalSettings"
+import { ReadingSettings } from "../../settings/ReadingSettings"
 
 export const SettingsList = () => {
-  const readerSettings = useLocalSettings([
-    "readerWakeLockEnabled",
-    "readerFloatingProgress",
-    "readerFloatingTime",
-  ])
-
   return (
     <List>
       <ListItem disablePadding>
@@ -35,46 +25,8 @@ export const SettingsList = () => {
           />
         </ListItemButton>
       </ListItem>
-      <ListSubheader sx={{ bgcolor: "transparent" }}>Device</ListSubheader>
-      <ListItemSwitch
-        primary="Show current time"
-        secondary="Display the current time on overlay of the book (not in comics)"
-        onClick={() => {
-          localSettingsSignal.update((state) => ({
-            ...state,
-            readerFloatingTime:
-              state.readerFloatingTime === "bottom"
-                ? ("off" as const)
-                : ("bottom" as const),
-          }))
-        }}
-        checked={readerSettings.readerFloatingTime === "bottom"}
-      />
-      <ListItemSwitch
-        primary="Show current progress"
-        secondary="Display the current book progress on overlay of the book (not in comics)"
-        onClick={() => {
-          localSettingsSignal.update((state) => ({
-            ...state,
-            readerFloatingProgress:
-              state.readerFloatingProgress === "bottom"
-                ? ("off" as const)
-                : ("bottom" as const),
-          }))
-        }}
-        checked={readerSettings.readerFloatingProgress === "bottom"}
-      />
-      <ListItemSwitch
-        primary="Keep screen on"
-        secondary="Prevent the device screen from turning off while reading"
-        onClick={() => {
-          localSettingsSignal.update((state) => ({
-            ...state,
-            readerWakeLockEnabled: !readerSettings.readerWakeLockEnabled,
-          }))
-        }}
-        checked={!!readerSettings.readerWakeLockEnabled}
-      />
+      <ListSubheader sx={{ bgcolor: "transparent" }}>Reading</ListSubheader>
+      <ReadingSettings />
     </List>
   )
 }
