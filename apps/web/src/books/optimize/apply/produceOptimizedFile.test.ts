@@ -67,7 +67,7 @@ const buildNonCompliantEpub = async (): Promise<File> => {
     ["mimetype", { dir: false, content: "application/epub+zip" }],
   ])
 
-  const { blob } = await writeArchive(entries, "application/epub+zip")
+  const { blob } = await writeArchive(entries)
 
   return new File([blob], "book.epub", { type: "application/epub+zip" })
 }

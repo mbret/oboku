@@ -79,13 +79,10 @@ export const produceOptimizedFile = async (
     const finalEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
 
     const mimeType = resolvePatchedMimeType(type, { hasOpf })
-    const { blob, close: closeOutput } = await writeArchive(
-      finalEntries,
-      mimeType,
-    )
+    const { blob, close: closeOutput } = await writeArchive(finalEntries)
 
     return {
-      file: new File([blob], name, { type: blob.type || mimeType }),
+      file: new File([blob], name, { type: mimeType }),
       close: closeOutput,
     }
   } finally {

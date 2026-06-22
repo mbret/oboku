@@ -87,16 +87,14 @@ const writeArchiveToOpfs = async (
 
 const writeArchiveToBlob = async (
   entries: EditableArchive,
-  mimeType: string,
 ): Promise<WrittenArchive> => {
-  const writer = new ZipWriter(new BlobWriter(mimeType))
+  const writer = new ZipWriter(new BlobWriter())
 
   await addEntriesToZip(writer, entries)
 
   const blob = await writer.close()
 
   Logger.info("[archiveWriter] wrote in-memory archive", {
-    mimeType,
     bytes: blob.size,
   })
 
@@ -105,15 +103,12 @@ const writeArchiveToBlob = async (
 
 export const writeArchive = async (
   entries: EditableArchive,
-  mimeType: string,
 ): Promise<WrittenArchive> => {
   Logger.info("[archiveWriter] writing archive", {
-    mimeType,
     entries: entries.size,
   })
 
   return (
-    (await writeArchiveToOpfs(entries, mimeType)) ??
-    (await writeArchiveToBlob(entries, mimeType))
+    (await writeArchiveToOpfs(entries)) ?? (await writeArchiveToBlob(entries))
   )
 }
