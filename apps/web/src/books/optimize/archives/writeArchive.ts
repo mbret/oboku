@@ -28,7 +28,15 @@ const addEntriesToZip = async (
   }
 }
 
-const createFreshTempFileHandle = async (): Promise<FileSystemFileHandle> => {
+export type WrittenArchive = {
+  blob: Blob
+  close: () => Promise<void>
+}
+
+const createFreshTempFile = async (): Promise<{
+  handle: FileSystemFileHandle
+  remove: () => Promise<void>
+}> => {
   const root = await navigator.storage.getDirectory()
   const previousRunLeftovers = root
     .removeEntry(OPFS_TMP_DIR, { recursive: true })
@@ -37,14 +45,15 @@ const createFreshTempFileHandle = async (): Promise<FileSystemFileHandle> => {
   await previousRunLeftovers
 
   const dir = await root.getDirectoryHandle(OPFS_TMP_DIR, { create: true })
+  const name = `${crypto.randomUUID()}.zip`
+  const handle = await dir.getFileHandle(name, { create: true })
 
-  return dir.getFileHandle(`${crypto.randomUUID()}.zip`, { create: true })
+  return { handle, remove: () => dir.removeEntry(name).catch(() => {}) }
 }
 
 const writeArchiveToOpfs = async (
   entries: EditableArchive,
-  mimeType: string,
-): Promise<File | null> => {
+): Promise<WrittenArchive | null> => {
   if (!opfsSupported()) {
     Logger.info("[archiveWriter] OPFS unavailable, using in-memory blob")
 
@@ -52,7 +61,7 @@ const writeArchiveToOpfs = async (
   }
 
   try {
-    const handle = await createFreshTempFileHandle()
+    const { handle, remove } = await createFreshTempFile()
     const diskBackedZipStream = await handle.createWritable()
     const writer = new ZipWriter(diskBackedZipStream)
 
@@ -62,11 +71,10 @@ const writeArchiveToOpfs = async (
     const streamedFile = await handle.getFile()
 
     Logger.info("[archiveWriter] streamed archive to OPFS", {
-      mimeType,
       bytes: streamedFile.size,
     })
 
-    return new File([streamedFile], streamedFile.name, { type: mimeType })
+    return { blob: streamedFile, close: remove }
   } catch (error) {
     Logger.warn(
       "[archiveWriter] OPFS streaming failed, falling back to in-memory blob",
@@ -80,7 +88,7 @@ const writeArchiveToOpfs = async (
 const writeArchiveToBlob = async (
   entries: EditableArchive,
   mimeType: string,
-): Promise<Blob> => {
+): Promise<WrittenArchive> => {
   const writer = new ZipWriter(new BlobWriter(mimeType))
 
   await addEntriesToZip(writer, entries)
@@ -92,13 +100,13 @@ const writeArchiveToBlob = async (
     bytes: blob.size,
   })
 
-  return blob
+  return { blob, close: () => Promise.resolve() }
 }
 
 export const writeArchive = async (
   entries: EditableArchive,
   mimeType: string,
-): Promise<Blob> => {
+): Promise<WrittenArchive> => {
   Logger.info("[archiveWriter] writing archive", {
     mimeType,
     entries: entries.size,

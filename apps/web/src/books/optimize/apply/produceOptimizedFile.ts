@@ -45,18 +45,13 @@ const enforceEpubMimetypeFirst = (
   return reordered
 }
 
-/**
- * Applies the curated operations to the book file and returns the resulting
- * file. This is the single transform shared by the apply step; persistence and
- * upload are deliberately left to the callers.
- */
 export const produceOptimizedFile = async (
   file: File,
   operations: OptimizeOperation[],
   {
     onCompressionProgress,
   }: { onCompressionProgress?: (ratio: number) => void } = {},
-): Promise<File> => {
+): Promise<{ file: File; close: () => Promise<void> }> => {
   const { name, type } = file
   const { entries, close } = await readArchive(file)
 
@@ -84,9 +79,15 @@ export const produceOptimizedFile = async (
     const finalEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
 
     const mimeType = resolvePatchedMimeType(type, { hasOpf })
-    const blob = await writeArchive(finalEntries, mimeType)
+    const { blob, close: closeOutput } = await writeArchive(
+      finalEntries,
+      mimeType,
+    )
 
-    return new File([blob], name, { type: blob.type || mimeType })
+    return {
+      file: new File([blob], name, { type: blob.type || mimeType }),
+      close: closeOutput,
+    }
   } finally {
     await close()
   }

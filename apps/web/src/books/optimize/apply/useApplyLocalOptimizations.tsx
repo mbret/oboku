@@ -34,11 +34,19 @@ export const useApplyLocalOptimizations = () => {
         throw new Error(`Cannot optimize: no cached file for book ${bookId}`)
       }
 
-      const optimized = await produceOptimizedFile(cached.data, operations, {
-        onCompressionProgress: (ratio) => compressionProgress$.next(ratio),
-      })
+      const { file: optimized, close } = await produceOptimizedFile(
+        cached.data,
+        operations,
+        {
+          onCompressionProgress: (ratio) => compressionProgress$.next(ratio),
+        },
+      )
 
-      await saveDownloadedFile(bookId, optimized)
+      try {
+        await saveDownloadedFile(bookId, optimized)
+      } finally {
+        await close()
+      }
     },
     onSuccess: (_data, { bookId }) => {
       void queryClient.invalidateQueries({

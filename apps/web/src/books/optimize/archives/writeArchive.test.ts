@@ -47,9 +47,8 @@ describe("writeArchive", () => {
       ["a/bytes.bin", { dir: false, content: new Uint8Array([1, 2, 3]) }],
     ])
 
-    const { entries: reloaded } = await readArchive(
-      await writeArchive(entries, "application/zip"),
-    )
+    const { blob } = await writeArchive(entries, "application/zip")
+    const { entries: reloaded } = await readArchive(blob)
 
     const text = reloaded.get("a/text.xhtml")
     const bin = reloaded.get("a/bytes.bin")
@@ -69,7 +68,7 @@ describe("writeArchive", () => {
       ["OEBPS/content.opf", { dir: false, content: "<package/>" }],
     ])
 
-    const blob = await writeArchive(entries, "application/epub+zip")
+    const { blob } = await writeArchive(entries, "application/epub+zip")
     const first = readFirstZipEntry(await new Response(blob).arrayBuffer())
 
     expect(first.name).toBe("mimetype")

@@ -67,7 +67,7 @@ const buildNonCompliantEpub = async (): Promise<File> => {
     ["mimetype", { dir: false, content: "application/epub+zip" }],
   ])
 
-  const blob = await writeArchive(entries, "application/epub+zip")
+  const { blob } = await writeArchive(entries, "application/epub+zip")
 
   return new File([blob], "book.epub", { type: "application/epub+zip" })
 }
@@ -79,7 +79,7 @@ describe("produceOptimizedFile", () => {
     const { entries: inputEntries } = await readArchive(input)
     expect([...inputEntries.keys()][0]).not.toBe("mimetype")
 
-    const output = await produceOptimizedFile(input, [])
+    const { file: output, close } = await produceOptimizedFile(input, [])
     const outputBytes = await readArrayBuffer(output)
 
     const outputFirst = readFirstZipEntry(outputBytes)
@@ -92,5 +92,7 @@ describe("produceOptimizedFile", () => {
     expect(mimetype && (await readEntryText(mimetype.content))).toBe(
       "application/epub+zip",
     )
+
+    await close()
   })
 })
