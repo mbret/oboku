@@ -1,4 +1,8 @@
-// @vitest-environment jsdom
+// `zip.js` writes archives as node-native `Blob`s. Run under the `node`
+// environment (not jsdom) so that `Blob`/`File` stay consistent: jsdom's `File`
+// constructor does not recognise a node `Blob` and would silently drop its
+// bytes when `produceOptimizedFile` wraps the output in a `File`.
+// @vitest-environment node
 import { describe, expect, it } from "vitest"
 import {
   type EditableArchive,
@@ -15,21 +19,6 @@ type FirstEntry = {
   compressionMethod: number
   extraFieldLength: number
 }
-
-const readArrayBuffer = (blob: Blob): Promise<ArrayBuffer> =>
-  new Promise((resolve, reject) => {
-    const reader = new FileReader()
-
-    reader.onload = () => {
-      if (reader.result instanceof ArrayBuffer) {
-        resolve(reader.result)
-      } else {
-        reject(new Error("Expected an ArrayBuffer result"))
-      }
-    }
-    reader.onerror = () => reject(reader.error)
-    reader.readAsArrayBuffer(blob)
-  })
 
 const readFirstZipEntry = (buffer: ArrayBuffer): FirstEntry => {
   const view = new DataView(buffer)
@@ -80,7 +69,7 @@ describe("produceOptimizedFile", () => {
     expect([...inputEntries.keys()][0]).not.toBe("mimetype")
 
     const { file: output, close } = await produceOptimizedFile(input, [])
-    const outputBytes = await readArrayBuffer(output)
+    const outputBytes = await output.arrayBuffer()
 
     const outputFirst = readFirstZipEntry(outputBytes)
     expect(outputFirst.name).toBe("mimetype")
