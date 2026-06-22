@@ -1,4 +1,7 @@
-import { type EditableArchive, readEntryText } from "../editableArchive"
+import {
+  type EditableArchive,
+  readEntryText,
+} from "../archives/editableArchive"
 import {
   getExtension,
   IMAGE_EXTENSIONS,

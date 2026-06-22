@@ -1,11 +1,8 @@
 import {
   BlobReader,
-  BlobWriter,
   type Entry,
-  Uint8ArrayReader,
   Uint8ArrayWriter,
   ZipReader,
-  ZipWriter,
 } from "@zip.js/zip.js"
 import type { Archive, ArchiveRecord } from "@oboku/archive-metadata"
 
@@ -114,28 +111,4 @@ export const toArchive = (
     recordsByUri: new Map(records.map((record) => [record.uri, record])),
     close,
   }
-}
-
-export const writeArchive = async (
-  entries: EditableArchive,
-  mimeType: string,
-): Promise<Blob> => {
-  const writer = new ZipWriter(new BlobWriter(mimeType))
-
-  for (const [path, entry] of entries) {
-    if (entry.dir) {
-      await writer.add(path, undefined, { directory: true })
-      continue
-    }
-
-    await writer.add(
-      path,
-      new Uint8ArrayReader(await readEntryBytes(entry.content)),
-      entry.store
-        ? { level: 0, dataDescriptor: false, extendedTimestamp: false }
-        : {},
-    )
-  }
-
-  return writer.close()
 }

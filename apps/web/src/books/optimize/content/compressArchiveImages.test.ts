@@ -1,6 +1,9 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { type EditableArchive, readEntryText } from "../editableArchive"
+import {
+  type EditableArchive,
+  readEntryText,
+} from "../archives/editableArchive"
 import type { CompressionResult } from "./imageCompressionPool"
 
 const compress = vi.fn<(bytes: ArrayBuffer) => Promise<CompressionResult>>()

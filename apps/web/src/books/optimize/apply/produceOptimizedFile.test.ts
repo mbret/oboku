@@ -4,8 +4,8 @@ import {
   type EditableArchive,
   readArchive,
   readEntryText,
-  writeArchive,
-} from "../editableArchive"
+} from "../archives/editableArchive"
+import { writeArchive } from "../archives/writeArchive"
 import { produceOptimizedFile } from "./produceOptimizedFile"
 
 const STORE = 0

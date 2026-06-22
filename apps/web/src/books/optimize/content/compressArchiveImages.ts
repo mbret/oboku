@@ -2,7 +2,7 @@ import {
   type EditableArchive,
   type EntryContent,
   readEntryArrayBuffer,
-} from "../editableArchive"
+} from "../archives/editableArchive"
 import { Logger } from "../../../debug/logger.shared"
 import { isConvertibleImagePath, replaceExtensionWithWebp } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"

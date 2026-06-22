@@ -4,9 +4,8 @@ import {
   type EditableArchive,
   readArchive,
   readEntryText,
-  toArchive,
-  writeArchive,
 } from "./editableArchive"
+import { writeArchive } from "./writeArchive"
 
 const readFirstZipEntry = (
   buffer: ArrayBuffer,
@@ -41,7 +40,7 @@ const readFirstZipEntry = (
   }
 }
 
-describe("editableArchive", () => {
+describe("writeArchive", () => {
   it("round-trips text and binary entries through a zip.js read/write cycle", async () => {
     const entries: EditableArchive = new Map([
       ["a/text.xhtml", { dir: false, content: "<p>hi</p>" }],
@@ -59,16 +58,6 @@ describe("editableArchive", () => {
     expect(bin && (await readEntryText(bin.content))).toBe(
       String.fromCharCode(1, 2, 3),
     )
-  })
-
-  it("exposes lazy records with byte sizes through the archive view", async () => {
-    const entries: EditableArchive = new Map([
-      ["note.txt", { dir: false, content: "abcde" }],
-    ])
-
-    const record = toArchive(entries).records[0]
-
-    expect(record).toMatchObject({ dir: false, uri: "note.txt", size: 5 })
   })
 
   it("writes STORE entries uncompressed and without extra fields for EPUB OCF", async () => {

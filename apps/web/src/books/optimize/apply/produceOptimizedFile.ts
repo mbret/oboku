@@ -1,8 +1,5 @@
-import {
-  type EditableArchive,
-  readArchive,
-  writeArchive,
-} from "../editableArchive"
+import { type EditableArchive, readArchive } from "../archives/editableArchive"
+import { writeArchive } from "../archives/writeArchive"
 import { applyMetadataPatches } from "../metadata/archiveFile"
 import { compressArchiveImages } from "../content/compressArchiveImages"
 import type { OptimizeOperation } from "./operations"

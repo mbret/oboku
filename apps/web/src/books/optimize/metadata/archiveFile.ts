@@ -7,7 +7,7 @@ import {
   readArchiveMetadata,
 } from "@oboku/archive-metadata"
 import { Logger } from "../../../debug/logger.shared"
-import { type EditableArchive, toArchive } from "../editableArchive"
+import { type EditableArchive, toArchive } from "../archives/editableArchive"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
