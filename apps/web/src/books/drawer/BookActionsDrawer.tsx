@@ -23,7 +23,7 @@ import {
 import { useBook, useIsBookLocal } from "../states"
 import { Cover } from "../Cover"
 import { ReadingStateState } from "@oboku/shared"
-import { useModalNavigationControl } from "../../navigation/useModalNavigationControl"
+import { useDismissibleOverlay } from "../../navigation/modalHistory"
 import { useBookDownloadState } from "../../download/states"
 import { signal, useLiveRef, useSignalValue } from "reactjrx"
 import { useRemoveHandler } from "../useRemoveHandler"
@@ -93,14 +93,12 @@ export const BookActionsDrawer = memo(() => {
   })
   const metadataFetchDisabled = metadataFetchResolved === false
 
-  const { closeModalWithNavigation: handleClose } = useModalNavigationControl(
-    {
-      onExit: () => {
-        bookActionDrawerSignal.setValue({ openedWith: undefined })
-      },
+  const { close: handleClose } = useDismissibleOverlay({
+    open: !!bookId,
+    onClose: () => {
+      bookActionDrawerSignal.setValue({ openedWith: undefined })
     },
-    bookId,
-  )
+  })
 
   const { mutate: onRemovePress } = useRemoveHandler({
     onSuccess: () => {
