@@ -1,12 +1,8 @@
 import { BlobWriter, Uint8ArrayReader, ZipWriter } from "@zip.js/zip.js"
 import { Logger } from "../../../debug/logger.shared"
 import { type EditableArchive, readEntryBytes } from "./editableArchive"
-
-const OPFS_TMP_DIR = "oboku-optimize-tmp"
-
-const opfsSupported = (): boolean =>
-  typeof navigator !== "undefined" &&
-  typeof navigator.storage?.getDirectory === "function"
+import { getTmpDir, opfsSupported } from "../../../storage/tmp"
+import { OPTIMIZE_TMP_SCOPE } from "../constants"
 
 const addEntriesToZip = async (
   writer: ZipWriter<unknown>,
@@ -33,18 +29,11 @@ export type WrittenArchive = {
   close: () => Promise<void>
 }
 
-const createFreshTempFile = async (): Promise<{
+const createTempFile = async (): Promise<{
   handle: FileSystemFileHandle
   remove: () => Promise<void>
 }> => {
-  const root = await navigator.storage.getDirectory()
-  const previousRunLeftovers = root
-    .removeEntry(OPFS_TMP_DIR, { recursive: true })
-    .catch(() => {})
-
-  await previousRunLeftovers
-
-  const dir = await root.getDirectoryHandle(OPFS_TMP_DIR, { create: true })
+  const dir = await getTmpDir(OPTIMIZE_TMP_SCOPE)
   const name = `${crypto.randomUUID()}.zip`
   const handle = await dir.getFileHandle(name, { create: true })
 
@@ -61,7 +50,7 @@ const writeArchiveToOpfs = async (
   }
 
   try {
-    const { handle, remove } = await createFreshTempFile()
+    const { handle, remove } = await createTempFile()
     const diskBackedZipStream = await handle.createWritable()
     const writer = new ZipWriter(diskBackedZipStream)
 

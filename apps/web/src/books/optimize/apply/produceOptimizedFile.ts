@@ -51,7 +51,7 @@ export const produceOptimizedFile = async (
   {
     onCompressionProgress,
   }: { onCompressionProgress?: (ratio: number) => void } = {},
-): Promise<{ file: File; close: () => Promise<void> }> => {
+): Promise<File> => {
   const { name, type } = file
   const { entries, close } = await readArchive(file)
 
@@ -79,12 +79,9 @@ export const produceOptimizedFile = async (
     const finalEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
 
     const mimeType = resolvePatchedMimeType(type, { hasOpf })
-    const { blob, close: closeOutput } = await writeArchive(finalEntries)
+    const { blob } = await writeArchive(finalEntries)
 
-    return {
-      file: new File([blob], name, { type: mimeType }),
-      close: closeOutput,
-    }
+    return new File([blob], name, { type: mimeType })
   } finally {
     await close()
   }

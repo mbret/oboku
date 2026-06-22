@@ -6,8 +6,11 @@ import {
 } from "@zip.js/zip.js"
 import type { Archive, ArchiveRecord } from "@oboku/archive-metadata"
 
-/** Content of a planned output entry: a pass-through original or new bytes/text. */
-export type EntryContent = Entry | Uint8Array | string
+/**
+ * Content of a planned output entry: a pass-through original, new bytes/text, or
+ * a {@link Blob} (e.g. a disk-backed spill file) whose bytes are read lazily.
+ */
+export type EntryContent = Entry | Uint8Array | string | Blob
 
 export type EditableEntry = {
   dir: boolean
@@ -29,11 +32,14 @@ export type EditableArchive = Map<string, EditableEntry>
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
-export const readEntryBytes = (content: EntryContent): Promise<Uint8Array> => {
-  if (typeof content === "string")
-    return Promise.resolve(encoder.encode(content))
-  if (content instanceof Uint8Array) return Promise.resolve(content)
-  if (content.directory) return Promise.resolve(new Uint8Array())
+export const readEntryBytes = async (
+  content: EntryContent,
+): Promise<Uint8Array> => {
+  if (typeof content === "string") return encoder.encode(content)
+  if (content instanceof Uint8Array) return content
+  if (content instanceof Blob)
+    return new Uint8Array(await content.arrayBuffer())
+  if (content.directory) return new Uint8Array()
 
   return content.getData(new Uint8ArrayWriter())
 }
@@ -60,6 +66,7 @@ export const readEntryArrayBuffer = async (
 const entryByteLength = (content: EntryContent): number => {
   if (typeof content === "string") return encoder.encode(content).byteLength
   if (content instanceof Uint8Array) return content.byteLength
+  if (content instanceof Blob) return content.size
 
   return content.uncompressedSize
 }

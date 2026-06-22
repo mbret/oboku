@@ -3,6 +3,8 @@ import {
   type EntryContent,
   readEntryArrayBuffer,
 } from "../archives/editableArchive"
+import { writeTmpFile } from "../../../storage/tmp"
+import { OPTIMIZE_TMP_SCOPE } from "../constants"
 import { Logger } from "../../../debug/logger.shared"
 import { isConvertibleImagePath, replaceExtensionWithWebp } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"
@@ -112,7 +114,7 @@ export const compressArchiveImages = async (
 
           entries.set(newPath, {
             dir: false,
-            content: new Uint8Array(result.bytes),
+            content: await writeTmpFile(OPTIMIZE_TMP_SCOPE, result.bytes),
           })
           compressedCount += 1
         } else {

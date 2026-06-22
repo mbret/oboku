@@ -5,6 +5,8 @@ import { dexieDb } from "../../../rxdb/dexie"
 import { getBookFile } from "../../../download/getBookFile.shared"
 import { produceOptimizedFile } from "./produceOptimizedFile"
 import { FILE_INSPECTION_QUERY_KEY } from "../useFileInspection"
+import { purgeTmpDir } from "../../../storage/tmp"
+import { OPTIMIZE_TMP_SCOPE } from "../constants"
 import type { OptimizeOperation } from "./operations"
 
 type ApplyLocalVariables = {
@@ -34,24 +36,19 @@ export const useApplyLocalOptimizations = () => {
         throw new Error(`Cannot optimize: no cached file for book ${bookId}`)
       }
 
-      const { file: optimized, close } = await produceOptimizedFile(
-        cached.data,
-        operations,
-        {
-          onCompressionProgress: (ratio) => compressionProgress$.next(ratio),
-        },
-      )
+      const optimized = await produceOptimizedFile(cached.data, operations, {
+        onCompressionProgress: (ratio) => compressionProgress$.next(ratio),
+      })
 
-      try {
-        await saveDownloadedFile(bookId, optimized)
-      } finally {
-        await close()
-      }
+      await saveDownloadedFile(bookId, optimized)
     },
     onSuccess: (_data, { bookId }) => {
       void queryClient.invalidateQueries({
         queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId],
       })
+    },
+    onSettled: () => {
+      void purgeTmpDir(OPTIMIZE_TMP_SCOPE)
     },
   })
 

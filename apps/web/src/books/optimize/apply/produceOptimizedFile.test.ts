@@ -68,7 +68,7 @@ describe("produceOptimizedFile", () => {
     const { entries: inputEntries } = await readArchive(input)
     expect([...inputEntries.keys()][0]).not.toBe("mimetype")
 
-    const { file: output, close } = await produceOptimizedFile(input, [])
+    const output = await produceOptimizedFile(input, [])
     const outputBytes = await output.arrayBuffer()
 
     const outputFirst = readFirstZipEntry(outputBytes)
@@ -81,7 +81,5 @@ describe("produceOptimizedFile", () => {
     expect(mimetype && (await readEntryText(mimetype.content))).toBe(
       "application/epub+zip",
     )
-
-    await close()
   })
 })
