@@ -8,7 +8,6 @@ import { latestDatabase$ } from "../../rxdb/RxDbProvider"
 import { getLinkStateAsync } from "../../links/states"
 import { dexieDb } from "../../rxdb/dexie"
 import { bytesToMb } from "../../common/utils"
-import { createCbzFromReadableStream } from "../createCbzFromReadableStream"
 import { DownloadState, booksDownloadStateSignal } from "../states"
 import { Logger } from "../../debug/logger.shared"
 import { notifyError } from "../../notifications/toasts"
@@ -94,19 +93,12 @@ export const DownloadFlowRequestItem = memo(
 
     const persistDownloadResult = useCallback(
       async (result: DownloadBookResult) => {
-        const sourceData = result.data
+        const data = result.data
         const filename = result.fileName.trim()
 
         if (!filename) {
           throw new Error("Downloaded file is missing a filename.")
         }
-
-        const data =
-          sourceData instanceof Blob
-            ? sourceData
-            : await createCbzFromReadableStream(sourceData, {
-                onData: ({ progress }) => setProgress(progress),
-              })
 
         const cachedData =
           data instanceof File
@@ -123,7 +115,7 @@ export const DownloadFlowRequestItem = memo(
           filename,
         })
       },
-      [bookId, setProgress],
+      [bookId],
     )
 
     const onResolve = useCallback(

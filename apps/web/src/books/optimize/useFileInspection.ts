@@ -1,7 +1,8 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
-import { loadArchive } from "./loadArchive"
+import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { readArchiveMetadataFromSource } from "./metadata/archiveFile"
 import {
   listImageEntries,
@@ -68,7 +69,9 @@ export const useFileInspection = (bookId: string | undefined) =>
             lastModified: file.lastModified,
           })
 
-          const { archive } = await loadArchive(file)
+          const archive = await createArchiveFromZipJs(
+            new ZipReader(new BlobReader(file)),
+          )
           const imageRecords = listImageEntries(archive)
           const { imageCount, imageBytes } = inspectContent(imageRecords)
           const averageImageResolution =

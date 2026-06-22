@@ -30,7 +30,6 @@ export const readingDirectionManifestHook: StreamerManifestHookFactory =
 export const webtoonManifestHook: StreamerManifestHookFactory =
   ({ archive }) =>
   (manifest) => {
-    // @important This implies that we always pass-through the link filename as is in the archive creation.
     const { isWebtoon } = directives.extractDirectivesFromName(
       archive.filename ?? "",
     )

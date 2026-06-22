@@ -1,4 +1,4 @@
-import type JSZip from "jszip"
+import { type EditableArchive, readEntryText } from "../editableArchive"
 import {
   getExtension,
   IMAGE_EXTENSIONS,
@@ -34,7 +34,7 @@ const decodeSegment = (segment: string): string => {
 
 /**
  * Document references may be percent-encoded (e.g. `images/page%201.jpg`) while
- * JSZip entry names — and therefore `renamedPaths` — are stored unescaped. We
+ * archive entry names — and therefore `renamedPaths` — are stored unescaped. We
  * decode per segment so the resolved path can match the archive entry without
  * turning an encoded slash (`%2F`) into a path separator.
  */
@@ -140,21 +140,21 @@ const rewriteOpfManifest = (
  * shares a basename with a skipped image in another folder is left untouched.
  */
 export const rewriteImageReferences = async (
-  zip: JSZip,
+  entries: EditableArchive,
   renamedPaths: ReadonlySet<string>,
 ): Promise<void> => {
   if (renamedPaths.size === 0) return
 
-  for (const entry of Object.values(zip.files)) {
+  for (const [path, entry] of entries) {
     if (entry.dir) continue
 
-    const extension = getExtension(entry.name)
+    const extension = getExtension(path)
     const isOpf = extension === OPF_EXTENSION
 
     if (!isOpf && !TEXT_REFERENCE_EXTENSIONS.has(extension)) continue
 
-    const content = await entry.async("string")
-    const baseDir = getDirname(entry.name)
+    const content = await readEntryText(entry.content)
+    const baseDir = getDirname(path)
 
     if (isOpf) {
       const manifestRewritten = rewriteOpfManifest(
@@ -168,13 +168,13 @@ export const rewriteImageReferences = async (
         renamedPaths,
       )
 
-      if (next !== content) zip.file(entry.name, next)
+      if (next !== content) entries.set(path, { dir: false, content: next })
 
       continue
     }
 
     const next = rewriteTextReferences(content, baseDir, renamedPaths)
 
-    if (next !== content) zip.file(entry.name, next)
+    if (next !== content) entries.set(path, { dir: false, content: next })
   }
 }

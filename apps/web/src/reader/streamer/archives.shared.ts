@@ -1,25 +1,13 @@
 import { type Archive, createArchiveFromText } from "@prose-reader/streamer"
-import { createArchiveFromJszip } from "@prose-reader/streamer/archives/createArchiveFromJszip"
 import { createArchiveFromLibArchive } from "@prose-reader/streamer/archives/createArchiveFromLibArchive"
-import { loadAsync as jszipLoadAsync } from "jszip"
+import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
 import type { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 import { isPotentialZipFile } from "@oboku/shared"
-
-const loadDataWithJsZip = async (data: Blob | File) => {
-  try {
-    return await jszipLoadAsync(data)
-  } catch (e) {
-    Logger.error(
-      "loadDataWithJsZip: An error occurred while loading file with jszip",
-    )
-
-    throw e
-  }
-}
 
 const RAR_MIME_TYPES = [
   "application/x-rar-compressed",
@@ -64,17 +52,17 @@ export const getArchiveForZipFile = async (
     if (
       isPotentialZipFile({ name: file.data.name, mimeType: file.data.type })
     ) {
-      const jszip = await loadDataWithJsZip(file.data)
-
       try {
-        return createArchiveFromJszip(jszip, {
+        const zipReader = new ZipReader(new BlobReader(file.data))
+
+        return await createArchiveFromZipJs(zipReader, {
           orderByAlpha: true,
           name: file.data.name,
           encodingFormat,
         })
       } catch (e) {
         Logger.error(
-          "createArchiveFromJszip: An error occurred while creating archive from jszip",
+          "createArchiveFromZipJs: An error occurred while creating archive from zip.js",
         )
         console.error(e)
 

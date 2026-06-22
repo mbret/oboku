@@ -1,4 +1,3 @@
-import type JSZip from "jszip"
 import {
   type Archive,
   type ArchiveMetadata,
@@ -7,8 +6,8 @@ import {
   patchArchiveMetadata,
   readArchiveMetadata,
 } from "@oboku/archive-metadata"
-import { createArchiveFromJszip } from "@prose-reader/streamer/archives/createArchiveFromJszip"
 import { Logger } from "../../../debug/logger.shared"
+import { type EditableArchive, toArchive } from "../editableArchive"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
@@ -40,19 +39,20 @@ export const readArchiveMetadataFromSource = async (
     },
   })
 
-export const applyMetadataPatchesToZip = async (
-  zip: JSZip,
+/** Applies metadata patches in place by replacing the affected entries. */
+export const applyMetadataPatches = async (
+  entries: EditableArchive,
   patches: ArchiveMetadataPatchPlan[],
 ): Promise<void> => {
-  const archive = await createArchiveFromJszip(zip)
-  const entries: ArchivePatchedEntry[] = []
+  const archive = toArchive(entries)
+  const patched: ArchivePatchedEntry[] = []
 
   for (const { patch, targets } of patches) {
     const result = await patchArchiveMetadata(archive, patch, targets)
-    entries.push(...result.entries)
+    patched.push(...result.entries)
   }
 
-  for (const entry of entries) {
-    zip.file(entry.path, entry.xml)
+  for (const entry of patched) {
+    entries.set(entry.path, { dir: false, content: entry.xml })
   }
 }

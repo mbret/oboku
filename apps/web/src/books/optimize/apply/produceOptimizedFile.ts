@@ -1,6 +1,9 @@
-import type JSZip from "jszip"
-import { applyMetadataPatchesToZip } from "../metadata/archiveFile"
-import { loadArchive } from "../loadArchive"
+import {
+  type EditableArchive,
+  readArchive,
+  writeArchive,
+} from "../editableArchive"
+import { applyMetadataPatches } from "../metadata/archiveFile"
 import { compressArchiveImages } from "../content/compressArchiveImages"
 import type { OptimizeOperation } from "./operations"
 
@@ -23,24 +26,26 @@ const resolvePatchedMimeType = (
 
 /**
  * EPUB OCF requires the `mimetype` entry to be the archive's first record and
- * stored uncompressed. JSZip preserves neither across a load/generate
- * round-trip on its own, so we rewrite the entry as STORED and move it to the
- * front before packaging to keep the output valid for strict readers.
+ * stored uncompressed. We rewrite it as a STORED entry and move it to the front
+ * (write order follows insertion order) so the output stays valid for strict
+ * readers.
  */
-const enforceEpubMimetypeFirst = (zip: JSZip): void => {
-  zip.file(MIMETYPE_ENTRY, EPUB_MIME_TYPE, { compression: "STORE" })
+const enforceEpubMimetypeFirst = (
+  entries: EditableArchive,
+): EditableArchive => {
+  const reordered: EditableArchive = new Map()
 
-  const mimetype = zip.files[MIMETYPE_ENTRY]
+  reordered.set(MIMETYPE_ENTRY, {
+    dir: false,
+    content: EPUB_MIME_TYPE,
+    store: true,
+  })
 
-  if (!mimetype) return
-
-  const reordered: typeof zip.files = { [MIMETYPE_ENTRY]: mimetype }
-
-  for (const [name, entry] of Object.entries(zip.files)) {
-    if (name !== MIMETYPE_ENTRY) reordered[name] = entry
+  for (const [path, entry] of entries) {
+    if (path !== MIMETYPE_ENTRY) reordered.set(path, entry)
   }
 
-  zip.files = reordered
+  return reordered
 }
 
 /**
@@ -56,33 +61,36 @@ export const produceOptimizedFile = async (
   }: { onCompressionProgress?: (ratio: number) => void } = {},
 ): Promise<File> => {
   const { name, type } = file
-  const { zip } = await loadArchive(file)
+  const { entries, close } = await readArchive(file)
 
-  for (const operation of operations) {
-    if (operation.kind === "metadata-patch") {
-      await applyMetadataPatchesToZip(zip, operation.patches)
+  try {
+    for (const operation of operations) {
+      if (operation.kind === "metadata-patch") {
+        await applyMetadataPatches(entries, operation.patches)
+      }
     }
+
+    const compressOperation = operations.find(
+      (operation) => operation.kind === "compress-images",
+    )
+
+    if (compressOperation) {
+      onCompressionProgress?.(0)
+      await compressArchiveImages(entries, compressOperation.config, {
+        onProgress: (completed, total) => {
+          onCompressionProgress?.(total > 0 ? completed / total : 0)
+        },
+      })
+    }
+
+    const hasOpf = archiveHasOpf([...entries.keys()])
+    const finalEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
+
+    const mimeType = resolvePatchedMimeType(type, { hasOpf })
+    const blob = await writeArchive(finalEntries, mimeType)
+
+    return new File([blob], name, { type: blob.type || mimeType })
+  } finally {
+    await close()
   }
-
-  const compressOperation = operations.find(
-    (operation) => operation.kind === "compress-images",
-  )
-
-  if (compressOperation) {
-    onCompressionProgress?.(0)
-    await compressArchiveImages(zip, compressOperation.config, {
-      onProgress: (completed, total) => {
-        onCompressionProgress?.(total > 0 ? completed / total : 0)
-      },
-    })
-  }
-
-  const hasOpf = archiveHasOpf(Object.keys(zip.files))
-
-  if (hasOpf) enforceEpubMimetypeFirst(zip)
-
-  const mimeType = resolvePatchedMimeType(type, { hasOpf })
-  const blob = await zip.generateAsync({ type: "blob", mimeType })
-
-  return new File([blob], name, { type: blob.type || mimeType })
 }

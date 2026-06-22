@@ -1,4 +1,8 @@
-import type JSZip from "jszip"
+import {
+  type EditableArchive,
+  type EntryContent,
+  readEntryArrayBuffer,
+} from "../editableArchive"
 import { Logger } from "../../../debug/logger.shared"
 import { isConvertibleImagePath, replaceExtensionWithWebp } from "./images"
 import { createImageCompressionPool } from "./imageCompressionPool"
@@ -21,17 +25,17 @@ import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
  * references accordingly) instead of skipping the conversion entirely.
  */
 const findCollidingWebpTargets = (
-  zip: JSZip,
-  images: JSZip.JSZipObject[],
+  entries: EditableArchive,
+  images: { path: string }[],
 ): Set<string> => {
-  const existingNames = new Set(Object.keys(zip.files))
+  const existingNames = new Set(entries.keys())
   const targetToSources = new Map<string, string[]>()
 
-  for (const entry of images) {
-    const target = replaceExtensionWithWebp(entry.name)
+  for (const { path } of images) {
+    const target = replaceExtensionWithWebp(path)
     const sources = targetToSources.get(target) ?? []
 
-    sources.push(entry.name)
+    sources.push(path)
     targetToSources.set(target, sources)
   }
 
@@ -51,21 +55,21 @@ const findCollidingWebpTargets = (
 }
 
 export const compressArchiveImages = async (
-  zip: JSZip,
+  entries: EditableArchive,
   config: ImageCompressionConfig,
   {
     onProgress,
   }: { onProgress?: (completed: number, total: number) => void } = {},
 ): Promise<ImageCompressionResult> => {
-  const images = Object.values(zip.files).filter(
-    (entry) => !entry.dir && isConvertibleImagePath(entry.name),
-  )
+  const images: { path: string; content: EntryContent }[] = [...entries]
+    .filter(([path, entry]) => !entry.dir && isConvertibleImagePath(path))
+    .map(([path, entry]) => ({ path, content: entry.content }))
   const total = images.length
 
   if (total === 0)
     return { totalImages: 0, compressedCount: 0, skippedCount: 0 }
 
-  const collidingNames = findCollidingWebpTargets(zip, images)
+  const collidingNames = findCollidingWebpTargets(entries, images)
 
   const pool = createImageCompressionPool()
   const renamedPaths = new Set<string>()
@@ -77,8 +81,8 @@ export const compressArchiveImages = async (
     await mapWithConcurrency(
       images,
       navigator.hardwareConcurrency || 4,
-      async (entry) => {
-        if (collidingNames.has(entry.name)) {
+      async (image) => {
+        if (collidingNames.has(image.path)) {
           skippedCount += 1
           completed += 1
           onProgress?.(completed, total)
@@ -86,7 +90,7 @@ export const compressArchiveImages = async (
           return
         }
 
-        const original = await entry.async("arraybuffer")
+        const original = await readEntryArrayBuffer(image.content)
         const originalByteLength = original.byteLength
         const result = await pool.compress(
           original,
@@ -98,15 +102,18 @@ export const compressArchiveImages = async (
           result.status === "ok" && result.bytes.byteLength < originalByteLength
 
         if (result.status === "ok" && isSmaller) {
-          const oldPath = entry.name
+          const oldPath = image.path
           const newPath = replaceExtensionWithWebp(oldPath)
 
           if (newPath !== oldPath) {
-            zip.remove(oldPath)
+            entries.delete(oldPath)
             renamedPaths.add(oldPath)
           }
 
-          zip.file(newPath, new Uint8Array(result.bytes))
+          entries.set(newPath, {
+            dir: false,
+            content: new Uint8Array(result.bytes),
+          })
           compressedCount += 1
         } else {
           skippedCount += 1
@@ -120,7 +127,7 @@ export const compressArchiveImages = async (
     pool.terminate()
   }
 
-  await rewriteImageReferences(zip, renamedPaths)
+  await rewriteImageReferences(entries, renamedPaths)
 
   Logger.info("[contentOptimizer] image compression", {
     totalImages: total,

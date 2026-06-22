@@ -8,8 +8,8 @@ import {
 const createArchive = (filename: string): Archive => ({
   filename,
   records: [],
-  recordsByUri: new Map(),
   close: async () => undefined,
+  recordsByUri: new Map(),
 })
 
 const createManifest = ({

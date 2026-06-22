@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import JSZip from "jszip"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { type EditableArchive, readEntryText } from "../editableArchive"
 import type { CompressionResult } from "./imageCompressionPool"
 
 const compress = vi.fn<(bytes: ArrayBuffer) => Promise<CompressionResult>>()
@@ -27,8 +27,23 @@ const arrayBufferOf = (value: string): ArrayBuffer => {
   return buffer
 }
 
-const decode = (bytes: ArrayBuffer): string =>
-  String.fromCharCode(...new Uint8Array(bytes))
+const archiveOf = (
+  files: Record<string, string | Uint8Array>,
+): EditableArchive =>
+  new Map(
+    Object.entries(files).map(([path, content]) => [
+      path,
+      { dir: false, content },
+    ]),
+  )
+
+const textOf = (entries: EditableArchive, path: string): Promise<string> => {
+  const entry = entries.get(path)
+
+  if (!entry) throw new Error(`missing entry: ${path}`)
+
+  return readEntryText(entry.content)
+}
 
 const config = { maxWidth: undefined, maxHeight: undefined }
 
@@ -39,10 +54,9 @@ describe("compressArchiveImages", () => {
   })
 
   it("returns zero counts and never spins up a pool for an archive without images", async () => {
-    const zip = new JSZip()
-    zip.file("OEBPS/content.opf", "<package/>")
+    const entries = archiveOf({ "OEBPS/content.opf": "<package/>" })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
     expect(result).toEqual({
       totalImages: 0,
@@ -54,60 +68,61 @@ describe("compressArchiveImages", () => {
 
   it("replaces images with their smaller webp output and skips the rest", async () => {
     compress.mockImplementation(async (bytes) =>
-      decode(bytes).includes("CONVERT")
+      new TextDecoder().decode(bytes).includes("CONVERT")
         ? { status: "ok", bytes: arrayBufferOf("x") }
         : { status: "skipped" },
     )
 
-    const zip = new JSZip()
-    zip.file("images/converted.jpg", bytesOf("CONVERT-larger-payload"))
-    zip.file("images/skipped.png", bytesOf("KEEP"))
+    const entries = archiveOf({
+      "images/converted.jpg": bytesOf("CONVERT-larger-payload"),
+      "images/skipped.png": bytesOf("KEEP"),
+    })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
     expect(result).toEqual({
       totalImages: 2,
       compressedCount: 1,
       skippedCount: 1,
     })
-    expect(zip.file("images/converted.jpg")).toBeNull()
-    expect(zip.file("images/converted.webp")).not.toBeNull()
-    expect(zip.file("images/skipped.png")).not.toBeNull()
+    expect(entries.has("images/converted.jpg")).toBe(false)
+    expect(entries.has("images/converted.webp")).toBe(true)
+    expect(entries.has("images/skipped.png")).toBe(true)
     expect(terminate).toHaveBeenCalledOnce()
   })
 
   it("does not count a non-smaller webp output as compressed", async () => {
     compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("larger") })
 
-    const zip = new JSZip()
-    zip.file("cover.jpg", bytesOf("tiny"))
+    const entries = archiveOf({ "cover.jpg": bytesOf("tiny") })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
     expect(result).toMatchObject({ compressedCount: 0, skippedCount: 1 })
-    expect(zip.file("cover.jpg")).not.toBeNull()
-    expect(zip.file("cover.webp")).toBeNull()
+    expect(entries.has("cover.jpg")).toBe(true)
+    expect(entries.has("cover.webp")).toBe(false)
   })
 
   it("rewrites references only for the images it actually converted", async () => {
     compress.mockImplementation(async (bytes) =>
-      decode(bytes).includes("CONVERT")
+      new TextDecoder().decode(bytes).includes("CONVERT")
         ? { status: "ok", bytes: arrayBufferOf("x") }
         : { status: "skipped" },
     )
 
-    const zip = new JSZip()
-    zip.file("chapter1/page.jpg", bytesOf("CONVERT-larger-payload"))
-    zip.file("chapter2/page.jpg", bytesOf("KEEP"))
-    zip.file("chapter1/index.xhtml", `<img src="page.jpg"/>`)
-    zip.file("chapter2/index.xhtml", `<img src="page.jpg"/>`)
+    const entries = archiveOf({
+      "chapter1/page.jpg": bytesOf("CONVERT-larger-payload"),
+      "chapter2/page.jpg": bytesOf("KEEP"),
+      "chapter1/index.xhtml": `<img src="page.jpg"/>`,
+      "chapter2/index.xhtml": `<img src="page.jpg"/>`,
+    })
 
-    await compressArchiveImages(zip, config)
+    await compressArchiveImages(entries, config)
 
-    expect(await zip.file("chapter1/index.xhtml")?.async("string")).toBe(
+    expect(await textOf(entries, "chapter1/index.xhtml")).toBe(
       `<img src="page.webp"/>`,
     )
-    expect(await zip.file("chapter2/index.xhtml")?.async("string")).toBe(
+    expect(await textOf(entries, "chapter2/index.xhtml")).toBe(
       `<img src="page.jpg"/>`,
     )
   })
@@ -115,52 +130,53 @@ describe("compressArchiveImages", () => {
   it("skips images whose webp targets collide instead of overwriting each other", async () => {
     compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
 
-    const zip = new JSZip()
-    zip.file("cover.jpg", bytesOf("jpg-larger-payload"))
-    zip.file("cover.png", bytesOf("png-larger-payload"))
+    const entries = archiveOf({
+      "cover.jpg": bytesOf("jpg-larger-payload"),
+      "cover.png": bytesOf("png-larger-payload"),
+    })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
     expect(result).toEqual({
       totalImages: 2,
       compressedCount: 0,
       skippedCount: 2,
     })
-    expect(zip.file("cover.jpg")).not.toBeNull()
-    expect(zip.file("cover.png")).not.toBeNull()
-    expect(zip.file("cover.webp")).toBeNull()
+    expect(entries.has("cover.jpg")).toBe(true)
+    expect(entries.has("cover.png")).toBe(true)
+    expect(entries.has("cover.webp")).toBe(false)
     expect(compress).not.toHaveBeenCalled()
   })
 
   it("skips an image whose webp target already exists in the archive", async () => {
     compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
 
-    const zip = new JSZip()
-    zip.file("cover.png", bytesOf("png-larger-payload"))
-    zip.file("cover.webp", bytesOf("existing-webp"))
+    const entries = archiveOf({
+      "cover.png": bytesOf("png-larger-payload"),
+      "cover.webp": bytesOf("existing-webp"),
+    })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
-    expect(decode(await zip.file("cover.webp")!.async("arraybuffer"))).toBe(
-      "existing-webp",
-    )
-    expect(zip.file("cover.png")).not.toBeNull()
+    expect(await textOf(entries, "cover.webp")).toBe("existing-webp")
+    expect(entries.has("cover.png")).toBe(true)
     expect(result).toMatchObject({ totalImages: 1, compressedCount: 0 })
   })
 
   it("never converts gif entries, to avoid flattening animations", async () => {
     compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("x") })
 
-    const zip = new JSZip()
-    zip.file("images/animation.gif", bytesOf("GIF-larger-payload"))
-    zip.file("images/photo.jpg", bytesOf("CONVERT-larger-payload"))
+    const entries = archiveOf({
+      "images/animation.gif": bytesOf("GIF-larger-payload"),
+      "images/photo.jpg": bytesOf("CONVERT-larger-payload"),
+    })
 
-    const result = await compressArchiveImages(zip, config)
+    const result = await compressArchiveImages(entries, config)
 
     expect(result.totalImages).toBe(1)
-    expect(zip.file("images/animation.gif")).not.toBeNull()
-    expect(zip.file("images/animation.webp")).toBeNull()
-    expect(zip.file("images/photo.webp")).not.toBeNull()
+    expect(entries.has("images/animation.gif")).toBe(true)
+    expect(entries.has("images/animation.webp")).toBe(false)
+    expect(entries.has("images/photo.webp")).toBe(true)
     expect(compress).toHaveBeenCalledOnce()
   })
 
@@ -168,11 +184,12 @@ describe("compressArchiveImages", () => {
     compress.mockResolvedValue({ status: "skipped" })
     const onProgress = vi.fn()
 
-    const zip = new JSZip()
-    zip.file("a.jpg", bytesOf("a"))
-    zip.file("b.jpg", bytesOf("b"))
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+    })
 
-    await compressArchiveImages(zip, config, { onProgress })
+    await compressArchiveImages(entries, config, { onProgress })
 
     expect(onProgress).toHaveBeenCalledTimes(2)
     expect(onProgress).toHaveBeenLastCalledWith(2, 2)

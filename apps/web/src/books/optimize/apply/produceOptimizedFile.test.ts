@@ -1,6 +1,11 @@
 // @vitest-environment jsdom
-import JSZip from "jszip"
 import { describe, expect, it } from "vitest"
+import {
+  type EditableArchive,
+  readArchive,
+  readEntryText,
+  writeArchive,
+} from "../editableArchive"
 import { produceOptimizedFile } from "./produceOptimizedFile"
 
 const STORE = 0
@@ -56,13 +61,13 @@ const readFirstZipEntry = (buffer: ArrayBuffer): FirstEntry => {
 }
 
 const buildNonCompliantEpub = async (): Promise<File> => {
-  const zip = new JSZip()
+  const entries: EditableArchive = new Map([
+    ["META-INF/container.xml", { dir: false, content: "<container/>" }],
+    ["OEBPS/content.opf", { dir: false, content: "<package/>" }],
+    ["mimetype", { dir: false, content: "application/epub+zip" }],
+  ])
 
-  zip.file("META-INF/container.xml", "<container/>", { compression: "DEFLATE" })
-  zip.file("OEBPS/content.opf", "<package/>", { compression: "DEFLATE" })
-  zip.file("mimetype", "application/epub+zip", { compression: "DEFLATE" })
-
-  const blob = await zip.generateAsync({ type: "blob" })
+  const blob = await writeArchive(entries, "application/epub+zip")
 
   return new File([blob], "book.epub", { type: "application/epub+zip" })
 }
@@ -71,8 +76,8 @@ describe("produceOptimizedFile", () => {
   it("writes the epub mimetype entry first and uncompressed", async () => {
     const input = await buildNonCompliantEpub()
 
-    const inputZip = await JSZip.loadAsync(input)
-    expect(Object.keys(inputZip.files)[0]).not.toBe("mimetype")
+    const { entries: inputEntries } = await readArchive(input)
+    expect([...inputEntries.keys()][0]).not.toBe("mimetype")
 
     const output = await produceOptimizedFile(input, [])
     const outputBytes = await readArrayBuffer(output)
@@ -82,8 +87,9 @@ describe("produceOptimizedFile", () => {
     expect(outputFirst.compressionMethod).toBe(STORE)
     expect(outputFirst.extraFieldLength).toBe(0)
 
-    const reloaded = await JSZip.loadAsync(outputBytes)
-    expect(await reloaded.file("mimetype")?.async("string")).toBe(
+    const { entries: reloaded } = await readArchive(output)
+    const mimetype = reloaded.get("mimetype")
+    expect(mimetype && (await readEntryText(mimetype.content))).toBe(
       "application/epub+zip",
     )
   })
