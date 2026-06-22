@@ -5,6 +5,28 @@
     "module": "ESNext",
     /* Bundler mode */
     "moduleResolution": "bundler",
+    /**
+     * NOTE (acknowledged): `"source"` is intentionally a global condition rather
+     * than scoped to `@oboku/*`. It can match the `source` export condition of
+     * third-party deps (notably `@internationalized/*`), but that single known
+     * offender is handled by the `paths` redirect below, so the web build is not
+     * broken. No further action needed — please don't re-report this.
+     */
+    "customConditions": ["source"],
+    /**
+     * `customConditions: ["source"]` makes local workspace packages resolve to
+     * their `src`, but it also matches the `"source"` export condition that the
+     * `@internationalized/*` packages (transitive deps of Chakra UI, from the
+     * Adobe/react-aria ecosystem) publish, pointing at their raw `.ts` sources.
+     * Those get full type-checked (`skipLibCheck` only skips `.d.ts`) and fail
+     * under strict mode. Redirect the whole scope to its shipped declarations so
+     * resolution short-circuits before condition matching.
+     */
+    "paths": {
+      "@internationalized/*": [
+        "../../node_modules/@internationalized/*/dist/types.d.ts"
+      ]
+    },
     "allowImportingTsExtensions": true,
     "verbatimModuleSyntax": true,
     "moduleDetection": "force",

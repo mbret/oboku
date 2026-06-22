@@ -19,6 +19,14 @@
 - **JSDoc on exported APIs is fine** when it documents the *contract* (parameters, return shape, edge cases) — not when it restates the implementation.
 - **Delete stale comments aggressively.** A comment that lies is worse than no comment.
 
+### Self-explanatory code over comments
+
+- **Make naming carry the intent a comment would have carried.** Before writing a comment, try to encode the same information in a name. Prefer renaming over annotating.
+- **Name boolean conditions and predicates.** Extract non-trivial conditions into named variables or small predicates (`isWakeLockSupported()`, `isDocumentVisible()`, `wasUnmountedWhileRequesting`) instead of leaving bare expressions with an explanatory comment.
+- **Name every function expression, including callbacks.** Pass named functions to `useEffect`, its cleanup return, event handlers, timers, and promise callbacks (e.g. `useEffect(function keepScreenAwakeWhileMounted() { ... }, [])`, `return function releaseWakeLockOnUnmount() { ... }`, `onWakeLockReleasedByOs`). Named functions document purpose at the call site and show up by name in stack traces and DevTools.
+- **Name intermediate values** rather than commenting what a literal or expression means. A descriptive `const` is preferable to an inline value plus a comment.
+- **The goal:** a reader should understand *what* and *why* from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
+
 ### Reuse before creating
 
 - Always look for existing components, hooks, utilities, routes, and data-access patterns before adding new ones.
