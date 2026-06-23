@@ -1,8 +1,17 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { parseOpf, resolveArchiveMetadata } from "@prose-reader/archive-parser"
-import type { ArchiveEntry } from "../archive/types"
+import { arrayBufferFileAccessors } from "@prose-reader/streamer"
+import type { ArchiveFileRecord } from "../archive/types"
 import { buildPatchedOpfXml } from "./write"
+
+const toArrayBuffer = (body: string): ArrayBuffer => {
+  const bytes = new TextEncoder().encode(body)
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+
+  return buffer
+}
 
 const opf = (
   metadata: string,
@@ -18,11 +27,12 @@ const opf = (
   `  <spine>${options.spine ?? ""}</spine>\n` +
   "</package>"
 
-const makeEntry = (path: string, body: string): ArchiveEntry => ({
-  path,
-  isDir: false,
-  readAsString: () => Promise.resolve(body),
-  readAsUint8Array: () => Promise.resolve(new TextEncoder().encode(body)),
+const makeEntry = (uri: string, body: string): ArchiveFileRecord => ({
+  dir: false,
+  basename: uri.split("/").filter(Boolean).pop() ?? uri,
+  uri,
+  size: body.length,
+  ...arrayBufferFileAccessors(() => Promise.resolve(toArrayBuffer(body))),
 })
 
 const readOpfMetadata = (xml: string) => resolveArchiveMetadata(parseOpf(xml))

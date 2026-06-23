@@ -4,7 +4,12 @@ import {
   resolveArchiveMetadata,
   type ArchiveResolveResult,
 } from "@prose-reader/archive-parser"
-import type { ArchiveEntry, ArchiveSource } from "./archive/types"
+import { readRecordAsText } from "@prose-reader/streamer"
+import {
+  type Archive,
+  type ArchiveFileRecord,
+  isFileRecord,
+} from "./archive/types"
 import { findComicInfoEntry } from "./comicInfo"
 import { findOpfEntry } from "./opf/read"
 
@@ -40,8 +45,8 @@ const getExtension = (path: string): string => {
   return path.substring(lastDot).toLowerCase()
 }
 
-const isImageEntry = (entry: ArchiveEntry): boolean =>
-  IMAGE_EXTENSIONS.has(getExtension(entry.path))
+const isImageEntry = (entry: ArchiveFileRecord): boolean =>
+  IMAGE_EXTENSIONS.has(getExtension(entry.uri))
 
 /**
  * Source-agnostic view of every metadata container we can extract from
@@ -88,18 +93,13 @@ export type ReadArchiveMetadataEvents = {
 }
 
 export const readArchiveMetadata = async (
-  source: ArchiveSource,
+  archive: Archive,
   events?: ReadArchiveMetadataEvents,
 ): Promise<ArchiveMetadata> => {
-  const entries = await source.listEntries()
-  const fileEntries = entries.filter((entry) => !entry.isDir)
+  const fileEntries = archive.records.filter(isFileRecord)
 
-  const opfEntry = await findOpfEntry({
-    listEntries: () => Promise.resolve(entries),
-  })
-  const comicInfoEntry = await findComicInfoEntry({
-    listEntries: () => Promise.resolve(entries),
-  })
+  const opfEntry = findOpfEntry(archive)
+  const comicInfoEntry = findComicInfoEntry(archive)
 
   const opfResult = opfEntry ? await loadOpf(opfEntry, events) : undefined
   const comicInfoResult = comicInfoEntry
@@ -144,28 +144,28 @@ const resolvePageCount = ({
 }
 
 const loadOpf = async (
-  entry: ArchiveEntry,
+  entry: ArchiveFileRecord,
   events: ReadArchiveMetadataEvents | undefined,
 ) => {
-  const xml = await entry.readAsString()
+  const xml = await readRecordAsText(entry)
 
-  events?.onOpfRead?.({ path: entry.path, xml })
+  events?.onOpfRead?.({ path: entry.uri, xml })
 
   const parsed = parseOpf(xml)
   const metadata = resolveArchiveMetadata(parsed)
-  const lastSlash = entry.path.lastIndexOf("/")
-  const basePath = lastSlash === -1 ? "" : entry.path.substring(0, lastSlash)
+  const lastSlash = entry.uri.lastIndexOf("/")
+  const basePath = lastSlash === -1 ? "" : entry.uri.substring(0, lastSlash)
 
   return { metadata, basePath, coverHref: parsed.coverHref }
 }
 
 const loadComicInfo = async (
-  entry: ArchiveEntry,
+  entry: ArchiveFileRecord,
   events: ReadArchiveMetadataEvents | undefined,
 ) => {
-  const xml = await entry.readAsString()
+  const xml = await readRecordAsText(entry)
 
-  events?.onComicInfoRead?.({ path: entry.path, xml })
+  events?.onComicInfoRead?.({ path: entry.uri, xml })
 
   return resolveArchiveMetadata(parseComicInfo(xml))
 }
@@ -181,10 +181,10 @@ const resolveOpfCover = (
 }
 
 const resolveFallbackCover = (
-  imageEntries: ArchiveEntry[],
+  imageEntries: ArchiveFileRecord[],
 ): string | undefined => {
   const images = imageEntries
-    .map((entry) => entry.path)
+    .map((entry) => entry.uri)
     .sort((a, b) => a.localeCompare(b))
 
   return images[0]

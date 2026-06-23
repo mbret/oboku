@@ -1,5 +1,9 @@
-export type { ArchiveEntry, ArchiveSource } from "./archive/types"
-export { findEntry } from "./archive/types"
+export type {
+  Archive,
+  ArchiveFileRecord,
+  ArchiveRecord,
+} from "./archive/types"
+export { findFileRecord, isFileRecord } from "./archive/types"
 
 export type { ArchiveMetadata, ReadArchiveMetadataEvents } from "./reader"
 export { readArchiveMetadata } from "./reader"
