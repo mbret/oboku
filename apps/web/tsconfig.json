@@ -24,7 +24,7 @@
      */
     "paths": {
       "@internationalized/*": [
-        "../../node_modules/@internationalized/*/dist/types.d.ts"
+        "../../node_modules/@internationalized/*/dist/types/src/index.d.ts"
       ]
     },
     "allowImportingTsExtensions": true,

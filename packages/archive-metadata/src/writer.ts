@@ -1,5 +1,9 @@
 import type { Archive } from "./archive/types"
-import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "./comicInfo"
+import {
+  COMIC_INFO_FILENAME,
+  buildPatchedComicInfoXml,
+  findComicInfoEntry,
+} from "./comicInfo"
 import { findOpfEntry } from "./opf/read"
 import { buildPatchedOpfXml } from "./opf/write"
 
@@ -85,7 +89,8 @@ export const patchArchiveMetadata = async (
 
   if (targets.comicInfo) {
     const xml = await buildPatchedComicInfoXml(archive, { isbn: patch.isbn })
-    entries.push({ path: COMIC_INFO_FILENAME, xml })
+    const existingComicInfo = findComicInfoEntry(archive)
+    entries.push({ path: existingComicInfo?.uri ?? COMIC_INFO_FILENAME, xml })
   }
 
   if (targets.opf) {
