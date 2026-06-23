@@ -1,26 +1,17 @@
 import { EMPTY, fromEvent, merge, tap } from "rxjs"
 import { getProfile } from "../../profile/currentProfile"
 import {
-  AskAuthMessage,
-  AskConfigurationMessage,
-  AskProfileMessage,
-  ConfigurationChangeMessage,
-  RefreshAuthMessage,
-  ReplyAskProfileMessage,
-  NotifyAuthMessage,
-  type SkipWaitingMessage,
+  type AppMessage,
+  type MessageOf,
+  configurationChangeMessage,
+  notifyAuthMessage,
+  parseMessage,
+  replyAskProfileMessage,
 } from "./types.shared"
 import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
 import { configuration } from "../../config/configuration"
 import { refreshAuthSession } from "../../http/httpClientApi.web"
-
-const isWorkerMessage = (
-  message: unknown,
-): message is {
-  type: string
-  payload?: unknown
-} => typeof message === "object" && message !== null && "type" in message
 
 export class WebCommunication {
   constructor() {
@@ -39,47 +30,49 @@ export class WebCommunication {
 
     return fromEvent(navigator.serviceWorker, "message").pipe(
       tap((event) => {
-        const data = "data" in event ? event.data : undefined
+        const message = parseMessage("data" in event ? event.data : undefined)
 
-        if (isWorkerMessage(data)) {
-          const replyPort =
-            event instanceof MessageEvent ? event.ports[0] : undefined
-          const serviceWorker =
-            event instanceof MessageEvent
-              ? event.source
-              : navigator.serviceWorker.controller
+        if (!message) return
 
-          Logger.log(
-            ["communication:web"],
-            "received message from service worker",
-            data,
-          )
+        const replyPort =
+          event instanceof MessageEvent ? event.ports[0] : undefined
+        const serviceWorker =
+          event instanceof MessageEvent
+            ? event.source
+            : navigator.serviceWorker.controller
 
-          const reply = (
-            message:
-              | ConfigurationChangeMessage
-              | NotifyAuthMessage
-              | ReplyAskProfileMessage,
-          ) => {
-            if (replyPort) {
-              replyPort.postMessage(message)
+        Logger.log(
+          ["communication:web"],
+          "received message from service worker",
+          message,
+        )
 
-              return
-            }
+        const reply = (
+          message:
+            | MessageOf<"CONFIGURATION_CHANGE">
+            | MessageOf<"NotifyAuthMessage">
+            | MessageOf<"ReplyAskProfileMessage">,
+        ) => {
+          if (replyPort) {
+            replyPort.postMessage(message)
 
-            serviceWorker?.postMessage(message)
+            return
           }
 
-          if (data.type === AskAuthMessage.type) {
-            reply(new NotifyAuthMessage(authStateSignal.value))
-          }
+          serviceWorker?.postMessage(message)
+        }
 
-          if (data.type === RefreshAuthMessage.type) {
+        switch (message.type) {
+          case "ASK_AUTH": {
+            reply(notifyAuthMessage(authStateSignal.value))
+            break
+          }
+          case "REFRESH_AUTH": {
             void (async () => {
               const refreshToken = authStateSignal.value?.refreshToken
 
               if (!refreshToken) {
-                reply(new NotifyAuthMessage(null))
+                reply(notifyAuthMessage(null))
 
                 return
               }
@@ -88,39 +81,34 @@ export class WebCommunication {
                 const didRefresh = await refreshAuthSession(refreshToken)
 
                 reply(
-                  new NotifyAuthMessage(
-                    didRefresh ? authStateSignal.value : null,
-                  ),
+                  notifyAuthMessage(didRefresh ? authStateSignal.value : null),
                 )
               } catch (error) {
                 console.error(error)
-                reply(new NotifyAuthMessage(null))
+                reply(notifyAuthMessage(null))
               }
             })()
+            break
           }
-
-          if (data.type === AskProfileMessage.type) {
-            const message = new ReplyAskProfileMessage({
-              profile: getProfile(),
-            })
-
-            reply(message)
+          case "ASK_PROFILE": {
+            reply(replyAskProfileMessage({ profile: getProfile() }))
+            break
           }
-
-          if (data.type === AskConfigurationMessage.type) {
-            const message = new ConfigurationChangeMessage({
-              API_COUCH_URI: configuration.API_COUCH_URI,
-              API_URL: configuration.API_URL,
-            })
-
-            reply(message)
+          case "ASK_CONFIGURATION": {
+            reply(
+              configurationChangeMessage({
+                API_COUCH_URI: configuration.API_COUCH_URI,
+                API_URL: configuration.API_URL,
+              }),
+            )
+            break
           }
         }
       }),
     )
   }
 
-  sendMessage(message: ConfigurationChangeMessage) {
+  sendMessage(message: MessageOf<"CONFIGURATION_CHANGE">) {
     if (!("serviceWorker" in navigator)) {
       return EMPTY
     }
@@ -131,10 +119,7 @@ export class WebCommunication {
   /**
    * Send message to given service worker
    */
-  static sendMessage(
-    serviceWorker: ServiceWorker,
-    message: SkipWaitingMessage,
-  ) {
+  static sendMessage(serviceWorker: ServiceWorker, message: AppMessage) {
     serviceWorker.postMessage(message)
   }
 }

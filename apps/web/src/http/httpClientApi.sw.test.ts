@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { NotifyAuthMessage } from "../workers/communication/types.shared"
+import { notifyAuthMessage } from "../workers/communication/types.shared"
 
 const { askClientAuth, refreshClientAuth } = vi.hoisted(() => ({
   askClientAuth: vi.fn(),
@@ -23,7 +23,7 @@ describe("httpClientApi service worker auth refresh", () => {
 
   it("refreshes expired cover requests and retries them with the fresh token", async () => {
     askClientAuth.mockResolvedValueOnce(
-      new NotifyAuthMessage({
+      notifyAuthMessage({
         accessToken: "expired-access-token",
         refreshToken: "refresh-token",
         email: "reader@example.com",
@@ -32,7 +32,7 @@ describe("httpClientApi service worker auth refresh", () => {
       }),
     )
     refreshClientAuth.mockResolvedValueOnce(
-      new NotifyAuthMessage({
+      notifyAuthMessage({
         accessToken: "fresh-access-token",
         refreshToken: "refresh-token",
         email: "reader@example.com",

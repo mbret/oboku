@@ -6,9 +6,13 @@ import {
   WebCommunication,
 } from "./communication/communication.web"
 import {
-  ConfigurationChangeMessage,
-  SkipWaitingMessage,
+  configurationChangeMessage,
+  runTaskMessage,
+  SwTask,
+  skipWaitingMessage,
 } from "./communication/types.shared"
+
+const BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
 import { useSubscribe } from "reactjrx"
 import { configuration } from "../config/configuration"
 import { distinctUntilKeyChanged, tap } from "rxjs"
@@ -66,11 +70,41 @@ export const useRegisterServiceWorker = () => {
   }, [])
 
   /**
+   * The client owns the background task cadence: main-thread timers are
+   * reliable, unlike anything scheduled inside the service worker (which gets
+   * killed when idle). We trigger once the SW is active and then on a regular
+   * interval while the tab is open; the SW coalesces concurrent triggers from
+   * multiple tabs.
+   */
+  useEffect(() => {
+    if (!("serviceWorker" in navigator)) return
+
+    const triggerBackgroundTasks = () => {
+      navigator.serviceWorker.ready
+        .then((registration) => {
+          registration.active?.postMessage(
+            runTaskMessage(SwTask.CoversCacheCleanup),
+          )
+        })
+        .catch(() => {})
+    }
+
+    triggerBackgroundTasks()
+
+    const intervalId = setInterval(
+      triggerBackgroundTasks,
+      BACKGROUND_TASK_INTERVAL_MS,
+    )
+
+    return () => clearInterval(intervalId)
+  }, [])
+
+  /**
    * During dev, as soon as we detect a new service worker, we skip waiting.
    */
   useEffect(() => {
     if (import.meta.env.MODE === "development" && waitingWorker) {
-      WebCommunication.sendMessage(waitingWorker, new SkipWaitingMessage())
+      WebCommunication.sendMessage(waitingWorker, skipWaitingMessage())
     }
   }, [waitingWorker])
 
@@ -80,7 +114,7 @@ export const useRegisterServiceWorker = () => {
         distinctUntilKeyChanged("config", isShallowEqual),
         tap(() => {
           webCommunication.sendMessage(
-            new ConfigurationChangeMessage({
+            configurationChangeMessage({
               API_COUCH_URI: configuration.API_COUCH_URI,
               API_URL: configuration.API_URL,
             }),

@@ -14,17 +14,15 @@ import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
 import { configure } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "./workers/constants.shared"
-import { registerCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
+import { runCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
-import {
-  ConfigurationChangeMessage,
-  SkipWaitingMessage,
-} from "./workers/communication/types.shared"
+import { SwTask } from "./workers/communication/types.shared"
 import { serviceWorkerConfiguration } from "./config/configuration.sw"
 import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
 import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
+import { assertNever } from "@oboku/shared"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -103,26 +101,39 @@ if (import.meta.env.PROD) {
   )
 }
 
-self.addEventListener("message", serviceWorkerCommunication.registerMessage)
+self.addEventListener("message", (event) => {
+  const message = serviceWorkerCommunication.registerMessage(event)
 
-// current sw can update and install itself
-serviceWorkerCommunication.watch(SkipWaitingMessage).subscribe(() => {
+  // `task` is narrowed to `SwTask` by the discriminated union — no cast.
+  if (message?.type === "RUN_TASK") {
+    const { task } = message.payload
+
+    switch (task) {
+      case SwTask.CoversCacheCleanup:
+        return event.waitUntil(runCoversCacheCleanup())
+      default:
+        assertNever(task)
+    }
+  }
+})
+
+serviceWorkerCommunication.watch("SKIP_WAITING").subscribe(() => {
   console.log("skip waiting")
 
   self.skipWaiting().then(() => {
-    // fetch fresh config as soon as the worker is ready
     serviceWorkerCommunication.askConfig()
   })
 })
 
 serviceWorkerCommunication
-  .watch(ConfigurationChangeMessage)
+  .watch("CONFIGURATION_CHANGE")
   .subscribe((message) => {
     serviceWorkerConfiguration.update(message.payload)
   })
 
-registerCoversCacheCleanup()
-cleanupOldRxdbDatabases()
+self.addEventListener("activate", (event) => {
+  event.waitUntil(cleanupOldRxdbDatabases())
+})
 
 self.addEventListener(`fetch`, (event) => {
   const isHandledByCovers = coversFetchListener(event)

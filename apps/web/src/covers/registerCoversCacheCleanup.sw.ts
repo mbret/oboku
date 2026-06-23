@@ -1,13 +1,10 @@
 import {
-  interval,
   switchMap,
   from,
-  tap,
   finalize,
-  catchError,
   defer,
   combineLatest,
-  retry,
+  lastValueFrom,
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
 import {
@@ -17,8 +14,7 @@ import {
 import { Logger } from "../debug/logger.shared"
 import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
 import { serviceWorkerConfiguration } from "../config/configuration.sw"
-
-declare const self: ServiceWorkerGlobalScope
+import { coalesce } from "../workers/coalesce"
 
 const cache$ = defer(() =>
   from(caches.open(serviceWorkerConfiguration.SW_COVERS_CACHE_KEY)),
@@ -37,7 +33,7 @@ const clearAllCovers = () => {
   )
 }
 
-export const registerCoversCacheCleanup = () => {
+const runCleanup = async (): Promise<unknown> => {
   const cleanupForProfile$ = database$.pipe(
     switchMap((db) =>
       from(db.book.find().exec()).pipe(
@@ -122,14 +118,10 @@ export const registerCoversCacheCleanup = () => {
   const cleanupOutdatedCovers$ = cache$.pipe(
     switchMap((cache) =>
       from(cache.keys()).pipe(
-        tap((keys) => {
-          const keysToRemoveDueToNewerVersion = keys.filter((item) => {
-            if (hasAnotherMoreRecentCoverForThisRequest(item, keys)) {
-              return true
-            }
-
-            return false
-          })
+        switchMap((keys) => {
+          const keysToRemoveDueToNewerVersion = keys.filter((item) =>
+            hasAnotherMoreRecentCoverForThisRequest(item, keys),
+          )
 
           return from(
             Promise.all(
@@ -141,25 +133,15 @@ export const registerCoversCacheCleanup = () => {
     ),
   )
 
-  interval(5 * 60 * 1000 * 2)
-    .pipe(
-      tap(() => {
-        Logger.info(`[sw/covers]`, `cleanup process started`)
-      }),
-      switchMap(() =>
-        combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
-      ),
-      tap(() => {
-        Logger.info(`[sw/covers]`, `cleanup process success`)
-      }),
-      catchError((error) => {
-        Logger.info(`[sw/covers]`, `cleanup process failed with error`, error)
+  Logger.info(`[sw/covers]`, `cleanup process started`)
 
-        console.error(error)
+  const result = await lastValueFrom(
+    combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
+  )
 
-        throw error
-      }),
-      retry(),
-    )
-    .subscribe()
+  Logger.info(`[sw/covers]`, `cleanup process success`)
+
+  return result
 }
+
+export const runCoversCacheCleanup = coalesce(runCleanup)
