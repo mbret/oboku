@@ -104,7 +104,6 @@ if (import.meta.env.PROD) {
 self.addEventListener("message", (event) => {
   const message = serviceWorkerCommunication.registerMessage(event)
 
-  // `task` is narrowed to `SwTask` by the discriminated union — no cast.
   if (message?.type === "RUN_TASK") {
     const { task } = message.payload
 
