@@ -18,6 +18,8 @@
       "!**/playwright-report",
       "!apps/web/stream-shim.js",
       "!apps/admin/src/routeTree.gen.ts",
+      "!**/*.svg",
+      "!**/next-env.d.ts",
       "!package.json"
     ]
   },
