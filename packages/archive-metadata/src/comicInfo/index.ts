@@ -1,8 +1,9 @@
 import { COMIC_INFO_FILENAME as PROSE_COMIC_INFO_FILENAME } from "@prose-reader/archive-parser"
+import { readRecordAsText } from "@prose-reader/streamer"
 import {
-  type ArchiveEntry,
-  type ArchiveSource,
-  findEntry,
+  type Archive,
+  type ArchiveFileRecord,
+  findFileRecord,
 } from "../archive/types"
 import {
   type XmlDocument,
@@ -31,12 +32,12 @@ const COMIC_INFO_NAMESPACE_ATTRS = {
  * package; the unified reader and writer consume it.
  */
 export const findComicInfoEntry = (
-  source: ArchiveSource,
-): Promise<ArchiveEntry | undefined> =>
-  findEntry(
-    source,
-    (entry) =>
-      entry.path.toLowerCase() === PROSE_COMIC_INFO_FILENAME.toLowerCase(),
+  archive: Archive,
+): ArchiveFileRecord | undefined =>
+  findFileRecord(
+    archive,
+    (record) =>
+      record.uri.toLowerCase() === PROSE_COMIC_INFO_FILENAME.toLowerCase(),
   )
 
 /**
@@ -51,11 +52,11 @@ export const findComicInfoEntry = (
  * which dispatches to this based on archive shape.
  */
 export const buildPatchedComicInfoXml = async (
-  source: ArchiveSource,
+  archive: Archive,
   patch: ComicInfoMetadataPatch,
 ): Promise<string> => {
-  const entry = await findComicInfoEntry(source)
-  const existingXml = entry ? await entry.readAsString() : null
+  const entry = findComicInfoEntry(archive)
+  const existingXml = entry ? await readRecordAsText(entry) : null
 
   return serializeComicInfoXml(existingXml, patch)
 }

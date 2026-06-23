@@ -3,37 +3,39 @@ import {
   BlobWriter,
   type Entry,
   TextReader,
-  TextWriter,
-  Uint8ArrayWriter,
   ZipReader,
   ZipWriter,
 } from "@zip.js/zip.js"
 import {
-  type ArchiveEntry,
+  type Archive,
   type ArchiveMetadata,
   type ArchivePatchedEntry,
   type ArchiveMetadataTargets,
-  type ArchiveSource,
   patchArchiveMetadata,
   readArchiveMetadata,
 } from "@oboku/archive-metadata"
+import {
+  blobFileAccessors,
+  createArchiveFromEntries,
+} from "@prose-reader/streamer"
+import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
 import { Logger } from "../../../debug/logger.shared"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 
-const toArchiveEntry = (entry: Entry): ArchiveEntry => ({
-  path: entry.filename,
-  isDir: entry.directory,
-  readAsString: () =>
-    entry.directory ? Promise.resolve("") : entry.getData(new TextWriter()),
-  readAsUint8Array: () =>
-    entry.directory
-      ? Promise.resolve(new Uint8Array())
-      : entry.getData(new Uint8ArrayWriter()),
-})
-
-const createZipJsArchiveSource = (entries: Entry[]): ArchiveSource => ({
-  listEntries: async () => entries.map(toArchiveEntry),
-})
+const createZipJsArchiveFromEntries = (entries: Entry[]): Archive =>
+  createArchiveFromEntries(
+    entries,
+    (entry) =>
+      entry.directory
+        ? { dir: true, uri: entry.filename }
+        : {
+            dir: false,
+            uri: entry.filename,
+            size: entry.uncompressedSize,
+            ...blobFileAccessors(() => entry.getData(new BlobWriter())),
+          },
+    { close: () => Promise.resolve() },
+  )
 
 export type { ArchiveMetadata, ArchiveMetadataTargets }
 
@@ -50,15 +52,13 @@ export const readArchiveMetadataFromFile = async (
   const zipReader = new ZipReader(new BlobReader(file))
 
   try {
-    const entries = await zipReader.getEntries()
-    const archive = createZipJsArchiveSource(entries)
+    const archive = await createArchiveFromZipJs(zipReader)
 
     Logger.info("[metadataFixer] archive structure", {
-      entryCount: entries.length,
-      entries: entries.map((entry) => ({
-        name: entry.filename,
-        dir: entry.directory,
-        date: entry.lastModDate,
+      entryCount: archive.records.length,
+      entries: archive.records.map((record) => ({
+        name: record.uri,
+        dir: record.dir,
       })),
     })
 
@@ -102,7 +102,7 @@ export const patchArchiveFile = async (
 
   try {
     const originalEntries = await zipReader.getEntries()
-    const archive = createZipJsArchiveSource(originalEntries)
+    const archive = createZipJsArchiveFromEntries(originalEntries)
     const patchedEntries: ArchivePatchedEntry[] = []
 
     for (const { patch, targets } of patches) {

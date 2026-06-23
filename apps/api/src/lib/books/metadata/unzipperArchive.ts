@@ -1,45 +1,21 @@
-import type { ArchiveEntry, ArchiveSource } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata"
+import { createArchiveFromUnzipper } from "@prose-reader/streamer/archives/createArchiveFromUnzipper"
 import unzipper from "unzipper"
 
-type CentralDirectoryFile = Awaited<
-  ReturnType<typeof unzipper.Open.file>
->["files"][number]
-
-const toArchiveEntry = (file: CentralDirectoryFile): ArchiveEntry => ({
-  path: file.path,
-  isDir: file.type === "Directory",
-  size: file.uncompressedSize,
-  readAsString: async () => (await file.buffer()).toString("utf8"),
-  readAsUint8Array: async () => {
-    const buffer = await file.buffer()
-
-    // `Buffer` is a `Uint8Array` subclass; return a plain Uint8Array so
-    // `@oboku/archive-metadata` stays free of Node-specific types.
-    return new Uint8Array(buffer.buffer, buffer.byteOffset, buffer.byteLength)
-  },
-})
+const basename = (uri: string): string =>
+  uri.split(/[\\/]/).filter(Boolean).pop() ?? uri
 
 /**
- * Adapt a zip file on disk to the runtime-agnostic `ArchiveSource`
- * interface consumed by `@oboku/archive-metadata`. Uses
- * `unzipper.Open.file` (random-access via the central directory) so
- * individual entries are still decoded lazily — the metadata package
- * only touches the handful it needs (e.g. OPF, ComicInfo.xml) and the
- * rest remain on disk.
+ * Adapt a zip file on disk to the {@link Archive} interface consumed by
+ * `@oboku/archive-metadata`, via prose-reader's `createArchiveFromUnzipper`.
+ * `unzipper.Open.file` gives random-access through the central directory,
+ * so entries stay lazily decoded — the metadata package only touches the
+ * handful it needs (OPF, ComicInfo.xml) and the rest remain on disk.
  */
 export const createUnzipperArchiveSource = async (
   filePath: string,
-): Promise<ArchiveSource & { close: () => Promise<void> }> => {
+): Promise<Archive> => {
   const directory = await unzipper.Open.file(filePath)
 
-  const entries = directory.files.map(toArchiveEntry)
-
-  return {
-    listEntries: async () => entries,
-    // `unzipper.Open.file` doesn't expose an explicit close hook — the
-    // underlying FDs are released per-entry when `buffer()` resolves.
-    // We keep a no-op close so callers can treat the adapter as
-    // disposable without branching on the runtime.
-    close: async () => {},
-  }
+  return createArchiveFromUnzipper(directory, { name: basename(filePath) })
 }

@@ -1,32 +1,46 @@
+import { arrayBufferFileAccessors, createArchive } from "@prose-reader/streamer"
 import { describe, expect, it } from "vitest"
-import type { ArchiveEntry, ArchiveSource } from "../archive/types"
+import type { Archive, ArchiveRecord } from "../archive/types"
 import { findOpfEntry } from "./read"
+
+const basename = (uri: string): string =>
+  uri.split("/").filter(Boolean).pop() ?? uri
+
+const toArrayBuffer = (body: string): ArrayBuffer => {
+  const bytes = new TextEncoder().encode(body)
+  const buffer = new ArrayBuffer(bytes.byteLength)
+  new Uint8Array(buffer).set(bytes)
+
+  return buffer
+}
 
 const makeArchive = (
   files: Record<string, string>,
   options: { directories?: string[] } = {},
-): ArchiveSource => {
-  const directoryEntries: ArchiveEntry[] = (options.directories ?? []).map(
-    (path) => ({
-      path,
-      isDir: true,
-      readAsString: () => Promise.reject(new Error("dir entry")),
-      readAsUint8Array: () => Promise.reject(new Error("dir entry")),
+): Archive => {
+  const directoryRecords = (options.directories ?? []).map(
+    (uri): ArchiveRecord => ({
+      dir: true,
+      basename: basename(uri),
+      uri,
     }),
   )
 
-  const fileEntries: ArchiveEntry[] = Object.entries(files).map(
-    ([path, body]) => ({
-      path,
-      isDir: false,
-      readAsString: () => Promise.resolve(body),
-      readAsUint8Array: () => Promise.resolve(new TextEncoder().encode(body)),
+  const fileRecords = Object.entries(files).map(
+    ([uri, body]): ArchiveRecord => ({
+      dir: false,
+      basename: basename(uri),
+      uri,
+      size: body.length,
+      ...arrayBufferFileAccessors(() => Promise.resolve(toArrayBuffer(body))),
     }),
   )
 
-  return {
-    listEntries: () => Promise.resolve([...directoryEntries, ...fileEntries]),
-  }
+  return createArchive({
+    filename: "test.zip",
+    records: [...directoryRecords, ...fileRecords],
+    close: () => Promise.resolve(),
+  })
 }
 
 describe("OPF detection (findOpfEntry)", () => {
@@ -37,25 +51,25 @@ describe("OPF detection (findOpfEntry)", () => {
       "OEBPS/text/chapter1.xhtml": "<html/>",
     })
 
-    const entry = await findOpfEntry(archive)
+    const entry = findOpfEntry(archive)
 
-    expect(entry?.path).toBe("OEBPS/content.opf")
+    expect(entry?.uri).toBe("OEBPS/content.opf")
   })
 
   it("finds an OPF at the archive root", async () => {
     const archive = makeArchive({ "package.opf": "<package/>" })
 
-    const entry = await findOpfEntry(archive)
+    const entry = findOpfEntry(archive)
 
-    expect(entry?.path).toBe("package.opf")
+    expect(entry?.uri).toBe("package.opf")
   })
 
   it("matches the .opf extension case-insensitively", async () => {
     const archive = makeArchive({ "OEBPS/Content.OPF": "<package/>" })
 
-    const entry = await findOpfEntry(archive)
+    const entry = findOpfEntry(archive)
 
-    expect(entry?.path).toBe("OEBPS/Content.OPF")
+    expect(entry?.uri).toBe("OEBPS/Content.OPF")
   })
 
   it("returns undefined when the archive holds no .opf file", async () => {
@@ -64,7 +78,7 @@ describe("OPF detection (findOpfEntry)", () => {
       "page-001.jpg": "binary",
     })
 
-    const entry = await findOpfEntry(archive)
+    const entry = findOpfEntry(archive)
 
     expect(entry).toBeUndefined()
   })
@@ -75,8 +89,8 @@ describe("OPF detection (findOpfEntry)", () => {
       "extras/legacy.opf": "<package/>",
     })
 
-    const entry = await findOpfEntry(archive)
+    const entry = findOpfEntry(archive)
 
-    expect(entry?.path).toBe("OEBPS/content.opf")
+    expect(entry?.uri).toBe("OEBPS/content.opf")
   })
 })
