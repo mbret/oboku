@@ -72,22 +72,27 @@ export const useFileInspection = (bookId: string | undefined) =>
           const archive = await createArchiveFromZipJs(
             new ZipReader(new BlobReader(file)),
           )
-          const imageRecords = listImageEntries(archive)
-          const { imageCount, imageBytes } = inspectContent(imageRecords)
-          const averageImageResolution =
-            await measureAverageImageResolution(imageRecords)
-          const metadata = await readArchiveMetadataFromSource(archive)
 
-          return {
-            fileName: file.name,
-            fileSize: file.size,
-            imageCount,
-            imageBytes,
-            averageImageResolution,
-            hasComicInfo: metadata.hasComicInfo,
-            hasOpf: metadata.hasOpf,
-            comicInfoIsbn: metadata.comicInfo?.isbn,
-            opfIsbn: metadata.opf?.isbn,
+          try {
+            const imageRecords = listImageEntries(archive)
+            const { imageCount, imageBytes } = inspectContent(imageRecords)
+            const averageImageResolution =
+              await measureAverageImageResolution(imageRecords)
+            const metadata = await readArchiveMetadataFromSource(archive)
+
+            return {
+              fileName: file.name,
+              fileSize: file.size,
+              imageCount,
+              imageBytes,
+              averageImageResolution,
+              hasComicInfo: metadata.hasComicInfo,
+              hasOpf: metadata.hasOpf,
+              comicInfoIsbn: metadata.comicInfo?.isbn,
+              opfIsbn: metadata.opf?.isbn,
+            }
+          } finally {
+            await archive.close()
           }
         }
       : skipToken,
