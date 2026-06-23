@@ -3,7 +3,6 @@ import {
   BlobWriter,
   type Entry,
   TextReader,
-  Uint8ArrayWriter,
   ZipReader,
   ZipWriter,
 } from "@zip.js/zip.js"
@@ -34,9 +33,7 @@ const toArchiveRecord = (entry: Entry): ArchiveRecord =>
         basename: basename(entry.filename),
         size: entry.uncompressedSize,
         arrayBuffer: () =>
-          entry
-            .getData(new Uint8ArrayWriter())
-            .then((bytes) => bytes.buffer as ArrayBuffer),
+          entry.getData(new BlobWriter()).then((blob) => blob.arrayBuffer()),
         blob: () => entry.getData(new BlobWriter()),
       }
 
