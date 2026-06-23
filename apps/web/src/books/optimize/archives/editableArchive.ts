@@ -1,10 +1,14 @@
+import type { Archive } from "@oboku/archive-metadata"
+import {
+  arrayBufferFileAccessors,
+  createArchiveFromEntries,
+} from "@prose-reader/streamer"
 import {
   BlobReader,
   type Entry,
   Uint8ArrayWriter,
   ZipReader,
 } from "@zip.js/zip.js"
-import type { Archive, ArchiveRecord } from "@oboku/archive-metadata"
 
 /**
  * Content of a planned output entry: a pass-through original, new bytes/text, or
@@ -71,12 +75,6 @@ const entryByteLength = (content: EntryContent): number => {
   return content.uncompressedSize
 }
 
-const basename = (path: string): string => {
-  const slash = path.lastIndexOf("/")
-
-  return slash === -1 ? path : path.slice(slash + 1)
-}
-
 /** Reads a zip blob into an ordered, mutable entry map. Content stays lazy. */
 export const readArchive = async (
   file: Blob,
@@ -98,24 +96,19 @@ export const readArchive = async (
 export const toArchive = (
   entries: EditableArchive,
   close: () => Promise<void> = () => Promise.resolve(),
-): Archive => {
-  const records: ArchiveRecord[] = [...entries].map(([uri, entry]) =>
-    entry.dir
-      ? { dir: true, uri, basename: basename(uri) }
-      : {
-          dir: false,
-          uri,
-          basename: basename(uri),
-          size: entryByteLength(entry.content),
-          arrayBuffer: () => readEntryArrayBuffer(entry.content),
-          blob: async () =>
-            new Blob([await readEntryArrayBuffer(entry.content)]),
-        },
+): Archive =>
+  createArchiveFromEntries(
+    [...entries],
+    ([uri, entry]) =>
+      entry.dir
+        ? { dir: true, uri }
+        : {
+            dir: false,
+            uri,
+            size: entryByteLength(entry.content),
+            ...arrayBufferFileAccessors(() =>
+              readEntryArrayBuffer(entry.content),
+            ),
+          },
+    { close },
   )
-
-  return {
-    records,
-    recordsByUri: new Map(records.map((record) => [record.uri, record])),
-    close,
-  }
-}
