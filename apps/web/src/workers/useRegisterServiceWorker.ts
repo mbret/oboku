@@ -15,6 +15,7 @@ import {
 const BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
 import { useSubscribe } from "reactjrx"
 import { configuration } from "../config/configuration"
+import { getProfile } from "../profile/currentProfile"
 import { distinctUntilKeyChanged, tap } from "rxjs"
 import { isShallowEqual } from "@oboku/shared"
 
@@ -83,7 +84,7 @@ export const useRegisterServiceWorker = () => {
       navigator.serviceWorker.ready
         .then((registration) => {
           registration.active?.postMessage(
-            runTaskMessage(SwTask.CoversCacheCleanup),
+            runTaskMessage(SwTask.CoversCacheCleanup, getProfile()),
           )
         })
         .catch(() => {})

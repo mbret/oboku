@@ -1,11 +1,8 @@
-import { filter, first, Subject, throwError, timeout } from "rxjs"
 import {
   type AppMessage,
   type AppMessageType,
   type MessageOf,
   askAuthMessage,
-  askConfigurationMessage,
-  askProfileMessage,
   parseMessage,
   refreshAuthMessage,
 } from "./types.shared"
@@ -35,13 +32,10 @@ const DEFAULT_CLIENT_REPLY_TIMEOUT_MS = 1000
 const REFRESH_AUTH_REPLY_TIMEOUT_MS = 5000
 
 class ServiceWorkerCommunication {
-  private incomingMessageSubject = new Subject<AppMessage>()
-
   /**
-   * Validate an inbound `message` event against the contract, fan it out to
-   * `watch`/`waitFor` subscribers, and return it so the caller can act on it
-   * directly (e.g. wrap a task in `waitUntil`). Unknown/malformed messages are
-   * dropped and return `null`.
+   * Validate an inbound `message` event against the contract and return it so
+   * the caller can act on it directly (e.g. wrap a task in `waitUntil`).
+   * Unknown/malformed messages are dropped and return `null`.
    */
   registerMessage = (event: ExtendableMessageEvent): AppMessage | null => {
     const message = parseMessage(event.data)
@@ -50,30 +44,7 @@ class ServiceWorkerCommunication {
 
     Logger.log("communication:sw", "received message from client", message)
 
-    this.incomingMessageSubject.next(message)
-
     return message
-  }
-
-  private sendMessage(message: AppMessage) {
-    Logger.log("communication:sw", "sending message", message)
-
-    self.clients.matchAll().then((clients) => {
-      clients.forEach((client) => {
-        client.postMessage(message)
-      })
-    })
-  }
-
-  private waitFor<T extends AppMessageType>(type: T) {
-    return this.incomingMessageSubject.pipe(
-      filter((message): message is MessageOf<T> => message.type === type),
-      timeout({
-        each: 1000,
-        with: () => throwError(() => new IncomingMessageTimeoutError()),
-      }),
-      first(),
-    )
   }
 
   private async requestReplyFromClient<T extends AppMessageType>({
@@ -125,12 +96,6 @@ class ServiceWorkerCommunication {
 
       client.postMessage(message, [channel.port2])
     })
-  }
-
-  public askProfile() {
-    this.sendMessage(askProfileMessage())
-
-    return this.waitFor("ReplyAskProfileMessage")
   }
 
   public async askClientAuth(clientId: string) {

@@ -107,11 +107,11 @@ self.addEventListener("message", (event) => {
 
   switch (message.type) {
     case "RUN_TASK": {
-      const { task } = message.payload
+      const { task, profile } = message.payload
 
       switch (task) {
         case SwTask.CoversCacheCleanup:
-          return event.waitUntil(runCoversCacheCleanup())
+          return event.waitUntil(runCoversCacheCleanup(profile))
         default:
           return assertNever(task)
       }

@@ -21,11 +21,9 @@ const configurationPayloadSchema: z.ZodType<SharedConfig> = z.object({
   API_COUCH_URI: z.string().optional(),
   API_URL: z.string().optional(),
 })
-const replyAskProfilePayloadSchema = z.object({
-  profile: z.string().optional(),
-})
 const runTaskPayloadSchema = z.object({
   task: z.enum(SwTask),
+  profile: z.string().optional(),
 })
 
 /**
@@ -50,11 +48,6 @@ export const messageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("CONFIGURATION_CHANGE"),
     payload: configurationPayloadSchema,
-  }),
-  z.object({ type: z.literal("ASK_PROFILE"), payload: emptyPayloadSchema }),
-  z.object({
-    type: z.literal("ReplyAskProfileMessage"),
-    payload: replyAskProfilePayloadSchema,
   }),
   z.object({ type: z.literal("SKIP_WAITING"), payload: emptyPayloadSchema }),
   z.object({ type: z.literal("RUN_TASK"), payload: runTaskPayloadSchema }),
@@ -109,24 +102,15 @@ export const configurationChangeMessage = (
   payload,
 })
 
-export const askProfileMessage = (): MessageOf<"ASK_PROFILE"> => ({
-  type: "ASK_PROFILE",
-  payload: {},
-})
-
-export const replyAskProfileMessage = (payload: {
-  profile: string | undefined
-}): MessageOf<"ReplyAskProfileMessage"> => ({
-  type: "ReplyAskProfileMessage",
-  payload,
-})
-
 export const skipWaitingMessage = (): MessageOf<"SKIP_WAITING"> => ({
   type: "SKIP_WAITING",
   payload: {},
 })
 
-export const runTaskMessage = (task: SwTask): MessageOf<"RUN_TASK"> => ({
+export const runTaskMessage = (
+  task: SwTask,
+  profile: string | undefined,
+): MessageOf<"RUN_TASK"> => ({
   type: "RUN_TASK",
-  payload: { task },
+  payload: { task, profile },
 })

@@ -1,12 +1,10 @@
 import { EMPTY, fromEvent, merge, tap } from "rxjs"
-import { getProfile } from "../../profile/currentProfile"
 import {
   type AppMessage,
   type MessageOf,
   configurationChangeMessage,
   notifyAuthMessage,
   parseMessage,
-  replyAskProfileMessage,
 } from "./types.shared"
 import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
@@ -50,8 +48,7 @@ export class WebCommunication {
         const reply = (
           message:
             | MessageOf<"CONFIGURATION_CHANGE">
-            | MessageOf<"NotifyAuthMessage">
-            | MessageOf<"ReplyAskProfileMessage">,
+            | MessageOf<"NotifyAuthMessage">,
         ) => {
           if (replyPort) {
             replyPort.postMessage(message)
@@ -88,10 +85,6 @@ export class WebCommunication {
                 reply(notifyAuthMessage(null))
               }
             })()
-            break
-          }
-          case "ASK_PROFILE": {
-            reply(replyAskProfileMessage({ profile: getProfile() }))
             break
           }
           case "ASK_CONFIGURATION": {
