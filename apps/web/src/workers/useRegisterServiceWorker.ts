@@ -62,14 +62,7 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  /**
-   * The client owns the background task cadence: main-thread timers are
-   * reliable, unlike anything scheduled inside the service worker (which gets
-   * killed when idle). We trigger once the SW is active and then on a regular
-   * interval while the tab is open; the SW coalesces concurrent triggers from
-   * multiple tabs.
-   */
-  useEffect(() => {
+  useEffect(function triggerBackgroundTasks() {
     if (!("serviceWorker" in navigator)) return
 
     const triggerBackgroundTasks = () => {
