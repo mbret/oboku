@@ -106,36 +106,42 @@ class Configuration extends BehaviorSubject<{
     )
   }
 
+  // Additional API origins. They serve the exact same API as VITE_API_URL and
+  // default to it. They exist only to work around the browser's per-origin
+  // HTTP/1 connection limit: live replication of several collections needs more
+  // concurrent connections than a single origin allows, so it can be spread
+  // across a few origins. Over HTTP/2 this limit is gone and these can stay
+  // unset.
+  get API_URL_2() {
+    return import.meta.env.VITE_API_URL_2 || this.API_URL
+  }
+
+  get API_URL_3() {
+    return import.meta.env.VITE_API_URL_3 || this.API_URL
+  }
+
+  get API_URL_4() {
+    return import.meta.env.VITE_API_URL_4 || this.API_URL
+  }
+
   get API_WEBDAV_URL() {
     return `${this.API_URL}/webdav`
   }
 
   get API_COUCH_URI() {
-    return (
-      import.meta.env.VITE_COUCH_DB_PUBLIC_URL ??
-      `${window.location.protocol}//${window.location.hostname}:5984`
-    )
+    return `${this.API_URL}/couchdb`
   }
 
   get API_COUCH_URI_2() {
-    return (
-      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_2 ??
-      `${window.location.protocol}//${window.location.hostname}:5985`
-    )
+    return `${this.API_URL_2}/couchdb`
   }
 
   get API_COUCH_URI_3() {
-    return (
-      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_3 ??
-      `${window.location.protocol}//${window.location.hostname}:5986`
-    )
+    return `${this.API_URL_3}/couchdb`
   }
 
   get API_COUCH_URI_4() {
-    return (
-      import.meta.env.VITE_COUCH_DB_PUBLIC_URL_4 ??
-      `${window.location.protocol}//${window.location.hostname}:5987`
-    )
+    return `${this.API_URL_4}/couchdb`
   }
 
   get VITE_FIREBASE_CONFIG() {

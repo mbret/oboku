@@ -74,10 +74,3 @@ chmod +x /custom-entrypoint.sh
 
 ENTRYPOINT ["/custom-entrypoint.sh"]
 CMD ["/opt/couchdb/bin/couchdb"]
-
-# Reverse proxy placed in front of CouchDB. CouchDB stays internal-only and this
-# container is what gets published, so CouchDB is never exposed to the host.
-FROM nginx:alpine AS couchdb-proxy
-ENV COUCHDB_UPSTREAM=http://couchdb:5984
-ENV NGINX_ENVSUBST_FILTER=COUCHDB_
-COPY apps/couchdb-proxy/default.conf.template /etc/nginx/templates/default.conf.template

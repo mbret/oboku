@@ -3,7 +3,7 @@
 ## Prerequisites
 
 * `https`: **(Required)** The web app rely heavily on service worker (notably to stream content) so you need to serve the web app through https. It can be self signed certificate. It will also work without http on localhost. The provided docker image for the web app does not embed self signed certificate.
-* `HTTP/2`: (**Recommended**) Many parallel requests needs to be done on the database, http/1 has limitations and will blocks certain requests. You need at least http/2 in front of couchdb
+* `HTTP/2`: (**Recommended**) The database is reached through the API, and replicating many collections needs many parallel connections. HTTP/1 caps connections per origin and will block some requests, so serve the API behind an HTTP/2 reverse proxy. Without HTTP/2 you must instead expose several API origins (see `VITE_API_URL_2/3/4` in [configuration/environment-variables.md](configuration/environment-variables.md "mention")).
 * `dropbox`: **(Optional)** To have a dropbox support, you will need to create a developer account and configure credentials.
 * `google drive`: **(Optional)** To have a google drive support, you will need to create a developer account and configure credentials
 
