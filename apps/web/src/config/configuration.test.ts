@@ -31,7 +31,7 @@ describe("configuration.fetchConfig", () => {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
     })
-    vi.stubGlobal("window", {
+    vi.stubGlobal("self", {
       location: {
         protocol: "https:",
         hostname: "reader.example.com",
@@ -70,7 +70,7 @@ describe("configuration.fetchConfig", () => {
       getItem: vi.fn(() => null),
       setItem: vi.fn(),
     })
-    vi.stubGlobal("window", {
+    vi.stubGlobal("self", {
       location: {
         protocol: "https:",
         hostname: "reader.example.com",
