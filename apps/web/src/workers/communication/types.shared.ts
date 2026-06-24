@@ -1,5 +1,4 @@
 import type { AuthSession } from "../../auth/types"
-import type { SharedConfig } from "../../config/types.shared"
 import { z } from "zod"
 
 export const SwTask = {
@@ -17,10 +16,6 @@ const authSessionPayloadSchema: z.ZodType<AuthSession> = z.object({
   dbName: z.string(),
 })
 const notifyAuthPayloadSchema = z.union([authSessionPayloadSchema, z.null()])
-const configurationPayloadSchema: z.ZodType<SharedConfig> = z.object({
-  API_COUCH_URI: z.string().optional(),
-  API_URL: z.string().optional(),
-})
 const runTaskPayloadSchema = z.object({
   task: z.enum(SwTask),
   profile: z.string().optional(),
@@ -40,14 +35,6 @@ export const messageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("NotifyAuthMessage"),
     payload: notifyAuthPayloadSchema,
-  }),
-  z.object({
-    type: z.literal("ASK_CONFIGURATION"),
-    payload: emptyPayloadSchema,
-  }),
-  z.object({
-    type: z.literal("CONFIGURATION_CHANGE"),
-    payload: configurationPayloadSchema,
   }),
   z.object({ type: z.literal("SKIP_WAITING"), payload: emptyPayloadSchema }),
   z.object({ type: z.literal("RUN_TASK"), payload: runTaskPayloadSchema }),
@@ -89,18 +76,6 @@ export const refreshAuthMessage = (): MessageOf<"REFRESH_AUTH"> => ({
 export const notifyAuthMessage = (
   payload: AuthSession | null,
 ): MessageOf<"NotifyAuthMessage"> => ({ type: "NotifyAuthMessage", payload })
-
-export const askConfigurationMessage = (): MessageOf<"ASK_CONFIGURATION"> => ({
-  type: "ASK_CONFIGURATION",
-  payload: {},
-})
-
-export const configurationChangeMessage = (
-  payload: SharedConfig,
-): MessageOf<"CONFIGURATION_CHANGE"> => ({
-  type: "CONFIGURATION_CHANGE",
-  payload,
-})
 
 export const skipWaitingMessage = (): MessageOf<"SKIP_WAITING"> => ({
   type: "SKIP_WAITING",

@@ -1,23 +1,15 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
+import { WebCommunication } from "./communication/communication.web"
 import {
-  webCommunication,
-  WebCommunication,
-} from "./communication/communication.web"
-import {
-  configurationChangeMessage,
   runTaskMessage,
   SwTask,
   skipWaitingMessage,
 } from "./communication/types.shared"
+import { getProfile } from "../profile/currentProfile"
 
 const BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
-import { useSubscribe } from "reactjrx"
-import { configuration } from "../config/configuration"
-import { getProfile } from "../profile/currentProfile"
-import { distinctUntilKeyChanged, tap } from "rxjs"
-import { isShallowEqual } from "@oboku/shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -108,24 +100,6 @@ export const useRegisterServiceWorker = () => {
       WebCommunication.sendMessage(waitingWorker, skipWaitingMessage())
     }
   }, [waitingWorker])
-
-  const sendConfigurationChangeMessage = useCallback(
-    () =>
-      configuration.pipe(
-        distinctUntilKeyChanged("config", isShallowEqual),
-        tap(() => {
-          webCommunication.sendMessage(
-            configurationChangeMessage({
-              API_COUCH_URI: configuration.API_COUCH_URI,
-              API_URL: configuration.API_URL,
-            }),
-          )
-        }),
-      ),
-    [],
-  )
-
-  useSubscribe(sendConfigurationChangeMessage)
 
   return { waitingWorker }
 }

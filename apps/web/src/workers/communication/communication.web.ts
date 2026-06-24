@@ -2,13 +2,11 @@ import { EMPTY, fromEvent, merge, tap } from "rxjs"
 import {
   type AppMessage,
   type MessageOf,
-  configurationChangeMessage,
   notifyAuthMessage,
   parseMessage,
 } from "./types.shared"
 import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
-import { configuration } from "../../config/configuration"
 import { refreshAuthSession } from "../../http/httpClientApi.web"
 
 export class WebCommunication {
@@ -45,11 +43,7 @@ export class WebCommunication {
           message,
         )
 
-        const reply = (
-          message:
-            | MessageOf<"CONFIGURATION_CHANGE">
-            | MessageOf<"NotifyAuthMessage">,
-        ) => {
+        const reply = (message: MessageOf<"NotifyAuthMessage">) => {
           if (replyPort) {
             replyPort.postMessage(message)
 
@@ -87,26 +81,9 @@ export class WebCommunication {
             })()
             break
           }
-          case "ASK_CONFIGURATION": {
-            reply(
-              configurationChangeMessage({
-                API_COUCH_URI: configuration.API_COUCH_URI,
-                API_URL: configuration.API_URL,
-              }),
-            )
-            break
-          }
         }
       }),
     )
-  }
-
-  sendMessage(message: MessageOf<"CONFIGURATION_CHANGE">) {
-    if (!("serviceWorker" in navigator)) {
-      return EMPTY
-    }
-
-    navigator.serviceWorker.controller?.postMessage(message)
   }
 
   /**
