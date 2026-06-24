@@ -127,12 +127,6 @@ class ServiceWorkerCommunication {
     })
   }
 
-  public askConfig() {
-    this.sendMessage(askConfigurationMessage())
-
-    return this.waitFor("CONFIGURATION_CHANGE")
-  }
-
   public askProfile() {
     this.sendMessage(askProfileMessage())
 
