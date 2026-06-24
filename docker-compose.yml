@@ -2,12 +2,8 @@ services:
   couchdb:
     image: mbret/oboku-couchdb
     restart: always
-    ports:
-      - "5984:5984"
-      # extra binds used for http/1 load balancing
-      - "5985:5984"
-      - "5986:5984"
-      - "5987:5984"
+    # No host ports: CouchDB is reachable only on the internal Docker network as
+    # `couchdb:5984`. The couchdb-proxy service below is what gets published.
     env_file:
       - .env
     environment:
@@ -18,6 +14,18 @@ services:
       - ./secrets:/secrets:ro
       - oboku-couchdb-data:/opt/couchdb/data
       - oboku-couchdb-config:/opt/couchdb/etc/local.d
+
+  couchdb-proxy:
+    image: mbret/oboku-couchdb-proxy
+    restart: always
+    depends_on:
+      - couchdb
+    ports:
+      - "5984:5984"
+      # extra binds used for http/1 load balancing
+      - "5985:5984"
+      - "5986:5984"
+      - "5987:5984"
 
   postgres:
     image: postgres:17
