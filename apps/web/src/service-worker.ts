@@ -19,7 +19,6 @@ import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
 import { SwTask } from "./workers/communication/types.shared"
-import { serviceWorkerConfiguration } from "./config/configuration.sw"
 import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
 import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
 import { assertNever } from "@oboku/shared"
@@ -118,15 +117,7 @@ self.addEventListener("message", (event) => {
       }
     }
     case "SKIP_WAITING":
-      return event.waitUntil(
-        self.skipWaiting().then(() => {
-          serviceWorkerCommunication.askConfig()
-        }),
-      )
-    case "CONFIGURATION_CHANGE":
-      return serviceWorkerConfiguration.update(message.payload)
-    default:
-      return
+      return event.waitUntil(self.skipWaiting())
   }
 })
 
