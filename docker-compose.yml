@@ -20,6 +20,8 @@ services:
     restart: always
     depends_on:
       - couchdb
+    environment:
+      COUCHDB_UPSTREAM: ${COUCHDB_UPSTREAM:-http://couchdb:5984}
     ports:
       - "5984:80"
       # extra binds used for http/1 load balancing
