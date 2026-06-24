@@ -81,6 +81,10 @@ class ServiceWorkerCommunication {
         const reply = parseMessage(event.data)
 
         if (reply && reply.type === replyType) {
+          // `reply.type === replyType` narrows the runtime value, but TS cannot
+          // relate it back to the generic `T` (a type parameter, not a literal),
+          // so it keeps `reply` as the full `AppMessage` union. The runtime check
+          // guarantees the cast is sound.
           resolve(reply as MessageOf<T>)
 
           return
