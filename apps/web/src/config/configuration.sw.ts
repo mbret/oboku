@@ -1,9 +1,8 @@
+import { getApiUrl } from "./configuration.shared"
+
 class ServiceWorkerConfiguration {
   get API_URL() {
-    return (
-      import.meta.env.VITE_API_URL ||
-      `${self.location.protocol}//${self.location.hostname}:3000`
-    )
+    return getApiUrl()
   }
 
   get SW_COVERS_CACHE_KEY() {
