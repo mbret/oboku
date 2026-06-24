@@ -37,8 +37,6 @@ const REFRESH_AUTH_REPLY_TIMEOUT_MS = 5000
 class ServiceWorkerCommunication {
   private incomingMessageSubject = new Subject<AppMessage>()
 
-  public incomingMessage$ = this.incomingMessageSubject.asObservable()
-
   /**
    * Validate an inbound `message` event against the contract, fan it out to
    * `watch`/`waitFor` subscribers, and return it so the caller can act on it
@@ -156,12 +154,6 @@ class ServiceWorkerCommunication {
       replyType: "NotifyAuthMessage",
       timeoutMs: REFRESH_AUTH_REPLY_TIMEOUT_MS,
     })
-  }
-
-  public watch<T extends AppMessageType>(type: T) {
-    return this.incomingMessage$.pipe(
-      filter((message): message is MessageOf<T> => message.type === type),
-    )
   }
 }
 

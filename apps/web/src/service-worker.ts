@@ -104,31 +104,31 @@ if (import.meta.env.PROD) {
 self.addEventListener("message", (event) => {
   const message = serviceWorkerCommunication.registerMessage(event)
 
-  if (message?.type === "RUN_TASK") {
-    const { task } = message.payload
+  if (!message) return
 
-    switch (task) {
-      case SwTask.CoversCacheCleanup:
-        return event.waitUntil(runCoversCacheCleanup())
-      default:
-        assertNever(task)
+  switch (message.type) {
+    case "RUN_TASK": {
+      const { task } = message.payload
+
+      switch (task) {
+        case SwTask.CoversCacheCleanup:
+          return event.waitUntil(runCoversCacheCleanup())
+        default:
+          return assertNever(task)
+      }
     }
+    case "SKIP_WAITING":
+      return event.waitUntil(
+        self.skipWaiting().then(() => {
+          serviceWorkerCommunication.askConfig()
+        }),
+      )
+    case "CONFIGURATION_CHANGE":
+      return serviceWorkerConfiguration.update(message.payload)
+    default:
+      return
   }
 })
-
-serviceWorkerCommunication.watch("SKIP_WAITING").subscribe(() => {
-  console.log("skip waiting")
-
-  self.skipWaiting().then(() => {
-    serviceWorkerCommunication.askConfig()
-  })
-})
-
-serviceWorkerCommunication
-  .watch("CONFIGURATION_CHANGE")
-  .subscribe((message) => {
-    serviceWorkerConfiguration.update(message.payload)
-  })
 
 self.addEventListener("activate", (event) => {
   event.waitUntil(cleanupOldRxdbDatabases())
