@@ -8,6 +8,15 @@ services:
       dockerfile: dockerfile
       target: couchdb
 
+  couchdb-proxy:
+    extends:
+      file: docker-compose.yml
+      service: couchdb-proxy
+    build:
+      context: ./
+      dockerfile: dockerfile
+      target: couchdb-proxy
+
   postgres:
     extends:
       file: docker-compose.yml
