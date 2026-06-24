@@ -21,11 +21,11 @@ services:
     depends_on:
       - couchdb
     ports:
-      - "5984:5984"
+      - "5984:80"
       # extra binds used for http/1 load balancing
-      - "5985:5984"
-      - "5986:5984"
-      - "5987:5984"
+      - "5985:80"
+      - "5986:80"
+      - "5987:80"
 
   postgres:
     image: postgres:17
