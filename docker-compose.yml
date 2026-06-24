@@ -12,6 +12,14 @@ services:
       - ./secrets:/secrets:ro
       - oboku-couchdb-data:/opt/couchdb/data
       - oboku-couchdb-config:/opt/couchdb/etc/local.d
+    # `/_up` reports node readiness without auth; the API waits for this before
+    # starting (see its depends_on condition).
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   postgres:
     image: postgres:17
@@ -45,7 +53,8 @@ services:
     image: mbret/oboku-api
     restart: always
     depends_on:
-      - couchdb
+      couchdb:
+        condition: service_healthy
     ports:
       - "3000:3000"
     env_file:
