@@ -27,6 +27,7 @@ import { useMutation$ } from "reactjrx"
 import { useGoogleScripts } from "./lib/scripts"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { PLUGIN_NAME } from "./lib/constants"
+import { configuration } from "../../config/configuration"
 
 export const DownloadBook = memo(
   ({
@@ -73,7 +74,7 @@ export const DownloadBook = memo(
                         },
                         responseType: "blob",
                         signal: abortController.signal,
-                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg`,
+                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${configuration.GOOGLE_API_KEY ?? ""}`,
                       }),
                     ).pipe(
                       map((mediaResponse) => ({
