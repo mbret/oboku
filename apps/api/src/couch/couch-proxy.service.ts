@@ -1,7 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import * as httpProxy from "http-proxy-3"
 import http from "node:http"
-import type { TLSSocket } from "node:tls"
 import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
 
@@ -56,12 +55,17 @@ export class CouchProxyService {
   private getProxy() {
     if (this.proxy) return this.proxy
 
-    const target = this.appConfigService.COUCH_DB_URL
-
-    this.logger.log(`Initializing CouchDB proxy -> target=${target}`)
-
     const proxy = httpProxy.createProxyServer({
-      target,
+      target: this.appConfigService.COUCH_DB_URL,
+      // Rewrite the upstream Host header to the target host. Otherwise the
+      // incoming request's Host (e.g. api.oboku.me) is forwarded as-is, and
+      // Node derives the TLS SNI from it. When COUCH_DB_URL points at a
+      // name-based reverse proxy (the deployment uses SWAG/nginx), the wrong
+      // Host/SNI fails to match the CouchDB server block: it falls back to the
+      // default vhost, which serves a self-signed cert (DEPTH_ZERO_SELF_SIGNED_CERT)
+      // or its landing page instead of proxying to CouchDB. Sending the target
+      // host makes the proxy both present the right cert and route correctly.
+      changeOrigin: true,
     })
 
     proxy.on("proxyReq", (proxyReq, req) => {
@@ -83,51 +87,19 @@ export class CouchProxyService {
 
       proxyReq.setHeader("X-Forwarded-For", forwardedFor)
       proxyReq.setHeader("X-Forwarded-Proto", forwardedProto)
-
-      // The Host header we send upstream is what Node uses to derive the TLS
-      // SNI servername, so log it alongside the path/target to make cert
-      // selection on a TLS-terminating upstream observable.
-      this.logger.log(
-        `[upstream-req] ${proxyReq.method} ${proxyReq.protocol}//${proxyReq.getHeader(
-          "host",
-        )}${proxyReq.path} (host-header/SNI=${proxyReq.getHeader("host")})`,
-      )
-
-      // Once the socket is attached, log the TLS handshake outcome: the SNI we
-      // actually negotiated, whether the peer cert verified, and (if not) why.
-      proxyReq.once("socket", (socket) => {
-        if (!("encrypted" in socket)) return
-
-        socket.once("secureConnect", () => {
-          const tlsSocket = socket as TLSSocket
-          const cert = tlsSocket.getPeerCertificate()
-
-          this.logger.log(
-            `[upstream-tls] servername=${tlsSocket.servername} authorized=${tlsSocket.authorized} authError=${tlsSocket.authorizationError ?? "-"} peer.subject=${cert?.subject?.CN ?? "?"} peer.issuer=${cert?.issuer?.CN ?? "?"}`,
-          )
-        })
-      })
     })
 
     // Strip CouchDB's CORS headers so only the ones we set on the response
     // survive, then advertise which headers the browser may read.
-    proxy.on("proxyRes", (proxyRes, req, res) => {
-      this.logger.log(
-        `[upstream-res] ${req.method} ${req.url} -> ${proxyRes.statusCode} ${proxyRes.statusMessage ?? ""}`,
-      )
-
+    proxy.on("proxyRes", (proxyRes, _req, res) => {
       for (const header of COUCH_CORS_RESPONSE_HEADERS) {
         delete proxyRes.headers[header]
       }
       res.setHeader("Access-Control-Expose-Headers", EXPOSED_HEADERS)
     })
 
-    proxy.on("error", (error, req, res) => {
-      const code = (error as NodeJS.ErrnoException).code ?? "-"
-      this.logger.error(
-        `CouchDB proxy error: ${error.message} (code=${code}) for ${req.method} ${req.url} host=${req.headers?.host ?? "-"} target=${target}`,
-        error.stack,
-      )
+    proxy.on("error", (error, _req, res) => {
+      this.logger.error("CouchDB proxy error", error)
 
       if (res instanceof http.ServerResponse) {
         if (!res.headersSent) {
@@ -169,10 +141,6 @@ export class CouchProxyService {
    * `/couchdb/userdb-x/_changes` -> `<COUCH_DB_URL>/userdb-x/_changes`.
    */
   middleware = (req: Request, res: Response) => {
-    this.logger.log(
-      `[incoming] ${req.method} ${req.originalUrl} host=${req.headers.host ?? "-"} origin=${req.headers.origin ?? "-"} xfwd-proto=${req.headers["x-forwarded-proto"] ?? "-"} xfwd-for=${req.headers["x-forwarded-for"] ?? "-"}`,
-    )
-
     this.applyCorsHeaders(req, res)
 
     // Answer the CORS preflight ourselves instead of forwarding it, so it works
