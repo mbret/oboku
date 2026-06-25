@@ -57,6 +57,13 @@ export class CouchProxyService {
 
     const proxy = httpProxy.createProxyServer({
       target: this.appConfigService.COUCH_DB_URL,
+      // This is internal, server-to-server traffic between the API and CouchDB.
+      // When COUCH_DB_URL is an https endpoint, CouchDB (or the layer in front
+      // of it) often presents a self-signed certificate, which Node's TLS
+      // client rejects by default (DEPTH_ZERO_SELF_SIGNED_CERT). Public TLS is
+      // terminated at the deployer's edge proxy, so skip verification on this
+      // trusted internal hop.
+      secure: false,
     })
 
     proxy.on("proxyReq", (proxyReq, req) => {
