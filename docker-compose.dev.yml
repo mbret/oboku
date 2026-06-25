@@ -7,6 +7,30 @@ services:
       context: ./
       dockerfile: dockerfile
       target: couchdb
+    ports:
+      - "5984:5984"
+
+  # Dev-only reverse proxy in front of the API. Production relies on the
+  # deployer's own (HTTP/2) reverse proxy; locally this exposes extra origins
+  # (VITE_API_URL_2/3/4) that forward to the API so the browser has enough
+  # origins for parallel replication. The primary origin is the API on :3000.
+  dev-proxy:
+    image: nginx:alpine
+    restart: unless-stopped
+    environment:
+      # The API the dev proxy forwards to. Defaults to the API running on the
+      # host (npm run start:dev); set to "api:3000" if you run the API via the
+      # api service in this compose file instead.
+      DEV_PROXY_UPSTREAM: ${DEV_PROXY_UPSTREAM:-host.docker.internal:3000}
+      NGINX_ENVSUBST_FILTER: DEV_PROXY_UPSTREAM
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./apps/dev-proxy/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    ports:
+      - "5985:5985"
+      - "5986:5986"
+      - "5987:5987"
 
   postgres:
     extends:
