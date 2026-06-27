@@ -24,7 +24,6 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { PersistQueryProvider } from "./queries/PersistQueryProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
 import { useLoadGsi } from "./google/gsi"
-import { AutoSignOutWhenUnauthorized } from "./auth/AutoSignOutWhenUnauthorized"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
@@ -71,8 +70,6 @@ const App = memo(() => {
             }}
           >
             <AppBrowserRouter>
-              {/* This needs to be high enough to catch at least any early calls to `httpClientApi` */}
-              <AutoSignOutWhenUnauthorized />
               <AuthenticatedOnly>
                 <UploadBookDialogWithDragOver />
                 <BookActionsDrawer />
