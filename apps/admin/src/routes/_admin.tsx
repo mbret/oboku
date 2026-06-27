@@ -35,6 +35,10 @@ const navItems = [
     description: "Overview",
   },
   {
+    to: "/users",
+    label: "Users",
+  },
+  {
     to: "/signup-links",
     label: "Sign up links",
     description: "Generate manual sign up links",
@@ -43,6 +47,11 @@ const navItems = [
     to: "/notifications",
     label: "Notifications",
     description: "Broadcast inbox messages",
+  },
+  {
+    to: "/email",
+    label: "Emails",
+    description: "Send emails to users",
   },
   {
     to: "/providers",
@@ -173,7 +182,7 @@ function AdminLayout() {
               component={Link}
               to={item.to}
               label={item.label}
-              description={item.description}
+              description={"description" in item ? item.description : undefined}
               active={pathname === item.to}
               onClick={close}
             />

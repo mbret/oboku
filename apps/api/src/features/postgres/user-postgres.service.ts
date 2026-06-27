@@ -64,6 +64,27 @@ export class UserPostgresService {
     return [...new Set(users.map(({ id }) => id))]
   }
 
+  async getAllUsers(): Promise<
+    Pick<UserPostgresEntity, "id" | "email" | "username" | "emailVerified">[]
+  > {
+    return this.userRepository.find({
+      select: ["id", "email", "username", "emailVerified"],
+      order: { id: "ASC" },
+    })
+  }
+
+  async getAllUserEmails(): Promise<string[]> {
+    const users = await this.userRepository.find({ select: ["email"] })
+
+    return [
+      ...new Set(
+        users
+          .map(({ email }) => email)
+          .filter((email): email is string => Boolean(email)),
+      ),
+    ]
+  }
+
   async getUserIdsByEmails(emails: string[]): Promise<number[]> {
     const users = await this.userRepository
       .createQueryBuilder("user")

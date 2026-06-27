@@ -40,11 +40,16 @@ import {
   ValidateIf,
 } from "class-validator"
 import { NotificationsService } from "src/notifications/notifications.service"
+import { AdminEmailService } from "./admin-email.service"
 import type {
   CreateAdminNotificationRequest,
   CreateAdminNotificationResponse,
   GetAdminNotificationsResponse,
+  GetAdminUsersResponse,
+  SendAdminEmailRequest,
+  SendAdminEmailResponse,
 } from "@oboku/shared"
+import { UserPostgresService } from "src/features/postgres/user-postgres.service"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const hashA = createHash("sha256").update(a).digest()
@@ -155,6 +160,26 @@ class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
   emails?: string[]
 }
 
+class SendAdminEmailDto implements SendAdminEmailRequest {
+  @IsString()
+  @MinLength(1)
+  subject!: string
+
+  @IsString()
+  @MinLength(1)
+  body!: string
+
+  @IsString()
+  @IsIn(["all", "emails"])
+  audienceType!: SendAdminEmailRequest["audienceType"]
+
+  @IsArray()
+  @ArrayMaxSize(1000)
+  @IsEmail({}, { each: true })
+  @IsOptional()
+  emails?: string[]
+}
+
 class SigninDto {
   @IsString()
   login!: string
@@ -187,6 +212,8 @@ export class AdminController {
     private readonly adminCoversService: AdminCoversService,
     private readonly authService: AuthService,
     private readonly notificationService: NotificationsService,
+    private readonly adminEmailService: AdminEmailService,
+    private readonly userPostgresService: UserPostgresService,
   ) {}
 
   private async signAdminTokens() {
@@ -294,6 +321,25 @@ export class AdminController {
     @Body() body: CreateAdminNotificationDto,
   ): Promise<CreateAdminNotificationResponse> {
     return this.notificationService.sendAdminBroadcast(body)
+  }
+
+  @Get("users")
+  async getUsers(): Promise<GetAdminUsersResponse> {
+    const users = await this.userPostgresService.getAllUsers()
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      emailVerified: Boolean(user.emailVerified),
+    }))
+  }
+
+  @Post("email")
+  async sendEmail(
+    @Body() body: SendAdminEmailDto,
+  ): Promise<SendAdminEmailResponse> {
+    return this.adminEmailService.sendBroadcast(body)
   }
 
   @Get("settings")

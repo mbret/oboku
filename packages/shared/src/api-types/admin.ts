@@ -33,3 +33,12 @@ export type UpdateInstanceSettingsRequest = Partial<
 >
 
 export type UpdateInstanceSettingsResponse = Record<string, unknown>
+
+export type AdminUserSummary = {
+  id: number
+  email: string
+  username: string
+  emailVerified: boolean
+}
+
+export type GetAdminUsersResponse = AdminUserSummary[]

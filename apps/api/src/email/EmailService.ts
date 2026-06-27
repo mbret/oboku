@@ -12,6 +12,60 @@ export class EmailService {
 
   constructor(private readonly appConfigService: AppConfigService) {}
 
+  private createTransporter() {
+    return nodemailer.createTransport({
+      host: this.appConfigService.EMAIL_SMTP_HOST,
+      port: this.appConfigService.EMAIL_SMTP_PORT,
+      secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
+      auth:
+        this.appConfigService.EMAIL_SMTP_USER &&
+        this.appConfigService.EMAIL_SMTP_PASSWORD
+          ? {
+              user: this.appConfigService.EMAIL_SMTP_USER,
+              pass: this.appConfigService.EMAIL_SMTP_PASSWORD,
+            }
+          : undefined,
+    })
+  }
+
+  /**
+   * Sends an email to a single recipient.
+   *
+   * In development, when SMTP is not configured, the email is logged instead
+   * of being delivered. In production an unconfigured SMTP throws.
+   */
+  async sendEmail({
+    to,
+    subject,
+    text,
+    html,
+  }: {
+    to: string
+    subject: string
+    text: string
+    html?: string
+  }) {
+    if (
+      !this.appConfigService.EMAIL_SMTP_HOST ||
+      !this.appConfigService.EMAIL_FROM
+    ) {
+      if (this.appConfigService.NODE_ENV === "development") {
+        this.logger.log(`Email to ${to} (${subject}):\n${text}`)
+        return
+      }
+
+      throw new InternalServerErrorException("Email delivery is not configured")
+    }
+
+    await this.createTransporter().sendMail({
+      from: this.appConfigService.EMAIL_FROM,
+      to,
+      subject,
+      text,
+      html,
+    })
+  }
+
   getSignUpLink({
     appPublicUrl,
     token,
@@ -30,36 +84,7 @@ export class EmailService {
       token,
     })
 
-    if (
-      !this.appConfigService.EMAIL_SMTP_HOST ||
-      !this.appConfigService.EMAIL_FROM
-    ) {
-      if (this.appConfigService.NODE_ENV === "development") {
-        this.logger.log(
-          `Email verification link for ${email}: ${verificationUrl}`,
-        )
-        return
-      }
-
-      throw new InternalServerErrorException("Email delivery is not configured")
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: this.appConfigService.EMAIL_SMTP_HOST,
-      port: this.appConfigService.EMAIL_SMTP_PORT,
-      secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
-      auth:
-        this.appConfigService.EMAIL_SMTP_USER &&
-        this.appConfigService.EMAIL_SMTP_PASSWORD
-          ? {
-              user: this.appConfigService.EMAIL_SMTP_USER,
-              pass: this.appConfigService.EMAIL_SMTP_PASSWORD,
-            }
-          : undefined,
-    })
-
-    await transporter.sendMail({
-      from: this.appConfigService.EMAIL_FROM,
+    await this.sendEmail({
       to: email,
       subject: "Complete your Oboku sign up",
       text: `Complete your Oboku sign up by opening this link: ${verificationUrl}`,
@@ -85,34 +110,7 @@ export class EmailService {
       token,
     })
 
-    if (
-      !this.appConfigService.EMAIL_SMTP_HOST ||
-      !this.appConfigService.EMAIL_FROM
-    ) {
-      if (this.appConfigService.NODE_ENV === "development") {
-        this.logger.log(`Magic sign-in link for ${email}: ${magicLinkUrl}`)
-        return
-      }
-
-      throw new InternalServerErrorException("Email delivery is not configured")
-    }
-
-    const transporter = nodemailer.createTransport({
-      host: this.appConfigService.EMAIL_SMTP_HOST,
-      port: this.appConfigService.EMAIL_SMTP_PORT,
-      secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
-      auth:
-        this.appConfigService.EMAIL_SMTP_USER &&
-        this.appConfigService.EMAIL_SMTP_PASSWORD
-          ? {
-              user: this.appConfigService.EMAIL_SMTP_USER,
-              pass: this.appConfigService.EMAIL_SMTP_PASSWORD,
-            }
-          : undefined,
-    })
-
-    await transporter.sendMail({
-      from: this.appConfigService.EMAIL_FROM,
+    await this.sendEmail({
       to: email,
       subject: "Complete your Oboku sign in",
       text: `Open this link to verify your email and sign in to Oboku: ${magicLinkUrl}`,
