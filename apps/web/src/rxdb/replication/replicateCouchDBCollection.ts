@@ -1,7 +1,7 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection, WithDeleted } from "rxdb"
 import { configuration } from "../../config/configuration"
-import { httpCouchClient } from "../../http/httpClientCouch.web"
+import type { FetchCouch } from "../../http/httpClientCouch.web"
 /**
  * Strips legacy `resourceId` / `linkResourceId` fields from deleted
  * documents so they don't break the local schema.
@@ -33,6 +33,7 @@ export const replicateCouchDBCollection = ({
   autoStart = false,
   cancelSignal,
   suffix,
+  fetchCouch,
   ...params
 }: {
   dbName: string
@@ -41,6 +42,7 @@ export const replicateCouchDBCollection = ({
   autoStart?: boolean
   cancelSignal: AbortSignal
   suffix?: string
+  fetchCouch: FetchCouch
 } & Omit<
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
@@ -67,26 +69,23 @@ export const replicateCouchDBCollection = ({
         typeof url === "string" &&
         url.startsWith(`${uri}/${dbName}/_changes`)
       ) {
-        const { response } = await httpCouchClient.fetch(
-          `${url}&filter=_selector`,
-          {
-            ...optionsWithAuth,
-            method: "post",
-            headers: {
-              ...optionsWithAuth.headers,
-              "Content-Type": "application/json",
-            },
-            unwrap: false,
-            signal: cancelSignal,
-            body: JSON.stringify({ selector: { rx_model: collection.name } }),
+        const { response } = await fetchCouch(`${url}&filter=_selector`, {
+          ...optionsWithAuth,
+          method: "post",
+          headers: {
+            ...optionsWithAuth.headers,
+            "Content-Type": "application/json",
           },
-        )
+          unwrap: false,
+          signal: cancelSignal,
+          body: JSON.stringify({ selector: { rx_model: collection.name } }),
+        })
 
         return response
       }
 
       // call the original fetch function with our custom options.
-      const { response } = await httpCouchClient.fetch(url, {
+      const { response } = await fetchCouch(url, {
         ...optionsWithAuth,
         signal: cancelSignal,
         unwrap: false,
