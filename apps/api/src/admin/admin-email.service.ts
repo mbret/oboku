@@ -4,9 +4,10 @@ import {
   Injectable,
   Logger,
 } from "@nestjs/common"
-import type {
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
+import {
+  renderBroadcastEmail,
+  type SendAdminEmailRequest,
+  type SendAdminEmailResponse,
 } from "@oboku/shared"
 import { EMAIL_MAX_CONNECTIONS, EmailService } from "src/email/EmailService"
 import {
@@ -17,14 +18,6 @@ import {
 const logger = new Logger("AdminEmailService")
 
 const SEND_CONCURRENCY = EMAIL_MAX_CONNECTIONS
-
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
 
 @Injectable()
 export class AdminEmailService {
@@ -78,7 +71,7 @@ export class AdminEmailService {
 
       await this.emailService.verifyTransport()
 
-      const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
+      const html = renderBroadcastEmail({ body })
 
       logger.log(
         `Admin email broadcast starting: subject="${subject}" ` +

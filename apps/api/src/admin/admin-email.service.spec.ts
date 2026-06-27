@@ -137,12 +137,13 @@ describe("AdminEmailService", () => {
 
     expect(verifyTransport).toHaveBeenCalledTimes(1)
     expect(sendEmail).toHaveBeenCalledTimes(2)
-    expect(sendEmail).toHaveBeenCalledWith({
-      to: "a@example.com",
-      subject: "Subject",
-      text: "Line 1\nLine 2",
-      html: "<p>Line 1<br />Line 2</p>",
-    })
+    const payload = sendEmail.mock.calls[0]?.[0]
+    expect(payload.to).toBe("a@example.com")
+    expect(payload.subject).toBe("Subject")
+    expect(payload.text).toBe("Line 1\nLine 2")
+    expect(payload.html).toContain("Line 1<br />Line 2")
+    // The body is wrapped in the branded oboku layout.
+    expect(payload.html).toContain("The oboku team")
   })
 
   it("escapes HTML in the body and keeps the plain-text version raw", async () => {
@@ -159,9 +160,12 @@ describe("AdminEmailService", () => {
 
     const payload = sendEmail.mock.calls[0]?.[0]
     expect(payload.text).toBe("<b>hi</b> & 'you' <script>")
-    expect(payload.html).toBe(
-      "<p>&lt;b&gt;hi&lt;/b&gt; &amp; &#39;you&#39; &lt;script&gt;</p>",
+    expect(payload.html).toContain(
+      "&lt;b&gt;hi&lt;/b&gt; &amp; &#39;you&#39; &lt;script&gt;",
     )
+    // The raw, unescaped body must never make it into the HTML.
+    expect(payload.html).not.toContain("<b>hi</b>")
+    expect(payload.html).not.toContain("<script>")
   })
 
   it("keeps delivering after a single recipient fails", async () => {

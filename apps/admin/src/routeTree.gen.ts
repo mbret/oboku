@@ -20,7 +20,9 @@ import { Route as AdminMigrationRouteImport } from './routes/_admin/migration'
 import { Route as AdminEmailRouteImport } from './routes/_admin/email'
 import { Route as AdminCoversRouteImport } from './routes/_admin/covers'
 import { Route as AdminServerSyncIndexRouteImport } from './routes/_admin/server-sync.index'
+import { Route as AdminEmailIndexRouteImport } from './routes/_admin/email.index'
 import { Route as AdminServerSyncSourceIdRouteImport } from './routes/_admin/server-sync.$sourceId'
+import { Route as AdminEmailTemplatesRouteImport } from './routes/_admin/email.templates'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/_admin',
@@ -76,42 +78,55 @@ const AdminServerSyncIndexRoute = AdminServerSyncIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminServerSyncRoute,
 } as any)
+const AdminEmailIndexRoute = AdminEmailIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminEmailRoute,
+} as any)
 const AdminServerSyncSourceIdRoute = AdminServerSyncSourceIdRouteImport.update({
   id: '/$sourceId',
   path: '/$sourceId',
   getParentRoute: () => AdminServerSyncRoute,
 } as any)
+const AdminEmailTemplatesRoute = AdminEmailTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AdminEmailRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AdminIndexRoute
   '/covers': typeof AdminCoversRoute
-  '/email': typeof AdminEmailRoute
+  '/email': typeof AdminEmailRouteWithChildren
   '/migration': typeof AdminMigrationRoute
   '/notifications': typeof AdminNotificationsRoute
   '/providers': typeof AdminProvidersRoute
   '/server-sync': typeof AdminServerSyncRouteWithChildren
   '/signup-links': typeof AdminSignupLinksRoute
   '/users': typeof AdminUsersRoute
+  '/email/templates': typeof AdminEmailTemplatesRoute
   '/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/email/': typeof AdminEmailIndexRoute
   '/server-sync/': typeof AdminServerSyncIndexRoute
 }
 export interface FileRoutesByTo {
   '/covers': typeof AdminCoversRoute
-  '/email': typeof AdminEmailRoute
   '/migration': typeof AdminMigrationRoute
   '/notifications': typeof AdminNotificationsRoute
   '/providers': typeof AdminProvidersRoute
   '/signup-links': typeof AdminSignupLinksRoute
   '/users': typeof AdminUsersRoute
   '/': typeof AdminIndexRoute
+  '/email/templates': typeof AdminEmailTemplatesRoute
   '/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/email': typeof AdminEmailIndexRoute
   '/server-sync': typeof AdminServerSyncIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_admin': typeof AdminRouteWithChildren
   '/_admin/covers': typeof AdminCoversRoute
-  '/_admin/email': typeof AdminEmailRoute
+  '/_admin/email': typeof AdminEmailRouteWithChildren
   '/_admin/migration': typeof AdminMigrationRoute
   '/_admin/notifications': typeof AdminNotificationsRoute
   '/_admin/providers': typeof AdminProvidersRoute
@@ -119,7 +134,9 @@ export interface FileRoutesById {
   '/_admin/signup-links': typeof AdminSignupLinksRoute
   '/_admin/users': typeof AdminUsersRoute
   '/_admin/': typeof AdminIndexRoute
+  '/_admin/email/templates': typeof AdminEmailTemplatesRoute
   '/_admin/server-sync/$sourceId': typeof AdminServerSyncSourceIdRoute
+  '/_admin/email/': typeof AdminEmailIndexRoute
   '/_admin/server-sync/': typeof AdminServerSyncIndexRoute
 }
 export interface FileRouteTypes {
@@ -134,19 +151,22 @@ export interface FileRouteTypes {
     | '/server-sync'
     | '/signup-links'
     | '/users'
+    | '/email/templates'
     | '/server-sync/$sourceId'
+    | '/email/'
     | '/server-sync/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/covers'
-    | '/email'
     | '/migration'
     | '/notifications'
     | '/providers'
     | '/signup-links'
     | '/users'
     | '/'
+    | '/email/templates'
     | '/server-sync/$sourceId'
+    | '/email'
     | '/server-sync'
   id:
     | '__root__'
@@ -160,7 +180,9 @@ export interface FileRouteTypes {
     | '/_admin/signup-links'
     | '/_admin/users'
     | '/_admin/'
+    | '/_admin/email/templates'
     | '/_admin/server-sync/$sourceId'
+    | '/_admin/email/'
     | '/_admin/server-sync/'
   fileRoutesById: FileRoutesById
 }
@@ -247,6 +269,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminServerSyncIndexRouteImport
       parentRoute: typeof AdminServerSyncRoute
     }
+    '/_admin/email/': {
+      id: '/_admin/email/'
+      path: '/'
+      fullPath: '/email/'
+      preLoaderRoute: typeof AdminEmailIndexRouteImport
+      parentRoute: typeof AdminEmailRoute
+    }
     '/_admin/server-sync/$sourceId': {
       id: '/_admin/server-sync/$sourceId'
       path: '/$sourceId'
@@ -254,8 +283,29 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminServerSyncSourceIdRouteImport
       parentRoute: typeof AdminServerSyncRoute
     }
+    '/_admin/email/templates': {
+      id: '/_admin/email/templates'
+      path: '/templates'
+      fullPath: '/email/templates'
+      preLoaderRoute: typeof AdminEmailTemplatesRouteImport
+      parentRoute: typeof AdminEmailRoute
+    }
   }
 }
+
+interface AdminEmailRouteChildren {
+  AdminEmailTemplatesRoute: typeof AdminEmailTemplatesRoute
+  AdminEmailIndexRoute: typeof AdminEmailIndexRoute
+}
+
+const AdminEmailRouteChildren: AdminEmailRouteChildren = {
+  AdminEmailTemplatesRoute: AdminEmailTemplatesRoute,
+  AdminEmailIndexRoute: AdminEmailIndexRoute,
+}
+
+const AdminEmailRouteWithChildren = AdminEmailRoute._addFileChildren(
+  AdminEmailRouteChildren,
+)
 
 interface AdminServerSyncRouteChildren {
   AdminServerSyncSourceIdRoute: typeof AdminServerSyncSourceIdRoute
@@ -273,7 +323,7 @@ const AdminServerSyncRouteWithChildren = AdminServerSyncRoute._addFileChildren(
 
 interface AdminRouteChildren {
   AdminCoversRoute: typeof AdminCoversRoute
-  AdminEmailRoute: typeof AdminEmailRoute
+  AdminEmailRoute: typeof AdminEmailRouteWithChildren
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminProvidersRoute: typeof AdminProvidersRoute
@@ -285,7 +335,7 @@ interface AdminRouteChildren {
 
 const AdminRouteChildren: AdminRouteChildren = {
   AdminCoversRoute: AdminCoversRoute,
-  AdminEmailRoute: AdminEmailRoute,
+  AdminEmailRoute: AdminEmailRouteWithChildren,
   AdminMigrationRoute: AdminMigrationRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminProvidersRoute: AdminProvidersRoute,
