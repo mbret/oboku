@@ -19,10 +19,6 @@ export class AppConfigService {
     return this.config.get("GOOGLE_CLIENT_ID", { infer: true })
   }
 
-  get GOOGLE_CLIENT_SECRET(): string | undefined {
-    return "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"
-  }
-
   get GOOGLE_CALLBACK_URL(): string | undefined {
     return "http://localhost:3000/auth/google/callback"
   }
@@ -159,5 +155,13 @@ export class AppConfigService {
 
   get EMAIL_FROM() {
     return this.config.get("EMAIL_FROM", { infer: true })
+  }
+
+  get EMAIL_FROM_NAME() {
+    return this.config.get("EMAIL_FROM_NAME", { infer: true }) ?? "oboku"
+  }
+
+  get EMAIL_SMTP_MAX_SEND_RATE() {
+    return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
   }
 }

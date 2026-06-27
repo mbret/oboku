@@ -14,7 +14,7 @@ import {
   type UserNotificationRow,
 } from "src/features/postgres/notification-postgres.service"
 import {
-  normalizeEmail,
+  normalizeAudienceEmails,
   UserPostgresService,
 } from "src/features/postgres/user-postgres.service"
 
@@ -131,15 +131,10 @@ export class NotificationsService {
       return this.userPostgresService.getAllUserIds()
     }
 
-    const emails = [
-      ...new Set((input.emails ?? []).map(normalizeEmail)),
-    ].filter((email) => email.length > 0)
-
-    if (emails.length === 0) {
-      throw new BadRequestException(
-        "At least one email is required for targeted notifications",
-      )
-    }
+    const emails = normalizeAudienceEmails(
+      input.emails,
+      "At least one email is required for targeted notifications",
+    )
 
     const userIds = await this.userPostgresService.getUserIdsByEmails(emails)
 

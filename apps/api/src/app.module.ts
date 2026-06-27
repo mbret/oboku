@@ -83,6 +83,8 @@ import { PluginsModule } from "./plugins/plugins.module"
         EMAIL_SMTP_USER: Joi.string().optional(),
         EMAIL_SMTP_PASSWORD: Joi.string().optional(),
         EMAIL_FROM: Joi.string().email().optional(),
+        EMAIL_FROM_NAME: Joi.string().optional(),
+        EMAIL_SMTP_MAX_SEND_RATE: Joi.number().positive().optional(),
       })
         .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
         .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),

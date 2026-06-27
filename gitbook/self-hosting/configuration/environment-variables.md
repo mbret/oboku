@@ -48,4 +48,15 @@ EMAIL_SMTP_PORT=587
 EMAIL_SMTP_USER=user
 EMAIL_SMTP_PASSWORD=password
 EMAIL_FROM=yourcontactemail
+# Optional. Display name shown to recipients, producing a From header of
+# "oboku <yourcontactemail>". Defaults to "oboku".
+EMAIL_FROM_NAME=oboku
+# Optional. Max emails sent per second across the SMTP pool. Set this to your
+# provider's maximum send rate (eg: Amazon SES "Maximum send rate") so large
+# admin broadcasts stay under it. Left unset, sends are not rate limited.
+EMAIL_SMTP_MAX_SEND_RATE=14
 ```
+
+> Providers also enforce a daily sending quota (eg: Amazon SES allows 50,000
+> emails / 24h by default). A single broadcast larger than your quota will have
+> its overflow rejected by the provider; request a quota increase if needed.

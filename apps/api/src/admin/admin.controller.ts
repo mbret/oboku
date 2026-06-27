@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -13,8 +14,14 @@ import {
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import type {
+  CreateAdminNotificationRequest,
+  CreateAdminNotificationResponse,
+  GetAdminNotificationsResponse,
+  GetAdminUsersResponse,
   GetInstanceSettingsResponse,
   GetServerSyncResponse,
+  SendAdminEmailRequest,
+  SendAdminEmailResponse,
   SetWebDavCredentialsResponse,
   UpdateInstanceSettingsResponse,
   UpdateServerSyncResponse,
@@ -40,11 +47,8 @@ import {
   ValidateIf,
 } from "class-validator"
 import { NotificationsService } from "src/notifications/notifications.service"
-import type {
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
-  GetAdminNotificationsResponse,
-} from "@oboku/shared"
+import { AdminEmailService } from "./admin-email.service"
+import { UserPostgresService } from "src/features/postgres/user-postgres.service"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const hashA = createHash("sha256").update(a).digest()
@@ -130,7 +134,22 @@ class UpdateInstanceSettingsDto {
   microsoftApplicationAuthority?: string
 }
 
-class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
+class AudienceDto {
+  @IsString()
+  @IsIn(["all", "emails"])
+  audienceType!: "all" | "emails"
+
+  @IsArray()
+  @ArrayMaxSize(1000)
+  @IsEmail({}, { each: true })
+  @IsOptional()
+  emails?: string[]
+}
+
+class CreateAdminNotificationDto
+  extends AudienceDto
+  implements CreateAdminNotificationRequest
+{
   @IsString()
   @MinLength(1)
   title!: string
@@ -143,16 +162,16 @@ class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
   @IsIn(["info", "success", "warning", "error"])
   @IsOptional()
   severity?: CreateAdminNotificationRequest["severity"]
+}
+
+class SendAdminEmailDto extends AudienceDto implements SendAdminEmailRequest {
+  @IsString()
+  @MinLength(1)
+  subject!: string
 
   @IsString()
-  @IsIn(["all", "emails"])
-  audienceType!: CreateAdminNotificationRequest["audienceType"]
-
-  @IsArray()
-  @ArrayMaxSize(1000)
-  @IsEmail({}, { each: true })
-  @IsOptional()
-  emails?: string[]
+  @MinLength(1)
+  body!: string
 }
 
 class SigninDto {
@@ -187,6 +206,8 @@ export class AdminController {
     private readonly adminCoversService: AdminCoversService,
     private readonly authService: AuthService,
     private readonly notificationService: NotificationsService,
+    private readonly adminEmailService: AdminEmailService,
+    private readonly userPostgresService: UserPostgresService,
   ) {}
 
   private async signAdminTokens() {
@@ -294,6 +315,26 @@ export class AdminController {
     @Body() body: CreateAdminNotificationDto,
   ): Promise<CreateAdminNotificationResponse> {
     return this.notificationService.sendAdminBroadcast(body)
+  }
+
+  @Get("users")
+  async getUsers(): Promise<GetAdminUsersResponse> {
+    const users = await this.userPostgresService.getAllUsers()
+
+    return users.map((user) => ({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      emailVerified: Boolean(user.emailVerified),
+    }))
+  }
+
+  @Post("email")
+  @HttpCode(202)
+  async sendEmail(
+    @Body() body: SendAdminEmailDto,
+  ): Promise<SendAdminEmailResponse> {
+    return this.adminEmailService.sendBroadcast(body)
   }
 
   @Get("settings")
