@@ -67,10 +67,9 @@ export class EmailService implements OnModuleDestroy {
     text: string
     html?: string
   }) {
-    if (
-      !this.appConfigService.EMAIL_SMTP_HOST ||
-      !this.appConfigService.EMAIL_FROM
-    ) {
+    const fromAddress = this.appConfigService.EMAIL_FROM
+
+    if (!this.appConfigService.EMAIL_SMTP_HOST || !fromAddress) {
       if (this.appConfigService.NODE_ENV === "development") {
         this.logger.log(`Email to ${to} (${subject}):\n${text}`)
         return
@@ -80,7 +79,10 @@ export class EmailService implements OnModuleDestroy {
     }
 
     await this.getTransporter().sendMail({
-      from: this.appConfigService.EMAIL_FROM,
+      from: {
+        name: this.appConfigService.EMAIL_FROM_NAME,
+        address: fromAddress,
+      },
       to,
       subject,
       text,

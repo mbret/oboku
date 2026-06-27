@@ -160,4 +160,8 @@ export class AppConfigService {
   get EMAIL_FROM() {
     return this.config.get("EMAIL_FROM", { infer: true })
   }
+
+  get EMAIL_FROM_NAME() {
+    return this.config.get("EMAIL_FROM_NAME", { infer: true }) ?? "oboku"
+  }
 }

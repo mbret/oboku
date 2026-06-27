@@ -28,4 +28,5 @@ export interface EnvironmentVariables {
   EMAIL_SMTP_USER?: string
   EMAIL_SMTP_PASSWORD?: string
   EMAIL_FROM?: string
+  EMAIL_FROM_NAME?: string
 }
