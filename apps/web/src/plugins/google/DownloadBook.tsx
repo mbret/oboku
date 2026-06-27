@@ -38,7 +38,9 @@ export const DownloadBook = memo(
     signal,
   }: DownloadBookComponentProps<"DRIVE">) => {
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
-    const { getGoogleScripts } = useGoogleScripts()
+    const { getGoogleScripts } = useGoogleScripts({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const requestFilesAccess = useRequestFilesAccess({
       requestPopup,
     })

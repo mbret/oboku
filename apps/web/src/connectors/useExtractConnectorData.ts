@@ -24,8 +24,6 @@ export const useExtractConnectorData = <
     "mutationFn"
   >,
 ) => {
-  // Forward only the toast-suppression policy down to the nested master-key
-  // request so a single consumer-level `meta` silences the whole subtree.
   const { mutateAsync: requestMasterKey } = useRequestMasterKey({
     meta: options?.meta,
   })
