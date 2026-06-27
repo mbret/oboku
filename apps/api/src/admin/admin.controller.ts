@@ -136,7 +136,27 @@ class UpdateInstanceSettingsDto {
   microsoftApplicationAuthority?: string
 }
 
-class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
+/**
+ * Shared audience targeting fields for admin broadcast DTOs. class-validator
+ * applies inherited property decorators, so the validation below runs for every
+ * subclass.
+ */
+class AudienceDto {
+  @IsString()
+  @IsIn(["all", "emails"])
+  audienceType!: "all" | "emails"
+
+  @IsArray()
+  @ArrayMaxSize(1000)
+  @IsEmail({}, { each: true })
+  @IsOptional()
+  emails?: string[]
+}
+
+class CreateAdminNotificationDto
+  extends AudienceDto
+  implements CreateAdminNotificationRequest
+{
   @IsString()
   @MinLength(1)
   title!: string
@@ -149,19 +169,9 @@ class CreateAdminNotificationDto implements CreateAdminNotificationRequest {
   @IsIn(["info", "success", "warning", "error"])
   @IsOptional()
   severity?: CreateAdminNotificationRequest["severity"]
-
-  @IsString()
-  @IsIn(["all", "emails"])
-  audienceType!: CreateAdminNotificationRequest["audienceType"]
-
-  @IsArray()
-  @ArrayMaxSize(1000)
-  @IsEmail({}, { each: true })
-  @IsOptional()
-  emails?: string[]
 }
 
-class SendAdminEmailDto implements SendAdminEmailRequest {
+class SendAdminEmailDto extends AudienceDto implements SendAdminEmailRequest {
   @IsString()
   @MinLength(1)
   subject!: string
@@ -169,16 +179,6 @@ class SendAdminEmailDto implements SendAdminEmailRequest {
   @IsString()
   @MinLength(1)
   body!: string
-
-  @IsString()
-  @IsIn(["all", "emails"])
-  audienceType!: SendAdminEmailRequest["audienceType"]
-
-  @IsArray()
-  @ArrayMaxSize(1000)
-  @IsEmail({}, { each: true })
-  @IsOptional()
-  emails?: string[]
 }
 
 class SigninDto {

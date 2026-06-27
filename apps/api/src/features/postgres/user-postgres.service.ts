@@ -1,9 +1,34 @@
-import { ConflictException, Injectable, Logger } from "@nestjs/common"
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 import { UserPostgresEntity } from "./entities"
 
 export const normalizeEmail = (email: string) => email.trim().toLowerCase()
+
+/**
+ * Normalizes, dedupes and drops empty entries from a targeted-audience email
+ * list, throwing if nothing remains. Shared by the admin email and admin
+ * notification broadcast paths.
+ */
+export const normalizeAudienceEmails = (
+  emails: string[] | undefined,
+  emptyMessage: string,
+): string[] => {
+  const normalized = [...new Set((emails ?? []).map(normalizeEmail))].filter(
+    (email) => email.length > 0,
+  )
+
+  if (normalized.length === 0) {
+    throw new BadRequestException(emptyMessage)
+  }
+
+  return normalized
+}
 
 const logger = new Logger("UserPostgresService")
 

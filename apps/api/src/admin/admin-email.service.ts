@@ -5,7 +5,7 @@ import type {
 } from "@oboku/shared"
 import { EmailService } from "src/email/EmailService"
 import {
-  normalizeEmail,
+  normalizeAudienceEmails,
   UserPostgresService,
 } from "src/features/postgres/user-postgres.service"
 
@@ -36,17 +36,10 @@ export class AdminEmailService {
       return this.userPostgresService.getAllUserEmails()
     }
 
-    const emails = [
-      ...new Set((input.emails ?? []).map(normalizeEmail)),
-    ].filter((email) => email.length > 0)
-
-    if (emails.length === 0) {
-      throw new BadRequestException(
-        "At least one email is required for targeted emails",
-      )
-    }
-
-    return emails
+    return normalizeAudienceEmails(
+      input.emails,
+      "At least one email is required for targeted emails",
+    )
   }
 
   /**
