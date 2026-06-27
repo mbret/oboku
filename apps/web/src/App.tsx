@@ -32,7 +32,7 @@ import { PluginDownloadFlowHost } from "./download/flow/PluginDownloadFlowHost"
 import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
-import { AuthenticatedOnly } from "./auth/AuthenticatedOnly"
+import { WithAuthentication } from "./auth/WithAuthentication"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
@@ -71,7 +71,7 @@ const App = memo(() => {
             }}
           >
             <AppBrowserRouter>
-              <AuthenticatedOnly>
+              <WithAuthentication>
                 <UploadBookDialogWithDragOver />
                 <BookActionsDrawer />
                 <CollectionActionsDrawer />
@@ -80,7 +80,7 @@ const App = memo(() => {
                 <SetupSecretDialog />
                 <AddTagDialog />
                 <AddCollectionDialog />
-              </AuthenticatedOnly>
+              </WithAuthentication>
               <AuthorizeActionDialog />
               <BackgroundReplication />
               <BlockingBackdrop />

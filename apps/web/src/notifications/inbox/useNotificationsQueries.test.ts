@@ -42,6 +42,9 @@ describe("notifications queries", () => {
         useQuery,
       }
     })
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
+    }))
 
     const { useInboxNotifications } = await import("./useInboxNotifications")
     type InboxNotifications = NonNullable<
@@ -92,6 +95,9 @@ describe("notifications queries", () => {
     })
     vi.doMock("./useLocalNotifications", () => ({
       useLocalNotifications: () => [],
+    }))
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
     }))
 
     const { useUnreadNotificationsCount } = await import(

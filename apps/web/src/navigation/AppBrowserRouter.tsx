@@ -33,8 +33,7 @@ import { BookOptimizeScreen } from "../pages/books/$id/optimize/BookOptimizeScre
 import { memo, useEffect, useRef, type ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
-import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../auth/states.web"
+import { useHasAuthentication } from "../auth/useHasAuthentication"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
@@ -51,6 +50,7 @@ import { plugins } from "../dataSources"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 import { NotificationsScreen } from "../notifications/inbox/NotificationsScreen"
+import { ReLoginScreen } from "../pages/ReloginScreen"
 import { ModalHistoryProvider } from "./modalHistory"
 
 const AppShell = ({ children }: { children: ReactNode }) => {
@@ -88,8 +88,7 @@ const MobileTabBarRouteWrapper = () => (
 )
 
 export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
-  const auth = useSignalValue(authStateSignal)
-  const isAuthenticated = !!auth?.accessToken
+  const hasSession = useHasAuthentication()
 
   const content = (
     <ModalHistoryProvider>
@@ -102,7 +101,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
           path={ROUTES.SIGN_UP_COMPLETE}
           element={<SignUpCompleteScreen />}
         />
-        {isAuthenticated ? (
+        {hasSession ? (
           <>
             <Route path="/reader/:bookId" element={<ReaderScreen />} />
             <Route path="*" element={<AppShellRouteWrapper />}>
@@ -156,6 +155,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.NOTIFICATIONS.slice(1)}
                 element={<NotificationsScreen />}
+              />
+              <Route
+                path={ROUTES.SESSION_EXPIRED.slice(1)}
+                element={<ReLoginScreen />}
               />
               <Route
                 path={ROUTES.SECURITY.slice(1)}

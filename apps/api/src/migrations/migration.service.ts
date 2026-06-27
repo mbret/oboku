@@ -130,7 +130,7 @@ function safeDecodeURIComponent(value: string): string {
  * a plain object (or null) so the migration can safely spread it.
  */
 function normalizeDataField(value: unknown): Record<string, unknown> | null {
-  if (value == null) return null
+  if (value === null || value === undefined) return null
   if (typeof value === "string") {
     try {
       const parsed: unknown = JSON.parse(value)

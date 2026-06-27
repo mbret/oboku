@@ -2,7 +2,9 @@ export function intersection<T>(
   ...arrays: Array<ArrayLike<T> | null | undefined>
 ): T[] {
   // Filter out undefined or null arrays
-  const filteredArrays = arrays.filter((arr) => arr != null) as Array<Array<T>>
+  const filteredArrays = arrays.filter(
+    (arr) => arr !== null && arr !== undefined,
+  ) as Array<Array<T>>
 
   // If there are no valid arrays, return an empty array
   if (filteredArrays.length === 0) {
