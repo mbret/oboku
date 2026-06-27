@@ -2,9 +2,11 @@ import { useQuery } from "@tanstack/react-query"
 import type { GetUnreadNotificationsCountResponse } from "@oboku/shared"
 import { configuration } from "../../config/configuration"
 import { httpClientApi } from "../../http/httpClientApi.web"
+import { useLocalNotifications } from "./useLocalNotifications"
 import { unreadCountQueryKey } from "./queryKeys"
 
 export const useUnreadNotificationsCount = () => {
+  const localNotifications = useLocalNotifications()
   const query = useQuery({
     queryKey: unreadCountQueryKey,
     queryFn: async (): Promise<GetUnreadNotificationsCountResponse> => {
@@ -22,6 +24,6 @@ export const useUnreadNotificationsCount = () => {
 
   return {
     ...query,
-    unreadCount: query.data?.count ?? 0,
+    unreadCount: (query.data?.count ?? 0) + localNotifications.length,
   }
 }

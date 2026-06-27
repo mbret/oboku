@@ -21,6 +21,7 @@ import {
 } from "./auth/auth"
 import type { SynologyDriveSession } from "./client"
 import { isXMLHttpResponseError } from "../../http/httpClient.web"
+import { useDownload } from "../../http/useDownload"
 import { downloadSynologyDriveBlob } from "./download/client"
 
 export const DownloadBook = memo(
@@ -31,7 +32,12 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"synology-drive">) => {
-    const requestSynologyDriveSession = useRequestSynologyDriveSession()
+    const requestSynologyDriveSession = useRequestSynologyDriveSession({
+      meta: { suppressGlobalErrorToast: true },
+    })
+    const { mutateAsync: downloadBlob } = useDownload({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const onErrorRef = useLiveRef(onError)
     const connectorId = link.data.connectorId
 
@@ -57,6 +63,7 @@ export const DownloadBook = memo(
         ).pipe(
           mergeMap(async (session: SynologyDriveSession) => {
             return await downloadSynologyDriveBlob({
+              download: downloadBlob,
               fileId,
               onDownloadProgress,
               session,
@@ -91,6 +98,7 @@ export const DownloadBook = memo(
         clearSynologyDriveSession()
         onError(error)
       },
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(

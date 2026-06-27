@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { signal } from "reactjrx"
+import { signal, type UseMutation$Options } from "reactjrx"
 import { signInSynologyDrive, type SynologyDriveSession } from "../client"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 
@@ -55,10 +55,13 @@ export const clearSynologyDriveSession = () => {
   synologyDriveSessionSignal.setValue(undefined)
 }
 
-export const useRequestSynologyDriveSession = () => {
-  const { mutateAsync: extractConnectorData } = useExtractConnectorData({
-    type: "synology-drive",
-  })
+export const useRequestSynologyDriveSession = (
+  options?: Pick<UseMutation$Options<unknown>, "meta">,
+) => {
+  const { mutateAsync: extractConnectorData } = useExtractConnectorData(
+    { type: "synology-drive" },
+    options,
+  )
 
   return useCallback(
     async (request: SynologyDriveRequest) => {

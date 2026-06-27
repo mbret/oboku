@@ -1,11 +1,14 @@
 import { catchError, combineLatest, first } from "rxjs"
+import type { UseMutation$Options } from "reactjrx"
 import { gsiOrThrow$ } from "../../../google/gsi"
 import { gapiOrThrow$, useLoadGapi } from "./gapi"
 import { showDialog } from "../../../common/dialogs/createDialog"
 import { useCallback } from "react"
 
-export const useGoogleScripts = () => {
-  const { mutate: loadGapi } = useLoadGapi()
+export const useGoogleScripts = (
+  options?: Pick<UseMutation$Options<unknown>, "meta">,
+) => {
+  const { mutate: loadGapi } = useLoadGapi(options)
 
   const getGoogleScripts = useCallback(
     () =>

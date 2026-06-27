@@ -1,7 +1,5 @@
-import {
-  httpClientWeb,
-  isXMLHttpResponseError,
-} from "../../../http/httpClient.web"
+import { isXMLHttpResponseError } from "../../../http/httpClient.web"
+import type { Download } from "../../../http/useDownload"
 import {
   getSynologyDriveBrowseItem,
   getSynologyDriveDownloadUrls,
@@ -29,15 +27,17 @@ const extractDownloadError = async (blob: Blob) => {
 }
 
 const downloadBlobFromUrl = async ({
+  download,
   onDownloadProgress,
   signal,
   url,
 }: {
+  download: Download
   onDownloadProgress: (progress: number) => void
   signal: AbortSignal
   url: string
 }) => {
-  const response = await httpClientWeb.download<Blob>({
+  const response = await download({
     headers: {
       Accept: "application/octet-stream",
     },
@@ -65,11 +65,13 @@ const downloadBlobFromUrl = async ({
 }
 
 export const downloadSynologyDriveBlob = async ({
+  download,
   fileId,
   onDownloadProgress,
   session,
   signal,
 }: {
+  download: Download
   fileId: string
   onDownloadProgress: (progress: number) => void
   session: SynologyDriveSession
@@ -92,6 +94,7 @@ export const downloadSynologyDriveBlob = async ({
   for (const url of urls) {
     try {
       const result = await downloadBlobFromUrl({
+        download,
         onDownloadProgress,
         signal,
         url,

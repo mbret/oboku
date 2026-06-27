@@ -4,6 +4,6 @@ export type DownloadFlowRequest = {
   file?: File
   id: string
   links: readonly string[]
-  reject: (error: Error) => void
+  reject: (error: unknown) => void
   resolve: () => void
 }
