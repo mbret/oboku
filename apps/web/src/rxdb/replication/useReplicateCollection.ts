@@ -9,7 +9,7 @@ export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
   RxDocumentType = any,
 >() => {
-  const fetchCouch = useFetchCouch()
+  const { mutateAsync: fetchCouch } = useFetchCouch()
 
   return useCallback(
     ({

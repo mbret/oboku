@@ -69,26 +69,32 @@ export const replicateCouchDBCollection = ({
         typeof url === "string" &&
         url.startsWith(`${uri}/${dbName}/_changes`)
       ) {
-        const { response } = await fetchCouch(`${url}&filter=_selector`, {
-          ...optionsWithAuth,
-          method: "post",
-          headers: {
-            ...optionsWithAuth.headers,
-            "Content-Type": "application/json",
+        const { response } = await fetchCouch({
+          input: `${url}&filter=_selector`,
+          config: {
+            ...optionsWithAuth,
+            method: "post",
+            headers: {
+              ...optionsWithAuth.headers,
+              "Content-Type": "application/json",
+            },
+            unwrap: false,
+            signal: cancelSignal,
+            body: JSON.stringify({ selector: { rx_model: collection.name } }),
           },
-          unwrap: false,
-          signal: cancelSignal,
-          body: JSON.stringify({ selector: { rx_model: collection.name } }),
         })
 
         return response
       }
 
       // call the original fetch function with our custom options.
-      const { response } = await fetchCouch(url, {
-        ...optionsWithAuth,
-        signal: cancelSignal,
-        unwrap: false,
+      const { response } = await fetchCouch({
+        input: url,
+        config: {
+          ...optionsWithAuth,
+          signal: cancelSignal,
+          unwrap: false,
+        },
       })
 
       return response

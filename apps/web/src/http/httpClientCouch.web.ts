@@ -1,5 +1,4 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { useCallback } from "react"
+import { useMutation } from "@tanstack/react-query"
 import { refreshOnUnauthorized } from "./httpClientApi.web"
 import { type FetchConfig, HttpClient } from "./httpClient.shared"
 import { injectToken } from "./injectToken.web"
@@ -14,28 +13,20 @@ httpCouchClient.useRequestInterceptor(injectToken)
 // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
 httpCouchClient.useResponseInterceptor(refreshOnUnauthorized)
 
-let couchFetchRequestId = 0
+type FetchInput = string | URL | globalThis.Request
+type FetchOptions = Omit<FetchConfig, "input">
 
-export const useFetchCouch = () => {
-  const queryClient = useQueryClient()
+export const useFetchCouch = () =>
+  useMutation({
+    mutationFn: ({
+      input,
+      config,
+    }: {
+      input: FetchInput
+      config: FetchOptions
+    }) => httpCouchClient.fetch(input, config),
+    gcTime: 0,
+    meta: { suppressGlobalErrorToast: true },
+  })
 
-  return useCallback(
-    (
-      input: string | URL | globalThis.Request,
-      config: Omit<FetchConfig, "input"> = {},
-    ) => {
-      couchFetchRequestId += 1
-
-      return queryClient.fetchQuery({
-        queryKey: ["couch", "fetch", couchFetchRequestId],
-        queryFn: () => httpCouchClient.fetch(input, config),
-        staleTime: 0,
-        gcTime: 0,
-        retry: false,
-      })
-    },
-    [queryClient],
-  )
-}
-
-export type FetchCouch = ReturnType<typeof useFetchCouch>
+export type FetchCouch = ReturnType<typeof useFetchCouch>["mutateAsync"]
