@@ -13,10 +13,13 @@ type DownloadOptions = Omit<
 export const useDownload = (options?: DownloadOptions) =>
   useMutation({
     mutationFn: (params: DownloadParams) =>
-      sendXhr<Blob>(
-        { ...params, method: "GET" },
-        (xhr) => xhr.response as Blob,
-      ),
+      sendXhr<Blob>({ ...params, method: "GET" }, (xhr) => {
+        if (!(xhr.response instanceof Blob)) {
+          throw new Error("Expected download response to be a Blob")
+        }
+
+        return xhr.response
+      }),
     gcTime: 0,
     ...options,
   })
