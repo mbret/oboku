@@ -4,6 +4,7 @@ import {
   Logger,
   type OnModuleDestroy,
 } from "@nestjs/common"
+import { renderMagicLinkEmail, renderSignUpEmail } from "@oboku/shared"
 import nodemailer, { type Transporter } from "nodemailer"
 import { AppConfigService } from "../config/AppConfigService"
 
@@ -129,9 +130,9 @@ export class EmailService implements OnModuleDestroy {
 
     await this.sendEmail({
       to: email,
-      subject: "Complete your Oboku sign up",
-      text: `Complete your Oboku sign up by opening this link: ${verificationUrl}`,
-      html: `<p>Complete your Oboku sign up.</p><p><a href="${verificationUrl}">Click here to complete sign up</a></p>`,
+      subject: "Complete your oboku sign up",
+      text: `Welcome to oboku! Complete your sign up by opening this link: ${verificationUrl}`,
+      html: renderSignUpEmail({ url: verificationUrl }),
     })
   }
 
@@ -155,9 +156,9 @@ export class EmailService implements OnModuleDestroy {
 
     await this.sendEmail({
       to: email,
-      subject: "Complete your Oboku sign in",
-      text: `Open this link to verify your email and sign in to Oboku: ${magicLinkUrl}`,
-      html: `<p>Use this one-time sign-in link to verify your email and sign in to Oboku.</p><p><a href="${magicLinkUrl}">Click here to continue</a></p>`,
+      subject: "Your oboku sign-in link",
+      text: `Open this link to verify your email and sign in to oboku: ${magicLinkUrl}`,
+      html: renderMagicLinkEmail({ url: magicLinkUrl }),
     })
   }
 }

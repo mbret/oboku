@@ -1,20 +1,4 @@
-export const design = {
-  palette: {
-    orange: `rgb(225, 100, 50, 1)`,
-  },
-}
-
-export const links = {
-  documentation: `https://docs.oboku.me`,
-  documentationConnectors: `https://docs.oboku.me/guides/connectors`,
-  documentationSecrets: `https://docs.oboku.me/secrets`,
-  app: `https://app.oboku.me`,
-  site: `https://oboku.me`,
-  linkedin: `https://www.linkedin.com/in/maxime-bret`,
-  github: `https://github.com/mbret/oboku`,
-  discord: `https://discord.gg/eB6MrMmmPN`,
-  reddit: `https://www.reddit.com/r/oboku/`,
-}
+export * from "./design"
 
 export * as directives from "./directives"
 
@@ -54,3 +38,4 @@ export * from "./microsoft"
 export * from "./utils/assertNever"
 export * from "./db/mongo"
 export * from "./api-types"
+export * from "./email/template"

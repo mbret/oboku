@@ -1,7 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router"
-import { AdminEmailSection } from "@/features/email/AdminEmailSection"
+import { Outlet, createFileRoute } from "@tanstack/react-router"
 
 export const Route = createFileRoute("/_admin/email")({
-  component: AdminEmailSection,
+  component: Outlet,
   staticData: { breadcrumb: "Emails" },
 })

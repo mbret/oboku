@@ -4,9 +4,10 @@ import {
   Injectable,
   Logger,
 } from "@nestjs/common"
-import type {
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
+import {
+  renderBroadcastEmail,
+  type SendAdminEmailRequest,
+  type SendAdminEmailResponse,
 } from "@oboku/shared"
 import { EMAIL_MAX_CONNECTIONS, EmailService } from "src/email/EmailService"
 import {
@@ -17,14 +18,6 @@ import {
 const logger = new Logger("AdminEmailService")
 
 const SEND_CONCURRENCY = EMAIL_MAX_CONNECTIONS
-
-const escapeHtml = (value: string) =>
-  value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;")
 
 @Injectable()
 export class AdminEmailService {
@@ -62,7 +55,15 @@ export class AdminEmailService {
       throw new BadRequestException("Body is required")
     }
 
+    logger.log(
+      `Admin email broadcast requested: subject="${subject}" ` +
+        `audience=${input.audienceType}`,
+    )
+
     if (this.broadcastInFlight) {
+      logger.warn(
+        "Rejected broadcast request: another broadcast is already in flight",
+      )
       throw new ConflictException(
         "A broadcast is already in progress. Wait for it to finish before sending another.",
       )
@@ -70,15 +71,19 @@ export class AdminEmailService {
     this.broadcastInFlight = true
 
     try {
+      logger.log("Resolving recipients...")
       const recipients = await this.resolveRecipients(input)
+      logger.log(`Resolved ${recipients.length} recipient(s)`)
 
       if (recipients.length === 0) {
         throw new BadRequestException("There are no recipients to email")
       }
 
+      logger.log("Verifying SMTP transport...")
       await this.emailService.verifyTransport()
+      logger.log("SMTP transport verified")
 
-      const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
+      const html = renderBroadcastEmail({ body })
 
       logger.log(
         `Admin email broadcast starting: subject="${subject}" ` +
@@ -90,14 +95,29 @@ export class AdminEmailService {
         body,
         html,
         audienceType: input.audienceType,
-      }).finally(() => {
-        this.broadcastInFlight = false
       })
+        .catch((error) => {
+          logger.error(
+            "Admin email broadcast crashed unexpectedly",
+            error instanceof Error ? error.stack : error,
+          )
+        })
+        .finally(() => {
+          this.broadcastInFlight = false
+        })
+
+      logger.log(
+        `Broadcast accepted and running in background for ${recipients.length} recipient(s)`,
+      )
 
       return { recipientCount: recipients.length }
     } catch (error) {
       // The conflict check stays outside this try so it can't clear the slot of
       // the broadcast already in flight; here we only release the slot we claimed.
+      logger.error(
+        "Admin email broadcast failed before dispatch",
+        error instanceof Error ? error.stack : error,
+      )
       this.broadcastInFlight = false
       throw error
     }
@@ -115,6 +135,11 @@ export class AdminEmailService {
     let deliveredCount = 0
     let failedCount = 0
     let cursor = 0
+
+    // Log progress at ~10% intervals (at least every 25 emails) so large
+    // broadcasts are observable without logging every single send.
+    const progressStep = Math.max(25, Math.ceil(recipients.length / 10))
+    let nextProgressAt = progressStep
 
     const worker = async () => {
       while (cursor < recipients.length) {
@@ -139,6 +164,15 @@ export class AdminEmailService {
           logger.error(
             `Failed to send admin email to ${to}`,
             error instanceof Error ? error.stack : error,
+          )
+        }
+
+        const processed = deliveredCount + failedCount
+        if (processed >= nextProgressAt) {
+          nextProgressAt += progressStep
+          logger.log(
+            `Broadcast progress: ${processed}/${recipients.length} ` +
+              `(${deliveredCount} delivered, ${failedCount} failed)`,
           )
         }
       }
