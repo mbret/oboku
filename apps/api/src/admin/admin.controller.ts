@@ -14,8 +14,14 @@ import {
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import type {
+  CreateAdminNotificationRequest,
+  CreateAdminNotificationResponse,
+  GetAdminNotificationsResponse,
+  GetAdminUsersResponse,
   GetInstanceSettingsResponse,
   GetServerSyncResponse,
+  SendAdminEmailRequest,
+  SendAdminEmailResponse,
   SetWebDavCredentialsResponse,
   UpdateInstanceSettingsResponse,
   UpdateServerSyncResponse,
@@ -42,14 +48,6 @@ import {
 } from "class-validator"
 import { NotificationsService } from "src/notifications/notifications.service"
 import { AdminEmailService } from "./admin-email.service"
-import type {
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
-  GetAdminNotificationsResponse,
-  GetAdminUsersResponse,
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
-} from "@oboku/shared"
 import { UserPostgresService } from "src/features/postgres/user-postgres.service"
 
 function timingSafeStringEqual(a: string, b: string): boolean {

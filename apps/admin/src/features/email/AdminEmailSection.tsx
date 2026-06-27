@@ -69,18 +69,23 @@ export const AdminEmailSection = () => {
           </div>
 
           <form
-            onSubmit={form.onSubmit(async (values) => {
-              await sendEmail.mutateAsync({
-                subject: values.subject,
-                body: values.body,
-                audienceType: values.audienceType,
-                emails:
-                  values.audienceType === "emails"
-                    ? parseEmails(values.recipientEmails)
-                    : undefined,
-              })
-
-              form.reset()
+            onSubmit={form.onSubmit((values) => {
+              sendEmail.mutate(
+                {
+                  subject: values.subject,
+                  body: values.body,
+                  audienceType: values.audienceType,
+                  emails:
+                    values.audienceType === "emails"
+                      ? parseEmails(values.recipientEmails)
+                      : undefined,
+                },
+                {
+                  onSuccess: () => {
+                    form.reset()
+                  },
+                },
+              )
             })}
           >
             <Stack gap="sm">

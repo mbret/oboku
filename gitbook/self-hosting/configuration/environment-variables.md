@@ -48,4 +48,7 @@ EMAIL_SMTP_PORT=587
 EMAIL_SMTP_USER=user
 EMAIL_SMTP_PASSWORD=password
 EMAIL_FROM=yourcontactemail
+# Optional. Display name shown to recipients, producing a From header of
+# "oboku <yourcontactemail>". Defaults to "oboku".
+EMAIL_FROM_NAME=oboku
 ```
