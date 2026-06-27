@@ -2,30 +2,52 @@ import {
   Injectable,
   InternalServerErrorException,
   Logger,
+  type OnModuleDestroy,
 } from "@nestjs/common"
-import nodemailer from "nodemailer"
+import nodemailer, { type Transporter } from "nodemailer"
 import { AppConfigService } from "../config/AppConfigService"
 
 @Injectable()
-export class EmailService {
+export class EmailService implements OnModuleDestroy {
   private readonly logger = new Logger(EmailService.name)
+  private transporter: Transporter | undefined
 
   constructor(private readonly appConfigService: AppConfigService) {}
 
-  private createTransporter() {
-    return nodemailer.createTransport({
-      host: this.appConfigService.EMAIL_SMTP_HOST,
-      port: this.appConfigService.EMAIL_SMTP_PORT,
-      secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
-      auth:
-        this.appConfigService.EMAIL_SMTP_USER &&
-        this.appConfigService.EMAIL_SMTP_PASSWORD
-          ? {
-              user: this.appConfigService.EMAIL_SMTP_USER,
-              pass: this.appConfigService.EMAIL_SMTP_PASSWORD,
-            }
-          : undefined,
-    })
+  onModuleDestroy() {
+    this.transporter?.close()
+    this.transporter = undefined
+  }
+
+  /**
+   * Returns a single pooled transporter, reused across every email.
+   *
+   * Pooling keeps a small set of SMTP connections open and paces messages
+   * through them instead of opening (and leaking) a fresh connection per
+   * email. This avoids provider throttling/refusals on large broadcasts and
+   * removes the SMTP handshake cost from each transactional send.
+   */
+  private getTransporter() {
+    if (!this.transporter) {
+      this.transporter = nodemailer.createTransport({
+        host: this.appConfigService.EMAIL_SMTP_HOST,
+        port: this.appConfigService.EMAIL_SMTP_PORT,
+        secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
+        pool: true,
+        maxConnections: 5,
+        maxMessages: 100,
+        auth:
+          this.appConfigService.EMAIL_SMTP_USER &&
+          this.appConfigService.EMAIL_SMTP_PASSWORD
+            ? {
+                user: this.appConfigService.EMAIL_SMTP_USER,
+                pass: this.appConfigService.EMAIL_SMTP_PASSWORD,
+              }
+            : undefined,
+      })
+    }
+
+    return this.transporter
   }
 
   /**
@@ -57,7 +79,7 @@ export class EmailService {
       throw new InternalServerErrorException("Email delivery is not configured")
     }
 
-    await this.createTransporter().sendMail({
+    await this.getTransporter().sendMail({
       from: this.appConfigService.EMAIL_FROM,
       to,
       subject,

@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  HttpCode,
   Param,
   Patch,
   Post,
@@ -336,6 +337,7 @@ export class AdminController {
   }
 
   @Post("email")
+  @HttpCode(202)
   async sendEmail(
     @Body() body: SendAdminEmailDto,
   ): Promise<SendAdminEmailResponse> {

@@ -34,11 +34,11 @@ export const useSendAdminEmail = () => {
     },
     onSuccess: (data) => {
       notifications.show({
-        title: "Email sent",
-        message: `Delivered to ${data.deliveredCount} of ${data.recipientCount} recipient${data.recipientCount === 1 ? "" : "s"}${
-          data.failedCount > 0 ? ` (${data.failedCount} failed)` : ""
-        }.`,
-        color: data.failedCount > 0 ? "yellow" : "green",
+        title: "Broadcast started",
+        message: `Sending to ${data.recipientCount} recipient${
+          data.recipientCount === 1 ? "" : "s"
+        }. Delivery runs in the background.`,
+        color: "green",
       })
     },
     onError: (error) => {
