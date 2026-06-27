@@ -83,31 +83,13 @@ export class AdminEmailService {
       throw new BadRequestException("Body is required")
     }
 
-    const recipients = await this.resolveRecipients(input)
-
-    if (recipients.length === 0) {
-      throw new BadRequestException("There are no recipients to email")
-    }
-
-    // Delivery runs in the background, so a totally-down or misconfigured SMTP
-    // would otherwise return 202 ("broadcast started") while every message
-    // silently fails and the operator loses the draft. Verify the transport up
-    // front so systemic failures surface as an error response; per-recipient
-    // rejections still can't be reported here and remain logged in runBroadcast.
-    await this.emailService.verifyTransport()
-
-    const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
-
-    logger.log(
-      `Admin email broadcast starting: subject="${subject}" ` +
-        `audience=${input.audienceType} recipients=${recipients.length}`,
-    )
-
-    // Block duplicate broadcasts from double-submits (double-click, React
-    // re-fire, retries). We return 202 before the background send finishes, so
-    // the client's pending state can't cover the broadcast's lifetime — only
-    // this flag can. The check and the set are adjacent (no await between), so
-    // two racing requests can't both claim the slot.
+    // Claim the in-flight slot before the pre-flight work below, so a
+    // double-submit (double-click, React re-fire, retry) is rejected up front
+    // instead of repeating the recipient query and SMTP verify only to be
+    // refused. We return 202 before the background send finishes, so the
+    // client's pending state can't cover the broadcast's lifetime — only this
+    // flag can. The check and the set are adjacent (no await between), so two
+    // racing requests can't both claim the slot.
     if (this.broadcastInFlight) {
       throw new ConflictException(
         "A broadcast is already in progress. Wait for it to finish before sending another.",
@@ -115,19 +97,48 @@ export class AdminEmailService {
     }
     this.broadcastInFlight = true
 
-    // Fire and forget: runBroadcast owns all of its own error handling, so this
-    // floating promise can never reject and crash the process. Its finally
-    // releases the in-flight slot when delivery completes.
-    void this.runBroadcast(recipients, {
-      subject,
-      body,
-      html,
-      audienceType: input.audienceType,
-    }).finally(() => {
-      this.broadcastInFlight = false
-    })
+    try {
+      const recipients = await this.resolveRecipients(input)
 
-    return { recipientCount: recipients.length }
+      if (recipients.length === 0) {
+        throw new BadRequestException("There are no recipients to email")
+      }
+
+      // Delivery runs in the background, so a totally-down or misconfigured SMTP
+      // would otherwise return 202 ("broadcast started") while every message
+      // silently fails and the operator loses the draft. Verify the transport up
+      // front so systemic failures surface as an error response; per-recipient
+      // rejections still can't be reported here and remain logged in runBroadcast.
+      await this.emailService.verifyTransport()
+
+      const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
+
+      logger.log(
+        `Admin email broadcast starting: subject="${subject}" ` +
+          `audience=${input.audienceType} recipients=${recipients.length}`,
+      )
+
+      // Fire and forget: runBroadcast owns all of its own error handling, so
+      // this floating promise can never reject and crash the process. Its
+      // finally releases the in-flight slot when delivery completes.
+      void this.runBroadcast(recipients, {
+        subject,
+        body,
+        html,
+        audienceType: input.audienceType,
+      }).finally(() => {
+        this.broadcastInFlight = false
+      })
+
+      return { recipientCount: recipients.length }
+    } catch (error) {
+      // Pre-flight failed (no recipients, transport unavailable) before
+      // runBroadcast took ownership of the slot, so release it here. The
+      // conflict rejection above is intentionally outside this try: it must not
+      // clear the slot held by the broadcast already in flight.
+      this.broadcastInFlight = false
+      throw error
+    }
   }
 
   private async runBroadcast(

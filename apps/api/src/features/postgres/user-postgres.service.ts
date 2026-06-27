@@ -101,11 +101,13 @@ export class UserPostgresService {
   async getAllUserEmails(): Promise<string[]> {
     const users = await this.userRepository.find({ select: ["email"] })
 
+    // Normalize before deduping so case/whitespace variants of the same mailbox
+    // collapse to one recipient, matching the targeted path's normalizeEmail.
     return [
       ...new Set(
         users
-          .map(({ email }) => email)
-          .filter((email): email is string => Boolean(email)),
+          .map(({ email }) => normalizeEmail(email ?? ""))
+          .filter((email) => email.length > 0),
       ),
     ]
   }
