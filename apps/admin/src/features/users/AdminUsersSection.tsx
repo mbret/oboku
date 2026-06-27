@@ -23,11 +23,6 @@ import {
 import { AgGridReact } from "ag-grid-react"
 import { useAdminUsers } from "./useAdminUsers"
 
-// Register only the grid features this table uses instead of the whole
-// community bundle. With `cellDataType: false` below, every `filter: true`
-// resolves to the text filter, so the typed number/date/boolean filter modules
-// are not needed. ValidationModule (dev only, tree-shaken from prod builds)
-// surfaces a clear message if a feature here ever needs an unregistered module.
 ModuleRegistry.registerModules([
   ClientSideRowModelModule,
   TextFilterModule,
@@ -64,8 +59,6 @@ export const AdminUsersSection = () => {
       sortable: true,
       filter: true,
       resizable: true,
-      // Skip cell data type inference so `filter: true` uses the text filter on
-      // every column (keeps the registered module set minimal).
       cellDataType: false,
     }),
     [],

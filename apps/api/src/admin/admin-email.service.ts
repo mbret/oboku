@@ -16,12 +16,6 @@ import {
 
 const logger = new Logger("AdminEmailService")
 
-/**
- * Workers dispatching emails in parallel. Matched to the SMTP pool's connection
- * count, which is the real throughput ceiling — more workers would just queue
- * behind the same connections. When a max send rate is configured the pool also
- * paces sends below that rate regardless of this number.
- */
 const SEND_CONCURRENCY = EMAIL_MAX_CONNECTIONS
 
 const escapeHtml = (value: string) =>
@@ -34,11 +28,6 @@ const escapeHtml = (value: string) =>
 
 @Injectable()
 export class AdminEmailService {
-  /**
-   * True while a broadcast is being dispatched or sent in the background.
-   * Blocks a concurrent broadcast so double-submits can't fan out duplicates.
-   * Per process only — it does not coordinate across multiple API instances.
-   */
   private broadcastInFlight = false
 
   constructor(
@@ -59,16 +48,6 @@ export class AdminEmailService {
     )
   }
 
-  /**
-   * Validates the request, resolves recipients, and verifies email delivery is
-   * usable synchronously (so validation errors, an unusable transport, and the
-   * recipient count all surface to the caller), then sends in the background
-   * and returns immediately. The broadcast can take minutes for a large
-   * audience, which would otherwise outlast the HTTP request timeout.
-   *
-   * Rejects with a conflict while another broadcast is already in flight, so a
-   * double-submit cannot dispatch duplicates.
-   */
   async sendBroadcast(
     input: SendAdminEmailRequest,
   ): Promise<SendAdminEmailResponse> {
@@ -83,13 +62,6 @@ export class AdminEmailService {
       throw new BadRequestException("Body is required")
     }
 
-    // Claim the in-flight slot before the pre-flight work below, so a
-    // double-submit (double-click, React re-fire, retry) is rejected up front
-    // instead of repeating the recipient query and SMTP verify only to be
-    // refused. We return 202 before the background send finishes, so the
-    // client's pending state can't cover the broadcast's lifetime — only this
-    // flag can. The check and the set are adjacent (no await between), so two
-    // racing requests can't both claim the slot.
     if (this.broadcastInFlight) {
       throw new ConflictException(
         "A broadcast is already in progress. Wait for it to finish before sending another.",
@@ -104,11 +76,6 @@ export class AdminEmailService {
         throw new BadRequestException("There are no recipients to email")
       }
 
-      // Delivery runs in the background, so a totally-down or misconfigured SMTP
-      // would otherwise return 202 ("broadcast started") while every message
-      // silently fails and the operator loses the draft. Verify the transport up
-      // front so systemic failures surface as an error response; per-recipient
-      // rejections still can't be reported here and remain logged in runBroadcast.
       await this.emailService.verifyTransport()
 
       const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
@@ -118,9 +85,6 @@ export class AdminEmailService {
           `audience=${input.audienceType} recipients=${recipients.length}`,
       )
 
-      // Fire and forget: runBroadcast owns all of its own error handling, so
-      // this floating promise can never reject and crash the process. Its
-      // finally releases the in-flight slot when delivery completes.
       void this.runBroadcast(recipients, {
         subject,
         body,
@@ -132,10 +96,8 @@ export class AdminEmailService {
 
       return { recipientCount: recipients.length }
     } catch (error) {
-      // Pre-flight failed (no recipients, transport unavailable) before
-      // runBroadcast took ownership of the slot, so release it here. The
-      // conflict rejection above is intentionally outside this try: it must not
-      // clear the slot held by the broadcast already in flight.
+      // The conflict check stays outside this try so it can't clear the slot of
+      // the broadcast already in flight; here we only release the slot we claimed.
       this.broadcastInFlight = false
       throw error
     }

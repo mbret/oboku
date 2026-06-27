@@ -7,14 +7,8 @@ import {
 import nodemailer, { type Transporter } from "nodemailer"
 import { AppConfigService } from "../config/AppConfigService"
 
-/**
- * Pool size: how many SMTP connections nodemailer keeps open and sends through
- * concurrently. Exported so broadcast dispatch can match its worker count to
- * the real connection ceiling instead of guessing.
- */
 export const EMAIL_MAX_CONNECTIONS = 5
 
-/** Messages sent over a single pooled connection before it is recycled. */
 const EMAIL_MAX_MESSAGES_PER_CONNECTION = 100
 
 @Injectable()
@@ -29,20 +23,8 @@ export class EmailService implements OnModuleDestroy {
     this.transporter = undefined
   }
 
-  /**
-   * Returns a single pooled transporter, reused across every email.
-   *
-   * Pooling keeps a small set of SMTP connections open and paces messages
-   * through them instead of opening (and leaking) a fresh connection per
-   * email. This avoids provider throttling/refusals on large broadcasts and
-   * removes the SMTP handshake cost from each transactional send.
-   */
   private getTransporter() {
     if (!this.transporter) {
-      // Providers cap the per-second send rate (e.g. Amazon SES). When a max
-      // send rate is configured, pace the whole pool to stay under it so a
-      // large broadcast can't burst past the limit and get throttled or have
-      // messages rejected. Left unset, the pool sends as fast as it can.
       const maxSendRate = this.appConfigService.EMAIL_SMTP_MAX_SEND_RATE
 
       this.transporter = nodemailer.createTransport({
@@ -67,12 +49,6 @@ export class EmailService implements OnModuleDestroy {
     return this.transporter
   }
 
-  /**
-   * Sends an email to a single recipient.
-   *
-   * In development, when SMTP is not configured, the email is logged instead
-   * of being delivered. In production an unconfigured SMTP throws.
-   */
   async sendEmail({
     to,
     subject,
@@ -107,17 +83,6 @@ export class EmailService implements OnModuleDestroy {
     })
   }
 
-  /**
-   * Verifies that email delivery is usable right now: SMTP reachable and
-   * credentials accepted. Lets callers fail fast and surface an error instead
-   * of accepting work that would silently fail for every recipient — notably
-   * background broadcasts, whose per-send failures are otherwise only visible
-   * in the logs.
-   *
-   * Mirrors {@link sendEmail}'s configuration handling: in development an
-   * unconfigured SMTP is a no-op (emails are logged, not sent); in production
-   * it throws.
-   */
   async verifyTransport() {
     if (
       !this.appConfigService.EMAIL_SMTP_HOST ||

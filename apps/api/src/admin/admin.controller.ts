@@ -134,11 +134,6 @@ class UpdateInstanceSettingsDto {
   microsoftApplicationAuthority?: string
 }
 
-/**
- * Shared audience targeting fields for admin broadcast DTOs. class-validator
- * applies inherited property decorators, so the validation below runs for every
- * subclass.
- */
 class AudienceDto {
   @IsString()
   @IsIn(["all", "emails"])

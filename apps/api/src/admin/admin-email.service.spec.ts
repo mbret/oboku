@@ -8,9 +8,8 @@ import type { EmailService } from "src/email/EmailService"
 import type { UserPostgresService } from "src/features/postgres/user-postgres.service"
 import { AdminEmailService } from "./admin-email.service"
 
-// The broadcast is fire-and-forget: sendBroadcast returns before delivery
-// runs. setImmediate resolves after the microtask queue has drained, by which
-// point the whole worker loop has completed (the mocks resolve synchronously).
+// setImmediate fires after the microtask queue drains, by which point the
+// fire-and-forget background delivery has fully run (mocks resolve synchronously).
 const flushBackgroundWork = () =>
   new Promise((resolve) => {
     setImmediate(resolve)
@@ -185,8 +184,6 @@ describe("AdminEmailService", () => {
   })
 
   it("rejects a second broadcast while one is already in flight", async () => {
-    // Hold the first broadcast's background delivery open so the in-flight flag
-    // stays set across the second submit.
     let releaseSend: () => void = () => undefined
     sendEmail.mockImplementation(
       () =>
@@ -203,7 +200,6 @@ describe("AdminEmailService", () => {
     })
     expect(first.recipientCount).toBe(1)
 
-    // Let the worker pick up the recipient and block on the pending send.
     await flushBackgroundWork()
 
     await expect(
@@ -215,11 +211,8 @@ describe("AdminEmailService", () => {
       }),
     ).rejects.toBeInstanceOf(ConflictException)
 
-    // The blocked send was the first broadcast's only recipient.
     expect(sendEmail).toHaveBeenCalledTimes(1)
 
-    // Release it so the in-flight slot is freed, then confirm a new broadcast is
-    // accepted again.
     releaseSend()
     await flushBackgroundWork()
 
