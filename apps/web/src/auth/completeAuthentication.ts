@@ -2,16 +2,18 @@ import { from, of, tap } from "rxjs"
 import { authStateSignal } from "./states.web"
 import { setProfile, currentProfileSignal } from "../profile/currentProfile"
 import { setUser } from "@sentry/react"
-import { queryClient } from "../queries/queryClient"
 import { persister } from "../queries/persister"
 import type { AuthSessionResponse } from "@oboku/shared"
+import type { QueryClient } from "@tanstack/react-query"
 
 export const completeAuthentication = ({
   reCreateDb,
   auth,
+  queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   auth: AuthSessionResponse
+  queryClient: QueryClient
 }) => {
   const previousAuth = authStateSignal.value
   const switchedAccount = previousAuth?.email !== auth.email

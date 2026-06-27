@@ -4,4 +4,5 @@ export type AuthSession = {
   email: string
   nameHex: string
   dbName: string
+  needsRelogin?: boolean
 }

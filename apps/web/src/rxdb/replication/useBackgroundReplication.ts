@@ -15,7 +15,11 @@ type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const { accessToken: token, dbName } = useSignalValue(authStateSignal) ?? {}
+  const {
+    accessToken: token,
+    dbName,
+    needsRelogin,
+  } = useSignalValue(authStateSignal) ?? {}
   const replicateBook = useReplicateCollection()
   const replicateTag = useReplicateCollection()
   const replicateCollection = useReplicateCollection()
@@ -127,7 +131,7 @@ export const useBackgroundReplication = () => {
   ])
 
   useEffect(() => {
-    if (!online || !isAuthenticated) return
+    if (!online || !isAuthenticated || needsRelogin) return
 
     replicationStates.forEach((state) => {
       state.start()
@@ -138,5 +142,5 @@ export const useBackgroundReplication = () => {
         state.pause()
       })
     }
-  }, [online, isAuthenticated, replicationStates])
+  }, [online, isAuthenticated, needsRelogin, replicationStates])
 }

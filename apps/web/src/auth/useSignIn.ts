@@ -7,9 +7,11 @@ import { signInWithGooglePrompt } from "../google/auth"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
 import { withLock } from "../common/locks/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const useSignIn = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
+  const queryClient = useQueryClient()
 
   return useMutation$({
     mutationFn: (data: { email: string; password: string } | undefined) => {
@@ -39,6 +41,7 @@ export const useSignIn = () => {
           completeAuthentication({
             reCreateDb,
             auth: data,
+            queryClient,
           }),
         ),
         withLock("authentication"),

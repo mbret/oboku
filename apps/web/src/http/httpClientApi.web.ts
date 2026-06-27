@@ -158,6 +158,7 @@ const refreshAuthState = async (refreshToken: string) => {
     ...authState,
     accessToken: response.data.accessToken,
     refreshToken: response.data.refreshToken,
+    needsRelogin: false,
   }
 
   authStateSignal.update(nextAuthState)
@@ -206,6 +207,12 @@ export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
   } catch (e) {
     console.log("Unable to refresh token")
     console.error(e)
+
+    const authState = authStateSignal.value
+
+    if (authState?.refreshToken && !authState.needsRelogin) {
+      authStateSignal.update({ ...authState, needsRelogin: true })
+    }
 
     return response
   }
