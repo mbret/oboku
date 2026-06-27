@@ -8,7 +8,7 @@ import type {
   SendAdminEmailRequest,
   SendAdminEmailResponse,
 } from "@oboku/shared"
-import { EmailService } from "src/email/EmailService"
+import { EMAIL_MAX_CONNECTIONS, EmailService } from "src/email/EmailService"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
@@ -16,8 +16,13 @@ import {
 
 const logger = new Logger("AdminEmailService")
 
-/** Max emails in flight at once. The pooled transporter is the real ceiling. */
-const SEND_CONCURRENCY = 10
+/**
+ * Workers dispatching emails in parallel. Matched to the SMTP pool's connection
+ * count, which is the real throughput ceiling — more workers would just queue
+ * behind the same connections. When a max send rate is configured the pool also
+ * paces sends below that rate regardless of this number.
+ */
+const SEND_CONCURRENCY = EMAIL_MAX_CONNECTIONS
 
 const escapeHtml = (value: string) =>
   value

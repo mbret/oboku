@@ -160,4 +160,13 @@ export class AppConfigService {
   get EMAIL_FROM_NAME() {
     return this.config.get("EMAIL_FROM_NAME", { infer: true }) ?? "oboku"
   }
+
+  /**
+   * Max emails to send per second across the SMTP pool. Set this to your
+   * provider's maximum send rate (e.g. Amazon SES "Maximum send rate") so large
+   * broadcasts stay under it. Left unset, sends are not rate limited.
+   */
+  get EMAIL_SMTP_MAX_SEND_RATE() {
+    return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
+  }
 }

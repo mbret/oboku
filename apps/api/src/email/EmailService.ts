@@ -7,6 +7,16 @@ import {
 import nodemailer, { type Transporter } from "nodemailer"
 import { AppConfigService } from "../config/AppConfigService"
 
+/**
+ * Pool size: how many SMTP connections nodemailer keeps open and sends through
+ * concurrently. Exported so broadcast dispatch can match its worker count to
+ * the real connection ceiling instead of guessing.
+ */
+export const EMAIL_MAX_CONNECTIONS = 5
+
+/** Messages sent over a single pooled connection before it is recycled. */
+const EMAIL_MAX_MESSAGES_PER_CONNECTION = 100
+
 @Injectable()
 export class EmailService implements OnModuleDestroy {
   private readonly logger = new Logger(EmailService.name)
@@ -29,13 +39,20 @@ export class EmailService implements OnModuleDestroy {
    */
   private getTransporter() {
     if (!this.transporter) {
+      // Providers cap the per-second send rate (e.g. Amazon SES). When a max
+      // send rate is configured, pace the whole pool to stay under it so a
+      // large broadcast can't burst past the limit and get throttled or have
+      // messages rejected. Left unset, the pool sends as fast as it can.
+      const maxSendRate = this.appConfigService.EMAIL_SMTP_MAX_SEND_RATE
+
       this.transporter = nodemailer.createTransport({
         host: this.appConfigService.EMAIL_SMTP_HOST,
         port: this.appConfigService.EMAIL_SMTP_PORT,
         secure: this.appConfigService.EMAIL_SMTP_PORT === 465,
         pool: true,
-        maxConnections: 5,
-        maxMessages: 100,
+        maxConnections: EMAIL_MAX_CONNECTIONS,
+        maxMessages: EMAIL_MAX_MESSAGES_PER_CONNECTION,
+        ...(maxSendRate ? { rateDelta: 1000, rateLimit: maxSendRate } : {}),
         auth:
           this.appConfigService.EMAIL_SMTP_USER &&
           this.appConfigService.EMAIL_SMTP_PASSWORD
