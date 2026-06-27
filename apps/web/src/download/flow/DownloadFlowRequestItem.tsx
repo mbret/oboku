@@ -10,7 +10,6 @@ import { dexieDb } from "../../rxdb/dexie"
 import { bytesToMb } from "../../common/utils"
 import { DownloadState, booksDownloadStateSignal } from "../states"
 import { Logger } from "../../debug/logger.shared"
-import { notifyError } from "../../notifications/toasts"
 import type { DownloadFlowRequest } from "./types"
 
 type DownloadLink = NonNullable<Awaited<ReturnType<typeof getLinkStateAsync>>>
@@ -80,10 +79,6 @@ export const DownloadFlowRequestItem = memo(
           reject(error)
 
           return
-        }
-
-        if (error) {
-          notifyError(error)
         }
 
         reject(toError(error, "Download failed"))

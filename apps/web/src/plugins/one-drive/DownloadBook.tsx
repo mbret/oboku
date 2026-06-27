@@ -61,6 +61,7 @@ export const DownloadBook = memo(function DownloadBook({
     },
     onSuccess: onResolve,
     onError,
+    meta: { suppressGlobalErrorToast: true },
   })
 
   const { mutate: resolve } = useMutation$({
@@ -92,6 +93,7 @@ export const DownloadBook = memo(function DownloadBook({
       })
     },
     onError,
+    meta: { suppressGlobalErrorToast: true },
   })
 
   useEffectWithUnmount$(

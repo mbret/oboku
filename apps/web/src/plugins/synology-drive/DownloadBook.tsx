@@ -32,7 +32,9 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"synology-drive">) => {
-    const requestSynologyDriveSession = useRequestSynologyDriveSession()
+    const requestSynologyDriveSession = useRequestSynologyDriveSession({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const { mutateAsync: downloadBlob } = useDownload({
       meta: { suppressGlobalErrorToast: true },
     })
@@ -96,6 +98,7 @@ export const DownloadBook = memo(
         clearSynologyDriveSession()
         onError(error)
       },
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(

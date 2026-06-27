@@ -106,6 +106,7 @@ export const DownloadBook = memo(
       },
       onSuccess: onResolve,
       onError,
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(
