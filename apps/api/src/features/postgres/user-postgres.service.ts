@@ -61,7 +61,7 @@ export class UserPostgresService {
   async getAllUserIds(): Promise<number[]> {
     const users = await this.userRepository.find({ select: ["id"] })
 
-    return [...new Set(users.map(({ id }) => id))]
+    return users.map(({ id }) => id)
   }
 
   async getAllUsers(): Promise<
