@@ -33,6 +33,7 @@ WORKDIR /usr/src/app/apps/admin
 
 FROM nginx:alpine AS admin
 WORKDIR /usr/src/app
+COPY apps/admin/nginx.default.conf /etc/nginx/conf.d/default.conf
 # Copy the runtime injection script into the container
 COPY apps/admin/env.sh /docker-entrypoint.d/env.sh
 RUN dos2unix /docker-entrypoint.d/env.sh
