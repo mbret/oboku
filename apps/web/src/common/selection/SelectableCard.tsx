@@ -25,6 +25,8 @@ const SelectionOverlayRegion = styled(Box, {
 
   return {
     position: "relative",
+    borderRadius: theme.shape.borderRadius,
+    overflow: "hidden",
     "&::before": {
       content: '""',
       position: "absolute",

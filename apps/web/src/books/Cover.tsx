@@ -47,7 +47,7 @@ const CoverImg = styled(`img`)<{
     width: "100%",
   }),
   ...(rounded && {
-    borderRadius: 5,
+    borderRadius: theme.shape.borderRadius,
   }),
 }))
 

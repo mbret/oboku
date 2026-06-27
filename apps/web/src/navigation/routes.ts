@@ -32,6 +32,7 @@ export const ROUTES = {
   COLLECTION_BOOKS: "/collections/:id/books",
   LOGIN: "/login",
   LOGIN_MAGIC_LINK: "/login/magic-link",
+  RELOGIN: "/login/relogin",
   SIGN_UP: "/signup",
   SIGN_UP_COMPLETE: "/signup/complete",
   READER: "/reader/:id",

@@ -7,6 +7,13 @@ type HttpApiError = {
 }
 
 export class CancelError extends Error {
+  /**
+   * Brand to keep `CancelError` structurally distinct from `Error`. Without it
+   * the two are identical, and the inferred `isCancelError` type predicate
+   * (TS 5.5+) narrows `!isCancelError(error)` on an `Error` down to `never`.
+   */
+  readonly isCancelError = true
+
   constructor(message?: string) {
     super(message ?? "CancelError")
   }

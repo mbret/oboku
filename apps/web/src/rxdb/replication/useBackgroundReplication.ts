@@ -5,6 +5,7 @@ import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
 import { useSignalValue, useSubscribe } from "reactjrx"
 import { authStateSignal } from "../../auth/states.web"
+import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
@@ -15,11 +16,8 @@ type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const {
-    accessToken: token,
-    dbName,
-    needsRelogin,
-  } = useSignalValue(authStateSignal) ?? {}
+  const { dbName } = useSignalValue(authStateSignal) ?? {}
+  const isAuthenticated = useIsAuthenticated()
   const replicateBook = useReplicateCollection()
   const replicateTag = useReplicateCollection()
   const replicateCollection = useReplicateCollection()
@@ -27,7 +25,6 @@ export const useBackgroundReplication = () => {
   const replicateSettings = useReplicateCollection()
   const replicateDatasource = useReplicateCollection()
   const replicateSecret = useReplicateCollection()
-  const isAuthenticated = !!token
   const [replicationStates, setReplicationStates] = useState<
     ReplicationState[]
   >([])
@@ -131,7 +128,7 @@ export const useBackgroundReplication = () => {
   ])
 
   useEffect(() => {
-    if (!online || !isAuthenticated || needsRelogin) return
+    if (!online || !isAuthenticated) return
 
     replicationStates.forEach((state) => {
       state.start()
@@ -142,5 +139,5 @@ export const useBackgroundReplication = () => {
         state.pause()
       })
     }
-  }, [online, isAuthenticated, needsRelogin, replicationStates])
+  }, [online, isAuthenticated, replicationStates])
 }

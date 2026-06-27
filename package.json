@@ -36,7 +36,7 @@
     "lint-staged": "^16.1.5",
     "rollup": "^4.60.1",
     "rollup-plugin-analyzer": "^4.0.0",
-    "typescript": "^5.9.2",
+    "typescript": "^6.0.3",
     "unplugin-dts": "^1.0.0",
     "vercel": "^54.6.1",
     "vitest": "^4.0.8",
