@@ -16,17 +16,6 @@ httpCouchClient.useResponseInterceptor(refreshOnUnauthorized)
 
 let couchFetchRequestId = 0
 
-/**
- * Routes every CouchDB replication request through the React Query client via
- * `fetchQuery`, so replication traffic participates in the same query process
- * (in-flight tracking, devtools, error surfacing) as the rest of the app
- * instead of bypassing it through a module-level client singleton.
- *
- * Each call gets a unique query key with caching disabled (`staleTime`/`gcTime`
- * at 0): replication requests are one-shot, carry distinct bodies, and their
- * `Response` body can only be read once, so any cache reuse would be incorrect.
- * Retries are left to RxDB's replication engine, not React Query.
- */
 export const useFetchCouch = () => {
   const queryClient = useQueryClient()
 
