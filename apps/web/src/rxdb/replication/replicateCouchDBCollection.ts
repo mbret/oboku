@@ -1,7 +1,7 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection, WithDeleted } from "rxdb"
 import { configuration } from "../../config/configuration"
-import type { FetchCouch } from "../../http/httpClientCouch.web"
+import type { FetchCouch } from "../../http/useFetchCouch"
 /**
  * Strips legacy `resourceId` / `linkResourceId` fields from deleted
  * documents so they don't break the local schema.

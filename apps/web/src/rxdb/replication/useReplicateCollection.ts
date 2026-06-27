@@ -3,7 +3,7 @@ import type { RxCollection } from "rxdb"
 import { Logger } from "../../debug/logger.shared"
 import { distinctUntilChanged, skip } from "rxjs"
 import { useCallback } from "react"
-import { useFetchCouch } from "../../http/httpClientCouch.web"
+import { useFetchCouch } from "../../http/useFetchCouch"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
