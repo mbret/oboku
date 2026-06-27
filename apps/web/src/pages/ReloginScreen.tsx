@@ -43,13 +43,6 @@ export const ReLoginScreen = () => {
     ? location.state.from
     : ROUTES.HOME
 
-  /**
-   * `completeAuthentication` clears `needsRelogin` synchronously, which runs
-   * ahead of the sign-in mutation publishing its `{ switchedAccount }` result.
-   * Wait for the in-flight mutation to settle before redirecting, otherwise we
-   * could act on a cleared flag while `data` is still undefined and send a
-   * switched account to the previous account's stale `from` route.
-   */
   if (!needsReLogin && !isPending) {
     return <Navigate to={data?.switchedAccount ? ROUTES.HOME : from} replace />
   }
