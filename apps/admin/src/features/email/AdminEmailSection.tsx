@@ -1,6 +1,7 @@
 import {
   Button,
   Group,
+  Modal,
   Paper,
   Radio,
   Stack,
@@ -11,8 +12,10 @@ import {
   Title,
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
+import { useDisclosure } from "@mantine/hooks"
 import { renderBroadcastEmail } from "@oboku/shared"
 import { Link } from "@tanstack/react-router"
+import { useState } from "react"
 import { EmailFrame } from "./EmailFrame"
 import { useSendAdminEmail } from "./useSendAdminEmail"
 
@@ -49,6 +52,39 @@ export const AdminEmailSection = () => {
     },
   })
   const sendEmail = useSendAdminEmail()
+  const [confirmOpened, { open: openConfirm, close: closeConfirm }] =
+    useDisclosure(false)
+  const [pendingValues, setPendingValues] =
+    useState<AdminEmailFormValues | null>(null)
+
+  const audienceSummary = pendingValues
+    ? pendingValues.audienceType === "all"
+      ? "every user"
+      : `${parseEmails(pendingValues.recipientEmails).length} recipient(s)`
+    : ""
+
+  const handleConfirmSend = () => {
+    if (!pendingValues) return
+
+    sendEmail.mutate(
+      {
+        subject: pendingValues.subject,
+        body: pendingValues.body,
+        audienceType: pendingValues.audienceType,
+        emails:
+          pendingValues.audienceType === "emails"
+            ? parseEmails(pendingValues.recipientEmails)
+            : undefined,
+      },
+      {
+        onSuccess: () => {
+          form.reset()
+          setPendingValues(null)
+          closeConfirm()
+        },
+      },
+    )
+  }
 
   return (
     <Stack gap="md">
@@ -64,22 +100,8 @@ export const AdminEmailSection = () => {
       <Paper withBorder p="md">
         <form
           onSubmit={form.onSubmit((values) => {
-            sendEmail.mutate(
-              {
-                subject: values.subject,
-                body: values.body,
-                audienceType: values.audienceType,
-                emails:
-                  values.audienceType === "emails"
-                    ? parseEmails(values.recipientEmails)
-                    : undefined,
-              },
-              {
-                onSuccess: () => {
-                  form.reset()
-                },
-              },
-            )
+            setPendingValues(values)
+            openConfirm()
           })}
         >
           <Stack gap="sm">
@@ -147,13 +169,46 @@ export const AdminEmailSection = () => {
               />
             )}
             <Group justify="flex-end">
-              <Button type="submit" loading={sendEmail.isPending}>
-                send email
-              </Button>
+              <Button type="submit">send email</Button>
             </Group>
           </Stack>
         </form>
       </Paper>
+
+      <Modal
+        opened={confirmOpened}
+        onClose={closeConfirm}
+        title="Send this broadcast?"
+        centered
+      >
+        <Stack gap="md">
+          <Text size="sm">
+            You're about to email <strong>{audienceSummary}</strong>. This
+            action can't be undone.
+          </Text>
+          {pendingValues && (
+            <Text size="sm" c="dimmed">
+              Subject: {pendingValues.subject.trim() || "(no subject)"}
+            </Text>
+          )}
+          <Group justify="flex-end">
+            <Button
+              variant="default"
+              onClick={closeConfirm}
+              disabled={sendEmail.isPending}
+            >
+              Cancel
+            </Button>
+            <Button
+              color="red"
+              onClick={handleConfirmSend}
+              loading={sendEmail.isPending}
+            >
+              Send to {audienceSummary}
+            </Button>
+          </Group>
+        </Stack>
+      </Modal>
 
       <Paper withBorder p="md">
         <Group justify="space-between" align="center" wrap="nowrap">
