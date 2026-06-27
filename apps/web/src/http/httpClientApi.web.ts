@@ -210,7 +210,7 @@ export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
 
     const authState = authStateSignal.value
 
-    if (authState?.refreshToken && !authState.needsRelogin) {
+    if (authState?.refreshToken === refreshToken && !authState.needsRelogin) {
       authStateSignal.update({ ...authState, needsRelogin: true })
     }
 
