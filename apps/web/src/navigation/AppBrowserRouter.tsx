@@ -157,7 +157,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<NotificationsScreen />}
               />
               <Route
-                path={ROUTES.RELOGIN.slice(1)}
+                path={ROUTES.SESSION_EXPIRED.slice(1)}
                 element={<ReLoginScreen />}
               />
               <Route

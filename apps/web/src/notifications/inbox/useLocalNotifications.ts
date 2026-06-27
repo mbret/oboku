@@ -29,7 +29,7 @@ export const useLocalNotifications = (): LocalNotification[] => {
         body: "Your session has expired. Please sign in again to continue.",
         action: {
           label: "Sign in again",
-          to: ROUTES.RELOGIN,
+          to: ROUTES.SESSION_EXPIRED,
         },
       })
     }
