@@ -77,16 +77,31 @@ export class AdminEmailService {
 
     const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
 
+    logger.log(
+      `Admin email broadcast starting: subject="${subject}" ` +
+        `audience=${input.audienceType} recipients=${recipients.length}`,
+    )
+
     // Fire and forget: runBroadcast owns all of its own error handling, so this
     // floating promise can never reject and crash the process.
-    void this.runBroadcast(recipients, { subject, body, html })
+    void this.runBroadcast(recipients, {
+      subject,
+      body,
+      html,
+      audienceType: input.audienceType,
+    })
 
     return { recipientCount: recipients.length }
   }
 
   private async runBroadcast(
     recipients: string[],
-    content: { subject: string; body: string; html: string },
+    content: {
+      subject: string
+      body: string
+      html: string
+      audienceType: SendAdminEmailRequest["audienceType"]
+    },
   ): Promise<void> {
     let deliveredCount = 0
     let failedCount = 0
@@ -128,7 +143,8 @@ export class AdminEmailService {
     )
 
     logger.log(
-      `Admin email broadcast finished: ${deliveredCount} delivered, ` +
+      `Admin email broadcast finished: subject="${content.subject}" ` +
+        `audience=${content.audienceType} ${deliveredCount} delivered, ` +
         `${failedCount} failed of ${recipients.length}`,
     )
   }
