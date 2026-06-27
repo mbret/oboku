@@ -90,6 +90,9 @@ describe("notifications queries", () => {
         useQuery,
       }
     })
+    vi.doMock("./useLocalNotifications", () => ({
+      useLocalNotifications: () => [],
+    }))
 
     const { useUnreadNotificationsCount } = await import(
       "./useUnreadNotificationsCount"
