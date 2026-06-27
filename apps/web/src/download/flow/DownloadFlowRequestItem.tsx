@@ -14,9 +14,6 @@ import type { DownloadFlowRequest } from "./types"
 
 type DownloadLink = NonNullable<Awaited<ReturnType<typeof getLinkStateAsync>>>
 
-const toError = (error: unknown, fallbackMessage: string) =>
-  error instanceof Error ? error : new Error(fallbackMessage)
-
 const setDownloadData = (
   bookId: string,
   data: ReturnType<typeof booksDownloadStateSignal.getValue>[number],
@@ -75,13 +72,7 @@ export const DownloadFlowRequestItem = memo(
           downloadState: DownloadState.None,
         })
 
-        if (error instanceof CancelError) {
-          reject(error)
-
-          return
-        }
-
-        reject(toError(error, "Download failed"))
+        reject(error)
       },
       [bookId, onSettled, reject, resolve],
     )
@@ -120,9 +111,7 @@ export const DownloadFlowRequestItem = memo(
             settle({ success: true })
           })
           .catch((error) => {
-            settle({
-              error: toError(error, "Unable to persist downloaded file."),
-            })
+            settle({ error })
           })
       },
       [persistDownloadResult, settle],
@@ -166,7 +155,7 @@ export const DownloadFlowRequestItem = memo(
               })
               settle({ success: true })
             } catch (error) {
-              onError(toError(error, "Unable to persist downloaded file."))
+              onError(error)
             }
 
             return
@@ -199,7 +188,7 @@ export const DownloadFlowRequestItem = memo(
             setLink(resolvedLink)
             setIsPreparing(false)
           } catch (error) {
-            onError(toError(error, "Unable to prepare the download."))
+            onError(error)
           }
         })()
       },
