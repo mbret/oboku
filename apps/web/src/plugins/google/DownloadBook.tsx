@@ -12,7 +12,7 @@ import {
   throwIfEmpty,
   type Observable,
 } from "rxjs"
-import { httpClientWeb } from "../../http/httpClient.web"
+import { useDownload } from "../../http/useDownload"
 import { CancelError } from "../../errors/errors.shared"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
@@ -43,6 +43,9 @@ export const DownloadBook = memo(
       requestPopup,
     })
     const getDriveFile = useDriveFilesGet()
+    const { mutateAsync: downloadBlob } = useDownload({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
         const { fileId } = link.data
@@ -62,7 +65,7 @@ export const DownloadBook = memo(
                 }).pipe(
                   mergeMap((info) =>
                     from(
-                      httpClientWeb.download<Blob>({
+                      downloadBlob({
                         headers: {
                           Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
                         },
