@@ -90,6 +90,43 @@ export class EmailService implements OnModuleDestroy {
     })
   }
 
+  /**
+   * Verifies that email delivery is usable right now: SMTP reachable and
+   * credentials accepted. Lets callers fail fast and surface an error instead
+   * of accepting work that would silently fail for every recipient — notably
+   * background broadcasts, whose per-send failures are otherwise only visible
+   * in the logs.
+   *
+   * Mirrors {@link sendEmail}'s configuration handling: in development an
+   * unconfigured SMTP is a no-op (emails are logged, not sent); in production
+   * it throws.
+   */
+  async verifyTransport() {
+    if (
+      !this.appConfigService.EMAIL_SMTP_HOST ||
+      !this.appConfigService.EMAIL_FROM
+    ) {
+      if (this.appConfigService.NODE_ENV === "development") {
+        return
+      }
+
+      throw new InternalServerErrorException("Email delivery is not configured")
+    }
+
+    try {
+      await this.getTransporter().verify()
+    } catch (error) {
+      this.logger.error(
+        "SMTP transport verification failed",
+        error instanceof Error ? error.stack : error,
+      )
+
+      throw new InternalServerErrorException(
+        "Email delivery is currently unavailable",
+      )
+    }
+  }
+
   getSignUpLink({
     appPublicUrl,
     token,

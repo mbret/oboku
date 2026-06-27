@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, Logger } from "@nestjs/common"
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+} from "@nestjs/common"
 import type {
   SendAdminEmailRequest,
   SendAdminEmailResponse,
@@ -24,6 +29,13 @@ const escapeHtml = (value: string) =>
 
 @Injectable()
 export class AdminEmailService {
+  /**
+   * True while a broadcast is being dispatched or sent in the background.
+   * Blocks a concurrent broadcast so double-submits can't fan out duplicates.
+   * Per process only — it does not coordinate across multiple API instances.
+   */
+  private broadcastInFlight = false
+
   constructor(
     private readonly userPostgresService: UserPostgresService,
     private readonly emailService: EmailService,
@@ -43,10 +55,14 @@ export class AdminEmailService {
   }
 
   /**
-   * Validates the request and resolves recipients synchronously (so validation
-   * errors and the recipient count surface to the caller), then sends in the
-   * background and returns immediately. The broadcast can take minutes for a
-   * large audience, which would otherwise outlast the HTTP request timeout.
+   * Validates the request, resolves recipients, and verifies email delivery is
+   * usable synchronously (so validation errors, an unusable transport, and the
+   * recipient count all surface to the caller), then sends in the background
+   * and returns immediately. The broadcast can take minutes for a large
+   * audience, which would otherwise outlast the HTTP request timeout.
+   *
+   * Rejects with a conflict while another broadcast is already in flight, so a
+   * double-submit cannot dispatch duplicates.
    */
   async sendBroadcast(
     input: SendAdminEmailRequest,
@@ -68,6 +84,13 @@ export class AdminEmailService {
       throw new BadRequestException("There are no recipients to email")
     }
 
+    // Delivery runs in the background, so a totally-down or misconfigured SMTP
+    // would otherwise return 202 ("broadcast started") while every message
+    // silently fails and the operator loses the draft. Verify the transport up
+    // front so systemic failures surface as an error response; per-recipient
+    // rejections still can't be reported here and remain logged in runBroadcast.
+    await this.emailService.verifyTransport()
+
     const html = `<p>${escapeHtml(body).replace(/\n/g, "<br />")}</p>`
 
     logger.log(
@@ -75,13 +98,28 @@ export class AdminEmailService {
         `audience=${input.audienceType} recipients=${recipients.length}`,
     )
 
+    // Block duplicate broadcasts from double-submits (double-click, React
+    // re-fire, retries). We return 202 before the background send finishes, so
+    // the client's pending state can't cover the broadcast's lifetime — only
+    // this flag can. The check and the set are adjacent (no await between), so
+    // two racing requests can't both claim the slot.
+    if (this.broadcastInFlight) {
+      throw new ConflictException(
+        "A broadcast is already in progress. Wait for it to finish before sending another.",
+      )
+    }
+    this.broadcastInFlight = true
+
     // Fire and forget: runBroadcast owns all of its own error handling, so this
-    // floating promise can never reject and crash the process.
+    // floating promise can never reject and crash the process. Its finally
+    // releases the in-flight slot when delivery completes.
     void this.runBroadcast(recipients, {
       subject,
       body,
       html,
       audienceType: input.audienceType,
+    }).finally(() => {
+      this.broadcastInFlight = false
     })
 
     return { recipientCount: recipients.length }
