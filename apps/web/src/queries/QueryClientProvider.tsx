@@ -1,33 +1,94 @@
-import { memo, type ReactNode } from "react"
+import { memo, type ReactNode, useState } from "react"
 import { version } from "../../package.json"
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
-import { API_QUERY_KEY_PREFIX, queryClient } from "./queryClient"
-import { persister } from "./persister"
 import {
   defaultShouldDehydrateMutation,
   defaultShouldDehydrateQuery,
+  MutationCache,
+  QueryCache,
+  QueryClient,
 } from "@tanstack/react-query"
+import { SwitchMutationCancelError } from "reactjrx"
+import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
+import { CancelError } from "../errors/errors.shared"
+import { notifyError } from "../notifications/toasts"
 import {
-  markSeenMutationKey,
-  markAllSeenMutationKey,
   archiveMutationKey,
+  markAllSeenMutationKey,
+  markSeenMutationKey,
 } from "../notifications/inbox/queryKeys"
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
+import { API_QUERY_KEY_PREFIX } from "./queryClient"
+import { persister } from "./persister"
 
-queryClient.setMutationDefaults(
-  markSeenMutationKey,
-  markSeenMutationOptions(queryClient),
-)
-queryClient.setMutationDefaults(
-  markAllSeenMutationKey,
-  markAllSeenMutationOptions(queryClient),
-)
-queryClient.setMutationDefaults(
-  archiveMutationKey,
-  archiveMutationOptions(queryClient),
-)
+const createQueryClient = () => {
+  const queryClient = new QueryClient({
+    mutationCache: new MutationCache({
+      onError: (error, _variables, _context, mutation) => {
+        if (
+          error instanceof CancelError ||
+          error instanceof SwitchMutationCancelError
+        )
+          return
+
+        if (isDebugEnabled() && !import.meta.env.DEV) {
+          alert(String(error))
+        }
+
+        console.error(error)
+
+        if (!mutation.options.meta?.suppressGlobalErrorToast) {
+          notifyError(error)
+        }
+      },
+    }),
+    queryCache: new QueryCache({
+      onError: (error) => {
+        if (error instanceof CancelError) return
+
+        console.error(error)
+      },
+    }),
+    defaultOptions: {
+      mutations: {
+        /**
+         * @important
+         * Same as for queries, most of mutations are offline by default.
+         * Don't forget to change it when needed
+         */
+        networkMode: "always",
+      },
+      queries: {
+        /**
+         * @important
+         * By default we do not want queries using data from rxdb to use cache when mounting
+         * This is because we might result in invalid data for a short period of time.
+         * If cache should be used for a specific query, make sure to setData whenever
+         * rxdb change with middleware. However since it's harder to maintain we just don't
+         * use cache by default.
+         */
+        gcTime: 0,
+      },
+    },
+  })
+
+  queryClient.setMutationDefaults(
+    markSeenMutationKey,
+    markSeenMutationOptions(queryClient),
+  )
+  queryClient.setMutationDefaults(
+    markAllSeenMutationKey,
+    markAllSeenMutationOptions(queryClient),
+  )
+  queryClient.setMutationDefaults(
+    archiveMutationKey,
+    archiveMutationOptions(queryClient),
+  )
+
+  return queryClient
+}
 
 /**
  * Only mutations whose keys are registered above via `setMutationDefaults` can
@@ -47,11 +108,13 @@ const isResumableMutationKey = (mutationKey: unknown) =>
     (key) => JSON.stringify(mutationKey) === JSON.stringify(key),
   )
 
-export const PersistQueryProvider = memo(function PersistQueryProvider({
+export const QueryClientProvider = memo(function QueryClientProvider({
   children,
 }: {
   children: ReactNode
 }) {
+  const [queryClient] = useState(createQueryClient)
+
   return (
     <PersistQueryClientProvider
       client={queryClient}

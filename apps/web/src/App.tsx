@@ -21,7 +21,7 @@ import { Logger } from "./debug/logger.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
-import { PersistQueryProvider } from "./queries/PersistQueryProvider"
+import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
@@ -33,6 +33,7 @@ import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/C
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { AuthenticatedOnly } from "./auth/AuthenticatedOnly"
+import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 
@@ -83,6 +84,7 @@ const App = memo(() => {
               <AuthorizeActionDialog />
               <BackgroundReplication />
               <BlockingBackdrop />
+              <NotifyExpiredSession />
               <OtherEffects />
             </AppBrowserRouter>
           </Box>
@@ -114,14 +116,14 @@ export const AppWithConfig = memo(() => {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <PersistQueryProvider>
+          <QueryClientProvider>
             <QueryClientProvider$>
               <LoadConfiguration>
                 <App />
               </LoadConfiguration>
               {import.meta.env.DEV && <DebugMenu />}
             </QueryClientProvider$>
-          </PersistQueryProvider>
+          </QueryClientProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />

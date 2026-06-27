@@ -10,6 +10,7 @@ const createAuthSession = (
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
+  needsRelogin: false,
   ...overrides,
 })
 
@@ -290,5 +291,47 @@ describe("httpClientApi web auth refresh", () => {
     expect(
       new Headers(fetchMock.mock.calls[1]?.[1]?.headers).get("Authorization"),
     ).toBe("Bearer fresh-access-token")
+  })
+
+  it("flags the session for relogin when the refresh request fails", async () => {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url.includes("/auth/token?grant_type=refresh_token")) {
+        return Promise.resolve(
+          new Response(null, { status: 401, statusText: "Unauthorized" }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { authStateSignal } = await import("../auth/states.web")
+    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+
+    authStateSignal.update(
+      createAuthSession({
+        accessToken: "expired-access-token",
+        refreshToken: "token-a",
+      }),
+    )
+
+    const unauthorizedResponse: HttpClientResponse = {
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+      },
+    }
+
+    const result = await refreshOnUnauthorized(unauthorizedResponse)
+
+    expect(result).toBe(unauthorizedResponse)
+    expect(authStateSignal.getValue()?.needsRelogin).toBe(true)
   })
 })

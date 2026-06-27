@@ -6,11 +6,12 @@ import { setUser } from "@sentry/react"
 import { currentProfileSignal } from "../profile/currentProfile"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
-import { queryClient } from "../queries/queryClient"
 import { persister } from "../queries/persister"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
+  const queryClient = useQueryClient()
 
   return () => {
     clearTemporaryMasterKey()

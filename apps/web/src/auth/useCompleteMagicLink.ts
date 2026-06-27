@@ -5,9 +5,11 @@ import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
 import { withLock } from "../common/locks/utils"
+import { useQueryClient } from "@tanstack/react-query"
 
 export const useCompleteMagicLink = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
+  const queryClient = useQueryClient()
 
   return useMutation$({
     mutationFn: (data: { token: string }) => {
@@ -21,6 +23,7 @@ export const useCompleteMagicLink = () => {
           completeAuthentication({
             reCreateDb,
             auth: data,
+            queryClient,
           }),
         ),
         withLock("magic-link-complete"),
