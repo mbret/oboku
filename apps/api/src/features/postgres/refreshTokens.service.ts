@@ -48,15 +48,21 @@ export class RefreshTokensService {
     userId: number
     installationId: string
   }) {
-    await this.refreshTokenRepository.delete({
-      user_id: userId,
-      installation_id: installationId,
-    })
+    const { refreshToken } =
+      await this.refreshTokenRepository.manager.transaction(async (manager) => {
+        await manager.delete(RefreshTokenPostgresEntity, {
+          user_id: userId,
+          installation_id: installationId,
+        })
 
-    const { refreshToken } = await this.insertRefreshToken({
-      user_id: userId,
-      installation_id: installationId,
-    })
+        return this.insertRefreshToken(
+          {
+            user_id: userId,
+            installation_id: installationId,
+          },
+          manager,
+        )
+      })
 
     return refreshToken
   }
@@ -86,9 +92,16 @@ export class RefreshTokensService {
         return this.resolveSuccessor(presented)
       }
 
-      await this.clearSuccessorCiphertext(presentedHash)
+      // A token presented past its grace window is a replay. Per OAuth refresh
+      // rotation best practice (RFC 6819), this is a theft signal, so revoke the
+      // whole session chain — including the currently-active successor a thief
+      // may be holding — and force a fresh login.
+      await this.revokeInstallationChain(
+        presented.user_id,
+        presented.installation_id,
+      )
       this.logger.warn(
-        `Refresh token reuse detected (user ${presented.user_id}, installation ${presented.installation_id})`,
+        `Refresh token reuse detected; revoked session chain (user ${presented.user_id}, installation ${presented.installation_id})`,
       )
       return { status: "reuse" }
     }
@@ -199,13 +212,14 @@ export class RefreshTokensService {
     return { status: "rotated", session, refreshToken }
   }
 
-  private async clearSuccessorCiphertext(presentedHash: string) {
-    await this.refreshTokenRepository
-      .createQueryBuilder()
-      .update(RefreshTokenPostgresEntity)
-      .set({ successor_token: null })
-      .where(WHERE_TOKEN_HASH_MATCHES, { presentedHash })
-      .execute()
+  private async revokeInstallationChain(
+    userId: number,
+    installationId: string,
+  ) {
+    await this.refreshTokenRepository.delete({
+      user_id: userId,
+      installation_id: installationId,
+    })
   }
 
   private async insertRefreshToken(

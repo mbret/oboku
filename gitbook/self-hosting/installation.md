@@ -11,6 +11,10 @@
 
 By default, there are strong limitations put in place to reduce memory / CPU usage. This allow the stack to run on cheaper servers. You can change some settings if you have a beefier server. If you plan on intensive usage with lot of books, visit our [enable-features.md](configuration/enable-features.md "mention")section. Some options can help you reduce the costs of hosting.
 
+{% hint style="warning" %}
+**Run the API as a single instance.** Do not run multiple API replicas behind a load balancer or scale it horizontally. Refresh-token rotation keeps a short-lived, per-process in-memory key to safely converge concurrent and retried refreshes onto a single token. A second instance cannot share that key, so the same session could end up with two valid tokens and clients may be unexpectedly signed out. Scale vertically (a bigger server) instead. CouchDB and Postgres can be scaled independently.
+{% endhint %}
+
 ## Installation with docker compose (recommended)
 
 {% hint style="success" %}

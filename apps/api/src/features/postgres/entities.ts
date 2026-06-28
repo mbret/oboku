@@ -181,9 +181,15 @@ export class RefreshTokenPostgresEntity {
    * The successor token minted when this token was rotated out, encrypted with
    * AES-256-GCM under a per-process in-memory key (never persisted). Held only
    * for the grace window so concurrent / retried refreshes of this same token
-   * converge on one successor instead of each minting a new one, then nulled
-   * once grace closes (reuse path / cron). Undecryptable after a restart (the
-   * key is gone), which is fine: callers fall back to minting a fresh successor.
+   * converge on one successor instead of each minting a new one. Undecryptable
+   * after a restart (the key is gone), which is fine: callers fall back to
+   * minting a fresh successor.
+   *
+   * IMPORTANT — this convergence is single-instance only. The key lives in one
+   * process's memory, so a sibling instance cannot decrypt this ciphertext and
+   * would mint a divergent successor, leaving two active tokens for the same
+   * session. The API must therefore run as a single instance (no horizontal
+   * scaling / load-balanced replicas). See the self-hosting docs.
    */
   @Column({ type: "text", nullable: true })
   successor_token!: string | null

@@ -47,6 +47,7 @@ describe("RefreshTokensService", () => {
     manager: {
       transaction: jest.Mock
       createQueryBuilder: jest.Mock
+      delete: jest.Mock
     }
   }
 
@@ -59,6 +60,7 @@ describe("RefreshTokensService", () => {
       manager: {
         transaction: jest.fn(),
         createQueryBuilder: jest.fn(),
+        delete: jest.fn().mockResolvedValue(undefined),
       },
     }
     repository.manager.transaction.mockImplementation(
@@ -97,7 +99,7 @@ describe("RefreshTokensService", () => {
     const insertBuilder = createQueryBuilderMock({
       raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],
     })
-    repository.createQueryBuilder.mockReturnValue(insertBuilder)
+    repository.manager.createQueryBuilder.mockReturnValue(insertBuilder)
 
     const token = await service.issueTokenForInstallation({
       userId: 1,
@@ -107,10 +109,13 @@ describe("RefreshTokensService", () => {
     expect(typeof token).toBe("string")
     expect(token.length).toBeGreaterThan(0)
 
-    expect(repository.delete).toHaveBeenCalledWith({
-      user_id: 1,
-      installation_id: "installation-1",
-    })
+    expect(repository.manager.delete).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        user_id: 1,
+        installation_id: "installation-1",
+      },
+    )
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 1,
       installation_id: "installation-1",
@@ -325,7 +330,7 @@ describe("RefreshTokensService", () => {
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
   })
 
-  it("flags reuse for a superseded token presented past the grace window and clears its ciphertext", async () => {
+  it("flags reuse for a superseded token presented past the grace window and revokes the whole session chain", async () => {
     const warnSpy = jest
       .spyOn(Logger.prototype, "warn")
       .mockImplementation(() => undefined)
@@ -341,18 +346,16 @@ describe("RefreshTokensService", () => {
     } as RefreshTokenPostgresEntity
 
     repository.findOne.mockResolvedValue(supersededRow)
-    const clearBuilder = createQueryBuilderMock({ affected: 1 })
-    repository.createQueryBuilder.mockReturnValue(clearBuilder)
 
     await expect(service.rotateForRefresh("replayed-token")).resolves.toEqual({
       status: "reuse",
     })
 
-    expect(clearBuilder.set).toHaveBeenCalledWith({ successor_token: null })
-    expect(clearBuilder.where).toHaveBeenCalledWith(
-      "token_hash = :presentedHash",
-      { presentedHash: hash("replayed-token") },
-    )
+    expect(repository.delete).toHaveBeenCalledWith({
+      user_id: 42,
+      installation_id: "installation-1",
+    })
+    expect(repository.createQueryBuilder).not.toHaveBeenCalled()
     expect(warnSpy).toHaveBeenCalled()
 
     warnSpy.mockRestore()
