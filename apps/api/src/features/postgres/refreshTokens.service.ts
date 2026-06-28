@@ -193,7 +193,13 @@ export class RefreshTokensService {
     })
 
     if (!current) {
-      return this.mintFreshSuccessor(presented)
+      // The row backing this token was deleted mid-rotation — a re-login wipe,
+      // an admin revoke, or stale-session cleanup ran between loading the token
+      // and this read. The session was destroyed on purpose, so reject the
+      // refresh instead of minting a successor; resurrecting it would re-grant a
+      // token that revoke/re-login meant to kill. The caller maps a non-rotated
+      // status to a 401 and the client re-authenticates.
+      return { status: "invalid" }
     }
 
     const storedSuccessor = current.successor_token
@@ -218,17 +224,6 @@ export class RefreshTokensService {
       clause: WHERE_SUCCESSOR_TOKEN_UNCHANGED,
       params: { expectedSuccessorToken: parent.successor_token ?? null },
     })
-  }
-
-  private async mintFreshSuccessor(
-    parent: RefreshTokenPostgresEntity,
-  ): Promise<RotationResult> {
-    const { session, refreshToken } = await this.insertRefreshToken({
-      user_id: parent.user_id,
-      installation_id: parent.installation_id,
-    })
-
-    return { status: "rotated", session, refreshToken }
   }
 
   private async insertRefreshToken(

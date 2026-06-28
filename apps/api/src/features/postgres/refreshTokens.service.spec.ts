@@ -219,6 +219,37 @@ describe("RefreshTokensService", () => {
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
   })
 
+  it("rejects the refresh instead of resurrecting the chain when the row is deleted mid-rotation", async () => {
+    // The refresh loads an active token, then the row is deleted underneath it
+    // (a concurrent re-login wipe or an admin revoke) before the CAS commits.
+    // The CAS loses (affected 0) and resolveSuccessor re-reads the row as gone.
+    // The session was destroyed on purpose, so we must reject — never mint a
+    // fresh active token, which would resurrect the chain revoke/re-login meant
+    // to kill.
+    const presentedRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("current-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: null,
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+
+    repository.findOne
+      .mockResolvedValueOnce(presentedRow) // live & active when the refresh starts
+      .mockResolvedValueOnce(null) // gone by the time resolveSuccessor re-reads
+    const casBuilder = createQueryBuilderMock({ affected: 0 })
+    repository.manager.createQueryBuilder.mockReturnValueOnce(casBuilder)
+
+    const result = await service.rotateForRefresh("current-token")
+
+    expect(result).toEqual({ status: "invalid" })
+    expect(repository.manager.createQueryBuilder).toHaveBeenCalledTimes(1)
+    // No resurrection: the autocommit insert path must never run for a deleted chain.
+    expect(repository.createQueryBuilder).not.toHaveBeenCalled()
+  })
+
   it("returns the same successor for a grace-window retry, minting nothing new", async () => {
     const successorToken = "grace-successor"
     const supersededRow = {
