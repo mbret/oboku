@@ -330,7 +330,7 @@ describe("RefreshTokensService", () => {
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
   })
 
-  it("flags reuse for a superseded token presented past the grace window and revokes the whole session chain", async () => {
+  it("flags reuse for a superseded token presented past the grace window but leaves the rest of the chain intact", async () => {
     const warnSpy = jest
       .spyOn(Logger.prototype, "warn")
       .mockImplementation(() => undefined)
@@ -351,10 +351,11 @@ describe("RefreshTokensService", () => {
       status: "reuse",
     })
 
-    expect(repository.delete).toHaveBeenCalledWith({
-      user_id: 42,
-      installation_id: "installation-1",
-    })
+    // The stale token is refused, but the chain must NOT be revoked: the active
+    // token and any concurrent siblings keep working so an erratic / offline
+    // client replaying an old token is never logged out as collateral.
+    expect(repository.delete).not.toHaveBeenCalled()
+    expect(repository.manager.delete).not.toHaveBeenCalled()
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
     expect(warnSpy).toHaveBeenCalled()
 

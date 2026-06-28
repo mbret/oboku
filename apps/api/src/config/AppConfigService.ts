@@ -182,11 +182,22 @@ export class AppConfigService {
 
   /**
    * How long the immediately-previous refresh token stays accepted after a
-   * rotation. This absorbs lost-response retries on flaky mobile networks: if
-   * the client never received the rotated token, it can safely retry with the
-   * old one for a while.
+   * rotation. Within this window a superseded token resolves to its successor
+   * (idempotent recovery); past it that one stale token is refused — but the
+   * active token in the chain keeps working, so a replay never logs the client
+   * out as collateral.
+   *
+   * Sized to absorb erratic-client and flaky-network replays: lost rotation
+   * responses, concurrent refreshes from multiple tabs, and short offline /
+   * backgrounded periods. The session access token lives ~5 minutes, so one
+   * hour spans ~12 natural refresh cycles — ample slack for a client to recover
+   * the successor on a later request without re-authenticating.
+   *
+   * Keep it modest (hours, not days): since a replay no longer revokes the
+   * chain, this window is also the span over which a stolen-but-stale token
+   * could still be advanced onto the live chain.
    */
   get SECURITY_REFRESH_TOKEN_ROTATION_GRACE_MS() {
-    return 5 * 60 * 1000
+    return 60 * 60 * 1000
   }
 }

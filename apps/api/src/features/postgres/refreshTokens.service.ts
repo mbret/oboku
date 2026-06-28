@@ -92,16 +92,20 @@ export class RefreshTokensService {
         return this.resolveSuccessor(presented)
       }
 
-      // A token presented past its grace window is a replay. Per OAuth refresh
-      // rotation best practice (RFC 6819), this is a theft signal, so revoke the
-      // whole session chain — including the currently-active successor a thief
-      // may be holding — and force a fresh login.
-      await this.revokeInstallationChain(
-        presented.user_id,
-        presented.installation_id,
-      )
+      // Past its grace window, a superseded token is a stale replay. We refuse
+      // this one token but deliberately leave the rest of the chain — the active
+      // token and any concurrent siblings — untouched, so an erratic or offline
+      // client that replays an old token is never logged out as collateral.
+      //
+      // A replay can still be a theft signal (RFC 6819), but the time-based
+      // heuristic fires on whoever falls behind, which is as likely to be the
+      // legitimate user as an attacker — and our re-login already wipes the
+      // installation chain, so a thief is evicted when the victim signs back in.
+      // Revoking here would just log the real user out for a benign retry. We
+      // log it for visibility instead; an operator can revoke a confirmed
+      // compromise manually via deleteByUserId.
       this.logger.warn(
-        `Refresh token reuse detected; revoked session chain (user ${presented.user_id}, installation ${presented.installation_id})`,
+        `Refresh token replay past grace window; refused the stale token but kept the session chain (user ${presented.user_id}, installation ${presented.installation_id})`,
       )
       return { status: "reuse" }
     }
@@ -210,16 +214,6 @@ export class RefreshTokensService {
     })
 
     return { status: "rotated", session, refreshToken }
-  }
-
-  private async revokeInstallationChain(
-    userId: number,
-    installationId: string,
-  ) {
-    await this.refreshTokenRepository.delete({
-      user_id: userId,
-      installation_id: installationId,
-    })
   }
 
   private async insertRefreshToken(

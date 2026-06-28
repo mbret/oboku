@@ -171,8 +171,10 @@ export class RefreshTokenPostgresEntity {
   /**
    * When this token was rotated out (a successor was minted). Null while the
    * token is the active one for its session. Once set, the token is accepted
-   * only through the short grace window (`superseded_at + grace`) for lost
-   * rotation-response retries; presented after that, it is a replay (reuse).
+   * only through the grace window (`superseded_at + grace`) for lost
+   * rotation-response and concurrent-refresh retries, during which it resolves
+   * to its successor. Presented after that, this one token is refused as a
+   * stale replay — but the rest of the chain (the active token) is left intact.
    */
   @Column({ type: "timestamp with time zone", nullable: true })
   superseded_at!: Date | null
