@@ -165,7 +165,10 @@ describe("RefreshTokensService", () => {
         presentedHash: hash("current-token"),
       },
     )
-    expect(casBuilder.andWhere).toHaveBeenCalledWith("superseded_at IS NULL")
+    expect(casBuilder.andWhere).toHaveBeenCalledWith(
+      "superseded_at IS NULL",
+      {},
+    )
 
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
@@ -254,8 +257,11 @@ describe("RefreshTokensService", () => {
     } as RefreshTokenPostgresEntity
 
     repository.findOne.mockResolvedValue(supersededRow)
+    const casBuilder = createQueryBuilderMock({ affected: 1 })
     const insertBuilder = createQueryBuilderMock({ raw: [successorRow] })
-    repository.createQueryBuilder.mockReturnValue(insertBuilder)
+    repository.manager.createQueryBuilder
+      .mockReturnValueOnce(casBuilder)
+      .mockReturnValueOnce(insertBuilder)
 
     const result = await service.rotateForRefresh("superseded-token")
 
@@ -264,13 +270,59 @@ describe("RefreshTokensService", () => {
     expect(result.session).toBe(successorRow)
     expect(result.refreshToken).not.toBe("superseded-token")
 
+    expect(repository.manager.transaction).toHaveBeenCalledTimes(1)
+    expect(casBuilder.set).toHaveBeenCalledWith({
+      successor_token: expect.any(String),
+    })
+    expect(casBuilder.where).toHaveBeenCalledWith(
+      "token_hash = :presentedHash",
+      { presentedHash: hash("superseded-token") },
+    )
+    expect(casBuilder.andWhere).toHaveBeenCalledWith(
+      "successor_token IS NOT DISTINCT FROM :expectedSuccessorToken",
+      { expectedSuccessorToken: null },
+    )
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash(result.refreshToken),
       superseded_at: null,
     })
-    expect(repository.createQueryBuilder).toHaveBeenCalledTimes(1)
+    expect(repository.createQueryBuilder).not.toHaveBeenCalled()
+  })
+
+  it("converges on a single fallback successor across grace retries when the parent is later read back", async () => {
+    const winnerToken = "fallback-winner"
+    const supersededRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("superseded-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: new Date(FIXED_NOW.getTime() - 60 * 1000),
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+    const persistedRow = {
+      ...supersededRow,
+      successor_token: service["encryptSuccessor"](winnerToken),
+    } as RefreshTokenPostgresEntity
+
+    repository.findOne
+      .mockResolvedValueOnce(supersededRow)
+      .mockResolvedValueOnce(supersededRow)
+      .mockResolvedValueOnce(persistedRow)
+    const casBuilder = createQueryBuilderMock({ affected: 0 })
+    repository.manager.createQueryBuilder.mockReturnValueOnce(casBuilder)
+
+    const result = await service.rotateForRefresh("superseded-token")
+
+    expect(result).toEqual({
+      status: "rotated",
+      session: persistedRow,
+      refreshToken: winnerToken,
+    })
+    expect(repository.manager.createQueryBuilder).toHaveBeenCalledTimes(1)
+    expect(repository.createQueryBuilder).not.toHaveBeenCalled()
   })
 
   it("flags reuse for a superseded token presented past the grace window and clears its ciphertext", async () => {

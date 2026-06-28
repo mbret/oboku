@@ -24,6 +24,8 @@ const WHERE_TOKEN_HASH_MATCHES = "token_hash = :presentedHash"
 const WHERE_TOKEN_STILL_ACTIVE = "superseded_at IS NULL"
 const WHERE_TOKEN_EXPIRED = "created_at < :expiryCutoff"
 const WHERE_TOKEN_SUPERSEDED_PAST_GRACE = "superseded_at < :graceCutoff"
+const WHERE_SUCCESSOR_TOKEN_UNCHANGED =
+  "successor_token IS NOT DISTINCT FROM :expectedSuccessorToken"
 
 const GCM_IV_BYTES = 12
 const GCM_AUTH_TAG_BYTES = 16
@@ -91,13 +93,24 @@ export class RefreshTokensService {
       return { status: "reuse" }
     }
 
-    return this.rotateActiveToken(presented, presentedHash, now)
+    return this.rotateActiveToken(presented, now)
   }
 
-  private async rotateActiveToken(
+  private rotateActiveToken(
     presented: RefreshTokenPostgresEntity,
-    presentedHash: string,
     now: Date,
+  ): Promise<RotationResult> {
+    return this.appendSuccessorUnderCas(
+      presented,
+      { clause: WHERE_TOKEN_STILL_ACTIVE, params: {} },
+      { superseded_at: now },
+    )
+  }
+
+  private async appendSuccessorUnderCas(
+    parent: RefreshTokenPostgresEntity,
+    guard: { clause: string; params: Record<string, unknown> },
+    extraSet: Partial<Pick<RefreshTokenPostgresEntity, "superseded_at">> = {},
   ): Promise<RotationResult> {
     const successorToken = this.generateToken()
 
@@ -107,11 +120,11 @@ export class RefreshTokensService {
           .createQueryBuilder()
           .update(RefreshTokenPostgresEntity)
           .set({
-            superseded_at: now,
+            ...extraSet,
             successor_token: this.encryptSuccessor(successorToken),
           })
-          .where(WHERE_TOKEN_HASH_MATCHES, { presentedHash })
-          .andWhere(WHERE_TOKEN_STILL_ACTIVE)
+          .where(WHERE_TOKEN_HASH_MATCHES, { presentedHash: parent.token_hash })
+          .andWhere(guard.clause, guard.params)
           .execute()
 
         if (cas.affected !== 1) {
@@ -120,8 +133,8 @@ export class RefreshTokensService {
 
         return this.insertRefreshToken(
           {
-            user_id: presented.user_id,
-            installation_id: presented.installation_id,
+            user_id: parent.user_id,
+            installation_id: parent.installation_id,
             refreshToken: successorToken,
           },
           manager,
@@ -130,7 +143,7 @@ export class RefreshTokensService {
     )
 
     if (!rotated) {
-      return this.resolveSuccessor(presented)
+      return this.resolveSuccessor(parent)
     }
 
     return {
@@ -147,19 +160,32 @@ export class RefreshTokensService {
       where: { token_hash: presented.token_hash },
     })
 
-    const storedSuccessor = current?.successor_token
+    if (!current) {
+      return this.mintFreshSuccessor(presented)
+    }
+
+    const storedSuccessor = current.successor_token
       ? this.decryptSuccessor(current.successor_token)
       : null
 
     if (storedSuccessor) {
       return {
         status: "rotated",
-        session: current ?? presented,
+        session: current,
         refreshToken: storedSuccessor,
       }
     }
 
-    return this.mintFreshSuccessor(presented)
+    return this.persistFreshSuccessor(current)
+  }
+
+  private persistFreshSuccessor(
+    parent: RefreshTokenPostgresEntity,
+  ): Promise<RotationResult> {
+    return this.appendSuccessorUnderCas(parent, {
+      clause: WHERE_SUCCESSOR_TOKEN_UNCHANGED,
+      params: { expectedSuccessorToken: parent.successor_token ?? null },
+    })
   }
 
   private async mintFreshSuccessor(
