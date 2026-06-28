@@ -254,6 +254,9 @@ export class RefreshTokensService {
       .execute()
 
     return {
+      // TypeORM types InsertResult.raw as `any` since its shape depends on the
+      // driver; `.returning("*")` makes Postgres return the full inserted row,
+      // so we assert it to the entity type.
       session: inserted.raw[0] as RefreshTokenPostgresEntity,
       refreshToken: issuedToken,
     }
