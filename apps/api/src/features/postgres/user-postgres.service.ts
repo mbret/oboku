@@ -57,7 +57,7 @@ export class UserPostgresService {
     })
   }
 
-  async create(user: Omit<UserPostgresEntity, "id">) {
+  async create(user: Omit<UserPostgresEntity, "id" | "createdAt">) {
     const newUser = this.userRepository.create({
       ...user,
       email: normalizeEmail(user.email),
@@ -85,10 +85,20 @@ export class UserPostgresService {
   }
 
   async getAllUsers(): Promise<
-    Pick<UserPostgresEntity, "id" | "email" | "username" | "emailVerified">[]
+    Pick<
+      UserPostgresEntity,
+      "id" | "email" | "username" | "emailVerified" | "createdAt" | "password"
+    >[]
   > {
     return this.userRepository.find({
-      select: ["id", "email", "username", "emailVerified"],
+      select: [
+        "id",
+        "email",
+        "username",
+        "emailVerified",
+        "createdAt",
+        "password",
+      ],
       order: { id: "ASC" },
     })
   }
