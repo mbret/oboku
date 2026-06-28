@@ -12,6 +12,12 @@ export const EMAIL_MAX_CONNECTIONS = 5
 
 const EMAIL_MAX_MESSAGES_PER_CONNECTION = 100
 
+// Fail fast instead of nodemailer's ~2min defaults so a misconfigured or
+// unreachable SMTP host surfaces a clear error quickly.
+const EMAIL_CONNECTION_TIMEOUT_MS = 10_000
+const EMAIL_GREETING_TIMEOUT_MS = 10_000
+const EMAIL_SOCKET_TIMEOUT_MS = 20_000
+
 @Injectable()
 export class EmailService implements OnModuleDestroy {
   private readonly logger = new Logger(EmailService.name)
@@ -35,6 +41,9 @@ export class EmailService implements OnModuleDestroy {
         pool: true,
         maxConnections: EMAIL_MAX_CONNECTIONS,
         maxMessages: EMAIL_MAX_MESSAGES_PER_CONNECTION,
+        connectionTimeout: EMAIL_CONNECTION_TIMEOUT_MS,
+        greetingTimeout: EMAIL_GREETING_TIMEOUT_MS,
+        socketTimeout: EMAIL_SOCKET_TIMEOUT_MS,
         ...(maxSendRate ? { rateDelta: 1000, rateLimit: maxSendRate } : {}),
         auth:
           this.appConfigService.EMAIL_SMTP_USER &&
