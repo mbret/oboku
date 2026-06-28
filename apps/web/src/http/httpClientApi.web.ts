@@ -21,7 +21,7 @@ import type {
 } from "@oboku/shared"
 import { authStateSignal } from "../auth/states.web"
 import { configuration } from "../config/configuration"
-import type { HttpClientResponse } from "./httpClient.shared"
+import { HttpClientError, type HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
 
@@ -187,7 +187,58 @@ export const refreshAuthSession = (refreshToken: string) => {
   return promise
 }
 
+const carriesAuthenticatedAccessToken = (
+  config: HttpClientResponse["config"],
+) => {
+  const headers = config?.headers
+
+  if (!headers) return false
+
+  if (headers instanceof Headers) return headers.has("Authorization")
+
+  if (Array.isArray(headers)) {
+    return headers.some(([key]) => key.toLowerCase() === "authorization")
+  }
+
+  return Object.keys(headers).some(
+    (key) => key.toLowerCase() === "authorization",
+  )
+}
+
+const provesSessionStillAlive = (response: HttpClientResponse) => {
+  const isSuccess = response.status >= 200 && response.status < 300
+
+  return isSuccess && carriesAuthenticatedAccessToken(response.config)
+}
+
+const refreshTokenWasRejected = (error: unknown) =>
+  error instanceof HttpClientError &&
+  (error.response?.status === 401 || error.response?.status === 403)
+
+const clearReloginFlag = () => {
+  const authState = authStateSignal.value
+
+  if (authState?.needsRelogin) {
+    authStateSignal.update({ ...authState, needsRelogin: false })
+  }
+}
+
+const flagSessionForRelogin = (rejectedRefreshToken: string) => {
+  const authState = authStateSignal.value
+
+  if (
+    authState?.refreshToken === rejectedRefreshToken &&
+    !authState.needsRelogin
+  ) {
+    authStateSignal.update({ ...authState, needsRelogin: true })
+  }
+}
+
 export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
+  if (provesSessionStillAlive(response)) {
+    clearReloginFlag()
+  }
+
   if (response.status !== 401) {
     return response
   }
@@ -204,15 +255,17 @@ export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
     if (!didApply) {
       return response
     }
-  } catch (e) {
+  } catch (error) {
     console.log("Unable to refresh token")
-    console.error(e)
+    console.error(error)
 
-    const authState = authStateSignal.value
+    const sessionIsTrulyExpired = refreshTokenWasRejected(error)
 
-    if (authState?.refreshToken === refreshToken && !authState.needsRelogin) {
-      authStateSignal.update({ ...authState, needsRelogin: true })
+    if (!sessionIsTrulyExpired) {
+      return response
     }
+
+    flagSessionForRelogin(refreshToken)
 
     return response
   }

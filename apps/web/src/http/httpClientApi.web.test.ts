@@ -334,4 +334,111 @@ describe("httpClientApi web auth refresh", () => {
     expect(result).toBe(unauthorizedResponse)
     expect(authStateSignal.getValue()?.needsRelogin).toBe(true)
   })
+
+  it("does not flag the session when the refresh fails transiently", async () => {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url.includes("/auth/token?grant_type=refresh_token")) {
+        // A transient failure (5xx / network blip), not an auth rejection.
+        return Promise.resolve(
+          new Response(null, {
+            status: 503,
+            statusText: "Service Unavailable",
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { authStateSignal } = await import("../auth/states.web")
+    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+
+    authStateSignal.update(
+      createAuthSession({
+        accessToken: "expired-access-token",
+        refreshToken: "token-a",
+      }),
+    )
+
+    const unauthorizedResponse: HttpClientResponse = {
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+      },
+    }
+
+    const result = await refreshOnUnauthorized(unauthorizedResponse)
+
+    expect(result).toBe(unauthorizedResponse)
+    expect(authStateSignal.getValue()?.needsRelogin).toBe(false)
+  })
+
+  it("clears a stale relogin latch on a successful authenticated response", async () => {
+    const { authStateSignal } = await import("../auth/states.web")
+    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+
+    authStateSignal.update(
+      createAuthSession({
+        accessToken: "access-token",
+        refreshToken: "token-a",
+        needsRelogin: true,
+      }),
+    )
+
+    const okResponse: HttpClientResponse = {
+      response: new Response(null, { status: 200, statusText: "OK" }),
+      data: undefined,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+        headers: {
+          Authorization: "Bearer access-token",
+        },
+      },
+    }
+
+    const result = await refreshOnUnauthorized(okResponse)
+
+    expect(result).toBe(okResponse)
+    expect(authStateSignal.getValue()?.needsRelogin).toBe(false)
+  })
+
+  it("leaves an expired session untouched on an unauthenticated success", async () => {
+    const { authStateSignal } = await import("../auth/states.web")
+    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+
+    authStateSignal.update(
+      createAuthSession({
+        accessToken: "access-token",
+        refreshToken: "token-a",
+        needsRelogin: true,
+      }),
+    )
+
+    const okResponse: HttpClientResponse = {
+      response: new Response(null, { status: 200, statusText: "OK" }),
+      data: undefined,
+      status: 200,
+      statusText: "OK",
+      headers: {},
+      config: {
+        input: "https://api.example.com/public",
+      },
+    }
+
+    const result = await refreshOnUnauthorized(okResponse)
+
+    expect(result).toBe(okResponse)
+    expect(authStateSignal.getValue()?.needsRelogin).toBe(true)
+  })
 })
