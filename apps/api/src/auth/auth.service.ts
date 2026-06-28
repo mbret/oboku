@@ -505,12 +505,14 @@ export class AuthService {
   ): Promise<RefreshTokenResponse> {
     void grant_type
 
-    const session =
-      await this.refreshTokensService.findActiveByToken(refreshToken)
+    const rotation =
+      await this.refreshTokensService.rotateForRefresh(refreshToken)
 
-    if (!session) {
+    if (rotation.status !== "rotated") {
       throw new UnauthorizedException()
     }
+
+    const { session, refreshToken: rotatedToken } = rotation
 
     const user = await this.usersService.findUserById(session.user_id)
 
@@ -527,7 +529,7 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken,
+      refreshToken: rotatedToken,
     }
   }
 

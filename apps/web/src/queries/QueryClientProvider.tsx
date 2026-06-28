@@ -11,6 +11,7 @@ import {
 import { SwitchMutationCancelError } from "reactjrx"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
+import { HttpClientError } from "../http/httpClient.shared"
 import { notifyError } from "../notifications/toasts"
 import {
   archiveMutationKey,
@@ -33,7 +34,10 @@ const createQueryClient = () => {
         )
           return
 
-        if (isDebugEnabled() && !import.meta.env.DEV) {
+        const isUnauthorized =
+          error instanceof HttpClientError && error.response?.status === 401
+
+        if (isDebugEnabled() && !import.meta.env.DEV && !isUnauthorized) {
           alert(String(error))
         }
 

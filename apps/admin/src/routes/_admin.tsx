@@ -64,6 +64,11 @@ const navItems = [
     description: "Storage usage and cleanup",
   },
   {
+    to: "/security",
+    label: "Security",
+    description: "Tokens and session revocation",
+  },
+  {
     to: "/server-sync",
     label: "Server Sync",
     description: "Instance-level sync support",

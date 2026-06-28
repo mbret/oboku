@@ -164,4 +164,40 @@ export class AppConfigService {
   get EMAIL_SMTP_MAX_SEND_RATE() {
     return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
   }
+
+  /**
+   * ------------------------------------------------------------
+   * SECURITY
+   * ------------------------------------------------------------
+   */
+
+  /**
+   * Absolute lifetime of a single refresh-token string. Each successful refresh
+   * rotates the token and resets this clock, so an active session can slide
+   * indefinitely while no individual token outlives ~6 months.
+   */
+  get SECURITY_REFRESH_TOKEN_TTL_MS() {
+    return 6 * 30 * 24 * 60 * 60 * 1000
+  }
+
+  /**
+   * How long the immediately-previous refresh token stays accepted after a
+   * rotation. Within this window a superseded token resolves to its successor
+   * (idempotent recovery); past it that one stale token is refused — but the
+   * active token in the chain keeps working, so a replay never logs the client
+   * out as collateral.
+   *
+   * Sized to absorb erratic-client and flaky-network replays: lost rotation
+   * responses, concurrent refreshes from multiple tabs, and short offline /
+   * backgrounded periods. The session access token lives ~5 minutes, so one
+   * hour spans ~12 natural refresh cycles — ample slack for a client to recover
+   * the successor on a later request without re-authenticating.
+   *
+   * Keep it modest (hours, not days): since a replay no longer revokes the
+   * chain, this window is also the span over which a stolen-but-stale token
+   * could still be advanced onto the live chain.
+   */
+  get SECURITY_REFRESH_TOKEN_ROTATION_GRACE_MS() {
+    return 60 * 60 * 1000
+  }
 }

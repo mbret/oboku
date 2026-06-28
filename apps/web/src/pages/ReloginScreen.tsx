@@ -1,6 +1,6 @@
 import { Alert, Container, Typography, styled } from "@mui/material"
 import { useForm } from "react-hook-form"
-import { Navigate, useLocation } from "react-router"
+import { Navigate, useLocation, useNavigate } from "react-router"
 import { useSignalValue } from "reactjrx"
 import { useSignIn } from "../auth/useSignIn"
 import { SignInForm, type SignInFormInputs } from "../auth/SignInForm"
@@ -30,7 +30,16 @@ const SignedInAsText = styled(Typography)(({ theme }) => ({
 export const ReLoginScreen = () => {
   const auth = useSignalValue(authStateSignal)
   const location = useLocation()
-  const { mutate, isPending, error, data } = useSignIn()
+  const navigate = useNavigate()
+  const { mutate, isPending, isIdle, error } = useSignIn({
+    onSuccess: ({ switchedAccount }) => {
+      if (!switchedAccount && isFromLocationState(location.state)) {
+        navigate(-1)
+      } else {
+        navigate(ROUTES.HOME, { replace: true })
+      }
+    },
+  })
   const { control, handleSubmit } = useForm<SignInFormInputs>({
     defaultValues: {
       email: auth?.email ?? "",
@@ -38,13 +47,8 @@ export const ReLoginScreen = () => {
     },
   })
 
-  const needsReLogin = !!auth?.needsRelogin
-  const from = isFromLocationState(location.state)
-    ? location.state.from
-    : ROUTES.HOME
-
-  if (!needsReLogin && !isPending) {
-    return <Navigate to={data?.switchedAccount ? ROUTES.HOME : from} replace />
+  if (!auth?.needsRelogin) {
+    return isIdle ? <Navigate to={ROUTES.HOME} replace /> : null
   }
 
   const displayedError = error && !isCancelError(error) ? error : null

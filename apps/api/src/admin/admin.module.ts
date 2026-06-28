@@ -15,6 +15,7 @@ import { NotificationsModule } from "src/notifications/notifications.module"
 import { EmailModule } from "src/email/email.module"
 import { PostgresModule } from "src/features/postgres/postgres.module"
 import { AdminEmailService } from "./admin-email.service"
+import { AdminSecurityService } from "./admin-security.service"
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { AdminEmailService } from "./admin-email.service"
     InstanceConfigService,
     ServerSourcesService,
     AdminEmailService,
+    AdminSecurityService,
   ],
   controllers: [AdminController],
   exports: [InstanceConfigService],

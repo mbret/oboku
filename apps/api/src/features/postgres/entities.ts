@@ -132,10 +132,37 @@ export class UserPostgresEntity {
   createdAt!: Date
 }
 
+/**
+ * Append-only log of issued refresh tokens. One row = one token, never mutated
+ * except to stamp `superseded_at` when it is rotated out. A session (one
+ * installation) is the chain of rows sharing `user_id` + `installation_id`; a
+ * row with `superseded_at IS NULL` is an active (currently-usable) token.
+ *
+ * One active token per session is the EXPECTED steady state, not an enforced
+ * invariant. Issuance is not serialized and the `(user_id, installation_id)`
+ * index is deliberately non-unique (see below), so sign-ins for the same
+ * installation that overlap in time can transiently leave more than one active
+ * row. This is tolerated by design: siblings rotate independently and collapse
+ * back to one on the next sign-in or via TTL/grace cleanup, and nothing reads
+ * "the" active token (every query keys on the unique `token_hash`), so no code
+ * path depends on there being exactly one.
+ *
+ * Rotation inserts a new row rather than overwriting, so `created_at` is a true
+ * issue timestamp and doubles as the per-token expiry anchor (a token is past
+ * its cap once `created_at` is older than the configured max age).
+ */
 @Entity({ name: "refresh_tokens" })
-@Index(["user_id", "installation_id"], { unique: true })
 @Index(["token_hash"], { unique: true })
-@Index(["user_id", "last_used_at"])
+// Deliberately NOT unique. This is an append-only chain, so many rows share the
+// same (user_id, installation_id) by design — the full rotation history, plus
+// (transiently) more than one active token; see the class doc above. A partial
+// unique index on active rows (`... WHERE superseded_at IS NULL`) would force a
+// single active token per session, but it would turn every tolerated
+// multi-active state into a hard failure: one of two concurrent sign-ins would
+// error, and rotating one of two existing siblings would throw instead of
+// degrading gracefully. We keep the plain index and tolerate siblings instead.
+@Index(["user_id", "installation_id"])
+@Index(["created_at"])
 export class RefreshTokenPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
@@ -146,21 +173,43 @@ export class RefreshTokenPostgresEntity {
   @Column({ type: "text" })
   installation_id!: string
 
+  /** Hash of this issued token. */
   @Column({ type: "text" })
   token_hash!: string
 
-  @Column({
-    type: "timestamp with time zone",
-    default: () => "CURRENT_TIMESTAMP",
-  })
+  /**
+   * When this token was issued. Never updated — each rotation inserts a new row
+   * — so it is a genuine creation timestamp and the per-token expiry anchor:
+   * the token is past its cap once `created_at + max age` is in the past.
+   */
+  @CreateDateColumn({ type: "timestamp with time zone" })
   created_at!: Date
 
-  @Column({
-    type: "timestamp with time zone",
-    default: () => "CURRENT_TIMESTAMP",
-  })
-  last_used_at!: Date
-
+  /**
+   * When this token was rotated out (a successor was minted). Null while the
+   * token is the active one for its session. Once set, the token is accepted
+   * only through the grace window (`superseded_at + grace`) for lost
+   * rotation-response and concurrent-refresh retries, during which it resolves
+   * to its successor. Presented after that, this one token is refused as a
+   * stale replay — but the rest of the chain (the active token) is left intact.
+   */
   @Column({ type: "timestamp with time zone", nullable: true })
-  revoked_at!: Date | null
+  superseded_at!: Date | null
+
+  /**
+   * The successor token minted when this token was rotated out, encrypted with
+   * AES-256-GCM under a per-process in-memory key (never persisted). Held only
+   * for the grace window so concurrent / retried refreshes of this same token
+   * converge on one successor instead of each minting a new one. Undecryptable
+   * after a restart (the key is gone), which is fine: callers fall back to
+   * minting a fresh successor.
+   *
+   * IMPORTANT — this convergence is single-instance only. The key lives in one
+   * process's memory, so a sibling instance cannot decrypt this ciphertext and
+   * would mint a divergent successor, leaving two active tokens for the same
+   * session. The API must therefore run as a single instance (no horizontal
+   * scaling / load-balanced replicas). See the self-hosting docs.
+   */
+  @Column({ type: "text", nullable: true })
+  successor_token!: string | null
 }

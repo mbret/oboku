@@ -7,14 +7,27 @@ import { signInWithGooglePrompt } from "../google/auth"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
 import { withLock } from "../common/locks/utils"
-import { useQueryClient } from "@tanstack/react-query"
+import {
+  type DefaultError,
+  type UseMutationOptions,
+  useQueryClient,
+} from "@tanstack/react-query"
 
-export const useSignIn = () => {
+type SignInVariables = { email: string; password: string } | undefined
+type SignInData = { switchedAccount: boolean }
+
+export const useSignIn = (
+  options?: Pick<
+    UseMutationOptions<SignInData, DefaultError, SignInVariables>,
+    "onSuccess" | "onError" | "onSettled"
+  >,
+) => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const queryClient = useQueryClient()
 
-  return useMutation$({
-    mutationFn: (data: { email: string; password: string } | undefined) => {
+  return useMutation$<SignInData, DefaultError, SignInVariables>({
+    ...options,
+    mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
       const signIn$ = data
