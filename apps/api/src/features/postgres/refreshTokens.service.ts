@@ -41,6 +41,21 @@ export class RefreshTokensService {
     private readonly appConfigService: AppConfigService,
   ) {}
 
+  /**
+   * Starts a fresh session for an installation on sign-in: wipes any existing
+   * chain for `(user_id, installation_id)`, then inserts one active token.
+   *
+   * Intentionally NOT serialized. Sequential sign-ins each wipe the previous
+   * chain, so the steady state is a single active token per installation. Two
+   * sign-ins for the same installation that overlap in time, however, race on
+   * this wipe-then-insert — under READ COMMITTED neither DELETE sees the other's
+   * uncommitted INSERT — so both can insert an active row and leave the session
+   * with more than one. That is accepted, not prevented: each token was still
+   * minted by the legitimate user authenticating, each rotates independently,
+   * and the next sign-in's wipe (or TTL/grace cleanup) collapses the chain back
+   * to one. See the entity doc for why we don't add a partial unique index or
+   * otherwise force a single active token.
+   */
   async issueTokenForInstallation({
     userId,
     installationId,
@@ -297,6 +312,66 @@ export class RefreshTokensService {
 
   async deleteByUserId(userId: number) {
     await this.refreshTokenRepository.delete({ user_id: userId })
+  }
+
+  async getStats(): Promise<{
+    totalTokens: number
+    activeTokens: number
+    distinctUsers: number
+    distinctSessions: number
+  }> {
+    const raw = await this.refreshTokenRepository
+      .createQueryBuilder("token")
+      .select("COUNT(*)", "totalTokens")
+      .addSelect(
+        "COUNT(*) FILTER (WHERE token.superseded_at IS NULL)",
+        "activeTokens",
+      )
+      .addSelect("COUNT(DISTINCT token.user_id)", "distinctUsers")
+      .addSelect(
+        "COUNT(DISTINCT (token.user_id, token.installation_id))",
+        "distinctSessions",
+      )
+      .getRawOne<{
+        totalTokens: string
+        activeTokens: string
+        distinctUsers: string
+        distinctSessions: string
+      }>()
+
+    return {
+      totalTokens: Number(raw?.totalTokens ?? 0),
+      activeTokens: Number(raw?.activeTokens ?? 0),
+      distinctUsers: Number(raw?.distinctUsers ?? 0),
+      distinctSessions: Number(raw?.distinctSessions ?? 0),
+    }
+  }
+
+  /** Revokes every refresh token in the database. Returns the number deleted. */
+  async deleteAll(): Promise<number> {
+    const result = await this.refreshTokenRepository
+      .createQueryBuilder()
+      .delete()
+      .from(RefreshTokenPostgresEntity)
+      .execute()
+
+    return result.affected ?? 0
+  }
+
+  /** Revokes all refresh tokens owned by the given users. Returns the count. */
+  async deleteByUserIds(userIds: number[]): Promise<number> {
+    if (userIds.length === 0) {
+      return 0
+    }
+
+    const result = await this.refreshTokenRepository
+      .createQueryBuilder()
+      .delete()
+      .from(RefreshTokenPostgresEntity)
+      .where("user_id IN (:...userIds)", { userIds })
+      .execute()
+
+    return result.affected ?? 0
   }
 
   @Cron("0 0 3 * * *")

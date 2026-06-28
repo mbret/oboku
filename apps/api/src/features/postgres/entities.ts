@@ -135,8 +135,17 @@ export class UserPostgresEntity {
 /**
  * Append-only log of issued refresh tokens. One row = one token, never mutated
  * except to stamp `superseded_at` when it is rotated out. A session (one
- * installation) is the chain of rows sharing `user_id` + `installation_id`; the
- * single row with `superseded_at IS NULL` holds the currently-active token.
+ * installation) is the chain of rows sharing `user_id` + `installation_id`; a
+ * row with `superseded_at IS NULL` is an active (currently-usable) token.
+ *
+ * One active token per session is the EXPECTED steady state, not an enforced
+ * invariant. Issuance is not serialized and the `(user_id, installation_id)`
+ * index is deliberately non-unique (see below), so sign-ins for the same
+ * installation that overlap in time can transiently leave more than one active
+ * row. This is tolerated by design: siblings rotate independently and collapse
+ * back to one on the next sign-in or via TTL/grace cleanup, and nothing reads
+ * "the" active token (every query keys on the unique `token_hash`), so no code
+ * path depends on there being exactly one.
  *
  * Rotation inserts a new row rather than overwriting, so `created_at` is a true
  * issue timestamp and doubles as the per-token expiry anchor (a token is past
@@ -144,6 +153,14 @@ export class UserPostgresEntity {
  */
 @Entity({ name: "refresh_tokens" })
 @Index(["token_hash"], { unique: true })
+// Deliberately NOT unique. This is an append-only chain, so many rows share the
+// same (user_id, installation_id) by design — the full rotation history, plus
+// (transiently) more than one active token; see the class doc above. A partial
+// unique index on active rows (`... WHERE superseded_at IS NULL`) would force a
+// single active token per session, but it would turn every tolerated
+// multi-active state into a hard failure: one of two concurrent sign-ins would
+// error, and rotating one of two existing siblings would throw instead of
+// degrading gracefully. We keep the plain index and tolerate siblings instead.
 @Index(["user_id", "installation_id"])
 @Index(["created_at"])
 export class RefreshTokenPostgresEntity {

@@ -20,6 +20,9 @@ import type {
   GetAdminUsersResponse,
   GetInstanceSettingsResponse,
   GetServerSyncResponse,
+  GetTokenStatsResponse,
+  RevokeTokensRequest,
+  RevokeTokensResponse,
   SendAdminEmailRequest,
   SendAdminEmailResponse,
   SetWebDavCredentialsResponse,
@@ -48,6 +51,7 @@ import {
 } from "class-validator"
 import { NotificationsService } from "src/notifications/notifications.service"
 import { AdminEmailService } from "./admin-email.service"
+import { AdminSecurityService } from "./admin-security.service"
 import { UserPostgresService } from "src/features/postgres/user-postgres.service"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
@@ -174,6 +178,8 @@ class SendAdminEmailDto extends AudienceDto implements SendAdminEmailRequest {
   body!: string
 }
 
+class RevokeTokensDto extends AudienceDto implements RevokeTokensRequest {}
+
 class SigninDto {
   @IsString()
   login!: string
@@ -207,6 +213,7 @@ export class AdminController {
     private readonly authService: AuthService,
     private readonly notificationService: NotificationsService,
     private readonly adminEmailService: AdminEmailService,
+    private readonly adminSecurityService: AdminSecurityService,
     private readonly userPostgresService: UserPostgresService,
   ) {}
 
@@ -342,6 +349,19 @@ export class AdminController {
     @Body() body: SendAdminEmailDto,
   ): Promise<SendAdminEmailResponse> {
     return this.adminEmailService.sendBroadcast(body)
+  }
+
+  @Get("tokens/stats")
+  async getTokenStats(): Promise<GetTokenStatsResponse> {
+    return this.adminSecurityService.getTokenStats()
+  }
+
+  @Post("tokens/revoke")
+  @HttpCode(200)
+  async revokeTokens(
+    @Body() body: RevokeTokensDto,
+  ): Promise<RevokeTokensResponse> {
+    return this.adminSecurityService.revokeTokens(body)
   }
 
   @Get("settings")

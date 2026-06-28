@@ -44,3 +44,21 @@ export type AdminUserSummary = {
 }
 
 export type GetAdminUsersResponse = AdminUserSummary[]
+
+export type GetTokenStatsResponse = {
+  totalTokens: number
+  activeTokens: number
+  distinctUsers: number
+  distinctSessions: number
+}
+
+export type RevokeTokensRequest = {
+  audienceType: "all" | "emails"
+  emails?: string[]
+}
+
+export type RevokeTokensResponse = {
+  revokedTokens: number
+  /** Number of matched users when targeting emails; null for a full revoke. */
+  targetedUsers: number | null
+}

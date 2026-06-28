@@ -14,6 +14,7 @@ import { Route as AdminIndexRouteImport } from './routes/_admin/index'
 import { Route as AdminUsersRouteImport } from './routes/_admin/users'
 import { Route as AdminSignupLinksRouteImport } from './routes/_admin/signup-links'
 import { Route as AdminServerSyncRouteImport } from './routes/_admin/server-sync'
+import { Route as AdminSecurityRouteImport } from './routes/_admin/security'
 import { Route as AdminProvidersRouteImport } from './routes/_admin/providers'
 import { Route as AdminNotificationsRouteImport } from './routes/_admin/notifications'
 import { Route as AdminMigrationRouteImport } from './routes/_admin/migration'
@@ -46,6 +47,11 @@ const AdminSignupLinksRoute = AdminSignupLinksRouteImport.update({
 const AdminServerSyncRoute = AdminServerSyncRouteImport.update({
   id: '/server-sync',
   path: '/server-sync',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSecurityRoute = AdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminProvidersRoute = AdminProvidersRouteImport.update({
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/migration': typeof AdminMigrationRoute
   '/notifications': typeof AdminNotificationsRoute
   '/providers': typeof AdminProvidersRoute
+  '/security': typeof AdminSecurityRoute
   '/server-sync': typeof AdminServerSyncRouteWithChildren
   '/signup-links': typeof AdminSignupLinksRoute
   '/users': typeof AdminUsersRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/migration': typeof AdminMigrationRoute
   '/notifications': typeof AdminNotificationsRoute
   '/providers': typeof AdminProvidersRoute
+  '/security': typeof AdminSecurityRoute
   '/signup-links': typeof AdminSignupLinksRoute
   '/users': typeof AdminUsersRoute
   '/': typeof AdminIndexRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/_admin/migration': typeof AdminMigrationRoute
   '/_admin/notifications': typeof AdminNotificationsRoute
   '/_admin/providers': typeof AdminProvidersRoute
+  '/_admin/security': typeof AdminSecurityRoute
   '/_admin/server-sync': typeof AdminServerSyncRouteWithChildren
   '/_admin/signup-links': typeof AdminSignupLinksRoute
   '/_admin/users': typeof AdminUsersRoute
@@ -148,6 +157,7 @@ export interface FileRouteTypes {
     | '/migration'
     | '/notifications'
     | '/providers'
+    | '/security'
     | '/server-sync'
     | '/signup-links'
     | '/users'
@@ -161,6 +171,7 @@ export interface FileRouteTypes {
     | '/migration'
     | '/notifications'
     | '/providers'
+    | '/security'
     | '/signup-links'
     | '/users'
     | '/'
@@ -176,6 +187,7 @@ export interface FileRouteTypes {
     | '/_admin/migration'
     | '/_admin/notifications'
     | '/_admin/providers'
+    | '/_admin/security'
     | '/_admin/server-sync'
     | '/_admin/signup-links'
     | '/_admin/users'
@@ -225,6 +237,13 @@ declare module '@tanstack/react-router' {
       path: '/server-sync'
       fullPath: '/server-sync'
       preLoaderRoute: typeof AdminServerSyncRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/security': {
+      id: '/_admin/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof AdminSecurityRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/providers': {
@@ -327,6 +346,7 @@ interface AdminRouteChildren {
   AdminMigrationRoute: typeof AdminMigrationRoute
   AdminNotificationsRoute: typeof AdminNotificationsRoute
   AdminProvidersRoute: typeof AdminProvidersRoute
+  AdminSecurityRoute: typeof AdminSecurityRoute
   AdminServerSyncRoute: typeof AdminServerSyncRouteWithChildren
   AdminSignupLinksRoute: typeof AdminSignupLinksRoute
   AdminUsersRoute: typeof AdminUsersRoute
@@ -339,6 +359,7 @@ const AdminRouteChildren: AdminRouteChildren = {
   AdminMigrationRoute: AdminMigrationRoute,
   AdminNotificationsRoute: AdminNotificationsRoute,
   AdminProvidersRoute: AdminProvidersRoute,
+  AdminSecurityRoute: AdminSecurityRoute,
   AdminServerSyncRoute: AdminServerSyncRouteWithChildren,
   AdminSignupLinksRoute: AdminSignupLinksRoute,
   AdminUsersRoute: AdminUsersRoute,
