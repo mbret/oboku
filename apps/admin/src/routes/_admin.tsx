@@ -165,9 +165,6 @@ function AdminLayout() {
               Admin
             </Text>
           </Group>
-          <Text size="sm" c="dimmed" visibleFrom="sm">
-            Admin tools
-          </Text>
         </Group>
       </AppShell.Header>
 
