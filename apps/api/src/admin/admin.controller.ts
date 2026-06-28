@@ -288,6 +288,11 @@ export class AdminController {
     return this.migrationService.migrateLegacyCollectionCoverKeys()
   }
 
+  @Post("reset-refresh-token-created-at")
+  async resetRefreshTokenCreatedAt() {
+    return this.migrationService.resetRefreshTokenCreatedAt()
+  }
+
   @Get("covers")
   async getCoversCleanupStats() {
     return this.adminCoversService.getCleanupStats()
