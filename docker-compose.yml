@@ -60,6 +60,7 @@ services:
     env_file:
       - .env
     environment:
+      POSTGRES_DB: ${POSTGRES_DB:-oboku}
       NODE_ENV: ${NODE_ENV:-production}
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
       COUCH_DB_URL: ${COUCH_DB_URL:-http://couchdb:5984}
