@@ -50,6 +50,25 @@ export const AdminUsersSection = () => {
           </Badge>
         ),
       },
+      {
+        field: "hasPassword",
+        headerName: "Password",
+        maxWidth: 160,
+        cellRenderer: (params: { value: boolean }) => (
+          <Badge color={params.value ? "blue" : "gray"} variant="light">
+            {params.value ? "set" : "none"}
+          </Badge>
+        ),
+      },
+      {
+        field: "createdAt",
+        headerName: "Created at",
+        flex: 1,
+        minWidth: 180,
+        filter: false,
+        valueFormatter: (params: { value: string | null | undefined }) =>
+          params.value ? new Date(params.value).toLocaleString() : "",
+      },
     ],
     [],
   )

@@ -39,6 +39,8 @@ export type AdminUserSummary = {
   email: string
   username: string
   emailVerified: boolean
+  hasPassword: boolean
+  createdAt: string
 }
 
 export type GetAdminUsersResponse = AdminUserSummary[]

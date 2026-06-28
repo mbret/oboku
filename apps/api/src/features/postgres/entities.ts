@@ -3,7 +3,13 @@ import type {
   NotificationSeverity,
   SyncFinishedNotificationData,
 } from "@oboku/shared"
-import { Column, Entity, Index, PrimaryGeneratedColumn } from "typeorm"
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  Index,
+  PrimaryGeneratedColumn,
+} from "typeorm"
 
 @Entity({ name: "sync_reports" })
 export class SyncReportPostgresEntity {
@@ -121,6 +127,9 @@ export class UserPostgresEntity {
    */
   @Column({ type: "boolean", default: false })
   emailVerified?: boolean
+
+  @CreateDateColumn({ type: "timestamp with time zone" })
+  createdAt!: Date
 }
 
 @Entity({ name: "refresh_tokens" })

@@ -326,6 +326,8 @@ export class AdminController {
       email: user.email,
       username: user.username,
       emailVerified: Boolean(user.emailVerified),
+      hasPassword: Boolean(user.password),
+      createdAt: user.createdAt.toISOString(),
     }))
   }
 
