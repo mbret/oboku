@@ -132,10 +132,20 @@ export class UserPostgresEntity {
   createdAt!: Date
 }
 
+/**
+ * Append-only log of issued refresh tokens. One row = one token, never mutated
+ * except to stamp `superseded_at` when it is rotated out. A session (one
+ * installation) is the chain of rows sharing `user_id` + `installation_id`; the
+ * single row with `superseded_at IS NULL` holds the currently-active token.
+ *
+ * Rotation inserts a new row rather than overwriting, so `created_at` is a true
+ * issue timestamp and doubles as the per-token expiry anchor (a token is past
+ * its cap once `created_at` is older than the configured max age).
+ */
 @Entity({ name: "refresh_tokens" })
-@Index(["user_id", "installation_id"], { unique: true })
 @Index(["token_hash"], { unique: true })
-@Index(["user_id", "last_used_at"])
+@Index(["user_id", "installation_id"])
+@Index(["created_at"])
 export class RefreshTokenPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
@@ -146,21 +156,35 @@ export class RefreshTokenPostgresEntity {
   @Column({ type: "text" })
   installation_id!: string
 
+  /** Hash of this issued token. */
   @Column({ type: "text" })
   token_hash!: string
 
-  @Column({
-    type: "timestamp with time zone",
-    default: () => "CURRENT_TIMESTAMP",
-  })
+  /**
+   * When this token was issued. Never updated — each rotation inserts a new row
+   * — so it is a genuine creation timestamp and the per-token expiry anchor:
+   * the token is past its cap once `created_at + max age` is in the past.
+   */
+  @CreateDateColumn({ type: "timestamp with time zone" })
   created_at!: Date
 
-  @Column({
-    type: "timestamp with time zone",
-    default: () => "CURRENT_TIMESTAMP",
-  })
-  last_used_at!: Date
-
+  /**
+   * When this token was rotated out (a successor was minted). Null while the
+   * token is the active one for its session. Once set, the token is accepted
+   * only through the short grace window (`superseded_at + grace`) for lost
+   * rotation-response retries; presented after that, it is a replay (reuse).
+   */
   @Column({ type: "timestamp with time zone", nullable: true })
-  revoked_at!: Date | null
+  superseded_at!: Date | null
+
+  /**
+   * The successor token minted when this token was rotated out, encrypted with
+   * AES-256-GCM under a per-process in-memory key (never persisted). Held only
+   * for the grace window so concurrent / retried refreshes of this same token
+   * converge on one successor instead of each minting a new one, then nulled
+   * once grace closes (reuse path / cron). Undecryptable after a restart (the
+   * key is gone), which is fine: callers fall back to minting a fresh successor.
+   */
+  @Column({ type: "text", nullable: true })
+  successor_token!: string | null
 }

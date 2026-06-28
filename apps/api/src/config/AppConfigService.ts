@@ -164,4 +164,29 @@ export class AppConfigService {
   get EMAIL_SMTP_MAX_SEND_RATE() {
     return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
   }
+
+  /**
+   * ------------------------------------------------------------
+   * SECURITY
+   * ------------------------------------------------------------
+   */
+
+  /**
+   * Absolute lifetime of a single refresh-token string. Each successful refresh
+   * rotates the token and resets this clock, so an active session can slide
+   * indefinitely while no individual token outlives ~6 months.
+   */
+  get SECURITY_REFRESH_TOKEN_TTL_MS() {
+    return 6 * 30 * 24 * 60 * 60 * 1000
+  }
+
+  /**
+   * How long the immediately-previous refresh token stays accepted after a
+   * rotation. This absorbs lost-response retries on flaky mobile networks: if
+   * the client never received the rotated token, it can safely retry with the
+   * old one for a while.
+   */
+  get SECURITY_REFRESH_TOKEN_ROTATION_GRACE_MS() {
+    return 5 * 60 * 1000
+  }
 }

@@ -29,7 +29,7 @@ describe("AuthService", () => {
   }
   let refreshTokensService: {
     issueTokenForInstallation: jest.Mock
-    findActiveByToken: jest.Mock
+    rotateForRefresh: jest.Mock
     deleteById: jest.Mock
   }
   let emailService: {
@@ -56,7 +56,7 @@ describe("AuthService", () => {
     }
     refreshTokensService = {
       issueTokenForInstallation: jest.fn(),
-      findActiveByToken: jest.fn(),
+      rotateForRefresh: jest.fn(),
       deleteById: jest.fn().mockResolvedValue(undefined),
     }
     emailService = {
@@ -197,11 +197,11 @@ describe("AuthService", () => {
     )
   })
 
-  it("refreshes access tokens from an active opaque session", async () => {
-    refreshTokensService.findActiveByToken.mockResolvedValue({
-      id: 7,
-      user_id: 42,
-      installation_id: "installation-1",
+  it("rotates the refresh token and returns the newly issued one", async () => {
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
     })
     usersService.findUserById.mockResolvedValue({
       id: 42,
@@ -213,21 +213,34 @@ describe("AuthService", () => {
       service.refreshToken("refresh_token", "opaque-refresh-token"),
     ).resolves.toEqual({
       accessToken: "fresh-access-token",
-      refreshToken: "opaque-refresh-token",
+      refreshToken: "rotated-refresh-token",
     })
 
-    expect(refreshTokensService.findActiveByToken).toHaveBeenCalledWith(
+    expect(refreshTokensService.rotateForRefresh).toHaveBeenCalledWith(
       "opaque-refresh-token",
     )
     expect(usersService.findUserById).toHaveBeenCalledWith(42)
     expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
   })
 
+  it("rejects refresh with an invalid (unknown or aged-out) token", async () => {
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "invalid",
+    })
+
+    await expect(
+      service.refreshToken("refresh_token", "stale-refresh-token"),
+    ).rejects.toThrow()
+
+    expect(usersService.findUserById).not.toHaveBeenCalled()
+    expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
+  })
+
   it("removes dangling refresh sessions when the user no longer exists", async () => {
-    refreshTokensService.findActiveByToken.mockResolvedValue({
-      id: 7,
-      user_id: 42,
-      installation_id: "installation-1",
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
     })
     usersService.findUserById.mockResolvedValue(null)
 
