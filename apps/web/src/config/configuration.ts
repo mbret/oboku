@@ -5,6 +5,7 @@ import {
   getWebConfigResponseSchema,
   type GetWebConfigResponse,
 } from "@oboku/shared"
+import { getApiUrl } from "./configuration.shared"
 
 const restoredConfigSchema = getWebConfigResponseSchema.partial()
 
@@ -100,10 +101,7 @@ class Configuration extends BehaviorSubject<{
   }
 
   get API_URL() {
-    return (
-      import.meta.env.VITE_API_URL ||
-      `${window.location.protocol}//${window.location.hostname}:3000`
-    )
+    return getApiUrl()
   }
 
   // Additional API origins. They serve the exact same API as VITE_API_URL and

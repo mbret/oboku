@@ -1,14 +1,11 @@
 import type { AuthSession } from "../../auth/types"
-import type { SharedConfig } from "../../config/types.shared"
 import { z } from "zod"
 
-type MessagePayload = Record<string, unknown> | null
-type EmptyPayload = Record<string, never>
+export const SwTask = {
+  CoversCacheCleanup: "coversCacheCleanup",
+} as const
 
-interface Message<Type extends string, Payload extends MessagePayload> {
-  type: Type
-  payload: Payload
-}
+export type SwTask = (typeof SwTask)[keyof typeof SwTask]
 
 const emptyPayloadSchema = z.object({}).strict()
 const authSessionPayloadSchema: z.ZodType<AuthSession> = z.object({
@@ -19,118 +16,76 @@ const authSessionPayloadSchema: z.ZodType<AuthSession> = z.object({
   dbName: z.string(),
 })
 const notifyAuthPayloadSchema = z.union([authSessionPayloadSchema, z.null()])
-const configurationPayloadSchema: z.ZodType<SharedConfig> = z.object({
-  API_COUCH_URI: z.string().optional(),
-  API_URL: z.string().optional(),
-})
-const replyAskProfilePayloadSchema = z.object({
+const runTaskPayloadSchema = z.object({
+  task: z.enum(SwTask),
   profile: z.string().optional(),
 })
 
-export class AskAuthMessage
-  implements Message<typeof AskAuthMessage.type, EmptyPayload>
-{
-  static readonly type = "ASK_AUTH"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
+/**
+ * Single source of truth for every message exchanged between the web client
+ * and the service worker. `type` is the discriminant, so parsing narrows the
+ * payload automatically and dispatch can be made exhaustive.
+ *
+ * The `type` string values are part of the wire contract between a client and
+ * a (possibly different version) service worker — do not rename them lightly.
+ */
+export const messageSchema = z.discriminatedUnion("type", [
+  z.object({ type: z.literal("ASK_AUTH"), payload: emptyPayloadSchema }),
+  z.object({ type: z.literal("REFRESH_AUTH"), payload: emptyPayloadSchema }),
+  z.object({
+    type: z.literal("NotifyAuthMessage"),
+    payload: notifyAuthPayloadSchema,
+  }),
+  z.object({ type: z.literal("SKIP_WAITING"), payload: emptyPayloadSchema }),
+  z.object({ type: z.literal("RUN_TASK"), payload: runTaskPayloadSchema }),
+])
 
-  public readonly type: typeof AskAuthMessage.type = AskAuthMessage.type
-  public readonly payload = {}
-}
+export type AppMessage = z.infer<typeof messageSchema>
+export type AppMessageType = AppMessage["type"]
+export type MessageOf<T extends AppMessageType> = Extract<
+  AppMessage,
+  { type: T }
+>
 
-export class RefreshAuthMessage
-  implements Message<typeof RefreshAuthMessage.type, EmptyPayload>
-{
-  static readonly type = "REFRESH_AUTH"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
+/**
+ * Validate an unknown wire value against the message contract. Returns the
+ * narrowed message on success, or `null` for anything malformed/unknown — so
+ * every boundary rejects bad input once, centrally.
+ */
+export const parseMessage = (data: unknown): AppMessage | null => {
+  const result = messageSchema.safeParse(data)
 
-  public readonly type: typeof RefreshAuthMessage.type = RefreshAuthMessage.type
-  public readonly payload = {}
-}
-
-export class NotifyAuthMessage
-  implements Message<typeof NotifyAuthMessage.type, AuthSession | null>
-{
-  static readonly type = "NotifyAuthMessage"
-  static validate(payload: unknown): payload is AuthSession | null {
-    return notifyAuthPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof NotifyAuthMessage.type = NotifyAuthMessage.type
-
-  constructor(public readonly payload: AuthSession | null) {}
-}
-
-export class AskConfigurationMessage
-  implements Message<typeof AskConfigurationMessage.type, EmptyPayload>
-{
-  static readonly type = "ASK_CONFIGURATION"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof AskConfigurationMessage.type =
-    AskConfigurationMessage.type
-  public readonly payload = {}
-}
-
-export class ConfigurationChangeMessage
-  implements Message<typeof ConfigurationChangeMessage.type, SharedConfig>
-{
-  static readonly type = "CONFIGURATION_CHANGE"
-  static validate(payload: unknown): payload is SharedConfig {
-    return configurationPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof ConfigurationChangeMessage.type =
-    ConfigurationChangeMessage.type
-  constructor(public readonly payload: SharedConfig) {}
-}
-
-export class AskProfileMessage
-  implements Message<typeof AskProfileMessage.type, EmptyPayload>
-{
-  static readonly type = "ASK_PROFILE"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof AskProfileMessage.type = AskProfileMessage.type
-  public readonly payload = {}
-}
-
-export class ReplyAskProfileMessage
-  implements
-    Message<typeof ReplyAskProfileMessage.type, { profile: string | undefined }>
-{
-  static readonly type = "ReplyAskProfileMessage"
-  static validate(
-    payload: unknown,
-  ): payload is { profile: string | undefined } {
-    return replyAskProfilePayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof ReplyAskProfileMessage.type =
-    ReplyAskProfileMessage.type
-
-  constructor(public readonly payload: { profile: string | undefined }) {}
+  return result.success ? result.data : null
 }
 
 /**
- * Message to skip waiting for the service worker to be updated.
- * The service worker receiving this can decide to install itself.
+ * Typed factories — the only sanctioned way to build a message. Each returns a
+ * fully-typed `{ type, payload }` so call sites cannot produce a malformed
+ * message or mismatch a payload with its type.
  */
-export class SkipWaitingMessage
-  implements Message<typeof SkipWaitingMessage.type, EmptyPayload>
-{
-  static readonly type = "SKIP_WAITING"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
+export const askAuthMessage = (): MessageOf<"ASK_AUTH"> => ({
+  type: "ASK_AUTH",
+  payload: {},
+})
 
-  public readonly type: typeof SkipWaitingMessage.type = SkipWaitingMessage.type
-  public readonly payload = {}
-}
+export const refreshAuthMessage = (): MessageOf<"REFRESH_AUTH"> => ({
+  type: "REFRESH_AUTH",
+  payload: {},
+})
+
+export const notifyAuthMessage = (
+  payload: AuthSession | null,
+): MessageOf<"NotifyAuthMessage"> => ({ type: "NotifyAuthMessage", payload })
+
+export const skipWaitingMessage = (): MessageOf<"SKIP_WAITING"> => ({
+  type: "SKIP_WAITING",
+  payload: {},
+})
+
+export const runTaskMessage = (
+  task: SwTask,
+  profile: string | undefined,
+): MessageOf<"RUN_TASK"> => ({
+  type: "RUN_TASK",
+  payload: { task, profile },
+})

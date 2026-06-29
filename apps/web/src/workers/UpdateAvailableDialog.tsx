@@ -10,7 +10,7 @@ import {
 import type { FC } from "react"
 import { lock } from "../common/locks/utils"
 import { WebCommunication } from "./communication/communication.web"
-import { SkipWaitingMessage } from "./communication/types.shared"
+import { skipWaitingMessage } from "./communication/types.shared"
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
@@ -38,10 +38,7 @@ export const UpdateAvailableDialog: FC<{
 
             lock()
 
-            WebCommunication.sendMessage(
-              serviceWorker,
-              new SkipWaitingMessage(),
-            )
+            WebCommunication.sendMessage(serviceWorker, skipWaitingMessage())
           }}
           color="primary"
           autoFocus

@@ -10,6 +10,9 @@ import "./main.css"
 import "./common/animations.css"
 import { AppWithConfig } from "./App"
 import { ErrorBoundary } from "@sentry/react"
+import { purgeTmp } from "./storage/tmp"
+
+void purgeTmp()
 
 const rootElm = document.getElementById("root")
 
