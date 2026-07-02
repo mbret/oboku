@@ -1,5 +1,5 @@
 import { EMPTY, fromEvent, merge, tap } from "rxjs"
-import { getProfile } from "../../profile/currentProfile"
+import { getProfile } from "../../profiles"
 import {
   AskAuthMessage,
   AskConfigurationMessage,

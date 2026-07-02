@@ -1,6 +1,6 @@
 import { from, map, of } from "rxjs"
 import { authStateSignal } from "./states.web"
-import { setProfile, currentProfileSignal } from "../profile/currentProfile"
+import { setProfile, currentProfileSignal } from "../profiles"
 import { setUser } from "@sentry/react"
 import { persister } from "../queries/persister"
 import type { AuthSessionResponse } from "@oboku/shared"
