@@ -5,13 +5,13 @@ import { BlockingBackdrop } from "./common/locks/BlockingBackdrop"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
-import { ErrorBoundary, setUser } from "@sentry/react"
+import { ErrorBoundary } from "@sentry/react"
 import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { useAuthSession, useIsAuthHydrated } from "./auth/authSession"
+import { useIsAuthHydrated } from "./auth/authSession"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -37,6 +37,7 @@ import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
+import { useSyncSentryUser } from "./debug/useSyncSentryUser"
 
 // @todo move to sw
 LibArchive.init({
@@ -136,25 +137,15 @@ export const AppWithConfig = memo(() => {
 })
 
 const OtherEffects = memo(() => {
+  const { mutate: loadGsi } = useLoadGsi()
+
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
-  const { mutate: loadGsi } = useLoadGsi()
-  const { data: auth } = useAuthSession()
+  useSyncSentryUser()
 
   useEffect(() => {
     loadGsi()
   }, [loadGsi])
-
-  useEffect(
-    function syncSentryUser() {
-      if (auth) {
-        setUser({ email: auth.email, id: auth.nameHex, username: auth.dbName })
-      } else {
-        setUser(null)
-      }
-    },
-    [auth],
-  )
 
   return null
 })
