@@ -21,7 +21,7 @@ export const useSignOut = () => {
 
     setUser(null)
 
-    clearActiveProfileId(queryClient)
+    clearActiveProfileId()
 
     if (activeProfileId) {
       queryClient.removeQueries({ queryKey: authQueryKey(activeProfileId) })

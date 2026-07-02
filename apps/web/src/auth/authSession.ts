@@ -1,6 +1,7 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
+import { useSignalValue } from "reactjrx"
 import { getProfileRow } from "../profiles/dbHelpers"
-import { useActiveProfileId } from "../profiles"
+import { activeProfileSignal } from "../profiles"
 import type { AuthSession } from "./types"
 
 export const authQueryKey = (activeProfileId: string | null | undefined) =>
@@ -20,7 +21,7 @@ export const authQueryOptions = (
 })
 
 export const useAuthSession = () => {
-  const activeProfileId = useActiveProfileId()
+  const activeProfileId = useSignalValue(activeProfileSignal)
 
   return useQuery(authQueryOptions(activeProfileId))
 }

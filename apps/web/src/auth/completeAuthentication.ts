@@ -3,7 +3,7 @@ import { setUser } from "@sentry/react"
 import type { AuthSessionResponse } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
-  getActiveProfileId,
+  activeProfileSignal,
   putProfileRow,
   setActiveProfileId,
 } from "../profiles"
@@ -20,7 +20,7 @@ export const completeAuthentication = ({
   queryClient: QueryClient
 }) => {
   return from(
-    ensureAuthSession(queryClient, getActiveProfileId(queryClient)),
+    ensureAuthSession(queryClient, activeProfileSignal.getValue()),
   ).pipe(
     switchMap((previousAuth) => {
       const switchedAccount = previousAuth?.email !== auth.email
@@ -45,7 +45,7 @@ export const completeAuthentication = ({
             void Promise.resolve(persister.removeClient())
           }
 
-          setActiveProfileId(queryClient, auth.nameHex)
+          setActiveProfileId(auth.nameHex)
           queryClient.setQueryData(authQueryKey(auth.nameHex), auth)
           setUser({ email: auth.email, id: auth.nameHex })
 
