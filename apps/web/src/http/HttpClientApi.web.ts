@@ -205,9 +205,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
 
     this.authSession.setSession(nextAuthState)
 
-    const didApply = !!nextAuthState
-
-    return didApply
+    return true
   }
 
   refreshAuthSession = (refreshToken: string) => {
@@ -261,8 +259,8 @@ export class HttpApiClientWeb extends HttpClientWeb {
       return response
     }
 
-    // Retry once with the refreshed token, but skip interceptors on the retry so
-    // a persistent 401 can fall through to the later sign-out interceptor.
+    // Retry once with the refreshed token; skip interceptors so a persistent
+    // 401 propagates to the caller instead of re-triggering another refresh.
     const retriedConfig = await this.injectToken({
       ...response.config,
       useInterceptors: false,
