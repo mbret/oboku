@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import type { GetUnreadNotificationsCountResponse } from "@oboku/shared"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 import { httpClientApi } from "../../http/httpClientApi.web"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useLocalNotifications } from "./useLocalNotifications"
 import { unreadCountQueryKey } from "./queryKeys"
 
 export const useUnreadNotificationsCount = () => {
+  const { data: config } = useConfig()
   const localNotifications = useLocalNotifications()
   const isAuthenticated = useIsAuthenticated()
 
@@ -15,7 +16,7 @@ export const useUnreadNotificationsCount = () => {
     queryFn: async (): Promise<GetUnreadNotificationsCountResponse> => {
       const { data } =
         await httpClientApi.fetchOrThrow<GetUnreadNotificationsCountResponse>(
-          `${configuration.API_URL}/notifications/unread-count`,
+          `${config?.API_URL}/notifications/unread-count`,
         )
 
       return data

@@ -5,12 +5,11 @@ import { removeProfile, currentProfileSignal } from "../profiles"
 import { setUser } from "@sentry/react"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
-import { persister } from "../queries/persister"
-import { useQueryClient } from "@tanstack/react-query"
+import { useResetSessionQueries } from "../queries/useResetSessionQueries"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
-  const queryClient = useQueryClient()
+  const resetSessionQueries = useResetSessionQueries()
 
   return () => {
     clearTemporaryMasterKey()
@@ -22,17 +21,7 @@ export const useSignOut = () => {
     removeProfile()
     currentProfileSignal.setValue(SIGNAL_RESET)
 
-    /**
-     * Prefer `resetQueries` over `clear` on sign-out: `clear` removes every
-     * query and cancels in-flight work, but mounted observers may not run a new
-     * fetch right away, which can leave screens stuck until remount.
-     * `resetQueries` resets state and refetches **active** queries (still
-     * skipped when `enabled` is false after auth clears). Mutations are cleared
-     * separately because `resetQueries` only touches the query cache.
-     */
-    void queryClient.resetQueries()
-    queryClient.getMutationCache().clear()
-    void persister.removeClient()
+    resetSessionQueries()
 
     signOutPlugins()
   }

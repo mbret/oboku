@@ -1,7 +1,6 @@
-import { memo, useEffect, type ReactNode } from "react"
-import { useObserve } from "reactjrx"
+import { memo, type ReactNode } from "react"
 import { SplashScreen } from "../common/SplashScreen"
-import { configuration } from "./configuration"
+import { useConfig } from "./useConfig"
 
 /**
  * Explicit boot boundary for remote configuration.
@@ -14,11 +13,7 @@ export const LoadConfiguration = memo(function LoadConfiguration({
 }: {
   children: ReactNode
 }) {
-  const { data: config } = useObserve(configuration.loaded$)
-
-  useEffect(() => {
-    configuration.ensureConfigLoaded()
-  }, [])
+  const { data: config } = useConfig()
 
   if (!config) {
     return <SplashScreen show />

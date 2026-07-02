@@ -1,5 +1,13 @@
 import type { UseQueryOptions } from "@tanstack/react-query"
 
+declare module "@tanstack/react-query" {
+  interface Register {
+    queryMeta: {
+      persistAcrossSessions?: boolean
+    }
+  }
+}
+
 export const API_QUERY_KEY_PREFIX = "api" as const
 export const RXDB_QUERY_KEY_PREFIX = "rxdb" as const
 

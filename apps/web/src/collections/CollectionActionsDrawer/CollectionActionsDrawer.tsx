@@ -30,7 +30,7 @@ import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 // import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
@@ -63,6 +63,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
       setIsEditCollectionDialogOpenedWithId(undefined)
     },
   })
+  const { data: config } = useConfig()
   const { data: collection } = useCollection({ id: collectionId })
   const collectionReadingProgress = useCollectionReadingProgress({
     id: collectionId,
@@ -109,50 +110,48 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             <ListItemText primary="Rename" />
           </ListItemButton>
 
-          {collection &&
-            collection._id !== configuration.COLLECTION_EMPTY_ID && (
-              <ListItemButton
-                onClick={() => {
-                  closeModalWithNavigation(() => {
-                    navigate(
-                      generatePath(ROUTES.COLLECTION_BOOKS, {
-                        id: collectionId ?? `-1`,
-                      }),
-                    )
-                  })
-                }}
-              >
-                <ListItemIcon>
-                  <LibraryAddRounded />
-                </ListItemIcon>
-                <ListItemText primary="Manage books" />
-              </ListItemButton>
-            )}
-          {collection &&
-            collection._id !== configuration.COLLECTION_EMPTY_ID && (
-              <ListItemButton
-                onClick={() => {
-                  refreshCollectionMetadata(collectionId ?? ``)
-                }}
-                disabled={isRefreshingMetadata || metadataFetchDisabled}
-              >
-                <ListItemIcon>
-                  <SyncRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary={
-                    isRefreshingMetadata
-                      ? "Refreshing metadata..."
-                      : "Refresh metadata"
-                  }
-                  secondary={
-                    metadataFetchDisabled
-                      ? "Disabled by metadata fetching policy"
-                      : undefined
-                  }
-                />
-              </ListItemButton>
-            )}
+          {collection && collection._id !== config?.COLLECTION_EMPTY_ID && (
+            <ListItemButton
+              onClick={() => {
+                closeModalWithNavigation(() => {
+                  navigate(
+                    generatePath(ROUTES.COLLECTION_BOOKS, {
+                      id: collectionId ?? `-1`,
+                    }),
+                  )
+                })
+              }}
+            >
+              <ListItemIcon>
+                <LibraryAddRounded />
+              </ListItemIcon>
+              <ListItemText primary="Manage books" />
+            </ListItemButton>
+          )}
+          {collection && collection._id !== config?.COLLECTION_EMPTY_ID && (
+            <ListItemButton
+              onClick={() => {
+                refreshCollectionMetadata(collectionId ?? ``)
+              }}
+              disabled={isRefreshingMetadata || metadataFetchDisabled}
+            >
+              <ListItemIcon>
+                <SyncRounded />
+              </ListItemIcon>
+              <ListItemText
+                primary={
+                  isRefreshingMetadata
+                    ? "Refreshing metadata..."
+                    : "Refresh metadata"
+                }
+                secondary={
+                  metadataFetchDisabled
+                    ? "Disabled by metadata fetching policy"
+                    : undefined
+                }
+              />
+            </ListItemButton>
+          )}
         </List>
         <Divider />
         <List>

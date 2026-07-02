@@ -9,11 +9,12 @@ import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 
 type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 
 export const useBackgroundReplication = () => {
+  const { data: config } = useConfig()
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
   const { dbName } = useSignalValue(authStateSignal) ?? {}
@@ -68,43 +69,43 @@ export const useBackgroundReplication = () => {
         collection: database.book,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI,
+        host: config?.API_COUCH_URI,
       }),
       replicateDatasource({
         collection: database.datasource,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_2,
+        host: config?.API_COUCH_URI_2,
       }),
       replicateTag({
         collection: database?.tag,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_2,
+        host: config?.API_COUCH_URI_2,
       }),
       replicateLink({
         collection: database.link,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_3,
+        host: config?.API_COUCH_URI_3,
       }),
       replicateSettings({
         collection: database.settings,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_3,
+        host: config?.API_COUCH_URI_3,
       }),
       replicateCollection({
         collection: database.obokucollection,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_4,
+        host: config?.API_COUCH_URI_4,
       }),
       replicateSecret({
         collection: database.secret,
         dbName,
         live: true,
-        host: configuration.API_COUCH_URI_4,
+        host: config?.API_COUCH_URI_4,
       }),
     ]
 
@@ -125,6 +126,7 @@ export const useBackgroundReplication = () => {
     replicateCollection,
     replicateSecret,
     dbName,
+    config,
   ])
 
   useEffect(() => {

@@ -1,11 +1,12 @@
 import { memo } from "react"
 import type { DownloadBookComponentProps } from "../types"
 import { WebdavDownloadBook } from "../webdav/DownloadBook"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 
 export const DownloadBook = memo(function DownloadBook(
   props: DownloadBookComponentProps<"server">,
 ) {
+  const { data: config } = useConfig()
   const { connectorId, filePath } = props.link.data
 
   return (
@@ -14,7 +15,7 @@ export const DownloadBook = memo(function DownloadBook(
       connectorType="server"
       connectorId={connectorId}
       filePath={filePath}
-      webdavUrl={configuration.API_WEBDAV_URL}
+      webdavUrl={config?.API_WEBDAV_URL}
     />
   )
 })

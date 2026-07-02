@@ -8,7 +8,7 @@ import { CollectionListItemProgress } from "./CollectionListItemProgress"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useCollectionCoverUri } from "../useCollectionCoverUri"
 import { StatusChip } from "../series/StatusChip"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 
 const DefaultBackground = () => {
   const theme = useTheme()
@@ -32,6 +32,7 @@ const DefaultBackground = () => {
 
 export const CollectionListItemCover = memo(
   ({ id, showType = true }: { id: string; showType?: boolean }) => {
+    const { data: config } = useConfig()
     const { data: item } = useCollection({
       id,
     })
@@ -52,7 +53,7 @@ export const CollectionListItemCover = memo(
           position: "relative",
           alignItems: "center",
 
-          ...(id === configuration.COLLECTION_EMPTY_ID && {
+          ...(id === config?.COLLECTION_EMPTY_ID && {
             opacity: 0.5,
           }),
         }}
@@ -76,7 +77,7 @@ export const CollectionListItemCover = memo(
           />
         )}
         <CollectionListItemBookCovers id={id} />
-        {id !== configuration.COLLECTION_EMPTY_ID && (
+        {id !== config?.COLLECTION_EMPTY_ID && (
           <>
             <CollectionListItemProgress
               progress={(readingProgress ?? 0) * 100}

@@ -17,6 +17,7 @@ import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { authUser } from "./lib/auth"
 import { uploadFile } from "./lib/uploadFile"
 import { PLUGIN_NAME } from "./constants"
+import { useConfig } from "../../config/useConfig"
 
 export const UpsertFile: UpsertFileComponent<"dropbox"> = memo(
   function DropboxUpsertFile({
@@ -27,6 +28,7 @@ export const UpsertFile: UpsertFileComponent<"dropbox"> = memo(
     onSuccess,
     signal,
   }) {
+    const { data: config } = useConfig()
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
 
     const { mutate: upsert } = useMutation$({
@@ -37,7 +39,9 @@ export const UpsertFile: UpsertFileComponent<"dropbox"> = memo(
         onUnmount$: Observable<void>
         signal: AbortSignal
       }) =>
-        from(authUser({ requestPopup })).pipe(
+        from(
+          authUser({ requestPopup, clientId: config?.DROPBOX_CLIENT_ID }),
+        ).pipe(
           switchMap((auth) =>
             uploadFile({
               accessToken: auth.getAccessToken(),
