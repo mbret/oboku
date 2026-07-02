@@ -1,5 +1,4 @@
 import { memo, type ReactNode, useEffect, useState } from "react"
-import { SplashScreen } from "../common/SplashScreen"
 import { migrateLegacyAuth } from "./migrateLegacyAuth"
 
 /**
