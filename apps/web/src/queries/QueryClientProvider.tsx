@@ -17,12 +17,15 @@ import {
   markAllSeenMutationKey,
   markSeenMutationKey,
 } from "../notifications/inbox/queryKeys"
-import { InboxMutationDefaults } from "../notifications/inbox/InboxMutationDefaults"
-import { HttpClientApiProvider } from "../http/HttpClientApiProvider"
+import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
+import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
+import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
+import { AuthSessionSync } from "../auth/AuthSessionSync"
+import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
-const createClients = () => {
+const createClients = (httpClientApi: HttpApiClientWeb) => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
@@ -76,6 +79,19 @@ const createClients = () => {
     },
   })
 
+  queryClient.setMutationDefaults(
+    markSeenMutationKey,
+    markSeenMutationOptions(queryClient, httpClientApi),
+  )
+  queryClient.setMutationDefaults(
+    markAllSeenMutationKey,
+    markAllSeenMutationOptions(queryClient, httpClientApi),
+  )
+  queryClient.setMutationDefaults(
+    archiveMutationKey,
+    archiveMutationOptions(queryClient, httpClientApi),
+  )
+
   return queryClient
 }
 
@@ -102,7 +118,8 @@ export const QueryClientProvider = memo(function QueryClientProvider({
 }: {
   children: ReactNode
 }) {
-  const [queryClient] = useState(createClients)
+  const httpClientApi = useHttpClientApi()
+  const [queryClient] = useState(() => createClients(httpClientApi))
 
   return (
     <PersistQueryClientProvider
@@ -127,10 +144,8 @@ export const QueryClientProvider = memo(function QueryClientProvider({
         queryClient.resumePausedMutations()
       }}
     >
-      <HttpClientApiProvider>
-        <InboxMutationDefaults />
-        {children}
-      </HttpClientApiProvider>
+      <AuthSessionSync />
+      {children}
     </PersistQueryClientProvider>
   )
 })

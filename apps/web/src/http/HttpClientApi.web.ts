@@ -28,9 +28,7 @@ import {
 } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 
-export type AuthSessionListener = {
-  onSessionChange: (session: AuthSession) => void
-}
+export type AuthSessionListener = (session: AuthSession) => void
 
 type InFlightRefresh = {
   refreshToken: string
@@ -44,8 +42,9 @@ const refreshTokenWasRejected = (error: unknown) =>
 export class HttpApiClientWeb extends HttpClientWeb {
   private session: AuthSession | null = null
   private refreshSessionPromise: InFlightRefresh | null = null
+  private sessionChangeListeners = new Set<AuthSessionListener>()
 
-  constructor(private readonly authSessionListener: AuthSessionListener) {
+  constructor() {
     super()
 
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
@@ -54,13 +53,23 @@ export class HttpApiClientWeb extends HttpClientWeb {
     this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
 
+  onSessionChange = (listener: AuthSessionListener) => {
+    this.sessionChangeListeners.add(listener)
+
+    return () => {
+      this.sessionChangeListeners.delete(listener)
+    }
+  }
+
   setSession = (session: AuthSession | null) => {
     this.session = session
   }
 
   private commitSession = (session: AuthSession) => {
     this.session = session
-    this.authSessionListener.onSessionChange(session)
+    this.sessionChangeListeners.forEach(function notifyListener(listener) {
+      listener(session)
+    })
   }
 
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>

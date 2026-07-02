@@ -21,6 +21,7 @@ import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "./queries/QueryClientProvider"
+import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
@@ -116,15 +117,17 @@ export const AppWithConfig = memo(() => {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <QueryClientProvider>
-            <QueryClientProvider$>
-              <ServiceWorkerMessages />
-              <LoadConfiguration>
-                <App />
-              </LoadConfiguration>
-              {import.meta.env.DEV && <DebugMenu />}
-            </QueryClientProvider$>
-          </QueryClientProvider>
+          <HttpClientApiProvider>
+            <QueryClientProvider>
+              <QueryClientProvider$>
+                <ServiceWorkerMessages />
+                <LoadConfiguration>
+                  <App />
+                </LoadConfiguration>
+                {import.meta.env.DEV && <DebugMenu />}
+              </QueryClientProvider$>
+            </QueryClientProvider>
+          </HttpClientApiProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />

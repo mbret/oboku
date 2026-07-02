@@ -53,10 +53,10 @@ const createClient = async (initialSession: AuthSession | null = null) => {
 
   let session = initialSession
 
-  const client = new HttpApiClientWeb({
-    onSessionChange: (next) => {
-      session = next
-    },
+  const client = new HttpApiClientWeb()
+
+  client.onSessionChange((next) => {
+    session = next
   })
 
   client.setSession(initialSession)

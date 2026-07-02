@@ -1,41 +1,13 @@
-import { memo, type ReactNode, useEffect, useState } from "react"
-import { useQueryClient } from "@tanstack/react-query"
+import { memo, type ReactNode, useState } from "react"
 import { HttpApiClientWeb } from "./HttpClientApi.web"
 import { HttpClientApiContext } from "./HttpClientApiContext"
-import { authQueryKey, useAuthSession } from "../auth/authSession"
-import { putProfileRow } from "../profiles/dbHelpers"
-import { Logger } from "../debug/logger.shared"
 
 export const HttpClientApiProvider = memo(function HttpClientApiProvider({
   children,
 }: {
   children: ReactNode
 }) {
-  const queryClient = useQueryClient()
-
-  const [httpClientApi] = useState(
-    () =>
-      new HttpApiClientWeb({
-        onSessionChange: (session) => {
-          queryClient.setQueryData(authQueryKey(session.nameHex), session)
-
-          void Promise.resolve()
-            .then(() => putProfileRow({ id: session.nameHex, ...session }))
-            .catch((error) => {
-              Logger.error("Failed to persist auth session", error)
-            })
-        },
-      }),
-  )
-
-  const { data: session } = useAuthSession()
-
-  useEffect(
-    function pushAuthSessionToHttpClient() {
-      httpClientApi.setSession(session ?? null)
-    },
-    [httpClientApi, session],
-  )
+  const [httpClientApi] = useState(() => new HttpApiClientWeb())
 
   return (
     <HttpClientApiContext.Provider value={httpClientApi}>
