@@ -1,7 +1,7 @@
-import { useAuthSession } from "../auth/authSession"
+import { useAuthSession } from "../../auth/authSession"
 import { useActiveProfileId } from "./activeProfile"
 
-export const useIsProfileHydrated = () => {
+export const useIsActiveProfileHydrated = () => {
   const activeProfileId = useActiveProfileId()
   const { isFetched } = useAuthSession()
 

@@ -1,11 +1,7 @@
+import { signal } from "reactjrx"
+import { STORAGE_PROFILE_KEY } from "../../config/envs"
 import { type QueryClient, useQuery } from "@tanstack/react-query"
 import { SIGNAL_RESET } from "reactjrx"
-import {
-  currentProfileSignal,
-  getProfile,
-  removeProfile,
-  setProfile,
-} from "./currentProfile"
 
 export const activeProfileIdQueryKey = ["activeProfileId"] as const
 
@@ -41,12 +37,28 @@ export const setActiveProfileId = (
   nameHex: string,
 ) => {
   setProfile(nameHex)
-  currentProfileSignal.update(nameHex)
+  activeProfileSignal.update(nameHex)
   queryClient.setQueryData(activeProfileIdQueryKey, nameHex)
 }
 
 export const clearActiveProfileId = (queryClient: QueryClient) => {
   removeProfile()
-  currentProfileSignal.setValue(SIGNAL_RESET)
+  activeProfileSignal.setValue(SIGNAL_RESET)
   queryClient.setQueryData(activeProfileIdQueryKey, null)
+}
+
+export const getProfile = () => {
+  return localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
+}
+
+export const activeProfileSignal = signal<string | undefined>({
+  default: getProfile() || undefined,
+})
+
+export const setProfile = (profile: string) => {
+  localStorage.setItem(STORAGE_PROFILE_KEY, profile)
+}
+
+export const removeProfile = () => {
+  localStorage.removeItem(STORAGE_PROFILE_KEY)
 }

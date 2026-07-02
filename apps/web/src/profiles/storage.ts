@@ -1,9 +1,9 @@
 import { createLocalStorageAdapter, useSignalValue } from "reactjrx"
-import { currentProfileSignal } from "./currentProfile"
+import { activeProfileSignal } from "./active/activeProfile"
 import { useEffect, useState } from "react"
 
 export const useProfileStorage = () => {
-  const currentProfile = useSignalValue(currentProfileSignal)
+  const currentProfile = useSignalValue(activeProfileSignal)
   const [storage, setStorage] = useState<
     ReturnType<typeof createLocalStorageAdapter> | undefined
   >(undefined)

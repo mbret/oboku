@@ -1,7 +1,7 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
 import { getProfileRow } from "../profiles/dbHelpers"
 import { migrateLegacyAuth } from "../profiles/migrateLegacyAuth"
-import { useActiveProfileId } from "../profiles/activeProfile"
+import { useActiveProfileId } from "../profiles"
 import type { AuthSession } from "./types"
 
 export const authQueryKey = (activeProfileId: string | null | undefined) =>

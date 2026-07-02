@@ -12,7 +12,7 @@ import {
 } from "./types.shared"
 import { useQueryClient } from "@tanstack/react-query"
 import { ensureAuthSession } from "../../auth/authSession"
-import { getActiveProfileId } from "../../profiles/activeProfile"
+import { getActiveProfileId } from "../../profiles"
 import { Logger } from "../../debug/logger.shared"
 import { API_COUCH_URI, API_URL } from "../../config/envs"
 import { useHttpClientApi } from "../../http"
