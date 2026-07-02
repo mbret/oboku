@@ -13,7 +13,7 @@ export const LoadConfiguration = memo(function LoadConfiguration({
 }: {
   children: ReactNode
 }) {
-  const { data: config } = useConfig()
+  const { data: config } = useConfig({ refetchOnMount: "always" })
 
   if (!config) {
     return <SplashScreen show />

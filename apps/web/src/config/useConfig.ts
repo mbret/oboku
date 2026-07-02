@@ -81,18 +81,32 @@ export const fetchConfig = async (): Promise<Config> => {
 }
 
 /**
- * Fetches the web config once per boot. The `api` key prefix opts it into the
- * persisted query cache (see queries/QueryClientProvider), which gives the same
- * cache-first + background refresh behavior the previous localStorage cache
- * provided. `gcTime` must stay non-zero (the provider default is 0) so the
- * result is retained and persisted.
+ * Reads the web config from the persisted query cache. The `api` key prefix
+ * opts it into that cache (see queries/QueryClientProvider), giving the same
+ * cache-first behavior the previous localStorage cache provided. `gcTime` must
+ * stay non-zero (the provider default is 0) so the result is retained and
+ * persisted.
+ *
+ * Config is deployment-level data that never changes within a session, so reads
+ * are static: consumers never refetch on mount, focus or reconnect. The
+ * once-per-boot background refresh is confined to the boot boundary
+ * (`LoadConfiguration`) via `refetchOnMount: "always"`. When the cache is empty
+ * (fresh install) react-query still performs the initial fetch regardless of
+ * `refetchOnMount`.
  */
-export const useConfig = () =>
+export const useConfig = ({
+  refetchOnMount = false,
+}: {
+  refetchOnMount?: boolean | "always"
+} = {}) =>
   useQuery({
     queryKey: webConfigQueryKey,
     queryFn: fetchConfig,
     networkMode: "always",
-    staleTime: 0,
+    staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
+    refetchOnMount,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
     meta: { persistAcrossSessions: true },
   })
