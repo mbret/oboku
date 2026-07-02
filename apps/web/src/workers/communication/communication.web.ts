@@ -10,10 +10,9 @@ import {
   NotifyAuthMessage,
   type SkipWaitingMessage,
 } from "./types.shared"
-import { authStateSignal } from "../../auth/states.web"
 import { Logger } from "../../debug/logger.shared"
 import { configuration } from "../../config/configuration"
-import { refreshAuthSession } from "../../http/httpClientApi.web"
+import { getSwAuthResponder } from "./authResponder.web"
 
 const isWorkerMessage = (
   message: unknown,
@@ -71,25 +70,29 @@ export class WebCommunication {
           }
 
           if (data.type === AskAuthMessage.type) {
-            reply(new NotifyAuthMessage(authStateSignal.value ?? null))
+            const responder = getSwAuthResponder()
+
+            reply(new NotifyAuthMessage(responder?.getAuthSession() ?? null))
           }
 
           if (data.type === RefreshAuthMessage.type) {
             void (async () => {
-              const refreshToken = authStateSignal.value?.refreshToken
+              const responder = getSwAuthResponder()
+              const refreshToken = responder?.getAuthSession()?.refreshToken
 
-              if (!refreshToken) {
+              if (!responder || !refreshToken) {
                 reply(new NotifyAuthMessage(null))
 
                 return
               }
 
               try {
-                const didRefresh = await refreshAuthSession(refreshToken)
+                const didRefresh =
+                  await responder.refreshAuthSession(refreshToken)
 
                 reply(
                   new NotifyAuthMessage(
-                    didRefresh ? (authStateSignal.value ?? null) : null,
+                    didRefresh ? (responder.getAuthSession() ?? null) : null,
                   ),
                 )
               } catch (error) {

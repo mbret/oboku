@@ -1,9 +1,7 @@
-import { useSignalValue } from "reactjrx"
-import type { AuthSession } from "./types"
-import { authStateSignal } from "./states.web"
+import { useAuthSession } from "./authSession"
 
-const selectHasAuthentication = (auth: AuthSession | null | undefined) =>
-  auth !== null && auth !== undefined
+export const useHasAuthentication = () => {
+  const { data: auth } = useAuthSession()
 
-export const useHasAuthentication = () =>
-  useSignalValue(authStateSignal, selectHasAuthentication)
+  return !!auth
+}

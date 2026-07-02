@@ -3,8 +3,8 @@ import { combineLatest, tap } from "rxjs"
 import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
-import { useSignalValue, useSubscribe } from "reactjrx"
-import { authStateSignal } from "../../auth/states.web"
+import { useSubscribe } from "reactjrx"
+import { useAuthSession } from "../../auth/authSession"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
@@ -16,7 +16,7 @@ type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 export const useBackgroundReplication = () => {
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const { dbName } = useSignalValue(authStateSignal) ?? {}
+  const dbName = useAuthSession().data?.dbName
   const isAuthenticated = useIsAuthenticated()
   const replicateBook = useReplicateCollection()
   const replicateTag = useReplicateCollection()

@@ -11,7 +11,8 @@ import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { usePersistAuthState } from "./auth/states.web"
+import { useIsAuthHydrated } from "./auth/authSession"
+import { InstallApiInterceptors } from "./http/InstallApiInterceptors"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -52,7 +53,7 @@ const App = memo(() => {
     entries: signalEntriesToPersist,
   })
 
-  const { isHydrated: isAuthHydrated } = usePersistAuthState()
+  const isAuthHydrated = useIsAuthHydrated()
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
@@ -69,23 +70,25 @@ const App = memo(() => {
               flexDirection: "column",
             }}
           >
-            <AppBrowserRouter>
-              <WithAuthentication>
-                <UploadBookDialogWithDragOver />
-                <BookActionsDrawer />
-                <CollectionActionsDrawer />
-                <PluginDownloadFlowHost />
-                <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
-                <SetupSecretDialog />
-                <AddTagDialog />
-                <AddCollectionDialog />
-              </WithAuthentication>
-              <AuthorizeActionDialog />
-              <BackgroundReplication />
-              <BlockingBackdrop />
-              <NotifyExpiredSession />
-              <OtherEffects />
-            </AppBrowserRouter>
+            <InstallApiInterceptors>
+              <AppBrowserRouter>
+                <WithAuthentication>
+                  <UploadBookDialogWithDragOver />
+                  <BookActionsDrawer />
+                  <CollectionActionsDrawer />
+                  <PluginDownloadFlowHost />
+                  <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
+                  <SetupSecretDialog />
+                  <AddTagDialog />
+                  <AddCollectionDialog />
+                </WithAuthentication>
+                <AuthorizeActionDialog />
+                <BackgroundReplication />
+                <BlockingBackdrop />
+                <NotifyExpiredSession />
+                <OtherEffects />
+              </AppBrowserRouter>
+            </InstallApiInterceptors>
           </Box>
         </Fade>
       )}

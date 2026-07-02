@@ -1,3 +1,4 @@
+import { QueryClient } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { AuthSession } from "../auth/types"
 import type { HttpClientResponse } from "./httpClient.shared"
@@ -41,13 +42,65 @@ const createRefreshResponse = (params: {
     },
   })
 
-describe("httpClientApi web auth refresh", () => {
+const createLocalStorageMock = (): Storage => {
+  const store = new Map<string, string>()
+
+  return {
+    getItem: (key) => store.get(key) ?? null,
+    setItem: (key, value) => {
+      store.set(key, String(value))
+    },
+    removeItem: (key) => {
+      store.delete(key)
+    },
+    clear: () => {
+      store.clear()
+    },
+    key: (index) => Array.from(store.keys())[index] ?? null,
+    get length() {
+      return store.size
+    },
+  }
+}
+
+/**
+ * The interceptors read/write auth through the react-query cache, so the tests
+ * seed the active-profile pointer and the auth session there instead of a global
+ * signal. Persistence to the Dexie `profiles` table is best-effort and rejects
+ * silently under the node test environment (no IndexedDB) — reads never depend
+ * on it.
+ */
+const setup = async () => {
+  const { createApiAuthInterceptors } = await import(
+    "./apiAuthInterceptors.web"
+  )
+  const { authQueryKey } = await import("../auth/authSession")
+  const { activeProfileIdQueryKey } = await import("../profiles/activeProfile")
+
+  const queryClient = new QueryClient()
+
+  const seedSession = (session: AuthSession) => {
+    queryClient.setQueryData(activeProfileIdQueryKey, session.nameHex)
+    queryClient.setQueryData(authQueryKey(session.nameHex), session)
+  }
+
+  const readSession = (nameHex: string) =>
+    queryClient.getQueryData<AuthSession | null>(authQueryKey(nameHex))
+
+  const interceptors = createApiAuthInterceptors(queryClient)
+
+  return { interceptors, seedSession, readSession }
+}
+
+describe("apiAuthInterceptors web auth refresh", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.unstubAllGlobals()
+    vi.stubGlobal("localStorage", createLocalStorageMock())
     vi.doMock("../config/configuration", () => ({
       configuration: {
         API_URL: "https://api.example.com",
+        STORAGE_PROFILE_KEY: "profile",
       },
     }))
   })
@@ -60,18 +113,17 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshAuthSession } = await import("./httpClientApi.web")
+    const { interceptors, seedSession, readSession } = await setup()
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
     )
 
-    const firstRefresh = refreshAuthSession("token-a")
-    const secondRefresh = refreshAuthSession("token-a")
+    const firstRefresh = interceptors.refreshAuthSession("token-a")
+    const secondRefresh = interceptors.refreshAuthSession("token-a")
 
     expect(firstRefresh).toBe(secondRefresh)
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -84,7 +136,7 @@ describe("httpClientApi web auth refresh", () => {
     )
 
     await expect(firstRefresh).resolves.toBe(true)
-    expect(authStateSignal.getValue()).toEqual(
+    expect(readSession("reader")).toEqual(
       createAuthSession({
         accessToken: "fresh-access-token",
         refreshToken: "token-a-2",
@@ -111,8 +163,7 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshAuthSession } = await import("./httpClientApi.web")
+    const { interceptors, seedSession, readSession } = await setup()
 
     const authStateA = createAuthSession({
       accessToken: "expired-a",
@@ -129,13 +180,13 @@ describe("httpClientApi web auth refresh", () => {
       dbName: "b-db",
     })
 
-    authStateSignal.update(authStateA)
+    seedSession(authStateA)
 
-    const firstRefresh = refreshAuthSession("token-a")
+    const firstRefresh = interceptors.refreshAuthSession("token-a")
 
-    authStateSignal.update(authStateB)
+    seedSession(authStateB)
 
-    const secondRefresh = refreshAuthSession("token-b")
+    const secondRefresh = interceptors.refreshAuthSession("token-b")
 
     expect(firstRefresh).not.toBe(secondRefresh)
     expect(fetchMock).toHaveBeenCalledTimes(2)
@@ -148,7 +199,8 @@ describe("httpClientApi web auth refresh", () => {
     )
 
     await expect(firstRefresh).resolves.toBe(false)
-    expect(authStateSignal.getValue()).toEqual(authStateB)
+    expect(readSession("b")).toEqual(authStateB)
+    expect(readSession("a")).toEqual(authStateA)
 
     refreshDeferredB.resolve(
       createRefreshResponse({
@@ -158,7 +210,7 @@ describe("httpClientApi web auth refresh", () => {
     )
 
     await expect(secondRefresh).resolves.toBe(true)
-    expect(authStateSignal.getValue()).toEqual(
+    expect(readSession("b")).toEqual(
       createAuthSession({
         accessToken: "fresh-b",
         refreshToken: "token-b-2",
@@ -183,10 +235,9 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+    const { interceptors, seedSession } = await setup()
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-a",
         refreshToken: "token-a",
@@ -207,9 +258,10 @@ describe("httpClientApi web auth refresh", () => {
       },
     }
 
-    const refreshPromise = refreshOnUnauthorized(unauthorizedResponse)
+    const refreshPromise =
+      interceptors.refreshOnUnauthorized(unauthorizedResponse)
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-b",
         refreshToken: "token-b",
@@ -262,17 +314,16 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+    const { interceptors, seedSession } = await setup()
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
     )
 
-    const retriedResponse = await refreshOnUnauthorized({
+    const retriedResponse = await interceptors.refreshOnUnauthorized({
       response: new Response(null, { status: 401, statusText: "Unauthorized" }),
       data: undefined,
       status: 401,
@@ -308,10 +359,9 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+    const { interceptors, seedSession, readSession } = await setup()
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
@@ -329,10 +379,11 @@ describe("httpClientApi web auth refresh", () => {
       },
     }
 
-    const result = await refreshOnUnauthorized(unauthorizedResponse)
+    const result =
+      await interceptors.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)
-    expect(authStateSignal.getValue()?.needsRelogin).toBe(true)
+    expect(readSession("reader")?.needsRelogin).toBe(true)
   })
 
   it("does not flag the session when the refresh fails transiently", async () => {
@@ -354,10 +405,9 @@ describe("httpClientApi web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { authStateSignal } = await import("../auth/states.web")
-    const { refreshOnUnauthorized } = await import("./httpClientApi.web")
+    const { interceptors, seedSession, readSession } = await setup()
 
-    authStateSignal.update(
+    seedSession(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
@@ -375,9 +425,10 @@ describe("httpClientApi web auth refresh", () => {
       },
     }
 
-    const result = await refreshOnUnauthorized(unauthorizedResponse)
+    const result =
+      await interceptors.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)
-    expect(authStateSignal.getValue()?.needsRelogin).toBe(false)
+    expect(readSession("reader")?.needsRelogin).toBe(false)
   })
 })
