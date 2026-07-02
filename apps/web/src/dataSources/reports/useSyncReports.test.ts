@@ -42,10 +42,8 @@ describe("useSyncReports", () => {
         fetchOrThrow,
       },
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", () => ({
       useQuery,

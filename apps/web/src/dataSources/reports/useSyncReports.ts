@@ -4,14 +4,17 @@ import {
   type SyncReportPostgresEntitiesShared,
 } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
-import { configuration } from "../../config/configuration"
-export const useSyncReports = () =>
-  useQuery({
+import { useConfig } from "../../config/useConfig"
+
+export const useSyncReports = () => {
+  const { data: config } = useConfig()
+
+  return useQuery({
     queryKey: ["api/datasourceReport"],
     queryFn: async () => {
       const { data } =
         await httpClientApi.fetchOrThrow<SyncReportPostgresEntitiesShared>(
-          `${configuration.API_URL}/datasources/sync-reports`,
+          `${config?.API_URL}/datasources/sync-reports`,
         )
 
       const entries = data
@@ -91,3 +94,4 @@ export const useSyncReports = () =>
     },
     gcTime: 5 * 60 * 1000,
   })
+}

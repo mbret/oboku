@@ -1,7 +1,8 @@
 import { useBook } from "./states"
-import { configuration } from "../config/configuration"
+import { useConfig } from "../config/useConfig"
 
 export const useBookCover = ({ bookId }: { bookId?: string }) => {
+  const { data: config } = useConfig()
   const { data: book } = useBook({ id: bookId })
   const assetHash = book?.lastMetadataUpdatedAt?.toString()
 
@@ -12,13 +13,13 @@ export const useBookCover = ({ bookId }: { bookId?: string }) => {
   })
 
   const coverSrc = bookId
-    ? `${configuration.API_URL}/covers/books/${bookId}?${urlParams.toString()}`
+    ? `${config?.API_URL}/covers/books/${bookId}?${urlParams.toString()}`
     : undefined
 
   urlParams.append("format", "image/jpeg")
 
   const coverSrcJpg = bookId
-    ? `${configuration.API_URL}/covers/books/${bookId}?${urlParams.toString()}`
+    ? `${config?.API_URL}/covers/books/${bookId}?${urlParams.toString()}`
     : undefined
 
   const hasCoverMetadata = !!book?.metadata?.find(

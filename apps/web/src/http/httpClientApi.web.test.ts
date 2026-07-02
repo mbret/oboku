@@ -45,10 +45,9 @@ describe("httpClientApi web auth refresh", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.unstubAllGlobals()
-    vi.doMock("../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../config/envs", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../config/envs")>()),
+      API_URL: "https://api.example.com",
     }))
   })
 

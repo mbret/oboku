@@ -28,10 +28,8 @@ describe("notifications queries", () => {
         fetchOrThrow,
       },
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", async (importOriginal) => {
       const actual =
@@ -79,10 +77,8 @@ describe("notifications queries", () => {
         fetchOrThrow,
       },
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", async (importOriginal) => {
       const actual =

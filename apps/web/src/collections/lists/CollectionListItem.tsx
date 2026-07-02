@@ -14,7 +14,7 @@ import { useCollectionActionsDrawer } from "../CollectionActionsDrawer/useCollec
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollection } from "../useCollection"
 import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 import { useNavigate } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 
@@ -31,6 +31,7 @@ export const CollectionListItem = memo(
     id: string
     showType?: boolean
   } & ListItemProps) => {
+    const { data: config } = useConfig()
     const { data: item } = useCollection({
       id,
     })
@@ -63,7 +64,7 @@ export const CollectionListItem = memo(
           <Stack
             direction="row"
             onClick={(e) => {
-              if (id !== configuration.COLLECTION_EMPTY_ID) {
+              if (id !== config?.COLLECTION_EMPTY_ID) {
                 e.stopPropagation()
                 openActionDrawer()
               }
@@ -87,7 +88,7 @@ export const CollectionListItem = memo(
               }}
             />
 
-            {id !== configuration.COLLECTION_EMPTY_ID && (
+            {id !== config?.COLLECTION_EMPTY_ID && (
               <IconButton
                 disableFocusRipple
                 disableRipple
@@ -97,7 +98,7 @@ export const CollectionListItem = memo(
                 <MoreVert />
               </IconButton>
             )}
-            {id === configuration.COLLECTION_EMPTY_ID && (
+            {id === config?.COLLECTION_EMPTY_ID && (
               <IconButton
                 disableFocusRipple
                 disableRipple

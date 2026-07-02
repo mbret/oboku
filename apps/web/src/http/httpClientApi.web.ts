@@ -20,7 +20,7 @@ import type {
   SyncDataSourceResponse,
 } from "@oboku/shared"
 import { authStateSignal } from "../auth/states.web"
-import { configuration } from "../config/configuration"
+import { API_URL } from "../config/envs"
 import { HttpClientError, type HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
@@ -28,7 +28,7 @@ import { injectToken } from "./injectToken.web"
 class HttpApiClient extends HttpClientWeb {
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
     this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
-      `${configuration.API_URL}/auth/magic-link/complete`,
+      `${API_URL}/auth/magic-link/complete`,
       {
         body: data,
       },
@@ -36,7 +36,7 @@ class HttpApiClient extends HttpClientWeb {
 
   refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
     this.postOrThrow<RefreshBookMetadataResponse, RefreshBookMetadataRequest>(
-      `${configuration.API_URL}/books/metadata/refresh`,
+      `${API_URL}/books/metadata/refresh`,
       {
         body: params,
       },
@@ -46,13 +46,13 @@ class HttpApiClient extends HttpClientWeb {
     this.postOrThrow<
       RefreshCollectionMetadataResponse,
       RefreshCollectionMetadataRequest
-    >(`${configuration.API_URL}/collections/metadata/refresh`, {
+    >(`${API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: params.soft ?? false },
     })
 
   syncDataSource = (params: SyncDataSourceRequest) =>
     this.postOrThrow<SyncDataSourceResponse, SyncDataSourceRequest>(
-      `${configuration.API_URL}/datasources/sync`,
+      `${API_URL}/datasources/sync`,
       {
         body: params,
       },
@@ -60,7 +60,7 @@ class HttpApiClient extends HttpClientWeb {
 
   signInWithEmail = (data: SignInWithEmailRequest) =>
     this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
-      `${configuration.API_URL}/auth/signin/email`,
+      `${API_URL}/auth/signin/email`,
       {
         body: data,
       },
@@ -68,7 +68,7 @@ class HttpApiClient extends HttpClientWeb {
 
   signInWithGoogle = (data: SignInWithGoogleRequest) =>
     this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
-      `${configuration.API_URL}/auth/signin/google`,
+      `${API_URL}/auth/signin/google`,
       {
         body: data,
       },
@@ -76,7 +76,7 @@ class HttpApiClient extends HttpClientWeb {
 
   signUp = (data: RequestSignUpRequest) =>
     this.postOrThrow<RequestSignUpResponse, RequestSignUpRequest>(
-      `${configuration.API_URL}/auth/signup`,
+      `${API_URL}/auth/signup`,
       {
         body: data,
       },
@@ -84,7 +84,7 @@ class HttpApiClient extends HttpClientWeb {
 
   completeSignUp = (data: CompleteSignUpRequest) =>
     this.postOrThrow<CompleteSignUpResponse, CompleteSignUpRequest>(
-      `${configuration.API_URL}/auth/signup/complete`,
+      `${API_URL}/auth/signup/complete`,
       {
         body: data,
       },
@@ -92,20 +92,20 @@ class HttpApiClient extends HttpClientWeb {
 
   requestMagicLink = (data: RequestMagicLinkRequest) =>
     this.postOrThrow<RequestMagicLinkResponse, RequestMagicLinkRequest>(
-      `${configuration.API_URL}/auth/magic-link`,
+      `${API_URL}/auth/magic-link`,
       {
         body: data,
       },
     )
 
   markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/seen`)
+    this.postOrThrow(`${API_URL}/notifications/${id}/seen`)
 
   markAllNotificationsAsSeen = () =>
-    this.postOrThrow(`${configuration.API_URL}/notifications/seen`)
+    this.postOrThrow(`${API_URL}/notifications/seen`)
 
   archiveNotification = ({ id }: { id: number }) =>
-    this.postOrThrow(`${configuration.API_URL}/notifications/${id}/archive`)
+    this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
   refreshToken = ({
     refreshToken,
@@ -115,7 +115,7 @@ class HttpApiClient extends HttpClientWeb {
     useInterceptors: boolean
   }) => {
     return this.postOrThrow<RefreshTokenResponse, never>(
-      `${configuration.API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
+      `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
       {
         useInterceptors,
       },
@@ -123,12 +123,9 @@ class HttpApiClient extends HttpClientWeb {
   }
 
   deleteAccount = () =>
-    this.fetchOrThrow<DeleteAccountResponse>(
-      `${configuration.API_URL}/auth/account`,
-      {
-        method: "DELETE",
-      },
-    )
+    this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {
+      method: "DELETE",
+    })
 }
 
 export const httpClientApi = new HttpApiClient()

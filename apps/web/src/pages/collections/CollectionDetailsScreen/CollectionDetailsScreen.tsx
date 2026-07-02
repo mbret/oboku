@@ -15,7 +15,7 @@ import { sortBooksBy } from "../../../books/helpers"
 import type { BookQueryResult } from "../../../books/states"
 import { Logger } from "../../../debug/logger.shared"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
-import { configuration } from "../../../config/configuration"
+import { useConfig } from "../../../config/useConfig"
 import { Header } from "./Header"
 import { EmptyList } from "../../../common/lists/EmptyList"
 import EmptyLibraryAsset from "../../../assets/empty-library.svg"
@@ -80,6 +80,7 @@ export const CollectionDetailsScreen = () => {
   const { viewMode, sorting } = useSignalValue(
     collectionDetailsScreenListControlsStateSignal,
   )
+  const { data: config } = useConfig()
   const { data: collection } = useCollection({
     id,
   })
@@ -104,7 +105,7 @@ export const CollectionDetailsScreen = () => {
   )
   const [tab, setTab] = useState<CollectionDetailsTab>("books")
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null)
-  const isEmptyCollection = id === configuration.COLLECTION_EMPTY_ID
+  const isEmptyCollection = id === config?.COLLECTION_EMPTY_ID
 
   const {
     override: metadataFetchOverride,

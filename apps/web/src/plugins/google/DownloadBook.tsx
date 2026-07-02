@@ -27,7 +27,7 @@ import { useMutation$ } from "reactjrx"
 import { useGoogleScripts } from "./lib/scripts"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { PLUGIN_NAME } from "./lib/constants"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 
 export const DownloadBook = memo(
   ({
@@ -37,6 +37,7 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"DRIVE">) => {
+    const { data: config } = useConfig()
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
     const { getGoogleScripts } = useGoogleScripts({
       meta: { suppressGlobalErrorToast: true },
@@ -79,7 +80,7 @@ export const DownloadBook = memo(
                         },
                         responseType: "blob",
                         signal: abortController.signal,
-                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${configuration.GOOGLE_API_KEY ?? ""}`,
+                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${config?.GOOGLE_API_KEY ?? ""}`,
                       }),
                     ).pipe(
                       map((mediaResponse) => ({

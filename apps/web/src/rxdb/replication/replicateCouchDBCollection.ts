@@ -1,6 +1,6 @@
 import { replicateCouchDB } from "rxdb/plugins/replication-couchdb"
 import type { RxCollection, WithDeleted } from "rxdb"
-import { configuration } from "../../config/configuration"
+import { API_COUCH_URI } from "../../config/envs"
 import type { FetchCouch } from "../../http/useFetchCouch"
 /**
  * Strips legacy `resourceId` / `linkResourceId` fields from deleted
@@ -47,7 +47,7 @@ export const replicateCouchDBCollection = ({
   Parameters<typeof replicateCouchDB>[0],
   "pull" | "push" | "url" | "replicationIdentifier" | "collection"
 >) => {
-  const uri = host ?? configuration.API_COUCH_URI
+  const uri = host ?? API_COUCH_URI
 
   return replicateCouchDB({
     replicationIdentifier: `${uri}/${dbName}-${collection.name}${suffix ? `-${suffix}` : ""}-replication`,
