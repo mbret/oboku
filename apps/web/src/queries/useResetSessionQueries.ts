@@ -1,5 +1,9 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { persister } from "./persister"
+import {
+  defaultShouldDehydrateQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
+import { persistQueryClientSave } from "@tanstack/react-query-persist-client"
+import { persistBuster, persister } from "./persister"
 
 /**
  * Resets the query-side session state, e.g. on sign-out.
@@ -9,12 +13,20 @@ import { persister } from "./persister"
  * which can leave screens stuck until remount. `resetQueries` resets state and
  * refetches **active** queries (still skipped when `enabled` is false after
  * auth clears). Mutations are cleared separately because `resetQueries` only
- * touches the query cache, and the persisted client is dropped so nothing
- * rehydrates on reload.
+ * touches the query cache.
  *
- * Queries tagged `meta.persistAcrossSessions` are app-global (not session
- * data) and must stay available for the signed-out screens (e.g. the web
- * config powering the Google sign-in button), so they are excluded.
+ * Queries tagged `meta.persistAcrossSessions` are app-global (not session data)
+ * and must stay available for the signed-out screens (e.g. the web config
+ * powering the Google sign-in button), so they are excluded from the reset.
+ *
+ * The persisted client cannot simply be dropped: the config lives in the same
+ * persister, and wiping it would leave `LoadConfiguration` without data on an
+ * offline reload (or while `/web/config` is unavailable). Relying on the
+ * provider's throttled auto-persist is not enough either — a reload before it
+ * flushes would rehydrate the pre-sign-out snapshot and resurface the previous
+ * session's cached data. So we force an immediate save of the global queries
+ * only, which atomically drops the persisted session data while keeping the
+ * config for rehydration.
  */
 export const useResetSessionQueries = () => {
   const queryClient = useQueryClient()
@@ -24,6 +36,17 @@ export const useResetSessionQueries = () => {
       predicate: (query) => !query.meta?.persistAcrossSessions,
     })
     queryClient.getMutationCache().clear()
-    void persister.removeClient()
+
+    void persistQueryClientSave({
+      queryClient,
+      persister,
+      buster: persistBuster,
+      dehydrateOptions: {
+        shouldDehydrateQuery: (query) =>
+          defaultShouldDehydrateQuery(query) &&
+          !!query.meta?.persistAcrossSessions,
+        shouldDehydrateMutation: () => false,
+      },
+    })
   }
 }
