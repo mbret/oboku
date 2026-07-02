@@ -1,10 +1,7 @@
-import { useSignalValue } from "reactjrx"
-import type { AuthSession } from "./types"
-import { authStateSignal } from "./states.web"
+import { useAuthSession } from "./authSession"
 
-const selectIsAuthenticated = (auth: AuthSession | null | undefined) => {
-  return auth !== null && auth !== undefined && !auth.needsRelogin
+export const useIsAuthenticated = () => {
+  const { data: auth } = useAuthSession()
+
+  return !!auth && !auth.needsRelogin
 }
-
-export const useIsAuthenticated = () =>
-  useSignalValue(authStateSignal, selectIsAuthenticated)

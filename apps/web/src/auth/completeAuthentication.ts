@@ -1,10 +1,14 @@
-import { from, map, of } from "rxjs"
-import { authStateSignal } from "./states.web"
-import { setProfile, currentProfileSignal } from "../profiles"
+import { from, of, switchMap } from "rxjs"
 import { setUser } from "@sentry/react"
-import { persister } from "../queries/persister"
 import type { AuthSessionResponse } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
+import {
+  getActiveProfileId,
+  putProfileRow,
+  setActiveProfileId,
+} from "../profiles"
+import { persister } from "../queries/persister"
+import { authQueryKey, getAuthSession } from "./authSession"
 
 export const completeAuthentication = ({
   reCreateDb,
@@ -15,7 +19,10 @@ export const completeAuthentication = ({
   auth: AuthSessionResponse
   queryClient: QueryClient
 }) => {
-  const previousAuth = authStateSignal.value
+  const previousAuth = getAuthSession(
+    queryClient,
+    getActiveProfileId(queryClient),
+  )
   const switchedAccount = previousAuth?.email !== auth.email
 
   const waitForDbRecreation$ = switchedAccount
@@ -23,21 +30,24 @@ export const completeAuthentication = ({
     : of(null)
 
   return waitForDbRecreation$.pipe(
-    map(() => {
-      authStateSignal.update(auth)
-      setUser({ email: auth.email, id: auth.nameHex })
-      setProfile(auth.nameHex)
-      currentProfileSignal.update(auth.nameHex)
+    switchMap(async () => {
+      await putProfileRow({ id: auth.nameHex, auth })
 
       if (switchedAccount) {
         /**
          * Reset in-memory cache synchronously so stale cross-account data is
          * never visible under the new session—even if persister cleanup fails.
+         * The auth/active-profile queries are written afterwards so the reset
+         * cannot leave the new session momentarily cleared.
          */
         void queryClient.resetQueries()
         queryClient.getMutationCache().clear()
         void Promise.resolve(persister.removeClient())
       }
+
+      setActiveProfileId(queryClient, auth.nameHex)
+      queryClient.setQueryData(authQueryKey(auth.nameHex), auth)
+      setUser({ email: auth.email, id: auth.nameHex })
 
       return { switchedAccount }
     }),
