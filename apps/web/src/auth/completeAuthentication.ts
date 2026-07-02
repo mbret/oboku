@@ -31,7 +31,7 @@ export const completeAuthentication = ({
 
   return waitForDbRecreation$.pipe(
     switchMap(async () => {
-      await putProfileRow({ id: auth.nameHex, auth })
+      await putProfileRow({ id: auth.nameHex, ...auth })
 
       if (switchedAccount) {
         /**

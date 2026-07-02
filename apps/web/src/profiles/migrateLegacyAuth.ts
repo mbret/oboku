@@ -61,7 +61,7 @@ const runMigration = async () => {
   const existing = await getProfileRow(auth.nameHex)
 
   if (!existing) {
-    await putProfileRow({ id: auth.nameHex, auth })
+    await putProfileRow({ id: auth.nameHex, ...auth })
   }
 
   if (!getProfile()) {

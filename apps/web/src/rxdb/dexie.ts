@@ -17,9 +17,8 @@ interface QueryCachePersistence {
   value: unknown
 }
 
-export interface Profile {
+export interface Profile extends AuthSession {
   id: string
-  auth: AuthSession
 }
 
 export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {

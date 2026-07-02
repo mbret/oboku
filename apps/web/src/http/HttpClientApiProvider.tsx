@@ -20,7 +20,7 @@ export const HttpClientApiProvider = memo(function HttpClientApiProvider({
           queryClient.setQueryData(authQueryKey(session.nameHex), session)
 
           void Promise.resolve()
-            .then(() => putProfileRow({ id: session.nameHex, auth: session }))
+            .then(() => putProfileRow({ id: session.nameHex, ...session }))
             .catch((error) => {
               Logger.error("Failed to persist auth session", error)
             })

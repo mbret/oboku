@@ -16,9 +16,7 @@ export const authQueryOptions = (
 
     if (!activeProfileId) return null
 
-    const row = await getProfileRow(activeProfileId)
-
-    return row?.auth ?? null
+    return (await getProfileRow(activeProfileId)) ?? null
   },
   enabled: !!activeProfileId,
   staleTime: Infinity,
