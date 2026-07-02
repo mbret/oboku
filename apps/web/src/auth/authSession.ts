@@ -36,10 +36,3 @@ export const ensureAuthSession = (
 
   return queryClient.ensureQueryData(authQueryOptions(activeProfileId))
 }
-
-export const useIsAuthHydrated = () => {
-  const activeProfileId = useActiveProfileId()
-  const { isFetched } = useAuthSession()
-
-  return !activeProfileId || isFetched
-}

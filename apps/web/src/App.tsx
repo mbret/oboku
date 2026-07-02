@@ -11,7 +11,7 @@ import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { useIsAuthHydrated } from "./auth/authSession"
+import { useIsProfileHydrated } from "./profiles"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -55,7 +55,7 @@ const App = memo(() => {
     entries: signalEntriesToPersist,
   })
 
-  const isAuthHydrated = useIsAuthHydrated()
+  const isAuthHydrated = useIsProfileHydrated()
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
