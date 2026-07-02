@@ -20,7 +20,6 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
-import { AuthSessionSync } from "../auth/AuthSessionSync"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
 import { persistBuster, persister } from "./persister"
@@ -144,7 +143,6 @@ export const QueryClientProvider = memo(function QueryClientProvider({
         queryClient.resumePausedMutations()
       }}
     >
-      <AuthSessionSync />
       {children}
     </PersistQueryClientProvider>
   )

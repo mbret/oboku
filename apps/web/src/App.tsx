@@ -34,6 +34,7 @@ import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/C
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { WithAuthentication } from "./auth/WithAuthentication"
+import { SyncAuthSessionWithHttpApiClient } from "./auth/SyncAuthSessionWithHttpApiClient"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
@@ -121,6 +122,7 @@ export const AppWithConfig = memo(() => {
         <ThemeProvider>
           <HttpClientApiProvider>
             <QueryClientProvider>
+              <SyncAuthSessionWithHttpApiClient />
               <QueryClientProvider$>
                 <ServiceWorkerMessages />
                 <LegacyAuthMigration>
