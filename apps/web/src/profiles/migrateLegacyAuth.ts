@@ -1,6 +1,6 @@
 import type { AuthSession } from "../auth/types"
 import { Logger } from "../debug/logger.shared"
-import { getProfileRow, putProfileRow } from "./profilesDb"
+import { getProfileRow, putProfileRow } from "./dbHelpers"
 import { getProfile, setProfile } from "./currentProfile"
 
 /**

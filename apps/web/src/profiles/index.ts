@@ -25,4 +25,4 @@ export const signalEntriesToPersist = [
 export * from "./storage"
 export * from "./currentProfile"
 export * from "./activeProfile"
-export * from "./profilesDb"
+export * from "./dbHelpers"

@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { HttpApiClientWeb } from "./HttpClientApi.web"
 import { HttpClientApiContext } from "./HttpClientApiContext"
 import { authQueryKey, useAuthSession } from "../auth/authSession"
-import { putProfileRow } from "../profiles/profilesDb"
+import { putProfileRow } from "../profiles/dbHelpers"
 import { Logger } from "../debug/logger.shared"
 
 export const HttpClientApiProvider = memo(function HttpClientApiProvider({

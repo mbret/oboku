@@ -1,5 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
-import { getProfileRow } from "../profiles/profilesDb"
+import { getProfileRow } from "../profiles/dbHelpers"
 import { migrateLegacyAuth } from "../profiles/migrateLegacyAuth"
 import { useActiveProfileId } from "../profiles/activeProfile"
 import type { AuthSession } from "./types"
