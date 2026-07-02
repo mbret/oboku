@@ -122,8 +122,8 @@ export const AppWithConfig = memo(() => {
         <ThemeProvider>
           <HttpClientApiProvider>
             <QueryClientProvider>
-              <SyncAuthSessionWithHttpApiClient />
               <QueryClientProvider$>
+                <SyncAuthSessionWithHttpApiClient />
                 <ServiceWorkerMessages />
                 <LegacyAuthMigration>
                   <LoadConfiguration>
