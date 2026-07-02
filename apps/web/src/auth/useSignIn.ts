@@ -1,7 +1,7 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
 import { from, map, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
 import { useConfig } from "../config/useConfig"
@@ -23,6 +23,7 @@ export const useSignIn = (
     "onSuccess" | "onError" | "onSettled"
   >,
 ) => {
+  const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const queryClient = useQueryClient()
   const { data: config } = useConfig()

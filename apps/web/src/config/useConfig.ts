@@ -3,7 +3,7 @@ import {
   getWebConfigResponseSchema,
   type GetWebConfigResponse,
 } from "@oboku/shared"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import {
   API_URL,
@@ -72,7 +72,9 @@ export const webConfigQueryKey = [
   "config",
 ] as const
 
-export const fetchConfig = async (): Promise<Config> => {
+export const fetchConfig = async (
+  httpClientApi: HttpApiClientWeb,
+): Promise<Config> => {
   const { data } = await httpClientApi.fetchOrThrow<GetWebConfigResponse>(
     `${API_URL}/web/config`,
   )
@@ -98,10 +100,12 @@ export const useConfig = ({
   refetchOnMount = false,
 }: {
   refetchOnMount?: boolean | "always"
-} = {}) =>
-  useQuery({
+} = {}) => {
+  const httpClientApi = useHttpClientApi()
+
+  return useQuery({
     queryKey: webConfigQueryKey,
-    queryFn: fetchConfig,
+    queryFn: () => fetchConfig(httpClientApi),
     networkMode: "always",
     staleTime: Number.POSITIVE_INFINITY,
     gcTime: Number.POSITIVE_INFINITY,
@@ -110,3 +114,4 @@ export const useConfig = ({
     refetchOnReconnect: false,
     meta: { persistAcrossSessions: true },
   })
+}

@@ -20,10 +20,15 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
+import { HttpApiClientWeb, HttpClientApiContext } from "../http"
+import { authQueryKey, getAuthSession } from "../auth/authSession"
+import { getActiveProfileId } from "../profiles/activeProfile"
+import { putProfileRow } from "../profiles/profilesDb"
+import { Logger } from "../debug/logger.shared"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
-const createQueryClient = () => {
+const createClients = () => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
@@ -77,20 +82,34 @@ const createQueryClient = () => {
     },
   })
 
+  const httpClientApi = new HttpApiClientWeb({
+    getSession: () =>
+      getAuthSession(queryClient, getActiveProfileId(queryClient)),
+    setSession: (session) => {
+      queryClient.setQueryData(authQueryKey(session.nameHex), session)
+
+      void Promise.resolve()
+        .then(() => putProfileRow({ id: session.nameHex, auth: session }))
+        .catch((error) => {
+          Logger.error("Failed to persist auth session", error)
+        })
+    },
+  })
+
   queryClient.setMutationDefaults(
     markSeenMutationKey,
-    markSeenMutationOptions(queryClient),
+    markSeenMutationOptions(queryClient, httpClientApi),
   )
   queryClient.setMutationDefaults(
     markAllSeenMutationKey,
-    markAllSeenMutationOptions(queryClient),
+    markAllSeenMutationOptions(queryClient, httpClientApi),
   )
   queryClient.setMutationDefaults(
     archiveMutationKey,
-    archiveMutationOptions(queryClient),
+    archiveMutationOptions(queryClient, httpClientApi),
   )
 
-  return queryClient
+  return { queryClient, httpClientApi }
 }
 
 /**
@@ -116,32 +135,34 @@ export const QueryClientProvider = memo(function QueryClientProvider({
 }: {
   children: ReactNode
 }) {
-  const [queryClient] = useState(createQueryClient)
+  const [{ queryClient, httpClientApi }] = useState(createClients)
 
   return (
-    <PersistQueryClientProvider
-      client={queryClient}
-      persistOptions={{
-        persister,
-        buster: persistBuster,
-        dehydrateOptions: {
-          // Only persist API-backed queries (prefixed with "api"). Queries backed
-          // by rxdb (prefixed with "rxdb") are already persisted locally and don't
-          // need to go through the query cache persister.
-          shouldDehydrateQuery: (query) =>
-            defaultShouldDehydrateQuery(query) &&
-            query.queryKey[0] === API_QUERY_KEY_PREFIX,
-          // Only persist mutations we can actually resume (see above).
-          shouldDehydrateMutation: (mutation) =>
-            defaultShouldDehydrateMutation(mutation) &&
-            isResumableMutationKey(mutation.options.mutationKey),
-        },
-      }}
-      onSuccess={() => {
-        queryClient.resumePausedMutations()
-      }}
-    >
-      {children}
-    </PersistQueryClientProvider>
+    <HttpClientApiContext.Provider value={httpClientApi}>
+      <PersistQueryClientProvider
+        client={queryClient}
+        persistOptions={{
+          persister,
+          buster: persistBuster,
+          dehydrateOptions: {
+            // Only persist API-backed queries (prefixed with "api"). Queries backed
+            // by rxdb (prefixed with "rxdb") are already persisted locally and don't
+            // need to go through the query cache persister.
+            shouldDehydrateQuery: (query) =>
+              defaultShouldDehydrateQuery(query) &&
+              query.queryKey[0] === API_QUERY_KEY_PREFIX,
+            // Only persist mutations we can actually resume (see above).
+            shouldDehydrateMutation: (mutation) =>
+              defaultShouldDehydrateMutation(mutation) &&
+              isResumableMutationKey(mutation.options.mutationKey),
+          },
+        }}
+        onSuccess={() => {
+          queryClient.resumePausedMutations()
+        }}
+      >
+        {children}
+      </PersistQueryClientProvider>
+    </HttpClientApiContext.Provider>
   )
 })

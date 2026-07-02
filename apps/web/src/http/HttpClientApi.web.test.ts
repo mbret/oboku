@@ -1,4 +1,3 @@
-import { QueryClient } from "@tanstack/react-query"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { AuthSession } from "../auth/types"
 import type { HttpClientResponse } from "./httpClient.shared"
@@ -42,61 +41,37 @@ const createRefreshResponse = (params: {
     },
   })
 
-const createLocalStorageMock = (): Storage => {
-  const store = new Map<string, string>()
+/**
+ * The client only reads/writes auth through the injected `AuthSessionAccessor`,
+ * so the tests back it with a plain in-memory session instead of the real
+ * react-query/Dexie wiring. This keeps the refresh-flow assertions focused on
+ * the client and independent of the auth store.
+ */
+const createClient = async (initialSession: AuthSession | null = null) => {
+  const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+
+  let session = initialSession
+
+  const client = new HttpApiClientWeb({
+    getSession: () => session,
+    setSession: (next) => {
+      session = next
+    },
+  })
 
   return {
-    getItem: (key) => store.get(key) ?? null,
-    setItem: (key, value) => {
-      store.set(key, String(value))
-    },
-    removeItem: (key) => {
-      store.delete(key)
-    },
-    clear: () => {
-      store.clear()
-    },
-    key: (index) => Array.from(store.keys())[index] ?? null,
-    get length() {
-      return store.size
+    client,
+    getSession: () => session,
+    setSession: (next: AuthSession | null) => {
+      session = next
     },
   }
 }
 
-/**
- * The interceptors read/write auth through the react-query cache, so the tests
- * seed the active-profile pointer and the auth session there instead of a global
- * signal. Persistence to the Dexie `profiles` table is best-effort and rejects
- * silently under the node test environment (no IndexedDB) — reads never depend
- * on it.
- */
-const setup = async () => {
-  const { createApiAuthInterceptors } = await import(
-    "./apiAuthInterceptors.web"
-  )
-  const { authQueryKey } = await import("../auth/authSession")
-  const { activeProfileIdQueryKey } = await import("../profiles/activeProfile")
-
-  const queryClient = new QueryClient()
-
-  const seedSession = (session: AuthSession) => {
-    queryClient.setQueryData(activeProfileIdQueryKey, session.nameHex)
-    queryClient.setQueryData(authQueryKey(session.nameHex), session)
-  }
-
-  const readSession = (nameHex: string) =>
-    queryClient.getQueryData<AuthSession | null>(authQueryKey(nameHex))
-
-  const interceptors = createApiAuthInterceptors(queryClient)
-
-  return { interceptors, seedSession, readSession }
-}
-
-describe("apiAuthInterceptors web auth refresh", () => {
+describe("HttpApiClientWeb auth refresh", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.unstubAllGlobals()
-    vi.stubGlobal("localStorage", createLocalStorageMock())
     vi.doMock("../config/envs", async (importOriginal) => ({
       ...(await importOriginal<typeof import("../config/envs")>()),
       API_URL: "https://api.example.com",
@@ -111,17 +86,15 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession, readSession } = await setup()
-
-    seedSession(
+    const { client, getSession } = await createClient(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
     )
 
-    const firstRefresh = interceptors.refreshAuthSession("token-a")
-    const secondRefresh = interceptors.refreshAuthSession("token-a")
+    const firstRefresh = client.refreshAuthSession("token-a")
+    const secondRefresh = client.refreshAuthSession("token-a")
 
     expect(firstRefresh).toBe(secondRefresh)
     expect(fetchMock).toHaveBeenCalledTimes(1)
@@ -134,7 +107,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
     )
 
     await expect(firstRefresh).resolves.toBe(true)
-    expect(readSession("reader")).toEqual(
+    expect(getSession()).toEqual(
       createAuthSession({
         accessToken: "fresh-access-token",
         refreshToken: "token-a-2",
@@ -161,8 +134,6 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession, readSession } = await setup()
-
     const authStateA = createAuthSession({
       accessToken: "expired-a",
       refreshToken: "token-a",
@@ -178,13 +149,13 @@ describe("apiAuthInterceptors web auth refresh", () => {
       dbName: "b-db",
     })
 
-    seedSession(authStateA)
+    const { client, getSession, setSession } = await createClient(authStateA)
 
-    const firstRefresh = interceptors.refreshAuthSession("token-a")
+    const firstRefresh = client.refreshAuthSession("token-a")
 
-    seedSession(authStateB)
+    setSession(authStateB)
 
-    const secondRefresh = interceptors.refreshAuthSession("token-b")
+    const secondRefresh = client.refreshAuthSession("token-b")
 
     expect(firstRefresh).not.toBe(secondRefresh)
     expect(fetchMock).toHaveBeenCalledTimes(2)
@@ -197,8 +168,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
     )
 
     await expect(firstRefresh).resolves.toBe(false)
-    expect(readSession("b")).toEqual(authStateB)
-    expect(readSession("a")).toEqual(authStateA)
+    expect(getSession()).toEqual(authStateB)
 
     refreshDeferredB.resolve(
       createRefreshResponse({
@@ -208,7 +178,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
     )
 
     await expect(secondRefresh).resolves.toBe(true)
-    expect(readSession("b")).toEqual(
+    expect(getSession()).toEqual(
       createAuthSession({
         accessToken: "fresh-b",
         refreshToken: "token-b-2",
@@ -233,9 +203,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession } = await setup()
-
-    seedSession(
+    const { client, setSession } = await createClient(
       createAuthSession({
         accessToken: "expired-a",
         refreshToken: "token-a",
@@ -256,10 +224,9 @@ describe("apiAuthInterceptors web auth refresh", () => {
       },
     }
 
-    const refreshPromise =
-      interceptors.refreshOnUnauthorized(unauthorizedResponse)
+    const refreshPromise = client.refreshOnUnauthorized(unauthorizedResponse)
 
-    seedSession(
+    setSession(
       createAuthSession({
         accessToken: "expired-b",
         refreshToken: "token-b",
@@ -312,16 +279,14 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession } = await setup()
-
-    seedSession(
+    const { client } = await createClient(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
     )
 
-    const retriedResponse = await interceptors.refreshOnUnauthorized({
+    const retriedResponse = await client.refreshOnUnauthorized({
       response: new Response(null, { status: 401, statusText: "Unauthorized" }),
       data: undefined,
       status: 401,
@@ -357,9 +322,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession, readSession } = await setup()
-
-    seedSession(
+    const { client, getSession } = await createClient(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
@@ -377,11 +340,10 @@ describe("apiAuthInterceptors web auth refresh", () => {
       },
     }
 
-    const result =
-      await interceptors.refreshOnUnauthorized(unauthorizedResponse)
+    const result = await client.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)
-    expect(readSession("reader")?.needsRelogin).toBe(true)
+    expect(getSession()?.needsRelogin).toBe(true)
   })
 
   it("does not flag the session when the refresh fails transiently", async () => {
@@ -403,9 +365,7 @@ describe("apiAuthInterceptors web auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { interceptors, seedSession, readSession } = await setup()
-
-    seedSession(
+    const { client, getSession } = await createClient(
       createAuthSession({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
@@ -423,10 +383,9 @@ describe("apiAuthInterceptors web auth refresh", () => {
       },
     }
 
-    const result =
-      await interceptors.refreshOnUnauthorized(unauthorizedResponse)
+    const result = await client.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)
-    expect(readSession("reader")?.needsRelogin).toBe(false)
+    expect(getSession()?.needsRelogin).toBe(false)
   })
 })

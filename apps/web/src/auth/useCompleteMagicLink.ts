@@ -1,5 +1,5 @@
 import { from, switchMap } from "rxjs"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
@@ -8,6 +8,7 @@ import { withLock } from "../common/locks/utils"
 import { useQueryClient } from "@tanstack/react-query"
 
 export const useCompleteMagicLink = () => {
+  const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const queryClient = useQueryClient()
 

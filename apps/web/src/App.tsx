@@ -5,14 +5,13 @@ import { BlockingBackdrop } from "./common/locks/BlockingBackdrop"
 import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
-import { ErrorBoundary } from "@sentry/react"
+import { ErrorBoundary, setUser } from "@sentry/react"
 import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { useIsAuthHydrated } from "./auth/authSession"
-import { InstallApiInterceptors } from "./http/InstallApiInterceptors"
+import { useAuthSession, useIsAuthHydrated } from "./auth/authSession"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -34,6 +33,7 @@ import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { WithAuthentication } from "./auth/WithAuthentication"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
+import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 
@@ -70,25 +70,23 @@ const App = memo(() => {
               flexDirection: "column",
             }}
           >
-            <InstallApiInterceptors>
-              <AppBrowserRouter>
-                <WithAuthentication>
-                  <UploadBookDialogWithDragOver />
-                  <BookActionsDrawer />
-                  <CollectionActionsDrawer />
-                  <PluginDownloadFlowHost />
-                  <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
-                  <SetupSecretDialog />
-                  <AddTagDialog />
-                  <AddCollectionDialog />
-                </WithAuthentication>
-                <AuthorizeActionDialog />
-                <BackgroundReplication />
-                <BlockingBackdrop />
-                <NotifyExpiredSession />
-                <OtherEffects />
-              </AppBrowserRouter>
-            </InstallApiInterceptors>
+            <AppBrowserRouter>
+              <WithAuthentication>
+                <UploadBookDialogWithDragOver />
+                <BookActionsDrawer />
+                <CollectionActionsDrawer />
+                <PluginDownloadFlowHost />
+                <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
+                <SetupSecretDialog />
+                <AddTagDialog />
+                <AddCollectionDialog />
+              </WithAuthentication>
+              <AuthorizeActionDialog />
+              <BackgroundReplication />
+              <BlockingBackdrop />
+              <NotifyExpiredSession />
+              <OtherEffects />
+            </AppBrowserRouter>
           </Box>
         </Fade>
       )}
@@ -120,6 +118,7 @@ export const AppWithConfig = memo(() => {
         <ThemeProvider>
           <QueryClientProvider>
             <QueryClientProvider$>
+              <ServiceWorkerMessages />
               <LoadConfiguration>
                 <App />
               </LoadConfiguration>
@@ -137,10 +136,22 @@ const OtherEffects = memo(() => {
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
   const { mutate: loadGsi } = useLoadGsi()
+  const { data: auth } = useAuthSession()
 
   useEffect(() => {
     loadGsi()
   }, [loadGsi])
+
+  useEffect(
+    function syncSentryUser() {
+      if (auth) {
+        setUser({ email: auth.email, id: auth.nameHex, username: auth.dbName })
+      } else {
+        setUser(null)
+      }
+    },
+    [auth],
+  )
 
   return null
 })

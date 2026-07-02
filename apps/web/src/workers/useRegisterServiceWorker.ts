@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
 import {
-  webCommunication,
-  WebCommunication,
+  postMessageToController,
+  sendMessageToServiceWorker,
 } from "./communication/communication.web"
 import {
   ConfigurationChangeMessage,
@@ -67,12 +67,12 @@ export const useRegisterServiceWorker = () => {
    */
   useEffect(() => {
     if (import.meta.env.MODE === "development" && waitingWorker) {
-      WebCommunication.sendMessage(waitingWorker, new SkipWaitingMessage())
+      sendMessageToServiceWorker(waitingWorker, new SkipWaitingMessage())
     }
   }, [waitingWorker])
 
   useEffect(() => {
-    webCommunication.sendMessage(
+    postMessageToController(
       new ConfigurationChangeMessage({
         API_COUCH_URI,
         API_URL,
