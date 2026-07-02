@@ -11,7 +11,7 @@ import {
   ReplyAskProfileMessage,
 } from "./types.shared"
 import { useQueryClient } from "@tanstack/react-query"
-import { getAuthSession } from "../../auth/authSession"
+import { ensureAuthSession } from "../../auth/authSession"
 import { getActiveProfileId } from "../../profiles/activeProfile"
 import { Logger } from "../../debug/logger.shared"
 import { API_COUCH_URI, API_URL } from "../../config/envs"
@@ -35,7 +35,7 @@ export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
       }
 
       const readSession = () =>
-        getAuthSession(queryClient, getActiveProfileId(queryClient))
+        ensureAuthSession(queryClient, getActiveProfileId(queryClient))
 
       const subscription = fromEvent(
         navigator.serviceWorker,
@@ -76,24 +76,33 @@ export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
         }
 
         if (data.type === AskAuthMessage.type) {
-          reply(new NotifyAuthMessage(readSession()))
+          void (async () => {
+            try {
+              reply(new NotifyAuthMessage(await readSession()))
+            } catch (error) {
+              console.error(error)
+              reply(new NotifyAuthMessage(null))
+            }
+          })()
         }
 
         if (data.type === RefreshAuthMessage.type) {
           void (async () => {
-            const refreshToken = readSession()?.refreshToken
-
-            if (!refreshToken) {
-              reply(new NotifyAuthMessage(null))
-
-              return
-            }
-
             try {
+              const refreshToken = (await readSession())?.refreshToken
+
+              if (!refreshToken) {
+                reply(new NotifyAuthMessage(null))
+
+                return
+              }
+
               const didRefresh =
                 await httpClientApi.refreshAuthSession(refreshToken)
 
-              reply(new NotifyAuthMessage(didRefresh ? readSession() : null))
+              reply(
+                new NotifyAuthMessage(didRefresh ? await readSession() : null),
+              )
             } catch (error) {
               console.error(error)
               reply(new NotifyAuthMessage(null))

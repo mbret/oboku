@@ -28,17 +28,13 @@ export const useAuthSession = () => {
   return useQuery(authQueryOptions(activeProfileId))
 }
 
-export const getAuthSession = (
+export const ensureAuthSession = (
   queryClient: QueryClient,
   activeProfileId: string | null | undefined,
-): AuthSession | null => {
-  if (!activeProfileId) return null
+): Promise<AuthSession | null> => {
+  if (!activeProfileId) return Promise.resolve(null)
 
-  return (
-    queryClient.getQueryData<AuthSession | null>(
-      authQueryKey(activeProfileId),
-    ) ?? null
-  )
+  return queryClient.ensureQueryData(authQueryOptions(activeProfileId))
 }
 
 export const useIsAuthHydrated = () => {
