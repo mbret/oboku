@@ -33,6 +33,8 @@ import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { WithAuthentication } from "./auth/WithAuthentication"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
+import { HttpClientApiProvider } from "./http"
+import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 
@@ -115,14 +117,17 @@ export const AppWithConfig = memo(() => {
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <QueryClientProvider>
-            <QueryClientProvider$>
-              <LoadConfiguration>
-                <App />
-              </LoadConfiguration>
-              {import.meta.env.DEV && <DebugMenu />}
-            </QueryClientProvider$>
-          </QueryClientProvider>
+          <HttpClientApiProvider>
+            <QueryClientProvider>
+              <QueryClientProvider$>
+                <ServiceWorkerMessages />
+                <LoadConfiguration>
+                  <App />
+                </LoadConfiguration>
+                {import.meta.env.DEV && <DebugMenu />}
+              </QueryClientProvider$>
+            </QueryClientProvider>
+          </HttpClientApiProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />
