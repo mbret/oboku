@@ -28,9 +28,7 @@ export const AuthSessionSync = memo(function AuthSessionSync() {
           )
 
           void Promise.resolve()
-            .then(() =>
-              putProfileRow({ id: nextSession.nameHex, ...nextSession }),
-            )
+            .then(() => putProfileRow(nextSession))
             .catch((error) => {
               Logger.error("Failed to persist auth session", error)
             })

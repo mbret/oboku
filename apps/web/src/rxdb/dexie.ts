@@ -1,5 +1,5 @@
 import Dexie, { type EntityTable } from "dexie"
-import type { AuthSession } from "../auth/types"
+import type { Profile } from "../profiles/types"
 
 /**
  * Persist the original filename alongside the binary payload because:
@@ -15,10 +15,6 @@ interface Downloads {
 interface QueryCachePersistence {
   key: string
   value: unknown
-}
-
-export interface Profile extends AuthSession {
-  id: string
 }
 
 export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {

@@ -8,13 +8,13 @@ import { isCancelError } from "../errors/errors.shared"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { useHasAuthentication } from "../auth/useHasAuthentication"
+import { useActiveProfile } from "../profiles"
 import { SignOutBeforeContinuePage } from "../auth/SignOutBeforeContinuePage"
 
 export const SignUpCompleteScreen = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
-  const hasSession = useHasAuthentication()
+  const hasSession = !!useActiveProfile().data
   const { mutateAsync, error, status } = useCompleteSignUp()
 
   if (status === "success" && hasSession) {

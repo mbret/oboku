@@ -1,6 +1,5 @@
-import { dexieDb, type Profile } from "../rxdb/dexie"
-
-export const getProfileRow = (id: string) => dexieDb.profiles.get(id)
+import { dexieDb } from "../rxdb/dexie"
+import type { Profile } from "./types"
 
 export const putProfileRow = (row: Profile) => dexieDb.profiles.put(row)
 

@@ -1,21 +1,24 @@
-import type { AuthSession } from "../auth/types"
+import type { Profile } from "./types"
 import { Logger } from "../debug/logger.shared"
-import { getProfileRow, putProfileRow } from "./dbHelpers"
 import {
   activeProfileIdSignal,
   getProfile,
   setProfile,
 } from "./active/activeProfileId"
+import { dexieDb } from "../rxdb/dexie"
 
 /**
  * Key under which the pre-migration reactjrx auth signal was persisted. The
  * value is a shared-store envelope keyed by the signal key ("authState"), whose
- * `value` field holds the {@link AuthSession}. See reactjrx `persistValue`.
+ * `value` field holds the legacy session (a {@link Profile} without its `id`).
+ * See reactjrx `persistValue`.
  */
 const LEGACY_AUTH_STORAGE_KEY = "auth"
 const LEGACY_AUTH_SIGNAL_KEY = "authState"
 
-const isAuthSession = (value: unknown): value is AuthSession => {
+type LegacyProfile = Omit<Profile, "id">
+
+const isLegacyProfile = (value: unknown): value is LegacyProfile => {
   if (typeof value !== "object" || value === null) return false
 
   const candidate = value as Record<string, unknown>
@@ -29,7 +32,7 @@ const isAuthSession = (value: unknown): value is AuthSession => {
   )
 }
 
-const readLegacyAuthSession = (): AuthSession | undefined => {
+const readLegacyProfile = (): LegacyProfile | undefined => {
   const raw = localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)
 
   if (!raw) return undefined
@@ -54,18 +57,18 @@ const readLegacyAuthSession = (): AuthSession | undefined => {
       ? (envelope as Record<string, unknown>).value
       : undefined
 
-  return isAuthSession(value) ? value : undefined
+  return isLegacyProfile(value) ? value : undefined
 }
 
 const runMigration = async () => {
-  const auth = readLegacyAuthSession()
+  const auth = readLegacyProfile()
 
   if (!auth) return
 
-  const existing = await getProfileRow(auth.nameHex)
+  const existing = await dexieDb.profiles.get(auth.nameHex)
 
   if (!existing) {
-    await putProfileRow({ id: auth.nameHex, ...auth })
+    await dexieDb.profiles.put({ id: auth.nameHex, ...auth })
   }
 
   if (!getProfile()) {

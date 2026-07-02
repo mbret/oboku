@@ -17,7 +17,7 @@ import {
   SkipWaitingMessage,
 } from "./types.shared"
 import { Logger } from "../../debug/logger.shared"
-import type { AuthSession } from "../../auth/types"
+import type { Profile } from "../../profiles/types"
 
 declare const self: ServiceWorkerGlobalScope
 
@@ -49,7 +49,7 @@ const isMessageData = (
 type ClientReplyMessage =
   | {
       readonly type: typeof NotifyAuthMessage.type
-      validate(payload: unknown): payload is AuthSession | null
+      validate(payload: unknown): payload is Omit<Profile, "id"> | null
     }
   | {
       readonly type: typeof ReplyAskProfileMessage.type

@@ -1,4 +1,4 @@
-import { getProfileRow } from "./dbHelpers"
+import { dexieDb } from "../rxdb/dexie"
 import { useQuery } from "@tanstack/react-query"
 
 export const profileByIdQueryKey = (profileId: string | null | undefined) =>
@@ -11,7 +11,7 @@ export const profileByIdQueryOptions = (
   queryFn: async () => {
     if (!profileId) return null
 
-    return (await getProfileRow(profileId)) ?? null
+    return (await dexieDb.profiles.get(profileId)) ?? null
   },
   enabled: !!profileId,
   staleTime: Infinity,

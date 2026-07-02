@@ -1,10 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import type { AuthSession } from "../auth/types"
+import type { Profile } from "../profiles/types"
 import type { HttpClientResponse } from "./httpClient.shared"
 
-const createAuthSession = (
-  overrides: Partial<AuthSession> = {},
-): AuthSession => ({
+const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
+  id: "reader",
   accessToken: "access-token",
   refreshToken: "refresh-token",
   email: "reader@example.com",
@@ -48,7 +47,7 @@ const createRefreshResponse = (params: {
  * refresh-flow assertions stay focused on the client and independent of the
  * react-query/Dexie wiring.
  */
-const createClient = async (initialSession: AuthSession | null = null) => {
+const createClient = async (initialSession: Profile | null = null) => {
   const { HttpApiClientWeb } = await import("./HttpClientApi.web")
 
   let session = initialSession
@@ -64,7 +63,7 @@ const createClient = async (initialSession: AuthSession | null = null) => {
   return {
     client,
     getSession: () => session,
-    setSession: (next: AuthSession | null) => {
+    setSession: (next: Profile | null) => {
       session = next
       client.setSession(next)
     },
@@ -90,7 +89,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client, getSession } = await createClient(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
@@ -111,7 +110,7 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     await expect(firstRefresh).resolves.toBe(true)
     expect(getSession()).toEqual(
-      createAuthSession({
+      createProfile({
         accessToken: "fresh-access-token",
         refreshToken: "token-a-2",
       }),
@@ -137,14 +136,14 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const authStateA = createAuthSession({
+    const authStateA = createProfile({
       accessToken: "expired-a",
       refreshToken: "token-a",
       email: "a@example.com",
       nameHex: "a",
       dbName: "a-db",
     })
-    const authStateB = createAuthSession({
+    const authStateB = createProfile({
       accessToken: "expired-b",
       refreshToken: "token-b",
       email: "b@example.com",
@@ -182,7 +181,7 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     await expect(secondRefresh).resolves.toBe(true)
     expect(getSession()).toEqual(
-      createAuthSession({
+      createProfile({
         accessToken: "fresh-b",
         refreshToken: "token-b-2",
         email: "b@example.com",
@@ -207,7 +206,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client, setSession } = await createClient(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-a",
         refreshToken: "token-a",
         email: "a@example.com",
@@ -230,7 +229,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const refreshPromise = client.refreshOnUnauthorized(unauthorizedResponse)
 
     setSession(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-b",
         refreshToken: "token-b",
         email: "b@example.com",
@@ -283,7 +282,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client } = await createClient(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
@@ -326,7 +325,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client, getSession } = await createClient(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),
@@ -369,7 +368,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client, getSession } = await createClient(
-      createAuthSession({
+      createProfile({
         accessToken: "expired-access-token",
         refreshToken: "token-a",
       }),

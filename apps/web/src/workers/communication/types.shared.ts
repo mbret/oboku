@@ -1,4 +1,4 @@
-import type { AuthSession } from "../../auth/types"
+import type { Profile } from "../../profiles/types"
 import type { SharedConfig } from "../../config/types.shared"
 import { z } from "zod"
 
@@ -11,7 +11,7 @@ interface Message<Type extends string, Payload extends MessagePayload> {
 }
 
 const emptyPayloadSchema = z.object({}).strict()
-const authSessionPayloadSchema: z.ZodType<AuthSession> = z.object({
+const authSessionPayloadSchema: z.ZodType<Omit<Profile, "id">> = z.object({
   accessToken: z.string(),
   refreshToken: z.string(),
   email: z.string(),
@@ -52,16 +52,16 @@ export class RefreshAuthMessage
 }
 
 export class NotifyAuthMessage
-  implements Message<typeof NotifyAuthMessage.type, AuthSession | null>
+  implements Message<typeof NotifyAuthMessage.type, Omit<Profile, "id"> | null>
 {
   static readonly type = "NotifyAuthMessage"
-  static validate(payload: unknown): payload is AuthSession | null {
+  static validate(payload: unknown): payload is Omit<Profile, "id"> | null {
     return notifyAuthPayloadSchema.safeParse(payload).success
   }
 
   public readonly type: typeof NotifyAuthMessage.type = NotifyAuthMessage.type
 
-  constructor(public readonly payload: AuthSession | null) {}
+  constructor(public readonly payload: Omit<Profile, "id"> | null) {}
 }
 
 export class AskConfigurationMessage

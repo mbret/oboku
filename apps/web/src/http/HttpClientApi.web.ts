@@ -19,7 +19,7 @@ import type {
   SyncDataSourceRequest,
   SyncDataSourceResponse,
 } from "@oboku/shared"
-import type { AuthSession } from "../auth/types"
+import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
 import {
   type FetchConfig,
@@ -28,7 +28,7 @@ import {
 } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 
-export type AuthSessionListener = (session: AuthSession) => void
+export type AuthSessionListener = (session: Profile) => void
 
 type InFlightRefresh = {
   refreshToken: string
@@ -40,7 +40,7 @@ const refreshTokenWasRejected = (error: unknown) =>
   (error.response?.status === 401 || error.response?.status === 403)
 
 export class HttpApiClientWeb extends HttpClientWeb {
-  private session: AuthSession | null = null
+  private session: Profile | null = null
   private refreshSessionPromise: InFlightRefresh | null = null
   private sessionChangeListeners = new Set<AuthSessionListener>()
 
@@ -61,11 +61,11 @@ export class HttpApiClientWeb extends HttpClientWeb {
     }
   }
 
-  setSession = (session: AuthSession | null) => {
+  setSession = (session: Profile | null) => {
     this.session = session
   }
 
-  private commitSession = (session: AuthSession) => {
+  private commitSession = (session: Profile) => {
     this.session = session
     this.sessionChangeListeners.forEach(function notifyListener(listener) {
       listener(session)
