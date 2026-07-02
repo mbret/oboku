@@ -28,9 +28,8 @@ import {
 } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 
-export type AuthSessionAccessor = {
-  getSession: () => AuthSession | null | undefined
-  setSession: (session: AuthSession) => void
+export type AuthSessionListener = {
+  onSessionChange: (session: AuthSession) => void
 }
 
 type InFlightRefresh = {
@@ -43,15 +42,25 @@ const refreshTokenWasRejected = (error: unknown) =>
   (error.response?.status === 401 || error.response?.status === 403)
 
 export class HttpApiClientWeb extends HttpClientWeb {
+  private session: AuthSession | null = null
   private refreshSessionPromise: InFlightRefresh | null = null
 
-  constructor(private readonly authSession: AuthSessionAccessor) {
+  constructor(private readonly authSessionListener: AuthSessionListener) {
     super()
 
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useRequestInterceptor(this.injectToken)
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useResponseInterceptor(this.refreshOnUnauthorized)
+  }
+
+  setSession = (session: AuthSession | null) => {
+    this.session = session
+  }
+
+  private commitSession = (session: AuthSession) => {
+    this.session = session
+    this.authSessionListener.onSessionChange(session)
   }
 
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
@@ -156,7 +165,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
     })
 
   private injectToken = async (config: FetchConfig): Promise<FetchConfig> => {
-    const session = this.authSession.getSession()
+    const session = this.session
 
     if (session?.accessToken) {
       return {
@@ -172,13 +181,13 @@ export class HttpApiClientWeb extends HttpClientWeb {
   }
 
   private flagSessionForRelogin = (rejectedRefreshToken: string) => {
-    const authState = this.authSession.getSession()
+    const authState = this.session
 
     if (
       authState?.refreshToken === rejectedRefreshToken &&
       !authState.needsRelogin
     ) {
-      this.authSession.setSession({ ...authState, needsRelogin: true })
+      this.commitSession({ ...authState, needsRelogin: true })
     }
   }
 
@@ -188,7 +197,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       useInterceptors: false,
     })
 
-    const authState = this.authSession.getSession()
+    const authState = this.session
 
     // we are checking if the current auth state is the same as the refresh token
     // if not, we are not going to refresh the auth state as it's not the same session
@@ -203,7 +212,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       needsRelogin: false,
     }
 
-    this.authSession.setSession(nextAuthState)
+    this.commitSession(nextAuthState)
 
     return true
   }
@@ -232,7 +241,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       return response
     }
 
-    const refreshToken = this.authSession.getSession()?.refreshToken
+    const refreshToken = this.session?.refreshToken
 
     if (!refreshToken) {
       return response

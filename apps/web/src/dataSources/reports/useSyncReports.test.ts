@@ -36,7 +36,7 @@ describe("useSyncReports", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/HttpClientApiProvider", () => ({
+    vi.doMock("../../http/HttpClientApiContext", () => ({
       useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
     vi.doMock("../../config/useConfig", () => ({

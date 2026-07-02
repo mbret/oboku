@@ -42,10 +42,11 @@ const createRefreshResponse = (params: {
   })
 
 /**
- * The client only reads/writes auth through the injected `AuthSessionAccessor`,
- * so the tests back it with a plain in-memory session instead of the real
- * react-query/Dexie wiring. This keeps the refresh-flow assertions focused on
- * the client and independent of the auth store.
+ * The client keeps its session in memory: the app pushes it in via `setSession`
+ * and the client emits refreshed/relogin-flagged sessions back through
+ * `onSessionChange`. The tests mirror both into a plain in-memory session so the
+ * refresh-flow assertions stay focused on the client and independent of the
+ * react-query/Dexie wiring.
  */
 const createClient = async (initialSession: AuthSession | null = null) => {
   const { HttpApiClientWeb } = await import("./HttpClientApi.web")
@@ -53,17 +54,19 @@ const createClient = async (initialSession: AuthSession | null = null) => {
   let session = initialSession
 
   const client = new HttpApiClientWeb({
-    getSession: () => session,
-    setSession: (next) => {
+    onSessionChange: (next) => {
       session = next
     },
   })
+
+  client.setSession(initialSession)
 
   return {
     client,
     getSession: () => session,
     setSession: (next: AuthSession | null) => {
       session = next
+      client.setSession(next)
     },
   }
 }

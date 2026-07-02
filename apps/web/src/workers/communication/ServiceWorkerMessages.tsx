@@ -15,7 +15,7 @@ import { getAuthSession } from "../../auth/authSession"
 import { getActiveProfileId } from "../../profiles/activeProfile"
 import { Logger } from "../../debug/logger.shared"
 import { API_COUCH_URI, API_URL } from "../../config/envs"
-import { useHttpClientApi } from "../../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../../http"
 
 const isWorkerMessage = (
   message: unknown,
