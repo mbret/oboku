@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import type { NotificationSeverity } from "@oboku/shared"
-import { useAuthSession } from "../../auth/authSession"
+import { useActiveProfile } from "../../profiles"
 import { ROUTES } from "../../navigation/routes"
 
 export type LocalNotification = {
@@ -15,7 +15,7 @@ export type LocalNotification = {
 }
 
 export const useLocalNotifications = (): LocalNotification[] => {
-  const needsRelogin = useAuthSession().data?.needsRelogin ?? false
+  const needsRelogin = useActiveProfile().data?.needsRelogin ?? false
 
   return useMemo(() => {
     const notifications: LocalNotification[] = []

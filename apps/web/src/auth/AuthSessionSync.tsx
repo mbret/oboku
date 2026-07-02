@@ -3,12 +3,13 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { Logger } from "../debug/logger.shared"
 import { putProfileRow } from "../profiles/dbHelpers"
-import { authQueryKey, useAuthSession } from "./authSession"
+import { profileByIdQueryKey } from "./authSession"
+import { useActiveProfile } from "../profiles"
 
 export const AuthSessionSync = memo(function AuthSessionSync() {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
-  const { data: session } = useAuthSession()
+  const { data: session } = useActiveProfile()
 
   useEffect(
     function pushAuthSessionToHttpClient() {
@@ -22,7 +23,7 @@ export const AuthSessionSync = memo(function AuthSessionSync() {
       return httpClientApi.onSessionChange(
         function writeSessionToCache(nextSession) {
           queryClient.setQueryData(
-            authQueryKey(nextSession.nameHex),
+            profileByIdQueryKey(nextSession.nameHex),
             nextSession,
           )
 

@@ -1,9 +1,9 @@
 import { memo, useEffect } from "react"
 import { notify } from "../notifications/toasts"
-import { useAuthSession } from "./authSession"
+import { useActiveProfile } from "../profiles"
 
 export const NotifyExpiredSession = memo(function NotifyExpiredSession() {
-  const needsRelogin = useAuthSession().data?.needsRelogin ?? false
+  const needsRelogin = useActiveProfile().data?.needsRelogin ?? false
 
   useEffect(() => {
     if (!needsRelogin) return

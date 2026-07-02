@@ -1,9 +1,9 @@
 import { useEffect } from "react"
 import { setUser } from "@sentry/react"
-import { useAuthSession } from "../auth/authSession"
+import { useActiveProfile } from "../profiles"
 
 export const useSyncSentryUser = () => {
-  const { data: auth } = useAuthSession()
+  const { data: auth } = useActiveProfile()
 
   useEffect(
     function syncSentryUser() {

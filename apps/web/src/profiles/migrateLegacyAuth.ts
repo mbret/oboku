@@ -2,10 +2,10 @@ import type { AuthSession } from "../auth/types"
 import { Logger } from "../debug/logger.shared"
 import { getProfileRow, putProfileRow } from "./dbHelpers"
 import {
-  activeProfileSignal,
+  activeProfileIdSignal,
   getProfile,
   setProfile,
-} from "./active/activeProfile"
+} from "./active/activeProfileId"
 
 /**
  * Key under which the pre-migration reactjrx auth signal was persisted. The
@@ -70,7 +70,7 @@ const runMigration = async () => {
 
   if (!getProfile()) {
     setProfile(auth.nameHex)
-    activeProfileSignal.update(auth.nameHex)
+    activeProfileIdSignal.update(auth.nameHex)
   }
 
   localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)

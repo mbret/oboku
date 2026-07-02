@@ -1,6 +1,10 @@
 import { memo, useEffect } from "react"
 import { fromEvent } from "rxjs"
-import { activeProfileSignal, getProfile } from "../../profiles"
+import {
+  activeProfileIdSignal,
+  ensureActiveProfile,
+  getProfile,
+} from "../../profiles"
 import {
   AskAuthMessage,
   AskConfigurationMessage,
@@ -11,7 +15,6 @@ import {
   ReplyAskProfileMessage,
 } from "./types.shared"
 import { useQueryClient } from "@tanstack/react-query"
-import { ensureAuthSession } from "../../auth/authSession"
 import { Logger } from "../../debug/logger.shared"
 import { API_COUCH_URI, API_URL } from "../../config/envs"
 import { useHttpClientApi } from "../../http"
@@ -34,7 +37,7 @@ export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
       }
 
       const readSession = () =>
-        ensureAuthSession(queryClient, activeProfileSignal.getValue())
+        ensureActiveProfile(queryClient, activeProfileIdSignal.getValue())
 
       const subscription = fromEvent(
         navigator.serviceWorker,

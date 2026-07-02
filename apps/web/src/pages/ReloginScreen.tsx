@@ -4,7 +4,7 @@ import { Navigate, useLocation, useNavigate } from "react-router"
 import { useSignIn } from "../auth/useSignIn"
 import { SignInForm, type SignInFormInputs } from "../auth/SignInForm"
 import { GoogleSignInButton } from "../common/GoogleSignInButton"
-import { useAuthSession } from "../auth/authSession"
+import { useActiveProfile } from "../profiles"
 import { Page } from "../common/Page"
 import { OrDivider } from "../common/OrDivider"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -27,7 +27,7 @@ const SignedInAsText = styled(Typography)(({ theme }) => ({
 }))
 
 export const ReLoginScreen = () => {
-  const { data: auth } = useAuthSession()
+  const { data: auth } = useActiveProfile()
   const location = useLocation()
   const navigate = useNavigate()
   const { mutate, isPending, isIdle, error } = useSignIn({

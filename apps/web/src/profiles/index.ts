@@ -23,6 +23,7 @@ export const signalEntriesToPersist = [
 ]
 
 export * from "./storage"
-export * from "./active/activeProfile"
+export * from "./active/activeProfileId"
 export * from "./active/useIsActiveProfileHydrated"
+export * from "./active/useActiveProfile"
 export * from "./dbHelpers"

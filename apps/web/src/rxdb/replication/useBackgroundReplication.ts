@@ -4,7 +4,7 @@ import { syncSignal } from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
 import { useSubscribe } from "reactjrx"
-import { useAuthSession } from "../../auth/authSession"
+import { useActiveProfile } from "../../profiles"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
@@ -17,7 +17,7 @@ export const useBackgroundReplication = () => {
   const { data: config } = useConfig()
   const { db: database } = useDatabase()
   const { online } = useNetworkState()
-  const dbName = useAuthSession().data?.dbName
+  const dbName = useActiveProfile().data?.dbName
   const isAuthenticated = useIsAuthenticated()
   const replicateBook = useReplicateCollection()
   const replicateTag = useReplicateCollection()

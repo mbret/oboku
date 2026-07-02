@@ -8,7 +8,7 @@ import {
   DialogTitle,
   TextField,
 } from "@mui/material"
-import { useAuthSession } from "./authSession"
+import { useActiveProfile } from "../profiles"
 import { useDeleteAccount } from "./useDeleteAccount"
 import { ReportProblemOutlined } from "@mui/icons-material"
 import { CancelButton } from "../common/forms/CancelButton"
@@ -25,7 +25,7 @@ export const DeleteAccountDialog = memo(function DeleteAccountDialog({
   onClose,
   open,
 }: DeleteAccountDialogProps) {
-  const { data: auth } = useAuthSession()
+  const { data: auth } = useActiveProfile()
   const email = auth?.email ?? ""
   const [confirmationInput, setConfirmationInput] = useState("")
   const { mutate, isPending, isError, error } = useDeleteAccount()

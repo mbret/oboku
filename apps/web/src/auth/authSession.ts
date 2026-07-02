@@ -1,36 +1,18 @@
-import { type QueryClient, useQuery } from "@tanstack/react-query"
-import { useSignalValue } from "reactjrx"
 import { getProfileRow } from "../profiles/dbHelpers"
-import { activeProfileSignal } from "../profiles"
 import type { AuthSession } from "./types"
 
-export const authQueryKey = (activeProfileId: string | null | undefined) =>
-  ["profile", activeProfileId ?? null] as const
+export const profileByIdQueryKey = (profileId: string | null | undefined) =>
+  ["profile", profileId ?? null] as const
 
-export const authQueryOptions = (
-  activeProfileId: string | null | undefined,
+export const profileByIdQueryOptions = (
+  profileId: string | null | undefined,
 ) => ({
-  queryKey: authQueryKey(activeProfileId),
+  queryKey: profileByIdQueryKey(profileId),
   queryFn: async (): Promise<AuthSession | null> => {
-    if (!activeProfileId) return null
+    if (!profileId) return null
 
-    return (await getProfileRow(activeProfileId)) ?? null
+    return (await getProfileRow(profileId)) ?? null
   },
-  enabled: !!activeProfileId,
+  enabled: !!profileId,
   staleTime: Infinity,
 })
-
-export const useAuthSession = () => {
-  const activeProfileId = useSignalValue(activeProfileSignal)
-
-  return useQuery(authQueryOptions(activeProfileId))
-}
-
-export const ensureAuthSession = (
-  queryClient: QueryClient,
-  activeProfileId: string | null | undefined,
-): Promise<AuthSession | null> => {
-  if (!activeProfileId) return Promise.resolve(null)
-
-  return queryClient.ensureQueryData(authQueryOptions(activeProfileId))
-}

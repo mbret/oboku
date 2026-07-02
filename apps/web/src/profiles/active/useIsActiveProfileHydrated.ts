@@ -1,10 +1,10 @@
 import { useSignalValue } from "reactjrx"
-import { useAuthSession } from "../../auth/authSession"
-import { activeProfileSignal } from "./activeProfile"
+import { activeProfileIdSignal } from "./activeProfileId"
+import { useActiveProfile } from "./useActiveProfile"
 
 export const useIsActiveProfileHydrated = () => {
-  const activeProfileId = useSignalValue(activeProfileSignal)
-  const { isFetched } = useAuthSession()
+  const activeProfileId = useSignalValue(activeProfileIdSignal)
+  const { isFetched } = useActiveProfile()
 
   return !activeProfileId || isFetched
 }
