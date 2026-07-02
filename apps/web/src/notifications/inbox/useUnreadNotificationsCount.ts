@@ -1,12 +1,13 @@
 import { useQuery } from "@tanstack/react-query"
 import type { GetUnreadNotificationsCountResponse } from "@oboku/shared"
 import { useConfig } from "../../config/useConfig"
-import { httpClientApi } from "../../http/httpClientApi.web"
+import { useHttpClientApi } from "../../http/HttpClientApiProvider"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useLocalNotifications } from "./useLocalNotifications"
 import { unreadCountQueryKey } from "./queryKeys"
 
 export const useUnreadNotificationsCount = () => {
+  const httpClientApi = useHttpClientApi()
   const { data: config } = useConfig()
   const localNotifications = useLocalNotifications()
   const isAuthenticated = useIsAuthenticated()

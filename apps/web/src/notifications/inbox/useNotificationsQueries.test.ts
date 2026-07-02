@@ -22,11 +22,8 @@ describe("notifications queries", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/httpClientApi.web", () => ({
-      httpClientApi: {
-        fetch,
-        fetchOrThrow,
-      },
+    vi.doMock("../../http/HttpClientApiProvider", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
     vi.doMock("../../config/useConfig", () => ({
       useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
@@ -71,11 +68,8 @@ describe("notifications queries", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/httpClientApi.web", () => ({
-      httpClientApi: {
-        fetch,
-        fetchOrThrow,
-      },
+    vi.doMock("../../http/HttpClientApiProvider", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
     vi.doMock("../../config/useConfig", () => ({
       useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),

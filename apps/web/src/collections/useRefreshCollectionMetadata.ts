@@ -1,7 +1,7 @@
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http/HttpClientApiProvider"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"
@@ -9,6 +9,7 @@ import { CancelError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
 export const useRefreshCollectionMetadata = () => {
+  const httpClientApi = useHttpClientApi()
   const { mutateAsync: updateCollection } = useCollectionIncrementalModify()
   const getRefreshMetadataPluginData = usePluginRefreshMetadata()
   const withNetwork = useWithNetwork()

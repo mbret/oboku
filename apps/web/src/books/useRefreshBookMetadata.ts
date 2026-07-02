@@ -1,5 +1,5 @@
 import { useNetworkState } from "react-use"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http/HttpClientApiProvider"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
@@ -10,6 +10,7 @@ import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
 
 export const useRefreshBookMetadata = () => {
+  const httpClientApi = useHttpClientApi()
   const { db: database } = useDatabase()
   const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch()
   const network = useNetworkState()

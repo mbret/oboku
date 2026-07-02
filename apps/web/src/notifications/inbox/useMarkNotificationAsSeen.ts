@@ -7,7 +7,8 @@ import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { httpClientApi } from "../../http/httpClientApi.web"
+import type { HttpApiClient } from "../../http/httpClientApi.web"
+import { useHttpClientApi } from "../../http/HttpClientApiProvider"
 import {
   type NotificationCacheSnapshot,
   cancelAndSnapshotNotificationQueries,
@@ -18,7 +19,10 @@ import {
   unreadCountQueryKey,
 } from "./queryKeys"
 
-export const markSeenMutationOptions = (queryClient: QueryClient) => ({
+export const markSeenMutationOptions = (
+  queryClient: QueryClient,
+  httpClientApi: HttpApiClient,
+) => ({
   mutationKey: markSeenMutationKey,
   networkMode: "online" as const,
   mutationFn: httpClientApi.markNotificationAsSeen,
@@ -53,6 +57,7 @@ export const markSeenMutationOptions = (queryClient: QueryClient) => ({
 
 export const useMarkNotificationAsSeen = () => {
   const queryClient = useQueryClient()
+  const httpClientApi = useHttpClientApi()
 
-  return useMutation(markSeenMutationOptions(queryClient))
+  return useMutation(markSeenMutationOptions(queryClient, httpClientApi))
 }

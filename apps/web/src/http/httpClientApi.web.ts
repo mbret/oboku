@@ -25,7 +25,38 @@ import { HttpClientError, type HttpClientResponse } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 import { injectToken } from "./injectToken.web"
 
-class HttpApiClient extends HttpClientWeb {
+type InFlightRefresh = {
+  refreshToken: string
+  promise: Promise<boolean>
+}
+
+const refreshTokenWasRejected = (error: unknown) =>
+  error instanceof HttpClientError &&
+  (error.response?.status === 401 || error.response?.status === 403)
+
+const flagSessionForRelogin = (rejectedRefreshToken: string) => {
+  const authState = authStateSignal.value
+
+  if (
+    authState?.refreshToken === rejectedRefreshToken &&
+    !authState.needsRelogin
+  ) {
+    authStateSignal.update({ ...authState, needsRelogin: true })
+  }
+}
+
+export class HttpApiClient extends HttpClientWeb {
+  private refreshSessionPromise: InFlightRefresh | null = null
+
+  constructor() {
+    super()
+
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+    this.useRequestInterceptor(injectToken)
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+    this.useResponseInterceptor(this.refreshOnUnauthorized)
+  }
+
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
     this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
       `${API_URL}/auth/magic-link/complete`,
@@ -126,123 +157,95 @@ class HttpApiClient extends HttpClientWeb {
     this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {
       method: "DELETE",
     })
-}
 
-export const httpClientApi = new HttpApiClient()
+  private refreshAuthState = async (refreshToken: string) => {
+    const response = await this.refreshToken({
+      refreshToken,
+      useInterceptors: false,
+    })
 
-type InFlightRefresh = {
-  refreshToken: string
-  promise: Promise<boolean>
-}
+    const authState = authStateSignal.getValue()
 
-let refreshSessionPromise: InFlightRefresh | null = null
-
-const refreshAuthState = async (refreshToken: string) => {
-  const response = await httpClientApi.refreshToken({
-    refreshToken,
-    useInterceptors: false,
-  })
-
-  const authState = authStateSignal.getValue()
-
-  // we are checking if the current auth state is the same as the refresh token
-  // if not, we are not going to refresh the auth state as it's not the same session
-  if (!authState || authState.refreshToken !== refreshToken) {
-    return false
-  }
-
-  const nextAuthState = {
-    ...authState,
-    accessToken: response.data.accessToken,
-    refreshToken: response.data.refreshToken,
-    needsRelogin: false,
-  }
-
-  authStateSignal.update(nextAuthState)
-
-  const didApply = !!nextAuthState
-
-  return didApply
-}
-
-export const refreshAuthSession = (refreshToken: string) => {
-  if (refreshSessionPromise?.refreshToken === refreshToken) {
-    return refreshSessionPromise.promise
-  }
-
-  const promise = refreshAuthState(refreshToken).finally(() => {
-    if (refreshSessionPromise?.promise === promise) {
-      refreshSessionPromise = null
+    // we are checking if the current auth state is the same as the refresh token
+    // if not, we are not going to refresh the auth state as it's not the same session
+    if (!authState || authState.refreshToken !== refreshToken) {
+      return false
     }
-  })
 
-  refreshSessionPromise = {
-    refreshToken,
-    promise,
-  }
-
-  return promise
-}
-
-const refreshTokenWasRejected = (error: unknown) =>
-  error instanceof HttpClientError &&
-  (error.response?.status === 401 || error.response?.status === 403)
-
-const flagSessionForRelogin = (rejectedRefreshToken: string) => {
-  const authState = authStateSignal.value
-
-  if (
-    authState?.refreshToken === rejectedRefreshToken &&
-    !authState.needsRelogin
-  ) {
-    authStateSignal.update({ ...authState, needsRelogin: true })
-  }
-}
-
-export const refreshOnUnauthorized = async (response: HttpClientResponse) => {
-  if (response.status !== 401) {
-    return response
-  }
-
-  const refreshToken = authStateSignal.value?.refreshToken
-
-  if (!refreshToken) {
-    return response
-  }
-
-  try {
-    const didApply = await refreshAuthSession(refreshToken)
-
-    if (!didApply) {
-      return response
+    const nextAuthState = {
+      ...authState,
+      accessToken: response.data.accessToken,
+      refreshToken: response.data.refreshToken,
+      needsRelogin: false,
     }
-  } catch (error) {
-    console.log("Unable to refresh token")
-    console.error(error)
 
-    const sessionIsTrulyExpired = refreshTokenWasRejected(error)
+    authStateSignal.update(nextAuthState)
 
-    if (!sessionIsTrulyExpired) {
+    const didApply = !!nextAuthState
+
+    return didApply
+  }
+
+  refreshAuthSession = (refreshToken: string) => {
+    if (this.refreshSessionPromise?.refreshToken === refreshToken) {
+      return this.refreshSessionPromise.promise
+    }
+
+    const promise = this.refreshAuthState(refreshToken).finally(() => {
+      if (this.refreshSessionPromise?.promise === promise) {
+        this.refreshSessionPromise = null
+      }
+    })
+
+    this.refreshSessionPromise = {
+      refreshToken,
+      promise,
+    }
+
+    return promise
+  }
+
+  refreshOnUnauthorized = async (response: HttpClientResponse) => {
+    if (response.status !== 401) {
       return response
     }
 
-    flagSessionForRelogin(refreshToken)
+    const refreshToken = authStateSignal.value?.refreshToken
 
-    return response
+    if (!refreshToken) {
+      return response
+    }
+
+    try {
+      const didApply = await this.refreshAuthSession(refreshToken)
+
+      if (!didApply) {
+        return response
+      }
+    } catch (error) {
+      console.log("Unable to refresh token")
+      console.error(error)
+
+      const sessionIsTrulyExpired = refreshTokenWasRejected(error)
+
+      if (!sessionIsTrulyExpired) {
+        return response
+      }
+
+      flagSessionForRelogin(refreshToken)
+
+      return response
+    }
+
+    // Retry once with the refreshed token, but skip interceptors on the retry so
+    // a persistent 401 can fall through to the later sign-out interceptor.
+    const retriedConfig = await injectToken({
+      ...response.config,
+      useInterceptors: false,
+    })
+
+    return this.fetch(retriedConfig.input, retriedConfig)
   }
-
-  // Retry once with the refreshed token, but skip interceptors on the retry so
-  // a persistent 401 can fall through to the later sign-out interceptor.
-  const retriedConfig = await injectToken({
-    ...response.config,
-    useInterceptors: false,
-  })
-
-  return httpClientApi.fetch(retriedConfig.input, retriedConfig)
 }
 
-// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useRequestInterceptor(injectToken)
-
-// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useResponseInterceptor(refreshOnUnauthorized)
+export const createHttpClientApi = () => new HttpApiClient()

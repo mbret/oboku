@@ -1,12 +1,14 @@
 import { useMutation } from "@tanstack/react-query"
-import { httpClientApi } from "./httpClientApi.web"
+import { useHttpClientApi } from "./HttpClientApiProvider"
 import type { FetchConfig } from "./httpClient.shared"
 
 type FetchInput = string | URL | globalThis.Request
 type FetchOptions = Omit<FetchConfig, "input">
 
-export const useFetchCouch = () =>
-  useMutation({
+export const useFetchCouch = () => {
+  const httpClientApi = useHttpClientApi()
+
+  return useMutation({
     mutationFn: ({
       input,
       config,
@@ -17,5 +19,6 @@ export const useFetchCouch = () =>
     gcTime: 0,
     meta: { suppressGlobalErrorToast: true },
   })
+}
 
 export type FetchCouch = ReturnType<typeof useFetchCouch>["mutateAsync"]

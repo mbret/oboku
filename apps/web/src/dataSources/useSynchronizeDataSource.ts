@@ -4,7 +4,7 @@ import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { fromCreateDialog } from "../common/dialogs/fromCreateDialog"
 import { createOfflineDialogOptions } from "../common/dialogs/presets"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http/HttpClientApiProvider"
 import { usePluginSynchronize } from "../plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
@@ -12,6 +12,7 @@ import { Logger } from "../debug/logger.shared"
 import { isCancelError } from "../errors/errors.shared"
 
 export const useSynchronizeDataSource = () => {
+  const httpClientApi = useHttpClientApi()
   const { db: database } = useDatabase()
   const { mutateAsync: atomicUpdateDataSource } =
     useDataSourceIncrementalPatch()

@@ -1,12 +1,13 @@
-import { httpClientApi } from "../../http/httpClientApi.web"
 import {
   compareDesc,
   type SyncReportPostgresEntitiesShared,
 } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
+import { useHttpClientApi } from "../../http/HttpClientApiProvider"
 
 export const useSyncReports = () => {
+  const httpClientApi = useHttpClientApi()
   const { data: config } = useConfig()
 
   return useQuery({

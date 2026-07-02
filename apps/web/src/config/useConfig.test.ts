@@ -1,6 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { GetWebConfigResponse } from "@oboku/shared"
+import type { HttpApiClient } from "../http/httpClientApi.web"
 import { buildConfig } from "./useConfig"
+
+// fetchConfig only touches `fetchOrThrow`; the double cast lets a minimal stub
+// stand in for the full client without recreating every domain method.
+const createHttpClientApiStub = (
+  overrides: Partial<HttpApiClient>,
+): HttpApiClient =>
+  ({ fetch: vi.fn(), ...overrides }) as unknown as HttpApiClient
 
 const baseServerConfig: GetWebConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",
@@ -78,7 +86,6 @@ describe("fetchConfig", () => {
   })
 
   it("fetches, validates and consolidates the web config", async () => {
-    const fetch = vi.fn()
     const fetchOrThrow = vi.fn().mockResolvedValue({
       data: {
         GOOGLE_CLIENT_ID: "12345-client",
@@ -88,10 +95,8 @@ describe("fetchConfig", () => {
         SHOW_DISABLED_PLUGINS: false,
       },
     })
+    const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
 
-    vi.doMock("../http/httpClientApi.web", () => ({
-      httpClientApi: { fetch, fetchOrThrow },
-    }))
     vi.stubGlobal("window", {
       location: {
         protocol: "https:",
@@ -101,12 +106,12 @@ describe("fetchConfig", () => {
 
     const { fetchConfig } = await import("./useConfig")
 
-    const config = await fetchConfig()
+    const config = await fetchConfig(httpClientApi)
 
     expect(fetchOrThrow).toHaveBeenCalledWith(
       "https://reader.example.com:3000/web/config",
     )
-    expect(fetch).not.toHaveBeenCalled()
+    expect(httpClientApi.fetch).not.toHaveBeenCalled()
     expect(config.GOOGLE_CLIENT_ID).toBe("12345-client")
     expect(config.GOOGLE_APP_ID).toBe("12345")
     expect(config.FEATURE_GOOGLE_SIGN_ENABLED).toBe(true)
@@ -116,10 +121,8 @@ describe("fetchConfig", () => {
   it("rejects when the request fails", async () => {
     const error = new Error("boom")
     const fetchOrThrow = vi.fn().mockRejectedValue(error)
+    const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
 
-    vi.doMock("../http/httpClientApi.web", () => ({
-      httpClientApi: { fetch: vi.fn(), fetchOrThrow },
-    }))
     vi.stubGlobal("window", {
       location: {
         protocol: "https:",
@@ -129,6 +132,6 @@ describe("fetchConfig", () => {
 
     const { fetchConfig } = await import("./useConfig")
 
-    await expect(fetchConfig()).rejects.toBe(error)
+    await expect(fetchConfig(httpClientApi)).rejects.toBe(error)
   })
 })

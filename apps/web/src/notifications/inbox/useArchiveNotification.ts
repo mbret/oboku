@@ -7,7 +7,8 @@ import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { httpClientApi } from "../../http/httpClientApi.web"
+import type { HttpApiClient } from "../../http/httpClientApi.web"
+import { useHttpClientApi } from "../../http/HttpClientApiProvider"
 import {
   type NotificationCacheSnapshot,
   archiveMutationKey,
@@ -18,7 +19,10 @@ import {
   unreadCountQueryKey,
 } from "./queryKeys"
 
-export const archiveMutationOptions = (queryClient: QueryClient) => ({
+export const archiveMutationOptions = (
+  queryClient: QueryClient,
+  httpClientApi: HttpApiClient,
+) => ({
   mutationKey: archiveMutationKey,
   networkMode: "online" as const,
   mutationFn: httpClientApi.archiveNotification,
@@ -51,6 +55,7 @@ export const archiveMutationOptions = (queryClient: QueryClient) => ({
 
 export const useArchiveNotification = () => {
   const queryClient = useQueryClient()
+  const httpClientApi = useHttpClientApi()
 
-  return useMutation(archiveMutationOptions(queryClient))
+  return useMutation(archiveMutationOptions(queryClient, httpClientApi))
 }

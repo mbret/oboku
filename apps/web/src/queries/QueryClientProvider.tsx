@@ -20,10 +20,12 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
+import type { HttpApiClient } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http/HttpClientApiProvider"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
-const createQueryClient = () => {
+const createQueryClient = (httpClientApi: HttpApiClient) => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
@@ -79,15 +81,15 @@ const createQueryClient = () => {
 
   queryClient.setMutationDefaults(
     markSeenMutationKey,
-    markSeenMutationOptions(queryClient),
+    markSeenMutationOptions(queryClient, httpClientApi),
   )
   queryClient.setMutationDefaults(
     markAllSeenMutationKey,
-    markAllSeenMutationOptions(queryClient),
+    markAllSeenMutationOptions(queryClient, httpClientApi),
   )
   queryClient.setMutationDefaults(
     archiveMutationKey,
-    archiveMutationOptions(queryClient),
+    archiveMutationOptions(queryClient, httpClientApi),
   )
 
   return queryClient
@@ -116,7 +118,8 @@ export const QueryClientProvider = memo(function QueryClientProvider({
 }: {
   children: ReactNode
 }) {
-  const [queryClient] = useState(createQueryClient)
+  const httpClientApi = useHttpClientApi()
+  const [queryClient] = useState(() => createQueryClient(httpClientApi))
 
   return (
     <PersistQueryClientProvider
