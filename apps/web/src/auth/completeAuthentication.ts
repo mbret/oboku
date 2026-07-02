@@ -8,7 +8,7 @@ import {
   setActiveProfileId,
 } from "../profiles"
 import { persister } from "../queries/persister"
-import { profileByIdQueryKey } from "./authSession"
+import { profileByIdQueryKey } from "../profiles/useProfileById"
 import { ensureActiveProfile } from "../profiles"
 
 export const completeAuthentication = ({

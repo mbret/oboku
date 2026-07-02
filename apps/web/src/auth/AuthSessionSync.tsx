@@ -3,7 +3,7 @@ import { useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { Logger } from "../debug/logger.shared"
 import { putProfileRow } from "../profiles/dbHelpers"
-import { profileByIdQueryKey } from "./authSession"
+import { profileByIdQueryKey } from "../profiles/useProfileById"
 import { useActiveProfile } from "../profiles"
 
 export const AuthSessionSync = memo(function AuthSessionSync() {

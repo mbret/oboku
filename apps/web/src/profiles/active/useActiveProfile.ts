@@ -1,12 +1,12 @@
 import { useSignalValue } from "reactjrx"
 import { activeProfileIdSignal } from "./activeProfileId"
-import { type QueryClient, useQuery } from "@tanstack/react-query"
-import { profileByIdQueryOptions } from "../../auth/authSession"
+import type { QueryClient } from "@tanstack/react-query"
+import { profileByIdQueryOptions, useProfileById } from "../useProfileById"
 
 export const useActiveProfile = () => {
   const activeProfileId = useSignalValue(activeProfileIdSignal)
 
-  return useQuery(profileByIdQueryOptions(activeProfileId))
+  return useProfileById(activeProfileId)
 }
 
 export const ensureActiveProfile = (

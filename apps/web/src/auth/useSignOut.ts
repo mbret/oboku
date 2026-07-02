@@ -5,7 +5,7 @@ import { setUser } from "@sentry/react"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useQueryClient } from "@tanstack/react-query"
-import { profileByIdQueryKey } from "./authSession"
+import { profileByIdQueryKey } from "../profiles/useProfileById"
 import { useResetSessionQueries } from "../queries/useResetSessionQueries"
 
 export const useSignOut = () => {
