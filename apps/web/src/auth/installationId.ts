@@ -1,4 +1,6 @@
-const AUTH_INSTALLATION_ID_STORAGE_KEY = "auth_installation_id"
+import { STORAGE_PREFIX_KEY } from "../storage/constants"
+
+const AUTH_INSTALLATION_ID_STORAGE_KEY = `${STORAGE_PREFIX_KEY}:auth_installation_id`
 
 /**
  * Returns a stable identifier for this browser installation/profile.
@@ -28,3 +30,5 @@ export const getOrCreateAuthInstallationId = () => {
 
   return installationId
 }
+
+getOrCreateAuthInstallationId()

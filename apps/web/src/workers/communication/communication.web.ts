@@ -71,7 +71,7 @@ export class WebCommunication {
           }
 
           if (data.type === AskAuthMessage.type) {
-            reply(new NotifyAuthMessage(authStateSignal.value))
+            reply(new NotifyAuthMessage(authStateSignal.value ?? null))
           }
 
           if (data.type === RefreshAuthMessage.type) {
@@ -89,7 +89,7 @@ export class WebCommunication {
 
                 reply(
                   new NotifyAuthMessage(
-                    didRefresh ? authStateSignal.value : null,
+                    didRefresh ? (authStateSignal.value ?? null) : null,
                   ),
                 )
               } catch (error) {

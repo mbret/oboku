@@ -5,11 +5,14 @@ import {
   getWebConfigResponseSchema,
   type GetWebConfigResponse,
 } from "@oboku/shared"
+import { STORAGE_PREFIX_KEY } from "../storage/constants"
 
 const restoredConfigSchema = getWebConfigResponseSchema.partial()
 
+const CONFIG_STORAGE_KEY = `${STORAGE_PREFIX_KEY}:config:web`
+
 const restoreConfig = (): Partial<GetWebConfigResponse> | undefined => {
-  const raw = localStorage.getItem("config")
+  const raw = localStorage.getItem(CONFIG_STORAGE_KEY)
 
   if (!raw) return undefined
 
@@ -18,7 +21,7 @@ const restoreConfig = (): Partial<GetWebConfigResponse> | undefined => {
     parsed = JSON.parse(raw)
   } catch (error) {
     Logger.error("Failed to parse cached web config; clearing cache", error)
-    localStorage.removeItem("config")
+    localStorage.removeItem(CONFIG_STORAGE_KEY)
 
     return undefined
   }
@@ -30,7 +33,8 @@ const restoreConfig = (): Partial<GetWebConfigResponse> | undefined => {
       "Cached web config does not match expected schema; clearing cache",
       result.error,
     )
-    localStorage.removeItem("config")
+
+    localStorage.removeItem(CONFIG_STORAGE_KEY)
 
     return undefined
   }
@@ -75,7 +79,7 @@ class Configuration extends BehaviorSubject<{
         config: fetchedConfig,
       })
 
-      localStorage.setItem("config", JSON.stringify(fetchedConfig))
+      localStorage.setItem(CONFIG_STORAGE_KEY, JSON.stringify(fetchedConfig))
     }
   }
 

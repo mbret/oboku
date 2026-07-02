@@ -1,7 +1,7 @@
 import { createLocalStorageAdapter, signal, usePersistSignals } from "reactjrx"
 import type { AuthSession } from "./types"
 
-export const authStateSignal = signal<AuthSession | null>({
+export const authStateSignal = signal<AuthSession | null | undefined>({
   key: "authState",
   default: null,
 })
