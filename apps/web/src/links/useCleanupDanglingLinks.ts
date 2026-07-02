@@ -3,7 +3,7 @@ import { combineLatest, first, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
 import { Logger } from "../debug/logger.shared"
 import { useMutation$ } from "reactjrx"
-import { configuration } from "../config/configuration"
+import { useConfig } from "../config/useConfig"
 
 const useRemoveDanglingLinks = () => {
   return useMutation$({
@@ -56,16 +56,17 @@ const useRemoveDanglingLinks = () => {
 }
 
 export const useCleanupDanglingLinks = () => {
+  const { data: config } = useConfig()
+  const cleanupInterval = config?.CLEANUP_DANGLING_LINKS_INTERVAL
   const { mutate: removeDanglingLinks } = useRemoveDanglingLinks()
 
   useEffect(() => {
-    const timer = setInterval(
-      removeDanglingLinks,
-      configuration.CLEANUP_DANGLING_LINKS_INTERVAL,
-    )
+    if (!cleanupInterval) return
+
+    const timer = setInterval(removeDanglingLinks, cleanupInterval)
 
     return () => {
       clearInterval(timer)
     }
-  }, [removeDanglingLinks])
+  }, [removeDanglingLinks, cleanupInterval])
 }

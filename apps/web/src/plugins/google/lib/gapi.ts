@@ -7,7 +7,7 @@ import {
 import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
 import { loadScript, retryOnFailure } from "../../../common/scripts"
-import { configuration } from "../../../config/configuration"
+import { useConfig } from "../../../config/useConfig"
 
 const ID = "oboku-google-api-script"
 
@@ -68,11 +68,11 @@ const loadPicker = () =>
     ),
   )
 
-const initClient = () =>
+const initClient = (apiKey: string | undefined) =>
   defer(() =>
     from(
       window.gapi.client.init({
-        apiKey: configuration.GOOGLE_API_KEY,
+        apiKey,
         discoveryDocs: [
           "https://www.googleapis.com/discovery/v1/apis/drive/v3/rest",
         ],
@@ -83,6 +83,8 @@ const initClient = () =>
 export const useLoadGapi = (
   options?: Pick<UseMutation$Options<unknown>, "meta">,
 ) => {
+  const { data: config } = useConfig()
+
   return useSwitchMutation$({
     mutationKey: ["pluginGoogleScriptMutation"],
     ...options,
@@ -126,7 +128,7 @@ export const useLoadGapi = (
             ),
           ]).pipe(
             mergeMap(() =>
-              initClient().pipe(
+              initClient(config?.GOOGLE_API_KEY).pipe(
                 catchError((error) => {
                   gapiSignal.setValue((state) => ({
                     ...state,

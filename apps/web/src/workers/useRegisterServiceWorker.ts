@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
 import {
@@ -9,10 +9,7 @@ import {
   ConfigurationChangeMessage,
   SkipWaitingMessage,
 } from "./communication/types.shared"
-import { useSubscribe } from "reactjrx"
-import { configuration } from "../config/configuration"
-import { distinctUntilKeyChanged, tap } from "rxjs"
-import { isShallowEqual } from "@oboku/shared"
+import { API_COUCH_URI, API_URL } from "../config/envs"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -74,23 +71,14 @@ export const useRegisterServiceWorker = () => {
     }
   }, [waitingWorker])
 
-  const sendConfigurationChangeMessage = useCallback(
-    () =>
-      configuration.pipe(
-        distinctUntilKeyChanged("config", isShallowEqual),
-        tap(() => {
-          webCommunication.sendMessage(
-            new ConfigurationChangeMessage({
-              API_COUCH_URI: configuration.API_COUCH_URI,
-              API_URL: configuration.API_URL,
-            }),
-          )
-        }),
-      ),
-    [],
-  )
-
-  useSubscribe(sendConfigurationChangeMessage)
+  useEffect(() => {
+    webCommunication.sendMessage(
+      new ConfigurationChangeMessage({
+        API_COUCH_URI,
+        API_URL,
+      }),
+    )
+  }, [])
 
   return { waitingWorker }
 }

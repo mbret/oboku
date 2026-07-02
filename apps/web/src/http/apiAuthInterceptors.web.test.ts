@@ -97,11 +97,9 @@ describe("apiAuthInterceptors web auth refresh", () => {
     vi.resetModules()
     vi.unstubAllGlobals()
     vi.stubGlobal("localStorage", createLocalStorageMock())
-    vi.doMock("../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-        STORAGE_PROFILE_KEY: "profile",
-      },
+    vi.doMock("../config/envs", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../config/envs")>()),
+      API_URL: "https://api.example.com",
     }))
   })
 

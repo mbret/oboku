@@ -1,5 +1,4 @@
 import { memo, type ReactNode, useState } from "react"
-import { version } from "../../package.json"
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import {
   defaultShouldDehydrateMutation,
@@ -22,7 +21,7 @@ import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificat
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
-import { persister } from "./persister"
+import { persistBuster, persister } from "./persister"
 
 const createQueryClient = () => {
   const queryClient = new QueryClient({
@@ -124,10 +123,7 @@ export const QueryClientProvider = memo(function QueryClientProvider({
       client={queryClient}
       persistOptions={{
         persister,
-        // Bump the cache namespace per release so paused mutations / queries
-        // persisted by an older build (potentially with keys we no longer
-        // register) are discarded instead of restored.
-        buster: version,
+        buster: persistBuster,
         dehydrateOptions: {
           // Only persist API-backed queries (prefixed with "api"). Queries backed
           // by rxdb (prefixed with "rxdb") are already persisted locally and don't

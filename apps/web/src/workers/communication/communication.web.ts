@@ -11,7 +11,7 @@ import {
   type SkipWaitingMessage,
 } from "./types.shared"
 import { Logger } from "../../debug/logger.shared"
-import { configuration } from "../../config/configuration"
+import { API_COUCH_URI, API_URL } from "../../config/envs"
 import { getSwAuthResponder } from "./authResponder.web"
 
 const isWorkerMessage = (
@@ -112,8 +112,8 @@ export class WebCommunication {
 
           if (data.type === AskConfigurationMessage.type) {
             const message = new ConfigurationChangeMessage({
-              API_COUCH_URI: configuration.API_COUCH_URI,
-              API_URL: configuration.API_URL,
+              API_COUCH_URI,
+              API_URL,
             })
 
             reply(message)

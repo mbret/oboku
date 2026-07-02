@@ -1,5 +1,4 @@
 import { signal, useSignalValue } from "reactjrx"
-import { configuration } from "../config/configuration"
 import { from, switchMap } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
 import { CancelError } from "../errors/errors.shared"
@@ -24,6 +23,7 @@ export const consentShownSignal = signal({
 export const requestGoogleAccessToken = async (
   gsi: typeof google,
   scopes: string[],
+  clientId: string,
 ) => {
   return await new Promise<google.accounts.oauth2.TokenResponse>(
     (resolve, reject) => {
@@ -31,7 +31,7 @@ export const requestGoogleAccessToken = async (
        * @see https://developers.google.com/identity/oauth2/web/reference/js-reference#google.accounts.oauth2.initTokenClient
        */
       const tokenClient = gsi.accounts.oauth2.initTokenClient({
-        client_id: configuration.GOOGLE_CLIENT_ID ?? "",
+        client_id: clientId,
         /**
          * In case user is using different google account, we
          * want to make sure he uses the right account.
@@ -69,14 +69,14 @@ export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
   return addSeconds(accessToken.created_at, expiresInSeconds)
 }
 
-export const signInWithGooglePrompt = () =>
+export const signInWithGooglePrompt = (clientId: string) =>
   gsiOrThrow$.pipe(
     switchMap((gsi) => {
       const signInWithPopup =
         new Promise<google.accounts.id.CredentialResponse>(
           (resolve, reject) => {
             gsi.accounts.id.initialize({
-              client_id: configuration.GOOGLE_CLIENT_ID ?? "",
+              client_id: clientId,
               context: "signin",
               ux_mode: "popup",
               use_fedcm_for_prompt: false,

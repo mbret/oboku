@@ -4,6 +4,7 @@ import { useReCreateDb } from "../rxdb"
 import { httpClientApi } from "../http/httpClientApi.web"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
+import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { getOrCreateAuthInstallationId } from "./installationId"
 import { withLock } from "../common/locks/utils"
@@ -24,6 +25,7 @@ export const useSignIn = (
 ) => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const queryClient = useQueryClient()
+  const { data: config } = useConfig()
 
   return useMutation$<SignInData, DefaultError, SignInVariables>({
     ...options,
@@ -37,7 +39,7 @@ export const useSignIn = (
               installation_id: installationId,
             }),
           )
-        : signInWithGooglePrompt().pipe(
+        : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
             map(
               (authResponse): SignInWithGoogleRequest => ({
                 token: authResponse.credential,

@@ -6,7 +6,7 @@ import {
   UploadConnectorSelectionStep,
   type UploadConnectorSelectionStepProps,
 } from "../../../upload/UploadConnectorSelectionStep"
-import { configuration } from "../../../config/configuration"
+import { useConfig } from "../../../config/useConfig"
 
 export type ServerAuthResult = {
   client: import("webdav").WebDAVClient
@@ -22,6 +22,7 @@ export const ConnectorSelectionStep = memo(
     >,
   ) => {
     const { onAuthenticated, ...rest } = props
+    const { data: config } = useConfig()
     const { mutateAsync: extractConnectorData } = useExtractConnectorData({
       type: "server",
     })
@@ -34,7 +35,7 @@ export const ConnectorSelectionStep = memo(
         authenticate={async (connectorId) => {
           const { data } = await extractConnectorData({ connectorId })
           const { client, items } = await connectWebdav({
-            url: configuration.API_WEBDAV_URL,
+            url: config?.API_WEBDAV_URL ?? "",
             username: data.username,
             password: data.password,
             path: "/",

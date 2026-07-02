@@ -1,11 +1,11 @@
 import { initializeApp } from "firebase/app"
 import { getAnalytics } from "firebase/analytics"
-import { configuration } from "../config/configuration"
+import { VITE_FIREBASE_CONFIG } from "../config/envs"
 
 function initializeAnalytics() {
-  if (!configuration.VITE_FIREBASE_CONFIG) return undefined
+  if (!VITE_FIREBASE_CONFIG) return undefined
 
-  const firebaseConfig = JSON.parse(configuration.VITE_FIREBASE_CONFIG)
+  const firebaseConfig = JSON.parse(VITE_FIREBASE_CONFIG)
 
   const app = initializeApp(firebaseConfig)
 
