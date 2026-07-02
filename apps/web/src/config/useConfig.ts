@@ -3,8 +3,7 @@ import {
   getWebConfigResponseSchema,
   type GetWebConfigResponse,
 } from "@oboku/shared"
-import type { HttpApiClient } from "../http/httpClientApi.web"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import {
   API_URL,
@@ -74,7 +73,7 @@ export const webConfigQueryKey = [
 ] as const
 
 export const fetchConfig = async (
-  httpClientApi: HttpApiClient,
+  httpClientApi: HttpApiClientWeb,
 ): Promise<Config> => {
   const { data } = await httpClientApi.fetchOrThrow<GetWebConfigResponse>(
     `${API_URL}/web/config`,

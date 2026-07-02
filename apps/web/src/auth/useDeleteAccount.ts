@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { useSignOut } from "./useSignOut"
 
 export const useDeleteAccount = () => {

@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { useHttpClientApi } from "./HttpClientApiProvider"
+import { useHttpClientApi } from "."
 import type { FetchConfig } from "./httpClient.shared"
 
 type FetchInput = string | URL | globalThis.Request

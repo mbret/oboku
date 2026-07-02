@@ -1,7 +1,7 @@
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { useWithNetwork } from "../common/network/useWithNetwork"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getCollectionById } from "./dbHelpers"

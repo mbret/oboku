@@ -20,12 +20,11 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
-import type { HttpApiClient } from "../http/httpClientApi.web"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
-const createQueryClient = (httpClientApi: HttpApiClient) => {
+const createQueryClient = (httpClientApi: HttpApiClientWeb) => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {

@@ -19,11 +19,19 @@ import type {
   SyncDataSourceRequest,
   SyncDataSourceResponse,
 } from "@oboku/shared"
-import { authStateSignal } from "../auth/states.web"
+import type { AuthSession } from "../auth/types"
 import { API_URL } from "../config/envs"
-import { HttpClientError, type HttpClientResponse } from "./httpClient.shared"
+import {
+  type FetchConfig,
+  HttpClientError,
+  type HttpClientResponse,
+} from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
-import { injectToken } from "./injectToken.web"
+
+export type AuthSessionAccessor = {
+  getSession: () => AuthSession | null | undefined
+  setSession: (session: AuthSession) => void
+}
 
 type InFlightRefresh = {
   refreshToken: string
@@ -34,25 +42,14 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
-const flagSessionForRelogin = (rejectedRefreshToken: string) => {
-  const authState = authStateSignal.value
-
-  if (
-    authState?.refreshToken === rejectedRefreshToken &&
-    !authState.needsRelogin
-  ) {
-    authStateSignal.update({ ...authState, needsRelogin: true })
-  }
-}
-
-export class HttpApiClient extends HttpClientWeb {
+export class HttpApiClientWeb extends HttpClientWeb {
   private refreshSessionPromise: InFlightRefresh | null = null
 
-  constructor() {
+  constructor(private readonly authSession: AuthSessionAccessor) {
     super()
 
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-    this.useRequestInterceptor(injectToken)
+    this.useRequestInterceptor(this.injectToken)
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
@@ -158,13 +155,40 @@ export class HttpApiClient extends HttpClientWeb {
       method: "DELETE",
     })
 
+  private injectToken = async (config: FetchConfig): Promise<FetchConfig> => {
+    const session = this.authSession.getSession()
+
+    if (session?.accessToken) {
+      return {
+        ...config,
+        headers: {
+          ...config.headers,
+          Authorization: `Bearer ${session.accessToken}`,
+        },
+      }
+    }
+
+    return config
+  }
+
+  private flagSessionForRelogin = (rejectedRefreshToken: string) => {
+    const authState = this.authSession.getSession()
+
+    if (
+      authState?.refreshToken === rejectedRefreshToken &&
+      !authState.needsRelogin
+    ) {
+      this.authSession.setSession({ ...authState, needsRelogin: true })
+    }
+  }
+
   private refreshAuthState = async (refreshToken: string) => {
     const response = await this.refreshToken({
       refreshToken,
       useInterceptors: false,
     })
 
-    const authState = authStateSignal.getValue()
+    const authState = this.authSession.getSession()
 
     // we are checking if the current auth state is the same as the refresh token
     // if not, we are not going to refresh the auth state as it's not the same session
@@ -179,7 +203,7 @@ export class HttpApiClient extends HttpClientWeb {
       needsRelogin: false,
     }
 
-    authStateSignal.update(nextAuthState)
+    this.authSession.setSession(nextAuthState)
 
     const didApply = !!nextAuthState
 
@@ -210,7 +234,7 @@ export class HttpApiClient extends HttpClientWeb {
       return response
     }
 
-    const refreshToken = authStateSignal.value?.refreshToken
+    const refreshToken = this.authSession.getSession()?.refreshToken
 
     if (!refreshToken) {
       return response
@@ -232,14 +256,14 @@ export class HttpApiClient extends HttpClientWeb {
         return response
       }
 
-      flagSessionForRelogin(refreshToken)
+      this.flagSessionForRelogin(refreshToken)
 
       return response
     }
 
     // Retry once with the refreshed token, but skip interceptors on the retry so
     // a persistent 401 can fall through to the later sign-out interceptor.
-    const retriedConfig = await injectToken({
+    const retriedConfig = await this.injectToken({
       ...response.config,
       useInterceptors: false,
     })
@@ -247,5 +271,3 @@ export class HttpApiClient extends HttpClientWeb {
     return this.fetch(retriedConfig.input, retriedConfig)
   }
 }
-
-export const createHttpClientApi = () => new HttpApiClient()

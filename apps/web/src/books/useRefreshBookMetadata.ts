@@ -1,5 +1,5 @@
 import { useNetworkState } from "react-use"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"

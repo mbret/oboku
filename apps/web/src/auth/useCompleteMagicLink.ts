@@ -1,5 +1,5 @@
 import { from, switchMap } from "rxjs"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"

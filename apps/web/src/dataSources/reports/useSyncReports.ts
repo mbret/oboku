@@ -4,7 +4,7 @@ import {
 } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
-import { useHttpClientApi } from "../../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../../http"
 
 export const useSyncReports = () => {
   const httpClientApi = useHttpClientApi()

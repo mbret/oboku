@@ -1,14 +1,23 @@
 import { createContext, type ReactNode, useContext, useState } from "react"
-import { createHttpClientApi, type HttpApiClient } from "./httpClientApi.web"
+import { authStateSignal } from "../auth/states.web"
+import { HttpApiClientWeb } from "./HttpClientApi.web"
 
-const HttpClientApiContext = createContext<HttpApiClient | undefined>(undefined)
+const HttpClientApiContext = createContext<HttpApiClientWeb | undefined>(
+  undefined,
+)
 
 export const HttpClientApiProvider = ({
   children,
 }: {
   children: ReactNode
 }) => {
-  const [client] = useState(createHttpClientApi)
+  const [client] = useState(
+    () =>
+      new HttpApiClientWeb({
+        getSession: () => authStateSignal.getValue(),
+        setSession: (session) => authStateSignal.update(session),
+      }),
+  )
 
   return (
     <HttpClientApiContext.Provider value={client}>

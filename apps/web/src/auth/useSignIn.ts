@@ -1,7 +1,7 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
 import { from, map, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
 import { useConfig } from "../config/useConfig"

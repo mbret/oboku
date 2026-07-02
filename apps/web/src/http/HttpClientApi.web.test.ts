@@ -60,8 +60,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     authStateSignal.update(
       createAuthSession({
@@ -112,8 +115,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     const authStateA = createAuthSession({
       accessToken: "expired-a",
@@ -185,8 +191,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     authStateSignal.update(
       createAuthSession({
@@ -265,8 +274,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     authStateSignal.update(
       createAuthSession({
@@ -312,8 +324,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     authStateSignal.update(
       createAuthSession({
@@ -359,8 +374,11 @@ describe("httpClientApi web auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { authStateSignal } = await import("../auth/states.web")
-    const { createHttpClientApi } = await import("./httpClientApi.web")
-    const client = createHttpClientApi()
+    const { HttpApiClientWeb } = await import("./HttpClientApi.web")
+    const client = new HttpApiClientWeb({
+      getSession: () => authStateSignal.getValue(),
+      setSession: (session) => authStateSignal.update(session),
+    })
 
     authStateSignal.update(
       createAuthSession({

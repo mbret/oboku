@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { GetWebConfigResponse } from "@oboku/shared"
-import type { HttpApiClient } from "../http/httpClientApi.web"
+import type { HttpApiClientWeb } from "../http"
 import { buildConfig } from "./useConfig"
 
 // fetchConfig only touches `fetchOrThrow`; the double cast lets a minimal stub
 // stand in for the full client without recreating every domain method.
 const createHttpClientApiStub = (
-  overrides: Partial<HttpApiClient>,
-): HttpApiClient =>
-  ({ fetch: vi.fn(), ...overrides }) as unknown as HttpApiClient
+  overrides: Partial<HttpApiClientWeb>,
+): HttpApiClientWeb =>
+  ({ fetch: vi.fn(), ...overrides }) as unknown as HttpApiClientWeb
 
 const baseServerConfig: GetWebConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",

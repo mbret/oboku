@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query"
 import type { GetNotificationsResponse } from "@oboku/shared"
 import { useConfig } from "../../config/useConfig"
-import { useHttpClientApi } from "../../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../../http"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { inboxNotificationsQueryKey } from "./queryKeys"
 

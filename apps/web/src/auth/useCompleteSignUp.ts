@@ -1,6 +1,6 @@
 import type { CompleteSignUpRequest } from "@oboku/shared"
 import { from, switchMap } from "rxjs"
-import { useHttpClientApi } from "../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { withLock } from "../common/locks/utils"
 import { useSignIn } from "./useSignIn"
