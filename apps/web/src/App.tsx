@@ -23,6 +23,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
@@ -122,9 +123,11 @@ export const AppWithConfig = memo(() => {
             <QueryClientProvider>
               <QueryClientProvider$>
                 <ServiceWorkerMessages />
-                <LoadConfiguration>
-                  <App />
-                </LoadConfiguration>
+                <LegacyAuthMigration>
+                  <LoadConfiguration>
+                    <App />
+                  </LoadConfiguration>
+                </LegacyAuthMigration>
                 {import.meta.env.DEV && <DebugMenu />}
               </QueryClientProvider$>
             </QueryClientProvider>

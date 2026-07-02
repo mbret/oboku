@@ -1,6 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
 import { getProfileRow } from "../profiles/dbHelpers"
-import { migrateLegacyAuth } from "../profiles/migrateLegacyAuth"
 import { useActiveProfileId } from "../profiles"
 import type { AuthSession } from "./types"
 
@@ -12,8 +11,6 @@ export const authQueryOptions = (
 ) => ({
   queryKey: authQueryKey(activeProfileId),
   queryFn: async (): Promise<AuthSession | null> => {
-    await migrateLegacyAuth()
-
     if (!activeProfileId) return null
 
     return (await getProfileRow(activeProfileId)) ?? null
