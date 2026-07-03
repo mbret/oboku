@@ -4,19 +4,20 @@ import type { AuthSessionResponse } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
   activeProfileIdSignal,
-  putProfileRow,
+  ensureActiveProfile,
   setActiveProfileId,
 } from "../profiles"
+import type { Profile } from "../profiles/types"
 import { persister } from "../queries/persister"
-import { profileByIdQueryKey } from "../profiles/useProfileById"
-import { ensureActiveProfile } from "../profiles"
 
 export const completeAuthentication = ({
   reCreateDb,
+  putProfile,
   auth,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
+  putProfile: (profile: Profile) => Promise<unknown>
   auth: AuthSessionResponse
   queryClient: QueryClient
 }) => {
@@ -32,8 +33,6 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
-          await putProfileRow({ id: auth.nameHex, ...auth })
-
           if (switchedAccount) {
             /**
              * Reset in-memory cache synchronously so stale cross-account data is
@@ -46,8 +45,9 @@ export const completeAuthentication = ({
             void Promise.resolve(persister.removeClient())
           }
 
+          await putProfile({ id: auth.nameHex, ...auth })
+
           setActiveProfileId(auth.nameHex)
-          queryClient.setQueryData(profileByIdQueryKey(auth.nameHex), auth)
           setUser({ email: auth.email, id: auth.nameHex })
 
           return { switchedAccount }

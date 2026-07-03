@@ -6,6 +6,7 @@ import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
 import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
+import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
 import { withLock } from "../common/locks/utils"
 import {
@@ -25,6 +26,7 @@ export const useSignIn = (
 ) => {
   const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
+  const { mutateAsync: putProfile } = usePutProfile()
   const queryClient = useQueryClient()
   const { data: config } = useConfig()
 
@@ -56,6 +58,7 @@ export const useSignIn = (
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,
+            putProfile,
             auth: data,
             queryClient,
           }),

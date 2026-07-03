@@ -1,16 +1,13 @@
 import { memo, useEffect } from "react"
-import { useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { Logger } from "../debug/logger.shared"
-import { putProfileRow } from "../profiles/dbHelpers"
-import { profileByIdQueryKey } from "../profiles/useProfileById"
-import { useActiveProfile } from "../profiles"
+import { useActiveProfile, usePutProfile } from "../profiles"
 
 export const SyncAuthSessionWithHttpApiClient = memo(
   function AuthSessionSync() {
-    const queryClient = useQueryClient()
     const httpClientApi = useHttpClientApi()
     const { data: session } = useActiveProfile()
+    const { mutate: putProfile } = usePutProfile()
 
     useEffect(
       function pushAuthSessionToHttpClient() {
@@ -22,21 +19,16 @@ export const SyncAuthSessionWithHttpApiClient = memo(
     useEffect(
       function persistHttpClientSessionChanges() {
         return httpClientApi.onSessionChange(
-          function writeSessionToCache(nextSession) {
-            queryClient.setQueryData(
-              profileByIdQueryKey(nextSession.nameHex),
-              nextSession,
-            )
-
-            void Promise.resolve()
-              .then(() => putProfileRow(nextSession))
-              .catch((error) => {
+          function persistSession(nextSession) {
+            putProfile(nextSession, {
+              onError: (error) => {
                 Logger.error("Failed to persist auth session", error)
-              })
+              },
+            })
           },
         )
       },
-      [httpClientApi, queryClient],
+      [httpClientApi, putProfile],
     )
 
     return null
