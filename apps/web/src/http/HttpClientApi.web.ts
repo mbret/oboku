@@ -28,7 +28,10 @@ import {
 } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 
-export type AuthSessionListener = (session: Profile) => void
+export type SessionStore = {
+  get: () => Promise<Profile | null>
+  set: (session: Profile) => Promise<void>
+}
 
 type InFlightRefresh = {
   refreshToken: string
@@ -40,9 +43,11 @@ const refreshTokenWasRejected = (error: unknown) =>
   (error.response?.status === 401 || error.response?.status === 403)
 
 export class HttpApiClientWeb extends HttpClientWeb {
-  private session: Profile | null = null
   private refreshSessionPromise: InFlightRefresh | null = null
-  private sessionChangeListeners = new Set<AuthSessionListener>()
+  private sessionStore: SessionStore = {
+    get: async () => null,
+    set: async () => {},
+  }
 
   constructor() {
     super()
@@ -53,24 +58,13 @@ export class HttpApiClientWeb extends HttpClientWeb {
     this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
 
-  onSessionChange = (listener: AuthSessionListener) => {
-    this.sessionChangeListeners.add(listener)
-
-    return () => {
-      this.sessionChangeListeners.delete(listener)
-    }
+  configureSessionStore = (store: SessionStore) => {
+    this.sessionStore = store
   }
 
-  setSession = (session: Profile | null) => {
-    this.session = session
-  }
+  private getSession = () => this.sessionStore.get()
 
-  private commitSession = (session: Profile) => {
-    this.session = session
-    this.sessionChangeListeners.forEach(function notifyListener(listener) {
-      listener(session)
-    })
-  }
+  private commitSession = (session: Profile) => this.sessionStore.set(session)
 
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
     this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
@@ -174,7 +168,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
     })
 
   private injectToken = async (config: FetchConfig): Promise<FetchConfig> => {
-    const session = this.session
+    const session = await this.getSession()
 
     if (session?.accessToken) {
       return {
@@ -189,14 +183,14 @@ export class HttpApiClientWeb extends HttpClientWeb {
     return config
   }
 
-  private flagSessionForRelogin = (rejectedRefreshToken: string) => {
-    const authState = this.session
+  private flagSessionForRelogin = async (rejectedRefreshToken: string) => {
+    const authState = await this.getSession()
 
     if (
       authState?.refreshToken === rejectedRefreshToken &&
       !authState.needsRelogin
     ) {
-      this.commitSession({ ...authState, needsRelogin: true })
+      await this.commitSession({ ...authState, needsRelogin: true })
     }
   }
 
@@ -206,7 +200,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       useInterceptors: false,
     })
 
-    const authState = this.session
+    const authState = await this.getSession()
 
     // we are checking if the current auth state is the same as the refresh token
     // if not, we are not going to refresh the auth state as it's not the same session
@@ -221,7 +215,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       needsRelogin: false,
     }
 
-    this.commitSession(nextAuthState)
+    await this.commitSession(nextAuthState)
 
     return true
   }
@@ -250,7 +244,8 @@ export class HttpApiClientWeb extends HttpClientWeb {
       return response
     }
 
-    const refreshToken = this.session?.refreshToken
+    const session = await this.getSession()
+    const refreshToken = session?.refreshToken
 
     if (!refreshToken) {
       return response
@@ -272,7 +267,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
         return response
       }
 
-      this.flagSessionForRelogin(refreshToken)
+      await this.flagSessionForRelogin(refreshToken)
 
       return response
     }
