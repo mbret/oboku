@@ -4,7 +4,7 @@ import { clearActiveProfileId, getProfile, useDeleteProfile } from "../profiles"
 import { setUser } from "@sentry/react"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
-import { useResetSessionQueries } from "../queries/useResetSessionQueries"
+import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
 
 export const useSignOut = () => {

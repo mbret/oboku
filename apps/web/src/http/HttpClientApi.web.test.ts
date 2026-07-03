@@ -116,6 +116,75 @@ describe("HttpApiClientWeb auth refresh", () => {
     )
   })
 
+  it("dedupes concurrent 401s into a single refresh through the async store", async () => {
+    let refreshCalls = 0
+
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url.includes("/auth/token?grant_type=refresh_token")) {
+        refreshCalls += 1
+
+        return Promise.resolve(
+          createRefreshResponse({
+            accessToken: "fresh-access-token",
+            refreshToken: "token-a-2",
+          }),
+        )
+      }
+
+      if (url === "https://api.example.com/protected") {
+        return Promise.resolve(
+          new Response(null, { status: 401, statusText: "Unauthorized" }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(
+      createProfile({
+        accessToken: "expired-access-token",
+        refreshToken: "token-a",
+      }),
+    )
+
+    const makeUnauthorized = (): HttpClientResponse => ({
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+        headers: {
+          Authorization: "Bearer expired-access-token",
+        },
+      },
+    })
+
+    await Promise.all([
+      client.refreshOnUnauthorized(makeUnauthorized()),
+      client.refreshOnUnauthorized(makeUnauthorized()),
+    ])
+
+    expect(refreshCalls).toBe(1)
+
+    const protectedRetries = fetchMock.mock.calls.filter(
+      ([input]) => String(input) === "https://api.example.com/protected",
+    )
+
+    expect(protectedRetries).toHaveLength(2)
+
+    for (const [, config] of protectedRetries) {
+      expect(new Headers(config?.headers).get("Authorization")).toBe(
+        "Bearer fresh-access-token",
+      )
+    }
+  })
+
   it("starts a new refresh after a session switch and ignores stale results", async () => {
     const refreshDeferredA = createDeferred<Response>()
     const refreshDeferredB = createDeferred<Response>()

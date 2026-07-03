@@ -1,12 +1,14 @@
 import {
   defaultShouldDehydrateQuery,
+  type Query,
+  type QueryClient,
   useQueryClient,
 } from "@tanstack/react-query"
 import { persistQueryClientSave } from "@tanstack/react-query-persist-client"
 import { persistBuster, persister } from "./persister"
 
 /**
- * Resets the query-side session state, e.g. on sign-out.
+ * Resets the query-side session state, shared by sign-out and account switch.
  *
  * Prefer `resetQueries` over `clear`: `clear` removes every query and cancels
  * in-flight work, but mounted observers may not run a new fetch right away,
@@ -23,30 +25,40 @@ import { persistBuster, persister } from "./persister"
  * persister, and wiping it would leave `LoadConfiguration` without data on an
  * offline reload (or while `/web/config` is unavailable). Relying on the
  * provider's throttled auto-persist is not enough either — a reload before it
- * flushes would rehydrate the pre-sign-out snapshot and resurface the previous
+ * flushes would rehydrate the pre-reset snapshot and resurface the previous
  * session's cached data. So we force an immediate save of the global queries
  * only, which atomically drops the persisted session data while keeping the
  * config for rehydration.
+ *
+ * `keepQuery` preserves extra queries from the reset. On account switch it
+ * keeps the (already-updated) active-profile query so `hasSession` never blinks
+ * empty mid-switch and unmounts the authenticated UI.
  */
+export const resetSessionQueries = (
+  queryClient: QueryClient,
+  { keepQuery }: { keepQuery?: (query: Query) => boolean } = {},
+) => {
+  void queryClient.resetQueries({
+    predicate: (query) =>
+      !query.meta?.persistAcrossSessions && !keepQuery?.(query),
+  })
+  queryClient.getMutationCache().clear()
+
+  void persistQueryClientSave({
+    queryClient,
+    persister,
+    buster: persistBuster,
+    dehydrateOptions: {
+      shouldDehydrateQuery: (query) =>
+        defaultShouldDehydrateQuery(query) &&
+        !!query.meta?.persistAcrossSessions,
+      shouldDehydrateMutation: () => false,
+    },
+  })
+}
+
 export const useResetSessionQueries = () => {
   const queryClient = useQueryClient()
 
-  return () => {
-    void queryClient.resetQueries({
-      predicate: (query) => !query.meta?.persistAcrossSessions,
-    })
-    queryClient.getMutationCache().clear()
-
-    void persistQueryClientSave({
-      queryClient,
-      persister,
-      buster: persistBuster,
-      dehydrateOptions: {
-        shouldDehydrateQuery: (query) =>
-          defaultShouldDehydrateQuery(query) &&
-          !!query.meta?.persistAcrossSessions,
-        shouldDehydrateMutation: () => false,
-      },
-    })
-  }
+  return () => resetSessionQueries(queryClient)
 }
