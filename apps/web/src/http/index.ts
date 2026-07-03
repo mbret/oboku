@@ -1,5 +1,5 @@
-export { type AuthSessionAccessor, HttpApiClientWeb } from "./HttpClientApi.web"
+export { HttpApiClientWeb } from "./HttpClientApi.web"
 export {
-  HttpClientApiProvider,
+  HttpClientApiContext,
   useHttpClientApi,
-} from "./HttpClientApiProvider"
+} from "./HttpClientApiContext"

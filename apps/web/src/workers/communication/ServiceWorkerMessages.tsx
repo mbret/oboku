@@ -1,6 +1,10 @@
 import { memo, useEffect } from "react"
 import { fromEvent } from "rxjs"
-import { getProfile } from "../../profiles"
+import {
+  activeProfileIdSignal,
+  ensureActiveProfile,
+  getProfile,
+} from "../../profiles"
 import {
   AskAuthMessage,
   AskConfigurationMessage,
@@ -10,10 +14,10 @@ import {
   RefreshAuthMessage,
   ReplyAskProfileMessage,
 } from "./types.shared"
-import { authStateSignal } from "../../auth/states.web"
+import { useQueryClient } from "@tanstack/react-query"
 import { Logger } from "../../debug/logger.shared"
 import { API_COUCH_URI, API_URL } from "../../config/envs"
-import { useHttpClientApi } from "../../http/HttpClientApiProvider"
+import { useHttpClientApi } from "../../http"
 
 const isWorkerMessage = (
   message: unknown,
@@ -24,12 +28,16 @@ const isWorkerMessage = (
 
 export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
   const httpClientApi = useHttpClientApi()
+  const queryClient = useQueryClient()
 
   useEffect(
     function listenIncomingServiceWorkerMessages() {
       if (!("serviceWorker" in navigator)) {
         return
       }
+
+      const readSession = () =>
+        ensureActiveProfile(queryClient, activeProfileIdSignal.getValue())
 
       const subscription = fromEvent(
         navigator.serviceWorker,
@@ -70,27 +78,32 @@ export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
         }
 
         if (data.type === AskAuthMessage.type) {
-          reply(new NotifyAuthMessage(authStateSignal.value ?? null))
+          void (async () => {
+            try {
+              reply(new NotifyAuthMessage(await readSession()))
+            } catch (error) {
+              console.error(error)
+              reply(new NotifyAuthMessage(null))
+            }
+          })()
         }
 
         if (data.type === RefreshAuthMessage.type) {
           void (async () => {
-            const refreshToken = authStateSignal.value?.refreshToken
-
-            if (!refreshToken) {
-              reply(new NotifyAuthMessage(null))
-
-              return
-            }
-
             try {
+              const refreshToken = (await readSession())?.refreshToken
+
+              if (!refreshToken) {
+                reply(new NotifyAuthMessage(null))
+
+                return
+              }
+
               const didRefresh =
                 await httpClientApi.refreshAuthSession(refreshToken)
 
               reply(
-                new NotifyAuthMessage(
-                  didRefresh ? (authStateSignal.value ?? null) : null,
-                ),
+                new NotifyAuthMessage(didRefresh ? await readSession() : null),
               )
             } catch (error) {
               console.error(error)
@@ -112,7 +125,7 @@ export const ServiceWorkerMessages = memo(function ServiceWorkerMessages() {
         subscription.unsubscribe()
       }
     },
-    [httpClientApi],
+    [httpClientApi, queryClient],
   )
 
   return null

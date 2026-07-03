@@ -1,4 +1,5 @@
-export type AuthSession = {
+export type Profile = {
+  id: string
   accessToken: string
   refreshToken: string
   email: string

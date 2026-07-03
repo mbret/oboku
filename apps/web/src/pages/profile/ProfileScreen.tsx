@@ -47,7 +47,7 @@ import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../../auth/states.web"
+import { useActiveProfile } from "../../profiles"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { showDialog } from "../../common/dialogs/createDialog"
 import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
@@ -63,7 +63,7 @@ export const ProfileScreen = () => {
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
-  const auth = useSignalValue(authStateSignal)
+  const { data: auth } = useActiveProfile()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,

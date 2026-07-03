@@ -33,7 +33,7 @@ import { BookOptimizeScreen } from "../pages/books/$id/optimize/BookOptimizeScre
 import { memo, useEffect, useRef, type ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
-import { useHasAuthentication } from "../auth/useHasAuthentication"
+import { useActiveProfile } from "../profiles"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
@@ -88,7 +88,7 @@ const MobileTabBarRouteWrapper = () => (
 )
 
 export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
-  const hasSession = useHasAuthentication()
+  const hasSession = !!useActiveProfile().data
 
   const content = (
     <ModalHistoryProvider>

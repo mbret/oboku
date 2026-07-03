@@ -1,10 +1,11 @@
-import { useQuery } from "@tanstack/react-query"
+import { type QueryClient, useQuery } from "@tanstack/react-query"
 import {
   getWebConfigResponseSchema,
   type GetWebConfigResponse,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
+import { readWebConfigCache, saveWebConfigCache } from "./configCache"
 import {
   API_URL,
   API_URL_2,
@@ -79,15 +80,39 @@ export const fetchConfig = async (
     `${API_URL}/web/config`,
   )
 
-  return buildConfig(getWebConfigResponseSchema.parse(data))
+  const server = getWebConfigResponseSchema.parse(data)
+
+  void saveWebConfigCache(server)
+
+  return buildConfig(server)
 }
 
 /**
- * Reads the web config from the persisted query cache. The `api` key prefix
- * opts it into that cache (see queries/QueryClientProvider), giving the same
- * cache-first behavior the previous localStorage cache provided. `gcTime` must
- * stay non-zero (the provider default is 0) so the result is retained and
- * persisted.
+ * Seeds the config query from the offline cache when it has no value yet, so a
+ * boot right after a release — which busts the react-query snapshot but not this
+ * cache — still resolves config offline instead of hanging on the splash screen.
+ * A no-op once any value is present, so it never clobbers a fresh fetch.
+ */
+export const seedWebConfigFromCache = async (queryClient: QueryClient) => {
+  if (queryClient.getQueryData(webConfigQueryKey) !== undefined) return
+
+  const server = await readWebConfigCache()
+
+  if (!server) return
+
+  queryClient.setQueryData(
+    webConfigQueryKey,
+    (existing: Config | undefined) => existing ?? buildConfig(server),
+  )
+}
+
+/**
+ * Reads the web config. Offline durability is owned by the dedicated
+ * `configCache` (see fetchConfig / seedWebConfigFromCache), so this query never
+ * opts into the shared react-query snapshot — that snapshot is busted on every
+ * release and would otherwise strand an offline boot after an update. `gcTime`
+ * must stay non-zero (the provider default is 0) so the result is retained in
+ * memory for the session.
  *
  * Config is deployment-level data that never changes within a session, so reads
  * are static: consumers never refetch on mount, focus or reconnect. The
@@ -112,6 +137,6 @@ export const useConfig = ({
     refetchOnMount,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    meta: { persistAcrossSessions: true },
+    meta: { survivesSessionReset: true },
   })
 }

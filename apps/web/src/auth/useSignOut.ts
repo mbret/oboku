@@ -1,25 +1,34 @@
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
-import { authStateSignal } from "./states.web"
 import { SIGNAL_RESET } from "reactjrx"
-import { removeProfile, currentProfileSignal } from "../profiles"
+import { clearActiveProfileId, getProfile, useDeleteProfile } from "../profiles"
 import { setUser } from "@sentry/react"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
-import { useResetSessionQueries } from "../queries/useResetSessionQueries"
+import { useResetSessionQueries } from "../queries/resetSessionQueries"
+import { Logger } from "../debug/logger.shared"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
+  const { mutateAsync: deleteProfile } = useDeleteProfile()
 
-  return () => {
+  return async () => {
+    const activeProfileId = getProfile()
+
     clearTemporaryMasterKey()
-    authStateSignal.update(SIGNAL_RESET)
     googleAccessTokenSignal.update(SIGNAL_RESET)
 
     setUser(null)
 
-    removeProfile()
-    currentProfileSignal.setValue(SIGNAL_RESET)
+    clearActiveProfileId()
+
+    if (activeProfileId) {
+      try {
+        await deleteProfile(activeProfileId)
+      } catch (error) {
+        Logger.error("Failed to delete profile on sign out", error)
+      }
+    }
 
     resetSessionQueries()
 

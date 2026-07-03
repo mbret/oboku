@@ -1,4 +1,5 @@
 import Dexie, { type EntityTable } from "dexie"
+import type { Profile } from "../profiles/types"
 
 /**
  * Persist the original filename alongside the binary payload because:
@@ -19,6 +20,7 @@ interface QueryCachePersistence {
 export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {
   downloads: EntityTable<Downloads, "id">
   queryCachePersistence: EntityTable<QueryCachePersistence, "key">
+  profiles: EntityTable<Profile, "id">
 }
 
 dexieDb.version(1).stores({
@@ -57,4 +59,10 @@ dexieDb
 dexieDb.version(4).stores({
   downloads: `++id, data, filename`,
   queryCachePersistence: `&key`,
+})
+
+dexieDb.version(5).stores({
+  downloads: `++id, data, filename`,
+  queryCachePersistence: `&key`,
+  profiles: `&id`,
 })

@@ -1,10 +1,9 @@
 import { memo, useEffect } from "react"
-import { useSignalValue } from "reactjrx"
 import { notify } from "../notifications/toasts"
-import { authStateSignal } from "./states.web"
+import { useActiveProfile } from "../profiles"
 
 export const NotifyExpiredSession = memo(function NotifyExpiredSession() {
-  const needsRelogin = useSignalValue(authStateSignal)?.needsRelogin ?? false
+  const needsRelogin = useActiveProfile().data?.needsRelogin ?? false
 
   useEffect(() => {
     if (!needsRelogin) return

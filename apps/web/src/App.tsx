@@ -11,7 +11,7 @@ import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { usePersistAuthState } from "./auth/states.web"
+import { useIsActiveProfileHydrated } from "./profiles"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -21,7 +21,9 @@ import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "./queries/QueryClientProvider"
+import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
@@ -32,11 +34,12 @@ import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/C
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { WithAuthentication } from "./auth/WithAuthentication"
+import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
-import { HttpClientApiProvider } from "./http"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
+import { useSyncSentryUser } from "./debug/useSyncSentryUser"
 
 // @todo move to sw
 LibArchive.init({
@@ -54,7 +57,7 @@ const App = memo(() => {
     entries: signalEntriesToPersist,
   })
 
-  const { isHydrated: isAuthHydrated } = usePersistAuthState()
+  const isAuthHydrated = useIsActiveProfileHydrated()
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
@@ -120,11 +123,15 @@ export const AppWithConfig = memo(() => {
           <HttpClientApiProvider>
             <QueryClientProvider>
               <QueryClientProvider$>
-                <ServiceWorkerMessages />
-                <LoadConfiguration>
-                  <App />
-                </LoadConfiguration>
-                {import.meta.env.DEV && <DebugMenu />}
+                <HttpSessionStoreProvider>
+                  <LegacyAuthMigration>
+                    <ServiceWorkerMessages />
+                    <LoadConfiguration>
+                      <App />
+                    </LoadConfiguration>
+                  </LegacyAuthMigration>
+                  {import.meta.env.DEV && <DebugMenu />}
+                </HttpSessionStoreProvider>
               </QueryClientProvider$>
             </QueryClientProvider>
           </HttpClientApiProvider>
@@ -136,9 +143,11 @@ export const AppWithConfig = memo(() => {
 })
 
 const OtherEffects = memo(() => {
+  const { mutate: loadGsi } = useLoadGsi()
+
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
-  const { mutate: loadGsi } = useLoadGsi()
+  useSyncSentryUser()
 
   useEffect(() => {
     loadGsi()

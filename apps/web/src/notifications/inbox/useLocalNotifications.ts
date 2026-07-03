@@ -1,7 +1,6 @@
 import { useMemo } from "react"
 import type { NotificationSeverity } from "@oboku/shared"
-import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../../auth/states.web"
+import { useActiveProfile } from "../../profiles"
 import { ROUTES } from "../../navigation/routes"
 
 export type LocalNotification = {
@@ -16,7 +15,7 @@ export type LocalNotification = {
 }
 
 export const useLocalNotifications = (): LocalNotification[] => {
-  const needsRelogin = useSignalValue(authStateSignal)?.needsRelogin ?? false
+  const needsRelogin = useActiveProfile().data?.needsRelogin ?? false
 
   return useMemo(() => {
     const notifications: LocalNotification[] = []

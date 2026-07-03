@@ -26,6 +26,7 @@ export const useUnreadNotificationsCount = () => {
     staleTime: 15 * 1000,
     gcTime: Infinity,
     refetchInterval: 30 * 1000,
+    meta: { persist: true },
   })
 
   return {

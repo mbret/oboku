@@ -19,7 +19,7 @@ import type {
   SyncDataSourceRequest,
   SyncDataSourceResponse,
 } from "@oboku/shared"
-import type { AuthSession } from "../auth/types"
+import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
 import {
   type FetchConfig,
@@ -28,9 +28,9 @@ import {
 } from "./httpClient.shared"
 import { HttpClientWeb } from "./httpClient.web"
 
-export type AuthSessionAccessor = {
-  getSession: () => AuthSession | null | undefined
-  setSession: (session: AuthSession) => void
+export type SessionStore = {
+  get: () => Promise<Profile | null>
+  set: (session: Profile) => Promise<void>
 }
 
 type InFlightRefresh = {
@@ -42,10 +42,22 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
+const getBearerToken = (headers: FetchConfig["headers"]) => {
+  const authorization = new Headers(headers).get("Authorization")
+
+  return authorization?.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length)
+    : undefined
+}
+
 export class HttpApiClientWeb extends HttpClientWeb {
   private refreshSessionPromise: InFlightRefresh | null = null
+  private sessionStore: SessionStore = {
+    get: async () => null,
+    set: async () => {},
+  }
 
-  constructor(private readonly authSession: AuthSessionAccessor) {
+  constructor() {
     super()
 
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
@@ -53,6 +65,14 @@ export class HttpApiClientWeb extends HttpClientWeb {
     // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
+
+  configureSessionStore = (store: SessionStore) => {
+    this.sessionStore = store
+  }
+
+  private getSession = () => this.sessionStore.get()
+
+  private commitSession = (session: Profile) => this.sessionStore.set(session)
 
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
     this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
@@ -156,7 +176,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
     })
 
   private injectToken = async (config: FetchConfig): Promise<FetchConfig> => {
-    const session = this.authSession.getSession()
+    const session = await this.getSession()
 
     if (session?.accessToken) {
       return {
@@ -171,14 +191,14 @@ export class HttpApiClientWeb extends HttpClientWeb {
     return config
   }
 
-  private flagSessionForRelogin = (rejectedRefreshToken: string) => {
-    const authState = this.authSession.getSession()
+  private flagSessionForRelogin = async (rejectedRefreshToken: string) => {
+    const authState = await this.getSession()
 
     if (
       authState?.refreshToken === rejectedRefreshToken &&
       !authState.needsRelogin
     ) {
-      this.authSession.setSession({ ...authState, needsRelogin: true })
+      await this.commitSession({ ...authState, needsRelogin: true })
     }
   }
 
@@ -188,7 +208,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       useInterceptors: false,
     })
 
-    const authState = this.authSession.getSession()
+    const authState = await this.getSession()
 
     // we are checking if the current auth state is the same as the refresh token
     // if not, we are not going to refresh the auth state as it's not the same session
@@ -203,7 +223,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
       needsRelogin: false,
     }
 
-    this.authSession.setSession(nextAuthState)
+    await this.commitSession(nextAuthState)
 
     return true
   }
@@ -232,34 +252,43 @@ export class HttpApiClientWeb extends HttpClientWeb {
       return response
     }
 
-    const refreshToken = this.authSession.getSession()?.refreshToken
+    const session = await this.getSession()
+    const refreshToken = session?.refreshToken
 
     if (!refreshToken) {
       return response
     }
 
-    try {
-      const didApply = await this.refreshAuthSession(refreshToken)
+    const requestAccessToken = getBearerToken(response.config.headers)
+    const tokenAlreadyRotated =
+      !!session?.accessToken &&
+      !!requestAccessToken &&
+      requestAccessToken !== session.accessToken
 
-      if (!didApply) {
+    if (!tokenAlreadyRotated) {
+      try {
+        const didApply = await this.refreshAuthSession(refreshToken)
+
+        if (!didApply) {
+          return response
+        }
+      } catch (error) {
+        console.log("Unable to refresh token")
+        console.error(error)
+
+        const sessionIsTrulyExpired = refreshTokenWasRejected(error)
+
+        if (!sessionIsTrulyExpired) {
+          return response
+        }
+
+        await this.flagSessionForRelogin(refreshToken)
+
         return response
       }
-    } catch (error) {
-      console.log("Unable to refresh token")
-      console.error(error)
-
-      const sessionIsTrulyExpired = refreshTokenWasRejected(error)
-
-      if (!sessionIsTrulyExpired) {
-        return response
-      }
-
-      this.flagSessionForRelogin(refreshToken)
-
-      return response
     }
 
-    // Retry once with the refreshed token; skip interceptors so a persistent
+    // Retry once with the current token; skip interceptors so a persistent
     // 401 propagates to the caller instead of re-triggering another refresh.
     const retriedConfig = await this.injectToken({
       ...response.config,
