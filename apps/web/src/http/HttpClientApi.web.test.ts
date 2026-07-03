@@ -377,6 +377,54 @@ describe("HttpApiClientWeb auth refresh", () => {
     ).toBe("Bearer fresh-access-token")
   })
 
+  it("retries with the current token without refreshing when it was already rotated", async () => {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url.includes("/auth/token?grant_type=refresh_token")) {
+        throw new Error("must not refresh when the token was already rotated")
+      }
+
+      if (url === "https://api.example.com/protected") {
+        return Promise.resolve(new Response(null, { status: 200 }))
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(
+      createProfile({
+        accessToken: "fresh-access-token",
+        refreshToken: "token-fresh",
+      }),
+    )
+
+    const result = await client.refreshOnUnauthorized({
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+        headers: {
+          Authorization: "Bearer stale-access-token",
+        },
+      },
+    })
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
+      "https://api.example.com/protected",
+    )
+    expect(
+      new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("Authorization"),
+    ).toBe("Bearer fresh-access-token")
+    expect(result.status).toBe(200)
+  })
+
   it("flags the session for relogin when the refresh request fails", async () => {
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)

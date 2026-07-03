@@ -42,6 +42,14 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
+const getBearerToken = (headers: FetchConfig["headers"]) => {
+  const authorization = new Headers(headers).get("Authorization")
+
+  return authorization?.startsWith("Bearer ")
+    ? authorization.slice("Bearer ".length)
+    : undefined
+}
+
 export class HttpApiClientWeb extends HttpClientWeb {
   private refreshSessionPromise: InFlightRefresh | null = null
   private sessionStore: SessionStore = {
@@ -251,28 +259,36 @@ export class HttpApiClientWeb extends HttpClientWeb {
       return response
     }
 
-    try {
-      const didApply = await this.refreshAuthSession(refreshToken)
+    const requestAccessToken = getBearerToken(response.config.headers)
+    const tokenAlreadyRotated =
+      !!session?.accessToken &&
+      !!requestAccessToken &&
+      requestAccessToken !== session.accessToken
 
-      if (!didApply) {
+    if (!tokenAlreadyRotated) {
+      try {
+        const didApply = await this.refreshAuthSession(refreshToken)
+
+        if (!didApply) {
+          return response
+        }
+      } catch (error) {
+        console.log("Unable to refresh token")
+        console.error(error)
+
+        const sessionIsTrulyExpired = refreshTokenWasRejected(error)
+
+        if (!sessionIsTrulyExpired) {
+          return response
+        }
+
+        await this.flagSessionForRelogin(refreshToken)
+
         return response
       }
-    } catch (error) {
-      console.log("Unable to refresh token")
-      console.error(error)
-
-      const sessionIsTrulyExpired = refreshTokenWasRejected(error)
-
-      if (!sessionIsTrulyExpired) {
-        return response
-      }
-
-      await this.flagSessionForRelogin(refreshToken)
-
-      return response
     }
 
-    // Retry once with the refreshed token; skip interceptors so a persistent
+    // Retry once with the current token; skip interceptors so a persistent
     // 401 propagates to the caller instead of re-triggering another refresh.
     const retriedConfig = await this.injectToken({
       ...response.config,
