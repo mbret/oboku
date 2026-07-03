@@ -8,7 +8,7 @@ export const setActiveProfileId = (nameHex: string) => {
 
 export const clearActiveProfileId = () => {
   removeProfile()
-  activeProfileIdSignal.setValue(SIGNAL_RESET)
+  activeProfileIdSignal.update(SIGNAL_RESET)
 }
 
 export const getProfile = () => {
@@ -16,8 +16,10 @@ export const getProfile = () => {
 }
 
 export const activeProfileIdSignal = signal<string | undefined>({
-  default: getProfile() || undefined,
+  default: undefined,
 })
+
+activeProfileIdSignal.update(getProfile())
 
 export const setProfile = (profile: string) => {
   localStorage.setItem(STORAGE_PROFILE_KEY, profile)
