@@ -112,6 +112,6 @@ export const useConfig = ({
     refetchOnMount,
     refetchOnWindowFocus: false,
     refetchOnReconnect: false,
-    meta: { persistAcrossSessions: true },
+    meta: { persistAcrossSessions: true, alwaysPersist: true },
   })
 }

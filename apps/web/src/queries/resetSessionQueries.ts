@@ -1,11 +1,11 @@
 import {
-  defaultShouldDehydrateQuery,
   type Query,
   type QueryClient,
   useQueryClient,
 } from "@tanstack/react-query"
 import { persistQueryClientSave } from "@tanstack/react-query-persist-client"
 import { persistBuster, persister } from "./persister"
+import { shouldPersistQueryState } from "./queryClient"
 
 /**
  * Resets the query-side session state, shared by sign-out and account switch.
@@ -50,8 +50,7 @@ export const resetSessionQueries = (
     buster: persistBuster,
     dehydrateOptions: {
       shouldDehydrateQuery: (query) =>
-        defaultShouldDehydrateQuery(query) &&
-        !!query.meta?.persistAcrossSessions,
+        !!query.meta?.persistAcrossSessions && shouldPersistQueryState(query),
       shouldDehydrateMutation: () => false,
     },
   })

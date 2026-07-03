@@ -2,7 +2,6 @@ import { memo, type ReactNode, useState } from "react"
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import {
   defaultShouldDehydrateMutation,
-  defaultShouldDehydrateQuery,
   MutationCache,
   QueryCache,
   QueryClient,
@@ -21,7 +20,7 @@ import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificat
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
-import { API_QUERY_KEY_PREFIX } from "./queryClient"
+import { API_QUERY_KEY_PREFIX, shouldPersistQueryState } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
 const createClients = (httpClientApi: HttpApiClientWeb) => {
@@ -127,12 +126,13 @@ export const QueryClientProvider = memo(function QueryClientProvider({
         persister,
         buster: persistBuster,
         dehydrateOptions: {
-          // Only persist API-backed queries (prefixed with "api"). Queries backed
-          // by rxdb (prefixed with "rxdb") are already persisted locally and don't
-          // need to go through the query cache persister.
+          // Persist API-backed queries (prefixed with "api"); queries backed by
+          // rxdb (prefixed with "rxdb") are already persisted locally. Successful
+          // queries persist by default; `alwaysPersist` ones are kept even when
+          // their latest fetch failed (see shouldPersistQueryState).
           shouldDehydrateQuery: (query) =>
-            defaultShouldDehydrateQuery(query) &&
-            query.queryKey[0] === API_QUERY_KEY_PREFIX,
+            query.queryKey[0] === API_QUERY_KEY_PREFIX &&
+            shouldPersistQueryState(query),
           // Only persist mutations we can actually resume (see above).
           shouldDehydrateMutation: (mutation) =>
             defaultShouldDehydrateMutation(mutation) &&
