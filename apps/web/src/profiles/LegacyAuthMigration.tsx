@@ -22,6 +22,7 @@ type LegacyProfile = Omit<Profile, "id">
 const isLegacyProfile = (value: unknown): value is LegacyProfile => {
   if (typeof value !== "object" || value === null) return false
 
+  // `as` its fine, its a one time temporary migration
   const candidate = value as Record<string, unknown>
 
   return (
