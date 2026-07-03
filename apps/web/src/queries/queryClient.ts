@@ -9,20 +9,17 @@ declare module "@tanstack/react-query" {
     queryMeta: {
       /**
        * The query is not tied to the signed-in user (deployment-level data, e.g.
-       * the web config). It is excluded from the per-user-session reset on
-       * sign-out / account switch and re-saved so it stays available on the
-       * signed-out screens.
+       * the web config), so it is excluded from the per-user-session reset on
+       * sign-out / account switch and stays available on the signed-out screens.
        */
-      persistAcrossSessions?: boolean
+      survivesSessionReset?: boolean
       /**
-       * Persist the query in the offline cache regardless of its fetch state.
-       * The default only persists `success` queries, so a query that drops to
-       * `error` after a failed refetch would otherwise be evicted from the
-       * snapshot and lost on the next (offline) boot. Only takes effect once the
-       * query has a value to persist; `refetchOnMount` refreshes it once back
-       * online.
+       * Opt this query into the shared react-query offline snapshot. The
+       * snapshot is busted on every release, so it is a warm-start nicety, not
+       * durable storage — queries that own their durability elsewhere (rxdb,
+       * the web config's dedicated cache) simply don't opt in.
        */
-      alwaysPersist?: boolean
+      persist?: boolean
     }
   }
 }
@@ -30,16 +27,13 @@ declare module "@tanstack/react-query" {
 export const API_QUERY_KEY_PREFIX = "api" as const
 export const RXDB_QUERY_KEY_PREFIX = "rxdb" as const
 
-export const shouldAlwaysPersistQuery = (query: Query) =>
-  !!query.meta?.alwaysPersist && query.state.data !== undefined
-
 /**
- * Whether a query's current state is worth writing to the offline cache: a
- * successful query, or one that opted into `alwaysPersist` and still holds a
- * last-good value. Callers add their own scope (API-backed vs session-surviving).
+ * Whether a query's current state is worth writing to the shared offline
+ * snapshot: a successful query that has opted in via `meta.persist`.
+ * Callers add their own scope where needed (e.g. session-surviving only).
  */
 export const shouldPersistQueryState = (query: Query) =>
-  defaultShouldDehydrateQuery(query) || shouldAlwaysPersistQuery(query)
+  !!query.meta?.persist && defaultShouldDehydrateQuery(query)
 
 export const createRxdbQueryDefaultOptions = (): Pick<
   UseQueryOptions,

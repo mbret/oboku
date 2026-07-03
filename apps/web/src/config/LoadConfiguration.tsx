@@ -1,6 +1,7 @@
-import { memo, type ReactNode } from "react"
+import { memo, type ReactNode, useEffect } from "react"
+import { useIsRestoring, useQueryClient } from "@tanstack/react-query"
 import { SplashScreen } from "../common/SplashScreen"
-import { useConfig } from "./useConfig"
+import { seedWebConfigFromCache, useConfig } from "./useConfig"
 
 /**
  * Explicit boot boundary for remote configuration.
@@ -13,7 +14,18 @@ export const LoadConfiguration = memo(function LoadConfiguration({
 }: {
   children: ReactNode
 }) {
+  const queryClient = useQueryClient()
+  const isRestoring = useIsRestoring()
   const { data: config } = useConfig({ refetchOnMount: "always" })
+
+  useEffect(
+    function seedWebConfigFromCacheOnBoot() {
+      if (isRestoring) return
+
+      void seedWebConfigFromCache(queryClient)
+    },
+    [isRestoring, queryClient],
+  )
 
   if (!config) {
     return <SplashScreen show />

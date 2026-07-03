@@ -1,7 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { QueryClient } from "@tanstack/react-query"
 import type { GetWebConfigResponse } from "@oboku/shared"
 import type { HttpApiClientWeb } from "../http"
-import { buildConfig } from "./useConfig"
+import {
+  buildConfig,
+  seedWebConfigFromCache,
+  webConfigQueryKey,
+} from "./useConfig"
+import { readWebConfigCache } from "./configCache"
+
+vi.mock("./configCache", () => ({
+  saveWebConfigCache: vi.fn(),
+  readWebConfigCache: vi.fn(),
+}))
 
 // fetchConfig only touches `fetchOrThrow`; the double cast lets a minimal stub
 // stand in for the full client without recreating every domain method.
@@ -133,5 +144,45 @@ describe("fetchConfig", () => {
     const { fetchConfig } = await import("./useConfig")
 
     await expect(fetchConfig(httpClientApi)).rejects.toBe(error)
+  })
+})
+
+describe("seedWebConfigFromCache", () => {
+  beforeEach(() => {
+    vi.mocked(readWebConfigCache).mockReset()
+  })
+
+  it("seeds the query from the cached server config", async () => {
+    vi.mocked(readWebConfigCache).mockResolvedValue(baseServerConfig)
+    const queryClient = new QueryClient()
+
+    await seedWebConfigFromCache(queryClient)
+
+    expect(queryClient.getQueryData(webConfigQueryKey)).toEqual(
+      buildConfig(baseServerConfig),
+    )
+  })
+
+  it("does not overwrite a config already in the cache", async () => {
+    vi.mocked(readWebConfigCache).mockResolvedValue(baseServerConfig)
+    const queryClient = new QueryClient()
+    const existing = buildConfig({
+      ...baseServerConfig,
+      GOOGLE_CLIENT_ID: "already-present",
+    })
+    queryClient.setQueryData(webConfigQueryKey, existing)
+
+    await seedWebConfigFromCache(queryClient)
+
+    expect(queryClient.getQueryData(webConfigQueryKey)).toBe(existing)
+  })
+
+  it("no-ops when the offline cache is empty", async () => {
+    vi.mocked(readWebConfigCache).mockResolvedValue(undefined)
+    const queryClient = new QueryClient()
+
+    await seedWebConfigFromCache(queryClient)
+
+    expect(queryClient.getQueryData(webConfigQueryKey)).toBeUndefined()
   })
 })

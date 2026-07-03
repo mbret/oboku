@@ -20,7 +20,7 @@ import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificat
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
-import { API_QUERY_KEY_PREFIX, shouldPersistQueryState } from "./queryClient"
+import { shouldPersistQueryState } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
 const createClients = (httpClientApi: HttpApiClientWeb) => {
@@ -126,13 +126,7 @@ export const QueryClientProvider = memo(function QueryClientProvider({
         persister,
         buster: persistBuster,
         dehydrateOptions: {
-          // Persist API-backed queries (prefixed with "api"); queries backed by
-          // rxdb (prefixed with "rxdb") are already persisted locally. Successful
-          // queries persist by default; `alwaysPersist` ones are kept even when
-          // their latest fetch failed (see shouldPersistQueryState).
-          shouldDehydrateQuery: (query) =>
-            query.queryKey[0] === API_QUERY_KEY_PREFIX &&
-            shouldPersistQueryState(query),
+          shouldDehydrateQuery: shouldPersistQueryState,
           // Only persist mutations we can actually resume (see above).
           shouldDehydrateMutation: (mutation) =>
             defaultShouldDehydrateMutation(mutation) &&

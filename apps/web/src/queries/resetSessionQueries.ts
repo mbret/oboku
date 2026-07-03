@@ -17,18 +17,16 @@ import { shouldPersistQueryState } from "./queryClient"
  * auth clears). Mutations are cleared separately because `resetQueries` only
  * touches the query cache.
  *
- * Queries tagged `meta.persistAcrossSessions` are app-global (not session data)
+ * Queries tagged `meta.survivesSessionReset` are app-global (not session data)
  * and must stay available for the signed-out screens (e.g. the web config
  * powering the Google sign-in button), so they are excluded from the reset.
  *
- * The persisted client cannot simply be dropped: the config lives in the same
- * persister, and wiping it would leave `LoadConfiguration` without data on an
- * offline reload (or while `/web/config` is unavailable). Relying on the
- * provider's throttled auto-persist is not enough either — a reload before it
- * flushes would rehydrate the pre-reset snapshot and resurface the previous
- * session's cached data. So we force an immediate save of the global queries
- * only, which atomically drops the persisted session data while keeping the
- * config for rehydration.
+ * A reload right after sign-out must not resurface the previous session's
+ * cached data, and the provider's throttled auto-persist may not have flushed
+ * by then. So we force an immediate save that atomically overwrites the snapshot
+ * with only the global queries that opt into persistence, dropping the session
+ * data. The web config never opts into the snapshot — it owns its offline
+ * cache — so it stays available to `LoadConfiguration` regardless.
  *
  * `keepQuery` preserves extra queries from the reset. On account switch it
  * keeps the (already-updated) active-profile query so `hasSession` never blinks
@@ -40,7 +38,7 @@ export const resetSessionQueries = (
 ) => {
   void queryClient.resetQueries({
     predicate: (query) =>
-      !query.meta?.persistAcrossSessions && !keepQuery?.(query),
+      !query.meta?.survivesSessionReset && !keepQuery?.(query),
   })
   queryClient.getMutationCache().clear()
 
@@ -50,7 +48,7 @@ export const resetSessionQueries = (
     buster: persistBuster,
     dehydrateOptions: {
       shouldDehydrateQuery: (query) =>
-        !!query.meta?.persistAcrossSessions && shouldPersistQueryState(query),
+        !!query.meta?.survivesSessionReset && shouldPersistQueryState(query),
       shouldDehydrateMutation: () => false,
     },
   })
