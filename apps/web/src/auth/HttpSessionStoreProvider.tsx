@@ -25,6 +25,11 @@ export const HttpSessionStoreProvider = memo(function HttpSessionStoreProvider({
       get: () =>
         ensureActiveProfile(queryClient, activeProfileIdSignal.getValue()),
       set: async (session) => {
+        const isStillActiveProfile =
+          activeProfileIdSignal.getValue() === session.id
+
+        if (!isStillActiveProfile) return
+
         await putProfile(session)
       },
     })
