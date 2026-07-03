@@ -5,13 +5,14 @@ import { setUser } from "@sentry/react"
 import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/useResetSessionQueries"
+import { Logger } from "../debug/logger.shared"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
-  const { mutate: deleteProfile } = useDeleteProfile()
+  const { mutateAsync: deleteProfile } = useDeleteProfile()
 
-  return () => {
+  return async () => {
     const activeProfileId = getProfile()
 
     clearTemporaryMasterKey()
@@ -22,7 +23,11 @@ export const useSignOut = () => {
     clearActiveProfileId()
 
     if (activeProfileId) {
-      deleteProfile(activeProfileId)
+      try {
+        await deleteProfile(activeProfileId)
+      } catch (error) {
+        Logger.error("Failed to delete profile on sign out", error)
+      }
     }
 
     resetSessionQueries()
