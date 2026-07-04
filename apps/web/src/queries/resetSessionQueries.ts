@@ -29,7 +29,7 @@ import { shouldPersistQueryState } from "./queryClient"
  * cache — so it stays available to `LoadConfiguration` regardless.
  *
  * `keepQuery` preserves extra queries from the reset. On account switch it
- * keeps the (already-updated) active-profile query so `hasSession` never blinks
+ * keeps the (already-updated) profiles query so `hasSession` never blinks
  * empty mid-switch and unmounts the authenticated UI.
  */
 export const resetSessionQueries = (

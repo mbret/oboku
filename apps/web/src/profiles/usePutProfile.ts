@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { dexieDb } from "../rxdb/dexie"
 import type { Profile } from "./types"
-import { profileByIdQueryKey } from "./useProfileById"
+import { profilesQueryKey } from "./useProfiles"
 
 export const usePutProfile = () => {
   const queryClient = useQueryClient()
@@ -9,23 +9,23 @@ export const usePutProfile = () => {
   return useMutation({
     mutationFn: (profile: Profile) => dexieDb.profiles.put(profile),
     onMutate: async (profile: Profile) => {
-      await queryClient.cancelQueries({
-        queryKey: profileByIdQueryKey(profile.id),
-      })
+      await queryClient.cancelQueries({ queryKey: profilesQueryKey })
 
-      const previousProfile = queryClient.getQueryData(
-        profileByIdQueryKey(profile.id),
-      )
+      const previousProfiles = queryClient.getQueryData(profilesQueryKey)
 
-      queryClient.setQueryData(profileByIdQueryKey(profile.id), profile)
-
-      return { previousProfile }
-    },
-    onError: (_error, profile, context) => {
       queryClient.setQueryData(
-        profileByIdQueryKey(profile.id),
-        context?.previousProfile,
+        profilesQueryKey,
+        (profiles) =>
+          profiles && [
+            ...profiles.filter((existing) => existing.id !== profile.id),
+            profile,
+          ],
       )
+
+      return { previousProfiles }
+    },
+    onError: (_error, _profile, context) => {
+      queryClient.setQueryData(profilesQueryKey, context?.previousProfiles)
     },
   })
 }
