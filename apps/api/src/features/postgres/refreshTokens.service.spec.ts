@@ -47,6 +47,8 @@ describe("RefreshTokensService", () => {
     manager: {
       transaction: jest.Mock
       createQueryBuilder: jest.Mock
+      findOne: jest.Mock
+      find: jest.Mock
       delete: jest.Mock
     }
   }
@@ -60,6 +62,8 @@ describe("RefreshTokensService", () => {
       manager: {
         transaction: jest.fn(),
         createQueryBuilder: jest.fn(),
+        findOne: jest.fn().mockResolvedValue(null),
+        find: jest.fn().mockResolvedValue([]),
         delete: jest.fn().mockResolvedValue(undefined),
       },
     }
@@ -446,6 +450,103 @@ describe("RefreshTokensService", () => {
     await service.deleteByUserId(42)
 
     expect(repository.delete).toHaveBeenCalledWith({ user_id: 42 })
+  })
+
+  it("revokes the whole installation chain from any token of the chain, locking it against in-flight rotations", async () => {
+    const supersededRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("stale-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: new Date(FIXED_NOW.getTime() - 10 * 60 * 1000),
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+
+    repository.manager.findOne.mockResolvedValue(supersededRow)
+
+    const chainOperations: string[] = []
+    repository.manager.find.mockImplementation(
+      async function recordChainLock() {
+        chainOperations.push("lock")
+        return [supersededRow]
+      },
+    )
+    repository.manager.delete.mockImplementation(
+      async function recordChainDelete() {
+        chainOperations.push("delete")
+      },
+    )
+
+    await service.revokeByToken("stale-token")
+
+    expect(repository.manager.transaction).toHaveBeenCalledTimes(1)
+    expect(repository.manager.findOne).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        where: { token_hash: hash("stale-token") },
+      },
+    )
+    expect(repository.manager.find).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        where: { user_id: 42, installation_id: "installation-1" },
+        lock: { mode: "pessimistic_write" },
+      },
+    )
+    expect(repository.manager.delete).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        user_id: 42,
+        installation_id: "installation-1",
+      },
+    )
+    expect(chainOperations).toEqual(["lock", "delete"])
+  })
+
+  it("leaves a chain re-issued by a re-login while revocation was acquiring locks", async () => {
+    const oldTombstoneRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("stale-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: null,
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+    const freshLoginRow = {
+      id: 8,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("fresh-login-token"),
+      created_at: FIXED_NOW,
+      superseded_at: null,
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+
+    repository.manager.findOne.mockResolvedValue(oldTombstoneRow)
+    repository.manager.find.mockResolvedValue([freshLoginRow])
+
+    await service.revokeByToken("stale-token")
+
+    expect(repository.manager.find).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        where: { user_id: 42, installation_id: "installation-1" },
+        lock: { mode: "pessimistic_write" },
+      },
+    )
+    expect(repository.manager.delete).not.toHaveBeenCalled()
+  })
+
+  it("treats revocation of an unknown token as a no-op", async () => {
+    repository.manager.findOne.mockResolvedValue(null)
+
+    await expect(
+      service.revokeByToken("unknown-token"),
+    ).resolves.toBeUndefined()
+
+    expect(repository.manager.delete).not.toHaveBeenCalled()
   })
 
   it("round-trips a successor token and rejects tampered or wrong-key payloads", () => {

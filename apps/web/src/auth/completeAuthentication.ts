@@ -5,7 +5,6 @@ import type { QueryClient } from "@tanstack/react-query"
 import {
   activeProfileIdSignal,
   ensureActiveProfile,
-  profileByIdQueryKey,
   setActiveProfileId,
 } from "../profiles"
 import type { Profile } from "../profiles/types"
@@ -44,16 +43,9 @@ export const completeAuthentication = ({
              * Commit the new session (profile row + active id) *before* resetting
              * so the refetches `resetQueries` triggers read the new account's
              * token rather than the previous one still cached under the old
-             * profile. The active-profile query is kept so `hasSession` doesn't
-             * blink empty mid-switch (see `resetSessionQueries`).
+             * profile.
              */
-            const activeProfileQueryKey = profileByIdQueryKey(auth.nameHex)
-
-            resetSessionQueries(queryClient, {
-              keepQuery: (query) =>
-                query.queryKey[0] === activeProfileQueryKey[0] &&
-                query.queryKey[1] === activeProfileQueryKey[1],
-            })
+            resetSessionQueries(queryClient)
           }
 
           return { switchedAccount }

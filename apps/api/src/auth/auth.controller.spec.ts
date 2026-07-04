@@ -3,6 +3,7 @@ import { ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import {
   AuthController,
+  LogoutDto,
   RefreshTokenQueryDto,
   SignInWithEmailDto,
   SignInWithGoogleDto,
@@ -18,6 +19,7 @@ describe("AuthController", () => {
     signInWithEmail: jest.Mock
     signInWithGoogle: jest.Mock
     refreshToken: jest.Mock
+    logout: jest.Mock
     deleteAccount: jest.Mock
   }
 
@@ -28,6 +30,7 @@ describe("AuthController", () => {
       signInWithEmail: jest.fn(),
       signInWithGoogle: jest.fn(),
       refreshToken: jest.fn(),
+      logout: jest.fn().mockResolvedValue(undefined),
       deleteAccount: jest.fn().mockResolvedValue(undefined),
     }
 
@@ -152,6 +155,40 @@ describe("AuthController", () => {
     ).rejects.toBeInstanceOf(BadRequestException)
 
     expect(authService.signInWithGoogle).not.toHaveBeenCalled()
+  })
+
+  it("forwards a valid logout request and always succeeds with an empty body", async () => {
+    const body = await validationPipe.transform(
+      {
+        refresh_token: "refresh-token",
+      },
+      {
+        type: "body",
+        metatype: LogoutDto,
+        data: "",
+      },
+    )
+
+    await expect(controller.logout(body)).resolves.toEqual({})
+
+    expect(authService.logout).toHaveBeenCalledWith({
+      refreshToken: "refresh-token",
+    })
+  })
+
+  it("rejects logout requests without refresh_token", async () => {
+    await expect(
+      validationPipe.transform(
+        {},
+        {
+          type: "body",
+          metatype: LogoutDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.logout).not.toHaveBeenCalled()
   })
 
   it("rejects refresh token requests without refresh_token", async () => {

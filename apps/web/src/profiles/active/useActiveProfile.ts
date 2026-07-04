@@ -1,7 +1,8 @@
 import { useSignalValue } from "reactjrx"
 import { activeProfileIdSignal } from "./activeProfileId"
 import type { QueryClient } from "@tanstack/react-query"
-import { profileByIdQueryOptions, useProfileById } from "../useProfileById"
+import { useProfileById } from "../useProfileById"
+import { profilesQueryOptions } from "../useProfiles"
 
 export const useActiveProfile = () => {
   const activeProfileId = useSignalValue(activeProfileIdSignal)
@@ -9,11 +10,13 @@ export const useActiveProfile = () => {
   return useProfileById(activeProfileId)
 }
 
-export const ensureActiveProfile = (
+export const ensureActiveProfile = async (
   queryClient: QueryClient,
   activeProfileId: string | null | undefined,
 ) => {
-  if (!activeProfileId) return Promise.resolve(null)
+  if (!activeProfileId) return null
 
-  return queryClient.ensureQueryData(profileByIdQueryOptions(activeProfileId))
+  const profiles = await queryClient.ensureQueryData(profilesQueryOptions)
+
+  return profiles.find((profile) => profile.id === activeProfileId) ?? null
 }

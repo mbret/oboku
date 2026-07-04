@@ -3,28 +3,28 @@ import { dexieDb } from "../rxdb/dexie"
 import type { Profile } from "./types"
 import { profilesQueryKey } from "./useProfiles"
 
-export const usePutProfile = () => {
+type ProfilePatch = Pick<Profile, "id"> & Partial<Omit<Profile, "id">>
+
+export const usePatchProfile = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (profile: Profile) => dexieDb.profiles.put(profile),
-    onMutate: async (profile: Profile) => {
+    mutationFn: ({ id, ...patch }: ProfilePatch) =>
+      dexieDb.profiles.update(id, patch),
+    onMutate: async ({ id, ...patch }: ProfilePatch) => {
       await queryClient.cancelQueries({ queryKey: profilesQueryKey })
 
       const previousProfiles = queryClient.getQueryData(profilesQueryKey)
 
-      queryClient.setQueryData(
-        profilesQueryKey,
-        (profiles) =>
-          profiles && [
-            ...profiles.filter((existing) => existing.id !== profile.id),
-            profile,
-          ],
+      queryClient.setQueryData(profilesQueryKey, (profiles) =>
+        profiles?.map((profile) =>
+          profile.id === id ? { ...profile, ...patch } : profile,
+        ),
       )
 
       return { previousProfiles }
     },
-    onError: (_error, _profile, context) => {
+    onError: (_error, _patch, context) => {
       queryClient.setQueryData(profilesQueryKey, context?.previousProfiles)
     },
   })

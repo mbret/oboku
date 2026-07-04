@@ -5,6 +5,8 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  LogoutRequest,
+  LogoutResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
@@ -169,6 +171,17 @@ export class HttpApiClientWeb extends HttpClientWeb {
       },
     )
   }
+
+  /**
+   * Revokes the server-side refresh session. Public endpoint where the
+   * refresh token itself is the credential, so interceptors are skipped: no
+   * bearer injection, and no refresh-on-401 dance for a session being killed.
+   */
+  logout = (data: LogoutRequest) =>
+    this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
+      body: data,
+      useInterceptors: false,
+    })
 
   deleteAccount = () =>
     this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {

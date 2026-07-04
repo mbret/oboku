@@ -8,9 +8,10 @@ declare module "@tanstack/react-query" {
   interface Register {
     queryMeta: {
       /**
-       * The query is not tied to the signed-in user (deployment-level data, e.g.
-       * the web config), so it is excluded from the per-user-session reset on
-       * sign-out / account switch and stays available on the signed-out screens.
+       * The query is not tied to the signed-in session (deployment-level data
+       * like the web config, or device-level data like the profiles list), so
+       * it is excluded from the per-user-session reset on sign-out / account
+       * switch and stays available on the signed-out screens.
        */
       survivesSessionReset?: boolean
       /**

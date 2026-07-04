@@ -9,6 +9,8 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  LogoutRequest,
+  LogoutResponse,
   RefreshTokenResponse,
   RequestMagicLinkRequest,
   RequestMagicLinkResponse,
@@ -78,6 +80,12 @@ export class RefreshTokenQueryDto {
   refresh_token!: string
 }
 
+export class LogoutDto implements LogoutRequest {
+  @IsString()
+  @IsNotEmpty()
+  refresh_token!: string
+}
+
 @Controller("auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -142,6 +150,14 @@ export class AuthController {
     @Query() query: RefreshTokenQueryDto,
   ): Promise<RefreshTokenResponse> {
     return this.authService.refreshToken(query.grant_type, query.refresh_token)
+  }
+
+  @Public()
+  @Post("logout")
+  async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
+    await this.authService.logout({ refreshToken: body.refresh_token })
+
+    return {}
   }
 
   @Delete("account")

@@ -52,4 +52,10 @@ export type CompleteMagicLinkResponse = AuthSessionResponse
 
 export type RefreshTokenResponse = AuthTokensResponse
 
+export type LogoutRequest = {
+  refresh_token: string
+}
+
+export type LogoutResponse = EmptyResponse
+
 export type DeleteAccountResponse = EmptyResponse

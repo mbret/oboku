@@ -1,8 +1,4 @@
-import {
-  type Query,
-  type QueryClient,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { type QueryClient, useQueryClient } from "@tanstack/react-query"
 import { persistQueryClientSave } from "@tanstack/react-query-persist-client"
 import { persistBuster, persister } from "./persister"
 import { shouldPersistQueryState } from "./queryClient"
@@ -17,9 +13,12 @@ import { shouldPersistQueryState } from "./queryClient"
  * auth clears). Mutations are cleared separately because `resetQueries` only
  * touches the query cache.
  *
- * Queries tagged `meta.survivesSessionReset` are app-global (not session data)
- * and must stay available for the signed-out screens (e.g. the web config
- * powering the Google sign-in button), so they are excluded from the reset.
+ * Queries tagged `meta.survivesSessionReset` are not session data and must
+ * stay available across the reset (e.g. the web config powering the Google
+ * sign-in button on the signed-out screens, or the device-scoped profiles
+ * query that `hasSession` derives from — resetting it mid-account-switch
+ * would blink `hasSession` empty and unmount the authenticated UI), so they
+ * are excluded from the reset.
  *
  * A reload right after sign-out must not resurface the previous session's
  * cached data, and the provider's throttled auto-persist may not have flushed
@@ -27,18 +26,10 @@ import { shouldPersistQueryState } from "./queryClient"
  * with only the global queries that opt into persistence, dropping the session
  * data. The web config never opts into the snapshot — it owns its offline
  * cache — so it stays available to `LoadConfiguration` regardless.
- *
- * `keepQuery` preserves extra queries from the reset. On account switch it
- * keeps the (already-updated) active-profile query so `hasSession` never blinks
- * empty mid-switch and unmounts the authenticated UI.
  */
-export const resetSessionQueries = (
-  queryClient: QueryClient,
-  { keepQuery }: { keepQuery?: (query: Query) => boolean } = {},
-) => {
+export const resetSessionQueries = (queryClient: QueryClient) => {
   void queryClient.resetQueries({
-    predicate: (query) =>
-      !query.meta?.survivesSessionReset && !keepQuery?.(query),
+    predicate: (query) => !query.meta?.survivesSessionReset,
   })
   queryClient.getMutationCache().clear()
 

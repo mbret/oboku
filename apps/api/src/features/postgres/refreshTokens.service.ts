@@ -305,6 +305,65 @@ export class RefreshTokensService {
     await this.refreshTokenRepository.delete(id)
   }
 
+  /**
+   * Revokes the whole `(user_id, installation_id)` chain the presented token
+   * belongs to. Superseded rows match too, so a client holding a token one
+   * rotation behind still kills the active successor. Unknown tokens are a
+   * no-op (RFC 7009 §2.2 semantics), keeping revocation idempotent for
+   * best-effort offline clients.
+   *
+   * Locking the chain before deleting serializes revocation with a concurrent
+   * rotation of ANY chain row (rotation CAS-locks its parent, which may be the
+   * active row rather than the presented one). Without it, under READ
+   * COMMITTED a successor inserted by an in-flight rotation is invisible to
+   * the DELETE's snapshot and would survive a "successful" revocation. Once
+   * the lock resolves, the DELETE is a new statement with a fresh snapshot, so
+   * it sweeps that successor too; a rotation blocked by our lock instead fails
+   * its CAS and resolves to `invalid` (see `resolveSuccessor`).
+   *
+   * The delete is additionally conditioned on the presented row surviving the
+   * lock acquisition. A same-installation re-login (`issueTokenForInstallation`)
+   * that commits in between wipes the chain — presented row included — and
+   * re-issues it, so the locked rows would be the fresh session's; deleting
+   * them would revoke the session the user just signed into. A vanished
+   * presented row means the token is now unknown, which falls under the
+   * unknown-token no-op above. Rotation never deletes the presented row, so
+   * this guard cannot skip a legitimate revocation.
+   */
+  async revokeByToken(presentedToken: string) {
+    const presentedHash = this.hashToken(presentedToken)
+
+    await this.refreshTokenRepository.manager.transaction(async (manager) => {
+      const presented = await manager.findOne(RefreshTokenPostgresEntity, {
+        where: { token_hash: presentedHash },
+      })
+
+      if (!presented) {
+        return
+      }
+
+      const chain = {
+        user_id: presented.user_id,
+        installation_id: presented.installation_id,
+      }
+
+      const lockedChain = await manager.find(RefreshTokenPostgresEntity, {
+        where: chain,
+        lock: { mode: "pessimistic_write" },
+      })
+
+      const chainStillContainsPresented = lockedChain.some(
+        (row) => row.token_hash === presentedHash,
+      )
+
+      if (!chainStillContainsPresented) {
+        return
+      }
+
+      await manager.delete(RefreshTokenPostgresEntity, chain)
+    })
+  }
+
   async deleteByUserId(userId: number) {
     await this.refreshTokenRepository.delete({ user_id: userId })
   }
