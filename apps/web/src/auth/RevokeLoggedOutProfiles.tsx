@@ -1,26 +1,22 @@
 import { memo, useEffect } from "react"
+import { useNetworkState } from "react-use"
+import { useHasLoggedOutProfiles } from "../profiles"
 import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
 export const RevokeLoggedOutProfiles = memo(function RevokeLoggedOutProfiles() {
+  const { online } = useNetworkState()
+  const { data: hasLoggedOutProfiles } = useHasLoggedOutProfiles()
   const { mutate: revokeLoggedOutProfiles } = useRevokeLoggedOutProfiles({
     meta: { suppressGlobalErrorToast: true },
   })
 
   useEffect(
-    function revokeOnBootAndWhenBackOnline() {
-      const runBestEffortRevoke = () => {
+    function revokeWhenOnlineWithLoggedOutProfiles() {
+      if (online && hasLoggedOutProfiles) {
         revokeLoggedOutProfiles()
       }
-
-      runBestEffortRevoke()
-
-      window.addEventListener("online", runBestEffortRevoke)
-
-      return function stopListeningForOnline() {
-        window.removeEventListener("online", runBestEffortRevoke)
-      }
     },
-    [revokeLoggedOutProfiles],
+    [online, hasLoggedOutProfiles, revokeLoggedOutProfiles],
   )
 
   return null

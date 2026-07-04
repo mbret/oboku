@@ -13,10 +13,7 @@ const { profilesStore } = vi.hoisted(() => ({
 vi.mock("../rxdb/dexie", () => ({
   dexieDb: {
     profiles: {
-      filter: (predicate: (profile: Profile) => boolean) => ({
-        toArray: async () =>
-          [...profilesStore.values()].filter((profile) => predicate(profile)),
-      }),
+      toArray: async () => [...profilesStore.values()],
       delete: async (profileId: string) => {
         profilesStore.delete(profileId)
       },
@@ -26,6 +23,7 @@ vi.mock("../rxdb/dexie", () => ({
 
 import type { HttpApiClientWeb } from "../http/HttpClientApi.web"
 import { HttpClientApiContext } from "../http"
+import { profilesQueryKey } from "../profiles"
 import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
@@ -38,12 +36,15 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   ...overrides,
 })
 
-const renderRevokeHook = (logout: ReturnType<typeof vi.fn>) => {
+const renderRevokeHook = (
+  logout: ReturnType<typeof vi.fn>,
+  queryClient = new QueryClient(),
+) => {
   // test double: only logout is exercised by the sweep
   const client = { logout } as unknown as HttpApiClientWeb
 
   const wrapper = ({ children }: { children: ReactNode }) => (
-    <QueryClientProvider client={new QueryClient()}>
+    <QueryClientProvider client={queryClient}>
       <HttpClientApiContext.Provider value={client}>
         {children}
       </HttpClientApiContext.Provider>
@@ -132,5 +133,38 @@ describe("useRevokeLoggedOutProfiles", () => {
 
     expect(profilesStore.has("gone-reader")).toBe(false)
     expect(profilesStore.has("stuck-reader")).toBe(true)
+  })
+
+  it("leaves a row overwritten by a re-login while its logout call is in flight", async () => {
+    profilesStore.set(
+      "reader",
+      createProfile({
+        id: "reader",
+        refreshToken: "old-refresh-token",
+        status: "loggedOut",
+      }),
+    )
+
+    const queryClient = new QueryClient()
+    const freshProfile = createProfile({
+      id: "reader",
+      refreshToken: "new-refresh-token",
+    })
+    const logout = vi
+      .fn()
+      .mockImplementation(async function reloginWhileLogoutInFlight() {
+        profilesStore.set("reader", freshProfile)
+        queryClient.setQueryData(profilesQueryKey, [freshProfile])
+
+        return { data: {} }
+      })
+    const { result } = renderRevokeHook(logout, queryClient)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledWith({
+      refresh_token: "old-refresh-token",
+    })
+    expect(profilesStore.get("reader")?.refreshToken).toBe("new-refresh-token")
   })
 })

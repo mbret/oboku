@@ -6,15 +6,11 @@ import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
-import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
   const { mutateAsync: patchProfile } = usePatchProfile()
-  const { mutate: revokeLoggedOutProfiles } = useRevokeLoggedOutProfiles({
-    meta: { suppressGlobalErrorToast: true },
-  })
 
   return async () => {
     const activeProfileId = getProfile()
@@ -26,11 +22,17 @@ export const useSignOut = () => {
 
     clearActiveProfileId()
 
+    // Reset before writing the tombstone: the write triggers the revocation
+    // sweep, and clearing the mutation cache after the sweep starts would
+    // void its scope serialization.
+    resetSessionQueries()
+
     /**
      * The profile row is kept as a `loggedOut` tombstone rather than deleted:
      * its refresh token is the credential the (possibly offline) revocation
-     * sweep needs to kill the server session. The row is deleted once
-     * revocation succeeds (see `useRevokeLoggedOutProfiles`).
+     * sweep needs to kill the server session. This write is also what
+     * triggers the sweep, which deletes the row once revocation succeeds
+     * (see `RevokeLoggedOutProfiles`).
      */
     if (activeProfileId) {
       try {
@@ -40,10 +42,6 @@ export const useSignOut = () => {
       }
     }
 
-    resetSessionQueries()
-
     signOutPlugins()
-
-    revokeLoggedOutProfiles()
   }
 }
