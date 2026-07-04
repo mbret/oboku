@@ -320,6 +320,15 @@ export class RefreshTokensService {
    * the lock resolves, the DELETE is a new statement with a fresh snapshot, so
    * it sweeps that successor too; a rotation blocked by our lock instead fails
    * its CAS and resolves to `invalid` (see `resolveSuccessor`).
+   *
+   * The delete is additionally conditioned on the presented row surviving the
+   * lock acquisition. A same-installation re-login (`issueTokenForInstallation`)
+   * that commits in between wipes the chain — presented row included — and
+   * re-issues it, so the locked rows would be the fresh session's; deleting
+   * them would revoke the session the user just signed into. A vanished
+   * presented row means the token is now unknown, which falls under the
+   * unknown-token no-op above. Rotation never deletes the presented row, so
+   * this guard cannot skip a legitimate revocation.
    */
   async revokeByToken(presentedToken: string) {
     const presentedHash = this.hashToken(presentedToken)
@@ -338,10 +347,18 @@ export class RefreshTokensService {
         installation_id: presented.installation_id,
       }
 
-      await manager.find(RefreshTokenPostgresEntity, {
+      const lockedChain = await manager.find(RefreshTokenPostgresEntity, {
         where: chain,
         lock: { mode: "pessimistic_write" },
       })
+
+      const chainStillContainsPresented = lockedChain.some(
+        (row) => row.token_hash === presentedHash,
+      )
+
+      if (!chainStillContainsPresented) {
+        return
+      }
 
       await manager.delete(RefreshTokenPostgresEntity, chain)
     })
