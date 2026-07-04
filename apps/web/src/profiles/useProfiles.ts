@@ -6,6 +6,7 @@ export const profilesQueryOptions = queryOptions({
   queryKey: ["profiles"] as const,
   queryFn: async (): Promise<Profile[]> => dexieDb.profiles.toArray(),
   staleTime: Infinity,
+  meta: { survivesSessionReset: true, persist: false },
 })
 
 export const profilesQueryKey = profilesQueryOptions.queryKey
