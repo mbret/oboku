@@ -12,7 +12,9 @@ export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
   const { mutateAsync: patchProfile } = usePatchProfile()
-  const revokeLoggedOutProfiles = useRevokeLoggedOutProfiles()
+  const { mutate: revokeLoggedOutProfiles } = useRevokeLoggedOutProfiles({
+    meta: { suppressGlobalErrorToast: true },
+  })
 
   return async () => {
     const activeProfileId = getProfile()
@@ -42,6 +44,6 @@ export const useSignOut = () => {
 
     signOutPlugins()
 
-    void revokeLoggedOutProfiles()
+    revokeLoggedOutProfiles()
   }
 }

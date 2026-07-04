@@ -73,7 +73,7 @@ describe("useRevokeLoggedOutProfiles", () => {
     const logout = vi.fn().mockResolvedValue({ data: {} })
     const { result } = renderRevokeHook(logout)
 
-    await result.current()
+    await result.current.mutateAsync()
 
     expect(logout).toHaveBeenCalledTimes(1)
     expect(logout).toHaveBeenCalledWith({
@@ -92,7 +92,7 @@ describe("useRevokeLoggedOutProfiles", () => {
     const logout = vi.fn().mockRejectedValue(new Error("offline"))
     const { result } = renderRevokeHook(logout)
 
-    await expect(result.current()).resolves.toBeUndefined()
+    await expect(result.current.mutateAsync()).resolves.toBeUndefined()
 
     expect(profilesStore.has("gone-reader")).toBe(true)
   })
@@ -128,7 +128,7 @@ describe("useRevokeLoggedOutProfiles", () => {
       )
     const { result } = renderRevokeHook(logout)
 
-    await result.current()
+    await result.current.mutateAsync()
 
     expect(profilesStore.has("gone-reader")).toBe(false)
     expect(profilesStore.has("stuck-reader")).toBe(true)
