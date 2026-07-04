@@ -311,19 +311,39 @@ export class RefreshTokensService {
    * rotation behind still kills the active successor. Unknown tokens are a
    * no-op (RFC 7009 §2.2 semantics), keeping revocation idempotent for
    * best-effort offline clients.
+   *
+   * Locking the chain before deleting serializes revocation with a concurrent
+   * rotation of ANY chain row (rotation CAS-locks its parent, which may be the
+   * active row rather than the presented one). Without it, under READ
+   * COMMITTED a successor inserted by an in-flight rotation is invisible to
+   * the DELETE's snapshot and would survive a "successful" revocation. Once
+   * the lock resolves, the DELETE is a new statement with a fresh snapshot, so
+   * it sweeps that successor too; a rotation blocked by our lock instead fails
+   * its CAS and resolves to `invalid` (see `resolveSuccessor`).
    */
   async revokeByToken(presentedToken: string) {
-    const presented = await this.refreshTokenRepository.findOne({
-      where: { token_hash: this.hashToken(presentedToken) },
-    })
+    const presentedHash = this.hashToken(presentedToken)
 
-    if (!presented) {
-      return
-    }
+    await this.refreshTokenRepository.manager.transaction(async (manager) => {
+      const presented = await manager.findOne(RefreshTokenPostgresEntity, {
+        where: { token_hash: presentedHash },
+      })
 
-    await this.refreshTokenRepository.delete({
-      user_id: presented.user_id,
-      installation_id: presented.installation_id,
+      if (!presented) {
+        return
+      }
+
+      const chain = {
+        user_id: presented.user_id,
+        installation_id: presented.installation_id,
+      }
+
+      await manager.find(RefreshTokenPostgresEntity, {
+        where: chain,
+        lock: { mode: "pessimistic_write" },
+      })
+
+      await manager.delete(RefreshTokenPostgresEntity, chain)
     })
   }
 
