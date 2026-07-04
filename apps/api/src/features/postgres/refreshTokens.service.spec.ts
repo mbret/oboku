@@ -448,6 +448,40 @@ describe("RefreshTokensService", () => {
     expect(repository.delete).toHaveBeenCalledWith({ user_id: 42 })
   })
 
+  it("revokes the whole installation chain from any token of the chain, even a superseded one", async () => {
+    const supersededRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("stale-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: new Date(FIXED_NOW.getTime() - 10 * 60 * 1000),
+      successor_token: null,
+    } as RefreshTokenPostgresEntity
+
+    repository.findOne.mockResolvedValue(supersededRow)
+
+    await service.revokeByToken("stale-token")
+
+    expect(repository.findOne).toHaveBeenCalledWith({
+      where: { token_hash: hash("stale-token") },
+    })
+    expect(repository.delete).toHaveBeenCalledWith({
+      user_id: 42,
+      installation_id: "installation-1",
+    })
+  })
+
+  it("treats revocation of an unknown token as a no-op", async () => {
+    repository.findOne.mockResolvedValue(null)
+
+    await expect(
+      service.revokeByToken("unknown-token"),
+    ).resolves.toBeUndefined()
+
+    expect(repository.delete).not.toHaveBeenCalled()
+  })
+
   it("round-trips a successor token and rejects tampered or wrong-key payloads", () => {
     const encrypt = (instance: RefreshTokensService, token: string) =>
       instance["encryptSuccessor"](token)

@@ -31,6 +31,7 @@ describe("AuthService", () => {
     issueTokenForInstallation: jest.Mock
     rotateForRefresh: jest.Mock
     deleteById: jest.Mock
+    revokeByToken: jest.Mock
   }
   let emailService: {
     getSignUpLink: jest.Mock
@@ -58,6 +59,7 @@ describe("AuthService", () => {
       issueTokenForInstallation: jest.fn(),
       rotateForRefresh: jest.fn(),
       deleteById: jest.fn().mockResolvedValue(undefined),
+      revokeByToken: jest.fn().mockResolvedValue(undefined),
     }
     emailService = {
       getSignUpLink: jest
@@ -157,6 +159,14 @@ describe("AuthService", () => {
       appPublicUrl: "https://app.example.com",
       token: "signup-token",
     })
+  })
+
+  it("revokes the presented refresh session on logout", async () => {
+    await service.logout({ refreshToken: "refresh-token" })
+
+    expect(refreshTokensService.revokeByToken).toHaveBeenCalledWith(
+      "refresh-token",
+    )
   })
 
   it("delegates deleteAccount to UsersService", async () => {

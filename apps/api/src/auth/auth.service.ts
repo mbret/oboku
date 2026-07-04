@@ -533,6 +533,10 @@ export class AuthService {
     }
   }
 
+  async logout({ refreshToken }: { refreshToken: string }) {
+    await this.refreshTokensService.revokeByToken(refreshToken)
+  }
+
   async deleteAccount({ userId, email }: { userId: number; email: string }) {
     await this.usersService.deleteAccount({ userId, email })
   }

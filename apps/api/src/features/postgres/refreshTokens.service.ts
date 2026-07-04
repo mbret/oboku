@@ -305,6 +305,28 @@ export class RefreshTokensService {
     await this.refreshTokenRepository.delete(id)
   }
 
+  /**
+   * Revokes the whole `(user_id, installation_id)` chain the presented token
+   * belongs to. Superseded rows match too, so a client holding a token one
+   * rotation behind still kills the active successor. Unknown tokens are a
+   * no-op (RFC 7009 §2.2 semantics), keeping revocation idempotent for
+   * best-effort offline clients.
+   */
+  async revokeByToken(presentedToken: string) {
+    const presented = await this.refreshTokenRepository.findOne({
+      where: { token_hash: this.hashToken(presentedToken) },
+    })
+
+    if (!presented) {
+      return
+    }
+
+    await this.refreshTokenRepository.delete({
+      user_id: presented.user_id,
+      installation_id: presented.installation_id,
+    })
+  }
+
   async deleteByUserId(userId: number) {
     await this.refreshTokenRepository.delete({ user_id: userId })
   }

@@ -35,6 +35,7 @@ import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
 import { WithAuthentication } from "./auth/WithAuthentication"
 import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
+import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
@@ -125,6 +126,7 @@ export const AppWithConfig = memo(() => {
               <QueryClientProvider$>
                 <HttpSessionStoreProvider>
                   <LegacyAuthMigration>
+                    <RevokeLoggedOutProfiles />
                     <ServiceWorkerMessages />
                     <LoadConfiguration>
                       <App />
