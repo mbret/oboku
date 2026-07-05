@@ -24,12 +24,7 @@ import type {
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
 import { signRefreshProof } from "../auth/proofKey"
-import {
-  type FetchConfig,
-  HttpClientError,
-  type HttpClientResponse,
-} from "./httpClient.shared"
-import { HttpClientWeb } from "./httpClient.web"
+import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
 
 export type SessionStore = {
   get: () => Promise<Profile | null>
@@ -40,10 +35,7 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
-export class HttpApiClientWeb extends HttpClientWeb {
-  private refreshSessionPromise: Promise<boolean> | null = null
-  /** Bumped after every applied refresh; see `FetchConfig.authEpoch`. */
-  private refreshEpoch = 0
+export class HttpApiClientWeb extends RefreshingHttpClient {
   private sessionStore: SessionStore = {
     get: async () => null,
     set: async () => {},
@@ -51,11 +43,6 @@ export class HttpApiClientWeb extends HttpClientWeb {
 
   constructor() {
     super({ credentials: "include" })
-
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-    this.useRequestInterceptor(this.stampAuthEpoch)
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-    this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
 
   configureSessionStore = (store: SessionStore) => {
@@ -182,13 +169,6 @@ export class HttpApiClientWeb extends HttpClientWeb {
       method: "DELETE",
     })
 
-  private stampAuthEpoch = async (
-    config: FetchConfig,
-  ): Promise<FetchConfig> => ({
-    ...config,
-    authEpoch: this.refreshEpoch,
-  })
-
   private flagSessionForRelogin = async (sessionId: string) => {
     const authState = await this.getSession()
 
@@ -197,16 +177,29 @@ export class HttpApiClientWeb extends HttpClientWeb {
     }
   }
 
-  private refreshAuthState = async () => {
+  protected shouldAttemptRefresh = async () => !!(await this.getSession())
+
+  protected applyRefresh = async () => {
     const sessionBeforeRefresh = await this.getSession()
 
     if (!sessionBeforeRefresh) {
       return false
     }
 
-    await this.refreshToken({ useInterceptors: false })
+    try {
+      await this.refreshToken({ useInterceptors: false })
+    } catch (error) {
+      console.log("Unable to refresh token")
+      console.error(error)
 
-    this.refreshEpoch++
+      if (refreshTokenWasRejected(error)) {
+        await this.flagSessionForRelogin(sessionBeforeRefresh.id)
+      }
+
+      throw error
+    }
+
+    this.markRefreshApplied()
 
     const authState = await this.getSession()
 
@@ -221,67 +214,5 @@ export class HttpApiClientWeb extends HttpClientWeb {
     }
 
     return true
-  }
-
-  refreshAuthSession = () => {
-    if (this.refreshSessionPromise) {
-      return this.refreshSessionPromise
-    }
-
-    const promise = this.refreshAuthState().finally(() => {
-      if (this.refreshSessionPromise === promise) {
-        this.refreshSessionPromise = null
-      }
-    })
-
-    this.refreshSessionPromise = promise
-
-    return promise
-  }
-
-  refreshOnUnauthorized = async (response: HttpClientResponse) => {
-    if (response.status !== 401) {
-      return response
-    }
-
-    const session = await this.getSession()
-
-    if (!session) {
-      return response
-    }
-
-    const refreshedSinceRequest =
-      response.config.authEpoch !== undefined &&
-      response.config.authEpoch !== this.refreshEpoch
-
-    if (!refreshedSinceRequest) {
-      try {
-        const didApply = await this.refreshAuthSession()
-
-        if (!didApply) {
-          return response
-        }
-      } catch (error) {
-        console.log("Unable to refresh token")
-        console.error(error)
-
-        const sessionIsTrulyExpired = refreshTokenWasRejected(error)
-
-        if (!sessionIsTrulyExpired) {
-          return response
-        }
-
-        await this.flagSessionForRelogin(session.id)
-
-        return response
-      }
-    }
-
-    // Retry once with the refreshed cookie; skip interceptors so a persistent
-    // 401 propagates to the caller instead of re-triggering another refresh.
-    return this.fetch(response.config.input, {
-      ...response.config,
-      useInterceptors: false,
-    })
   }
 }
