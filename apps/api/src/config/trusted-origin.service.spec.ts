@@ -1,5 +1,5 @@
 import { AppConfigService } from "./AppConfigService"
-import { TrustedOriginsService } from "./TrustedOriginsService"
+import { TrustedOriginsService } from "./trusted-origin.service"
 
 const createService = ({
   appPublicUrl = "https://oboku.example.com",

@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/TrustedOriginsService"
+import { TrustedOriginsService } from "../config/trusted-origin.service"
 import { createCsrfOriginMiddleware } from "./csrf-origin.middleware"
 
 const trustedOrigins = new TrustedOriginsService(

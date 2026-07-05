@@ -10,7 +10,7 @@ import { json, urlencoded } from "express"
 import path from "node:path"
 import { WebDavService } from "./webdav/webdav.service"
 import { CouchProxyService } from "./couch/couch-proxy.service"
-import { TrustedOriginsService } from "./config/TrustedOriginsService"
+import { TrustedOriginsService } from "./config/trusted-origin.service"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
 
 async function bootstrap() {

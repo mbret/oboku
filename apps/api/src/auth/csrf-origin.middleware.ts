@@ -1,5 +1,5 @@
 import type { NextFunction, Request, Response } from "express"
-import type { TrustedOriginsService } from "../config/TrustedOriginsService"
+import type { TrustedOriginsService } from "../config/trusted-origin.service"
 import { ACCESS_TOKEN_COOKIE, REFRESH_TOKEN_COOKIE } from "./auth-cookies"
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"])

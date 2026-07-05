@@ -3,7 +3,7 @@ import * as httpProxy from "http-proxy-3"
 import http from "node:http"
 import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/TrustedOriginsService"
+import { TrustedOriginsService } from "../config/trusted-origin.service"
 import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication

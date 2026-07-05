@@ -1,6 +1,6 @@
 import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/TrustedOriginsService"
+import { TrustedOriginsService } from "../config/trusted-origin.service"
 import {
   CouchProxyService,
   moveAuthCookieToAuthorizationHeader,
