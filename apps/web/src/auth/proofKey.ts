@@ -12,14 +12,13 @@ import { Logger } from "../debug/logger.shared"
  * sign-in attempt never clobbers the key of the session that is still active.
  */
 
-const PENDING_KEY_ID = "pending"
-const CURRENT_KEY_ID = "current"
+const PENDING_PROOF_KEY = "auth.proofKey.pending"
+const CURRENT_PROOF_KEY = "auth.proofKey.current"
 
 const ECDSA_P256_KEY_PARAMS = { name: "ECDSA", namedCurve: "P-256" }
 const ES256_SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" }
 
 export type StoredProofKey = {
-  id: string
   privateKey: CryptoKey
   publicJwk: JsonWebKey
 }
@@ -45,10 +44,9 @@ export const createPendingProofKey = async (): Promise<JsonWebKey> => {
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
 
-  await dexieDb.authProofKeys.put({
-    id: PENDING_KEY_ID,
-    privateKey: keyPair.privateKey,
-    publicJwk,
+  await dexieDb.keyValue.put({
+    key: PENDING_PROOF_KEY,
+    value: { privateKey: keyPair.privateKey, publicJwk },
   })
 
   return publicJwk
@@ -72,17 +70,18 @@ export const createPendingProofKeyIfPossible = async (): Promise<
 }
 
 export const promotePendingProofKey = async () => {
-  await dexieDb.transaction("rw", dexieDb.authProofKeys, async () => {
-    const pending = await dexieDb.authProofKeys.get(PENDING_KEY_ID)
+  await dexieDb.transaction("rw", dexieDb.keyValue, async () => {
+    const pending = await dexieDb.keyValue.get(PENDING_PROOF_KEY)
 
     if (!pending) return
 
-    await dexieDb.authProofKeys.put({ ...pending, id: CURRENT_KEY_ID })
-    await dexieDb.authProofKeys.delete(PENDING_KEY_ID)
+    await dexieDb.keyValue.put({ key: CURRENT_PROOF_KEY, value: pending.value })
+    await dexieDb.keyValue.delete(PENDING_PROOF_KEY)
   })
 }
 
-export const deleteProofKeys = () => dexieDb.authProofKeys.clear()
+export const deleteProofKeys = () =>
+  dexieDb.keyValue.bulkDelete([PENDING_PROOF_KEY, CURRENT_PROOF_KEY])
 
 /**
  * Builds the DPoP-style proof JWT (RFC 9449 shape) sent with `/auth/token`.
@@ -92,11 +91,11 @@ export const deleteProofKeys = () => dexieDb.authProofKeys.clear()
 export const signRefreshProof = async (
   url: string,
 ): Promise<string | undefined> => {
-  const stored = await dexieDb.authProofKeys.get(CURRENT_KEY_ID)
+  const stored = await dexieDb.keyValue.get(CURRENT_PROOF_KEY)
 
   if (!stored) return undefined
 
-  const header = { alg: "ES256", typ: "dpop+jwt", jwk: stored.publicJwk }
+  const header = { alg: "ES256", typ: "dpop+jwt", jwk: stored.value.publicJwk }
   const payload = {
     htm: "POST",
     htu: url,
@@ -106,7 +105,7 @@ export const signRefreshProof = async (
   const signingInput = `${encodeJsonProofPart(header)}.${encodeJsonProofPart(payload)}`
   const signature = await crypto.subtle.sign(
     ES256_SIGN_PARAMS,
-    stored.privateKey,
+    stored.value.privateKey,
     new TextEncoder().encode(signingInput),
   )
 

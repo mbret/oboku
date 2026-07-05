@@ -5,7 +5,7 @@ import type {
 import { version } from "../../package.json"
 import { dexieDb } from "../rxdb/dexie"
 
-const PERSIST_KEY = "queryClient"
+const PERSIST_KEY = "queryCache.persistedClient"
 
 /**
  * Cache namespace for persisted queries/mutations. Bumped per release so state
@@ -21,15 +21,14 @@ export const persister: Persister = {
     // up in dehydrated query state (e.g. fetch meta / in-flight work). JSON
     // round-trip keeps only serializable plain data for Dexie.
     const plain: PersistedClient = JSON.parse(JSON.stringify(client))
-    await dexieDb.queryCachePersistence.put({ key: PERSIST_KEY, value: plain })
+    await dexieDb.keyValue.put({ key: PERSIST_KEY, value: plain })
   },
   restoreClient: async () => {
-    const row = await dexieDb.queryCachePersistence.get(PERSIST_KEY)
-    // `value` is typed as `unknown` in the Dexie schema; the actual shape is
-    // always a PersistedClient because persistClient is the only writer.
-    return (row?.value as PersistedClient) ?? undefined
+    const entry = await dexieDb.keyValue.get(PERSIST_KEY)
+
+    return entry?.value
   },
   removeClient: async () => {
-    await dexieDb.queryCachePersistence.delete(PERSIST_KEY)
+    await dexieDb.keyValue.delete(PERSIST_KEY)
   },
 }

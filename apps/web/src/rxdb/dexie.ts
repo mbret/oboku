@@ -1,5 +1,7 @@
-import Dexie, { type EntityTable } from "dexie"
+import Dexie, { type EntityTable, type PromiseExtended } from "dexie"
+import type { PersistedClient } from "@tanstack/react-query-persist-client"
 import type { Profile } from "../profiles/types"
+import type { CachedWebConfig } from "../config/configCache"
 import type { StoredProofKey } from "../auth/proofKey"
 
 /**
@@ -13,16 +15,38 @@ interface Downloads {
   filename: string
 }
 
-interface QueryCachePersistence {
-  key: string
-  value: unknown
+/**
+ * Registry of everything stored in the `keyValue` table. Adding an entry here
+ * is all that is needed for `dexieDb.keyValue.get/put` to be typed for that
+ * key. Values that outlive an app version must still be validated at runtime
+ * by their consumer (see configCache) — the type only reflects what the
+ * current build writes.
+ */
+interface KeyValueMap {
+  "queryCache.persistedClient": PersistedClient
+  "config.webConfig": CachedWebConfig
+  "auth.proofKey.pending": StoredProofKey
+  "auth.proofKey.current": StoredProofKey
+}
+
+type KeyValueEntry = {
+  [Key in keyof KeyValueMap]: { key: Key; value: KeyValueMap[Key] }
+}[keyof KeyValueMap]
+
+type KeyValueTable = Omit<EntityTable<KeyValueEntry, "key">, "get" | "put"> & {
+  get<Key extends keyof KeyValueMap>(
+    key: Key,
+  ): PromiseExtended<{ key: Key; value: KeyValueMap[Key] } | undefined>
+  put<Key extends keyof KeyValueMap>(entry: {
+    key: Key
+    value: KeyValueMap[Key]
+  }): PromiseExtended<Key>
 }
 
 export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {
   downloads: EntityTable<Downloads, "id">
-  queryCachePersistence: EntityTable<QueryCachePersistence, "key">
+  keyValue: KeyValueTable
   profiles: EntityTable<Profile, "id">
-  authProofKeys: EntityTable<StoredProofKey, "id">
 }
 
 dexieDb.version(1).stores({
@@ -71,4 +95,10 @@ dexieDb.version(5).stores({
 
 dexieDb.version(6).stores({
   authProofKeys: `&id`,
+})
+
+dexieDb.version(7).stores({
+  queryCachePersistence: null,
+  authProofKeys: null,
+  keyValue: `&key`,
 })
