@@ -9,7 +9,6 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
-import { Logger } from "../debug/logger.shared"
 import { persistProofKey, type StoredProofKey } from "./proofKey"
 
 export const completeAuthentication = ({
@@ -37,14 +36,7 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
-          try {
-            await persistProofKey(proofKey)
-          } catch (error) {
-            Logger.error(
-              "Failed to persist the refresh proof key; the session will require re-login once the access token expires",
-              error,
-            )
-          }
+          await persistProofKey(proofKey)
 
           await putProfile({ id: auth.nameHex, ...auth })
 
