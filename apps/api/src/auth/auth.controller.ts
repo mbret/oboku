@@ -1,12 +1,16 @@
 import { Body, Controller, Delete, Headers, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
+import { Type } from "class-transformer"
 import {
+  Equals,
   IsEmail,
   IsNotEmpty,
   IsObject,
   IsString,
+  MaxLength,
   MinLength,
+  ValidateNested,
 } from "class-validator"
 import type {
   AuthProofPublicKeyJwk,
@@ -26,6 +30,30 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+
+/**
+ * The exact P-256 JWK shape needed to compute an RFC 7638 thumbprint at
+ * refresh. Anything looser would bind a session that signs in fine but can
+ * never refresh. Coordinate lengths are a lax bound (P-256 encodes to 43
+ * base64url chars) that mainly keeps the stored key small.
+ */
+export class AuthProofPublicKeyDto implements AuthProofPublicKeyJwk {
+  @Equals("EC")
+  kty!: string
+
+  @Equals("P-256")
+  crv!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  x!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  y!: string
+}
 
 export class RequestSignUpDto implements RequestSignUpRequest {
   @IsEmail()
@@ -54,7 +82,9 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
   installation_id!: string
 
   @IsObject()
-  public_key!: AuthProofPublicKeyJwk
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -70,7 +100,9 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   installation_id!: string
 
   @IsObject()
-  public_key!: AuthProofPublicKeyJwk
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -83,7 +115,9 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   installation_id!: string
 
   @IsObject()
-  public_key!: AuthProofPublicKeyJwk
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class RefreshTokenQueryDto {
