@@ -12,17 +12,19 @@ const signProof = async ({
   privateKey,
   headerJwk,
   htm = "POST",
+  jti = "jti-1",
   issuedAt,
 }: {
   privateKey: KeyLike
   headerJwk: JWK
   htm?: string
+  jti?: string | null
   issuedAt?: number
 }) => {
   const jwt = new SignJWT({
     htm,
     htu: "https://api/auth/token",
-    jti: "jti-1",
+    ...(jti === null ? {} : { jti }),
   }).setProtectedHeader({ alg: "ES256", typ: "dpop+jwt", jwk: headerJwk })
 
   if (issuedAt !== undefined) {
@@ -152,6 +154,86 @@ describe("RefreshProofService", () => {
         boundPublicKey: JSON.stringify(boundKeys.publicJwk),
       }),
     ).resolves.toBe(false)
+  })
+
+  it("rejects a proof without a jti", async () => {
+    const proof = await signProof({
+      privateKey: boundKeys.privateKey,
+      headerJwk: boundKeys.publicJwk,
+      jti: null,
+    })
+
+    await expect(
+      service.isProofValid({
+        proof,
+        boundPublicKey: JSON.stringify(boundKeys.publicJwk),
+      }),
+    ).resolves.toBe(false)
+  })
+
+  it("rejects the same proof presented twice (captured pair replay)", async () => {
+    const proof = await signProof({
+      privateKey: boundKeys.privateKey,
+      headerJwk: boundKeys.publicJwk,
+    })
+    const boundPublicKey = JSON.stringify(boundKeys.publicJwk)
+
+    await expect(service.isProofValid({ proof, boundPublicKey })).resolves.toBe(
+      true,
+    )
+    await expect(service.isProofValid({ proof, boundPublicKey })).resolves.toBe(
+      false,
+    )
+  })
+
+  it("accepts successive proofs with distinct jtis from the same key", async () => {
+    const boundPublicKey = JSON.stringify(boundKeys.publicJwk)
+    const firstProof = await signProof({
+      privateKey: boundKeys.privateKey,
+      headerJwk: boundKeys.publicJwk,
+      jti: "jti-first",
+    })
+    const secondProof = await signProof({
+      privateKey: boundKeys.privateKey,
+      headerJwk: boundKeys.publicJwk,
+      jti: "jti-second",
+    })
+
+    await expect(
+      service.isProofValid({ proof: firstProof, boundPublicKey }),
+    ).resolves.toBe(true)
+    await expect(
+      service.isProofValid({ proof: secondProof, boundPublicKey }),
+    ).resolves.toBe(true)
+  })
+
+  it("scopes jti replay tracking per bound key", async () => {
+    const otherSession = await generateKeyPair("ES256")
+    const otherJwk = await exportJWK(otherSession.publicKey)
+    const sharedJti = "jti-shared"
+    const proofForBoundKey = await signProof({
+      privateKey: boundKeys.privateKey,
+      headerJwk: boundKeys.publicJwk,
+      jti: sharedJti,
+    })
+    const proofForOtherKey = await signProof({
+      privateKey: otherSession.privateKey,
+      headerJwk: otherJwk,
+      jti: sharedJti,
+    })
+
+    await expect(
+      service.isProofValid({
+        proof: proofForBoundKey,
+        boundPublicKey: JSON.stringify(boundKeys.publicJwk),
+      }),
+    ).resolves.toBe(true)
+    await expect(
+      service.isProofValid({
+        proof: proofForOtherKey,
+        boundPublicKey: JSON.stringify(otherJwk),
+      }),
+    ).resolves.toBe(true)
   })
 
   it("rejects when the stored key is not valid JSON", async () => {
