@@ -1,3 +1,4 @@
+import { SignJWT } from "jose"
 import { dexieDb } from "../rxdb/dexie"
 
 /**
@@ -17,25 +18,11 @@ import { dexieDb } from "../rxdb/dexie"
 const CURRENT_PROOF_KEY = "auth.proofKey.current"
 
 const ECDSA_P256_KEY_PARAMS = { name: "ECDSA", namedCurve: "P-256" }
-const ES256_SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" }
 
 export type StoredProofKey = {
   privateKey: CryptoKey
-  publicJwk: JsonWebKey
+  publicJwk: JsonWebKey & { kty: string }
 }
-
-const base64UrlEncode = (bytes: Uint8Array) => {
-  let binary = ""
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte)
-  }
-
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
-}
-
-const encodeJsonProofPart = (part: object) =>
-  base64UrlEncode(new TextEncoder().encode(JSON.stringify(part)))
 
 export const createProofKey = async (): Promise<StoredProofKey> => {
   const keyPair = await crypto.subtle.generateKey(
@@ -44,8 +31,13 @@ export const createProofKey = async (): Promise<StoredProofKey> => {
     ["sign"],
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
+  const { kty } = publicJwk
 
-  return { privateKey: keyPair.privateKey, publicJwk }
+  if (!kty) {
+    throw new Error("Exported proof public JWK is missing kty")
+  }
+
+  return { privateKey: keyPair.privateKey, publicJwk: { ...publicJwk, kty } }
 }
 
 export const persistProofKey = (proofKey: StoredProofKey) =>
@@ -65,19 +57,16 @@ export const signRefreshProof = async (
 
   if (!stored) return undefined
 
-  const header = { alg: "ES256", typ: "dpop+jwt", jwk: stored.value.publicJwk }
-  const payload = {
+  return new SignJWT({
     htm: "POST",
     htu: url,
-    iat: Math.floor(Date.now() / 1000),
     jti: crypto.randomUUID(),
-  }
-  const signingInput = `${encodeJsonProofPart(header)}.${encodeJsonProofPart(payload)}`
-  const signature = await crypto.subtle.sign(
-    ES256_SIGN_PARAMS,
-    stored.value.privateKey,
-    new TextEncoder().encode(signingInput),
-  )
-
-  return `${signingInput}.${base64UrlEncode(new Uint8Array(signature))}`
+  })
+    .setProtectedHeader({
+      alg: "ES256",
+      typ: "dpop+jwt",
+      jwk: stored.value.publicJwk,
+    })
+    .setIssuedAt()
+    .sign(stored.value.privateKey)
 }
