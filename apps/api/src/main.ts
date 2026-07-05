@@ -45,11 +45,15 @@ async function bootstrap() {
   const couchProxyService = app.get(CouchProxyService)
   app.use("/couchdb", couchProxyService.middleware)
 
-  // Re-add the body parsers (disabled above) for the rest of the API.
-  app.use(json())
-  app.use(urlencoded({ extended: true }))
-
-  app.useGlobalPipes(new ValidationPipe())
+  // CORS must be registered before the body parsers. express.json()/urlencoded()
+  // reject a malformed or oversized body by throwing straight to Express's error
+  // handler, bypassing every middleware registered after them — so with CORS
+  // registered later those 400/413 responses (and any other pre-router failure)
+  // would ship without `Access-Control-Allow-Origin`, and the browser masks the
+  // real status as an opaque cross-origin error. Placed after the proxy mounts,
+  // which terminate their own requests and own their CORS, so it never
+  // double-handles them.
+  //
   // Reflect only trusted origins: with `credentials: true` the browser lets
   // scripts on the allowed origin make cookie-carrying requests, so a
   // wildcard/reflect-any policy would hand any website credentialed access.
@@ -60,6 +64,12 @@ async function bootstrap() {
     ) => callback(null, trustedOriginsService.isTrusted(origin)),
     credentials: true,
   })
+
+  // Re-add the body parsers (disabled above) for the rest of the API.
+  app.use(json())
+  app.use(urlencoded({ extended: true }))
+
+  app.useGlobalPipes(new ValidationPipe())
 
   await app.listen(configService.getOrThrow("PORT"))
 }
