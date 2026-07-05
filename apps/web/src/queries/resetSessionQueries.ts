@@ -9,9 +9,17 @@ import { shouldPersistQueryState } from "./queryClient"
  * Prefer `resetQueries` over `clear`: `clear` removes every query and cancels
  * in-flight work, but mounted observers may not run a new fetch right away,
  * which can leave screens stuck until remount. `resetQueries` resets state and
- * refetches **active** queries (still skipped when `enabled` is false after
- * auth clears). Mutations are cleared separately because `resetQueries` only
- * touches the query cache.
+ * refetches **active** queries. Mutations are cleared separately because
+ * `resetQueries` only touches the query cache.
+ *
+ * The refetch runs before observers re-render with the new auth state, so a
+ * plain `enabled: isAuthenticated` cannot exclude a query from it — on
+ * sign-out that would fire authenticated endpoints without credentials.
+ * Queries that require a session must wrap their options in
+ * `useQueryOptionsWithAuthentication`, whose `enabled` resolves against the
+ * live session at refetch time. Account switch commits the new session
+ * *before* resetting
+ * (see `completeAuthentication`), so those queries refetch with the new token.
  *
  * Queries tagged `meta.survivesSessionReset` are not session data and must
  * stay available across the reset (e.g. the web config powering the Google
