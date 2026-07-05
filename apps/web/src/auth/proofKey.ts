@@ -1,11 +1,12 @@
 import { dexieDb } from "../rxdb/dexie"
-import { Logger } from "../debug/logger.shared"
 
 /**
  * Sender-constrained refresh key management. The private key is generated
  * non-extractable, so even code running inside the app (XSS) can only ask the
  * browser to sign with it — never read it. Deleting it is therefore a
  * fail-closed logout: without the key no one can refresh this session again.
+ * Every session is bound to a key — a browser that cannot create or store one
+ * (no WebCrypto, evicted IndexedDB) cannot sign in.
  *
  * Keys are staged under a `pending` slot while a sign-in is in flight and
  * promoted to `current` only once the server has bound them, so a failed
@@ -52,23 +53,6 @@ export const createPendingProofKey = async (): Promise<JsonWebKey> => {
   return publicJwk
 }
 
-/**
- * Undefined when key storage or WebCrypto is unavailable (private browsing,
- * evicted IndexedDB): the sign-in then proceeds unbound rather than failing
- * outright, and the session simply refreshes without sender constraining.
- */
-export const createPendingProofKeyIfPossible = async (): Promise<
-  JsonWebKey | undefined
-> => {
-  try {
-    return await createPendingProofKey()
-  } catch (error) {
-    Logger.error("Failed to create a refresh proof key", error)
-
-    return undefined
-  }
-}
-
 export const promotePendingProofKey = async () => {
   await dexieDb.transaction("rw", dexieDb.keyValue, async () => {
     const pending = await dexieDb.keyValue.get(PENDING_PROOF_KEY)
@@ -85,8 +69,8 @@ export const deleteProofKeys = () =>
 
 /**
  * Builds the DPoP-style proof JWT (RFC 9449 shape) sent with `/auth/token`.
- * Returns undefined when no key is registered (pre-binding session or evicted
- * storage) — the refresh then only succeeds for a not-yet-bound session.
+ * Returns undefined when no key is registered (deleted or evicted storage) —
+ * the server then rejects the refresh and the user must sign in again.
  */
 export const signRefreshProof = async (
   url: string,

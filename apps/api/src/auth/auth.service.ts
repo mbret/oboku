@@ -37,8 +37,8 @@ import { RefreshProofService } from "./refresh-proof.service"
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
-const serializePublicKey = (publicKey: AuthProofPublicKeyJwk | undefined) =>
-  publicKey ? JSON.stringify(publicKey) : undefined
+const serializePublicKey = (publicKey: AuthProofPublicKeyJwk) =>
+  JSON.stringify(publicKey)
 
 type SignUpTokenPayload = {
   sub: string
@@ -170,7 +170,7 @@ export class AuthService {
     email: string
     userId: number
     installationId: string
-    publicKey?: string
+    publicKey: string
   }): Promise<AuthTokensResponse> {
     const accessToken = await this.couchService.generateUserJWT({
       email,
@@ -198,7 +198,7 @@ export class AuthService {
     email: string
     userId: number
     installationId: string
-    publicKey?: string
+    publicKey: string
   }): Promise<AuthSessionResponse> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
@@ -518,10 +518,10 @@ export class AuthService {
   }
 
   /**
-   * A session bound to a public key (every session issued at sign-in since
-   * sender constraining shipped) only refreshes with a valid proof signed by
-   * the matching private key. Unbound sessions predate the binding and
-   * refresh without a proof until they die or re-authenticate.
+   * Every session is bound to a public key at sign-in and only refreshes with
+   * a valid proof signed by the matching private key. Sessions without a
+   * bound key (issued before sender constraining shipped) are rejected and
+   * must re-authenticate.
    */
   async refreshToken({
     refreshToken,
@@ -536,17 +536,16 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
-    if (presented.public_key) {
-      const isProofValid =
-        !!proof &&
-        (await this.refreshProofService.isProofValid({
-          proof,
-          boundPublicKey: presented.public_key,
-        }))
+    const isProofValid =
+      !!presented.public_key &&
+      !!proof &&
+      (await this.refreshProofService.isProofValid({
+        proof,
+        boundPublicKey: presented.public_key,
+      }))
 
-      if (!isProofValid) {
-        throw new UnauthorizedException()
-      }
+    if (!isProofValid) {
+      throw new UnauthorizedException()
     }
 
     const rotation =

@@ -63,7 +63,7 @@ export class RefreshTokensService {
   }: {
     userId: number
     installationId: string
-    publicKey?: string
+    publicKey: string
   }) {
     const { refreshToken } =
       await this.refreshTokenRepository.manager.transaction(async (manager) => {
@@ -76,7 +76,7 @@ export class RefreshTokensService {
           {
             user_id: userId,
             installation_id: installationId,
-            public_key: publicKey ?? null,
+            public_key: publicKey,
           },
           manager,
         )

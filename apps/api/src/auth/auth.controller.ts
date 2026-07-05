@@ -66,9 +66,8 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
   @IsNotEmpty()
   installation_id!: string
 
-  @IsOptional()
   @IsObject()
-  public_key?: AuthProofPublicKeyJwk
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -83,9 +82,8 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   @IsNotEmpty()
   installation_id!: string
 
-  @IsOptional()
   @IsObject()
-  public_key?: AuthProofPublicKeyJwk
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -97,9 +95,8 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   @IsNotEmpty()
   installation_id!: string
 
-  @IsOptional()
   @IsObject()
-  public_key?: AuthProofPublicKeyJwk
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class RefreshTokenQueryDto {

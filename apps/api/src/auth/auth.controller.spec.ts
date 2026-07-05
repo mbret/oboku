@@ -156,6 +156,7 @@ describe("AuthController", () => {
       {
         token: "google-token",
         installation_id: "installation-1",
+        public_key: { kty: "EC", crv: "P-256" },
       },
       {
         type: "body",
@@ -169,7 +170,26 @@ describe("AuthController", () => {
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
       installation_id: "installation-1",
+      public_key: { kty: "EC", crv: "P-256" },
     })
+  })
+
+  it("rejects sign-in requests without a proof public key", async () => {
+    await expect(
+      validationPipe.transform(
+        {
+          token: "google-token",
+          installation_id: "installation-1",
+        },
+        {
+          type: "body",
+          metatype: SignInWithGoogleDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.signInWithGoogle).not.toHaveBeenCalled()
   })
 
   it("rejects Google sign-in requests without a token", async () => {

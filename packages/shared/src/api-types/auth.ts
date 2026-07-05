@@ -32,13 +32,13 @@ export type SignInWithEmailRequest = {
   email: string
   password: string
   installation_id: string
-  public_key?: AuthProofPublicKeyJwk
+  public_key: AuthProofPublicKeyJwk
 }
 
 export type SignInWithGoogleRequest = {
   token: string
   installation_id: string
-  public_key?: AuthProofPublicKeyJwk
+  public_key: AuthProofPublicKeyJwk
 }
 
 export type RequestSignUpRequest = {
@@ -65,7 +65,7 @@ export type RequestMagicLinkResponse = EmptyResponse
 export type CompleteMagicLinkRequest = {
   token: string
   installation_id: string
-  public_key?: AuthProofPublicKeyJwk
+  public_key: AuthProofPublicKeyJwk
 }
 
 export type CompleteMagicLinkResponse = AuthSessionResponse

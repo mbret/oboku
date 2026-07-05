@@ -108,6 +108,7 @@ describe("RefreshTokensService", () => {
     const token = await service.issueTokenForInstallation({
       userId: 1,
       installationId: "installation-1",
+      publicKey: '{"kty":"EC"}',
     })
 
     expect(typeof token).toBe("string")
@@ -123,7 +124,7 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 1,
       installation_id: "installation-1",
-      public_key: null,
+      public_key: '{"kty":"EC"}',
       token_hash: hash(token),
       superseded_at: null,
     })

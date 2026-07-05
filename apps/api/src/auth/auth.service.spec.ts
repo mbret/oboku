@@ -202,6 +202,7 @@ describe("AuthService", () => {
         email: "reader@example.com",
         userId: 1,
         installationId: "installation-1",
+        publicKey: '{"kty":"EC"}',
       }),
     ).resolves.toEqual({
       accessToken: "access-token",
@@ -216,7 +217,7 @@ describe("AuthService", () => {
       {
         userId: 1,
         installationId: "installation-1",
-        publicKey: undefined,
+        publicKey: '{"kty":"EC"}',
       },
     )
   })
@@ -226,8 +227,9 @@ describe("AuthService", () => {
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
-      public_key: null,
+      public_key: '{"kty":"EC"}',
     })
+    refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
       status: "rotated",
       session: { id: 7, user_id: 42, installation_id: "installation-1" },
@@ -240,7 +242,10 @@ describe("AuthService", () => {
     couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
 
     await expect(
-      service.refreshToken({ refreshToken: "opaque-refresh-token" }),
+      service.refreshToken({
+        refreshToken: "opaque-refresh-token",
+        proof: "valid-proof",
+      }),
     ).resolves.toEqual({
       accessToken: "fresh-access-token",
       refreshToken: "rotated-refresh-token",
@@ -269,14 +274,18 @@ describe("AuthService", () => {
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
-      public_key: null,
+      public_key: '{"kty":"EC"}',
     })
+    refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
       status: "invalid",
     })
 
     await expect(
-      service.refreshToken({ refreshToken: "stale-refresh-token" }),
+      service.refreshToken({
+        refreshToken: "stale-refresh-token",
+        proof: "valid-proof",
+      }),
     ).rejects.toThrow()
 
     expect(usersService.findUserById).not.toHaveBeenCalled()
@@ -288,8 +297,9 @@ describe("AuthService", () => {
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
-      public_key: null,
+      public_key: '{"kty":"EC"}',
     })
+    refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
       status: "rotated",
       session: { id: 7, user_id: 42, installation_id: "installation-1" },
@@ -298,7 +308,10 @@ describe("AuthService", () => {
     usersService.findUserById.mockResolvedValue(null)
 
     await expect(
-      service.refreshToken({ refreshToken: "opaque-refresh-token" }),
+      service.refreshToken({
+        refreshToken: "opaque-refresh-token",
+        proof: "valid-proof",
+      }),
     ).rejects.toThrow()
 
     expect(refreshTokensService.deleteById).toHaveBeenCalledWith(7)
@@ -377,30 +390,23 @@ describe("AuthService", () => {
     )
   })
 
-  it("refreshes an unbound (pre-binding) session without requiring a proof", async () => {
+  it("rejects refresh of an unbound (pre-binding) session even with a proof", async () => {
     refreshTokensService.findByToken.mockResolvedValue({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       public_key: null,
     })
-    refreshTokensService.rotateForRefresh.mockResolvedValue({
-      status: "rotated",
-      session: { id: 8, user_id: 42, installation_id: "installation-1" },
-      refreshToken: "rotated-refresh-token",
-    })
-    usersService.findUserById.mockResolvedValue({
-      id: 42,
-      email: "reader@example.com",
-    })
-    couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
 
-    await service.refreshToken({ refreshToken: "opaque-refresh-token" })
+    await expect(
+      service.refreshToken({
+        refreshToken: "opaque-refresh-token",
+        proof: "valid-proof",
+      }),
+    ).rejects.toThrow()
 
     expect(refreshProofService.isProofValid).not.toHaveBeenCalled()
-    expect(refreshTokensService.rotateForRefresh).toHaveBeenCalledWith(
-      "opaque-refresh-token",
-    )
+    expect(refreshTokensService.rotateForRefresh).not.toHaveBeenCalled()
   })
 
   it("registers the sign-in public key with the issued refresh session", async () => {

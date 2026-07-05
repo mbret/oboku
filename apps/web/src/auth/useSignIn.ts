@@ -1,5 +1,5 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
-import { from, map, switchMap } from "rxjs"
+import { from, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
@@ -8,7 +8,7 @@ import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
-import { createPendingProofKeyIfPossible } from "./proofKey"
+import { createPendingProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import {
   type DefaultError,
@@ -36,7 +36,7 @@ export const useSignIn = (
     mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
-      return from(createPendingProofKeyIfPossible()).pipe(
+      return from(createPendingProofKey()).pipe(
         switchMap((publicKey) =>
           data
             ? from(
