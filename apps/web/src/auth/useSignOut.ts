@@ -6,6 +6,7 @@ import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
+import { deleteProofKeys } from "./proofKey"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
@@ -14,6 +15,19 @@ export const useSignOut = () => {
 
   return async () => {
     const activeProfileId = getProfile()
+
+    /**
+     * Deleting the non-extractable proof key first makes the sign-out
+     * fail-closed even offline: without it the refresh token can never mint
+     * another access token, so the session dies once the current access token
+     * expires — regardless of whether the server-side revocation below ever
+     * succeeds.
+     */
+    try {
+      await deleteProofKeys()
+    } catch (error) {
+      Logger.error("Failed to delete the refresh proof keys on sign out", error)
+    }
 
     clearTemporaryMasterKey()
     googleAccessTokenSignal.update(SIGNAL_RESET)

@@ -1,8 +1,15 @@
-import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
+import { Body, Controller, Delete, Headers, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator"
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsString,
+  MinLength,
+} from "class-validator"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
   CompleteMagicLinkRequest,
   CompleteMagicLinkResponse,
@@ -45,6 +52,9 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
 
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -58,6 +68,9 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -68,6 +81,9 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  public_key!: AuthProofPublicKeyJwk
 }
 
 export class RefreshTokenQueryDto {
@@ -148,8 +164,12 @@ export class AuthController {
   @Post("token")
   refreshTokens(
     @Query() query: RefreshTokenQueryDto,
+    @Headers("dpop") proof: string | undefined,
   ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken(query.grant_type, query.refresh_token)
+    return this.authService.refreshToken({
+      refreshToken: query.refresh_token,
+      proof,
+    })
   }
 
   @Public()

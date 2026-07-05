@@ -5,6 +5,7 @@ import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { createPendingProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import { useQueryClient } from "@tanstack/react-query"
 
@@ -16,12 +17,16 @@ export const useCompleteMagicLink = () => {
 
   return useMutation$({
     mutationFn: (data: { token: string }) => {
-      return from(
-        httpClientApi.authWithMagicLink({
-          ...data,
-          installation_id: getOrCreateAuthInstallationId(),
-        }),
-      ).pipe(
+      return from(createPendingProofKey()).pipe(
+        switchMap((publicKey) =>
+          from(
+            httpClientApi.authWithMagicLink({
+              ...data,
+              installation_id: getOrCreateAuthInstallationId(),
+              public_key: publicKey,
+            }),
+          ),
+        ),
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,

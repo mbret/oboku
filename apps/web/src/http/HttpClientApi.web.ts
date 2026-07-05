@@ -23,6 +23,7 @@ import type {
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
+import { signRefreshProof } from "../auth/proofKey"
 import {
   type FetchConfig,
   HttpClientError,
@@ -157,19 +158,20 @@ export class HttpApiClientWeb extends HttpClientWeb {
   archiveNotification = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
-  refreshToken = ({
+  refreshToken = async ({
     refreshToken,
     useInterceptors = true,
   }: {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.postOrThrow<RefreshTokenResponse, never>(
-      `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
-      {
-        useInterceptors,
-      },
-    )
+    const url = `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`
+    const proof = await signRefreshProof(url).catch(() => undefined)
+
+    return this.postOrThrow<RefreshTokenResponse, never>(url, {
+      useInterceptors,
+      headers: proof ? { dpop: proof } : undefined,
+    })
   }
 
   /**

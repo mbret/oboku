@@ -98,7 +98,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const secondRefresh = client.refreshAuthSession("token-a")
 
     expect(firstRefresh).toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
     refreshDeferred.resolve(
       createRefreshResponse({
@@ -228,7 +228,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const secondRefresh = client.refreshAuthSession("token-b")
 
     expect(firstRefresh).not.toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
 
     refreshDeferredA.resolve(
       createRefreshResponse({

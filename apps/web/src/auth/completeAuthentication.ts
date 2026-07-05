@@ -9,6 +9,8 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
+import { Logger } from "../debug/logger.shared"
+import { promotePendingProofKey } from "./proofKey"
 
 export const completeAuthentication = ({
   reCreateDb,
@@ -33,6 +35,15 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
+          try {
+            await promotePendingProofKey()
+          } catch (error) {
+            Logger.error(
+              "Failed to promote the refresh proof key; the session will require re-login once the access token expires",
+              error,
+            )
+          }
+
           await putProfile({ id: auth.nameHex, ...auth })
 
           setActiveProfileId(auth.nameHex)

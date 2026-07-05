@@ -76,6 +76,7 @@ describe("AuthController", () => {
         email: "reader@example.com",
         password: "password",
         installation_id: "installation-1",
+        public_key: { kty: "EC", crv: "P-256" },
       },
       {
         type: "body",
@@ -90,6 +91,7 @@ describe("AuthController", () => {
       email: "reader@example.com",
       password: "password",
       installation_id: "installation-1",
+      public_key: { kty: "EC", crv: "P-256" },
     })
   })
 
@@ -124,6 +126,7 @@ describe("AuthController", () => {
       {
         token: "google-token",
         installation_id: "installation-1",
+        public_key: { kty: "EC", crv: "P-256" },
       },
       {
         type: "body",
@@ -137,6 +140,7 @@ describe("AuthController", () => {
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
       installation_id: "installation-1",
+      public_key: { kty: "EC", crv: "P-256" },
     })
   })
 

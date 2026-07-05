@@ -197,6 +197,18 @@ export class RefreshTokenPostgresEntity {
   superseded_at!: Date | null
 
   /**
+   * JSON-serialized public JWK (ECDSA P-256) the client registered for this
+   * session, making the refresh token sender-constrained: refreshing requires
+   * a DPoP-style proof signed by the matching non-extractable private key, so
+   * a stolen refresh token alone cannot mint tokens. Bound at sign-in only
+   * and inherited by every successor row on rotation. Null for sessions
+   * issued before this column existed (they refresh proof-less until they
+   * expire or re-authenticate).
+   */
+  @Column({ type: "text", nullable: true })
+  public_key!: string | null
+
+  /**
    * The successor token minted when this token was rotated out, encrypted with
    * AES-256-GCM under a per-process in-memory key (never persisted). Held only
    * for the grace window so concurrent / retried refreshes of this same token

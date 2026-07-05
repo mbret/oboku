@@ -1,5 +1,5 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
-import { from, map, switchMap } from "rxjs"
+import { from, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
@@ -8,6 +8,7 @@ import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { createPendingProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import {
   type DefaultError,
@@ -35,26 +36,28 @@ export const useSignIn = (
     mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
-      const signIn$ = data
-        ? from(
-            httpClientApi.signInWithEmail({
-              ...data,
-              installation_id: installationId,
-            }),
-          )
-        : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
-            map(
-              (authResponse): SignInWithGoogleRequest => ({
-                token: authResponse.credential,
-                installation_id: installationId,
-              }),
-            ),
-            switchMap((credentials) =>
-              from(httpClientApi.signInWithGoogle(credentials)),
-            ),
-          )
-
-      return signIn$.pipe(
+      return from(createPendingProofKey()).pipe(
+        switchMap((publicKey) =>
+          data
+            ? from(
+                httpClientApi.signInWithEmail({
+                  ...data,
+                  installation_id: installationId,
+                  public_key: publicKey,
+                }),
+              )
+            : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
+                switchMap((authResponse) =>
+                  from(
+                    httpClientApi.signInWithGoogle({
+                      token: authResponse.credential,
+                      installation_id: installationId,
+                      public_key: publicKey,
+                    } satisfies SignInWithGoogleRequest),
+                  ),
+                ),
+              ),
+        ),
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,
