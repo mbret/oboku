@@ -10,17 +10,20 @@ import {
 } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { Profile } from "../profiles/types"
+import type { ProfileWithLegacyTokens } from "../profiles/types"
 
 const { profilesStore } = vi.hoisted(() => ({
-  profilesStore: new Map<string, Profile>(),
+  profilesStore: new Map<string, ProfileWithLegacyTokens>(),
 }))
 
 vi.mock("../rxdb/dexie", () => ({
   dexieDb: {
     profiles: {
       toArray: async () => [...profilesStore.values()],
-      update: async (profileId: string, patch: Partial<Profile>) => {
+      update: async (
+        profileId: string,
+        patch: Partial<ProfileWithLegacyTokens>,
+      ) => {
         const profile = profilesStore.get(profileId)
 
         if (!profile) return 0
@@ -62,10 +65,10 @@ const goOnline = () => {
   })
 }
 
-const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
+const createProfile = (
+  overrides: Partial<ProfileWithLegacyTokens> = {},
+): ProfileWithLegacyTokens => ({
   id: "reader",
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
@@ -91,6 +94,7 @@ describe("RevokeLoggedOutProfiles", () => {
   afterEach(() => {
     cleanup()
     profilesStore.clear()
+    localStorage.clear()
     onLine = true
   })
 
@@ -146,6 +150,7 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
     expect(logout).toHaveBeenCalledTimes(1)
+    expect(logout).toHaveBeenCalledWith()
   })
 
   it("sweeps once sign out flags the profile as logged out", async () => {
@@ -153,7 +158,6 @@ describe("RevokeLoggedOutProfiles", () => {
       "active-reader",
       createProfile({
         id: "active-reader",
-        refreshToken: "active-refresh-token",
       }),
     )
 
@@ -189,8 +193,6 @@ describe("RevokeLoggedOutProfiles", () => {
     await waitFor(() => {
       expect(profilesStore.has("active-reader")).toBe(false)
     })
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "active-refresh-token",
-    })
+    expect(logout).toHaveBeenCalledWith()
   })
 })

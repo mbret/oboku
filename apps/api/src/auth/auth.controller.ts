@@ -1,8 +1,28 @@
-import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Delete,
+  Headers,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+} from "@nestjs/common"
+import type { Request, Response } from "express"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator"
+import { AuthCookiesService, REFRESH_TOKEN_COOKIE } from "./auth-cookies"
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
   CompleteMagicLinkRequest,
   CompleteMagicLinkResponse,
@@ -45,6 +65,10 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
 
   @IsNotEmpty()
   installation_id!: string
+
+  @IsOptional()
+  @IsObject()
+  public_key?: AuthProofPublicKeyJwk
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -58,6 +82,10 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsOptional()
+  @IsObject()
+  public_key?: AuthProofPublicKeyJwk
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -68,42 +96,58 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsOptional()
+  @IsObject()
+  public_key?: AuthProofPublicKeyJwk
 }
 
 export class RefreshTokenQueryDto {
   @IsString()
   @IsNotEmpty()
   grant_type!: "refresh_token"
-
-  @IsString()
-  @IsNotEmpty()
-  refresh_token!: string
 }
 
 export class LogoutDto implements LogoutRequest {
+  @IsOptional()
   @IsString()
   @IsNotEmpty()
-  refresh_token!: string
+  refresh_token?: string
 }
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authCookiesService: AuthCookiesService,
+  ) {}
 
   @Public()
   @Post("signin/email")
   async signinWithEmail(
     @Body() body: SignInWithEmailDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithEmail(body)
+    const session = await this.authService.signInWithEmail(body)
+
+    this.authCookiesService.set(request, response, session)
+
+    return session
   }
 
   @Public()
   @Post("signin/google")
   async signinWithGoogle(
     @Body() body: SignInWithGoogleDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithGoogle(body)
+    const session = await this.authService.signInWithGoogle(body)
+
+    this.authCookiesService.set(request, response, session)
+
+    return session
   }
 
   @Public()
@@ -140,22 +184,67 @@ export class AuthController {
   @Post("magic-link/complete")
   async completeMagicLink(
     @Body() body: CompleteMagicLinkDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<CompleteMagicLinkResponse> {
-    return this.authService.completeMagicLink(body)
+    const session = await this.authService.completeMagicLink(body)
+
+    this.authCookiesService.set(request, response, session)
+
+    return session
   }
 
   @Public()
   @Post("token")
-  refreshTokens(
-    @Query() query: RefreshTokenQueryDto,
+  async refreshTokens(
+    @Query() _query: RefreshTokenQueryDto,
+    @Headers("dpop") proof: string | undefined,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken(query.grant_type, query.refresh_token)
+    const refreshToken: string | undefined =
+      request.cookies?.[REFRESH_TOKEN_COOKIE]
+
+    if (!refreshToken) {
+      throw new UnauthorizedException()
+    }
+
+    const tokens = await this.authService.refreshToken({
+      refreshToken,
+      proof,
+    })
+
+    this.authCookiesService.set(request, response, tokens)
+
+    return tokens
   }
 
   @Public()
   @Post("logout")
-  async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
-    await this.authService.logout({ refreshToken: body.refresh_token })
+  async logout(
+    @Body() body: LogoutDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<LogoutResponse> {
+    const cookieRefreshToken: string | undefined =
+      request.cookies?.[REFRESH_TOKEN_COOKIE]
+    const refreshToken = body?.refresh_token ?? cookieRefreshToken
+
+    if (refreshToken) {
+      await this.authService.logout({ refreshToken })
+    }
+
+    // A body token targets a specific chain (admin, legacy clients) while the
+    // cookies may belong to a newer session on this browser; only clear the
+    // cookies when they are (or may be) the credential being revoked.
+    const revokesAnotherSession =
+      !!body?.refresh_token &&
+      !!cookieRefreshToken &&
+      body.refresh_token !== cookieRefreshToken
+
+    if (!revokesAnotherSession) {
+      this.authCookiesService.clear(request, response)
+    }
 
     return {}
   }

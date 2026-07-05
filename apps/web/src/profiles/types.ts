@@ -1,7 +1,5 @@
 export type Profile = {
   id: string
-  accessToken: string
-  refreshToken: string
   email: string
   nameHex: string
   dbName: string
@@ -16,4 +14,14 @@ export type Profile = {
    * point it is deleted (see `useRevokeLoggedOutProfiles`).
    */
   status?: "active" | "loggedOut"
+}
+
+/**
+ * Rows written before auth moved to httpOnly cookies persisted the tokens.
+ * They survive only until the one-time cookie migration (active rows) or the
+ * legacy tombstone sweep (logged-out rows) strips them.
+ */
+export type ProfileWithLegacyTokens = Profile & {
+  accessToken?: string
+  refreshToken?: string
 }

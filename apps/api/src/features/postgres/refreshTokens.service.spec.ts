@@ -123,9 +123,29 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 1,
       installation_id: "installation-1",
+      public_key: null,
       token_hash: hash(token),
       superseded_at: null,
     })
+  })
+
+  it("persists the sign-in public key on the issued token", async () => {
+    const insertBuilder = createQueryBuilderMock({
+      raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],
+    })
+    repository.manager.createQueryBuilder.mockReturnValue(insertBuilder)
+
+    await service.issueTokenForInstallation({
+      userId: 1,
+      installationId: "installation-1",
+      publicKey: '{"kty":"EC","crv":"P-256"}',
+    })
+
+    expect(insertBuilder.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        public_key: '{"kty":"EC","crv":"P-256"}',
+      }),
+    )
   })
 
   it("rotates an active token: wins the CAS, stores the encrypted successor, and inserts it", async () => {
@@ -182,11 +202,40 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
       installation_id: "installation-1",
+      public_key: null,
       token_hash: hash(result.refreshToken),
       superseded_at: null,
     })
     expect(repository.manager.createQueryBuilder).toHaveBeenCalledTimes(2)
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
+  })
+
+  it("carries the bound public key over to the successor on rotation", async () => {
+    const activeRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("current-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: null,
+      successor_token: null,
+      public_key: '{"kty":"EC","crv":"P-256"}',
+    } as RefreshTokenPostgresEntity
+
+    repository.findOne.mockResolvedValue(activeRow)
+    const casBuilder = createQueryBuilderMock({ affected: 1 })
+    const insertBuilder = createQueryBuilderMock({ raw: [{ id: 8 }] })
+    repository.manager.createQueryBuilder
+      .mockReturnValueOnce(casBuilder)
+      .mockReturnValueOnce(insertBuilder)
+
+    await service.rotateForRefresh("current-token")
+
+    expect(insertBuilder.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        public_key: '{"kty":"EC","crv":"P-256"}',
+      }),
+    )
   })
 
   it("converges on the stored successor when it loses the CAS to a concurrent refresh", async () => {
@@ -325,6 +374,7 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
       installation_id: "installation-1",
+      public_key: null,
       token_hash: hash(result.refreshToken),
       superseded_at: null,
     })

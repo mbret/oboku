@@ -59,9 +59,11 @@ export class RefreshTokensService {
   async issueTokenForInstallation({
     userId,
     installationId,
+    publicKey,
   }: {
     userId: number
     installationId: string
+    publicKey?: string
   }) {
     const { refreshToken } =
       await this.refreshTokenRepository.manager.transaction(async (manager) => {
@@ -74,12 +76,19 @@ export class RefreshTokensService {
           {
             user_id: userId,
             installation_id: installationId,
+            public_key: publicKey ?? null,
           },
           manager,
         )
       })
 
     return refreshToken
+  }
+
+  async findByToken(presentedToken: string) {
+    return this.refreshTokenRepository.findOne({
+      where: { token_hash: this.hashToken(presentedToken) },
+    })
   }
 
   async rotateForRefresh(presentedToken: string): Promise<RotationResult> {
@@ -167,6 +176,7 @@ export class RefreshTokensService {
           {
             user_id: parent.user_id,
             installation_id: parent.installation_id,
+            public_key: parent.public_key ?? null,
             refreshToken: successorToken,
           },
           manager,
@@ -230,8 +240,12 @@ export class RefreshTokensService {
     {
       user_id,
       installation_id,
+      public_key,
       refreshToken,
-    }: Pick<RefreshTokenPostgresEntity, "user_id" | "installation_id"> & {
+    }: Pick<
+      RefreshTokenPostgresEntity,
+      "user_id" | "installation_id" | "public_key"
+    > & {
       refreshToken?: string
     },
     manager?: EntityManager,
@@ -251,6 +265,7 @@ export class RefreshTokensService {
       .values({
         user_id,
         installation_id,
+        public_key,
         token_hash: this.hashToken(issuedToken),
         superseded_at: null,
       })

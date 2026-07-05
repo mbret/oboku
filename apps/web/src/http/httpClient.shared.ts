@@ -31,12 +31,23 @@ export type HttpClientResponse<T = unknown> = {
 
 export type FetchConfig = RequestInit & {
   input: string | URL | globalThis.Request
-  clientId?: string
   unwrap?: boolean
   useInterceptors?: boolean
+  /**
+   * Refresh epoch the request was sent under (stamped by the api client), so
+   * a 401 can tell whether the session was already refreshed since.
+   */
+  authEpoch?: number
 }
 
 export class HttpClient {
+  /**
+   * @param baseRequestInit merged under every request's own init — e.g.
+   * `{ credentials: "include" }` for clients whose auth rides on cookies.
+   * Applied even when interceptors are skipped.
+   */
+  constructor(private baseRequestInit: RequestInit = {}) {}
+
   private interceptors: {
     request?: (request: FetchConfig) => Promise<FetchConfig>
     response?: (response: HttpClientResponse) => Promise<HttpClientResponse>
@@ -111,12 +122,17 @@ export class HttpClient {
             Promise.resolve({ ...config, input }),
           )
 
-    const { clientId: _clientId, unwrap = true, ...params } = interceptedConfig
+    const {
+      unwrap = true,
+      authEpoch: _authEpoch,
+      ...params
+    } = interceptedConfig
 
     let response: Response
 
     try {
       response = await fetch(input, {
+        ...this.baseRequestInit,
         ...params,
       })
     } catch (error) {

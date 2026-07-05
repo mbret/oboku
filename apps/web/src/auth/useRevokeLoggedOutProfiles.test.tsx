@@ -4,10 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { Profile } from "../profiles/types"
+import type { ProfileWithLegacyTokens } from "../profiles/types"
 
 const { profilesStore } = vi.hoisted(() => ({
-  profilesStore: new Map<string, Profile>(),
+  profilesStore: new Map<string, ProfileWithLegacyTokens>(),
 }))
 
 vi.mock("../rxdb/dexie", () => ({
@@ -23,13 +23,13 @@ vi.mock("../rxdb/dexie", () => ({
 
 import type { HttpApiClientWeb } from "../http/HttpClientApi.web"
 import { HttpClientApiContext } from "../http"
-import { profilesQueryKey } from "../profiles"
+import { profilesQueryKey, setProfile } from "../profiles"
 import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
-const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
+const createProfile = (
+  overrides: Partial<ProfileWithLegacyTokens> = {},
+): ProfileWithLegacyTokens => ({
   id: "reader",
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
@@ -58,9 +58,26 @@ describe("useRevokeLoggedOutProfiles", () => {
   afterEach(() => {
     cleanup()
     profilesStore.clear()
+    localStorage.clear()
   })
 
-  it("revokes logged out profiles and deletes their local tombstone", async () => {
+  it("revokes a cookie-session tombstone through the refresh cookie and deletes it", async () => {
+    profilesStore.set(
+      "gone-reader",
+      createProfile({ id: "gone-reader", status: "loggedOut" }),
+    )
+
+    const logout = vi.fn().mockResolvedValue({ data: {} })
+    const { result } = renderRevokeHook(logout)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledTimes(1)
+    expect(logout).toHaveBeenCalledWith()
+    expect(profilesStore.has("gone-reader")).toBe(false)
+  })
+
+  it("revokes a legacy tombstone with its persisted refresh token", async () => {
     profilesStore.set("active-reader", createProfile({ id: "active-reader" }))
     profilesStore.set(
       "gone-reader",
@@ -98,7 +115,25 @@ describe("useRevokeLoggedOutProfiles", () => {
     expect(profilesStore.has("gone-reader")).toBe(true)
   })
 
-  it("revokes independently so one failure does not block other tombstones", async () => {
+  it("drops an unrevocable tombstone once a newer sign-in owns the cookies", async () => {
+    setProfile("active-reader")
+    profilesStore.set("active-reader", createProfile({ id: "active-reader" }))
+    profilesStore.set(
+      "gone-reader",
+      createProfile({ id: "gone-reader", status: "loggedOut" }),
+    )
+
+    const logout = vi.fn().mockResolvedValue({ data: {} })
+    const { result } = renderRevokeHook(logout)
+
+    await result.current.mutateAsync()
+
+    expect(logout).not.toHaveBeenCalled()
+    expect(profilesStore.has("gone-reader")).toBe(false)
+    expect(profilesStore.has("active-reader")).toBe(true)
+  })
+
+  it("revokes legacy tombstones independently so one failure does not block others", async () => {
     profilesStore.set(
       "gone-reader",
       createProfile({
@@ -140,16 +175,12 @@ describe("useRevokeLoggedOutProfiles", () => {
       "reader",
       createProfile({
         id: "reader",
-        refreshToken: "old-refresh-token",
         status: "loggedOut",
       }),
     )
 
     const queryClient = new QueryClient()
-    const freshProfile = createProfile({
-      id: "reader",
-      refreshToken: "new-refresh-token",
-    })
+    const freshProfile = createProfile({ id: "reader" })
     const logout = vi
       .fn()
       .mockImplementation(async function reloginWhileLogoutInFlight() {
@@ -162,9 +193,7 @@ describe("useRevokeLoggedOutProfiles", () => {
 
     await result.current.mutateAsync()
 
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "old-refresh-token",
-    })
-    expect(profilesStore.get("reader")?.refreshToken).toBe("new-refresh-token")
+    expect(logout).toHaveBeenCalledTimes(1)
+    expect(profilesStore.get("reader")).toEqual(freshProfile)
   })
 })

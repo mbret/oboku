@@ -8,6 +8,7 @@ import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { createPendingProofKeyIfPossible } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import {
   type DefaultError,
@@ -35,26 +36,29 @@ export const useSignIn = (
     mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
-      const signIn$ = data
-        ? from(
-            httpClientApi.signInWithEmail({
-              ...data,
-              installation_id: installationId,
-            }),
-          )
-        : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
-            map(
-              (authResponse): SignInWithGoogleRequest => ({
-                token: authResponse.credential,
-                installation_id: installationId,
-              }),
-            ),
-            switchMap((credentials) =>
-              from(httpClientApi.signInWithGoogle(credentials)),
-            ),
-          )
-
-      return signIn$.pipe(
+      return from(createPendingProofKeyIfPossible()).pipe(
+        switchMap((publicKey) =>
+          data
+            ? from(
+                httpClientApi.signInWithEmail({
+                  ...data,
+                  installation_id: installationId,
+                  public_key: publicKey,
+                }),
+              )
+            : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
+                map(
+                  (authResponse): SignInWithGoogleRequest => ({
+                    token: authResponse.credential,
+                    installation_id: installationId,
+                    public_key: publicKey,
+                  }),
+                ),
+                switchMap((credentials) =>
+                  from(httpClientApi.signInWithGoogle(credentials)),
+                ),
+              ),
+        ),
         switchMap(({ data }) =>
           completeAuthentication({
             reCreateDb,

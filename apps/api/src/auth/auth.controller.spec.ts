@@ -1,6 +1,7 @@
-import { BadRequestException } from "@nestjs/common"
+import { BadRequestException, UnauthorizedException } from "@nestjs/common"
 import { ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
+import type { Request, Response } from "express"
 import {
   AuthController,
   LogoutDto,
@@ -9,6 +10,13 @@ import {
   SignInWithGoogleDto,
 } from "./auth.controller"
 import { AuthService } from "./auth.service"
+import { AuthCookiesService } from "./auth-cookies"
+
+// Test doubles carrying only the members the controller touches; the express
+// interfaces are far larger, hence the assertions.
+const createRequest = (cookies: Record<string, string> = {}) =>
+  ({ cookies }) as unknown as Request
+const createResponse = () => ({}) as unknown as Response
 
 describe("AuthController", () => {
   let controller: AuthController
@@ -22,6 +30,10 @@ describe("AuthController", () => {
     logout: jest.Mock
     deleteAccount: jest.Mock
   }
+  let authCookiesService: {
+    set: jest.Mock
+    clear: jest.Mock
+  }
 
   beforeEach(async () => {
     authService = {
@@ -33,6 +45,10 @@ describe("AuthController", () => {
       logout: jest.fn().mockResolvedValue(undefined),
       deleteAccount: jest.fn().mockResolvedValue(undefined),
     }
+    authCookiesService = {
+      set: jest.fn(),
+      clear: jest.fn(),
+    }
 
     const module: TestingModule = await Test.createTestingModule({
       controllers: [AuthController],
@@ -40,6 +56,10 @@ describe("AuthController", () => {
         {
           provide: AuthService,
           useValue: authService,
+        },
+        {
+          provide: AuthCookiesService,
+          useValue: authCookiesService,
         },
       ],
     }).compile()
@@ -62,20 +82,22 @@ describe("AuthController", () => {
     })
   })
 
-  it("forwards a valid email sign-in request", async () => {
-    authService.signInWithEmail.mockResolvedValue({
+  it("forwards a valid email sign-in request and sets the auth cookies", async () => {
+    const session = {
       accessToken: "access-token",
       refreshToken: "refresh-token",
       dbName: "db-name",
       email: "reader@example.com",
       nameHex: "abc",
-    })
+    }
+    authService.signInWithEmail.mockResolvedValue(session)
 
     const body = await validationPipe.transform(
       {
         email: "reader@example.com",
         password: "password",
         installation_id: "installation-1",
+        public_key: { kty: "EC", crv: "P-256" },
       },
       {
         type: "body",
@@ -83,14 +105,24 @@ describe("AuthController", () => {
         data: "",
       },
     )
+    const request = createRequest()
+    const response = createResponse()
 
-    await controller.signinWithEmail(body)
+    await expect(
+      controller.signinWithEmail(body, request, response),
+    ).resolves.toEqual(session)
 
     expect(authService.signInWithEmail).toHaveBeenCalledWith({
       email: "reader@example.com",
       password: "password",
       installation_id: "installation-1",
+      public_key: { kty: "EC", crv: "P-256" },
     })
+    expect(authCookiesService.set).toHaveBeenCalledWith(
+      request,
+      response,
+      session,
+    )
   })
 
   it("rejects sign-in requests without installation_id", async () => {
@@ -132,7 +164,7 @@ describe("AuthController", () => {
       },
     )
 
-    await controller.signinWithGoogle(body)
+    await controller.signinWithGoogle(body, createRequest(), createResponse())
 
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
@@ -157,7 +189,91 @@ describe("AuthController", () => {
     expect(authService.signInWithGoogle).not.toHaveBeenCalled()
   })
 
-  it("forwards a valid logout request and always succeeds with an empty body", async () => {
+  it("refreshes from the cookie", async () => {
+    authService.refreshToken.mockResolvedValue({
+      accessToken: "fresh-access-token",
+      refreshToken: "rotated-refresh-token",
+    })
+
+    const request = createRequest({
+      oboku_refresh_token: "cookie-refresh-token",
+    })
+    const response = createResponse()
+
+    await controller.refreshTokens(
+      { grant_type: "refresh_token" },
+      "proof-jwt",
+      request,
+      response,
+    )
+
+    expect(authService.refreshToken).toHaveBeenCalledWith({
+      refreshToken: "cookie-refresh-token",
+      proof: "proof-jwt",
+    })
+    expect(authCookiesService.set).toHaveBeenCalledWith(request, response, {
+      accessToken: "fresh-access-token",
+      refreshToken: "rotated-refresh-token",
+    })
+  })
+
+  it("rejects refresh without the cookie", async () => {
+    await expect(
+      controller.refreshTokens(
+        { grant_type: "refresh_token" },
+        undefined,
+        createRequest(),
+        createResponse(),
+      ),
+    ).rejects.toBeInstanceOf(UnauthorizedException)
+
+    expect(authService.refreshToken).not.toHaveBeenCalled()
+  })
+
+  it("still validates the refresh grant type", async () => {
+    await expect(
+      validationPipe.transform(
+        {},
+        {
+          type: "query",
+          metatype: RefreshTokenQueryDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.refreshToken).not.toHaveBeenCalled()
+  })
+
+  it("revokes the cookie session on logout and clears the cookies", async () => {
+    const request = createRequest({
+      oboku_refresh_token: "cookie-refresh-token",
+    })
+    const response = createResponse()
+
+    const body = await validationPipe.transform(
+      {},
+      {
+        type: "body",
+        metatype: LogoutDto,
+        data: "",
+      },
+    )
+
+    await expect(controller.logout(body, request, response)).resolves.toEqual(
+      {},
+    )
+
+    expect(authService.logout).toHaveBeenCalledWith({
+      refreshToken: "cookie-refresh-token",
+    })
+    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
+  })
+
+  it("revokes a body-specified session (legacy/admin) and clears cookies when none conflict", async () => {
+    const request = createRequest()
+    const response = createResponse()
+
     const body = await validationPipe.transform(
       {
         refresh_token: "refresh-token",
@@ -169,42 +285,41 @@ describe("AuthController", () => {
       },
     )
 
-    await expect(controller.logout(body)).resolves.toEqual({})
+    await expect(controller.logout(body, request, response)).resolves.toEqual(
+      {},
+    )
 
     expect(authService.logout).toHaveBeenCalledWith({
       refreshToken: "refresh-token",
     })
+    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
   })
 
-  it("rejects logout requests without refresh_token", async () => {
-    await expect(
-      validationPipe.transform(
-        {},
-        {
-          type: "body",
-          metatype: LogoutDto,
-          data: "",
-        },
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException)
+  it("keeps the cookies when a body token revokes a different session", async () => {
+    const request = createRequest({
+      oboku_refresh_token: "cookie-refresh-token",
+    })
+    const response = createResponse()
+
+    await controller.logout(
+      { refresh_token: "older-refresh-token" },
+      request,
+      response,
+    )
+
+    expect(authService.logout).toHaveBeenCalledWith({
+      refreshToken: "older-refresh-token",
+    })
+    expect(authCookiesService.clear).not.toHaveBeenCalled()
+  })
+
+  it("stays idempotent on logout without any credential", async () => {
+    const request = createRequest()
+    const response = createResponse()
+
+    await expect(controller.logout({}, request, response)).resolves.toEqual({})
 
     expect(authService.logout).not.toHaveBeenCalled()
-  })
-
-  it("rejects refresh token requests without refresh_token", async () => {
-    await expect(
-      validationPipe.transform(
-        {
-          grant_type: "refresh_token",
-        },
-        {
-          type: "query",
-          metatype: RefreshTokenQueryDto,
-          data: "",
-        },
-      ),
-    ).rejects.toBeInstanceOf(BadRequestException)
-
-    expect(authService.refreshToken).not.toHaveBeenCalled()
+    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
   })
 })

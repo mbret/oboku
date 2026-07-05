@@ -78,6 +78,7 @@ import { PluginsModule } from "./plugins/plugins.module"
         ADMIN_LOGIN: Joi.string().optional(),
         ADMIN_PASSWORD: Joi.string().optional(),
         APP_PUBLIC_URL: Joi.string().uri().required(),
+        API_CORS_TRUSTED_ORIGINS: Joi.string().optional(),
         EMAIL_SMTP_HOST: Joi.string().optional(),
         EMAIL_SMTP_PORT: Joi.number().port().optional(),
         EMAIL_SMTP_USER: Joi.string().optional(),

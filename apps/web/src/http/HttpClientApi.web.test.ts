@@ -2,10 +2,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "../profiles/types"
 import type { HttpClientResponse } from "./httpClient.shared"
 
+const { signRefreshProof } = vi.hoisted(() => ({
+  signRefreshProof: vi.fn(),
+}))
+
+vi.mock("../auth/proofKey", () => ({
+  signRefreshProof,
+}))
+
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
@@ -29,16 +35,36 @@ const createDeferred = <T>() => {
   }
 }
 
-const createRefreshResponse = (params: {
-  accessToken: string
-  refreshToken: string
-}) =>
-  new Response(JSON.stringify(params), {
-    status: 200,
-    headers: {
-      "Content-Type": "application/json",
+const REFRESH_URL =
+  "https://api.example.com/auth/token?grant_type=refresh_token"
+
+const createRefreshResponse = () =>
+  new Response(
+    JSON.stringify({
+      accessToken: "fresh-access-token",
+      refreshToken: "rotated-refresh-token",
+    }),
+    {
+      status: 200,
+      headers: {
+        "Content-Type": "application/json",
+      },
     },
-  })
+  )
+
+const createUnauthorized = (
+  config: Partial<HttpClientResponse["config"]> = {},
+): HttpClientResponse => ({
+  response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+  data: undefined,
+  status: 401,
+  statusText: "Unauthorized",
+  headers: {},
+  config: {
+    input: "https://api.example.com/protected",
+    ...config,
+  },
+})
 
 /**
  * The client reads and persists its session through an injected store, which in
@@ -73,13 +99,53 @@ describe("HttpApiClientWeb auth refresh", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.unstubAllGlobals()
+    signRefreshProof.mockReset()
+    signRefreshProof.mockResolvedValue("proof-jwt")
     vi.doMock("../config/envs", async (importOriginal) => ({
       ...(await importOriginal<typeof import("../config/envs")>()),
       API_URL: "https://api.example.com",
     }))
   })
 
-  it("deduplicates refreshes for the same refresh token", async () => {
+  it("refreshes over the cookie with a DPoP proof and no token in the URL", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createRefreshResponse())
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+
+    await expect(client.refreshAuthSession()).resolves.toBe(true)
+
+    const [input, init] = fetchMock.mock.calls[0] ?? []
+
+    expect(String(input)).toBe(REFRESH_URL)
+    expect(init?.credentials).toBe("include")
+    expect(new Headers(init?.headers).get("DPoP")).toBe("proof-jwt")
+    expect(signRefreshProof).toHaveBeenCalledWith(REFRESH_URL)
+  })
+
+  it("omits the proof header when no key is registered (pre-binding session)", async () => {
+    signRefreshProof.mockResolvedValue(undefined)
+
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createRefreshResponse())
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+
+    await client.refreshToken({ useInterceptors: false })
+
+    const [input, init] = fetchMock.mock.calls[0] ?? []
+
+    expect(String(input)).toBe(REFRESH_URL)
+    expect(new Headers(init?.headers).get("DPoP")).toBeNull()
+  })
+
+  it("deduplicates concurrent refreshes", async () => {
     const refreshDeferred = createDeferred<Response>()
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -87,50 +153,31 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { client, getSession } = await createClient(
-      createProfile({
-        accessToken: "expired-access-token",
-        refreshToken: "token-a",
-      }),
-    )
+    const { client } = await createClient(createProfile())
 
-    const firstRefresh = client.refreshAuthSession("token-a")
-    const secondRefresh = client.refreshAuthSession("token-a")
+    const firstRefresh = client.refreshAuthSession()
+    const secondRefresh = client.refreshAuthSession()
 
     expect(firstRefresh).toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
 
-    refreshDeferred.resolve(
-      createRefreshResponse({
-        accessToken: "fresh-access-token",
-        refreshToken: "token-a-2",
-      }),
-    )
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    refreshDeferred.resolve(createRefreshResponse())
 
     await expect(firstRefresh).resolves.toBe(true)
-    expect(getSession()).toEqual(
-      createProfile({
-        accessToken: "fresh-access-token",
-        refreshToken: "token-a-2",
-      }),
-    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
-  it("dedupes concurrent 401s into a single refresh through the async store", async () => {
+  it("dedupes concurrent 401s into a single refresh and retries them cookie-only", async () => {
     let refreshCalls = 0
 
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)
 
-      if (url.includes("/auth/token?grant_type=refresh_token")) {
+      if (url === REFRESH_URL) {
         refreshCalls += 1
 
-        return Promise.resolve(
-          createRefreshResponse({
-            accessToken: "fresh-access-token",
-            refreshToken: "token-a-2",
-          }),
-        )
+        return Promise.resolve(createRefreshResponse())
       }
 
       if (url === "https://api.example.com/protected") {
@@ -144,30 +191,11 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { client } = await createClient(
-      createProfile({
-        accessToken: "expired-access-token",
-        refreshToken: "token-a",
-      }),
-    )
-
-    const makeUnauthorized = (): HttpClientResponse => ({
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-        headers: {
-          Authorization: "Bearer expired-access-token",
-        },
-      },
-    })
+    const { client } = await createClient(createProfile())
 
     await Promise.all([
-      client.refreshOnUnauthorized(makeUnauthorized()),
-      client.refreshOnUnauthorized(makeUnauthorized()),
+      client.refreshOnUnauthorized(createUnauthorized({ authEpoch: 0 })),
+      client.refreshOnUnauthorized(createUnauthorized({ authEpoch: 0 })),
     ])
 
     expect(refreshCalls).toBe(1)
@@ -179,210 +207,17 @@ describe("HttpApiClientWeb auth refresh", () => {
     expect(protectedRetries).toHaveLength(2)
 
     for (const [, config] of protectedRetries) {
-      expect(new Headers(config?.headers).get("Authorization")).toBe(
-        "Bearer fresh-access-token",
-      )
+      expect(new Headers(config?.headers).get("Authorization")).toBeNull()
+      expect(config?.credentials).toBe("include")
     }
   })
 
-  it("starts a new refresh after a session switch and ignores stale results", async () => {
-    const refreshDeferredA = createDeferred<Response>()
-    const refreshDeferredB = createDeferred<Response>()
+  it("retries without refreshing when the session was already refreshed since the request", async () => {
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)
 
-      if (url.includes("refresh_token=token-a")) {
-        return refreshDeferredA.promise
-      }
-
-      if (url.includes("refresh_token=token-b")) {
-        return refreshDeferredB.promise
-      }
-
-      throw new Error(`Unexpected fetch call for ${url}`)
-    })
-
-    vi.stubGlobal("fetch", fetchMock)
-
-    const authStateA = createProfile({
-      accessToken: "expired-a",
-      refreshToken: "token-a",
-      email: "a@example.com",
-      nameHex: "a",
-      dbName: "a-db",
-    })
-    const authStateB = createProfile({
-      accessToken: "expired-b",
-      refreshToken: "token-b",
-      email: "b@example.com",
-      nameHex: "b",
-      dbName: "b-db",
-    })
-
-    const { client, getSession, setSession } = await createClient(authStateA)
-
-    const firstRefresh = client.refreshAuthSession("token-a")
-
-    setSession(authStateB)
-
-    const secondRefresh = client.refreshAuthSession("token-b")
-
-    expect(firstRefresh).not.toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-
-    refreshDeferredA.resolve(
-      createRefreshResponse({
-        accessToken: "fresh-a",
-        refreshToken: "token-a-2",
-      }),
-    )
-
-    await expect(firstRefresh).resolves.toBe(false)
-    expect(getSession()).toEqual(authStateB)
-
-    refreshDeferredB.resolve(
-      createRefreshResponse({
-        accessToken: "fresh-b",
-        refreshToken: "token-b-2",
-      }),
-    )
-
-    await expect(secondRefresh).resolves.toBe(true)
-    expect(getSession()).toEqual(
-      createProfile({
-        accessToken: "fresh-b",
-        refreshToken: "token-b-2",
-        email: "b@example.com",
-        nameHex: "b",
-        dbName: "b-db",
-      }),
-    )
-  })
-
-  it("does not retry a 401 request when the refresh belongs to a stale session", async () => {
-    const refreshDeferred = createDeferred<Response>()
-    const fetchMock = vi.fn<typeof fetch>((input) => {
-      const url = String(input)
-
-      if (url.includes("refresh_token=token-a")) {
-        return refreshDeferred.promise
-      }
-
-      throw new Error(`Unexpected fetch call for ${url}`)
-    })
-
-    vi.stubGlobal("fetch", fetchMock)
-
-    const { client, setSession } = await createClient(
-      createProfile({
-        accessToken: "expired-a",
-        refreshToken: "token-a",
-        email: "a@example.com",
-        nameHex: "a",
-        dbName: "a-db",
-      }),
-    )
-
-    const unauthorizedResponse: HttpClientResponse = {
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-      },
-    }
-
-    const refreshPromise = client.refreshOnUnauthorized(unauthorizedResponse)
-
-    setSession(
-      createProfile({
-        accessToken: "expired-b",
-        refreshToken: "token-b",
-        email: "b@example.com",
-        nameHex: "b",
-        dbName: "b-db",
-      }),
-    )
-
-    refreshDeferred.resolve(
-      createRefreshResponse({
-        accessToken: "fresh-a",
-        refreshToken: "token-a-2",
-      }),
-    )
-
-    await expect(refreshPromise).resolves.toBe(unauthorizedResponse)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-  })
-
-  it("retries a 401 request only once with the refreshed access token", async () => {
-    let refreshCalls = 0
-
-    const fetchMock = vi.fn<typeof fetch>((input) => {
-      const url = String(input)
-
-      if (url.includes("/auth/token?grant_type=refresh_token")) {
-        refreshCalls += 1
-
-        if (refreshCalls > 1) {
-          throw new Error(`Unexpected extra refresh for ${url}`)
-        }
-
-        return Promise.resolve(
-          createRefreshResponse({
-            accessToken: "fresh-access-token",
-            refreshToken: "token-a-2",
-          }),
-        )
-      }
-
-      if (url === "https://api.example.com/protected") {
-        return Promise.resolve(
-          new Response(null, { status: 401, statusText: "Unauthorized" }),
-        )
-      }
-
-      throw new Error(`Unexpected fetch call for ${url}`)
-    })
-
-    vi.stubGlobal("fetch", fetchMock)
-
-    const { client } = await createClient(
-      createProfile({
-        accessToken: "expired-access-token",
-        refreshToken: "token-a",
-      }),
-    )
-
-    const retriedResponse = await client.refreshOnUnauthorized({
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-        headers: {
-          Authorization: "Bearer expired-access-token",
-        },
-      },
-    })
-
-    expect(retriedResponse.status).toBe(401)
-    expect(fetchMock).toHaveBeenCalledTimes(2)
-    expect(
-      new Headers(fetchMock.mock.calls[1]?.[1]?.headers).get("Authorization"),
-    ).toBe("Bearer fresh-access-token")
-  })
-
-  it("retries with the current token without refreshing when it was already rotated", async () => {
-    const fetchMock = vi.fn<typeof fetch>((input) => {
-      const url = String(input)
-
-      if (url.includes("/auth/token?grant_type=refresh_token")) {
-        throw new Error("must not refresh when the token was already rotated")
+      if (url === REFRESH_URL) {
+        return Promise.resolve(createRefreshResponse())
       }
 
       if (url === "https://api.example.com/protected") {
@@ -394,42 +229,82 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { client } = await createClient(
-      createProfile({
-        accessToken: "fresh-access-token",
-        refreshToken: "token-fresh",
-      }),
-    )
+    const { client } = await createClient(createProfile())
 
-    const result = await client.refreshOnUnauthorized({
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-        headers: {
-          Authorization: "Bearer stale-access-token",
-        },
-      },
-    })
+    // one applied refresh moves the client past epoch 0
+    await client.refreshAuthSession()
 
-    expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(String(fetchMock.mock.calls[0]?.[0])).toBe(
-      "https://api.example.com/protected",
-    )
-    expect(
-      new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("Authorization"),
-    ).toBe("Bearer fresh-access-token")
+    const staleEpochResponse = createUnauthorized({ authEpoch: 0 })
+    const result = await client.refreshOnUnauthorized(staleEpochResponse)
+
     expect(result.status).toBe(200)
+
+    const refreshCalls = fetchMock.mock.calls.filter(
+      ([input]) => String(input) === REFRESH_URL,
+    )
+
+    expect(refreshCalls).toHaveLength(1)
   })
 
-  it("flags the session for relogin when the refresh request fails", async () => {
+  it("returns the 401 untouched when no session exists", async () => {
+    const fetchMock = vi.fn<typeof fetch>()
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(null)
+
+    const unauthorizedResponse = createUnauthorized()
+
+    await expect(
+      client.refreshOnUnauthorized(unauthorizedResponse),
+    ).resolves.toBe(unauthorizedResponse)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("does not retry a 401 request when the session switched during the refresh", async () => {
+    const refreshDeferred = createDeferred<Response>()
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockReturnValueOnce(refreshDeferred.promise)
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession, setSession } = await createClient(
+      createProfile({ id: "a", email: "a@example.com" }),
+    )
+
+    const unauthorizedResponse = createUnauthorized({ authEpoch: 0 })
+    const refreshPromise = client.refreshOnUnauthorized(unauthorizedResponse)
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    const sessionB = createProfile({ id: "b", email: "b@example.com" })
+    setSession(sessionB)
+
+    refreshDeferred.resolve(createRefreshResponse())
+
+    await expect(refreshPromise).resolves.toBe(unauthorizedResponse)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(getSession()).toEqual(sessionB)
+  })
+
+  it("retries a 401 request only once after a refresh", async () => {
+    let refreshCalls = 0
+
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)
 
-      if (url.includes("/auth/token?grant_type=refresh_token")) {
+      if (url === REFRESH_URL) {
+        refreshCalls += 1
+
+        if (refreshCalls > 1) {
+          throw new Error(`Unexpected extra refresh for ${url}`)
+        }
+
+        return Promise.resolve(createRefreshResponse())
+      }
+
+      if (url === "https://api.example.com/protected") {
         return Promise.resolve(
           new Response(null, { status: 401, statusText: "Unauthorized" }),
         )
@@ -440,24 +315,49 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { client, getSession } = await createClient(
-      createProfile({
-        accessToken: "expired-access-token",
-        refreshToken: "token-a",
-      }),
+    const { client } = await createClient(createProfile())
+
+    const retriedResponse = await client.refreshOnUnauthorized(
+      createUnauthorized({ authEpoch: 0 }),
     )
 
-    const unauthorizedResponse: HttpClientResponse = {
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-      },
-    }
+    expect(retriedResponse.status).toBe(401)
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+  })
 
+  it("clears the relogin flag once a refresh succeeds", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createRefreshResponse())
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession } = await createClient(
+      createProfile({ needsRelogin: true }),
+    )
+
+    await expect(client.refreshAuthSession()).resolves.toBe(true)
+    expect(getSession()?.needsRelogin).toBe(false)
+  })
+
+  it("flags the session for relogin when the refresh is rejected", async () => {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url === REFRESH_URL) {
+        return Promise.resolve(
+          new Response(null, { status: 401, statusText: "Unauthorized" }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession } = await createClient(createProfile())
+
+    const unauthorizedResponse = createUnauthorized()
     const result = await client.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)
@@ -468,7 +368,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)
 
-      if (url.includes("/auth/token?grant_type=refresh_token")) {
+      if (url === REFRESH_URL) {
         // A transient failure (5xx / network blip), not an auth rejection.
         return Promise.resolve(
           new Response(null, {
@@ -483,24 +383,9 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const { client, getSession } = await createClient(
-      createProfile({
-        accessToken: "expired-access-token",
-        refreshToken: "token-a",
-      }),
-    )
+    const { client, getSession } = await createClient(createProfile())
 
-    const unauthorizedResponse: HttpClientResponse = {
-      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
-      data: undefined,
-      status: 401,
-      statusText: "Unauthorized",
-      headers: {},
-      config: {
-        input: "https://api.example.com/protected",
-      },
-    }
-
+    const unauthorizedResponse = createUnauthorized()
     const result = await client.refreshOnUnauthorized(unauthorizedResponse)
 
     expect(result).toBe(unauthorizedResponse)

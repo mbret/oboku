@@ -137,6 +137,22 @@ export class AppConfigService {
     return this.config.getOrThrow("APP_PUBLIC_URL", { infer: true })
   }
 
+  /**
+   * Extra origins allowed to make credentialed CORS requests, beyond any port
+   * on `APP_PUBLIC_URL`'s hostname (e.g. a separately-hosted admin app).
+   * Comma-separated list of full origins.
+   */
+  get API_CORS_TRUSTED_ORIGINS(): string[] {
+    const raw = this.config.get("API_CORS_TRUSTED_ORIGINS", { infer: true })
+
+    return (
+      raw
+        ?.split(",")
+        .map((origin) => origin.trim())
+        .filter(Boolean) ?? []
+    )
+  }
+
   get EMAIL_SMTP_HOST() {
     return this.config.get("EMAIL_SMTP_HOST", { infer: true })
   }

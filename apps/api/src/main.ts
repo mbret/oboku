@@ -5,10 +5,13 @@ import { AppModule } from "./app.module"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./config/types"
 import { Logger, ValidationPipe } from "@nestjs/common"
+import cookieParser from "cookie-parser"
 import { json, urlencoded } from "express"
 import path from "node:path"
 import { WebDavService } from "./webdav/webdav.service"
 import { CouchProxyService } from "./couch/couch-proxy.service"
+import { TrustedOriginsService } from "./config/TrustedOriginsService"
+import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -25,6 +28,14 @@ async function bootstrap() {
     `API_CONFIG_DIR: ${path.resolve(configService.getOrThrow("API_CONFIG_DIR"))}`,
   )
 
+  const trustedOriginsService = app.get(TrustedOriginsService)
+
+  // Cookie parsing must precede the proxy mounts so both the raw proxy
+  // middlewares and the Nest guard see `req.cookies` (it never reads the
+  // body, so mounting it before the body parsers is safe).
+  app.use(cookieParser())
+  app.use(createCsrfOriginMiddleware(trustedOriginsService))
+
   // Mount the streaming proxies BEFORE body parsing so request bodies stream
   // through untouched (large CouchDB _bulk_docs, binary attachments, etc.).
   // These middlewares fully handle their requests and never call next().
@@ -39,8 +50,15 @@ async function bootstrap() {
   app.use(urlencoded({ extended: true }))
 
   app.useGlobalPipes(new ValidationPipe())
+  // Reflect only trusted origins: with `credentials: true` the browser lets
+  // scripts on the allowed origin make cookie-carrying requests, so a
+  // wildcard/reflect-any policy would hand any website credentialed access.
   app.enableCors({
-    origin: "*",
+    origin: (
+      origin: string | undefined,
+      callback: (error: Error | null, allow?: boolean) => void,
+    ) => callback(null, trustedOriginsService.isTrusted(origin)),
+    credentials: true,
   })
 
   await app.listen(configService.getOrThrow("PORT"))

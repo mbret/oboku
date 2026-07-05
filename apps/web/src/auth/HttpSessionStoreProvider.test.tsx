@@ -19,8 +19,6 @@ import { HttpSessionStoreProvider } from "./HttpSessionStoreProvider"
 
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",

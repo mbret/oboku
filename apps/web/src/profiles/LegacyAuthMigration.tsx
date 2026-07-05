@@ -1,5 +1,5 @@
 import { memo, type ReactNode, useEffect, useState } from "react"
-import type { Profile } from "./types"
+import type { ProfileWithLegacyTokens } from "./types"
 import { Logger } from "../debug/logger.shared"
 import {
   activeProfileIdSignal,
@@ -17,7 +17,7 @@ import { dexieDb } from "../rxdb/dexie"
 const LEGACY_AUTH_STORAGE_KEY = "auth"
 const LEGACY_AUTH_SIGNAL_KEY = "authState"
 
-type LegacyProfile = Omit<Profile, "id">
+type LegacyProfile = Omit<ProfileWithLegacyTokens, "id">
 
 const isLegacyProfile = (value: unknown): value is LegacyProfile => {
   if (typeof value !== "object" || value === null) return false
@@ -70,7 +70,15 @@ const runMigration = async () => {
   const existing = await dexieDb.profiles.get(auth.nameHex)
 
   if (!existing) {
-    await dexieDb.profiles.put({ id: auth.nameHex, ...auth })
+    // The legacy tokens are dropped, not copied: auth now rides on httpOnly
+    // cookies, so this session cannot be resumed — the first authenticated
+    // request fails and the user re-logs in, with all local data intact.
+    await dexieDb.profiles.put({
+      id: auth.nameHex,
+      email: auth.email,
+      nameHex: auth.nameHex,
+      dbName: auth.dbName,
+    })
   }
 
   if (!getProfile()) {

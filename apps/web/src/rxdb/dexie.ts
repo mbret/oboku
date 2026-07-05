@@ -1,5 +1,6 @@
 import Dexie, { type EntityTable } from "dexie"
 import type { Profile } from "../profiles/types"
+import type { StoredProofKey } from "../auth/proofKey"
 
 /**
  * Persist the original filename alongside the binary payload because:
@@ -21,6 +22,7 @@ export const dexieDb = new Dexie(`oboku-dexie`) as Dexie & {
   downloads: EntityTable<Downloads, "id">
   queryCachePersistence: EntityTable<QueryCachePersistence, "key">
   profiles: EntityTable<Profile, "id">
+  authProofKeys: EntityTable<StoredProofKey, "id">
 }
 
 dexieDb.version(1).stores({
@@ -65,4 +67,8 @@ dexieDb.version(5).stores({
   downloads: `++id, data, filename`,
   queryCachePersistence: `&key`,
   profiles: `&id`,
+})
+
+dexieDb.version(6).stores({
+  authProofKeys: `&id`,
 })
