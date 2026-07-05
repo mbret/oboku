@@ -548,8 +548,7 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
-    const rotation =
-      await this.refreshTokensService.rotateForRefresh(refreshToken)
+    const rotation = await this.refreshTokensService.rotateForRefresh(presented)
 
     if (rotation.status !== "rotated") {
       throw new UnauthorizedException()

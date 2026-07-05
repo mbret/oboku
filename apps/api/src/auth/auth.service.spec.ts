@@ -223,12 +223,13 @@ describe("AuthService", () => {
   })
 
   it("rotates the refresh token and returns the newly issued one", async () => {
-    refreshTokensService.findByToken.mockResolvedValue({
+    const presentedRow = {
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       public_key: '{"kty":"EC"}',
-    })
+    }
+    refreshTokensService.findByToken.mockResolvedValue(presentedRow)
     refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
       status: "rotated",
@@ -252,7 +253,7 @@ describe("AuthService", () => {
     })
 
     expect(refreshTokensService.rotateForRefresh).toHaveBeenCalledWith(
-      "opaque-refresh-token",
+      presentedRow,
     )
     expect(usersService.findUserById).toHaveBeenCalledWith(42)
     expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
