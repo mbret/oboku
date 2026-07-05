@@ -166,7 +166,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
     useInterceptors: boolean
   }) => {
     const url = `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`
-    const proof = await signRefreshProof(url).catch(() => undefined)
+    const proof = await signRefreshProof(url)
 
     return this.postOrThrow<RefreshTokenResponse, never>(url, {
       useInterceptors,

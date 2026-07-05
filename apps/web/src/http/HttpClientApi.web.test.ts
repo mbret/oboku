@@ -77,6 +77,10 @@ describe("HttpApiClientWeb auth refresh", () => {
       ...(await importOriginal<typeof import("../config/envs")>()),
       API_URL: "https://api.example.com",
     }))
+    vi.doMock("../auth/proofKey", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../auth/proofKey")>()),
+      signRefreshProof: async () => undefined,
+    }))
   })
 
   it("deduplicates refreshes for the same refresh token", async () => {
