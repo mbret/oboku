@@ -8,12 +8,12 @@ import { dexieDb } from "../rxdb/dexie"
  * Every session is bound to a key — a browser that cannot create or store one
  * (no WebCrypto, evicted IndexedDB) cannot sign in.
  *
- * Keys are staged under a `pending` slot while a sign-in is in flight and
- * promoted to `current` only once the server has bound them, so a failed
- * sign-in attempt never clobbers the key of the session that is still active.
+ * A key is generated in memory and only persisted as `current` once the server
+ * has bound it. Each sign-in attempt carries its own key from creation through
+ * to persistence, so a failed attempt never clobbers the active session's key
+ * and overlapping attempts can never promote a key the server did not bind.
  */
 
-const PENDING_PROOF_KEY = "auth.proofKey.pending"
 const CURRENT_PROOF_KEY = "auth.proofKey.current"
 
 const ECDSA_P256_KEY_PARAMS = { name: "ECDSA", namedCurve: "P-256" }
@@ -37,7 +37,7 @@ const base64UrlEncode = (bytes: Uint8Array) => {
 const encodeJsonProofPart = (part: object) =>
   base64UrlEncode(new TextEncoder().encode(JSON.stringify(part)))
 
-export const createPendingProofKey = async (): Promise<JsonWebKey> => {
+export const createProofKey = async (): Promise<StoredProofKey> => {
   const keyPair = await crypto.subtle.generateKey(
     ECDSA_P256_KEY_PARAMS,
     false,
@@ -45,27 +45,13 @@ export const createPendingProofKey = async (): Promise<JsonWebKey> => {
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
 
-  await dexieDb.keyValue.put({
-    key: PENDING_PROOF_KEY,
-    value: { privateKey: keyPair.privateKey, publicJwk },
-  })
-
-  return publicJwk
+  return { privateKey: keyPair.privateKey, publicJwk }
 }
 
-export const promotePendingProofKey = async () => {
-  await dexieDb.transaction("rw", dexieDb.keyValue, async () => {
-    const pending = await dexieDb.keyValue.get(PENDING_PROOF_KEY)
+export const persistProofKey = (proofKey: StoredProofKey) =>
+  dexieDb.keyValue.put({ key: CURRENT_PROOF_KEY, value: proofKey })
 
-    if (!pending) return
-
-    await dexieDb.keyValue.put({ key: CURRENT_PROOF_KEY, value: pending.value })
-    await dexieDb.keyValue.delete(PENDING_PROOF_KEY)
-  })
-}
-
-export const deleteProofKeys = () =>
-  dexieDb.keyValue.bulkDelete([PENDING_PROOF_KEY, CURRENT_PROOF_KEY])
+export const deleteProofKey = () => dexieDb.keyValue.delete(CURRENT_PROOF_KEY)
 
 /**
  * Builds the DPoP-style proof JWT (RFC 9449 shape) sent with `/auth/token`.

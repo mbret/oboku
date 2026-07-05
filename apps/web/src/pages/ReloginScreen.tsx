@@ -65,6 +65,7 @@ export const ReLoginScreen = () => {
         {displayedError ? <ErrorAlert error={displayedError} /> : null}
         <SignInForm
           control={control}
+          disabled={isPending}
           onSubmit={handleSubmit((data) => {
             mutate(data)
           })}

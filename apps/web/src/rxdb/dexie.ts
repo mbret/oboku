@@ -25,7 +25,6 @@ interface QueryCachePersistence {
  * by their consumer — the type only reflects what the current build writes.
  */
 interface KeyValueMap {
-  "auth.proofKey.pending": StoredProofKey
   "auth.proofKey.current": StoredProofKey
 }
 
