@@ -47,16 +47,15 @@ export const useSignIn = (
                 }),
               )
             : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
-                map(
-                  (authResponse): SignInWithGoogleRequest => ({
-                    token: authResponse.credential,
-                    installation_id: installationId,
-                    public_key: publicKey,
-                  }),
-                ),
-                switchMap((credentials) =>
-                  from(httpClientApi.signInWithGoogle(credentials)),
-                ),
+                switchMap((authResponse) => {
+                  return from(
+                    httpClientApi.signInWithGoogle({
+                      token: authResponse.credential,
+                      installation_id: installationId,
+                      public_key: publicKey,
+                    } satisfies SignInWithGoogleRequest),
+                  )
+                }),
               ),
         ),
         switchMap(({ data }) =>
