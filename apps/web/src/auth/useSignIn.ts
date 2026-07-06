@@ -8,7 +8,7 @@ import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
-import { createPendingProofKey } from "./proofKey"
+import { createProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import {
   type DefaultError,
@@ -36,35 +36,38 @@ export const useSignIn = (
     mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
-      return from(createPendingProofKey()).pipe(
-        switchMap((publicKey) =>
-          data
+      return from(createProofKey()).pipe(
+        switchMap((proofKey) =>
+          (data
             ? from(
                 httpClientApi.signInWithEmail({
                   ...data,
                   installation_id: installationId,
-                  public_key: publicKey,
+                  public_key: proofKey.publicJwk,
                 }),
               )
             : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
-                switchMap((authResponse) => {
-                  return from(
+                switchMap((authResponse) =>
+                  from(
                     httpClientApi.signInWithGoogle({
                       token: authResponse.credential,
                       installation_id: installationId,
-                      public_key: publicKey,
+                      public_key: proofKey.publicJwk,
                     } satisfies SignInWithGoogleRequest),
-                  )
-                }),
-              ),
-        ),
-        switchMap(({ data }) =>
-          completeAuthentication({
-            reCreateDb,
-            putProfile,
-            auth: data,
-            queryClient,
-          }),
+                  ),
+                ),
+              )
+          ).pipe(
+            switchMap(({ data: auth }) =>
+              completeAuthentication({
+                reCreateDb,
+                putProfile,
+                auth,
+                proofKey,
+                queryClient,
+              }),
+            ),
+          ),
         ),
         withLock("authentication"),
       )

@@ -202,8 +202,8 @@ export class RefreshTokenPostgresEntity {
    * a DPoP-style proof signed by the matching non-extractable private key, so
    * a stolen refresh cookie alone cannot mint tokens. Bound at sign-in only
    * and inherited by every successor row on rotation. Null for sessions
-   * issued before this column existed (they refresh proof-less until they
-   * expire or re-authenticate).
+   * issued before this column existed; those are rejected on their next
+   * refresh and must re-authenticate (deliberate: no graceful migration).
    */
   @Column({ type: "text", nullable: true })
   public_key!: string | null

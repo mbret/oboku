@@ -91,18 +91,21 @@ export class RefreshTokensService {
     })
   }
 
-  async rotateForRefresh(presentedToken: string): Promise<RotationResult> {
+  /**
+   * Rotates the chain for a row the caller already loaded via `findByToken`.
+   * The row may have gone stale in between; every write is CAS-guarded and
+   * falls back to re-reading (`resolveSuccessor`), so a stale row converges
+   * instead of corrupting the chain.
+   */
+  async rotateForRefresh(
+    presented: RefreshTokenPostgresEntity,
+  ): Promise<RotationResult> {
     const now = new Date()
-    const presentedHash = this.hashToken(presentedToken)
     const expiryCutoff = new Date(
       now.getTime() - this.appConfigService.SECURITY_REFRESH_TOKEN_TTL_MS,
     )
 
-    const presented = await this.refreshTokenRepository.findOne({
-      where: { token_hash: presentedHash },
-    })
-
-    if (!presented || presented.created_at <= expiryCutoff) {
+    if (presented.created_at <= expiryCutoff) {
       return { status: "invalid" }
     }
 

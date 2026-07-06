@@ -1,3 +1,4 @@
+import { SignJWT } from "jose"
 import { dexieDb } from "../rxdb/dexie"
 
 /**
@@ -8,64 +9,41 @@ import { dexieDb } from "../rxdb/dexie"
  * Every session is bound to a key — a browser that cannot create or store one
  * (no WebCrypto, evicted IndexedDB) cannot sign in.
  *
- * Keys are staged under a `pending` slot while a sign-in is in flight and
- * promoted to `current` only once the server has bound them, so a failed
- * sign-in attempt never clobbers the key of the session that is still active.
+ * A key is generated in memory and only persisted as `current` once the server
+ * has bound it. Each sign-in attempt carries its own key from creation through
+ * to persistence, so a failed attempt never clobbers the active session's key
+ * and overlapping attempts can never promote a key the server did not bind.
  */
 
-const PENDING_PROOF_KEY = "auth.proofKey.pending"
 const CURRENT_PROOF_KEY = "auth.proofKey.current"
 
 const ECDSA_P256_KEY_PARAMS = { name: "ECDSA", namedCurve: "P-256" }
-const ES256_SIGN_PARAMS = { name: "ECDSA", hash: "SHA-256" }
 
 export type StoredProofKey = {
   privateKey: CryptoKey
-  publicJwk: JsonWebKey
+  publicJwk: JsonWebKey & { kty: string }
 }
 
-const base64UrlEncode = (bytes: Uint8Array) => {
-  let binary = ""
-
-  for (const byte of bytes) {
-    binary += String.fromCharCode(byte)
-  }
-
-  return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "")
-}
-
-const encodeJsonProofPart = (part: object) =>
-  base64UrlEncode(new TextEncoder().encode(JSON.stringify(part)))
-
-export const createPendingProofKey = async (): Promise<JsonWebKey> => {
+export const createProofKey = async (): Promise<StoredProofKey> => {
   const keyPair = await crypto.subtle.generateKey(
     ECDSA_P256_KEY_PARAMS,
     false,
     ["sign"],
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
+  const { kty } = publicJwk
 
-  await dexieDb.keyValue.put({
-    key: PENDING_PROOF_KEY,
-    value: { privateKey: keyPair.privateKey, publicJwk },
-  })
+  if (!kty) {
+    throw new Error("Exported proof public JWK is missing kty")
+  }
 
-  return publicJwk
+  return { privateKey: keyPair.privateKey, publicJwk: { ...publicJwk, kty } }
 }
 
-export const promotePendingProofKey = async () => {
-  await dexieDb.transaction("rw", dexieDb.keyValue, async () => {
-    const pending = await dexieDb.keyValue.get(PENDING_PROOF_KEY)
+export const persistProofKey = (proofKey: StoredProofKey) =>
+  dexieDb.keyValue.put({ key: CURRENT_PROOF_KEY, value: proofKey })
 
-    if (!pending) return
-
-    await dexieDb.keyValue.put({ key: CURRENT_PROOF_KEY, value: pending.value })
-    await dexieDb.keyValue.delete(PENDING_PROOF_KEY)
-  })
-}
-
-export const deleteProofKeys = () =>
-  dexieDb.keyValue.bulkDelete([PENDING_PROOF_KEY, CURRENT_PROOF_KEY])
+export const deleteProofKey = () => dexieDb.keyValue.delete(CURRENT_PROOF_KEY)
 
 /**
  * Builds the DPoP-style proof JWT (RFC 9449 shape) sent with `/auth/token`.
@@ -79,19 +57,16 @@ export const signRefreshProof = async (
 
   if (!stored) return undefined
 
-  const header = { alg: "ES256", typ: "dpop+jwt", jwk: stored.value.publicJwk }
-  const payload = {
+  return new SignJWT({
     htm: "POST",
     htu: url,
-    iat: Math.floor(Date.now() / 1000),
     jti: crypto.randomUUID(),
-  }
-  const signingInput = `${encodeJsonProofPart(header)}.${encodeJsonProofPart(payload)}`
-  const signature = await crypto.subtle.sign(
-    ES256_SIGN_PARAMS,
-    stored.value.privateKey,
-    new TextEncoder().encode(signingInput),
-  )
-
-  return `${signingInput}.${base64UrlEncode(new Uint8Array(signature))}`
+  })
+    .setProtectedHeader({
+      alg: "ES256",
+      typ: "dpop+jwt",
+      jwk: stored.value.publicJwk,
+    })
+    .setIssuedAt()
+    .sign(stored.value.privateKey)
 }

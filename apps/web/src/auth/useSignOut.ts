@@ -6,7 +6,7 @@ import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
-import { deleteProofKeys } from "./proofKey"
+import { deleteProofKey } from "./proofKey"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
@@ -24,9 +24,9 @@ export const useSignOut = () => {
      * revocation below ever succeeds.
      */
     try {
-      await deleteProofKeys()
+      await deleteProofKey()
     } catch (error) {
-      Logger.error("Failed to delete the refresh proof keys on sign out", error)
+      Logger.error("Failed to delete the refresh proof key on sign out", error)
     }
 
     clearTemporaryMasterKey()

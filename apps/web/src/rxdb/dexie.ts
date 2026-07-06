@@ -25,7 +25,6 @@ interface Downloads {
 interface KeyValueMap {
   "queryCache.persistedClient": PersistedClient
   "config.webConfig": CachedWebConfig
-  "auth.proofKey.pending": StoredProofKey
   "auth.proofKey.current": StoredProofKey
 }
 
@@ -94,11 +93,12 @@ dexieDb.version(5).stores({
 })
 
 dexieDb.version(6).stores({
-  authProofKeys: `&id`,
+  downloads: `++id, data, filename`,
+  queryCachePersistence: `&key`,
+  profiles: `&id`,
+  keyValue: `&key`,
 })
 
 dexieDb.version(7).stores({
   queryCachePersistence: null,
-  authProofKeys: null,
-  keyValue: `&key`,
 })

@@ -37,8 +37,13 @@ import { RefreshProofService } from "./refresh-proof.service"
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
-const serializePublicKey = (publicKey: AuthProofPublicKeyJwk) =>
-  JSON.stringify(publicKey)
+/**
+ * Persists only the RFC 7638 thumbprint members — the thumbprint comparison
+ * at refresh needs nothing else, and dropping the rest bounds the stored
+ * text no matter what extra properties a client sends.
+ */
+const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyJwk) =>
+  JSON.stringify({ kty, crv, x, y })
 
 type SignUpTokenPayload = {
   sub: string
@@ -548,8 +553,7 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
-    const rotation =
-      await this.refreshTokensService.rotateForRefresh(refreshToken)
+    const rotation = await this.refreshTokensService.rotateForRefresh(presented)
 
     if (rotation.status !== "rotated") {
       throw new UnauthorizedException()

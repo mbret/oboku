@@ -223,12 +223,13 @@ describe("AuthService", () => {
   })
 
   it("rotates the refresh token and returns the newly issued one", async () => {
-    refreshTokensService.findByToken.mockResolvedValue({
+    const presentedRow = {
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       public_key: '{"kty":"EC"}',
-    })
+    }
+    refreshTokensService.findByToken.mockResolvedValue(presentedRow)
     refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
       status: "rotated",
@@ -252,7 +253,7 @@ describe("AuthService", () => {
     })
 
     expect(refreshTokensService.rotateForRefresh).toHaveBeenCalledWith(
-      "opaque-refresh-token",
+      presentedRow,
     )
     expect(usersService.findUserById).toHaveBeenCalledWith(42)
     expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
@@ -354,40 +355,6 @@ describe("AuthService", () => {
       boundPublicKey: '{"kty":"EC"}',
     })
     expect(refreshTokensService.rotateForRefresh).not.toHaveBeenCalled()
-  })
-
-  it("refreshes a key-bound session with a valid proof", async () => {
-    refreshTokensService.findByToken.mockResolvedValue({
-      id: 7,
-      user_id: 42,
-      installation_id: "installation-1",
-      public_key: '{"kty":"EC"}',
-    })
-    refreshProofService.isProofValid.mockResolvedValue(true)
-    refreshTokensService.rotateForRefresh.mockResolvedValue({
-      status: "rotated",
-      session: { id: 8, user_id: 42, installation_id: "installation-1" },
-      refreshToken: "rotated-refresh-token",
-    })
-    usersService.findUserById.mockResolvedValue({
-      id: 42,
-      email: "reader@example.com",
-    })
-    couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
-
-    await expect(
-      service.refreshToken({
-        refreshToken: "opaque-refresh-token",
-        proof: "valid-proof",
-      }),
-    ).resolves.toEqual({
-      accessToken: "fresh-access-token",
-      refreshToken: "rotated-refresh-token",
-    })
-
-    expect(refreshTokensService.rotateForRefresh).toHaveBeenCalledWith(
-      "opaque-refresh-token",
-    )
   })
 
   it("rejects refresh of an unbound (pre-binding) session even with a proof", async () => {

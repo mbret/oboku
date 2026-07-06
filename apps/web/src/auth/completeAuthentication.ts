@@ -9,18 +9,19 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
-import { Logger } from "../debug/logger.shared"
-import { promotePendingProofKey } from "./proofKey"
+import { persistProofKey, type StoredProofKey } from "./proofKey"
 
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
   auth,
+  proofKey,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
   auth: AuthSessionResponse
+  proofKey: StoredProofKey
   queryClient: QueryClient
 }) => {
   return from(
@@ -35,14 +36,7 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
-          try {
-            await promotePendingProofKey()
-          } catch (error) {
-            Logger.error(
-              "Failed to promote the refresh proof key; the session will require re-login once the access cookie expires",
-              error,
-            )
-          }
+          await persistProofKey(proofKey)
 
           await putProfile({
             id: auth.nameHex,

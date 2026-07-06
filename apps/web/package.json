@@ -1,6 +1,6 @@
 {
   "name": "@oboku/web",
-  "version": "0.257.0",
+  "version": "0.257.2",
   "private": true,
   "dependencies": {
     "@azure/msal-browser": "^5.6.3",
@@ -38,6 +38,7 @@
     "firebase": "^12.5.0",
     "fuse.js": "^7.3.0",
     "gesturx": "^1.8.2",
+    "jose": "^5.9.6",
     "libarchive.js": "^2.0.2",
     "next-themes": "^0.4.6",
     "pdfjs-dist": "^5.1.91",

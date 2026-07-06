@@ -18,6 +18,14 @@ const createRequest = (cookies: Record<string, string> = {}) =>
   ({ cookies }) as unknown as Request
 const createResponse = () => ({}) as unknown as Response
 
+// RFC 7517 A.1 example P-256 key
+const validPublicKey = {
+  kty: "EC",
+  crv: "P-256",
+  x: "MKBCTNIcKUSDii11ySs3526iDZ8AiTo7Tu6KPAqv7D4",
+  y: "4Etl6SRW2YiLUrN5vfvVHuhp7x8PxltmWWlbbM4IFyM",
+}
+
 describe("AuthController", () => {
   let controller: AuthController
   let validationPipe: ValidationPipe
@@ -97,7 +105,7 @@ describe("AuthController", () => {
         email: "reader@example.com",
         password: "password",
         installation_id: "installation-1",
-        public_key: { kty: "EC", crv: "P-256" },
+        public_key: validPublicKey,
       },
       {
         type: "body",
@@ -116,7 +124,7 @@ describe("AuthController", () => {
       email: "reader@example.com",
       password: "password",
       installation_id: "installation-1",
-      public_key: { kty: "EC", crv: "P-256" },
+      public_key: validPublicKey,
     })
     expect(authCookiesService.set).toHaveBeenCalledWith(
       request,
@@ -143,6 +151,46 @@ describe("AuthController", () => {
     expect(authService.signInWithEmail).not.toHaveBeenCalled()
   })
 
+  it("rejects sign-in requests with an empty public_key", async () => {
+    await expect(
+      validationPipe.transform(
+        {
+          email: "reader@example.com",
+          password: "password",
+          installation_id: "installation-1",
+          public_key: {},
+        },
+        {
+          type: "body",
+          metatype: SignInWithEmailDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.signInWithEmail).not.toHaveBeenCalled()
+  })
+
+  it("rejects sign-in requests whose public_key is missing its coordinates", async () => {
+    await expect(
+      validationPipe.transform(
+        {
+          email: "reader@example.com",
+          password: "password",
+          installation_id: "installation-1",
+          public_key: { kty: "EC", crv: "P-256" },
+        },
+        {
+          type: "body",
+          metatype: SignInWithEmailDto,
+          data: "",
+        },
+      ),
+    ).rejects.toBeInstanceOf(BadRequestException)
+
+    expect(authService.signInWithEmail).not.toHaveBeenCalled()
+  })
+
   it("forwards a valid Google sign-in request", async () => {
     authService.signInWithGoogle.mockResolvedValue({
       accessToken: "access-token",
@@ -156,7 +204,7 @@ describe("AuthController", () => {
       {
         token: "google-token",
         installation_id: "installation-1",
-        public_key: { kty: "EC", crv: "P-256" },
+        public_key: validPublicKey,
       },
       {
         type: "body",
@@ -170,7 +218,7 @@ describe("AuthController", () => {
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
       installation_id: "installation-1",
-      public_key: { kty: "EC", crv: "P-256" },
+      public_key: validPublicKey,
     })
   })
 
