@@ -4,7 +4,6 @@ import { Test, TestingModule } from "@nestjs/testing"
 import type { Request, Response } from "express"
 import {
   AuthController,
-  LogoutDto,
   RefreshTokenQueryDto,
   SignInWithEmailDto,
   SignInWithGoogleDto,
@@ -319,18 +318,7 @@ describe("AuthController", () => {
     })
     const response = createResponse()
 
-    const body = await validationPipe.transform(
-      {},
-      {
-        type: "body",
-        metatype: LogoutDto,
-        data: "",
-      },
-    )
-
-    await expect(controller.logout(body, request, response)).resolves.toEqual(
-      {},
-    )
+    await expect(controller.logout(request, response)).resolves.toEqual({})
 
     expect(authService.logout).toHaveBeenCalledWith({
       refreshToken: "cookie-refresh-token",
@@ -338,54 +326,11 @@ describe("AuthController", () => {
     expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
   })
 
-  it("revokes a body-specified session (legacy/admin) and clears cookies when none conflict", async () => {
-    const request = createRequest()
-    const response = createResponse()
-
-    const body = await validationPipe.transform(
-      {
-        refresh_token: "refresh-token",
-      },
-      {
-        type: "body",
-        metatype: LogoutDto,
-        data: "",
-      },
-    )
-
-    await expect(controller.logout(body, request, response)).resolves.toEqual(
-      {},
-    )
-
-    expect(authService.logout).toHaveBeenCalledWith({
-      refreshToken: "refresh-token",
-    })
-    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
-  })
-
-  it("keeps the cookies when a body token revokes a different session", async () => {
-    const request = createRequest({
-      oboku_refresh_token: "cookie-refresh-token",
-    })
-    const response = createResponse()
-
-    await controller.logout(
-      { refresh_token: "older-refresh-token" },
-      request,
-      response,
-    )
-
-    expect(authService.logout).toHaveBeenCalledWith({
-      refreshToken: "older-refresh-token",
-    })
-    expect(authCookiesService.clear).not.toHaveBeenCalled()
-  })
-
   it("stays idempotent on logout without any credential", async () => {
     const request = createRequest()
     const response = createResponse()
 
-    await expect(controller.logout({}, request, response)).resolves.toEqual({})
+    await expect(controller.logout(request, response)).resolves.toEqual({})
 
     expect(authService.logout).not.toHaveBeenCalled()
     expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)

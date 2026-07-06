@@ -5,7 +5,6 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
-  LogoutRequest,
   LogoutResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
@@ -154,13 +153,11 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
   /**
    * Revokes the server-side refresh session and clears the auth cookies. The
-   * refresh cookie is the credential (`refresh_token` in the body only for
-   * legacy pre-cookie tombstones), so interceptors are skipped: no refresh-
+   * refresh cookie is the credential, so interceptors are skipped: no refresh-
    * on-401 dance for a session being killed.
    */
-  logout = (data: LogoutRequest = {}) =>
-    this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
-      body: data,
+  logout = () =>
+    this.postOrThrow<LogoutResponse>(`${API_URL}/auth/logout`, {
       useInterceptors: false,
     })
 

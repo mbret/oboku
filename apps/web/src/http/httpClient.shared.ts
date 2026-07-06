@@ -178,7 +178,7 @@ export class HttpClient {
     return response as HttpClientResponse<T>
   }
 
-  postOrThrow = async <T, Body extends Record<string, unknown>>(
+  postOrThrow = async <T, Body extends Record<string, unknown> = never>(
     input: string | URL | globalThis.Request,
     options: Omit<FetchConfig, "body" | "method" | "input"> & {
       body?: Body

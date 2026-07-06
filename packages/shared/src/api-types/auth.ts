@@ -72,11 +72,6 @@ export type CompleteMagicLinkResponse = AuthSessionResponse
 
 export type RefreshTokenResponse = AuthTokensResponse
 
-export type LogoutRequest = {
-  /** Cookie-authenticated clients omit it; the refresh cookie is the credential. */
-  refresh_token?: string
-}
-
 export type LogoutResponse = EmptyResponse
 
 export type DeleteAccountResponse = EmptyResponse

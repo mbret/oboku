@@ -19,7 +19,6 @@ import {
   IsEmail,
   IsNotEmpty,
   IsObject,
-  IsOptional,
   IsString,
   MaxLength,
   MinLength,
@@ -33,7 +32,6 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
-  LogoutRequest,
   LogoutResponse,
   RefreshTokenResponse,
   RequestMagicLinkRequest,
@@ -137,13 +135,6 @@ export class RefreshTokenQueryDto {
   @IsString()
   @IsNotEmpty()
   grant_type!: "refresh_token"
-}
-
-export class LogoutDto implements LogoutRequest {
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  refresh_token?: string
 }
 
 @Controller("auth")
@@ -253,29 +244,17 @@ export class AuthController {
   @Public()
   @Post("logout")
   async logout(
-    @Body() body: LogoutDto,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<LogoutResponse> {
-    const cookieRefreshToken: string | undefined =
+    const refreshToken: string | undefined =
       request.cookies?.[REFRESH_TOKEN_COOKIE]
-    const refreshToken = body?.refresh_token ?? cookieRefreshToken
 
     if (refreshToken) {
       await this.authService.logout({ refreshToken })
     }
 
-    // A body token targets a specific chain (admin, legacy clients) while the
-    // cookies may belong to a newer session on this browser; only clear the
-    // cookies when they are (or may be) the credential being revoked.
-    const revokesAnotherSession =
-      !!body?.refresh_token &&
-      !!cookieRefreshToken &&
-      body.refresh_token !== cookieRefreshToken
-
-    if (!revokesAnotherSession) {
-      this.authCookiesService.clear(request, response)
-    }
+    this.authCookiesService.clear(request, response)
 
     return {}
   }
