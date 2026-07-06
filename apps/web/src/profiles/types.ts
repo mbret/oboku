@@ -15,13 +15,3 @@ export type Profile = {
    */
   status?: "active" | "loggedOut"
 }
-
-/**
- * Rows written before auth moved to httpOnly cookies persisted the tokens.
- * They survive only until the one-time cookie migration (active rows) or the
- * legacy tombstone sweep (logged-out rows) strips them.
- */
-export type ProfileWithLegacyTokens = Profile & {
-  accessToken?: string
-  refreshToken?: string
-}

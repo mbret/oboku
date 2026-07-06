@@ -10,20 +10,17 @@ import {
 } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { ProfileWithLegacyTokens } from "../profiles/types"
+import type { Profile } from "../profiles/types"
 
 const { profilesStore } = vi.hoisted(() => ({
-  profilesStore: new Map<string, ProfileWithLegacyTokens>(),
+  profilesStore: new Map<string, Profile>(),
 }))
 
 vi.mock("../rxdb/dexie", () => ({
   dexieDb: {
     profiles: {
       toArray: async () => [...profilesStore.values()],
-      update: async (
-        profileId: string,
-        patch: Partial<ProfileWithLegacyTokens>,
-      ) => {
+      update: async (profileId: string, patch: Partial<Profile>) => {
         const profile = profilesStore.get(profileId)
 
         if (!profile) return 0
@@ -65,9 +62,7 @@ const goOnline = () => {
   })
 }
 
-const createProfile = (
-  overrides: Partial<ProfileWithLegacyTokens> = {},
-): ProfileWithLegacyTokens => ({
+const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
   email: "reader@example.com",
   nameHex: "reader",
@@ -104,7 +99,6 @@ describe("RevokeLoggedOutProfiles", () => {
       "gone-reader",
       createProfile({
         id: "gone-reader",
-        refreshToken: "gone-refresh-token",
         status: "loggedOut",
       }),
     )
@@ -119,9 +113,7 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
 
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "gone-refresh-token",
-    })
+    expect(logout).toHaveBeenCalledWith()
     expect(profilesStore.has("active-reader")).toBe(true)
   })
 

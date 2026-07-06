@@ -1,5 +1,5 @@
 import { memo, type ReactNode, useEffect, useState } from "react"
-import type { ProfileWithLegacyTokens } from "./types"
+import type { Profile } from "./types"
 import { Logger } from "../debug/logger.shared"
 import {
   activeProfileIdSignal,
@@ -17,7 +17,10 @@ import { dexieDb } from "../rxdb/dexie"
 const LEGACY_AUTH_STORAGE_KEY = "auth"
 const LEGACY_AUTH_SIGNAL_KEY = "authState"
 
-type LegacyProfile = Omit<ProfileWithLegacyTokens, "id">
+type LegacyProfile = Omit<Profile, "id"> & {
+  accessToken?: string
+  refreshToken?: string
+}
 
 const isLegacyProfile = (value: unknown): value is LegacyProfile => {
   if (typeof value !== "object" || value === null) return false

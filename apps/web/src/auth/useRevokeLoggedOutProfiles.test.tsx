@@ -4,10 +4,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { ProfileWithLegacyTokens } from "../profiles/types"
+import type { Profile } from "../profiles/types"
 
 const { profilesStore } = vi.hoisted(() => ({
-  profilesStore: new Map<string, ProfileWithLegacyTokens>(),
+  profilesStore: new Map<string, Profile>(),
 }))
 
 vi.mock("../rxdb/dexie", () => ({
@@ -26,9 +26,7 @@ import { HttpClientApiContext } from "../http"
 import { profilesQueryKey, setProfile } from "../profiles"
 import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
-const createProfile = (
-  overrides: Partial<ProfileWithLegacyTokens> = {},
-): ProfileWithLegacyTokens => ({
+const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
   email: "reader@example.com",
   nameHex: "reader",
@@ -77,30 +75,6 @@ describe("useRevokeLoggedOutProfiles", () => {
     expect(profilesStore.has("gone-reader")).toBe(false)
   })
 
-  it("revokes a legacy tombstone with its persisted refresh token", async () => {
-    profilesStore.set("active-reader", createProfile({ id: "active-reader" }))
-    profilesStore.set(
-      "gone-reader",
-      createProfile({
-        id: "gone-reader",
-        refreshToken: "gone-refresh-token",
-        status: "loggedOut",
-      }),
-    )
-
-    const logout = vi.fn().mockResolvedValue({ data: {} })
-    const { result } = renderRevokeHook(logout)
-
-    await result.current.mutateAsync()
-
-    expect(logout).toHaveBeenCalledTimes(1)
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "gone-refresh-token",
-    })
-    expect(profilesStore.has("gone-reader")).toBe(false)
-    expect(profilesStore.has("active-reader")).toBe(true)
-  })
-
   it("keeps the tombstone for a later sweep when revocation fails", async () => {
     profilesStore.set(
       "gone-reader",
@@ -131,43 +105,6 @@ describe("useRevokeLoggedOutProfiles", () => {
     expect(logout).not.toHaveBeenCalled()
     expect(profilesStore.has("gone-reader")).toBe(false)
     expect(profilesStore.has("active-reader")).toBe(true)
-  })
-
-  it("revokes legacy tombstones independently so one failure does not block others", async () => {
-    profilesStore.set(
-      "gone-reader",
-      createProfile({
-        id: "gone-reader",
-        refreshToken: "gone-refresh-token",
-        status: "loggedOut",
-      }),
-    )
-    profilesStore.set(
-      "stuck-reader",
-      createProfile({
-        id: "stuck-reader",
-        refreshToken: "stuck-refresh-token",
-        status: "loggedOut",
-      }),
-    )
-
-    const logout = vi
-      .fn()
-      .mockImplementation(
-        async ({ refresh_token }: { refresh_token: string }) => {
-          if (refresh_token === "stuck-refresh-token") {
-            throw new Error("offline")
-          }
-
-          return { data: {} }
-        },
-      )
-    const { result } = renderRevokeHook(logout)
-
-    await result.current.mutateAsync()
-
-    expect(profilesStore.has("gone-reader")).toBe(false)
-    expect(profilesStore.has("stuck-reader")).toBe(true)
   })
 
   it("leaves a row overwritten by a re-login while its logout call is in flight", async () => {
