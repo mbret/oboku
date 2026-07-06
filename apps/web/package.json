@@ -24,7 +24,7 @@
     "@prose-reader/enhancer-pdf": "^1.291.0",
     "@prose-reader/enhancer-refit": "^1.291.0",
     "@prose-reader/enhancer-search": "^1.291.0",
-    "@prose-reader/react-reader": "^1.291.0",
+    "@prose-reader/react-reader": "^1.316.0",
     "@prose-reader/shared": "^1.291.0",
     "@prose-reader/streamer": "^1.291.0",
     "@sentry/react": "^10.25.0",
