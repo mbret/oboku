@@ -1,8 +1,19 @@
-import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
+import { Body, Controller, Delete, Headers, Post, Query } from "@nestjs/common"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator"
+import { Type } from "class-transformer"
+import {
+  Equals,
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsString,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from "class-validator"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
   CompleteMagicLinkRequest,
   CompleteMagicLinkResponse,
@@ -19,6 +30,30 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+
+/**
+ * The exact P-256 JWK shape needed to compute an RFC 7638 thumbprint at
+ * refresh. Anything looser would bind a session that signs in fine but can
+ * never refresh. Coordinate lengths are a lax bound (P-256 encodes to 43
+ * base64url chars) that mainly keeps the stored key small.
+ */
+export class AuthProofPublicKeyDto implements AuthProofPublicKeyJwk {
+  @Equals("EC")
+  kty!: string
+
+  @Equals("P-256")
+  crv!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  x!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  y!: string
+}
 
 export class RequestSignUpDto implements RequestSignUpRequest {
   @IsEmail()
@@ -45,6 +80,11 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
 
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -58,6 +98,11 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -68,6 +113,11 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class RefreshTokenQueryDto {
@@ -148,8 +198,12 @@ export class AuthController {
   @Post("token")
   refreshTokens(
     @Query() query: RefreshTokenQueryDto,
+    @Headers("dpop") proof: string | undefined,
   ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken(query.grant_type, query.refresh_token)
+    return this.authService.refreshToken({
+      refreshToken: query.refresh_token,
+      proof,
+    })
   }
 
   @Public()

@@ -23,6 +23,7 @@ import type {
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
+import { signRefreshProof } from "../auth/proofKey"
 import {
   type FetchConfig,
   HttpClientError,
@@ -157,19 +158,20 @@ export class HttpApiClientWeb extends HttpClientWeb {
   archiveNotification = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
-  refreshToken = ({
+  refreshToken = async ({
     refreshToken,
     useInterceptors = true,
   }: {
     refreshToken: string
     useInterceptors: boolean
   }) => {
-    return this.postOrThrow<RefreshTokenResponse, never>(
-      `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`,
-      {
-        useInterceptors,
-      },
-    )
+    const url = `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`
+    const proof = await signRefreshProof(url)
+
+    return this.postOrThrow<RefreshTokenResponse, never>(url, {
+      useInterceptors,
+      headers: proof ? { dpop: proof } : undefined,
+    })
   }
 
   /**
@@ -204,13 +206,18 @@ export class HttpApiClientWeb extends HttpClientWeb {
     return config
   }
 
-  private flagSessionForRelogin = async (rejectedRefreshToken: string) => {
+  private flagSessionForRelogin = async (staleSession: Profile) => {
     const authState = await this.getSession()
 
-    if (
-      authState?.refreshToken === rejectedRefreshToken &&
-      !authState.needsRelogin
-    ) {
+    if (!authState || authState.needsRelogin) {
+      return
+    }
+
+    const isSameSession =
+      authState.id === staleSession.id &&
+      authState.refreshToken === staleSession.refreshToken
+
+    if (isSameSession) {
       await this.commitSession({ ...authState, needsRelogin: true })
     }
   }
@@ -266,15 +273,24 @@ export class HttpApiClientWeb extends HttpClientWeb {
     }
 
     const session = await this.getSession()
-    const refreshToken = session?.refreshToken
 
+    if (!session) {
+      return response
+    }
+
+    const refreshToken = session.refreshToken
+
+    // A session without a refresh token can never recover from a 401 on its
+    // own, so it is flagged for relogin instead of silently staying broken.
     if (!refreshToken) {
+      await this.flagSessionForRelogin(session)
+
       return response
     }
 
     const requestAccessToken = getBearerToken(response.config.headers)
     const tokenAlreadyRotated =
-      !!session?.accessToken &&
+      !!session.accessToken &&
       !!requestAccessToken &&
       requestAccessToken !== session.accessToken
 
@@ -286,7 +302,6 @@ export class HttpApiClientWeb extends HttpClientWeb {
           return response
         }
       } catch (error) {
-        console.log("Unable to refresh token")
         console.error(error)
 
         const sessionIsTrulyExpired = refreshTokenWasRejected(error)
@@ -295,7 +310,7 @@ export class HttpApiClientWeb extends HttpClientWeb {
           return response
         }
 
-        await this.flagSessionForRelogin(refreshToken)
+        await this.flagSessionForRelogin(session)
 
         return response
       }

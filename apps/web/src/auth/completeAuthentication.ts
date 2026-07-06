@@ -9,16 +9,19 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
+import { persistProofKey, type StoredProofKey } from "./proofKey"
 
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
   auth,
+  proofKey,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
   auth: AuthSessionResponse
+  proofKey: StoredProofKey
   queryClient: QueryClient
 }) => {
   return from(
@@ -33,6 +36,8 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
+          await persistProofKey(proofKey)
+
           await putProfile({ id: auth.nameHex, ...auth })
 
           setActiveProfileId(auth.nameHex)

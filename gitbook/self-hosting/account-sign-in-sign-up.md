@@ -1,5 +1,9 @@
 # Account Sign in / Sign up
 
+{% hint style="warning" %}
+**HTTPS is mandatory for sign-in.** Every sign-in method binds your session to the device using the Web Crypto API, which browsers only expose on secure contexts (https or localhost). If you serve the web app over plain http (e.g. `http://<lan-ip>`), sign-in will fail. See the [installation](installation.md "mention") prerequisites.
+{% endhint %}
+
 Oboku currently supports two ways to sign in
 
 ## Google Sign-In

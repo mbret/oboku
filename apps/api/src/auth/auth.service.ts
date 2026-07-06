@@ -23,6 +23,7 @@ import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
 import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
   AuthTokensResponse,
   CompleteMagicLinkRequest,
@@ -31,9 +32,18 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+import { RefreshProofService } from "./refresh-proof.service"
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
+
+/**
+ * Persists only the RFC 7638 thumbprint members — the thumbprint comparison
+ * at refresh needs nothing else, and dropping the rest bounds the stored
+ * text no matter what extra properties a client sends.
+ */
+const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyJwk) =>
+  JSON.stringify({ kty, crv, x, y })
 
 type SignUpTokenPayload = {
   sub: string
@@ -57,6 +67,7 @@ export class AuthService {
     private refreshTokensService: RefreshTokensService,
     private secretService: SecretsService,
     private emailService: EmailService,
+    private refreshProofService: RefreshProofService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -159,10 +170,12 @@ export class AuthService {
     email,
     userId,
     installationId,
+    publicKey,
   }: {
     email: string
     userId: number
     installationId: string
+    publicKey: string
   }): Promise<AuthTokensResponse> {
     const accessToken = await this.couchService.generateUserJWT({
       email,
@@ -172,6 +185,7 @@ export class AuthService {
       await this.refreshTokensService.issueTokenForInstallation({
         userId,
         installationId,
+        publicKey,
       })
 
     return {
@@ -184,10 +198,12 @@ export class AuthService {
     email,
     userId,
     installationId,
+    publicKey,
   }: {
     email: string
     userId: number
     installationId: string
+    publicKey: string
   }): Promise<AuthSessionResponse> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
@@ -210,6 +226,7 @@ export class AuthService {
       email: couchUser.email,
       userId,
       installationId,
+      publicKey,
     })
 
     const nameHex = emailToNameHex(couchUser.name)
@@ -227,6 +244,7 @@ export class AuthService {
     email,
     password,
     installation_id,
+    public_key,
   }: SignInWithEmailRequest): Promise<AuthSessionResponse> {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
@@ -234,12 +252,14 @@ export class AuthService {
       email: retrievedUser.email,
       userId: retrievedUser.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
   async signInWithGoogle({
     token,
     installation_id,
+    public_key,
   }: SignInWithGoogleRequest): Promise<AuthSessionResponse> {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
@@ -247,6 +267,7 @@ export class AuthService {
       email: retrievedUser.email,
       userId: retrievedUser.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
@@ -475,6 +496,7 @@ export class AuthService {
   async completeMagicLink({
     token,
     installation_id,
+    public_key,
   }: CompleteMagicLinkRequest): Promise<AuthSessionResponse> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
@@ -496,17 +518,42 @@ export class AuthService {
       email: user.email,
       userId: user.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
-  async refreshToken(
-    grant_type: "refresh_token",
-    refreshToken: string,
-  ): Promise<RefreshTokenResponse> {
-    void grant_type
+  /**
+   * Every session is bound to a public key at sign-in and only refreshes with
+   * a valid proof signed by the matching private key. Sessions without a
+   * bound key (issued before sender constraining shipped) are rejected and
+   * must re-authenticate.
+   */
+  async refreshToken({
+    refreshToken,
+    proof,
+  }: {
+    refreshToken: string
+    proof?: string
+  }): Promise<RefreshTokenResponse> {
+    const presented = await this.refreshTokensService.findByToken(refreshToken)
 
-    const rotation =
-      await this.refreshTokensService.rotateForRefresh(refreshToken)
+    if (!presented) {
+      throw new UnauthorizedException()
+    }
+
+    const isProofValid =
+      !!presented.public_key &&
+      !!proof &&
+      (await this.refreshProofService.isProofValid({
+        proof,
+        boundPublicKey: presented.public_key,
+      }))
+
+    if (!isProofValid) {
+      throw new UnauthorizedException()
+    }
+
+    const rotation = await this.refreshTokensService.rotateForRefresh(presented)
 
     if (rotation.status !== "rotated") {
       throw new UnauthorizedException()

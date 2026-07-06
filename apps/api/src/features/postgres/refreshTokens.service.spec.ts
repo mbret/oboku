@@ -108,6 +108,7 @@ describe("RefreshTokensService", () => {
     const token = await service.issueTokenForInstallation({
       userId: 1,
       installationId: "installation-1",
+      publicKey: '{"kty":"EC"}',
     })
 
     expect(typeof token).toBe("string")
@@ -123,9 +124,29 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 1,
       installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
       token_hash: hash(token),
       superseded_at: null,
     })
+  })
+
+  it("persists the sign-in public key on the issued token", async () => {
+    const insertBuilder = createQueryBuilderMock({
+      raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],
+    })
+    repository.manager.createQueryBuilder.mockReturnValue(insertBuilder)
+
+    await service.issueTokenForInstallation({
+      userId: 1,
+      installationId: "installation-1",
+      publicKey: '{"kty":"EC","crv":"P-256"}',
+    })
+
+    expect(insertBuilder.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        public_key: '{"kty":"EC","crv":"P-256"}',
+      }),
+    )
   })
 
   it("rotates an active token: wins the CAS, stores the encrypted successor, and inserts it", async () => {
@@ -146,14 +167,13 @@ describe("RefreshTokensService", () => {
       superseded_at: null,
     } as RefreshTokenPostgresEntity
 
-    repository.findOne.mockResolvedValue(activeRow)
     const casBuilder = createQueryBuilderMock({ affected: 1 })
     const insertBuilder = createQueryBuilderMock({ raw: [successorRow] })
     repository.manager.createQueryBuilder
       .mockReturnValueOnce(casBuilder)
       .mockReturnValueOnce(insertBuilder)
 
-    const result = await service.rotateForRefresh("current-token")
+    const result = await service.rotateForRefresh(activeRow)
 
     expect(result).toEqual({
       status: "rotated",
@@ -182,11 +202,39 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
       installation_id: "installation-1",
+      public_key: null,
       token_hash: hash(result.refreshToken),
       superseded_at: null,
     })
     expect(repository.manager.createQueryBuilder).toHaveBeenCalledTimes(2)
     expect(repository.createQueryBuilder).not.toHaveBeenCalled()
+  })
+
+  it("carries the bound public key over to the successor on rotation", async () => {
+    const activeRow = {
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      token_hash: hash("current-token"),
+      created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
+      superseded_at: null,
+      successor_token: null,
+      public_key: '{"kty":"EC","crv":"P-256"}',
+    } as RefreshTokenPostgresEntity
+
+    const casBuilder = createQueryBuilderMock({ affected: 1 })
+    const insertBuilder = createQueryBuilderMock({ raw: [{ id: 8 }] })
+    repository.manager.createQueryBuilder
+      .mockReturnValueOnce(casBuilder)
+      .mockReturnValueOnce(insertBuilder)
+
+    await service.rotateForRefresh(activeRow)
+
+    expect(insertBuilder.values).toHaveBeenCalledWith(
+      expect.objectContaining({
+        public_key: '{"kty":"EC","crv":"P-256"}',
+      }),
+    )
   })
 
   it("converges on the stored successor when it loses the CAS to a concurrent refresh", async () => {
@@ -206,13 +254,11 @@ describe("RefreshTokensService", () => {
       successor_token: service["encryptSuccessor"](winnerToken),
     } as RefreshTokenPostgresEntity
 
-    repository.findOne
-      .mockResolvedValueOnce(presentedRow)
-      .mockResolvedValueOnce(rotatedRow)
+    repository.findOne.mockResolvedValueOnce(rotatedRow)
     const casBuilder = createQueryBuilderMock({ affected: 0 })
     repository.manager.createQueryBuilder.mockReturnValueOnce(casBuilder)
 
-    const result = await service.rotateForRefresh("current-token")
+    const result = await service.rotateForRefresh(presentedRow)
 
     expect(result).toEqual({
       status: "rotated",
@@ -240,13 +286,12 @@ describe("RefreshTokensService", () => {
       successor_token: null,
     } as RefreshTokenPostgresEntity
 
-    repository.findOne
-      .mockResolvedValueOnce(presentedRow) // live & active when the refresh starts
-      .mockResolvedValueOnce(null) // gone by the time resolveSuccessor re-reads
+    // gone by the time resolveSuccessor re-reads
+    repository.findOne.mockResolvedValueOnce(null)
     const casBuilder = createQueryBuilderMock({ affected: 0 })
     repository.manager.createQueryBuilder.mockReturnValueOnce(casBuilder)
 
-    const result = await service.rotateForRefresh("current-token")
+    const result = await service.rotateForRefresh(presentedRow)
 
     expect(result).toEqual({ status: "invalid" })
     expect(repository.manager.createQueryBuilder).toHaveBeenCalledTimes(1)
@@ -268,7 +313,7 @@ describe("RefreshTokensService", () => {
 
     repository.findOne.mockResolvedValue(supersededRow)
 
-    const result = await service.rotateForRefresh("superseded-token")
+    const result = await service.rotateForRefresh(supersededRow)
 
     expect(result).toEqual({
       status: "rotated",
@@ -303,7 +348,7 @@ describe("RefreshTokensService", () => {
       .mockReturnValueOnce(casBuilder)
       .mockReturnValueOnce(insertBuilder)
 
-    const result = await service.rotateForRefresh("superseded-token")
+    const result = await service.rotateForRefresh(supersededRow)
 
     expect(result.status).toBe("rotated")
     if (result.status !== "rotated") throw new Error("expected rotated")
@@ -325,6 +370,7 @@ describe("RefreshTokensService", () => {
     expect(insertBuilder.values).toHaveBeenCalledWith({
       user_id: 42,
       installation_id: "installation-1",
+      public_key: null,
       token_hash: hash(result.refreshToken),
       superseded_at: null,
     })
@@ -349,12 +395,11 @@ describe("RefreshTokensService", () => {
 
     repository.findOne
       .mockResolvedValueOnce(supersededRow)
-      .mockResolvedValueOnce(supersededRow)
       .mockResolvedValueOnce(persistedRow)
     const casBuilder = createQueryBuilderMock({ affected: 0 })
     repository.manager.createQueryBuilder.mockReturnValueOnce(casBuilder)
 
-    const result = await service.rotateForRefresh("superseded-token")
+    const result = await service.rotateForRefresh(supersededRow)
 
     expect(result).toEqual({
       status: "rotated",
@@ -380,9 +425,7 @@ describe("RefreshTokensService", () => {
       successor_token: service["encryptSuccessor"]("stale-successor"),
     } as RefreshTokenPostgresEntity
 
-    repository.findOne.mockResolvedValue(supersededRow)
-
-    await expect(service.rotateForRefresh("replayed-token")).resolves.toEqual({
+    await expect(service.rotateForRefresh(supersededRow)).resolves.toEqual({
       status: "reuse",
     })
 
@@ -397,16 +440,6 @@ describe("RefreshTokensService", () => {
     warnSpy.mockRestore()
   })
 
-  it("returns invalid for an unknown token", async () => {
-    repository.findOne.mockResolvedValue(null)
-
-    await expect(service.rotateForRefresh("unknown-token")).resolves.toEqual({
-      status: "invalid",
-    })
-
-    expect(repository.createQueryBuilder).not.toHaveBeenCalled()
-  })
-
   it("returns invalid for a token older than the max age (per-token cap)", async () => {
     const agedRow = {
       id: 7,
@@ -417,9 +450,7 @@ describe("RefreshTokensService", () => {
       superseded_at: null,
     } as RefreshTokenPostgresEntity
 
-    repository.findOne.mockResolvedValue(agedRow)
-
-    await expect(service.rotateForRefresh("aged-token")).resolves.toEqual({
+    await expect(service.rotateForRefresh(agedRow)).resolves.toEqual({
       status: "invalid",
     })
 

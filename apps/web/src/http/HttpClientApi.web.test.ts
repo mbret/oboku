@@ -77,6 +77,10 @@ describe("HttpApiClientWeb auth refresh", () => {
       ...(await importOriginal<typeof import("../config/envs")>()),
       API_URL: "https://api.example.com",
     }))
+    vi.doMock("../auth/proofKey", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../auth/proofKey")>()),
+      signRefreshProof: async () => undefined,
+    }))
   })
 
   it("deduplicates refreshes for the same refresh token", async () => {
@@ -98,7 +102,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const secondRefresh = client.refreshAuthSession("token-a")
 
     expect(firstRefresh).toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(1)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
     refreshDeferred.resolve(
       createRefreshResponse({
@@ -228,7 +232,7 @@ describe("HttpApiClientWeb auth refresh", () => {
     const secondRefresh = client.refreshAuthSession("token-b")
 
     expect(firstRefresh).not.toBe(secondRefresh)
-    expect(fetchMock).toHaveBeenCalledTimes(2)
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2))
 
     refreshDeferredA.resolve(
       createRefreshResponse({
@@ -423,6 +427,38 @@ describe("HttpApiClientWeb auth refresh", () => {
       new Headers(fetchMock.mock.calls[0]?.[1]?.headers).get("Authorization"),
     ).toBe("Bearer fresh-access-token")
     expect(result.status).toBe(200)
+  })
+
+  it("flags the session for relogin when it has no refresh token", async () => {
+    const fetchMock = vi.fn<typeof fetch>(() => {
+      throw new Error("must not fetch when the session has no refresh token")
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession } = await createClient(
+      createProfile({
+        accessToken: "expired-access-token",
+        refreshToken: undefined,
+      }),
+    )
+
+    const unauthorizedResponse: HttpClientResponse = {
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+      },
+    }
+
+    const result = await client.refreshOnUnauthorized(unauthorizedResponse)
+
+    expect(result).toBe(unauthorizedResponse)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(getSession()?.needsRelogin).toBe(true)
   })
 
   it("flags the session for relogin when the refresh request fails", async () => {

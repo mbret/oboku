@@ -59,9 +59,11 @@ export class RefreshTokensService {
   async issueTokenForInstallation({
     userId,
     installationId,
+    publicKey,
   }: {
     userId: number
     installationId: string
+    publicKey: string
   }) {
     const { refreshToken } =
       await this.refreshTokenRepository.manager.transaction(async (manager) => {
@@ -74,6 +76,7 @@ export class RefreshTokensService {
           {
             user_id: userId,
             installation_id: installationId,
+            public_key: publicKey,
           },
           manager,
         )
@@ -82,18 +85,27 @@ export class RefreshTokensService {
     return refreshToken
   }
 
-  async rotateForRefresh(presentedToken: string): Promise<RotationResult> {
+  async findByToken(presentedToken: string) {
+    return this.refreshTokenRepository.findOne({
+      where: { token_hash: this.hashToken(presentedToken) },
+    })
+  }
+
+  /**
+   * Rotates the chain for a row the caller already loaded via `findByToken`.
+   * The row may have gone stale in between; every write is CAS-guarded and
+   * falls back to re-reading (`resolveSuccessor`), so a stale row converges
+   * instead of corrupting the chain.
+   */
+  async rotateForRefresh(
+    presented: RefreshTokenPostgresEntity,
+  ): Promise<RotationResult> {
     const now = new Date()
-    const presentedHash = this.hashToken(presentedToken)
     const expiryCutoff = new Date(
       now.getTime() - this.appConfigService.SECURITY_REFRESH_TOKEN_TTL_MS,
     )
 
-    const presented = await this.refreshTokenRepository.findOne({
-      where: { token_hash: presentedHash },
-    })
-
-    if (!presented || presented.created_at <= expiryCutoff) {
+    if (presented.created_at <= expiryCutoff) {
       return { status: "invalid" }
     }
 
@@ -167,6 +179,7 @@ export class RefreshTokensService {
           {
             user_id: parent.user_id,
             installation_id: parent.installation_id,
+            public_key: parent.public_key ?? null,
             refreshToken: successorToken,
           },
           manager,
@@ -230,8 +243,12 @@ export class RefreshTokensService {
     {
       user_id,
       installation_id,
+      public_key,
       refreshToken,
-    }: Pick<RefreshTokenPostgresEntity, "user_id" | "installation_id"> & {
+    }: Pick<
+      RefreshTokenPostgresEntity,
+      "user_id" | "installation_id" | "public_key"
+    > & {
       refreshToken?: string
     },
     manager?: EntityManager,
@@ -251,6 +268,7 @@ export class RefreshTokensService {
       .values({
         user_id,
         installation_id,
+        public_key,
         token_hash: this.hashToken(issuedToken),
         superseded_at: null,
       })

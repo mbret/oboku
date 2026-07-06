@@ -72,6 +72,7 @@ export const LoginScreen = () => {
       >
         <SignInForm
           control={control}
+          disabled={isPending}
           onSubmit={handleSubmit((data) => {
             mutate(data)
           })}
