@@ -429,6 +429,38 @@ describe("HttpApiClientWeb auth refresh", () => {
     expect(result.status).toBe(200)
   })
 
+  it("flags the session for relogin when it has no refresh token", async () => {
+    const fetchMock = vi.fn<typeof fetch>(() => {
+      throw new Error("must not fetch when the session has no refresh token")
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession } = await createClient(
+      createProfile({
+        accessToken: "expired-access-token",
+        refreshToken: undefined,
+      }),
+    )
+
+    const unauthorizedResponse: HttpClientResponse = {
+      response: new Response(null, { status: 401, statusText: "Unauthorized" }),
+      data: undefined,
+      status: 401,
+      statusText: "Unauthorized",
+      headers: {},
+      config: {
+        input: "https://api.example.com/protected",
+      },
+    }
+
+    const result = await client.refreshOnUnauthorized(unauthorizedResponse)
+
+    expect(result).toBe(unauthorizedResponse)
+    expect(fetchMock).not.toHaveBeenCalled()
+    expect(getSession()?.needsRelogin).toBe(true)
+  })
+
   it("flags the session for relogin when the refresh request fails", async () => {
     const fetchMock = vi.fn<typeof fetch>((input) => {
       const url = String(input)
