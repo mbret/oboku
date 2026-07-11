@@ -20,18 +20,20 @@ export const useCompleteMagicLink = () => {
       return from(createProofKey()).pipe(
         switchMap((proofKey) =>
           from(
-            httpClientApi.authWithMagicLink({
-              ...data,
-              installation_id: getOrCreateAuthInstallationId(),
-              public_key: proofKey.publicJwk,
-            }),
+            httpClientApi.authWithMagicLink(
+              {
+                ...data,
+                installation_id: getOrCreateAuthInstallationId(),
+                public_key: proofKey.publicJwk,
+              },
+              proofKey,
+            ),
           ).pipe(
             switchMap(({ data: auth }) =>
               completeAuthentication({
                 reCreateDb,
                 putProfile,
                 auth,
-                proofKey,
                 queryClient,
               }),
             ),

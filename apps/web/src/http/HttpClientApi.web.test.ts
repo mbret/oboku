@@ -1,14 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "../profiles/types"
+import type { StoredProofKey } from "../auth/proofKey"
 import type { HttpClientResponse } from "./httpClient.shared"
 
-const { signRefreshProof } = vi.hoisted(() => ({
+const { signRefreshProof, persistProofKey } = vi.hoisted(() => ({
   signRefreshProof: vi.fn(),
+  persistProofKey: vi.fn(),
 }))
 
 vi.mock("../auth/proofKey", () => ({
   signRefreshProof,
+  persistProofKey,
 }))
+
+// CryptoKey cannot be constructed in the test env; the client only forwards it.
+const proofKey = {
+  privateKey: {},
+  publicJwk: { kty: "EC" },
+} as unknown as StoredProofKey
 
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
@@ -126,6 +135,8 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.unstubAllGlobals()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
+    persistProofKey.mockReset()
+    persistProofKey.mockResolvedValue(undefined)
     vi.doMock("../config/envs", async (importOriginal) => ({
       ...(await importOriginal<typeof import("../config/envs")>()),
       API_URL: "https://api.example.com",
@@ -317,11 +328,15 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
-    const signInPromise = client.signInWithEmail(createSignInRequest())
+    const signInPromise = client.signInWithEmail(
+      createSignInRequest(),
+      proofKey,
+    )
 
     await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(persistProofKey).not.toHaveBeenCalled()
 
     refreshDeferred.resolve(createRefreshResponse())
 
@@ -332,6 +347,8 @@ describe("HttpApiClientWeb auth refresh", () => {
       REFRESH_URL,
       SIGNIN_URL,
     ])
+    expect(persistProofKey).toHaveBeenCalledTimes(1)
+    expect(persistProofKey).toHaveBeenCalledWith(proofKey)
   })
 
   it("fails a rejected sign-in directly instead of refreshing and replaying it", async () => {
@@ -347,10 +364,11 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     const { client } = await createClient(createProfile())
 
-    await expect(client.signInWithEmail(createSignInRequest())).rejects.toThrow(
-      "Response error with status 401",
-    )
+    await expect(
+      client.signInWithEmail(createSignInRequest(), proofKey),
+    ).rejects.toThrow("Response error with status 401")
     expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(persistProofKey).not.toHaveBeenCalled()
   })
 
   it("does not retry a 401 request when the session switched during the refresh", async () => {

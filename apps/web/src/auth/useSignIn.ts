@@ -40,20 +40,26 @@ export const useSignIn = (
         switchMap((proofKey) =>
           (data
             ? from(
-                httpClientApi.signInWithEmail({
-                  ...data,
-                  installation_id: installationId,
-                  public_key: proofKey.publicJwk,
-                }),
+                httpClientApi.signInWithEmail(
+                  {
+                    ...data,
+                    installation_id: installationId,
+                    public_key: proofKey.publicJwk,
+                  },
+                  proofKey,
+                ),
               )
             : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
                 switchMap((authResponse) =>
                   from(
-                    httpClientApi.signInWithGoogle({
-                      token: authResponse.credential,
-                      installation_id: installationId,
-                      public_key: proofKey.publicJwk,
-                    } satisfies SignInWithGoogleRequest),
+                    httpClientApi.signInWithGoogle(
+                      {
+                        token: authResponse.credential,
+                        installation_id: installationId,
+                        public_key: proofKey.publicJwk,
+                      } satisfies SignInWithGoogleRequest,
+                      proofKey,
+                    ),
                   ),
                 ),
               )
@@ -63,7 +69,6 @@ export const useSignIn = (
                 reCreateDb,
                 putProfile,
                 auth,
-                proofKey,
                 queryClient,
               }),
             ),

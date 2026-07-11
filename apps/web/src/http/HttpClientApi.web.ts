@@ -22,6 +22,7 @@ import type {
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
 import { withAuthCookiesLock } from "./authCookiesLock"
+import { persistProofKey, type StoredProofKey } from "../auth/proofKey"
 import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
 import { refreshTokenRequest } from "./refreshTokenRequest"
 
@@ -52,8 +53,33 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
   private commitSession = (session: Profile) => this.sessionStore.set(session)
 
-  authWithMagicLink = (data: CompleteMagicLinkRequest) =>
-    withAuthCookiesLock(() =>
+  /**
+   * Runs a cookie-setting auth fetch and persists its proof key inside the same
+   * cookies-lock hold. The browser writes the response's cookies and we persist
+   * the matching key without releasing the lock in between, so the session
+   * whose `Set-Cookie` lands last also owns the persisted key. Persisting after
+   * the lock released instead would let two overlapping sign-ins pair one
+   * session's cookies with the other's key, failing every future refresh with a
+   * DPoP-key mismatch. The key is persisted only after a successful response,
+   * so a rejected attempt never promotes a key the server did not bind.
+   */
+  private establishSession = <T>(
+    proofKey: StoredProofKey,
+    authenticate: () => Promise<T>,
+  ): Promise<Awaited<T>> =>
+    withAuthCookiesLock(async () => {
+      const response = await authenticate()
+
+      await persistProofKey(proofKey)
+
+      return response
+    })
+
+  authWithMagicLink = (
+    data: CompleteMagicLinkRequest,
+    proofKey: StoredProofKey,
+  ) =>
+    this.establishSession(proofKey, () =>
       this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
         `${API_URL}/auth/magic-link/complete`,
         {
@@ -87,8 +113,8 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       },
     )
 
-  signInWithEmail = (data: SignInWithEmailRequest) =>
-    withAuthCookiesLock(() =>
+  signInWithEmail = (data: SignInWithEmailRequest, proofKey: StoredProofKey) =>
+    this.establishSession(proofKey, () =>
       this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
         `${API_URL}/auth/signin/email`,
         {
@@ -98,8 +124,11 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       ),
     )
 
-  signInWithGoogle = (data: SignInWithGoogleRequest) =>
-    withAuthCookiesLock(() =>
+  signInWithGoogle = (
+    data: SignInWithGoogleRequest,
+    proofKey: StoredProofKey,
+  ) =>
+    this.establishSession(proofKey, () =>
       this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
         `${API_URL}/auth/signin/google`,
         {
