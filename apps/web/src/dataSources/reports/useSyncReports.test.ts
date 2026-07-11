@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const hasQueryFn = <Result>(
@@ -44,6 +46,9 @@ describe("useSyncReports", () => {
     }))
     vi.doMock("@tanstack/react-query", () => ({
       useQuery,
+    }))
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
     }))
 
     const { useSyncReports } = await import("./useSyncReports")
