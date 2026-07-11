@@ -186,6 +186,36 @@ describe("RefreshProofService", () => {
     )
   })
 
+  it("remembers a jti until the proof stops verifying, even with a fast client clock", async () => {
+    jest.useFakeTimers()
+
+    try {
+      const clockToleranceSeconds = 5 * 60
+      const firstUseSeconds = 1_700_000_000
+      jest.setSystemTime(firstUseSeconds * 1000)
+
+      const boundPublicKey = JSON.stringify(boundKeys.publicJwk)
+      const fastClientIat = firstUseSeconds + clockToleranceSeconds
+      const proof = await signProof({
+        privateKey: boundKeys.privateKey,
+        headerJwk: boundKeys.publicJwk,
+        issuedAt: fastClientIat,
+      })
+
+      await expect(
+        service.isProofValid({ proof, boundPublicKey }),
+      ).resolves.toBe(true)
+
+      jest.setSystemTime((firstUseSeconds + 700) * 1000)
+
+      await expect(
+        service.isProofValid({ proof, boundPublicKey }),
+      ).resolves.toBe(false)
+    } finally {
+      jest.useRealTimers()
+    }
+  })
+
   it("accepts successive proofs with distinct jtis from the same key", async () => {
     const boundPublicKey = JSON.stringify(boundKeys.publicJwk)
     const firstProof = await signProof({
