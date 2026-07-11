@@ -1,8 +1,6 @@
-import type { RefreshTokenResponse } from "@oboku/shared"
-import { withAuthCookiesLock } from "./authCookiesLock"
-import { signRefreshProof } from "../auth/proofKey"
 import { serviceWorkerConfiguration } from "../config/configuration.sw"
 import { RefreshingHttpClient } from "./httpClient.shared"
+import { refreshTokenRequest } from "./refreshTokenRequest"
 
 /**
  * Auth rides on the httpOnly access cookie, which the browser attaches for the
@@ -20,19 +18,8 @@ class HttpApiClientSw extends RefreshingHttpClient {
     super({ credentials: "include" })
   }
 
-  private refreshToken = () =>
-    withAuthCookiesLock(async () => {
-      const url = `${serviceWorkerConfiguration.API_URL}/auth/token?grant_type=refresh_token`
-      const proof = await signRefreshProof(url).catch(() => undefined)
-
-      return this.postOrThrow<RefreshTokenResponse, never>(url, {
-        headers: proof ? { DPoP: proof } : {},
-        useInterceptors: false,
-      })
-    })
-
   protected applyRefresh = async () => {
-    await this.refreshToken()
+    await refreshTokenRequest(this, serviceWorkerConfiguration.API_URL)
 
     this.markRefreshApplied()
 

@@ -10,7 +10,6 @@ import type {
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
   RefreshCollectionMetadataResponse,
-  RefreshTokenResponse,
   RequestMagicLinkRequest,
   RequestMagicLinkResponse,
   RequestSignUpRequest,
@@ -23,8 +22,8 @@ import type {
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
 import { withAuthCookiesLock } from "./authCookiesLock"
-import { signRefreshProof } from "../auth/proofKey"
 import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
+import { refreshTokenRequest } from "./refreshTokenRequest"
 
 export type SessionStore = {
   get: () => Promise<Profile | null>
@@ -143,20 +142,7 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   archiveNotification = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
-  /**
-   * The refresh credential is the httpOnly cookie; the DPoP proof header
-   * proves possession of the session's bound key.
-   */
-  refreshToken = () =>
-    withAuthCookiesLock(async () => {
-      const url = `${API_URL}/auth/token?grant_type=refresh_token`
-      const proof = await signRefreshProof(url)
-
-      return this.postOrThrow<RefreshTokenResponse, never>(url, {
-        headers: proof ? { DPoP: proof } : {},
-        useInterceptors: false,
-      })
-    })
+  refreshToken = () => refreshTokenRequest(this, API_URL)
 
   /**
    * Revokes the server-side refresh session and clears the auth cookies. The
