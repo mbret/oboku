@@ -13,6 +13,20 @@ const FIXED_NOW = new Date("2026-06-28T12:00:00.000Z")
 
 const hash = (token: string) => createHash("sha256").update(token).digest("hex")
 
+const makeRefreshTokenRow = (
+  overrides: Partial<RefreshTokenPostgresEntity> = {},
+): RefreshTokenPostgresEntity => ({
+  id: 0,
+  user_id: 0,
+  installation_id: "",
+  token_hash: "",
+  created_at: FIXED_NOW,
+  superseded_at: null,
+  public_key: null,
+  successor_token: null,
+  ...overrides,
+})
+
 const createQueryBuilderMock = (executeResult: unknown) => {
   const qb: Record<string, jest.Mock> = {}
 
@@ -189,22 +203,18 @@ describe("RefreshTokensService", () => {
   })
 
   it("rotates an active token: wins the CAS, stores the encrypted successor, and inserts it", async () => {
-    const activeRow = {
+    const activeRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("current-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
-      superseded_at: null,
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
-    const successorRow = {
+    })
+    const successorRow = makeRefreshTokenRow({
       id: 8,
       user_id: 42,
       installation_id: "installation-1",
-      created_at: FIXED_NOW,
-      superseded_at: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     const casBuilder = createQueryBuilderMock({ affected: 1 })
     const insertBuilder = createQueryBuilderMock({ raw: [successorRow] })
@@ -250,16 +260,14 @@ describe("RefreshTokensService", () => {
   })
 
   it("carries the bound public key over to the successor on rotation", async () => {
-    const activeRow = {
+    const activeRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("current-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
-      superseded_at: null,
-      successor_token: null,
       public_key: '{"kty":"EC","crv":"P-256"}',
-    } as RefreshTokenPostgresEntity
+    })
 
     const casBuilder = createQueryBuilderMock({ affected: 1 })
     const insertBuilder = createQueryBuilderMock({ raw: [{ id: 8 }] })
@@ -278,20 +286,18 @@ describe("RefreshTokensService", () => {
 
   it("converges on the stored successor when it loses the CAS to a concurrent refresh", async () => {
     const winnerToken = "winner-token"
-    const presentedRow = {
+    const presentedRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("current-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
-      superseded_at: null,
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
+    })
     const rotatedRow = {
       ...presentedRow,
       superseded_at: FIXED_NOW,
       successor_token: service["encryptSuccessor"](winnerToken),
-    } as RefreshTokenPostgresEntity
+    }
 
     repository.findOne.mockResolvedValueOnce(rotatedRow)
     const casBuilder = createQueryBuilderMock({ affected: 0 })
@@ -315,15 +321,13 @@ describe("RefreshTokensService", () => {
     // The session was destroyed on purpose, so we must reject — never mint a
     // fresh active token, which would resurrect the chain revoke/re-login meant
     // to kill.
-    const presentedRow = {
+    const presentedRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("current-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
-      superseded_at: null,
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     // gone by the time resolveSuccessor re-reads
     repository.findOne.mockResolvedValueOnce(null)
@@ -340,7 +344,7 @@ describe("RefreshTokensService", () => {
 
   it("returns the same successor for a grace-window retry, minting nothing new", async () => {
     const successorToken = "grace-successor"
-    const supersededRow = {
+    const supersededRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
@@ -348,7 +352,7 @@ describe("RefreshTokensService", () => {
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
       superseded_at: new Date(FIXED_NOW.getTime() - 60 * 1000),
       successor_token: service["encryptSuccessor"](successorToken),
-    } as RefreshTokenPostgresEntity
+    })
 
     repository.findOne.mockResolvedValue(supersededRow)
 
@@ -363,22 +367,19 @@ describe("RefreshTokensService", () => {
   })
 
   it("falls back to a fresh successor in the grace window when the stored one cannot be decrypted", async () => {
-    const supersededRow = {
+    const supersededRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("superseded-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
       superseded_at: new Date(FIXED_NOW.getTime() - 60 * 1000),
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
-    const successorRow = {
+    })
+    const successorRow = makeRefreshTokenRow({
       id: 9,
       user_id: 42,
       installation_id: "installation-1",
-      created_at: FIXED_NOW,
-      superseded_at: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     repository.findOne.mockResolvedValue(supersededRow)
     const casBuilder = createQueryBuilderMock({ affected: 1 })
@@ -418,19 +419,18 @@ describe("RefreshTokensService", () => {
 
   it("converges on a single fallback successor across grace retries when the parent is later read back", async () => {
     const winnerToken = "fallback-winner"
-    const supersededRow = {
+    const supersededRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("superseded-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
       superseded_at: new Date(FIXED_NOW.getTime() - 60 * 1000),
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
+    })
     const persistedRow = {
       ...supersededRow,
       successor_token: service["encryptSuccessor"](winnerToken),
-    } as RefreshTokenPostgresEntity
+    }
 
     repository.findOne
       .mockResolvedValueOnce(supersededRow)
@@ -454,7 +454,7 @@ describe("RefreshTokensService", () => {
       .spyOn(Logger.prototype, "warn")
       .mockImplementation(() => undefined)
 
-    const supersededRow = {
+    const supersededRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
@@ -462,7 +462,7 @@ describe("RefreshTokensService", () => {
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
       superseded_at: new Date(FIXED_NOW.getTime() - 10 * 60 * 1000),
       successor_token: service["encryptSuccessor"]("stale-successor"),
-    } as RefreshTokenPostgresEntity
+    })
 
     await expect(service.rotateForRefresh(supersededRow)).resolves.toEqual({
       status: "reuse",
@@ -480,14 +480,13 @@ describe("RefreshTokensService", () => {
   })
 
   it("returns invalid for a token older than the max age (per-token cap)", async () => {
-    const agedRow = {
+    const agedRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("aged-token"),
       created_at: new Date(FIXED_NOW.getTime() - SIX_MONTHS_MS - 1000),
-      superseded_at: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     await expect(service.rotateForRefresh(agedRow)).resolves.toEqual({
       status: "invalid",
@@ -523,15 +522,14 @@ describe("RefreshTokensService", () => {
   })
 
   it("revokes the whole installation chain from any token of the chain, locking it against in-flight rotations", async () => {
-    const supersededRow = {
+    const supersededRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("stale-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
       superseded_at: new Date(FIXED_NOW.getTime() - 10 * 60 * 1000),
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     repository.manager.findOne.mockResolvedValue(supersededRow)
 
@@ -575,24 +573,19 @@ describe("RefreshTokensService", () => {
   })
 
   it("leaves a chain re-issued by a re-login while revocation was acquiring locks", async () => {
-    const oldTombstoneRow = {
+    const oldTombstoneRow = makeRefreshTokenRow({
       id: 7,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("stale-token"),
       created_at: new Date(FIXED_NOW.getTime() - ONE_DAY_MS),
-      superseded_at: null,
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
-    const freshLoginRow = {
+    })
+    const freshLoginRow = makeRefreshTokenRow({
       id: 8,
       user_id: 42,
       installation_id: "installation-1",
       token_hash: hash("fresh-login-token"),
-      created_at: FIXED_NOW,
-      superseded_at: null,
-      successor_token: null,
-    } as RefreshTokenPostgresEntity
+    })
 
     repository.manager.findOne.mockResolvedValue(oldTombstoneRow)
     repository.manager.find.mockResolvedValue([freshLoginRow])
@@ -635,6 +628,9 @@ describe("RefreshTokensService", () => {
 
     expect(decrypt(service, "not-valid-base64-payload")).toBeNull()
 
+    // `as never`: encrypt/decrypt read only the per-instance key, so the
+    // constructor's repository and config are irrelevant here — this second
+    // instance exists solely to exercise decryption under a different key.
     const otherInstance = new RefreshTokensService(
       repository as never,
       { SECURITY_REFRESH_TOKEN_TTL_MS: SIX_MONTHS_MS } as never,

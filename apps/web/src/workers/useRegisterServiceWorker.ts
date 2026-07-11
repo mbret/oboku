@@ -17,7 +17,7 @@ export const useRegisterServiceWorker = () => {
   )
   const firstTime = useRef(true)
 
-  useEffect(() => {
+  useEffect(function registerServiceWorkerOnce() {
     if (firstTime.current) {
       firstTime.current = false
 
@@ -33,7 +33,7 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  useEffect(() => {
+  useEffect(function reloadWhenServiceWorkerTakesControl() {
     if (!("serviceWorker" in navigator)) return
 
     const controllerchange = () => {
@@ -54,7 +54,7 @@ export const useRegisterServiceWorker = () => {
       controllerchange,
     )
 
-    return () => {
+    return function removeControllerChangeListener() {
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         controllerchange,
@@ -65,13 +65,16 @@ export const useRegisterServiceWorker = () => {
   /**
    * During dev, as soon as we detect a new service worker, we skip waiting.
    */
-  useEffect(() => {
-    if (import.meta.env.MODE === "development" && waitingWorker) {
-      sendMessageToServiceWorker(waitingWorker, new SkipWaitingMessage())
-    }
-  }, [waitingWorker])
+  useEffect(
+    function skipWaitingInDevelopment() {
+      if (import.meta.env.MODE === "development" && waitingWorker) {
+        sendMessageToServiceWorker(waitingWorker, new SkipWaitingMessage())
+      }
+    },
+    [waitingWorker],
+  )
 
-  useEffect(() => {
+  useEffect(function pushConfigurationToController() {
     postMessageToController(
       new ConfigurationChangeMessage({
         API_COUCH_URI,

@@ -22,20 +22,16 @@ type LegacyProfile = Omit<Profile, "id"> & {
   refreshToken?: string
 }
 
-const isLegacyProfile = (value: unknown): value is LegacyProfile => {
-  if (typeof value !== "object" || value === null) return false
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null
 
-  // `as` its fine, its a one time temporary migration
-  const candidate = value as Record<string, unknown>
-
-  return (
-    typeof candidate.accessToken === "string" &&
-    typeof candidate.refreshToken === "string" &&
-    typeof candidate.email === "string" &&
-    typeof candidate.nameHex === "string" &&
-    typeof candidate.dbName === "string"
-  )
-}
+const isLegacyProfile = (value: unknown): value is LegacyProfile =>
+  isRecord(value) &&
+  typeof value.accessToken === "string" &&
+  typeof value.refreshToken === "string" &&
+  typeof value.email === "string" &&
+  typeof value.nameHex === "string" &&
+  typeof value.dbName === "string"
 
 const readLegacyProfile = (): LegacyProfile | undefined => {
   const raw = localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)
@@ -52,15 +48,9 @@ const readLegacyProfile = (): LegacyProfile | undefined => {
     return undefined
   }
 
-  const envelope =
-    typeof parsed === "object" && parsed !== null
-      ? (parsed as Record<string, unknown>)[LEGACY_AUTH_SIGNAL_KEY]
-      : undefined
+  const envelope = isRecord(parsed) ? parsed[LEGACY_AUTH_SIGNAL_KEY] : undefined
 
-  const value =
-    typeof envelope === "object" && envelope !== null
-      ? (envelope as Record<string, unknown>).value
-      : undefined
+  const value = isRecord(envelope) ? envelope.value : undefined
 
   return isLegacyProfile(value) ? value : undefined
 }
