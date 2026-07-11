@@ -24,7 +24,7 @@ class ServiceWorkerCommunication {
   public incomingMessage$ = this.incomingMessageSubject.asObservable()
 
   registerMessage = (event: ExtendableMessageEvent) => {
-    if (typeof event.data === "object" && "type" in event.data) {
+    if (typeof event.data === "object" && event.data && "type" in event.data) {
       Logger.log("communication:sw", "received message from client", event.data)
 
       // @todo make it dynamic
