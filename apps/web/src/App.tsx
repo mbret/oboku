@@ -36,6 +36,7 @@ import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragO
 import { WithAuthentication } from "./auth/WithAuthentication"
 import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
 import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
+import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
@@ -127,6 +128,7 @@ export const AppWithConfig = memo(() => {
                 <HttpSessionStoreProvider>
                   <LegacyAuthMigration>
                     <RevokeLoggedOutProfiles />
+                    <SyncProfilesAcrossTabs />
                     <ServiceWorkerMessages />
                     <LoadConfiguration>
                       <App />

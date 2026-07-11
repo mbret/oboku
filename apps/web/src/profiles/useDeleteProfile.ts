@@ -5,6 +5,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import { dexieDb } from "../rxdb/dexie"
+import { profilesBroadcast } from "./profilesBroadcast"
 import { profilesQueryKey } from "./useProfiles"
 
 export const useDeleteProfile = (
@@ -19,6 +20,7 @@ export const useDeleteProfile = (
       queryClient.setQueryData(profilesQueryKey, (profiles) =>
         profiles?.filter((profile) => profile.id !== profileId),
       )
+      profilesBroadcast.broadcast("profiles-changed")
     },
   })
 }
