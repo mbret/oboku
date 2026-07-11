@@ -14,6 +14,8 @@ services:
   # deployer's own (HTTP/2) reverse proxy; locally this exposes extra origins
   # (VITE_API_URL_2/3/4) that forward to the API so the browser has enough
   # origins for parallel replication. The primary origin is the API on :3000.
+  # Extra origins differ by port only: the httpOnly auth cookies are
+  # host-scoped, so a different hostname would never receive them.
   dev-proxy:
     image: nginx:alpine
     restart: unless-stopped
