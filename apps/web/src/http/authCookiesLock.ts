@@ -12,7 +12,4 @@ const AUTH_COOKIES_LOCK = "oboku-auth-cookies"
  */
 export const withAuthCookiesLock = async <T>(
   task: () => Promise<T>,
-): Promise<Awaited<T>> =>
-  // lib.dom types request<T> without the Web Locks promise flattening, so the
-  // request is typed Promise<Promise<T>>; awaiting restores the runtime shape.
-  await navigator.locks.request(AUTH_COOKIES_LOCK, task)
+): Promise<Awaited<T>> => await navigator.locks.request(AUTH_COOKIES_LOCK, task)
