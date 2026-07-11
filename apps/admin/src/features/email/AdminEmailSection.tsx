@@ -1,9 +1,7 @@
 import {
   Button,
   Group,
-  Modal,
   Paper,
-  Radio,
   Stack,
   Tabs,
   Text,
@@ -12,25 +10,22 @@ import {
   Title,
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { useDisclosure } from "@mantine/hooks"
 import { renderBroadcastEmail } from "@oboku/shared"
 import { Link } from "@tanstack/react-router"
-import { useState } from "react"
+import {
+  AudienceFields,
+  type AudienceFormValues,
+  parseEmails,
+  validateRecipientEmails,
+} from "@/components/AudienceFields"
+import { ConfirmModal, useConfirmableSubmit } from "@/components/ConfirmModal"
 import { EmailFrame } from "./EmailFrame"
 import { useSendAdminEmail } from "./useSendAdminEmail"
 
-type AdminEmailFormValues = {
+type AdminEmailFormValues = AudienceFormValues & {
   subject: string
   body: string
-  audienceType: "all" | "emails"
-  recipientEmails: string
 }
-
-const parseEmails = (value: string) =>
-  value
-    .split(/[\n,]/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0)
 
 export const AdminEmailSection = () => {
   const form = useForm<AdminEmailFormValues>({
@@ -45,17 +40,12 @@ export const AdminEmailSection = () => {
       subject: (value) =>
         value.trim().length > 0 ? null : "Subject is required",
       body: (value) => (value.trim().length > 0 ? null : "Body is required"),
-      recipientEmails: (value, values) =>
-        values.audienceType === "emails" && parseEmails(value).length === 0
-          ? "Provide at least one email"
-          : null,
+      recipientEmails: validateRecipientEmails,
     },
   })
   const sendEmail = useSendAdminEmail()
-  const [confirmOpened, { open: openConfirm, close: closeConfirm }] =
-    useDisclosure(false)
-  const [pendingValues, setPendingValues] =
-    useState<AdminEmailFormValues | null>(null)
+  const confirmation = useConfirmableSubmit<AdminEmailFormValues>()
+  const { pendingValues } = confirmation
 
   const audienceSummary = pendingValues
     ? pendingValues.audienceType === "all"
@@ -79,8 +69,7 @@ export const AdminEmailSection = () => {
       {
         onSuccess: () => {
           form.reset()
-          setPendingValues(null)
-          closeConfirm()
+          confirmation.reset()
         },
       },
     )
@@ -98,12 +87,7 @@ export const AdminEmailSection = () => {
       </div>
 
       <Paper withBorder p="md">
-        <form
-          onSubmit={form.onSubmit((values) => {
-            setPendingValues(values)
-            openConfirm()
-          })}
-        >
+        <form onSubmit={form.onSubmit(confirmation.request)}>
           <Stack gap="sm">
             <Tabs defaultValue="compose">
               <Tabs.List mb="md">
@@ -141,33 +125,15 @@ export const AdminEmailSection = () => {
               </Tabs.Panel>
             </Tabs>
 
-            <Radio.Group
-              label="Audience"
-              {...form.getInputProps("audienceType")}
-            >
-              <Stack gap="xs" mt="xs">
-                <Radio
-                  value="all"
-                  label="Everyone"
-                  description="Send the email to all existing users."
-                />
-                <Radio
-                  value="emails"
-                  label="Specific emails"
-                  description="Only send to the provided email addresses."
-                />
-              </Stack>
-            </Radio.Group>
-            {form.values.audienceType === "emails" && (
-              <Textarea
-                label="Recipient emails"
-                description="Separate addresses with commas or new lines."
-                placeholder={"reader@example.com\nteam@example.com"}
-                minRows={4}
-                autosize
-                {...form.getInputProps("recipientEmails")}
-              />
-            )}
+            <AudienceFields
+              form={form}
+              groupLabel="Audience"
+              everyoneLabel="Everyone"
+              everyoneDescription="Send the email to all existing users."
+              specificLabel="Specific emails"
+              specificDescription="Only send to the provided email addresses."
+              emailsLabel="Recipient emails"
+            />
             <Group justify="flex-end">
               <Button type="submit">send email</Button>
             </Group>
@@ -175,40 +141,24 @@ export const AdminEmailSection = () => {
         </form>
       </Paper>
 
-      <Modal
-        opened={confirmOpened}
-        onClose={closeConfirm}
+      <ConfirmModal
+        opened={confirmation.opened}
+        onClose={confirmation.close}
         title="Send this broadcast?"
-        centered
+        confirmLabel={`Send to ${audienceSummary}`}
+        onConfirm={handleConfirmSend}
+        pending={sendEmail.isPending}
       >
-        <Stack gap="md">
-          <Text size="sm">
-            You're about to email <strong>{audienceSummary}</strong>. This
-            action can't be undone.
+        <Text size="sm">
+          You're about to email <strong>{audienceSummary}</strong>. This action
+          can't be undone.
+        </Text>
+        {pendingValues && (
+          <Text size="sm" c="dimmed">
+            Subject: {pendingValues.subject.trim() || "(no subject)"}
           </Text>
-          {pendingValues && (
-            <Text size="sm" c="dimmed">
-              Subject: {pendingValues.subject.trim() || "(no subject)"}
-            </Text>
-          )}
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={closeConfirm}
-              disabled={sendEmail.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={handleConfirmSend}
-              loading={sendEmail.isPending}
-            >
-              Send to {audienceSummary}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+        )}
+      </ConfirmModal>
 
       <Paper withBorder p="md">
         <Group justify="space-between" align="center" wrap="nowrap">
