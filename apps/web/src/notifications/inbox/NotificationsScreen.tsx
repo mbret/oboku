@@ -21,13 +21,13 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
     isPending,
     fetchStatus,
   } = useInboxNotifications()
-  const { unreadCount } = useUnreadNotificationsCount()
+  const { serverUnreadCount } = useUnreadNotificationsCount()
   const markAllNotificationsAsSeen = useMarkAllNotificationsAsSeen()
   const localNotifications = useLocalNotifications()
   const hasLocalNotifications = localNotifications.length > 0
   const isUnavailable = fetchStatus === "idle" && isPending
   const canMarkAllRead =
-    unreadCount > 0 && !isUnavailable && !hasError && !isInitialLoading
+    serverUnreadCount > 0 && !isUnavailable && !hasError && !isInitialLoading
   const isEmpty =
     notifications?.length === 0 && !isInitialLoading && !hasLocalNotifications
 

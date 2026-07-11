@@ -29,8 +29,11 @@ export const useUnreadNotificationsCount = () => {
     }),
   )
 
+  const serverUnreadCount = query.data?.count ?? 0
+
   return {
     ...query,
-    unreadCount: (query.data?.count ?? 0) + localNotifications.length,
+    serverUnreadCount,
+    unreadCount: serverUnreadCount + localNotifications.length,
   }
 }
