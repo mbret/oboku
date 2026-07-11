@@ -130,6 +130,45 @@ describe("RefreshTokensService", () => {
     })
   })
 
+  it("locks the installation chain before wiping it so an in-flight rotation cannot outlive the re-login", async () => {
+    const operations: string[] = []
+    repository.manager.find.mockImplementation(
+      async function recordChainLock() {
+        operations.push("lock")
+        return []
+      },
+    )
+    repository.manager.delete.mockImplementation(
+      async function recordChainWipe() {
+        operations.push("delete")
+      },
+    )
+    const insertBuilder = createQueryBuilderMock({
+      raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],
+    })
+    repository.manager.createQueryBuilder.mockImplementation(
+      function recordInsert() {
+        operations.push("insert")
+        return insertBuilder
+      },
+    )
+
+    await service.issueTokenForInstallation({
+      userId: 1,
+      installationId: "installation-1",
+      publicKey: '{"kty":"EC"}',
+    })
+
+    expect(repository.manager.find).toHaveBeenCalledWith(
+      RefreshTokenPostgresEntity,
+      {
+        where: { user_id: 1, installation_id: "installation-1" },
+        lock: { mode: "pessimistic_write" },
+      },
+    )
+    expect(operations).toEqual(["lock", "delete", "insert"])
+  })
+
   it("persists the sign-in public key on the issued token", async () => {
     const insertBuilder = createQueryBuilderMock({
       raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],

@@ -42,19 +42,27 @@ export class RefreshTokensService {
   ) {}
 
   /**
-   * Starts a fresh session for an installation on sign-in: wipes any existing
-   * chain for `(user_id, installation_id)`, then inserts one active token.
+   * Starts a fresh session for an installation on sign-in: locks any existing
+   * chain for `(user_id, installation_id)`, wipes it, then inserts one active
+   * token.
    *
-   * Intentionally NOT serialized. Sequential sign-ins each wipe the previous
-   * chain, so the steady state is a single active token per installation. Two
-   * sign-ins for the same installation that overlap in time, however, race on
-   * this wipe-then-insert — under READ COMMITTED neither DELETE sees the other's
-   * uncommitted INSERT — so both can insert an active row and leave the session
-   * with more than one. That is accepted, not prevented: each token was still
-   * minted by the legitimate user authenticating, each rotates independently,
-   * and the next sign-in's wipe (or TTL/grace cleanup) collapses the chain back
-   * to one. See the entity doc for why we don't add a partial unique index or
-   * otherwise force a single active token.
+   * Locking the chain before the wipe serializes it with a concurrent rotation
+   * of any chain row (rotation CAS-locks its parent). Without the lock, under
+   * READ COMMITTED a successor inserted by a rotation that commits while our
+   * DELETE waits on the locked parent is invisible to the DELETE's snapshot and
+   * would survive the wipe — so a thief mid-rotation would keep a live token
+   * across the victim's re-login. Once the lock resolves, the DELETE is a new
+   * statement with a fresh snapshot that sweeps that successor too; a rotation
+   * blocked by our lock instead fails its CAS on the deleted parent and resolves
+   * to `invalid` (see `resolveSuccessor`). This is the same hazard `revokeByToken`
+   * guards, and it is what lets `rotateForRefresh` refuse to revoke a past-grace
+   * replay: re-login is the eviction path a thief must not outlive.
+   *
+   * Two sign-ins for an installation with no existing chain lock nothing (there
+   * are no rows yet), so they can still each insert an active token; that
+   * transient multi-active state is accepted and collapses on the next sign-in's
+   * wipe or TTL/grace cleanup. See the entity doc for why we don't force a single
+   * active token with a partial unique index.
    */
   async issueTokenForInstallation({
     userId,
@@ -65,12 +73,16 @@ export class RefreshTokensService {
     installationId: string
     publicKey: string
   }) {
+    const chain = { user_id: userId, installation_id: installationId }
+
     const { refreshToken } =
       await this.refreshTokenRepository.manager.transaction(async (manager) => {
-        await manager.delete(RefreshTokenPostgresEntity, {
-          user_id: userId,
-          installation_id: installationId,
+        await manager.find(RefreshTokenPostgresEntity, {
+          where: chain,
+          lock: { mode: "pessimistic_write" },
         })
+
+        await manager.delete(RefreshTokenPostgresEntity, chain)
 
         return this.insertRefreshToken(
           {
