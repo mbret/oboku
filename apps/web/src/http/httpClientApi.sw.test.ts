@@ -165,6 +165,64 @@ describe("httpClientApi service worker client", () => {
     expect(refreshCalls).toHaveLength(1)
   })
 
+  it("waits for the shared auth cookies lock before refreshing", async () => {
+    let releaseLock!: () => void
+    const lockHeldByAnotherContext = new Promise<void>((resolve) => {
+      releaseLock = resolve
+    })
+
+    vi.stubGlobal("navigator", {
+      locks: {
+        request: (_name: string, task: () => Promise<unknown>) =>
+          lockHeldByAnotherContext.then(() => task()),
+      },
+    })
+
+    let coverCalls = 0
+
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url === REFRESH_URL) {
+        return Promise.resolve(createRefreshResponse())
+      }
+
+      if (url === COVER_URL) {
+        coverCalls += 1
+
+        return Promise.resolve(
+          new Response("cover", { status: coverCalls === 1 ? 401 : 200 }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const httpClientApi = await createClient()
+
+    const responsePromise = httpClientApi.fetch(COVER_URL)
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      COVER_URL,
+    ])
+
+    releaseLock()
+
+    const { status } = await responsePromise
+
+    expect(status).toBe(200)
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      COVER_URL,
+      REFRESH_URL,
+      COVER_URL,
+    ])
+  })
+
   it("returns the 401 when the refresh itself is rejected, without retrying", async () => {
     let coverCalls = 0
 

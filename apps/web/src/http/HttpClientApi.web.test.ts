@@ -37,6 +37,31 @@ const createDeferred = <T>() => {
 
 const REFRESH_URL =
   "https://api.example.com/auth/token?grant_type=refresh_token"
+const SIGNIN_URL = "https://api.example.com/auth/signin/email"
+
+const createSignInRequest = () => ({
+  email: "b@example.com",
+  password: "secret",
+  installation_id: "installation",
+  public_key: { kty: "EC" },
+})
+
+/** Deterministic single-queue stand-in for `navigator.locks`. */
+const createNavigatorWithLockQueue = () => {
+  let tail: Promise<unknown> = Promise.resolve()
+
+  return {
+    locks: {
+      request: (_name: string, task: () => Promise<unknown>) => {
+        const run = tail.then(() => task())
+
+        tail = run.catch(() => undefined)
+
+        return run
+      },
+    },
+  }
+}
 
 const createRefreshResponse = () =>
   new Response(
@@ -137,7 +162,7 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     const { client } = await createClient(createProfile())
 
-    await client.refreshToken({ useInterceptors: false })
+    await client.refreshToken()
 
     const [input, init] = fetchMock.mock.calls[0] ?? []
 
@@ -259,6 +284,73 @@ describe("HttpApiClientWeb auth refresh", () => {
       client.refreshOnUnauthorized(unauthorizedResponse),
     ).resolves.toBe(unauthorizedResponse)
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it("queues a sign-in behind an in-flight refresh so its cookies land last", async () => {
+    vi.stubGlobal("navigator", createNavigatorWithLockQueue())
+
+    const refreshDeferred = createDeferred<Response>()
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url === REFRESH_URL) {
+        return refreshDeferred.promise
+      }
+
+      if (url === SIGNIN_URL) {
+        return Promise.resolve(
+          new Response(JSON.stringify({}), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+
+    const refreshPromise = client.refreshAuthSession()
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    const signInPromise = client.signInWithEmail(createSignInRequest())
+
+    await new Promise((resolve) => setTimeout(resolve, 0))
+
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+
+    refreshDeferred.resolve(createRefreshResponse())
+
+    await expect(refreshPromise).resolves.toBe(true)
+    await expect(signInPromise).resolves.toMatchObject({ status: 200 })
+
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      REFRESH_URL,
+      SIGNIN_URL,
+    ])
+  })
+
+  it("fails a rejected sign-in directly instead of refreshing and replaying it", async () => {
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      if (String(input) === SIGNIN_URL) {
+        return Promise.resolve(new Response(null, { status: 401 }))
+      }
+
+      throw new Error(`Unexpected fetch call for ${String(input)}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+
+    await expect(client.signInWithEmail(createSignInRequest())).rejects.toThrow(
+      "Response error with status 401",
+    )
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
 
   it("does not retry a 401 request when the session switched during the refresh", async () => {

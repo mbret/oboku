@@ -22,6 +22,7 @@ import type {
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
+import { withAuthCookiesLock } from "./authCookiesLock"
 import { signRefreshProof } from "../auth/proofKey"
 import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
 
@@ -53,11 +54,14 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   private commitSession = (session: Profile) => this.sessionStore.set(session)
 
   authWithMagicLink = (data: CompleteMagicLinkRequest) =>
-    this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
-      `${API_URL}/auth/magic-link/complete`,
-      {
-        body: data,
-      },
+    withAuthCookiesLock(() =>
+      this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+        `${API_URL}/auth/magic-link/complete`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
   refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
@@ -85,19 +89,25 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     )
 
   signInWithEmail = (data: SignInWithEmailRequest) =>
-    this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
-      `${API_URL}/auth/signin/email`,
-      {
-        body: data,
-      },
+    withAuthCookiesLock(() =>
+      this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
+        `${API_URL}/auth/signin/email`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
   signInWithGoogle = (data: SignInWithGoogleRequest) =>
-    this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
-      `${API_URL}/auth/signin/google`,
-      {
-        body: data,
-      },
+    withAuthCookiesLock(() =>
+      this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
+        `${API_URL}/auth/signin/google`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
   signUp = (data: RequestSignUpRequest) =>
@@ -137,19 +147,16 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
    * The refresh credential is the httpOnly cookie; the DPoP proof header
    * proves possession of the session's bound key.
    */
-  refreshToken = async ({
-    useInterceptors = true,
-  }: {
-    useInterceptors?: boolean
-  } = {}) => {
-    const url = `${API_URL}/auth/token?grant_type=refresh_token`
-    const proof = await signRefreshProof(url)
+  refreshToken = () =>
+    withAuthCookiesLock(async () => {
+      const url = `${API_URL}/auth/token?grant_type=refresh_token`
+      const proof = await signRefreshProof(url)
 
-    return this.postOrThrow<RefreshTokenResponse, never>(url, {
-      headers: proof ? { DPoP: proof } : {},
-      useInterceptors,
+      return this.postOrThrow<RefreshTokenResponse, never>(url, {
+        headers: proof ? { DPoP: proof } : {},
+        useInterceptors: false,
+      })
     })
-  }
 
   /**
    * Revokes the server-side refresh session and clears the auth cookies. The
@@ -157,9 +164,11 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
    * on-401 dance for a session being killed.
    */
   logout = () =>
-    this.postOrThrow<LogoutResponse>(`${API_URL}/auth/logout`, {
-      useInterceptors: false,
-    })
+    withAuthCookiesLock(() =>
+      this.postOrThrow<LogoutResponse>(`${API_URL}/auth/logout`, {
+        useInterceptors: false,
+      }),
+    )
 
   deleteAccount = () =>
     this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {
@@ -184,7 +193,7 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     }
 
     try {
-      await this.refreshToken({ useInterceptors: false })
+      await this.refreshToken()
     } catch (error) {
       console.log("Unable to refresh token")
       console.error(error)
