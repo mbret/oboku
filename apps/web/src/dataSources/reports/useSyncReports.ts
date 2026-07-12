@@ -7,6 +7,13 @@ import { useConfig } from "../../config/useConfig"
 import { useHttpClientApi } from "../../http"
 import { useQueryOptionsWithAuthentication } from "../../auth"
 
+const emptyCounts = () => ({
+  added: 0,
+  deleted: 0,
+  updated: 0,
+  fetchedMetadata: 0,
+})
+
 export const useSyncReports = () => {
   const httpClientApi = useHttpClientApi()
   const { data: config } = useConfig()
@@ -24,6 +31,8 @@ export const useSyncReports = () => {
           .map((report) => {
             return report.report.reduce(
               (acc, { rx_model, added, deleted, updated, fetchedMetadata }) => {
+                const current = acc[rx_model] ?? emptyCounts()
+
                 const updateWith = (entry: {
                   added: number
                   deleted: number
@@ -49,8 +58,8 @@ export const useSyncReports = () => {
                 return {
                   ...acc,
                   [rx_model]: {
-                    ...acc[rx_model],
-                    ...updateWith(acc[rx_model]),
+                    ...current,
+                    ...updateWith(current),
                   },
                 }
               },
@@ -58,36 +67,11 @@ export const useSyncReports = () => {
                 report,
                 createdAt: new Date(report.created_at),
                 endedAt: new Date(report.ended_at),
-                book: {
-                  added: 0,
-                  updated: 0,
-                  deleted: 0,
-                  fetchedMetadata: 0,
-                },
-                tag: {
-                  added: 0,
-                  updated: 0,
-                  deleted: 0,
-                  fetchedMetadata: 0,
-                },
-                link: {
-                  added: 0,
-                  updated: 0,
-                  deleted: 0,
-                  fetchedMetadata: 0,
-                },
-                obokucollection: {
-                  added: 0,
-                  updated: 0,
-                  deleted: 0,
-                  fetchedMetadata: 0,
-                },
-                datasource: {
-                  added: 0,
-                  updated: 0,
-                  deleted: 0,
-                  fetchedMetadata: 0,
-                },
+                book: emptyCounts(),
+                tag: emptyCounts(),
+                link: emptyCounts(),
+                obokucollection: emptyCounts(),
+                datasource: emptyCounts(),
               },
             )
           })
