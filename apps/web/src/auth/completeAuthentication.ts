@@ -25,6 +25,16 @@ export const completeAuthentication = ({
     ensureActiveProfile(queryClient, activeProfileIdSignal.getValue()),
   ).pipe(
     switchMap((previousAuth) => {
+      /**
+       * Whether the local database holds another account's data and must be
+       * recreated. `previousAuth` is the still-active profile, which the
+       * expired-session relogin path preserves — so a same-account relogin is
+       * detected here and keeps the database (no needless re-replication for a
+       * transient token death). An explicit sign-out instead clears the active
+       * profile *and* wipes the local database (see `useSignOut`), so any later
+       * sign-in re-replicates from empty regardless: the `true` this then yields
+       * recreates an already-empty database by design, not a cross-account leak.
+       */
       const switchedAccount = previousAuth?.email !== auth.email
 
       const waitForDbRecreation$ = switchedAccount

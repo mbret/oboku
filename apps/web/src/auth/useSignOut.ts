@@ -7,11 +7,14 @@ import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
 import { deleteProofKey } from "./proofKey"
+import { useReCreateDb } from "../rxdb"
+import { purgeAllDownloads } from "../download/purgeAllDownloads"
 
 export const useSignOut = () => {
   const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
   const { mutateAsync: patchProfile } = usePatchProfile()
+  const { mutateAsync: reCreateDb } = useReCreateDb()
 
   return async () => {
     const activeProfileId = getProfile()
@@ -35,6 +38,26 @@ export const useSignOut = () => {
     setUser(null)
 
     clearActiveProfileId()
+
+    /**
+     * Sign-out removes this device's copy of the account's data, not just the
+     * session: the replicated library survives in IndexedDB otherwise, readable
+     * to anyone on a shared device. The two stores are wiped independently so a
+     * failure of one still attempts the other. Server-backed books re-download
+     * after the next sign-in; device-local (`file` plugin) books do not, which
+     * is why the sign-out UI warns before reaching here (see `ProfileScreen`).
+     */
+    try {
+      await reCreateDb({ overwrite: true })
+    } catch (error) {
+      Logger.error("Failed to wipe the local database on sign out", error)
+    }
+
+    try {
+      await purgeAllDownloads()
+    } catch (error) {
+      Logger.error("Failed to purge downloaded files on sign out", error)
+    }
 
     // Reset before writing the tombstone: the write triggers the revocation
     // sweep, and clearing the mutation cache after the sweep starts would
