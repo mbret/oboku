@@ -1,6 +1,11 @@
 import { EmbeddedJWK, jwtVerify } from "jose"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { createProofKey, persistProofKey, signRefreshProof } from "./proofKey"
+import {
+  createProofKey,
+  hasProofKey,
+  persistProofKey,
+  signRefreshProof,
+} from "./proofKey"
 
 const keyValueStore = vi.hoisted(
   () => new Map<string, { key: string; value: unknown }>(),
@@ -75,5 +80,21 @@ describe("signRefreshProof", () => {
     ])
 
     expect(firstVerified.payload.jti).not.toBe(secondVerified.payload.jti)
+  })
+})
+
+describe("hasProofKey", () => {
+  beforeEach(() => {
+    keyValueStore.clear()
+  })
+
+  it("is false when no proof key is persisted", async () => {
+    await expect(hasProofKey()).resolves.toBe(false)
+  })
+
+  it("is true once a proof key is persisted", async () => {
+    await persistProofKey(await createProofKey())
+
+    await expect(hasProofKey()).resolves.toBe(true)
   })
 })

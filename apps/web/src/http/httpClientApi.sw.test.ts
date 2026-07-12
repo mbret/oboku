@@ -1,11 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { signRefreshProof } = vi.hoisted(() => ({
+const { signRefreshProof, hasProofKey } = vi.hoisted(() => ({
   signRefreshProof: vi.fn(),
+  hasProofKey: vi.fn(),
 }))
 
 vi.mock("../auth/proofKey", () => ({
   signRefreshProof,
+  hasProofKey,
 }))
 
 const API_URL = "https://api.example.com"
@@ -39,6 +41,8 @@ describe("httpClientApi service worker client", () => {
     vi.unstubAllGlobals()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
+    hasProofKey.mockReset()
+    hasProofKey.mockResolvedValue(true)
   })
 
   it("sends requests with cookies and no Authorization header", async () => {
@@ -102,6 +106,32 @@ describe("httpClientApi service worker client", () => {
 
     expect(new Headers(retryInit?.headers).get("Authorization")).toBeNull()
     expect(retryInit?.credentials).toBe("include")
+  })
+
+  it("does not attempt a refresh on a 401 when no proof key is bound", async () => {
+    hasProofKey.mockResolvedValue(false)
+
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url === COVER_URL) {
+        return Promise.resolve(new Response(null, { status: 401 }))
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const httpClientApi = await createClient()
+
+    const { status } = await httpClientApi.fetch(COVER_URL)
+
+    expect(status).toBe(401)
+    expect(signRefreshProof).not.toHaveBeenCalled()
+    expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
+      COVER_URL,
+    ])
   })
 
   it("deduplicates concurrent 401s into a single refresh", async () => {
