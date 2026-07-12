@@ -1,11 +1,6 @@
 export type EmptyResponse = Record<string, never>
 
-export type AuthTokensResponse = {
-  accessToken: string
-  refreshToken: string
-}
-
-export type AuthSessionResponse = AuthTokensResponse & {
+export type AuthSessionResponse = {
   dbName: string
   email: string
   nameHex: string
@@ -70,7 +65,7 @@ export type CompleteMagicLinkRequest = {
 
 export type CompleteMagicLinkResponse = AuthSessionResponse
 
-export type RefreshTokenResponse = AuthTokensResponse
+export type RefreshTokenResponse = EmptyResponse
 
 export type LogoutResponse = EmptyResponse
 

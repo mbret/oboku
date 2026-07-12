@@ -5,6 +5,16 @@ import { AppConfigService } from "../config/AppConfigService"
 export const ACCESS_TOKEN_COOKIE = "oboku_access_token"
 export const REFRESH_TOKEN_COOKIE = "oboku_refresh_token"
 
+/**
+ * The token pair the auth flow hands to the browser exclusively through
+ * httpOnly cookies. Kept server-internal on purpose: it never appears in a
+ * response body, so JS (and therefore XSS) cannot read it.
+ */
+export type AuthTokens = {
+  accessToken: string
+  refreshToken: string
+}
+
 const ACCESS_TOKEN_COOKIE_PATH = "/"
 /** Keeps the refresh token off every request except `/auth/*` (token, logout). */
 const REFRESH_TOKEN_COOKIE_PATH = "/auth"
@@ -34,10 +44,7 @@ export class AuthCookiesService {
   set(
     request: Request,
     response: Response,
-    {
-      accessToken,
-      refreshToken,
-    }: { accessToken: string; refreshToken: string },
+    { accessToken, refreshToken }: AuthTokens,
   ) {
     response.cookie(ACCESS_TOKEN_COOKIE, accessToken, {
       ...this.baseOptions(request),

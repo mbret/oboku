@@ -25,14 +25,20 @@ import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 import type {
   AuthProofPublicKeyJwk,
   AuthSessionResponse,
-  AuthTokensResponse,
   CompleteMagicLinkRequest,
   CompleteSignUpResponse,
-  RefreshTokenResponse,
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
 import { RefreshProofService } from "./refresh-proof.service"
+import type { AuthTokens } from "./auth-cookies"
+
+/**
+ * A completed authentication: the session metadata the client renders plus the
+ * {@link AuthTokens} the controller writes to httpOnly cookies. Only the
+ * metadata half is serialized to the response body.
+ */
+type AuthenticatedSession = AuthTokens & AuthSessionResponse
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
@@ -176,7 +182,7 @@ export class AuthService {
     userId: number
     installationId: string
     publicKey: string
-  }): Promise<AuthTokensResponse> {
+  }): Promise<AuthTokens> {
     const accessToken = await this.couchService.generateUserJWT({
       email,
       userId,
@@ -204,7 +210,7 @@ export class AuthService {
     userId: number
     installationId: string
     publicKey: string
-  }): Promise<AuthSessionResponse> {
+  }): Promise<AuthenticatedSession> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
     const { user: couchUser, created: couchUserCreated } =
@@ -245,7 +251,7 @@ export class AuthService {
     password,
     installation_id,
     public_key,
-  }: SignInWithEmailRequest): Promise<AuthSessionResponse> {
+  }: SignInWithEmailRequest): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
@@ -260,7 +266,7 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: SignInWithGoogleRequest): Promise<AuthSessionResponse> {
+  }: SignInWithGoogleRequest): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
     return this.completeSignIn({
@@ -497,7 +503,7 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: CompleteMagicLinkRequest): Promise<AuthSessionResponse> {
+  }: CompleteMagicLinkRequest): Promise<AuthenticatedSession> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -534,7 +540,7 @@ export class AuthService {
   }: {
     refreshToken: string
     proof?: string
-  }): Promise<RefreshTokenResponse> {
+  }): Promise<AuthTokens> {
     const presented = await this.refreshTokensService.findByToken(refreshToken)
 
     if (!presented) {

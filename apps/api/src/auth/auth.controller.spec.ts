@@ -117,7 +117,11 @@ describe("AuthController", () => {
 
     await expect(
       controller.signinWithEmail(body, request, response),
-    ).resolves.toEqual(session)
+    ).resolves.toEqual({
+      dbName: "db-name",
+      email: "reader@example.com",
+      nameHex: "abc",
+    })
 
     expect(authService.signInWithEmail).toHaveBeenCalledWith({
       email: "reader@example.com",
@@ -125,11 +129,10 @@ describe("AuthController", () => {
       installation_id: "installation-1",
       public_key: validPublicKey,
     })
-    expect(authCookiesService.set).toHaveBeenCalledWith(
-      request,
-      response,
-      session,
-    )
+    expect(authCookiesService.set).toHaveBeenCalledWith(request, response, {
+      accessToken: "access-token",
+      refreshToken: "refresh-token",
+    })
   })
 
   it("rejects sign-in requests without installation_id", async () => {
@@ -267,12 +270,14 @@ describe("AuthController", () => {
     })
     const response = createResponse()
 
-    await controller.refreshTokens(
-      { grant_type: "refresh_token" },
-      "proof-jwt",
-      request,
-      response,
-    )
+    await expect(
+      controller.refreshTokens(
+        { grant_type: "refresh_token" },
+        "proof-jwt",
+        request,
+        response,
+      ),
+    ).resolves.toEqual({})
 
     expect(authService.refreshToken).toHaveBeenCalledWith({
       refreshToken: "cookie-refresh-token",

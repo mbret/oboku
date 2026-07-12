@@ -151,9 +151,13 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    const session = await this.authService.signInWithEmail(body)
+    const { accessToken, refreshToken, ...session } =
+      await this.authService.signInWithEmail(body)
 
-    this.authCookiesService.set(request, response, session)
+    this.authCookiesService.set(request, response, {
+      accessToken,
+      refreshToken,
+    })
 
     return session
   }
@@ -165,9 +169,13 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    const session = await this.authService.signInWithGoogle(body)
+    const { accessToken, refreshToken, ...session } =
+      await this.authService.signInWithGoogle(body)
 
-    this.authCookiesService.set(request, response, session)
+    this.authCookiesService.set(request, response, {
+      accessToken,
+      refreshToken,
+    })
 
     return session
   }
@@ -209,9 +217,13 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<CompleteMagicLinkResponse> {
-    const session = await this.authService.completeMagicLink(body)
+    const { accessToken, refreshToken, ...session } =
+      await this.authService.completeMagicLink(body)
 
-    this.authCookiesService.set(request, response, session)
+    this.authCookiesService.set(request, response, {
+      accessToken,
+      refreshToken,
+    })
 
     return session
   }
@@ -238,7 +250,7 @@ export class AuthController {
 
     this.authCookiesService.set(request, response, tokens)
 
-    return tokens
+    return {}
   }
 
   @Public()
