@@ -19,11 +19,10 @@ const createRequest = (headers: Record<string, string> = {}, secure = false) =>
 
 const createResponse = () => {
   const cookie = jest.fn()
-  const clearCookie = jest.fn()
 
   return {
-    mocks: { cookie, clearCookie },
-    response: { cookie, clearCookie } as unknown as Response,
+    mocks: { cookie },
+    response: { cookie } as unknown as Response,
   }
 }
 
@@ -95,22 +94,6 @@ describe("AuthCookiesService", () => {
       "oboku_refresh_token",
       "refresh-token",
       expect.objectContaining({ secure: true }),
-    )
-  })
-
-  it("clears both cookies with matching attributes", () => {
-    const service = createService()
-    const { mocks, response } = createResponse()
-
-    service.clear(createRequest(), response)
-
-    expect(mocks.clearCookie).toHaveBeenCalledWith(
-      "oboku_access_token",
-      expect.objectContaining({ path: "/" }),
-    )
-    expect(mocks.clearCookie).toHaveBeenCalledWith(
-      "oboku_refresh_token",
-      expect.objectContaining({ path: "/auth" }),
     )
   })
 })

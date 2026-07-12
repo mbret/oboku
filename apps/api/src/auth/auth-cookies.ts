@@ -70,15 +70,4 @@ export class AuthCookiesService {
       maxAge: this.appConfigService.SECURITY_REFRESH_TOKEN_TTL_MS,
     })
   }
-
-  clear(request: Request, response: Response) {
-    response.clearCookie(ACCESS_TOKEN_COOKIE, {
-      ...this.baseOptions(request),
-      path: ACCESS_TOKEN_COOKIE_PATH,
-    })
-    response.clearCookie(REFRESH_TOKEN_COOKIE, {
-      ...this.baseOptions(request),
-      path: REFRESH_TOKEN_COOKIE_PATH,
-    })
-  }
 }
