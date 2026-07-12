@@ -8,8 +8,6 @@ export const useDeleteAccount = () => {
 
   return useMutation({
     mutationFn: () => httpClientApi.deleteAccount(),
-    onSuccess: () => {
-      signOut()
-    },
+    onSuccess: () => signOut(),
   })
 }
