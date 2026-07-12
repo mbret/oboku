@@ -12,7 +12,11 @@ import {
 import type { Request, Response } from "express"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { AuthCookiesService, REFRESH_TOKEN_COOKIE } from "./auth-cookies"
+import {
+  type AuthTokens,
+  AuthCookiesService,
+  REFRESH_TOKEN_COOKIE,
+} from "./auth-cookies"
 import { Type } from "class-transformer"
 import {
   Equals,
@@ -151,16 +155,17 @@ export class AuthController {
     private readonly authCookiesService: AuthCookiesService,
   ) {}
 
-  @Public()
-  @Post("signin/email")
-  async signinWithEmail(
-    @Body() body: SignInWithEmailDto,
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthSessionResponse> {
-    const { accessToken, refreshToken, ...session } =
-      await this.authService.signInWithEmail(body)
-
+  /**
+   * Moves the freshly minted tokens into httpOnly cookies and returns only the
+   * body-safe half of the session. Every authenticated response goes through
+   * here so the token strip and the cookie write can never be forgotten
+   * independently — the tokens must not reach the JSON body.
+   */
+  private issueSession(
+    request: Request,
+    response: Response,
+    { accessToken, refreshToken, ...session }: AuthTokens & AuthSessionResponse,
+  ): AuthSessionResponse {
     this.authCookiesService.set(request, response, {
       accessToken,
       refreshToken,
@@ -170,21 +175,31 @@ export class AuthController {
   }
 
   @Public()
+  @Post("signin/email")
+  async signinWithEmail(
+    @Body() body: SignInWithEmailDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ): Promise<AuthSessionResponse> {
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithEmail(body),
+    )
+  }
+
+  @Public()
   @Post("signin/google")
   async signinWithGoogle(
     @Body() body: SignInWithGoogleDto,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    const { accessToken, refreshToken, ...session } =
-      await this.authService.signInWithGoogle(body)
-
-    this.authCookiesService.set(request, response, {
-      accessToken,
-      refreshToken,
-    })
-
-    return session
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithGoogle(body),
+    )
   }
 
   @Public()
@@ -224,15 +239,11 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<CompleteMagicLinkResponse> {
-    const { accessToken, refreshToken, ...session } =
-      await this.authService.completeMagicLink(body)
-
-    this.authCookiesService.set(request, response, {
-      accessToken,
-      refreshToken,
-    })
-
-    return session
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.completeMagicLink(body),
+    )
   }
 
   @Public()
