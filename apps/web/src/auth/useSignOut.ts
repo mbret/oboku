@@ -67,9 +67,9 @@ export const useSignOut = () => {
 
     /**
      * The profile row is kept as a `loggedOut` tombstone rather than deleted:
-     * it marks a server session that still awaits revocation (the refresh
-     * cookie is the credential). This write is also what triggers the sweep,
-     * which deletes the row once revocation succeeds
+     * it marks a server session that still awaits revocation and carries the
+     * `sessionId` the sweep revokes it by. This write is also what triggers the
+     * sweep, which deletes the row once revocation succeeds
      * (see `RevokeLoggedOutProfiles`).
      */
     if (activeProfileId) {
