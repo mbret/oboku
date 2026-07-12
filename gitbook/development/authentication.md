@@ -28,11 +28,11 @@ sequenceDiagram
     W->>W: generate non-extractable ECDSA P-256 keypair (pending slot)
     W->>A: POST /auth/signin/email {credentials, installation_id, public_key}
     A->>A: issue access JWT + refresh session (public_key bound)
-    A-->>W: Set-Cookie access + refresh, JSON body (tokens for admin/legacy)
+    A-->>W: Set-Cookie access + refresh, JSON body = session metadata (no tokens)
     W->>W: promote keypair pending → current, persist token-less profile
 ```
 
-All session-issuing routes (`signin/email`, `signin/google`, `magic-link/complete`) accept the optional `public_key` JWK and bind it to the refresh session (`refresh_tokens.public_key`). The keypair is staged under a *pending* slot and only promoted to *current* after the server has bound it, so a failed sign-in attempt never destroys the active session's key. The JSON body still returns the tokens for the admin app; the web app never persists them.
+All session-issuing routes (`signin/email`, `signin/google`, `magic-link/complete`) accept the optional `public_key` JWK and bind it to the refresh session (`refresh_tokens.public_key`). The keypair is staged under a *pending* slot and only promoted to *current* after the server has bound it, so a failed sign-in attempt never destroys the active session's key. The JSON body carries only session metadata (`dbName`, `email`, `nameHex`, and the freshly minted `sessionId`) — the tokens travel exclusively in `Set-Cookie` and never appear in a response body, so JS (and therefore XSS) cannot read them. The web app persists this token-less session and keeps the `sessionId` to revoke exactly this session at logout.
 
 ## Authenticated requests
 
@@ -70,25 +70,25 @@ Fail-closed and offline-capable, in three steps (`useSignOut`):
 
 1. **Delete the proof keys** from IndexedDB. From this instant nothing can refresh the session — even offline, it dies when the ≤5-minute access cookie expires.
 2. **Clear local state** (query cache, active profile, plugin state). The UI is signed out immediately; the profile row stays as a `loggedOut` tombstone.
-3. **Best-effort server revocation**: the tombstone sweep (`RevokeLoggedOutProfiles`, on boot / `online` / post-sign-out) calls `POST /auth/logout`, where the refresh cookie is the credential. The server revokes the whole Postgres chain and deletes the tombstone row; the cookies are left untouched — they may already belong to a newer session, and the revoked rows make any lingering cookie inert. Offline sign-outs are retried until they succeed.
+3. **Best-effort server revocation**: the tombstone sweep (`RevokeLoggedOutProfiles`, on boot / `online` / post-sign-out) calls `POST /auth/logout` with the tombstone's `sessionId` in the body — a non-secret identity, not the refresh cookie. The server revokes that whole Postgres chain by id and leaves the cookies untouched (there is no cookie-clearing path): they may already belong to a newer session, and the revoked rows make any lingering cookie inert. Only after the call succeeds does the sweep delete the local tombstone row. Offline sign-outs are retried until they succeed.
 
-There is a single cookie jar, so if the user signs into another account before the sweep succeeds, the old chain can no longer be revoked from the client — the overwrite also destroyed the only copy of the old cookie, so nothing can use that chain; it dies by the refresh TTL / stale-session cron. Pre-cookie tombstones still carry their legacy refresh token and are revoked with it through the request body.
+Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep names the exact session to kill regardless of which refresh cookie is currently stored, so signing into another account — or the same one — before the sweep completes cannot misfire. A re-login mints a fresh `sessionId` on a new chain (after wiping the old one), so an old tombstone can never name the new session; it simply finds nothing to revoke.
 
 ## Refresh-session storage
 
 Sessions live in Postgres (`refresh_tokens`): one row per issued token, hashed (SHA-256), chained per `(user_id, installation_id)`. Relevant columns:
 
 * `token_hash` — the only lookup key.
-* `public_key` — JSON-serialized public JWK bound to the session at sign-in (null for sessions issued before sender constraining shipped; they refresh proof-less until they expire or re-authenticate).
+* `public_key` — JSON-serialized public JWK bound to the session at sign-in (null for sessions issued before sender constraining shipped; those are rejected on their next refresh and must re-authenticate — no graceful migration).
 * `superseded_at` / `successor_token` — rotation bookkeeping; the encrypted successor converges concurrent refreshes and is why the API must run as a **single instance**.
 
 Individual tokens expire after ~6 months (`created_at` anchored); a daily cron deletes expired and long-superseded rows.
 
 ## Admin app & pre-cookie sessions
 
-The admin app keeps its own localStorage tokens and `Authorization: Bearer` header — the guard's header fallback, the JSON token bodies, and the `refresh_token` logout body exist for it and stay supported.
+The admin app is a **separate surface** with its own endpoints under `/admin` (guarded by `AdminAuthGuard`, not the user cookie flow): `POST /admin/signin` and `POST /admin/refresh` return `access_token`/`refresh_token` in the JSON body and take `{ refresh_token }` in the body, and the admin app stores them in localStorage and sends `Authorization: Bearer`. The user guard's cookie-first read keeps that `Bearer` fallback for it. None of this touches the user `/auth/*` endpoints, which never put a token in a response body; in particular `/auth/logout` revokes by `session_id` and has no `refresh_token` body.
 
-Pre-cookie web sessions are **not migrated**: after the cutover, the first authenticated request fails, and the user re-logs in once with all local data intact (same-account sign-in does not recreate the local database, and the sign-in wipes the old server chain). Tokens persisted by old bundles are dropped, not reused; `loggedOut` tombstones written before the switch still carry their refresh token and the revocation sweep uses it (request body) to kill their chain.
+Pre-cookie web sessions are **not migrated**: after the cutover, the first authenticated request fails, and the user re-logs in once with all local data intact (same-account sign-in does not recreate the local database, and the sign-in wipes the old server chain). Tokens persisted by old bundles are dropped, not reused. A `loggedOut` tombstone written by a pre-`sessionId` bundle has no identity to revoke by, so the sweep cannot kill its chain from the client; that chain lapses through the refresh TTL and the stale-session cron instead (and it is rejected the moment it tries to refresh).
 
 There is deliberately **no old-bundle back-compat**: `/auth/token` accepts no refresh token outside the cookie, so a browser still running a pre-cookie bundle cannot refresh once the new API is live. Those users are signed out until the PWA picks up the new bundle — which it does on the next visit — and then re-login once. The accepted trade-off is a short lockout instead of carrying token-in-URL transports.
 
