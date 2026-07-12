@@ -163,6 +163,7 @@ export class UserPostgresEntity {
 // degrading gracefully. We keep the plain index and tolerate siblings instead.
 @Index(["user_id", "installation_id"])
 @Index(["created_at"])
+@Index("idx_refresh_session_id", ["session_id"])
 export class RefreshTokenPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
@@ -207,6 +208,26 @@ export class RefreshTokenPostgresEntity {
    */
   @Column({ type: "text", nullable: true })
   public_key!: string | null
+
+  /**
+   * Non-secret identity of the session this token belongs to, minted fresh on
+   * every sign-in and inherited by every successor row on rotation. It lets a
+   * client revoke exactly one session by id at logout, unaffected by which
+   * refresh cookie currently sits in the jar (a same-installation re-login
+   * mints a new id, so revoking the old one can never touch the new session).
+   *
+   * Nullable only for rows issued before this column existed. `null` is a live
+   * signal, not dead data: `AuthService.refreshToken` rejects a null-id row so
+   * the session re-authenticates into one that carries an id. Do NOT backfill
+   * it — the client never learns a backfilled id, so it would silence that
+   * signal and leave the session unrevocable-by-id until it expires.
+   *
+   * TODO(legacy, ~2027-01): once refresh tokens predating this column have all
+   * expired (TTL is 6 months), make this NOT NULL and drop the null-id reject
+   * in `AuthService.refreshToken`.
+   */
+  @Column({ type: "uuid", nullable: true })
+  session_id!: string | null
 
   /**
    * The successor token minted when this token was rotated out, encrypted with

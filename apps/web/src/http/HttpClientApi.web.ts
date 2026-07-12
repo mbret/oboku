@@ -5,6 +5,7 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  LogoutRequest,
   LogoutResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
@@ -174,16 +175,17 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   refreshToken = () => refreshTokenRequest(this, API_URL)
 
   /**
-   * Revokes the server-side refresh session and clears the auth cookies. The
-   * refresh cookie is the credential, so interceptors are skipped: no refresh-
-   * on-401 dance for a session being killed.
+   * Revokes exactly the session identified by `sessionId`, regardless of which
+   * refresh cookie currently sits in the jar. The server does not touch cookies
+   * on this path, so it needs no cookies lock and cannot revoke a newer
+   * session's chain. Interceptors are skipped: no refresh-on-401 dance for a
+   * session being killed.
    */
-  logout = () =>
-    withAuthCookiesLock(() =>
-      this.postOrThrow<LogoutResponse>(`${API_URL}/auth/logout`, {
-        useInterceptors: false,
-      }),
-    )
+  logout = (sessionId: string) =>
+    this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
+      body: { session_id: sessionId },
+      useInterceptors: false,
+    })
 
   deleteAccount = () =>
     this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {

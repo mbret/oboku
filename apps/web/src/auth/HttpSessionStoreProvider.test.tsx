@@ -26,6 +26,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   nameHex: "reader",
   dbName: "reader-db",
   needsRelogin: false,
+  sessionId: "session-default",
   ...overrides,
 })
 

@@ -4,6 +4,12 @@ export type AuthSessionResponse = {
   dbName: string
   email: string
   nameHex: string
+  /**
+   * Non-secret identity minted fresh for this sign-in. The client stores it on
+   * the session and later presents it to `logout` to revoke exactly this
+   * session, regardless of which refresh cookie currently sits in the jar.
+   */
+  sessionId: string
 }
 
 /**
@@ -66,6 +72,11 @@ export type CompleteMagicLinkRequest = {
 export type CompleteMagicLinkResponse = AuthSessionResponse
 
 export type RefreshTokenResponse = EmptyResponse
+
+/** Revokes the session with this identity, whatever refresh cookie is in the jar. */
+export type LogoutRequest = {
+  session_id: string
+}
 
 export type LogoutResponse = EmptyResponse
 

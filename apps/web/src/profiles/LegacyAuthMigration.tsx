@@ -55,7 +55,7 @@ const readLegacyProfile = (): LegacyProfile | undefined => {
   return isLegacyProfile(value) ? value : undefined
 }
 
-const runMigration = async () => {
+const importLegacyLocalStorageAuth = async () => {
   const auth = readLegacyProfile()
 
   if (!auth) return
@@ -71,6 +71,7 @@ const runMigration = async () => {
       email: auth.email,
       nameHex: auth.nameHex,
       dbName: auth.dbName,
+      sessionId: crypto.randomUUID(),
     })
   }
 
@@ -80,6 +81,37 @@ const runMigration = async () => {
   }
 
   localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)
+}
+
+/**
+ * Backfills a throwaway `sessionId` onto any profile row persisted before
+ * session-scoped logout, so `Profile.sessionId` is always present. A backfilled
+ * id matches no server session, so the logout sweep's revoke call harmlessly
+ * no-ops (the server session is already inert after sign-out and dies by TTL);
+ * a live session gets a real id again on its next sign-in.
+ *
+ * TODO(legacy, ~2027-01): remove once refresh tokens issued before this column
+ * (server TTL is 6 months) have all expired and no profile row can predate it.
+ */
+const backfillMissingSessionIds = async () => {
+  const profiles = await dexieDb.profiles.toArray()
+
+  await Promise.all(
+    profiles
+      // `sessionId` is typed required, but rows written by older builds lack it
+      // at runtime — this is that boundary.
+      .filter((profile) => !profile.sessionId)
+      .map((profile) =>
+        dexieDb.profiles.update(profile.id, {
+          sessionId: crypto.randomUUID(),
+        }),
+      ),
+  )
+}
+
+const runMigration = async () => {
+  await importLegacyLocalStorageAuth()
+  await backfillMissingSessionIds()
 }
 
 let migrationPromise: Promise<void> | null = null

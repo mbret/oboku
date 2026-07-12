@@ -38,6 +38,7 @@ export const completeAuthentication = ({
             email: auth.email,
             nameHex: auth.nameHex,
             dbName: auth.dbName,
+            sessionId: auth.sessionId,
           })
 
           setActiveProfileId(auth.nameHex)

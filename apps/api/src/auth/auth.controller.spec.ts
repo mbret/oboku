@@ -93,6 +93,7 @@ describe("AuthController", () => {
     const session = {
       accessToken: "access-token",
       refreshToken: "refresh-token",
+      sessionId: "session-1",
       dbName: "db-name",
       email: "reader@example.com",
       nameHex: "abc",
@@ -118,6 +119,7 @@ describe("AuthController", () => {
     await expect(
       controller.signinWithEmail(body, request, response),
     ).resolves.toEqual({
+      sessionId: "session-1",
       dbName: "db-name",
       email: "reader@example.com",
       nameHex: "abc",
@@ -317,27 +319,12 @@ describe("AuthController", () => {
     expect(authService.refreshToken).not.toHaveBeenCalled()
   })
 
-  it("revokes the cookie session on logout and clears the cookies", async () => {
-    const request = createRequest({
-      oboku_refresh_token: "cookie-refresh-token",
-    })
-    const response = createResponse()
+  it("revokes the session by id on logout and leaves the cookies untouched", async () => {
+    await expect(
+      controller.logout({ session_id: "session-1" }),
+    ).resolves.toEqual({})
 
-    await expect(controller.logout(request, response)).resolves.toEqual({})
-
-    expect(authService.logout).toHaveBeenCalledWith({
-      refreshToken: "cookie-refresh-token",
-    })
-    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
-  })
-
-  it("stays idempotent on logout without any credential", async () => {
-    const request = createRequest()
-    const response = createResponse()
-
-    await expect(controller.logout(request, response)).resolves.toEqual({})
-
-    expect(authService.logout).not.toHaveBeenCalled()
-    expect(authCookiesService.clear).toHaveBeenCalledWith(request, response)
+    expect(authService.logout).toHaveBeenCalledWith({ sessionId: "session-1" })
+    expect(authCookiesService.clear).not.toHaveBeenCalled()
   })
 })

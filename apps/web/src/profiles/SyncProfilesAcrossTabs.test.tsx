@@ -34,6 +34,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
+  sessionId: "session-default",
   ...overrides,
 })
 

@@ -20,6 +20,7 @@ import {
   IsNotEmpty,
   IsObject,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -32,6 +33,7 @@ import type {
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  LogoutRequest,
   LogoutResponse,
   RefreshTokenResponse,
   RequestMagicLinkRequest,
@@ -135,6 +137,11 @@ export class RefreshTokenQueryDto {
   @IsString()
   @IsNotEmpty()
   grant_type!: "refresh_token"
+}
+
+export class LogoutDto implements LogoutRequest {
+  @IsUUID()
+  session_id!: string
 }
 
 @Controller("auth")
@@ -253,20 +260,16 @@ export class AuthController {
     return {}
   }
 
+  /**
+   * Revokes the session by its identity and leaves the cookies untouched — they
+   * may belong to whoever is active now, and the revoked session's rows are
+   * deleted so any lingering cookie is inert (it dies on next sign-in or at
+   * cookie expiry).
+   */
   @Public()
   @Post("logout")
-  async logout(
-    @Req() request: Request,
-    @Res({ passthrough: true }) response: Response,
-  ): Promise<LogoutResponse> {
-    const refreshToken: string | undefined =
-      request.cookies?.[REFRESH_TOKEN_COOKIE]
-
-    if (refreshToken) {
-      await this.authService.logout({ refreshToken })
-    }
-
-    this.authCookiesService.clear(request, response)
+  async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
+    await this.authService.logout({ sessionId: body.session_id })
 
     return {}
   }

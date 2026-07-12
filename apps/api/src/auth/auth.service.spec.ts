@@ -33,7 +33,7 @@ describe("AuthService", () => {
     findByToken: jest.Mock
     rotateForRefresh: jest.Mock
     deleteById: jest.Mock
-    revokeByToken: jest.Mock
+    revokeBySessionId: jest.Mock
   }
   let refreshProofService: {
     isProofValid: jest.Mock
@@ -65,7 +65,7 @@ describe("AuthService", () => {
       findByToken: jest.fn(),
       rotateForRefresh: jest.fn(),
       deleteById: jest.fn().mockResolvedValue(undefined),
-      revokeByToken: jest.fn().mockResolvedValue(undefined),
+      revokeBySessionId: jest.fn().mockResolvedValue(undefined),
     }
     refreshProofService = {
       isProofValid: jest.fn(),
@@ -174,11 +174,11 @@ describe("AuthService", () => {
     })
   })
 
-  it("revokes the presented refresh session on logout", async () => {
-    await service.logout({ refreshToken: "refresh-token" })
+  it("revokes the session by id on logout", async () => {
+    await service.logout({ sessionId: "session-1" })
 
-    expect(refreshTokensService.revokeByToken).toHaveBeenCalledWith(
-      "refresh-token",
+    expect(refreshTokensService.revokeBySessionId).toHaveBeenCalledWith(
+      "session-1",
     )
   })
 
@@ -193,9 +193,10 @@ describe("AuthService", () => {
 
   it("issues per-installation refresh sessions when generating tokens", async () => {
     couchService.generateUserJWT.mockResolvedValue("access-token")
-    refreshTokensService.issueTokenForInstallation.mockResolvedValue(
-      "refresh-token",
-    )
+    refreshTokensService.issueTokenForInstallation.mockResolvedValue({
+      refreshToken: "refresh-token",
+      sessionId: "session-1",
+    })
 
     await expect(
       service.generateTokens({
@@ -207,6 +208,7 @@ describe("AuthService", () => {
     ).resolves.toEqual({
       accessToken: "access-token",
       refreshToken: "refresh-token",
+      sessionId: "session-1",
     })
 
     expect(couchService.generateUserJWT).toHaveBeenCalledWith({
@@ -228,6 +230,7 @@ describe("AuthService", () => {
       user_id: 42,
       installation_id: "installation-1",
       public_key: '{"kty":"EC"}',
+      session_id: "session-1",
     }
     refreshTokensService.findByToken.mockResolvedValue(presentedRow)
     refreshProofService.isProofValid.mockResolvedValue(true)
@@ -276,6 +279,7 @@ describe("AuthService", () => {
       user_id: 42,
       installation_id: "installation-1",
       public_key: '{"kty":"EC"}',
+      session_id: "session-1",
     })
     refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
@@ -299,6 +303,7 @@ describe("AuthService", () => {
       user_id: 42,
       installation_id: "installation-1",
       public_key: '{"kty":"EC"}',
+      session_id: "session-1",
     })
     refreshProofService.isProofValid.mockResolvedValue(true)
     refreshTokensService.rotateForRefresh.mockResolvedValue({
@@ -376,11 +381,32 @@ describe("AuthService", () => {
     expect(refreshTokensService.rotateForRefresh).not.toHaveBeenCalled()
   })
 
+  it("rejects refresh of a session with no session id (pre session-scoped logout)", async () => {
+    refreshTokensService.findByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
+      session_id: null,
+    })
+    refreshProofService.isProofValid.mockResolvedValue(true)
+
+    await expect(
+      service.refreshToken({
+        refreshToken: "legacy-refresh-token",
+        proof: "valid-proof",
+      }),
+    ).rejects.toThrow()
+
+    expect(refreshTokensService.rotateForRefresh).not.toHaveBeenCalled()
+  })
+
   it("registers the sign-in public key with the issued refresh session", async () => {
     couchService.generateUserJWT.mockResolvedValue("access-token")
-    refreshTokensService.issueTokenForInstallation.mockResolvedValue(
-      "refresh-token",
-    )
+    refreshTokensService.issueTokenForInstallation.mockResolvedValue({
+      refreshToken: "refresh-token",
+      sessionId: "session-1",
+    })
 
     await service.generateTokens({
       email: "reader@example.com",

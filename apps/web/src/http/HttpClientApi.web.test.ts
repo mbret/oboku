@@ -25,6 +25,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   nameHex: "reader",
   dbName: "reader-db",
   needsRelogin: false,
+  sessionId: "session-default",
   ...overrides,
 })
 
@@ -47,6 +48,7 @@ const createDeferred = <T>() => {
 const REFRESH_URL =
   "https://api.example.com/auth/token?grant_type=refresh_token"
 const SIGNIN_URL = "https://api.example.com/auth/signin/email"
+const LOGOUT_URL = "https://api.example.com/auth/logout"
 
 const createSignInRequest = () => ({
   email: "b@example.com",
@@ -500,5 +502,38 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     expect(result).toBe(unauthorizedResponse)
     expect(getSession()?.needsRelogin).toBe(false)
+  })
+
+  describe("logout", () => {
+    it("posts the session id to revoke it, skipping interceptors", async () => {
+      const fetchMock = vi.fn<typeof fetch>((input) => {
+        if (String(input) === LOGOUT_URL) {
+          return Promise.resolve(
+            new Response(JSON.stringify({}), {
+              status: 200,
+              headers: { "Content-Type": "application/json" },
+            }),
+          )
+        }
+
+        throw new Error(`Unexpected fetch call for ${String(input)}`)
+      })
+
+      vi.stubGlobal("fetch", fetchMock)
+
+      const { client } = await createClient(createProfile())
+
+      await client.logout("session-1")
+
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+
+      const [input, init] = fetchMock.mock.calls[0] ?? []
+
+      expect(String(input)).toBe(LOGOUT_URL)
+      expect(init?.credentials).toBe("include")
+      expect(JSON.parse(String(init?.body))).toEqual({
+        session_id: "session-1",
+      })
+    })
   })
 })

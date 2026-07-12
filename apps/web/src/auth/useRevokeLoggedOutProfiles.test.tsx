@@ -23,7 +23,7 @@ vi.mock("../rxdb/dexie", () => ({
 
 import type { HttpApiClientWeb } from "../http/HttpClientApi.web"
 import { HttpClientApiContext } from "../http"
-import { profilesQueryKey, setProfile } from "../profiles"
+import { profilesQueryKey } from "../profiles"
 import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
 
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
@@ -31,6 +31,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
+  sessionId: "session-default",
   ...overrides,
 })
 
@@ -56,29 +57,35 @@ describe("useRevokeLoggedOutProfiles", () => {
   afterEach(() => {
     cleanup()
     profilesStore.clear()
-    localStorage.clear()
   })
 
-  it("revokes a cookie-session tombstone through the refresh cookie and deletes it", async () => {
+  it("revokes a tombstone by its own session id and deletes it", async () => {
     profilesStore.set(
       "gone-reader",
-      createProfile({ id: "gone-reader", status: "loggedOut" }),
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "session-1",
+      }),
     )
 
-    const logout = vi.fn().mockResolvedValue({ data: {} })
+    const logout = vi.fn().mockResolvedValue(undefined)
     const { result } = renderRevokeHook(logout)
 
     await result.current.mutateAsync()
 
-    expect(logout).toHaveBeenCalledTimes(1)
-    expect(logout).toHaveBeenCalledWith()
+    expect(logout).toHaveBeenCalledWith("session-1")
     expect(profilesStore.has("gone-reader")).toBe(false)
   })
 
   it("keeps the tombstone for a later sweep when revocation fails", async () => {
     profilesStore.set(
       "gone-reader",
-      createProfile({ id: "gone-reader", status: "loggedOut" }),
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "session-1",
+      }),
     )
 
     const logout = vi.fn().mockRejectedValue(new Error("offline"))
@@ -89,48 +96,32 @@ describe("useRevokeLoggedOutProfiles", () => {
     expect(profilesStore.has("gone-reader")).toBe(true)
   })
 
-  it("drops an unrevocable tombstone once a newer sign-in owns the cookies", async () => {
-    setProfile("active-reader")
-    profilesStore.set("active-reader", createProfile({ id: "active-reader" }))
-    profilesStore.set(
-      "gone-reader",
-      createProfile({ id: "gone-reader", status: "loggedOut" }),
-    )
-
-    const logout = vi.fn().mockResolvedValue({ data: {} })
-    const { result } = renderRevokeHook(logout)
-
-    await result.current.mutateAsync()
-
-    expect(logout).not.toHaveBeenCalled()
-    expect(profilesStore.has("gone-reader")).toBe(false)
-    expect(profilesStore.has("active-reader")).toBe(true)
-  })
-
-  it("leaves a row overwritten by a re-login while its logout call is in flight", async () => {
+  it("leaves a row a re-login turned active while its logout call was in flight", async () => {
     profilesStore.set(
       "reader",
       createProfile({
         id: "reader",
         status: "loggedOut",
+        sessionId: "old-session",
       }),
     )
 
     const queryClient = new QueryClient()
-    const freshProfile = createProfile({ id: "reader" })
+    const freshProfile = createProfile({
+      id: "reader",
+      sessionId: "new-session",
+    })
     const logout = vi
       .fn()
       .mockImplementation(async function reloginWhileLogoutInFlight() {
         profilesStore.set("reader", freshProfile)
         queryClient.setQueryData(profilesQueryKey, [freshProfile])
-
-        return { data: {} }
       })
     const { result } = renderRevokeHook(logout, queryClient)
 
     await result.current.mutateAsync()
 
-    expect(logout).toHaveBeenCalledTimes(1)
+    expect(logout).toHaveBeenCalledWith("old-session")
     expect(profilesStore.get("reader")).toEqual(freshProfile)
   })
 })

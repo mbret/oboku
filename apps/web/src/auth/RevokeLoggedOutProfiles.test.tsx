@@ -67,6 +67,7 @@ const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
+  sessionId: "session-default",
   ...overrides,
 })
 
@@ -100,6 +101,7 @@ describe("RevokeLoggedOutProfiles", () => {
       createProfile({
         id: "gone-reader",
         status: "loggedOut",
+        sessionId: "gone-session",
       }),
     )
 
@@ -113,14 +115,18 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
 
-    expect(logout).toHaveBeenCalledWith()
+    expect(logout).toHaveBeenCalledWith("gone-session")
     expect(profilesStore.has("active-reader")).toBe(true)
   })
 
   it("waits for the network to come back before sweeping", async () => {
     profilesStore.set(
       "gone-reader",
-      createProfile({ id: "gone-reader", status: "loggedOut" }),
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "gone-session",
+      }),
     )
 
     const logout = vi.fn().mockResolvedValue({ data: {} })
@@ -142,7 +148,7 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
     expect(logout).toHaveBeenCalledTimes(1)
-    expect(logout).toHaveBeenCalledWith()
+    expect(logout).toHaveBeenCalledWith("gone-session")
   })
 
   it("sweeps once sign out flags the profile as logged out", async () => {
@@ -150,6 +156,7 @@ describe("RevokeLoggedOutProfiles", () => {
       "active-reader",
       createProfile({
         id: "active-reader",
+        sessionId: "reader-session",
       }),
     )
 
@@ -185,6 +192,6 @@ describe("RevokeLoggedOutProfiles", () => {
     await waitFor(() => {
       expect(profilesStore.has("active-reader")).toBe(false)
     })
-    expect(logout).toHaveBeenCalledWith()
+    expect(logout).toHaveBeenCalledWith("reader-session")
   })
 })
