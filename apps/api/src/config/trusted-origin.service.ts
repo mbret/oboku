@@ -1,13 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "./AppConfigService"
-
-const parseHostname = (url: string) => {
-  try {
-    return new URL(url).hostname
-  } catch {
-    return undefined
-  }
-}
+import { parseUrl } from "../lib/http/url"
 
 /**
  * Decides which browser origins may make credentialed (cookie-carrying)
@@ -27,8 +20,8 @@ export class TrustedOriginsService {
       return true
     }
 
-    const originHostname = parseHostname(origin)
-    const appHostname = parseHostname(this.appConfigService.APP_PUBLIC_URL)
+    const originHostname = parseUrl(origin)?.hostname
+    const appHostname = parseUrl(this.appConfigService.APP_PUBLIC_URL)?.hostname
 
     return !!originHostname && originHostname === appHostname
   }

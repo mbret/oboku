@@ -1,6 +1,8 @@
 import { Injectable } from "@nestjs/common"
 import type { CookieOptions, Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
+import { getForwardedProto } from "../lib/http/forwardedProto"
+import { parseUrl } from "../lib/http/url"
 
 export const ACCESS_TOKEN_COOKIE = "oboku_access_token"
 export const REFRESH_TOKEN_COOKIE = "oboku_refresh_token"
@@ -19,23 +21,11 @@ const ACCESS_TOKEN_COOKIE_PATH = "/"
 /** Keeps the refresh token off every request except `/auth/*` (token, logout). */
 const REFRESH_TOKEN_COOKIE_PATH = "/auth"
 
-const isRequestSecure = (request: Request) => {
-  const forwardedProtoHeader = request.headers["x-forwarded-proto"]
-  const forwardedProto = Array.isArray(forwardedProtoHeader)
-    ? forwardedProtoHeader[0]
-    : forwardedProtoHeader
-  const outermostProto = forwardedProto?.split(",")[0]?.trim()
+const isRequestSecure = (request: Request) =>
+  request.secure ||
+  getForwardedProto(request.headers["x-forwarded-proto"]) === "https"
 
-  return request.secure || outermostProto === "https"
-}
-
-const isHttpsUrl = (url: string) => {
-  try {
-    return new URL(url).protocol === "https:"
-  } catch {
-    return false
-  }
-}
+const isHttpsUrl = (url: string) => parseUrl(url)?.protocol === "https:"
 
 @Injectable()
 export class AuthCookiesService {
