@@ -75,18 +75,12 @@ const createNavigatorWithLockQueue = () => {
 }
 
 const createRefreshResponse = () =>
-  new Response(
-    JSON.stringify({
-      accessToken: "fresh-access-token",
-      refreshToken: "rotated-refresh-token",
-    }),
-    {
-      status: 200,
-      headers: {
-        "Content-Type": "application/json",
-      },
+  new Response(JSON.stringify({}), {
+    status: 200,
+    headers: {
+      "Content-Type": "application/json",
     },
-  )
+  })
 
 const createUnauthorized = (
   config: Partial<HttpClientResponse["config"]> = {},
