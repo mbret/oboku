@@ -70,7 +70,7 @@ Fail-closed and offline-capable, in three steps (`useSignOut`):
 
 1. **Delete the proof keys** from IndexedDB. From this instant nothing can refresh the session — even offline, it dies when the ≤5-minute access cookie expires.
 2. **Clear local state** (query cache, active profile, plugin state). The UI is signed out immediately; the profile row stays as a `loggedOut` tombstone.
-3. **Best-effort server revocation**: the tombstone sweep (`RevokeLoggedOutProfiles`, on boot / `online` / post-sign-out) calls `POST /auth/logout`, where the refresh cookie is the credential. The server revokes the whole Postgres chain and clears both cookies; the tombstone row is then deleted. Offline sign-outs are retried until they succeed.
+3. **Best-effort server revocation**: the tombstone sweep (`RevokeLoggedOutProfiles`, on boot / `online` / post-sign-out) calls `POST /auth/logout`, where the refresh cookie is the credential. The server revokes the whole Postgres chain and deletes the tombstone row; the cookies are left untouched — they may already belong to a newer session, and the revoked rows make any lingering cookie inert. Offline sign-outs are retried until they succeed.
 
 There is a single cookie jar, so if the user signs into another account before the sweep succeeds, the old chain can no longer be revoked from the client — the overwrite also destroyed the only copy of the old cookie, so nothing can use that chain; it dies by the refresh TTL / stale-session cron. Pre-cookie tombstones still carry their legacy refresh token and are revoked with it through the request body.
 

@@ -39,7 +39,6 @@ describe("AuthController", () => {
   }
   let authCookiesService: {
     set: jest.Mock
-    clear: jest.Mock
   }
 
   beforeEach(async () => {
@@ -54,7 +53,6 @@ describe("AuthController", () => {
     }
     authCookiesService = {
       set: jest.fn(),
-      clear: jest.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -325,6 +323,6 @@ describe("AuthController", () => {
     ).resolves.toEqual({})
 
     expect(authService.logout).toHaveBeenCalledWith({ sessionId: "session-1" })
-    expect(authCookiesService.clear).not.toHaveBeenCalled()
+    expect(authCookiesService.set).not.toHaveBeenCalled()
   })
 })
