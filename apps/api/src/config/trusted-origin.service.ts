@@ -11,18 +11,23 @@ import { parseUrl } from "../lib/http/url"
  */
 @Injectable()
 export class TrustedOriginsService {
-  constructor(private appConfigService: AppConfigService) {}
+  private readonly trustedOrigins: Set<string>
+  private readonly appHostname: string | undefined
+
+  constructor(private appConfigService: AppConfigService) {
+    this.trustedOrigins = new Set(
+      this.appConfigService.API_CORS_TRUSTED_ORIGINS,
+    )
+    this.appHostname = parseUrl(this.appConfigService.APP_PUBLIC_URL)?.hostname
+  }
 
   isTrusted(origin: string | undefined): boolean {
     if (!origin) return false
 
-    if (this.appConfigService.API_CORS_TRUSTED_ORIGINS.includes(origin)) {
-      return true
-    }
+    if (this.trustedOrigins.has(origin)) return true
 
     const originHostname = parseUrl(origin)?.hostname
-    const appHostname = parseUrl(this.appConfigService.APP_PUBLIC_URL)?.hostname
 
-    return !!originHostname && originHostname === appHostname
+    return !!originHostname && originHostname === this.appHostname
   }
 }
