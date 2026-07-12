@@ -164,6 +164,23 @@ describe("HttpApiClientWeb auth refresh", () => {
     expect(signRefreshProof).toHaveBeenCalledWith(REFRESH_URL)
   })
 
+  it("bounds the refresh fetch with an abort signal so a stall cannot pin the cookies lock", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createRefreshResponse())
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+
+    await client.refreshAuthSession()
+
+    const [, init] = fetchMock.mock.calls[0] ?? []
+
+    expect(init?.signal).toBeInstanceOf(AbortSignal)
+    expect(init?.signal?.aborted).toBe(false)
+  })
+
   it("omits the proof header when no key is registered (pre-binding session)", async () => {
     signRefreshProof.mockResolvedValue(undefined)
 

@@ -3,11 +3,11 @@ import { notify } from "../notifications/toasts"
 import { useActiveProfile } from "../profiles"
 
 export const NotifyExpiredSession = memo(function NotifyExpiredSession() {
-  const needsRelogin = useActiveProfile().data?.needsRelogin ?? false
+  const needsReLogin = useActiveProfile().data?.needsRelogin ?? false
 
   useEffect(
     function notifyWhenSessionExpired() {
-      if (!needsRelogin) return
+      if (!needsReLogin) return
 
       notify({
         title: "Session expired",
@@ -16,7 +16,7 @@ export const NotifyExpiredSession = memo(function NotifyExpiredSession() {
         severity: "warning",
       })
     },
-    [needsRelogin],
+    [needsReLogin],
   )
 
   return null
