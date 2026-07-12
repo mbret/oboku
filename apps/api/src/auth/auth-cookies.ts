@@ -29,15 +29,29 @@ const isRequestSecure = (request: Request) => {
   return request.secure || outermostProto === "https"
 }
 
+const isHttpsUrl = (url: string) => {
+  try {
+    return new URL(url).protocol === "https:"
+  } catch {
+    return false
+  }
+}
+
 @Injectable()
 export class AuthCookiesService {
   constructor(private appConfigService: AppConfigService) {}
 
   private baseOptions(request: Request): CookieOptions {
+    // Keyed on the declared public scheme, not `NODE_ENV`: a TLS deployment
+    // stays protected even if its proxy strips `X-Forwarded-Proto`, while a
+    // production self-host served over plain HTTP (LAN) can still store the
+    // cookie instead of having a forced `Secure` flag silently drop it.
     return {
       httpOnly: true,
       sameSite: "lax",
-      secure: isRequestSecure(request),
+      secure:
+        isRequestSecure(request) ||
+        isHttpsUrl(this.appConfigService.APP_PUBLIC_URL),
     }
   }
 

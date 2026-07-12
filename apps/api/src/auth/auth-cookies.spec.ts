@@ -4,11 +4,12 @@ import { AuthCookiesService } from "./auth-cookies"
 
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000
 
-const createService = () =>
+const createService = (appPublicUrl = "http://localhost:3000") =>
   new AuthCookiesService(
     // Config test double limited to what the service reads.
     {
       SECURITY_REFRESH_TOKEN_TTL_MS: SIX_MONTHS_MS,
+      APP_PUBLIC_URL: appPublicUrl,
     } as unknown as AppConfigService,
   )
 
@@ -72,6 +73,27 @@ describe("AuthCookiesService", () => {
     expect(mocks.cookie).toHaveBeenCalledWith(
       "oboku_access_token",
       "access-jwt",
+      expect.objectContaining({ secure: true }),
+    )
+  })
+
+  it("marks the cookies secure when the public URL is https", () => {
+    const service = createService("https://oboku.example")
+    const { mocks, response } = createResponse()
+
+    service.set(createRequest(), response, {
+      accessToken: "access-jwt",
+      refreshToken: "refresh-token",
+    })
+
+    expect(mocks.cookie).toHaveBeenCalledWith(
+      "oboku_access_token",
+      "access-jwt",
+      expect.objectContaining({ secure: true }),
+    )
+    expect(mocks.cookie).toHaveBeenCalledWith(
+      "oboku_refresh_token",
+      "refresh-token",
       expect.objectContaining({ secure: true }),
     )
   })
