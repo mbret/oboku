@@ -50,7 +50,7 @@ export const completeAuthentication = ({
              * token rather than the previous one still cached under the old
              * profile.
              */
-            resetSessionQueries(queryClient)
+            await resetSessionQueries(queryClient)
           }
 
           return { switchedAccount }

@@ -1,4 +1,4 @@
-import { memo, type ReactNode, useState } from "react"
+import { memo, type ReactNode, useEffect, useState } from "react"
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client"
 import {
   defaultShouldDehydrateMutation,
@@ -6,7 +6,7 @@ import {
   QueryCache,
   QueryClient,
 } from "@tanstack/react-query"
-import { SwitchMutationCancelError } from "reactjrx"
+import { SwitchMutationCancelError, useSignalValue } from "reactjrx"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
@@ -19,11 +19,41 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
+import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { shouldPersistQueryState } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
-const createClients = (httpClientApi: HttpApiClientWeb) => {
+/**
+ * The resumable notification mutations own profile-scoped optimistic cache
+ * updates, so their registered defaults must carry the active profile. Live
+ * mutations get it through the hook; a mutation resumed after a reload has no
+ * observer, so it relies on these defaults being re-registered whenever the
+ * active profile changes.
+ */
+const setNotificationMutationDefaults = (
+  queryClient: QueryClient,
+  httpClientApi: HttpApiClientWeb,
+  profileId: string | undefined,
+) => {
+  queryClient.setMutationDefaults(
+    markSeenMutationKey,
+    markSeenMutationOptions(queryClient, httpClientApi, profileId),
+  )
+  queryClient.setMutationDefaults(
+    markAllSeenMutationKey,
+    markAllSeenMutationOptions(queryClient, httpClientApi, profileId),
+  )
+  queryClient.setMutationDefaults(
+    archiveMutationKey,
+    archiveMutationOptions(queryClient, httpClientApi, profileId),
+  )
+}
+
+const createClients = (
+  httpClientApi: HttpApiClientWeb,
+  profileId: string | undefined,
+) => {
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({
       onError: (error, _variables, _context, mutation) => {
@@ -77,18 +107,7 @@ const createClients = (httpClientApi: HttpApiClientWeb) => {
     },
   })
 
-  queryClient.setMutationDefaults(
-    markSeenMutationKey,
-    markSeenMutationOptions(queryClient, httpClientApi),
-  )
-  queryClient.setMutationDefaults(
-    markAllSeenMutationKey,
-    markAllSeenMutationOptions(queryClient, httpClientApi),
-  )
-  queryClient.setMutationDefaults(
-    archiveMutationKey,
-    archiveMutationOptions(queryClient, httpClientApi),
-  )
+  setNotificationMutationDefaults(queryClient, httpClientApi, profileId)
 
   return queryClient
 }
@@ -117,7 +136,21 @@ export const QueryClientProvider = memo(function QueryClientProvider({
   children: ReactNode
 }) {
   const httpClientApi = useHttpClientApi()
-  const [queryClient] = useState(() => createClients(httpClientApi))
+  const activeProfileId = useSignalValue(activeProfileIdSignal)
+  const [queryClient] = useState(() =>
+    createClients(httpClientApi, activeProfileId),
+  )
+
+  useEffect(
+    function keepNotificationMutationDefaultsScopedToActiveProfile() {
+      setNotificationMutationDefaults(
+        queryClient,
+        httpClientApi,
+        activeProfileId,
+      )
+    },
+    [queryClient, httpClientApi, activeProfileId],
+  )
 
   return (
     <PersistQueryClientProvider

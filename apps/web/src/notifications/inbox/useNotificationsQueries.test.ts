@@ -42,6 +42,14 @@ describe("notifications queries", () => {
     vi.doMock("../../auth/useIsAuthenticated", () => ({
       useIsAuthenticated: () => true,
     }))
+    vi.doMock("reactjrx", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("reactjrx")>()
+
+      return {
+        ...actual,
+        useSignalValue: () => "reader",
+      }
+    })
 
     const { useInboxNotifications } = await import("./useInboxNotifications")
     type InboxNotifications = NonNullable<
@@ -91,6 +99,14 @@ describe("notifications queries", () => {
     vi.doMock("../../auth/useIsAuthenticated", () => ({
       useIsAuthenticated: () => true,
     }))
+    vi.doMock("reactjrx", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("reactjrx")>()
+
+      return {
+        ...actual,
+        useSignalValue: () => "reader",
+      }
+    })
 
     const { useUnreadNotificationsCount } = await import(
       "./useUnreadNotificationsCount"

@@ -38,8 +38,9 @@ export const useSignOut = () => {
 
     // Reset before writing the tombstone: the write triggers the revocation
     // sweep, and clearing the mutation cache after the sweep starts would
-    // void its scope serialization.
-    resetSessionQueries()
+    // void its scope serialization. Await the snapshot flush so a reload right
+    // after sign-out cannot rehydrate the previous session's cached data.
+    await resetSessionQueries()
 
     /**
      * The profile row is kept as a `loggedOut` tombstone rather than deleted:
