@@ -40,7 +40,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.15.1",
     "dropbox": "^10.34.0",
-    "google-auth-library": "^10.0.0",
+    "google-auth-library": "^10.9.0",
     "googleapis": "^171.4.0",
     "joi": "^18.0.0",
     "json-schema-to-ts": "^3.1.1",
