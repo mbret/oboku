@@ -19,7 +19,7 @@ import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
 import { SwTask } from "./workers/communication/types.shared"
-import { cleanupOldRxdbDatabases } from "./rxdb/cleanupOldRxdbDatabases.sw"
+import { runOldRxdbDatabasesCleanup } from "./rxdb/cleanupOldRxdbDatabases.sw"
 import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
 import { assertNever } from "@oboku/shared"
 
@@ -112,6 +112,8 @@ self.addEventListener("message", (event) => {
       switch (task) {
         case SwTask.CoversCacheCleanup:
           return event.waitUntil(runCoversCacheCleanup(profile))
+        case SwTask.OldRxdbDatabasesCleanup:
+          return event.waitUntil(runOldRxdbDatabasesCleanup())
         default:
           return assertNever(task)
       }
@@ -120,11 +122,6 @@ self.addEventListener("message", (event) => {
       return event.waitUntil(self.skipWaiting())
   }
 })
-
-// Runs on every service-worker startup (not just `activate`) so a deletion
-// blocked by connections from not-yet-reloaded tabs is retried on the next
-// start once those connections close.
-cleanupOldRxdbDatabases()
 
 self.addEventListener(`fetch`, (event) => {
   const isHandledByCovers = coversFetchListener(event)

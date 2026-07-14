@@ -11,7 +11,7 @@ export const clearActiveProfileId = () => {
   activeProfileIdSignal.update(SIGNAL_RESET)
 }
 
-export const getProfile = () => {
+export const fetchProfile = () => {
   return localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
 }
 
@@ -20,7 +20,7 @@ export const activeProfileIdSignal = signal<string | undefined>({
 })
 
 export const syncActiveProfileIdFromStorage = () => {
-  const profileId = getProfile()
+  const profileId = fetchProfile()
 
   activeProfileIdSignal.update(profileId ?? SIGNAL_RESET)
 }

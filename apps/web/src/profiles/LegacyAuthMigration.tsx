@@ -3,7 +3,7 @@ import type { Profile } from "./types"
 import { Logger } from "../debug/logger.shared"
 import {
   activeProfileIdSignal,
-  getProfile,
+  fetchProfile,
   setProfile,
 } from "./active/activeProfileId"
 import { dexieDb } from "../rxdb/dexie"
@@ -75,7 +75,7 @@ const importLegacyLocalStorageAuth = async () => {
     })
   }
 
-  if (!getProfile()) {
+  if (!fetchProfile()) {
     setProfile(auth.nameHex)
     activeProfileIdSignal.update(auth.nameHex)
   }

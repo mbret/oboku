@@ -1,4 +1,5 @@
 import { Logger } from "../debug/logger.shared"
+import { coalesce } from "../workers/coalesce"
 import { RXDB_DATABASE_NAME } from "./constants.shared"
 
 const RXDB_INDEXED_DB_NAME_PREFIX = "rxdb-dexie-"
@@ -74,7 +75,7 @@ const deleteIndexedDbDatabase = (databaseName: string) =>
  * targets IndexedDB database names created by RxDB Dexie storage, such as
  * `rxdb-dexie-oboku-49--0--book`.
  */
-export const cleanupOldRxdbDatabases = async () => {
+const cleanupOldRxdbDatabases = async () => {
   if (typeof indexedDB === "undefined") {
     return
   }
@@ -138,3 +139,5 @@ export const cleanupOldRxdbDatabases = async () => {
     currentVersion: version,
   })
 }
+
+export const runOldRxdbDatabasesCleanup = coalesce(cleanupOldRxdbDatabases)

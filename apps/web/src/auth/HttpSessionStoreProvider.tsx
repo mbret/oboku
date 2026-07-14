@@ -1,7 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { memo, type ReactNode, useState } from "react"
 import { useHttpClientApi } from "../http"
-import { getProfile } from "../profiles/active/activeProfileId"
+import { fetchProfile } from "../profiles/active/activeProfileId"
 import { ensureActiveProfile } from "../profiles/active/useActiveProfile"
 import { usePutProfile } from "../profiles/usePutProfile"
 
@@ -28,9 +28,9 @@ export const HttpSessionStoreProvider = memo(function HttpSessionStoreProvider({
 
   useState(function configureSessionStoreOnce() {
     httpClientApi.configureSessionStore({
-      get: () => ensureActiveProfile(queryClient, getProfile()),
+      get: () => ensureActiveProfile(queryClient, fetchProfile()),
       set: async (session) => {
-        const isStillActiveProfile = getProfile() === session.id
+        const isStillActiveProfile = fetchProfile() === session.id
 
         if (!isStillActiveProfile) return
 

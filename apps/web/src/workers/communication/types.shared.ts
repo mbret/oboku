@@ -2,6 +2,7 @@ import { z } from "zod"
 
 export const SwTask = {
   CoversCacheCleanup: "coversCacheCleanup",
+  OldRxdbDatabasesCleanup: "oldRxdbDatabasesCleanup",
 } as const
 
 export type SwTask = (typeof SwTask)[keyof typeof SwTask]
