@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app"
 import { getAnalytics } from "firebase/analytics"
-import { VITE_FIREBASE_CONFIG } from "../config/envs"
+import { VITE_FIREBASE_CONFIG } from "../config"
 
 function initializeAnalytics() {
   if (!VITE_FIREBASE_CONFIG) return undefined

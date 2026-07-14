@@ -2,14 +2,7 @@ import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
-import {
-  runTaskMessage,
-  SwTask,
-  skipWaitingMessage,
-} from "./communication/types.shared"
-import { getProfile } from "../profiles/active/activeProfileId"
-
-const BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
+import { skipWaitingMessage } from "./communication/types.shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -60,29 +53,6 @@ export const useRegisterServiceWorker = () => {
         controllerchange,
       )
     }
-  }, [])
-
-  useEffect(function triggerBackgroundTasks() {
-    if (!("serviceWorker" in navigator)) return
-
-    const triggerBackgroundTasks = () => {
-      navigator.serviceWorker.ready
-        .then((registration) => {
-          registration.active?.postMessage(
-            runTaskMessage(SwTask.CoversCacheCleanup, getProfile()),
-          )
-        })
-        .catch(() => {})
-    }
-
-    triggerBackgroundTasks()
-
-    const intervalId = setInterval(
-      triggerBackgroundTasks,
-      BACKGROUND_TASK_INTERVAL_MS,
-    )
-
-    return () => clearInterval(intervalId)
   }, [])
 
   /**

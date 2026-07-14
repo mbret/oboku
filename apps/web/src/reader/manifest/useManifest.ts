@@ -1,7 +1,6 @@
 import type { Manifest } from "@prose-reader/shared"
 import { webStreamer } from "../streamer/webStreamer"
-import { STREAMER_URL_PREFIX } from "../../workers/constants.shared"
-import { serviceWorkerReadySignal } from "../../workers/states.web"
+import { STREAMER_URL_PREFIX } from "../../config"
 import { useQuery } from "@tanstack/react-query"
 import { useDatabase } from "../../rxdb"
 import { getMetadataFromBook } from "../../books/metadata"
@@ -18,7 +17,9 @@ export const useManifest = (bookId: string | undefined) => {
     queryKey: ["reader/streamer/manifest", { bookId }],
     networkMode: "always",
     queryFn: async () => {
-      const isSwStreamerAvailable = serviceWorkerReadySignal.getValue()
+      // A service worker only intercepts fetches for pages it controls, so its
+      // streamer is usable exactly when it controls this page.
+      const isSwStreamerAvailable = !!navigator.serviceWorker?.controller
 
       const { response: swStreamerResponse } = isSwStreamerAvailable
         ? await httpClient.fetch(

@@ -15,7 +15,7 @@ import {
   API_COUCH_URI_2,
   API_COUCH_URI_3,
   API_COUCH_URI_4,
-} from "./envs"
+} from "./envs.shared"
 
 const API_WEBDAV_URL = `${API_URL}/webdav`
 

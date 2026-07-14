@@ -21,7 +21,7 @@ import type {
   SyncDataSourceResponse,
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
-import { API_URL } from "../config/envs"
+import { API_URL } from "../config"
 import { withAuthCookiesLock } from "./authCookiesLock"
 import { persistProofKey, type StoredProofKey } from "../auth/proofKey"
 import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"

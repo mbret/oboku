@@ -13,7 +13,7 @@ import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
 import { configure } from "@prose-reader/streamer"
-import { STREAMER_URL_PREFIX } from "./workers/constants.shared"
+import { STREAMER_URL_PREFIX } from "./config/envs.shared"
 import { runCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
 import { swStreamer } from "./reader/streamer/swStreamer.sw"
@@ -121,9 +121,10 @@ self.addEventListener("message", (event) => {
   }
 })
 
-self.addEventListener("activate", (event) => {
-  event.waitUntil(cleanupOldRxdbDatabases())
-})
+// Runs on every service-worker startup (not just `activate`) so a deletion
+// blocked by connections from not-yet-reloaded tabs is retried on the next
+// start once those connections close.
+cleanupOldRxdbDatabases()
 
 self.addEventListener(`fetch`, (event) => {
   const isHandledByCovers = coversFetchListener(event)

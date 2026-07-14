@@ -1,5 +1,5 @@
-import { getCoverIdFromUrl } from "./helpers.shared"
-import { serviceWorkerConfiguration } from "../config/configuration.sw"
+import { getCoverIdFromUrl, SW_COVERS_CACHE_KEY } from "./helpers.shared"
+import { API_URL } from "../config/envs.shared"
 import { HttpClientError } from "../http/httpClient.shared"
 import { httpClientApi } from "../http/httpClientApi.sw"
 
@@ -8,13 +8,11 @@ export const coversFetchListener = (event: FetchEvent) => {
 
   if (
     event.request.destination === "image" &&
-    event.request.url.startsWith(`${serviceWorkerConfiguration.API_URL}/covers`)
+    event.request.url.startsWith(`${API_URL}/covers`)
   ) {
     event.respondWith(
       (async () => {
-        const cache = await caches.open(
-          serviceWorkerConfiguration.SW_COVERS_CACHE_KEY,
-        )
+        const cache = await caches.open(SW_COVERS_CACHE_KEY)
 
         const cachedResponse = await cache.match(event.request)
 

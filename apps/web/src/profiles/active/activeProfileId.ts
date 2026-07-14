@@ -1,5 +1,5 @@
 import { signal, SIGNAL_RESET } from "reactjrx"
-import { STORAGE_PROFILE_KEY } from "../../config/envs"
+import { STORAGE_PROFILE_KEY } from "../../config"
 
 export const setActiveProfileId = (nameHex: string) => {
   setProfile(nameHex)

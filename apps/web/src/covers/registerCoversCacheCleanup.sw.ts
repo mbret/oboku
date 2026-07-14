@@ -10,14 +10,12 @@ import { createSwDatabase } from "../rxdb/db.sw"
 import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest,
+  SW_COVERS_CACHE_KEY,
 } from "./helpers.shared"
 import { Logger } from "../debug/logger.shared"
-import { serviceWorkerConfiguration } from "../config/configuration.sw"
 import { coalesce } from "../workers/coalesce"
 
-const cache$ = defer(() =>
-  from(caches.open(serviceWorkerConfiguration.SW_COVERS_CACHE_KEY)),
-)
+const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
 const database$ = defer(() => from(createSwDatabase()))
 
 const clearAllCovers = () => {

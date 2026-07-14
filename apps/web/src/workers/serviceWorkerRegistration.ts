@@ -2,7 +2,6 @@
 // register() is not called by default.
 
 import { Logger } from "../debug/logger.shared"
-import { serviceWorkerReadySignal } from "./states.web"
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -168,7 +167,3 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       )
     })
 }
-
-navigator.serviceWorker.ready.then(() => [
-  serviceWorkerReadySignal.setValue(true),
-])

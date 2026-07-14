@@ -11,6 +11,7 @@ import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
+import { BackgroundTasks } from "./workers/BackgroundTasks"
 import { useIsActiveProfileHydrated } from "./profiles"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
@@ -89,6 +90,7 @@ const App = memo(() => {
               </WithAuthentication>
               <AuthorizeActionDialog />
               <BackgroundReplication />
+              <BackgroundTasks />
               <BlockingBackdrop />
               <NotifyExpiredSession />
               <OtherEffects />

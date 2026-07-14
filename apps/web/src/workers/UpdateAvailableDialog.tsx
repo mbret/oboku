@@ -21,7 +21,7 @@ export const UpdateAvailableDialog: FC<{
 
   return (
     <Dialog open={hasUpdate}>
-      <DialogTitle>Yay! A new version is here</DialogTitle>
+      <DialogTitle>A new version is here</DialogTitle>
       <DialogContent>
         <DialogContentText>
           A new version of the app is available. (

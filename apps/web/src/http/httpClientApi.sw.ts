@@ -1,4 +1,4 @@
-import { serviceWorkerConfiguration } from "../config/configuration.sw"
+import { API_URL } from "../config/envs.shared"
 import { hasProofKey } from "../auth/proofKey"
 import { RefreshingHttpClient } from "./httpClient.shared"
 import { refreshTokenRequest } from "./refreshTokenRequest"
@@ -25,7 +25,7 @@ class HttpApiClientSw extends RefreshingHttpClient {
   protected shouldAttemptRefresh = () => hasProofKey()
 
   protected applyRefresh = async () => {
-    await refreshTokenRequest(this, serviceWorkerConfiguration.API_URL)
+    await refreshTokenRequest(this, API_URL)
 
     this.markRefreshApplied()
 

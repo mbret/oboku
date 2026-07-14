@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { findAlternatesNotSharingApiHostname } from "./envs"
+import { findAlternatesNotSharingApiHostname } from "./envs.shared"
 
 describe("findAlternatesNotSharingApiHostname", () => {
   it("accepts alternates that differ from the API origin by port only", () => {
