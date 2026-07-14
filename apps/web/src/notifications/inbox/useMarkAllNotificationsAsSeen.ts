@@ -1,14 +1,9 @@
-import {
-  useMutation,
-  useQueryClient,
-  type QueryClient,
-} from "@tanstack/react-query"
+import type { QueryClient } from "@tanstack/react-query"
 import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
-import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import type { HttpApiClientWeb } from "../../http"
 import {
   type NotificationCacheSnapshot,
   cancelAndSnapshotNotificationQueries,
@@ -18,6 +13,7 @@ import {
   rollbackNotificationCaches,
   unreadCountQueryKey,
 } from "./queryKeys"
+import { useNotificationMutation } from "./useNotificationMutation"
 
 export const markAllSeenMutationOptions = (
   queryClient: QueryClient,
@@ -56,12 +52,5 @@ export const markAllSeenMutationOptions = (
   onSettled: () => invalidateNotificationQueries(queryClient, profileId),
 })
 
-export const useMarkAllNotificationsAsSeen = () => {
-  const queryClient = useQueryClient()
-  const httpClientApi = useHttpClientApi()
-  const activeProfileId = useActiveProfileId()
-
-  return useMutation(
-    markAllSeenMutationOptions(queryClient, httpClientApi, activeProfileId),
-  )
-}
+export const useMarkAllNotificationsAsSeen = () =>
+  useNotificationMutation(markAllSeenMutationOptions)

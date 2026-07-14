@@ -1,14 +1,9 @@
-import {
-  useMutation,
-  useQueryClient,
-  type QueryClient,
-} from "@tanstack/react-query"
+import type { QueryClient } from "@tanstack/react-query"
 import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
-import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import type { HttpApiClientWeb } from "../../http"
 import {
   type NotificationCacheSnapshot,
   archiveMutationKey,
@@ -18,6 +13,7 @@ import {
   rollbackNotificationCaches,
   unreadCountQueryKey,
 } from "./queryKeys"
+import { useNotificationMutation } from "./useNotificationMutation"
 
 export const archiveMutationOptions = (
   queryClient: QueryClient,
@@ -57,12 +53,5 @@ export const archiveMutationOptions = (
   onSettled: () => invalidateNotificationQueries(queryClient, profileId),
 })
 
-export const useArchiveNotification = () => {
-  const queryClient = useQueryClient()
-  const httpClientApi = useHttpClientApi()
-  const activeProfileId = useActiveProfileId()
-
-  return useMutation(
-    archiveMutationOptions(queryClient, httpClientApi, activeProfileId),
-  )
-}
+export const useArchiveNotification = () =>
+  useNotificationMutation(archiveMutationOptions)

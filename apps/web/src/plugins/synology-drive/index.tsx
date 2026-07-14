@@ -8,7 +8,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
-import { useLinkInfo } from "./useLinkInfo"
+import { fileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import iconSynologyDrive from "../../assets/icon_synology_drive_01.png"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 

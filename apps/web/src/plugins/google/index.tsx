@@ -17,7 +17,7 @@ import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
-import { useLinkInfo } from "./useLinkInfo"
+import { fileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (

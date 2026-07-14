@@ -8,7 +8,7 @@ import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
-import { useLinkInfo } from "./useLinkInfo"
+import { filePathLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { SvgIcon } from "@mui/material"
 import WebDAVIconAsset from "../../assets/webdav-icon.svg?react"
 

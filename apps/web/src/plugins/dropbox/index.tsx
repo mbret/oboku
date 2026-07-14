@@ -11,7 +11,7 @@ import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
-import { useLinkInfo } from "./useLinkInfo"
+import { fileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { UpsertFile } from "./UpsertFile"
 
