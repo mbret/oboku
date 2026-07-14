@@ -56,3 +56,4 @@
 * [Local Profile](development/local-profile.md)
 * [Local Database](development/local-database.md)
 * [Covers Cache](development/covers-cache.md)
+* [Authentication](development/authentication.md)

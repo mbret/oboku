@@ -7,7 +7,9 @@ import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
+import { useSignalValue } from "reactjrx"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
+import { activeProfileIdSignal } from "../../profiles/active/activeProfileId"
 import {
   type NotificationCacheSnapshot,
   cancelAndSnapshotNotificationQueries,
@@ -21,15 +23,19 @@ import {
 export const markAllSeenMutationOptions = (
   queryClient: QueryClient,
   httpClientApi: HttpApiClientWeb,
+  profileId: string | undefined,
 ) => ({
   mutationKey: markAllSeenMutationKey,
   networkMode: "online" as const,
   mutationFn: httpClientApi.markAllNotificationsAsSeen,
   onMutate: async () => {
-    const snapshot = await cancelAndSnapshotNotificationQueries(queryClient)
+    const snapshot = await cancelAndSnapshotNotificationQueries(
+      queryClient,
+      profileId,
+    )
 
     queryClient.setQueryData<GetNotificationsResponse>(
-      inboxNotificationsQueryKey,
+      inboxNotificationsQueryKey(profileId),
       (old) =>
         old?.map((n) =>
           n.seenAt ? n : { ...n, seenAt: new Date().toISOString() },
@@ -37,7 +43,7 @@ export const markAllSeenMutationOptions = (
     )
 
     queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
-      unreadCountQueryKey,
+      unreadCountQueryKey(profileId),
       (old) => (old ? { count: 0 } : old),
     )
 
@@ -47,13 +53,16 @@ export const markAllSeenMutationOptions = (
     _err: unknown,
     _vars: undefined,
     context: NotificationCacheSnapshot | undefined,
-  ) => rollbackNotificationCaches(queryClient, context),
-  onSettled: () => invalidateNotificationQueries(queryClient),
+  ) => rollbackNotificationCaches(queryClient, profileId, context),
+  onSettled: () => invalidateNotificationQueries(queryClient, profileId),
 })
 
 export const useMarkAllNotificationsAsSeen = () => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
+  const activeProfileId = useSignalValue(activeProfileIdSignal)
 
-  return useMutation(markAllSeenMutationOptions(queryClient, httpClientApi))
+  return useMutation(
+    markAllSeenMutationOptions(queryClient, httpClientApi, activeProfileId),
+  )
 }

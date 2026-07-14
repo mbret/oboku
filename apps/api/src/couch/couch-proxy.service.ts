@@ -3,6 +3,9 @@ import * as httpProxy from "http-proxy-3"
 import http from "node:http"
 import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
+import { TrustedOriginsService } from "../config/trusted-origin.service"
+import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies"
+import { getForwardedProto } from "../lib/http/forwardedProto"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication
 // does not depend on CouchDB's `[cors]` config and we never emit a header
@@ -28,6 +31,22 @@ const COUCH_CORS_RESPONSE_HEADERS = [
 ]
 
 /**
+ * Translates the web app's auth cookie into the `Authorization: Bearer`
+ * header CouchDB validates, unless the caller already sent one (the admin
+ * app). Cookies never flow upstream: they are meaningless to CouchDB at best
+ * and collide with its own cookie auth at worst.
+ */
+export const moveAuthCookieToAuthorizationHeader = (req: Request) => {
+  const accessToken: string | undefined = req.cookies?.[ACCESS_TOKEN_COOKIE]
+
+  if (!req.headers.authorization && accessToken) {
+    req.headers.authorization = `Bearer ${accessToken}`
+  }
+
+  delete req.headers.cookie
+}
+
+/**
  * Reverse proxy that exposes CouchDB under the API's `/couchdb` route.
  *
  * CouchDB itself stays internal-only (`COUCH_DB_URL`, defaulting to the bundled
@@ -50,7 +69,10 @@ export class CouchProxyService {
   private readonly logger = new Logger(CouchProxyService.name)
   private proxy: httpProxy.ProxyServer | undefined
 
-  constructor(private readonly appConfigService: AppConfigService) {}
+  constructor(
+    private readonly appConfigService: AppConfigService,
+    private readonly trustedOriginsService: TrustedOriginsService,
+  ) {}
 
   private getProxy() {
     if (this.proxy) return this.proxy
@@ -76,13 +98,9 @@ export class CouchProxyService {
         : remoteAddr
       // Preserve the original scheme so CouchDB builds https absolute URLs when
       // a TLS-terminating proxy sits in front of the API; fall back to this
-      // hop's scheme otherwise. A repeated header arrives as an array, so take
-      // the first (outermost) value.
-      const forwardedProtoHeader = req.headers["x-forwarded-proto"]
+      // hop's scheme otherwise.
       const forwardedProto =
-        (Array.isArray(forwardedProtoHeader)
-          ? forwardedProtoHeader[0]
-          : forwardedProtoHeader) ??
+        getForwardedProto(req.headers["x-forwarded-proto"]) ??
         ("encrypted" in req.socket && req.socket.encrypted ? "https" : "http")
 
       proxyReq.setHeader("X-Forwarded-For", forwardedFor)
@@ -118,21 +136,27 @@ export class CouchProxyService {
   }
 
   /**
-   * Sets the CORS response headers. With credentials enabled the spec forbids a
-   * literal `*`, so the request Origin is reflected back (matching how CouchDB
-   * behaves with `origins = *` + `credentials = true`); requests without an
-   * Origin (same-origin, or non-browser clients) get `*` and no credentials.
+   * Sets the CORS response headers. Only trusted origins are reflected back
+   * with credentials enabled — reflecting arbitrary origins would let any
+   * website make cookie-carrying requests here. Requests without an Origin
+   * (same-origin, or non-browser clients) get `*` and no credentials;
+   * untrusted origins get no CORS headers, so the browser refuses them.
    */
   private applyCorsHeaders(req: Request, res: Response) {
     const origin = req.headers.origin
 
-    if (origin) {
+    if (!origin) {
+      res.setHeader("Access-Control-Allow-Origin", "*")
+
+      return
+    }
+
+    if (this.trustedOriginsService.isTrusted(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin)
       res.setHeader("Access-Control-Allow-Credentials", "true")
-      res.setHeader("Vary", "Origin")
-    } else {
-      res.setHeader("Access-Control-Allow-Origin", "*")
     }
+
+    res.setHeader("Vary", "Origin")
   }
 
   /**
@@ -154,6 +178,8 @@ export class CouchProxyService {
 
       return
     }
+
+    moveAuthCookieToAuthorizationHeader(req)
 
     this.getProxy().web(req, res)
   }

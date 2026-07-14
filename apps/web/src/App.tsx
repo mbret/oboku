@@ -23,6 +23,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
@@ -36,6 +37,7 @@ import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragO
 import { WithAuthentication } from "./auth/WithAuthentication"
 import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
 import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
+import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
@@ -115,6 +117,7 @@ const App = memo(() => {
 export const AppWithConfig = memo(() => {
   return (
     <ErrorBoundary
+      fallback={({ error }) => <AppError error={error} />}
       onError={(e) => {
         Logger.error(e)
       }}
@@ -127,6 +130,7 @@ export const AppWithConfig = memo(() => {
                 <HttpSessionStoreProvider>
                   <LegacyAuthMigration>
                     <RevokeLoggedOutProfiles />
+                    <SyncProfilesAcrossTabs />
                     <ServiceWorkerMessages />
                     <LoadConfiguration>
                       <App />

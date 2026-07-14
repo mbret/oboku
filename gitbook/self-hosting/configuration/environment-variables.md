@@ -25,7 +25,13 @@ VITE_API_URL=yourapiurl
 VITE_API_URL_2=yourapiurl2
 VITE_API_URL_3=yourapiurl3
 VITE_API_URL_4=yourapiurl4
+# Public URL of the web app. Also drives which browser origins may make
+# credentialed (cookie) requests: every port on this hostname is trusted.
 APP_PUBLIC_URL=http://app-public-url
+# (Optional) Extra origins allowed to make credentialed requests, beyond any
+# port on APP_PUBLIC_URL's hostname (e.g. an admin app hosted elsewhere).
+# Comma-separated list of full origins.
+API_CORS_TRUSTED_ORIGINS=https://admin.example.org
 ```
 {% endcode %}
 

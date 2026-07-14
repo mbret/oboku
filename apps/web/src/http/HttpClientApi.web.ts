@@ -11,7 +11,6 @@ import type {
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
   RefreshCollectionMetadataResponse,
-  RefreshTokenResponse,
   RequestMagicLinkRequest,
   RequestMagicLinkResponse,
   RequestSignUpRequest,
@@ -23,50 +22,28 @@ import type {
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config/envs"
-import { signRefreshProof } from "../auth/proofKey"
-import {
-  type FetchConfig,
-  HttpClientError,
-  type HttpClientResponse,
-} from "./httpClient.shared"
-import { HttpClientWeb } from "./httpClient.web"
+import { withAuthCookiesLock } from "./authCookiesLock"
+import { persistProofKey, type StoredProofKey } from "../auth/proofKey"
+import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
+import { refreshTokenRequest } from "./refreshTokenRequest"
 
 export type SessionStore = {
   get: () => Promise<Profile | null>
   set: (session: Profile) => Promise<void>
 }
 
-type InFlightRefresh = {
-  refreshToken: string
-  promise: Promise<boolean>
-}
-
 const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
-const getBearerToken = (headers: FetchConfig["headers"]) => {
-  const authorization = new Headers(headers).get("Authorization")
-
-  return authorization?.startsWith("Bearer ")
-    ? authorization.slice("Bearer ".length)
-    : undefined
-}
-
-export class HttpApiClientWeb extends HttpClientWeb {
-  private refreshSessionPromise: InFlightRefresh | null = null
+export class HttpApiClientWeb extends RefreshingHttpClient {
   private sessionStore: SessionStore = {
     get: async () => null,
     set: async () => {},
   }
 
   constructor() {
-    super()
-
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-    this.useRequestInterceptor(this.injectToken)
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-    this.useResponseInterceptor(this.refreshOnUnauthorized)
+    super({ credentials: "include" })
   }
 
   configureSessionStore = (store: SessionStore) => {
@@ -77,12 +54,40 @@ export class HttpApiClientWeb extends HttpClientWeb {
 
   private commitSession = (session: Profile) => this.sessionStore.set(session)
 
-  authWithMagicLink = (data: CompleteMagicLinkRequest) =>
-    this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
-      `${API_URL}/auth/magic-link/complete`,
-      {
-        body: data,
-      },
+  /**
+   * Runs a cookie-setting auth fetch and persists its proof key inside the same
+   * cookies-lock hold. The browser writes the response's cookies and we persist
+   * the matching key without releasing the lock in between, so the session
+   * whose `Set-Cookie` lands last also owns the persisted key. Persisting after
+   * the lock released instead would let two overlapping sign-ins pair one
+   * session's cookies with the other's key, failing every future refresh with a
+   * DPoP-key mismatch. The key is persisted only after a successful response,
+   * so a rejected attempt never promotes a key the server did not bind.
+   */
+  private establishSession = <T>(
+    proofKey: StoredProofKey,
+    authenticate: () => Promise<T>,
+  ): Promise<Awaited<T>> =>
+    withAuthCookiesLock(async () => {
+      const response = await authenticate()
+
+      await persistProofKey(proofKey)
+
+      return response
+    })
+
+  authWithMagicLink = (
+    data: CompleteMagicLinkRequest,
+    proofKey: StoredProofKey,
+  ) =>
+    this.establishSession(proofKey, () =>
+      this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
+        `${API_URL}/auth/magic-link/complete`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
   refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
@@ -109,20 +114,29 @@ export class HttpApiClientWeb extends HttpClientWeb {
       },
     )
 
-  signInWithEmail = (data: SignInWithEmailRequest) =>
-    this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
-      `${API_URL}/auth/signin/email`,
-      {
-        body: data,
-      },
+  signInWithEmail = (data: SignInWithEmailRequest, proofKey: StoredProofKey) =>
+    this.establishSession(proofKey, () =>
+      this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
+        `${API_URL}/auth/signin/email`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
-  signInWithGoogle = (data: SignInWithGoogleRequest) =>
-    this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
-      `${API_URL}/auth/signin/google`,
-      {
-        body: data,
-      },
+  signInWithGoogle = (
+    data: SignInWithGoogleRequest,
+    proofKey: StoredProofKey,
+  ) =>
+    this.establishSession(proofKey, () =>
+      this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
+        `${API_URL}/auth/signin/google`,
+        {
+          body: data,
+          useInterceptors: false,
+        },
+      ),
     )
 
   signUp = (data: RequestSignUpRequest) =>
@@ -158,30 +172,18 @@ export class HttpApiClientWeb extends HttpClientWeb {
   archiveNotification = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
-  refreshToken = async ({
-    refreshToken,
-    useInterceptors = true,
-  }: {
-    refreshToken: string
-    useInterceptors: boolean
-  }) => {
-    const url = `${API_URL}/auth/token?grant_type=refresh_token&refresh_token=${refreshToken}`
-    const proof = await signRefreshProof(url)
-
-    return this.postOrThrow<RefreshTokenResponse, never>(url, {
-      useInterceptors,
-      headers: proof ? { dpop: proof } : undefined,
-    })
-  }
+  refreshToken = () => refreshTokenRequest(this, API_URL)
 
   /**
-   * Revokes the server-side refresh session. Public endpoint where the
-   * refresh token itself is the credential, so interceptors are skipped: no
-   * bearer injection, and no refresh-on-401 dance for a session being killed.
+   * Revokes exactly the session identified by `sessionId`, regardless of which
+   * refresh cookie currently sits in the jar. The server does not touch cookies
+   * on this path, so it needs no cookies lock and cannot revoke a newer
+   * session's chain. Interceptors are skipped: no refresh-on-401 dance for a
+   * session being killed.
    */
-  logout = (data: LogoutRequest) =>
+  logout = (sessionId: string) =>
     this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
-      body: data,
+      body: { session_id: sessionId },
       useInterceptors: false,
     })
 
@@ -190,139 +192,52 @@ export class HttpApiClientWeb extends HttpClientWeb {
       method: "DELETE",
     })
 
-  private injectToken = async (config: FetchConfig): Promise<FetchConfig> => {
-    const session = await this.getSession()
-
-    if (session?.accessToken) {
-      return {
-        ...config,
-        headers: {
-          ...config.headers,
-          Authorization: `Bearer ${session.accessToken}`,
-        },
-      }
-    }
-
-    return config
-  }
-
-  private flagSessionForRelogin = async (staleSession: Profile) => {
+  private flagSessionForRelogin = async (sessionId: string) => {
     const authState = await this.getSession()
 
-    if (!authState || authState.needsRelogin) {
-      return
-    }
-
-    const isSameSession =
-      authState.id === staleSession.id &&
-      authState.refreshToken === staleSession.refreshToken
-
-    if (isSameSession) {
+    if (authState?.sessionId === sessionId && !authState.needsRelogin) {
       await this.commitSession({ ...authState, needsRelogin: true })
     }
   }
 
-  private refreshAuthState = async (refreshToken: string) => {
-    const response = await this.refreshToken({
-      refreshToken,
-      useInterceptors: false,
-    })
+  protected shouldAttemptRefresh = async () => !!(await this.getSession())
 
-    const authState = await this.getSession()
+  protected applyRefresh = async () => {
+    const sessionBeforeRefresh = await this.getSession()
 
-    // we are checking if the current auth state is the same as the refresh token
-    // if not, we are not going to refresh the auth state as it's not the same session
-    if (!authState || authState.refreshToken !== refreshToken) {
+    if (!sessionBeforeRefresh) {
       return false
     }
 
-    const nextAuthState = {
-      ...authState,
-      accessToken: response.data.accessToken,
-      refreshToken: response.data.refreshToken,
-      needsRelogin: false,
+    try {
+      await this.refreshToken()
+    } catch (error) {
+      console.log("Unable to refresh token")
+      console.error(error)
+
+      if (refreshTokenWasRejected(error)) {
+        await this.flagSessionForRelogin(sessionBeforeRefresh.sessionId)
+      }
+
+      throw error
     }
 
-    await this.commitSession(nextAuthState)
+    this.markRefreshApplied()
+
+    const authState = await this.getSession()
+
+    // the session changed hands while refreshing; the fresh cookies belong to
+    // whoever is active now, leave their state alone. A same-account relogin
+    // mints a new sessionId, so keying on it (not the account id) treats that
+    // fresh session as a different owner too.
+    if (!authState || authState.sessionId !== sessionBeforeRefresh.sessionId) {
+      return false
+    }
+
+    if (authState.needsRelogin) {
+      await this.commitSession({ ...authState, needsRelogin: false })
+    }
 
     return true
-  }
-
-  refreshAuthSession = (refreshToken: string) => {
-    if (this.refreshSessionPromise?.refreshToken === refreshToken) {
-      return this.refreshSessionPromise.promise
-    }
-
-    const promise = this.refreshAuthState(refreshToken).finally(() => {
-      if (this.refreshSessionPromise?.promise === promise) {
-        this.refreshSessionPromise = null
-      }
-    })
-
-    this.refreshSessionPromise = {
-      refreshToken,
-      promise,
-    }
-
-    return promise
-  }
-
-  refreshOnUnauthorized = async (response: HttpClientResponse) => {
-    if (response.status !== 401) {
-      return response
-    }
-
-    const session = await this.getSession()
-
-    if (!session) {
-      return response
-    }
-
-    const refreshToken = session.refreshToken
-
-    // A session without a refresh token can never recover from a 401 on its
-    // own, so it is flagged for relogin instead of silently staying broken.
-    if (!refreshToken) {
-      await this.flagSessionForRelogin(session)
-
-      return response
-    }
-
-    const requestAccessToken = getBearerToken(response.config.headers)
-    const tokenAlreadyRotated =
-      !!session.accessToken &&
-      !!requestAccessToken &&
-      requestAccessToken !== session.accessToken
-
-    if (!tokenAlreadyRotated) {
-      try {
-        const didApply = await this.refreshAuthSession(refreshToken)
-
-        if (!didApply) {
-          return response
-        }
-      } catch (error) {
-        console.error(error)
-
-        const sessionIsTrulyExpired = refreshTokenWasRejected(error)
-
-        if (!sessionIsTrulyExpired) {
-          return response
-        }
-
-        await this.flagSessionForRelogin(session)
-
-        return response
-      }
-    }
-
-    // Retry once with the current token; skip interceptors so a persistent
-    // 401 propagates to the caller instead of re-triggering another refresh.
-    const retriedConfig = await this.injectToken({
-      ...response.config,
-      useInterceptors: false,
-    })
-
-    return this.fetch(retriedConfig.input, retriedConfig)
   }
 }

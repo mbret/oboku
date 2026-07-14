@@ -1,7 +1,5 @@
 export type Profile = {
   id: string
-  accessToken: string
-  refreshToken: string
   email: string
   nameHex: string
   dbName: string
@@ -16,4 +14,12 @@ export type Profile = {
    * point it is deleted (see `useRevokeLoggedOutProfiles`).
    */
   status?: "active" | "loggedOut"
+  /**
+   * Non-secret identity of this profile's server session, minted at sign-in.
+   * The logout sweep presents it to revoke exactly this session. Rows persisted
+   * before session-scoped logout are backfilled with a throwaway UUID at boot
+   * (see `LegacyAuthMigration`), so this is always present; a backfilled id
+   * matches no server session and simply no-ops at logout.
+   */
+  sessionId: string
 }

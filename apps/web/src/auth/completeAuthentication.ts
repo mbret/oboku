@@ -9,25 +9,32 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
-import { persistProofKey, type StoredProofKey } from "./proofKey"
 
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
   auth,
-  proofKey,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
   auth: AuthSessionResponse
-  proofKey: StoredProofKey
   queryClient: QueryClient
 }) => {
   return from(
     ensureActiveProfile(queryClient, activeProfileIdSignal.getValue()),
   ).pipe(
     switchMap((previousAuth) => {
+      /**
+       * Whether the local database holds another account's data and must be
+       * recreated. `previousAuth` is the still-active profile, which the
+       * expired-session relogin path preserves — so a same-account relogin is
+       * detected here and keeps the database (no needless re-replication for a
+       * transient token death). An explicit sign-out instead clears the active
+       * profile *and* wipes the local database (see `useSignOut`), so any later
+       * sign-in re-replicates from empty regardless: the `true` this then yields
+       * recreates an already-empty database by design, not a cross-account leak.
+       */
       const switchedAccount = previousAuth?.email !== auth.email
 
       const waitForDbRecreation$ = switchedAccount
@@ -36,9 +43,13 @@ export const completeAuthentication = ({
 
       return waitForDbRecreation$.pipe(
         switchMap(async () => {
-          await persistProofKey(proofKey)
-
-          await putProfile({ id: auth.nameHex, ...auth })
+          await putProfile({
+            id: auth.nameHex,
+            email: auth.email,
+            nameHex: auth.nameHex,
+            dbName: auth.dbName,
+            sessionId: auth.sessionId,
+          })
 
           setActiveProfileId(auth.nameHex)
           setUser({ email: auth.email, id: auth.nameHex })
@@ -50,7 +61,7 @@ export const completeAuthentication = ({
              * token rather than the previous one still cached under the old
              * profile.
              */
-            resetSessionQueries(queryClient)
+            await resetSessionQueries(queryClient)
           }
 
           return { switchedAccount }

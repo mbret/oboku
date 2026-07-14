@@ -19,7 +19,13 @@ export const activeProfileIdSignal = signal<string | undefined>({
   default: undefined,
 })
 
-activeProfileIdSignal.update(getProfile())
+export const syncActiveProfileIdFromStorage = () => {
+  const profileId = getProfile()
+
+  activeProfileIdSignal.update(profileId ?? SIGNAL_RESET)
+}
+
+syncActiveProfileIdFromStorage()
 
 export const setProfile = (profile: string) => {
   localStorage.setItem(STORAGE_PROFILE_KEY, profile)

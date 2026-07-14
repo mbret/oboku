@@ -10,11 +10,15 @@ import { calculateJwkThumbprint, EmbeddedJWK, jwtVerify, type JWK } from "jose"
 const PROOF_FRESHNESS_WINDOW_SECONDS = 5 * 60
 
 /**
- * jose accepts an `iat` up to `maxTokenAge + clockTolerance` old, so a jti
- * must be remembered for the sum of both windows to cover every proof still
- * accepted as fresh.
+ * jose accepts a proof while server time is within
+ * `[iat - clockTolerance, iat + maxTokenAge + clockTolerance]`. The jti timer
+ * starts at first consumption, which a fast client clock can place at the
+ * lower bound, so it must run for the full span (`maxTokenAge +
+ * 2 * clockTolerance`) or a captured proof replays after the record expires
+ * but while jose still accepts it. Both windows are
+ * `PROOF_FRESHNESS_WINDOW_SECONDS` here.
  */
-const SEEN_JTI_TTL_MS = 2 * PROOF_FRESHNESS_WINDOW_SECONDS * 1000
+const SEEN_JTI_TTL_MS = 3 * PROOF_FRESHNESS_WINDOW_SECONDS * 1000
 
 @Injectable()
 export class RefreshProofService {

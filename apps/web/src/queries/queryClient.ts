@@ -19,6 +19,15 @@ declare module "@tanstack/react-query" {
        * snapshot is busted on every release, so it is a warm-start nicety, not
        * durable storage — queries that own their durability elsewhere (rxdb,
        * the web config's dedicated cache) simply don't opt in.
+       *
+       * Invariant: a persisted query that is per-user session data (not
+       * `survivesSessionReset`) MUST scope its key by the active profile id.
+       * The sign-out scrub drops session data from the snapshot, but a reload
+       * can beat it; an unscoped session key then lets the previous user's
+       * cache resurface for the next profile on a shared device, while a
+       * profile-scoped key reads a different slot per profile and cannot mix.
+       * See `notifications/inbox/queryKeys` for the reference pattern; the
+       * persister's dev guard flags violations of this rule.
        */
       persist?: boolean
     }

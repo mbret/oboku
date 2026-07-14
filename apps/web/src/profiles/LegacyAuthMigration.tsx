@@ -17,22 +17,21 @@ import { dexieDb } from "../rxdb/dexie"
 const LEGACY_AUTH_STORAGE_KEY = "auth"
 const LEGACY_AUTH_SIGNAL_KEY = "authState"
 
-type LegacyProfile = Omit<Profile, "id">
-
-const isLegacyProfile = (value: unknown): value is LegacyProfile => {
-  if (typeof value !== "object" || value === null) return false
-
-  // `as` its fine, its a one time temporary migration
-  const candidate = value as Record<string, unknown>
-
-  return (
-    typeof candidate.accessToken === "string" &&
-    typeof candidate.refreshToken === "string" &&
-    typeof candidate.email === "string" &&
-    typeof candidate.nameHex === "string" &&
-    typeof candidate.dbName === "string"
-  )
+type LegacyProfile = Omit<Profile, "id"> & {
+  accessToken?: string
+  refreshToken?: string
 }
+
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null
+
+const isLegacyProfile = (value: unknown): value is LegacyProfile =>
+  isRecord(value) &&
+  typeof value.accessToken === "string" &&
+  typeof value.refreshToken === "string" &&
+  typeof value.email === "string" &&
+  typeof value.nameHex === "string" &&
+  typeof value.dbName === "string"
 
 const readLegacyProfile = (): LegacyProfile | undefined => {
   const raw = localStorage.getItem(LEGACY_AUTH_STORAGE_KEY)
@@ -49,20 +48,14 @@ const readLegacyProfile = (): LegacyProfile | undefined => {
     return undefined
   }
 
-  const envelope =
-    typeof parsed === "object" && parsed !== null
-      ? (parsed as Record<string, unknown>)[LEGACY_AUTH_SIGNAL_KEY]
-      : undefined
+  const envelope = isRecord(parsed) ? parsed[LEGACY_AUTH_SIGNAL_KEY] : undefined
 
-  const value =
-    typeof envelope === "object" && envelope !== null
-      ? (envelope as Record<string, unknown>).value
-      : undefined
+  const value = isRecord(envelope) ? envelope.value : undefined
 
   return isLegacyProfile(value) ? value : undefined
 }
 
-const runMigration = async () => {
+const importLegacyLocalStorageAuth = async () => {
   const auth = readLegacyProfile()
 
   if (!auth) return
@@ -70,7 +63,16 @@ const runMigration = async () => {
   const existing = await dexieDb.profiles.get(auth.nameHex)
 
   if (!existing) {
-    await dexieDb.profiles.put({ id: auth.nameHex, ...auth })
+    // The legacy tokens are dropped, not copied: auth now rides on httpOnly
+    // cookies, so this session cannot be resumed — the first authenticated
+    // request fails and the user re-logs in, with all local data intact.
+    await dexieDb.profiles.put({
+      id: auth.nameHex,
+      email: auth.email,
+      nameHex: auth.nameHex,
+      dbName: auth.dbName,
+      sessionId: crypto.randomUUID(),
+    })
   }
 
   if (!getProfile()) {
@@ -79,6 +81,37 @@ const runMigration = async () => {
   }
 
   localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)
+}
+
+/**
+ * Backfills a throwaway `sessionId` onto any profile row persisted before
+ * session-scoped logout, so `Profile.sessionId` is always present. A backfilled
+ * id matches no server session, so the logout sweep's revoke call harmlessly
+ * no-ops (the server session is already inert after sign-out and dies by TTL);
+ * a live session gets a real id again on its next sign-in.
+ *
+ * TODO(legacy, ~2027-01): remove once refresh tokens issued before this column
+ * (server TTL is 6 months) have all expired and no profile row can predate it.
+ */
+const backfillMissingSessionIds = async () => {
+  const profiles = await dexieDb.profiles.toArray()
+
+  await Promise.all(
+    profiles
+      // `sessionId` is typed required, but rows written by older builds lack it
+      // at runtime — this is that boundary.
+      .filter((profile) => !profile.sessionId)
+      .map((profile) =>
+        dexieDb.profiles.update(profile.id, {
+          sessionId: crypto.randomUUID(),
+        }),
+      ),
+  )
+}
+
+const runMigration = async () => {
+  await importLegacyLocalStorageAuth()
+  await backfillMissingSessionIds()
 }
 
 let migrationPromise: Promise<void> | null = null

@@ -29,7 +29,12 @@ export const useCollection = ({
 
   return useQuery$({
     ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "collection", id, { isLibraryUnlocked }],
+    queryKey: [
+      RXDB_QUERY_KEY_PREFIX,
+      "collection",
+      id,
+      { isLibraryUnlocked, isNotInterested },
+    ],
     enabled: !!id && !!enabled,
     queryFn: () => {
       const emptyCollectionId = config?.COLLECTION_EMPTY_ID

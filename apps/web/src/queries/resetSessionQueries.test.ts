@@ -20,6 +20,7 @@ vi.mock("./persister", () => ({
 import { SIGNAL_RESET } from "reactjrx"
 import { withQueryOptionsAuthentication } from "../auth"
 import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
+import { persister } from "./persister"
 import { resetSessionQueries } from "./resetSessionQueries"
 
 const activeCleanups: Array<() => void> = []
@@ -111,6 +112,26 @@ describe("resetSessionQueries", () => {
     resetSessionQueries(queryClient)
 
     expect(queryFn).not.toHaveBeenCalled()
+  })
+
+  it("awaits an offline snapshot flush that drops session data on sign-out", async () => {
+    activeProfileIdSignal.update("reader")
+    const queryClient = new QueryClient()
+    await mountObservedQuery(
+      queryClient,
+      withQueryOptionsAuthentication({
+        queryKey: ["api", "notifications", "list"],
+        meta: { persist: true },
+      }),
+    )
+    vi.mocked(persister.persistClient).mockClear()
+
+    activeProfileIdSignal.update(SIGNAL_RESET)
+    await resetSessionQueries(queryClient)
+
+    expect(persister.persistClient).toHaveBeenCalledTimes(1)
+    const [persisted] = vi.mocked(persister.persistClient).mock.calls[0] ?? []
+    expect(persisted?.clientState.queries).toHaveLength(0)
   })
 
   it("leaves session-surviving queries untouched on sign-out", async () => {

@@ -23,6 +23,7 @@ export interface EnvironmentVariables {
   ADMIN_LOGIN?: string
   ADMIN_PASSWORD?: string
   APP_PUBLIC_URL: string
+  API_CORS_TRUSTED_ORIGINS?: string
   EMAIL_SMTP_HOST?: string
   EMAIL_SMTP_PORT?: number
   EMAIL_SMTP_USER?: string

@@ -64,11 +64,10 @@ const goOnline = () => {
 
 const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
   id: "reader",
-  accessToken: "access-token",
-  refreshToken: "refresh-token",
   email: "reader@example.com",
   nameHex: "reader",
   dbName: "reader-db",
+  sessionId: "session-default",
   ...overrides,
 })
 
@@ -91,6 +90,7 @@ describe("RevokeLoggedOutProfiles", () => {
   afterEach(() => {
     cleanup()
     profilesStore.clear()
+    localStorage.clear()
     onLine = true
   })
 
@@ -100,8 +100,8 @@ describe("RevokeLoggedOutProfiles", () => {
       "gone-reader",
       createProfile({
         id: "gone-reader",
-        refreshToken: "gone-refresh-token",
         status: "loggedOut",
+        sessionId: "gone-session",
       }),
     )
 
@@ -115,16 +115,18 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
 
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "gone-refresh-token",
-    })
+    expect(logout).toHaveBeenCalledWith("gone-session")
     expect(profilesStore.has("active-reader")).toBe(true)
   })
 
   it("waits for the network to come back before sweeping", async () => {
     profilesStore.set(
       "gone-reader",
-      createProfile({ id: "gone-reader", status: "loggedOut" }),
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "gone-session",
+      }),
     )
 
     const logout = vi.fn().mockResolvedValue({ data: {} })
@@ -146,6 +148,7 @@ describe("RevokeLoggedOutProfiles", () => {
       expect(profilesStore.has("gone-reader")).toBe(false)
     })
     expect(logout).toHaveBeenCalledTimes(1)
+    expect(logout).toHaveBeenCalledWith("gone-session")
   })
 
   it("sweeps once sign out flags the profile as logged out", async () => {
@@ -153,7 +156,7 @@ describe("RevokeLoggedOutProfiles", () => {
       "active-reader",
       createProfile({
         id: "active-reader",
-        refreshToken: "active-refresh-token",
+        sessionId: "reader-session",
       }),
     )
 
@@ -189,8 +192,6 @@ describe("RevokeLoggedOutProfiles", () => {
     await waitFor(() => {
       expect(profilesStore.has("active-reader")).toBe(false)
     })
-    expect(logout).toHaveBeenCalledWith({
-      refresh_token: "active-refresh-token",
-    })
+    expect(logout).toHaveBeenCalledWith("reader-session")
   })
 })

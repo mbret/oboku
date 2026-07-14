@@ -34,6 +34,19 @@ export class OfflineError extends Error {
 export class StreamerFileNotSupportedError extends Error {}
 export class StreamerFileNotFoundError extends Error {}
 
+/**
+ * Thrown to escalate an unrecoverable failure to the app-level error boundary,
+ * which renders the global recovery screen. Reserve for states the user cannot
+ * work around in place (e.g. no valid persisted config and the config endpoint
+ * is unreachable), not for failures a cache or retry can absorb.
+ */
+export class CriticalError extends Error {
+  constructor(message?: string, options?: ErrorOptions) {
+    super(message ?? "CriticalError", options)
+    this.name = "CriticalError"
+  }
+}
+
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
 export const ERROR_LINK_INVALID_MESSAGE =

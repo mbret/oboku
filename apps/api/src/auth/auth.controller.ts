@@ -1,6 +1,22 @@
-import { Body, Controller, Delete, Headers, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Delete,
+  Headers,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+} from "@nestjs/common"
+import type { Request, Response } from "express"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
+import {
+  type AuthTokens,
+  AuthCookiesService,
+  REFRESH_TOKEN_COOKIE,
+} from "./auth-cookies"
 import { Type } from "class-transformer"
 import {
   Equals,
@@ -8,6 +24,7 @@ import {
   IsNotEmpty,
   IsObject,
   IsString,
+  IsUUID,
   MaxLength,
   MinLength,
   ValidateNested,
@@ -124,36 +141,65 @@ export class RefreshTokenQueryDto {
   @IsString()
   @IsNotEmpty()
   grant_type!: "refresh_token"
-
-  @IsString()
-  @IsNotEmpty()
-  refresh_token!: string
 }
 
 export class LogoutDto implements LogoutRequest {
-  @IsString()
-  @IsNotEmpty()
-  refresh_token!: string
+  @IsUUID()
+  session_id!: string
 }
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authCookiesService: AuthCookiesService,
+  ) {}
+
+  /**
+   * Moves the freshly minted tokens into httpOnly cookies and returns only the
+   * body-safe half of the session. Every authenticated response goes through
+   * here so the token strip and the cookie write can never be forgotten
+   * independently — the tokens must not reach the JSON body.
+   */
+  private issueSession(
+    request: Request,
+    response: Response,
+    { accessToken, refreshToken, ...session }: AuthTokens & AuthSessionResponse,
+  ): AuthSessionResponse {
+    this.authCookiesService.set(request, response, {
+      accessToken,
+      refreshToken,
+    })
+
+    return session
+  }
 
   @Public()
   @Post("signin/email")
   async signinWithEmail(
     @Body() body: SignInWithEmailDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithEmail(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithEmail(body),
+    )
   }
 
   @Public()
   @Post("signin/google")
   async signinWithGoogle(
     @Body() body: SignInWithGoogleDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithGoogle(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithGoogle(body),
+    )
   }
 
   @Public()
@@ -190,26 +236,51 @@ export class AuthController {
   @Post("magic-link/complete")
   async completeMagicLink(
     @Body() body: CompleteMagicLinkDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<CompleteMagicLinkResponse> {
-    return this.authService.completeMagicLink(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.completeMagicLink(body),
+    )
   }
 
   @Public()
   @Post("token")
-  refreshTokens(
-    @Query() query: RefreshTokenQueryDto,
+  async refreshTokens(
+    @Query() _query: RefreshTokenQueryDto,
     @Headers("dpop") proof: string | undefined,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken({
-      refreshToken: query.refresh_token,
+    const refreshToken: string | undefined =
+      request.cookies?.[REFRESH_TOKEN_COOKIE]
+
+    if (!refreshToken) {
+      throw new UnauthorizedException()
+    }
+
+    const tokens = await this.authService.refreshToken({
+      refreshToken,
       proof,
     })
+
+    this.authCookiesService.set(request, response, tokens)
+
+    return {}
   }
 
+  /**
+   * Revokes the session by its identity and leaves the cookies untouched — they
+   * may belong to whoever is active now, and the revoked session's rows are
+   * deleted so any lingering cookie is inert (it dies on next sign-in or at
+   * cookie expiry).
+   */
   @Public()
   @Post("logout")
   async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
-    await this.authService.logout({ refreshToken: body.refresh_token })
+    await this.authService.logout({ sessionId: body.session_id })
 
     return {}
   }

@@ -60,6 +60,11 @@ FROM couchdb:3.5.1 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
 
+# The docker-compose healthcheck curls /_up; if a base-image bump ever drops
+# curl, fail the build here rather than let the API silently block forever on
+# an unhealthy couchdb (its depends_on waits for service_healthy).
+RUN command -v curl >/dev/null || { echo "curl missing from couchdb base image; docker-compose healthcheck requires it" >&2; exit 1; }
+
 # Create a custom entrypoint wrapper script
 RUN echo '#!/bin/sh\n\
 # Run your custom script first\n\

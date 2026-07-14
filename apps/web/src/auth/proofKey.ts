@@ -45,6 +45,9 @@ export const persistProofKey = (proofKey: StoredProofKey) =>
 
 export const deleteProofKey = () => dexieDb.keyValue.delete(CURRENT_PROOF_KEY)
 
+export const hasProofKey = async (): Promise<boolean> =>
+  (await dexieDb.keyValue.get(CURRENT_PROOF_KEY)) !== undefined
+
 /**
  * Builds the DPoP-style proof JWT (RFC 9449 shape) sent with `/auth/token`.
  * Returns undefined when no key is registered (deleted or evicted storage) —

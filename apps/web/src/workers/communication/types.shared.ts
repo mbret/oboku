@@ -1,4 +1,3 @@
-import type { Profile } from "../../profiles/types"
 import type { SharedConfig } from "../../config/types.shared"
 import { z } from "zod"
 
@@ -11,14 +10,6 @@ interface Message<Type extends string, Payload extends MessagePayload> {
 }
 
 const emptyPayloadSchema = z.object({}).strict()
-const authSessionPayloadSchema: z.ZodType<Omit<Profile, "id">> = z.object({
-  accessToken: z.string(),
-  refreshToken: z.string(),
-  email: z.string(),
-  nameHex: z.string(),
-  dbName: z.string(),
-})
-const notifyAuthPayloadSchema = z.union([authSessionPayloadSchema, z.null()])
 const configurationPayloadSchema: z.ZodType<SharedConfig> = z.object({
   API_COUCH_URI: z.string().optional(),
   API_URL: z.string().optional(),
@@ -26,43 +17,6 @@ const configurationPayloadSchema: z.ZodType<SharedConfig> = z.object({
 const replyAskProfilePayloadSchema = z.object({
   profile: z.string().optional(),
 })
-
-export class AskAuthMessage
-  implements Message<typeof AskAuthMessage.type, EmptyPayload>
-{
-  static readonly type = "ASK_AUTH"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof AskAuthMessage.type = AskAuthMessage.type
-  public readonly payload = {}
-}
-
-export class RefreshAuthMessage
-  implements Message<typeof RefreshAuthMessage.type, EmptyPayload>
-{
-  static readonly type = "REFRESH_AUTH"
-  static validate(payload: unknown): payload is EmptyPayload {
-    return emptyPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof RefreshAuthMessage.type = RefreshAuthMessage.type
-  public readonly payload = {}
-}
-
-export class NotifyAuthMessage
-  implements Message<typeof NotifyAuthMessage.type, Omit<Profile, "id"> | null>
-{
-  static readonly type = "NotifyAuthMessage"
-  static validate(payload: unknown): payload is Omit<Profile, "id"> | null {
-    return notifyAuthPayloadSchema.safeParse(payload).success
-  }
-
-  public readonly type: typeof NotifyAuthMessage.type = NotifyAuthMessage.type
-
-  constructor(public readonly payload: Omit<Profile, "id"> | null) {}
-}
 
 export class AskConfigurationMessage
   implements Message<typeof AskConfigurationMessage.type, EmptyPayload>

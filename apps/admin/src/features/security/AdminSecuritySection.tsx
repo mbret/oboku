@@ -1,31 +1,22 @@
 import {
   Button,
   Group,
-  Modal,
   Paper,
-  Radio,
   SimpleGrid,
   Stack,
   Text,
-  Textarea,
   Title,
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
-import { useDisclosure } from "@mantine/hooks"
-import { useState } from "react"
+import {
+  AudienceFields,
+  type AudienceFormValues,
+  parseEmails,
+  validateRecipientEmails,
+} from "@/components/AudienceFields"
+import { ConfirmModal, useConfirmableSubmit } from "@/components/ConfirmModal"
 import { useRevokeTokens } from "./useRevokeTokens"
 import { useTokenStats } from "./useTokenStats"
-
-type RevokeFormValues = {
-  audienceType: "all" | "emails"
-  recipientEmails: string
-}
-
-const parseEmails = (value: string) =>
-  value
-    .split(/[\n,]/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0)
 
 const StatCard = ({ label, value }: { label: string; value: number }) => (
   <Paper withBorder p="md">
@@ -41,23 +32,17 @@ const StatCard = ({ label, value }: { label: string; value: number }) => (
 export const AdminSecuritySection = () => {
   const stats = useTokenStats()
   const revokeTokens = useRevokeTokens()
-  const [confirmOpened, { open: openConfirm, close: closeConfirm }] =
-    useDisclosure(false)
-  const [pendingValues, setPendingValues] = useState<RevokeFormValues | null>(
-    null,
-  )
+  const confirmation = useConfirmableSubmit<AudienceFormValues>()
+  const { pendingValues } = confirmation
 
-  const form = useForm<RevokeFormValues>({
+  const form = useForm<AudienceFormValues>({
     mode: "controlled",
     initialValues: {
       audienceType: "all",
       recipientEmails: "",
     },
     validate: {
-      recipientEmails: (value, values) =>
-        values.audienceType === "emails" && parseEmails(value).length === 0
-          ? "Provide at least one email"
-          : null,
+      recipientEmails: validateRecipientEmails,
     },
   })
 
@@ -81,8 +66,7 @@ export const AdminSecuritySection = () => {
       {
         onSuccess: () => {
           form.reset()
-          setPendingValues(null)
-          closeConfirm()
+          confirmation.reset()
         },
       },
     )
@@ -138,12 +122,7 @@ export const AdminSecuritySection = () => {
       </Paper>
 
       <Paper withBorder p="md">
-        <form
-          onSubmit={form.onSubmit((values) => {
-            setPendingValues(values)
-            openConfirm()
-          })}
-        >
+        <form onSubmit={form.onSubmit(confirmation.request)}>
           <Stack gap="sm">
             <div>
               <Text size="sm" fw={500}>
@@ -155,31 +134,15 @@ export const AdminSecuritySection = () => {
               </Text>
             </div>
 
-            <Radio.Group label="Target" {...form.getInputProps("audienceType")}>
-              <Stack gap="xs" mt="xs">
-                <Radio
-                  value="all"
-                  label="Everyone (broadcast)"
-                  description="Delete every refresh token in the database."
-                />
-                <Radio
-                  value="emails"
-                  label="Specific users"
-                  description="Only revoke tokens for the provided email addresses."
-                />
-              </Stack>
-            </Radio.Group>
-
-            {form.values.audienceType === "emails" && (
-              <Textarea
-                label="User emails"
-                description="Separate addresses with commas or new lines."
-                placeholder={"reader@example.com\nteam@example.com"}
-                minRows={4}
-                autosize
-                {...form.getInputProps("recipientEmails")}
-              />
-            )}
+            <AudienceFields
+              form={form}
+              groupLabel="Target"
+              everyoneLabel="Everyone (broadcast)"
+              everyoneDescription="Delete every refresh token in the database."
+              specificLabel="Specific users"
+              specificDescription="Only revoke tokens for the provided email addresses."
+              emailsLabel="User emails"
+            />
 
             <Group justify="flex-end">
               <Button type="submit" color="red">
@@ -190,35 +153,19 @@ export const AdminSecuritySection = () => {
         </form>
       </Paper>
 
-      <Modal
-        opened={confirmOpened}
-        onClose={closeConfirm}
+      <ConfirmModal
+        opened={confirmation.opened}
+        onClose={confirmation.close}
         title="Revoke these tokens?"
-        centered
+        confirmLabel={`Revoke ${audienceSummary}`}
+        onConfirm={handleConfirmRevoke}
+        pending={revokeTokens.isPending}
       >
-        <Stack gap="md">
-          <Text size="sm">
-            You're about to revoke <strong>{audienceSummary}</strong>. This
-            signs the affected users out and can't be undone.
-          </Text>
-          <Group justify="flex-end">
-            <Button
-              variant="default"
-              onClick={closeConfirm}
-              disabled={revokeTokens.isPending}
-            >
-              Cancel
-            </Button>
-            <Button
-              color="red"
-              onClick={handleConfirmRevoke}
-              loading={revokeTokens.isPending}
-            >
-              Revoke {audienceSummary}
-            </Button>
-          </Group>
-        </Stack>
-      </Modal>
+        <Text size="sm">
+          You're about to revoke <strong>{audienceSummary}</strong>. This signs
+          the affected users out and can't be undone.
+        </Text>
+      </ConfirmModal>
     </Stack>
   )
 }

@@ -1,5 +1,6 @@
 import {
   type DefaultError,
+  type QueryClient,
   type UseMutationOptions,
   useMutation,
   useQueryClient,
@@ -10,14 +11,37 @@ import { useDeleteProfile } from "../profiles/useDeleteProfile"
 import { isLoggedOutProfile } from "../profiles/useHasLoggedOutProfiles"
 import { profilesQueryOptions } from "../profiles/useProfiles"
 
+const isRowStillATombstone = (
+  queryClient: QueryClient,
+  profileId: string,
+  sessionId: string,
+) => {
+  const currentRow = queryClient
+    .getQueryData(profilesQueryOptions.queryKey)
+    ?.find((candidate) => candidate.id === profileId)
+
+  return (
+    !!currentRow &&
+    isLoggedOutProfile(currentRow) &&
+    currentRow.sessionId === sessionId
+  )
+}
+
 /**
  * Best-effort revocation of `loggedOut` profile tombstones (see
- * `Profile.status`): each one's server session is revoked, then the local row
- * is deleted. A profile that fails (typically offline) is kept for a later
- * sweep. Sweeps run from a single place — `RevokeLoggedOutProfiles` fires one
- * whenever the app is online and a tombstone exists. Overlapping sweeps are
- * serialized through the mutation scope. A row overwritten by a re-login while
- * its logout call is in flight is left untouched.
+ * `Profile.status`). Each tombstone carries its own `sessionId`, so revocation
+ * is session-scoped and race-free: the sweep revokes exactly that session
+ * whatever refresh cookie is in the jar, then deletes the local row only while
+ * it still carries the revoked `sessionId`. A same-account re-login mints a new
+ * session id, so revoking an old tombstone can never touch it. A tombstone that
+ * fails to revoke (typically offline) is kept for a later sweep; the others
+ * still proceed.
+ *
+ * Sweeps run from a single place — `RevokeLoggedOutProfiles` fires one whenever
+ * the app is online and a tombstone exists. Overlapping sweeps are serialized
+ * through the mutation scope. A row a re-login turned back into an active
+ * profile — or into a fresher tombstone under a new session id — while its
+ * logout call was in flight is left for that new session's own sweep.
  */
 export const useRevokeLoggedOutProfiles = (
   options?: Pick<UseMutationOptions<void, DefaultError, void>, "meta">,
@@ -33,22 +57,18 @@ export const useRevokeLoggedOutProfiles = (
     scope: { id: "revoke-logged-out-profiles" },
     mutationFn: async () => {
       const profiles = await queryClient.ensureQueryData(profilesQueryOptions)
-      const loggedOutProfiles = profiles.filter(isLoggedOutProfile)
+      const tombstones = profiles.filter(isLoggedOutProfile)
+
+      if (!tombstones.length) return
 
       await Promise.all(
-        loggedOutProfiles.map(async function revokeAndDeleteProfile(profile) {
+        tombstones.map(async function revokeTombstone(profile) {
           try {
-            await httpClientApi.logout({ refresh_token: profile.refreshToken })
+            await httpClientApi.logout(profile.sessionId)
 
-            const currentRow = queryClient
-              .getQueryData(profilesQueryOptions.queryKey)
-              ?.find((candidate) => candidate.id === profile.id)
-            const isRowStillThisTombstone =
-              !!currentRow &&
-              isLoggedOutProfile(currentRow) &&
-              currentRow.refreshToken === profile.refreshToken
-
-            if (isRowStillThisTombstone) {
+            if (
+              isRowStillATombstone(queryClient, profile.id, profile.sessionId)
+            ) {
               await deleteProfile(profile.id)
             }
           } catch (error) {
