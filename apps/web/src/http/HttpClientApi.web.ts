@@ -195,7 +195,7 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   private flagSessionForRelogin = async (sessionId: string) => {
     const authState = await this.getSession()
 
-    if (authState?.id === sessionId && !authState.needsRelogin) {
+    if (authState?.sessionId === sessionId && !authState.needsRelogin) {
       await this.commitSession({ ...authState, needsRelogin: true })
     }
   }
@@ -216,7 +216,7 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       console.error(error)
 
       if (refreshTokenWasRejected(error)) {
-        await this.flagSessionForRelogin(sessionBeforeRefresh.id)
+        await this.flagSessionForRelogin(sessionBeforeRefresh.sessionId)
       }
 
       throw error
@@ -227,8 +227,10 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     const authState = await this.getSession()
 
     // the session changed hands while refreshing; the fresh cookies belong to
-    // whoever is active now, leave their state alone
-    if (!authState || authState.id !== sessionBeforeRefresh.id) {
+    // whoever is active now, leave their state alone. A same-account relogin
+    // mints a new sessionId, so keying on it (not the account id) treats that
+    // fresh session as a different owner too.
+    if (!authState || authState.sessionId !== sessionBeforeRefresh.sessionId) {
       return false
     }
 

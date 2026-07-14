@@ -393,7 +393,11 @@ describe("HttpApiClientWeb auth refresh", () => {
     vi.stubGlobal("fetch", fetchMock)
 
     const { client, getSession, setSession } = await createClient(
-      createProfile({ id: "a", email: "a@example.com" }),
+      createProfile({
+        id: "a",
+        email: "a@example.com",
+        sessionId: "session-a",
+      }),
     )
 
     const unauthorizedResponse = createUnauthorized({ authEpoch: 0 })
@@ -401,7 +405,11 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
 
-    const sessionB = createProfile({ id: "b", email: "b@example.com" })
+    const sessionB = createProfile({
+      id: "b",
+      email: "b@example.com",
+      sessionId: "session-b",
+    })
     setSession(sessionB)
 
     refreshDeferred.resolve(createRefreshResponse())
@@ -485,6 +493,35 @@ describe("HttpApiClientWeb auth refresh", () => {
 
     expect(result).toBe(unauthorizedResponse)
     expect(getSession()?.needsRelogin).toBe(true)
+  })
+
+  it("does not flag a fresh same-account session when a stale refresh is rejected mid-relogin", async () => {
+    const refreshDeferred = createDeferred<Response>()
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockReturnValueOnce(refreshDeferred.promise)
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client, getSession, setSession } = await createClient(
+      createProfile({ sessionId: "session-old" }),
+    )
+
+    const unauthorizedResponse = createUnauthorized({ authEpoch: 0 })
+    const refreshPromise = client.refreshOnUnauthorized(unauthorizedResponse)
+
+    await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
+
+    // Same account signs in again while the stale refresh is still in flight:
+    // fresh row, same account id, new sessionId.
+    setSession(createProfile({ sessionId: "session-new" }))
+
+    refreshDeferred.resolve(
+      new Response(null, { status: 401, statusText: "Unauthorized" }),
+    )
+
+    await expect(refreshPromise).resolves.toBe(unauthorizedResponse)
+    expect(getSession()?.needsRelogin).toBe(false)
   })
 
   it("does not flag the session when the refresh fails transiently", async () => {
