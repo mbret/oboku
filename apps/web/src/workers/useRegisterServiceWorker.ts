@@ -58,11 +58,14 @@ export const useRegisterServiceWorker = () => {
   /**
    * During dev, as soon as we detect a new service worker, we skip waiting.
    */
-  useEffect(() => {
-    if (import.meta.env.MODE === "development" && waitingWorker) {
-      sendMessageToServiceWorker(waitingWorker, skipWaitingMessage())
-    }
-  }, [waitingWorker])
+  useEffect(
+    function skipWaitingForNewServiceWorkerInDev() {
+      if (import.meta.env.MODE === "development" && waitingWorker) {
+        sendMessageToServiceWorker(waitingWorker, skipWaitingMessage())
+      }
+    },
+    [waitingWorker],
+  )
 
   return { waitingWorker }
 }
