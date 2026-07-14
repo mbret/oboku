@@ -23,6 +23,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
@@ -116,6 +117,7 @@ const App = memo(() => {
 export const AppWithConfig = memo(() => {
   return (
     <ErrorBoundary
+      fallback={({ error }) => <AppError error={error} />}
       onError={(e) => {
         Logger.error(e)
       }}
