@@ -1,107 +1,20 @@
-import { filter, first, Subject, throwError, timeout } from "rxjs"
-import {
-  AskConfigurationMessage,
-  AskProfileMessage,
-  ConfigurationChangeMessage,
-  ReplyAskProfileMessage,
-  SkipWaitingMessage,
-} from "./types.shared"
+import { type AppMessage, parseMessage } from "./types.shared"
 import { Logger } from "../../debug/logger.shared"
 
-declare const self: ServiceWorkerGlobalScope
-
-export class IncomingMessageTimeoutError extends Error {
-  constructor() {
-    super("Incoming message timeout")
-  }
-}
-
 class ServiceWorkerCommunication {
-  private incomingMessageSubject = new Subject<
-    ReplyAskProfileMessage | SkipWaitingMessage | ConfigurationChangeMessage
-  >()
+  /**
+   * Validate an inbound `message` event against the contract and return it so
+   * the caller can act on it directly (e.g. wrap a task in `waitUntil`).
+   * Unknown/malformed messages are dropped and return `null`.
+   */
+  registerMessage = (event: ExtendableMessageEvent): AppMessage | null => {
+    const message = parseMessage(event.data)
 
-  public incomingMessage$ = this.incomingMessageSubject.asObservable()
+    if (!message) return null
 
-  registerMessage = (event: ExtendableMessageEvent) => {
-    if (typeof event.data === "object" && event.data && "type" in event.data) {
-      Logger.log("communication:sw", "received message from client", event.data)
+    Logger.log("communication:sw", "received message from client", message)
 
-      // @todo make it dynamic
-
-      if (event.data.type === ReplyAskProfileMessage.type) {
-        this.incomingMessageSubject.next(
-          new ReplyAskProfileMessage(event.data.payload),
-        )
-      }
-
-      if (event.data.type === SkipWaitingMessage.type) {
-        this.incomingMessageSubject.next(new SkipWaitingMessage())
-      }
-
-      if (event.data.type === ConfigurationChangeMessage.type) {
-        this.incomingMessageSubject.next(
-          new ConfigurationChangeMessage(event.data.payload),
-        )
-      }
-    }
-  }
-
-  private sendMessage(message: unknown) {
-    Logger.log("communication:sw", "sending message", message)
-
-    self.clients.matchAll().then((clients) => {
-      clients.forEach((client) => {
-        client.postMessage(message)
-      })
-    })
-  }
-
-  private waitFor<
-    Reply extends
-      | ReplyAskProfileMessage
-      | SkipWaitingMessage
-      | ConfigurationChangeMessage,
-  >(
-    predicate: (
-      value:
-        | ReplyAskProfileMessage
-        | SkipWaitingMessage
-        | ConfigurationChangeMessage,
-    ) => value is Reply,
-  ) {
-    return this.incomingMessageSubject.pipe(
-      filter(predicate),
-      timeout({
-        each: 1000,
-        with: () => throwError(() => new IncomingMessageTimeoutError()),
-      }),
-      first(),
-    )
-  }
-
-  public askConfig() {
-    this.sendMessage(new AskConfigurationMessage())
-
-    return this.waitFor(
-      (message) => message instanceof ConfigurationChangeMessage,
-    )
-  }
-
-  public askProfile() {
-    this.sendMessage(new AskProfileMessage())
-
-    return this.waitFor((message) => message instanceof ReplyAskProfileMessage)
-  }
-
-  public watch<
-    Reply extends typeof SkipWaitingMessage | typeof ConfigurationChangeMessage,
-  >(Message: Reply) {
-    return this.incomingMessage$.pipe(
-      filter(
-        (message): message is InstanceType<Reply> => message instanceof Message,
-      ),
-    )
+    return message
   }
 }
 

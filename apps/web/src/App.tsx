@@ -11,6 +11,7 @@ import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
+import { ServiceWorkerBackgroundTasks } from "./workers/ServiceWorkerBackgroundTasks"
 import { useIsActiveProfileHydrated } from "./profiles"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
@@ -39,7 +40,6 @@ import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
 import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
 import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
-import { ServiceWorkerMessages } from "./workers/communication/ServiceWorkerMessages"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 import { useSyncSentryUser } from "./debug/useSyncSentryUser"
@@ -98,6 +98,7 @@ const App = memo(() => {
         </Fade>
       )}
       <UpdateAvailableDialog serviceWorker={waitingWorker} />
+      <ServiceWorkerBackgroundTasks />
       <PreloadQueries
         onReady={() => {
           setIsPreloadingQueries(false)
@@ -131,7 +132,6 @@ export const AppWithConfig = memo(() => {
                   <LegacyAuthMigration>
                     <RevokeLoggedOutProfiles />
                     <SyncProfilesAcrossTabs />
-                    <ServiceWorkerMessages />
                     <LoadConfiguration>
                       <App />
                     </LoadConfiguration>

@@ -1,3 +1,6 @@
+/** Name of the Cache Storage bucket holding cached book covers. */
+export const SW_COVERS_CACHE_KEY = `covers`
+
 export const getCoverIdFromUrl = (url: URL) => {
   const pathname = url.pathname
   const pathParts = pathname.split(`/`)

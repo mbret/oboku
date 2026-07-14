@@ -6,7 +6,7 @@ import {
   QueryCache,
   QueryClient,
 } from "@tanstack/react-query"
-import { SwitchMutationCancelError, useSignalValue } from "reactjrx"
+import { SwitchMutationCancelError } from "reactjrx"
 import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
 import { CancelError } from "../errors/errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
@@ -19,7 +19,7 @@ import {
 import { markSeenMutationOptions } from "../notifications/inbox/useMarkNotificationAsSeen"
 import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNotificationsAsSeen"
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
-import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
+import { useActiveProfileId } from "../profiles/active/activeProfileId"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { shouldPersistQueryState } from "./queryClient"
 import { persistBuster, persister } from "./persister"
@@ -136,7 +136,7 @@ export const QueryClientProvider = memo(function QueryClientProvider({
   children: ReactNode
 }) {
   const httpClientApi = useHttpClientApi()
-  const activeProfileId = useSignalValue(activeProfileIdSignal)
+  const activeProfileId = useActiveProfileId()
   const [queryClient] = useState(() =>
     createClients(httpClientApi, activeProfileId),
   )

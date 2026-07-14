@@ -30,9 +30,8 @@ vi.mock("../rxdb/dexie", () => ({
 }))
 
 vi.mock("./active/activeProfileId", () => ({
-  activeProfileIdSignal: { update: vi.fn() },
-  getProfile: () => undefined,
-  setProfile: vi.fn(),
+  getActiveProfileId: () => undefined,
+  setActiveProfileId: vi.fn(),
 }))
 
 const renderMigration = async () => {

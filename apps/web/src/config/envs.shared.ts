@@ -1,7 +1,11 @@
 const resolveBaseApiUrl = () => {
   if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL
 
-  const location = typeof window !== "undefined" ? window.location : undefined
+  // Read the location from the service worker global (`self`) or the window,
+  // so this module resolves correctly whichever context imports it.
+  const location =
+    (typeof self !== "undefined" ? self.location : undefined) ??
+    (typeof window !== "undefined" ? window.location : undefined)
 
   return location ? `${location.protocol}//${location.hostname}:3000` : ""
 }
@@ -64,6 +68,8 @@ if (alternatesOutsideCookieScope.length > 0) {
 
 export const VITE_FIREBASE_CONFIG = import.meta.env.VITE_FIREBASE_CONFIG
 export const STORAGE_PROFILE_KEY = `profile`
+/** URL path prefix the reader streamer serves book resources under. */
+export const STREAMER_URL_PREFIX = `streamer`
 export const API_COUCH_URI = `${API_URL}/couchdb`
 export const API_COUCH_URI_2 = `${API_URL_2}/couchdb`
 export const API_COUCH_URI_3 = `${API_URL_3}/couchdb`

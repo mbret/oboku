@@ -3,8 +3,8 @@ import { setUser } from "@sentry/react"
 import type { AuthSessionResponse } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
-  activeProfileIdSignal,
   ensureActiveProfile,
+  getActiveProfileId,
   setActiveProfileId,
 } from "../profiles"
 import type { Profile } from "../profiles/types"
@@ -21,9 +21,7 @@ export const completeAuthentication = ({
   auth: AuthSessionResponse
   queryClient: QueryClient
 }) => {
-  return from(
-    ensureActiveProfile(queryClient, activeProfileIdSignal.getValue()),
-  ).pipe(
+  return from(ensureActiveProfile(queryClient, getActiveProfileId())).pipe(
     switchMap((previousAuth) => {
       /**
        * Whether the local database holds another account's data and must be

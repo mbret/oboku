@@ -14,9 +14,9 @@ import type { HttpApiClientWeb, SessionStore } from "../http/HttpClientApi.web"
 import { HttpClientApiContext } from "../http"
 import {
   clearActiveProfileId,
-  removeProfile,
   setActiveProfileId,
 } from "../profiles/active/activeProfileId"
+import { STORAGE_PROFILE_KEY } from "../config"
 import type { Profile } from "../profiles/types"
 import { HttpSessionStoreProvider } from "./HttpSessionStoreProvider"
 
@@ -91,7 +91,7 @@ describe("HttpSessionStoreProvider session store", () => {
 
     // another tab signed out: localStorage is cleared but this tab's in-memory
     // signal still holds "reader"
-    removeProfile()
+    localStorage.removeItem(STORAGE_PROFILE_KEY)
 
     await store.set(createProfile())
 

@@ -2,9 +2,8 @@ import { memo, type ReactNode, useEffect, useState } from "react"
 import type { Profile } from "./types"
 import { Logger } from "../debug/logger.shared"
 import {
-  activeProfileIdSignal,
-  getProfile,
-  setProfile,
+  getActiveProfileId,
+  setActiveProfileId,
 } from "./active/activeProfileId"
 import { dexieDb } from "../rxdb/dexie"
 
@@ -75,9 +74,8 @@ const importLegacyLocalStorageAuth = async () => {
     })
   }
 
-  if (!getProfile()) {
-    setProfile(auth.nameHex)
-    activeProfileIdSignal.update(auth.nameHex)
+  if (!getActiveProfileId()) {
+    setActiveProfileId(auth.nameHex)
   }
 
   localStorage.removeItem(LEGACY_AUTH_STORAGE_KEY)

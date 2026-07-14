@@ -1,15 +1,8 @@
 import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
-import {
-  postMessageToController,
-  sendMessageToServiceWorker,
-} from "./communication/communication.web"
-import {
-  ConfigurationChangeMessage,
-  SkipWaitingMessage,
-} from "./communication/types.shared"
-import { API_COUCH_URI, API_URL } from "../config/envs"
+import { sendMessageToServiceWorker } from "./communication/communication.web"
+import { skipWaitingMessage } from "./communication/types.shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -66,22 +59,13 @@ export const useRegisterServiceWorker = () => {
    * During dev, as soon as we detect a new service worker, we skip waiting.
    */
   useEffect(
-    function skipWaitingInDevelopment() {
+    function skipWaitingForNewServiceWorkerInDev() {
       if (import.meta.env.MODE === "development" && waitingWorker) {
-        sendMessageToServiceWorker(waitingWorker, new SkipWaitingMessage())
+        sendMessageToServiceWorker(waitingWorker, skipWaitingMessage())
       }
     },
     [waitingWorker],
   )
-
-  useEffect(function pushConfigurationToController() {
-    postMessageToController(
-      new ConfigurationChangeMessage({
-        API_COUCH_URI,
-        API_URL,
-      }),
-    )
-  }, [])
 
   return { waitingWorker }
 }

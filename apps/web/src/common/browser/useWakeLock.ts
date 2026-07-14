@@ -4,9 +4,8 @@
 
 import { useEffect, useState } from "react"
 import { Logger } from "../../debug/logger.shared"
-import type { PromiseReturnType } from "../../types"
 
-type WakeLockSentinel = PromiseReturnType<typeof navigator.wakeLock.request>
+type WakeLockSentinel = Awaited<ReturnType<typeof navigator.wakeLock.request>>
 
 const isWakeLockSupported = () => "wakeLock" in navigator
 

@@ -133,8 +133,8 @@ describe("HttpApiClientWeb auth refresh", () => {
     signRefreshProof.mockResolvedValue("proof-jwt")
     persistProofKey.mockReset()
     persistProofKey.mockResolvedValue(undefined)
-    vi.doMock("../config/envs", async (importOriginal) => ({
-      ...(await importOriginal<typeof import("../config/envs")>()),
+    vi.doMock("../config", async (importOriginal) => ({
+      ...(await importOriginal<typeof import("../config")>()),
       API_URL: "https://api.example.com",
     }))
   })

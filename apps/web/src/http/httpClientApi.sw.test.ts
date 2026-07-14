@@ -24,11 +24,7 @@ const createRefreshResponse = () =>
   )
 
 const createClient = async () => {
-  const { serviceWorkerConfiguration } = await import(
-    "../config/configuration.sw"
-  )
-
-  serviceWorkerConfiguration.update({ API_URL })
+  vi.stubEnv("VITE_API_URL", API_URL)
 
   const { httpClientApi } = await import("./httpClientApi.sw")
 
@@ -39,6 +35,7 @@ describe("httpClientApi service worker client", () => {
   beforeEach(() => {
     vi.resetModules()
     vi.unstubAllGlobals()
+    vi.unstubAllEnvs()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
     hasProofKey.mockReset()

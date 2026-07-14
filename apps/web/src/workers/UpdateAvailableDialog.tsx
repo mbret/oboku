@@ -10,7 +10,7 @@ import {
 import type { FC } from "react"
 import { lock } from "../common/locks/utils"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
-import { SkipWaitingMessage } from "./communication/types.shared"
+import { skipWaitingMessage } from "./communication/types.shared"
 
 export const UpdateAvailableDialog: FC<{
   serviceWorker?: ServiceWorker
@@ -21,7 +21,7 @@ export const UpdateAvailableDialog: FC<{
 
   return (
     <Dialog open={hasUpdate}>
-      <DialogTitle>Yay! A new version is here</DialogTitle>
+      <DialogTitle>A new version is here</DialogTitle>
       <DialogContent>
         <DialogContentText>
           A new version of the app is available. (
@@ -38,7 +38,7 @@ export const UpdateAvailableDialog: FC<{
 
             lock()
 
-            sendMessageToServiceWorker(serviceWorker, new SkipWaitingMessage())
+            sendMessageToServiceWorker(serviceWorker, skipWaitingMessage())
           }}
           color="primary"
           autoFocus

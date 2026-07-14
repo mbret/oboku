@@ -1,115 +1,78 @@
 import {
-  interval,
   switchMap,
   from,
-  tap,
   finalize,
-  catchError,
   defer,
   combineLatest,
-  retry,
+  lastValueFrom,
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
 import {
   getMetadataFromRequest,
   hasAnotherMoreRecentCoverForThisRequest,
+  SW_COVERS_CACHE_KEY,
 } from "./helpers.shared"
 import { Logger } from "../debug/logger.shared"
-import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
-import { serviceWorkerConfiguration } from "../config/configuration.sw"
+import { coalesce } from "../workers/coalesce"
 
-declare const self: ServiceWorkerGlobalScope
-
-const cache$ = defer(() =>
-  from(caches.open(serviceWorkerConfiguration.SW_COVERS_CACHE_KEY)),
-)
+const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
 const database$ = defer(() => from(createSwDatabase()))
 
-const clearAllCovers = () => {
-  return cache$.pipe(
-    switchMap((cache) =>
-      from(cache.keys()).pipe(
-        switchMap((cacheKeys) =>
-          from(Promise.all(cacheKeys.map((key) => cache.delete(key)))),
-        ),
-      ),
-    ),
-  )
+const clearAllCovers = async () => {
+  const cache = await caches.open(SW_COVERS_CACHE_KEY)
+  const cacheKeys = await cache.keys()
+
+  return await Promise.all(cacheKeys.map((key) => cache.delete(key)))
 }
 
-export const registerCoversCacheCleanup = () => {
+const runCleanup = async (profile: string | undefined): Promise<unknown> => {
   const cleanupForProfile$ = database$.pipe(
     switchMap((db) =>
-      from(db.book.find().exec()).pipe(
-        switchMap((docs) =>
+      combineLatest([
+        from(db.book.find().exec()),
+        from(db.obokucollection.find().exec()),
+      ]).pipe(
+        switchMap(([bookDocs, collectionDocs]) =>
           cache$.pipe(
-            switchMap((cache) => {
-              return from(cache.keys()).pipe(
+            switchMap((cache) =>
+              from(cache.keys()).pipe(
                 switchMap((cacheKeys) => {
-                  return serviceWorkerCommunication.askProfile().pipe(
-                    switchMap((replyAskProfileMessage) => {
-                      const profile = replyAskProfileMessage.payload.profile
+                  /**
+                   * No current profile, we delete every entries
+                   */
+                  if (!profile) {
+                    Logger.info(
+                      `[sw/covers]`,
+                      `No current profile set, deleting all covers in cache`,
+                    )
+                    return clearAllCovers()
+                  }
 
-                      /**
-                       * No current profile, we delete every entries
-                       */
-                      if (!profile) {
-                        Logger.info(
-                          `[sw/covers]`,
-                          `No current profile set, deleting all covers in cache`,
-                        )
-                        return clearAllCovers()
-                      }
+                  const cacheKeysNotInDb = cacheKeys.filter((key) => {
+                    const { coverId } = getMetadataFromRequest(key)
 
-                      const requestsNotForCurrentProfile = cacheKeys.filter(
-                        (request) => {
-                          const { coverId } = getMetadataFromRequest(request)
+                    const coverFoundInDb =
+                      bookDocs.some(({ _id }) => _id === coverId) ||
+                      collectionDocs.some(({ _id }) => _id === coverId)
 
-                          if (!coverId.startsWith(profile)) return true
+                    return !coverFoundInDb
+                  })
 
-                          return false
-                        },
-                      )
+                  if (cacheKeysNotInDb.length) {
+                    Logger.info(
+                      `[sw/covers]`,
+                      `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`,
+                    )
+                  }
 
-                      const cacheKeysNotInDb = cacheKeys.filter((key) => {
-                        const { coverId } = getMetadataFromRequest(key)
-
-                        const coverFoundInDb = docs.find(({ _id }) => {
-                          const coverIdFromBookId = `${profile}-${_id}`
-
-                          return coverIdFromBookId === coverId
-                        })
-
-                        return !coverFoundInDb
-                      })
-
-                      if (requestsNotForCurrentProfile.length) {
-                        Logger.info(
-                          `[sw/covers]`,
-                          `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`,
-                        )
-                      }
-
-                      if (cacheKeysNotInDb.length) {
-                        Logger.info(
-                          `[sw/covers]`,
-                          `Removing ${cacheKeysNotInDb.length} obsolete covers in cache`,
-                        )
-                      }
-
-                      return from(
-                        Promise.all(
-                          [
-                            ...cacheKeysNotInDb,
-                            ...requestsNotForCurrentProfile,
-                          ].map((key) => cache.delete(key)),
-                        ),
-                      )
-                    }),
+                  return from(
+                    Promise.all(
+                      cacheKeysNotInDb.map((key) => cache.delete(key)),
+                    ),
                   )
                 }),
-              )
-            }),
+              ),
+            ),
           ),
         ),
         finalize(() => {
@@ -122,14 +85,10 @@ export const registerCoversCacheCleanup = () => {
   const cleanupOutdatedCovers$ = cache$.pipe(
     switchMap((cache) =>
       from(cache.keys()).pipe(
-        tap((keys) => {
-          const keysToRemoveDueToNewerVersion = keys.filter((item) => {
-            if (hasAnotherMoreRecentCoverForThisRequest(item, keys)) {
-              return true
-            }
-
-            return false
-          })
+        switchMap((keys) => {
+          const keysToRemoveDueToNewerVersion = keys.filter((item) =>
+            hasAnotherMoreRecentCoverForThisRequest(item, keys),
+          )
 
           return from(
             Promise.all(
@@ -141,25 +100,15 @@ export const registerCoversCacheCleanup = () => {
     ),
   )
 
-  interval(5 * 60 * 1000 * 2)
-    .pipe(
-      tap(() => {
-        Logger.info(`[sw/covers]`, `cleanup process started`)
-      }),
-      switchMap(() =>
-        combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
-      ),
-      tap(() => {
-        Logger.info(`[sw/covers]`, `cleanup process success`)
-      }),
-      catchError((error) => {
-        Logger.info(`[sw/covers]`, `cleanup process failed with error`, error)
+  Logger.info(`[sw/covers]`, `cleanup process started`)
 
-        console.error(error)
+  const result = await lastValueFrom(
+    combineLatest([cleanupForProfile$, cleanupOutdatedCovers$]),
+  )
 
-        throw error
-      }),
-      retry(),
-    )
-    .subscribe()
+  Logger.info(`[sw/covers]`, `cleanup process success`)
+
+  return result
 }
+
+export const runCoversCacheCleanup = coalesce(runCleanup)
