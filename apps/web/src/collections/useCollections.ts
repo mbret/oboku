@@ -93,6 +93,9 @@ export const useCollections = ({
               const notInterestedBookIds = visibleBooks
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
+              const visibleBooksById = new Map(
+                visibleBooks.map((book) => [book._id, book] as const),
+              )
 
               const finalQueryObj: MangoQuery<CollectionDocType> = {
                 ...queryObj,
@@ -172,15 +175,16 @@ export const useCollections = ({
                      * Filter collection by reading state
                      */
                     .filter((collection) => {
-                      const booksFromCollection = visibleBooks.filter((book) =>
-                        collection.books.includes(book._id),
-                      )
+                      if (readingState === "any") return true
 
                       const collectionReadingState =
-                        booksFromCollection.reduce<
+                        collection.books.reduce<
                           CollectionReadingState | undefined
-                        >((acc, book) => {
-                          const bookState = book.readingStateCurrentState
+                        >((acc, bookId) => {
+                          const bookState =
+                            visibleBooksById.get(
+                              bookId,
+                            )?.readingStateCurrentState
 
                           if (acc === "ongoing") return "ongoing"
                           if (bookState === ReadingStateState.Reading)
