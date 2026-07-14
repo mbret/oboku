@@ -21,10 +21,9 @@ vi.mock("../rxdb/dexie", () => ({
 import { useIsAuthenticated } from "../auth/useIsAuthenticated"
 import {
   clearActiveProfileId,
-  removeProfile,
   setActiveProfileId,
-  setProfile,
 } from "./active/activeProfileId"
+import { STORAGE_PROFILE_KEY } from "../config"
 import { useActiveProfile } from "./active/useActiveProfile"
 import { PROFILES_BROADCAST_CHANNEL } from "./profilesBroadcast"
 import { SyncProfilesAcrossTabs } from "./SyncProfilesAcrossTabs"
@@ -83,7 +82,7 @@ describe("SyncProfilesAcrossTabs", () => {
     expect(result.current.active.data).toBeNull()
 
     profilesStore.set("reader", createProfile())
-    setProfile("reader")
+    localStorage.setItem(STORAGE_PROFILE_KEY, "reader")
 
     notifyProfilesChangedFromAnotherTab()
 
@@ -103,7 +102,7 @@ describe("SyncProfilesAcrossTabs", () => {
       expect(result.current.active.data).toEqual(createProfile())
     })
 
-    removeProfile()
+    localStorage.removeItem(STORAGE_PROFILE_KEY)
 
     notifyProfilesChangedFromAnotherTab()
 

@@ -1,7 +1,6 @@
 import { memo, useEffect } from "react"
-import { useSignalValue } from "reactjrx"
 import { runTaskMessage, SwTask } from "./communication/types.shared"
-import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
+import { useActiveProfileId } from "../profiles/active/activeProfileId"
 
 const SW_BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
 
@@ -25,7 +24,7 @@ const postTaskWhenReady = (task: SwTask, profile: string | undefined) => {
 
 export const ServiceWorkerBackgroundTasks = memo(
   function ServiceWorkerBackgroundTasks() {
-    const activeProfileId = useSignalValue(activeProfileIdSignal)
+    const activeProfileId = useActiveProfileId()
 
     useEffect(
       function runCoversCacheCleanupPeriodically() {

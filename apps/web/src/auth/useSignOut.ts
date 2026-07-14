@@ -2,7 +2,7 @@ import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 import { SIGNAL_RESET } from "reactjrx"
 import {
   clearActiveProfileId,
-  fetchProfile,
+  getActiveProfileId,
   usePatchProfile,
 } from "../profiles"
 import { setUser } from "@sentry/react"
@@ -21,7 +21,7 @@ export const useSignOut = () => {
   const { mutateAsync: reCreateDb } = useReCreateDb()
 
   return async () => {
-    const activeProfileId = fetchProfile()
+    const activeProfileId = getActiveProfileId()
 
     /**
      * Deleting the non-extractable proof key first makes the sign-out

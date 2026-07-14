@@ -4,7 +4,7 @@ import type {
   QueryKey,
   UseQueryOptions,
 } from "@tanstack/react-query"
-import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
+import { getActiveProfileId } from "../profiles/active/activeProfileId"
 import { useIsAuthenticated } from "./useIsAuthenticated"
 
 type CallerEnabled<
@@ -26,10 +26,10 @@ const resolveCallerEnabled = <TQueryFnData, TError, TQueryKey extends QueryKey>(
  * tick, and the refetch of active queries it triggers reads `enabled` from
  * the observer's **last render** — still `true` — so the request would fire
  * without credentials and 401. Resolving `enabled` as a function checks the
- * live session signal at fetch-decision time instead, on top of whatever
+ * live session at fetch-decision time instead, on top of whatever
  * `enabled` the caller provides.
  *
- * The live check is not reactive (nothing re-renders when the signal flips),
+ * The live check is not reactive (nothing re-renders when it flips),
  * so query hooks should use `useQueryOptionsWithAuthentication`, which adds
  * the reactive `isAuthenticated` watch.
  */
@@ -47,8 +47,7 @@ export const withQueryOptionsAuthentication = <
     ...options,
     enabled: function enabledWhileSessionIsActive(query) {
       return (
-        !!activeProfileIdSignal.getValue() &&
-        resolveCallerEnabled(callerEnabled, query)
+        !!getActiveProfileId() && resolveCallerEnabled(callerEnabled, query)
       )
     },
   }

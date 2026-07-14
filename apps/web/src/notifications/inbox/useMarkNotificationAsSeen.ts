@@ -7,9 +7,8 @@ import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { useSignalValue } from "reactjrx"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
-import { activeProfileIdSignal } from "../../profiles/active/activeProfileId"
+import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import {
   type NotificationCacheSnapshot,
   cancelAndSnapshotNotificationQueries,
@@ -63,7 +62,7 @@ export const markSeenMutationOptions = (
 export const useMarkNotificationAsSeen = () => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
-  const activeProfileId = useSignalValue(activeProfileIdSignal)
+  const activeProfileId = useActiveProfileId()
 
   return useMutation(
     markSeenMutationOptions(queryClient, httpClientApi, activeProfileId),

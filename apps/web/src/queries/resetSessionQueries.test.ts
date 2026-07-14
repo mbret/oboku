@@ -17,9 +17,11 @@ vi.mock("./persister", () => ({
   },
 }))
 
-import { SIGNAL_RESET } from "reactjrx"
 import { withQueryOptionsAuthentication } from "../auth"
-import { activeProfileIdSignal } from "../profiles/active/activeProfileId"
+import {
+  clearActiveProfileId,
+  setActiveProfileId,
+} from "../profiles/active/activeProfileId"
 import { persister } from "./persister"
 import { resetSessionQueries } from "./resetSessionQueries"
 
@@ -54,11 +56,11 @@ describe("resetSessionQueries", () => {
       cleanup()
     })
     activeCleanups.length = 0
-    activeProfileIdSignal.update(SIGNAL_RESET)
+    clearActiveProfileId()
   })
 
   it("resets authenticated queries without refetching them on sign-out", async () => {
-    activeProfileIdSignal.update("reader")
+    setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const authenticatedQueryKey = ["api", "notifications", "unread-count"]
     const authenticatedQueryFn = await mountObservedQuery(
@@ -69,7 +71,7 @@ describe("resetSessionQueries", () => {
       queryKey: ["rxdb", "books"],
     })
 
-    activeProfileIdSignal.update(SIGNAL_RESET)
+    clearActiveProfileId()
     resetSessionQueries(queryClient)
 
     await vi.waitFor(() => expect(localQueryFn).toHaveBeenCalledTimes(2))
@@ -78,7 +80,7 @@ describe("resetSessionQueries", () => {
   })
 
   it("refetches authenticated queries on account switch", async () => {
-    activeProfileIdSignal.update("previous-reader")
+    setActiveProfileId("previous-reader")
     const queryClient = new QueryClient()
     const authenticatedQueryFn = await mountObservedQuery(
       queryClient,
@@ -87,7 +89,7 @@ describe("resetSessionQueries", () => {
       }),
     )
 
-    activeProfileIdSignal.update("next-reader")
+    setActiveProfileId("next-reader")
     resetSessionQueries(queryClient)
 
     await vi.waitFor(() =>
@@ -96,7 +98,7 @@ describe("resetSessionQueries", () => {
   })
 
   it("honors the caller's own enabled condition", async () => {
-    activeProfileIdSignal.update("reader")
+    setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const queryFn = vi.fn(async () => "data")
     const observer = new QueryObserver(
@@ -115,7 +117,7 @@ describe("resetSessionQueries", () => {
   })
 
   it("awaits an offline snapshot flush that drops session data on sign-out", async () => {
-    activeProfileIdSignal.update("reader")
+    setActiveProfileId("reader")
     const queryClient = new QueryClient()
     await mountObservedQuery(
       queryClient,
@@ -126,7 +128,7 @@ describe("resetSessionQueries", () => {
     )
     vi.mocked(persister.persistClient).mockClear()
 
-    activeProfileIdSignal.update(SIGNAL_RESET)
+    clearActiveProfileId()
     await resetSessionQueries(queryClient)
 
     expect(persister.persistClient).toHaveBeenCalledTimes(1)
@@ -135,7 +137,7 @@ describe("resetSessionQueries", () => {
   })
 
   it("leaves session-surviving queries untouched on sign-out", async () => {
-    activeProfileIdSignal.update("reader")
+    setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const survivorQueryKey = ["api", "config"]
     const survivorQueryFn = await mountObservedQuery(queryClient, {
@@ -143,7 +145,7 @@ describe("resetSessionQueries", () => {
       meta: { survivesSessionReset: true },
     })
 
-    activeProfileIdSignal.update(SIGNAL_RESET)
+    clearActiveProfileId()
     resetSessionQueries(queryClient)
 
     expect(survivorQueryFn).toHaveBeenCalledTimes(1)

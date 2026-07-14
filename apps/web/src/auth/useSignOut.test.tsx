@@ -30,7 +30,7 @@ vi.mock("../queries/resetSessionQueries", () => ({
 }))
 vi.mock("../profiles", () => ({
   clearActiveProfileId: vi.fn(),
-  getProfile: () => "reader",
+  getActiveProfileId: () => "reader",
   usePatchProfile: () => ({ mutateAsync: patchProfile }),
 }))
 vi.mock("./proofKey", () => ({ deleteProofKey }))

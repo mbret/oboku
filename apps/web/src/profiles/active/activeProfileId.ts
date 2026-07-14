@@ -1,36 +1,27 @@
-import { signal, SIGNAL_RESET } from "reactjrx"
+import { signal, SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { STORAGE_PROFILE_KEY } from "../../config"
 
-export const setActiveProfileId = (nameHex: string) => {
-  setProfile(nameHex)
-  activeProfileIdSignal.update(nameHex)
-}
-
-export const clearActiveProfileId = () => {
-  removeProfile()
-  activeProfileIdSignal.update(SIGNAL_RESET)
-}
-
-export const fetchProfile = () => {
-  return localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
-}
-
-export const activeProfileIdSignal = signal<string | undefined>({
+const activeProfileIdSignal = signal<string | undefined>({
   default: undefined,
 })
 
-export const syncActiveProfileIdFromStorage = () => {
-  const profileId = fetchProfile()
+export const getActiveProfileId = () =>
+  localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
 
-  activeProfileIdSignal.update(profileId ?? SIGNAL_RESET)
+export const useActiveProfileId = () => useSignalValue(activeProfileIdSignal)
+
+export const setActiveProfileId = (profileId: string) => {
+  localStorage.setItem(STORAGE_PROFILE_KEY, profileId)
+  activeProfileIdSignal.update(profileId)
+}
+
+export const clearActiveProfileId = () => {
+  localStorage.removeItem(STORAGE_PROFILE_KEY)
+  activeProfileIdSignal.update(SIGNAL_RESET)
+}
+
+export const syncActiveProfileIdFromStorage = () => {
+  activeProfileIdSignal.update(getActiveProfileId() ?? SIGNAL_RESET)
 }
 
 syncActiveProfileIdFromStorage()
-
-export const setProfile = (profile: string) => {
-  localStorage.setItem(STORAGE_PROFILE_KEY, profile)
-}
-
-export const removeProfile = () => {
-  localStorage.removeItem(STORAGE_PROFILE_KEY)
-}
