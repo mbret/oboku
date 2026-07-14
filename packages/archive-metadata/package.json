@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@prose-reader/archive-parser": "^1.277.0",
-    "@prose-reader/shared": "^1.277.0",
     "@prose-reader/streamer": "^1.277.0"
   },
   "devDependencies": {
