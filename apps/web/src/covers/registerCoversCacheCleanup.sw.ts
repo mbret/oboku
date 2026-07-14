@@ -18,23 +18,21 @@ import { coalesce } from "../workers/coalesce"
 const cache$ = defer(() => from(caches.open(SW_COVERS_CACHE_KEY)))
 const database$ = defer(() => from(createSwDatabase()))
 
-const clearAllCovers = () => {
-  return cache$.pipe(
-    switchMap((cache) =>
-      from(cache.keys()).pipe(
-        switchMap((cacheKeys) =>
-          from(Promise.all(cacheKeys.map((key) => cache.delete(key)))),
-        ),
-      ),
-    ),
-  )
+const clearAllCovers = async () => {
+  const cache = await caches.open(SW_COVERS_CACHE_KEY)
+  const cacheKeys = await cache.keys()
+
+  return await Promise.all(cacheKeys.map((key) => cache.delete(key)))
 }
 
 const runCleanup = async (profile: string | undefined): Promise<unknown> => {
   const cleanupForProfile$ = database$.pipe(
     switchMap((db) =>
-      from(db.book.find().exec()).pipe(
-        switchMap((docs) =>
+      combineLatest([
+        from(db.book.find().exec()),
+        from(db.obokucollection.find().exec()),
+      ]).pipe(
+        switchMap(([bookDocs, collectionDocs]) =>
           cache$.pipe(
             switchMap((cache) =>
               from(cache.keys()).pipe(
@@ -50,34 +48,15 @@ const runCleanup = async (profile: string | undefined): Promise<unknown> => {
                     return clearAllCovers()
                   }
 
-                  const requestsNotForCurrentProfile = cacheKeys.filter(
-                    (request) => {
-                      const { coverId } = getMetadataFromRequest(request)
-
-                      if (!coverId.startsWith(profile)) return true
-
-                      return false
-                    },
-                  )
-
                   const cacheKeysNotInDb = cacheKeys.filter((key) => {
                     const { coverId } = getMetadataFromRequest(key)
 
-                    const coverFoundInDb = docs.find(({ _id }) => {
-                      const coverIdFromBookId = `${profile}-${_id}`
-
-                      return coverIdFromBookId === coverId
-                    })
+                    const coverFoundInDb =
+                      bookDocs.some(({ _id }) => _id === coverId) ||
+                      collectionDocs.some(({ _id }) => _id === coverId)
 
                     return !coverFoundInDb
                   })
-
-                  if (requestsNotForCurrentProfile.length) {
-                    Logger.info(
-                      `[sw/covers]`,
-                      `Removing ${requestsNotForCurrentProfile.length} covers not related to current profile in cache`,
-                    )
-                  }
 
                   if (cacheKeysNotInDb.length) {
                     Logger.info(
@@ -88,10 +67,7 @@ const runCleanup = async (profile: string | undefined): Promise<unknown> => {
 
                   return from(
                     Promise.all(
-                      [
-                        ...cacheKeysNotInDb,
-                        ...requestsNotForCurrentProfile,
-                      ].map((key) => cache.delete(key)),
+                      cacheKeysNotInDb.map((key) => cache.delete(key)),
                     ),
                   )
                 }),
