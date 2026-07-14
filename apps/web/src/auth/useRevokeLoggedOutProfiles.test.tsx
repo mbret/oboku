@@ -124,4 +124,34 @@ describe("useRevokeLoggedOutProfiles", () => {
     expect(logout).toHaveBeenCalledWith("old-session")
     expect(profilesStore.get("reader")).toEqual(freshProfile)
   })
+
+  it("leaves a fresher tombstone a re-login then re-logout minted under a new session id", async () => {
+    profilesStore.set(
+      "reader",
+      createProfile({
+        id: "reader",
+        status: "loggedOut",
+        sessionId: "old-session",
+      }),
+    )
+
+    const queryClient = new QueryClient()
+    const freshTombstone = createProfile({
+      id: "reader",
+      status: "loggedOut",
+      sessionId: "new-session",
+    })
+    const logout = vi
+      .fn()
+      .mockImplementation(async function reloginThenReLogoutWhileInFlight() {
+        profilesStore.set("reader", freshTombstone)
+        queryClient.setQueryData(profilesQueryKey, [freshTombstone])
+      })
+    const { result } = renderRevokeHook(logout, queryClient)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledWith("old-session")
+    expect(profilesStore.get("reader")).toEqual(freshTombstone)
+  })
 })

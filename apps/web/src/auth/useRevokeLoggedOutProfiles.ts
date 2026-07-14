@@ -11,27 +11,37 @@ import { useDeleteProfile } from "../profiles/useDeleteProfile"
 import { isLoggedOutProfile } from "../profiles/useHasLoggedOutProfiles"
 import { profilesQueryOptions } from "../profiles/useProfiles"
 
-const isRowStillATombstone = (queryClient: QueryClient, profileId: string) => {
+const isRowStillATombstone = (
+  queryClient: QueryClient,
+  profileId: string,
+  sessionId: string,
+) => {
   const currentRow = queryClient
     .getQueryData(profilesQueryOptions.queryKey)
     ?.find((candidate) => candidate.id === profileId)
 
-  return !!currentRow && isLoggedOutProfile(currentRow)
+  return (
+    !!currentRow &&
+    isLoggedOutProfile(currentRow) &&
+    currentRow.sessionId === sessionId
+  )
 }
 
 /**
  * Best-effort revocation of `loggedOut` profile tombstones (see
  * `Profile.status`). Each tombstone carries its own `sessionId`, so revocation
  * is session-scoped and race-free: the sweep revokes exactly that session
- * whatever refresh cookie is in the jar, then deletes the local row. A
- * same-account re-login mints a new session id, so revoking an old tombstone
- * can never touch it. A tombstone that fails to revoke (typically offline) is
- * kept for a later sweep; the others still proceed.
+ * whatever refresh cookie is in the jar, then deletes the local row only while
+ * it still carries the revoked `sessionId`. A same-account re-login mints a new
+ * session id, so revoking an old tombstone can never touch it. A tombstone that
+ * fails to revoke (typically offline) is kept for a later sweep; the others
+ * still proceed.
  *
  * Sweeps run from a single place — `RevokeLoggedOutProfiles` fires one whenever
  * the app is online and a tombstone exists. Overlapping sweeps are serialized
  * through the mutation scope. A row a re-login turned back into an active
- * profile while its logout call was in flight is left untouched.
+ * profile — or into a fresher tombstone under a new session id — while its
+ * logout call was in flight is left for that new session's own sweep.
  */
 export const useRevokeLoggedOutProfiles = (
   options?: Pick<UseMutationOptions<void, DefaultError, void>, "meta">,
@@ -56,7 +66,9 @@ export const useRevokeLoggedOutProfiles = (
           try {
             await httpClientApi.logout(profile.sessionId)
 
-            if (isRowStillATombstone(queryClient, profile.id)) {
+            if (
+              isRowStillATombstone(queryClient, profile.id, profile.sessionId)
+            ) {
               await deleteProfile(profile.id)
             }
           } catch (error) {
