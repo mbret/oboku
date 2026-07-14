@@ -40,9 +40,10 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
   filePath,
   webdavUrl,
 }: WebdavDownloadBookProps) {
-  const { mutateAsync: extractConnectorData } = useExtractConnectorData({
-    type: connectorType,
-  })
+  const { mutateAsync: extractConnectorData } = useExtractConnectorData(
+    { type: connectorType },
+    { meta: { suppressGlobalErrorToast: true } },
+  )
   const onErrorRef = useLiveRef(onError)
   const { mutate: download } = useMutation$({
     mutationFn: ({
@@ -86,6 +87,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
       ),
     onSuccess: onResolve,
     onError,
+    meta: { suppressGlobalErrorToast: true },
   })
 
   useEffectWithUnmount$(

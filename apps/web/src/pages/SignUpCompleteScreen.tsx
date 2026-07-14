@@ -8,22 +8,20 @@ import { isCancelError } from "../errors/errors.shared"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../auth/states.web"
+import { useActiveProfile } from "../profiles"
 import { SignOutBeforeContinuePage } from "../auth/SignOutBeforeContinuePage"
 
 export const SignUpCompleteScreen = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
-  const auth = useSignalValue(authStateSignal)
-  const isAuthenticated = !!auth?.accessToken
+  const hasSession = !!useActiveProfile().data
   const { mutateAsync, error, status } = useCompleteSignUp()
 
-  if (status === "success" && isAuthenticated) {
+  if (status === "success" && hasSession) {
     return <Navigate to={ROUTES.HOME} replace />
   }
 
-  if (isAuthenticated) {
+  if (hasSession) {
     return <SignOutBeforeContinuePage />
   }
 

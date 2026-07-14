@@ -6,7 +6,8 @@ Some variables let you enable specific features, visit the [related section](ena
 
 {% code title=".env" %}
 ```bash
-# couchdb is exposed publicly so you should consider a strong password.
+# couchdb is reachable only through the API (proxied under /couchdb).
+# Set a strong admin password.
 COUCHDB_PASSWORD=createastrongpassword
 # postgres does not need to be exposed publicly but you should 
 # still consider a strong password.
@@ -15,17 +16,22 @@ POSTGRES_PASSWORD=createastrongpassword
 # By default, it will point to the same origin as the web app
 # and port 3000.
 VITE_API_URL=yourapiurl
-# This is the couchdb url endpoint used by the web apps.
-# Due to limitation with http1 we use 4 endpoints so hits can be
-# distributed evenly. by default it uses the same origin 
-# as the web app and the 4 ports open by the docker compose. 
-# If you are using http2, you can use the
-# same url and port as it does not have the same limitation.
-VITE_COUCH_DB_PUBLIC_URL=couchdburl
-VITE_COUCH_DB_PUBLIC_URL_2=couchdburl2
-VITE_COUCH_DB_PUBLIC_URL_3=couchdburl3
-VITE_COUCH_DB_PUBLIC_URL_4=couchdburl4
+# Additional API origins used by the web apps. CouchDB is proxied by the API,
+# so replication runs against the API itself. Due to a limitation with HTTP/1
+# (a low cap on connections per origin), replicating many collections at once
+# needs several origins. These are extra origins serving the same API; hits are
+# distributed across them. They default to VITE_API_URL. If you serve the API
+# over HTTP/2 you can leave them unset, since HTTP/2 has no per-origin limit.
+VITE_API_URL_2=yourapiurl2
+VITE_API_URL_3=yourapiurl3
+VITE_API_URL_4=yourapiurl4
+# Public URL of the web app. Also drives which browser origins may make
+# credentialed (cookie) requests: every port on this hostname is trusted.
 APP_PUBLIC_URL=http://app-public-url
+# (Optional) Extra origins allowed to make credentialed requests, beyond any
+# port on APP_PUBLIC_URL's hostname (e.g. an admin app hosted elsewhere).
+# Comma-separated list of full origins.
+API_CORS_TRUSTED_ORIGINS=https://admin.example.org
 ```
 {% endcode %}
 
@@ -48,4 +54,15 @@ EMAIL_SMTP_PORT=587
 EMAIL_SMTP_USER=user
 EMAIL_SMTP_PASSWORD=password
 EMAIL_FROM=yourcontactemail
+# Optional. Display name shown to recipients, producing a From header of
+# "oboku <yourcontactemail>". Defaults to "oboku".
+EMAIL_FROM_NAME=oboku
+# Optional. Max emails sent per second across the SMTP pool. Set this to your
+# provider's maximum send rate (eg: Amazon SES "Maximum send rate") so large
+# admin broadcasts stay under it. Left unset, sends are not rate limited.
+EMAIL_SMTP_MAX_SEND_RATE=14
 ```
+
+> Providers also enforce a daily sending quota (eg: Amazon SES allows 50,000
+> emails / 24h by default). A single broadcast larger than your quota will have
+> its overflow rejected by the provider; request a quota increase if needed.

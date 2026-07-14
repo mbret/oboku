@@ -15,9 +15,11 @@ export type SignInFormInputs = {
 export const SignInForm = ({
   control,
   onSubmit,
+  disabled,
 }: {
   control: Control<SignInFormInputs>
   onSubmit: ReturnType<UseFormHandleSubmit<SignInFormInputs>>
+  disabled?: boolean
 }) => {
   return (
     <Stack
@@ -71,6 +73,7 @@ export const SignInForm = ({
         size="large"
         variant="contained"
         startIcon={<Login />}
+        disabled={disabled}
       >
         Sign in
       </Button>

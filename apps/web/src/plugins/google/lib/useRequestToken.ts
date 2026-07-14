@@ -9,7 +9,7 @@ import {
 import { Logger } from "../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { CancelError } from "../../../errors/errors.shared"
-import { configuration } from "../../../config/configuration"
+import { useConfig } from "../../../config/useConfig"
 import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 const isPopupClosedError = (error: unknown) => {
@@ -26,6 +26,7 @@ export const useRequestToken = ({
 }: {
   requestPopup: () => Promise<boolean>
 }) => {
+  const { data: config } = useConfig()
   const { getGoogleScripts } = useGoogleScripts()
 
   const requestToken = ({ scope }: { scope: string[] }) =>
@@ -33,19 +34,20 @@ export const useRequestToken = ({
       mergeMap(([gsi]) => {
         const firstScope = scope[0]
         const accessToken = googleAccessTokenSignal.getValue()
+        const minimumValidityMs = config?.MINIMUM_TOKEN_VALIDITY_MS
 
         /**
          * We return current token if it has enough time left for downstream
          * requests, based on the shared web configuration threshold, and the
          * scope is valid.
          */
-        if (accessToken) {
+        if (accessToken && minimumValidityMs !== undefined) {
           if (
             (!firstScope ||
               (firstScope && hasGrantedPermissions(gsi, accessToken, scope))) &&
             hasMinimumValidityLeft({
               expiresAt: getTokenExpirationDate(accessToken),
-              minimumValidityMs: configuration.MINIMUM_TOKEN_VALIDITY_MS,
+              minimumValidityMs,
             })
           ) {
             return of(accessToken)
@@ -53,7 +55,7 @@ export const useRequestToken = ({
         }
 
         Logger.info(
-          `google token invalid or below ${configuration.MINIMUM_TOKEN_VALIDITY_MS}ms validity, requesting new one`,
+          `google token invalid or below ${minimumValidityMs}ms validity, requesting new one`,
         )
 
         return from(requestPopup()).pipe(
@@ -63,7 +65,13 @@ export const useRequestToken = ({
           mergeMap(() => {
             consentShownSignal.setValue(true)
 
-            return from(requestGoogleAccessToken(gsi, scope)).pipe(
+            return from(
+              requestGoogleAccessToken(
+                gsi,
+                scope,
+                config?.GOOGLE_CLIENT_ID ?? "",
+              ),
+            ).pipe(
               mergeMap((accessToken) => {
                 consentShownSignal.setValue(false)
 

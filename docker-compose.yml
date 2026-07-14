@@ -2,12 +2,6 @@ services:
   couchdb:
     image: mbret/oboku-couchdb
     restart: always
-    ports:
-      - "5984:5984"
-      # extra binds used for http/1 load balancing
-      - "5985:5984"
-      - "5986:5984"
-      - "5987:5984"
     env_file:
       - .env
     environment:
@@ -18,6 +12,14 @@ services:
       - ./secrets:/secrets:ro
       - oboku-couchdb-data:/opt/couchdb/data
       - oboku-couchdb-config:/opt/couchdb/etc/local.d
+    # `/_up` reports node readiness without auth; the API waits for this before
+    # starting (see its depends_on condition).
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
 
   postgres:
     image: postgres:17
@@ -50,13 +52,18 @@ services:
   api:
     image: mbret/oboku-api
     restart: always
+    depends_on:
+      couchdb:
+        condition: service_healthy
     ports:
       - "3000:3000"
     env_file:
       - .env
     environment:
+      POSTGRES_DB: ${POSTGRES_DB:-oboku}
       NODE_ENV: ${NODE_ENV:-production}
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
+      COUCH_DB_URL: ${COUCH_DB_URL:-http://couchdb:5984}
       JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
       JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
       API_DATA_DIR: ${API_DATA_DIR:-/var/lib/oboku/data}

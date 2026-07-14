@@ -1,92 +1,36 @@
-import { type FetchConfig, HttpClient } from "./httpClient.shared"
-import { serviceWorkerCommunication } from "../workers/communication/communication.sw"
+import { serviceWorkerConfiguration } from "../config/configuration.sw"
+import { hasProofKey } from "../auth/proofKey"
+import { RefreshingHttpClient } from "./httpClient.shared"
+import { refreshTokenRequest } from "./refreshTokenRequest"
 
-export const httpClientApi = new HttpClient()
+/**
+ * Auth rides on the httpOnly access cookie, which the browser attaches for the
+ * service worker like for any client. On a 401 the worker refreshes inline —
+ * the refresh cookie plus a DPoP proof signed with the session's bound key
+ * (read from the same IndexedDB the window uses) — and replays the request, so
+ * a covers fetch only surfaces a 401 when the session is genuinely expired.
+ *
+ * The worker keeps no session bookkeeping, so it gates the refresh on that
+ * bound key rather than a session record: with no key persisted (logged out, or
+ * evicted storage) a refresh could only fail its DPoP check, so the 401 passes
+ * straight through instead of firing a doomed `/auth/token` request per 401.
+ * Unlike the window client a failed refresh just returns the 401; the main
+ * thread owns flagging the session for relogin on its own traffic.
+ */
+class HttpApiClientSw extends RefreshingHttpClient {
+  constructor() {
+    super({ credentials: "include" })
+  }
 
-const getAuthorizedHeaders = (
-  headers: HeadersInit | undefined,
-  accessToken: string,
-) => {
-  const nextHeaders = new Headers(headers)
+  protected shouldAttemptRefresh = () => hasProofKey()
 
-  nextHeaders.set("Authorization", `Bearer ${accessToken}`)
+  protected applyRefresh = async () => {
+    await refreshTokenRequest(this, serviceWorkerConfiguration.API_URL)
 
-  return nextHeaders
+    this.markRefreshApplied()
+
+    return true
+  }
 }
 
-const retryUnauthorized = async (config: FetchConfig) => {
-  if (!config.clientId) {
-    return null
-  }
-
-  let authReply: Awaited<
-    ReturnType<typeof serviceWorkerCommunication.refreshClientAuth>
-  >
-
-  try {
-    authReply = await serviceWorkerCommunication.refreshClientAuth(
-      config.clientId,
-    )
-  } catch (error) {
-    console.error(error)
-
-    return null
-  }
-
-  if (!authReply.payload?.accessToken) {
-    return null
-  }
-
-  return httpClientApi.fetch(config.input, {
-    ...config,
-    headers: getAuthorizedHeaders(
-      config.headers,
-      authReply.payload.accessToken,
-    ),
-    useInterceptors: false,
-  })
-}
-
-// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useRequestInterceptor(async function injectAccessToken(config) {
-  if (!config.clientId) {
-    return config
-  }
-
-  let authReply: Awaited<
-    ReturnType<typeof serviceWorkerCommunication.askClientAuth>
-  >
-
-  try {
-    authReply = await serviceWorkerCommunication.askClientAuth(config.clientId)
-  } catch (error) {
-    console.error(error)
-
-    return config
-  }
-
-  if (authReply.payload?.accessToken) {
-    return {
-      ...config,
-      headers: getAuthorizedHeaders(
-        config.headers,
-        authReply.payload.accessToken,
-      ),
-    }
-  }
-
-  return config
-})
-
-// biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
-httpClientApi.useResponseInterceptor(async (response) => {
-  if (response.status === 401) {
-    const retriedResponse = await retryUnauthorized(response.config).catch(
-      () => null,
-    )
-
-    return retriedResponse ?? response
-  }
-
-  return response
-})
+export const httpClientApi = new HttpApiClientSw()

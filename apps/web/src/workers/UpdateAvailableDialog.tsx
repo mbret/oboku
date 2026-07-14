@@ -9,7 +9,7 @@ import {
 } from "@mui/material"
 import type { FC } from "react"
 import { lock } from "../common/locks/utils"
-import { WebCommunication } from "./communication/communication.web"
+import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
 
 export const UpdateAvailableDialog: FC<{
@@ -38,7 +38,7 @@ export const UpdateAvailableDialog: FC<{
 
             lock()
 
-            WebCommunication.sendMessage(serviceWorker, skipWaitingMessage())
+            sendMessageToServiceWorker(serviceWorker, skipWaitingMessage())
           }}
           color="primary"
           autoFocus

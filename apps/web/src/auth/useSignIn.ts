@@ -1,45 +1,78 @@
 import type { SignInWithGoogleRequest } from "@oboku/shared"
-import { from, map, switchMap } from "rxjs"
+import { from, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
-import { httpClientApi } from "../http/httpClientApi.web"
+import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
+import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
+import { usePutProfile } from "../profiles"
 import { getOrCreateAuthInstallationId } from "./installationId"
+import { createProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
+import {
+  type DefaultError,
+  type UseMutationOptions,
+  useQueryClient,
+} from "@tanstack/react-query"
 
-export const useSignIn = () => {
+type SignInVariables = { email: string; password: string } | undefined
+type SignInData = { switchedAccount: boolean }
+
+export const useSignIn = (
+  options?: Pick<
+    UseMutationOptions<SignInData, DefaultError, SignInVariables>,
+    "onSuccess" | "onError" | "onSettled"
+  >,
+) => {
+  const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
+  const { mutateAsync: putProfile } = usePutProfile()
+  const queryClient = useQueryClient()
+  const { data: config } = useConfig()
 
-  return useMutation$({
-    mutationFn: (data: { email: string; password: string } | undefined) => {
+  return useMutation$<SignInData, DefaultError, SignInVariables>({
+    ...options,
+    mutationFn: (data) => {
       const installationId = getOrCreateAuthInstallationId()
 
-      const signIn$ = data
-        ? from(
-            httpClientApi.signInWithEmail({
-              ...data,
-              installation_id: installationId,
-            }),
-          )
-        : signInWithGooglePrompt().pipe(
-            map(
-              (authResponse): SignInWithGoogleRequest => ({
-                token: authResponse.credential,
-                installation_id: installationId,
+      return from(createProofKey()).pipe(
+        switchMap((proofKey) =>
+          (data
+            ? from(
+                httpClientApi.signInWithEmail(
+                  {
+                    ...data,
+                    installation_id: installationId,
+                    public_key: proofKey.publicJwk,
+                  },
+                  proofKey,
+                ),
+              )
+            : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
+                switchMap((authResponse) =>
+                  from(
+                    httpClientApi.signInWithGoogle(
+                      {
+                        token: authResponse.credential,
+                        installation_id: installationId,
+                        public_key: proofKey.publicJwk,
+                      } satisfies SignInWithGoogleRequest,
+                      proofKey,
+                    ),
+                  ),
+                ),
+              )
+          ).pipe(
+            switchMap(({ data: auth }) =>
+              completeAuthentication({
+                reCreateDb,
+                putProfile,
+                auth,
+                queryClient,
               }),
             ),
-            switchMap((credentials) =>
-              from(httpClientApi.signInWithGoogle(credentials)),
-            ),
-          )
-
-      return signIn$.pipe(
-        switchMap(({ data }) =>
-          completeAuthentication({
-            reCreateDb,
-            auth: data,
-          }),
+          ),
         ),
         withLock("authentication"),
       )

@@ -12,7 +12,7 @@ import { useMutation$ } from "reactjrx"
 import { resolveDownloadFileName } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../types"
 import { CancelError } from "../../errors/errors.shared"
-import { httpClientWeb } from "../../http/httpClient.web"
+import { useDownload } from "../../http/useDownload"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../common/useDelayEffect"
@@ -25,6 +25,9 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"URI">) => {
+    const { mutateAsync: downloadBlob } = useDownload({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
         const abortController = new AbortController()
@@ -36,7 +39,7 @@ export const DownloadBook = memo(
         const downloadLink = link.data.url
 
         return from(
-          httpClientWeb.download<Blob>({
+          downloadBlob({
             responseType: "blob",
             signal: abortController.signal,
             url: downloadLink,
@@ -62,6 +65,7 @@ export const DownloadBook = memo(
       },
       onSuccess: onResolve,
       onError,
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(

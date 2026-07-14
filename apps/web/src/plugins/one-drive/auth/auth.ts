@@ -12,7 +12,6 @@ import {
   type OneDriveApiCredentials,
 } from "@oboku/shared"
 import { signal } from "reactjrx"
-import { configuration } from "../../../config/configuration"
 import {
   ONE_DRIVE_CONSUMER_AUTHORITY,
   ONE_DRIVE_GRAPH_SCOPES,
@@ -25,7 +24,10 @@ import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
 export const msalAccountSignal = signal<AccountInfo | undefined>({})
 
+type OneDriveClientConfig = { clientId: string; authority?: string }
+
 let clientPromise: Promise<PublicClientApplication> | undefined
+let oneDriveClientConfig: OneDriveClientConfig | undefined
 
 const MULTIPLE_MICROSOFT_ACCOUNTS_ERROR =
   "Multiple Microsoft accounts were found. Please clear the OneDrive session from the plugin settings and sign in again."
@@ -46,15 +48,10 @@ function syncAccountFromClient(client: PublicClientApplication) {
   msalAccountSignal.next(account ?? undefined)
 }
 
-async function initializeOneDriveClient() {
-  const clientId = configuration.MICROSOFT_APPLICATION_CLIENT_ID
-
-  if (!clientId) {
-    throw new Error(
-      "OneDrive is not configured. Register the application client ID in admin first.",
-    )
-  }
-
+async function initializeOneDriveClient({
+  clientId,
+  authority,
+}: OneDriveClientConfig) {
   const redirectUri = new URL(
     microsoftAuthCallbackPath,
     window.location.origin,
@@ -62,7 +59,7 @@ async function initializeOneDriveClient() {
 
   const client = new PublicClientApplication({
     auth: {
-      authority: configuration.MICROSOFT_APPLICATION_AUTHORITY,
+      authority,
       clientId,
       redirectUri,
     },
@@ -93,11 +90,19 @@ async function getOneDriveClient() {
     return clientPromise
   }
 
-  clientPromise = initializeOneDriveClient().catch((error: unknown) => {
-    clientPromise = undefined
+  if (!oneDriveClientConfig) {
+    throw new Error(
+      "OneDrive is not configured. Register the application client ID in admin first.",
+    )
+  }
 
-    throw error
-  })
+  clientPromise = initializeOneDriveClient(oneDriveClientConfig).catch(
+    (error: unknown) => {
+      clientPromise = undefined
+
+      throw error
+    },
+  )
 
   return clientPromise
 }
@@ -257,16 +262,11 @@ export async function requestMicrosoftAccessToken({
   }
 }
 
-export async function requestOneDriveProviderCredentials({
-  minimumValidityMs = configuration.MINIMUM_TOKEN_VALIDITY_MS,
-  ...options
-}: Omit<
-  MicrosoftAccessTokenRequest,
-  "authority" | "scopes"
-> = {}): Promise<OneDriveApiCredentials> {
+export async function requestOneDriveProviderCredentials(
+  options: Omit<MicrosoftAccessTokenRequest, "authority" | "scopes"> = {},
+): Promise<OneDriveApiCredentials> {
   const authResult = await requestMicrosoftAccessToken({
     ...options,
-    minimumValidityMs,
     scopes: ONE_DRIVE_GRAPH_SCOPES,
   })
 
@@ -276,10 +276,18 @@ export async function requestOneDriveProviderCredentials({
   }
 }
 
-export async function initializeOneDriveSession() {
-  if (!configuration.FEATURE_ONE_DRIVE_ENABLED) {
+export async function initializeOneDriveSession({
+  clientId,
+  authority,
+}: {
+  clientId?: string
+  authority?: string
+}) {
+  if (!clientId) {
     return
   }
+
+  oneDriveClientConfig = { clientId, authority }
 
   try {
     await getOneDriveClient()
@@ -292,7 +300,7 @@ export async function clearOneDriveSession() {
   const pending = clientPromise
   clientPromise = undefined
 
-  if (!configuration.MICROSOFT_APPLICATION_CLIENT_ID || !pending) {
+  if (!oneDriveClientConfig || !pending) {
     msalAccountSignal.next(undefined)
     return
   }

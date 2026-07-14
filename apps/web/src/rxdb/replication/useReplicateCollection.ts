@@ -3,11 +3,16 @@ import type { RxCollection } from "rxdb"
 import { Logger } from "../../debug/logger.shared"
 import { distinctUntilChanged, skip } from "rxjs"
 import { useCallback } from "react"
+import { useFetchCouch } from "../../http/useFetchCouch"
 
 export const useReplicateCollection = <
   Collection extends RxCollection<RxDocumentType>,
   RxDocumentType = any,
 >() => {
+  const { mutateAsync: fetchCouch } = useFetchCouch({
+    meta: { suppressGlobalErrorToast: true },
+  })
+
   return useCallback(
     ({
       collection,
@@ -15,7 +20,7 @@ export const useReplicateCollection = <
       ...params
     }: { collection: Collection; suffix?: string } & Omit<
       Parameters<typeof replicateCouchDBCollection>[0],
-      "cancelSignal"
+      "cancelSignal" | "fetchCouch"
     >) => {
       const cancelSignal = new AbortController()
       const id = `${Date.now()}-${suffix ?? ""}`
@@ -25,6 +30,7 @@ export const useReplicateCollection = <
         collection,
         cancelSignal: cancelSignal.signal,
         suffix,
+        fetchCouch,
       })
 
       const replicationId = `${collection.name}:${id}`
@@ -83,6 +89,6 @@ export const useReplicateCollection = <
 
       return state
     },
-    [],
+    [fetchCouch],
   )
 }

@@ -1,9 +1,9 @@
 import { Alert, Button, Box, Stack } from "@mui/material"
-import { Google, PersonAdd, MarkEmailRead } from "@mui/icons-material"
+import { PersonAdd, MarkEmailRead } from "@mui/icons-material"
 import { useSignIn } from "../auth/useSignIn"
 import { OrDivider } from "../common/OrDivider"
 import { isApiError, isCancelError } from "../errors/errors.shared"
-import { configuration } from "../config/configuration"
+import { GoogleSignInButton } from "../common/GoogleSignInButton"
 import { SignInForm, type SignInFormInputs } from "../auth/SignInForm"
 import { Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
@@ -72,6 +72,7 @@ export const LoginScreen = () => {
       >
         <SignInForm
           control={control}
+          disabled={isPending}
           onSubmit={handleSubmit((data) => {
             mutate(data)
           })}
@@ -100,14 +101,10 @@ export const LoginScreen = () => {
           gap: 1,
         }}
       >
-        <Button
+        <GoogleSignInButton
           onClick={() => mutate(undefined)}
-          size="large"
-          startIcon={<Google />}
-          disabled={!configuration.FEATURE_GOOGLE_SIGN_ENABLED || isPending}
-        >
-          Sign in with Google
-        </Button>
+          disabled={isPending}
+        />
         <Button
           component={Link}
           to={ROUTES.SIGN_UP}

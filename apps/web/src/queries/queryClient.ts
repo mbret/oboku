@@ -1,66 +1,49 @@
-import { isDebugEnabled } from "../debug/isDebugEnabled.shared"
-import { CancelError } from "../errors/errors.shared"
 import {
-  MutationCache,
-  QueryCache,
-  QueryClient,
+  defaultShouldDehydrateQuery,
+  type Query,
   type UseQueryOptions,
 } from "@tanstack/react-query"
-import { SwitchMutationCancelError } from "reactjrx"
-import { notifyError } from "../notifications/toasts"
+
+declare module "@tanstack/react-query" {
+  interface Register {
+    queryMeta: {
+      /**
+       * The query is not tied to the signed-in session (deployment-level data
+       * like the web config, or device-level data like the profiles list), so
+       * it is excluded from the per-user-session reset on sign-out / account
+       * switch and stays available on the signed-out screens.
+       */
+      survivesSessionReset?: boolean
+      /**
+       * Opt this query into the shared react-query offline snapshot. The
+       * snapshot is busted on every release, so it is a warm-start nicety, not
+       * durable storage — queries that own their durability elsewhere (rxdb,
+       * the web config's dedicated cache) simply don't opt in.
+       *
+       * Invariant: a persisted query that is per-user session data (not
+       * `survivesSessionReset`) MUST scope its key by the active profile id.
+       * The sign-out scrub drops session data from the snapshot, but a reload
+       * can beat it; an unscoped session key then lets the previous user's
+       * cache resurface for the next profile on a shared device, while a
+       * profile-scoped key reads a different slot per profile and cannot mix.
+       * See `notifications/inbox/queryKeys` for the reference pattern; the
+       * persister's dev guard flags violations of this rule.
+       */
+      persist?: boolean
+    }
+  }
+}
 
 export const API_QUERY_KEY_PREFIX = "api" as const
 export const RXDB_QUERY_KEY_PREFIX = "rxdb" as const
 
-export const queryClient = new QueryClient({
-  mutationCache: new MutationCache({
-    onError: (error, _variables, _context, mutation) => {
-      if (
-        error instanceof CancelError ||
-        error instanceof SwitchMutationCancelError
-      )
-        return
-
-      if (isDebugEnabled() && !import.meta.env.DEV) {
-        alert(String(error))
-      }
-
-      console.error(error)
-
-      if (!mutation.options.meta?.suppressGlobalErrorToast) {
-        notifyError(error)
-      }
-    },
-  }),
-  queryCache: new QueryCache({
-    onError: (error) => {
-      if (error instanceof CancelError) return
-
-      console.error(error)
-    },
-  }),
-  defaultOptions: {
-    mutations: {
-      /**
-       * @important
-       * Same as for queries, most of mutations are offline by default.
-       * Don't forget to change it when needed
-       */
-      networkMode: "always",
-    },
-    queries: {
-      /**
-       * @important
-       * By default we do not want queries using data from rxdb to use cache when mounting
-       * This is because we might result in invalid data for a short period of time.
-       * If cache should be used for a specific query, make sure to setData whenever
-       * rxdb change with middleware. However since it's harder to maintain we just don't
-       * use cache by default.
-       */
-      gcTime: 0,
-    },
-  },
-})
+/**
+ * Whether a query's current state is worth writing to the shared offline
+ * snapshot: a successful query that has opted in via `meta.persist`.
+ * Callers add their own scope where needed (e.g. session-surviving only).
+ */
+export const shouldPersistQueryState = (query: Query) =>
+  !!query.meta?.persist && defaultShouldDehydrateQuery(query)
 
 export const createRxdbQueryDefaultOptions = (): Pick<
   UseQueryOptions,

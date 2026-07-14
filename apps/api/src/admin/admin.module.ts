@@ -12,6 +12,10 @@ import { AuthModule } from "src/auth/auth.module"
 import { InstanceConfigService } from "./instance-config/instance-config.service"
 import { ServerSourcesService } from "./instance-config/server-sources.service"
 import { NotificationsModule } from "src/notifications/notifications.module"
+import { EmailModule } from "src/email/email.module"
+import { PostgresModule } from "src/features/postgres/postgres.module"
+import { AdminEmailService } from "./admin-email.service"
+import { AdminSecurityService } from "./admin-security.service"
 
 @Module({
   imports: [
@@ -20,6 +24,8 @@ import { NotificationsModule } from "src/notifications/notifications.module"
     CoversModule,
     MigrationModule,
     NotificationsModule,
+    EmailModule,
+    PostgresModule,
   ],
   providers: [
     AppConfigService,
@@ -29,6 +35,8 @@ import { NotificationsModule } from "src/notifications/notifications.module"
     AdminAuthGuard,
     InstanceConfigService,
     ServerSourcesService,
+    AdminEmailService,
+    AdminSecurityService,
   ],
   controllers: [AdminController],
   exports: [InstanceConfigService],

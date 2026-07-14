@@ -34,4 +34,34 @@ describe("HttpClient", () => {
       client.fetchOrThrow("https://api.example.com/session"),
     ).rejects.toBeInstanceOf(HttpClientError)
   })
+
+  it("applies the base request init to every request, even without interceptors", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const client = new HttpClient({ credentials: "include" })
+
+    await client.fetch("https://api.example.com/session", {
+      useInterceptors: false,
+    })
+
+    expect(fetchMock.mock.calls[0]?.[1]?.credentials).toBe("include")
+  })
+
+  it("lets a request's own init override the base request init", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValue(new Response(null, { status: 200 }))
+    vi.stubGlobal("fetch", fetchMock)
+
+    const client = new HttpClient({ credentials: "include" })
+
+    await client.fetch("https://api.example.com/session", {
+      credentials: "omit",
+    })
+
+    expect(fetchMock.mock.calls[0]?.[1]?.credentials).toBe("omit")
+  })
 })

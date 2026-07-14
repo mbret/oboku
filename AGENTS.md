@@ -73,6 +73,12 @@
 - The source of truth for Synology Drive API availability is the target NAS via `SYNO.API.Info`.
 - When typing `SYNO.SynologyDrive.*` responses, prefer shapes validated against live NAS responses over guessed or loosely related public documentation.
 
+### React-query mutations: global error toast (web)
+
+- The web app's global `MutationCache.onError` (see `QueryClientProvider.tsx`) shows an error toast for every mutation failure unless the mutation sets `meta.suppressGlobalErrorToast`.
+- `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
+- Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
+
 ### React `memo` components
 
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).

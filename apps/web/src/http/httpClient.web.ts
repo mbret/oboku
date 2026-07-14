@@ -89,7 +89,7 @@ type XhrParams = {
   onDownloadProgress?: (event: ProgressEvent<EventTarget>) => void
 }
 
-const sendXhr = <T>(
+export const sendXhr = <T>(
   {
     url,
     method,
@@ -171,11 +171,6 @@ export class HttpClientWeb extends HttpClient {
 
       return () => controller.abort()
     })
-
-  // `xhr.response` is typed `any` because its runtime shape depends on
-  // `responseType`; callers pick `T` via the generic to constrain it.
-  download = <T>(params: DownloadParams) =>
-    sendXhr<T>({ ...params, method: "GET" }, (xhr) => xhr.response as T)
 }
 
 export const httpClientWeb = new HttpClientWeb()

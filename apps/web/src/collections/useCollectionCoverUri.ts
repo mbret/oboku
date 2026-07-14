@@ -1,13 +1,14 @@
 import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
-import { useBookCover } from "../books/useBookCover"
-import { configuration } from "../config/configuration"
+import { useBookCoverUrl } from "../books/useBookCover"
+import { useConfig } from "../config/useConfig"
 
 export const useCollectionCoverUri = (
   collection?: DeepReadonlyObject<CollectionDocType> | null,
 ) => {
+  const { data: config } = useConfig()
   const assetHash = collection?.lastMetadataUpdatedAt?.toString()
-  const { coverSrc: firstBookCoverSrc, hasCoverMetadata } = useBookCover({
+  const { coverSrc: firstBookCoverSrc, hasCoverMetadata } = useBookCoverUrl({
     bookId: collection?.books[0],
   })
   const urlParams = new URLSearchParams({
@@ -32,7 +33,7 @@ export const useCollectionCoverUri = (
   }
 
   return {
-    uri: `${configuration.API_URL}/covers/collections/${collection._id}?${urlParams.toString()}`,
+    uri: `${config?.API_URL}/covers/collections/${collection._id}?${urlParams.toString()}`,
     hasCover: true,
   }
 }

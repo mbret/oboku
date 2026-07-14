@@ -19,6 +19,7 @@ import { scheduleDelayedEffect } from "../../common/useDelayEffect"
 import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
 import { useMutation$ } from "reactjrx"
+import { useConfig } from "../../config/useConfig"
 
 type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
   result?: {
@@ -33,10 +34,13 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"dropbox">) => {
+    const { data: config } = useConfig()
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) =>
-        defer(() => from(authUser({ requestPopup }))).pipe(
+        defer(() =>
+          from(authUser({ requestPopup, clientId: config?.DROPBOX_CLIENT_ID })),
+        ).pipe(
           mergeMap((auth) => {
             const dropbox = new Dropbox({ auth })
 
@@ -61,6 +65,7 @@ export const DownloadBook = memo(
         ),
       onSuccess: onResolve,
       onError,
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(

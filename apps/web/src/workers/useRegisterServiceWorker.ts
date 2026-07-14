@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
-import { WebCommunication } from "./communication/communication.web"
+import { sendMessageToServiceWorker } from "./communication/communication.web"
 import {
   runTaskMessage,
   SwTask,
   skipWaitingMessage,
 } from "./communication/types.shared"
-import { getProfile } from "../profile/currentProfile"
+import { getProfile } from "../profiles/active/activeProfileId"
 
 const BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
 
@@ -17,7 +17,7 @@ export const useRegisterServiceWorker = () => {
   )
   const firstTime = useRef(true)
 
-  useEffect(() => {
+  useEffect(function registerServiceWorkerOnce() {
     if (firstTime.current) {
       firstTime.current = false
 
@@ -33,7 +33,7 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  useEffect(() => {
+  useEffect(function reloadWhenServiceWorkerTakesControl() {
     if (!("serviceWorker" in navigator)) return
 
     const controllerchange = () => {
@@ -54,7 +54,7 @@ export const useRegisterServiceWorker = () => {
       controllerchange,
     )
 
-    return () => {
+    return function removeControllerChangeListener() {
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         controllerchange,
@@ -90,7 +90,7 @@ export const useRegisterServiceWorker = () => {
    */
   useEffect(() => {
     if (import.meta.env.MODE === "development" && waitingWorker) {
-      WebCommunication.sendMessage(waitingWorker, skipWaitingMessage())
+      sendMessageToServiceWorker(waitingWorker, skipWaitingMessage())
     }
   }, [waitingWorker])
 

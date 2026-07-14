@@ -25,13 +25,18 @@ export const coversFetchListener = (event: FetchEvent) => {
         /**
          * We want to be able to access the response headers (avoid opaque).
          * So we make sure to have a cors enabled request.
+         *
+         * `no-store` skips the browser HTTP cache: covers are served with a long
+         * `immutable` Cache-Control and this worker keeps its own Cache Storage
+         * layer above, so letting the HTTP cache also retain them only pins stale
+         * entries — e.g. a response cached under a previous CORS policy that now
+         * fails the credentialed CORS check.
          */
         try {
           const { response } = await httpClientApi.fetch(event.request, {
-            clientId: event.clientId || event.resultingClientId,
             unwrap: false,
             mode: "cors",
-            credentials: "omit",
+            cache: "no-store",
           })
 
           if (response.status !== 200) {

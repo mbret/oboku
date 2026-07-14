@@ -35,6 +35,10 @@ const navItems = [
     description: "Overview",
   },
   {
+    to: "/users",
+    label: "Users",
+  },
+  {
     to: "/signup-links",
     label: "Sign up links",
     description: "Generate manual sign up links",
@@ -45,6 +49,11 @@ const navItems = [
     description: "Broadcast inbox messages",
   },
   {
+    to: "/email",
+    label: "Emails",
+    description: "Send emails to users",
+  },
+  {
     to: "/providers",
     label: "Providers",
     description: "Plugins & sync",
@@ -53,6 +62,11 @@ const navItems = [
     to: "/covers",
     label: "Covers",
     description: "Storage usage and cleanup",
+  },
+  {
+    to: "/security",
+    label: "Security",
+    description: "Tokens and session revocation",
   },
   {
     to: "/server-sync",
@@ -156,9 +170,6 @@ function AdminLayout() {
               Admin
             </Text>
           </Group>
-          <Text size="sm" c="dimmed" visibleFrom="sm">
-            Admin tools
-          </Text>
         </Group>
       </AppShell.Header>
 
@@ -173,7 +184,7 @@ function AdminLayout() {
               component={Link}
               to={item.to}
               label={item.label}
-              description={item.description}
+              description={"description" in item ? item.description : undefined}
               active={pathname === item.to}
               onClick={close}
             />

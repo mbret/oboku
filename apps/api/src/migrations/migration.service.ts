@@ -1,5 +1,8 @@
 import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
+import { InjectRepository } from "@nestjs/typeorm"
+import { Repository } from "typeorm"
+import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
 import { CouchService } from "src/couch/couch.service"
 import { listUserDatabases } from "src/lib/couch/listUserDatabases"
 import { tolerateMissingUserDb } from "./tolerateMissingUserDb"
@@ -130,7 +133,7 @@ function safeDecodeURIComponent(value: string): string {
  * a plain object (or null) so the migration can safely spread it.
  */
 function normalizeDataField(value: unknown): Record<string, unknown> | null {
-  if (value == null) return null
+  if (value === null || value === undefined) return null
   if (typeof value === "string") {
     try {
       const parsed: unknown = JSON.parse(value)
@@ -235,7 +238,44 @@ export class MigrationService {
   constructor(
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
+    @InjectRepository(RefreshTokenPostgresEntity)
+    private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
+
+  async resetRefreshTokenCreatedAt(): Promise<{ updated: number }> {
+    /**
+     * Migration: reset `created_at` to now for every refresh token row.
+     *
+     * Why this exists:
+     * - The previous refresh-token model never expired a token by `created_at`.
+     *   It pruned by `last_used_at` inactivity (2-year retention) and reused a
+     *   single row per installation, so `created_at` is the session's original
+     *   creation date and is frequently older than the new 6-month per-token cap.
+     * - The new rotation model treats `created_at` as the per-token expiry
+     *   anchor. Without this reset, every active session whose row predates the
+     *   cap would be rejected on its next refresh and forced to log in again.
+     *
+     * What it does:
+     * - Sets `created_at = now()` on every existing refresh token row, giving
+     *   each currently-retained session a fresh full-length window from deploy.
+     *
+     * IMPORTANT — run exactly once, at the deploy that ships the new rotation
+     * model. Unlike the other migrations here it is NOT safe to re-run: each run
+     * pushes the expiry anchor forward by another full TTL, indefinitely
+     * extending every token.
+     */
+    const result = await this.refreshTokenRepository
+      .createQueryBuilder()
+      .update(RefreshTokenPostgresEntity)
+      .set({ created_at: () => "now()" })
+      .execute()
+
+    const updated = result.affected ?? 0
+
+    logger.log(`Reset created_at on ${updated} refresh token(s)`)
+
+    return { updated }
+  }
 
   async migrateWebdavConnectorsToConnectors(): Promise<{
     usersMigrated: number

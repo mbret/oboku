@@ -1,5 +1,6 @@
 import { Alert, Box, Chip, Stack, Typography } from "@mui/material"
 import { Fragment } from "react/jsx-runtime"
+import { EmptyAlert } from "../../common/alerts/EmptyAlert"
 import {
   formatReportDateTime,
   getRxModelLabelFromValue,
@@ -23,10 +24,10 @@ export const DataSourcesReportsScreen = memo(
         {isLoading ? (
           <SkeletonLoader />
         ) : !data?.length ? (
-          <Alert severity="info">
+          <EmptyAlert>
             You don't have any reports yet. They will appears after you start a
             sync.
-          </Alert>
+          </EmptyAlert>
         ) : (
           <Stack
             sx={{

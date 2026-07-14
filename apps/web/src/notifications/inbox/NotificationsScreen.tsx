@@ -1,34 +1,51 @@
 import { memo } from "react"
-import { Alert, Button, Stack, Typography } from "@mui/material"
+import { Button, Stack } from "@mui/material"
 import { Page } from "../../common/Page"
+import { EmptyAlert } from "../../common/alerts/EmptyAlert"
+import { FetchErrorAlert } from "../../common/alerts/FetchErrorAlert"
+import { LoadingAlert } from "../../common/alerts/LoadingAlert"
+import { UnavailableAlert } from "../../common/alerts/UnavailableAlert"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
+import { useLocalNotifications } from "./useLocalNotifications"
+import { LocalNotificationCard } from "./LocalNotificationCard"
 import { useInboxNotifications } from "./useInboxNotifications"
 import { useMarkAllNotificationsAsSeen } from "./useMarkAllNotificationsAsSeen"
 import { useUnreadNotificationsCount } from "./useUnreadNotificationsCount"
 import { NotificationCard } from "./NotificationCard"
 
 export const NotificationsScreen = memo(function NotificationsScreen() {
-  const notificationsQuery = useInboxNotifications()
-  const { unreadCount } = useUnreadNotificationsCount()
+  const {
+    data: notifications,
+    isLoading: isInitialLoading,
+    isError: hasError,
+    isPending,
+    fetchStatus,
+  } = useInboxNotifications()
+  const { serverUnreadCount } = useUnreadNotificationsCount()
   const markAllNotificationsAsSeen = useMarkAllNotificationsAsSeen()
+  const localNotifications = useLocalNotifications()
+  const hasLocalNotifications = localNotifications.length > 0
+  const isUnavailable = fetchStatus === "idle" && isPending
+  const canMarkAllRead =
+    serverUnreadCount > 0 && !isUnavailable && !hasError && !isInitialLoading
+  const isEmpty =
+    notifications?.length === 0 && !isInitialLoading && !hasLocalNotifications
 
   return (
     <Page>
       <TopBarNavigation
         title="Notifications"
         rightComponent={
-          unreadCount > 0 ? (
-            <Button
-              color="inherit"
-              variant="text"
-              onClick={() => {
-                markAllNotificationsAsSeen.mutate(undefined)
-              }}
-              disabled={markAllNotificationsAsSeen.isPending}
-            >
-              Mark all read
-            </Button>
-          ) : undefined
+          <Button
+            color="inherit"
+            variant="text"
+            onClick={() => {
+              markAllNotificationsAsSeen.mutate(undefined)
+            }}
+            disabled={!canMarkAllRead || markAllNotificationsAsSeen.isPending}
+          >
+            Mark all read
+          </Button>
         }
       />
       <Stack
@@ -37,28 +54,22 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
           gap: 2,
         }}
       >
-        {notificationsQuery.isLoading && (
-          <Typography
-            sx={{
-              color: "text.secondary",
-            }}
-          >
-            Loading notifications…
-          </Typography>
-        )}
+        {localNotifications.map((notification) => (
+          <LocalNotificationCard
+            key={notification.id}
+            notification={notification}
+          />
+        ))}
 
-        {notificationsQuery.error && (
-          <Alert severity="error">{notificationsQuery.error.message}</Alert>
-        )}
+        {isInitialLoading && <LoadingAlert subject="notifications" />}
 
-        {notificationsQuery.data?.length === 0 &&
-          !notificationsQuery.isLoading && (
-            <Alert severity="info">
-              You do not have any notifications right now.
-            </Alert>
-          )}
+        {hasError && <FetchErrorAlert subject="notifications" />}
 
-        {notificationsQuery.data?.map((notification) => (
+        {isUnavailable && <UnavailableAlert subject="notifications" />}
+
+        {isEmpty && <EmptyAlert subject="notifications" />}
+
+        {notifications?.map((notification) => (
           <NotificationCard key={notification.id} notification={notification} />
         ))}
       </Stack>

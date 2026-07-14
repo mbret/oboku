@@ -31,12 +31,23 @@ export type HttpClientResponse<T = unknown> = {
 
 export type FetchConfig = RequestInit & {
   input: string | URL | globalThis.Request
-  clientId?: string
   unwrap?: boolean
   useInterceptors?: boolean
+  /**
+   * Refresh epoch the request was sent under (stamped by the api client), so
+   * a 401 can tell whether the session was already refreshed since.
+   */
+  authEpoch?: number
 }
 
 export class HttpClient {
+  /**
+   * @param baseRequestInit merged under every request's own init — e.g.
+   * `{ credentials: "include" }` for clients whose auth rides on cookies.
+   * Applied even when interceptors are skipped.
+   */
+  constructor(private baseRequestInit: RequestInit = {}) {}
+
   private interceptors: {
     request?: (request: FetchConfig) => Promise<FetchConfig>
     response?: (response: HttpClientResponse) => Promise<HttpClientResponse>
@@ -111,12 +122,17 @@ export class HttpClient {
             Promise.resolve({ ...config, input }),
           )
 
-    const { clientId: _clientId, unwrap = true, ...params } = interceptedConfig
+    const {
+      unwrap = true,
+      authEpoch: _authEpoch,
+      ...params
+    } = interceptedConfig
 
     let response: Response
 
     try {
       response = await fetch(input, {
+        ...this.baseRequestInit,
         ...params,
       })
     } catch (error) {
@@ -162,7 +178,7 @@ export class HttpClient {
     return response as HttpClientResponse<T>
   }
 
-  postOrThrow = async <T, Body extends Record<string, unknown>>(
+  postOrThrow = async <T, Body extends Record<string, unknown> = never>(
     input: string | URL | globalThis.Request,
     options: Omit<FetchConfig, "body" | "method" | "input"> & {
       body?: Body
@@ -209,6 +225,106 @@ export class HttpClient {
     request: (request: FetchConfig) => Promise<FetchConfig>,
   ) => {
     return this.useInterceptors(request)
+  }
+}
+
+/**
+ * Transport client that transparently refreshes the session on a 401 and
+ * replays the failed request once. The mechanics — stamping each request with
+ * the current refresh epoch, deduplicating concurrent refreshes into a single
+ * in-flight call, gating on whether a refresh already happened since the
+ * request, and retrying exactly once with interceptors disabled — live here so
+ * every context (window, service worker) shares one implementation. What a
+ * refresh actually *does*, and whether a given 401 is even worth refreshing
+ * for, is left to subclasses.
+ */
+export abstract class RefreshingHttpClient extends HttpClient {
+  private refreshInFlight: Promise<boolean> | null = null
+  /** Bumped after every applied refresh; see `FetchConfig.authEpoch`. */
+  private refreshEpoch = 0
+
+  constructor(baseRequestInit: RequestInit = {}) {
+    super(baseRequestInit)
+
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+    this.useRequestInterceptor(this.stampAuthEpoch)
+    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
+    this.useResponseInterceptor(this.refreshOnUnauthorized)
+  }
+
+  /**
+   * Perform the token refresh network call. Resolve `true` when a fresh
+   * session was applied and the failed request should be replayed, `false` to
+   * leave the 401 untouched, or throw to signal the refresh itself failed.
+   * Call `markRefreshApplied()` the moment fresh cookies are in place.
+   */
+  protected abstract applyRefresh(): Promise<boolean>
+
+  /** Whether a 401 warrants a refresh attempt at all (default: always). */
+  protected shouldAttemptRefresh(): Promise<boolean> {
+    return Promise.resolve(true)
+  }
+
+  protected markRefreshApplied() {
+    this.refreshEpoch++
+  }
+
+  private stampAuthEpoch = async (
+    config: FetchConfig,
+  ): Promise<FetchConfig> => ({
+    ...config,
+    authEpoch: this.refreshEpoch,
+  })
+
+  refreshAuthSession = (): Promise<boolean> => {
+    if (this.refreshInFlight) {
+      return this.refreshInFlight
+    }
+
+    const promise = this.applyRefresh().finally(() => {
+      if (this.refreshInFlight === promise) {
+        this.refreshInFlight = null
+      }
+    })
+
+    this.refreshInFlight = promise
+
+    return promise
+  }
+
+  refreshOnUnauthorized = async (
+    response: HttpClientResponse,
+  ): Promise<HttpClientResponse> => {
+    if (response.status !== 401) {
+      return response
+    }
+
+    if (!(await this.shouldAttemptRefresh())) {
+      return response
+    }
+
+    const refreshedSinceRequest =
+      response.config.authEpoch !== undefined &&
+      response.config.authEpoch !== this.refreshEpoch
+
+    if (!refreshedSinceRequest) {
+      try {
+        const didApply = await this.refreshAuthSession()
+
+        if (!didApply) {
+          return response
+        }
+      } catch {
+        return response
+      }
+    }
+
+    // Retry once with the refreshed cookie; skip interceptors so a persistent
+    // 401 propagates to the caller instead of re-triggering another refresh.
+    return this.fetch(response.config.input, {
+      ...response.config,
+      useInterceptors: false,
+    })
   }
 }
 

@@ -23,17 +23,33 @@ import { SecretsService } from "src/config/SecretsService"
 import { EmailService } from "../email/EmailService"
 import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
-  AuthTokensResponse,
   CompleteMagicLinkRequest,
   CompleteSignUpResponse,
-  RefreshTokenResponse,
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+import { RefreshProofService } from "./refresh-proof.service"
+import type { AuthTokens } from "./auth-cookies"
+
+/**
+ * A completed authentication: the session metadata the client renders plus the
+ * {@link AuthTokens} the controller writes to httpOnly cookies. Only the
+ * metadata half is serialized to the response body.
+ */
+type AuthenticatedSession = AuthTokens & AuthSessionResponse
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
+
+/**
+ * Persists only the RFC 7638 thumbprint members — the thumbprint comparison
+ * at refresh needs nothing else, and dropping the rest bounds the stored
+ * text no matter what extra properties a client sends.
+ */
+const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyJwk) =>
+  JSON.stringify({ kty, crv, x, y })
 
 type SignUpTokenPayload = {
   sub: string
@@ -57,6 +73,7 @@ export class AuthService {
     private refreshTokensService: RefreshTokensService,
     private secretService: SecretsService,
     private emailService: EmailService,
+    private refreshProofService: RefreshProofService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -159,24 +176,28 @@ export class AuthService {
     email,
     userId,
     installationId,
+    publicKey,
   }: {
     email: string
     userId: number
     installationId: string
-  }): Promise<AuthTokensResponse> {
+    publicKey: string
+  }): Promise<AuthTokens & { sessionId: string }> {
     const accessToken = await this.couchService.generateUserJWT({
       email,
       userId,
     })
-    const refreshToken =
+    const { refreshToken, sessionId } =
       await this.refreshTokensService.issueTokenForInstallation({
         userId,
         installationId,
+        publicKey,
       })
 
     return {
       accessToken,
       refreshToken,
+      sessionId,
     }
   }
 
@@ -184,11 +205,13 @@ export class AuthService {
     email,
     userId,
     installationId,
+    publicKey,
   }: {
     email: string
     userId: number
     installationId: string
-  }): Promise<AuthSessionResponse> {
+    publicKey: string
+  }): Promise<AuthenticatedSession> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
     const { user: couchUser, created: couchUserCreated } =
@@ -206,10 +229,11 @@ export class AuthService {
       })
     }
 
-    const { accessToken, refreshToken } = await this.generateTokens({
+    const { accessToken, refreshToken, sessionId } = await this.generateTokens({
       email: couchUser.email,
       userId,
       installationId,
+      publicKey,
     })
 
     const nameHex = emailToNameHex(couchUser.name)
@@ -217,6 +241,7 @@ export class AuthService {
     return {
       accessToken,
       refreshToken,
+      sessionId,
       nameHex,
       dbName,
       email: couchUser.email,
@@ -227,26 +252,30 @@ export class AuthService {
     email,
     password,
     installation_id,
-  }: SignInWithEmailRequest): Promise<AuthSessionResponse> {
+    public_key,
+  }: SignInWithEmailRequest): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
       email: retrievedUser.email,
       userId: retrievedUser.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
   async signInWithGoogle({
     token,
     installation_id,
-  }: SignInWithGoogleRequest): Promise<AuthSessionResponse> {
+    public_key,
+  }: SignInWithGoogleRequest): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
     return this.completeSignIn({
       email: retrievedUser.email,
       userId: retrievedUser.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
@@ -475,7 +504,8 @@ export class AuthService {
   async completeMagicLink({
     token,
     installation_id,
-  }: CompleteMagicLinkRequest): Promise<AuthSessionResponse> {
+    public_key,
+  }: CompleteMagicLinkRequest): Promise<AuthenticatedSession> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -496,21 +526,58 @@ export class AuthService {
       email: user.email,
       userId: user.id,
       installationId: installation_id,
+      publicKey: serializePublicKey(public_key),
     })
   }
 
-  async refreshToken(
-    grant_type: "refresh_token",
-    refreshToken: string,
-  ): Promise<RefreshTokenResponse> {
-    void grant_type
+  /**
+   * Every session is bound to a public key at sign-in and only refreshes with
+   * a valid proof signed by the matching private key. Sessions without a
+   * bound key (issued before sender constraining shipped) are rejected and
+   * must re-authenticate.
+   *
+   * A session also must carry an identity (`session_id`) so it can be revoked
+   * by id at logout. Sessions issued before session-scoped logout have none;
+   * they are rejected here and re-authenticate into one that does.
+   */
+  async refreshToken({
+    refreshToken,
+    proof,
+  }: {
+    refreshToken: string
+    proof?: string
+  }): Promise<AuthTokens> {
+    const presented = await this.refreshTokensService.findByToken(refreshToken)
 
-    const session =
-      await this.refreshTokensService.findActiveByToken(refreshToken)
-
-    if (!session) {
+    if (!presented) {
       throw new UnauthorizedException()
     }
+
+    const isProofValid =
+      !!presented.public_key &&
+      !!proof &&
+      (await this.refreshProofService.isProofValid({
+        proof,
+        boundPublicKey: presented.public_key,
+      }))
+
+    if (!isProofValid) {
+      throw new UnauthorizedException()
+    }
+
+    // TODO(legacy, ~2027-01): drop this guard once refresh tokens issued before
+    // the session_id column (TTL 6 months) have expired; see the column doc.
+    if (!presented.session_id) {
+      throw new UnauthorizedException()
+    }
+
+    const rotation = await this.refreshTokensService.rotateForRefresh(presented)
+
+    if (rotation.status !== "rotated") {
+      throw new UnauthorizedException()
+    }
+
+    const { session, refreshToken: rotatedToken } = rotation
 
     const user = await this.usersService.findUserById(session.user_id)
 
@@ -527,8 +594,16 @@ export class AuthService {
 
     return {
       accessToken,
-      refreshToken,
+      refreshToken: rotatedToken,
     }
+  }
+
+  /**
+   * Revokes the session with this non-secret identity — the exact session the
+   * caller means to kill, whatever refresh cookie is currently in the jar.
+   */
+  async logout({ sessionId }: { sessionId: string }) {
+    await this.refreshTokensService.revokeBySessionId(sessionId)
   }
 
   async deleteAccount({ userId, email }: { userId: number; email: string }) {

@@ -2,7 +2,7 @@ import { useRequestToken } from "./useRequestToken"
 import { finalize, from, switchMap } from "rxjs"
 import { useGoogleScripts } from "./scripts"
 import { READER_ACCEPTED_MIME_TYPES } from "@oboku/shared"
-import { configuration } from "../../../config/configuration"
+import { useConfig } from "../../../config/useConfig"
 import { GOOGLE_DRIVE_FILE_SCOPES } from "./constants"
 
 export const useDrivePicker = ({
@@ -12,6 +12,7 @@ export const useDrivePicker = ({
   requestPopup: () => Promise<boolean>
   scope?: string[]
 }) => {
+  const { data: config } = useConfig()
   const { requestToken } = useRequestToken({ requestPopup })
   const { getGoogleScripts } = useGoogleScripts()
 
@@ -50,8 +51,8 @@ export const useDrivePicker = ({
                 const pickerBuilder = new gsi.picker.PickerBuilder()
                   .addView(docView)
                   .setOAuthToken(accessToken.access_token)
-                  .setDeveloperKey(configuration.GOOGLE_API_KEY ?? "")
-                  .setAppId(configuration.GOOGLE_APP_ID ?? "")
+                  .setDeveloperKey(config?.GOOGLE_API_KEY ?? "")
+                  .setAppId(config?.GOOGLE_APP_ID ?? "")
                   .setCallback((data) => {
                     // type is broken and does not have loaded https://developers.google.com/picker/docs/reference#action
                     if (
