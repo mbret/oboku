@@ -4,22 +4,20 @@ import { useActiveProfileId } from "../profiles/active/activeProfileId"
 
 const SW_BACKGROUND_TASK_INTERVAL_MS = 10 * 60 * 1000
 
-const postTaskWhenReady = (task: SwTask, profile: string | undefined) => {
-  const abortController = new AbortController()
+const postTaskWhenReady = (
+  task: SwTask,
+  profile: string | undefined,
+  signal: AbortSignal,
+) => {
+  if (!("serviceWorker" in navigator)) return
 
-  if ("serviceWorker" in navigator) {
-    navigator.serviceWorker.ready
-      .then((registration) => {
-        if (abortController.signal.aborted) return
+  navigator.serviceWorker.ready
+    .then((registration) => {
+      if (signal.aborted) return
 
-        registration.active?.postMessage(runTaskMessage(task, profile))
-      })
-      .catch(() => {})
-  }
-
-  return function abortPendingPost() {
-    abortController.abort()
-  }
+      registration.active?.postMessage(runTaskMessage(task, profile))
+    })
+    .catch(() => {})
 }
 
 export const ServiceWorkerBackgroundTasks = memo(
@@ -28,10 +26,15 @@ export const ServiceWorkerBackgroundTasks = memo(
 
     useEffect(
       function runCoversCacheCleanupPeriodically() {
+        const abortController = new AbortController()
         const triggerCoversCacheCleanup = () =>
-          postTaskWhenReady(SwTask.CoversCacheCleanup, activeProfileId)
+          postTaskWhenReady(
+            SwTask.CoversCacheCleanup,
+            activeProfileId,
+            abortController.signal,
+          )
 
-        const abortInitialPost = triggerCoversCacheCleanup()
+        triggerCoversCacheCleanup()
 
         const intervalId = setInterval(
           triggerCoversCacheCleanup,
@@ -40,14 +43,24 @@ export const ServiceWorkerBackgroundTasks = memo(
 
         return function stopCoversCacheCleanup() {
           clearInterval(intervalId)
-          abortInitialPost()
+          abortController.abort()
         }
       },
       [activeProfileId],
     )
 
     useEffect(function cleanupOldRxdbDatabasesOnStartup() {
-      return postTaskWhenReady(SwTask.OldRxdbDatabasesCleanup, undefined)
+      const abortController = new AbortController()
+
+      postTaskWhenReady(
+        SwTask.OldRxdbDatabasesCleanup,
+        undefined,
+        abortController.signal,
+      )
+
+      return function abortPendingRxdbCleanupPost() {
+        abortController.abort()
+      }
     }, [])
 
     return null
