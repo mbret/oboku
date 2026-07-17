@@ -15,39 +15,35 @@ export const useBooksForSearch = (search: string) => {
     isNotInterested: notInterestedContents,
   })
 
-  const filteredBooks = useMemo(
-    () =>
-      visibleBooks
-        ?.filter((book) => {
-          const searchRegex = new RegExp(
-            search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
-            "i",
-          )
+  const filteredBooks = useMemo(() => {
+    const searchRegex = new RegExp(
+      search.replace(REGEXP_SPECIAL_CHAR, `\\$&`) || "",
+      "i",
+    )
 
-          const metadata = book.metadata?.length
-            ? book.metadata
-            : [getMetadataFromBook(book)]
+    return visibleBooks
+      ?.filter((book) => {
+        const metadata = book.metadata?.length
+          ? book.metadata
+          : [getMetadataFromBook(book)]
 
-          return metadata?.some((item) => {
-            const { title } = item
+        return metadata?.some((item) => {
+          const { title } = item
 
-            if (!title) return false
+          if (!title) return false
 
-            const indexOfFirstMatch =
-              title?.toString()?.search(searchRegex) || 0
+          const indexOfFirstMatch = title?.toString()?.search(searchRegex) || 0
 
-            return indexOfFirstMatch >= 0
-          })
+          return indexOfFirstMatch >= 0
         })
-        .sort((a, b) =>
-          sortByTitleComparator(
-            getMetadataFromBook(a).title?.toString() ?? "",
-            getMetadataFromBook(b).title?.toString() ?? "",
-          ),
-        )
-        .map((item) => item._id),
-    [search, visibleBooks],
-  )
+      })
+      .map((book) => ({
+        book,
+        title: getMetadataFromBook(book).title?.toString() ?? "",
+      }))
+      .sort((a, b) => sortByTitleComparator(a.title, b.title))
+      .map(({ book }) => book._id)
+  }, [search, visibleBooks])
 
   return { data: filteredBooks }
 }
