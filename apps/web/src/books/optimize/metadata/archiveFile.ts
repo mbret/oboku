@@ -17,8 +17,8 @@ import {
 import {
   blobFileAccessors,
   createArchiveFromEntries,
-} from "@prose-reader/streamer"
-import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+} from "@prose-reader/archive-reader"
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { Logger } from "../../../debug/logger.shared"
 import type { ArchiveMetadataPatchPlan } from "./targets"
 

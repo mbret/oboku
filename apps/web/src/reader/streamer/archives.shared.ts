@@ -1,6 +1,9 @@
-import { type Archive, createArchiveFromText } from "@prose-reader/streamer"
-import { createArchiveFromLibArchive } from "@prose-reader/streamer/archives/createArchiveFromLibArchive"
-import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+import {
+  type Archive,
+  createArchiveFromText,
+} from "@prose-reader/archive-reader"
+import { createArchiveFromLibArchive } from "@prose-reader/archive-reader/archives/createArchiveFromLibArchive"
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"

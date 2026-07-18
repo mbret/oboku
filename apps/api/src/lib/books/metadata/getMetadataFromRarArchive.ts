@@ -1,5 +1,5 @@
 import type { FileMetadata } from "@oboku/shared"
-import { createArchiveFromNodeUnrarJs } from "@prose-reader/streamer/archives/createArchiveFromNodeUnrarJs"
+import { createArchiveFromNodeUnrarJs } from "@prose-reader/archive-reader/archives/createArchiveFromNodeUnrarJs"
 import type { Extractor } from "node-unrar-js"
 import { getMetadataFromArchive } from "./getMetadataFromArchive"
 
