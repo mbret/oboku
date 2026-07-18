@@ -1,4 +1,7 @@
-import { arrayBufferFileAccessors, createArchive } from "@prose-reader/streamer"
+import {
+  arrayBufferFileAccessors,
+  createArchive,
+} from "@prose-reader/archive-reader"
 import { describe, expect, it } from "vitest"
 import type { Archive, ArchiveRecord } from "../archive/types"
 import { findOpfEntry } from "./read"

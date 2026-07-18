@@ -16,4 +16,4 @@ export type {
 } from "./writer"
 export { patchArchiveMetadata } from "./writer"
 
-export { normalizeIsbn } from "@prose-reader/archive-parser"
+export { normalizeIsbn } from "@prose-reader/archive-reader"

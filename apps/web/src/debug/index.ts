@@ -2,7 +2,7 @@ import { isDebugEnabled } from "./isDebugEnabled.shared"
 import "./reporting"
 
 if (isDebugEnabled()) {
-  window.__PROSE_READER_DEBUG = true
+  globalThis.__PROSE_READER_DEBUG = true
 }
 
 export const toggleDebug = () => {

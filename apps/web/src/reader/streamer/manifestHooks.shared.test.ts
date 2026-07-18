@@ -1,4 +1,5 @@
-import type { Archive, Manifest } from "@prose-reader/streamer"
+import type { Archive } from "@prose-reader/archive-reader"
+import type { Manifest } from "@prose-reader/streamer"
 import { describe, expect, it } from "vitest"
 import {
   readingDirectionManifestHook,
