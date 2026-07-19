@@ -1,5 +1,5 @@
 import { Stack, Typography, styled } from "@mui/material"
-import { normalizeIsbn } from "@oboku/archive-metadata"
+import { normalizeIsbn } from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
