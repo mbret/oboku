@@ -11,9 +11,9 @@ export function extractDateComponents(dateStr: string | undefined = "") {
   } else if (!Number.isNaN(Date.parse(dateStr))) {
     const date = new Date(dateStr)
 
-    day = date.getDay()
-    month = date.getMonth()
-    year = date.getFullYear()
+    day = date.getUTCDate()
+    month = date.getUTCMonth() + 1
+    year = date.getUTCFullYear()
   }
 
   return { year, month, day }
