@@ -7,12 +7,12 @@
 // You can also remove this file if you'd prefer not to use a
 // service worker, and the Workbox build step will be skipped.
 
+import "./debug/enableProseReaderDebug.sw"
 import { clientsClaim } from "workbox-core"
 import { ExpirationPlugin } from "workbox-expiration"
 import { precacheAndRoute, createHandlerBoundToURL } from "workbox-precaching"
 import { registerRoute } from "workbox-routing"
 import { StaleWhileRevalidate } from "workbox-strategies"
-import { configure } from "@prose-reader/streamer"
 import { STREAMER_URL_PREFIX } from "./config/envs.shared"
 import { runCoversCacheCleanup } from "./covers/registerCoversCacheCleanup.sw"
 import { coversFetchListener } from "./covers/coversFetchListener.sw"
@@ -24,8 +24,6 @@ import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoint
 import { assertNever } from "@oboku/shared"
 
 declare const self: ServiceWorkerGlobalScope
-
-configure({ enableReport: !import.meta.env.PROD })
 
 clientsClaim()
 

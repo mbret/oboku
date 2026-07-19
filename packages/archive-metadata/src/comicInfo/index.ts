@@ -1,5 +1,7 @@
-import { COMIC_INFO_FILENAME as PROSE_COMIC_INFO_FILENAME } from "@prose-reader/archive-parser"
-import { readRecordAsText } from "@prose-reader/streamer"
+import {
+  COMIC_INFO_FILENAME as PROSE_COMIC_INFO_FILENAME,
+  readRecordAsText,
+} from "@prose-reader/archive-reader"
 import {
   type Archive,
   type ArchiveFileRecord,

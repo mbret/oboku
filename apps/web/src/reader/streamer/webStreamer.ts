@@ -24,14 +24,11 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
 
 export const webStreamer = new Streamer({
   hooks: {
-    manifest: {
-      content: [
-        readingDirectionManifestHook,
-        ...cbzStreamerHooks.manifest.content,
-      ],
-      spine: cbzStreamerHooks.manifest.spine,
-      presentation: [webtoonManifestHook],
-    },
+    manifest: [
+      readingDirectionManifestHook,
+      ...cbzStreamerHooks.manifest,
+      webtoonManifestHook,
+    ],
     resource: cbzStreamerHooks.resource,
   },
   /**

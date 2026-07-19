@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import {
+  arrayBufferFileAccessors,
+  createArchive,
   parseComicInfo,
   resolveArchiveMetadata,
-} from "@prose-reader/archive-parser"
-import { arrayBufferFileAccessors, createArchive } from "@prose-reader/streamer"
+} from "@prose-reader/archive-reader"
 import type { Archive, ArchiveRecord } from "../archive/types"
 import {
   COMIC_INFO_FILENAME,

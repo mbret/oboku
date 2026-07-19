@@ -1,4 +1,4 @@
-import { readRecordAsText } from "@prose-reader/streamer"
+import { readRecordAsText } from "@prose-reader/archive-reader"
 import type { ArchiveFileRecord } from "../archive/types"
 import {
   type XmlDocument,
