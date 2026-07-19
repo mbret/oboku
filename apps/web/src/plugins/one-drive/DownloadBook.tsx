@@ -8,7 +8,8 @@ import {
   throwIfEmpty,
   type Observable,
 } from "rxjs"
-import { type DownloadParams, httpClientWeb } from "../../http/httpClient.web"
+import type { DownloadParams } from "../../http/httpClient.web"
+import { useDownload } from "../../http/useDownload"
 import { CancelError } from "../../errors/errors.shared"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
@@ -28,6 +29,9 @@ export const DownloadBook = memo(function DownloadBook({
   signal,
 }: DownloadBookComponentProps<"one-drive">) {
   const requestPopup = useRequestPopupDialog(ONE_DRIVE_PLUGIN_NAME)
+  const { mutateAsync: downloadBlob } = useDownload({
+    meta: { suppressGlobalErrorToast: true },
+  })
 
   const { mutate: download } = useMutation({
     mutationFn: async ({
@@ -39,7 +43,7 @@ export const DownloadBook = memo(function DownloadBook({
       fileName: string
       size?: number
     }) => {
-      const response = await httpClientWeb.download<Blob>({
+      const response = await downloadBlob({
         onDownloadProgress: (event) => {
           const totalSize = size || event.total || 1
 
@@ -57,6 +61,7 @@ export const DownloadBook = memo(function DownloadBook({
     },
     onSuccess: onResolve,
     onError,
+    meta: { suppressGlobalErrorToast: true },
   })
 
   const { mutate: resolve } = useMutation$({
@@ -88,6 +93,7 @@ export const DownloadBook = memo(function DownloadBook({
       })
     },
     onError,
+    meta: { suppressGlobalErrorToast: true },
   })
 
   useEffectWithUnmount$(

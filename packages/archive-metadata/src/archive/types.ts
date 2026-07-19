@@ -2,7 +2,7 @@ import {
   type Archive,
   type ArchiveRecord,
   isFileRecord,
-} from "@prose-reader/streamer"
+} from "@prose-reader/archive-reader"
 
 export type { Archive, ArchiveRecord }
 export { isFileRecord }

@@ -1,6 +1,5 @@
 import type React from "react"
-import { memo, useEffect, useState } from "react"
-import { useMountedState } from "react-use"
+import { memo, useState } from "react"
 import placeholder from "../assets/cover-placeholder.jpg"
 import { Box, type BoxProps, styled } from "@mui/material"
 import { useBook } from "./states"
@@ -47,7 +46,7 @@ const CoverImg = styled(`img`)<{
     width: "100%",
   }),
   ...(rounded && {
-    borderRadius: 5,
+    borderRadius: theme.shape.borderRadius,
   }),
 }))
 
@@ -77,11 +76,9 @@ export const Cover = memo(
     rounded?: boolean
     blurIfNeeded?: boolean
   } & Pick<BoxProps, "sx">) => {
-    const isMounted = useMountedState()
     const book = useBookCoverState({
       bookId,
     })
-    const [hasError, setHasError] = useState(false)
     const [isLoading, setIsLoading] = useState(true)
     const localSettings = useLocalSettings()
     const shouldBlurCover =
@@ -89,13 +86,7 @@ export const Cover = memo(
       blurIfNeeded &&
       !localSettings.unBlurWhenProtectedVisible
 
-    const { coverSrc, coverSrcJpg } = useBookCover({ bookId })
-
-    useEffect(() => {
-      void coverSrc
-
-      setHasError(false)
-    }, [coverSrc])
+    const { coverSrc, coverSrcJpg, onError } = useBookCover({ bookId })
 
     return (
       <CoverRootBox className={className} style={style} sx={sx}>
@@ -122,17 +113,11 @@ export const Cover = memo(
             }),
           }}
         >
-          <source
-            srcSet={hasError ? placeholder : coverSrc}
-            type="image/webp"
-          />
-          <source
-            srcSet={hasError ? placeholder : coverSrcJpg}
-            type="image/jpeg"
-          />
+          <source srcSet={coverSrc} type="image/webp" />
+          <source srcSet={coverSrcJpg} type="image/jpeg" />
           <CoverImg
             alt="img"
-            src={hasError ? placeholder : coverSrc}
+            src={coverSrc}
             fullWidth={fullWidth}
             rounded={rounded}
             withShadow={withShadow}
@@ -142,9 +127,7 @@ export const Cover = memo(
             onLoad={() => {
               setIsLoading(false)
             }}
-            onError={() => {
-              isMounted() && setHasError(true)
-            }}
+            onError={onError}
             {...rest}
           />
         </picture>

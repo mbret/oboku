@@ -47,10 +47,14 @@ import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
-import { authStateSignal } from "../../auth/states.web"
+import { useActiveProfile } from "../../profiles"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
 import { showDialog } from "../../common/dialogs/createDialog"
-import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
+import {
+  createNotImplementedDialogOptions,
+  showConfirmDialog,
+} from "../../common/dialogs/presets"
+import { countLocalOnlyDownloadedBooks } from "../../download/countLocalOnlyDownloadedBooks"
 import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
@@ -63,7 +67,7 @@ export const ProfileScreen = () => {
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
-  const auth = useSignalValue(authStateSignal)
+  const { data: auth } = useActiveProfile()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -72,13 +76,41 @@ export const ProfileScreen = () => {
   const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
   const { unreadCount } = useUnreadNotificationsCount()
+  const { db } = useDatabase()
+
+  const confirmThenSignOut = useCallback(
+    async function confirmThenSignOut() {
+      const localOnlyBookCount = db
+        ? await countLocalOnlyDownloadedBooks(db)
+        : 0
+
+      if (localOnlyBookCount > 0) {
+        const lostBooks =
+          localOnlyBookCount === 1
+            ? "1 book you added directly from this device has"
+            : `${localOnlyBookCount} books you added directly from this device have`
+
+        const confirmed = await showConfirmDialog({
+          title: "Sign out?",
+          message: `Signing out erases everything downloaded on this device. ${lostBooks} no cloud copy and will be permanently lost.`,
+          cancelTitle: "Cancel",
+          actions: [{ title: "Sign out", variant: "contained" }],
+        })
+
+        if (!confirmed) return
+      }
+
+      signOut()
+    },
+    [db, signOut],
+  )
 
   return (
     <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
       <List>
         <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItemButton onClick={(_) => signOut()}>
+        <ListItemButton onClick={confirmThenSignOut}>
           <ListItemText primary="Sign out" secondary={auth?.email} />
         </ListItemButton>
         <ListItemButton

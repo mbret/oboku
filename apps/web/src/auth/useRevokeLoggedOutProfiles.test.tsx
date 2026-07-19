@@ -1,0 +1,157 @@
+// @vitest-environment jsdom
+
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { cleanup, renderHook } from "@testing-library/react"
+import type { ReactNode } from "react"
+import { afterEach, describe, expect, it, vi } from "vitest"
+import type { Profile } from "../profiles/types"
+
+const { profilesStore } = vi.hoisted(() => ({
+  profilesStore: new Map<string, Profile>(),
+}))
+
+vi.mock("../rxdb/dexie", () => ({
+  dexieDb: {
+    profiles: {
+      toArray: async () => [...profilesStore.values()],
+      delete: async (profileId: string) => {
+        profilesStore.delete(profileId)
+      },
+    },
+  },
+}))
+
+import type { HttpApiClientWeb } from "../http/HttpClientApi.web"
+import { HttpClientApiContext } from "../http"
+import { profilesQueryKey } from "../profiles"
+import { useRevokeLoggedOutProfiles } from "./useRevokeLoggedOutProfiles"
+
+const createProfile = (overrides: Partial<Profile> = {}): Profile => ({
+  id: "reader",
+  email: "reader@example.com",
+  nameHex: "reader",
+  dbName: "reader-db",
+  sessionId: "session-default",
+  ...overrides,
+})
+
+const renderRevokeHook = (
+  logout: ReturnType<typeof vi.fn>,
+  queryClient = new QueryClient(),
+) => {
+  // test double: only logout is exercised by the sweep
+  const client = { logout } as unknown as HttpApiClientWeb
+
+  const wrapper = ({ children }: { children: ReactNode }) => (
+    <QueryClientProvider client={queryClient}>
+      <HttpClientApiContext.Provider value={client}>
+        {children}
+      </HttpClientApiContext.Provider>
+    </QueryClientProvider>
+  )
+
+  return renderHook(() => useRevokeLoggedOutProfiles(), { wrapper })
+}
+
+describe("useRevokeLoggedOutProfiles", () => {
+  afterEach(() => {
+    cleanup()
+    profilesStore.clear()
+  })
+
+  it("revokes a tombstone by its own session id and deletes it", async () => {
+    profilesStore.set(
+      "gone-reader",
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "session-1",
+      }),
+    )
+
+    const logout = vi.fn().mockResolvedValue(undefined)
+    const { result } = renderRevokeHook(logout)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledWith("session-1")
+    expect(profilesStore.has("gone-reader")).toBe(false)
+  })
+
+  it("keeps the tombstone for a later sweep when revocation fails", async () => {
+    profilesStore.set(
+      "gone-reader",
+      createProfile({
+        id: "gone-reader",
+        status: "loggedOut",
+        sessionId: "session-1",
+      }),
+    )
+
+    const logout = vi.fn().mockRejectedValue(new Error("offline"))
+    const { result } = renderRevokeHook(logout)
+
+    await expect(result.current.mutateAsync()).resolves.toBeUndefined()
+
+    expect(profilesStore.has("gone-reader")).toBe(true)
+  })
+
+  it("leaves a row a re-login turned active while its logout call was in flight", async () => {
+    profilesStore.set(
+      "reader",
+      createProfile({
+        id: "reader",
+        status: "loggedOut",
+        sessionId: "old-session",
+      }),
+    )
+
+    const queryClient = new QueryClient()
+    const freshProfile = createProfile({
+      id: "reader",
+      sessionId: "new-session",
+    })
+    const logout = vi
+      .fn()
+      .mockImplementation(async function reloginWhileLogoutInFlight() {
+        profilesStore.set("reader", freshProfile)
+        queryClient.setQueryData(profilesQueryKey, [freshProfile])
+      })
+    const { result } = renderRevokeHook(logout, queryClient)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledWith("old-session")
+    expect(profilesStore.get("reader")).toEqual(freshProfile)
+  })
+
+  it("leaves a fresher tombstone a re-login then re-logout minted under a new session id", async () => {
+    profilesStore.set(
+      "reader",
+      createProfile({
+        id: "reader",
+        status: "loggedOut",
+        sessionId: "old-session",
+      }),
+    )
+
+    const queryClient = new QueryClient()
+    const freshTombstone = createProfile({
+      id: "reader",
+      status: "loggedOut",
+      sessionId: "new-session",
+    })
+    const logout = vi
+      .fn()
+      .mockImplementation(async function reloginThenReLogoutWhileInFlight() {
+        profilesStore.set("reader", freshTombstone)
+        queryClient.setQueryData(profilesQueryKey, [freshTombstone])
+      })
+    const { result } = renderRevokeHook(logout, queryClient)
+
+    await result.current.mutateAsync()
+
+    expect(logout).toHaveBeenCalledWith("old-session")
+    expect(profilesStore.get("reader")).toEqual(freshTombstone)
+  })
+})

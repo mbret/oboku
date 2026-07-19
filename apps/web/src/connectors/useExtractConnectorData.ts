@@ -1,5 +1,6 @@
+import type { DefaultError } from "@tanstack/react-query"
 import { from, map, switchMap } from "rxjs"
-import { useMutation$ } from "reactjrx"
+import { useMutation$, type UseMutation$Options } from "reactjrx"
 import { useRequestMasterKey } from "../secrets/useRequestMasterKey"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { throwIfNotDefined } from "../common/rxjs/operators"
@@ -12,12 +13,20 @@ import { isConnectorOfType } from "../rxdb/collections/settings"
 
 export const useExtractConnectorData = <
   T extends SettingsConnectorDocType["type"],
->({
-  type,
-}: {
-  type: T
-}) => {
-  const { mutateAsync: requestMasterKey } = useRequestMasterKey()
+>(
+  { type }: { type: T },
+  options?: Omit<
+    UseMutation$Options<
+      { data: SettingsResolvedConnectorData<T> },
+      DefaultError,
+      { connectorId: string }
+    >,
+    "mutationFn"
+  >,
+) => {
+  const { mutateAsync: requestMasterKey } = useRequestMasterKey({
+    meta: options?.meta,
+  })
 
   return useMutation$({
     mutationFn: ({ connectorId }: { connectorId: string }) =>
@@ -62,5 +71,6 @@ export const useExtractConnectorData = <
           ),
         ),
       ),
+    ...options,
   })
 }

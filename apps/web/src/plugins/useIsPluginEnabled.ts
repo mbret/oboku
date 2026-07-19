@@ -1,32 +1,34 @@
-import { configuration } from "../config/configuration"
+import { useConfig } from "../config/useConfig"
 import { plugin as googlePlugin } from "./google"
 import { plugin as dropboxPlugin } from "./dropbox"
 import { plugin as oneDrivePlugin } from "./one-drive"
 import { plugin as serverPlugin } from "./server"
 import type { Plugin } from "./configure"
 
-const isPluginEnabled = (plugin: Plugin) => {
-  switch (plugin.type) {
-    case googlePlugin.type:
-      return configuration.FEATURE_GOOGLE_DRIVE_ENABLED
-    case dropboxPlugin.type:
-      return configuration.FEATURE_DROPBOX_ENABLED
-    case oneDrivePlugin.type:
-      return configuration.FEATURE_ONE_DRIVE_ENABLED
-    case serverPlugin.type:
-      return configuration.FEATURE_SERVER_SYNC_ENABLED
-    default:
-      return true
+export const useGetIsPluginEnabled = () => {
+  const { data: config } = useConfig()
+
+  return function getIsPluginEnabled(plugin: Plugin) {
+    switch (plugin.type) {
+      case googlePlugin.type:
+        return !!config?.FEATURE_GOOGLE_DRIVE_ENABLED
+      case dropboxPlugin.type:
+        return !!config?.FEATURE_DROPBOX_ENABLED
+      case oneDrivePlugin.type:
+        return !!config?.FEATURE_ONE_DRIVE_ENABLED
+      case serverPlugin.type:
+        return !!config?.FEATURE_SERVER_SYNC_ENABLED
+      default:
+        return true
+    }
   }
 }
 
-const isPluginVisible = (plugin: Plugin) =>
-  isPluginEnabled(plugin) || configuration.SHOW_DISABLED_PLUGINS
-
 export const useGetIsPluginVisible = () => {
-  return isPluginVisible
-}
+  const { data: config } = useConfig()
+  const isPluginEnabled = useGetIsPluginEnabled()
 
-export const useGetIsPluginEnabled = () => {
-  return isPluginEnabled
+  return function getIsPluginVisible(plugin: Plugin) {
+    return isPluginEnabled(plugin) || !!config?.SHOW_DISABLED_PLUGINS
+  }
 }

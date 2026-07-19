@@ -1,7 +1,7 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
-import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { readArchiveMetadataFromSource } from "./metadata/archiveFile"
 import {

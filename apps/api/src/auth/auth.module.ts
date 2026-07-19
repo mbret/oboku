@@ -8,6 +8,8 @@ import { APP_GUARD } from "@nestjs/core"
 import { AuthController } from "./auth.controller"
 import { CouchService } from "../couch/couch.service"
 import { EmailModule } from "../email/email.module"
+import { AuthCookiesService } from "./auth-cookies"
+import { RefreshProofService } from "./refresh-proof.service"
 
 @Module({
   imports: [UsersModule, PostgresModule, EmailModule],
@@ -15,6 +17,8 @@ import { EmailModule } from "../email/email.module"
     AuthService,
     JwtService,
     CouchService,
+    AuthCookiesService,
+    RefreshProofService,
     /**
      * AuthGuard is used to protect all routes by default
      */

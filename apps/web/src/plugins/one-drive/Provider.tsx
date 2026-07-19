@@ -1,23 +1,22 @@
 import { memo, useEffect } from "react"
-import { useObserve } from "reactjrx"
-import { configuration } from "../../config/configuration"
+import { useConfig } from "../../config/useConfig"
 import type { ObokuPlugin } from "../types"
 import { initializeOneDriveSession } from "./auth/auth"
 
 export const Provider: ObokuPlugin["Provider"] = memo(function Provider({
   children,
 }) {
-  const { data: configurationState } = useObserve(configuration)
-  const isOneDriveEnabled =
-    !!configurationState?.config.MICROSOFT_APPLICATION_CLIENT_ID
+  const { data: config } = useConfig()
+  const clientId = config?.MICROSOFT_APPLICATION_CLIENT_ID
+  const authority = config?.MICROSOFT_APPLICATION_AUTHORITY
 
   useEffect(() => {
-    if (!isOneDriveEnabled) {
+    if (!clientId) {
       return
     }
 
-    void initializeOneDriveSession()
-  }, [isOneDriveEnabled])
+    void initializeOneDriveSession({ clientId, authority })
+  }, [clientId, authority])
 
   return <>{children}</>
 })

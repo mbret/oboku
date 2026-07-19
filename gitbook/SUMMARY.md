@@ -22,6 +22,7 @@
 * [User Accounts](self-hosting/user-accounts.md)
 * [OPDS Server](self-hosting/opds-server.md)
 * [Server Sync](self-hosting/server-sync.md)
+* [Changelog](self-hosting/changelog.md)
 
 ## Guides
 
@@ -55,3 +56,4 @@
 * [Local Profile](development/local-profile.md)
 * [Local Database](development/local-database.md)
 * [Covers Cache](development/covers-cache.md)
+* [Authentication](development/authentication.md)

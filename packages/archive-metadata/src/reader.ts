@@ -1,10 +1,10 @@
 import {
   parseComicInfo,
   parseOpf,
+  readRecordAsText,
   resolveArchiveMetadata,
-  type ArchiveResolveResult,
-} from "@prose-reader/archive-parser"
-import { readRecordAsText } from "@prose-reader/streamer"
+  type ResolvedMetadata,
+} from "@prose-reader/archive-reader"
 import {
   type Archive,
   type ArchiveFileRecord,
@@ -65,8 +65,8 @@ export type ArchiveMetadata = {
   hasOpf: boolean
   /** `true` when the archive exposed a ComicInfo.xml at the root. */
   hasComicInfo: boolean
-  opf?: ArchiveResolveResult | undefined
-  comicInfo?: ArchiveResolveResult | undefined
+  opf?: ResolvedMetadata | undefined
+  comicInfo?: ResolvedMetadata | undefined
   /**
    * Archive-relative path to the cover. For EPUBs this is the OPF
    * cover with its folder prefix resolved; for other archives it's

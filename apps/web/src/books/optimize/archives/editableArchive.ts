@@ -2,7 +2,7 @@ import type { Archive } from "@oboku/archive-metadata"
 import {
   arrayBufferFileAccessors,
   createArchiveFromEntries,
-} from "@prose-reader/streamer"
+} from "@prose-reader/archive-reader"
 import {
   BlobReader,
   type Entry,

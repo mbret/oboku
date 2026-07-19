@@ -10,7 +10,7 @@ import {
   libraryStateSignal,
   selectIsLibraryUnlocked,
 } from "../library/books/states"
-import { configuration } from "../config/configuration"
+import { useConfig } from "../config/useConfig"
 
 export const useCollection = ({
   id,
@@ -21,6 +21,7 @@ export const useCollection = ({
   isNotInterested?: "with" | "none" | "only" | undefined
   enabled?: boolean
 }) => {
+  const { data: config } = useConfig()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -28,14 +29,22 @@ export const useCollection = ({
 
   return useQuery$({
     ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "collection", id, { isLibraryUnlocked }],
+    queryKey: [
+      RXDB_QUERY_KEY_PREFIX,
+      "collection",
+      id,
+      { isLibraryUnlocked, isNotInterested },
+    ],
     enabled: !!id && !!enabled,
     queryFn: () => {
+      const emptyCollectionId = config?.COLLECTION_EMPTY_ID
+
       return latestDatabase$.pipe(
         switchMap((db) => {
-          if (id === configuration.COLLECTION_EMPTY_ID)
+          if (emptyCollectionId && id === emptyCollectionId)
             return observeEmptyCollection({
               db,
+              id: emptyCollectionId,
               includeProtected: isLibraryUnlocked,
               isNotInterested,
             })

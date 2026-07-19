@@ -1,0 +1,38 @@
+# Dev-only reverse proxy in front of the API.
+#
+# Production runs the API behind the deployer's own reverse proxy (which gives
+# HTTP/2, so a single origin handles all live replications). Local dev has no
+# such layer, so this exposes extra origins that forward to the API, giving the
+# browser more origins to dodge the per-origin HTTP/1 connection limit when
+# replicating many collections. The primary origin is the API itself (:3000);
+# these ports back VITE_API_URL_2/3/4. Each forwards to the same API, which in
+# turn proxies CouchDB under /couchdb.
+server {
+  listen 5985;
+  listen 5986;
+  listen 5987;
+  server_name _;
+
+  # CouchDB accepts large _bulk_docs payloads and binary attachments; never cap
+  # the body size at the proxy.
+  client_max_body_size 0;
+
+  location / {
+    proxy_pass http://${DEV_PROXY_UPSTREAM};
+    proxy_redirect off;
+
+    proxy_http_version 1.1;
+    proxy_set_header Host $http_host;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto $scheme;
+    # Drop the client's Connection header so keepalive to the upstream works.
+    proxy_set_header Connection "";
+
+    # Stream CouchDB's _changes longpoll/continuous feeds rather than buffering
+    # them, and allow long-lived feeds to stay open.
+    proxy_buffering off;
+    proxy_request_buffering off;
+    proxy_read_timeout 3600s;
+    proxy_send_timeout 3600s;
+  }
+}

@@ -5,7 +5,6 @@ import {
   Button,
   Group,
   Paper,
-  Radio,
   ScrollArea,
   Select,
   Stack,
@@ -15,22 +14,20 @@ import {
   Title,
 } from "@mantine/core"
 import { useForm } from "@mantine/form"
+import {
+  AudienceFields,
+  type AudienceFormValues,
+  parseEmails,
+  validateRecipientEmails,
+} from "@/components/AudienceFields"
 import { useCreateAdminNotification } from "./useCreateAdminNotification"
 import { useAdminNotifications } from "./useAdminNotifications"
 
-type AdminNotificationsFormValues = {
+type AdminNotificationsFormValues = AudienceFormValues & {
   title: string
   body: string
   severity: NotificationSeverity
-  audienceType: "all" | "emails"
-  recipientEmails: string
 }
-
-const parseEmails = (value: string) =>
-  value
-    .split(/[\n,]/)
-    .map((entry) => entry.trim())
-    .filter((entry) => entry.length > 0)
 
 const severityOptions: {
   value: NotificationSeverity
@@ -61,10 +58,7 @@ export const AdminNotificationsSection = () => {
     },
     validate: {
       title: (value) => (value.trim().length > 0 ? null : "Title is required"),
-      recipientEmails: (value, values) =>
-        values.audienceType === "emails" && parseEmails(value).length === 0
-          ? "Provide at least one email"
-          : null,
+      recipientEmails: validateRecipientEmails,
     },
   })
   const notificationsQuery = useAdminNotifications()
@@ -128,33 +122,15 @@ export const AdminNotificationsSection = () => {
                 allowDeselect={false}
                 {...form.getInputProps("severity")}
               />
-              <Radio.Group
-                label="Audience"
-                {...form.getInputProps("audienceType")}
-              >
-                <Stack gap="xs" mt="xs">
-                  <Radio
-                    value="all"
-                    label="Everyone"
-                    description="Send the notification to all existing users."
-                  />
-                  <Radio
-                    value="emails"
-                    label="Specific emails"
-                    description="Only send to the provided email addresses."
-                  />
-                </Stack>
-              </Radio.Group>
-              {form.values.audienceType === "emails" && (
-                <Textarea
-                  label="Recipient emails"
-                  description="Separate addresses with commas or new lines."
-                  placeholder={"reader@example.com\nteam@example.com"}
-                  minRows={4}
-                  autosize
-                  {...form.getInputProps("recipientEmails")}
-                />
-              )}
+              <AudienceFields
+                form={form}
+                groupLabel="Audience"
+                everyoneLabel="Everyone"
+                everyoneDescription="Send the notification to all existing users."
+                specificLabel="Specific emails"
+                specificDescription="Only send to the provided email addresses."
+                emailsLabel="Recipient emails"
+              />
               <Group justify="flex-end">
                 <Button type="submit" loading={createNotification.isPending}>
                   send notification

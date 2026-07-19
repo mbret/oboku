@@ -43,13 +43,13 @@ export const StatusChip = memo(
                   alignItems: "center",
                 }}
               >
-                <StarRounded fontSize="small" color="warning" />
+                <StarRounded fontSize="small" sx={{ color: "inherit" }} />
                 <Typography
-                  color="warning"
                   variant="caption"
                   sx={{
                     lineHeight: "inherit",
                     fontWeight: "bold",
+                    color: "inherit",
                   }}
                 >
                   {rating.toFixed(1)}

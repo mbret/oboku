@@ -1,9 +1,29 @@
-import { ConflictException, Injectable, Logger } from "@nestjs/common"
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  Logger,
+} from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 import { UserPostgresEntity } from "./entities"
 
 export const normalizeEmail = (email: string) => email.trim().toLowerCase()
+
+export const normalizeAudienceEmails = (
+  emails: string[] | undefined,
+  emptyMessage: string,
+): string[] => {
+  const normalized = [...new Set((emails ?? []).map(normalizeEmail))].filter(
+    (email) => email.length > 0,
+  )
+
+  if (normalized.length === 0) {
+    throw new BadRequestException(emptyMessage)
+  }
+
+  return normalized
+}
 
 const logger = new Logger("UserPostgresService")
 
@@ -37,7 +57,7 @@ export class UserPostgresService {
     })
   }
 
-  async create(user: Omit<UserPostgresEntity, "id">) {
+  async create(user: Omit<UserPostgresEntity, "id" | "createdAt">) {
     const newUser = this.userRepository.create({
       ...user,
       email: normalizeEmail(user.email),
@@ -61,7 +81,38 @@ export class UserPostgresService {
   async getAllUserIds(): Promise<number[]> {
     const users = await this.userRepository.find({ select: ["id"] })
 
-    return [...new Set(users.map(({ id }) => id))]
+    return users.map(({ id }) => id)
+  }
+
+  async getAllUsers(): Promise<
+    Pick<
+      UserPostgresEntity,
+      "id" | "email" | "username" | "emailVerified" | "createdAt" | "password"
+    >[]
+  > {
+    return this.userRepository.find({
+      select: [
+        "id",
+        "email",
+        "username",
+        "emailVerified",
+        "createdAt",
+        "password",
+      ],
+      order: { id: "ASC" },
+    })
+  }
+
+  async getAllUserEmails(): Promise<string[]> {
+    const users = await this.userRepository.find({ select: ["email"] })
+
+    return [
+      ...new Set(
+        users
+          .map(({ email }) => normalizeEmail(email ?? ""))
+          .filter((email) => email.length > 0),
+      ),
+    ]
   }
 
   async getUserIdsByEmails(emails: string[]): Promise<number[]> {

@@ -7,12 +7,12 @@ import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
 import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
-import { signalEntriesToPersist } from "./profile"
+import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
 import { BackgroundReplication } from "./rxdb/replication/BackgroundReplication"
-import { useProfileStorage } from "./profile/storage"
-import { usePersistAuthState } from "./auth/states.web"
+import { ServiceWorkerBackgroundTasks } from "./workers/ServiceWorkerBackgroundTasks"
+import { useIsActiveProfileHydrated } from "./profiles"
 import { DialogProvider } from "./common/dialogs/DialogProvider"
 import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
@@ -21,10 +21,12 @@ import { Logger } from "./debug/logger.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
 import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
-import { PersistQueryProvider } from "./queries/PersistQueryProvider"
+import { QueryClientProvider } from "./queries/QueryClientProvider"
+import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { AppError } from "./errors/AppError"
+import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
-import { AutoSignOutWhenUnauthorized } from "./auth/AutoSignOutWhenUnauthorized"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
@@ -33,9 +35,14 @@ import { PluginDownloadFlowHost } from "./download/flow/PluginDownloadFlowHost"
 import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
-import { AuthenticatedOnly } from "./auth/AuthenticatedOnly"
+import { WithAuthentication } from "./auth/WithAuthentication"
+import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
+import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
+import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
+import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
+import { useSyncSentryUser } from "./debug/useSyncSentryUser"
 
 // @todo move to sw
 LibArchive.init({
@@ -53,7 +60,7 @@ const App = memo(() => {
     entries: signalEntriesToPersist,
   })
 
-  const { isHydrated: isAuthHydrated } = usePersistAuthState()
+  const isAuthHydrated = useIsActiveProfileHydrated()
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
@@ -71,9 +78,7 @@ const App = memo(() => {
             }}
           >
             <AppBrowserRouter>
-              {/* This needs to be high enough to catch at least any early calls to `httpClientApi` */}
-              <AutoSignOutWhenUnauthorized />
-              <AuthenticatedOnly>
+              <WithAuthentication>
                 <UploadBookDialogWithDragOver />
                 <BookActionsDrawer />
                 <CollectionActionsDrawer />
@@ -82,16 +87,18 @@ const App = memo(() => {
                 <SetupSecretDialog />
                 <AddTagDialog />
                 <AddCollectionDialog />
-              </AuthenticatedOnly>
+              </WithAuthentication>
               <AuthorizeActionDialog />
               <BackgroundReplication />
               <BlockingBackdrop />
+              <NotifyExpiredSession />
               <OtherEffects />
             </AppBrowserRouter>
           </Box>
         </Fade>
       )}
       <UpdateAvailableDialog serviceWorker={waitingWorker} />
+      <ServiceWorkerBackgroundTasks />
       <PreloadQueries
         onReady={() => {
           setIsPreloadingQueries(false)
@@ -111,20 +118,29 @@ const App = memo(() => {
 export const AppWithConfig = memo(() => {
   return (
     <ErrorBoundary
+      fallback={({ error }) => <AppError error={error} />}
       onError={(e) => {
         Logger.error(e)
       }}
     >
       <StyledEngineProvider injectFirst>
         <ThemeProvider>
-          <PersistQueryProvider>
-            <QueryClientProvider$>
-              <LoadConfiguration>
-                <App />
-              </LoadConfiguration>
-              {import.meta.env.DEV && <DebugMenu />}
-            </QueryClientProvider$>
-          </PersistQueryProvider>
+          <HttpClientApiProvider>
+            <QueryClientProvider>
+              <QueryClientProvider$>
+                <HttpSessionStoreProvider>
+                  <LegacyAuthMigration>
+                    <RevokeLoggedOutProfiles />
+                    <SyncProfilesAcrossTabs />
+                    <LoadConfiguration>
+                      <App />
+                    </LoadConfiguration>
+                  </LegacyAuthMigration>
+                  {import.meta.env.DEV && <DebugMenu />}
+                </HttpSessionStoreProvider>
+              </QueryClientProvider$>
+            </QueryClientProvider>
+          </HttpClientApiProvider>
         </ThemeProvider>
       </StyledEngineProvider>
       <BlurFilterReference />
@@ -133,9 +149,11 @@ export const AppWithConfig = memo(() => {
 })
 
 const OtherEffects = memo(() => {
+  const { mutate: loadGsi } = useLoadGsi()
+
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
-  const { mutate: loadGsi } = useLoadGsi()
+  useSyncSentryUser()
 
   useEffect(() => {
     loadGsi()

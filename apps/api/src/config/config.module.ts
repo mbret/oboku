@@ -1,10 +1,11 @@
 import { Module, Global } from "@nestjs/common"
 import { AppConfigService } from "./AppConfigService"
 import { SecretsService } from "./SecretsService"
+import { TrustedOriginsService } from "./trusted-origin.service"
 
 @Global()
 @Module({
-  providers: [AppConfigService, SecretsService],
-  exports: [AppConfigService, SecretsService],
+  providers: [AppConfigService, SecretsService, TrustedOriginsService],
+  exports: [AppConfigService, SecretsService, TrustedOriginsService],
 })
 export class AppConfigModule {}

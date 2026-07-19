@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const hasQueryFn = <Result>(
@@ -22,16 +24,11 @@ describe("notifications queries", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/httpClientApi.web", () => ({
-      httpClientApi: {
-        fetch,
-        fetchOrThrow,
-      },
+    vi.doMock("../../http/HttpClientApiContext", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", async (importOriginal) => {
       const actual =
@@ -40,6 +37,17 @@ describe("notifications queries", () => {
       return {
         ...actual,
         useQuery,
+      }
+    })
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
+    }))
+    vi.doMock("reactjrx", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("reactjrx")>()
+
+      return {
+        ...actual,
+        useSignalValue: () => "reader",
       }
     })
 
@@ -70,16 +78,11 @@ describe("notifications queries", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/httpClientApi.web", () => ({
-      httpClientApi: {
-        fetch,
-        fetchOrThrow,
-      },
+    vi.doMock("../../http/HttpClientApiContext", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", async (importOriginal) => {
       const actual =
@@ -88,6 +91,20 @@ describe("notifications queries", () => {
       return {
         ...actual,
         useQuery,
+      }
+    })
+    vi.doMock("./useLocalNotifications", () => ({
+      useLocalNotifications: () => [],
+    }))
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
+    }))
+    vi.doMock("reactjrx", async (importOriginal) => {
+      const actual = await importOriginal<typeof import("reactjrx")>()
+
+      return {
+        ...actual,
+        useSignalValue: () => "reader",
       }
     })
 

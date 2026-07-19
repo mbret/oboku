@@ -2,7 +2,6 @@
 // register() is not called by default.
 
 import { Logger } from "../debug/logger.shared"
-import { serviceWorkerReadySignal } from "./states.web"
 
 // This lets the app load faster on subsequent visits in production, and gives
 // it offline capabilities. However, it also means that developers (and users)
@@ -93,7 +92,7 @@ function registerValidSW(swUrl: string, config?: Config) {
 
       registration.onupdatefound = () => {
         const installingWorker = registration.installing
-        if (installingWorker == null) {
+        if (installingWorker === null) {
           return
         }
         installingWorker.onstatechange = () => {
@@ -149,7 +148,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       const contentType = response.headers.get("content-type")
       if (
         response.status === 404 ||
-        (contentType != null && contentType.indexOf("javascript") === -1)
+        (contentType !== null && contentType.indexOf("javascript") === -1)
       ) {
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
@@ -168,7 +167,3 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       )
     })
 }
-
-navigator.serviceWorker.ready.then(() => [
-  serviceWorkerReadySignal.setValue(true),
-])

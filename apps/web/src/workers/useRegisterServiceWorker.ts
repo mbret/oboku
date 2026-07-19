@@ -1,18 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { Logger } from "../debug/logger.shared"
-import {
-  webCommunication,
-  WebCommunication,
-} from "./communication/communication.web"
-import {
-  ConfigurationChangeMessage,
-  SkipWaitingMessage,
-} from "./communication/types.shared"
-import { useSubscribe } from "reactjrx"
-import { configuration } from "../config/configuration"
-import { distinctUntilKeyChanged, tap } from "rxjs"
-import { isShallowEqual } from "@oboku/shared"
+import { sendMessageToServiceWorker } from "./communication/communication.web"
+import { skipWaitingMessage } from "./communication/types.shared"
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -20,7 +10,7 @@ export const useRegisterServiceWorker = () => {
   )
   const firstTime = useRef(true)
 
-  useEffect(() => {
+  useEffect(function registerServiceWorkerOnce() {
     if (firstTime.current) {
       firstTime.current = false
 
@@ -36,7 +26,7 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  useEffect(() => {
+  useEffect(function reloadWhenServiceWorkerTakesControl() {
     if (!("serviceWorker" in navigator)) return
 
     const controllerchange = () => {
@@ -57,7 +47,7 @@ export const useRegisterServiceWorker = () => {
       controllerchange,
     )
 
-    return () => {
+    return function removeControllerChangeListener() {
       navigator.serviceWorker.removeEventListener(
         "controllerchange",
         controllerchange,
@@ -68,29 +58,14 @@ export const useRegisterServiceWorker = () => {
   /**
    * During dev, as soon as we detect a new service worker, we skip waiting.
    */
-  useEffect(() => {
-    if (import.meta.env.MODE === "development" && waitingWorker) {
-      WebCommunication.sendMessage(waitingWorker, new SkipWaitingMessage())
-    }
-  }, [waitingWorker])
-
-  const sendConfigurationChangeMessage = useCallback(
-    () =>
-      configuration.pipe(
-        distinctUntilKeyChanged("config", isShallowEqual),
-        tap(() => {
-          webCommunication.sendMessage(
-            new ConfigurationChangeMessage({
-              API_COUCH_URI: configuration.API_COUCH_URI,
-              API_URL: configuration.API_URL,
-            }),
-          )
-        }),
-      ),
-    [],
+  useEffect(
+    function skipWaitingForNewServiceWorkerInDev() {
+      if (import.meta.env.MODE === "development" && waitingWorker) {
+        sendMessageToServiceWorker(waitingWorker, skipWaitingMessage())
+      }
+    },
+    [waitingWorker],
   )
-
-  useSubscribe(sendConfigurationChangeMessage)
 
   return { waitingWorker }
 }

@@ -34,7 +34,7 @@ export class UsersService {
     return this.userPostgresService.findById(userId)
   }
 
-  async registerUser(user: Omit<UserPostgresEntity, "id">) {
+  async registerUser(user: Omit<UserPostgresEntity, "id" | "createdAt">) {
     return this.userPostgresService.create(user)
   }
 

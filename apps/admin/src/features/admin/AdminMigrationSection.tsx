@@ -3,10 +3,14 @@ import { useMigrateWebdavConnectors } from "../useMigrateWebdavConnectors"
 import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
 import { useMigrateResourceIdToLinkData } from "../useMigrateResourceIdToLinkData"
 import { useMigrateCollectionCoverKeys } from "../useMigrateCollectionCoverKeys"
+import { useResetRefreshTokenCreatedAt } from "../useResetRefreshTokenCreatedAt"
 import { ConfirmButton } from "@/components/ConfirmButton"
 
 const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
   "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
+
+const RUN_ONCE_CONFIRMATION_MESSAGE =
+  "Run this EXACTLY ONCE, right after deploying the new refresh-token rotation.\n\nIt resets created_at to now() on every refresh token. Running it again extends every token by another full TTL and defeats the expiry cap."
 
 export const AdminMigrationSection = () => {
   const {
@@ -33,6 +37,12 @@ export const AdminMigrationSection = () => {
     isPending: isCollectionCoverKeysPending,
     error: collectionCoverKeysError,
   } = useMigrateCollectionCoverKeys()
+  const {
+    mutate: resetRefreshTokenCreatedAt,
+    data: resetRefreshTokenCreatedAtResult,
+    isPending: isResetRefreshTokenCreatedAtPending,
+    error: resetRefreshTokenCreatedAtError,
+  } = useResetRefreshTokenCreatedAt()
 
   return (
     <>
@@ -68,6 +78,15 @@ export const AdminMigrationSection = () => {
           onConfirm={() => migrateCollectionCoverKeys()}
         >
           migrate collection cover keys
+        </ConfirmButton>
+        <ConfirmButton
+          variant="light"
+          color="red"
+          loading={isResetRefreshTokenCreatedAtPending}
+          confirmMessage={RUN_ONCE_CONFIRMATION_MESSAGE}
+          onConfirm={() => resetRefreshTokenCreatedAt()}
+        >
+          reset refresh-token created_at (run once)
         </ConfirmButton>
       </Group>
       <Paper withBorder p="md" mt="md">
@@ -185,6 +204,35 @@ export const AdminMigrationSection = () => {
         {!collectionCoverKeysResult &&
           !isCollectionCoverKeysPending &&
           !collectionCoverKeysError && (
+            <Text size="sm" c="dimmed">
+              No migration run yet
+            </Text>
+          )}
+      </Paper>
+      <Paper withBorder p="md" mt="md">
+        <Text size="sm" fw={500} mb="xs">
+          Refresh-token created_at reset (run once)
+        </Text>
+        {isResetRefreshTokenCreatedAtPending && (
+          <Text size="sm" c="dimmed">
+            Running…
+          </Text>
+        )}
+        {resetRefreshTokenCreatedAtError && (
+          <Text size="sm" c="red">
+            Error: {resetRefreshTokenCreatedAtError.message}
+          </Text>
+        )}
+        {resetRefreshTokenCreatedAtResult &&
+          !isResetRefreshTokenCreatedAtPending && (
+            <Text size="sm" c="dimmed">
+              Last run: {resetRefreshTokenCreatedAtResult.updated} token(s)
+              updated
+            </Text>
+          )}
+        {!resetRefreshTokenCreatedAtResult &&
+          !isResetRefreshTokenCreatedAtPending &&
+          !resetRefreshTokenCreatedAtError && (
             <Text size="sm" c="dimmed">
               No migration run yet
             </Text>

@@ -1,7 +1,10 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
-import { parseOpf, resolveArchiveMetadata } from "@prose-reader/archive-parser"
-import { arrayBufferFileAccessors } from "@prose-reader/streamer"
+import {
+  arrayBufferFileAccessors,
+  parseOpf,
+  resolveArchiveMetadata,
+} from "@prose-reader/archive-reader"
 import type { ArchiveFileRecord } from "../archive/types"
 import { buildPatchedOpfXml } from "./write"
 
@@ -162,7 +165,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     expect(readOpfMetadata(xml)).toMatchObject({
       title: "Norwegian Wood",
-      authors: ["Haruki Murakami"],
+      contributors: [{ name: "Haruki Murakami", roles: ["author"] }],
       publisher: "Vintage",
       languages: ["en"],
       isbn: "9783161484100",

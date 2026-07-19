@@ -78,6 +78,7 @@ describe("UsersService", () => {
       username: "Reader",
       password: "hashed-password",
       emailVerified: true,
+      createdAt: new Date(),
     }
     userPostgresService.save.mockResolvedValue(user)
 

@@ -1,3 +1,5 @@
+// @vitest-environment jsdom
+
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const hasQueryFn = <Result>(
@@ -36,19 +38,17 @@ describe("useSyncReports", () => {
     })
     const useQuery = vi.fn((options) => options)
 
-    vi.doMock("../../http/httpClientApi.web", () => ({
-      httpClientApi: {
-        fetch,
-        fetchOrThrow,
-      },
+    vi.doMock("../../http/HttpClientApiContext", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
     }))
-    vi.doMock("../../config/configuration", () => ({
-      configuration: {
-        API_URL: "https://api.example.com",
-      },
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
     }))
     vi.doMock("@tanstack/react-query", () => ({
       useQuery,
+    }))
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
     }))
 
     const { useSyncReports } = await import("./useSyncReports")
@@ -73,5 +73,58 @@ describe("useSyncReports", () => {
     expect(result).toHaveLength(1)
     expect(result[0]?.book.added).toBe(1)
     expect(result[0]?.book.fetchedMetadata).toBe(1)
+  })
+
+  it("ignores report models outside the seeded set instead of crashing", async () => {
+    const fetch = vi.fn()
+    const fetchOrThrow = vi.fn().mockResolvedValue({
+      data: [
+        {
+          created_at: "2026-04-06T19:00:00.000Z",
+          ended_at: "2026-04-06T19:01:00.000Z",
+          report: [
+            {
+              rx_model: "secret",
+              added: true,
+              deleted: false,
+              updated: false,
+              fetchedMetadata: true,
+            },
+          ],
+        },
+      ],
+    })
+    const useQuery = vi.fn((options) => options)
+
+    vi.doMock("../../http/HttpClientApiContext", () => ({
+      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
+    }))
+    vi.doMock("../../config/useConfig", () => ({
+      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
+    }))
+    vi.doMock("@tanstack/react-query", () => ({
+      useQuery,
+    }))
+    vi.doMock("../../auth/useIsAuthenticated", () => ({
+      useIsAuthenticated: () => true,
+    }))
+
+    const { useSyncReports } = await import("./useSyncReports")
+    type SyncReportEntries = NonNullable<
+      ReturnType<typeof useSyncReports>["data"]
+    >
+
+    useSyncReports()
+
+    const options = useQuery.mock.calls[0]?.[0]
+
+    if (!hasQueryFn<SyncReportEntries>(options)) {
+      throw new Error("Expected useQuery to be called with a queryFn")
+    }
+
+    const result = await options.queryFn()
+
+    expect(result).toHaveLength(1)
+    expect(result[0]?.book.added).toBe(0)
   })
 })

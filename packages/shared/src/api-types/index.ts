@@ -1,5 +1,6 @@
 export * from "./auth"
 export * from "./admin"
+export * from "./email"
 export * from "./notifications"
 export * from "./providers"
 export * from "./web"

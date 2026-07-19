@@ -1,5 +1,5 @@
 import { ServiceWorkerStreamer } from "@prose-reader/streamer"
-import { STREAMER_URL_PREFIX } from "../../workers/constants.shared"
+import { STREAMER_URL_PREFIX } from "../../config/envs.shared"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { getArchiveForZipFile, isRarFile } from "./archives.shared"
 import {
@@ -15,14 +15,11 @@ import {
 
 export const swStreamer = new ServiceWorkerStreamer({
   hooks: {
-    manifest: {
-      content: [
-        readingDirectionManifestHook,
-        ...cbzStreamerHooks.manifest.content,
-      ],
-      spine: cbzStreamerHooks.manifest.spine,
-      presentation: [webtoonManifestHook],
-    },
+    manifest: [
+      readingDirectionManifestHook,
+      ...cbzStreamerHooks.manifest,
+      webtoonManifestHook,
+    ],
     resource: cbzStreamerHooks.resource,
   },
   cleanArchiveAfter: 5 * 60 * 1000, // 5mn

@@ -73,6 +73,31 @@ describe("createWorkerPool", () => {
     await expect(queued).rejects.toThrow("dead pool")
   })
 
+  it("rejects new runs after the pool is exhausted instead of hanging", async () => {
+    const { pool, workers } = createPool(1)
+
+    const inFlight = pool.run("a")
+
+    workers[0]?.crash("dead pool")
+
+    await expect(inFlight).rejects.toThrow("dead pool")
+
+    // Without a terminal error, this run would enqueue forever with no worker
+    // left to dispatch it.
+    await expect(pool.run("b")).rejects.toThrow("dead pool")
+  })
+
+  it("rejects runs and pending tasks after terminate", async () => {
+    const { pool } = createPool(1)
+
+    const inFlight = pool.run("a")
+
+    pool.terminate()
+
+    await expect(inFlight).rejects.toThrow("Worker pool terminated")
+    await expect(pool.run("b")).rejects.toThrow("Worker pool terminated")
+  })
+
   it("keeps serving on the surviving workers when one errors", async () => {
     const { pool, workers } = createPool(2)
 

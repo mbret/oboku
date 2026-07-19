@@ -1,10 +1,12 @@
-import { type Archive, createArchiveFromText } from "@prose-reader/streamer"
-import { createArchiveFromLibArchive } from "@prose-reader/streamer/archives/createArchiveFromLibArchive"
-import { createArchiveFromZipJs } from "@prose-reader/streamer/archives/createArchiveFromZipJs"
+import {
+  type Archive,
+  createArchiveFromText,
+} from "@prose-reader/archive-reader"
+import { createArchiveFromLibArchive } from "@prose-reader/archive-reader/archives/createArchiveFromLibArchive"
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
-import type { PromiseReturnType } from "../../types"
 import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 import { isPotentialZipFile } from "@oboku/shared"
@@ -16,7 +18,7 @@ const RAR_MIME_TYPES = [
 ]
 
 export const isRarFile = (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ) => {
   const normalizedName = file.data.name.toLowerCase()
 
@@ -28,7 +30,7 @@ export const isRarFile = (
 }
 
 export const isPdfFile = (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ) => {
   const normalizedName = file.data.name.toLowerCase()
 
@@ -39,11 +41,11 @@ export const isPdfFile = (
 }
 
 const getEncodingFormat = (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ) => (file.data.type.length > 0 ? file.data.type : undefined)
 
 export const getArchiveForZipFile = async (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ): Promise<Archive> => {
   try {
     const normalizedName = file.data.name.toLowerCase()
@@ -93,7 +95,7 @@ export const getArchiveForZipFile = async (
  * We fallback to app main thread for rar archives
  */
 export const getArchiveForRarFile = async (
-  file: NonNullable<PromiseReturnType<typeof getBookFile>>,
+  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ) => {
   const archive = await LibARchive.open(file.data)
 

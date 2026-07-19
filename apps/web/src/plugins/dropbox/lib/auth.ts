@@ -1,6 +1,5 @@
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
-import { configuration } from "../../../config/configuration"
 import { signal } from "reactjrx"
 import { dropboxAuthCallbackPath } from "../../common/authCallbackEntrypoints.shared"
 import { hasMinimumValidityLeft } from "../../common/tokenValidity"
@@ -13,12 +12,6 @@ const defaultWindowOptions = {
 const MINIMUM_DROPBOX_TOKEN_VALIDITY_MS = 1000 * 60 * 60
 
 export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
-
-configuration.subscribe(() => {
-  if (configuration.DROPBOX_CLIENT_ID) {
-    dropboxAuthSignal.getValue()?.setClientId(configuration.DROPBOX_CLIENT_ID)
-  }
-})
 
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined = dropboxAuthSignal
@@ -36,8 +29,10 @@ const isAccessTokenStillSufficient = () => {
  */
 export const authUser = ({
   requestPopup,
+  clientId,
 }: {
   requestPopup: () => Promise<boolean>
+  clientId?: string
 }) => {
   return new Promise<DropboxAuth>((resolve, reject) => {
     ;(async () => {
@@ -48,8 +43,10 @@ export const authUser = ({
       const dropboxAuth =
         dropboxAuthSignal.getValue() ??
         new DropboxAuth({
-          clientId: configuration.DROPBOX_CLIENT_ID,
+          clientId,
         })
+
+      if (clientId) dropboxAuth.setClientId(clientId)
 
       dropboxAuthSignal.update(dropboxAuth)
 

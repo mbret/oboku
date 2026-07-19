@@ -1,14 +1,44 @@
-import { Body, Controller, Delete, Post, Query } from "@nestjs/common"
+import {
+  Body,
+  Controller,
+  Delete,
+  Headers,
+  Post,
+  Query,
+  Req,
+  Res,
+  UnauthorizedException,
+} from "@nestjs/common"
+import type { Request, Response } from "express"
 import { AuthService } from "./auth.service"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
-import { IsEmail, IsNotEmpty, IsString, MinLength } from "class-validator"
+import {
+  type AuthTokens,
+  AuthCookiesService,
+  REFRESH_TOKEN_COOKIE,
+} from "./auth-cookies"
+import { Type } from "class-transformer"
+import {
+  Equals,
+  IsEmail,
+  IsNotEmpty,
+  IsObject,
+  IsString,
+  IsUUID,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from "class-validator"
 import type {
+  AuthProofPublicKeyJwk,
   AuthSessionResponse,
   CompleteMagicLinkRequest,
   CompleteMagicLinkResponse,
   CompleteSignUpRequest,
   CompleteSignUpResponse,
   DeleteAccountResponse,
+  LogoutRequest,
+  LogoutResponse,
   RefreshTokenResponse,
   RequestMagicLinkRequest,
   RequestMagicLinkResponse,
@@ -17,6 +47,30 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
+
+/**
+ * The exact P-256 JWK shape needed to compute an RFC 7638 thumbprint at
+ * refresh. Anything looser would bind a session that signs in fine but can
+ * never refresh. Coordinate lengths are a lax bound (P-256 encodes to 43
+ * base64url chars) that mainly keeps the stored key small.
+ */
+export class AuthProofPublicKeyDto implements AuthProofPublicKeyJwk {
+  @Equals("EC")
+  kty!: string
+
+  @Equals("P-256")
+  crv!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  x!: string
+
+  @IsString()
+  @IsNotEmpty()
+  @MaxLength(256)
+  y!: string
+}
 
 export class RequestSignUpDto implements RequestSignUpRequest {
   @IsEmail()
@@ -43,6 +97,11 @@ export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
 
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithEmailDto implements SignInWithEmailRequest {
@@ -56,6 +115,11 @@ export class SignInWithEmailDto implements SignInWithEmailRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class SignInWithGoogleDto implements SignInWithGoogleRequest {
@@ -66,36 +130,76 @@ export class SignInWithGoogleDto implements SignInWithGoogleRequest {
   @IsString()
   @IsNotEmpty()
   installation_id!: string
+
+  @IsObject()
+  @ValidateNested()
+  @Type(() => AuthProofPublicKeyDto)
+  public_key!: AuthProofPublicKeyDto
 }
 
 export class RefreshTokenQueryDto {
   @IsString()
   @IsNotEmpty()
   grant_type!: "refresh_token"
+}
 
-  @IsString()
-  @IsNotEmpty()
-  refresh_token!: string
+export class LogoutDto implements LogoutRequest {
+  @IsUUID()
+  session_id!: string
 }
 
 @Controller("auth")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly authCookiesService: AuthCookiesService,
+  ) {}
+
+  /**
+   * Moves the freshly minted tokens into httpOnly cookies and returns only the
+   * body-safe half of the session. Every authenticated response goes through
+   * here so the token strip and the cookie write can never be forgotten
+   * independently — the tokens must not reach the JSON body.
+   */
+  private issueSession(
+    request: Request,
+    response: Response,
+    { accessToken, refreshToken, ...session }: AuthTokens & AuthSessionResponse,
+  ): AuthSessionResponse {
+    this.authCookiesService.set(request, response, {
+      accessToken,
+      refreshToken,
+    })
+
+    return session
+  }
 
   @Public()
   @Post("signin/email")
   async signinWithEmail(
     @Body() body: SignInWithEmailDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithEmail(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithEmail(body),
+    )
   }
 
   @Public()
   @Post("signin/google")
   async signinWithGoogle(
     @Body() body: SignInWithGoogleDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<AuthSessionResponse> {
-    return this.authService.signInWithGoogle(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.signInWithGoogle(body),
+    )
   }
 
   @Public()
@@ -132,16 +236,53 @@ export class AuthController {
   @Post("magic-link/complete")
   async completeMagicLink(
     @Body() body: CompleteMagicLinkDto,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<CompleteMagicLinkResponse> {
-    return this.authService.completeMagicLink(body)
+    return this.issueSession(
+      request,
+      response,
+      await this.authService.completeMagicLink(body),
+    )
   }
 
   @Public()
   @Post("token")
-  refreshTokens(
-    @Query() query: RefreshTokenQueryDto,
+  async refreshTokens(
+    @Query() _query: RefreshTokenQueryDto,
+    @Headers("dpop") proof: string | undefined,
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
   ): Promise<RefreshTokenResponse> {
-    return this.authService.refreshToken(query.grant_type, query.refresh_token)
+    const refreshToken: string | undefined =
+      request.cookies?.[REFRESH_TOKEN_COOKIE]
+
+    if (!refreshToken) {
+      throw new UnauthorizedException()
+    }
+
+    const tokens = await this.authService.refreshToken({
+      refreshToken,
+      proof,
+    })
+
+    this.authCookiesService.set(request, response, tokens)
+
+    return {}
+  }
+
+  /**
+   * Revokes the session by its identity and leaves the cookies untouched — they
+   * may belong to whoever is active now, and the revoked session's rows are
+   * deleted so any lingering cookie is inert (it dies on next sign-in or at
+   * cookie expiry).
+   */
+  @Public()
+  @Post("logout")
+  async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
+    await this.authService.logout({ sessionId: body.session_id })
+
+    return {}
   }
 
   @Delete("account")

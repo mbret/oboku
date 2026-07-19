@@ -12,7 +12,7 @@ import {
   throwIfEmpty,
   type Observable,
 } from "rxjs"
-import { httpClientWeb } from "../../http/httpClient.web"
+import { useDownload } from "../../http/useDownload"
 import { CancelError } from "../../errors/errors.shared"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
@@ -27,6 +27,7 @@ import { useMutation$ } from "reactjrx"
 import { useGoogleScripts } from "./lib/scripts"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
 import { PLUGIN_NAME } from "./lib/constants"
+import { useConfig } from "../../config/useConfig"
 
 export const DownloadBook = memo(
   ({
@@ -36,12 +37,18 @@ export const DownloadBook = memo(
     onResolve,
     signal,
   }: DownloadBookComponentProps<"DRIVE">) => {
+    const { data: config } = useConfig()
     const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
-    const { getGoogleScripts } = useGoogleScripts()
+    const { getGoogleScripts } = useGoogleScripts({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const requestFilesAccess = useRequestFilesAccess({
       requestPopup,
     })
     const getDriveFile = useDriveFilesGet()
+    const { mutateAsync: downloadBlob } = useDownload({
+      meta: { suppressGlobalErrorToast: true },
+    })
     const { mutate: download } = useMutation$({
       mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
         const { fileId } = link.data
@@ -61,7 +68,7 @@ export const DownloadBook = memo(
                 }).pipe(
                   mergeMap((info) =>
                     from(
-                      httpClientWeb.download<Blob>({
+                      downloadBlob({
                         headers: {
                           Authorization: `Bearer ${gapi.auth.getToken().access_token}`,
                         },
@@ -73,7 +80,7 @@ export const DownloadBook = memo(
                         },
                         responseType: "blob",
                         signal: abortController.signal,
-                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=AIzaSyBgTV-RQecG_TFwilsdUJXqKmeXEiNSWUg`,
+                        url: `https://content.googleapis.com/drive/v3/files/${fileId}?alt=media&key=${config?.GOOGLE_API_KEY ?? ""}`,
                       }),
                     ).pipe(
                       map((mediaResponse) => ({
@@ -102,6 +109,7 @@ export const DownloadBook = memo(
       },
       onSuccess: onResolve,
       onError,
+      meta: { suppressGlobalErrorToast: true },
     })
 
     useEffectWithUnmount$(

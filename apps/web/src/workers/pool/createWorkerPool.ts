@@ -33,6 +33,7 @@ export const createWorkerPool = <Request, Response>({
   const liveWorkers = new Set<Worker>()
   const idle: Worker[] = []
   let nextId = 0
+  let poolError: Error | null = null
 
   const pump = () => {
     while (idle.length > 0 && queue.length > 0) {
@@ -96,7 +97,8 @@ export const createWorkerPool = <Request, Response>({
     worker.terminate()
 
     if (liveWorkers.size === 0) {
-      failAll(new Error(message))
+      poolError = new Error(message)
+      failAll(poolError)
 
       return
     }
@@ -126,6 +128,12 @@ export const createWorkerPool = <Request, Response>({
     transfer: Transferable[] = [],
   ): Promise<Response> =>
     new Promise((resolve, reject) => {
+      if (poolError) {
+        reject(poolError)
+
+        return
+      }
+
       const id = nextId
       nextId += 1
 
@@ -137,9 +145,8 @@ export const createWorkerPool = <Request, Response>({
     for (const worker of workers) {
       worker.terminate()
     }
-    queue.length = 0
-    pending.clear()
-    runningByWorker.clear()
+    poolError = poolError ?? new Error("Worker pool terminated")
+    failAll(poolError)
     liveWorkers.clear()
   }
 
