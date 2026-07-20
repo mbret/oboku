@@ -1,52 +1,16 @@
 import {
+  type ArchiveReadingOrderItem,
+  type ResolvedMetadata,
   parseComicInfo,
   parseOpf,
   readRecordAsText,
+  resolveArchiveCover,
   resolveArchiveMetadata,
-  type ResolvedMetadata,
+  resolveArchiveReadingOrder,
 } from "@prose-reader/archive-reader"
-import {
-  type Archive,
-  type ArchiveFileRecord,
-  isFileRecord,
-} from "./archive/types"
+import type { Archive, ArchiveFileRecord } from "./archive/types"
 import { findComicInfoEntry } from "./comicInfo"
 import { findOpfEntry } from "./opf/read"
-
-/**
- * Extensions this reader considers as "images" — both for picking the
- * fallback cover when no OPF cover is declared, and for counting pages
- * in comic archives. Covers every raster format real-world CBZ/CBR/EPUB
- * producers actually use; anything downstream (e.g. the API's `sharp`
- * pipeline) can normalize these to a delivery format of its own.
- *
- * Kept internal on purpose: "what is an image inside a book archive?"
- * is a concern that belongs in this package, not something each caller
- * should redefine and risk drifting on.
- */
-const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
-  ".jpg",
-  ".jpeg",
-  ".png",
-  ".gif",
-  ".webp",
-  ".avif",
-  ".bmp",
-  ".tif",
-  ".tiff",
-])
-
-const getExtension = (path: string): string => {
-  const lastDot = path.lastIndexOf(".")
-  const lastSlash = path.lastIndexOf("/")
-
-  if (lastDot === -1 || lastDot < lastSlash) return ""
-
-  return path.substring(lastDot).toLowerCase()
-}
-
-const isImageEntry = (entry: ArchiveFileRecord): boolean =>
-  IMAGE_EXTENSIONS.has(getExtension(entry.uri))
 
 /**
  * Source-agnostic view of every metadata container we can extract from
@@ -68,10 +32,10 @@ export type ArchiveMetadata = {
   opf?: ResolvedMetadata | undefined
   comicInfo?: ResolvedMetadata | undefined
   /**
-   * Archive-relative path to the cover. For EPUBs this is the OPF
-   * cover with its folder prefix resolved; for other archives it's
-   * the first image entry in alphabetic order. `undefined` when the
-   * archive has no recognizable cover asset.
+   * Archive-relative path to the cover, as resolved by prose-reader:
+   * the OPF-declared cover (folder prefix applied) when present,
+   * otherwise the first image in the archive's reading order.
+   * `undefined` when the archive has no recognizable cover asset.
    */
   coverHref?: string | undefined
   /**
@@ -96,8 +60,6 @@ export const readArchiveMetadata = async (
   archive: Archive,
   events?: ReadArchiveMetadataEvents,
 ): Promise<ArchiveMetadata> => {
-  const fileEntries = archive.records.filter(isFileRecord)
-
   const opfEntry = findOpfEntry(archive)
   const comicInfoEntry = findComicInfoEntry(archive)
 
@@ -106,24 +68,30 @@ export const readArchiveMetadata = async (
     ? await loadComicInfo(comicInfoEntry, events)
     : undefined
 
-  const imageEntries = fileEntries.filter(isImageEntry)
+  const hasOpf = opfResult !== undefined
+  const opfSource = opfResult?.source
 
-  const coverHref =
-    resolveOpfCover(opfResult) ?? resolveFallbackCover(imageEntries)
-  const pageCount = resolvePageCount({
-    hasOpf: opfResult !== undefined,
-    imageEntryCount: imageEntries.length,
-  })
+  const readingOrder = await resolveArchiveReadingOrder(
+    archive,
+    opfSource ? { opf: opfSource } : undefined,
+  )
+  const cover = await resolveArchiveCover(
+    archive,
+    opfSource ? { opf: opfSource, readingOrder } : { readingOrder },
+  )
 
   return {
-    hasOpf: opfResult !== undefined,
+    hasOpf,
     hasComicInfo: comicInfoResult !== undefined,
     opf: opfResult?.metadata,
     comicInfo: comicInfoResult,
-    coverHref,
-    pageCount,
+    coverHref: cover?.uri,
+    pageCount: resolvePageCount({ hasOpf, readingOrder }),
   }
 }
+
+const isImageReadingOrderItem = (item: ArchiveReadingOrderItem): boolean =>
+  item.mediaType?.startsWith("image/") === true
 
 /**
  * Decide which signal represents the "page count" for this archive.
@@ -133,12 +101,14 @@ export const readArchiveMetadata = async (
  */
 const resolvePageCount = ({
   hasOpf,
-  imageEntryCount,
+  readingOrder,
 }: {
   hasOpf: boolean
-  imageEntryCount: number
+  readingOrder: ArchiveReadingOrderItem[]
 }): number | undefined => {
   if (hasOpf) return undefined
+
+  const imageEntryCount = readingOrder.filter(isImageReadingOrderItem).length
 
   return imageEntryCount > 0 ? imageEntryCount : undefined
 }
@@ -151,12 +121,14 @@ const loadOpf = async (
 
   events?.onOpfRead?.({ path: entry.uri, xml })
 
-  const parsed = parseOpf(xml)
-  const metadata = resolveArchiveMetadata(parsed)
+  const opf = parseOpf(xml)
   const lastSlash = entry.uri.lastIndexOf("/")
   const basePath = lastSlash === -1 ? "" : entry.uri.substring(0, lastSlash)
 
-  return { metadata, basePath, coverHref: parsed.coverHref }
+  return {
+    metadata: resolveArchiveMetadata(opf),
+    source: { opf, basePath },
+  }
 }
 
 const loadComicInfo = async (
@@ -168,24 +140,4 @@ const loadComicInfo = async (
   events?.onComicInfoRead?.({ path: entry.uri, xml })
 
   return resolveArchiveMetadata(parseComicInfo(xml))
-}
-
-const resolveOpfCover = (
-  opf: { basePath: string; coverHref: string | undefined } | undefined,
-): string | undefined => {
-  if (!opf?.coverHref) return undefined
-
-  return opf.basePath !== ""
-    ? `${opf.basePath}/${opf.coverHref}`
-    : opf.coverHref
-}
-
-const resolveFallbackCover = (
-  imageEntries: ArchiveFileRecord[],
-): string | undefined => {
-  const images = imageEntries
-    .map((entry) => entry.uri)
-    .sort((a, b) => a.localeCompare(b))
-
-  return images[0]
 }
