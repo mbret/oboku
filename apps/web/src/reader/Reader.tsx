@@ -2,7 +2,13 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { type ComponentProps, memo, useCallback, useRef } from "react"
+import {
+  type ComponentProps,
+  memo,
+  type RefObject,
+  useCallback,
+  useRef,
+} from "react"
 import { readerSignal } from "./states"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
@@ -11,7 +17,6 @@ import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
-import { useLoadReader } from "./useLoadReader"
 import type { Manifest } from "@prose-reader/shared"
 import { ReactReader } from "@prose-reader/react-reader"
 import "@prose-reader/react-reader/index.css"
@@ -29,7 +34,7 @@ export const Reader = memo(function Reader({
   isPreview: boolean
 }) {
   const reader = useSignalValue(readerSignal)
-  const { data: readerState } = useObserve(() => reader?.state$, [reader])
+  const { data: isReaderMounted } = useObserve(() => reader?.mounted$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
   const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
     useManifest(bookId)
@@ -100,13 +105,13 @@ export const Reader = memo(function Reader({
         </ReactReader>
       </Box>
       {/* Need to be after reader container so it shows on top and hide loading */}
-      {readerState !== "ready" && <BookLoading />}
+      {!isReaderMounted && <BookLoading />}
       <Effects
         bookId={bookId}
         isPreview={isPreview}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
-        containerElement={readerContainerRef.current}
+        containerRef={readerContainerRef}
       />
     </>
   )
@@ -117,20 +122,20 @@ const Effects = memo(function Effects({
   isPreview,
   isUsingWebStreamer,
   manifest,
-  containerElement,
+  containerRef,
 }: {
   bookId: string
   isPreview: boolean
   isUsingWebStreamer?: boolean
   manifest?: Manifest
-  containerElement?: HTMLElement | null
+  containerRef: RefObject<HTMLElement | null>
 }) {
-  useCreateReader({ bookId, isUsingWebStreamer })
-  useLoadReader({
+  useCreateReader({
     bookId,
-    containerElement,
     isPreview,
+    isUsingWebStreamer,
     manifest,
+    containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview })
 
