@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react"
-import { SIGNAL_RESET, useLiveRef } from "reactjrx"
+import { SIGNAL_RESET } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
 import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
@@ -47,9 +47,11 @@ export const useCreateReader = ({
   manifest?: Manifest
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: book } = useBook({
+  const { data: bookOnce } = useBook({
     id: bookId,
-    enabled: (query) => {
+    // Observing stops after the first result, so later progress-sync writes to
+    // the same book document never change `bookOnce` or recreate the reader.
+    enabled: function observeBookUntilFirstResult(query) {
       if (isPreview) return false
 
       const hasNoResultYet = query.state.data === undefined
@@ -57,11 +59,7 @@ export const useCreateReader = ({
       return hasNoResultYet
     },
   })
-  const isRestoredLocationReady = isPreview || !!book
-  // The reader restores the location it was created with. Later location
-  // writes (progress sync) flow back into the book query and must not
-  // destroy/recreate the reader, so the book stays out of the effect deps.
-  const bookRef = useLiveRef(book)
+  const isRestoredLocationReady = isPreview || !!bookOnce
 
   useEffect(() => {
     const containerElement = containerRef.current
@@ -77,7 +75,7 @@ export const useCreateReader = ({
 
     const cfi = isPreview
       ? undefined
-      : bookRef.current?.readingStateCurrentBookmarkLocation || undefined
+      : bookOnce?.readingStateCurrentBookmarkLocation || undefined
 
     const instance = createAppReader({
       manifest,
@@ -134,7 +132,7 @@ export const useCreateReader = ({
     isPreview,
     isRestoredLocationReady,
     bookId,
-    bookRef,
+    bookOnce,
     containerRef,
   ])
 }
