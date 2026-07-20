@@ -66,6 +66,14 @@
 - Prefer `npm` commands over `pnpm` or `yarn` unless the user explicitly asks otherwise.
 - When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `package-lock.json` as the source of truth.
 
+### React version pin (web app on 19.1.x)
+
+- `apps/web` pins `react` and `react-dom` to `19.1.8` while the rest of the monorepo (`apps/admin`, `apps/landing`, and the hoisted root copy) stays on `19.2.x`. This is intentional and temporary.
+- **Why:** React 19.2's dev-only performance-track logger (`logComponentRender` → `addObjectDiffToProperties`) recursively reads props and accesses `.$$typeof` on every object it meets, with no cross-origin guard. The web app loads Google's `gapi` client, which injects a same-page cross-origin iframe reachable through the top `window`; reading it throws `SecurityError: Blocked a frame with origin ...`. Because the throw escapes inside `commitPassiveMountOnFiber`, it aborts remaining passive-effect mounts (e.g. the reader quick-menu tap gesture) and corrupts the work loop (`Should not already be working.` on the next render). Prod builds don't run this logger; only dev is affected. Upstream: https://github.com/facebook/react/issues/34840.
+- **Why 19.1.8 specifically:** the offending logger was introduced in 19.2.0, so 19.1.x does not have the code path. The web app uses no 19.2-only APIs. `apps/admin` cannot drop to 19.1.x because `@mantine` 9.4 uses `useEffectEvent` (19.2+), which is why the pin is web-only rather than repo-wide.
+- **How it holds together:** npm nests the 19.1.8 copy under `apps/web/node_modules`; hoisted deps (`@chakra-ui`, `@prose-reader/react-reader`, …) would otherwise resolve the root 19.2.x copy, so `apps/web/vite.config.ts` sets `resolve.dedupe: ["react", "react-dom"]` to force a single copy. Do not remove that dedupe while the pin stands.
+- **Removal:** once the React issue is fixed, bump `apps/web` back to match the rest of the repo and drop the `resolve.dedupe` entry in the same change.
+
 ### Synology API docs
 
 - For Synology integrations, treat the public DSM Login Web API guide and File Station API guide as generic protocol references only.

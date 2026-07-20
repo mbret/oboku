@@ -107,6 +107,17 @@ export default defineConfig(({ mode }) => ({
      * replaced when this option is set.
      */
     conditions: ["source", "module", "browser", "development|production"],
+    /**
+     * The web app pins react/react-dom to 19.1.x while the rest of the
+     * monorepo is on 19.2.x (react-dom 19.2 dev builds crash on our gapi
+     * iframe, see https://github.com/facebook/react/issues/34840). npm
+     * therefore nests react under apps/web/node_modules while hoisted
+     * dependencies (@chakra-ui, @prose-reader/react-reader, ...) would
+     * resolve the root 19.2.x copy. Dedupe forces every react import onto
+     * this app's single copy. Remove together with the version pin once the
+     * react issue is fixed.
+     */
+    dedupe: ["react", "react-dom"],
     alias: {
       stream: path.resolve(__dirname, "./stream-shim.js"),
     },
