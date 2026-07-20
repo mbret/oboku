@@ -1,11 +1,11 @@
 import { MenuBookOutlined } from "@mui/icons-material"
 import { Button } from "@mui/material"
 import { createSearchParams, generatePath, Link } from "react-router"
-import { ROUTES } from "../../navigation/routes"
+import { ROUTES } from "../../../navigation/routes"
 import {
   READER_MODE_PARAM,
   READER_PREVIEW_MODE,
-} from "../../reader/ReaderScreen"
+} from "../../../reader/ReaderScreen"
 
 type Props = {
   bookId: string
@@ -21,11 +21,10 @@ export function TestBookButton({ bookId }: Props) {
           [READER_MODE_PARAM]: READER_PREVIEW_MODE,
         }).toString(),
       }}
-      variant="outlined"
-      fullWidth
+      color="inherit"
       startIcon={<MenuBookOutlined />}
     >
-      Test book
+      Test
     </Button>
   )
 }

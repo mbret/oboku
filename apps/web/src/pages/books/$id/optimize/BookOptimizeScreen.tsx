@@ -4,52 +4,23 @@ import { useParams, useSearchParams } from "react-router"
 import { Page } from "../../../../common/Page"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
-import { ROUTES } from "../../../../navigation/routes"
 import { useBook } from "../../../../books/states"
 import { useLink } from "../../../../links/states"
 import { pluginsByType } from "../../../../plugins/configure"
 import { useBookDownloadState } from "../../../../download/states"
 import { DownloadBookStep } from "../../../../books/optimize/DownloadBookStep"
-import { MetadataTab } from "../../../../books/optimize/MetadataTab"
-import { ContentTab } from "../../../../books/optimize/ContentTab"
+import { OptimizeStep } from "../../../../books/optimize/OptimizeStep"
+import { TestBookButton } from "../../../../books/optimize/actions/TestBookButton"
+import {
+  BOOK_OPTIMIZE_TAB_PARAM,
+  BOOK_OPTIMIZE_TABS,
+  DEFAULT_BOOK_OPTIMIZE_TAB,
+  isBookOptimizeTab,
+  type BookOptimizeTab,
+} from "../../../../books/optimize/tabs"
 
 type ScreenParams = {
   id: string
-}
-
-export const BOOK_OPTIMIZE_TAB_PARAM = "tab"
-
-export const BOOK_OPTIMIZE_TABS = {
-  METADATA: "metadata",
-  CONTENT: "content",
-} as const
-
-export type BookOptimizeTab =
-  (typeof BOOK_OPTIMIZE_TABS)[keyof typeof BOOK_OPTIMIZE_TABS]
-
-export const DEFAULT_BOOK_OPTIMIZE_TAB = BOOK_OPTIMIZE_TABS.METADATA
-
-export const isBookOptimizeTab = (
-  value: string | null,
-): value is BookOptimizeTab =>
-  value === BOOK_OPTIMIZE_TABS.METADATA || value === BOOK_OPTIMIZE_TABS.CONTENT
-
-export const getBookOptimizeRoute = ({
-  bookId,
-  tab,
-}: {
-  bookId: string
-  tab?: BookOptimizeTab
-}) => {
-  const path = ROUTES.BOOK_OPTIMIZE.replace(":id", bookId)
-
-  if (!tab) return path
-
-  const searchParams = new URLSearchParams({
-    [BOOK_OPTIMIZE_TAB_PARAM]: tab,
-  })
-
-  return `${path}?${searchParams.toString()}`
 }
 
 const PageContainer = styled(Container)(({ theme }) => ({
@@ -105,7 +76,15 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
 
   return (
     <Page bottomGutter={false}>
-      <TopBarNavigation title="Optimize book" showBack />
+      <TopBarNavigation
+        title="Optimize book"
+        showBack
+        rightComponent={
+          bookId && book && link && isDownloaded ? (
+            <TestBookButton bookId={bookId} />
+          ) : undefined
+        }
+      />
       {book && link && isDownloaded && !canUploadToDataSource && (
         <Alert severity="info">
           This data source can&apos;t upload files back yet. Changes can only be
@@ -130,19 +109,12 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
         ) : !isDownloaded ? (
           <DownloadBookStep book={book} displayFileName={linkFileName} />
         ) : (
-          <>
-            <MetadataTab
-              book={book}
-              link={link}
-              canUploadToDataSource={canUploadToDataSource}
-              hidden={currentTab !== BOOK_OPTIMIZE_TABS.METADATA}
-            />
-
-            <ContentTab
-              bookId={bookId}
-              hidden={currentTab !== BOOK_OPTIMIZE_TABS.CONTENT}
-            />
-          </>
+          <OptimizeStep
+            book={book}
+            link={link}
+            canUploadToDataSource={canUploadToDataSource}
+            currentTab={currentTab}
+          />
         )}
       </PageContainer>
     </Page>

@@ -1,5 +1,11 @@
-import { Alert, Chip, Stack, Typography, styled } from "@mui/material"
-import type { DetectedContainer } from "./targets"
+import { Chip, Stack, Typography, styled } from "@mui/material"
+import {
+  CONTAINER_LABELS,
+  type ContainerKey,
+  type DetectedContainer,
+} from "./targets"
+import { useBookOptimize } from "../BookOptimizeProvider"
+import { memo } from "react"
 
 const ContainersChipStack = styled(Stack)(({ theme }) => ({
   flexDirection: "row",
@@ -7,58 +13,64 @@ const ContainersChipStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(0.5),
 }))
 
-type Props = {
-  inspectionReady: boolean
-  detectedContainers: DetectedContainer[]
-  metadataReadFailed: boolean
-}
+const CONTAINER_ORDER: readonly ContainerKey[] = ["comicInfo", "opf"]
 
-export function MetadataDetectionSummary({
-  inspectionReady,
-  detectedContainers,
-  metadataReadFailed,
-}: Props) {
-  if (!inspectionReady) {
-    return <Typography variant="body2">Waiting for the file…</Typography>
+export const collectDetectedContainers = ({
+  hasOpf,
+  hasComicInfo,
+}: {
+  hasOpf: boolean
+  hasComicInfo: boolean
+}): DetectedContainer[] => {
+  const present: Record<ContainerKey, boolean> = {
+    comicInfo: hasComicInfo,
+    opf: hasOpf,
   }
 
-  if (metadataReadFailed) {
+  return CONTAINER_ORDER.filter((key) => present[key]).map((key) => ({
+    key,
+    label: CONTAINER_LABELS[key],
+  }))
+}
+
+export const MetadataDetectionSummary = memo(
+  function MetadataDetectionSummary() {
+    const { inspection } = useBookOptimize()
+
+    const detectedContainers = collectDetectedContainers({
+      hasOpf: inspection.hasOpf,
+      hasComicInfo: inspection.hasComicInfo,
+    })
+
     return (
-      <Alert severity="error">
-        This file could not be opened. Metadata cannot be edited for this format
-        or the file is corrupted.
-      </Alert>
+      <Stack spacing={1}>
+        {detectedContainers.length > 0 ? (
+          <Stack spacing={1}>
+            <Typography variant="subtitle2">Detected metadata</Typography>
+            <ContainersChipStack>
+              {detectedContainers.map((container) => (
+                <Chip
+                  key={container.key}
+                  label={container.label}
+                  size="small"
+                  variant="outlined"
+                />
+              ))}
+            </ContainersChipStack>
+          </Stack>
+        ) : (
+          <Typography variant="body2">
+            No embedded metadata containers were found.{" "}
+            <Chip
+              component="span"
+              label="ComicInfo.xml"
+              size="small"
+              variant="outlined"
+            />{" "}
+            will be used as the default metadata container.
+          </Typography>
+        )}
+      </Stack>
     )
-  }
-
-  return (
-    <Stack spacing={1}>
-      {detectedContainers.length > 0 ? (
-        <Stack spacing={1}>
-          <Typography variant="subtitle2">Detected metadata</Typography>
-          <ContainersChipStack>
-            {detectedContainers.map((container) => (
-              <Chip
-                key={container.key}
-                label={container.label}
-                size="small"
-                variant="outlined"
-              />
-            ))}
-          </ContainersChipStack>
-        </Stack>
-      ) : (
-        <Typography variant="body2">
-          No embedded metadata containers were found.{" "}
-          <Chip
-            component="span"
-            label="ComicInfo.xml"
-            size="small"
-            variant="outlined"
-          />{" "}
-          will be used as the default metadata container.
-        </Typography>
-      )}
-    </Stack>
-  )
-}
+  },
+)

@@ -1,14 +1,14 @@
-import { LinearProgress, Stack, Typography, styled } from "@mui/material"
-import type { SubmitEventHandler } from "react"
-import type { Control } from "react-hook-form"
-import { useObserve } from "reactjrx"
-import { EMPTY, type Observable } from "rxjs"
-import { normalizeIsbn } from "@oboku/archive-metadata"
+import { Stack, Typography, styled } from "@mui/material"
+import { normalizeIsbn } from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import type { MetadataFormSection } from "./targets"
+import type { BookOptimizeFormValues } from "../form"
+import { useBookOptimize } from "../BookOptimizeProvider"
+import { CONTAINER_LABELS } from "./targets"
 import type { MetadataFixerFormValues } from "./types"
 
-const validateIsbn = (raw: string): true | string => {
+const validateIsbn = (raw: string | boolean): true | string => {
+  if (typeof raw !== "string") return true
+
   const trimmed = raw.trim()
 
   if (trimmed === "") return true
@@ -25,61 +25,53 @@ const MetadataSectionStack = styled(Stack)(({ theme }) => ({
   padding: theme.spacing(1.5),
 }))
 
-const getHelperText = (section: MetadataFormSection): string | undefined => {
-  return section.isbn ? undefined : "No ISBN found."
+type IsbnSectionProps = {
+  label: string
+  fieldName: keyof MetadataFixerFormValues
+  detectedIsbn: string | undefined
 }
 
-type Props = {
-  control: Control<MetadataFixerFormValues>
-  sections: MetadataFormSection[]
-  isApplying: boolean
-  isUploading: boolean
-  uploadProgress$: Observable<number> | undefined
-  onSubmit: SubmitEventHandler<HTMLFormElement>
-}
-
-export function MetadataForm({
-  control,
-  sections,
-  isApplying,
-  isUploading,
-  uploadProgress$,
-  onSubmit,
-}: Props) {
-  const { data: uploadProgress = 0 } = useObserve(
-    () => uploadProgress$ ?? EMPTY,
-    [uploadProgress$],
-  )
-  const uploadPercent = Math.min(
-    100,
-    Math.max(0, Math.round(uploadProgress * 100)),
-  )
+function IsbnSection({ label, fieldName, detectedIsbn }: IsbnSectionProps) {
+  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+  const isApplying = isApplyingLocally || isUploading
 
   return (
-    <Stack component="form" spacing={2} onSubmit={onSubmit} noValidate>
-      {sections.map((section) => (
-        <MetadataSectionStack key={section.key}>
-          <Typography variant="subtitle2">{section.label}</Typography>
-          <ControlledTextField<MetadataFixerFormValues>
-            name={section.fieldName}
-            control={control}
-            rules={{ validate: validateIsbn }}
-            label="ISBN"
-            size="small"
-            fullWidth
-            helperText={getHelperText(section)}
-            disabled={isApplying}
-          />
-        </MetadataSectionStack>
-      ))}
-      {isUploading && (
-        <Stack spacing={1}>
-          <Typography variant="body2">Uploading… {uploadPercent}%</Typography>
-          <LinearProgress
-            variant={uploadPercent > 0 ? "determinate" : "indeterminate"}
-            value={uploadPercent}
-          />
-        </Stack>
+    <MetadataSectionStack>
+      <Typography variant="subtitle2">{label}</Typography>
+      <ControlledTextField<BookOptimizeFormValues>
+        name={fieldName}
+        control={control}
+        rules={{ validate: validateIsbn }}
+        label="ISBN"
+        size="small"
+        fullWidth
+        helperText={detectedIsbn ? undefined : "No ISBN found."}
+        disabled={isApplying}
+      />
+    </MetadataSectionStack>
+  )
+}
+
+export function MetadataForm() {
+  const { inspection } = useBookOptimize()
+  const { hasComicInfo, hasOpf, comicInfoIsbn, opfIsbn } = inspection
+  const hasNoContainer = !hasComicInfo && !hasOpf
+
+  return (
+    <Stack spacing={2}>
+      {(hasComicInfo || hasNoContainer) && (
+        <IsbnSection
+          label={CONTAINER_LABELS.comicInfo}
+          fieldName="comicInfoIsbn"
+          detectedIsbn={hasNoContainer ? undefined : comicInfoIsbn}
+        />
+      )}
+      {hasOpf && (
+        <IsbnSection
+          label={CONTAINER_LABELS.opf}
+          fieldName="opfIsbn"
+          detectedIsbn={opfIsbn}
+        />
       )}
     </Stack>
   )

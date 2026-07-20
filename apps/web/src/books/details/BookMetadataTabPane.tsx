@@ -16,10 +16,7 @@ import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { MetadataSourcePane } from "./MetadataSourcePane"
 import { BookMetadataPolicyPane } from "../metadata/BookMetadataPolicyPane"
 import { DataSourceSection } from "./DataSourceSection"
-import {
-  BOOK_OPTIMIZE_TABS,
-  getBookOptimizeRoute,
-} from "../../pages/books/$id/optimize/BookOptimizeScreen"
+import { BOOK_OPTIMIZE_TABS, getBookOptimizeRoute } from "../optimize/tabs"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 
 type Props = {
