@@ -187,12 +187,14 @@ export const sortBooksBy = (
       })
     }
     case "alpha": {
-      return [...books].sort((a, b) =>
-        sortByTitleComparator(
-          getMetadataFromBook(a).title?.toString() ?? "",
-          getMetadataFromBook(b).title?.toString() ?? "",
-        ),
-      )
+      const booksWithSortTitle = books.map((book) => ({
+        book,
+        title: getMetadataFromBook(book).title?.toString() ?? "",
+      }))
+
+      booksWithSortTitle.sort((a, b) => sortByTitleComparator(a.title, b.title))
+
+      return booksWithSortTitle.map((entry) => entry.book)
     }
     default:
       return books
