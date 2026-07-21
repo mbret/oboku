@@ -48,7 +48,7 @@ export const isFileSupported = ({
   name?: string | null
   mimeType?: string | null
 }) => {
-  const extension = `.${getUrlExtension(name || "")}`
+  const extension = `.${getUrlExtension(name || "").toLowerCase()}`
 
   return (
     READER_ACCEPTED_EXTENSIONS.includes(extension) ||
