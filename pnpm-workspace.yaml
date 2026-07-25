@@ -1,0 +1,22 @@
+packages:
+  - packages/*
+  - apps/*
+catalog:
+  react: 19.2.8
+  react-dom: 19.2.8
+# apps/web/tsconfig.json redirects @internationalized/* to
+# ../../node_modules/@internationalized/*/dist/types — keep that scope
+# physically hoisted at the root like npm used to.
+publicHoistPattern:
+  - '@internationalized/*'
+allowBuilds:
+  '@firebase/util': true
+  '@sentry/node-cpu-profiler': true
+  '@swc/core': true
+  aws-sdk: false
+  bcrypt: true
+  esbuild: true
+  nx: true
+  protobufjs: false
+  sharp: true
+  unrs-resolver: true

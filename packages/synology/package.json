@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "start:dev": "vite build --watch --mode development",
-    "start": "npm run start:dev",
+    "start": "pnpm run start:dev",
     "build": "tsc && vite build",
     "test": "vitest run"
   },
