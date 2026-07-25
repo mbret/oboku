@@ -20,3 +20,5 @@ allowBuilds:
   protobufjs: false
   sharp: true
   unrs-resolver: true
+patchedDependencies:
+  react-dom@19.2.8: patches/react-dom@19.2.8.patch
