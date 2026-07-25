@@ -9,8 +9,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "next": "16.1.6",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.10.6",
@@ -18,18 +18,18 @@
     "@mui/lab": "^9.0.0-beta.2",
     "@mui/material": "^9.0.0",
     "@mui/material-nextjs": "^9.0.0",
-    "@oboku/shared": "0.8.0",
+    "@oboku/shared": "workspace:*",
     "remark-gfm": "^4.0.0",
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
     "eslint": "^9",
     "eslint-config-next": "16.1.6"
   },
   "overrides": {
-    "@types/react": "19.2.14",
+    "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3"
   }
 }

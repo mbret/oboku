@@ -1,0 +1,166 @@
+diff --git a/cjs/react-dom-client.development.js b/cjs/react-dom-client.development.js
+index b9bb0b5bd00886f4ba53a0f3608d04dcc7567320..cb6f51484bd81cd3b3948bcb9cf33bdf6671c596 100644
+--- a/cjs/react-dom-client.development.js
++++ b/cjs/react-dom-client.development.js
+@@ -3781,10 +3781,27 @@
+       return kind;
+     }
+     function addObjectToProperties(object, properties, indent, prefix) {
+-      for (var key in object)
+-        hasOwnProperty.call(object, key) &&
+-          "_" !== key[0] &&
+-          addValueToProperties(key, object[key], properties, indent, prefix);
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        for (var key in object)
++          try {
++            hasOwnProperty.call(object, key) &&
++              "_" !== key[0] &&
++              addValueToProperties(
++                key,
++                object[key],
++                properties,
++                indent,
++                prefix
++              );
++          } catch (patchError) {
++            properties.push([
++              prefix + "  ".repeat(indent) + key,
++              "[inaccessible]"
++            ]);
++          }
++      } catch (patchError) {}
+     }
+     function addValueToProperties(
+       propertyName,
+@@ -3792,6 +3809,30 @@
+       properties,
+       indent,
+       prefix
++    ) {
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        addValueToPropertiesUnsafe(
++          propertyName,
++          value,
++          properties,
++          indent,
++          prefix
++        );
++      } catch (patchError) {
++        properties.push([
++          prefix + "  ".repeat(indent) + propertyName,
++          "[inaccessible]"
++        ]);
++      }
++    }
++    function addValueToPropertiesUnsafe(
++      propertyName,
++      value,
++      properties,
++      indent,
++      prefix
+     ) {
+       switch (typeof value) {
+         case "object":
+@@ -3955,6 +3996,15 @@
+       ]);
+     }
+     function addObjectDiffToProperties(prev, next, properties, indent) {
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        return addObjectDiffToPropertiesUnsafe(prev, next, properties, indent);
++      } catch (patchError) {
++        return !1;
++      }
++    }
++    function addObjectDiffToPropertiesUnsafe(prev, next, properties, indent) {
+       var isDeeplyEqual = !0;
+       for (key in prev)
+         key in next ||
+diff --git a/cjs/react-dom-profiling.development.js b/cjs/react-dom-profiling.development.js
+index dfabf7b22ffe706608e5a34331a020ce0ffc3e5a..46953755e494f14ed1bb9a33d91ba4347ca95133 100644
+--- a/cjs/react-dom-profiling.development.js
++++ b/cjs/react-dom-profiling.development.js
+@@ -3789,10 +3789,27 @@
+       return kind;
+     }
+     function addObjectToProperties(object, properties, indent, prefix) {
+-      for (var key in object)
+-        hasOwnProperty.call(object, key) &&
+-          "_" !== key[0] &&
+-          addValueToProperties(key, object[key], properties, indent, prefix);
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        for (var key in object)
++          try {
++            hasOwnProperty.call(object, key) &&
++              "_" !== key[0] &&
++              addValueToProperties(
++                key,
++                object[key],
++                properties,
++                indent,
++                prefix
++              );
++          } catch (patchError) {
++            properties.push([
++              prefix + "  ".repeat(indent) + key,
++              "[inaccessible]"
++            ]);
++          }
++      } catch (patchError) {}
+     }
+     function addValueToProperties(
+       propertyName,
+@@ -3800,6 +3817,30 @@
+       properties,
+       indent,
+       prefix
++    ) {
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        addValueToPropertiesUnsafe(
++          propertyName,
++          value,
++          properties,
++          indent,
++          prefix
++        );
++      } catch (patchError) {
++        properties.push([
++          prefix + "  ".repeat(indent) + propertyName,
++          "[inaccessible]"
++        ]);
++      }
++    }
++    function addValueToPropertiesUnsafe(
++      propertyName,
++      value,
++      properties,
++      indent,
++      prefix
+     ) {
+       switch (typeof value) {
+         case "object":
+@@ -3963,6 +4004,15 @@
+       ]);
+     }
+     function addObjectDiffToProperties(prev, next, properties, indent) {
++      // patched(oboku): reads on cross-origin objects throw SecurityError
++      // https://github.com/facebook/react/issues/34840
++      try {
++        return addObjectDiffToPropertiesUnsafe(prev, next, properties, indent);
++      } catch (patchError) {
++        return !1;
++      }
++    }
++    function addObjectDiffToPropertiesUnsafe(prev, next, properties, indent) {
+       var isDeeplyEqual = !0;
+       for (key in prev)
+         key in next ||

@@ -300,7 +300,10 @@ describe("OneDrive auth", () => {
     const { InteractionRequiredAuthError } = await import("@azure/msal-browser")
 
     client.acquireTokenSilent.mockRejectedValueOnce(
-      new InteractionRequiredAuthError(),
+      new InteractionRequiredAuthError(
+        "interaction_required",
+        "test-correlation-id",
+      ),
     )
 
     const [{ requestMicrosoftAccessToken }, { CancelError }] =
