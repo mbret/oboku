@@ -1,4 +1,5 @@
 {
+  "installCommand": "npm i -g pnpm@11 && cd ../.. && pnpm install --frozen-lockfile",
   "rewrites": [
     {
       "source": "/auth-callback-dropbox",
