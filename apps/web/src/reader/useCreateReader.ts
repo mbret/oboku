@@ -1,4 +1,4 @@
-import { type RefObject, useEffect } from "react"
+import { type RefObject, useEffect, useState } from "react"
 import { SIGNAL_RESET } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
@@ -47,10 +47,8 @@ export const useCreateReader = ({
   manifest?: Manifest
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: bookOnce } = useBook({
+  const { data: book } = useBook({
     id: bookId,
-    // Observing stops after the first result, so later progress-sync writes to
-    // the same book document never change `bookOnce` or recreate the reader.
     enabled: function observeBookUntilFirstResult(query) {
       if (isPreview) return false
 
@@ -59,6 +57,27 @@ export const useCreateReader = ({
       return hasNoResultYet
     },
   })
+  // Other observers of the same book query (e.g. the book finished dialog)
+  // keep its cache live, so freeze the first result or every progress-sync
+  // write would remount the reader.
+  const [firstBookResult, setFirstBookResult] = useState<{
+    bookId: string
+    book: typeof book
+  }>()
+
+  useEffect(
+    function captureFirstBookResult() {
+      if (book === undefined) return
+
+      setFirstBookResult((existing) =>
+        existing?.bookId === bookId ? existing : { bookId, book },
+      )
+    },
+    [book, bookId],
+  )
+
+  const bookOnce =
+    firstBookResult?.bookId === bookId ? firstBookResult.book : undefined
   const isRestoredLocationReady = isPreview || !!bookOnce
 
   useEffect(() => {
