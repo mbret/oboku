@@ -2,7 +2,7 @@ import { intersection } from "@oboku/shared"
 import { useProtectedTagIds } from "../tags/helpers"
 import { createLinkQueryOptions, useLink } from "../links/states"
 import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
-import { map, switchMap } from "rxjs"
+import { map, type Observable, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { useQueries$, useQuery$, useSignalValue } from "reactjrx"
@@ -17,7 +17,11 @@ import {
   libraryStateSignal,
   selectIsLibraryUnlocked,
 } from "../library/books/states"
-import { skipToken, type UseQueryOptions } from "@tanstack/react-query"
+import {
+  type SkipToken,
+  skipToken,
+  type UseQueryOptions,
+} from "@tanstack/react-query"
 
 type UseBooksOptions<TData = DeepReadonlyObject<BookDocType>[]> =
   UseQueryOptions<DeepReadonlyObject<BookDocType>[], unknown, TData>
@@ -71,6 +75,42 @@ export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   })
 }
 
+type BookQueryOptions = ReturnType<typeof createRxdbQueryDefaultOptions> & {
+  queryKey: (string | { id: string | undefined })[]
+  queryFn:
+    | SkipToken
+    | (() => Observable<DeepReadonlyObject<BookDocType> | null>)
+}
+
+export const createBookQueryOptions = ({
+  id,
+}: {
+  id?: string
+}): BookQueryOptions => {
+  const queryFn: BookQueryOptions["queryFn"] =
+    id === undefined
+      ? skipToken
+      : () => {
+          return latestDatabase$.pipe(
+            switchMap((db) =>
+              observeBook({
+                db,
+                queryObj: id,
+              }),
+            ),
+            map((value) => {
+              return value?.toJSON() ?? null
+            }),
+          )
+        }
+
+  return {
+    ...createRxdbQueryDefaultOptions(),
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "bookJSON", { id }],
+    queryFn,
+  }
+}
+
 export const useBook = ({
   id,
   ...rest
@@ -85,24 +125,7 @@ export const useBook = ({
   "queryKey" | "queryFn"
 >) => {
   return useQuery$({
-    ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "bookJSON", { id }],
-    queryFn:
-      id === undefined
-        ? skipToken
-        : () => {
-            return latestDatabase$.pipe(
-              switchMap((db) =>
-                observeBook({
-                  db,
-                  queryObj: id,
-                }),
-              ),
-              map((value) => {
-                return value?.toJSON() ?? null
-              }),
-            )
-          },
+    ...createBookQueryOptions({ id }),
     ...rest,
   })
 }
