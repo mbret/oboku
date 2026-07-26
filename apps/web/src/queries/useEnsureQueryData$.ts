@@ -1,76 +1,67 @@
 import {
-  type DefaultError,
   hashKey,
   type QueryKey,
-  type UseQueryOptions,
+  skipToken,
+  useQueryClient,
 } from "@tanstack/react-query"
-import { useEffect, useState } from "react"
-import { useQuery$ } from "reactjrx"
+import { useEffect, useRef, useState } from "react"
+import { type EnsureQueryFn$, ensureQueryData$ } from "./ensureQueryData$"
 
-type ObservableQueryFn<
-  TQueryFnData,
-  TError,
-  TQueryKey extends QueryKey,
-> = Parameters<
-  typeof useQuery$<TQueryFnData, TError, TQueryFnData, TQueryKey>
->[0]["queryFn"]
-
-type FirstResult<TQueryFnData, TError> = {
+type FirstResult<TQueryFnData> = {
   queryHash: string
   data: TQueryFnData | undefined
-  error: TError | undefined
+  error: unknown
 }
 
 const noResultYet = { data: undefined, error: undefined }
 
 /**
- * Resolves the first available result (or error) of a query and never
- * updates afterwards, even while other observers keep the query cache live.
- * The snapshot is keyed by the query key, so a key change resolves a fresh
- * one. Gate resolution with a `skipToken` queryFn; `enabled` is reserved by
- * the hook itself.
+ * Resolves the first available result (or error) of a query through
+ * `ensureQueryData$` and never updates afterwards, even while other
+ * observers keep the query cache live. The snapshot is keyed by the query
+ * key, so a key change resolves a fresh one. Gate resolution with a
+ * `skipToken` queryFn.
  */
 export function useEnsureQueryData$<
   TQueryFnData = unknown,
-  TError = DefaultError,
   TQueryKey extends QueryKey = QueryKey,
->(
-  options: Omit<
-    UseQueryOptions<TQueryFnData, TError, TQueryFnData, TQueryKey>,
-    "queryFn" | "enabled" | "select"
-  > & {
-    queryFn: ObservableQueryFn<TQueryFnData, TError, TQueryKey>
-  },
-): { data: TQueryFnData | undefined; error: TError | undefined } {
+>(options: {
+  queryKey: TQueryKey
+  queryFn: EnsureQueryFn$<TQueryFnData>
+}): { data: TQueryFnData | undefined; error: unknown } {
+  const queryClient = useQueryClient()
   const queryHash = hashKey(options.queryKey)
-  const [firstResult, setFirstResult] =
-    useState<FirstResult<TQueryFnData, TError>>()
-
-  const { data, error } = useQuery$<
-    TQueryFnData,
-    TError,
-    TQueryFnData,
-    TQueryKey
-  >({
-    ...options,
-    enabled: function observeUntilFirstResult(query) {
-      return query.state.data === undefined
-    },
-  })
+  const [firstResult, setFirstResult] = useState<FirstResult<TQueryFnData>>()
+  const optionsRef = useRef(options)
+  optionsRef.current = options
 
   useEffect(
-    function captureFirstResult() {
-      const hasNoResultYet = data === undefined && error === null
+    function resolveFirstResult() {
+      if (optionsRef.current.queryFn === skipToken) return
 
-      if (hasNoResultYet) return
+      let isDisposed = false
 
-      setFirstResult((existing) =>
-        existing?.queryHash === queryHash
-          ? existing
-          : { queryHash, data, error: error ?? undefined },
-      )
+      const captureFirstResult = (
+        result: Pick<FirstResult<TQueryFnData>, "data" | "error">,
+      ) => {
+        if (isDisposed) return
+
+        setFirstResult((existing) =>
+          existing?.queryHash === queryHash
+            ? existing
+            : { queryHash, ...result },
+        )
+      }
+
+      ensureQueryData$(queryClient, optionsRef.current)
+        .then((data) => captureFirstResult({ data, error: undefined }))
+        .catch((error) => captureFirstResult({ data: undefined, error }))
+
+      return function disposeCapture() {
+        isDisposed = true
+      }
     },
-    [data, error, queryHash],
+    [queryHash, queryClient],
   )
 
   return firstResult?.queryHash === queryHash ? firstResult : noResultYet
