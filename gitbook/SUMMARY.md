@@ -38,6 +38,7 @@
 * [Books](guides/books.md)
 * [Data Sources](guides/datasources.md)
 * [Reader](guides/reader.md)
+* [Storage protection](guides/storage.md)
 * [Supported Contents](guides/supported-contents.md)
 
 ## Sync Providers
