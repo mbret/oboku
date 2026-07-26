@@ -9,7 +9,7 @@ import {
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { QueryClientProvider$ } from "reactjrx"
 import { BehaviorSubject, of } from "rxjs"
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { useEnsureQueryData$ } from "./useEnsureQueryData$"
 
 afterEach(cleanup)
@@ -50,7 +50,7 @@ describe("useEnsureQueryData$", () => {
     renderProbe({ queryKey: ["first-value"], queryFn: () => of("initial") })
 
     await waitFor(() => expect(latestResult.data).toBe("initial"))
-    expect(latestResult.error).toBeUndefined()
+    expect(latestResult.error).toBeNull()
   })
 
   it("ignores later updates to the same query cache entry", async () => {
@@ -83,7 +83,23 @@ describe("useEnsureQueryData$", () => {
     await act(async () => {})
 
     expect(latestResult.data).toBeUndefined()
-    expect(latestResult.error).toBeUndefined()
+    expect(latestResult.error).toBeNull()
+  })
+
+  it("shares a single resolution between concurrent consumers of a key", async () => {
+    const queryFn = vi.fn(() => of("shared"))
+
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <QueryClientProvider$>
+          <Probe queryKey={["shared-key"]} queryFn={queryFn} />
+          <Probe queryKey={["shared-key"]} queryFn={queryFn} />
+        </QueryClientProvider$>
+      </QueryClientProvider>,
+    )
+
+    await waitFor(() => expect(latestResult.data).toBe("shared"))
+    expect(queryFn).toHaveBeenCalledTimes(1)
   })
 
   it("resolves a fresh snapshot when the query key changes", async () => {

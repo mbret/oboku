@@ -1,26 +1,25 @@
 import {
-  hashKey,
   type QueryKey,
   skipToken,
+  useQuery,
   useQueryClient,
 } from "@tanstack/react-query"
-import { useEffect, useRef, useState } from "react"
 import { type EnsureQueryFn$, ensureQueryData$ } from "./ensureQueryData$"
 
-type FirstResult<TQueryFnData> = {
-  queryHash: string
-  data: TQueryFnData | undefined
-  error: unknown
-}
-
-const noResultYet = { data: undefined, error: undefined }
+const ENSURE_QUERY_KEY_PREFIX = "ensureQueryData$"
 
 /**
  * Resolves the first available result (or error) of a query through
  * `ensureQueryData$` and never updates afterwards, even while other
- * observers keep the query cache live. The snapshot is keyed by the query
- * key, so a key change resolves a fresh one. Gate resolution with a
- * `skipToken` queryFn.
+ * observers keep the query cache live. The snapshot is memoized under a
+ * private `[ENSURE_QUERY_KEY_PREFIX, queryKey]` cache entry scoped to the
+ * consumers' lifetime, so concurrent consumers share one resolution and a
+ * key change resolves a fresh one. Gate resolution with a `skipToken`
+ * queryFn.
+ *
+ * The freeze assumes invalidations stay prefix-scoped (the app norm): an
+ * unfiltered `invalidateQueries`/`resetQueries` sweep bypasses `staleTime`
+ * and would re-resolve the snapshot.
  */
 export function useEnsureQueryData$<
   TQueryFnData = unknown,
@@ -30,39 +29,17 @@ export function useEnsureQueryData$<
   queryFn: EnsureQueryFn$<TQueryFnData>
 }): { data: TQueryFnData | undefined; error: unknown } {
   const queryClient = useQueryClient()
-  const queryHash = hashKey(options.queryKey)
-  const [firstResult, setFirstResult] = useState<FirstResult<TQueryFnData>>()
-  const optionsRef = useRef(options)
-  optionsRef.current = options
 
-  useEffect(
-    function resolveFirstResult() {
-      if (optionsRef.current.queryFn === skipToken) return
-
-      let isDisposed = false
-
-      const captureFirstResult = (
-        result: Pick<FirstResult<TQueryFnData>, "data" | "error">,
-      ) => {
-        if (isDisposed) return
-
-        setFirstResult((existing) =>
-          existing?.queryHash === queryHash
-            ? existing
-            : { queryHash, ...result },
-        )
-      }
-
-      ensureQueryData$(queryClient, optionsRef.current)
-        .then((data) => captureFirstResult({ data, error: undefined }))
-        .catch((error) => captureFirstResult({ data: undefined, error }))
-
-      return function disposeCapture() {
-        isDisposed = true
-      }
-    },
-    [queryHash, queryClient],
-  )
-
-  return firstResult?.queryHash === queryHash ? firstResult : noResultYet
+  return useQuery({
+    queryKey: [ENSURE_QUERY_KEY_PREFIX, options.queryKey],
+    queryFn:
+      options.queryFn === skipToken
+        ? skipToken
+        : function resolveFirstResult() {
+            return ensureQueryData$(queryClient, options)
+          },
+    staleTime: Number.POSITIVE_INFINITY,
+    gcTime: 0,
+    retry: false,
+  })
 }
