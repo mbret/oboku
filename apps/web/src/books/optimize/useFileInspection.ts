@@ -1,10 +1,5 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
-import type { Archive } from "@oboku/archive-metadata"
-import {
-  type ResolvedArchive,
-  type ResolvedArchiveSourceKind,
-  resolveArchive,
-} from "@prose-reader/archive-reader"
+import { type Archive, resolveArchive } from "@prose-reader/archive-reader"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
@@ -17,30 +12,18 @@ import {
 
 export const FILE_INSPECTION_QUERY_KEY = ["metadataFixer", "fileInspection"]
 
-/**
- * `unreadable` means the container file is there but its XML could not be
- * parsed. It is a state of its own because it decides what saving can do:
- * a container we cannot read is one we cannot patch.
- */
-export type ContainerState = "absent" | "readable" | "unreadable"
+const resolveBookArchive = (archive: Archive) =>
+  resolveArchive(archive, { include: ["metadata", "sources"] })
 
-/**
- * The metadata containers the archive carries, and the single ISBN the book
- * declares through them. Which container the ISBN came from is not surfaced —
- * the user edits a book's ISBN, not a container's.
- */
-type ArchiveContainers = {
-  opf: ContainerState
-  comicInfo: ContainerState
-  isbn: string | undefined
-}
+export type ResolvedBookArchive = Awaited<ReturnType<typeof resolveBookArchive>>
 
-export type FileInspection = ArchiveContainers & {
+export type FileInspection = {
   fileName: string
   fileSize: number
   imageCount: number
   imageBytes: number
   averageImageResolution: ImageResolution | undefined
+  resolvedArchive: ResolvedBookArchive
 }
 
 const inspectContent = (
@@ -50,44 +33,6 @@ const inspectContent = (
   imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
-const containerState = (
-  kind: ResolvedArchiveSourceKind,
-  {
-    sources,
-    unreadableSources,
-  }: Pick<ResolvedArchive, "sources" | "unreadableSources">,
-): ContainerState => {
-  if (sources[kind] !== undefined) return "readable"
-
-  return unreadableSources.includes(kind) ? "unreadable" : "absent"
-}
-
-const readArchiveContainers = async (
-  archive: Archive,
-): Promise<ArchiveContainers> => {
-  const resolved = await resolveArchive(archive, {
-    include: ["metadata", "sources"],
-  })
-
-  const containers: ArchiveContainers = {
-    opf: containerState("opf", resolved),
-    comicInfo: containerState("comicInfo", resolved),
-    isbn: resolved.metadata.isbn,
-  }
-
-  Logger.info("[metadataFixer] archive containers", containers)
-
-  return containers
-}
-
-/**
- * Inspects the locally cached book file in a single pass: file stats, image
- * stats, and embedded metadata.
- *
- * A container that cannot be parsed never fails the inspection — it surfaces
- * as `unreadable` so the metadata tab can tell the user what saving will and
- * will not touch.
- */
 export const useFileInspection = (bookId: string | undefined) =>
   useQuery({
     queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId] as const,
@@ -104,7 +49,7 @@ export const useFileInspection = (bookId: string | undefined) =>
 
           const file = result.data
 
-          Logger.info("[metadataFixer] file inspection", {
+          Logger.info("[metadataFixer] file", {
             name: file.name,
             size: file.size,
             type: file.type,
@@ -120,16 +65,18 @@ export const useFileInspection = (bookId: string | undefined) =>
             const { imageCount, imageBytes } = inspectContent(imageRecords)
             const averageImageResolution =
               await measureAverageImageResolution(imageRecords)
-            const containers = await readArchiveContainers(archive)
-
-            return {
+            const inspection: FileInspection = {
               fileName: file.name,
               fileSize: file.size,
               imageCount,
               imageBytes,
               averageImageResolution,
-              ...containers,
+              resolvedArchive: await resolveBookArchive(archive),
             }
+
+            Logger.info("[metadataFixer] file inspection", inspection)
+
+            return inspection
           } finally {
             await archive.close()
           }

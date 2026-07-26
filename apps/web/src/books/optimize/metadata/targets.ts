@@ -35,7 +35,9 @@ export const trimMetadataFixerFormValues = ({
 
 export const resolveMetadataFixerFormValues = (
   inspection: FileInspection,
-): MetadataFixerFormValues => ({ isbn: inspection.isbn ?? "" })
+): MetadataFixerFormValues => ({
+  isbn: inspection.resolvedArchive.metadata.isbn ?? "",
+})
 
 /**
  * Writes the ISBN into every container the archive can carry: the OPF when it
@@ -52,5 +54,8 @@ export const resolveArchiveMetadataPatchPlan = (
   inspection: FileInspection,
 ): ArchiveMetadataPatchPlan => ({
   patch: { isbn: normalizeFormIsbn(values.isbn) },
-  targets: { comicInfo: true, opf: inspection.opf === "readable" },
+  targets: {
+    comicInfo: true,
+    opf: inspection.resolvedArchive.sources.opf !== undefined,
+  },
 })

@@ -1,30 +1,34 @@
+import type { ResolvedArchiveSourceKind } from "@prose-reader/archive-reader"
 import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
-import type { ContainerState } from "../useFileInspection"
+import type { ResolvedBookArchive } from "../useFileInspection"
 import { CONTAINER_LABELS } from "./targets"
 
-const CONTAINER_STATE_LABELS: Record<ContainerState, string> = {
-  absent: "Not found",
-  readable: "Found",
-  unreadable: "Found, unreadable",
+const containerValue = (
+  kind: ResolvedArchiveSourceKind,
+  { sources, unreadableSources }: ResolvedBookArchive,
+): string => {
+  if (sources[kind] !== undefined) return "Found"
+
+  return unreadableSources.includes(kind) ? "Found, unreadable" : "Not found"
 }
 
 export const MetadataReport = memo(function MetadataReport() {
   const { inspection } = useBookOptimize()
-  const { comicInfo, opf, isbn } = inspection
+  const { resolvedArchive } = inspection
 
   return (
     <Report title="Metadata report">
       <ReportRow
         label={CONTAINER_LABELS.comicInfo}
-        value={CONTAINER_STATE_LABELS[comicInfo]}
+        value={containerValue("comicInfo", resolvedArchive)}
       />
       <ReportRow
         label={CONTAINER_LABELS.opf}
-        value={CONTAINER_STATE_LABELS[opf]}
+        value={containerValue("opf", resolvedArchive)}
       />
-      <ReportRow label="ISBN" value={isbn ?? "—"} />
+      <ReportRow label="ISBN" value={resolvedArchive.metadata.isbn ?? "—"} />
     </Report>
   )
 })

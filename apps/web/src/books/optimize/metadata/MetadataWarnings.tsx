@@ -5,13 +5,13 @@ import { CONTAINER_LABELS } from "./targets"
 
 export const MetadataWarnings = memo(function MetadataWarnings() {
   const { inspection } = useBookOptimize()
-  const { comicInfo, opf } = inspection
+  const { unreadableSources } = inspection.resolvedArchive
 
-  if (comicInfo !== "unreadable" && opf !== "unreadable") return null
+  if (unreadableSources.length === 0) return null
 
   return (
     <Stack spacing={1}>
-      {opf === "unreadable" && (
+      {unreadableSources.includes("opf") && (
         <Alert severity="warning" variant="standard">
           This book's {CONTAINER_LABELS.opf} could not be read, so none of its
           own metadata could be recovered. You can still fix the book: saving
@@ -20,7 +20,7 @@ export const MetadataWarnings = memo(function MetadataWarnings() {
           reading order, which oboku cannot rebuild.
         </Alert>
       )}
-      {comicInfo === "unreadable" && (
+      {unreadableSources.includes("comicInfo") && (
         <Alert severity="warning" variant="standard">
           This book's {CONTAINER_LABELS.comicInfo} could not be read. Saving
           replaces it entirely with a new one holding only the fields oboku
