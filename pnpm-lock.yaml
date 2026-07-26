@@ -508,8 +508,8 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       dexie:
-        specifier: ^4.4.2
-        version: 4.4.4
+        specifier: 4.4.2
+        version: 4.4.2
       dropbox:
         specifier: ^10.38.0
         version: 10.38.0
@@ -7017,9 +7017,6 @@ packages:
 
   dexie@4.4.2:
     resolution: {integrity: sha512-zMtV8q79EFE5U8FKZvt0Y/77PCU/Hr/RDxv1EDeo228L+m/HTbeN2AjoQm674rhQCX8n3ljK87lajt7UQuZfvw==}
-
-  dexie@4.4.4:
-    resolution: {integrity: sha512-jIwsYI8Os2hgnqc6O49YwFDKGc5v5QjGx0wPVp543ip1F53VFAKMLthV2pQosQcVTv3eAskTWYspOx195PM0FQ==}
 
   dezalgo@1.0.4:
     resolution: {integrity: sha512-rXSP0bf+5n0Qonsb+SVVfNfIsimO4HEtmnIpPHY8Q1UCzKlQrDMfdobr8nJOOsRgWCyMRqeSBQzmWUMq7zvVig==}
@@ -19505,8 +19502,6 @@ snapshots:
       dequal: 2.0.3
 
   dexie@4.4.2: {}
-
-  dexie@4.4.4: {}
 
   dezalgo@1.0.4:
     dependencies:

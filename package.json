@@ -23,7 +23,8 @@
     "tsc": "lerna run tsc",
     "format": "biome format --write .",
     "lint": "biome check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "postinstall": "node scripts/check-dexie-version.mjs"
   },
   "devDependencies": {
     "@biomejs/biome": "^2.5.5",

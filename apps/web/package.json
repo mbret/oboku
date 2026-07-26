@@ -37,7 +37,7 @@
     "@tanstack/react-virtual": "^3.14.8",
     "@zip.js/zip.js": "^2.8.34",
     "buffer": "^6.0.3",
-    "dexie": "^4.4.2",
+    "dexie": "4.4.2",
     "dropbox": "^10.38.0",
     "firebase": "^12.16.0",
     "fuse.js": "^7.5.0",
