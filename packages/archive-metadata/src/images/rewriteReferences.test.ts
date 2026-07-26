@@ -1,10 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
-import {
-  type EditableArchive,
-  readEntryText,
-} from "../archives/editableArchive"
-import { rewriteImageReferences } from "./rewriteImageReferences"
+import { type EditableArchive, readEntryText } from "../update/editableArchive"
+import { rewriteImageReferences } from "./rewriteReferences"
 
 const archiveOf = (files: Record<string, string>): EditableArchive =>
   new Map(

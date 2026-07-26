@@ -1,10 +1,11 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import { getTmpDir, opfsSupported, purgeTmp, writeTmpFile } from "./tmp"
-
-vi.mock("../../debug/logger.shared", () => ({
-  Logger: { info: vi.fn(), warn: vi.fn() },
-}))
+import {
+  openOpfsZipTarget,
+  opfsSupported,
+  purgeStagedFiles,
+  stageBytesInOpfs,
+} from "./opfsStaging"
 
 class FakeFileHandle {
   contents = new Uint8Array(0)
@@ -76,8 +77,9 @@ const bytesOf = (blob: Blob) =>
     reader.readAsArrayBuffer(blob)
   })
 
-const findTmpDir = (root: FakeDirectoryHandle) =>
-  root.dirs.get("oboku-tmp")?.dirs.get("optimize")
+const findStagingDir = (root: FakeDirectoryHandle) => root.dirs.get("oboku-tmp")
+
+const STAGED_NAME = "11111111-1111-1111-1111-111111111111"
 
 beforeEach(() => {
   vi.spyOn(crypto, "randomUUID").mockReturnValue(
@@ -104,38 +106,25 @@ describe("opfsSupported", () => {
   })
 })
 
-describe("getTmpDir", () => {
-  it("creates the optimize directory nested under the tmp root", async () => {
-    const root = new FakeDirectoryHandle()
-    enableOpfs(root)
-
-    const dir = await getTmpDir()
-
-    expect(findTmpDir(root)).toBe(dir)
-  })
-})
-
-describe("writeTmpFile", () => {
+describe("stageBytesInOpfs", () => {
   it("returns an in-memory blob without touching OPFS when unsupported", async () => {
     disableOpfs()
     const bytes = new Uint8Array([1, 2, 3]).buffer
 
-    const blob = await writeTmpFile(bytes)
+    const blob = await stageBytesInOpfs(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([1, 2, 3]))
   })
 
-  it("persists the bytes to OPFS and returns the written file", async () => {
+  it("spills the bytes to OPFS and returns the written file", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
     const bytes = new Uint8Array([4, 5, 6]).buffer
 
-    const blob = await writeTmpFile(bytes)
+    const blob = await stageBytesInOpfs(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([4, 5, 6]))
-    expect(
-      findTmpDir(root)?.files.has("11111111-1111-1111-1111-111111111111.bin"),
-    ).toBe(true)
+    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.bin`)).toBe(true)
   })
 
   it("falls back to an in-memory blob when the OPFS write fails", async () => {
@@ -146,33 +135,54 @@ describe("writeTmpFile", () => {
     enableOpfs(root)
     const bytes = new Uint8Array([7, 8, 9]).buffer
 
-    const blob = await writeTmpFile(bytes)
+    const blob = await stageBytesInOpfs(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([7, 8, 9]))
   })
 })
 
-describe("purgeTmp", () => {
-  it("removes the optimize directory and leaves the tmp root in place", async () => {
+describe("openOpfsZipTarget", () => {
+  it("returns no target when OPFS is unsupported", async () => {
+    disableOpfs()
+
+    expect(await openOpfsZipTarget()).toBeNull()
+  })
+
+  it("streams into a staged file and drops it on dispose", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
-    await writeTmpFile(new Uint8Array([1]).buffer)
 
-    await purgeTmp()
+    const target = await openOpfsZipTarget()
 
-    expect(root.dirs.has("oboku-tmp")).toBe(true)
-    expect(findTmpDir(root)).toBeUndefined()
+    expect(target).not.toBeNull()
+    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.zip`)).toBe(true)
+
+    await target?.dispose()
+
+    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.zip`)).toBe(false)
+  })
+})
+
+describe("purgeStagedFiles", () => {
+  it("removes the whole staging directory", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    await stageBytesInOpfs(new Uint8Array([1]).buffer)
+
+    await purgeStagedFiles()
+
+    expect(findStagingDir(root)).toBeUndefined()
   })
 
   it("does nothing when OPFS is unsupported", async () => {
     disableOpfs()
 
-    await expect(purgeTmp()).resolves.toBeUndefined()
+    await expect(purgeStagedFiles()).resolves.toBeUndefined()
   })
 
   it("swallows errors when there is nothing to purge", async () => {
     enableOpfs(new FakeDirectoryHandle())
 
-    await expect(purgeTmp()).resolves.toBeUndefined()
+    await expect(purgeStagedFiles()).resolves.toBeUndefined()
   })
 })

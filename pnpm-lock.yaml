@@ -508,7 +508,7 @@ importers:
         specifier: ^6.0.3
         version: 6.0.3
       dexie:
-        specifier: ^4.4.4
+        specifier: ^4.4.2
         version: 4.4.4
       dropbox:
         specifier: ^10.38.0
@@ -667,6 +667,9 @@ importers:
       '@prose-reader/shared':
         specifier: ^1.334.0
         version: 1.334.0
+      '@zip.js/zip.js':
+        specifier: ^2.8.34
+        version: 2.8.34
     devDependencies:
       vite:
         specifier: ^8.1.5

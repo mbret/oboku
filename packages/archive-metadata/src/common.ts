@@ -12,3 +12,9 @@ export type {
   ArchivePatchedEntry,
 } from "./writer"
 export { patchArchiveMetadata } from "./writer"
+
+export type { PatchMetadataAction } from "./update/actions"
+export type {
+  ArchiveUpdateProgress,
+  ArchiveUpdateResult,
+} from "./update/updateArchive"

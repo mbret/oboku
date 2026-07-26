@@ -1,10 +1,18 @@
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
+import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { describe, expect, it } from "vitest"
 import {
   type EditableArchive,
-  readArchive,
   readEntryText,
+  toEditableArchive,
 } from "./editableArchive"
-import { writeArchive } from "./writeArchive"
+import { openNoZipTarget } from "./staging"
+import { writeZip } from "./writeZip"
+
+const readZip = async (blob: Blob): Promise<EditableArchive> =>
+  toEditableArchive(
+    await createArchiveFromZipJs(new ZipReader(new BlobReader(blob))),
+  )
 
 const readFirstZipEntry = (
   buffer: ArrayBuffer,
@@ -39,15 +47,17 @@ const readFirstZipEntry = (
   }
 }
 
-describe("writeArchive", () => {
+describe("writeZip", () => {
   it("round-trips text and binary entries through a zip.js read/write cycle", async () => {
     const entries: EditableArchive = new Map([
       ["a/text.xhtml", { dir: false, content: "<p>hi</p>" }],
       ["a/bytes.bin", { dir: false, content: new Uint8Array([1, 2, 3]) }],
     ])
 
-    const { blob } = await writeArchive(entries)
-    const { entries: reloaded } = await readArchive(blob)
+    const { blob } = await writeZip(entries, {
+      openZipTarget: openNoZipTarget,
+    })
+    const reloaded = await readZip(blob)
 
     const text = reloaded.get("a/text.xhtml")
     const bin = reloaded.get("a/bytes.bin")
@@ -67,11 +77,47 @@ describe("writeArchive", () => {
       ["OEBPS/content.opf", { dir: false, content: "<package/>" }],
     ])
 
-    const { blob } = await writeArchive(entries)
+    const { blob } = await writeZip(entries, {
+      openZipTarget: openNoZipTarget,
+    })
     const first = readFirstZipEntry(await new Response(blob).arrayBuffer())
 
     expect(first.name).toBe("mimetype")
     expect(first.compressionMethod).toBe(0)
     expect(first.extraFieldLength).toBe(0)
+  })
+
+  it("streams into the target when the runtime offers one", async () => {
+    const chunks: BlobPart[] = []
+    const entries: EditableArchive = new Map([
+      ["note.txt", { dir: false, content: "hello" }],
+    ])
+
+    const { blob } = await writeZip(entries, {
+      openZipTarget: async () => ({
+        stream: new WritableStream<Uint8Array>({
+          write(chunk) {
+            chunks.push(new Uint8Array(chunk))
+          },
+        }),
+        finish: async () => new Blob(chunks),
+        dispose: () => Promise.resolve(),
+      }),
+    })
+
+    expect(chunks.length).toBeGreaterThan(0)
+    expect((await readZip(blob)).has("note.txt")).toBe(true)
+  })
+
+  it("falls back to an in-memory archive when the target cannot be opened", async () => {
+    const entries: EditableArchive = new Map([
+      ["note.txt", { dir: false, content: "hello" }],
+    ])
+
+    const { blob } = await writeZip(entries, {
+      openZipTarget: () => Promise.reject(new Error("quota exceeded")),
+    })
+
+    expect((await readZip(blob)).has("note.txt")).toBe(true)
   })
 })

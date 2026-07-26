@@ -1,8 +1,8 @@
-import { createWorkerPool } from "../../../workers/pool/createWorkerPool"
+import { createWorkerPool } from "../utils/workerPool/createWorkerPool"
 import type {
   ImageCompressionRequest,
   ImageCompressionResponse,
-} from "./imageCompression.types"
+} from "./compression.types"
 
 export type CompressionResult = ImageCompressionResponse
 
@@ -21,7 +21,7 @@ export const createImageCompressionPool = (): ImageCompressionPool => {
     ImageCompressionResponse
   >({
     createWorker: () =>
-      new Worker(new URL("./imageCompression.worker.ts", import.meta.url), {
+      new Worker(new URL("./compression.worker.ts", import.meta.url), {
         type: "module",
       }),
   })

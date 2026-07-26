@@ -10,7 +10,7 @@ import { useController } from "react-hook-form"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { hasCompressionDimension, type BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
-import { CONVERTIBLE_IMAGE_FORMAT_NAMES } from "./images"
+import { CONVERTIBLE_IMAGE_FORMAT_NAMES } from "@oboku/archive-metadata/web"
 
 const convertibleFormats = CONVERTIBLE_IMAGE_FORMAT_NAMES.join(", ")
 

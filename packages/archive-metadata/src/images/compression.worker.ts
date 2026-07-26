@@ -1,8 +1,8 @@
-import { createWorkerPoolHandler } from "../../../workers/pool/createWorkerPoolHandler.worker"
+import { createWorkerPoolHandler } from "../utils/workerPool/createWorkerPoolHandler.worker"
 import type {
   ImageCompressionRequest,
   ImageCompressionResponse,
-} from "./imageCompression.types"
+} from "./compression.types"
 
 const computeScale = (
   width: number,

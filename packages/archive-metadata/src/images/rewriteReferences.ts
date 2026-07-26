@@ -1,12 +1,9 @@
-import {
-  type EditableArchive,
-  readEntryText,
-} from "../archives/editableArchive"
+import { type EditableArchive, readEntryText } from "../update/editableArchive"
 import {
   getExtension,
   IMAGE_EXTENSIONS,
   replaceExtensionWithWebp,
-} from "./images"
+} from "./paths"
 
 const TEXT_REFERENCE_EXTENSIONS: ReadonlySet<string> = new Set([
   ".xhtml",

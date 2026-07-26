@@ -62,7 +62,7 @@ export const createWorkerPool = <Request, Response>({
       if (result.error) {
         const error = new Error(result.error.message)
         error.name = result.error.name
-        error.stack = result.error.stack
+        if (result.error.stack !== undefined) error.stack = result.error.stack
         task.reject(error)
       } else {
         task.resolve(result.payload)

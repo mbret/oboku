@@ -1,20 +1,15 @@
-import type { Archive } from "@oboku/archive-metadata"
 import {
   arrayBufferFileAccessors,
   createArchiveFromEntries,
 } from "@prose-reader/archive-reader"
-import {
-  BlobReader,
-  type Entry,
-  Uint8ArrayWriter,
-  ZipReader,
-} from "@zip.js/zip.js"
+import type { Archive, ArchiveFileRecord } from "../archive/types"
 
 /**
- * Content of a planned output entry: a pass-through original, new bytes/text, or
- * a {@link Blob} (e.g. a disk-backed spill file) whose bytes are read lazily.
+ * Content of a planned output entry: a pass-through record from the source
+ * archive, new bytes/text, or a {@link Blob} (e.g. a disk-backed spill file)
+ * whose bytes are read lazily.
  */
-export type EntryContent = Entry | Uint8Array | string | Blob
+export type EntryContent = ArchiveFileRecord | Uint8Array | string | Blob
 
 export type EditableEntry = {
   dir: boolean
@@ -36,16 +31,15 @@ export type EditableArchive = Map<string, EditableEntry>
 const encoder = new TextEncoder()
 const decoder = new TextDecoder()
 
+const EMPTY_BYTES = new Uint8Array()
+
 export const readEntryBytes = async (
   content: EntryContent,
 ): Promise<Uint8Array> => {
   if (typeof content === "string") return encoder.encode(content)
   if (content instanceof Uint8Array) return content
-  if (content instanceof Blob)
-    return new Uint8Array(await content.arrayBuffer())
-  if (content.directory) return new Uint8Array()
 
-  return content.getData(new Uint8ArrayWriter())
+  return new Uint8Array(await content.arrayBuffer())
 }
 
 export const readEntryText = async (content: EntryContent): Promise<string> =>
@@ -72,26 +66,26 @@ const entryByteLength = (content: EntryContent): number => {
   if (content instanceof Uint8Array) return content.byteLength
   if (content instanceof Blob) return content.size
 
-  return content.uncompressedSize
-}
-
-/** Reads a zip blob into an ordered, mutable entry map. Content stays lazy. */
-export const readArchive = async (
-  file: Blob,
-): Promise<{ entries: EditableArchive; close: () => Promise<void> }> => {
-  const reader = new ZipReader(new BlobReader(file))
-  const entries: EditableArchive = new Map()
-
-  for (const entry of await reader.getEntries()) {
-    entries.set(entry.filename, { dir: entry.directory, content: entry })
-  }
-
-  return { entries, close: () => reader.close() }
+  return content.size
 }
 
 /**
- * Read-only {@link Archive} view over the entries, for the metadata
- * reader/writer and inspection. Records resolve their content lazily.
+ * Ordered, mutable view over a source archive's records. Content stays lazy:
+ * pass-through entries are only read when the output archive is written.
+ */
+export const toEditableArchive = (archive: Archive): EditableArchive =>
+  new Map(
+    archive.records.map((record) => [
+      record.uri,
+      record.dir
+        ? { dir: true, content: EMPTY_BYTES }
+        : { dir: false, content: record },
+    ]),
+  )
+
+/**
+ * Read-only {@link Archive} view over the entries, so the metadata reader and
+ * writer can run against work in progress. Records resolve content lazily.
  */
 export const toArchive = (
   entries: EditableArchive,

@@ -1,16 +1,19 @@
 // `zip.js` writes archives as node-native `Blob`s. Run under the `node`
 // environment (not jsdom) so that `Blob`/`File` stay consistent: jsdom's `File`
 // constructor does not recognise a node `Blob` and would silently drop its
-// bytes when `produceOptimizedFile` wraps the output in a `File`.
+// bytes when a caller wraps the output in a `File`.
 // @vitest-environment node
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
+import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { describe, expect, it } from "vitest"
+import { updateArchive } from "../node"
 import {
   type EditableArchive,
-  readArchive,
   readEntryText,
-} from "../archives/editableArchive"
-import { writeArchive } from "../archives/writeArchive"
-import { produceOptimizedFile } from "./produceOptimizedFile"
+  toEditableArchive,
+} from "./editableArchive"
+import { openNoZipTarget } from "./staging"
+import { writeZip } from "./writeZip"
 
 const STORE = 0
 
@@ -49,37 +52,60 @@ const readFirstZipEntry = (buffer: ArrayBuffer): FirstEntry => {
   return { name, compressionMethod, extraFieldLength }
 }
 
-const buildNonCompliantEpub = async (): Promise<File> => {
+const openZip = (blob: Blob) =>
+  createArchiveFromZipJs(new ZipReader(new BlobReader(blob)))
+
+const readZip = async (blob: Blob): Promise<EditableArchive> =>
+  toEditableArchive(await openZip(blob))
+
+const buildNonCompliantEpub = async (): Promise<Blob> => {
   const entries: EditableArchive = new Map([
     ["META-INF/container.xml", { dir: false, content: "<container/>" }],
     ["OEBPS/content.opf", { dir: false, content: "<package/>" }],
     ["mimetype", { dir: false, content: "application/epub+zip" }],
   ])
 
-  const { blob } = await writeArchive(entries)
+  const { blob } = await writeZip(entries, { openZipTarget: openNoZipTarget })
 
-  return new File([blob], "book.epub", { type: "application/epub+zip" })
+  return blob
 }
 
-describe("produceOptimizedFile", () => {
+describe("updateArchive", () => {
   it("writes the epub mimetype entry first and uncompressed", async () => {
     const input = await buildNonCompliantEpub()
 
-    const { entries: inputEntries } = await readArchive(input)
-    expect([...inputEntries.keys()][0]).not.toBe("mimetype")
+    expect([...(await readZip(input)).keys()][0]).not.toBe("mimetype")
 
-    const output = await produceOptimizedFile(input, [])
-    const outputBytes = await output.arrayBuffer()
+    const archive = await openZip(input)
+    const { blob, mimeType } = await updateArchive(archive, { actions: [] })
 
-    const outputFirst = readFirstZipEntry(outputBytes)
+    const outputFirst = readFirstZipEntry(
+      await new Response(blob).arrayBuffer(),
+    )
     expect(outputFirst.name).toBe("mimetype")
     expect(outputFirst.compressionMethod).toBe(STORE)
     expect(outputFirst.extraFieldLength).toBe(0)
+    expect(mimeType).toBe("application/epub+zip")
 
-    const { entries: reloaded } = await readArchive(output)
+    const reloaded = await readZip(blob)
     const mimetype = reloaded.get("mimetype")
     expect(mimetype && (await readEntryText(mimetype.content))).toBe(
       "application/epub+zip",
     )
+
+    await archive.close()
+  })
+
+  it("keeps the source mime type when the caller knows it", async () => {
+    const archive = await openZip(await buildNonCompliantEpub())
+
+    const { mimeType } = await updateArchive(archive, {
+      actions: [],
+      sourceMimeType: "application/zip",
+    })
+
+    expect(mimeType).toBe("application/zip")
+
+    await archive.close()
   })
 })

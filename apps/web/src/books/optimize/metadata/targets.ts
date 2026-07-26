@@ -1,7 +1,7 @@
 import type {
   ArchiveMetadataPatch,
   ArchiveMetadataTargets,
-} from "@oboku/archive-metadata"
+} from "@oboku/archive-metadata/web"
 import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 

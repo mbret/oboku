@@ -1,3 +1,4 @@
+import type { WebArchiveUpdateAction } from "@oboku/archive-metadata/web"
 import type { FileInspection } from "../useFileInspection"
 import {
   resolveArchiveMetadataPatchPlan,
@@ -9,26 +10,27 @@ import {
   parseDimension,
   type BookOptimizeFormValues,
 } from "../form"
-import type { OptimizeOperation } from "./operations"
 
-const resolveMetadataPatchOperation = (
+const resolveMetadataPatchAction = (
   values: BookOptimizeFormValues,
   inspection: FileInspection,
-): OptimizeOperation | undefined => {
+): WebArchiveUpdateAction | undefined => {
   const trimmed = trimMetadataFixerFormValues(values)
   const resolved = resolveMetadataFixerFormValues(inspection)
 
   if (trimmed.isbn === resolved.isbn) return undefined
 
-  return {
-    kind: "metadata-patch",
-    plan: resolveArchiveMetadataPatchPlan(trimmed, inspection),
-  }
+  const { patch, targets } = resolveArchiveMetadataPatchPlan(
+    trimmed,
+    inspection,
+  )
+
+  return { kind: "patch-metadata", patch, targets }
 }
 
-const resolveCompressOperation = (
+const resolveCompressImagesAction = (
   values: BookOptimizeFormValues,
-): OptimizeOperation | undefined => {
+): WebArchiveUpdateAction | undefined => {
   if (!values.compressImages || !hasCompressionDimension(values))
     return undefined
 
@@ -41,13 +43,11 @@ const resolveCompressOperation = (
   }
 }
 
-export const buildOptimizeOperations = (
+export const buildUpdateActions = (
   values: BookOptimizeFormValues,
   inspection: FileInspection,
-): OptimizeOperation[] =>
+): WebArchiveUpdateAction[] =>
   [
-    resolveMetadataPatchOperation(values, inspection),
-    resolveCompressOperation(values),
-  ].filter(
-    (operation): operation is OptimizeOperation => operation !== undefined,
-  )
+    resolveMetadataPatchAction(values, inspection),
+    resolveCompressImagesAction(values),
+  ].filter((action): action is WebArchiveUpdateAction => action !== undefined)

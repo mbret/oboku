@@ -2,13 +2,13 @@ import {
   type EditableArchive,
   type EntryContent,
   readEntryArrayBuffer,
-} from "../archives/editableArchive"
-import { writeTmpFile } from "../tmp"
-import { Logger } from "../../../debug/logger.shared"
-import { isConvertibleImagePath, replaceExtensionWithWebp } from "./images"
-import { createImageCompressionPool } from "./imageCompressionPool"
-import { mapWithConcurrency } from "./mapWithConcurrency"
-import { rewriteImageReferences } from "./rewriteImageReferences"
+} from "../update/editableArchive"
+import { report } from "../utils/report"
+import type { StageBytes } from "../update/staging"
+import { isConvertibleImagePath, replaceExtensionWithWebp } from "./paths"
+import { createImageCompressionPool } from "./compressionPool"
+import { mapWithConcurrency } from "../utils/mapWithConcurrency"
+import { rewriteImageReferences } from "./rewriteReferences"
 import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
 
 /**
@@ -59,8 +59,12 @@ export const compressArchiveImages = async (
   entries: EditableArchive,
   config: ImageCompressionConfig,
   {
+    stageBytes,
     onProgress,
-  }: { onProgress?: (completed: number, total: number) => void } = {},
+  }: {
+    stageBytes: StageBytes
+    onProgress?: (completed: number, total: number) => void
+  },
 ): Promise<ImageCompressionResult> => {
   const images: { path: string; content: EntryContent }[] = [...entries]
     .filter(([path, entry]) => !entry.dir && isConvertibleImagePath(path))
@@ -113,7 +117,7 @@ export const compressArchiveImages = async (
 
           entries.set(newPath, {
             dir: false,
-            content: await writeTmpFile(result.bytes),
+            content: await stageBytes(result.bytes),
           })
           compressedCount += 1
         } else {
@@ -130,7 +134,7 @@ export const compressArchiveImages = async (
 
   await rewriteImageReferences(entries, renamedPaths)
 
-  Logger.info("[contentOptimizer] image compression", {
+  report.info("image compression", {
     totalImages: total,
     compressedCount,
     skippedCount,

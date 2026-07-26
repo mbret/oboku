@@ -1,16 +1,20 @@
+import {
+  purgeStagedFiles,
+  updateArchive,
+  type WebArchiveUpdateAction,
+} from "@oboku/archive-metadata/web"
+import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
+import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { useRef } from "react"
 import { BehaviorSubject } from "rxjs"
 import { dexieDb } from "../../../rxdb/dexie"
 import { getBookFile } from "../../../download/getBookFile.shared"
-import { produceOptimizedFile } from "./produceOptimizedFile"
 import { FILE_INSPECTION_QUERY_KEY } from "../useFileInspection"
-import { purgeTmp } from "../tmp"
-import type { OptimizeOperation } from "./operations"
 
 type ApplyLocalVariables = {
   bookId: string
-  operations: OptimizeOperation[]
+  actions: WebArchiveUpdateAction[]
 }
 
 const saveDownloadedFile = async (bookId: string, file: File) => {
@@ -26,7 +30,7 @@ export const useApplyLocalOptimizations = () => {
   const compressionProgress$ = useRef(new BehaviorSubject(0)).current
 
   const mutation = useMutation({
-    mutationFn: async ({ bookId, operations }: ApplyLocalVariables) => {
+    mutationFn: async ({ bookId, actions }: ApplyLocalVariables) => {
       compressionProgress$.next(0)
 
       const cached = await getBookFile(bookId)
@@ -35,11 +39,31 @@ export const useApplyLocalOptimizations = () => {
         throw new Error(`Cannot optimize: no cached file for book ${bookId}`)
       }
 
-      const optimized = await produceOptimizedFile(cached.data, operations, {
-        onCompressionProgress: (ratio) => compressionProgress$.next(ratio),
-      })
+      const file = cached.data
+      const archive = await createArchiveFromZipJs(
+        new ZipReader(new BlobReader(file)),
+      )
 
-      await saveDownloadedFile(bookId, optimized)
+      try {
+        const { blob, mimeType, dispose } = await updateArchive(archive, {
+          actions,
+          sourceMimeType: file.type,
+          onProgress: ({ completed, total }) => {
+            compressionProgress$.next(total > 0 ? completed / total : 0)
+          },
+        })
+
+        try {
+          await saveDownloadedFile(
+            bookId,
+            new File([blob], file.name, { type: mimeType }),
+          )
+        } finally {
+          await dispose()
+        }
+      } finally {
+        await archive.close()
+      }
     },
     onSuccess: (_data, { bookId }) => {
       void queryClient.invalidateQueries({
@@ -47,7 +71,7 @@ export const useApplyLocalOptimizations = () => {
       })
     },
     onSettled: () => {
-      void purgeTmp()
+      void purgeStagedFiles()
     },
   })
 

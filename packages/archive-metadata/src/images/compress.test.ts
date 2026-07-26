@@ -1,22 +1,19 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import {
-  type EditableArchive,
-  readEntryText,
-} from "../archives/editableArchive"
-import type { CompressionResult } from "./imageCompressionPool"
+import { type EditableArchive, readEntryText } from "../update/editableArchive"
+import type { CompressionResult } from "./compressionPool"
 
 const compress = vi.fn<(bytes: ArrayBuffer) => Promise<CompressionResult>>()
 const terminate = vi.fn()
 
-vi.mock("./imageCompressionPool", () => ({
+vi.mock("./compressionPool", () => ({
   createImageCompressionPool: () => ({
     compress,
     terminate,
   }),
 }))
 
-const { compressArchiveImages } = await import("./compressArchiveImages")
+const { compressArchiveImages } = await import("./compress")
 
 const bytesOf = (value: string): Uint8Array =>
   Uint8Array.from(value, (character) => character.charCodeAt(0))
@@ -50,6 +47,9 @@ const textOf = (entries: EditableArchive, path: string): Promise<string> => {
 
 const config = { maxWidth: undefined, maxHeight: undefined }
 
+const stageBytes = async (bytes: ArrayBuffer): Promise<Blob> =>
+  new Blob([bytes])
+
 describe("compressArchiveImages", () => {
   beforeEach(() => {
     compress.mockReset()
@@ -59,7 +59,7 @@ describe("compressArchiveImages", () => {
   it("returns zero counts and never spins up a pool for an archive without images", async () => {
     const entries = archiveOf({ "OEBPS/content.opf": "<package/>" })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(result).toEqual({
       totalImages: 0,
@@ -81,7 +81,7 @@ describe("compressArchiveImages", () => {
       "images/skipped.png": bytesOf("KEEP"),
     })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(result).toEqual({
       totalImages: 2,
@@ -99,7 +99,7 @@ describe("compressArchiveImages", () => {
 
     const entries = archiveOf({ "cover.jpg": bytesOf("tiny") })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(result).toMatchObject({ compressedCount: 0, skippedCount: 1 })
     expect(entries.has("cover.jpg")).toBe(true)
@@ -120,7 +120,7 @@ describe("compressArchiveImages", () => {
       "chapter2/index.xhtml": `<img src="page.jpg"/>`,
     })
 
-    await compressArchiveImages(entries, config)
+    await compressArchiveImages(entries, config, { stageBytes })
 
     expect(await textOf(entries, "chapter1/index.xhtml")).toBe(
       `<img src="page.webp"/>`,
@@ -138,7 +138,7 @@ describe("compressArchiveImages", () => {
       "cover.png": bytesOf("png-larger-payload"),
     })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(result).toEqual({
       totalImages: 2,
@@ -159,7 +159,7 @@ describe("compressArchiveImages", () => {
       "cover.webp": bytesOf("existing-webp"),
     })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(await textOf(entries, "cover.webp")).toBe("existing-webp")
     expect(entries.has("cover.png")).toBe(true)
@@ -174,7 +174,7 @@ describe("compressArchiveImages", () => {
       "images/photo.jpg": bytesOf("CONVERT-larger-payload"),
     })
 
-    const result = await compressArchiveImages(entries, config)
+    const result = await compressArchiveImages(entries, config, { stageBytes })
 
     expect(result.totalImages).toBe(1)
     expect(entries.has("images/animation.gif")).toBe(true)
@@ -192,7 +192,7 @@ describe("compressArchiveImages", () => {
       "b.jpg": bytesOf("b"),
     })
 
-    await compressArchiveImages(entries, config, { onProgress })
+    await compressArchiveImages(entries, config, { stageBytes, onProgress })
 
     expect(onProgress).toHaveBeenCalledTimes(2)
     expect(onProgress).toHaveBeenLastCalledWith(2, 2)

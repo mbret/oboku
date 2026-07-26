@@ -8,7 +8,7 @@ import {
   listImageEntries,
   measureAverageImageResolution,
   type ImageResolution,
-} from "./content/images"
+} from "@oboku/archive-metadata/web"
 
 export const FILE_INSPECTION_QUERY_KEY = ["metadataFixer", "fileInspection"]
 

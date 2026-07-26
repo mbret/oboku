@@ -22,7 +22,7 @@ import {
   resolveBookOptimizeFormValues,
   type BookOptimizeFormValues,
 } from "./form"
-import { buildOptimizeOperations } from "./apply/buildOptimizeOperations"
+import { buildUpdateActions } from "./apply/buildUpdateActions"
 
 type BookOptimizeContextValue = {
   control: Control<BookOptimizeFormValues>
@@ -118,7 +118,7 @@ export function BookOptimizeProvider({
     if (!canApplyLocally) return
 
     applyLocalOptimizations(
-      { bookId, operations: buildOptimizeOperations(getValues(), inspection) },
+      { bookId, actions: buildUpdateActions(getValues(), inspection) },
       {
         onSuccess: () => {
           reset(getValues())

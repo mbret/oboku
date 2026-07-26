@@ -6,7 +6,7 @@ export type WorkerPoolEnvelope<T> = {
 export type WorkerPoolErrorPayload = {
   name: string
   message: string
-  stack?: string
+  stack: string | undefined
 }
 
 export type WorkerPoolResult<T> =
