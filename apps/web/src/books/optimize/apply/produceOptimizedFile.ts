@@ -1,6 +1,11 @@
-import { type EditableArchive, readArchive } from "../archives/editableArchive"
+import { patchArchiveMetadata } from "@oboku/archive-metadata"
+import {
+  type EditableArchive,
+  readArchive,
+  toArchive,
+} from "../archives/editableArchive"
 import { writeArchive } from "../archives/writeArchive"
-import { applyMetadataPatches } from "../metadata/archiveFile"
+import type { ArchiveMetadataPatchPlan } from "../metadata/targets"
 import { compressArchiveImages } from "../content/compressArchiveImages"
 import type { OptimizeOperation } from "./operations"
 
@@ -9,6 +14,22 @@ const MIMETYPE_ENTRY = "mimetype"
 
 const archiveHasOpf = (paths: string[]): boolean =>
   paths.some((path) => path.toLowerCase().endsWith(".opf"))
+
+/** Applies a metadata patch in place by replacing the affected entries. */
+const applyMetadataPatch = async (
+  entries: EditableArchive,
+  { patch, targets }: ArchiveMetadataPatchPlan,
+): Promise<void> => {
+  const { entries: patched } = await patchArchiveMetadata(
+    toArchive(entries),
+    patch,
+    targets,
+  )
+
+  for (const entry of patched) {
+    entries.set(entry.path, { dir: false, content: entry.xml })
+  }
+}
 
 const resolvePatchedMimeType = (
   type: string,
@@ -58,7 +79,7 @@ export const produceOptimizedFile = async (
   try {
     for (const operation of operations) {
       if (operation.kind === "metadata-patch") {
-        await applyMetadataPatches(entries, operation.patches)
+        await applyMetadataPatch(entries, operation.plan)
       }
     }
 

@@ -7,11 +7,6 @@ import type { MetadataFixerFormValues } from "./types"
 
 export type ContainerKey = "comicInfo" | "opf"
 
-export type DetectedContainer = {
-  key: ContainerKey
-  label: string
-}
-
 export type ArchiveMetadataPatchPlan = {
   patch: ArchiveMetadataPatch
   targets: ArchiveMetadataTargets
@@ -23,8 +18,7 @@ export const CONTAINER_LABELS: Record<ContainerKey, string> = {
 }
 
 export const EMPTY_METADATA_FIXER_FORM_VALUES: MetadataFixerFormValues = {
-  comicInfoIsbn: "",
-  opfIsbn: "",
+  isbn: "",
 }
 
 const normalizeFormIsbn = (isbn: string): string | undefined => {
@@ -34,54 +28,29 @@ const normalizeFormIsbn = (isbn: string): string | undefined => {
 }
 
 export const trimMetadataFixerFormValues = ({
-  comicInfoIsbn,
-  opfIsbn,
+  isbn,
 }: MetadataFixerFormValues): MetadataFixerFormValues => ({
-  comicInfoIsbn: comicInfoIsbn.trim(),
-  opfIsbn: opfIsbn.trim(),
+  isbn: isbn.trim(),
 })
 
 export const resolveMetadataFixerFormValues = (
-  inspection: FileInspection | undefined,
-): MetadataFixerFormValues => {
-  if (!inspection) return EMPTY_METADATA_FIXER_FORM_VALUES
+  inspection: FileInspection,
+): MetadataFixerFormValues => ({ isbn: inspection.isbn ?? "" })
 
-  return {
-    comicInfoIsbn: inspection.comicInfoIsbn ?? "",
-    opfIsbn: inspection.opfIsbn ?? "",
-  }
-}
-
-export const resolveArchiveMetadataPatchPlans = (
+/**
+ * Writes the ISBN into every container the archive can carry: the OPF when it
+ * is readable, plus ComicInfo.xml either patched or synthesized. Keeping them
+ * in sync is the point — an archive whose containers disagree has no ISBN the
+ * user can trust, and picking a winner per container was never their call.
+ *
+ * An unreadable OPF is skipped rather than replaced: the package document
+ * also carries the manifest and spine, so overwriting it with the fields
+ * oboku knows about would cost the book its reading order.
+ */
+export const resolveArchiveMetadataPatchPlan = (
   values: MetadataFixerFormValues,
-  inspection: FileInspection | undefined,
-): ArchiveMetadataPatchPlan[] => {
-  if (!inspection) return []
-
-  if (!inspection.hasComicInfo && !inspection.hasOpf) {
-    return [
-      {
-        patch: { isbn: normalizeFormIsbn(values.comicInfoIsbn) },
-        targets: { comicInfo: true },
-      },
-    ]
-  }
-
-  const patches: ArchiveMetadataPatchPlan[] = []
-
-  if (inspection.hasComicInfo) {
-    patches.push({
-      patch: { isbn: normalizeFormIsbn(values.comicInfoIsbn) },
-      targets: { comicInfo: true },
-    })
-  }
-
-  if (inspection.hasOpf) {
-    patches.push({
-      patch: { isbn: normalizeFormIsbn(values.opfIsbn) },
-      targets: { opf: true },
-    })
-  }
-
-  return patches
-}
+  inspection: FileInspection,
+): ArchiveMetadataPatchPlan => ({
+  patch: { isbn: normalizeFormIsbn(values.isbn) },
+  targets: { comicInfo: true, opf: inspection.opf === "readable" },
+})

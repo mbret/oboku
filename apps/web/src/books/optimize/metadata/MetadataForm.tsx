@@ -1,10 +1,9 @@
-import { Stack, Typography, styled } from "@mui/material"
+import { Stack } from "@mui/material"
 import { normalizeIsbn } from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
-import { CONTAINER_LABELS } from "./targets"
-import type { MetadataFixerFormValues } from "./types"
+import type { FileInspection } from "../useFileInspection"
 
 const validateIsbn = (raw: string | boolean): true | string => {
   if (typeof raw !== "string") return true
@@ -18,61 +17,36 @@ const validateIsbn = (raw: string | boolean): true | string => {
     : "Not a recognizable ISBN-10 or ISBN-13"
 }
 
-const MetadataSectionStack = styled(Stack)(({ theme }) => ({
-  border: `1px solid ${theme.palette.divider}`,
-  borderRadius: theme.shape.borderRadius,
-  gap: theme.spacing(1),
-  padding: theme.spacing(1.5),
-}))
+const isbnHelperText = ({
+  comicInfo,
+  opf,
+  isbn,
+}: FileInspection): string | undefined => {
+  if (comicInfo === "absent" && opf === "absent")
+    return "This book carries no metadata container — saving an ISBN will add a ComicInfo.xml."
 
-type IsbnSectionProps = {
-  label: string
-  fieldName: keyof MetadataFixerFormValues
-  detectedIsbn: string | undefined
+  if (!isbn) return "No ISBN found in this book yet."
+
+  return undefined
 }
 
-function IsbnSection({ label, fieldName, detectedIsbn }: IsbnSectionProps) {
-  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+export function MetadataForm() {
+  const { control, inspection, isApplyingLocally, isUploading } =
+    useBookOptimize()
   const isApplying = isApplyingLocally || isUploading
 
   return (
-    <MetadataSectionStack>
-      <Typography variant="subtitle2">{label}</Typography>
+    <Stack spacing={2}>
       <ControlledTextField<BookOptimizeFormValues>
-        name={fieldName}
+        name="isbn"
         control={control}
         rules={{ validate: validateIsbn }}
         label="ISBN"
         size="small"
         fullWidth
-        helperText={detectedIsbn ? undefined : "No ISBN found."}
+        helperText={isbnHelperText(inspection)}
         disabled={isApplying}
       />
-    </MetadataSectionStack>
-  )
-}
-
-export function MetadataForm() {
-  const { inspection } = useBookOptimize()
-  const { hasComicInfo, hasOpf, comicInfoIsbn, opfIsbn } = inspection
-  const hasNoContainer = !hasComicInfo && !hasOpf
-
-  return (
-    <Stack spacing={2}>
-      {(hasComicInfo || hasNoContainer) && (
-        <IsbnSection
-          label={CONTAINER_LABELS.comicInfo}
-          fieldName="comicInfoIsbn"
-          detectedIsbn={hasNoContainer ? undefined : comicInfoIsbn}
-        />
-      )}
-      {hasOpf && (
-        <IsbnSection
-          label={CONTAINER_LABELS.opf}
-          fieldName="opfIsbn"
-          detectedIsbn={opfIsbn}
-        />
-      )}
     </Stack>
   )
 }

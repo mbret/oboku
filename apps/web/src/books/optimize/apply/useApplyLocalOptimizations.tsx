@@ -5,8 +5,7 @@ import { dexieDb } from "../../../rxdb/dexie"
 import { getBookFile } from "../../../download/getBookFile.shared"
 import { produceOptimizedFile } from "./produceOptimizedFile"
 import { FILE_INSPECTION_QUERY_KEY } from "../useFileInspection"
-import { purgeTmpDir } from "../../../storage/tmp"
-import { OPTIMIZE_TMP_SCOPE } from "../constants"
+import { purgeTmp } from "../tmp"
 import type { OptimizeOperation } from "./operations"
 
 type ApplyLocalVariables = {
@@ -48,7 +47,7 @@ export const useApplyLocalOptimizations = () => {
       })
     },
     onSettled: () => {
-      void purgeTmpDir(OPTIMIZE_TMP_SCOPE)
+      void purgeTmp()
     },
   })
 

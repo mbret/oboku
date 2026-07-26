@@ -10,7 +10,7 @@ import "./main.css"
 import "./common/animations.css"
 import { AppWithConfig } from "./App"
 import { ErrorBoundary } from "@sentry/react"
-import { purgeTmp } from "./storage/tmp"
+import { purgeTmp } from "./books/optimize/tmp"
 
 void purgeTmp()
 

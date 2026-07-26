@@ -26,25 +26,25 @@
     "prepare": "husky"
   },
   "devDependencies": {
-    "@biomejs/biome": "^2.1.1",
-    "@rollup/plugin-replace": "^6.0.2",
-    "@types/node": "^25.9.1",
+    "@biomejs/biome": "^2.5.5",
+    "@rollup/plugin-replace": "^6.0.3",
+    "@types/node": "^25.9.5",
     "husky": "^9.1.7",
-    "lerna": "^9.0.0",
-    "lint-staged": "^16.1.5",
-    "rollup": "^4.60.1",
+    "lerna": "^9.0.7",
+    "lint-staged": "^16.4.0",
+    "rollup": "^4.62.2",
     "rollup-plugin-analyzer": "^4.0.0",
-    "typescript": "^5.9.2",
-    "unplugin-dts": "^1.0.0",
-    "vercel": "^54.6.1",
-    "vitest": "^4.0.8",
-    "rollup-plugin-node-externals": "^8.0.0"
+    "rollup-plugin-node-externals": "^8.1.2",
+    "typescript": "^5.9.3",
+    "unplugin-dts": "^1.0.3",
+    "vercel": "^54.21.1",
+    "vitest": "^4.1.10"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.787.0",
-    "@aws-sdk/client-ssm": "^3.787.0",
+    "@aws-sdk/client-s3": "^3.1095.0",
+    "@aws-sdk/client-ssm": "^3.1095.0",
     "@emotion/cache": "^11.14.0",
-    "@microsoft/api-extractor": "^7.58.2"
+    "@microsoft/api-extractor": "^7.58.12"
   },
   "lint-staged": {
     "*": [

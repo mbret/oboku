@@ -1,8 +1,7 @@
 import { BlobWriter, Uint8ArrayReader, ZipWriter } from "@zip.js/zip.js"
 import { Logger } from "../../../debug/logger.shared"
 import { type EditableArchive, readEntryBytes } from "./editableArchive"
-import { getTmpDir, opfsSupported } from "../../../storage/tmp"
-import { OPTIMIZE_TMP_SCOPE } from "../constants"
+import { getTmpDir, opfsSupported } from "../tmp"
 
 const addEntriesToZip = async (
   writer: ZipWriter<unknown>,
@@ -33,7 +32,7 @@ const createTempFile = async (): Promise<{
   handle: FileSystemFileHandle
   remove: () => Promise<void>
 }> => {
-  const dir = await getTmpDir(OPTIMIZE_TMP_SCOPE)
+  const dir = await getTmpDir()
   const name = `${crypto.randomUUID()}.zip`
   const handle = await dir.getFileHandle(name, { create: true })
 

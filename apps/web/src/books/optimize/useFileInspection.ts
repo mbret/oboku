@@ -1,9 +1,14 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
+import type { Archive } from "@oboku/archive-metadata"
+import {
+  type ResolvedArchive,
+  type ResolvedArchiveSourceKind,
+  resolveArchive,
+} from "@prose-reader/archive-reader"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
-import { readArchiveMetadataFromSource } from "./metadata/archiveFile"
 import {
   listImageEntries,
   measureAverageImageResolution,
@@ -12,16 +17,30 @@ import {
 
 export const FILE_INSPECTION_QUERY_KEY = ["metadataFixer", "fileInspection"]
 
-export type FileInspection = {
+/**
+ * `unreadable` means the container file is there but its XML could not be
+ * parsed. It is a state of its own because it decides what saving can do:
+ * a container we cannot read is one we cannot patch.
+ */
+export type ContainerState = "absent" | "readable" | "unreadable"
+
+/**
+ * The metadata containers the archive carries, and the single ISBN the book
+ * declares through them. Which container the ISBN came from is not surfaced —
+ * the user edits a book's ISBN, not a container's.
+ */
+type ArchiveContainers = {
+  opf: ContainerState
+  comicInfo: ContainerState
+  isbn: string | undefined
+}
+
+export type FileInspection = ArchiveContainers & {
   fileName: string
   fileSize: number
   imageCount: number
   imageBytes: number
   averageImageResolution: ImageResolution | undefined
-  hasComicInfo: boolean
-  hasOpf: boolean
-  comicInfoIsbn: string | undefined
-  opfIsbn: string | undefined
 }
 
 const inspectContent = (
@@ -31,20 +50,43 @@ const inspectContent = (
   imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
+const containerState = (
+  kind: ResolvedArchiveSourceKind,
+  {
+    sources,
+    unreadableSources,
+  }: Pick<ResolvedArchive, "sources" | "unreadableSources">,
+): ContainerState => {
+  if (sources[kind] !== undefined) return "readable"
+
+  return unreadableSources.includes(kind) ? "unreadable" : "absent"
+}
+
+const readArchiveContainers = async (
+  archive: Archive,
+): Promise<ArchiveContainers> => {
+  const resolved = await resolveArchive(archive, {
+    include: ["metadata", "sources"],
+  })
+
+  const containers: ArchiveContainers = {
+    opf: containerState("opf", resolved),
+    comicInfo: containerState("comicInfo", resolved),
+    isbn: resolved.metadata.isbn,
+  }
+
+  Logger.info("[metadataFixer] archive containers", containers)
+
+  return containers
+}
+
 /**
  * Inspects the locally cached book file in a single pass: file stats, image
- * stats, and embedded metadata (OPF / ComicInfo).
+ * stats, and embedded metadata.
  *
- * Inspection is intentionally all-or-nothing. A malformed OPF or ComicInfo.xml
- * makes `readArchiveMetadataFromSource` reject, which fails the whole query and
- * surfaces the file as unsupported/corrupt in `OptimizeStep` — even though
- * image counting and compression could technically still run. We treat an
- * archive whose declared metadata cannot be parsed as untrustworthy rather than
- * presenting an optimize UI built on partially-read data.
- *
- * Before isolating metadata parse failures into the metadata fields here, also
- * design the partial-state UX (`MetadataTab`, `MetadataForm`, the action bar),
- * otherwise the recovered content path has nowhere to surface.
+ * A container that cannot be parsed never fails the inspection — it surfaces
+ * as `unreadable` so the metadata tab can tell the user what saving will and
+ * will not touch.
  */
 export const useFileInspection = (bookId: string | undefined) =>
   useQuery({
@@ -78,7 +120,7 @@ export const useFileInspection = (bookId: string | undefined) =>
             const { imageCount, imageBytes } = inspectContent(imageRecords)
             const averageImageResolution =
               await measureAverageImageResolution(imageRecords)
-            const metadata = await readArchiveMetadataFromSource(archive)
+            const containers = await readArchiveContainers(archive)
 
             return {
               fileName: file.name,
@@ -86,10 +128,7 @@ export const useFileInspection = (bookId: string | undefined) =>
               imageCount,
               imageBytes,
               averageImageResolution,
-              hasComicInfo: metadata.hasComicInfo,
-              hasOpf: metadata.hasOpf,
-              comicInfoIsbn: metadata.comicInfo?.isbn,
-              opfIsbn: metadata.opf?.isbn,
+              ...containers,
             }
           } finally {
             await archive.close()

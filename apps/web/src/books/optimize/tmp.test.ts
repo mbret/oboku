@@ -1,14 +1,8 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import {
-  getTmpDir,
-  opfsSupported,
-  purgeTmp,
-  purgeTmpDir,
-  writeTmpFile,
-} from "./tmp"
+import { getTmpDir, opfsSupported, purgeTmp, writeTmpFile } from "./tmp"
 
-vi.mock("../debug/logger.shared", () => ({
+vi.mock("../../debug/logger.shared", () => ({
   Logger: { info: vi.fn(), warn: vi.fn() },
 }))
 
@@ -82,6 +76,9 @@ const bytesOf = (blob: Blob) =>
     reader.readAsArrayBuffer(blob)
   })
 
+const findTmpDir = (root: FakeDirectoryHandle) =>
+  root.dirs.get("oboku-tmp")?.dirs.get("optimize")
+
 beforeEach(() => {
   vi.spyOn(crypto, "randomUUID").mockReturnValue(
     "11111111-1111-1111-1111-111111111111",
@@ -108,15 +105,13 @@ describe("opfsSupported", () => {
 })
 
 describe("getTmpDir", () => {
-  it("creates the scope directory nested under the tmp root", async () => {
+  it("creates the optimize directory nested under the tmp root", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
 
-    const dir = await getTmpDir("scope-a")
+    const dir = await getTmpDir()
 
-    const tmpRoot = root.dirs.get("oboku-tmp")
-    expect(tmpRoot).toBeDefined()
-    expect(tmpRoot?.dirs.get("scope-a")).toBe(dir)
+    expect(findTmpDir(root)).toBe(dir)
   })
 })
 
@@ -125,7 +120,7 @@ describe("writeTmpFile", () => {
     disableOpfs()
     const bytes = new Uint8Array([1, 2, 3]).buffer
 
-    const blob = await writeTmpFile("scope", bytes)
+    const blob = await writeTmpFile(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([1, 2, 3]))
   })
@@ -135,13 +130,11 @@ describe("writeTmpFile", () => {
     enableOpfs(root)
     const bytes = new Uint8Array([4, 5, 6]).buffer
 
-    const blob = await writeTmpFile("scope-b", bytes)
+    const blob = await writeTmpFile(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([4, 5, 6]))
-
-    const scopeDir = root.dirs.get("oboku-tmp")?.dirs.get("scope-b")
     expect(
-      scopeDir?.files.has("11111111-1111-1111-1111-111111111111.bin"),
+      findTmpDir(root)?.files.has("11111111-1111-1111-1111-111111111111.bin"),
     ).toBe(true)
   })
 
@@ -153,48 +146,22 @@ describe("writeTmpFile", () => {
     enableOpfs(root)
     const bytes = new Uint8Array([7, 8, 9]).buffer
 
-    const blob = await writeTmpFile("scope-c", bytes)
+    const blob = await writeTmpFile(bytes)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([7, 8, 9]))
   })
 })
 
-describe("purgeTmpDir", () => {
-  it("removes only the given scope from the tmp root", async () => {
-    const root = new FakeDirectoryHandle()
-    enableOpfs(root)
-    await writeTmpFile("keep", new Uint8Array([1]).buffer)
-    await writeTmpFile("drop", new Uint8Array([2]).buffer)
-
-    await purgeTmpDir("drop")
-
-    const tmpRoot = root.dirs.get("oboku-tmp")
-    expect(tmpRoot?.dirs.has("drop")).toBe(false)
-    expect(tmpRoot?.dirs.has("keep")).toBe(true)
-  })
-
-  it("does nothing when OPFS is unsupported", async () => {
-    disableOpfs()
-
-    await expect(purgeTmpDir("whatever")).resolves.toBeUndefined()
-  })
-
-  it("swallows errors when the scope does not exist", async () => {
-    enableOpfs(new FakeDirectoryHandle())
-
-    await expect(purgeTmpDir("missing")).resolves.toBeUndefined()
-  })
-})
-
 describe("purgeTmp", () => {
-  it("removes the entire tmp root", async () => {
+  it("removes the optimize directory and leaves the tmp root in place", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
-    await writeTmpFile("scope", new Uint8Array([1]).buffer)
+    await writeTmpFile(new Uint8Array([1]).buffer)
 
     await purgeTmp()
 
-    expect(root.dirs.has("oboku-tmp")).toBe(false)
+    expect(root.dirs.has("oboku-tmp")).toBe(true)
+    expect(findTmpDir(root)).toBeUndefined()
   })
 
   it("does nothing when OPFS is unsupported", async () => {

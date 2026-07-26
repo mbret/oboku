@@ -1,6 +1,6 @@
 import type { FileInspection } from "../useFileInspection"
 import {
-  resolveArchiveMetadataPatchPlans,
+  resolveArchiveMetadataPatchPlan,
   resolveMetadataFixerFormValues,
   trimMetadataFixerFormValues,
 } from "../metadata/targets"
@@ -17,15 +17,12 @@ const resolveMetadataPatchOperation = (
 ): OptimizeOperation | undefined => {
   const trimmed = trimMetadataFixerFormValues(values)
   const resolved = resolveMetadataFixerFormValues(inspection)
-  const metadataChanged =
-    trimmed.comicInfoIsbn !== resolved.comicInfoIsbn ||
-    trimmed.opfIsbn !== resolved.opfIsbn
 
-  if (!metadataChanged) return undefined
+  if (trimmed.isbn === resolved.isbn) return undefined
 
   return {
     kind: "metadata-patch",
-    patches: resolveArchiveMetadataPatchPlans(trimmed, inspection),
+    plan: resolveArchiveMetadataPatchPlan(trimmed, inspection),
   }
 }
 
