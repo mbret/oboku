@@ -11,19 +11,19 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AdminRouteImport } from './routes/_admin'
 import { Route as AdminIndexRouteImport } from './routes/_admin/index'
-import { Route as AdminUsersRouteImport } from './routes/_admin/users'
-import { Route as AdminSignupLinksRouteImport } from './routes/_admin/signup-links'
-import { Route as AdminServerSyncRouteImport } from './routes/_admin/server-sync'
-import { Route as AdminSecurityRouteImport } from './routes/_admin/security'
-import { Route as AdminProvidersRouteImport } from './routes/_admin/providers'
-import { Route as AdminNotificationsRouteImport } from './routes/_admin/notifications'
-import { Route as AdminMigrationRouteImport } from './routes/_admin/migration'
-import { Route as AdminEmailRouteImport } from './routes/_admin/email'
 import { Route as AdminCoversRouteImport } from './routes/_admin/covers'
-import { Route as AdminServerSyncIndexRouteImport } from './routes/_admin/server-sync.index'
+import { Route as AdminEmailRouteImport } from './routes/_admin/email'
+import { Route as AdminMigrationRouteImport } from './routes/_admin/migration'
+import { Route as AdminNotificationsRouteImport } from './routes/_admin/notifications'
+import { Route as AdminProvidersRouteImport } from './routes/_admin/providers'
+import { Route as AdminSecurityRouteImport } from './routes/_admin/security'
+import { Route as AdminServerSyncRouteImport } from './routes/_admin/server-sync'
+import { Route as AdminSignupLinksRouteImport } from './routes/_admin/signup-links'
+import { Route as AdminUsersRouteImport } from './routes/_admin/users'
 import { Route as AdminEmailIndexRouteImport } from './routes/_admin/email.index'
-import { Route as AdminServerSyncSourceIdRouteImport } from './routes/_admin/server-sync.$sourceId'
 import { Route as AdminEmailTemplatesRouteImport } from './routes/_admin/email.templates'
+import { Route as AdminServerSyncIndexRouteImport } from './routes/_admin/server-sync.index'
+import { Route as AdminServerSyncSourceIdRouteImport } from './routes/_admin/server-sync.$sourceId'
 
 const AdminRoute = AdminRouteImport.update({
   id: '/_admin',
@@ -34,39 +34,9 @@ const AdminIndexRoute = AdminIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminUsersRoute = AdminUsersRouteImport.update({
-  id: '/users',
-  path: '/users',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSignupLinksRoute = AdminSignupLinksRouteImport.update({
-  id: '/signup-links',
-  path: '/signup-links',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminServerSyncRoute = AdminServerSyncRouteImport.update({
-  id: '/server-sync',
-  path: '/server-sync',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminSecurityRoute = AdminSecurityRouteImport.update({
-  id: '/security',
-  path: '/security',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminProvidersRoute = AdminProvidersRouteImport.update({
-  id: '/providers',
-  path: '/providers',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
-  id: '/notifications',
-  path: '/notifications',
-  getParentRoute: () => AdminRoute,
-} as any)
-const AdminMigrationRoute = AdminMigrationRouteImport.update({
-  id: '/migration',
-  path: '/migration',
+const AdminCoversRoute = AdminCoversRouteImport.update({
+  id: '/covers',
+  path: '/covers',
   getParentRoute: () => AdminRoute,
 } as any)
 const AdminEmailRoute = AdminEmailRouteImport.update({
@@ -74,30 +44,60 @@ const AdminEmailRoute = AdminEmailRouteImport.update({
   path: '/email',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminCoversRoute = AdminCoversRouteImport.update({
-  id: '/covers',
-  path: '/covers',
+const AdminMigrationRoute = AdminMigrationRouteImport.update({
+  id: '/migration',
+  path: '/migration',
   getParentRoute: () => AdminRoute,
 } as any)
-const AdminServerSyncIndexRoute = AdminServerSyncIndexRouteImport.update({
-  id: '/',
-  path: '/',
-  getParentRoute: () => AdminServerSyncRoute,
+const AdminNotificationsRoute = AdminNotificationsRouteImport.update({
+  id: '/notifications',
+  path: '/notifications',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminProvidersRoute = AdminProvidersRouteImport.update({
+  id: '/providers',
+  path: '/providers',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSecurityRoute = AdminSecurityRouteImport.update({
+  id: '/security',
+  path: '/security',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminServerSyncRoute = AdminServerSyncRouteImport.update({
+  id: '/server-sync',
+  path: '/server-sync',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminSignupLinksRoute = AdminSignupLinksRouteImport.update({
+  id: '/signup-links',
+  path: '/signup-links',
+  getParentRoute: () => AdminRoute,
+} as any)
+const AdminUsersRoute = AdminUsersRouteImport.update({
+  id: '/users',
+  path: '/users',
+  getParentRoute: () => AdminRoute,
 } as any)
 const AdminEmailIndexRoute = AdminEmailIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => AdminEmailRoute,
 } as any)
-const AdminServerSyncSourceIdRoute = AdminServerSyncSourceIdRouteImport.update({
-  id: '/$sourceId',
-  path: '/$sourceId',
-  getParentRoute: () => AdminServerSyncRoute,
-} as any)
 const AdminEmailTemplatesRoute = AdminEmailTemplatesRouteImport.update({
   id: '/templates',
   path: '/templates',
   getParentRoute: () => AdminEmailRoute,
+} as any)
+const AdminServerSyncIndexRoute = AdminServerSyncIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminServerSyncRoute,
+} as any)
+const AdminServerSyncSourceIdRoute = AdminServerSyncSourceIdRouteImport.update({
+  id: '/$sourceId',
+  path: '/$sourceId',
+  getParentRoute: () => AdminServerSyncRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -218,53 +218,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminIndexRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/users': {
-      id: '/_admin/users'
-      path: '/users'
-      fullPath: '/users'
-      preLoaderRoute: typeof AdminUsersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/signup-links': {
-      id: '/_admin/signup-links'
-      path: '/signup-links'
-      fullPath: '/signup-links'
-      preLoaderRoute: typeof AdminSignupLinksRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/server-sync': {
-      id: '/_admin/server-sync'
-      path: '/server-sync'
-      fullPath: '/server-sync'
-      preLoaderRoute: typeof AdminServerSyncRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/security': {
-      id: '/_admin/security'
-      path: '/security'
-      fullPath: '/security'
-      preLoaderRoute: typeof AdminSecurityRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/providers': {
-      id: '/_admin/providers'
-      path: '/providers'
-      fullPath: '/providers'
-      preLoaderRoute: typeof AdminProvidersRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/notifications': {
-      id: '/_admin/notifications'
-      path: '/notifications'
-      fullPath: '/notifications'
-      preLoaderRoute: typeof AdminNotificationsRouteImport
-      parentRoute: typeof AdminRoute
-    }
-    '/_admin/migration': {
-      id: '/_admin/migration'
-      path: '/migration'
-      fullPath: '/migration'
-      preLoaderRoute: typeof AdminMigrationRouteImport
+    '/_admin/covers': {
+      id: '/_admin/covers'
+      path: '/covers'
+      fullPath: '/covers'
+      preLoaderRoute: typeof AdminCoversRouteImport
       parentRoute: typeof AdminRoute
     }
     '/_admin/email': {
@@ -274,19 +232,54 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/covers': {
-      id: '/_admin/covers'
-      path: '/covers'
-      fullPath: '/covers'
-      preLoaderRoute: typeof AdminCoversRouteImport
+    '/_admin/migration': {
+      id: '/_admin/migration'
+      path: '/migration'
+      fullPath: '/migration'
+      preLoaderRoute: typeof AdminMigrationRouteImport
       parentRoute: typeof AdminRoute
     }
-    '/_admin/server-sync/': {
-      id: '/_admin/server-sync/'
-      path: '/'
-      fullPath: '/server-sync/'
-      preLoaderRoute: typeof AdminServerSyncIndexRouteImport
-      parentRoute: typeof AdminServerSyncRoute
+    '/_admin/notifications': {
+      id: '/_admin/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AdminNotificationsRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/providers': {
+      id: '/_admin/providers'
+      path: '/providers'
+      fullPath: '/providers'
+      preLoaderRoute: typeof AdminProvidersRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/security': {
+      id: '/_admin/security'
+      path: '/security'
+      fullPath: '/security'
+      preLoaderRoute: typeof AdminSecurityRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/server-sync': {
+      id: '/_admin/server-sync'
+      path: '/server-sync'
+      fullPath: '/server-sync'
+      preLoaderRoute: typeof AdminServerSyncRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/signup-links': {
+      id: '/_admin/signup-links'
+      path: '/signup-links'
+      fullPath: '/signup-links'
+      preLoaderRoute: typeof AdminSignupLinksRouteImport
+      parentRoute: typeof AdminRoute
+    }
+    '/_admin/users': {
+      id: '/_admin/users'
+      path: '/users'
+      fullPath: '/users'
+      preLoaderRoute: typeof AdminUsersRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/_admin/email/': {
       id: '/_admin/email/'
@@ -295,19 +288,26 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminEmailIndexRouteImport
       parentRoute: typeof AdminEmailRoute
     }
-    '/_admin/server-sync/$sourceId': {
-      id: '/_admin/server-sync/$sourceId'
-      path: '/$sourceId'
-      fullPath: '/server-sync/$sourceId'
-      preLoaderRoute: typeof AdminServerSyncSourceIdRouteImport
-      parentRoute: typeof AdminServerSyncRoute
-    }
     '/_admin/email/templates': {
       id: '/_admin/email/templates'
       path: '/templates'
       fullPath: '/email/templates'
       preLoaderRoute: typeof AdminEmailTemplatesRouteImport
       parentRoute: typeof AdminEmailRoute
+    }
+    '/_admin/server-sync/': {
+      id: '/_admin/server-sync/'
+      path: '/'
+      fullPath: '/server-sync/'
+      preLoaderRoute: typeof AdminServerSyncIndexRouteImport
+      parentRoute: typeof AdminServerSyncRoute
+    }
+    '/_admin/server-sync/$sourceId': {
+      id: '/_admin/server-sync/$sourceId'
+      path: '/$sourceId'
+      fullPath: '/server-sync/$sourceId'
+      preLoaderRoute: typeof AdminServerSyncSourceIdRouteImport
+      parentRoute: typeof AdminServerSyncRoute
     }
   }
 }

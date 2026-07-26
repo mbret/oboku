@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { Dropbox, type DropboxResponse, type files } from "dropbox"
+import { Dropbox } from "dropbox"
 import {
   defer,
   from,
@@ -20,12 +20,6 @@ import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
 import { useMutation$ } from "reactjrx"
 import { useConfig } from "../../config/useConfig"
-
-type ResponseWithFileBlob = DropboxResponse<files.FileMetadata> & {
-  result?: {
-    fileBlob?: Blob
-  }
-}
 
 export const DownloadBook = memo(
   ({
@@ -50,14 +44,17 @@ export const DownloadBook = memo(
               }),
             )
           }),
-          map((response: ResponseWithFileBlob) => {
-            if (!response.result?.fileBlob) {
+          map(({ result }) => {
+            if (!("fileBlob" in result) || !result.fileBlob) {
               throw new Error("missing file blob")
             }
 
             return {
-              data: response.result.fileBlob,
-              fileName: response.result.name,
+              // The SDK types browser downloads as its own DropboxFileBlob
+              // stand-in, which lags the DOM Blob interface (missing bytes());
+              // at runtime it is an actual Blob.
+              data: result.fileBlob as Blob,
+              fileName: result.name,
             }
           }),
           takeUntil(merge(fromAbortSignal(signal), onUnmount$)),

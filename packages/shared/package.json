@@ -19,12 +19,12 @@
   ],
   "scripts": {
     "start:dev": "vite build --watch --mode development",
-    "start": "npm run start:dev",
+    "start": "pnpm run start:dev",
     "build": "tsc && vite build",
     "test": "vitest run"
   },
   "dependencies": {
-    "@oboku/synology": "0.1.0",
+    "@oboku/synology": "workspace:*",
     "dropbox": "^10.34.0",
     "zod": "^4.0.5"
   },

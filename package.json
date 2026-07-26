@@ -5,13 +5,11 @@
   "repository": "git@github.com:mbret/oboku.git",
   "author": "Maxime Bret <bret.maxime@gmail.com>",
   "license": "MIT",
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
+  "packageManager": "pnpm@11.17.0",
   "scripts": {
     "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
-    "start": "lerna run start:dev --stream",
+    "docker:dev:infra": "docker compose -f docker-compose.dev.yml up -d --wait couchdb postgres dev-proxy",
+    "start": "pnpm run docker:dev:infra && lerna run start:dev --stream",
     "start:lib": "lerna run start:dev --scope=@oboku/shared --scope=@oboku/synology",
     "start:web": "lerna run start:dev --scope=@oboku/web",
     "start:landing": "lerna run dev --scope=@oboku/landing",
@@ -23,8 +21,8 @@
     "build:landing": "lerna run build --scope=@oboku/landing",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
-    "format": "npx @biomejs/biome format --write .",
-    "lint": "npx @biomejs/biome check .",
+    "format": "biome format --write .",
+    "lint": "biome check .",
     "prepare": "husky"
   },
   "devDependencies": {

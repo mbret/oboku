@@ -15,7 +15,8 @@ import { audioEnhancer } from "@prose-reader/enhancer-audio"
 import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
-import { useBook } from "../books/states"
+import { createBookQueryOptions } from "../books/states"
+import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 
 export const createAppReader = pdfEnhancer(
   audioEnhancer(
@@ -47,18 +48,9 @@ export const useCreateReader = ({
   manifest?: Manifest
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: bookOnce } = useBook({
-    id: bookId,
-    // Observing stops after the first result, so later progress-sync writes to
-    // the same book document never change `bookOnce` or recreate the reader.
-    enabled: function observeBookUntilFirstResult(query) {
-      if (isPreview) return false
-
-      const hasNoResultYet = query.state.data === undefined
-
-      return hasNoResultYet
-    },
-  })
+  const { data: bookOnce } = useEnsureQueryData$(
+    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
+  )
   const isRestoredLocationReady = isPreview || !!bookOnce
 
   useEffect(() => {

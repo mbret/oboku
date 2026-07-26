@@ -1,34 +1,36 @@
-FROM node:25 AS base
+# node:25 no longer bundles corepack, so install pnpm explicitly
+# (version kept in sync with the root package.json `packageManager` field).
+FROM node:25 AS node-pnpm
+RUN npm install -g pnpm@11.17.0
+
+# pnpm needs every workspace manifest present to install with a frozen
+# lockfile, so the base stage installs once for the whole monorepo and app
+# stages only add their sources and build.
+FROM node-pnpm AS base
 WORKDIR /usr/src/app
-# @todo use upcoming exclude option to filter out stuff we don't need
-# ideally we want to at least strip `apps` so that sub target build
-# their own scope.
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml lerna.json nx.json ./
+COPY patches ./patches
 COPY packages ./packages
 COPY config ./config
-COPY lerna.json ./
-COPY nx.json ./
-RUN npm ci
+COPY apps/api/package.json ./apps/api/package.json
+COPY apps/admin/package.json ./apps/admin/package.json
+COPY apps/web/package.json ./apps/web/package.json
+COPY apps/landing/package.json ./apps/landing/package.json
+RUN pnpm install --frozen-lockfile
 
-# We will work with the monorepo entirely since
-# we have sub packages that need to be built
-FROM node:25 AS api
+FROM node-pnpm AS api
 WORKDIR /usr/src/app
-# @todo use exclude to remove lot of stuff
 COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
-# should only install missing packages from API
-RUN npm ci
-RUN npx lerna run build --scope=@oboku/api
+RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 CMD ["node", "dist/main"]
 
-FROM node:25 AS admin-build
+FROM node-pnpm AS admin-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/admin ./apps/admin
-RUN npm ci
-RUN npx lerna run build --scope=@oboku/admin
+RUN pnpm exec lerna run build --scope=@oboku/admin
 WORKDIR /usr/src/app/apps/admin
 
 FROM nginx:alpine AS admin
@@ -42,12 +44,11 @@ COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
-FROM node:25 AS web-build
+FROM node-pnpm AS web-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/web ./apps/web
-RUN npm ci
-RUN npx lerna run build --scope=@oboku/web
+RUN pnpm exec lerna run build --scope=@oboku/web
 WORKDIR /usr/src/app/apps/web
 
 FROM nginx:alpine AS web

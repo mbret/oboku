@@ -21,7 +21,7 @@ services:
     restart: unless-stopped
     environment:
       # The API the dev proxy forwards to. Defaults to the API running on the
-      # host (npm run start:dev); set to "api:3000" if you run the API via the
+      # host (pnpm run start:dev); set to "api:3000" if you run the API via the
       # api service in this compose file instead.
       DEV_PROXY_UPSTREAM: ${DEV_PROXY_UPSTREAM:-host.docker.internal:3000}
       NGINX_ENVSUBST_FILTER: DEV_PROXY_UPSTREAM
@@ -84,7 +84,7 @@ services:
     volumes:
       - ./apps/api:/usr/src/app
       - ./config:/var/lib/oboku/config
-    command: npm run start:dev
+    command: pnpm run start:dev
 
 volumes:
   oboku-postgres:
