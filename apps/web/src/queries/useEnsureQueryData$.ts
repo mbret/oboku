@@ -1,4 +1,5 @@
 import {
+  type NetworkMode,
   type QueryKey,
   skipToken,
   useQuery,
@@ -20,6 +21,10 @@ const ENSURE_QUERY_KEY_PREFIX = "ensureQueryData$"
  * The freeze assumes invalidations stay prefix-scoped (the app norm): an
  * unfiltered `invalidateQueries`/`resetQueries` sweep bypasses `staleTime`
  * and would re-resolve the snapshot.
+ *
+ * Resolution is cache-first, so the network mode defaults to `"always"` —
+ * pausing offline would block even warm-cache reads. Pass `"online"` for a
+ * network-bound source that should pause instead of settling as an error.
  */
 export function useEnsureQueryData$<
   TQueryFnData = unknown,
@@ -27,11 +32,13 @@ export function useEnsureQueryData$<
 >(options: {
   queryKey: TQueryKey
   queryFn: EnsureQueryFn$<TQueryFnData>
+  networkMode?: NetworkMode
 }): { data: TQueryFnData | undefined; error: unknown } {
   const queryClient = useQueryClient()
 
   return useQuery({
     queryKey: [ENSURE_QUERY_KEY_PREFIX, options.queryKey],
+    networkMode: options.networkMode ?? "always",
     queryFn:
       options.queryFn === skipToken
         ? skipToken

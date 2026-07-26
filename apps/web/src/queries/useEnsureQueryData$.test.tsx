@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
 import {
+  onlineManager,
   QueryClient,
   QueryClientProvider,
   type QueryKey,
@@ -84,6 +85,21 @@ describe("useEnsureQueryData$", () => {
 
     expect(latestResult.data).toBeUndefined()
     expect(latestResult.error).toBeNull()
+  })
+
+  it("resolves from a local source while offline", async () => {
+    onlineManager.setOnline(false)
+
+    try {
+      renderProbe({
+        queryKey: ["offline"],
+        queryFn: () => of("local-value"),
+      })
+
+      await waitFor(() => expect(latestResult.data).toBe("local-value"))
+    } finally {
+      onlineManager.setOnline(true)
+    }
   })
 
   it("shares a single resolution between concurrent consumers of a key", async () => {
