@@ -1,11 +1,4 @@
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-  Outlet,
-  useLocation,
-} from "react-router"
+import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router"
 import { HomeScreen } from "../pages/HomeScreen"
 import { LoginScreen } from "../pages/LoginScreen"
 import { ReaderScreen } from "../reader/ReaderScreen"
@@ -30,7 +23,7 @@ import { BookTagsScreen } from "../pages/books/$id/tags/BookTagsScreen"
 import { BookCollectionsScreen } from "../pages/books/$id/collections/BookCollectionsScreen"
 import { BookMetadataSourceScreen } from "../pages/books/$id/metadata/$source/BookMetadataSourceScreen"
 import { BookOptimizeScreen } from "../pages/books/$id/optimize/BookOptimizeScreen"
-import { memo, useEffect, useRef, type ReactNode } from "react"
+import type { ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useActiveProfile } from "../profiles"
@@ -241,7 +234,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
         )}
       </Routes>
       {children}
-      <TrackHistoryCanGoBack />
     </ModalHistoryProvider>
   )
 
@@ -256,33 +248,3 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
     </BrowserRouter>
   )
 }
-
-const TrackHistoryCanGoBack = memo(() => {
-  const { pathname, state } = useLocation()
-  const isFirstChange = useRef(true)
-
-  useEffect(() => {
-    return () => {
-      // concurrent bug ?
-      // we have to reset the ref for next mount, no idea why
-      isFirstChange.current = true
-    }
-  }, [])
-
-  useEffect(() => {
-    void pathname
-
-    if (!isFirstChange.current && !state?.__obokuFallbackBack) {
-      window.history.replaceState(
-        {
-          ...window.history.state,
-          __obokuCanGoBack: true,
-        },
-        ``,
-      )
-    }
-    isFirstChange.current = false
-  }, [pathname, state])
-
-  return null
-})
