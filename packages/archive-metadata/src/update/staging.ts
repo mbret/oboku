@@ -25,3 +25,23 @@ export type ZipTarget = {
 export type OpenZipTarget = () => Promise<ZipTarget | null>
 
 export const openNoZipTarget: OpenZipTarget = async () => null
+
+/**
+ * Everything one update stages, scoped so that concurrent updates — in this
+ * context or another one — never stage into the same place. `release` drops the
+ * whole scope, and must not be called while the update's output blob can still
+ * be read: staged blobs reference their backing storage rather than copying it.
+ */
+export type StagingScope = {
+  stageBytes: StageBytes
+  openZipTarget: OpenZipTarget
+  release: () => Promise<void>
+}
+
+export type OpenStagingScope = () => Promise<StagingScope>
+
+export const openInMemoryStagingScope: OpenStagingScope = async () => ({
+  stageBytes: stageBytesInMemory,
+  openZipTarget: openNoZipTarget,
+  release: () => Promise.resolve(),
+})

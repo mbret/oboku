@@ -1,6 +1,6 @@
 import type { Archive } from "./archive/types"
 import type { PatchMetadataAction } from "./update/actions"
-import { openNoZipTarget, stageBytesInMemory } from "./update/staging"
+import { openInMemoryStagingScope } from "./update/staging"
 import {
   type ArchiveUpdateOptions,
   type ArchiveUpdateResult,
@@ -13,8 +13,7 @@ export * from "./common"
 export type NodeArchiveUpdateAction = PatchMetadataAction
 
 const nodeRuntime: ArchiveUpdateRuntime = {
-  stageBytes: stageBytesInMemory,
-  openZipTarget: openNoZipTarget,
+  openStagingScope: openInMemoryStagingScope,
   compressImages: undefined,
 }
 

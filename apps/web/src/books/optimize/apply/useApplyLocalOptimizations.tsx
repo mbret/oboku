@@ -1,5 +1,4 @@
 import {
-  purgeStagedFiles,
   updateArchive,
   type WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
@@ -69,9 +68,6 @@ export const useApplyLocalOptimizations = () => {
       void queryClient.invalidateQueries({
         queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId],
       })
-    },
-    onSettled: () => {
-      void purgeStagedFiles()
     },
   })
 

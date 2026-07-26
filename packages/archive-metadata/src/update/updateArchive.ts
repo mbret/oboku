@@ -7,7 +7,7 @@ import {
   toEditableArchive,
 } from "./editableArchive"
 import type { CompressImagesAction, PatchMetadataAction } from "./actions"
-import type { OpenZipTarget, StageBytes } from "./staging"
+import type { OpenStagingScope, StageBytes } from "./staging"
 import { writeZip } from "./writeZip"
 
 const EPUB_MIME_TYPE = "application/epub+zip"
@@ -23,7 +23,11 @@ export type ArchiveUpdateProgress = {
 export type ArchiveUpdateResult = {
   blob: Blob
   mimeType: string
-  /** Releases whatever the update staged to produce `blob`. */
+  /**
+   * Releases whatever the update staged to produce `blob`. `blob` may only
+   * reference its staged bytes rather than hold them, so it has to be fully read
+   * before this is called.
+   */
   dispose: () => Promise<void>
 }
 
@@ -44,8 +48,7 @@ export type ArchiveUpdateOptions<Action> = {
  * `compressImages` cannot accept a `compress-images` action.
  */
 export type ArchiveUpdateRuntime = {
-  stageBytes: StageBytes
-  openZipTarget: OpenZipTarget
+  openStagingScope: OpenStagingScope
   compressImages:
     | ((
         entries: EditableArchive,
@@ -122,36 +125,46 @@ export const runArchiveUpdate = async <
   { actions, sourceMimeType, onProgress }: ArchiveUpdateOptions<Action>,
 ): Promise<ArchiveUpdateResult> => {
   const entries = toEditableArchive(archive)
+  const scope = await runtime.openStagingScope()
 
-  for (const action of actions) {
-    if (action.kind === "patch-metadata") {
-      await applyMetadataPatch(entries, action)
-      continue
+  try {
+    for (const action of actions) {
+      if (action.kind === "patch-metadata") {
+        await applyMetadataPatch(entries, action)
+        continue
+      }
+
+      if (!runtime.compressImages) {
+        throw new Error(
+          `This runtime cannot run the "${action.kind}" action: no image compression available.`,
+        )
+      }
+
+      await runtime.compressImages(entries, action, {
+        stageBytes: scope.stageBytes,
+        onProgress: (completed, total) => {
+          onProgress?.({ action: action.kind, completed, total })
+        },
+      })
     }
 
-    if (!runtime.compressImages) {
-      throw new Error(
-        `This runtime cannot run the "${action.kind}" action: no image compression available.`,
-      )
-    }
-
-    await runtime.compressImages(entries, action, {
-      stageBytes: runtime.stageBytes,
-      onProgress: (completed, total) => {
-        onProgress?.({ action: action.kind, completed, total })
-      },
+    const hasOpf = archiveHasOpf([...entries.keys()])
+    const outputEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
+    const { blob, dispose: disposeZipTarget } = await writeZip(outputEntries, {
+      openZipTarget: scope.openZipTarget,
     })
-  }
 
-  const hasOpf = archiveHasOpf([...entries.keys()])
-  const outputEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
-  const { blob, dispose } = await writeZip(outputEntries, {
-    openZipTarget: runtime.openZipTarget,
-  })
+    return {
+      blob,
+      mimeType: resolveOutputMimeType(sourceMimeType, { hasOpf }),
+      dispose: async function releaseStagingScope() {
+        await disposeZipTarget()
+        await scope.release()
+      },
+    }
+  } catch (error) {
+    await scope.release()
 
-  return {
-    blob,
-    mimeType: resolveOutputMimeType(sourceMimeType, { hasOpf }),
-    dispose,
+    throw error
   }
 }

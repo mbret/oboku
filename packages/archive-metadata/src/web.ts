@@ -4,7 +4,7 @@ import type {
   CompressImagesAction,
   PatchMetadataAction,
 } from "./update/actions"
-import { openOpfsZipTarget, stageBytesInOpfs } from "./update/opfsStaging"
+import { openOpfsStagingScope } from "./update/opfsStaging"
 import {
   type ArchiveUpdateOptions,
   type ArchiveUpdateResult,
@@ -27,8 +27,7 @@ export { purgeStagedFiles } from "./update/opfsStaging"
 export type WebArchiveUpdateAction = PatchMetadataAction | CompressImagesAction
 
 const webRuntime: ArchiveUpdateRuntime = {
-  stageBytes: stageBytesInOpfs,
-  openZipTarget: openOpfsZipTarget,
+  openStagingScope: openOpfsStagingScope,
   compressImages: (entries, action, { stageBytes, onProgress }) =>
     compressArchiveImages(entries, action.config, { stageBytes, onProgress }),
 }

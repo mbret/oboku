@@ -1,14 +1,15 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
-  openOpfsZipTarget,
+  openOpfsStagingScope,
   opfsSupported,
   purgeStagedFiles,
-  stageBytesInOpfs,
 } from "./opfsStaging"
 
 class FakeFileHandle {
   contents = new Uint8Array(0)
+
+  constructor(readonly name: string) {}
 
   async createWritable() {
     return {
@@ -45,7 +46,7 @@ class FakeDirectoryHandle {
 
     if (!file) {
       if (!options?.create) throw new Error(`NotFound: ${name}`)
-      file = new FakeFileHandle()
+      file = new FakeFileHandle(name)
       this.files.set(name, file)
     }
 
@@ -57,12 +58,54 @@ class FakeDirectoryHandle {
       throw new Error(`NotFound: ${name}`)
     }
   }
+
+  async *keys() {
+    yield* [...this.dirs.keys(), ...this.files.keys()]
+  }
+}
+
+type FakeLockCallback = (lock: { name: string } | null) => unknown
+
+class FakeLockManager {
+  readonly heldNames = new Set<string>()
+
+  request(
+    name: string,
+    optionsOrCallback: { ifAvailable?: boolean } | FakeLockCallback,
+    maybeCallback?: FakeLockCallback,
+  ) {
+    const runWithLock =
+      typeof optionsOrCallback === "function"
+        ? optionsOrCallback
+        : maybeCallback
+    const ifAvailable =
+      typeof optionsOrCallback === "function"
+        ? false
+        : Boolean(optionsOrCallback.ifAvailable)
+
+    if (!runWithLock) throw new Error("FakeLockManager: missing callback")
+
+    if (ifAvailable && this.heldNames.has(name)) {
+      return Promise.resolve(runWithLock(null))
+    }
+
+    this.heldNames.add(name)
+
+    return Promise.resolve(runWithLock({ name })).finally(() => {
+      this.heldNames.delete(name)
+    })
+  }
 }
 
 const enableOpfs = (root: FakeDirectoryHandle) => {
+  const locks = new FakeLockManager()
+
   vi.stubGlobal("navigator", {
     storage: { getDirectory: async () => root },
+    locks,
   })
+
+  return locks
 }
 
 const disableOpfs = () => {
@@ -77,14 +120,39 @@ const bytesOf = (blob: Blob) =>
     reader.readAsArrayBuffer(blob)
   })
 
-const findStagingDir = (root: FakeDirectoryHandle) => root.dirs.get("oboku-tmp")
+const STAGING_DIR = "prose-reader-archive-staging-v1"
 
-const STAGED_NAME = "11111111-1111-1111-1111-111111111111"
+const findStagingDir = (root: FakeDirectoryHandle) => root.dirs.get(STAGING_DIR)
+
+type Uuid = ReturnType<typeof crypto.randomUUID>
+
+const uuidOf = (nth: number): Uuid =>
+  `${`${nth}`.padStart(8, "0")}-0000-0000-0000-000000000000`
+
+const FIRST_SCOPE_ID = uuidOf(1)
+const FIRST_STAGED_NAME = uuidOf(2)
+
+const seedStagingDir = async (
+  root: FakeDirectoryHandle,
+  updateIds: string[],
+) => {
+  const staging = await root.getDirectoryHandle(STAGING_DIR, { create: true })
+
+  for (const updateId of updateIds) {
+    await staging.getDirectoryHandle(updateId, { create: true })
+  }
+
+  return staging
+}
 
 beforeEach(() => {
-  vi.spyOn(crypto, "randomUUID").mockReturnValue(
-    "11111111-1111-1111-1111-111111111111",
-  )
+  let issued = 0
+
+  vi.spyOn(crypto, "randomUUID").mockImplementation(function nextUuid() {
+    issued += 1
+
+    return uuidOf(issued)
+  })
 })
 
 afterEach(() => {
@@ -106,72 +174,171 @@ describe("opfsSupported", () => {
   })
 })
 
-describe("stageBytesInOpfs", () => {
-  it("returns an in-memory blob without touching OPFS when unsupported", async () => {
+describe("openOpfsStagingScope", () => {
+  it("keeps bytes in memory and offers no zip target when OPFS is unsupported", async () => {
     disableOpfs()
-    const bytes = new Uint8Array([1, 2, 3]).buffer
 
-    const blob = await stageBytesInOpfs(bytes)
+    const scope = await openOpfsStagingScope()
 
-    expect(await bytesOf(blob)).toEqual(new Uint8Array([1, 2, 3]))
+    expect(await scope.openZipTarget()).toBeNull()
+    expect(
+      await bytesOf(await scope.stageBytes(new Uint8Array([1, 2]).buffer)),
+    ).toEqual(new Uint8Array([1, 2]))
+    await expect(scope.release()).resolves.toBeUndefined()
   })
 
-  it("spills the bytes to OPFS and returns the written file", async () => {
+  it("spills the bytes into its own directory and returns the written file", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
-    const bytes = new Uint8Array([4, 5, 6]).buffer
 
-    const blob = await stageBytesInOpfs(bytes)
+    const scope = await openOpfsStagingScope()
+    const blob = await scope.stageBytes(new Uint8Array([4, 5, 6]).buffer)
 
     expect(await bytesOf(blob)).toEqual(new Uint8Array([4, 5, 6]))
-    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.bin`)).toBe(true)
+    expect(
+      findStagingDir(root)
+        ?.dirs.get(FIRST_SCOPE_ID)
+        ?.files.has(`${FIRST_STAGED_NAME}.bin`),
+    ).toBe(true)
   })
 
-  it("falls back to an in-memory blob when the OPFS write fails", async () => {
-    const root = new FakeDirectoryHandle()
-    vi.spyOn(root, "getDirectoryHandle").mockRejectedValue(
-      new Error("quota exceeded"),
-    )
-    enableOpfs(root)
-    const bytes = new Uint8Array([7, 8, 9]).buffer
-
-    const blob = await stageBytesInOpfs(bytes)
-
-    expect(await bytesOf(blob)).toEqual(new Uint8Array([7, 8, 9]))
-  })
-})
-
-describe("openOpfsZipTarget", () => {
-  it("returns no target when OPFS is unsupported", async () => {
-    disableOpfs()
-
-    expect(await openOpfsZipTarget()).toBeNull()
-  })
-
-  it("streams into a staged file and drops it on dispose", async () => {
+  it("gives concurrent scopes separate directories", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
 
-    const target = await openOpfsZipTarget()
+    const first = await openOpfsStagingScope()
+    const second = await openOpfsStagingScope()
 
-    expect(target).not.toBeNull()
-    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.zip`)).toBe(true)
+    await first.stageBytes(new Uint8Array([1]).buffer)
+    await second.stageBytes(new Uint8Array([2]).buffer)
+
+    expect([...(findStagingDir(root)?.dirs.keys() ?? [])]).toHaveLength(2)
+  })
+
+  it("releasing one scope leaves a concurrent scope's files alone", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+
+    const first = await openOpfsStagingScope()
+    const second = await openOpfsStagingScope()
+    const survivor = await second.stageBytes(new Uint8Array([9]).buffer)
+
+    await first.release()
+
+    expect(await bytesOf(survivor)).toEqual(new Uint8Array([9]))
+    expect([...(findStagingDir(root)?.dirs.keys() ?? [])]).toHaveLength(1)
+  })
+
+  it("streams into a staged file and drops it on the target's dispose", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+
+    const scope = await openOpfsStagingScope()
+    const target = await scope.openZipTarget()
+    const scopeDir = findStagingDir(root)?.dirs.get(FIRST_SCOPE_ID)
+
+    expect(scopeDir?.files.has(`${FIRST_STAGED_NAME}.zip`)).toBe(true)
 
     await target?.dispose()
 
-    expect(findStagingDir(root)?.files.has(`${STAGED_NAME}.zip`)).toBe(false)
+    expect(scopeDir?.files.has(`${FIRST_STAGED_NAME}.zip`)).toBe(false)
+  })
+
+  it("removes its directory and frees its lock on release", async () => {
+    const root = new FakeDirectoryHandle()
+    const locks = enableOpfs(root)
+
+    const scope = await openOpfsStagingScope()
+
+    expect(locks.heldNames.has(`${STAGING_DIR}:${FIRST_SCOPE_ID}`)).toBe(true)
+
+    await scope.release()
+
+    expect(findStagingDir(root)?.dirs.has(FIRST_SCOPE_ID)).toBe(false)
+    expect(locks.heldNames.size).toBe(0)
+  })
+
+  it("reaps orphans left by earlier contexts without being asked", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    await seedStagingDir(root, ["dead"])
+
+    const scope = await openOpfsStagingScope()
+
+    await vi.waitFor(() => {
+      expect(findStagingDir(root)?.dirs.has("dead")).toBe(false)
+    })
+    expect(findStagingDir(root)?.dirs.has(FIRST_SCOPE_ID)).toBe(true)
+
+    await scope.release()
+  })
+
+  it("falls back to memory without holding a lock when the directory cannot be created", async () => {
+    const root = new FakeDirectoryHandle()
+    const locks = enableOpfs(root)
+    vi.spyOn(root, "getDirectoryHandle").mockRejectedValue(
+      new Error("quota exceeded"),
+    )
+
+    const scope = await openOpfsStagingScope()
+
+    expect(locks.heldNames.size).toBe(0)
+    expect(await scope.openZipTarget()).toBeNull()
+    expect(
+      await bytesOf(await scope.stageBytes(new Uint8Array([7]).buffer)),
+    ).toEqual(new Uint8Array([7]))
   })
 })
 
 describe("purgeStagedFiles", () => {
-  it("removes the whole staging directory", async () => {
+  it("removes directories no update holds", async () => {
     const root = new FakeDirectoryHandle()
     enableOpfs(root)
-    await stageBytesInOpfs(new Uint8Array([1]).buffer)
+    const staging = await seedStagingDir(root, ["dead-a", "dead-b"])
 
     await purgeStagedFiles()
 
-    expect(findStagingDir(root)).toBeUndefined()
+    expect([...staging.dirs.keys()]).toEqual([])
+  })
+
+  it("leaves a live scope's directory alone", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    const live = await openOpfsStagingScope()
+    const staged = await live.stageBytes(new Uint8Array([3]).buffer)
+    await seedStagingDir(root, ["dead"])
+
+    await purgeStagedFiles()
+
+    expect([...(findStagingDir(root)?.dirs.keys() ?? [])]).toEqual([
+      FIRST_SCOPE_ID,
+    ])
+    expect(await bytesOf(staged)).toEqual(new Uint8Array([3]))
+  })
+
+  it("reaps a directory once its scope is released", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    const scope = await openOpfsStagingScope()
+    await scope.stageBytes(new Uint8Array([3]).buffer)
+
+    await purgeStagedFiles()
+    expect(findStagingDir(root)?.dirs.has(FIRST_SCOPE_ID)).toBe(true)
+
+    await scope.release()
+    await purgeStagedFiles()
+
+    expect(findStagingDir(root)?.dirs.has(FIRST_SCOPE_ID)).toBe(false)
+  })
+
+  it("drops the legacy staging directory outright", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    await root.getDirectoryHandle("oboku-tmp", { create: true })
+
+    await purgeStagedFiles()
+
+    expect(root.dirs.has("oboku-tmp")).toBe(false)
   })
 
   it("does nothing when OPFS is unsupported", async () => {
