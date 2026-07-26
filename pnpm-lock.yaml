@@ -229,6 +229,9 @@ importers:
       dropbox:
         specifier: ^10.34.0
         version: 10.37.1
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1(supports-color@8.1.1)
       google-auth-library:
         specifier: ^10.0.0
         version: 10.5.0(supports-color@8.1.1)
@@ -2658,8 +2661,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.6.20200806':
     resolution: {integrity: sha512-QN6aGmIbLXcJW0SEf8tz9UWCpQTBMy2u4xSuZ04YofzMGknhWwMeUecySLntCZYAEstHzDoSgwxCf5Gb8GqIRQ==}
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260713':
-    resolution: {integrity: sha512-87SbDEwfMBbGNKWOagddz0WoC5N+qns88Faz1sESWVR0sObQZOfsvUsakOuVd036XTLLxQIzEDlrAeqHx8ZQtw==}
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260720':
+    resolution: {integrity: sha512-PexiExzULSlZPQSOjIdZByocQMFcGTQg5/AfyQvCgl6MZCtnw6qdBUqzuegvMsKhLgNbOzgJ5Xbtc0W3Tnj56Q==}
 
   '@microsoft/api-extractor-model@7.33.10':
     resolution: {integrity: sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==}
@@ -14514,7 +14517,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260713':
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260720':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -16490,7 +16493,7 @@ snapshots:
 
   '@types/gapi.client.drive-v3@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260713
+      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260720
 
   '@types/gapi.client@1.0.8': {}
 
