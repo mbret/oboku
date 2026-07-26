@@ -1,19 +1,10 @@
 import { report } from "../utils/report"
-import {
-  openInMemoryStagingScope,
-  type OpenStagingScope,
-  type OpenZipTarget,
-  type StageBytes,
-} from "./staging"
+import type { OpenStagingScope, OpenZipTarget, StageBytes } from "./staging"
 
 const STAGING_DIR = "prose-reader-archive-staging-v1"
 const LEGACY_STAGING_DIR = "oboku-tmp"
 
 const lockNameFor = (updateId: string) => `${STAGING_DIR}:${updateId}`
-
-export const opfsSupported = (): boolean =>
-  typeof navigator !== "undefined" &&
-  typeof navigator.storage?.getDirectory === "function"
 
 type HeldLock = { release: () => void }
 
@@ -57,24 +48,17 @@ const createStagedFile = (
 
 /**
  * Spills entry bytes to OPFS so the pipeline carries a file-backed blob rather
- * than the bytes themselves. Falls back to an in-memory blob whenever OPFS
- * refuses the write — that costs memory, never correctness.
+ * than the bytes themselves.
  */
 const stageBytesIn = (dir: FileSystemDirectoryHandle): StageBytes =>
   async function stageBytesInScope(bytes) {
-    try {
-      const handle = await createStagedFile(dir, "bin")
-      const stream = await handle.createWritable()
+    const handle = await createStagedFile(dir, "bin")
+    const stream = await handle.createWritable()
 
-      await stream.write(bytes)
-      await stream.close()
+    await stream.write(bytes)
+    await stream.close()
 
-      return await handle.getFile()
-    } catch (error) {
-      report.warn("OPFS staging failed, keeping bytes in memory", error)
-
-      return new Blob([bytes])
-    }
+    return handle.getFile()
   }
 
 const openZipTargetIn = (dir: FileSystemDirectoryHandle): OpenZipTarget =>
@@ -112,8 +96,6 @@ const removeScopeUnlessOwned = async (
  * querying it is what makes that check free of a time-of-check race.
  */
 export const purgeStagedFiles = async (): Promise<void> => {
-  if (!opfsSupported()) return
-
   try {
     const root = await navigator.storage.getDirectory()
 
@@ -142,8 +124,6 @@ export const purgeStagedFiles = async (): Promise<void> => {
  * is already held by then, so the sweep cannot reach this update's own directory.
  */
 export const openOpfsStagingScope: OpenStagingScope = async () => {
-  if (!opfsSupported()) return openInMemoryStagingScope()
-
   const updateId = crypto.randomUUID()
   const lock = await holdLock(lockNameFor(updateId))
 
@@ -162,8 +142,7 @@ export const openOpfsStagingScope: OpenStagingScope = async () => {
     }
   } catch (error) {
     lock.release()
-    report.warn("unable to stage this update in OPFS, staying in memory", error)
 
-    return openInMemoryStagingScope()
+    throw error
   }
 }

@@ -1,6 +1,6 @@
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import {
   type EditableArchive,
   readEntryText,
@@ -109,15 +109,37 @@ describe("writeZip", () => {
     expect((await readZip(blob)).has("note.txt")).toBe(true)
   })
 
-  it("falls back to an in-memory archive when the target cannot be opened", async () => {
+  it("propagates a target that cannot be opened", async () => {
     const entries: EditableArchive = new Map([
       ["note.txt", { dir: false, content: "hello" }],
     ])
 
-    const { blob } = await writeZip(entries, {
-      openZipTarget: () => Promise.reject(new Error("quota exceeded")),
-    })
+    await expect(
+      writeZip(entries, {
+        openZipTarget: () => Promise.reject(new Error("quota exceeded")),
+      }),
+    ).rejects.toThrow("quota exceeded")
+  })
 
-    expect((await readZip(blob)).has("note.txt")).toBe(true)
+  it("disposes the target and propagates when the stream fails mid-write", async () => {
+    const entries: EditableArchive = new Map([
+      ["note.txt", { dir: false, content: "hello" }],
+    ])
+    const dispose = vi.fn(() => Promise.resolve())
+
+    await expect(
+      writeZip(entries, {
+        openZipTarget: async () => ({
+          stream: new WritableStream<Uint8Array>({
+            write() {
+              throw new Error("device full")
+            },
+          }),
+          finish: async () => new Blob([]),
+          dispose,
+        }),
+      }),
+    ).rejects.toThrow("device full")
+    expect(dispose).toHaveBeenCalled()
   })
 })

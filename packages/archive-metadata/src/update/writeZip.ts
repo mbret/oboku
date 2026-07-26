@@ -1,7 +1,7 @@
 import { BlobWriter, Uint8ArrayReader, ZipWriter } from "@zip.js/zip.js"
 import { report } from "../utils/report"
 import { type EditableArchive, readEntryBytes } from "./editableArchive"
-import type { OpenZipTarget } from "./staging"
+import type { OpenZipTarget, ZipTarget } from "./staging"
 
 const addEntriesToZip = async (
   writer: ZipWriter<unknown>,
@@ -30,16 +30,8 @@ export type WrittenArchive = {
 
 const writeZipToTarget = async (
   entries: EditableArchive,
-  openZipTarget: OpenZipTarget,
-): Promise<WrittenArchive | null> => {
-  const target = await openZipTarget().catch((error: unknown) => {
-    report.warn("unable to open a streaming zip target", error)
-
-    return null
-  })
-
-  if (!target) return null
-
+  target: ZipTarget,
+): Promise<WrittenArchive> => {
   try {
     const writer = new ZipWriter(target.stream)
 
@@ -52,10 +44,9 @@ const writeZipToTarget = async (
 
     return { blob, dispose: target.dispose }
   } catch (error) {
-    report.warn("streaming zip target failed, retrying in memory", error)
     await target.dispose().catch(() => {})
 
-    return null
+    throw error
   }
 }
 
@@ -74,14 +65,17 @@ const writeZipToBlob = async (
 }
 
 /**
- * Assembles the entries into a zip, streaming into `openZipTarget` when the
- * runtime offers one so the output never has to be held in memory. Any failure
- * of the streaming path — unavailable, out of quota, failed mid-write — retries
- * in memory.
+ * Assembles the entries into a zip, streaming into `openZipTarget` so the output
+ * never has to be held in memory. Only runtimes that have no streaming
+ * destination at all — they return `null` — build the archive in memory; a
+ * destination that fails mid-write fails the write rather than quietly falling
+ * back to holding the whole archive.
  */
 export const writeZip = async (
   entries: EditableArchive,
   { openZipTarget }: { openZipTarget: OpenZipTarget },
-): Promise<WrittenArchive> =>
-  (await writeZipToTarget(entries, openZipTarget)) ??
-  (await writeZipToBlob(entries))
+): Promise<WrittenArchive> => {
+  const target = await openZipTarget()
+
+  return target ? writeZipToTarget(entries, target) : writeZipToBlob(entries)
+}

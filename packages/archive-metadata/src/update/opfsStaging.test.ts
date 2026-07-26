@@ -1,10 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import {
-  openOpfsStagingScope,
-  opfsSupported,
-  purgeStagedFiles,
-} from "./opfsStaging"
+import { openOpfsStagingScope, purgeStagedFiles } from "./opfsStaging"
 
 class FakeFileHandle {
   contents = new Uint8Array(0)
@@ -160,31 +156,11 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
-describe("opfsSupported", () => {
-  it("is true when navigator.storage.getDirectory exists", () => {
-    enableOpfs(new FakeDirectoryHandle())
-
-    expect(opfsSupported()).toBe(true)
-  })
-
-  it("is false when navigator.storage is missing", () => {
-    disableOpfs()
-
-    expect(opfsSupported()).toBe(false)
-  })
-})
-
 describe("openOpfsStagingScope", () => {
-  it("keeps bytes in memory and offers no zip target when OPFS is unsupported", async () => {
+  it("rejects rather than degrading when the platform has no OPFS", async () => {
     disableOpfs()
 
-    const scope = await openOpfsStagingScope()
-
-    expect(await scope.openZipTarget()).toBeNull()
-    expect(
-      await bytesOf(await scope.stageBytes(new Uint8Array([1, 2]).buffer)),
-    ).toEqual(new Uint8Array([1, 2]))
-    await expect(scope.release()).resolves.toBeUndefined()
+    await expect(openOpfsStagingScope()).rejects.toThrow()
   })
 
   it("spills the bytes into its own directory and returns the written file", async () => {
@@ -273,20 +249,32 @@ describe("openOpfsStagingScope", () => {
     await scope.release()
   })
 
-  it("falls back to memory without holding a lock when the directory cannot be created", async () => {
+  it("frees its lock and propagates when the directory cannot be created", async () => {
     const root = new FakeDirectoryHandle()
     const locks = enableOpfs(root)
     vi.spyOn(root, "getDirectoryHandle").mockRejectedValue(
       new Error("quota exceeded"),
     )
 
-    const scope = await openOpfsStagingScope()
-
+    await expect(openOpfsStagingScope()).rejects.toThrow("quota exceeded")
     expect(locks.heldNames.size).toBe(0)
-    expect(await scope.openZipTarget()).toBeNull()
-    expect(
-      await bytesOf(await scope.stageBytes(new Uint8Array([7]).buffer)),
-    ).toEqual(new Uint8Array([7]))
+  })
+
+  it("propagates a failed spill rather than keeping the bytes in memory", async () => {
+    const root = new FakeDirectoryHandle()
+    enableOpfs(root)
+    const scope = await openOpfsStagingScope()
+    const staging = await root.getDirectoryHandle(STAGING_DIR, { create: true })
+    const scopeDir = await staging.getDirectoryHandle(FIRST_SCOPE_ID, {
+      create: true,
+    })
+    vi.spyOn(scopeDir, "getFileHandle").mockRejectedValue(
+      new Error("quota exceeded"),
+    )
+
+    await expect(scope.stageBytes(new Uint8Array([7]).buffer)).rejects.toThrow(
+      "quota exceeded",
+    )
   })
 })
 
@@ -341,7 +329,7 @@ describe("purgeStagedFiles", () => {
     expect(root.dirs.has("oboku-tmp")).toBe(false)
   })
 
-  it("does nothing when OPFS is unsupported", async () => {
+  it("stays best-effort when OPFS is unavailable", async () => {
     disableOpfs()
 
     await expect(purgeStagedFiles()).resolves.toBeUndefined()
