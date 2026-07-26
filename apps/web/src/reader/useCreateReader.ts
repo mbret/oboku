@@ -1,4 +1,4 @@
-import { type RefObject, useEffect, useState } from "react"
+import { type RefObject, useEffect } from "react"
 import { SIGNAL_RESET } from "reactjrx"
 import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
 import { createReader } from "@prose-reader/core"
@@ -15,7 +15,8 @@ import { audioEnhancer } from "@prose-reader/enhancer-audio"
 import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
-import { useBook } from "../books/states"
+import { createBookQueryOptions } from "../books/states"
+import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 
 export const createAppReader = pdfEnhancer(
   audioEnhancer(
@@ -47,37 +48,9 @@ export const useCreateReader = ({
   manifest?: Manifest
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: book } = useBook({
-    id: bookId,
-    enabled: function observeBookUntilFirstResult(query) {
-      if (isPreview) return false
-
-      const hasNoResultYet = query.state.data === undefined
-
-      return hasNoResultYet
-    },
-  })
-  // Other observers of the same book query (e.g. the book finished dialog)
-  // keep its cache live, so freeze the first result or every progress-sync
-  // write would remount the reader.
-  const [firstBookResult, setFirstBookResult] = useState<{
-    bookId: string
-    book: typeof book
-  }>()
-
-  useEffect(
-    function captureFirstBookResult() {
-      if (book === undefined) return
-
-      setFirstBookResult((existing) =>
-        existing?.bookId === bookId ? existing : { bookId, book },
-      )
-    },
-    [book, bookId],
+  const { data: bookOnce } = useEnsureQueryData$(
+    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
-
-  const bookOnce =
-    firstBookResult?.bookId === bookId ? firstBookResult.book : undefined
   const isRestoredLocationReady = isPreview || !!bookOnce
 
   useEffect(() => {
