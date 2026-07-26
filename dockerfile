@@ -9,6 +9,7 @@ RUN npm install -g pnpm@11.17.0
 FROM node-pnpm AS base
 WORKDIR /usr/src/app
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml lerna.json nx.json ./
+COPY patches ./patches
 COPY packages ./packages
 COPY config ./config
 COPY apps/api/package.json ./apps/api/package.json
