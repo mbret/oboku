@@ -1,8 +1,4 @@
-import {
-  type CollectionDocType,
-  difference,
-  ReadingStateState,
-} from "@oboku/shared"
+import { type CollectionDocType, ReadingStateState } from "@oboku/shared"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useQuery$, useSignalValue } from "reactjrx"
 import {
@@ -18,6 +14,7 @@ import {
 } from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
+import { collectionPassesNotInterestedFilter } from "./collectionPassesNotInterestedFilter"
 
 type CollectionReadingState = "ongoing" | "finished" | "unread" | undefined
 
@@ -147,27 +144,13 @@ export const useCollections = ({
                      * this case we want collections that contains at least
                      * one of the not interested book.
                      */
-                    .filter((collection) => {
-                      if (isNotInterested === "only") {
-                        return collection.books.length === 0
-                          ? false
-                          : intersection(collection.books, bookIds).length > 0
-                      }
-
-                      if (
-                        isNotInterested === "none" &&
-                        collection.books.length > 0
-                      ) {
-                        const booksNotProtected = difference(
-                          collection.books,
-                          notInterestedBookIds,
-                        )
-
-                        return booksNotProtected.length > 0
-                      }
-
-                      return true
-                    })
+                    .filter((collection) =>
+                      collectionPassesNotInterestedFilter({
+                        collectionBooks: collection.books,
+                        isNotInterested,
+                        notInterestedBookIds,
+                      }),
+                    )
                     /**
                      * Filter collection by reading state
                      */
