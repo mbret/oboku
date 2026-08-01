@@ -101,6 +101,43 @@ describe("rewriteImageReferences", () => {
     expect(opf).toContain(`media-type="image/jpeg"`)
   })
 
+  it("leaves visible text and metadata values untouched", async () => {
+    const entries = archiveOf({
+      "chapter.xhtml": `<p>See cover.jpg for details.</p><img alt="cover.jpg" title="src=cover.jpg" src="cover.jpg"/><script>const example = '<img src="cover.jpg">'</script>`,
+      "content.opf": `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf" xmlns:dc="http://purl.org/dc/elements/1.1/"><metadata><dc:title>cover.jpg</dc:title></metadata><manifest><item id="cover" href="cover.jpg" media-type="image/jpeg"/></manifest></package>`,
+      "ComicInfo.xml": `<ComicInfo><Title>cover.jpg</Title></ComicInfo>`,
+    })
+
+    await rewriteImageReferences(entries, new Set(["cover.jpg"]))
+
+    expect(await textOf(entries, "chapter.xhtml")).toBe(
+      `<p>See cover.jpg for details.</p><img alt="cover.jpg" title="src=cover.jpg" src="cover.webp"/><script>const example = '<img src="cover.jpg">'</script>`,
+    )
+
+    const opf = await textOf(entries, "content.opf")
+    expect(opf).toContain(`<dc:title>cover.jpg</dc:title>`)
+    expect(opf).toContain(`href="cover.webp"`)
+    expect(opf).toContain(`media-type="image/webp"`)
+    expect(await textOf(entries, "ComicInfo.xml")).toBe(
+      `<ComicInfo><Title>cover.jpg</Title></ComicInfo>`,
+    )
+  })
+
+  it("rewrites srcset candidates and inline CSS references", async () => {
+    const entries = archiveOf({
+      "index.xhtml": `<style>.label::before { content: "url(cover.jpg)"; } .cover { background: url(cover.jpg); } /* url(cover.jpg) */</style><img srcset="cover.jpg 1x, cover@2x.jpg 2x" style="background-image: url('cover.jpg')"/>`,
+    })
+
+    await rewriteImageReferences(
+      entries,
+      new Set(["cover.jpg", "cover@2x.jpg"]),
+    )
+
+    expect(await textOf(entries, "index.xhtml")).toBe(
+      `<style>.label::before { content: "url(cover.jpg)"; } .cover { background: url(cover.webp); } /* url(cover.jpg) */</style><img srcset="cover.webp 1x, cover@2x.webp 2x" style="background-image: url('cover.webp')"/>`,
+    )
+  })
+
   it("leaves external urls untouched", async () => {
     const entries = archiveOf({
       "index.xhtml": `<a href="https://example.com/page.jpg">x</a><img src="cover.jpg"/>`,
