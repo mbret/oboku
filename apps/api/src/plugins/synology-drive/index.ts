@@ -1,5 +1,11 @@
-import { isCollectionOfType, PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
+import {
+  isCollectionOfType,
+  type LinkWithCredentials,
+  PLUGIN_SYNOLOGY_DRIVE_TYPE,
+  type ProviderApiCredentials,
+} from "@oboku/shared"
 import { Logger } from "@nestjs/common"
+import type createNano from "nano"
 import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
@@ -15,6 +21,37 @@ import {
 import { getDataSourceData } from "../helpers"
 
 const logger = new Logger("SynologyDrivePlugin")
+
+const openSynologyDriveSessionForLink = async ({
+  link,
+  providerCredentials,
+  db,
+}: {
+  link: LinkWithCredentials<"synology-drive">
+  providerCredentials: ProviderApiCredentials<"synology-drive">
+  db?: createNano.DocumentScope<unknown>
+}) => {
+  const connectorId = link.data?.connectorId
+  if (!connectorId || !providerCredentials || !db) {
+    throw new Error(
+      "Synology Drive credentials (password) and connector are required",
+    )
+  }
+  const connector = await getConnectorById(db, connectorId, "synology-drive")
+  if (!connector) {
+    throw new Error("Synology Drive connector not found")
+  }
+  const session = await getSynologyDriveSession({
+    connector: {
+      allowSelfSigned: connector.allowSelfSigned,
+      url: connector.url,
+      username: connector.username,
+    },
+    providerCredentials,
+  })
+
+  return { session, fileId: link.data.fileId }
+}
 
 export const dataSource: DataSourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
@@ -108,25 +145,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     }
   },
   getFileMetadata: async ({ link, providerCredentials, db }) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "Synology Drive credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "synology-drive")
-    if (!connector) {
-      throw new Error("Synology Drive connector not found")
-    }
-    const session = await getSynologyDriveSession({
-      connector: {
-        allowSelfSigned: connector.allowSelfSigned,
-        url: connector.url,
-        username: connector.username,
-      },
+    const { session, fileId } = await openSynologyDriveSessionForLink({
+      link,
       providerCredentials,
+      db,
     })
-    const { fileId } = link.data
     const metadata = await getSynologyDriveItemMetadata({
       fileId,
       session,
@@ -143,25 +166,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     }
   },
   getFolderMetadata: async ({ link, providerCredentials, db }) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "Synology Drive credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "synology-drive")
-    if (!connector) {
-      throw new Error("Synology Drive connector not found")
-    }
-    const session = await getSynologyDriveSession({
-      connector: {
-        allowSelfSigned: connector.allowSelfSigned,
-        url: connector.url,
-        username: connector.username,
-      },
+    const { session, fileId } = await openSynologyDriveSessionForLink({
+      link,
       providerCredentials,
+      db,
     })
-    const { fileId } = link.data
     const metadata = await getSynologyDriveItemMetadata({
       fileId,
       session,
@@ -173,25 +182,11 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
     }
   },
   download: async (link, providerCredentials, db) => {
-    const connectorId = link.data?.connectorId
-    if (!connectorId || !providerCredentials || !db) {
-      throw new Error(
-        "Synology Drive credentials (password) and connector are required",
-      )
-    }
-    const connector = await getConnectorById(db, connectorId, "synology-drive")
-    if (!connector) {
-      throw new Error("Synology Drive connector not found")
-    }
-    const session = await getSynologyDriveSession({
-      connector: {
-        allowSelfSigned: connector.allowSelfSigned,
-        url: connector.url,
-        username: connector.username,
-      },
+    const { session, fileId } = await openSynologyDriveSessionForLink({
+      link,
       providerCredentials,
+      db,
     })
-    const { fileId } = link.data
 
     return downloadSynologyDriveStream({
       fileId,
