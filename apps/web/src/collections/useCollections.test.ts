@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { collectionPassesNotInterestedFilter } from "./collectionPassesNotInterestedFilter"
+import { collectionPassesNotInterestedFilter } from "./useCollections"
 
 describe("collectionPassesNotInterestedFilter", () => {
   describe(`when isNotInterested is "only"`, () => {

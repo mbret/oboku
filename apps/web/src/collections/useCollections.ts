@@ -1,4 +1,8 @@
-import { type CollectionDocType, ReadingStateState } from "@oboku/shared"
+import {
+  type CollectionDocType,
+  ReadingStateState,
+  difference,
+} from "@oboku/shared"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useQuery$, useSignalValue } from "reactjrx"
 import {
@@ -14,9 +18,30 @@ import {
 } from "../library/books/states"
 import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
-import { collectionPassesNotInterestedFilter } from "./collectionPassesNotInterestedFilter"
 
 type CollectionReadingState = "ongoing" | "finished" | "unread" | undefined
+
+export const collectionPassesNotInterestedFilter = ({
+  collectionBooks,
+  isNotInterested,
+  notInterestedBookIds,
+}: {
+  collectionBooks: DeepReadonlyArray<string>
+  isNotInterested: "with" | "none" | "only" | undefined
+  notInterestedBookIds: string[]
+}) => {
+  if (isNotInterested === "only") {
+    return collectionBooks.length === 0
+      ? false
+      : intersection(collectionBooks, notInterestedBookIds).length > 0
+  }
+
+  if (isNotInterested === "none" && collectionBooks.length > 0) {
+    return difference(collectionBooks, notInterestedBookIds).length > 0
+  }
+
+  return true
+}
 
 export const useCollections = ({
   queryObj,
