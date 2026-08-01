@@ -1,5 +1,6 @@
 import type { Archive, ArchiveFileRecord } from "../archive/types"
 import { isFileRecord } from "../archive/types"
+import { mapWithConcurrency } from "../utils/mapWithConcurrency"
 import { isImagePath } from "./paths"
 
 export const listImageEntries = (archive: Archive): ArchiveFileRecord[] =>
@@ -13,6 +14,7 @@ export type ImageResolution = {
 }
 
 const RESOLUTION_SAMPLE_SIZE = 24
+const RESOLUTION_MEASURE_CONCURRENCY = 2
 
 /**
  * Estimates the typical image resolution by decoding an evenly spaced sample
@@ -30,23 +32,20 @@ export const measureAverageImageResolution = async (
     .filter((_, index) => index % step === 0)
     .slice(0, sampleSize)
 
-  const resolutions = await Promise.all(
-    sample.map(async (record): Promise<ImageResolution | undefined> => {
+  const measured: ImageResolution[] = []
+
+  await mapWithConcurrency(
+    sample,
+    RESOLUTION_MEASURE_CONCURRENCY,
+    async function measureImageResolution(record) {
       try {
         const bitmap = await createImageBitmap(await record.blob())
-        const resolution = { width: bitmap.width, height: bitmap.height }
+        measured.push({ width: bitmap.width, height: bitmap.height })
         bitmap.close()
-
-        return resolution
       } catch {
         // Undecodable formats (e.g. AVIF on some browsers) are skipped.
-        return undefined
       }
-    }),
-  )
-
-  const measured = resolutions.filter(
-    (resolution): resolution is ImageResolution => resolution !== undefined,
+    },
   )
 
   if (measured.length === 0) return undefined
