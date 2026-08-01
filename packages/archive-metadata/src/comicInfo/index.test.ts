@@ -3,15 +3,12 @@ import { describe, expect, it } from "vitest"
 import {
   arrayBufferFileAccessors,
   createArchive,
+  getArchiveHasComicInfo,
   parseComicInfo,
   resolveArchiveMetadata,
 } from "@prose-reader/archive-reader"
 import type { Archive, ArchiveRecord } from "../archive/types"
-import {
-  COMIC_INFO_FILENAME,
-  buildPatchedComicInfoXml,
-  findComicInfoEntry,
-} from "./index"
+import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "./index"
 
 const basename = (uri: string): string =>
   uri.split("/").filter(Boolean).pop() ?? uri
@@ -61,14 +58,14 @@ const minimalComicInfo = (body = "") =>
 const readComicInfoIsbn = (xml: string): string | undefined =>
   resolveArchiveMetadata(parseComicInfo(xml)).isbn
 
-describe("ComicInfo detection (findComicInfoEntry)", () => {
+describe("ComicInfo detection (getArchiveHasComicInfo)", () => {
   it("finds ComicInfo.xml at the archive root", async () => {
     const archive = makeArchive({
       "ComicInfo.xml": minimalComicInfo(),
       "page-001.jpg": "binary",
     })
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
     expect(entry?.uri).toBe("ComicInfo.xml")
   })
@@ -76,20 +73,19 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
   it("matches the filename case-insensitively", async () => {
     const archive = makeArchive({ "ComicInfo.XML": minimalComicInfo() })
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
     expect(entry?.uri).toBe("ComicInfo.XML")
   })
 
-  it("ignores ComicInfo files nested inside sub-folders", async () => {
+  it("finds a ComicInfo nested inside a sub-folder", async () => {
     const archive = makeArchive({
       "meta/ComicInfo.xml": minimalComicInfo(),
-      "deep/nested/comicinfo.xml": minimalComicInfo(),
     })
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
-    expect(entry).toBeUndefined()
+    expect(entry?.uri).toBe("meta/ComicInfo.xml")
   })
 
   it("returns undefined when there is no ComicInfo entry at all", async () => {
@@ -98,7 +94,7 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       "page-002.jpg": "binary",
     })
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
     expect(entry).toBeUndefined()
   })
@@ -109,18 +105,18 @@ describe("ComicInfo detection (findComicInfoEntry)", () => {
       { directories: ["ComicInfo.xml/"] },
     )
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
     expect(entry).toBeUndefined()
   })
 
-  it("returns the first matching root-level file when several casings co-exist", async () => {
+  it("returns the first matching file when several casings co-exist", async () => {
     const archive = makeArchive({
       "ComicInfo.xml": minimalComicInfo("<Title>first</Title>"),
       "comicinfo.xml": minimalComicInfo("<Title>second</Title>"),
     })
 
-    const entry = findComicInfoEntry(archive)
+    const entry = getArchiveHasComicInfo(archive)
 
     expect(entry?.uri).toBe("ComicInfo.xml")
   })

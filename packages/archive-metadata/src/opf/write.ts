@@ -31,8 +31,8 @@ const OPF_LABEL = "OPF"
  *
  * Unlike ComicInfo, we do *not* synthesize an OPF when the archive
  * has none: that would turn a CBZ into an EPUB, which is well outside
- * the scope of "fix metadata in place". Callers should gate on
- * {@link ArchiveMetadata.hasOpf} before requesting an OPF target.
+ * the scope of "fix metadata in place". Callers should gate on the
+ * archive actually carrying an OPF before requesting an OPF target.
  */
 export const buildPatchedOpfXml = async (
   entry: ArchiveFileRecord,

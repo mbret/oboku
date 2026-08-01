@@ -1,12 +1,9 @@
 import {
   COMIC_INFO_FILENAME as PROSE_COMIC_INFO_FILENAME,
+  getArchiveHasComicInfo,
   readRecordAsText,
 } from "@prose-reader/archive-reader"
-import {
-  type Archive,
-  type ArchiveFileRecord,
-  findFileRecord,
-} from "../archive/types"
+import type { Archive } from "../archive/types"
 import {
   type XmlDocument,
   parseXml,
@@ -28,21 +25,6 @@ const COMIC_INFO_NAMESPACE_ATTRS = {
 }
 
 /**
- * Locate a `ComicInfo.xml` entry regardless of casing. Matches only the
- * top-level filename — nested `comicinfo.xml` files inside sub-folders
- * are not part of the spec and silently ignored. Internal to the
- * package; the unified reader and writer consume it.
- */
-export const findComicInfoEntry = (
-  archive: Archive,
-): ArchiveFileRecord | undefined =>
-  findFileRecord(
-    archive,
-    (record) =>
-      record.uri.toLowerCase() === PROSE_COMIC_INFO_FILENAME.toLowerCase(),
-  )
-
-/**
  * Produce the new ComicInfo.xml body for a patched archive. Handles
  * the "archive has no ComicInfo yet" case by synthesizing a minimal
  * document, and the "archive has a malformed ComicInfo" case by
@@ -57,7 +39,7 @@ export const buildPatchedComicInfoXml = async (
   archive: Archive,
   patch: ComicInfoMetadataPatch,
 ): Promise<string> => {
-  const entry = findComicInfoEntry(archive)
+  const entry = getArchiveHasComicInfo(archive)
   const existingXml = entry ? await readRecordAsText(entry) : null
 
   return serializeComicInfoXml(existingXml, patch)

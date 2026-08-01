@@ -3,10 +3,7 @@ export type {
   ArchiveFileRecord,
   ArchiveRecord,
 } from "./archive/types"
-export { findFileRecord, isFileRecord } from "./archive/types"
-
-export type { ArchiveMetadata, ReadArchiveMetadataEvents } from "./reader"
-export { readArchiveMetadata } from "./reader"
+export { isFileRecord } from "./archive/types"
 
 export type {
   ArchiveMetadataPatch,
@@ -16,4 +13,5 @@ export type {
 } from "./writer"
 export { patchArchiveMetadata } from "./writer"
 
-export { normalizeIsbn } from "@prose-reader/archive-reader"
+export type { PatchMetadataAction } from "./update/actions"
+export type { ArchiveUpdateResult } from "./update/updateArchive"
