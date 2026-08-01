@@ -1,11 +1,11 @@
-import type { Archive } from "./archive/types"
+import type { Archive } from "../archive/types"
 import {
   COMIC_INFO_FILENAME,
   buildPatchedComicInfoXml,
   findComicInfoEntry,
-} from "./comicInfo"
-import { findOpfEntry } from "./opf/read"
-import { buildPatchedOpfXml } from "./opf/write"
+} from "../comicInfo"
+import { findOpfEntry } from "../opf/read"
+import { buildPatchedOpfXml } from "../opf/write"
 
 /**
  * Fields an archive patch may set. Mirrors the writable subset of
