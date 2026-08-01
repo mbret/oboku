@@ -1,5 +1,4 @@
 import { memo } from "react"
-import { LoginRounded } from "@mui/icons-material"
 import { Alert, AlertTitle, Button, Stack } from "@mui/material"
 import { Link, useLocation } from "react-router"
 import type { LocalNotification } from "./useLocalNotifications"
@@ -32,7 +31,7 @@ export const LocalNotificationCard = memo(function LocalNotificationCard({
             state={{ from: location.pathname } satisfies FromLocationState}
             size="small"
             variant="contained"
-            startIcon={<LoginRounded />}
+            startIcon={<notification.action.icon />}
           >
             {notification.action.label}
           </Button>
