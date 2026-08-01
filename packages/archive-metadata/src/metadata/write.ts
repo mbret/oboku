@@ -2,9 +2,9 @@ import {
   getArchiveHasComicInfo,
   getArchiveOpfInfo,
 } from "@prose-reader/archive-reader"
-import type { Archive } from "./archive/types"
-import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "./comicInfo"
-import { buildPatchedOpfXml } from "./opf/write"
+import type { Archive } from "../archive/types"
+import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "../comicInfo"
+import { buildPatchedOpfXml } from "../opf/write"
 
 /**
  * Fields an archive patch may set. Expand in lockstep when a new field

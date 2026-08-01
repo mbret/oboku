@@ -1,5 +1,8 @@
 import type { ImageCompressionConfig } from "../images/types"
-import type { ArchiveMetadataPatch, ArchiveMetadataTargets } from "../writer"
+import type {
+  ArchiveMetadataPatch,
+  ArchiveMetadataTargets,
+} from "../metadata/write"
 
 /**
  * Rewrites the archive's metadata containers. Available in every runtime — it
