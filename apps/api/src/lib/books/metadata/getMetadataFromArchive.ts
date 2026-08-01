@@ -1,16 +1,17 @@
-import { type Archive, readArchiveMetadata } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata"
 import type { FileMetadata } from "@oboku/shared"
-import type { ResolvedMetadata } from "@prose-reader/archive-reader"
+import {
+  type ResolvedMetadata,
+  resolveArchive,
+} from "@prose-reader/archive-reader"
 import { Logger } from "@nestjs/common"
 
 const logger = new Logger("getMetadataFromArchive")
 
-const authorNames = (
-  metadata: ResolvedMetadata | undefined,
-): string[] | undefined => {
+const authorNames = (metadata: ResolvedMetadata): string[] | undefined => {
   const names: string[] = []
 
-  for (const contributor of metadata?.contributors ?? []) {
+  for (const contributor of metadata.contributors ?? []) {
     if (contributor.roles.includes("author")) {
       names.push(contributor.name)
     }
@@ -28,28 +29,32 @@ export const getMetadataFromArchive = async (
   archive: Archive,
   contentType: string,
 ): Promise<FileMetadata> => {
-  const metadata = await readArchiveMetadata(archive)
-  const opf = metadata.opf
-  const comicInfo = metadata.comicInfo
+  const { metadata, unreadableSources } = await resolveArchive(archive, {
+    include: ["metadata"],
+  })
 
   logger.log(
-    `Extracted archive metadata (hasOpf=${metadata.hasOpf}, hasComicInfo=${metadata.hasComicInfo})`,
+    `Extracted archive metadata (title=${metadata.title !== undefined}, isbn=${metadata.isbn !== undefined}, cover=${metadata.cover !== undefined})`,
   )
+
+  if (unreadableSources.length > 0) {
+    logger.warn(
+      `Archive carries metadata sources it cannot parse: ${unreadableSources.join(", ")}`,
+    )
+  }
 
   return {
     type: "file",
     contentType,
-    title: opf?.title ?? comicInfo?.title,
-    authors: authorNames(opf) ?? authorNames(comicInfo),
-    publisher: opf?.publisher ?? comicInfo?.publisher,
-    rights: opf?.rights ?? comicInfo?.rights,
-    languages:
-      toMutableList(opf?.languages) ?? toMutableList(comicInfo?.languages),
-    date: opf?.published ?? comicInfo?.published,
-    subjects:
-      toMutableList(opf?.subjects) ?? toMutableList(comicInfo?.subjects),
-    coverLink: metadata.coverHref,
-    pageCount: metadata.pageCount,
-    isbn: comicInfo?.isbn ?? opf?.isbn,
+    title: metadata.title,
+    authors: authorNames(metadata),
+    publisher: metadata.publisher,
+    rights: metadata.rights,
+    languages: toMutableList(metadata.languages),
+    date: metadata.published,
+    subjects: toMutableList(metadata.subjects),
+    coverLink: metadata.cover?.uri,
+    pageCount: metadata.numberOfPages,
+    isbn: metadata.isbn,
   }
 }
