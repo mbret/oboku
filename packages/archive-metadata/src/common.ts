@@ -10,8 +10,8 @@ export type {
   ArchiveMetadataTargets,
   ArchivePatch,
   ArchivePatchedEntry,
-} from "./writer"
-export { patchArchiveMetadata } from "./writer"
+} from "./metadata/write"
+export { patchArchiveMetadata } from "./metadata/write"
 
 export type { PatchMetadataAction } from "./update/actions"
 export type {

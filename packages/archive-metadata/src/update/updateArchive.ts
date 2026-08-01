@@ -1,6 +1,6 @@
 import type { ImageCompressionResult } from "../images/types"
 import type { Archive } from "../archive/types"
-import { patchArchiveMetadata } from "../writer"
+import { patchArchiveMetadata } from "../metadata/write"
 import {
   type EditableArchive,
   toArchive,
