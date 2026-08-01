@@ -5,12 +5,13 @@ import type { CompressionResult } from "./compressionPool"
 
 const compress = vi.fn<(bytes: ArrayBuffer) => Promise<CompressionResult>>()
 const terminate = vi.fn()
+const createImageCompressionPool = vi.fn(() => ({
+  compress,
+  terminate,
+}))
 
 vi.mock("./compressionPool", () => ({
-  createImageCompressionPool: () => ({
-    compress,
-    terminate,
-  }),
+  createImageCompressionPool,
 }))
 
 const { compressArchiveImages } = await import("./compress")
@@ -54,6 +55,7 @@ describe("compressArchiveImages", () => {
   beforeEach(() => {
     compress.mockReset()
     terminate.mockReset()
+    createImageCompressionPool.mockClear()
   })
 
   it("returns zero counts and never spins up a pool for an archive without images", async () => {
@@ -196,5 +198,47 @@ describe("compressArchiveImages", () => {
 
     expect(onProgress).toHaveBeenCalledTimes(2)
     expect(onProgress).toHaveBeenLastCalledWith(2, 2)
+  })
+
+  it("compresses at most two images concurrently", async () => {
+    let active = 0
+    let peak = 0
+    let releaseFirstBatch = function releaseImmediately() {}
+    const firstBatch = new Promise<void>(function waitForRelease(resolve) {
+      releaseFirstBatch = resolve
+    })
+
+    compress.mockImplementation(async function holdFirstBatch() {
+      active += 1
+      peak = Math.max(peak, active)
+
+      if (compress.mock.calls.length <= 2) await firstBatch
+
+      active -= 1
+
+      return { status: "skipped" }
+    })
+
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+      "c.jpg": bytesOf("c"),
+      "d.jpg": bytesOf("d"),
+    })
+
+    const compression = compressArchiveImages(entries, config, { stageBytes })
+
+    await vi.waitFor(function waitForFirstBatch() {
+      expect(compress).toHaveBeenCalledTimes(2)
+    })
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(2)
+    expect(peak).toBe(2)
+
+    releaseFirstBatch()
+    await compression
+
+    expect(compress).toHaveBeenCalledTimes(4)
+    expect(peak).toBe(2)
   })
 })

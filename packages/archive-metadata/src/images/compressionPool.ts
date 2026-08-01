@@ -15,7 +15,9 @@ export type ImageCompressionPool = {
   terminate: () => void
 }
 
-export const createImageCompressionPool = (): ImageCompressionPool => {
+export const createImageCompressionPool = (
+  size: number,
+): ImageCompressionPool => {
   const pool = createWorkerPool<
     ImageCompressionRequest,
     ImageCompressionResponse
@@ -24,6 +26,7 @@ export const createImageCompressionPool = (): ImageCompressionPool => {
       new Worker(new URL("./compression.worker.ts", import.meta.url), {
         type: "module",
       }),
+    size,
   })
 
   return {

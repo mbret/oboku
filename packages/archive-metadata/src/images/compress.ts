@@ -11,6 +11,8 @@ import { mapWithConcurrency } from "../utils/mapWithConcurrency"
 import { rewriteImageReferences } from "./rewriteReferences"
 import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
 
+const MAX_IMAGE_COMPRESSION_CONCURRENCY = 2
+
 /**
  * Identifies images whose `.webp` target would clash with another archive
  * entry — either because two originals collapse to the same name (e.g.
@@ -76,7 +78,11 @@ export const compressArchiveImages = async (
 
   const collidingNames = findCollidingWebpTargets(entries, images)
 
-  const pool = createImageCompressionPool()
+  const compressionConcurrency = Math.min(
+    navigator.hardwareConcurrency || MAX_IMAGE_COMPRESSION_CONCURRENCY,
+    MAX_IMAGE_COMPRESSION_CONCURRENCY,
+  )
+  const pool = createImageCompressionPool(compressionConcurrency)
   const renamedPaths = new Set<string>()
   let completed = 0
   let compressedCount = 0
@@ -85,8 +91,8 @@ export const compressArchiveImages = async (
   try {
     await mapWithConcurrency(
       images,
-      navigator.hardwareConcurrency || 4,
-      async (image) => {
+      compressionConcurrency,
+      async function compressImage(image) {
         if (collidingNames.has(image.path)) {
           skippedCount += 1
           completed += 1
