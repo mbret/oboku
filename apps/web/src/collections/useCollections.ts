@@ -1,7 +1,7 @@
 import {
   type CollectionDocType,
-  difference,
   ReadingStateState,
+  difference,
 } from "@oboku/shared"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useQuery$, useSignalValue } from "reactjrx"
@@ -20,6 +20,28 @@ import { intersection } from "@oboku/shared"
 import { observeBooks } from "../books/dbHelpers"
 
 type CollectionReadingState = "ongoing" | "finished" | "unread" | undefined
+
+export const collectionPassesNotInterestedFilter = ({
+  collectionBooks,
+  isNotInterested,
+  notInterestedBookIds,
+}: {
+  collectionBooks: DeepReadonlyArray<string>
+  isNotInterested: "with" | "none" | "only" | undefined
+  notInterestedBookIds: string[]
+}) => {
+  if (isNotInterested === "only") {
+    return collectionBooks.length === 0
+      ? false
+      : intersection(collectionBooks, notInterestedBookIds).length > 0
+  }
+
+  if (isNotInterested === "none" && collectionBooks.length > 0) {
+    return difference(collectionBooks, notInterestedBookIds).length > 0
+  }
+
+  return true
+}
 
 export const useCollections = ({
   queryObj,
@@ -147,27 +169,13 @@ export const useCollections = ({
                      * this case we want collections that contains at least
                      * one of the not interested book.
                      */
-                    .filter((collection) => {
-                      if (isNotInterested === "only") {
-                        return collection.books.length === 0
-                          ? false
-                          : intersection(collection.books, bookIds).length > 0
-                      }
-
-                      if (
-                        isNotInterested === "none" &&
-                        collection.books.length > 0
-                      ) {
-                        const booksNotProtected = difference(
-                          collection.books,
-                          notInterestedBookIds,
-                        )
-
-                        return booksNotProtected.length > 0
-                      }
-
-                      return true
-                    })
+                    .filter((collection) =>
+                      collectionPassesNotInterestedFilter({
+                        collectionBooks: collection.books,
+                        isNotInterested,
+                        notInterestedBookIds,
+                      }),
+                    )
                     /**
                      * Filter collection by reading state
                      */
