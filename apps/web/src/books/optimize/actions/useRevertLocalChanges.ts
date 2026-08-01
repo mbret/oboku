@@ -19,35 +19,47 @@ export const useRevertLocalChanges = ({
   link: DeepReadonlyObject<LinkDocType>
 }) => {
   const bookId = book._id
-  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const { mutate: downloadBook } = useDownloadBook()
-  const bookLinks = useMemo(() => [...book.links], [book.links])
+  const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile({
+    meta: { suppressGlobalErrorToast: true },
+  })
+  const { mutateAsync: downloadBook } = useDownloadBook({
+    meta: { suppressGlobalErrorToast: true },
+  })
+  const bookLinks = useMemo(
+    function copyBookLinks() {
+      return [...book.links]
+    },
+    [book.links],
+  )
   // Local-only books have no data source to re-download from, so reverting
   // (which deletes the local file) would lose it permanently.
   const canRevert = link.type !== PLUGIN_FILE_TYPE
 
   const { mutate: revert, isPending: isReverting } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async function restoreOriginalDownload() {
       await removeDownloadFile({ bookId })
-      downloadBook({ _id: bookId, links: bookLinks })
+      await downloadBook({ _id: bookId, links: bookLinks })
     },
-    onError: (error) => {
+    onError: function reportRevertError(error) {
       notifyError(error)
     },
   })
 
-  const revertLocalChanges = useCallback(async () => {
-    if (isReverting || !canRevert) return
+  const revertLocalChanges = useCallback(
+    async function confirmAndRevertLocalChanges() {
+      if (isReverting || !canRevert) return
 
-    const isConfirmed = await showConfirmDialog({
-      message:
-        "This will discard your local changes and re-download the original file from the data source.",
-    })
+      const isConfirmed = await showConfirmDialog({
+        message:
+          "This will discard your local changes and re-download the original file from the data source.",
+      })
 
-    if (!isConfirmed) return
+      if (!isConfirmed) return
 
-    revert()
-  }, [canRevert, isReverting, revert])
+      revert()
+    },
+    [canRevert, isReverting, revert],
+  )
 
   return { revertLocalChanges, isReverting, canRevert }
 }
