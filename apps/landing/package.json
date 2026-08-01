@@ -12,23 +12,23 @@
     "lint": "eslint ."
   },
   "dependencies": {
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^9.2.0",
+    "@mui/lab": "9.0.0-beta.6",
+    "@mui/material": "^9.2.0",
+    "@mui/material-nextjs": "^9.1.1",
+    "@oboku/shared": "workspace:*",
+    "next": "16.1.6",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "next": "16.1.6",
-    "@emotion/react": "^11.13.3",
-    "@emotion/styled": "^11.10.6",
-    "@mui/icons-material": "^9.0.0",
-    "@mui/lab": "^9.0.0-beta.2",
-    "@mui/material": "^9.0.0",
-    "@mui/material-nextjs": "^9.0.0",
-    "@oboku/shared": "workspace:*",
-    "remark-gfm": "^4.0.0",
-    "react-markdown": "^10.1.0"
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
     "@types/react": "19.2.17",
     "@types/react-dom": "19.2.3",
-    "eslint": "^9",
+    "eslint": "^9.39.5",
     "eslint-config-next": "16.1.6"
   },
   "overrides": {
