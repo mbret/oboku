@@ -62,9 +62,12 @@
 
 ### Package manager
 
-- Use `npm` as the default package manager for this repository.
-- Prefer `npm` commands over `pnpm` or `yarn` unless the user explicitly asks otherwise.
-- When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `package-lock.json` as the source of truth.
+- Use `pnpm` as the package manager for this repository (pinned via the `packageManager` field in the root `package.json`).
+- Prefer `pnpm` commands over `npm` or `yarn` unless the user explicitly asks otherwise.
+- When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `pnpm-lock.yaml` as the source of truth.
+- Workspace-internal dependencies (`@oboku/*`) use the `workspace:*` protocol.
+- pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
+- Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 
 ### Synology API docs
 

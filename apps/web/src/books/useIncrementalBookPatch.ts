@@ -1,8 +1,7 @@
-import { getLatestDatabase } from "../rxdb/RxDbProvider"
-import { from, mergeMap, of } from "rxjs"
 import type { RxDocument } from "rxdb"
 import type { BookDocType } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
+import { incrementalBookMutation } from "./incrementalBookMutation"
 
 export const useIncrementalBookPatch = () =>
   useMutation$({
@@ -12,17 +11,5 @@ export const useIncrementalBookPatch = () =>
     }: {
       doc: RxDocument<BookDocType> | string
       patch: Partial<BookDocType>
-    }) =>
-      getLatestDatabase().pipe(
-        mergeMap((db) =>
-          typeof doc === "string"
-            ? from(db.book.findOne({ selector: { _id: doc } }).exec())
-            : of(doc),
-        ),
-        mergeMap((item) => {
-          if (!item) return of(null)
-
-          return from(item.incrementalPatch(patch))
-        }),
-      ),
+    }) => incrementalBookMutation(doc, (item) => item.incrementalPatch(patch)),
   })

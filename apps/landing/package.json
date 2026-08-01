@@ -2,6 +2,9 @@
   "name": "@oboku/landing",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=24"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,8 +12,8 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "react": "19.2.7",
-    "react-dom": "19.2.7",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "next": "16.1.6",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.10.6",
@@ -18,7 +21,7 @@
     "@mui/lab": "^9.0.0-beta.2",
     "@mui/material": "^9.0.0",
     "@mui/material-nextjs": "^9.0.0",
-    "@oboku/shared": "0.8.0",
+    "@oboku/shared": "workspace:*",
     "remark-gfm": "^4.0.0",
     "react-markdown": "^10.1.0"
   },

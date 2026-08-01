@@ -9,17 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
       - uses: actions/setup-node@v6
         with:
           node-version: '25'
-          cache: 'npm'
+          cache: 'pnpm'
 
       - name: Check
         run: |
-          npm ci
-          npm run lint
-          npm run build
-          npm run test
+          pnpm install --frozen-lockfile
+          pnpm run lint
+          pnpm run build
+          pnpm run test
 
   deploy-api-docker:
     needs: build-and-test

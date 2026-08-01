@@ -32,6 +32,7 @@ import { useRemoveCoversInCache } from "../../../covers/useRemoveCoversInCache"
 import { useDownloadedBooks } from "../../../download/useDownloadedBooks"
 import { useBooks } from "../../../books/states"
 import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
+import { StoragePersistenceListItem } from "./StoragePersistenceListItem"
 
 const bookListStyle = { width: "100%" }
 
@@ -124,6 +125,7 @@ export const ManageStorageScreen = () => {
             }
           />
         </ListItem>
+        <StoragePersistenceListItem />
         <ListItemButton onClick={() => removeCoversInCache()}>
           <ListItemIcon>
             <ImageRounded />

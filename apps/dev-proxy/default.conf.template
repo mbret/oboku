@@ -7,6 +7,15 @@
 # replicating many collections. The primary origin is the API itself (:3000);
 # these ports back VITE_API_URL_2/3/4. Each forwards to the same API, which in
 # turn proxies CouchDB under /couchdb.
+upstream dev_api {
+  # host.docker.internal can resolve to an IPv4 + IPv6 pair (Docker Desktop
+  # writes both host-gateway entries) and the IPv6 twin is unreachable from
+  # the IPv4-only compose network. max_fails=0 keeps that dead peer from ever
+  # disabling the group: a failed connect falls through to the next address,
+  # and since nothing was sent, even POSTs are safe to move.
+  server ${DEV_PROXY_UPSTREAM} max_fails=0;
+}
+
 server {
   listen 5985;
   listen 5986;
@@ -18,7 +27,7 @@ server {
   client_max_body_size 0;
 
   location / {
-    proxy_pass http://${DEV_PROXY_UPSTREAM};
+    proxy_pass http://dev_api;
     proxy_redirect off;
 
     proxy_http_version 1.1;
