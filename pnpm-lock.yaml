@@ -568,7 +568,7 @@ importers:
         specifier: ^1.135.6
         version: 1.141.2(@tanstack/react-query@5.101.2(react@19.2.8))(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)(rxjs@7.8.2)
       rxdb:
-        specifier: ^17.1.0
+        specifier: ^17.4.0
         version: 17.4.0(firebase@12.16.0)(react@19.2.8)(rxjs@7.8.2)(supports-color@8.1.1)
       rxjs:
         specifier: ^7.5.7
