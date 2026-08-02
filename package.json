@@ -4,7 +4,7 @@
   "private": true,
   "repository": "git@github.com:mbret/oboku.git",
   "author": "Maxime Bret <bret.maxime@gmail.com>",
-  "license": "MIT",
+  "license": "GPL-3.0",
   "packageManager": "pnpm@11.18.0",
   "scripts": {
     "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",

@@ -13,7 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "files": [
     "/dist"
   ],
