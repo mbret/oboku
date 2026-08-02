@@ -11,8 +11,7 @@ import { useForm, type Control } from "react-hook-form"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import type { Observable } from "rxjs"
-import { CancelError } from "../../errors/errors.shared"
-import { notify, notifyError } from "../../notifications/toasts"
+import { notify } from "../../notifications/toasts"
 import type { FileInspection } from "./useFileInspection"
 import { useApplyLocalOptimizations } from "./apply/useApplyLocalOptimizations"
 import { useUploadToDataSource } from "./actions/useUploadToDataSource"
@@ -128,10 +127,6 @@ export function BookOptimizeProvider({
               "Changes were saved to the downloaded file on this device.",
             severity: "success",
           })
-        },
-        onError: (error) => {
-          if (error instanceof CancelError) return
-          notifyError(error)
         },
       },
     )

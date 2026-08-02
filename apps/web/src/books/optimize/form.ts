@@ -19,11 +19,11 @@ export const EMPTY_BOOK_OPTIMIZE_FORM_VALUES: BookOptimizeFormValues = {
 }
 
 export const parseDimension = (value: string): number | undefined => {
-  const parsed = Number(value)
+  const dimension = Math.round(Number(value))
 
-  if (!Number.isFinite(parsed) || parsed <= 0) return undefined
+  if (!Number.isFinite(dimension) || dimension <= 0) return undefined
 
-  return Math.round(parsed)
+  return dimension
 }
 
 export const hasCompressionDimension = (

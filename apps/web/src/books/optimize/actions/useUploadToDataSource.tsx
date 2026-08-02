@@ -5,8 +5,7 @@ import type { DeepReadonlyObject } from "rxdb"
 import { getBookFile } from "../../../download/getBookFile.shared"
 import { usePluginUpsertFile } from "../../../plugins/usePluginUpsertFile"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
-import { CancelError } from "../../../errors/errors.shared"
-import { notify, notifyError } from "../../../notifications/toasts"
+import { notify } from "../../../notifications/toasts"
 
 export const useUploadToDataSource = ({
   book,
@@ -22,7 +21,9 @@ export const useUploadToDataSource = ({
     mutateAsync: upsertFile,
     slot,
     progress$: uploadProgress$,
-  } = usePluginUpsertFile()
+  } = usePluginUpsertFile({
+    meta: { suppressGlobalErrorToast: true },
+  })
 
   const { mutate: uploadFile, isPending: isUploading } = useMutation({
     mutationFn: async () => {
@@ -62,10 +63,6 @@ export const useUploadToDataSource = ({
           description: "The file was uploaded to the data source.",
           severity: "success",
         })
-      },
-      onError: (error) => {
-        if (error instanceof CancelError) return
-        notifyError(error)
       },
     })
   }, [canUpload, uploadFile])

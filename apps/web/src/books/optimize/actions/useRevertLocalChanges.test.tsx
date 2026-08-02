@@ -1,6 +1,10 @@
 // @vitest-environment jsdom
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import {
+  MutationCache,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import {
   type BookDocType,
@@ -12,7 +16,6 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const {
   downloadBook,
-  notifyError,
   removeDownloadFile,
   showConfirmDialog,
   useDownloadBook,
@@ -23,7 +26,6 @@ const {
 
   return {
     downloadBook,
-    notifyError: vi.fn(),
     removeDownloadFile,
     showConfirmDialog: vi.fn(async function confirmRevert() {
       return true
@@ -39,9 +41,6 @@ const {
 
 vi.mock("../../../common/dialogs/presets", function mockDialogs() {
   return { showConfirmDialog }
-})
-vi.mock("../../../notifications/toasts", function mockToasts() {
-  return { notifyError }
 })
 vi.mock("../../../download", function mockDownloads() {
   return { useDownloadBook }
@@ -87,8 +86,10 @@ const link: LinkDocTypeForProvider<"URI"> = {
   type: "URI",
 }
 
-function createWrapper() {
-  const queryClient = new QueryClient()
+function createWrapper(onMutationError?: (error: Error) => void) {
+  const queryClient = new QueryClient({
+    mutationCache: new MutationCache({ onError: onMutationError }),
+  })
 
   return function RevertQueryClientProvider({
     children,
@@ -164,13 +165,16 @@ describe("useRevertLocalChanges", function testUseRevertLocalChanges() {
   it("reports a replacement download failure through the revert mutation", async function reportReplacementDownloadFailure() {
     const replacementDownload = createDeferred()
     const error = new Error("replacement download failed")
+    const onMutationError = vi.fn(function reportGlobalMutationError(
+      _error: Error,
+    ) {})
     downloadBook.mockReturnValueOnce(replacementDownload.promise)
     const { result } = renderHook(
       function renderUseRevertLocalChanges() {
         return useRevertLocalChanges({ book, link })
       },
       {
-        wrapper: createWrapper(),
+        wrapper: createWrapper(onMutationError),
       },
     )
 
@@ -189,7 +193,8 @@ describe("useRevertLocalChanges", function testUseRevertLocalChanges() {
     })
 
     await waitFor(function waitForErrorNotification() {
-      expect(notifyError).toHaveBeenCalledWith(error)
+      expect(onMutationError).toHaveBeenCalledTimes(1)
+      expect(onMutationError.mock.calls[0]?.[0]).toBe(error)
       expect(result.current.isReverting).toBe(false)
     })
   })

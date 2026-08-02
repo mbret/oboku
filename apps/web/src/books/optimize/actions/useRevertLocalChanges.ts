@@ -7,7 +7,6 @@ import {
 } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
-import { notifyError } from "../../../notifications/toasts"
 import { useDownloadBook } from "../../../download"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
 
@@ -39,9 +38,6 @@ export const useRevertLocalChanges = ({
     mutationFn: async function restoreOriginalDownload() {
       await removeDownloadFile({ bookId })
       await downloadBook({ _id: bookId, links: bookLinks })
-    },
-    onError: function reportRevertError(error) {
-      notifyError(error)
     },
   })
 

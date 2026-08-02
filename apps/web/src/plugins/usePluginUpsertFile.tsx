@@ -1,5 +1,9 @@
 import { useEffect, useState, type ReactNode } from "react"
-import { useMutation } from "@tanstack/react-query"
+import {
+  type DefaultError,
+  type UseMutationOptions,
+  useMutation,
+} from "@tanstack/react-query"
 import { useLiveRef } from "reactjrx"
 import { BehaviorSubject, type Observable } from "rxjs"
 import type { LinkDocType } from "@oboku/shared"
@@ -23,7 +27,12 @@ type Pending = UpsertFileVariables & {
 
 const SCOPE_ID = "plugin-upsert-file"
 
-export const usePluginUpsertFile = () => {
+export const usePluginUpsertFile = (
+  options?: Pick<
+    UseMutationOptions<void, DefaultError, UpsertFileVariables>,
+    "meta"
+  >,
+) => {
   const [pending, setPending] = useState<Pending | null>(null)
   const pendingRef = useLiveRef(pending)
 
@@ -39,6 +48,7 @@ export const usePluginUpsertFile = () => {
   )
 
   const mutation = useMutation({
+    ...options,
     scope: { id: SCOPE_ID },
     mutationFn: async (variables: UpsertFileVariables) => {
       const abortController = new AbortController()
