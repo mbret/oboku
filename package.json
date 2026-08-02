@@ -5,7 +5,7 @@
   "repository": "git@github.com:mbret/oboku.git",
   "author": "Maxime Bret <bret.maxime@gmail.com>",
   "license": "MIT",
-  "packageManager": "pnpm@11.17.0",
+  "packageManager": "pnpm@11.18.0",
   "scripts": {
     "docker:dev": "docker compose -f docker-compose.dev.yml up -d --build",
     "docker:dev:infra": "docker compose -f docker-compose.dev.yml up -d --wait couchdb postgres dev-proxy",
