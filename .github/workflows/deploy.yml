@@ -22,8 +22,24 @@ jobs:
           pnpm run build
           pnpm run test
 
-  deploy-api-docker:
+  resolve-version:
+    name: 'Resolve version'
     needs: build-and-test
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      sha_tag: ${{ steps.version.outputs.sha_tag }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: version
+        run: |
+          {
+            echo "version=$(jq -r .version package.json)"
+            echo "sha_tag=sha-${GITHUB_SHA:0:7}"
+          } >> "$GITHUB_OUTPUT"
+
+  deploy-api-docker:
+    needs: [build-and-test, resolve-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -46,10 +62,13 @@ jobs:
           target: api
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-api:latest
+          tags: |
+            mbret/oboku-api:latest
+            mbret/oboku-api:${{ needs.resolve-version.outputs.version }}
+            mbret/oboku-api:${{ needs.resolve-version.outputs.sha_tag }}
 
   deploy-couchdb-docker:
-    needs: build-and-test
+    needs: [build-and-test, resolve-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -70,10 +89,13 @@ jobs:
           target: couchdb
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-couchdb:latest
+          tags: |
+            mbret/oboku-couchdb:latest
+            mbret/oboku-couchdb:${{ needs.resolve-version.outputs.version }}
+            mbret/oboku-couchdb:${{ needs.resolve-version.outputs.sha_tag }}
 
   deploy-web-docker:
-    needs: build-and-test
+    needs: [build-and-test, resolve-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -96,10 +118,13 @@ jobs:
           target: web
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-web:latest
+          tags: |
+            mbret/oboku-web:latest
+            mbret/oboku-web:${{ needs.resolve-version.outputs.version }}
+            mbret/oboku-web:${{ needs.resolve-version.outputs.sha_tag }}
 
   deploy-admin-docker:
-    needs: build-and-test
+    needs: [build-and-test, resolve-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -122,11 +147,14 @@ jobs:
           target: admin
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-admin:latest
+          tags: |
+            mbret/oboku-admin:latest
+            mbret/oboku-admin:${{ needs.resolve-version.outputs.version }}
+            mbret/oboku-admin:${{ needs.resolve-version.outputs.sha_tag }}
 
   publish-release:
     name: 'Publish release'
-    needs: [build-and-test]
+    needs: [build-and-test, resolve-version]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -136,9 +164,9 @@ jobs:
       - name: 'Publish GitHub release for the root version'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ needs.resolve-version.outputs.version }}
         run: |
-          version="$(jq -r .version package.json)"
-          tag="v$version"
+          tag="v$VERSION"
 
           if gh release view "$tag" > /dev/null 2>&1; then
             echo "$tag is already released"
@@ -146,11 +174,7 @@ jobs:
           fi
 
           upgrade_notes="$(mktemp)"
-          awk -v heading="## $version" '
-            $0 == heading { capture = 1; next }
-            capture && /^## / { exit }
-            capture
-          ' gitbook/self-hosting/changelog.md > "$upgrade_notes"
+          node scripts/release-notes.mjs "$VERSION" "$tag" > "$upgrade_notes"
 
           notes_args=()
           if [ -s "$upgrade_notes" ]; then
