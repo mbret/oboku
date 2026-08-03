@@ -219,7 +219,7 @@ export const addTagsToBookIfNotExist = async (
 
   const [bookUpdate, tagUpdate] = await Promise.all([
     atomicUpdate(db, "book", bookId, (old) => {
-      const tags = old.tags.find((tag) => tagIds.includes(tag))
+      const tags = tagIds.every((tagId) => old.tags.includes(tagId))
         ? old.tags
         : [...old.tags.filter((tag) => !tagIds.includes(tag)), ...tagIds]
 
