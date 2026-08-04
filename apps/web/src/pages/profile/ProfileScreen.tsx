@@ -40,7 +40,6 @@ import {
   selectIsLibraryUnlocked,
 } from "../../library/books/states"
 import { lockLibrary, unlockLibrary } from "../../library/libraryLock"
-import packageJson from "../../../package.json"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
 import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
@@ -228,7 +227,7 @@ export const ProfileScreen = () => {
           <ListItemText primary="Terms of Service" />
         </ListItemButton>
         <ListItem>
-          <ListItemText primary="App Version" secondary={packageJson.version} />
+          <ListItemText primary="App Version" secondary={__APP_VERSION__} />
         </ListItem>
       </List>
       <List

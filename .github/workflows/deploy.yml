@@ -187,35 +187,9 @@ jobs:
             --generate-notes \
             "${notes_args[@]}"
 
-  bump-web-version:
-    name: 'Bump Version'
-    needs: [build-and-test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout source code'
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Automated Version Bump'
-        id: version-bump
-        uses: 'phips28/gh-action-bump-version@v10.1.1'
-        with:
-          tag-prefix: 'web-'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: 'apps/web'
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Output Step'
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
-
   deploy-web-vercel:
     name: 'Deploy web vercel'
-    needs: [bump-web-version]
+    needs: [build-and-test]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
       app_directory: 'apps/web'

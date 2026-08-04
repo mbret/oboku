@@ -1,4 +1,3 @@
-import { version } from "../../package.json"
 import {
   init,
   captureConsoleIntegration,
@@ -19,7 +18,7 @@ if (import.meta.env.SENTRY_DSN) {
       httpClientIntegration(),
     ],
     sendDefaultPii: true,
-    release: version,
+    release: __APP_VERSION__,
     // We recommend adjusting this value in production, or using tracesSampler
     // for finer control
     tracesSampleRate: 1.0,
