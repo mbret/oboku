@@ -1,11 +1,10 @@
-import createNano, { type MangoResponse, type RequestError } from "nano"
+import createNano, { type RequestError } from "nano"
 import {
   type SafeMangoQuery,
   type InsertAbleBookDocType,
   ReadingStateState,
   type DocType,
   type ModelOf,
-  type DataSourceDocType,
   type SettingsDocType,
   isShallowEqual,
 } from "@oboku/shared"
@@ -141,16 +140,6 @@ export const insert = async <
   if (!doc.ok) throw new Error("Unable to create document")
 
   return doc
-}
-
-export const findAllDataSources = async (
-  db: createNano.DocumentScope<unknown>,
-) => {
-  return db.find({
-    selector: {
-      rx_model: "datasource",
-    },
-  }) as Promise<MangoResponse<DataSourceDocType>>
 }
 
 /** Fetches the singleton settings document. Returns null if missing or on error. */
