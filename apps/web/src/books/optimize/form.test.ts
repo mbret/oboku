@@ -4,8 +4,14 @@ import {
   hasImageCompressionOperation,
 } from "./form"
 
-describe("hasImageCompressionOperation", () => {
-  it("allows WebP conversion without resize dimensions", () => {
+describe("EMPTY_BOOK_OPTIMIZE_FORM_VALUES", function testEmptyBookOptimizeFormValues() {
+  it("keeps the original image format by default", function keepOriginalImageFormat() {
+    expect(EMPTY_BOOK_OPTIMIZE_FORM_VALUES.imageOutputMode).toBe("original")
+  })
+})
+
+describe("hasImageCompressionOperation", function testHasImageCompressionOperation() {
+  it("allows WebP conversion without resize dimensions", function allowWebpWithoutResizeDimensions() {
     expect(
       hasImageCompressionOperation({
         ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
@@ -14,7 +20,7 @@ describe("hasImageCompressionOperation", () => {
     ).toBe(true)
   })
 
-  it("requires a resize dimension when keeping the original format", () => {
+  it("requires a resize dimension when keeping the original format", function requireResizeDimensionForOriginalFormat() {
     expect(
       hasImageCompressionOperation({
         ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES,

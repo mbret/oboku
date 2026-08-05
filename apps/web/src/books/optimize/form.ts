@@ -13,10 +13,12 @@ export type BookOptimizeFormValues = MetadataFixerFormValues & {
   maxHeight: string
 }
 
+const DEFAULT_IMAGE_OUTPUT_MODE: ImageOutputMode = "original"
+
 export const EMPTY_BOOK_OPTIMIZE_FORM_VALUES: BookOptimizeFormValues = {
   ...EMPTY_METADATA_FIXER_FORM_VALUES,
   compressImages: false,
-  imageOutputMode: "webp",
+  imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
   maxWidth: "",
   maxHeight: "",
 }
@@ -45,7 +47,7 @@ export const resolveBookOptimizeFormValues = (
 ): BookOptimizeFormValues => ({
   ...resolveMetadataFixerFormValues(inspection),
   compressImages: false,
-  imageOutputMode: "webp",
+  imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
   maxWidth: "",
   maxHeight: "",
 })

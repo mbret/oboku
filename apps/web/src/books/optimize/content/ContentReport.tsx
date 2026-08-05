@@ -13,6 +13,14 @@ const FileFormatChipsStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(0.5),
 }))
 
+const formatResolution = ({
+  width,
+  height,
+}: {
+  width: number
+  height: number
+}): string => `${width} × ${height} px (${(width / height).toFixed(2)}:1)`
+
 export function ContentReport() {
   const { inspection } = useBookOptimize()
   const {
@@ -43,7 +51,7 @@ export function ContentReport() {
       {averageImageResolution && (
         <ReportRow
           label="Average resolution"
-          value={`${averageImageResolution.width} × ${averageImageResolution.height} px`}
+          value={formatResolution(averageImageResolution)}
         />
       )}
       <Divider />
