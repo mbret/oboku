@@ -48,7 +48,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
       },
       {
         kind: "compress-images",
-        config: { maxWidth: 1200, maxHeight: 1600 },
+        config: { maxWidth: 1200, maxHeight: 1600, outputMode: "webp" },
       },
     ]
     renderDialogProvider()
@@ -70,8 +70,10 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     expect(screen.getByText("OPF package document")).not.toBeNull()
     expect(listItems[1]?.textContent).toContain("Resize eligible")
     expect(screen.getByText("1200 × 1600 px")).not.toBeNull()
-    expect(screen.getByText("JPG · JPEG · PNG · BMP")).not.toBeNull()
-    expect(listItems[2]?.textContent).toContain("Convert images to")
+    expect(screen.getAllByText("JPG · JPEG · PNG · BMP")).toHaveLength(2)
+    expect(listItems[2]?.textContent).toContain(
+      "Convert JPG · JPEG · PNG · BMP images to WebP",
+    )
     expect(screen.getByText("WebP")).not.toBeNull()
     expect(listItems[3]?.textContent).toBe(
       "Update references to converted images.",
@@ -96,7 +98,11 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
       },
       {
         kind: "compress-images",
-        config: { maxWidth: undefined, maxHeight: 1600 },
+        config: {
+          maxWidth: undefined,
+          maxHeight: 1600,
+          outputMode: "original",
+        },
       },
     ]
     renderDialogProvider()
@@ -111,6 +117,13 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     expect(screen.getByText("ComicInfo.xml")).not.toBeNull()
     expect(listItems[1]?.textContent).toContain("to a maximum height of")
     expect(screen.getByText("1600 px")).not.toBeNull()
+    expect(screen.getByText("JPG · JPEG · PNG")).not.toBeNull()
+    expect(listItems[2]?.textContent).toContain(
+      "Keep each resized image in its original format",
+    )
+    expect(listItems[3]?.textContent).toContain(
+      "Leave all other image formats unchanged",
+    )
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
 

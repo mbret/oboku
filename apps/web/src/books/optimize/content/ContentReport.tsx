@@ -1,12 +1,24 @@
 import { formatBytes } from "@oboku/shared"
+import { Chip, Divider, Stack, Typography, styled } from "@mui/material"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
+
+const FileFormatsSectionStack = styled(Stack)(({ theme }) => ({
+  gap: theme.spacing(0.75),
+}))
+
+const FileFormatChipsStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "row",
+  flexWrap: "wrap",
+  gap: theme.spacing(0.5),
+}))
 
 export function ContentReport() {
   const { inspection } = useBookOptimize()
   const {
     fileSize,
     fileCount,
+    fileExtensions,
     imageCount,
     imageBytes,
     averageImageResolution,
@@ -34,6 +46,28 @@ export function ContentReport() {
           value={`${averageImageResolution.width} × ${averageImageResolution.height} px`}
         />
       )}
+      <Divider />
+      <FileFormatsSectionStack>
+        <Typography variant="body2" color="text.secondary">
+          File formats
+        </Typography>
+        <FileFormatChipsStack>
+          {fileExtensions.length > 0 ? (
+            fileExtensions.map(function renderFileExtension(extension) {
+              return (
+                <Chip
+                  key={extension}
+                  label={extension}
+                  size="small"
+                  variant="outlined"
+                />
+              )
+            })
+          ) : (
+            <Typography variant="body2">—</Typography>
+          )}
+        </FileFormatChipsStack>
+      </FileFormatsSectionStack>
     </Report>
   )
 }

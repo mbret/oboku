@@ -25,10 +25,26 @@ export type FileInspection = {
   fileName: string
   fileSize: number
   fileCount: number
+  fileExtensions: string[]
   imageCount: number
   imageBytes: number
   averageImageResolution: ImageResolution | undefined
   resolvedArchive: ResolvedBookArchive
+}
+
+const listFileExtensions = (records: readonly { uri: string }[]): string[] => {
+  const extensions = new Set<string>()
+
+  for (const { uri } of records) {
+    const fileName = uri.slice(uri.lastIndexOf("/") + 1)
+    const extensionSeparator = fileName.lastIndexOf(".")
+
+    if (extensionSeparator >= 0 && extensionSeparator < fileName.length - 1) {
+      extensions.add(fileName.slice(extensionSeparator + 1).toUpperCase())
+    }
+  }
+
+  return [...extensions].sort()
 }
 
 const inspectContent = (
@@ -66,6 +82,7 @@ export const useFileInspection = (bookId: string | undefined) =>
           )
 
           try {
+            const fileRecords = archive.records.filter(isFileRecord)
             const imageRecords = listImageEntries(archive)
             const { imageCount, imageBytes } = inspectContent(imageRecords)
             const averageImageResolution =
@@ -73,7 +90,8 @@ export const useFileInspection = (bookId: string | undefined) =>
             const inspection: FileInspection = {
               fileName: file.name,
               fileSize: file.size,
-              fileCount: archive.records.filter(isFileRecord).length,
+              fileCount: fileRecords.length,
+              fileExtensions: listFileExtensions(fileRecords),
               imageCount,
               imageBytes,
               averageImageResolution,

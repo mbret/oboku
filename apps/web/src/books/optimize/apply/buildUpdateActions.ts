@@ -6,7 +6,7 @@ import {
   trimMetadataFixerFormValues,
 } from "../metadata/targets"
 import {
-  hasCompressionDimension,
+  hasImageCompressionOperation,
   parseDimension,
   type BookOptimizeFormValues,
 } from "../form"
@@ -31,7 +31,7 @@ const resolveMetadataPatchAction = (
 const resolveCompressImagesAction = (
   values: BookOptimizeFormValues,
 ): WebArchiveUpdateAction | undefined => {
-  if (!values.compressImages || !hasCompressionDimension(values))
+  if (!values.compressImages || !hasImageCompressionOperation(values))
     return undefined
 
   return {
@@ -39,6 +39,7 @@ const resolveCompressImagesAction = (
     config: {
       maxWidth: parseDimension(values.maxWidth),
       maxHeight: parseDimension(values.maxHeight),
+      outputMode: values.imageOutputMode,
     },
   }
 }

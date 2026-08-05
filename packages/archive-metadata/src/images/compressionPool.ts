@@ -1,5 +1,6 @@
 import { createWorkerPool } from "../utils/workerPool/createWorkerPool"
 import type {
+  ImageCompressionOptions,
   ImageCompressionRequest,
   ImageCompressionResponse,
 } from "./compression.types"
@@ -9,8 +10,7 @@ export type CompressionResult = ImageCompressionResponse
 export type ImageCompressionPool = {
   compress: (
     bytes: ArrayBuffer,
-    maxWidth: number | undefined,
-    maxHeight: number | undefined,
+    options: ImageCompressionOptions,
   ) => Promise<CompressionResult>
   terminate: () => void
 }
@@ -30,8 +30,7 @@ export const createImageCompressionPool = (
   })
 
   return {
-    compress: (bytes, maxWidth, maxHeight) =>
-      pool.run({ bytes, maxWidth, maxHeight }, [bytes]),
+    compress: (bytes, options) => pool.run({ bytes, ...options }, [bytes]),
     terminate: pool.terminate,
   }
 }

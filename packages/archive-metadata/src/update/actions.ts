@@ -15,8 +15,8 @@ export type PatchMetadataAction = {
 }
 
 /**
- * Re-encodes the archive's images to WebP and rewrites every reference to them.
- * Needs a canvas-and-worker runtime, so only the web entrypoint accepts it.
+ * Resizes the archive's images and optionally re-encodes them to WebP. Needs a
+ * canvas-and-worker runtime, so only the web entrypoint accepts it.
  */
 export type CompressImagesAction = {
   kind: "compress-images"

@@ -1,5 +1,6 @@
 import {
   CONVERTIBLE_IMAGE_FORMAT_NAMES,
+  PRESERVABLE_IMAGE_FORMAT_NAMES,
   type WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
 import { FiberManualRecord } from "@mui/icons-material"
@@ -81,12 +82,12 @@ function MetadataUpdateItems({
 function ImageResizeUpdateItem({
   maxWidth,
   maxHeight,
+  formats,
 }: {
   maxWidth: number | undefined
   maxHeight: number | undefined
+  formats: string
 }) {
-  const formats = CONVERTIBLE_IMAGE_FORMAT_NAMES.join(" · ")
-
   if (maxWidth !== undefined && maxHeight !== undefined) {
     return (
       <UpdateListItem>
@@ -122,13 +123,36 @@ function ImageCompressionUpdateItems({
 }: {
   action: Extract<WebArchiveUpdateAction, { kind: "compress-images" }>
 }) {
+  const keepsOriginalFormat = action.config.outputMode === "original"
+  const formats = (
+    keepsOriginalFormat
+      ? PRESERVABLE_IMAGE_FORMAT_NAMES
+      : CONVERTIBLE_IMAGE_FORMAT_NAMES
+  ).join(" · ")
+
   return (
     <>
-      <ImageResizeUpdateItem {...action.config} />
-      <UpdateListItem>
-        Convert images to <KeyChip label="WebP" /> when the result is smaller.
-      </UpdateListItem>
-      <UpdateListItem>Update references to converted images.</UpdateListItem>
+      <ImageResizeUpdateItem {...action.config} formats={formats} />
+      {keepsOriginalFormat ? (
+        <>
+          <UpdateListItem>
+            Keep each resized image in its original format.
+          </UpdateListItem>
+          <UpdateListItem>
+            Leave all other image formats unchanged.
+          </UpdateListItem>
+        </>
+      ) : (
+        <>
+          <UpdateListItem>
+            Convert <KeyChip label={formats} /> images to{" "}
+            <KeyChip label="WebP" />.
+          </UpdateListItem>
+          <UpdateListItem>
+            Update references to converted images.
+          </UpdateListItem>
+        </>
+      )}
     </>
   )
 }
