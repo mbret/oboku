@@ -2,6 +2,7 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -66,6 +67,15 @@ const values: BookOptimizeFormValues = {
 }
 const inspection = { fileName: "book.epub" }
 const actions = [{ kind: "patch-metadata" }]
+
+function createDeferred<T>() {
+  let resolve = function resolveImmediately(_value: T) {}
+  const promise = new Promise<T>(function captureResolution(resolvePromise) {
+    resolve = resolvePromise
+  })
+
+  return { promise, resolve }
+}
 
 const renderProgress = (
   progress: ApplyLocallyProgress,
@@ -178,5 +188,30 @@ describe("BookOptimizeActionBar", function testBookOptimizeActionBar() {
     })
 
     expect(mocks.reset).not.toHaveBeenCalled()
+  })
+
+  it("does not show progress while confirmation is pending", async function hideProgressBeforeConfirmation() {
+    const confirmation = createDeferred<boolean>()
+
+    mocks.applyLocally.mockReturnValue(confirmation.promise)
+    renderProgress({ phase: "preparing" }, true, false)
+
+    fireEvent.click(screen.getByRole("button", { name: "Apply locally" }))
+
+    await waitFor(function waitForConfirmation() {
+      expect(mocks.applyLocally).toHaveBeenCalledOnce()
+    })
+
+    expect(screen.queryByText("Preparing book…")).toBeNull()
+    expect(
+      screen
+        .getByRole("button", { name: "Apply locally" })
+        .hasAttribute("disabled"),
+    ).toBe(true)
+
+    await act(async function declineConfirmation() {
+      confirmation.resolve(false)
+      await confirmation.promise
+    })
   })
 })

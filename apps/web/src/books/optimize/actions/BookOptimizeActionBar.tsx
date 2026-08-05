@@ -110,21 +110,21 @@ export function BookOptimizeActionBar() {
   const { applyCurrentValuesLocally, isPending: isApplyingCurrentValues } =
     useApplyCurrentValuesLocally()
   const applyLocallyProgress$ = useApplyLocallyProgress(bookId)
-  const isApplyingLocalOptimizations = useIsApplyingLocally(bookId)
-  const isApplyingLocally =
-    isApplyingCurrentValues || isApplyingLocalOptimizations
+  const isApplyingLocally = useIsApplyingLocally(bookId)
+  const isApplyLocallyWorkflowPending =
+    isApplyingCurrentValues || isApplyingLocally
 
   const { data: applyLocallyProgress = DEFAULT_APPLY_LOCALLY_PROGRESS } =
     useObserve(applyLocallyProgress$ ?? EMPTY)
   const { data: uploadProgress = 0 } = useObserve(uploadProgress$ ?? EMPTY)
 
-  const canUpload = canUploadCurrentFile && !isApplyingLocally
+  const canUpload = canUploadCurrentFile && !isApplyLocallyWorkflowPending
   const canApplyLocally =
-    isValid && isDirty && !isApplyingLocally && !isUploading
+    isValid && isDirty && !isApplyLocallyWorkflowPending && !isUploading
   const applyLocallyVariant = canUpload ? "outlined" : "contained"
   const uploadVariant = canUpload ? "contained" : "outlined"
 
-  const isApplying = isApplyingLocally || isUploading
+  const isApplying = isApplyLocallyWorkflowPending || isUploading
   const applyLocallyPercent =
     applyLocallyProgress.phase === "optimizing-images" &&
     applyLocallyProgress.progress !== undefined
