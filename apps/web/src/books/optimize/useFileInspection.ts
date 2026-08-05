@@ -63,7 +63,6 @@ export const getFileInspectionQueryOptions = (bookId: string) =>
     queryKey: getFileInspectionQueryKey(bookId),
     networkMode: "always",
     staleTime: 0,
-    refetchOnMount: false,
     refetchOnWindowFocus: false,
     queryFn: async function inspectBookFile(): Promise<FileInspection> {
       const result = await getBookFile(bookId)
