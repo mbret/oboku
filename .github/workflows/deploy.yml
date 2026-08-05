@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
 
+concurrency:
+  group: deploy-master
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -22,11 +25,50 @@ jobs:
           pnpm run build
           pnpm run test
 
-  deploy-api-docker:
+  release:
+    name: 'Release'
     needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    outputs:
+      version: ${{ steps.released.outputs.version }}
+      sha: ${{ steps.released.outputs.sha }}
+      sha_tag: ${{ steps.released.outputs.sha_tag }}
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '25'
+          cache: 'pnpm'
+
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm exec semantic-release
+
+      - id: released
+        run: |
+          {
+            echo "version=$(jq -r .version package.json)"
+            echo "sha=$(git rev-parse HEAD)"
+            echo "sha_tag=sha-$(git rev-parse --short=7 HEAD)"
+          } >> "$GITHUB_OUTPUT"
+
+  deploy-api-docker:
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -46,13 +88,18 @@ jobs:
           target: api
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-api:latest
+          tags: |
+            mbret/oboku-api:latest
+            mbret/oboku-api:${{ needs.release.outputs.version }}
+            mbret/oboku-api:${{ needs.release.outputs.sha_tag }}
 
   deploy-couchdb-docker:
-    needs: build-and-test
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -70,13 +117,18 @@ jobs:
           target: couchdb
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-couchdb:latest
+          tags: |
+            mbret/oboku-couchdb:latest
+            mbret/oboku-couchdb:${{ needs.release.outputs.version }}
+            mbret/oboku-couchdb:${{ needs.release.outputs.sha_tag }}
 
   deploy-web-docker:
-    needs: build-and-test
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -96,13 +148,18 @@ jobs:
           target: web
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-web:latest
+          tags: |
+            mbret/oboku-web:latest
+            mbret/oboku-web:${{ needs.release.outputs.version }}
+            mbret/oboku-web:${{ needs.release.outputs.sha_tag }}
 
   deploy-admin-docker:
-    needs: build-and-test
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -122,37 +179,14 @@ jobs:
           target: admin
           platforms: linux/amd64,linux/arm64
           push: true
-          tags: mbret/oboku-admin:latest
-
-  bump-web-version:
-    name: 'Bump Version'
-    needs: [build-and-test]
-    runs-on: ubuntu-latest
-    steps:
-      - name: 'Checkout source code'
-        uses: actions/checkout@v6
-        with:
-          ref: ${{ github.ref }}
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Automated Version Bump'
-        id: version-bump
-        uses: 'phips28/gh-action-bump-version@v10.1.1'
-        with:
-          tag-prefix: 'web-'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          PACKAGEJSON_DIR: 'apps/web'
-      - name: 'cat package.json'
-        run: cat ./package.json
-      - name: 'Output Step'
-        env:
-          NEW_TAG: ${{ steps.version-bump.outputs.newTag }}
-        run: echo "new tag $NEW_TAG"
+          tags: |
+            mbret/oboku-admin:latest
+            mbret/oboku-admin:${{ needs.release.outputs.version }}
+            mbret/oboku-admin:${{ needs.release.outputs.sha_tag }}
 
   deploy-web-vercel:
     name: 'Deploy web vercel'
-    needs: [bump-web-version]
+    needs: [build-and-test, release]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
       app_directory: 'apps/web'

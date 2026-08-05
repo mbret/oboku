@@ -7,11 +7,7 @@ import {
   lastValueFrom,
 } from "rxjs"
 import { createSwDatabase } from "../rxdb/db.sw"
-import {
-  getMetadataFromRequest,
-  hasAnotherMoreRecentCoverForThisRequest,
-  SW_COVERS_CACHE_KEY,
-} from "./helpers.shared"
+import { getMetadataFromRequest, SW_COVERS_CACHE_KEY } from "./helpers.shared"
 import { Logger } from "../debug/logger.shared"
 import { coalesce } from "../workers/coalesce"
 
@@ -48,14 +44,14 @@ const runCleanup = async (profile: string | undefined): Promise<unknown> => {
                     return clearAllCovers()
                   }
 
+                  const idsInDb = new Set<string>()
+                  for (const { _id } of bookDocs) idsInDb.add(_id)
+                  for (const { _id } of collectionDocs) idsInDb.add(_id)
+
                   const cacheKeysNotInDb = cacheKeys.filter((key) => {
                     const { coverId } = getMetadataFromRequest(key)
 
-                    const coverFoundInDb =
-                      bookDocs.some(({ _id }) => _id === coverId) ||
-                      collectionDocs.some(({ _id }) => _id === coverId)
-
-                    return !coverFoundInDb
+                    return !idsInDb.has(coverId)
                   })
 
                   if (cacheKeysNotInDb.length) {
@@ -86,9 +82,27 @@ const runCleanup = async (profile: string | undefined): Promise<unknown> => {
     switchMap((cache) =>
       from(cache.keys()).pipe(
         switchMap((keys) => {
-          const keysToRemoveDueToNewerVersion = keys.filter((item) =>
-            hasAnotherMoreRecentCoverForThisRequest(item, keys),
-          )
+          const latestTimeByCoverId = new Map<string, number>()
+          const keyMetadata = keys.map((request) => {
+            const { coverId, coverTimeCached } = getMetadataFromRequest(request)
+            const latestCoverTime = latestTimeByCoverId.get(coverId)
+
+            if (
+              latestCoverTime === undefined ||
+              coverTimeCached > latestCoverTime
+            ) {
+              latestTimeByCoverId.set(coverId, coverTimeCached)
+            }
+
+            return { request, coverId, coverTimeCached }
+          })
+
+          const keysToRemoveDueToNewerVersion = keyMetadata
+            .filter(
+              ({ coverId, coverTimeCached }) =>
+                coverTimeCached < (latestTimeByCoverId.get(coverId) ?? 0),
+            )
+            .map(({ request }) => request)
 
           return from(
             Promise.all(

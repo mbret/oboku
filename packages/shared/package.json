@@ -1,6 +1,6 @@
 {
   "name": "@oboku/shared",
-  "version": "0.8.0",
+  "private": true,
   "type": "module",
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
@@ -13,7 +13,7 @@
       "require": "./dist/index.cjs"
     }
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "files": [
     "/dist"
   ],

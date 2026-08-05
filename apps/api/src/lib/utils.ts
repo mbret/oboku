@@ -129,13 +129,6 @@ export const onBeforeError =
       ),
     )
 
-export const switchMapMergeOuter = <T, R>(
-  project: (value: T) => Observable<R>,
-) =>
-  switchMap((outer: T) =>
-    project(outer).pipe(map((inner) => ({ ...outer, ...inner }))),
-  )
-
 export const switchMapCombineOuter = <T, R>(
   project: (value: T) => Observable<R>,
 ) =>

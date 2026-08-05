@@ -1,6 +1,6 @@
 {
   "name": "@oboku/archive-metadata",
-  "version": "0.1.0",
+  "private": true,
   "type": "module",
   "exports": {
     "./web": {
@@ -16,7 +16,7 @@
       "require": "./dist/node.cjs"
     }
   },
-  "license": "MIT",
+  "license": "GPL-3.0",
   "files": [
     "/dist"
   ],

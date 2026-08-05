@@ -23,6 +23,6 @@
 
 ## Copyright and license
 
-Code released under the [MIT License](https://mbret/oboku/blob/master/LICENSE).
+Code released under the [GNU General Public License v3.0](https://github.com/mbret/oboku/blob/master/LICENCE).
 
 Enjoy :metal:

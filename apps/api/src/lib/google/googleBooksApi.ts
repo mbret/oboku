@@ -109,25 +109,3 @@ export const findByVolumeId = async (
 
   throw new Error(`An error occurred during findByISBN`)
 }
-
-export const findSeriesByTitle = async (
-  name: string,
-  apiKey: string,
-  config: AppConfigService,
-) => {
-  const response = await performWithBackoff({
-    asyncFunction: () =>
-      axios.get<GoogleBooksApiVolumesResponseData>(
-        `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${name}&key=${apiKey}`,
-      ),
-    retry: isRetryableGoogleBooksError,
-  })
-
-  if (response.status === 200) {
-    // Logger.info(`google findByName response`, response.data)
-
-    return response.data
-  }
-
-  throw new Error(`An error occurred during findByISBN`)
-}

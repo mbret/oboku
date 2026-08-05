@@ -4,7 +4,18 @@ import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
+import { readFileSync } from "node:fs"
 import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared"
+
+const productVersion = JSON.parse(
+  readFileSync(path.resolve(__dirname, "../../package.json"), "utf8"),
+).version
+
+const buildId = (
+  process.env.GITHUB_SHA ??
+  process.env.VERCEL_GIT_COMMIT_SHA ??
+  "dev"
+).slice(0, 7)
 
 const manualChunkGroups = [
   ["dropbox", ["dropbox"]],
@@ -45,6 +56,10 @@ export default defineConfig(({ mode }) => ({
      * in the test workers so jsdom provides a working implementation.
      */
     execArgv: ["--no-experimental-webstorage"],
+  },
+  define: {
+    __APP_VERSION__: JSON.stringify(productVersion),
+    __BUILD_ID__: JSON.stringify(buildId),
   },
   build: {
     // Keep source maps in production for error logging (stack traces). Excluded from PWA precache via globIgnores.
