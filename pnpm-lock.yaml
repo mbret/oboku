@@ -676,6 +676,9 @@ importers:
       '@prose-reader/shared':
         specifier: ^1.334.0
         version: 1.334.0
+      '@zip.js/zip.js':
+        specifier: ^2.8.34
+        version: 2.8.34
     devDependencies:
       vite:
         specifier: ^8.1.5

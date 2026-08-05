@@ -20,7 +20,7 @@ type WorkerScope<Request, Response> = {
 const toErrorPayload = (error: unknown): WorkerPoolErrorPayload =>
   error instanceof Error
     ? { name: error.name, message: error.message, stack: error.stack }
-    : { name: "Error", message: String(error) }
+    : { name: "Error", message: String(error), stack: undefined }
 
 /**
  * Worker-side counterpart of {@link createWorkerPool}. Unwraps the pool

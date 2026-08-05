@@ -54,6 +54,15 @@
 - Prefer small, incremental refactors that reduce pattern drift without broad unrelated rewrites.
 - Do not introduce new abstractions unless they are reused or clearly expected to be reused.
 
+### Browser support: no fallbacks, no shims
+
+- **Assume an up-to-date browser.** Keeping the browser current is a product requirement, not something the code compensates for. Write simple, next-gen code.
+- **Do not add fallbacks, shims, polyfills, or graceful degradation** for an API that is baseline across all major browsers (desktop *and* mobile). If such an API is missing at runtime, letting the process crash is the correct behaviour — a fallback path doubles the code, doubles the states to reason about, and is the path least likely to be exercised or tested.
+- **Prefer crashing over silently degrading.** A capability check that quietly switches to a worse implementation hides the failure and makes the resulting bug much harder to find than an exception would have been.
+- **Do flag an API that is *not* baseline everywhere.** If support is genuinely uneven across major desktop/mobile browsers, say so and let the user decide rather than silently working around it.
+- **Ask before reaching for a very recent API.** When something is baseline but only recently (roughly within the last year or two), confirm with the user first instead of assuming — and do not silently downgrade to an older API to avoid asking.
+- Rationale: the amount of code that exists purely to serve browsers nobody uses is a permanent tax on readability and correctness. `packages/archive-metadata`'s OPFS staging is the reference example — it requires OPFS and Web Locks outright and has no in-memory fallback path.
+
 ### Shared package (@oboku/shared)
 
 - No user-facing content strings (error messages, labels, placeholders, etc.) should live in the shared package.

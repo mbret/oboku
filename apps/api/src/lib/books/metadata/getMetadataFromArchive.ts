@@ -1,4 +1,4 @@
-import type { Archive } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata/node"
 import type { FileMetadata } from "@oboku/shared"
 import {
   type ResolvedMetadata,

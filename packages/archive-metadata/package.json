@@ -2,15 +2,18 @@
   "name": "@oboku/archive-metadata",
   "private": true,
   "type": "module",
-  "types": "./dist/index.d.ts",
-  "main": "./dist/index.js",
-  "module": "./dist/index.js",
   "exports": {
-    ".": {
-      "source": "./src/index.ts",
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs"
+    "./web": {
+      "source": "./src/web.ts",
+      "types": "./dist/web.d.ts",
+      "import": "./dist/web.js",
+      "require": "./dist/web.cjs"
+    },
+    "./node": {
+      "source": "./src/node.ts",
+      "types": "./dist/node.d.ts",
+      "import": "./dist/node.js",
+      "require": "./dist/node.cjs"
     }
   },
   "license": "GPL-3.0",
@@ -25,7 +28,8 @@
   },
   "dependencies": {
     "@prose-reader/archive-reader": "^1.334.0",
-    "@prose-reader/shared": "^1.334.0"
+    "@prose-reader/shared": "^1.334.0",
+    "@zip.js/zip.js": "^2.8.34"
   },
   "devDependencies": {
     "vite": "^8.1.5"
