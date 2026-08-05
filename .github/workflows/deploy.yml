@@ -25,46 +25,50 @@ jobs:
           pnpm run build
           pnpm run test
 
-  bump-version:
-    name: 'Bump version'
+  release:
+    name: 'Release'
     needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      issues: write
+      pull-requests: write
     outputs:
-      version: ${{ steps.bump.outputs.version }}
-      sha: ${{ steps.bump.outputs.sha }}
-      sha_tag: ${{ steps.bump.outputs.sha_tag }}
+      version: ${{ steps.released.outputs.version }}
+      sha: ${{ steps.released.outputs.sha }}
+      sha_tag: ${{ steps.released.outputs.sha_tag }}
     steps:
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
-      - id: bump
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '25'
+          cache: 'pnpm'
+
+      - name: Semantic release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          version="$(node scripts/next-version.mjs)"
+          pnpm install --frozen-lockfile
+          pnpm exec semantic-release
 
-          if [ "$version" != "$(jq -r .version package.json)" ]; then
-            git config user.name 'github-actions[bot]'
-            git config user.email 'github-actions[bot]@users.noreply.github.com'
-            npm pkg set version="$version"
-            git add package.json
-            git commit -m "chore: release v$version"
-            git push origin HEAD:master
-          fi
-
+      - id: released
+        run: |
           {
-            echo "version=$version"
+            echo "version=$(jq -r .version package.json)"
             echo "sha=$(git rev-parse HEAD)"
             echo "sha_tag=sha-$(git rev-parse --short=7 HEAD)"
           } >> "$GITHUB_OUTPUT"
 
   deploy-api-docker:
-    needs: [build-and-test, bump-version]
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.sha }}
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -86,16 +90,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-api:latest
-            mbret/oboku-api:${{ needs.bump-version.outputs.version }}
-            mbret/oboku-api:${{ needs.bump-version.outputs.sha_tag }}
+            mbret/oboku-api:${{ needs.release.outputs.version }}
+            mbret/oboku-api:${{ needs.release.outputs.sha_tag }}
 
   deploy-couchdb-docker:
-    needs: [build-and-test, bump-version]
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.sha }}
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -115,16 +119,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-couchdb:latest
-            mbret/oboku-couchdb:${{ needs.bump-version.outputs.version }}
-            mbret/oboku-couchdb:${{ needs.bump-version.outputs.sha_tag }}
+            mbret/oboku-couchdb:${{ needs.release.outputs.version }}
+            mbret/oboku-couchdb:${{ needs.release.outputs.sha_tag }}
 
   deploy-web-docker:
-    needs: [build-and-test, bump-version]
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.sha }}
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -146,16 +150,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-web:latest
-            mbret/oboku-web:${{ needs.bump-version.outputs.version }}
-            mbret/oboku-web:${{ needs.bump-version.outputs.sha_tag }}
+            mbret/oboku-web:${{ needs.release.outputs.version }}
+            mbret/oboku-web:${{ needs.release.outputs.sha_tag }}
 
   deploy-admin-docker:
-    needs: [build-and-test, bump-version]
+    needs: [build-and-test, release]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ needs.bump-version.outputs.sha }}
+          ref: ${{ needs.release.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -177,50 +181,12 @@ jobs:
           push: true
           tags: |
             mbret/oboku-admin:latest
-            mbret/oboku-admin:${{ needs.bump-version.outputs.version }}
-            mbret/oboku-admin:${{ needs.bump-version.outputs.sha_tag }}
-
-  publish-release:
-    name: 'Publish release'
-    needs: [build-and-test, bump-version]
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          ref: ${{ needs.bump-version.outputs.sha }}
-
-      - name: 'Publish GitHub release for the root version'
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.bump-version.outputs.version }}
-          RELEASE_SHA: ${{ needs.bump-version.outputs.sha }}
-        run: |
-          tag="v$VERSION"
-
-          if gh release view "$tag" > /dev/null 2>&1; then
-            echo "$tag is already released"
-            exit 0
-          fi
-
-          upgrade_notes="$(mktemp)"
-          node scripts/release-notes.mjs "$VERSION" "$tag" > "$upgrade_notes"
-
-          notes_args=()
-          if [ -s "$upgrade_notes" ]; then
-            notes_args=(--notes-file "$upgrade_notes")
-          fi
-
-          gh release create "$tag" \
-            --target "$RELEASE_SHA" \
-            --title "$tag" \
-            --generate-notes \
-            "${notes_args[@]}"
+            mbret/oboku-admin:${{ needs.release.outputs.version }}
+            mbret/oboku-admin:${{ needs.release.outputs.sha_tag }}
 
   deploy-web-vercel:
     name: 'Deploy web vercel'
-    needs: [build-and-test, bump-version]
+    needs: [build-and-test, release]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
       app_directory: 'apps/web'
