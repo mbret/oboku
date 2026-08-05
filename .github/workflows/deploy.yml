@@ -4,6 +4,9 @@ on:
   push:
     branches: [master]
 
+concurrency:
+  group: deploy-master
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -22,27 +25,46 @@ jobs:
           pnpm run build
           pnpm run test
 
-  resolve-version:
-    name: 'Resolve version'
+  bump-version:
+    name: 'Bump version'
     needs: build-and-test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
-      version: ${{ steps.version.outputs.version }}
-      sha_tag: ${{ steps.version.outputs.sha_tag }}
+      version: ${{ steps.bump.outputs.version }}
+      sha: ${{ steps.bump.outputs.sha }}
+      sha_tag: ${{ steps.bump.outputs.sha_tag }}
     steps:
       - uses: actions/checkout@v6
-      - id: version
+        with:
+          fetch-depth: 0
+      - id: bump
         run: |
+          version="$(node scripts/next-version.mjs)"
+
+          if [ "$version" != "$(jq -r .version package.json)" ]; then
+            git config user.name 'github-actions[bot]'
+            git config user.email 'github-actions[bot]@users.noreply.github.com'
+            npm pkg set version="$version"
+            git add package.json
+            git commit -m "chore: release v$version"
+            git push origin HEAD:master
+          fi
+
           {
-            echo "version=$(jq -r .version package.json)"
-            echo "sha_tag=sha-${GITHUB_SHA:0:7}"
+            echo "version=$version"
+            echo "sha=$(git rev-parse HEAD)"
+            echo "sha_tag=sha-$(git rev-parse --short=7 HEAD)"
           } >> "$GITHUB_OUTPUT"
 
   deploy-api-docker:
-    needs: [build-and-test, resolve-version]
+    needs: [build-and-test, bump-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -64,14 +86,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-api:latest
-            mbret/oboku-api:${{ needs.resolve-version.outputs.version }}
-            mbret/oboku-api:${{ needs.resolve-version.outputs.sha_tag }}
+            mbret/oboku-api:${{ needs.bump-version.outputs.version }}
+            mbret/oboku-api:${{ needs.bump-version.outputs.sha_tag }}
 
   deploy-couchdb-docker:
-    needs: [build-and-test, resolve-version]
+    needs: [build-and-test, bump-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -91,14 +115,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-couchdb:latest
-            mbret/oboku-couchdb:${{ needs.resolve-version.outputs.version }}
-            mbret/oboku-couchdb:${{ needs.resolve-version.outputs.sha_tag }}
+            mbret/oboku-couchdb:${{ needs.bump-version.outputs.version }}
+            mbret/oboku-couchdb:${{ needs.bump-version.outputs.sha_tag }}
 
   deploy-web-docker:
-    needs: [build-and-test, resolve-version]
+    needs: [build-and-test, bump-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -120,14 +146,16 @@ jobs:
           push: true
           tags: |
             mbret/oboku-web:latest
-            mbret/oboku-web:${{ needs.resolve-version.outputs.version }}
-            mbret/oboku-web:${{ needs.resolve-version.outputs.sha_tag }}
+            mbret/oboku-web:${{ needs.bump-version.outputs.version }}
+            mbret/oboku-web:${{ needs.bump-version.outputs.sha_tag }}
 
   deploy-admin-docker:
-    needs: [build-and-test, resolve-version]
+    needs: [build-and-test, bump-version]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
       - name: Set up Docker Buildx
@@ -149,22 +177,25 @@ jobs:
           push: true
           tags: |
             mbret/oboku-admin:latest
-            mbret/oboku-admin:${{ needs.resolve-version.outputs.version }}
-            mbret/oboku-admin:${{ needs.resolve-version.outputs.sha_tag }}
+            mbret/oboku-admin:${{ needs.bump-version.outputs.version }}
+            mbret/oboku-admin:${{ needs.bump-version.outputs.sha_tag }}
 
   publish-release:
     name: 'Publish release'
-    needs: [build-and-test, resolve-version]
+    needs: [build-and-test, bump-version]
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v6
+        with:
+          ref: ${{ needs.bump-version.outputs.sha }}
 
       - name: 'Publish GitHub release for the root version'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          VERSION: ${{ needs.resolve-version.outputs.version }}
+          VERSION: ${{ needs.bump-version.outputs.version }}
+          RELEASE_SHA: ${{ needs.bump-version.outputs.sha }}
         run: |
           tag="v$VERSION"
 
@@ -182,14 +213,14 @@ jobs:
           fi
 
           gh release create "$tag" \
-            --target "$GITHUB_SHA" \
+            --target "$RELEASE_SHA" \
             --title "$tag" \
             --generate-notes \
             "${notes_args[@]}"
 
   deploy-web-vercel:
     name: 'Deploy web vercel'
-    needs: [build-and-test]
+    needs: [build-and-test, bump-version]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
       app_directory: 'apps/web'
