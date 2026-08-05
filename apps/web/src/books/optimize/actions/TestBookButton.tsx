@@ -6,12 +6,15 @@ import {
   READER_MODE_PARAM,
   READER_PREVIEW_MODE,
 } from "../../../reader/ReaderScreen"
+import { useIsApplyingLocally } from "../apply/useApplyLocally"
 
 type Props = {
   bookId: string
 }
 
 export function TestBookButton({ bookId }: Props) {
+  const isApplyingLocally = useIsApplyingLocally(bookId)
+
   return (
     <Button
       component={Link}
@@ -22,6 +25,7 @@ export function TestBookButton({ bookId }: Props) {
         }).toString(),
       }}
       color="inherit"
+      disabled={isApplyingLocally}
       startIcon={<MenuBookOutlined />}
     >
       Test

@@ -5,7 +5,7 @@
 // @vitest-environment node
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 import { updateArchive } from "../node"
 import {
   type EditableArchive,
@@ -105,6 +105,17 @@ describe("updateArchive", () => {
     })
 
     expect(mimeType).toBe("application/zip")
+
+    await archive.close()
+  })
+
+  it("reports when it starts rebuilding the archive", async () => {
+    const archive = await openZip(await buildNonCompliantEpub())
+    const onProgress = vi.fn()
+
+    await updateArchive(archive, { actions: [], onProgress })
+
+    expect(onProgress).toHaveBeenCalledWith({ phase: "write-archive" })
 
     await archive.close()
   })

@@ -10,62 +10,143 @@ import {
   Typography,
   styled,
 } from "@mui/material"
+import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useObserve } from "reactjrx"
 import { EMPTY } from "rxjs"
 import { useBookOptimize } from "../BookOptimizeProvider"
+import { buildUpdateActions } from "../apply/buildUpdateActions"
+import {
+  type ApplyLocallyProgress,
+  useApplyLocally,
+  useApplyLocallyProgress,
+  useIsApplyingLocally,
+} from "../apply/useApplyLocally"
+import { getFileInspectionQueryOptions } from "../useFileInspection"
 
-const ActionBarStack = styled(Stack)(({ theme }) => ({
-  position: "sticky",
-  bottom: 0,
-  gap: theme.spacing(1),
-  paddingTop: theme.spacing(1),
-  paddingBottom: theme.spacing(2),
-  backgroundColor: theme.palette.background.default,
-}))
+const ActionBarStack = styled(Stack)(function styleActionBarStack({ theme }) {
+  return {
+    position: "sticky",
+    bottom: 0,
+    gap: theme.spacing(1),
+    paddingTop: theme.spacing(1),
+    paddingBottom: theme.spacing(2),
+    backgroundColor: theme.palette.background.default,
+  }
+})
+
+const DEFAULT_APPLY_LOCALLY_PROGRESS: ApplyLocallyProgress = {
+  phase: "preparing",
+}
 
 const toPercent = (value: number): number =>
   Math.min(100, Math.max(0, Math.round(value * 100)))
 
+const getApplyLocallyProgressLabel = (
+  progress: ApplyLocallyProgress,
+): string => {
+  if (progress.phase === "preparing") return "Preparing book…"
+
+  if (progress.phase === "optimizing-images") {
+    return progress.progress === undefined
+      ? "Optimizing images…"
+      : `Optimizing images… ${toPercent(progress.progress)}%`
+  }
+
+  if (progress.phase === "rebuilding-book-file") {
+    return "Rebuilding book file…"
+  }
+
+  if (progress.phase === "saving-locally") return "Saving locally…"
+
+  return "Refreshing report…"
+}
+
+const getApplyCurrentValuesLocallyMutationKey = (bookId: string) => [
+  "books",
+  "optimize",
+  bookId,
+  "apply-current-values-locally",
+]
+
+function useApplyCurrentValuesLocally() {
+  const { bookId, getValues, reset } = useBookOptimize()
+  const queryClient = useQueryClient()
+  const { applyLocally } = useApplyLocally({
+    meta: { suppressGlobalErrorToast: true },
+  })
+  const { mutate: applyCurrentValuesLocally, isPending } = useMutation({
+    mutationKey: getApplyCurrentValuesLocallyMutationKey(bookId),
+    mutationFn: async function applyCurrentValuesLocally() {
+      const values = getValues()
+      const inspection = await queryClient.ensureQueryData(
+        getFileInspectionQueryOptions(bookId),
+      )
+      const actions = buildUpdateActions(values, inspection)
+      const didApply = await applyLocally({ actions, bookId })
+
+      return didApply ? values : undefined
+    },
+    onSuccess: function resetAppliedValues(values) {
+      if (values) reset(values)
+    },
+  })
+
+  return { applyCurrentValuesLocally, isPending }
+}
+
 export function BookOptimizeActionBar() {
   const {
-    canApplyLocally,
-    canUpload,
-    isApplyingLocally,
+    canUpload: canUploadCurrentFile,
+    bookId,
+    isDirty,
+    isValid,
     isUploading,
-    applyLocally,
     uploadToDataSource,
     revertLocalChanges,
     canRevert,
     isReverting,
     uploadProgress$,
-    compressionProgress$,
   } = useBookOptimize()
+  const { applyCurrentValuesLocally, isPending: isApplyingCurrentValues } =
+    useApplyCurrentValuesLocally()
+  const applyLocallyProgress$ = useApplyLocallyProgress(bookId)
+  const isApplyingLocally = useIsApplyingLocally(bookId)
+  const isApplyLocallyWorkflowPending =
+    isApplyingCurrentValues || isApplyingLocally
 
-  const { data: compressionProgress = 0 } = useObserve(
-    () => compressionProgress$,
-    [compressionProgress$],
-  )
-  const { data: uploadProgress = 0 } = useObserve(
-    () => uploadProgress$ ?? EMPTY,
-    [uploadProgress$],
-  )
+  const { data: applyLocallyProgress = DEFAULT_APPLY_LOCALLY_PROGRESS } =
+    useObserve(applyLocallyProgress$ ?? EMPTY)
+  const { data: uploadProgress = 0 } = useObserve(uploadProgress$ ?? EMPTY)
 
+  const canUpload = canUploadCurrentFile && !isApplyLocallyWorkflowPending
+  const canApplyLocally =
+    isValid && isDirty && !isApplyLocallyWorkflowPending && !isUploading
   const applyLocallyVariant = canUpload ? "outlined" : "contained"
   const uploadVariant = canUpload ? "contained" : "outlined"
 
-  const isApplying = isApplyingLocally || isUploading
-  const showCompressionProgress = isApplyingLocally && compressionProgress > 0
-  const compressionPercent = toPercent(compressionProgress)
+  const isApplying = isApplyLocallyWorkflowPending || isUploading
+  const applyLocallyPercent =
+    applyLocallyProgress.phase === "optimizing-images" &&
+    applyLocallyProgress.progress !== undefined
+      ? toPercent(applyLocallyProgress.progress)
+      : undefined
+  const applyLocallyProgressLabel =
+    getApplyLocallyProgressLabel(applyLocallyProgress)
   const uploadPercent = toPercent(uploadProgress)
 
   return (
     <ActionBarStack>
-      {showCompressionProgress && (
+      {isApplyingLocally && (
         <Stack spacing={1}>
-          <Typography variant="body2">
-            Compressing images… {compressionPercent}%
-          </Typography>
-          <LinearProgress variant="determinate" value={compressionPercent} />
+          <Typography variant="body2">{applyLocallyProgressLabel}</Typography>
+          <LinearProgress
+            variant={
+              applyLocallyPercent === undefined
+                ? "indeterminate"
+                : "determinate"
+            }
+            value={applyLocallyPercent}
+          />
         </Stack>
       )}
       {isUploading && (
@@ -82,7 +163,9 @@ export function BookOptimizeActionBar() {
         fullWidth
         disabled={!canApplyLocally}
         startIcon={<SaveOutlined />}
-        onClick={applyLocally}
+        onClick={function applyCurrentBookValuesLocally() {
+          applyCurrentValuesLocally()
+        }}
       >
         {isApplyingLocally ? "Applying locally…" : "Apply locally"}
       </Button>

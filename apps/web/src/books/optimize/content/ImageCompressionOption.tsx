@@ -17,6 +17,7 @@ import {
   type BookOptimizeFormValues,
 } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
+import { useIsApplyingLocally } from "../apply/useApplyLocally"
 import {
   CONVERTIBLE_IMAGE_FORMAT_NAMES,
   PRESERVABLE_IMAGE_FORMAT_NAMES,
@@ -55,7 +56,8 @@ const getScreenResolution = (): string => {
 }
 
 export function ImageCompressionOption() {
-  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+  const { bookId, control, isUploading } = useBookOptimize()
+  const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading
   const {
     field: { value: enabled, onChange: changeCompressionEnabled },
@@ -111,20 +113,6 @@ export function ImageCompressionOption() {
             >
               <Stack>
                 <FormControlLabel
-                  value="webp"
-                  control={<Radio />}
-                  label="Convert to WebP"
-                />
-                {outputMode === "webp" && (
-                  <OutputFormatFormHelperText>
-                    {convertibleFormats} images are converted to WebP, even
-                    without resize dimensions. References are updated, and all
-                    other image formats are left unchanged.
-                  </OutputFormatFormHelperText>
-                )}
-              </Stack>
-              <Stack>
-                <FormControlLabel
                   value="original"
                   control={<Radio />}
                   label="Keep original format"
@@ -134,6 +122,20 @@ export function ImageCompressionOption() {
                     {preservableFormats} images are resized in their original
                     format. All other image formats, including BMP, are left
                     unchanged.
+                  </OutputFormatFormHelperText>
+                )}
+              </Stack>
+              <Stack>
+                <FormControlLabel
+                  value="webp"
+                  control={<Radio />}
+                  label="Convert to WebP"
+                />
+                {outputMode === "webp" && (
+                  <OutputFormatFormHelperText>
+                    {convertibleFormats} images are converted to WebP, even
+                    without resize dimensions. References are updated, and all
+                    other image formats are left unchanged.
                   </OutputFormatFormHelperText>
                 )}
               </Stack>
