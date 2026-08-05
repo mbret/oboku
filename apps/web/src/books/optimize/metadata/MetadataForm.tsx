@@ -3,6 +3,7 @@ import { normalizeIsbn } from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
+import { useIsApplyingLocally } from "../apply/useApplyLocally"
 
 const validateIsbn = (raw: string | boolean): true | string => {
   if (typeof raw !== "string") return true
@@ -17,8 +18,8 @@ const validateIsbn = (raw: string | boolean): true | string => {
 }
 
 export function MetadataForm() {
-  const { control, inspection, isApplyingLocally, isUploading } =
-    useBookOptimize()
+  const { bookId, control, inspection, isUploading } = useBookOptimize()
+  const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading
 
   return (

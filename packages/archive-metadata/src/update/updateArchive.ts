@@ -14,11 +14,13 @@ const EPUB_MIME_TYPE = "application/epub+zip"
 const CBZ_MIME_TYPE = "application/x-cbz"
 const MIMETYPE_ENTRY = "mimetype"
 
-export type ArchiveUpdateProgress = {
-  action: "compress-images"
-  completed: number
-  total: number
-}
+export type ArchiveUpdateProgress =
+  | {
+      phase: "compress-images"
+      completed: number
+      total: number
+    }
+  | { phase: "write-archive" }
 
 export type ArchiveUpdateResult = {
   blob: Blob
@@ -142,14 +144,17 @@ export const runArchiveUpdate = async <
 
       await runtime.compressImages(entries, action, {
         stageBytes: scope.stageBytes,
-        onProgress: (completed, total) => {
-          onProgress?.({ action: action.kind, completed, total })
+        onProgress: function reportImageCompressionProgress(completed, total) {
+          onProgress?.({ phase: action.kind, completed, total })
         },
       })
     }
 
     const hasOpf = archiveHasOpf([...entries.keys()])
     const outputEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
+
+    onProgress?.({ phase: "write-archive" })
+
     const { blob, dispose: disposeZipTarget } = await writeZip(outputEntries, {
       openZipTarget: scope.openZipTarget,
     })

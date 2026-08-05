@@ -1,4 +1,4 @@
-import { skipToken, useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import {
   type Archive,
   isFileRecord,
@@ -14,7 +14,11 @@ import {
   type ImageResolution,
 } from "@oboku/archive-metadata/web"
 
-export const FILE_INSPECTION_QUERY_KEY = ["metadataFixer", "fileInspection"]
+export const getFileInspectionQueryKey = (bookId: string) => [
+  "metadataFixer",
+  "fileInspection",
+  bookId,
+]
 
 const resolveBookArchive = (archive: Archive) =>
   resolveArchive(archive, { include: ["metadata", "sources"] })
@@ -54,56 +58,58 @@ const inspectContent = (
   imageBytes: records.reduce((total, { size }) => total + size, 0),
 })
 
-export const useFileInspection = (bookId: string | undefined) =>
-  useQuery({
-    queryKey: [...FILE_INSPECTION_QUERY_KEY, bookId] as const,
+export const getFileInspectionQueryOptions = (bookId: string) =>
+  queryOptions({
+    queryKey: getFileInspectionQueryKey(bookId),
     networkMode: "always",
     staleTime: 0,
+    refetchOnMount: false,
     refetchOnWindowFocus: false,
-    queryFn: bookId
-      ? async (): Promise<FileInspection> => {
-          const result = await getBookFile(bookId)
+    queryFn: async function inspectBookFile(): Promise<FileInspection> {
+      const result = await getBookFile(bookId)
 
-          if (!result) {
-            throw new Error(`No cached file for book ${bookId}`)
-          }
+      if (!result) {
+        throw new Error(`No cached file for book ${bookId}`)
+      }
 
-          const file = result.data
+      const file = result.data
 
-          Logger.info("[metadataFixer] file", {
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            lastModified: file.lastModified,
-          })
+      Logger.info("[metadataFixer] file", {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        lastModified: file.lastModified,
+      })
 
-          const archive = await createArchiveFromZipJs(
-            new ZipReader(new BlobReader(file)),
-          )
+      const archive = await createArchiveFromZipJs(
+        new ZipReader(new BlobReader(file)),
+      )
 
-          try {
-            const fileRecords = archive.records.filter(isFileRecord)
-            const imageRecords = listImageEntries(archive)
-            const { imageCount, imageBytes } = inspectContent(imageRecords)
-            const averageImageResolution =
-              await measureAverageImageResolution(imageRecords)
-            const inspection: FileInspection = {
-              fileName: file.name,
-              fileSize: file.size,
-              fileCount: fileRecords.length,
-              fileExtensions: listFileExtensions(fileRecords),
-              imageCount,
-              imageBytes,
-              averageImageResolution,
-              resolvedArchive: await resolveBookArchive(archive),
-            }
-
-            Logger.info("[metadataFixer] file inspection", inspection)
-
-            return inspection
-          } finally {
-            await archive.close()
-          }
+      try {
+        const fileRecords = archive.records.filter(isFileRecord)
+        const imageRecords = listImageEntries(archive)
+        const { imageCount, imageBytes } = inspectContent(imageRecords)
+        const averageImageResolution =
+          await measureAverageImageResolution(imageRecords)
+        const inspection: FileInspection = {
+          fileName: file.name,
+          fileSize: file.size,
+          fileCount: fileRecords.length,
+          fileExtensions: listFileExtensions(fileRecords),
+          imageCount,
+          imageBytes,
+          averageImageResolution,
+          resolvedArchive: await resolveBookArchive(archive),
         }
-      : skipToken,
+
+        Logger.info("[metadataFixer] file inspection", inspection)
+
+        return inspection
+      } finally {
+        await archive.close()
+      }
+    },
   })
+
+export const useFileInspection = (bookId: string) =>
+  useQuery(getFileInspectionQueryOptions(bookId))

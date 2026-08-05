@@ -17,6 +17,7 @@ import {
   type BookOptimizeFormValues,
 } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
+import { useIsApplyingLocally } from "../apply/useApplyLocally"
 import {
   CONVERTIBLE_IMAGE_FORMAT_NAMES,
   PRESERVABLE_IMAGE_FORMAT_NAMES,
@@ -55,7 +56,8 @@ const getScreenResolution = (): string => {
 }
 
 export function ImageCompressionOption() {
-  const { control, isApplyingLocally, isUploading } = useBookOptimize()
+  const { bookId, control, isUploading } = useBookOptimize()
+  const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading
   const {
     field: { value: enabled, onChange: changeCompressionEnabled },
