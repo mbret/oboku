@@ -1,3 +1,4 @@
+import { isArchiveEpub } from "@prose-reader/archive-reader"
 import type { ImageCompressionResult } from "../images/types"
 import type { Archive } from "../archive/types"
 import { patchArchiveMetadata } from "../metadata/write"
@@ -12,6 +13,7 @@ import { writeZip } from "./writeZip"
 
 const EPUB_MIME_TYPE = "application/epub+zip"
 const CBZ_MIME_TYPE = "application/x-cbz"
+const ZIP_MIME_TYPE = "application/zip"
 const MIMETYPE_ENTRY = "mimetype"
 
 export type ArchiveUpdateProgress =
@@ -36,9 +38,8 @@ export type ArchiveUpdateResult = {
 export type ArchiveUpdateOptions<Action> = {
   actions: Action[]
   /**
-   * MIME type of the source container, kept when it is known. Archives read
-   * from an opaque source often have none, and the type is then derived from
-   * what the output actually contains.
+   * MIME type reported for the source container. The source filename and
+   * detected EPUB structure take precedence over a generic ZIP type.
    */
   sourceMimeType?: string
   onProgress?: (progress: ArchiveUpdateProgress) => void
@@ -78,16 +79,28 @@ const applyMetadataPatch = async (
   }
 }
 
-const archiveHasOpf = (paths: string[]): boolean =>
-  paths.some((path) => path.toLowerCase().endsWith(".opf"))
+const resolveFilenameMimeType = (filename: string | undefined) => {
+  const normalizedFilename = filename?.toLowerCase()
+
+  if (normalizedFilename?.endsWith(".epub")) return EPUB_MIME_TYPE
+  if (normalizedFilename?.endsWith(".cbz")) return CBZ_MIME_TYPE
+  if (normalizedFilename?.endsWith(".zip")) return ZIP_MIME_TYPE
+
+  return undefined
+}
 
 const resolveOutputMimeType = (
+  sourceFilename: string | undefined,
   sourceMimeType: string | undefined,
-  { hasOpf }: { hasOpf: boolean },
+  { isEpub }: { isEpub: boolean },
 ): string => {
+  const filenameMimeType = resolveFilenameMimeType(sourceFilename)
+
+  if (filenameMimeType) return filenameMimeType
+  if (isEpub) return EPUB_MIME_TYPE
   if (sourceMimeType) return sourceMimeType
 
-  return hasOpf ? EPUB_MIME_TYPE : CBZ_MIME_TYPE
+  return ZIP_MIME_TYPE
 }
 
 /**
@@ -150,8 +163,8 @@ export const runArchiveUpdate = async <
       })
     }
 
-    const hasOpf = archiveHasOpf([...entries.keys()])
-    const outputEntries = hasOpf ? enforceEpubMimetypeFirst(entries) : entries
+    const isEpub = isArchiveEpub(toArchive(entries))
+    const outputEntries = isEpub ? enforceEpubMimetypeFirst(entries) : entries
 
     onProgress?.({ phase: "write-archive" })
 
@@ -161,7 +174,11 @@ export const runArchiveUpdate = async <
 
     return {
       blob,
-      mimeType: resolveOutputMimeType(sourceMimeType, { hasOpf }),
+      mimeType: resolveOutputMimeType(
+        archive.filename,
+        sourceMimeType || archive.encodingFormat,
+        { isEpub },
+      ),
       dispose: async function releaseStagingScope() {
         await disposeZipTarget()
         await scope.release()

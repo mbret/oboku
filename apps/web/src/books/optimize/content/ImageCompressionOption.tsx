@@ -18,6 +18,7 @@ import {
 } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
+import { KeyChip } from "../KeyChip"
 import {
   CONVERTIBLE_IMAGE_FORMAT_NAMES,
   PRESERVABLE_IMAGE_FORMAT_NAMES,
@@ -42,10 +43,12 @@ const ResizeDimensionsFormHelperText = styled(FormHelperText)(({ theme }) => ({
   margin: theme.spacing(1, 0),
 }))
 
+// Cast preserves FormHelperText's polymorphic `component` prop, which MUI's
+// `styled` otherwise erases.
 const OutputFormatFormHelperText = styled(FormHelperText)(({ theme }) => ({
   marginTop: -theme.spacing(0.5),
   marginBottom: theme.spacing(0.5),
-}))
+})) as typeof FormHelperText
 
 const getScreenResolution = (): string => {
   const ratio = window.devicePixelRatio || 1
@@ -106,7 +109,11 @@ export function ImageCompressionOption() {
             <RadioGroup
               value={outputMode}
               onChange={function selectImageOutputMode(_event, value) {
-                if (value === "webp" || value === "original") {
+                if (
+                  value === "avif" ||
+                  value === "original" ||
+                  value === "webp"
+                ) {
                   changeOutputMode(value)
                 }
               }}
@@ -139,6 +146,25 @@ export function ImageCompressionOption() {
                   </OutputFormatFormHelperText>
                 )}
               </Stack>
+              <Stack>
+                <FormControlLabel
+                  value="avif"
+                  control={<Radio />}
+                  label="Convert to AVIF"
+                />
+                {outputMode === "avif" && (
+                  <OutputFormatFormHelperText component="div">
+                    {convertibleFormats} images are converted to AVIF with{" "}
+                    <KeyChip label="Lossy compression" />,{" "}
+                    <KeyChip label="Quality 50/100" />,{" "}
+                    <KeyChip label="8-bit" /> and <KeyChip label="YUV 4:2:0" />.
+                    Original dimensions are preserved unless resize limits are
+                    set. Source colors are normalized to sRGB. The original ICC
+                    profile, EXIF, and XMP metadata are not copied. References
+                    are updated, and all other image formats are left unchanged.
+                  </OutputFormatFormHelperText>
+                )}
+              </Stack>
             </RadioGroup>
           </FormControl>
           <FormControl
@@ -148,9 +174,8 @@ export function ImageCompressionOption() {
           >
             <FormLabel component="legend">Resize dimensions</FormLabel>
             <ResizeDimensionsFormHelperText>
-              Optional for WebP conversion and required when keeping the
-              original format. Aspect ratio is preserved; leave either field
-              empty to constrain only the other dimension.
+              Aspect ratio is preserved; leave either field empty to constrain
+              only the other dimension.
             </ResizeDimensionsFormHelperText>
             <DimensionsStack>
               <ControlledTextField<BookOptimizeFormValues>

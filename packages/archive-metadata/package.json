@@ -27,6 +27,7 @@
     "test": "vitest run"
   },
   "dependencies": {
+    "@jsquash/avif": "2.1.1",
     "@prose-reader/archive-reader": "^1.334.0",
     "@prose-reader/shared": "^1.334.0",
     "@zip.js/zip.js": "^2.8.34"

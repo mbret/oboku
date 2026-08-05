@@ -129,4 +129,32 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
 
     await expect(confirmation).resolves.toBe(false)
   })
+
+  it("describes AVIF conversion", async function describeAvifConversion() {
+    const actions: WebArchiveUpdateAction[] = [
+      {
+        kind: "compress-images",
+        config: {
+          maxWidth: undefined,
+          maxHeight: undefined,
+          outputMode: "avif",
+        },
+      },
+    ]
+    renderDialogProvider()
+
+    const confirmation = openConfirmation(actions)
+
+    expect(await screen.findByRole("dialog")).not.toBeNull()
+    const listItems = screen.getAllByRole("listitem")
+
+    expect(listItems[0]?.textContent).toContain(
+      "Convert JPG · JPEG · PNG · BMP images to AVIF",
+    )
+    expect(screen.getByText("AVIF")).not.toBeNull()
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+
+    await expect(confirmation).resolves.toBe(false)
+  })
 })

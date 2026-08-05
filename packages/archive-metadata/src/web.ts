@@ -16,6 +16,7 @@ export * from "./common"
 
 export type { CompressImagesAction } from "./update/actions"
 export type {
+  ConvertedImageOutputMode,
   ImageCompressionConfig,
   ImageOutputMode,
 } from "./images/types"

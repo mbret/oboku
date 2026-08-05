@@ -5,7 +5,6 @@ import {
 } from "@oboku/archive-metadata/web"
 import { FiberManualRecord } from "@mui/icons-material"
 import {
-  Chip,
   List,
   ListItem,
   ListItemIcon,
@@ -15,6 +14,7 @@ import {
 } from "@mui/material"
 import { Fragment, type ReactNode } from "react"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
+import { KeyChip } from "../KeyChip"
 import { CONTAINER_LABELS } from "../metadata/targets"
 
 const BulletListItemIcon = styled(ListItemIcon)(({ theme }) => ({
@@ -26,10 +26,6 @@ const UpdateContentStack = styled(Stack)({
   flex: 1,
   minWidth: 0,
 })
-
-function KeyChip({ label }: { label: string }) {
-  return <Chip label={label} size="small" variant="outlined" />
-}
 
 function UpdateListItem({ children }: { children: ReactNode }) {
   return (
@@ -129,6 +125,7 @@ function ImageCompressionUpdateItems({
       ? PRESERVABLE_IMAGE_FORMAT_NAMES
       : CONVERTIBLE_IMAGE_FORMAT_NAMES
   ).join(" · ")
+  const convertedFormat = action.config.outputMode === "avif" ? "AVIF" : "WebP"
 
   return (
     <>
@@ -146,7 +143,7 @@ function ImageCompressionUpdateItems({
         <>
           <UpdateListItem>
             Convert <KeyChip label={formats} /> images to{" "}
-            <KeyChip label="WebP" />.
+            <KeyChip label={convertedFormat} />.
           </UpdateListItem>
           <UpdateListItem>
             Update references to converted images.

@@ -52,8 +52,10 @@ const readFirstZipEntry = (buffer: ArrayBuffer): FirstEntry => {
   return { name, compressionMethod, extraFieldLength }
 }
 
-const openZip = (blob: Blob) =>
-  createArchiveFromZipJs(new ZipReader(new BlobReader(blob)))
+const openZip = (
+  blob: Blob,
+  options?: { name?: string; encodingFormat?: string },
+) => createArchiveFromZipJs(new ZipReader(new BlobReader(blob)), options)
 
 const readZip = async (blob: Blob): Promise<EditableArchive> =>
   toEditableArchive(await openZip(blob))
@@ -68,6 +70,14 @@ const buildNonCompliantEpub = async (): Promise<Blob> => {
   const { blob } = await writeZip(entries, { openZipTarget: openNoZipTarget })
 
   return blob
+}
+
+const buildGenericZip = async (): Promise<Blob> => {
+  const entries: EditableArchive = new Map([
+    ["images/cover.jpg", { dir: false, content: "image" }],
+  ])
+
+  return (await writeZip(entries, { openZipTarget: openNoZipTarget })).blob
 }
 
 describe("updateArchive", () => {
@@ -96,13 +106,61 @@ describe("updateArchive", () => {
     await archive.close()
   })
 
-  it("keeps the source mime type when the caller knows it", async () => {
+  it("uses EPUB content detection when the filename is unavailable", async () => {
     const archive = await openZip(await buildNonCompliantEpub())
 
     const { mimeType } = await updateArchive(archive, {
       actions: [],
       sourceMimeType: "application/zip",
     })
+
+    expect(mimeType).toBe("application/epub+zip")
+
+    await archive.close()
+  })
+
+  it("keeps a plain ZIP as application/zip when its MIME type is unavailable", async () => {
+    const archive = await openZip(await buildGenericZip(), {
+      name: "book.zip",
+    })
+
+    const { mimeType } = await updateArchive(archive, { actions: [] })
+
+    expect(mimeType).toBe("application/zip")
+
+    await archive.close()
+  })
+
+  it("uses the CBZ MIME type for a CBZ filename", async () => {
+    const archive = await openZip(await buildGenericZip(), {
+      name: "book.CBZ",
+      encodingFormat: "application/zip",
+    })
+
+    const { mimeType } = await updateArchive(archive, { actions: [] })
+
+    expect(mimeType).toBe("application/x-cbz")
+
+    await archive.close()
+  })
+
+  it("uses the EPUB MIME type for an EPUB filename", async () => {
+    const archive = await openZip(await buildNonCompliantEpub(), {
+      name: "book.EPUB",
+      encodingFormat: "application/zip",
+    })
+
+    const { mimeType } = await updateArchive(archive, { actions: [] })
+
+    expect(mimeType).toBe("application/epub+zip")
+
+    await archive.close()
+  })
+
+  it("defaults an unidentified ZIP archive to application/zip", async () => {
+    const archive = await openZip(await buildGenericZip())
+
+    const { mimeType } = await updateArchive(archive, { actions: [] })
 
     expect(mimeType).toBe("application/zip")
 
