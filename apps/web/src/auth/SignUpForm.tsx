@@ -1,6 +1,6 @@
-import { Button, Stack, TextField } from "@mui/material"
-import { Controller, useForm } from "react-hook-form"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { Button, Stack } from "@mui/material"
+import { useForm } from "react-hook-form"
+import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { PersonAdd } from "@mui/icons-material"
 
 type Inputs = {
@@ -27,7 +27,7 @@ export const SignUpForm = ({
         gap: 1,
       }}
     >
-      <Controller
+      <ControlledTextField
         name="email"
         control={control}
         rules={{
@@ -37,20 +37,10 @@ export const SignUpForm = ({
             message: "Invalid email format",
           },
         }}
-        render={({ field: { ref, ...rest }, fieldState }) => {
-          return (
-            <TextField
-              {...rest}
-              label="Email"
-              type="email"
-              fullWidth
-              inputRef={ref}
-              autoComplete="email"
-              error={fieldState.invalid}
-              helperText={errorToHelperText(fieldState.error)}
-            />
-          )
-        }}
+        label="Email"
+        type="email"
+        fullWidth
+        autoComplete="email"
       />
       <Button
         type="submit"

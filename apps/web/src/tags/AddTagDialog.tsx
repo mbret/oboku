@@ -5,12 +5,11 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  TextField,
 } from "@mui/material"
-import { Controller, type SubmitHandler, useForm } from "react-hook-form"
+import { type SubmitHandler, useForm } from "react-hook-form"
 import { signal, useSignalValue } from "reactjrx"
 import { useCreateTag } from "./helpers"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { CancelButton } from "../common/forms/CancelButton"
 
 type Inputs = {
@@ -67,24 +66,14 @@ export function AddTagDialog() {
       <DialogTitle>Create a new tag</DialogTitle>
       <DialogContent>
         <form id={FORM_ID} onSubmit={handleSubmit(onSubmit)}>
-          <Controller
+          <ControlledTextField
             name="name"
             control={control}
             rules={{ required: true }}
-            render={({ field: { ref, ...rest }, fieldState }) => {
-              return (
-                <TextField
-                  {...rest}
-                  label="Name"
-                  type="text"
-                  fullWidth
-                  margin="normal"
-                  inputRef={ref}
-                  error={fieldState.invalid}
-                  helperText={errorToHelperText(fieldState.error)}
-                />
-              )
-            }}
+            label="Name"
+            type="text"
+            fullWidth
+            margin="normal"
           />
         </form>
       </DialogContent>
