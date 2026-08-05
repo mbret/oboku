@@ -48,7 +48,8 @@ if (subjects === "") {
 
 const messages = git(`log --format=%B ${commitRange}`)
 const hasBreakingChange =
-  /^[a-z]+(\([^)]*\))?!:/m.test(subjects) || /^BREAKING CHANGE/m.test(messages)
+  /^[a-z]+(\([^)]*\))?!:/m.test(subjects) ||
+  /^BREAKING[ -]CHANGE:/m.test(messages)
 const hasFeature = /^feat(\([^)]*\))?:/m.test(subjects)
 
 const [major, minor, patch] = currentVersion.split(".").map(Number)
