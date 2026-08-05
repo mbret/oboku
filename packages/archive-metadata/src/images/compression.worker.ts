@@ -20,10 +20,19 @@ const compress = async ({
   bytes,
   maxWidth,
   maxHeight,
+  outputType,
+  skipIfUnscaled,
 }: ImageCompressionRequest): Promise<ImageCompressionResponse> => {
   try {
     const bitmap = await createImageBitmap(new Blob([bytes]))
     const scale = computeScale(bitmap.width, bitmap.height, maxWidth, maxHeight)
+
+    if (skipIfUnscaled && scale === 1) {
+      bitmap.close()
+
+      return { status: "skipped" }
+    }
+
     const targetWidth = Math.max(1, Math.round(bitmap.width * scale))
     const targetHeight = Math.max(1, Math.round(bitmap.height * scale))
 
@@ -39,7 +48,10 @@ const compress = async ({
     context.drawImage(bitmap, 0, 0, targetWidth, targetHeight)
     bitmap.close()
 
-    const blob = await canvas.convertToBlob({ type: "image/webp" })
+    const blob = await canvas.convertToBlob({ type: outputType })
+
+    if (blob.type !== outputType) return { status: "skipped" }
+
     const output = await blob.arrayBuffer()
 
     return { status: "ok", bytes: output }

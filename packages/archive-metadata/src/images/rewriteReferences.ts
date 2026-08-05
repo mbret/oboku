@@ -3,6 +3,7 @@ import {
   getExtension,
   IMAGE_EXTENSIONS,
   replaceExtensionWithWebp,
+  WEBP_MEDIA_TYPE,
 } from "./paths"
 
 const TEXT_REFERENCE_EXTENSIONS: ReadonlySet<string> = new Set([
@@ -16,8 +17,6 @@ const TEXT_REFERENCE_EXTENSIONS: ReadonlySet<string> = new Set([
 ])
 
 const OPF_EXTENSION = ".opf"
-const WEBP_MEDIA_TYPE = "image/webp"
-
 const getDirname = (path: string): string => {
   const lastSlash = path.lastIndexOf("/")
 

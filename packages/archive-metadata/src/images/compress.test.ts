@@ -1,9 +1,10 @@
 // @vitest-environment jsdom
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { type EditableArchive, readEntryText } from "../update/editableArchive"
-import type { CompressionResult } from "./compressionPool"
+import type { ImageCompressionPool } from "./compressionPool"
+import type { ImageCompressionConfig } from "./types"
 
-const compress = vi.fn<(bytes: ArrayBuffer) => Promise<CompressionResult>>()
+const compress = vi.fn<ImageCompressionPool["compress"]>()
 const terminate = vi.fn()
 const createImageCompressionPool = vi.fn(() => ({
   compress,
@@ -46,7 +47,11 @@ const textOf = (entries: EditableArchive, path: string): Promise<string> => {
   return readEntryText(entry.content)
 }
 
-const config = { maxWidth: undefined, maxHeight: undefined }
+const config: ImageCompressionConfig = {
+  maxWidth: undefined,
+  maxHeight: undefined,
+  outputMode: "webp",
+}
 
 const stageBytes = async (bytes: ArrayBuffer): Promise<Blob> =>
   new Blob([bytes])
@@ -71,7 +76,7 @@ describe("compressArchiveImages", () => {
     expect(compress).not.toHaveBeenCalled()
   })
 
-  it("replaces images with their smaller webp output and skips the rest", async () => {
+  it("replaces successfully encoded images with webp output and skips the rest", async () => {
     compress.mockImplementation(async (bytes) =>
       new TextDecoder().decode(bytes).includes("CONVERT")
         ? { status: "ok", bytes: arrayBufferOf("x") }
@@ -96,16 +101,16 @@ describe("compressArchiveImages", () => {
     expect(terminate).toHaveBeenCalledOnce()
   })
 
-  it("does not count a non-smaller webp output as compressed", async () => {
+  it("uses a successfully encoded webp output even when its byte size grows", async () => {
     compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("larger") })
 
     const entries = archiveOf({ "cover.jpg": bytesOf("tiny") })
 
     const result = await compressArchiveImages(entries, config, { stageBytes })
 
-    expect(result).toMatchObject({ compressedCount: 0, skippedCount: 1 })
-    expect(entries.has("cover.jpg")).toBe(true)
-    expect(entries.has("cover.webp")).toBe(false)
+    expect(result).toMatchObject({ compressedCount: 1, skippedCount: 0 })
+    expect(entries.has("cover.jpg")).toBe(false)
+    expect(entries.has("cover.webp")).toBe(true)
   })
 
   it("rewrites references only for the images it actually converted", async () => {
@@ -183,6 +188,93 @@ describe("compressArchiveImages", () => {
     expect(entries.has("images/animation.webp")).toBe(false)
     expect(entries.has("images/photo.webp")).toBe(true)
     expect(compress).toHaveBeenCalledOnce()
+  })
+
+  it("resizes jpeg and png images in place when keeping their original format", async () => {
+    compress.mockResolvedValue({
+      status: "ok",
+      bytes: arrayBufferOf("resized"),
+    })
+
+    const entries = archiveOf({
+      "images/photo.jpg": bytesOf("original-jpeg"),
+      "images/illustration.png": bytesOf("original-png"),
+      "chapter.xhtml": `<img src="images/photo.jpg"/>`,
+    })
+
+    const result = await compressArchiveImages(
+      entries,
+      { maxWidth: 800, maxHeight: 1200, outputMode: "original" },
+      { stageBytes },
+    )
+
+    expect(result).toEqual({
+      totalImages: 2,
+      compressedCount: 2,
+      skippedCount: 0,
+    })
+    expect(entries.has("images/photo.jpg")).toBe(true)
+    expect(entries.has("images/illustration.png")).toBe(true)
+    expect(entries.has("images/photo.webp")).toBe(false)
+    expect(await textOf(entries, "chapter.xhtml")).toBe(
+      `<img src="images/photo.jpg"/>`,
+    )
+    expect(compress).toHaveBeenNthCalledWith(1, expect.any(ArrayBuffer), {
+      maxWidth: 800,
+      maxHeight: 1200,
+      outputType: "image/jpeg",
+      skipIfUnscaled: true,
+    })
+    expect(compress).toHaveBeenNthCalledWith(2, expect.any(ArrayBuffer), {
+      maxWidth: 800,
+      maxHeight: 1200,
+      outputType: "image/png",
+      skipIfUnscaled: true,
+    })
+  })
+
+  it("leaves formats the browser cannot re-encode unchanged in original mode", async () => {
+    compress.mockResolvedValue({
+      status: "ok",
+      bytes: arrayBufferOf("resized"),
+    })
+
+    const entries = archiveOf({
+      "images/photo.bmp": bytesOf("original-bmp"),
+      "images/photo.jpg": bytesOf("original-jpeg"),
+    })
+
+    const result = await compressArchiveImages(
+      entries,
+      { maxWidth: 800, maxHeight: undefined, outputMode: "original" },
+      { stageBytes },
+    )
+
+    expect(result.totalImages).toBe(1)
+    expect(entries.has("images/photo.bmp")).toBe(true)
+    expect(entries.has("images/photo.jpg")).toBe(true)
+    expect(compress).toHaveBeenCalledOnce()
+  })
+
+  it("keeps a resized original-format image even when its byte size grows", async () => {
+    compress.mockResolvedValue({
+      status: "ok",
+      bytes: arrayBufferOf("resized-but-larger"),
+    })
+    const stageResizedBytes = vi.fn(stageBytes)
+
+    const entries = archiveOf({ "cover.jpg": bytesOf("tiny") })
+
+    const result = await compressArchiveImages(
+      entries,
+      { maxWidth: 800, maxHeight: undefined, outputMode: "original" },
+      { stageBytes: stageResizedBytes },
+    )
+
+    expect(result).toMatchObject({ compressedCount: 1, skippedCount: 0 })
+    expect(new TextDecoder().decode(stageResizedBytes.mock.calls[0]?.[0])).toBe(
+      "resized-but-larger",
+    )
   })
 
   it("reports progress for every processed image", async () => {

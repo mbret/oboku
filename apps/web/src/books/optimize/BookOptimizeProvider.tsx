@@ -11,8 +11,10 @@ import { useForm, type Control } from "react-hook-form"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import type { Observable } from "rxjs"
+import { Logger } from "../../debug/logger.shared"
 import { notify } from "../../notifications/toasts"
 import type { FileInspection } from "./useFileInspection"
+import { confirmApplyLocalUpdate } from "./apply/confirmApplyLocalUpdate"
 import { useApplyLocalOptimizations } from "./apply/useApplyLocalOptimizations"
 import { useUploadToDataSource } from "./actions/useUploadToDataSource"
 import { useRevertLocalChanges } from "./actions/useRevertLocalChanges"
@@ -30,7 +32,7 @@ type BookOptimizeContextValue = {
   isUploading: boolean
   canApplyLocally: boolean
   canUpload: boolean
-  applyLocally: () => void
+  applyLocally: () => Promise<void>
   uploadToDataSource: () => Promise<void>
   revertLocalChanges: () => Promise<void>
   canRevert: boolean
@@ -113,31 +115,42 @@ export function BookOptimizeProvider({
   // (unable to apply and unable to upload).
   const canApplyLocally = isValid && isDirty && !isBusy
 
-  const applyLocally = useCallback(() => {
-    if (!canApplyLocally) return
+  const applyLocally = useCallback(
+    async function confirmAndApplyLocally() {
+      if (!canApplyLocally) return
 
-    applyLocalOptimizations(
-      { bookId, actions: buildUpdateActions(getValues(), inspection) },
-      {
-        onSuccess: () => {
-          reset(getValues())
-          notify({
-            title: "Book optimized",
-            description:
-              "Changes were saved to the downloaded file on this device.",
-            severity: "success",
-          })
+      const actions = buildUpdateActions(getValues(), inspection)
+
+      Logger.info("[bookOptimize] local update actions", { bookId, actions })
+
+      const isConfirmed = await confirmApplyLocalUpdate(actions)
+
+      if (!isConfirmed) return
+
+      applyLocalOptimizations(
+        { bookId, actions },
+        {
+          onSuccess: () => {
+            reset(getValues())
+            notify({
+              title: "Book optimized",
+              description:
+                "Changes were saved to the downloaded file on this device.",
+              severity: "success",
+            })
+          },
         },
-      },
-    )
-  }, [
-    applyLocalOptimizations,
-    bookId,
-    canApplyLocally,
-    getValues,
-    inspection,
-    reset,
-  ])
+      )
+    },
+    [
+      applyLocalOptimizations,
+      bookId,
+      canApplyLocally,
+      getValues,
+      inspection,
+      reset,
+    ],
+  )
 
   const value = useMemo<BookOptimizeContextValue>(
     () => ({

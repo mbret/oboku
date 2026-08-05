@@ -15,8 +15,14 @@ import {
 export * from "./common"
 
 export type { CompressImagesAction } from "./update/actions"
-export type { ImageCompressionConfig } from "./images/types"
-export { CONVERTIBLE_IMAGE_FORMAT_NAMES } from "./images/paths"
+export type {
+  ImageCompressionConfig,
+  ImageOutputMode,
+} from "./images/types"
+export {
+  CONVERTIBLE_IMAGE_FORMAT_NAMES,
+  PRESERVABLE_IMAGE_FORMAT_NAMES,
+} from "./images/paths"
 export type { ImageResolution } from "./images/inspect"
 export {
   listImageEntries,

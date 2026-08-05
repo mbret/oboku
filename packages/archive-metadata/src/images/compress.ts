@@ -5,13 +5,54 @@ import {
 } from "../update/editableArchive"
 import { report } from "../utils/report"
 import type { StageBytes } from "../update/staging"
-import { isConvertibleImagePath, replaceExtensionWithWebp } from "./paths"
+import {
+  getPreservableImageMediaType,
+  isConvertibleImagePath,
+  replaceExtensionWithWebp,
+  WEBP_MEDIA_TYPE,
+  type PreservableImageMediaType,
+} from "./paths"
 import { createImageCompressionPool } from "./compressionPool"
 import { mapWithConcurrency } from "../utils/mapWithConcurrency"
 import { rewriteImageReferences } from "./rewriteReferences"
 import type { ImageCompressionConfig, ImageCompressionResult } from "./types"
 
 const MAX_IMAGE_COMPRESSION_CONCURRENCY = 2
+
+type CompressibleImage = {
+  path: string
+  content: EntryContent
+  outputType: PreservableImageMediaType | typeof WEBP_MEDIA_TYPE
+}
+
+const listCompressibleImages = (
+  entries: EditableArchive,
+  outputMode: ImageCompressionConfig["outputMode"],
+): CompressibleImage[] => {
+  const images: CompressibleImage[] = []
+
+  for (const [path, entry] of entries) {
+    if (entry.dir) continue
+
+    if (outputMode === "webp") {
+      if (isConvertibleImagePath(path)) {
+        images.push({
+          path,
+          content: entry.content,
+          outputType: WEBP_MEDIA_TYPE,
+        })
+      }
+
+      continue
+    }
+
+    const outputType = getPreservableImageMediaType(path)
+
+    if (outputType) images.push({ path, content: entry.content, outputType })
+  }
+
+  return images
+}
 
 /**
  * Identifies images whose `.webp` target would clash with another archive
@@ -68,15 +109,16 @@ export const compressArchiveImages = async (
     onProgress?: (completed: number, total: number) => void
   },
 ): Promise<ImageCompressionResult> => {
-  const images: { path: string; content: EntryContent }[] = [...entries]
-    .filter(([path, entry]) => !entry.dir && isConvertibleImagePath(path))
-    .map(([path, entry]) => ({ path, content: entry.content }))
+  const images = listCompressibleImages(entries, config.outputMode)
   const total = images.length
 
   if (total === 0)
     return { totalImages: 0, compressedCount: 0, skippedCount: 0 }
 
-  const collidingNames = findCollidingWebpTargets(entries, images)
+  const collidingNames =
+    config.outputMode === "webp"
+      ? findCollidingWebpTargets(entries, images)
+      : new Set<string>()
 
   const compressionConcurrency = Math.min(
     navigator.hardwareConcurrency || MAX_IMAGE_COMPRESSION_CONCURRENCY,
@@ -102,19 +144,19 @@ export const compressArchiveImages = async (
         }
 
         const original = await readEntryArrayBuffer(image.content)
-        const originalByteLength = original.byteLength
-        const result = await pool.compress(
-          original,
-          config.maxWidth,
-          config.maxHeight,
-        )
+        const result = await pool.compress(original, {
+          maxWidth: config.maxWidth,
+          maxHeight: config.maxHeight,
+          outputType: image.outputType,
+          skipIfUnscaled: config.outputMode === "original",
+        })
 
-        const isSmaller =
-          result.status === "ok" && result.bytes.byteLength < originalByteLength
-
-        if (result.status === "ok" && isSmaller) {
+        if (result.status === "ok") {
           const oldPath = image.path
-          const newPath = replaceExtensionWithWebp(oldPath)
+          const newPath =
+            config.outputMode === "webp"
+              ? replaceExtensionWithWebp(oldPath)
+              : oldPath
 
           if (newPath !== oldPath) {
             entries.delete(oldPath)
@@ -141,6 +183,7 @@ export const compressArchiveImages = async (
   await rewriteImageReferences(entries, renamedPaths)
 
   report.info("image compression", {
+    outputMode: config.outputMode,
     totalImages: total,
     compressedCount,
     skippedCount,

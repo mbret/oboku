@@ -11,6 +11,18 @@ export const IMAGE_EXTENSIONS: ReadonlySet<string> = new Set([
 ])
 
 export const WEBP_EXTENSION = ".webp"
+export const WEBP_MEDIA_TYPE = "image/webp"
+
+export type PreservableImageMediaType = "image/jpeg" | "image/png"
+
+const PRESERVABLE_IMAGE_MEDIA_TYPES: ReadonlyMap<
+  string,
+  PreservableImageMediaType
+> = new Map([
+  [".jpg", "image/jpeg"],
+  [".jpeg", "image/jpeg"],
+  [".png", "image/png"],
+])
 
 /**
  * Subset of {@link IMAGE_EXTENSIONS} we convert to WebP. Restricted to static
@@ -38,6 +50,10 @@ export const CONVERTIBLE_IMAGE_FORMAT_NAMES: readonly string[] = [
   ...CONVERTIBLE_IMAGE_EXTENSIONS,
 ].map((extension) => extension.slice(1).toUpperCase())
 
+export const PRESERVABLE_IMAGE_FORMAT_NAMES: readonly string[] = [
+  ...PRESERVABLE_IMAGE_MEDIA_TYPES.keys(),
+].map((extension) => extension.slice(1).toUpperCase())
+
 export const getExtension = (path: string): string => {
   const lastDot = path.lastIndexOf(".")
   const lastSlash = path.lastIndexOf("/")
@@ -52,6 +68,11 @@ export const isImagePath = (path: string): boolean =>
 
 export const isConvertibleImagePath = (path: string): boolean =>
   CONVERTIBLE_IMAGE_EXTENSIONS.has(getExtension(path))
+
+export const getPreservableImageMediaType = (
+  path: string,
+): PreservableImageMediaType | undefined =>
+  PRESERVABLE_IMAGE_MEDIA_TYPES.get(getExtension(path))
 
 export const replaceExtensionWithWebp = (path: string): string => {
   const extension = getExtension(path)
