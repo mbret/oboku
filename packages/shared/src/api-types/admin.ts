@@ -19,7 +19,7 @@ export type SetWebDavCredentialsResponse = {
 
 export type GetInstanceSettingsResponse = {
   showDisabledPlugins: boolean
-  metadataFileDownloadMaxSizeBytes: number
+  fileDownloadMaxSizeBytes: number
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
 }
@@ -28,7 +28,7 @@ export type UpdateInstanceSettingsRequest = Partial<
   Pick<
     GetInstanceSettingsResponse,
     | "showDisabledPlugins"
-    | "metadataFileDownloadMaxSizeBytes"
+    | "fileDownloadMaxSizeBytes"
     | "microsoftApplicationClientId"
     | "microsoftApplicationAuthority"
   >

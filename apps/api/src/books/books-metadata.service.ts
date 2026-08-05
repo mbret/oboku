@@ -55,8 +55,8 @@ export class BooksMetadataService {
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
-    const metadataFileDownloadMaxSizeBytes =
-      await this.instanceConfigService.getMetadataFileDownloadMaxSizeBytes()
+    const fileDownloadMaxSizeBytes =
+      await this.instanceConfigService.getFileDownloadMaxSizeBytes()
 
     let _data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
 
@@ -71,7 +71,7 @@ export class BooksMetadataService {
           googleApiKey: this.appConfigService.GOOGLE_API_KEY,
           db,
           force,
-          metadataFileDownloadMaxSizeBytes,
+          fileDownloadMaxSizeBytes,
         },
         this.appConfigService,
         this.coversService,

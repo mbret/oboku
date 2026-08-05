@@ -33,17 +33,17 @@ export type InstanceConfig = {
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
-  metadataFileDownloadMaxSizeBytes: number
+  /** Maximum size of a user file (book, …) the server accepts to download. */
+  fileDownloadMaxSizeBytes: number
 }
 
-export const DEFAULT_METADATA_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
+export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
-  metadataFileDownloadMaxSizeBytes:
-    DEFAULT_METADATA_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -74,10 +74,10 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
   microsoftApplicationClientId: Joi.string().trim().empty("").optional(),
   microsoftApplicationAuthority: Joi.string().trim().uri().allow("").optional(),
   showDisabledPlugins: Joi.boolean().default(true),
-  metadataFileDownloadMaxSizeBytes: Joi.number()
+  fileDownloadMaxSizeBytes: Joi.number()
     .integer()
     .min(1)
-    .default(DEFAULT_METADATA_FILE_DOWNLOAD_MAX_SIZE_BYTES),
+    .default(DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {
@@ -134,10 +134,10 @@ export class InstanceConfigService implements OnModuleInit {
     return config.serverSync.enabled
   }
 
-  async getMetadataFileDownloadMaxSizeBytes(): Promise<number> {
+  async getFileDownloadMaxSizeBytes(): Promise<number> {
     const config = await this.getConfig()
 
-    return config.metadataFileDownloadMaxSizeBytes
+    return config.fileDownloadMaxSizeBytes
   }
 
   async getServerSources(): Promise<ServerSourceConfig[]> {

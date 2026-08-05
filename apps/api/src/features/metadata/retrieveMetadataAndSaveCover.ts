@@ -79,7 +79,7 @@ export const retrieveMetadataAndSaveCover = async (
      * has been shipped that should be re-applied to existing books.
      */
     force?: boolean
-    metadataFileDownloadMaxSizeBytes: number
+    fileDownloadMaxSizeBytes: number
   },
   config: AppConfigService,
   coversService: CoversService,
@@ -209,7 +209,7 @@ export const retrieveMetadataAndSaveCover = async (
     const reportedFileSizeBytes = Number(linkMetadata.size)
     const exceedsFileDownloadSizeLimit =
       Number.isFinite(reportedFileSizeBytes) &&
-      reportedFileSizeBytes > ctx.metadataFileDownloadMaxSizeBytes
+      reportedFileSizeBytes > ctx.fileDownloadMaxSizeBytes
 
     if (
       canDownload &&
@@ -218,7 +218,7 @@ export const retrieveMetadataAndSaveCover = async (
       exceedsFileDownloadSizeLimit
     ) {
       logger.log(
-        `Skipping file download for ${ctx.book._id} (reported size ${reportedFileSizeBytes} bytes exceeds the ${ctx.metadataFileDownloadMaxSizeBytes} bytes limit)`,
+        `Skipping file download for ${ctx.book._id} (reported size ${reportedFileSizeBytes} bytes exceeds the ${ctx.fileDownloadMaxSizeBytes} bytes limit)`,
       )
     }
 
@@ -234,7 +234,7 @@ export const retrieveMetadataAndSaveCover = async (
               link: ctx.link,
               providerCredentials: ctx.providerCredentials,
               db: ctx.db,
-              maxSizeBytes: ctx.metadataFileDownloadMaxSizeBytes,
+              maxSizeBytes: ctx.fileDownloadMaxSizeBytes,
             })
             .catch((error) => {
               /**

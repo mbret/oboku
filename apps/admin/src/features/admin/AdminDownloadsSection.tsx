@@ -6,33 +6,32 @@ import { useUpdateInstanceSettings } from "../useUpdateInstanceSettings"
 
 const BYTES_PER_MEGABYTE = 1024 * 1024
 
-type AdminMetadataFormValues = {
-  metadataFileDownloadMaxSizeMb: number | string
+type AdminDownloadsFormValues = {
+  fileDownloadMaxSizeMb: number | string
 }
 
-export const AdminMetadataSection = () => {
+export const AdminDownloadsSection = () => {
   const instanceSettings = useInstanceSettings()
   const updateInstanceSettings = useUpdateInstanceSettings()
-  const form = useForm<AdminMetadataFormValues>({
+  const form = useForm<AdminDownloadsFormValues>({
     mode: "controlled",
     initialValues: {
-      metadataFileDownloadMaxSizeMb: "",
+      fileDownloadMaxSizeMb: "",
     },
     validate: {
-      metadataFileDownloadMaxSizeMb: (value) =>
+      fileDownloadMaxSizeMb: (value) =>
         typeof value === "number" && value >= 1
           ? null
           : "Must be at least 1 MB",
     },
   })
 
-  const savedMaxSizeBytes =
-    instanceSettings.data?.metadataFileDownloadMaxSizeBytes
+  const savedMaxSizeBytes = instanceSettings.data?.fileDownloadMaxSizeBytes
 
   useEffect(
     function syncFormFromInstanceSettings() {
       form.setValues({
-        metadataFileDownloadMaxSizeMb:
+        fileDownloadMaxSizeMb:
           savedMaxSizeBytes !== undefined
             ? Math.round(savedMaxSizeBytes / BYTES_PER_MEGABYTE)
             : "",
@@ -46,13 +45,12 @@ export const AdminMetadataSection = () => {
       <Stack gap="sm">
         <div>
           <Text size="sm" fw={500} mb="xs">
-            Metadata
+            Downloads
           </Text>
           <Text size="sm" c="dimmed">
-            When refreshing a book's metadata, the server may download the book
-            file to extract embedded information (cover, authors, …). Files
-            larger than this limit are not downloaded; other metadata sources
-            still apply.
+            Maximum size of a user file (book, …) the server accepts to download
+            from a provider — for example when downloading a book to extract its
+            embedded metadata during a refresh. Larger files are skipped.
           </Text>
         </div>
 
@@ -72,9 +70,8 @@ export const AdminMetadataSection = () => {
           <form
             onSubmit={form.onSubmit(async (values) => {
               await updateInstanceSettings.mutateAsync({
-                metadataFileDownloadMaxSizeBytes: Math.round(
-                  Number(values.metadataFileDownloadMaxSizeMb) *
-                    BYTES_PER_MEGABYTE,
+                fileDownloadMaxSizeBytes: Math.round(
+                  Number(values.fileDownloadMaxSizeMb) * BYTES_PER_MEGABYTE,
                 ),
               })
             })}
@@ -85,14 +82,14 @@ export const AdminMetadataSection = () => {
                 min={1}
                 step={50}
                 allowDecimal={false}
-                {...form.getInputProps("metadataFileDownloadMaxSizeMb")}
+                {...form.getInputProps("fileDownloadMaxSizeMb")}
               />
               <Group justify="flex-end">
                 <Button
                   type="submit"
                   loading={updateInstanceSettings.isPending}
                 >
-                  save metadata settings
+                  save download settings
                 </Button>
               </Group>
             </Stack>

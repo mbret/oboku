@@ -128,7 +128,7 @@ class UpdateInstanceSettingsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  metadataFileDownloadMaxSizeBytes?: number
+  fileDownloadMaxSizeBytes?: number
 
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
@@ -377,7 +377,7 @@ export class AdminController {
 
     return {
       showDisabledPlugins: config.showDisabledPlugins,
-      metadataFileDownloadMaxSizeBytes: config.metadataFileDownloadMaxSizeBytes,
+      fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }
