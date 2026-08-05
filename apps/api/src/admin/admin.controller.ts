@@ -43,9 +43,11 @@ import {
   IsBoolean,
   IsEmail,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUrl,
+  Min,
   MinLength,
   ValidateIf,
 } from "class-validator"
@@ -122,6 +124,11 @@ class UpdateInstanceSettingsDto {
   @IsBoolean()
   @IsOptional()
   showDisabledPlugins?: boolean
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  metadataFileDownloadMaxSizeBytes?: number
 
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
@@ -370,6 +377,7 @@ export class AdminController {
 
     return {
       showDisabledPlugins: config.showDisabledPlugins,
+      metadataFileDownloadMaxSizeBytes: config.metadataFileDownloadMaxSizeBytes,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }

@@ -4,7 +4,10 @@ import path from "node:path"
 import { ConflictException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "./instance-config.service"
+import {
+  DEFAULT_METADATA_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  InstanceConfigService,
+} from "./instance-config.service"
 import { EnvironmentVariables } from "src/config/types"
 import { ServerSourcesService } from "./server-sources.service"
 
@@ -89,6 +92,8 @@ describe("InstanceConfigService server sources", () => {
         ],
       },
       showDisabledPlugins: true,
+      metadataFileDownloadMaxSizeBytes:
+        DEFAULT_METADATA_FILE_DOWNLOAD_MAX_SIZE_BYTES,
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
