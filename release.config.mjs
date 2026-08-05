@@ -30,6 +30,12 @@ export default {
         message: "chore: release v${nextRelease.version}",
       },
     ],
-    "@semantic-release/github",
+    [
+      "@semantic-release/github",
+      {
+        successComment: false,
+        releasedLabels: false,
+      },
+    ],
   ],
 }
