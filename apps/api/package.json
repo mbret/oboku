@@ -52,7 +52,7 @@
     "nano": "^11.0.6",
     "node-domexception": "^2.0.2",
     "node-unrar-js": "^2.0.2",
-    "nodemailer": "^8.0.11",
+    "nodemailer": "^9.0.4",
     "pg": "^8.22.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
