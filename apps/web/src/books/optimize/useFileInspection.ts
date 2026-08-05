@@ -1,5 +1,9 @@
 import { skipToken, useQuery } from "@tanstack/react-query"
-import { type Archive, resolveArchive } from "@prose-reader/archive-reader"
+import {
+  type Archive,
+  isFileRecord,
+  resolveArchive,
+} from "@prose-reader/archive-reader"
 import { getBookFile } from "../../download/getBookFile.shared"
 import { Logger } from "../../debug/logger.shared"
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
@@ -20,6 +24,7 @@ export type ResolvedBookArchive = Awaited<ReturnType<typeof resolveBookArchive>>
 export type FileInspection = {
   fileName: string
   fileSize: number
+  fileCount: number
   imageCount: number
   imageBytes: number
   averageImageResolution: ImageResolution | undefined
@@ -68,6 +73,7 @@ export const useFileInspection = (bookId: string | undefined) =>
             const inspection: FileInspection = {
               fileName: file.name,
               fileSize: file.size,
+              fileCount: archive.records.filter(isFileRecord).length,
               imageCount,
               imageBytes,
               averageImageResolution,
