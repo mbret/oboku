@@ -9,12 +9,6 @@ export const getCollectionById = (database: Database, id: string) => {
   )
 }
 
-export const getCollections = async (database: Database) => {
-  const result = await database.collections.obokucollection.find({}).exec()
-
-  return result
-}
-
 export const observeEmptyCollection = ({
   db,
   id,

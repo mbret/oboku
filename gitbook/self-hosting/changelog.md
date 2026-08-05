@@ -1,8 +1,10 @@
 # Changelog
 
-This page lists changes that require action when upgrading a self-hosted instance. Only releases with migration steps are listed.
+The changelog lives on the [GitHub releases page](https://github.com/mbret/oboku/releases). Each release lists its changes, and breaking changes come with upgrade instructions.
 
-## 1.2.0
+## Releases prior to the move
+
+### 1.2.0
 
 CouchDB is now reached **through the API** under the `/couchdb` route instead of being exposed directly. The standalone CouchDB reverse-proxy container is gone, and CouchDB no longer needs any published ports.
 

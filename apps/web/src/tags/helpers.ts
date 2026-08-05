@@ -8,7 +8,6 @@ import {
   RXDB_QUERY_KEY_PREFIX,
 } from "../queries/queryClient"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
-import type { Database } from "../rxdb"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
 import { useMutation, type UseQueryOptions } from "@tanstack/react-query"
 
@@ -57,31 +56,6 @@ const protectedTags$ = tags$.pipe(
   map((tag) => tag.filter(({ isProtected }) => isProtected)),
 )
 
-/**
- * @deprecated move to observable
- */
-export const getProtectedTags = async (db: Database) => {
-  const result = await db.tag.find({}).exec()
-
-  return result.filter(({ isProtected }) => isProtected).map(({ _id }) => _id)
-}
-
-/**
- * @deprecated move to observable
- */
-export const getTagsByIds = async (db: Database) => {
-  const result = await db.tag.find({}).exec()
-
-  return result.reduce(
-    (acc, tag) => {
-      acc[tag._id] = tag
-
-      return acc
-    },
-    {} as Record<string, TagsDocType>,
-  )
-}
-
 export const useTag = <TData = DeepReadonlyObject<TagsDocType> | null>(
   id?: string,
   options: Omit<
@@ -121,25 +95,6 @@ export const useTags = ({
         map((items) => items.map((item) => item.toJSON())),
       ),
     ...options,
-  })
-
-export const useTagsByIds = () =>
-  useQuery$({
-    ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsById"],
-    queryFn: () =>
-      tags$.pipe(
-        map((tags) =>
-          tags.reduce(
-            (acc, tag) => {
-              acc[tag._id] = tag
-
-              return acc
-            },
-            {} as Record<string, DeepReadonlyObject<TagsDocType>>,
-          ),
-        ),
-      ),
   })
 
 export const useTagIds = () =>

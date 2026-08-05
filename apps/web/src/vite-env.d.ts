@@ -22,6 +22,10 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+declare const __APP_VERSION__: string
+
+declare const __BUILD_ID__: string
+
 declare namespace Intl {
   // TypeScript 5.9.x in this repo does not yet ship Intl.DurationFormat in its
   // bundled lib typings, even though our supported browsers expose it at

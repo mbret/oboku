@@ -21,21 +21,3 @@ export const getMetadataFromRequest = (request: Request) => {
     coverTimeCached,
   }
 }
-
-export const hasAnotherMoreRecentCoverForThisRequest = (
-  request: Request,
-  requests: readonly Request[],
-) => {
-  const { coverId, coverTimeCached } = getMetadataFromRequest(request)
-
-  return requests.find((key) => {
-    const { coverId: itemCoverId, coverTimeCached: existingCoverTimeCached } =
-      getMetadataFromRequest(key)
-
-    return (
-      key.url !== request.url &&
-      itemCoverId === coverId &&
-      existingCoverTimeCached > coverTimeCached
-    )
-  })
-}
