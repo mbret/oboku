@@ -1,4 +1,12 @@
-import { Alert, Container, Tab, Tabs, Typography, styled } from "@mui/material"
+import {
+  Alert,
+  Container,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+  styled,
+} from "@mui/material"
 import { memo, type SyntheticEvent, useCallback } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { Page } from "../../../../common/Page"
@@ -11,6 +19,7 @@ import { useBookDownloadState } from "../../../../download/states"
 import { DownloadBookStep } from "../../../../books/optimize/DownloadBookStep"
 import { OptimizeStep } from "../../../../books/optimize/OptimizeStep"
 import { TestBookButton } from "../../../../books/optimize/actions/TestBookButton"
+import { BookOptimizeActionsMenu } from "../../../../books/optimize/actions/BookOptimizeActionsMenu"
 import {
   BOOK_OPTIMIZE_TAB_PARAM,
   BOOK_OPTIMIZE_TABS,
@@ -22,6 +31,12 @@ import {
 type ScreenParams = {
   id: string
 }
+
+const TopBarActionsStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: theme.spacing(1),
+}))
 
 const PageContainer = styled(Container)(({ theme }) => ({
   display: "flex",
@@ -81,7 +96,10 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
         showBack
         rightComponent={
           bookId && book && link && isDownloaded ? (
-            <TestBookButton bookId={bookId} />
+            <TopBarActionsStack>
+              <TestBookButton bookId={bookId} />
+              <BookOptimizeActionsMenu bookId={bookId} />
+            </TopBarActionsStack>
           ) : undefined
         }
       />
