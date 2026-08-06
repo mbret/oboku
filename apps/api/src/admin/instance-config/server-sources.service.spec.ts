@@ -3,15 +3,24 @@ import os from "node:os"
 import path from "node:path"
 import { ConflictException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
+import { filter, firstValueFrom } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "./instance-config.service"
+import {
+  DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  InstanceConfigService,
+} from "./instance-config.service"
 import { EnvironmentVariables } from "src/config/types"
 import { ServerSourcesService } from "./server-sources.service"
 
 describe("InstanceConfigService server sources", () => {
   const createdDirectories: string[] = []
+  const createdServices: InstanceConfigService[] = []
 
   afterEach(async () => {
+    for (const service of createdServices.splice(0)) {
+      service.onModuleDestroy()
+    }
+
     await Promise.all(
       createdDirectories
         .splice(0)
@@ -20,6 +29,12 @@ describe("InstanceConfigService server sources", () => {
         ),
     )
   })
+
+  const trackService = (service: InstanceConfigService) => {
+    createdServices.push(service)
+
+    return service
+  }
 
   const createServices = async () => {
     const rootDir = await fs.promises.mkdtemp(
@@ -47,14 +62,13 @@ describe("InstanceConfigService server sources", () => {
       new ConfigService<EnvironmentVariables>(env),
     )
     const serverSourcesService = new ServerSourcesService()
-    const instanceConfigService = new InstanceConfigService(
-      appConfig,
-      serverSourcesService,
+    const instanceConfigService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
     )
-    await instanceConfigService.onModuleInit()
 
     return {
       appConfig,
+      serverSourcesService,
       sourceDirectory,
       instanceConfigService,
     }
@@ -89,6 +103,7 @@ describe("InstanceConfigService server sources", () => {
         ],
       },
       showDisabledPlugins: true,
+      fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -117,8 +132,28 @@ describe("InstanceConfigService server sources", () => {
     ).rejects.toBeInstanceOf(ConflictException)
   })
 
-  it("rejects unknown nested microsoft config properties", async () => {
-    const { appConfig, instanceConfigService } = await createServices()
+  it("serializes concurrent updates so none are lost", async () => {
+    const { instanceConfigService } = await createServices()
+
+    await Promise.all([
+      instanceConfigService.updateConfig((config) => ({
+        ...config,
+        showDisabledPlugins: false,
+      })),
+      instanceConfigService.updateConfig((config) => ({
+        ...config,
+        fileDownloadMaxSizeBytes: 123,
+      })),
+    ])
+
+    expect(instanceConfigService.getConfig().value).toMatchObject({
+      showDisabledPlugins: false,
+      fileDownloadMaxSizeBytes: 123,
+    })
+  })
+
+  it("fails the boot on unknown nested microsoft config properties", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
 
     await fs.promises.writeFile(
       appConfig.CONFIG_FILE,
@@ -143,13 +178,13 @@ describe("InstanceConfigService server sources", () => {
       "utf8",
     )
 
-    await expect(instanceConfigService.getConfig()).rejects.toThrow(
-      "Invalid instance config file",
-    )
+    expect(
+      () => new InstanceConfigService(appConfig, serverSourcesService),
+    ).toThrow("Invalid instance config file")
   })
 
   it("accepts an empty microsoft authority string", async () => {
-    const { appConfig, instanceConfigService } = await createServices()
+    const { appConfig, serverSourcesService } = await createServices()
 
     await fs.promises.writeFile(
       appConfig.CONFIG_FILE,
@@ -170,8 +205,67 @@ describe("InstanceConfigService server sources", () => {
       "utf8",
     )
 
-    await expect(instanceConfigService.getConfig()).resolves.toMatchObject({
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    expect(rebootedService.getConfig().value).toMatchObject({
       microsoftApplicationAuthority: "",
+    })
+  })
+
+  it("notifies config subscribers on update", async () => {
+    const { instanceConfigService } = await createServices()
+
+    const emissions: boolean[] = []
+    const subscription = instanceConfigService
+      .getConfig()
+      .subscribe(function collectShowDisabledPlugins(config) {
+        emissions.push(config.showDisabledPlugins)
+      })
+
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      showDisabledPlugins: false,
+    }))
+
+    subscription.unsubscribe()
+
+    expect(emissions).toEqual([true, false])
+  })
+
+  it("re-reads and emits when the file is edited out-of-band", async () => {
+    const { appConfig, instanceConfigService } = await createServices()
+
+    const currentConfig = instanceConfigService.getConfig().value
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ ...currentConfig, fileDownloadMaxSizeBytes: 456 }),
+      "utf8",
+    )
+
+    await expect(
+      firstValueFrom(
+        instanceConfigService
+          .getConfig()
+          .pipe(filter((config) => config.fileDownloadMaxSizeBytes === 456)),
+      ),
+    ).resolves.toMatchObject({ fileDownloadMaxSizeBytes: 456 })
+  })
+
+  it("keeps the last valid config when the file is corrupted out-of-band", async () => {
+    const { appConfig, instanceConfigService } = await createServices()
+
+    await fs.promises.writeFile(appConfig.CONFIG_FILE, "{ not json", "utf8")
+
+    await new Promise(function waitForWatcherToProcess(resolve) {
+      setTimeout(resolve, 400)
+    })
+
+    expect(instanceConfigService.getConfig().value).toMatchObject({
+      showDisabledPlugins: true,
+      fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
     })
   })
 })

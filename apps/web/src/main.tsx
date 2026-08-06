@@ -10,6 +10,9 @@ import "./main.css"
 import "./common/animations.css"
 import { AppWithConfig } from "./App"
 import { ErrorBoundary } from "@sentry/react"
+import { purgeStagedFiles } from "@oboku/archive-metadata/web"
+
+void purgeStagedFiles()
 
 const rootElm = document.getElementById("root")
 

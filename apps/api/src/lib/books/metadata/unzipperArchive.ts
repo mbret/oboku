@@ -1,4 +1,4 @@
-import type { Archive } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata/node"
 import { createArchiveFromUnzipper } from "@prose-reader/archive-reader/archives/createArchiveFromUnzipper"
 import unzipper from "unzipper"
 

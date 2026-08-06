@@ -1,0 +1,64 @@
+import { describe, expect, it, vi } from "vitest"
+import { pruneDriveFileRevisions } from "./pruneDriveFileRevisions"
+
+function createGapiStub(revisionIds: string[]) {
+  const deleteRevision = vi.fn(async function deleteDriveRevision(_request: {
+    fileId: string
+    revisionId: string
+  }) {})
+
+  const stub = {
+    client: {
+      drive: {
+        revisions: {
+          list: vi.fn(async function listDriveRevisions() {
+            return {
+              result: { revisions: revisionIds.map((id) => ({ id })) },
+            }
+          }),
+          delete: deleteRevision,
+        },
+      },
+    },
+  }
+
+  // The gapi client is a third-party global namespace with no constructible
+  // stub, so tests can only provide the subset of it under test.
+  return { gapi: stub as unknown as typeof gapi, deleteRevision }
+}
+
+describe("pruneDriveFileRevisions", function testPruneDriveFileRevisions() {
+  it("deletes every revision but the head one", async function deleteObsoleteRevisions() {
+    const { gapi: gapiStub, deleteRevision } = createGapiStub([
+      "revision-1",
+      "revision-2",
+      "revision-3",
+    ])
+
+    await pruneDriveFileRevisions(gapiStub, {
+      fileId: "file-1",
+      headRevisionId: "revision-3",
+    })
+
+    expect(deleteRevision).toHaveBeenCalledTimes(2)
+    expect(deleteRevision).toHaveBeenNthCalledWith(1, {
+      fileId: "file-1",
+      revisionId: "revision-1",
+    })
+    expect(deleteRevision).toHaveBeenNthCalledWith(2, {
+      fileId: "file-1",
+      revisionId: "revision-2",
+    })
+  })
+
+  it("leaves a file with no previous version untouched", async function keepSingleRevision() {
+    const { gapi: gapiStub, deleteRevision } = createGapiStub(["revision-1"])
+
+    await pruneDriveFileRevisions(gapiStub, {
+      fileId: "file-1",
+      headRevisionId: "revision-1",
+    })
+
+    expect(deleteRevision).not.toHaveBeenCalled()
+  })
+})

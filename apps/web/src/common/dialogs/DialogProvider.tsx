@@ -40,7 +40,7 @@ function TemplateDialog({ dialog }: { dialog?: DialogTemplateType<unknown> }) {
       <DialogTitle>{currentDialog?.title}</DialogTitle>
       {message !== undefined && (
         <DialogContent>
-          <DialogContentText>{message}</DialogContentText>
+          <DialogContentText component="div">{message}</DialogContentText>
         </DialogContent>
       )}
       <DialogActions>

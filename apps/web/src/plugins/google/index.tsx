@@ -37,6 +37,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   name: PLUGIN_NAME,
   canRemoveResource: false,
   canUpsertFile: true,
+  upsertPrunesVersionHistory: true,
   Icon: GoogleDriveIcon,
   UploadBookComponent: UploadBook,
   canSynchronize: true,

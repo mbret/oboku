@@ -14,10 +14,7 @@ import { Link } from "react-router"
 import { useBook } from "../states"
 import { MetadataPane } from "./MetadataPane"
 import { CollectionsPane } from "./CollectionsPane"
-import {
-  BOOK_OPTIMIZE_TABS,
-  getBookOptimizeRoute,
-} from "../../pages/books/$id/optimize/BookOptimizeScreen"
+import { BOOK_OPTIMIZE_TABS, getBookOptimizeRoute } from "../optimize/tabs"
 
 type Props = {
   bookId: string

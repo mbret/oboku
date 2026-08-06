@@ -1,4 +1,4 @@
-import type { Archive } from "@oboku/archive-metadata"
+import type { Archive } from "@oboku/archive-metadata/node"
 import type { FileMetadata } from "@oboku/shared"
 import {
   type ResolvedMetadata,
@@ -48,10 +48,10 @@ export const getMetadataFromArchive = async (
     contentType,
     title: metadata.title,
     authors: authorNames(metadata),
-    publisher: metadata.publisher,
+    publisher: metadata.publication?.edition?.publisher,
     rights: metadata.rights,
     languages: toMutableList(metadata.languages),
-    date: metadata.published,
+    date: metadata.publication?.edition?.date,
     subjects: toMutableList(metadata.subjects),
     coverLink: metadata.cover?.uri,
     pageCount: metadata.numberOfPages,

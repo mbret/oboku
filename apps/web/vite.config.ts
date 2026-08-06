@@ -11,11 +11,14 @@ const productVersion = JSON.parse(
   readFileSync(path.resolve(__dirname, "../../package.json"), "utf8"),
 ).version
 
-const buildId = (
-  process.env.GITHUB_SHA ??
-  process.env.VERCEL_GIT_COMMIT_SHA ??
-  "dev"
-).slice(0, 7)
+const commitSha = [
+  process.env.GITHUB_SHA,
+  process.env.VERCEL_GIT_COMMIT_SHA,
+].find(function isNonEmptySha(sha) {
+  return !!sha
+})
+
+const buildId = commitSha?.slice(0, 7) ?? productVersion
 
 const manualChunkGroups = [
   ["dropbox", ["dropbox"]],
@@ -143,7 +146,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.js.map",
           "**/*.css.map",
         ],
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB; large assets (e.g. maps) excluded via globIgnores
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB; includes the AVIF encoder WASM
       },
       srcDir: "src",
       filename: "service-worker.ts",

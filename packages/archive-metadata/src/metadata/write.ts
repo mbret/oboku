@@ -1,15 +1,13 @@
-import type { Archive } from "../archive/types"
 import {
-  COMIC_INFO_FILENAME,
-  buildPatchedComicInfoXml,
-  findComicInfoEntry,
-} from "../comicInfo"
-import { findOpfEntry } from "../opf/read"
+  getArchiveHasComicInfo,
+  getArchiveOpfInfo,
+} from "@prose-reader/archive-reader"
+import type { Archive } from "../archive/types"
+import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "../comicInfo"
 import { buildPatchedOpfXml } from "../opf/write"
 
 /**
- * Fields an archive patch may set. Mirrors the writable subset of
- * {@link ArchiveMetadata} — expand in lockstep when a new field
+ * Fields an archive patch may set. Expand in lockstep when a new field
  * becomes writable in at least one container.
  *
  * Today only `isbn` is writable.
@@ -70,9 +68,9 @@ export type ArchivePatch = {
  *
  * The caller keeps ownership of how the archive is repacked — each
  * runtime plugs in its own write-capable zip library (JSZip on the
- * web; something else on the server when that lands). Keeping the
- * writer at the XML layer is the same layering choice that
- * {@link readArchiveMetadata} makes for reads.
+ * web; something else on the server when that lands). Containers are
+ * located with the same prose-reader lookups the read side uses, so a
+ * container the reader sees is the container the writer patches.
  */
 export const patchArchiveMetadata = async (
   archive: Archive,
@@ -89,14 +87,14 @@ export const patchArchiveMetadata = async (
 
   if (targets.comicInfo) {
     const xml = await buildPatchedComicInfoXml(archive, { isbn: patch.isbn })
-    const existingComicInfo = findComicInfoEntry(archive)
+    const existingComicInfo = getArchiveHasComicInfo(archive)
     entries.push({ path: existingComicInfo?.uri ?? COMIC_INFO_FILENAME, xml })
   }
 
   if (targets.opf) {
-    const opfEntry = findOpfEntry(archive)
+    const { data: opfEntry } = getArchiveOpfInfo(archive)
 
-    if (!opfEntry) {
+    if (!opfEntry || opfEntry.dir) {
       throw new Error(
         "Cannot write OPF metadata: archive does not carry an OPF package document.",
       )

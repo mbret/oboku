@@ -2,6 +2,7 @@
 .data
 store.sqlite
 node_modules
+.pnpm-store
 .yarn
 .env
 !.secrets

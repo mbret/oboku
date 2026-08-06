@@ -95,6 +95,10 @@ export async function getFileMetadataFromWebdav(
       contentType: response.data.mime,
       name: response.data.basename,
       modifiedAt: normalizeLastmod(response.data.lastmod),
+      bookMetadata: {
+        size: response.data.size.toString(),
+        contentType: response.data.mime,
+      },
     }
   }
 

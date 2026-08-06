@@ -1,7 +1,7 @@
-import { Injectable } from "@nestjs/common"
+import { Inject, Injectable } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
-import { pipeline } from "node:stream"
+import { pipeline, Transform } from "node:stream"
 import type createNano from "nano"
 import {
   type BookDocType,
@@ -27,6 +27,31 @@ type DownloadParams<T extends DataSourceType = DataSourceType> = {
   db?: createNano.DocumentScope<unknown>
 }
 
+export class FileDownloadSizeLimitExceededError extends Error {
+  constructor(maxSizeBytes: number) {
+    super(
+      `Download aborted: file exceeds the maximum allowed size of ${maxSizeBytes} bytes`,
+    )
+  }
+}
+
+const createByteLimitTransform = (maxSizeBytes: number) => {
+  let downloadedBytes = 0
+
+  return new Transform({
+    transform(chunk: Buffer, _encoding, callback) {
+      downloadedBytes += chunk.byteLength
+
+      if (downloadedBytes > maxSizeBytes) {
+        callback(new FileDownloadSizeLimitExceededError(maxSizeBytes))
+        return
+      }
+
+      callback(null, chunk)
+    },
+  })
+}
+
 const getRequiredPlugin = <T extends DataSourceType>(type: T) => {
   const plugin = getPlugin(type)
 
@@ -39,7 +64,10 @@ const getRequiredPlugin = <T extends DataSourceType>(type: T) => {
 
 @Injectable()
 export class PluginsService {
-  constructor(private readonly appConfigService: AppConfigService) {}
+  constructor(
+    @Inject(AppConfigService)
+    private readonly appConfigService: Pick<AppConfigService, "TMP_DIR_BOOKS">,
+  ) {}
 
   getFolderMetadata<T extends DataSourceType>(params: MetadataParams<T>) {
     return getRequiredPlugin(params.link.type).getFolderMetadata({
@@ -74,11 +102,13 @@ export class PluginsService {
     link,
     providerCredentials,
     db,
+    maxSizeBytes,
   }: {
     book: BookDocType
     link: LinkDocType
     providerCredentials: ProviderApiCredentials<DataSourceType>
     db?: createNano.DocumentScope<unknown>
+    maxSizeBytes: number
   }) {
     return new Promise<{ filepath: string }>((resolve, reject) => {
       this.download({ link, providerCredentials, db })
@@ -89,14 +119,25 @@ export class PluginsService {
           )
           const fileWriteStream = fs.createWriteStream(filepath, { flags: "w" })
 
-          pipeline(stream, fileWriteStream, (error) => {
-            if (error) {
-              reject(error)
-              return
-            }
+          pipeline(
+            stream,
+            createByteLimitTransform(maxSizeBytes),
+            fileWriteStream,
+            (error) => {
+              if (error) {
+                fs.rm(
+                  filepath,
+                  { force: true },
+                  function rejectAfterPartialFileCleanup() {
+                    reject(error)
+                  },
+                )
+                return
+              }
 
-            resolve({ filepath })
-          })
+              resolve({ filepath })
+            },
+          )
         })
         .catch(reject)
     })

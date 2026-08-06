@@ -13,7 +13,7 @@ export type DialogAction<T = undefined> = {
 export type DialogTemplateType<T = undefined> = {
   type?: "template"
   title?: string
-  message?: string
+  message?: ReactNode
   id: string
   cancellable?: boolean
   dismissible?: boolean

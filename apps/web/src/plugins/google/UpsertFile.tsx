@@ -1,6 +1,9 @@
 import { memo } from "react"
 import {
+  catchError,
+  from,
   merge,
+  of,
   switchMap,
   takeUntil,
   throwIfEmpty,
@@ -9,12 +12,15 @@ import {
 import { useMutation$ } from "reactjrx"
 import type { UpsertFileComponent } from "../types"
 import { CancelError } from "../../errors/errors.shared"
+import { Logger } from "../../debug/logger.shared"
+import { notify } from "../../notifications/toasts"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
 import { useRequestPopupDialog } from "../useRequestPopupDialog"
 import { useGoogleScripts } from "./lib/scripts"
 import { useRequestToken } from "./lib/useRequestToken"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"
+import { pruneDriveFileRevisions } from "./lib/pruneDriveFileRevisions"
 import { GOOGLE_DRIVE_FILE_SCOPES, PLUGIN_NAME } from "./lib/constants"
 import { updateDriveFileMedia } from "./lib/updateDriveFileMedia"
 import { scheduleDelayedEffect } from "../../common/useDelayEffect"
@@ -52,16 +58,40 @@ export const UpsertFile: UpsertFileComponent<"DRIVE"> = memo(
               switchMap(() =>
                 requestToken({ scope: GOOGLE_DRIVE_FILE_SCOPES }),
               ),
+              switchMap((accessToken) =>
+                updateDriveFileMedia({
+                  fileId,
+                  file,
+                  accessToken: accessToken.access_token,
+                  contentType,
+                  onProgress,
+                }),
+              ),
+              switchMap(({ headRevisionId }) =>
+                from(
+                  pruneDriveFileRevisions(gapiInstance, {
+                    fileId,
+                    headRevisionId,
+                  }),
+                ).pipe(
+                  /**
+                   * The file is already replaced at this point, and retrying
+                   * the upload would only add another revision to prune.
+                   */
+                  catchError(function warnAboutUnprunedHistory(error) {
+                    Logger.error("Failed to prune drive file revisions", error)
+
+                    notify({
+                      title: "Version history kept",
+                      description: `The file was replaced but ${PLUGIN_NAME} could not delete every previous version. They keep using storage until ${PLUGIN_NAME} purges them.`,
+                      severity: "warning",
+                    })
+
+                    return of(null)
+                  }),
+                ),
+              ),
             ),
-          ),
-          switchMap((accessToken) =>
-            updateDriveFileMedia({
-              fileId,
-              file,
-              accessToken: accessToken.access_token,
-              contentType,
-              onProgress,
-            }),
           ),
           takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
           throwIfEmpty(() => new CancelError()),

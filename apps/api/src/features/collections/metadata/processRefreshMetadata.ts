@@ -1,6 +1,7 @@
 import {
   type CollectionDocType,
   type CollectionMetadata,
+  computeCollectionMetadata,
   DataSourceType,
   directives,
   ProviderApiCredentials,
@@ -12,7 +13,6 @@ import { saveOrUpdateCover } from "./saveOrUpdateCover"
 import { from, lastValueFrom, of, switchMap } from "rxjs"
 import { markCollectionAsFetching } from "./collections"
 import { Logger } from "@nestjs/common"
-import { computeMetadata } from "src/lib/collections/computeMetadata"
 import { findOne } from "src/lib/couch/findOne"
 import { atomicUpdate } from "src/lib/couch/dbHelpers"
 import { isCollectionProtected } from "src/lib/couch/isCollectionProtected"
@@ -95,10 +95,10 @@ export const processRefreshMetadata = async (
     return
   }
 
-  const metadataUser = collection.metadata?.find((item) => item.type === "user")
-  const { title: userTitle, startYear: userStartYear } = computeMetadata([
-    metadataUser,
-  ])
+  const { title: userTitle, startYear: userStartYear } =
+    computeCollectionMetadata(
+      collection.metadata?.filter((item) => item.type === "user") ?? [],
+    )
 
   const directivesFromLink = directives.extractDirectivesFromName(
     linkMetadataInfo?.name ?? "",
