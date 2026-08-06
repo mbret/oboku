@@ -7,11 +7,11 @@ import { dexieDb } from "../rxdb/dexie"
 const PERSIST_KEY = "queryCache.persistedClient"
 
 /**
- * Cache namespace for persisted queries/mutations. Keyed on the build rather
- * than the product version, so state persisted by an older build is discarded
- * on restore instead of rehydrated even when several builds ship under the same
- * version. Shared by every writer (the provider and any manual
- * `persistQueryClientSave`) so a snapshot always survives restore.
+ * Cache namespace for persisted queries/mutations. Keyed on the build id (the
+ * commit sha when the build knows it, the product version otherwise), so state
+ * persisted by an older build is discarded on restore instead of rehydrated.
+ * Shared by every writer (the provider and any manual `persistQueryClientSave`)
+ * so a snapshot always survives restore.
  */
 export const persistBuster = __BUILD_ID__
 
