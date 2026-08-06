@@ -55,8 +55,8 @@ export class BooksMetadataService {
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
-    const fileDownloadMaxSizeBytes =
-      await this.instanceConfigService.getFileDownloadMaxSizeBytes()
+    const { fileDownloadMaxSizeBytes } =
+      await this.instanceConfigService.getConfig()
 
     let _data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
 

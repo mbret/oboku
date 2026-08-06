@@ -54,7 +54,6 @@ describe("InstanceConfigService server sources", () => {
       appConfig,
       serverSourcesService,
     )
-    await instanceConfigService.onModuleInit()
 
     return {
       appConfig,

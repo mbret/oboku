@@ -50,7 +50,9 @@ export class WebDavService {
       return
     }
 
-    if (!(await this.instanceConfigService.isServerSyncEnabled())) {
+    const { serverSync } = await this.instanceConfigService.getConfig()
+
+    if (!serverSync.enabled) {
       res.status(404).end()
 
       return

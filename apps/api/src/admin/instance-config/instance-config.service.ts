@@ -1,4 +1,4 @@
-import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
 import bcrypt from "bcrypt"
@@ -93,9 +93,7 @@ const parseInstanceConfig = (value: unknown): InstanceConfig => {
 }
 
 @Injectable()
-export class InstanceConfigService implements OnModuleInit {
-  private initializationPromise: Promise<void> | null = null
-
+export class InstanceConfigService {
   constructor(
     @Inject(AppConfigService)
     private readonly appConfig: Pick<
@@ -103,16 +101,46 @@ export class InstanceConfigService implements OnModuleInit {
       "CONFIG_DIR" | "CONFIG_FILE"
     >,
     private readonly serverSourcesService: ServerSourcesService,
-  ) {}
+  ) {
+    this.initializeConfigFile()
+  }
 
-  async onModuleInit() {
-    await this.ensureInitialized()
+  /**
+   * Runs synchronously at construction (i.e. during Nest bootstrap,
+   * before any consumer can call {@link getConfig}): seeds the config
+   * file with defaults when missing, otherwise validates it so a
+   * corrupted file fails the boot instead of the first request.
+   */
+  private initializeConfigFile() {
+    fs.mkdirSync(this.appConfig.CONFIG_DIR, { recursive: true })
+
+    if (!fs.existsSync(this.appConfig.CONFIG_FILE)) {
+      this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
+      return
+    }
+
+    this.parseConfigFileContent(
+      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+    )
   }
 
   async getConfig(): Promise<InstanceConfig> {
-    await this.ensureInitialized()
+    let rawContent: string
 
-    return this.readConfigFile()
+    try {
+      rawContent = await fs.promises.readFile(
+        this.appConfig.CONFIG_FILE,
+        "utf8",
+      )
+    } catch (error) {
+      throw new Error(
+        `Failed to read instance config file at ${this.appConfig.CONFIG_FILE}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      )
+    }
+
+    return this.parseConfigFileContent(rawContent)
   }
 
   async updateConfig(
@@ -123,33 +151,15 @@ export class InstanceConfigService implements OnModuleInit {
     const currentConfig = await this.getConfig()
     const nextConfig = parseInstanceConfig(await updater(currentConfig))
 
-    await this.writeConfigFile(nextConfig)
+    this.writeConfigFile(nextConfig)
 
     return nextConfig
-  }
-
-  async isServerSyncEnabled(): Promise<boolean> {
-    const config = await this.getConfig()
-
-    return config.serverSync.enabled
-  }
-
-  async getFileDownloadMaxSizeBytes(): Promise<number> {
-    const config = await this.getConfig()
-
-    return config.fileDownloadMaxSizeBytes
   }
 
   async getServerSources(): Promise<ServerSourceConfig[]> {
     const config = await this.getConfig()
 
     return this.serverSourcesService.list(config.serverSync.sources)
-  }
-
-  async getWebDavCredentials(): Promise<WebDavCredentials | null> {
-    const config = await this.getConfig()
-
-    return config.serverSync.credentials
   }
 
   async setWebDavCredentials(credentials: WebDavCredentials): Promise<void> {
@@ -246,43 +256,7 @@ export class InstanceConfigService implements OnModuleInit {
     }))
   }
 
-  private async ensureInitialized() {
-    if (!this.initializationPromise) {
-      this.initializationPromise = this.initialize()
-    }
-
-    return this.initializationPromise
-  }
-
-  private async initialize() {
-    await fs.promises.mkdir(this.appConfig.CONFIG_DIR, { recursive: true })
-
-    try {
-      await fs.promises.access(this.appConfig.CONFIG_FILE, fs.constants.F_OK)
-    } catch {
-      await this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
-      return
-    }
-
-    await this.readConfigFile()
-  }
-
-  private async readConfigFile(): Promise<InstanceConfig> {
-    let rawContent: string
-
-    try {
-      rawContent = await fs.promises.readFile(
-        this.appConfig.CONFIG_FILE,
-        "utf8",
-      )
-    } catch (error) {
-      throw new Error(
-        `Failed to read instance config file at ${this.appConfig.CONFIG_FILE}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-      )
-    }
-
+  private parseConfigFileContent(rawContent: string): InstanceConfig {
     let parsedContent: unknown
 
     try {
@@ -306,7 +280,7 @@ export class InstanceConfigService implements OnModuleInit {
     }
   }
 
-  private async writeConfigFile(config: InstanceConfig) {
+  private writeConfigFile(config: InstanceConfig) {
     const directory = path.dirname(this.appConfig.CONFIG_FILE)
     const temporaryFile = path.join(
       directory,
@@ -314,7 +288,7 @@ export class InstanceConfigService implements OnModuleInit {
     )
     const serialized = JSON.stringify(config, null, 2)
 
-    await fs.promises.writeFile(temporaryFile, `${serialized}\n`, "utf8")
-    await fs.promises.rename(temporaryFile, this.appConfig.CONFIG_FILE)
+    fs.writeFileSync(temporaryFile, `${serialized}\n`, "utf8")
+    fs.renameSync(temporaryFile, this.appConfig.CONFIG_FILE)
   }
 }
