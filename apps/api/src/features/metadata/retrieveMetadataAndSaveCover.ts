@@ -387,13 +387,21 @@ export const retrieveMetadataAndSaveCover = async (
     })
 
     /**
-     * Only report a length when we actually downloaded the file —
-     * otherwise the caller would overwrite the previously-recorded
-     * link.contentLength with 0 on every cached refresh.
+     * The downloaded bytes are authoritative; the provider-reported size is
+     * the next best thing. Reporting nothing when we have neither keeps the
+     * caller from overwriting the previously-recorded link.contentLength
+     * with 0 on every cached refresh.
      */
+    const hasReportedFileSize =
+      !!linkMetadata.size && Number.isFinite(reportedFileSizeBytes)
+
     return {
       link: {
-        contentLength: tmpFilePath ? fileContentLength : undefined,
+        contentLength: tmpFilePath
+          ? fileContentLength
+          : hasReportedFileSize
+            ? reportedFileSizeBytes
+            : undefined,
       },
     }
   } catch (e) {

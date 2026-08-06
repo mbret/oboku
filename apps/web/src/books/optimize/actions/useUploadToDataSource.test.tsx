@@ -17,6 +17,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const {
   getBookFile,
   notify,
+  refreshBookMetadata,
   showConfirmDialog,
   upsertFile,
   usePluginUpsertFile,
@@ -32,6 +33,10 @@ const {
       return null
     }),
     notify: vi.fn(),
+    refreshBookMetadata: vi.fn(async function refreshMetadata(
+      _bookId: string,
+      _options?: { force?: boolean },
+    ) {}),
     showConfirmDialog: vi.fn(async function confirmUpload() {
       return true
     }),
@@ -56,6 +61,13 @@ vi.mock("../../../common/dialogs/presets", function mockDialogs() {
 })
 vi.mock("../../../notifications/toasts", function mockToasts() {
   return { notify }
+})
+vi.mock("../../useRefreshBookMetadata", function mockRefreshBookMetadata() {
+  return {
+    useRefreshBookMetadata: function useMockRefreshBookMetadata() {
+      return refreshBookMetadata
+    },
+  }
 })
 
 import { useUploadToDataSource } from "./useUploadToDataSource"
@@ -144,5 +156,27 @@ describe("useUploadToDataSource", function testUseUploadToDataSource() {
       meta: { suppressGlobalErrorToast: true },
     })
     expect(notify).not.toHaveBeenCalled()
+    expect(refreshBookMetadata).not.toHaveBeenCalled()
+  })
+
+  it("refreshes the book metadata once the new file is on the data source", async function refreshMetadataAfterUpload() {
+    const { result } = renderHook(
+      function renderUseUploadToDataSource() {
+        return useUploadToDataSource({ book, link, enabled: true })
+      },
+      { wrapper: createWrapper(vi.fn()) },
+    )
+
+    await act(async function startUpload() {
+      await result.current.uploadToDataSource()
+    })
+
+    await waitFor(function waitForMetadataRefresh() {
+      expect(refreshBookMetadata).toHaveBeenCalledWith(book._id, {
+        force: true,
+      })
+    })
+
+    expect(notify).toHaveBeenCalledTimes(1)
   })
 })

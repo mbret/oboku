@@ -6,6 +6,7 @@ import { getBookFile } from "../../../download/getBookFile.shared"
 import { usePluginUpsertFile } from "../../../plugins/usePluginUpsertFile"
 import { pluginsByType } from "../../../plugins/configure"
 import { notify } from "../../../notifications/toasts"
+import { useRefreshBookMetadata } from "../../useRefreshBookMetadata"
 import { confirmUploadToDataSource } from "./confirmUploadToDataSource"
 
 export const useUploadToDataSource = ({
@@ -19,6 +20,7 @@ export const useUploadToDataSource = ({
 }) => {
   const bookId = book._id
   const plugin = pluginsByType[link.type]
+  const refreshBookMetadata = useRefreshBookMetadata()
   const {
     mutateAsync: upsertFile,
     slot,
@@ -44,6 +46,14 @@ export const useUploadToDataSource = ({
         contentType: file.type,
       })
     },
+    /**
+     * Forced because the cover bucket key is derived from the archive entry
+     * path, which an optimized re-upload leaves unchanged even though the
+     * bytes — and therefore the cover — differ.
+     */
+    onSuccess: async function refreshMetadataDerivedFromUploadedFile() {
+      await refreshBookMetadata(bookId, { force: true })
+    },
   })
 
   const canUpload = enabled && !isUploading
@@ -62,7 +72,8 @@ export const useUploadToDataSource = ({
       onSuccess: () => {
         notify({
           title: "Upload complete",
-          description: "The file was uploaded to the data source.",
+          description:
+            "The file was uploaded to the data source. Its metadata is being refreshed.",
           severity: "success",
         })
       },
