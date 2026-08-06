@@ -1,5 +1,3 @@
-import { isDefined } from "reactjrx"
-
 const MAX_REVISIONS_PER_REQUEST = 1000
 
 /**
@@ -12,22 +10,29 @@ export const pruneDriveFileRevisions = async (
   _gapi: typeof gapi,
   { fileId }: { fileId: string },
 ) => {
-  const { result: file } = await _gapi.client.drive.files.get({
-    fileId,
-    supportsAllDrives: true,
-    fields: "headRevisionId",
-  })
+  const [{ result: file }, { result: revisionList }] = await Promise.all([
+    _gapi.client.drive.files.get({
+      fileId,
+      supportsAllDrives: true,
+      fields: "headRevisionId",
+    }),
+    _gapi.client.drive.revisions.list({
+      fileId,
+      fields: "revisions(id)",
+      pageSize: MAX_REVISIONS_PER_REQUEST,
+    }),
+  ])
 
-  const { result: revisionList } = await _gapi.client.drive.revisions.list({
-    fileId,
-    fields: "revisions(id)",
-    pageSize: MAX_REVISIONS_PER_REQUEST,
-  })
+  const obsoleteRevisionIds = (revisionList.revisions ?? []).reduce<string[]>(
+    function collectObsoleteRevisionId(revisionIds, { id }) {
+      if (id !== undefined && id !== file.headRevisionId) {
+        revisionIds.push(id)
+      }
 
-  const obsoleteRevisionIds = (revisionList.revisions ?? [])
-    .map((revision) => revision.id)
-    .filter(isDefined)
-    .filter((revisionId) => revisionId !== file.headRevisionId)
+      return revisionIds
+    },
+    [],
+  )
 
   for (const revisionId of obsoleteRevisionIds) {
     await _gapi.client.drive.revisions.delete({ fileId, revisionId })
