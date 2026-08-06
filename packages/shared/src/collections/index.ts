@@ -1,3 +1,5 @@
+export * from "./computedMetadata"
+
 export const getCollectionCoverKey = (
   userNameHex: string,
   collectionId: string,
