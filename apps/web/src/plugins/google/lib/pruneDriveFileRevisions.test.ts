@@ -1,9 +1,5 @@
-// @vitest-environment jsdom
-
-import { renderHook } from "@testing-library/react"
-import { firstValueFrom } from "rxjs"
 import { describe, expect, it, vi } from "vitest"
-import { usePruneDriveFileRevisions } from "./usePruneDriveFileRevisions"
+import { pruneDriveFileRevisions } from "./pruneDriveFileRevisions"
 
 function createGapiStub({
   headRevisionId,
@@ -28,9 +24,7 @@ function createGapiStub({
         revisions: {
           list: vi.fn(async function listDriveRevisions() {
             return {
-              result: {
-                revisions: revisionIds.map((id) => ({ id })),
-              },
+              result: { revisions: revisionIds.map((id) => ({ id })) },
             }
           }),
           delete: deleteRevision,
@@ -44,22 +38,14 @@ function createGapiStub({
   return { gapi: stub as unknown as typeof gapi, deleteRevision }
 }
 
-function pruneRevisions(gapiStub: typeof gapi, fileId: string) {
-  const { result } = renderHook(function renderUsePruneDriveFileRevisions() {
-    return usePruneDriveFileRevisions()
-  })
-
-  return firstValueFrom(result.current(gapiStub, { fileId }))
-}
-
-describe("usePruneDriveFileRevisions", function testUsePruneDriveFileRevisions() {
+describe("pruneDriveFileRevisions", function testPruneDriveFileRevisions() {
   it("deletes every revision but the head one", async function deleteObsoleteRevisions() {
     const { gapi: gapiStub, deleteRevision } = createGapiStub({
       headRevisionId: "revision-3",
       revisionIds: ["revision-1", "revision-2", "revision-3"],
     })
 
-    await pruneRevisions(gapiStub, "file-1")
+    await pruneDriveFileRevisions(gapiStub, { fileId: "file-1" })
 
     expect(deleteRevision).toHaveBeenCalledTimes(2)
     expect(deleteRevision).toHaveBeenNthCalledWith(1, {
@@ -78,7 +64,7 @@ describe("usePruneDriveFileRevisions", function testUsePruneDriveFileRevisions()
       revisionIds: ["revision-1"],
     })
 
-    await pruneRevisions(gapiStub, "file-1")
+    await pruneDriveFileRevisions(gapiStub, { fileId: "file-1" })
 
     expect(deleteRevision).not.toHaveBeenCalled()
   })
