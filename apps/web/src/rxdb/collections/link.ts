@@ -21,18 +21,17 @@ type LinkCollectionMethods = {
 }
 
 /**
- * Fields kept in the schema only so existing documents stay valid without a
- * migration. They are absent from {@link LinkDocType} on purpose: nothing
- * reads or writes them.
+ * Kept in the schema so stored documents stay valid without a migration,
+ * and out of {@link LinkDocType} so no code can read or write them.
  */
-type LinkSchemaOnlyFields = {
+type DeprecatedProps = {
   dataSourceId?: string
-  /** @deprecated superseded by the `link` metadata entry's `size` */
+  /** Superseded by the `link` metadata entry's `size`. */
   contentLength?: number | null
 }
 
 const linkSchema: RxJsonSchema<
-  Omit<LinkDocType & LinkSchemaOnlyFields, `_rev` | `rxdbMeta`>
+  Omit<LinkDocType & DeprecatedProps, `_rev` | `rxdbMeta`>
 > = {
   title: "link",
   version: 1,
