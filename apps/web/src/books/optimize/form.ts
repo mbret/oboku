@@ -40,7 +40,7 @@ export const hasCompressionDimension = (
 export const hasImageCompressionOperation = (
   values: BookOptimizeFormValues,
 ): boolean =>
-  values.imageOutputMode === "webp" || hasCompressionDimension(values)
+  values.imageOutputMode !== "original" || hasCompressionDimension(values)
 
 export const resolveBookOptimizeFormValues = (
   inspection: FileInspection,

@@ -1,4 +1,6 @@
-export type ImageOutputMode = "webp" | "original"
+export type ImageOutputMode = "avif" | "original" | "webp"
+
+export type ConvertedImageOutputMode = Exclude<ImageOutputMode, "original">
 
 export type ImageCompressionConfig = {
   maxWidth: number | undefined

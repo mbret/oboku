@@ -26,7 +26,11 @@ describe("rewriteImageReferences", () => {
       "chapter2/index.xhtml": `<img src="page.jpg"/>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["chapter1/page.jpg"]))
+    await rewriteImageReferences(
+      entries,
+      new Set(["chapter1/page.jpg"]),
+      "webp",
+    )
 
     expect(await textOf(entries, "chapter1/index.xhtml")).toBe(
       `<img src="page.webp"/>`,
@@ -41,7 +45,11 @@ describe("rewriteImageReferences", () => {
       "OEBPS/text/chapter.xhtml": `<image xlink:href="../images/cover.png?v=1"/>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["OEBPS/images/cover.png"]))
+    await rewriteImageReferences(
+      entries,
+      new Set(["OEBPS/images/cover.png"]),
+      "webp",
+    )
 
     expect(await textOf(entries, "OEBPS/text/chapter.xhtml")).toBe(
       `<image xlink:href="../images/cover.webp?v=1"/>`,
@@ -54,7 +62,11 @@ describe("rewriteImageReferences", () => {
       "OEBPS/content.opf": `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="a" href="images/page%201.jpg" media-type="image/jpeg"/></manifest></package>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["OEBPS/images/page 1.jpg"]))
+    await rewriteImageReferences(
+      entries,
+      new Set(["OEBPS/images/page 1.jpg"]),
+      "webp",
+    )
 
     expect(await textOf(entries, "OEBPS/text/chapter.xhtml")).toBe(
       `<img src="../images/page%201.webp"/>`,
@@ -73,7 +85,11 @@ describe("rewriteImageReferences", () => {
       "OEBPS/styles/bare.css": `.bg { background: url(../images/page 1.jpg); }`,
     })
 
-    await rewriteImageReferences(entries, new Set(["OEBPS/images/page 1.jpg"]))
+    await rewriteImageReferences(
+      entries,
+      new Set(["OEBPS/images/page 1.jpg"]),
+      "webp",
+    )
 
     expect(await textOf(entries, "OEBPS/text/chapter.xhtml")).toBe(
       `<img src="../images/page 1.webp"/>`,
@@ -91,7 +107,11 @@ describe("rewriteImageReferences", () => {
       "OEBPS/content.opf": `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="a" href="images/a.jpg" media-type="image/jpeg"/><item id="b" href="images/b.jpg" media-type="image/jpeg"/></manifest></package>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["OEBPS/images/a.jpg"]))
+    await rewriteImageReferences(
+      entries,
+      new Set(["OEBPS/images/a.jpg"]),
+      "webp",
+    )
 
     const opf = await textOf(entries, "OEBPS/content.opf")
 
@@ -108,7 +128,7 @@ describe("rewriteImageReferences", () => {
       "ComicInfo.xml": `<ComicInfo><Title>cover.jpg</Title></ComicInfo>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["cover.jpg"]))
+    await rewriteImageReferences(entries, new Set(["cover.jpg"]), "webp")
 
     expect(await textOf(entries, "chapter.xhtml")).toBe(
       `<p>See cover.jpg for details.</p><img alt="cover.jpg" title="src=cover.jpg" src="cover.webp"/><script>const example = '<img src="cover.jpg">'</script>`,
@@ -131,6 +151,7 @@ describe("rewriteImageReferences", () => {
     await rewriteImageReferences(
       entries,
       new Set(["cover.jpg", "cover@2x.jpg"]),
+      "webp",
     )
 
     expect(await textOf(entries, "index.xhtml")).toBe(
@@ -143,7 +164,7 @@ describe("rewriteImageReferences", () => {
       "index.xhtml": `<a href="https://example.com/page.jpg">x</a><img src="cover.jpg"/>`,
     })
 
-    await rewriteImageReferences(entries, new Set(["cover.jpg"]))
+    await rewriteImageReferences(entries, new Set(["cover.jpg"]), "webp")
 
     expect(await textOf(entries, "index.xhtml")).toBe(
       `<a href="https://example.com/page.jpg">x</a><img src="cover.webp"/>`,
@@ -153,8 +174,25 @@ describe("rewriteImageReferences", () => {
   it("does nothing when no images were converted", async () => {
     const entries = archiveOf({ "index.xhtml": `<img src="page.jpg"/>` })
 
-    await rewriteImageReferences(entries, new Set())
+    await rewriteImageReferences(entries, new Set(), "webp")
 
     expect(await textOf(entries, "index.xhtml")).toBe(`<img src="page.jpg"/>`)
+  })
+
+  it("rewrites AVIF paths and OPF media types", async () => {
+    const entries = archiveOf({
+      "chapter.xhtml": `<img src="cover.jpg"/>`,
+      "content.opf": `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="cover" href="cover.jpg" media-type="image/jpeg"/></manifest></package>`,
+    })
+
+    await rewriteImageReferences(entries, new Set(["cover.jpg"]), "avif")
+
+    expect(await textOf(entries, "chapter.xhtml")).toBe(
+      `<img src="cover.avif"/>`,
+    )
+    const opf = await textOf(entries, "content.opf")
+
+    expect(opf).toContain(`href="cover.avif"`)
+    expect(opf).toContain(`media-type="image/avif"`)
   })
 })

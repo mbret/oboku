@@ -1,10 +1,11 @@
 import { type EditableArchive, readEntryText } from "../update/editableArchive"
 import {
+  getConvertedImageMediaType,
   getExtension,
   IMAGE_EXTENSIONS,
-  replaceExtensionWithWebp,
-  WEBP_MEDIA_TYPE,
+  replaceExtensionWithConvertedFormat,
 } from "./paths"
+import type { ConvertedImageOutputMode } from "./types"
 
 const TEXT_REFERENCE_EXTENSIONS: ReadonlySet<string> = new Set([
   ".xhtml",
@@ -97,19 +98,21 @@ const rewriteReference = (
   reference: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string => {
   const { path, suffix } = splitReferenceSuffix(reference)
 
   if (!IMAGE_EXTENSIONS.has(getExtension(path))) return reference
   if (!renamedPaths.has(resolveArchivePath(baseDir, path))) return reference
 
-  return `${replaceExtensionWithWebp(path)}${suffix}`
+  return `${replaceExtensionWithConvertedFormat(path, outputMode)}${suffix}`
 }
 
 const rewriteSrcsetReferences = (
   value: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string =>
   value.replace(
     SRCSET_CANDIDATE_PATTERN,
@@ -118,7 +121,12 @@ const rewriteSrcsetReferences = (
       separator: string,
       candidate: string,
     ) {
-      return `${separator}${rewriteReference(candidate, baseDir, renamedPaths)}`
+      return `${separator}${rewriteReference(
+        candidate,
+        baseDir,
+        renamedPaths,
+        outputMode,
+      )}`
     },
   )
 
@@ -126,6 +134,7 @@ const rewriteCssReferences = (
   content: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string =>
   content.replace(
     CSS_TOKEN_PATTERN,
@@ -142,7 +151,12 @@ const rewriteCssReferences = (
       const value = doubleQuotedValue ?? singleQuotedValue ?? unquotedValue
       if (value === undefined) return match
 
-      const rewritten = rewriteReference(value, baseDir, renamedPaths)
+      const rewritten = rewriteReference(
+        value,
+        baseDir,
+        renamedPaths,
+        outputMode,
+      )
 
       if (doubleQuotedValue !== undefined)
         return `${urlPrefix}"${rewritten}"${urlSuffix}`
@@ -158,17 +172,18 @@ const rewriteMarkupAttributeValue = (
   value: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string => {
   if (SRCSET_ATTRIBUTE_NAMES.has(attributeName)) {
-    return rewriteSrcsetReferences(value, baseDir, renamedPaths)
+    return rewriteSrcsetReferences(value, baseDir, renamedPaths, outputMode)
   }
 
   if (REFERENCE_ATTRIBUTE_NAMES.has(attributeName)) {
-    return rewriteReference(value, baseDir, renamedPaths)
+    return rewriteReference(value, baseDir, renamedPaths, outputMode)
   }
 
   return attributeName === "style"
-    ? rewriteCssReferences(value, baseDir, renamedPaths)
+    ? rewriteCssReferences(value, baseDir, renamedPaths, outputMode)
     : value
 }
 
@@ -176,6 +191,7 @@ const rewriteMarkupTagReferences = (
   tag: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string => {
   return tag.replace(
     MARKUP_ATTRIBUTE_PATTERN,
@@ -196,6 +212,7 @@ const rewriteMarkupTagReferences = (
         value,
         baseDir,
         renamedPaths,
+        outputMode,
       )
 
       if (rewritten === value) return match
@@ -214,6 +231,7 @@ const rewriteMarkupReferences = (
   content: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string =>
   content.replace(
     MARKUP_TOKEN_PATTERN,
@@ -232,12 +250,18 @@ const rewriteMarkupReferences = (
           styleContent,
           baseDir,
           renamedPaths,
+          outputMode,
         )}${styleEnd}`
       }
 
       if (/^<!--|^<!\[CDATA\[|^<script\b/i.test(token)) return token
 
-      return rewriteMarkupTagReferences(token, baseDir, renamedPaths)
+      return rewriteMarkupTagReferences(
+        token,
+        baseDir,
+        renamedPaths,
+        outputMode,
+      )
     },
   )
 
@@ -246,15 +270,17 @@ const rewriteTextReferences = (
   extension: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string =>
   extension === ".css"
-    ? rewriteCssReferences(content, baseDir, renamedPaths)
-    : rewriteMarkupReferences(content, baseDir, renamedPaths)
+    ? rewriteCssReferences(content, baseDir, renamedPaths, outputMode)
+    : rewriteMarkupReferences(content, baseDir, renamedPaths, outputMode)
 
 const rewriteOpfManifest = (
   xml: string,
   baseDir: string,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): string | undefined => {
   const doc = new DOMParser().parseFromString(xml, "application/xml")
 
@@ -267,12 +293,17 @@ const rewriteOpfManifest = (
     const href = item.getAttribute("href")
     if (!href) continue
 
-    const rewrittenHref = rewriteReference(href, baseDir, renamedPaths)
+    const rewrittenHref = rewriteReference(
+      href,
+      baseDir,
+      renamedPaths,
+      outputMode,
+    )
 
     if (rewrittenHref === href) continue
 
     item.setAttribute("href", rewrittenHref)
-    item.setAttribute("media-type", WEBP_MEDIA_TYPE)
+    item.setAttribute("media-type", getConvertedImageMediaType(outputMode))
     changed = true
   }
 
@@ -282,8 +313,8 @@ const rewriteOpfManifest = (
 }
 
 /**
- * Rewrites references to images that were converted to WebP across the
- * archive's text documents and OPF manifest.
+ * Rewrites references to converted images across the archive's text documents
+ * and OPF manifest.
  *
  * References are resolved relative to the document that contains them and
  * matched against the full archive paths in `renamedPaths`, so an image that
@@ -292,6 +323,7 @@ const rewriteOpfManifest = (
 export const rewriteImageReferences = async (
   entries: EditableArchive,
   renamedPaths: ReadonlySet<string>,
+  outputMode: ConvertedImageOutputMode,
 ): Promise<void> => {
   if (renamedPaths.size === 0) return
 
@@ -311,12 +343,14 @@ export const rewriteImageReferences = async (
         content,
         baseDir,
         renamedPaths,
+        outputMode,
       )
       const next = rewriteTextReferences(
         manifestRewritten ?? content,
         extension,
         baseDir,
         renamedPaths,
+        outputMode,
       )
 
       if (next !== content) entries.set(path, { dir: false, content: next })
@@ -329,6 +363,7 @@ export const rewriteImageReferences = async (
       extension,
       baseDir,
       renamedPaths,
+      outputMode,
     )
 
     if (next !== content) entries.set(path, { dir: false, content: next })

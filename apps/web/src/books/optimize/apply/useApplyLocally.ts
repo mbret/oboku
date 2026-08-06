@@ -133,12 +133,15 @@ export function useApplyLocally(options?: ApplyLocallyOptions) {
       const file = cached.data
       const archive = await createArchiveFromZipJs(
         new ZipReader(new BlobReader(file)),
+        {
+          name: file.name,
+          encodingFormat: file.type || undefined,
+        },
       )
 
       try {
         const { blob, mimeType, dispose } = await updateArchive(archive, {
           actions,
-          sourceMimeType: file.type,
           onProgress: function reportArchiveUpdateProgress(progress) {
             if (progress.phase === "write-archive") {
               progress$.next({

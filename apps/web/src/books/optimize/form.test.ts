@@ -20,6 +20,15 @@ describe("hasImageCompressionOperation", function testHasImageCompressionOperati
     ).toBe(true)
   })
 
+  it("allows AVIF conversion without resize dimensions", function allowAvifWithoutResizeDimensions() {
+    expect(
+      hasImageCompressionOperation({
+        ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
+        imageOutputMode: "avif",
+      }),
+    ).toBe(true)
+  })
+
   it("requires a resize dimension when keeping the original format", function requireResizeDimensionForOriginalFormat() {
     expect(
       hasImageCompressionOperation({

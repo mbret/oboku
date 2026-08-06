@@ -143,7 +143,7 @@ export default defineConfig(({ mode }) => ({
           "**/*.js.map",
           "**/*.css.map",
         ],
-        maximumFileSizeToCacheInBytes: 3 * 1024 * 1024, // 3 MiB; large assets (e.g. maps) excluded via globIgnores
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB; includes the AVIF encoder WASM
       },
       srcDir: "src",
       filename: "service-worker.ts",

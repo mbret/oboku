@@ -166,7 +166,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     expect(readOpfMetadata(xml)).toMatchObject({
       title: "Norwegian Wood",
       contributors: [{ name: "Haruki Murakami", roles: ["author"] }],
-      publisher: "Vintage",
+      publication: { edition: { publisher: "Vintage" } },
       languages: ["en"],
       isbn: "9783161484100",
     })

@@ -27,11 +27,12 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@prose-reader/archive-reader": "^1.334.0",
-    "@prose-reader/shared": "^1.334.0",
+    "@jsquash/avif": "2.1.1",
+    "@prose-reader/archive-reader": "^1.344.0",
+    "@prose-reader/shared": "^1.344.0",
     "@zip.js/zip.js": "^2.8.34"
   },
   "devDependencies": {
-    "vite": "^8.1.5"
+    "vite": "^8.2.0"
   }
 }

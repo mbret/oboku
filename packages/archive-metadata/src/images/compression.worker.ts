@@ -16,6 +16,25 @@ const computeScale = (
   return Math.min(1, widthScale, heightScale)
 }
 
+const encodeCanvas = async (
+  canvas: OffscreenCanvas,
+  context: OffscreenCanvasRenderingContext2D,
+  outputType: ImageCompressionRequest["outputType"],
+): Promise<ArrayBuffer | undefined> => {
+  if (outputType === "image/avif") {
+    const { default: encodeAvif } = await import("@jsquash/avif/encode.js")
+
+    return encodeAvif(context.getImageData(0, 0, canvas.width, canvas.height), {
+      quality: 50,
+      speed: 6,
+    })
+  }
+
+  const blob = await canvas.convertToBlob({ type: outputType })
+
+  return blob.type === outputType ? blob.arrayBuffer() : undefined
+}
+
 const compress = async ({
   bytes,
   maxWidth,
@@ -37,7 +56,10 @@ const compress = async ({
     const targetHeight = Math.max(1, Math.round(bitmap.height * scale))
 
     const canvas = new OffscreenCanvas(targetWidth, targetHeight)
-    const context = canvas.getContext("2d")
+    const context = canvas.getContext("2d", {
+      colorSpace: "srgb",
+      colorType: "unorm8",
+    })
 
     if (!context) {
       bitmap.close()
@@ -48,11 +70,9 @@ const compress = async ({
     context.drawImage(bitmap, 0, 0, targetWidth, targetHeight)
     bitmap.close()
 
-    const blob = await canvas.convertToBlob({ type: outputType })
+    const output = await encodeCanvas(canvas, context, outputType)
 
-    if (blob.type !== outputType) return { status: "skipped" }
-
-    const output = await blob.arrayBuffer()
+    if (!output) return { status: "skipped" }
 
     return { status: "ok", bytes: output }
   } catch {

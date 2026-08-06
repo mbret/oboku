@@ -1,6 +1,11 @@
-import type { PreservableImageMediaType } from "./paths"
+import type {
+  ConvertedImageMediaType,
+  PreservableImageMediaType,
+} from "./paths"
 
-export type ImageOutputMediaType = PreservableImageMediaType | "image/webp"
+export type ImageOutputMediaType =
+  | ConvertedImageMediaType
+  | PreservableImageMediaType
 
 export type ImageCompressionRequest = {
   bytes: ArrayBuffer

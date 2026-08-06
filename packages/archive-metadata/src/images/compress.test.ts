@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { type EditableArchive, readEntryText } from "../update/editableArchive"
 import type { ImageCompressionPool } from "./compressionPool"
 import type { ImageCompressionConfig } from "./types"
@@ -57,6 +57,11 @@ const stageBytes = async (bytes: ArrayBuffer): Promise<Blob> =>
   new Blob([bytes])
 
 describe("compressArchiveImages", () => {
+  afterEach(function restoreMocks() {
+    vi.restoreAllMocks()
+    vi.unstubAllGlobals()
+  })
+
   beforeEach(() => {
     compress.mockReset()
     terminate.mockReset()
@@ -99,6 +104,41 @@ describe("compressArchiveImages", () => {
     expect(entries.has("images/converted.webp")).toBe(true)
     expect(entries.has("images/skipped.png")).toBe(true)
     expect(terminate).toHaveBeenCalledOnce()
+  })
+
+  it("replaces successfully encoded images with AVIF output", async () => {
+    compress.mockResolvedValue({ status: "ok", bytes: arrayBufferOf("avif") })
+
+    const entries = archiveOf({
+      "images/cover.jpg": bytesOf("original"),
+      "content.opf": `<?xml version="1.0"?><package xmlns="http://www.idpf.org/2007/opf"><manifest><item id="cover" href="images/cover.jpg" media-type="image/jpeg"/></manifest></package>`,
+    })
+
+    const result = await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(result).toEqual({
+      totalImages: 1,
+      compressedCount: 1,
+      skippedCount: 0,
+    })
+    expect(entries.has("images/cover.jpg")).toBe(false)
+    expect(entries.has("images/cover.avif")).toBe(true)
+    expect(await textOf(entries, "content.opf")).toContain(
+      `href="images/cover.avif"`,
+    )
+    expect(await textOf(entries, "content.opf")).toContain(
+      `media-type="image/avif"`,
+    )
+    expect(compress).toHaveBeenCalledWith(expect.any(ArrayBuffer), {
+      maxWidth: undefined,
+      maxHeight: undefined,
+      outputType: "image/avif",
+      skipIfUnscaled: false,
+    })
   })
 
   it("uses a successfully encoded webp output even when its byte size grows", async () => {
@@ -332,5 +372,99 @@ describe("compressArchiveImages", () => {
 
     expect(compress).toHaveBeenCalledTimes(4)
     expect(peak).toBe(2)
+  })
+
+  it("uses four compression workers for AVIF on eight-core devices", async () => {
+    compress.mockResolvedValue({ status: "skipped" })
+    vi.spyOn(navigator, "hardwareConcurrency", "get").mockReturnValue(8)
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+    })
+
+    await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(4)
+    expect(compress).toHaveBeenCalledTimes(2)
+  })
+
+  it("uses two compression workers for AVIF on six-core devices", async () => {
+    compress.mockResolvedValue({ status: "skipped" })
+    vi.spyOn(navigator, "hardwareConcurrency", "get").mockReturnValue(6)
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+    })
+
+    await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(2)
+    expect(compress).toHaveBeenCalledTimes(2)
+  })
+
+  it("uses up to four compression workers for AVIF on high-end devices", async () => {
+    compress.mockResolvedValue({ status: "skipped" })
+    vi.spyOn(navigator, "hardwareConcurrency", "get").mockReturnValue(24)
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+      "c.jpg": bytesOf("c"),
+      "d.jpg": bytesOf("d"),
+      "e.jpg": bytesOf("e"),
+    })
+
+    await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(4)
+    expect(compress).toHaveBeenCalledTimes(5)
+  })
+
+  it("uses one compression worker for AVIF on lower-core devices", async () => {
+    compress.mockResolvedValue({ status: "skipped" })
+    vi.spyOn(navigator, "hardwareConcurrency", "get").mockReturnValue(4)
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+    })
+
+    await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(1)
+    expect(compress).toHaveBeenCalledTimes(2)
+  })
+
+  it("uses one outer AVIF worker when the encoder can use internal threads", async () => {
+    compress.mockResolvedValue({ status: "skipped" })
+    vi.spyOn(navigator, "hardwareConcurrency", "get").mockReturnValue(8)
+    vi.stubGlobal("crossOriginIsolated", true)
+    const entries = archiveOf({
+      "a.jpg": bytesOf("a"),
+      "b.jpg": bytesOf("b"),
+    })
+
+    await compressArchiveImages(
+      entries,
+      { ...config, outputMode: "avif" },
+      { stageBytes },
+    )
+
+    expect(createImageCompressionPool).toHaveBeenCalledWith(1)
+    expect(compress).toHaveBeenCalledTimes(2)
   })
 })
