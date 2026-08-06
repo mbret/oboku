@@ -20,13 +20,19 @@ type LinkCollectionMethods = {
   ) => Promise<LinkDocument>
 }
 
+/**
+ * Fields kept in the schema only so existing documents stay valid without a
+ * migration. They are absent from {@link LinkDocType} on purpose: nothing
+ * reads or writes them.
+ */
+type LinkSchemaOnlyFields = {
+  dataSourceId?: string
+  /** @deprecated superseded by the `link` metadata entry's `size` */
+  contentLength?: number | null
+}
+
 const linkSchema: RxJsonSchema<
-  Omit<
-    LinkDocType & {
-      dataSourceId?: string
-    },
-    `_rev` | `rxdbMeta`
-  >
+  Omit<LinkDocType & LinkSchemaOnlyFields, `_rev` | `rxdbMeta`>
 > = {
   title: "link",
   version: 1,
