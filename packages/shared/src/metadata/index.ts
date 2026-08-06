@@ -268,11 +268,9 @@ export type CollectionMetadata = {
   /**
    * googleBookApi: Metadata scrapped through google book api
    * link: metadata scrapped from the current link
-   * file: metadata scrapped from the file itself.
-   * user: metadata from user. highest priority
+   * user: metadata from user
    *
-   * priority order:
-   * [user, file, ..., link]
+   * See `COLLECTION_METADATA_PRIORITY` for how sources override each other.
    */
   type:
     | "googleBookApi"
