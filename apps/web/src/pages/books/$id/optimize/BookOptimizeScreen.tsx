@@ -1,4 +1,12 @@
-import { Alert, Container, Tab, Tabs, Typography, styled } from "@mui/material"
+import {
+  Alert,
+  Container,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+  styled,
+} from "@mui/material"
 import { memo, type SyntheticEvent, useCallback } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { Page } from "../../../../common/Page"
@@ -23,6 +31,12 @@ import {
 type ScreenParams = {
   id: string
 }
+
+const TopBarActionsStack = styled(Stack)(({ theme }) => ({
+  flexDirection: "row",
+  alignItems: "center",
+  gap: theme.spacing(1),
+}))
 
 const PageContainer = styled(Container)(({ theme }) => ({
   display: "flex",
@@ -82,10 +96,10 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
         showBack
         rightComponent={
           bookId && book && link && isDownloaded ? (
-            <>
+            <TopBarActionsStack>
               <TestBookButton bookId={bookId} />
               <BookOptimizeActionsMenu bookId={bookId} />
-            </>
+            </TopBarActionsStack>
           ) : undefined
         }
       />
