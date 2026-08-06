@@ -6,8 +6,8 @@ import { BookOptimizeActionsMenu } from "./BookOptimizeActionsMenu"
 
 const mocks = vi.hoisted(function createMocks() {
   return {
-    downloadBookFileToDevice: vi.fn(),
-    useDownloadBookFileToDevice: vi.fn(),
+    exportBookFileToDevice: vi.fn(),
+    useExportBookFileToDevice: vi.fn(),
     useIsApplyingLocally: vi.fn(),
   }
 })
@@ -17,20 +17,20 @@ vi.mock("../apply/useApplyLocally", function mockApplyLocally() {
 })
 
 vi.mock(
-  "./useDownloadBookFileToDevice",
-  function mockDownloadBookFileToDevice() {
-    return { useDownloadBookFileToDevice: mocks.useDownloadBookFileToDevice }
+  "../../../download/useExportBookFileToDevice",
+  function mockExportBookFileToDevice() {
+    return { useExportBookFileToDevice: mocks.useExportBookFileToDevice }
   },
 )
 
 const renderActionsMenu = ({
   isApplyingLocally = false,
-  isDownloadingToDevice = false,
+  isExportingToDevice = false,
 } = {}) => {
   mocks.useIsApplyingLocally.mockReturnValue(isApplyingLocally)
-  mocks.useDownloadBookFileToDevice.mockReturnValue({
-    downloadBookFileToDevice: mocks.downloadBookFileToDevice,
-    isDownloadingToDevice,
+  mocks.useExportBookFileToDevice.mockReturnValue({
+    exportBookFileToDevice: mocks.exportBookFileToDevice,
+    isExportingToDevice,
   })
 
   render(<BookOptimizeActionsMenu bookId="book-id" />)
@@ -51,8 +51,8 @@ describe("BookOptimizeActionsMenu", function testBookOptimizeActionsMenu() {
 
     fireEvent.click(menuItem)
 
-    expect(mocks.useDownloadBookFileToDevice).toHaveBeenCalledWith("book-id")
-    expect(mocks.downloadBookFileToDevice).toHaveBeenCalledOnce()
+    expect(mocks.useExportBookFileToDevice).toHaveBeenCalledWith("book-id")
+    expect(mocks.exportBookFileToDevice).toHaveBeenCalledOnce()
   })
 
   it("is disabled while local optimizations are applying", function disableWhileApplyingLocally() {
@@ -63,7 +63,7 @@ describe("BookOptimizeActionsMenu", function testBookOptimizeActionsMenu() {
   })
 
   it("is disabled while a download is already running", function disableWhileDownloading() {
-    const menuItem = renderActionsMenu({ isDownloadingToDevice: true })
+    const menuItem = renderActionsMenu({ isExportingToDevice: true })
 
     expect(menuItem.getAttribute("aria-disabled")).toBe("true")
   })

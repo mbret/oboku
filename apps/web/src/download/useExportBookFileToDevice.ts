@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import { getBookFile } from "../../../download/getBookFile.shared"
+import { getBookFile } from "./getBookFile.shared"
 
 const saveFileToDevice = (file: File) => {
   const objectUrl = URL.createObjectURL(file)
@@ -14,19 +14,19 @@ const saveFileToDevice = (file: File) => {
   })
 }
 
-export const useDownloadBookFileToDevice = (bookId: string) => {
-  const { mutate: downloadBookFileToDevice, isPending: isDownloadingToDevice } =
+export const useExportBookFileToDevice = (bookId: string) => {
+  const { mutate: exportBookFileToDevice, isPending: isExportingToDevice } =
     useMutation({
-      mutationFn: async function saveLocalBookFileToDevice() {
+      mutationFn: async function saveDownloadedBookFileToDevice() {
         const cached = await getBookFile(bookId)
 
         if (!cached) {
-          throw new Error(`Cannot download: no cached file for book ${bookId}`)
+          throw new Error(`Cannot export: no cached file for book ${bookId}`)
         }
 
         saveFileToDevice(cached.data)
       },
     })
 
-  return { downloadBookFileToDevice, isDownloadingToDevice }
+  return { exportBookFileToDevice, isExportingToDevice }
 }

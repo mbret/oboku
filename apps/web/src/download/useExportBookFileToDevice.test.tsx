@@ -9,7 +9,7 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { getBookFile } = vi.hoisted(function createDownloadMocks() {
+const { getBookFile } = vi.hoisted(function createExportMocks() {
   return {
     getBookFile: vi.fn(async function getCachedBookFile(): Promise<{
       data: File
@@ -19,11 +19,11 @@ const { getBookFile } = vi.hoisted(function createDownloadMocks() {
   }
 })
 
-vi.mock("../../../download/getBookFile.shared", function mockBookFile() {
+vi.mock("./getBookFile.shared", function mockBookFile() {
   return { getBookFile }
 })
 
-import { useDownloadBookFileToDevice } from "./useDownloadBookFileToDevice"
+import { useExportBookFileToDevice } from "./useExportBookFileToDevice"
 
 const file = new File(["book"], "book.epub", { type: "application/epub+zip" })
 
@@ -32,7 +32,7 @@ function createWrapper(onMutationError: (error: Error) => void) {
     mutationCache: new MutationCache({ onError: onMutationError }),
   })
 
-  return function DownloadQueryClientProvider({
+  return function ExportQueryClientProvider({
     children,
   }: {
     children: ReactNode
@@ -43,12 +43,12 @@ function createWrapper(onMutationError: (error: Error) => void) {
   }
 }
 
-const renderDownloadBookFileToDevice = (
+const renderExportBookFileToDevice = (
   onMutationError = vi.fn(function reportGlobalMutationError(_error: Error) {}),
 ) => {
   const { result } = renderHook(
-    function renderUseDownloadBookFileToDevice() {
-      return useDownloadBookFileToDevice("book-id")
+    function renderUseExportBookFileToDevice() {
+      return useExportBookFileToDevice("book-id")
     },
     { wrapper: createWrapper(onMutationError) },
   )
@@ -56,7 +56,7 @@ const renderDownloadBookFileToDevice = (
   return { onMutationError, result }
 }
 
-describe("useDownloadBookFileToDevice", function testUseDownloadBookFileToDevice() {
+describe("useExportBookFileToDevice", function testUseExportBookFileToDevice() {
   beforeEach(function resetMocks() {
     vi.clearAllMocks()
     getBookFile.mockResolvedValue({ data: file })
@@ -73,13 +73,13 @@ describe("useDownloadBookFileToDevice", function testUseDownloadBookFileToDevice
         clickedAnchors.push(this)
       },
     )
-    const { result } = renderDownloadBookFileToDevice()
+    const { result } = renderExportBookFileToDevice()
 
-    act(function startDownload() {
-      result.current.downloadBookFileToDevice()
+    act(function startExport() {
+      result.current.exportBookFileToDevice()
     })
 
-    await waitFor(function waitForDownload() {
+    await waitFor(function waitForExport() {
       expect(clickedAnchors).toHaveLength(1)
     })
 
@@ -95,18 +95,18 @@ describe("useDownloadBookFileToDevice", function testUseDownloadBookFileToDevice
 
   it("fails when the book has no local file", async function failWithoutCachedFile() {
     getBookFile.mockResolvedValue(null)
-    const { onMutationError, result } = renderDownloadBookFileToDevice()
+    const { onMutationError, result } = renderExportBookFileToDevice()
 
-    act(function startDownload() {
-      result.current.downloadBookFileToDevice()
+    act(function startExport() {
+      result.current.exportBookFileToDevice()
     })
 
-    await waitFor(function waitForDownloadFailure() {
+    await waitFor(function waitForExportFailure() {
       expect(onMutationError).toHaveBeenCalledTimes(1)
     })
 
     expect(onMutationError.mock.calls[0]?.[0]?.message).toBe(
-      "Cannot download: no cached file for book book-id",
+      "Cannot export: no cached file for book book-id",
     )
   })
 })

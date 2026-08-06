@@ -7,8 +7,8 @@ import {
   MenuItem,
 } from "@mui/material"
 import { type MouseEvent, useState } from "react"
+import { useExportBookFileToDevice } from "../../../download/useExportBookFileToDevice"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
-import { useDownloadBookFileToDevice } from "./useDownloadBookFileToDevice"
 
 type Props = {
   bookId: string
@@ -17,8 +17,8 @@ type Props = {
 export function BookOptimizeActionsMenu({ bookId }: Props) {
   const [anchorElement, setAnchorElement] = useState<HTMLElement | null>(null)
   const isApplyingLocally = useIsApplyingLocally(bookId)
-  const { downloadBookFileToDevice, isDownloadingToDevice } =
-    useDownloadBookFileToDevice(bookId)
+  const { exportBookFileToDevice, isExportingToDevice } =
+    useExportBookFileToDevice(bookId)
 
   function closeMenu() {
     setAnchorElement(null)
@@ -37,10 +37,10 @@ export function BookOptimizeActionsMenu({ bookId }: Props) {
       </IconButton>
       <Menu anchorEl={anchorElement} open={!!anchorElement} onClose={closeMenu}>
         <MenuItem
-          disabled={isApplyingLocally || isDownloadingToDevice}
+          disabled={isApplyingLocally || isExportingToDevice}
           onClick={function downloadLocalFileToDevice() {
             closeMenu()
-            downloadBookFileToDevice()
+            exportBookFileToDevice()
           }}
         >
           <ListItemIcon>
