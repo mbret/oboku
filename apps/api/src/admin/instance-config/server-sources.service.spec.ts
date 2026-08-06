@@ -120,6 +120,26 @@ describe("InstanceConfigService server sources", () => {
     ).rejects.toBeInstanceOf(ConflictException)
   })
 
+  it("serializes concurrent updates so none are lost", async () => {
+    const { instanceConfigService } = await createServices()
+
+    await Promise.all([
+      instanceConfigService.updateConfig((config) => ({
+        ...config,
+        showDisabledPlugins: false,
+      })),
+      instanceConfigService.updateConfig((config) => ({
+        ...config,
+        fileDownloadMaxSizeBytes: 123,
+      })),
+    ])
+
+    await expect(instanceConfigService.getConfig()).resolves.toMatchObject({
+      showDisabledPlugins: false,
+      fileDownloadMaxSizeBytes: 123,
+    })
+  })
+
   it("rejects unknown nested microsoft config properties", async () => {
     const { appConfig, instanceConfigService } = await createServices()
 

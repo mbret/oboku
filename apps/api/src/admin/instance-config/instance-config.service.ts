@@ -143,7 +143,28 @@ export class InstanceConfigService {
     return this.parseConfigFileContent(rawContent)
   }
 
+  /**
+   * Chained so concurrent updates run one at a time: each read-modify-write
+   * sees the previous write, instead of two stale reads racing and the last
+   * write silently dropping the other's changes.
+   */
+  private updateChain: Promise<unknown> = Promise.resolve()
+
   async updateConfig(
+    updater: (
+      config: InstanceConfig,
+    ) => InstanceConfig | Promise<InstanceConfig>,
+  ): Promise<InstanceConfig> {
+    const update = this.updateChain
+      .catch(function ignorePreviousUpdateFailure() {})
+      .then(() => this.applyConfigUpdate(updater))
+
+    this.updateChain = update
+
+    return update
+  }
+
+  private async applyConfigUpdate(
     updater: (
       config: InstanceConfig,
     ) => InstanceConfig | Promise<InstanceConfig>,
