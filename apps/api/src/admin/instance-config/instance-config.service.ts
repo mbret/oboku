@@ -3,7 +3,7 @@ import fs from "node:fs"
 import path from "node:path"
 import bcrypt from "bcrypt"
 import Joi from "joi"
-import { BehaviorSubject, Observable } from "rxjs"
+import { BehaviorSubject } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
 import {
   PublicServerSource,
@@ -101,8 +101,6 @@ export class InstanceConfigService implements OnModuleDestroy {
   private readonly configFileWatcher: fs.FSWatcher
   private configFileReloadTimeout: NodeJS.Timeout | undefined
 
-  readonly config$: Observable<InstanceConfig>
-
   constructor(
     @Inject(AppConfigService)
     private readonly appConfig: Pick<
@@ -112,7 +110,6 @@ export class InstanceConfigService implements OnModuleDestroy {
     private readonly serverSourcesService: ServerSourcesService,
   ) {
     this.configSubject = new BehaviorSubject(this.initializeConfigFile())
-    this.config$ = this.configSubject.asObservable()
     this.configFileWatcher = this.watchConfigFile()
   }
 
@@ -188,8 +185,8 @@ export class InstanceConfigService implements OnModuleDestroy {
     }
   }
 
-  async getConfig(): Promise<InstanceConfig> {
-    return this.configSubject.getValue()
+  getConfig(): BehaviorSubject<InstanceConfig> {
+    return this.configSubject
   }
 
   /** Serializes read-modify-write cycles so a stale read never overwrites a newer write. */
@@ -223,10 +220,10 @@ export class InstanceConfigService implements OnModuleDestroy {
     return nextConfig
   }
 
-  async getServerSources(): Promise<ServerSourceConfig[]> {
-    const config = await this.getConfig()
-
-    return this.serverSourcesService.list(config.serverSync.sources)
+  getServerSources(): ServerSourceConfig[] {
+    return this.serverSourcesService.list(
+      this.configSubject.value.serverSync.sources,
+    )
   }
 
   async setWebDavCredentials(credentials: WebDavCredentials): Promise<void> {
@@ -244,10 +241,10 @@ export class InstanceConfigService implements OnModuleDestroy {
     }))
   }
 
-  async getEnabledServerSources(): Promise<PublicServerSource[]> {
-    const config = await this.getConfig()
-
-    return this.serverSourcesService.listEnabled(config.serverSync.sources)
+  getEnabledServerSources(): PublicServerSource[] {
+    return this.serverSourcesService.listEnabled(
+      this.configSubject.value.serverSync.sources,
+    )
   }
 
   async createServerSource(input: {

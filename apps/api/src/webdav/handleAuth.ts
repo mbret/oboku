@@ -24,7 +24,7 @@ export async function handleAuth(
   res: Response,
   instanceConfigService: InstanceConfigService,
 ): Promise<boolean> {
-  const { credentials } = (await instanceConfigService.getConfig()).serverSync
+  const { credentials } = instanceConfigService.getConfig().value.serverSync
 
   if (!credentials) {
     sendUnauthorized(res)

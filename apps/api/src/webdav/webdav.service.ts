@@ -50,7 +50,7 @@ export class WebDavService {
       return
     }
 
-    const { serverSync } = await this.instanceConfigService.getConfig()
+    const { serverSync } = this.instanceConfigService.getConfig().value
 
     if (!serverSync.enabled) {
       res.status(404).end()
@@ -81,7 +81,7 @@ export class WebDavService {
 
     const { sourceName, relativePath } = parsed
 
-    const source = await this.resolveEnabledSource(sourceName)
+    const source = this.resolveEnabledSource(sourceName)
 
     if (!source) {
       res
@@ -137,8 +137,8 @@ export class WebDavService {
     }
   }
 
-  private async resolveEnabledSource(sourceName: string) {
-    const sources = await this.instanceConfigService.getServerSources()
+  private resolveEnabledSource(sourceName: string) {
+    const sources = this.instanceConfigService.getServerSources()
 
     return sources.find((s) => s.name === sourceName && s.enabled) ?? null
   }

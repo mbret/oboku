@@ -146,7 +146,7 @@ describe("InstanceConfigService server sources", () => {
       })),
     ])
 
-    await expect(instanceConfigService.getConfig()).resolves.toMatchObject({
+    expect(instanceConfigService.getConfig().value).toMatchObject({
       showDisabledPlugins: false,
       fileDownloadMaxSizeBytes: 123,
     })
@@ -209,20 +209,20 @@ describe("InstanceConfigService server sources", () => {
       new InstanceConfigService(appConfig, serverSourcesService),
     )
 
-    await expect(rebootedService.getConfig()).resolves.toMatchObject({
+    expect(rebootedService.getConfig().value).toMatchObject({
       microsoftApplicationAuthority: "",
     })
   })
 
-  it("notifies config$ subscribers on update", async () => {
+  it("notifies config subscribers on update", async () => {
     const { instanceConfigService } = await createServices()
 
     const emissions: boolean[] = []
-    const subscription = instanceConfigService.config$.subscribe(
-      function collectShowDisabledPlugins(config) {
+    const subscription = instanceConfigService
+      .getConfig()
+      .subscribe(function collectShowDisabledPlugins(config) {
         emissions.push(config.showDisabledPlugins)
-      },
-    )
+      })
 
     await instanceConfigService.updateConfig((config) => ({
       ...config,
@@ -237,7 +237,7 @@ describe("InstanceConfigService server sources", () => {
   it("re-reads and emits when the file is edited out-of-band", async () => {
     const { appConfig, instanceConfigService } = await createServices()
 
-    const currentConfig = await instanceConfigService.getConfig()
+    const currentConfig = instanceConfigService.getConfig().value
 
     await fs.promises.writeFile(
       appConfig.CONFIG_FILE,
@@ -247,9 +247,9 @@ describe("InstanceConfigService server sources", () => {
 
     await expect(
       firstValueFrom(
-        instanceConfigService.config$.pipe(
-          filter((config) => config.fileDownloadMaxSizeBytes === 456),
-        ),
+        instanceConfigService
+          .getConfig()
+          .pipe(filter((config) => config.fileDownloadMaxSizeBytes === 456)),
       ),
     ).resolves.toMatchObject({ fileDownloadMaxSizeBytes: 456 })
   })
@@ -263,7 +263,7 @@ describe("InstanceConfigService server sources", () => {
       setTimeout(resolve, 400)
     })
 
-    await expect(instanceConfigService.getConfig()).resolves.toMatchObject({
+    expect(instanceConfigService.getConfig().value).toMatchObject({
       showDisabledPlugins: true,
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
     })
