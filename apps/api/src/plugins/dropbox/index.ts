@@ -87,6 +87,14 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       name: response.result.name,
       canDownload: true,
       modifiedAt: fileResult?.server_modified ?? MODIFIED_AT_UNSUPPORTED,
+      /**
+       * Dropbox's `filesDownload` buffers the whole file in memory, so
+       * reporting `size` here is what lets the caller skip oversized
+       * files before the download even starts.
+       */
+      bookMetadata: {
+        size: fileResult?.size.toString(),
+      },
     }
   },
   /**
