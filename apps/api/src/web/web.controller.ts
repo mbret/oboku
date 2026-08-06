@@ -14,8 +14,8 @@ export class WebController {
 
   @Public()
   @Get("config")
-  async getConfig(): Promise<GetWebConfigResponse> {
-    const config = await this.instanceConfigService.getConfig()
+  getConfig(): GetWebConfigResponse {
+    const config = this.instanceConfigService.getConfig().value
 
     return {
       GOOGLE_CLIENT_ID: this.appConfigService.GOOGLE_CLIENT_ID,

@@ -1,8 +1,9 @@
-import { Inject, Injectable, OnModuleInit } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
 import bcrypt from "bcrypt"
 import Joi from "joi"
+import { BehaviorSubject } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
 import {
   PublicServerSource,
@@ -33,12 +34,18 @@ export type InstanceConfig = {
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
+  fileDownloadMaxSizeBytes: number
 }
+
+export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
+
+const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
+  fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -69,6 +76,10 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
   microsoftApplicationClientId: Joi.string().trim().empty("").optional(),
   microsoftApplicationAuthority: Joi.string().trim().uri().allow("").optional(),
   showDisabledPlugins: Joi.boolean().default(true),
+  fileDownloadMaxSizeBytes: Joi.number()
+    .integer()
+    .min(1)
+    .default(DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {
@@ -84,8 +95,11 @@ const parseInstanceConfig = (value: unknown): InstanceConfig => {
 }
 
 @Injectable()
-export class InstanceConfigService implements OnModuleInit {
-  private initializationPromise: Promise<void> | null = null
+export class InstanceConfigService implements OnModuleDestroy {
+  private readonly logger = new Logger(InstanceConfigService.name)
+  private readonly configSubject: BehaviorSubject<InstanceConfig>
+  private readonly configFileWatcher: fs.FSWatcher
+  private configFileReloadTimeout: NodeJS.Timeout | undefined
 
   constructor(
     @Inject(AppConfigService)
@@ -94,47 +108,122 @@ export class InstanceConfigService implements OnModuleInit {
       "CONFIG_DIR" | "CONFIG_FILE"
     >,
     private readonly serverSourcesService: ServerSourcesService,
-  ) {}
-
-  async onModuleInit() {
-    await this.ensureInitialized()
+  ) {
+    this.configSubject = new BehaviorSubject(this.initializeConfigFile())
+    this.configFileWatcher = this.watchConfigFile()
   }
 
-  async getConfig(): Promise<InstanceConfig> {
-    await this.ensureInitialized()
+  onModuleDestroy() {
+    clearTimeout(this.configFileReloadTimeout)
+    this.configFileWatcher.close()
+    this.configSubject.complete()
+  }
+
+  private initializeConfigFile(): InstanceConfig {
+    fs.mkdirSync(this.appConfig.CONFIG_DIR, { recursive: true })
+
+    if (!fs.existsSync(this.appConfig.CONFIG_FILE)) {
+      this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
+
+      return DEFAULT_INSTANCE_CONFIG
+    }
 
     return this.readConfigFile()
   }
+
+  private watchConfigFile() {
+    const configFileName = path.basename(this.appConfig.CONFIG_FILE)
+
+    const scheduleReloadOnConfigFileEvent = (
+      _eventType: fs.WatchEventType,
+      filename: string | null,
+    ) => {
+      if (filename && filename !== configFileName) return
+
+      clearTimeout(this.configFileReloadTimeout)
+      this.configFileReloadTimeout = setTimeout(
+        this.refreshConfigFromFile,
+        CONFIG_FILE_RELOAD_DEBOUNCE_MS,
+      )
+    }
+
+    const logWatcherError = (error: Error) => {
+      this.logger.error(`Instance config file watcher error: ${error.message}`)
+    }
+
+    const watcher = fs.watch(
+      this.appConfig.CONFIG_DIR,
+      { persistent: false },
+      scheduleReloadOnConfigFileEvent,
+    )
+
+    watcher.on("error", logWatcherError)
+
+    return watcher
+  }
+
+  /**
+   * An invalid out-of-band edit keeps the last valid config (and logs)
+   * instead of breaking readers.
+   */
+  private readonly refreshConfigFromFile = () => {
+    try {
+      const config = this.readConfigFile()
+
+      const configChanged =
+        JSON.stringify(config) !== JSON.stringify(this.configSubject.getValue())
+
+      if (configChanged) {
+        this.configSubject.next(config)
+      }
+    } catch (error) {
+      this.logger.error(
+        `Ignoring instance config file change: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+      )
+    }
+  }
+
+  getConfig(): BehaviorSubject<InstanceConfig> {
+    return this.configSubject
+  }
+
+  /** Serializes read-modify-write cycles so a stale read never overwrites a newer write. */
+  private updateChain: Promise<unknown> = Promise.resolve()
 
   async updateConfig(
     updater: (
       config: InstanceConfig,
     ) => InstanceConfig | Promise<InstanceConfig>,
   ): Promise<InstanceConfig> {
-    const currentConfig = await this.getConfig()
+    const update = this.updateChain
+      .catch(function ignorePreviousUpdateFailure() {})
+      .then(() => this.applyConfigUpdate(updater))
+
+    this.updateChain = update
+
+    return update
+  }
+
+  private async applyConfigUpdate(
+    updater: (
+      config: InstanceConfig,
+    ) => InstanceConfig | Promise<InstanceConfig>,
+  ): Promise<InstanceConfig> {
+    const currentConfig = this.readConfigFile()
     const nextConfig = parseInstanceConfig(await updater(currentConfig))
 
-    await this.writeConfigFile(nextConfig)
+    this.writeConfigFile(nextConfig)
+    this.configSubject.next(nextConfig)
 
     return nextConfig
   }
 
-  async isServerSyncEnabled(): Promise<boolean> {
-    const config = await this.getConfig()
-
-    return config.serverSync.enabled
-  }
-
-  async getServerSources(): Promise<ServerSourceConfig[]> {
-    const config = await this.getConfig()
-
-    return this.serverSourcesService.list(config.serverSync.sources)
-  }
-
-  async getWebDavCredentials(): Promise<WebDavCredentials | null> {
-    const config = await this.getConfig()
-
-    return config.serverSync.credentials
+  getServerSources(): ServerSourceConfig[] {
+    return this.serverSourcesService.list(
+      this.configSubject.value.serverSync.sources,
+    )
   }
 
   async setWebDavCredentials(credentials: WebDavCredentials): Promise<void> {
@@ -152,10 +241,10 @@ export class InstanceConfigService implements OnModuleInit {
     }))
   }
 
-  async getEnabledServerSources(): Promise<PublicServerSource[]> {
-    const config = await this.getConfig()
-
-    return this.serverSourcesService.listEnabled(config.serverSync.sources)
+  getEnabledServerSources(): PublicServerSource[] {
+    return this.serverSourcesService.listEnabled(
+      this.configSubject.value.serverSync.sources,
+    )
   }
 
   async createServerSource(input: {
@@ -231,43 +320,13 @@ export class InstanceConfigService implements OnModuleInit {
     }))
   }
 
-  private async ensureInitialized() {
-    if (!this.initializationPromise) {
-      this.initializationPromise = this.initialize()
-    }
-
-    return this.initializationPromise
+  private readConfigFile(): InstanceConfig {
+    return this.parseConfigFileContent(
+      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+    )
   }
 
-  private async initialize() {
-    await fs.promises.mkdir(this.appConfig.CONFIG_DIR, { recursive: true })
-
-    try {
-      await fs.promises.access(this.appConfig.CONFIG_FILE, fs.constants.F_OK)
-    } catch {
-      await this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
-      return
-    }
-
-    await this.readConfigFile()
-  }
-
-  private async readConfigFile(): Promise<InstanceConfig> {
-    let rawContent: string
-
-    try {
-      rawContent = await fs.promises.readFile(
-        this.appConfig.CONFIG_FILE,
-        "utf8",
-      )
-    } catch (error) {
-      throw new Error(
-        `Failed to read instance config file at ${this.appConfig.CONFIG_FILE}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
-      )
-    }
-
+  private parseConfigFileContent(rawContent: string): InstanceConfig {
     let parsedContent: unknown
 
     try {
@@ -291,7 +350,7 @@ export class InstanceConfigService implements OnModuleInit {
     }
   }
 
-  private async writeConfigFile(config: InstanceConfig) {
+  private writeConfigFile(config: InstanceConfig) {
     const directory = path.dirname(this.appConfig.CONFIG_FILE)
     const temporaryFile = path.join(
       directory,
@@ -299,7 +358,7 @@ export class InstanceConfigService implements OnModuleInit {
     )
     const serialized = JSON.stringify(config, null, 2)
 
-    await fs.promises.writeFile(temporaryFile, `${serialized}\n`, "utf8")
-    await fs.promises.rename(temporaryFile, this.appConfig.CONFIG_FILE)
+    fs.writeFileSync(temporaryFile, `${serialized}\n`, "utf8")
+    fs.renameSync(temporaryFile, this.appConfig.CONFIG_FILE)
   }
 }

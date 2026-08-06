@@ -7,6 +7,7 @@ import { CoversService } from "src/covers/covers.service"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
 import { PluginsService } from "src/plugins/plugins.service"
+import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 
 @Injectable()
 export class BooksMetadataService {
@@ -17,6 +18,7 @@ export class BooksMetadataService {
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
     private readonly pluginsService: PluginsService,
+    private readonly instanceConfigService: InstanceConfigService,
   ) {}
 
   public refreshMetadata = async (
@@ -53,6 +55,9 @@ export class BooksMetadataService {
 
     if (!link) throw new Error(`Unable to find link ${firstLinkId}`)
 
+    const { fileDownloadMaxSizeBytes } =
+      this.instanceConfigService.getConfig().value
+
     let _data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
 
     try {
@@ -66,6 +71,7 @@ export class BooksMetadataService {
           googleApiKey: this.appConfigService.GOOGLE_API_KEY,
           db,
           force,
+          fileDownloadMaxSizeBytes,
         },
         this.appConfigService,
         this.coversService,

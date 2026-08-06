@@ -43,9 +43,11 @@ import {
   IsBoolean,
   IsEmail,
   IsIn,
+  IsInt,
   IsOptional,
   IsString,
   IsUrl,
+  Min,
   MinLength,
   ValidateIf,
 } from "class-validator"
@@ -122,6 +124,11 @@ class UpdateInstanceSettingsDto {
   @IsBoolean()
   @IsOptional()
   showDisabledPlugins?: boolean
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  fileDownloadMaxSizeBytes?: number
 
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
@@ -365,11 +372,12 @@ export class AdminController {
   }
 
   @Get("settings")
-  async getSettings(): Promise<GetInstanceSettingsResponse> {
-    const config = await this.instanceConfigService.getConfig()
+  getSettings(): GetInstanceSettingsResponse {
+    const config = this.instanceConfigService.getConfig().value
 
     return {
       showDisabledPlugins: config.showDisabledPlugins,
+      fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }
@@ -388,8 +396,8 @@ export class AdminController {
   }
 
   @Get("server-sync")
-  async getServerSync(): Promise<GetServerSyncResponse> {
-    const config = await this.instanceConfigService.getConfig()
+  getServerSync(): GetServerSyncResponse {
+    const config = this.instanceConfigService.getConfig().value
     const { credentials } = config.serverSync
 
     return {

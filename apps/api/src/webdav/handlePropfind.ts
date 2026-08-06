@@ -67,7 +67,7 @@ export async function handlePropfind(
     })
 
     if (depth !== "0") {
-      const sources = await instanceConfigService.getServerSources()
+      const sources = instanceConfigService.getServerSources()
 
       for (const s of sources) {
         if (!s.enabled) continue
