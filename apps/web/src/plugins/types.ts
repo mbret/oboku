@@ -132,10 +132,13 @@ type UpsertFileCapability<
 > =
   | {
       canUpsertFile: true
+      /** Whether upserting a file deletes the versions the provider kept for it */
+      upsertPrunesVersionHistory?: boolean
       UpsertFileComponent: UpsertFileComponent<T>
     }
   | {
       canUpsertFile?: false
+      upsertPrunesVersionHistory?: undefined
       UpsertFileComponent?: undefined
     }
 

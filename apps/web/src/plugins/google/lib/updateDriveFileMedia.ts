@@ -1,3 +1,4 @@
+import { map } from "rxjs"
 import { httpClientWeb } from "../../../http/httpClient.web"
 import { toProgressRatioHandler } from "../../../http/toProgressRatioHandler"
 
@@ -16,13 +17,19 @@ export const updateDriveFileMedia = ({
   contentType,
   onProgress,
 }: Params) =>
-  httpClientWeb.upload$({
-    url: `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true`,
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": contentType ?? file.type ?? "application/octet-stream",
-    },
-    body: file,
-    onUploadProgress: toProgressRatioHandler(onProgress),
-  })
+  httpClientWeb
+    .upload$({
+      url: `https://www.googleapis.com/upload/drive/v3/files/${fileId}?uploadType=media&supportsAllDrives=true&fields=headRevisionId`,
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": contentType ?? file.type ?? "application/octet-stream",
+      },
+      body: file,
+      onUploadProgress: toProgressRatioHandler(onProgress),
+    })
+    .pipe(
+      map(function toUpdatedFile({ data }): gapi.client.drive.File {
+        return JSON.parse(data)
+      }),
+    )
