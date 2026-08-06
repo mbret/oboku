@@ -7,7 +7,9 @@ import {
 } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
+import { Logger } from "../../../debug/logger.shared"
 import { useDownloadBook } from "../../../download"
+import { getBookFile } from "../../../download/getBookFile.shared"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
 
 export const useRevertLocalChanges = ({
@@ -36,8 +38,27 @@ export const useRevertLocalChanges = ({
 
   const { mutate: revert, isPending: isReverting } = useMutation({
     mutationFn: async function restoreOriginalDownload() {
+      const previousLocalFile = await getBookFile(bookId)
+
+      // The download flow resolves immediately when a file is already cached,
+      // so the local file has to be gone before the original can be fetched.
       await removeDownloadFile({ bookId })
-      await downloadBook({ _id: bookId, links: bookLinks })
+
+      try {
+        await downloadBook({ _id: bookId, links: bookLinks })
+      } catch (downloadError) {
+        if (previousLocalFile) {
+          await downloadBook({
+            _id: bookId,
+            links: bookLinks,
+            file: previousLocalFile.data,
+          }).catch(function reportLocalFileRestoreFailure(restoreError) {
+            Logger.error(restoreError)
+          })
+        }
+
+        throw downloadError
+      }
     },
   })
 

@@ -146,6 +146,8 @@ jobs:
           context: ./
           file: dockerfile
           target: web
+          build-args: |
+            GITHUB_SHA=${{ needs.release.outputs.sha }}
           platforms: linux/amd64,linux/arm64
           push: true
           tags: |

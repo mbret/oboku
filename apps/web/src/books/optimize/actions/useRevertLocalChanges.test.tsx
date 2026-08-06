@@ -16,6 +16,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const {
   downloadBook,
+  getBookFile,
   removeDownloadFile,
   showConfirmDialog,
   useDownloadBook,
@@ -26,6 +27,11 @@ const {
 
   return {
     downloadBook,
+    getBookFile: vi.fn(async function getCachedBookFile(): Promise<{
+      data: File
+    } | null> {
+      return null
+    }),
     removeDownloadFile,
     showConfirmDialog: vi.fn(async function confirmRevert() {
       return true
@@ -44,6 +50,9 @@ vi.mock("../../../common/dialogs/presets", function mockDialogs() {
 })
 vi.mock("../../../download", function mockDownloads() {
   return { useDownloadBook }
+})
+vi.mock("../../../download/getBookFile.shared", function mockGetBookFile() {
+  return { getBookFile }
 })
 vi.mock(
   "../../../download/useRemoveDownloadFile",
@@ -191,6 +200,47 @@ describe("useRevertLocalChanges", function testUseRevertLocalChanges() {
 
       await replacementDownload.promise.catch(function ignoreExpectedError() {})
     })
+
+    await waitFor(function waitForErrorNotification() {
+      expect(onMutationError).toHaveBeenCalledTimes(1)
+      expect(onMutationError.mock.calls[0]?.[0]).toBe(error)
+      expect(result.current.isReverting).toBe(false)
+    })
+  })
+
+  it("puts the previous local file back when the replacement download fails", async function restorePreviousLocalFile() {
+    const previousLocalFile = new File(["previous"], "book.epub")
+    const error = new Error("replacement download failed")
+    const onMutationError = vi.fn(function reportGlobalMutationError(
+      _error: Error,
+    ) {})
+    getBookFile.mockResolvedValueOnce({ data: previousLocalFile })
+    downloadBook.mockRejectedValueOnce(error)
+    const { result } = renderHook(
+      function renderUseRevertLocalChanges() {
+        return useRevertLocalChanges({ book, link })
+      },
+      {
+        wrapper: createWrapper(onMutationError),
+      },
+    )
+
+    await act(async function startRevert() {
+      await result.current.revertLocalChanges()
+    })
+
+    await waitFor(function waitForLocalFileRestore() {
+      expect(downloadBook).toHaveBeenNthCalledWith(2, {
+        _id: book._id,
+        links: book.links,
+        file: previousLocalFile,
+      })
+    })
+
+    expect(getBookFile).toHaveBeenCalledWith(book._id)
+    expect(getBookFile.mock.invocationCallOrder[0]).toBeLessThan(
+      removeDownloadFile.mock.invocationCallOrder[0] ?? 0,
+    )
 
     await waitFor(function waitForErrorNotification() {
       expect(onMutationError).toHaveBeenCalledTimes(1)

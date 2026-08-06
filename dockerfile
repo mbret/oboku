@@ -1,7 +1,9 @@
-# node:25 no longer bundles corepack, so install pnpm explicitly
-# (version kept in sync with the root package.json `packageManager` field).
+# node:25 no longer bundles corepack, so install pnpm explicitly, reading the
+# version from the root package.json `packageManager` field so it cannot drift.
 FROM node:25 AS node-pnpm
-RUN npm install -g pnpm@11.17.0
+WORKDIR /usr/src/app
+COPY package.json ./
+RUN npm install -g "pnpm@$(node -p 'require("./package.json").packageManager.replace(/^pnpm@/, "").split("+")[0]')"
 
 # pnpm needs every workspace manifest present to install with a frozen
 # lockfile, so the base stage installs once for the whole monorepo and app
@@ -46,6 +48,8 @@ ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
 FROM node-pnpm AS web-build
+ARG GITHUB_SHA
+ENV GITHUB_SHA=${GITHUB_SHA}
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
 COPY apps/web ./apps/web
