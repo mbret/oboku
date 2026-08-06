@@ -33,7 +33,6 @@ export type InstanceConfig = {
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
-  /** Maximum size of a user file (book, …) the server accepts to download. */
   fileDownloadMaxSizeBytes: number
 }
 
@@ -105,12 +104,6 @@ export class InstanceConfigService {
     this.initializeConfigFile()
   }
 
-  /**
-   * Runs synchronously at construction (i.e. during Nest bootstrap,
-   * before any consumer can call {@link getConfig}): seeds the config
-   * file with defaults when missing, otherwise validates it so a
-   * corrupted file fails the boot instead of the first request.
-   */
   private initializeConfigFile() {
     fs.mkdirSync(this.appConfig.CONFIG_DIR, { recursive: true })
 
@@ -143,11 +136,7 @@ export class InstanceConfigService {
     return this.parseConfigFileContent(rawContent)
   }
 
-  /**
-   * Chained so concurrent updates run one at a time: each read-modify-write
-   * sees the previous write, instead of two stale reads racing and the last
-   * write silently dropping the other's changes.
-   */
+  /** Serializes read-modify-write cycles so a stale read never overwrites a newer write. */
   private updateChain: Promise<unknown> = Promise.resolve()
 
   async updateConfig(
