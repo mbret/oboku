@@ -4,8 +4,9 @@ import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { getBookFile } from "../../../download/getBookFile.shared"
 import { usePluginUpsertFile } from "../../../plugins/usePluginUpsertFile"
-import { showConfirmDialog } from "../../../common/dialogs/presets"
+import { pluginsByType } from "../../../plugins/configure"
 import { notify } from "../../../notifications/toasts"
+import { confirmUploadToDataSource } from "./confirmUploadToDataSource"
 
 export const useUploadToDataSource = ({
   book,
@@ -17,6 +18,7 @@ export const useUploadToDataSource = ({
   enabled: boolean
 }) => {
   const bookId = book._id
+  const plugin = pluginsByType[link.type]
   const {
     mutateAsync: upsertFile,
     slot,
@@ -49,9 +51,9 @@ export const useUploadToDataSource = ({
   const uploadToDataSource = useCallback(async () => {
     if (!canUpload) return
 
-    const isConfirmed = await showConfirmDialog({
-      message:
-        "This will overwrite the file on the remote data source with the current local file.",
+    const isConfirmed = await confirmUploadToDataSource({
+      providerName: plugin.name,
+      prunesVersionHistory: plugin.upsertPrunesVersionHistory ?? false,
     })
 
     if (!isConfirmed) return
@@ -65,7 +67,7 @@ export const useUploadToDataSource = ({
         })
       },
     })
-  }, [canUpload, uploadFile])
+  }, [canUpload, plugin, uploadFile])
 
   return { uploadToDataSource, isUploading, canUpload, slot, uploadProgress$ }
 }
