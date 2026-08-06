@@ -10,17 +10,6 @@ type Params = {
   onProgress?: (progress: number) => void
 }
 
-const parseHeadRevisionId = (responseText: string) => {
-  const payload: unknown = JSON.parse(responseText)
-
-  return payload !== null &&
-    typeof payload === "object" &&
-    "headRevisionId" in payload &&
-    typeof payload.headRevisionId === "string"
-    ? payload.headRevisionId
-    : undefined
-}
-
 export const updateDriveFileMedia = ({
   fileId,
   file,
@@ -40,7 +29,7 @@ export const updateDriveFileMedia = ({
       onUploadProgress: toProgressRatioHandler(onProgress),
     })
     .pipe(
-      map(function toUpdatedFile({ data }) {
-        return { headRevisionId: parseHeadRevisionId(data) }
+      map(function toUpdatedFile({ data }): gapi.client.drive.File {
+        return JSON.parse(data)
       }),
     )
