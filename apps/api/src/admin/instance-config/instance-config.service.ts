@@ -1,8 +1,9 @@
-import { Inject, Injectable } from "@nestjs/common"
+import { Inject, Injectable, Logger, OnModuleDestroy } from "@nestjs/common"
 import fs from "node:fs"
 import path from "node:path"
 import bcrypt from "bcrypt"
 import Joi from "joi"
+import { BehaviorSubject, Observable } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
 import {
   PublicServerSource,
@@ -37,6 +38,8 @@ export type InstanceConfig = {
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
+
+const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
 const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   version: 1,
@@ -92,7 +95,14 @@ const parseInstanceConfig = (value: unknown): InstanceConfig => {
 }
 
 @Injectable()
-export class InstanceConfigService {
+export class InstanceConfigService implements OnModuleDestroy {
+  private readonly logger = new Logger(InstanceConfigService.name)
+  private readonly configSubject: BehaviorSubject<InstanceConfig>
+  private readonly configFileWatcher: fs.FSWatcher
+  private configFileReloadTimeout: NodeJS.Timeout | undefined
+
+  readonly config$: Observable<InstanceConfig>
+
   constructor(
     @Inject(AppConfigService)
     private readonly appConfig: Pick<
@@ -101,39 +111,85 @@ export class InstanceConfigService {
     >,
     private readonly serverSourcesService: ServerSourcesService,
   ) {
-    this.initializeConfigFile()
+    this.configSubject = new BehaviorSubject(this.initializeConfigFile())
+    this.config$ = this.configSubject.asObservable()
+    this.configFileWatcher = this.watchConfigFile()
   }
 
-  private initializeConfigFile() {
+  onModuleDestroy() {
+    clearTimeout(this.configFileReloadTimeout)
+    this.configFileWatcher.close()
+    this.configSubject.complete()
+  }
+
+  private initializeConfigFile(): InstanceConfig {
     fs.mkdirSync(this.appConfig.CONFIG_DIR, { recursive: true })
 
     if (!fs.existsSync(this.appConfig.CONFIG_FILE)) {
       this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
-      return
+
+      return DEFAULT_INSTANCE_CONFIG
     }
 
-    this.parseConfigFileContent(
-      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
-    )
+    return this.readConfigFile()
   }
 
-  async getConfig(): Promise<InstanceConfig> {
-    let rawContent: string
+  private watchConfigFile() {
+    const configFileName = path.basename(this.appConfig.CONFIG_FILE)
 
-    try {
-      rawContent = await fs.promises.readFile(
-        this.appConfig.CONFIG_FILE,
-        "utf8",
+    const scheduleReloadOnConfigFileEvent = (
+      _eventType: fs.WatchEventType,
+      filename: string | null,
+    ) => {
+      if (filename && filename !== configFileName) return
+
+      clearTimeout(this.configFileReloadTimeout)
+      this.configFileReloadTimeout = setTimeout(
+        this.refreshConfigFromFile,
+        CONFIG_FILE_RELOAD_DEBOUNCE_MS,
       )
+    }
+
+    const logWatcherError = (error: Error) => {
+      this.logger.error(`Instance config file watcher error: ${error.message}`)
+    }
+
+    const watcher = fs.watch(
+      this.appConfig.CONFIG_DIR,
+      { persistent: false },
+      scheduleReloadOnConfigFileEvent,
+    )
+
+    watcher.on("error", logWatcherError)
+
+    return watcher
+  }
+
+  /**
+   * An invalid out-of-band edit keeps the last valid config (and logs)
+   * instead of breaking readers.
+   */
+  private readonly refreshConfigFromFile = () => {
+    try {
+      const config = this.readConfigFile()
+
+      const configChanged =
+        JSON.stringify(config) !== JSON.stringify(this.configSubject.getValue())
+
+      if (configChanged) {
+        this.configSubject.next(config)
+      }
     } catch (error) {
-      throw new Error(
-        `Failed to read instance config file at ${this.appConfig.CONFIG_FILE}: ${
+      this.logger.error(
+        `Ignoring instance config file change: ${
           error instanceof Error ? error.message : "Unknown error"
         }`,
       )
     }
+  }
 
-    return this.parseConfigFileContent(rawContent)
+  async getConfig(): Promise<InstanceConfig> {
+    return this.configSubject.getValue()
   }
 
   /** Serializes read-modify-write cycles so a stale read never overwrites a newer write. */
@@ -158,10 +214,11 @@ export class InstanceConfigService {
       config: InstanceConfig,
     ) => InstanceConfig | Promise<InstanceConfig>,
   ): Promise<InstanceConfig> {
-    const currentConfig = await this.getConfig()
+    const currentConfig = this.readConfigFile()
     const nextConfig = parseInstanceConfig(await updater(currentConfig))
 
     this.writeConfigFile(nextConfig)
+    this.configSubject.next(nextConfig)
 
     return nextConfig
   }
@@ -264,6 +321,12 @@ export class InstanceConfigService {
         ),
       },
     }))
+  }
+
+  private readConfigFile(): InstanceConfig {
+    return this.parseConfigFileContent(
+      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+    )
   }
 
   private parseConfigFileContent(rawContent: string): InstanceConfig {
