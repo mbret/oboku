@@ -67,8 +67,13 @@ export const UpsertFile: UpsertFileComponent<"DRIVE"> = memo(
                   onProgress,
                 }),
               ),
-              switchMap(() =>
-                from(pruneDriveFileRevisions(gapiInstance, { fileId })).pipe(
+              switchMap(({ headRevisionId }) =>
+                from(
+                  pruneDriveFileRevisions(gapiInstance, {
+                    fileId,
+                    headRevisionId,
+                  }),
+                ).pipe(
                   /**
                    * The file is already replaced at this point, and retrying
                    * the upload would only add another revision to prune.

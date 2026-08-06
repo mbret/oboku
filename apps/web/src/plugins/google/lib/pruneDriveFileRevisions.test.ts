@@ -1,13 +1,7 @@
 import { describe, expect, it, vi } from "vitest"
 import { pruneDriveFileRevisions } from "./pruneDriveFileRevisions"
 
-function createGapiStub({
-  headRevisionId,
-  revisionIds,
-}: {
-  headRevisionId: string | undefined
-  revisionIds: string[]
-}) {
+function createGapiStub(revisionIds: string[]) {
   const deleteRevision = vi.fn(async function deleteDriveRevision(_request: {
     fileId: string
     revisionId: string
@@ -16,11 +10,6 @@ function createGapiStub({
   const stub = {
     client: {
       drive: {
-        files: {
-          get: vi.fn(async function getDriveFile() {
-            return { result: { headRevisionId } }
-          }),
-        },
         revisions: {
           list: vi.fn(async function listDriveRevisions() {
             return {
@@ -40,12 +29,16 @@ function createGapiStub({
 
 describe("pruneDriveFileRevisions", function testPruneDriveFileRevisions() {
   it("deletes every revision but the head one", async function deleteObsoleteRevisions() {
-    const { gapi: gapiStub, deleteRevision } = createGapiStub({
-      headRevisionId: "revision-3",
-      revisionIds: ["revision-1", "revision-2", "revision-3"],
-    })
+    const { gapi: gapiStub, deleteRevision } = createGapiStub([
+      "revision-1",
+      "revision-2",
+      "revision-3",
+    ])
 
-    await pruneDriveFileRevisions(gapiStub, { fileId: "file-1" })
+    await pruneDriveFileRevisions(gapiStub, {
+      fileId: "file-1",
+      headRevisionId: "revision-3",
+    })
 
     expect(deleteRevision).toHaveBeenCalledTimes(2)
     expect(deleteRevision).toHaveBeenNthCalledWith(1, {
@@ -59,12 +52,12 @@ describe("pruneDriveFileRevisions", function testPruneDriveFileRevisions() {
   })
 
   it("leaves a file with no previous version untouched", async function keepSingleRevision() {
-    const { gapi: gapiStub, deleteRevision } = createGapiStub({
-      headRevisionId: "revision-1",
-      revisionIds: ["revision-1"],
-    })
+    const { gapi: gapiStub, deleteRevision } = createGapiStub(["revision-1"])
 
-    await pruneDriveFileRevisions(gapiStub, { fileId: "file-1" })
+    await pruneDriveFileRevisions(gapiStub, {
+      fileId: "file-1",
+      headRevisionId: "revision-1",
+    })
 
     expect(deleteRevision).not.toHaveBeenCalled()
   })
