@@ -565,8 +565,8 @@ importers:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.17)(react@19.2.8)(supports-color@8.1.1)
       react-router:
-        specifier: ^7.18.2
-        version: 7.18.2(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
+        specifier: ^8.3.0
+        version: 8.3.0(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
       react-use:
         specifier: ^17.6.1
         version: 17.6.1(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
@@ -7154,10 +7154,6 @@ packages:
     resolution: {integrity: sha512-yki5XnKuf750l50uGTllt6kKILY4nQ1eNIQatoXEByZ5dWgnKqbnqmTrBE5B4N7lrMJKQ2ytWMiTO2o0v6Ew/w==}
     engines: {node: '>= 0.6'}
 
-  cookie@1.1.1:
-    resolution: {integrity: sha512-ei8Aos7ja0weRpFzJnEA9UHJ/7XQmqglbRwnf2ATjcB9Wq874VKH9kfjjirM6UhU2/E5fFYadylyhFldcqSidQ==}
-    engines: {node: '>=18'}
-
   cookiejar@2.1.4:
     resolution: {integrity: sha512-LDx6oHrK+PhzLKJU9j5S7/Y3jM/mUHvD/DeI1WQmJn652iPC5Y4TBzC9l+5OMOXlyTTA+SmVUPm0HQUwpD5Jqw==}
 
@@ -7221,6 +7217,7 @@ packages:
 
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   crypto-random-string@2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
@@ -11091,12 +11088,12 @@ packages:
       '@types/react':
         optional: true
 
-  react-router@7.18.2:
-    resolution: {integrity: sha512-aUVMjFm3GAPTTZL7oYr5E7ETiqfQCHRLH+B+5afnICvf0r7kkK4eR6SMuwbSTJw/7t+12khT/Kahij49fqOCIg==}
-    engines: {node: '>=20.0.0'}
+  react-router@8.3.0:
+    resolution: {integrity: sha512-qyPMvW83jGIct3yiieisxdk9M745anqhpIMKN5m1t6yBMfgVPpt77aHOqs5fUlEJRMCGffg9BaQLH9oPVOL7xQ==}
+    engines: {node: '>=22.22.0'}
     peerDependencies:
-      react: '>=18'
-      react-dom: '>=18'
+      react: '>=19.2.7'
+      react-dom: '>=19.2.7'
     peerDependenciesMeta:
       react-dom:
         optional: true
@@ -11547,9 +11544,6 @@ packages:
   serve-static@2.2.1:
     resolution: {integrity: sha512-xRXBn0pPqQTVQiC8wyQrKs2MOlX24zQ0POGaj0kultvoOCstBQM5yvOhAVSUwOMjQtTvsPWoNCHfPGwaaQJhTw==}
     engines: {node: '>= 18'}
-
-  set-cookie-parser@2.7.2:
-    resolution: {integrity: sha512-oeM1lpU/UvhTxw+g3cIfxXHyJRc/uidd3yK1P242gzHds0udQBYzs3y8j4gCCW+ZJ7ad0yctld8RYO+bdurlvw==}
 
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
@@ -20550,8 +20544,6 @@ snapshots:
 
   cookie@0.7.2: {}
 
-  cookie@1.1.1: {}
-
   cookiejar@2.1.4: {}
 
   copy-to-clipboard@3.3.3:
@@ -25458,11 +25450,10 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.2.17
 
-  react-router@7.18.2(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8):
+  react-router@8.3.0(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8):
     dependencies:
-      cookie: 1.1.1
+      cookie-es: 3.1.1
       react: 19.2.8
-      set-cookie-parser: 2.7.2
     optionalDependencies:
       react-dom: 19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8)
 
@@ -26070,8 +26061,6 @@ snapshots:
       send: 1.2.1(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
-
-  set-cookie-parser@2.7.2: {}
 
   set-function-length@1.2.2:
     dependencies:
