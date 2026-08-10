@@ -18,6 +18,11 @@ export default {
       },
     ],
     [
+      // conventional-changelog-conventionalcommits must stay on v9: v10 emits
+      // @conventional-changelog/template function partials, while
+      // @semantic-release/release-notes-generator@14 still renders through
+      // Handlebars (conventional-changelog-writer@8) and silently drops every
+      // commit, leaving release notes with only a compare link.
       "@semantic-release/release-notes-generator",
       { preset: "conventionalcommits" },
     ],
