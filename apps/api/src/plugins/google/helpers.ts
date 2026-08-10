@@ -6,7 +6,6 @@ import type { DriveApiCredentials } from "@oboku/shared"
 import { type drive_v3, google } from "googleapis"
 
 export type File = NonNullable<drive_v3.Schema$FileList["files"]>[number]
-export type DriveLinkData = { modifiedTime?: File["modifiedTime"] }
 
 type GoogleOAuth2Client = InstanceType<typeof google.auth.OAuth2>
 

@@ -1,4 +1,4 @@
-import { queryOptions, useQuery } from "@tanstack/react-query"
+import { queryOptions } from "@tanstack/react-query"
 import { dexieDb } from "../rxdb/dexie"
 import type { Profile } from "./types"
 
@@ -10,5 +10,3 @@ export const profilesQueryOptions = queryOptions({
 })
 
 export const profilesQueryKey = profilesQueryOptions.queryKey
-
-export const useProfiles = () => useQuery(profilesQueryOptions)
