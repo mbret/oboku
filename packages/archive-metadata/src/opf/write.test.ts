@@ -2,10 +2,10 @@
 import { describe, expect, it } from "vitest"
 import {
   arrayBufferFileAccessors,
+  isbnIdentifierValue,
   parseOpf,
   resolveArchiveMetadata,
 } from "@prose-reader/archive-reader"
-import { archiveMetadataIsbn } from "../metadata/isbn"
 import type { ArchiveFileRecord } from "../archive/types"
 import { buildPatchedOpfXml } from "./write"
 
@@ -42,7 +42,7 @@ const makeEntry = (uri: string, body: string): ArchiveFileRecord => ({
 const readOpfMetadata = (xml: string) => resolveArchiveMetadata(parseOpf(xml))
 
 const readOpfIsbn = (xml: string): string | undefined =>
-  archiveMetadataIsbn(readOpfMetadata(xml))
+  isbnIdentifierValue(readOpfMetadata(xml).identifiers)
 
 describe("OPF editing (buildPatchedOpfXml)", () => {
   it('inserts a new opf:scheme="ISBN" identifier when the metadata had none', async () => {

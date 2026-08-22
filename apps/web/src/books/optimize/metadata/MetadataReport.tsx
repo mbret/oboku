@@ -1,5 +1,7 @@
-import { archiveMetadataIsbn } from "@oboku/archive-metadata/web"
-import type { ResolvedArchiveSourceKind } from "@prose-reader/archive-reader"
+import {
+  isbnIdentifierValue,
+  type ResolvedArchiveSourceKind,
+} from "@prose-reader/archive-reader"
 import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
@@ -31,7 +33,7 @@ export const MetadataReport = memo(function MetadataReport() {
       />
       <ReportRow
         label="ISBN"
-        value={archiveMetadataIsbn(resolvedArchive.metadata) ?? "—"}
+        value={isbnIdentifierValue(resolvedArchive.metadata.identifiers) ?? "—"}
       />
     </Report>
   )

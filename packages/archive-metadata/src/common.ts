@@ -5,8 +5,6 @@ export type {
 } from "./archive/types"
 export { isFileRecord } from "./archive/types"
 
-export { archiveMetadataIsbn } from "./metadata/isbn"
-
 export type {
   ArchiveMetadataPatch,
   ArchiveMetadataTargets,

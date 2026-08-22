@@ -1,8 +1,8 @@
-import {
-  archiveMetadataIsbn,
-  type ArchiveMetadataPatch,
-  type ArchiveMetadataTargets,
+import type {
+  ArchiveMetadataPatch,
+  ArchiveMetadataTargets,
 } from "@oboku/archive-metadata/web"
+import { isbnIdentifierValue } from "@prose-reader/archive-reader"
 import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 
@@ -37,7 +37,8 @@ export const trimMetadataFixerFormValues = ({
 export const resolveMetadataFixerFormValues = (
   inspection: FileInspection,
 ): MetadataFixerFormValues => ({
-  isbn: archiveMetadataIsbn(inspection.resolvedArchive.metadata) ?? "",
+  isbn:
+    isbnIdentifierValue(inspection.resolvedArchive.metadata.identifiers) ?? "",
 })
 
 /**

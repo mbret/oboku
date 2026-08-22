@@ -1,6 +1,7 @@
-import { archiveMetadataIsbn, type Archive } from "@oboku/archive-metadata/node"
+import type { Archive } from "@oboku/archive-metadata/node"
 import type { FileMetadata } from "@oboku/shared"
 import {
+  isbnIdentifierValue,
   mainTitle,
   type ResolvedMetadata,
   resolveArchive,
@@ -35,7 +36,7 @@ export const getMetadataFromArchive = async (
   })
 
   const title = mainTitle(metadata)
-  const isbn = archiveMetadataIsbn(metadata)
+  const isbn = isbnIdentifierValue(metadata.identifiers)
 
   logger.log(
     `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, cover=${metadata.cover !== undefined})`,
