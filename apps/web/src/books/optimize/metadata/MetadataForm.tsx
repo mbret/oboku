@@ -1,5 +1,8 @@
 import { Stack } from "@mui/material"
-import { normalizeIsbn } from "@prose-reader/archive-reader"
+import {
+  isbnIdentifierValue,
+  normalizeIsbn,
+} from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
@@ -32,7 +35,7 @@ export function MetadataForm() {
         size="small"
         fullWidth
         helperText={
-          inspection.resolvedArchive.metadata.isbn
+          isbnIdentifierValue(inspection.resolvedArchive.metadata.identifiers)
             ? undefined
             : "No ISBN found in this book yet."
         }
