@@ -1,4 +1,7 @@
-import type { ResolvedArchiveSourceKind } from "@prose-reader/archive-reader"
+import {
+  isbnIdentifierValue,
+  type ResolvedArchiveSourceKind,
+} from "@prose-reader/archive-reader"
 import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
@@ -28,7 +31,10 @@ export const MetadataReport = memo(function MetadataReport() {
         label={CONTAINER_LABELS.opf}
         value={containerValue("opf", resolvedArchive)}
       />
-      <ReportRow label="ISBN" value={resolvedArchive.metadata.isbn ?? "—"} />
+      <ReportRow
+        label="ISBN"
+        value={isbnIdentifierValue(resolvedArchive.metadata.identifiers) ?? "—"}
+      />
     </Report>
   )
 })
