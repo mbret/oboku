@@ -64,8 +64,8 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
       rollup-plugin-node-externals:
-        specifier: ^8.1.2
-        version: 8.1.2(rollup@4.62.4)
+        specifier: ^9.0.1
+        version: 9.0.1(rollup@4.62.4)(vite@8.2.0(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0))
       semantic-release:
         specifier: ^25.0.9
         version: 25.0.9(supports-color@7.2.0)(typescript@5.9.3)
@@ -3027,8 +3027,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.6.20200806':
     resolution: {integrity: sha512-QN6aGmIbLXcJW0SEf8tz9UWCpQTBMy2u4xSuZ04YofzMGknhWwMeUecySLntCZYAEstHzDoSgwxCf5Gb8GqIRQ==}
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260728':
-    resolution: {integrity: sha512-gRK8cZK3VucxkGBO83UBJ5XhIqb+H4smSWhyLLB1CDftbByPsJTdtika+yCdxB+5kwyHjSsHM5pM+PCJYs0h8g==}
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260819':
+    resolution: {integrity: sha512-xOXj+gbdM67rYrs2tg6OVkpBUGPD58A6NwyiOTuixpq99IyY8XCHhrV4a7utRa2vsJCgsc9J24lJe5tdGduALg==}
 
   '@microsoft/api-extractor-model@7.33.10':
     resolution: {integrity: sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==}
@@ -7221,6 +7221,7 @@ packages:
 
   crypto-js@4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
+    deprecated: Active development of CryptoJS has been discontinued. This library is no longer maintained.
 
   crypto-random-string@2.0.0:
     resolution: {integrity: sha512-v1plID3y9r/lPhviJ1wrXpLeyUIGAZ2SHNYTEapm7/8A9nLPoyvVp3RK/EPFqn5kEznyWgYZNsRtYYIWbuG8KA==}
@@ -7779,6 +7780,7 @@ packages:
   eslint@9.39.5:
     resolution: {integrity: sha512-DgZS62aPLXKlnxILS/AYCoRvHaZeXceIzlXPkkGGzJWSow1aEk0lbTlxUSlyjC8jcaKxAdOnTDz+o1JFSBsyjw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+    deprecated: This version is no longer supported. Please see https://eslint.org/version-support for other options.
     hasBin: true
     peerDependencies:
       jiti: '*'
@@ -11360,11 +11362,17 @@ packages:
     resolution: {integrity: sha512-LL9GEt3bkXp6Wa19SNR5MWcvHNMvuTFYg+eYBZN2OIFhSWN+pEJUQXEKu5BsOeABob3x9PDaLKW7w5iOJnsESQ==}
     engines: {node: '>=8.0.0'}
 
-  rollup-plugin-node-externals@8.1.2:
-    resolution: {integrity: sha512-EuB6/lolkMLK16gvibUjikERq5fCRVIGwD2xue/CrM8D0pz5GXD2V6N8IrgxegwbcUoKkUFI8VYCEEv8MMvgpA==}
-    engines: {node: '>= 21 || ^20.6.0 || ^18.19.0'}
+  rollup-plugin-node-externals@9.0.1:
+    resolution: {integrity: sha512-Yp91CX1ebDA8s4+BY7bOOdhF8VRR1XAKnSsHeVhYg4DW4MRXPsF4F2FnSsN9ghJgFhHl3L1uyK7A9NA/SF4Zgw==}
+    engines: {node: '>= 24'}
     peerDependencies:
       rollup: ^4.0.0
+      vite: '>=5.0.0'
+    peerDependenciesMeta:
+      rollup:
+        optional: true
+      vite:
+        optional: true
 
   rollup@4.62.4:
     resolution: {integrity: sha512-RXOqwaPsBGjMNMa4sQjDjHieHEZDFoj/Rdr46l2MU5DfEs16wHJPC2RPTPHWhNl+M3aI472LLqFkFKut4SblOg==}
@@ -15910,7 +15918,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260728':
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260819':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -18073,7 +18081,7 @@ snapshots:
 
   '@types/gapi.client.drive-v3@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260728
+      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260819
 
   '@types/gapi.client@1.0.8': {}
 
@@ -25808,9 +25816,10 @@ snapshots:
 
   rollup-plugin-analyzer@4.0.0: {}
 
-  rollup-plugin-node-externals@8.1.2(rollup@4.62.4):
-    dependencies:
+  rollup-plugin-node-externals@9.0.1(rollup@4.62.4)(vite@8.2.0(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0)):
+    optionalDependencies:
       rollup: 4.62.4
+      vite: 8.2.0(@types/node@25.9.5)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0)
 
   rollup@4.62.4:
     dependencies:

@@ -38,7 +38,7 @@
     "lint-staged": "^16.4.0",
     "rollup": "^4.62.4",
     "rollup-plugin-analyzer": "^4.0.0",
-    "rollup-plugin-node-externals": "^8.1.2",
+    "rollup-plugin-node-externals": "^9.0.1",
     "semantic-release": "^25.0.9",
     "typescript": "^5.9.3",
     "unplugin-dts": "^1.0.3",
