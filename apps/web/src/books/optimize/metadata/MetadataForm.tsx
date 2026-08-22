@@ -1,4 +1,5 @@
 import { Stack } from "@mui/material"
+import { archiveMetadataIsbn } from "@oboku/archive-metadata/web"
 import { normalizeIsbn } from "@prose-reader/archive-reader"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
@@ -32,7 +33,7 @@ export function MetadataForm() {
         size="small"
         fullWidth
         helperText={
-          inspection.resolvedArchive.metadata.isbn
+          archiveMetadataIsbn(inspection.resolvedArchive.metadata)
             ? undefined
             : "No ISBN found in this book yet."
         }

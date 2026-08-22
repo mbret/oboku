@@ -1,6 +1,7 @@
-import type {
-  ArchiveMetadataPatch,
-  ArchiveMetadataTargets,
+import {
+  archiveMetadataIsbn,
+  type ArchiveMetadataPatch,
+  type ArchiveMetadataTargets,
 } from "@oboku/archive-metadata/web"
 import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
@@ -36,7 +37,7 @@ export const trimMetadataFixerFormValues = ({
 export const resolveMetadataFixerFormValues = (
   inspection: FileInspection,
 ): MetadataFixerFormValues => ({
-  isbn: inspection.resolvedArchive.metadata.isbn ?? "",
+  isbn: archiveMetadataIsbn(inspection.resolvedArchive.metadata) ?? "",
 })
 
 /**

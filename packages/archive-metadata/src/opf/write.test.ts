@@ -5,6 +5,7 @@ import {
   parseOpf,
   resolveArchiveMetadata,
 } from "@prose-reader/archive-reader"
+import { archiveMetadataIsbn } from "../metadata/isbn"
 import type { ArchiveFileRecord } from "../archive/types"
 import { buildPatchedOpfXml } from "./write"
 
@@ -40,6 +41,9 @@ const makeEntry = (uri: string, body: string): ArchiveFileRecord => ({
 
 const readOpfMetadata = (xml: string) => resolveArchiveMetadata(parseOpf(xml))
 
+const readOpfIsbn = (xml: string): string | undefined =>
+  archiveMetadataIsbn(readOpfMetadata(xml))
+
 describe("OPF editing (buildPatchedOpfXml)", () => {
   it('inserts a new opf:scheme="ISBN" identifier when the metadata had none', async () => {
     const entry = makeEntry(
@@ -52,7 +56,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
-    expect(readOpfMetadata(xml).isbn).toBe("9783161484100")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
     expect(xml).toContain("<dc:title>Sample</dc:title>")
   })
@@ -68,7 +72,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
-    expect(readOpfMetadata(xml).isbn).toBe("9783161484100")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).not.toContain("0000000000")
   })
 
@@ -80,7 +84,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
-    expect(readOpfMetadata(xml).isbn).toBe("9783161484100")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).not.toContain("0000000000")
   })
 
@@ -92,7 +96,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
-    expect(readOpfMetadata(xml).isbn).toBe("9783161484100")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).not.toContain("0000000000")
   })
 
@@ -121,7 +125,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
 
-    expect(readOpfMetadata(xml).isbn).toBeUndefined()
+    expect(readOpfIsbn(xml)).toBeUndefined()
     expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
   })
 
@@ -133,7 +137,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "" })
 
-    expect(readOpfMetadata(xml).isbn).toBeUndefined()
+    expect(readOpfIsbn(xml)).toBeUndefined()
   })
 
   it("does nothing when clearing an already-absent ISBN", async () => {
@@ -146,7 +150,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
 
-    expect(readOpfMetadata(xml).isbn).toBeUndefined()
+    expect(readOpfIsbn(xml)).toBeUndefined()
     expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
   })
 
@@ -164,12 +168,12 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
     expect(readOpfMetadata(xml)).toMatchObject({
-      title: "Norwegian Wood",
+      titles: [{ value: "Norwegian Wood" }],
       contributors: [{ name: "Haruki Murakami", roles: ["author"] }],
       publication: { edition: { publisher: "Vintage" } },
       languages: ["en"],
-      isbn: "9783161484100",
     })
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
   })
 
   it("preserves manifest and spine when inserting an ISBN", async () => {
@@ -185,9 +189,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
 
-    expect(readOpfMetadata(xml)).toMatchObject({
-      isbn: "9783161484100",
-    })
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).toContain(
       '<item id="ci" href="cover.png" media-type="image/png" properties="cover-image"',
     )
@@ -258,6 +260,6 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       isbn: "9783161484100",
     })
 
-    expect(readOpfMetadata(xml).isbn).toBe("9783161484100")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
   })
 })
