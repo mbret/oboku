@@ -42,7 +42,7 @@
     "cookie-parser": "^1.4.7",
     "dropbox": "^10.43.0",
     "express": "^5.2.1",
-    "google-auth-library": "^10.9.1",
+    "google-auth-library": "^11.0.2",
     "googleapis": "^171.4.0",
     "http-proxy-3": "^1.23.3",
     "joi": "^18.2.3",
