@@ -73,9 +73,10 @@ export type GoogleBookApiMetadata = BookMetadataVariant<
 
 /**
  * Metadata extracted from the file's contents (EPUB OPF or RAR/ZIP scan).
- * No descriptions, ratings, format types, or remote identifiers (other
- * than `isbn`, which EPUB's `dc:identifier` and CBZ's ComicInfo `<GTIN>`
- * both embed in the file itself).
+ * No descriptions, ratings or format types. Identifiers are advertised when
+ * the container embeds them: `isbn` from EPUB's `dc:identifier` or CBZ's
+ * ComicInfo `<GTIN>`, and `googleVolumeId` from a `GoogleBooks` identifier
+ * in the OPF.
  */
 export type FileMetadata = BookMetadataVariant<
   "file",
@@ -90,6 +91,7 @@ export type FileMetadata = BookMetadataVariant<
   | "pageCount"
   | "contentType"
   | "isbn"
+  | "googleVolumeId"
 >
 
 /**
