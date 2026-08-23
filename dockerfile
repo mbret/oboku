@@ -1,6 +1,6 @@
-# node:25 no longer bundles corepack, so install pnpm explicitly, reading the
+# node:24 no longer bundles corepack, so install pnpm explicitly, reading the
 # version from the root package.json `packageManager` field so it cannot drift.
-FROM node:25 AS node-pnpm
+FROM node:24 AS node-pnpm
 WORKDIR /usr/src/app
 COPY package.json ./
 RUN npm install -g "pnpm@$(node -p 'require("./package.json").packageManager.replace(/^pnpm@/, "").split("+")[0]')"
