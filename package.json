@@ -42,7 +42,7 @@
     "semantic-release": "^25.0.9",
     "typescript": "^5.9.3",
     "unplugin-dts": "^1.0.3",
-    "vercel": "^58.7.1",
+    "vercel": "^59.3.0",
     "vitest": "^4.1.10"
   },
   "dependencies": {
