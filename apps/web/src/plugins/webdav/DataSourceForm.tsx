@@ -1,11 +1,10 @@
 import { memo } from "react"
 import { Alert, InputAdornment, Link } from "@mui/material"
-import { Controller, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
+import { ControlledConnectorSelector } from "../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../common/forms/ControlledTextField"
-import { errorToHelperText } from "../../common/forms/errorToHelperText"
 import { links } from "@oboku/shared"
 import type { WebDAVDataSourceDocType } from "@oboku/shared"
-import { ConnectorSelector } from "../../connectors/ConnectorSelector"
 import { TestConnection } from "../../connectors/TestConnection"
 import { useConnector } from "../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
@@ -74,22 +73,11 @@ export const DataSourceForm = memo(
             },
           }}
         />
-        <Controller
+        <ControlledConnectorSelector
           control={control}
           name="connectorId"
           rules={{ required: true }}
-          render={({ field, fieldState }) => (
-            <ConnectorSelector
-              {...field}
-              connectorType="webdav"
-              helperText={
-                fieldState.invalid
-                  ? errorToHelperText(fieldState.error)
-                  : undefined
-              }
-              error={fieldState.invalid}
-            />
-          )}
+          connectorType="webdav"
         />
         <TestConnection
           connectionData={{
