@@ -28,8 +28,8 @@
   },
   "dependencies": {
     "@jsquash/avif": "2.1.1",
-    "@prose-reader/archive-reader": "^1.352.0",
-    "@prose-reader/shared": "^1.352.0",
+    "@prose-reader/archive-reader": "^1.357.0",
+    "@prose-reader/shared": "^1.357.0",
     "@zip.js/zip.js": "^2.8.34"
   },
   "devDependencies": {
