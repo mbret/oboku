@@ -8,9 +8,8 @@
  *
  * Also doubles as the shape of the **merged** view returned by consumers
  * (e.g. `getMetadataFromBook`): once values from each source are
- * collapsed by priority, the result is source-agnostic and any field can
- * be present, including filename-directive-only fields like
- * `googleVolumeId` that no concrete variant owns.
+ * collapsed by priority, the result is source-agnostic, so any field may
+ * be present regardless of which variant supplied it.
  */
 export type BookMetadataFields = {
   title?: string | number
