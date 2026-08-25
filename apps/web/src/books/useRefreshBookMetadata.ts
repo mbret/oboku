@@ -9,10 +9,6 @@ import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
 
-/**
- * This flow reports every failure itself through `notifyError`, so the
- * mutations it drives must not also raise the global toast.
- */
 const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const useRefreshBookMetadata = () => {

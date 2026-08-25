@@ -8,10 +8,6 @@ import { getCollectionById } from "./dbHelpers"
 import { CancelError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
-/**
- * Failures propagate to this mutation, whose own rejection raises the global
- * toast, so the mutations it drives must not raise one too.
- */
 const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const useRefreshCollectionMetadata = () => {
