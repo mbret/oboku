@@ -1,10 +1,6 @@
-import { Button, Stack, TextField } from "@mui/material"
-import {
-  Controller,
-  type Control,
-  type UseFormHandleSubmit,
-} from "react-hook-form"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { Button, Stack } from "@mui/material"
+import type { Control, UseFormHandleSubmit } from "react-hook-form"
+import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { Login } from "@mui/icons-material"
 
 export type SignInFormInputs = {
@@ -30,43 +26,23 @@ export const SignInForm = ({
         gap: 1,
       }}
     >
-      <Controller
+      <ControlledTextField
         name="email"
         control={control}
         rules={{ required: true }}
-        render={({ field: { ref, ...rest }, fieldState }) => {
-          return (
-            <TextField
-              {...rest}
-              label="Email"
-              type="email"
-              fullWidth
-              inputRef={ref}
-              autoComplete="email"
-              error={fieldState.invalid}
-              helperText={errorToHelperText(fieldState.error)}
-            />
-          )
-        }}
+        label="Email"
+        type="email"
+        fullWidth
+        autoComplete="email"
       />
-      <Controller
+      <ControlledTextField
         name="password"
         control={control}
         rules={{ required: true }}
-        render={({ field: { ref, ...rest }, fieldState }) => {
-          return (
-            <TextField
-              {...rest}
-              label="Password"
-              type="password"
-              fullWidth
-              inputRef={ref}
-              autoComplete="current-password"
-              error={fieldState.invalid}
-              helperText={errorToHelperText(fieldState.error)}
-            />
-          )
-        }}
+        label="Password"
+        type="password"
+        fullWidth
+        autoComplete="current-password"
       />
       <Button
         type="submit"

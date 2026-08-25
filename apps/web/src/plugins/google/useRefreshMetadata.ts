@@ -8,6 +8,7 @@ import { GOOGLE_DRIVE_FILE_SCOPES } from "./lib/constants"
 
 export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
   requestPopup,
+  meta,
 }) => {
   const { getGoogleScripts } = useGoogleScripts()
   const { requestToken } = useRequestToken({ requestPopup })
@@ -16,6 +17,7 @@ export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
   })
 
   return useMutation({
+    meta,
     mutationFn: async ({ linkData }) => {
       const fileId =
         linkData && "fileId" in linkData ? linkData.fileId : undefined

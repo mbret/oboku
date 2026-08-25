@@ -1,6 +1,8 @@
 import type { Archive } from "@oboku/archive-metadata/node"
 import type { FileMetadata } from "@oboku/shared"
 import {
+  isbnIdentifierValue,
+  mainTitle,
   type ResolvedMetadata,
   resolveArchive,
 } from "@prose-reader/archive-reader"
@@ -33,8 +35,11 @@ export const getMetadataFromArchive = async (
     include: ["metadata"],
   })
 
+  const title = mainTitle(metadata)
+  const isbn = isbnIdentifierValue(metadata.identifiers)
+
   logger.log(
-    `Extracted archive metadata (title=${metadata.title !== undefined}, isbn=${metadata.isbn !== undefined}, cover=${metadata.cover !== undefined})`,
+    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, cover=${metadata.cover !== undefined})`,
   )
 
   if (unreadableSources.length > 0) {
@@ -46,7 +51,7 @@ export const getMetadataFromArchive = async (
   return {
     type: "file",
     contentType,
-    title: metadata.title,
+    title,
     authors: authorNames(metadata),
     publisher: metadata.publication?.edition?.publisher,
     rights: metadata.rights,
@@ -55,6 +60,6 @@ export const getMetadataFromArchive = async (
     subjects: toMutableList(metadata.subjects),
     coverLink: metadata.cover?.uri,
     pageCount: metadata.numberOfPages,
-    isbn: metadata.isbn,
+    isbn,
   }
 }

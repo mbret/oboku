@@ -7,11 +7,10 @@ import {
   DialogContentText,
   DialogTitle,
   FormControlLabel,
-  TextField,
 } from "@mui/material"
 import { useEffect } from "react"
 import { Controller, useForm } from "react-hook-form"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { signal, useMutation$, useSignalValue } from "reactjrx"
 import { type Observable, from, map, mergeMap, of } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
@@ -168,25 +167,15 @@ export const AuthorizeActionDialog = () => {
               })
             })}
           >
-            <Controller
+            <ControlledTextField
               name="password"
               control={control}
               rules={{ required: true }}
-              render={({ field: { ref, ...rest }, fieldState }) => {
-                return (
-                  <TextField
-                    {...rest}
-                    label="Password"
-                    type="password"
-                    fullWidth
-                    margin="normal"
-                    inputRef={ref}
-                    autoComplete="current-password"
-                    error={fieldState.invalid}
-                    helperText={errorToHelperText(fieldState.error)}
-                  />
-                )
-              }}
+              label="Password"
+              type="password"
+              fullWidth
+              margin="normal"
+              autoComplete="current-password"
             />
             <Controller
               name="authorizeFor5Min"

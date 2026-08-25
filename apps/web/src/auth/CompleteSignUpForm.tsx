@@ -1,6 +1,6 @@
-import { Button, Stack, TextField } from "@mui/material"
-import { Controller, useForm } from "react-hook-form"
-import { errorToHelperText } from "../common/forms/errorToHelperText"
+import { Button, Stack } from "@mui/material"
+import { useForm } from "react-hook-form"
+import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { PersonAdd } from "@mui/icons-material"
 
 type Inputs = {
@@ -29,26 +29,16 @@ export const CompleteSignUpForm = ({
         gap: 1,
       }}
     >
-      <Controller
+      <ControlledTextField
         name="password"
         control={control}
         rules={{ required: true, minLength: 8 }}
-        render={({ field: { ref, ...rest }, fieldState }) => {
-          return (
-            <TextField
-              {...rest}
-              label="Password"
-              type="password"
-              fullWidth
-              inputRef={ref}
-              autoComplete="new-password"
-              error={fieldState.invalid}
-              helperText={errorToHelperText(fieldState.error)}
-            />
-          )
-        }}
+        label="Password"
+        type="password"
+        fullWidth
+        autoComplete="new-password"
       />
-      <Controller
+      <ControlledTextField
         name="confirmPassword"
         control={control}
         rules={{
@@ -56,20 +46,10 @@ export const CompleteSignUpForm = ({
           validate: (value) =>
             value === getValues("password") || "Passwords must match",
         }}
-        render={({ field: { ref, ...rest }, fieldState }) => {
-          return (
-            <TextField
-              {...rest}
-              label="Confirm password"
-              type="password"
-              fullWidth
-              inputRef={ref}
-              autoComplete="new-password"
-              error={fieldState.invalid}
-              helperText={errorToHelperText(fieldState.error)}
-            />
-          )
-        }}
+        label="Confirm password"
+        type="password"
+        fullWidth
+        autoComplete="new-password"
       />
       <Button
         type="submit"
