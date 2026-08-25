@@ -1,11 +1,14 @@
 import type { CollectionDocType } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
-import { useMutation } from "@tanstack/react-query"
+import { type UseMutationOptions, useMutation } from "@tanstack/react-query"
 
-export const useCollectionIncrementalModify = () => {
+export const useCollectionIncrementalModify = (
+  options?: Pick<UseMutationOptions, "meta">,
+) => {
   const { db } = useDatabase()
 
   return useMutation({
+    ...options,
     mutationFn: async ({
       _id,
       name,

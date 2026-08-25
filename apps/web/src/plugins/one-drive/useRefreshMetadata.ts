@@ -4,10 +4,11 @@ import { requestOneDriveProviderCredentials } from "./auth/auth"
 import { useConfig } from "../../config/useConfig"
 
 export const useRefreshMetadata: ObokuPlugin<"one-drive">["useRefreshMetadata"] =
-  ({ requestPopup }) => {
+  ({ requestPopup, meta }) => {
     const { data: config } = useConfig()
 
     return useMutation({
+      meta,
       mutationFn: async () => {
         return {
           providerCredentials: await requestOneDriveProviderCredentials({

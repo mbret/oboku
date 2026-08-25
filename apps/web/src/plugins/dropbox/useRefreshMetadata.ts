@@ -4,10 +4,11 @@ import { useMutation } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
 
 export const useRefreshMetadata: ObokuPlugin<"dropbox">[`useRefreshMetadata`] =
-  ({ requestPopup }) => {
+  ({ requestPopup, meta }) => {
     const { data: config } = useConfig()
 
     return useMutation({
+      meta,
       mutationFn: async () => {
         const auth = await authUser({
           requestPopup,
