@@ -1,6 +1,5 @@
 import {
   CanActivate,
-  createParamDecorator,
   ExecutionContext,
   Injectable,
   SetMetadata,
@@ -10,21 +9,9 @@ import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { SecretsService } from "src/config/SecretsService"
 
-export type AdminUser = {
-  sub: string
-  role: string
-  type?: string
-}
-
 const IS_ADMIN_PUBLIC_KEY = "isAdminPublic"
 
 export const AdminPublic = () => SetMetadata(IS_ADMIN_PUBLIC_KEY, true)
-
-export const WithAdminUser = createParamDecorator(
-  (_: unknown, ctx: ExecutionContext) => {
-    return ctx.switchToHttp().getRequest().adminUser
-  },
-)
 
 @Injectable()
 export class AdminAuthGuard implements CanActivate {
