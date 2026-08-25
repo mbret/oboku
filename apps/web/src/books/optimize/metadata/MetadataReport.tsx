@@ -1,5 +1,5 @@
 import {
-  isbnIdentifierValue,
+  identifierValue,
   type ResolvedArchiveSourceKind,
 } from "@prose-reader/archive-reader"
 import { memo } from "react"
@@ -33,7 +33,9 @@ export const MetadataReport = memo(function MetadataReport() {
       />
       <ReportRow
         label="ISBN"
-        value={isbnIdentifierValue(resolvedArchive.metadata.identifiers) ?? "—"}
+        value={
+          identifierValue(resolvedArchive.metadata.identifiers, "ISBN") ?? "—"
+        }
       />
     </Report>
   )

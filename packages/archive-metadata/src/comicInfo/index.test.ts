@@ -4,7 +4,7 @@ import {
   arrayBufferFileAccessors,
   createArchive,
   getArchiveHasComicInfo,
-  isbnIdentifierValue,
+  identifierValue,
   parseComicInfo,
   resolveArchiveMetadata,
 } from "@prose-reader/archive-reader"
@@ -57,7 +57,10 @@ const minimalComicInfo = (body = "") =>
   `xmlns:xsd="http://www.w3.org/2001/XMLSchema">${body}</ComicInfo>`
 
 const readComicInfoIsbn = (xml: string): string | undefined =>
-  isbnIdentifierValue(resolveArchiveMetadata(parseComicInfo(xml)).identifiers)
+  identifierValue(
+    resolveArchiveMetadata(parseComicInfo(xml)).identifiers,
+    "ISBN",
+  )
 
 describe("ComicInfo detection (getArchiveHasComicInfo)", () => {
   it("finds ComicInfo.xml at the archive root", async () => {
