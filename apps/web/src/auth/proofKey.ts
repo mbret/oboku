@@ -28,7 +28,7 @@ export const createProofKey = async (): Promise<StoredProofKey> => {
   const keyPair = await crypto.subtle.generateKey(
     ECDSA_P256_KEY_PARAMS,
     false,
-    ["sign"],
+    ["sign", "verify"],
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
   const { kty } = publicJwk

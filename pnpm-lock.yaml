@@ -532,8 +532,8 @@ importers:
         specifier: ^1.11.0
         version: 1.11.0(rxjs@7.8.2)
       jose:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^6.2.8
+        version: 6.2.10
       libarchive.js:
         specifier: ^2.0.2
         version: 2.0.2
@@ -9123,6 +9123,9 @@ packages:
 
   jose@5.9.6:
     resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
+
+  jose@6.2.10:
+    resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
 
   jose@6.2.3:
     resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
@@ -22880,6 +22883,8 @@ snapshots:
   jose@5.10.0: {}
 
   jose@5.9.6: {}
+
+  jose@6.2.10: {}
 
   jose@6.2.3: {}
 
