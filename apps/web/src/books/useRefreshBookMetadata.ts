@@ -9,12 +9,18 @@ import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
 import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
 
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
 export const useRefreshBookMetadata = () => {
   const httpClientApi = useHttpClientApi()
   const { db: database } = useDatabase()
-  const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch()
+  const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch(
+    withoutGlobalErrorToast,
+  )
   const network = useNetworkState()
-  const refreshPluginMetadata = usePluginRefreshMetadata()
+  const refreshPluginMetadata = usePluginRefreshMetadata(
+    withoutGlobalErrorToast,
+  )
 
   return async (bookId: string, { force }: { force?: boolean } = {}) => {
     try {

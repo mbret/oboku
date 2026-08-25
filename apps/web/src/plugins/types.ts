@@ -18,7 +18,10 @@ import type {
 } from "react"
 import type { SvgIconProps } from "@mui/material"
 import type { DeepReadonly } from "rxdb"
-import type { UseMutationResult } from "@tanstack/react-query"
+import type {
+  UseMutationOptions,
+  UseMutationResult,
+} from "@tanstack/react-query"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
 type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
@@ -74,7 +77,11 @@ export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
 
 export type UseRefreshMetadataHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
+> = (
+  options: {
+    requestPopup: () => Promise<boolean>
+  } & Pick<UseMutationOptions, "meta">,
+) => UseMutationResult<
   {
     providerCredentials: ProviderApiCredentials<T>
   },
