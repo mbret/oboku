@@ -47,12 +47,11 @@ export const useUploadToDataSource = ({
       })
     },
     /**
-     * Forced because the cover bucket key is derived from the archive entry
-     * path, which an optimized re-upload leaves unchanged even though the
-     * bytes — and therefore the cover — differ.
+     * Not awaited: the refresh reports its own outcome and the upload is
+     * already complete, so its failure must not read as an upload failure.
      */
-    onSuccess: async function refreshMetadataDerivedFromUploadedFile() {
-      await refreshBookMetadata(bookId, { force: true })
+    onSuccess: function refreshMetadataDerivedFromUploadedFile() {
+      void refreshBookMetadata(bookId)
     },
   })
 

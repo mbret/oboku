@@ -172,9 +172,7 @@ describe("useUploadToDataSource", function testUseUploadToDataSource() {
     })
 
     await waitFor(function waitForMetadataRefresh() {
-      expect(refreshBookMetadata).toHaveBeenCalledWith(book._id, {
-        force: true,
-      })
+      expect(refreshBookMetadata).toHaveBeenCalledWith(book._id)
     })
 
     expect(notify).toHaveBeenCalledTimes(1)
