@@ -35,45 +35,50 @@ export const useLibraryBooks = () => {
   const downloadedBookIdsFilter =
     downloadState === DownloadState.Downloaded ? downloadedBookIds : undefined
 
-  const bookIds = useMemo(() => {
-    const downloadedBookIdSet =
-      downloadedBookIdsFilter && new Set(downloadedBookIdsFilter)
+  const bookIds = useMemo(
+    function computeVisibleBookIds() {
+      const downloadedBookIdSet =
+        downloadedBookIdsFilter && new Set(downloadedBookIdsFilter)
 
-    const filteredBooks = (unsortedBooks ?? []).filter((book) => {
-      if (downloadedBookIdSet && !downloadedBookIdSet.has(book._id)) {
-        return false
-      }
+      const filteredBooks = (unsortedBooks ?? []).filter(
+        function matchesLibraryFilters(book) {
+          if (downloadedBookIdSet && !downloadedBookIdSet.has(book._id)) {
+            return false
+          }
 
-      if (
-        filteredTags?.length &&
-        !book?.tags?.some((tagId) => filteredTags.includes(tagId))
-      ) {
-        return false
-      }
+          if (
+            filteredTags?.length &&
+            !book?.tags?.some((tagId) => filteredTags.includes(tagId))
+          ) {
+            return false
+          }
 
-      if (
-        readingStates.length &&
-        !readingStates.includes(book.readingStateCurrentState)
-      ) {
-        return false
-      }
+          if (
+            readingStates.length &&
+            !readingStates.includes(book.readingStateCurrentState)
+          ) {
+            return false
+          }
 
-      if (isNotInterested !== "only" && book.isNotInterested) return false
+          if (isNotInterested !== "only" && book.isNotInterested) return false
 
-      if (isNotInterested === "only" && !book.isNotInterested) return false
+          if (isNotInterested === "only" && !book.isNotInterested) return false
 
-      return true
-    })
+          return true
+        },
+      )
 
-    return sortBooksBy(filteredBooks, sorting).map((book) => book._id)
-  }, [
-    downloadedBookIdsFilter,
-    filteredTags,
-    isNotInterested,
-    readingStates,
-    sorting,
-    unsortedBooks,
-  ])
+      return sortBooksBy(filteredBooks, sorting).map((book) => book._id)
+    },
+    [
+      downloadedBookIdsFilter,
+      filteredTags,
+      isNotInterested,
+      readingStates,
+      sorting,
+      unsortedBooks,
+    ],
+  )
 
   if (bookIds.length !== results.current.length) {
     results.current = bookIds

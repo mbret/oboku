@@ -49,8 +49,11 @@ export const getBookDownloadsState = ({ bookId }: { bookId: string }) => {
 
 export const useBookDownloadState = (bookId?: string | null) => {
   const selectBookDownloadState = useCallback(
-    (bookDownloadState: BooksDownloadState) =>
-      bookId ? mapBookDownloadState({ bookId, bookDownloadState }) : undefined,
+    function selectBookDownloadState(bookDownloadState: BooksDownloadState) {
+      return bookId
+        ? mapBookDownloadState({ bookId, bookDownloadState })
+        : undefined
+    },
     [bookId],
   )
 
