@@ -9,10 +9,6 @@ import { HttpClientError } from "../http/httpClient.shared"
 import { HttpClientNetworkError } from "../http/httpClient.web"
 import { Alert } from "@mui/material"
 
-export const ErrorMessage = ({ error }: { error: unknown }) => {
-  return <>{errorToMessage(error)}</>
-}
-
 export const ErrorAlert = ({ error }: { error: unknown }) => {
   const severity = error instanceof ObokuSharedError ? error.severity : "error"
 
