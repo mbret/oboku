@@ -273,7 +273,7 @@ importers:
         version: 2.0.2
       nodemailer:
         specifier: ^9.0.4
-        version: 9.0.4
+        version: 9.0.5
       pg:
         specifier: ^8.22.0
         version: 8.22.0
@@ -10103,8 +10103,8 @@ packages:
     resolution: {integrity: sha512-hLNmoJzqaKJnod8yiTVGe9hnlNRHotUi0CreSv/8HtfRi/3JnRC8DvsmKfeGGguRjTEulhZK6zXX5PXoVuDZ2w==}
     engines: {node: '>=10.0.0'}
 
-  nodemailer@9.0.4:
-    resolution: {integrity: sha512-LmJNRVRtfSCULxcZpy0Cpg4WWenlUZ9+zbmTO+S7v9wD6XreYLjXRFtDjtV/4F0HT5p1GyZfA0Ux/myxHb18CQ==}
+  nodemailer@9.0.5:
+    resolution: {integrity: sha512-wvjiKvjczmsN7U/8006JOdXubgBk2XFAbioDMbT+sM7cPs0QrhJTa6KBRX7P5REGGkDcLUz/EarWidb8G8C1jQ==}
     engines: {node: '>=6.0.0'}
 
   nopt@8.1.0:
@@ -24222,7 +24222,7 @@ snapshots:
 
   node-unrar-js@2.0.2: {}
 
-  nodemailer@9.0.4: {}
+  nodemailer@9.0.5: {}
 
   nopt@8.1.0:
     dependencies:
