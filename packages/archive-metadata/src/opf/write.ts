@@ -1,4 +1,10 @@
-import { readRecordAsText } from "@prose-reader/archive-reader"
+import {
+  parseOpf,
+  readRecordAsText,
+  resolveArchiveMetadata,
+  type OpfIdentifier,
+  type ResolvedMetadataIdentifier,
+} from "@prose-reader/archive-reader"
 import type { ArchiveFileRecord } from "../archive/types"
 import {
   type XmlDocument,
@@ -31,9 +37,6 @@ const IDENTIFIER_ELEMENT_NAME = "dc:identifier"
 
 const ISBN_SCHEME = "ISBN"
 
-/** Every spelling of the scheme attribute the read side accepts. */
-const SCHEME_ATTRIBUTES = ["opf:scheme", "opf:Scheme", "scheme"] as const
-
 /**
  * Apply a metadata patch to an existing OPF package document and
  * return the serialized XML body the caller should write back. The
@@ -54,6 +57,36 @@ export const buildPatchedOpfXml = async (
   return serializeOpfXml(xml, patch)
 }
 
+/**
+ * Which identifier the writer should touch is the reader's decision, not one
+ * this writer re-derives: `parseOpf` reports each element verbatim — including
+ * the `id` that addresses it — and `resolveArchiveMetadata` says what scheme
+ * the book ends up advertising for it, across every spelling of the scheme
+ * attribute and the EPUB 3 `identifier-type` refinements. Reading the document
+ * any other way is how a writer ends up editing an element the reader does not
+ * report, or appending a second one beside it.
+ *
+ * The two lists are index-aligned: the resolver maps over the parsed
+ * identifiers one to one.
+ */
+type ReaderIdentifier = {
+  readonly parsed: OpfIdentifier
+  readonly resolved: ResolvedMetadataIdentifier
+}
+
+const readerIdentifiers = (xml: string): ReadonlyArray<ReaderIdentifier> => {
+  const parsed = parseOpf(xml)
+  const resolved = resolveArchiveMetadata(parsed).identifiers ?? []
+
+  return parsed.identifiers.flatMap(function pairWithResolved(entry, index) {
+    const counterpart = resolved[index]
+
+    return counterpart === undefined
+      ? []
+      : [{ parsed: entry, resolved: counterpart }]
+  })
+}
+
 const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
   const doc = parseXml(xml, OPF_LABEL)
   const root = doc.documentElement
@@ -68,7 +101,7 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
     throw new Error("OPF document has no <metadata> element")
   }
 
-  upsertIsbnIdentifier(doc, root, metadata, patch.isbn)
+  upsertIsbnIdentifier(doc, metadata, readerIdentifiers(xml), patch.isbn)
 
   const serialized = serializeXml(doc)
 
@@ -100,145 +133,85 @@ const findChildByLocalName = (
 ): XmlElement | undefined => listChildrenByLocalName(parent, name)[0]
 
 /**
- * ONIX codelist 5 codes the read side maps to a scheme name, so an identifier
- * typed `<meta property="identifier-type" scheme="onix:codelist5">15</meta>`
- * is matched as the ISBN the reader reports rather than as the literal `15`.
+ * The element the reader read an identifier from. An `id` addresses it exactly;
+ * an identifier authored without one has only its position among the identifier
+ * elements, which is the order the parser reported it in.
  */
-const ONIX_IDENTIFIER_TYPES: Record<string, string> = {
-  "02": "ISBN",
-  "03": "GTIN",
-  "04": "UPC",
-  "05": "ISMN",
-  "06": "DOI",
-  "13": "LCCN",
-  "14": "GTIN",
-  "15": "ISBN",
-  "22": "URN",
-  "23": "OCLC",
-  "24": "ISBN",
-  "25": "ISMN",
-  "26": "DOI",
-  "34": "GTIN",
-  "35": "ARK",
-}
-
-const refiningMetas = (metadata: XmlElement, id: string): XmlElement[] =>
-  id === ""
-    ? []
-    : listChildrenByLocalName(metadata, "meta").filter(
-        function refinesElement(meta) {
-          return meta.getAttribute("refines")?.trim() === `#${id}`
-        },
-      )
-
-const identifierTypeMeta = (
+const findIdentifierElement = (
   metadata: XmlElement,
-  element: XmlElement,
-): XmlElement | undefined =>
-  refiningMetas(metadata, element.getAttribute("id")?.trim() ?? "").find(
-    function statesIdentifierType(meta) {
-      return meta.getAttribute("property")?.trim() === "identifier-type"
-    },
-  )
+  { parsed }: ReaderIdentifier,
+  index: number,
+): XmlElement | undefined => {
+  const elements = listChildrenByLocalName(metadata, "identifier")
 
-const metaIdentifierType = (meta: XmlElement): string => {
-  const value = meta.textContent?.trim() ?? ""
-  const isOnixCode =
-    meta.getAttribute("scheme")?.trim().toLowerCase() === "onix:codelist5"
-
-  return isOnixCode ? (ONIX_IDENTIFIER_TYPES[value] ?? value) : value
-}
-
-const attributeScheme = (element: XmlElement): string | undefined => {
-  for (const name of SCHEME_ATTRIBUTES) {
-    const value = element.getAttribute(name)?.trim()
-
-    if (value !== undefined && value !== "") return value
-  }
-
-  return undefined
-}
-
-/**
- * The scheme an element states, wherever it states it: EPUB 2 puts it on the
- * identifier, EPUB 3 refines it from a sibling `<meta>`.
- */
-const elementScheme = (metadata: XmlElement, element: XmlElement): string => {
-  const attribute = attributeScheme(element)
-
-  if (attribute !== undefined) return attribute
-
-  const meta = identifierTypeMeta(metadata, element)
-
-  return meta === undefined ? "" : metaIdentifierType(meta)
-}
-
-/**
- * Locate the `<dc:identifier>` the read side reports as the ISBN, if any —
- * matching where it states its scheme and how it spells it, so writes target
- * the node reads pick up instead of appending a second one beside it.
- */
-const findIsbnIdentifier = (metadata: XmlElement): XmlElement | undefined =>
-  listChildrenByLocalName(metadata, "identifier").find(
-    function carriesIsbnScheme(element) {
-      return elementScheme(metadata, element).toLowerCase() === "isbn"
-    },
-  )
-
-/**
- * The package's `unique-identifier` names a `dc:identifier` by id. Removing
- * that element would leave the reference dangling and the document invalid,
- * so it is the one identifier this writer will not delete.
- */
-const isUniqueIdentifierElement = (
-  root: XmlElement,
-  element: XmlElement,
-): boolean => {
-  const uniqueIdentifierId = root.getAttribute("unique-identifier")?.trim()
+  if (parsed.id === undefined) return elements[index]
 
   return (
-    uniqueIdentifierId !== undefined &&
-    uniqueIdentifierId !== "" &&
-    element.getAttribute("id")?.trim() === uniqueIdentifierId
+    elements.find(function carriesId(element) {
+      return element.getAttribute("id")?.trim() === parsed.id
+    }) ?? elements[index]
   )
 }
+
+const isbnIdentifierIndex = (
+  identifiers: ReadonlyArray<ReaderIdentifier>,
+): number =>
+  identifiers.findIndex(function resolvesAsIsbn({ resolved }) {
+    return resolved.scheme === ISBN_SCHEME
+  })
 
 /**
  * Removes an identifier along with the metadata refining it, which would
  * otherwise be left pointing at an id the package no longer has.
  */
-const removeIdentifier = (metadata: XmlElement, element: XmlElement): void => {
-  for (const meta of refiningMetas(
-    metadata,
-    element.getAttribute("id")?.trim() ?? "",
-  )) {
-    metadata.removeChild(meta)
+const removeIdentifier = (
+  metadata: XmlElement,
+  element: XmlElement,
+  refinedBy: ReadonlyArray<string>,
+): void => {
+  for (const meta of listChildrenByLocalName(metadata, "meta")) {
+    if (refinedBy.includes(meta.getAttribute("refines")?.trim() ?? "")) {
+      metadata.removeChild(meta)
+    }
   }
 
   metadata.removeChild(element)
 }
+
+const refinementTargets = ({ parsed }: ReaderIdentifier): string[] =>
+  parsed.id === undefined ? [] : [`#${parsed.id}`, parsed.id]
 
 // Untagged `<dc:identifier>` elements may be the publication UUID
 // referenced by `<package unique-identifier>`; only ISBN-tagged
 // identifiers are touched.
 const upsertIsbnIdentifier = (
   doc: XmlDocument,
-  root: XmlElement,
   metadata: XmlElement,
+  identifiers: ReadonlyArray<ReaderIdentifier>,
   isbn: string | undefined,
 ): void => {
-  const existing = findIsbnIdentifier(metadata)
+  const index = isbnIdentifierIndex(identifiers)
+  const existing = identifiers[index]
+  const element =
+    existing === undefined
+      ? undefined
+      : findIdentifierElement(metadata, existing, index)
 
   if (isbn === undefined || isbn === "") {
-    if (existing && !isUniqueIdentifierElement(root, existing)) {
-      removeIdentifier(metadata, existing)
+    /**
+     * The element `<package unique-identifier>` names is structural: removing
+     * it leaves the reference dangling. Untagging it would buy nothing either,
+     * since the reader infers ISBN from a bare ISBN value.
+     */
+    if (existing && element && existing.resolved.unique !== true) {
+      removeIdentifier(metadata, element, refinementTargets(existing))
     }
 
     return
   }
 
-  if (existing) {
-    existing.textContent = isbn
+  if (element) {
+    element.textContent = isbn
 
     return
   }
