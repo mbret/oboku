@@ -399,3 +399,67 @@ describe("OPF editing with refinement-typed identifiers", () => {
     expect(xml).toContain("9783161484100")
   })
 })
+
+describe("OPF editing alongside empty identifier elements", () => {
+  it("updates the ISBN rather than an empty element sitting before it", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        "<metadata>" +
+        "<dc:identifier></dc:identifier>" +
+        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
+        "</metadata><manifest/><spine/></package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).not.toContain("0000000000")
+  })
+
+  it("removes the ISBN rather than an empty element sitting before it", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        "<metadata>" +
+        "<dc:identifier></dc:identifier>" +
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+        "</metadata><manifest/><spine/></package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+
+    expect(readOpfIsbn(xml)).toBeUndefined()
+    expect(xml).not.toContain("9783161484100")
+  })
+})
+
+describe("OPF editing alongside identifiers the parser drops", () => {
+  it("updates the ISBN rather than an element holding only a nested element", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        "<metadata>" +
+        "<dc:identifier><span>ignored</span></dc:identifier>" +
+        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
+        "</metadata><manifest/><spine/></package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).not.toContain("0000000000")
+  })
+})
