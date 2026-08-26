@@ -14,7 +14,6 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@mui/icons-material": "^9.3.0",
-    "@mui/lab": "9.0.0-beta.6",
     "@mui/material": "^9.3.0",
     "@mui/material-nextjs": "^9.3.0",
     "@oboku/shared": "workspace:*",

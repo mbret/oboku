@@ -24,8 +24,6 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@oboku/synology": "workspace:*",
-    "dropbox": "^10.43.0",
     "zod": "^4.4.3"
   },
   "devDependencies": {
