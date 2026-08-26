@@ -251,13 +251,6 @@ export const retrieveMetadataAndSaveCover = async (
             })
         : { filepath: undefined }
 
-    let fileContentLength = 0
-
-    if (tmpFilePath) {
-      const stats = fs.statSync(tmpFilePath)
-      fileContentLength = stats.size
-    }
-
     fileToUnlink = tmpFilePath
 
     console.log(
@@ -385,17 +378,6 @@ export const retrieveMetadataAndSaveCover = async (
         lastMetadataUpdateError: null,
       }
     })
-
-    /**
-     * Only report a length when we actually downloaded the file —
-     * otherwise the caller would overwrite the previously-recorded
-     * link.contentLength with 0 on every cached refresh.
-     */
-    return {
-      link: {
-        contentLength: tmpFilePath ? fileContentLength : undefined,
-      },
-    }
   } catch (e) {
     console.log(
       `Error while processing book ${ctx.book._id} ${bookNameForDebug}`,

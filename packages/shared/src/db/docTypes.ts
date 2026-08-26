@@ -78,7 +78,6 @@ export type LinkDocTypeForProvider<T extends DataSourceDocType["type"]> =
     data: LinkDataForProvider<T>
     book: string | null
     rx_model: "link"
-    contentLength?: number | null
     modifiedAt: string | null
     createdAt: string
   }

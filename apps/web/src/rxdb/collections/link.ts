@@ -20,13 +20,18 @@ type LinkCollectionMethods = {
   ) => Promise<LinkDocument>
 }
 
+/**
+ * Kept in the schema so stored documents stay valid without a migration,
+ * and out of {@link LinkDocType} so no code can read or write them.
+ */
+type DeprecatedProps = {
+  dataSourceId?: string
+  /** Superseded by the `link` metadata entry's `size`. */
+  contentLength?: number | null
+}
+
 const linkSchema: RxJsonSchema<
-  Omit<
-    LinkDocType & {
-      dataSourceId?: string
-    },
-    `_rev` | `rxdbMeta`
-  >
+  Omit<LinkDocType & DeprecatedProps, `_rev` | `rxdbMeta`>
 > = {
   title: "link",
   version: 1,
