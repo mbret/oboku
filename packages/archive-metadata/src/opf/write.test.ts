@@ -263,3 +263,139 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     expect(readOpfIsbn(xml)).toBe("9783161484100")
   })
 })
+
+describe("OPF editing across container spellings", () => {
+  const reparse = (xml: string): Document => {
+    const doc = new DOMParser().parseFromString(xml, "application/xml")
+    const error = doc.getElementsByTagName("parsererror").item(0)
+
+    if (error) throw new Error(`malformed: ${error.textContent}`)
+
+    return doc
+  }
+
+  it("binds the namespaces of an identifier it creates", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">' +
+        "<metadata/><manifest/><spine/></package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(() => reparse(xml)).not.toThrow()
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+  })
+
+  it("patches a package that prefixes the OPF namespace", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<opf:package xmlns:opf="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        "<opf:metadata><dc:title>Sample</dc:title></opf:metadata>" +
+        "<opf:manifest/><opf:spine/></opf:package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).toContain("<dc:title>Sample</dc:title>")
+  })
+
+  it("updates an unprefixed <identifier> under a default DC namespace", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        '<metadata xmlns="http://purl.org/dc/elements/1.1/">' +
+        '<identifier opf:scheme="ISBN">0000000000</identifier>' +
+        "</metadata><manifest/><spine/></package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).not.toContain("0000000000")
+  })
+
+  it("matches a capitalized opf:Scheme attribute when updating", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf('<dc:identifier opf:Scheme="ISBN">0000000000</dc:identifier>'),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).not.toContain("0000000000")
+  })
+})
+
+describe("OPF editing with refinement-typed identifiers", () => {
+  it("updates an identifier typed by an ONIX identifier-type refinement", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="book-id">0000000000</dc:identifier>' +
+          '<meta refines="#book-id" property="identifier-type" scheme="onix:codelist5">15</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).not.toContain("0000000000")
+    expect(readOpfMetadata(xml).identifiers).toHaveLength(1)
+  })
+
+  it("updates an identifier typed by a literal identifier-type refinement", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="book-id">0000000000</dc:identifier>' +
+          '<meta refines="#book-id" property="identifier-type">ISBN</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(readOpfMetadata(xml).identifiers).toHaveLength(1)
+  })
+
+  it("removes the metadata refining an identifier it deletes", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
+          '<dc:identifier id="isbn-id" opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<meta refines="#isbn-id" property="identifier-type" scheme="onix:codelist5">15</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+
+    expect(readOpfIsbn(xml)).toBeUndefined()
+    expect(xml).not.toContain('refines="#isbn-id"')
+    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
+  })
+
+  it("keeps the identifier the package points at when clearing the ISBN", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="pub-id" opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+
+    expect(xml).toContain('id="pub-id"')
+    expect(xml).toContain("9783161484100")
+  })
+})
