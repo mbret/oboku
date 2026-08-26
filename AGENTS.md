@@ -78,6 +78,40 @@
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 
+### prose-reader: read its docs before writing code against it
+
+- **prose-reader and oboku have the same maintainer.** prose-reader is not a
+  third-party black box: its repository is available, its behaviour is
+  changeable, and a gap there is fixable rather than something to work around
+  locally.
+- `@prose-reader/*` is a documented library. Its guides live in the prose-reader
+  repo under `gitbook/<package>/` (e.g. `gitbook/archive-reader/`) and are the
+  source of truth for what each package owns, what its vocabulary means, and why
+  a field is shaped the way it is. Read them before writing code against it.
+- **The guides can be stale, wrong, or silent** — they are hand-written
+  alongside the code. When one does not answer the question, or contradicts what
+  you observe, read prose-reader's `src/`: it is typed, commented, and states
+  intent. Trust the source over the guide when they disagree, say so, and offer
+  to correct the guide upstream.
+- **Never reverse-engineer behaviour from `dist/`.** The published bundles are
+  minified: they tell you what the code does and nothing about what it intends.
+  Read `src/` in the repository instead — reaching for the built artifact when
+  the real source is available is what produced the duplication below.
+- **Treat "I am about to reimplement something archive-reader also does" as a
+  hard stop.** Identifier schemes and their crosswalks (ONIX, MARC), catalog URL
+  forms, container parsing, and metadata resolution all live upstream.
+  Duplicating them has been the recurring mistake in this repository.
+- **A field the resolved vocabulary omits is usually omitted deliberately.**
+  `metadata` is what the resolver believes; `sources` is the verbatim parser
+  output — what the book said. Container-specific detail lives in `sources`, so
+  check there and in the docs before concluding something is unavailable
+  upstream.
+- If knowledge genuinely belongs upstream and is not there yet, prefer a
+  prose-reader PR over a local copy, then upgrade oboku to the published version
+  in its own PR.
+- Smell test: if a test file uses a prose-reader helper to verify what the code
+  under test computes by hand, the code under test should be using that helper.
+
 ### Synology API docs
 
 - For Synology integrations, treat the public DSM Login Web API guide and File Station API guide as generic protocol references only.
