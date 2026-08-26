@@ -133,14 +133,33 @@ const findChildByLocalName = (
 ): XmlElement | undefined => listChildrenByLocalName(parent, name)[0]
 
 /**
- * The identifier elements the parser reports, in its order. Elements with no
- * value are skipped because the parser drops them, and an authored empty
- * `<dc:identifier>` would otherwise shift every position after it.
+ * An element's own text, excluding any nested element's — the value the parser
+ * reads. `textContent` would fold descendants in, and disagreeing with the
+ * parser about which elements have a value is what shifts the positions below.
+ */
+const directText = (element: XmlElement): string =>
+  Array.from(element.childNodes)
+    .filter(function isTextual(node) {
+      return (
+        node.nodeType === Node.TEXT_NODE ||
+        node.nodeType === Node.CDATA_SECTION_NODE
+      )
+    })
+    .map(function nodeText(node) {
+      return node.nodeValue ?? ""
+    })
+    .join("")
+
+/**
+ * The identifier elements the parser reports, in its order. Valueless elements
+ * are skipped because the parser drops them, and one authored empty — or
+ * holding only a nested element — would otherwise shift every position after
+ * it.
  */
 const identifierElements = (metadata: XmlElement): XmlElement[] =>
   listChildrenByLocalName(metadata, "identifier").filter(
     function statesAValue(element) {
-      return (element.textContent?.trim() ?? "") !== ""
+      return directText(element).trim() !== ""
     },
   )
 
