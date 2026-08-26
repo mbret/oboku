@@ -133,6 +133,18 @@ const findChildByLocalName = (
 ): XmlElement | undefined => listChildrenByLocalName(parent, name)[0]
 
 /**
+ * The identifier elements the parser reports, in its order. Elements with no
+ * value are skipped because the parser drops them, and an authored empty
+ * `<dc:identifier>` would otherwise shift every position after it.
+ */
+const identifierElements = (metadata: XmlElement): XmlElement[] =>
+  listChildrenByLocalName(metadata, "identifier").filter(
+    function statesAValue(element) {
+      return (element.textContent?.trim() ?? "") !== ""
+    },
+  )
+
+/**
  * The element the reader read an identifier from. An `id` addresses it exactly;
  * an identifier authored without one has only its position among the identifier
  * elements, which is the order the parser reported it in.
@@ -142,7 +154,7 @@ const findIdentifierElement = (
   { parsed }: ReaderIdentifier,
   index: number,
 ): XmlElement | undefined => {
-  const elements = listChildrenByLocalName(metadata, "identifier")
+  const elements = identifierElements(metadata)
 
   if (parsed.id === undefined) return elements[index]
 
