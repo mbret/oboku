@@ -9,13 +9,10 @@ import type {
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { createNotificationMutationOptions } from "./createNotificationMutationOptions"
 import {
-  type NotificationCacheSnapshot,
-  cancelAndSnapshotNotificationQueries,
   inboxNotificationsQueryKey,
-  invalidateNotificationQueries,
   markAllSeenMutationKey,
-  rollbackNotificationCaches,
   unreadCountQueryKey,
 } from "./queryKeys"
 
@@ -23,38 +20,27 @@ export const markAllSeenMutationOptions = (
   queryClient: QueryClient,
   httpClientApi: HttpApiClientWeb,
   profileId: string | undefined,
-) => ({
-  mutationKey: markAllSeenMutationKey,
-  networkMode: "online" as const,
-  mutationFn: httpClientApi.markAllNotificationsAsSeen,
-  onMutate: async () => {
-    const snapshot = await cancelAndSnapshotNotificationQueries(
-      queryClient,
-      profileId,
-    )
+) =>
+  createNotificationMutationOptions({
+    queryClient,
+    profileId,
+    mutationKey: markAllSeenMutationKey,
+    mutationFn: httpClientApi.markAllNotificationsAsSeen,
+    applyOptimisticUpdate: (_vars: undefined) => {
+      queryClient.setQueryData<GetNotificationsResponse>(
+        inboxNotificationsQueryKey(profileId),
+        (old) =>
+          old?.map((n) =>
+            n.seenAt ? n : { ...n, seenAt: new Date().toISOString() },
+          ),
+      )
 
-    queryClient.setQueryData<GetNotificationsResponse>(
-      inboxNotificationsQueryKey(profileId),
-      (old) =>
-        old?.map((n) =>
-          n.seenAt ? n : { ...n, seenAt: new Date().toISOString() },
-        ),
-    )
-
-    queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
-      unreadCountQueryKey(profileId),
-      (old) => (old ? { count: 0 } : old),
-    )
-
-    return snapshot
-  },
-  onError: (
-    _err: unknown,
-    _vars: undefined,
-    context: NotificationCacheSnapshot | undefined,
-  ) => rollbackNotificationCaches(queryClient, profileId, context),
-  onSettled: () => invalidateNotificationQueries(queryClient, profileId),
-})
+      queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
+        unreadCountQueryKey(profileId),
+        (old) => (old ? { count: 0 } : old),
+      )
+    },
+  })
 
 export const useMarkAllNotificationsAsSeen = () => {
   const queryClient = useQueryClient()

@@ -9,13 +9,10 @@ import type {
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { createNotificationMutationOptions } from "./createNotificationMutationOptions"
 import {
-  type NotificationCacheSnapshot,
   archiveMutationKey,
-  cancelAndSnapshotNotificationQueries,
   inboxNotificationsQueryKey,
-  invalidateNotificationQueries,
-  rollbackNotificationCaches,
   unreadCountQueryKey,
 } from "./queryKeys"
 
@@ -23,39 +20,28 @@ export const archiveMutationOptions = (
   queryClient: QueryClient,
   httpClientApi: HttpApiClientWeb,
   profileId: string | undefined,
-) => ({
-  mutationKey: archiveMutationKey,
-  networkMode: "online" as const,
-  mutationFn: httpClientApi.archiveNotification,
-  onMutate: async ({ id }: { id: number }) => {
-    const snapshot = await cancelAndSnapshotNotificationQueries(
-      queryClient,
-      profileId,
-    )
+) =>
+  createNotificationMutationOptions({
+    queryClient,
+    profileId,
+    mutationKey: archiveMutationKey,
+    mutationFn: httpClientApi.archiveNotification,
+    applyOptimisticUpdate: ({ id }: { id: number }, snapshot) => {
+      const removed = snapshot.previousNotifications?.find((n) => n.id === id)
 
-    const removed = snapshot.previousNotifications?.find((n) => n.id === id)
-
-    queryClient.setQueryData<GetNotificationsResponse>(
-      inboxNotificationsQueryKey(profileId),
-      (old) => old?.filter((n) => n.id !== id),
-    )
-
-    if (removed && !removed.seenAt) {
-      queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
-        unreadCountQueryKey(profileId),
-        (old) => (old ? { count: Math.max(0, old.count - 1) } : old),
+      queryClient.setQueryData<GetNotificationsResponse>(
+        inboxNotificationsQueryKey(profileId),
+        (old) => old?.filter((n) => n.id !== id),
       )
-    }
 
-    return snapshot
-  },
-  onError: (
-    _err: unknown,
-    _vars: { id: number },
-    context: NotificationCacheSnapshot | undefined,
-  ) => rollbackNotificationCaches(queryClient, profileId, context),
-  onSettled: () => invalidateNotificationQueries(queryClient, profileId),
-})
+      if (removed && !removed.seenAt) {
+        queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
+          unreadCountQueryKey(profileId),
+          (old) => (old ? { count: Math.max(0, old.count - 1) } : old),
+        )
+      }
+    },
+  })
 
 export const useArchiveNotification = () => {
   const queryClient = useQueryClient()
