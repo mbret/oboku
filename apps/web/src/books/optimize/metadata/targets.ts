@@ -1,8 +1,12 @@
 import type {
+  ArchiveMetadataIdentifier,
   ArchiveMetadataPatch,
   ArchiveMetadataTargets,
 } from "@oboku/archive-metadata/web"
-import { identifierValue } from "@prose-reader/archive-reader"
+import {
+  identifierValue,
+  isIsbnBearingScheme,
+} from "@prose-reader/archive-reader"
 import type { FileInspection } from "../useFileInspection"
 import type { MetadataFixerFormValues } from "./types"
 
@@ -41,6 +45,41 @@ export const resolveMetadataFixerFormValues = (
     identifierValue(inspection.resolvedArchive.metadata.identifiers, "ISBN") ??
     "",
 })
+
+/**
+ * The identifiers the archive should end up carrying: the ones it already has,
+ * with the edited ISBN swapped into whichever of them announced one — appended
+ * when none did, dropped when the field was cleared.
+ *
+ * The patch is the complete set rather than a delta, so every identifier the
+ * book carries has to be listed for it to survive the write. Only the ISBN is
+ * editable here; the rest are passed through as read.
+ */
+const patchIdentifiers = (
+  inspection: FileInspection,
+  isbn: string | undefined,
+): ArchiveMetadataIdentifier[] => {
+  const identifiers = (
+    inspection.resolvedArchive.metadata.identifiers ?? []
+  ).map(function toPatchIdentifier({ scheme, value, unique }) {
+    return { scheme, value, unique: unique === true }
+  })
+  const isbnIndex = identifiers.findIndex(function announcesIsbn({ scheme }) {
+    return isIsbnBearingScheme(scheme)
+  })
+
+  if (isbn === undefined) {
+    return identifiers.filter(function isNotTheEditedIsbn(_, index) {
+      return index !== isbnIndex
+    })
+  }
+
+  if (isbnIndex === -1) return [...identifiers, { scheme: "ISBN", value: isbn }]
+
+  return identifiers.map(function withEditedValue(identifier, index) {
+    return index === isbnIndex ? { ...identifier, value: isbn } : identifier
+  })
+}
 
 /**
  * The containers a save should write.
@@ -87,6 +126,8 @@ export const resolveArchiveMetadataPatchPlan = (
   values: MetadataFixerFormValues,
   inspection: FileInspection,
 ): ArchiveMetadataPatchPlan => ({
-  patch: { isbn: normalizeFormIsbn(values.isbn) },
+  patch: {
+    identifiers: patchIdentifiers(inspection, normalizeFormIsbn(values.isbn)),
+  },
   targets: resolveMetadataTargets(inspection),
 })

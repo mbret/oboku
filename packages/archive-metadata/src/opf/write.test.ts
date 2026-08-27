@@ -5,6 +5,7 @@ import {
   identifierValue,
   parseOpf,
   resolveArchiveMetadata,
+  type ResolvedMetadataIdentifier,
 } from "@prose-reader/archive-reader"
 import type { ArchiveFileRecord } from "../archive/types"
 import { buildPatchedOpfXml } from "./write"
@@ -39,25 +40,34 @@ const makeEntry = (uri: string, body: string): ArchiveFileRecord => ({
   ...arrayBufferFileAccessors(() => Promise.resolve(toArrayBuffer(body))),
 })
 
+const UUID_IDENTIFIER = "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809"
+
 const readOpfMetadata = (xml: string) => resolveArchiveMetadata(parseOpf(xml))
 
 const readOpfIsbn = (xml: string): string | undefined =>
   identifierValue(readOpfMetadata(xml).identifiers, "ISBN")
+
+const readOpfIdentifiers = (
+  xml: string,
+): ReadonlyArray<ResolvedMetadataIdentifier> =>
+  readOpfMetadata(xml).identifiers ?? []
 
 describe("OPF editing (buildPatchedOpfXml)", () => {
   it('inserts a new opf:scheme="ISBN" identifier when the metadata had none', async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
+        `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>` +
           "<dc:title>Sample</dc:title>",
       ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
-    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
+    expect(xml).toContain(UUID_IDENTIFIER)
     expect(xml).toContain("<dc:title>Sample</dc:title>")
   })
 
@@ -65,12 +75,14 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
+        `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>` +
           '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>',
       ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).not.toContain("0000000000")
@@ -82,79 +94,272 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       opf('<dc:identifier opf:scheme="isbn">0000000000</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).not.toContain("0000000000")
   })
 
-  it('matches a bare scheme="ISBN" attribute when updating', async () => {
+  it('reuses a bare scheme="ISBN" attribute rather than switching spelling', async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf('<dc:identifier scheme="ISBN">0000000000</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(xml).toContain('scheme="ISBN"')
+    expect(xml).not.toContain("opf:scheme")
     expect(xml).not.toContain("0000000000")
   })
 
-  it("never touches a UUID identifier carrying the unique-identifier id", async () => {
+  it("writes an identifier on any scheme the caller asks for", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
-      opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>',
-      ),
+      opf("<dc:title>Sample</dc:title>"),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "ISBN", value: "9783161484100" },
+        { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+        { scheme: "AcmeCatalog", value: "acme-42" },
+      ],
+    })
 
-    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
-    expect(xml).toContain('id="pub-id"')
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN" },
+      { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
+      { value: "acme-42", scheme: "AcmeCatalog" },
+    ])
   })
 
-  it("removes the ISBN identifier when the patch clears it with undefined", async () => {
+  it("normalizes a known scheme to its canonical casing", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
-      opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
-          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
-      ),
+      opf("<dc:title>Sample</dc:title>"),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "googlebooks", value: "zyTCAlFPjgYC" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBeUndefined()
-    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
+    expect(xml).toContain('opf:scheme="GoogleBooks"')
   })
 
-  it("removes the ISBN identifier when the patch clears it with an empty string", async () => {
+  it("writes an untagged identifier when the scheme is Unknown", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "Unknown", value: "custom-id" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBeUndefined()
+    expect(xml).toContain("<dc:identifier>custom-id</dc:identifier>")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "custom-id", scheme: "Unknown" },
+    ])
   })
 
-  it("does nothing when clearing an already-absent ISBN", async () => {
+  it("removes the identifiers the patch leaves out", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>',
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
       ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "DOI", value: "10.1000/182" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBeUndefined()
-    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "10.1000/182", scheme: "DOI" },
+    ])
+    expect(xml).not.toContain("9783161484100")
   })
 
-  it("preserves unrelated metadata fields when inserting an ISBN", async () => {
+  it("removes every identifier when the patch carries none", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, { identifiers: [] })
+
+    expect(readOpfIdentifiers(xml)).toEqual([])
+  })
+
+  it("keeps several identifiers sharing one scheme", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "ISBN", value: "9783161484100" },
+        { scheme: "ISBN", value: "9780306406157" },
+      ],
+    })
+
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN" },
+      { value: "9780306406157", scheme: "ISBN" },
+    ])
+  })
+
+  it("reuses the element of a scheme so refining metadata keeps resolving", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="isbn-id" opf:scheme="ISBN">0000000000</dc:identifier>' +
+          '<meta refines="#isbn-id" property="identifier-type" scheme="onix:codelist5">15</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(xml).toContain('id="isbn-id"')
+    expect(xml).toContain('refines="#isbn-id"')
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+  })
+
+  it("binds the scheme attribute when the package omits the opf prefix", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        `<metadata><dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier></metadata>` +
+        "<manifest/><spine/>" +
+        "</package>",
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "ISBN", value: "9783161484100" },
+      ],
+    })
+
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    // Re-patching parses the output again, which a document carrying an
+    // unbound prefix would fail.
+    const repatched = await buildPatchedOpfXml(
+      makeEntry("OEBPS/content.opf", xml),
+      { identifiers: readOpfIdentifiers(xml) },
+    )
+
+    expect(readOpfIsbn(repatched)).toBe("9783161484100")
+  })
+
+  it("matches an identifier typed only by a refining meta", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="gb">zyTCAlFPjgYC</dc:identifier>' +
+          '<meta refines="#gb" property="identifier-type">GoogleBooks</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "GoogleBooks", value: "otherVolumeId" }],
+    })
+
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "otherVolumeId", scheme: "GoogleBooks" },
+    ])
+    expect(xml).toContain('id="gb"')
+    expect(xml).toContain('refines="#gb"')
+  })
+
+  it("matches an identifier typed by an ONIX identifier-type code", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="isbn">0000000000</dc:identifier>' +
+          '<meta refines="#isbn" property="identifier-type" scheme="onix:codelist5">15</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN" },
+    ])
+    expect(xml).toContain('id="isbn"')
+  })
+
+  it("removes the metadata refining an identifier it deletes", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier id="doomed" opf:scheme="DOI">10.1000/182</dc:identifier>' +
+          '<meta refines="#doomed" property="identifier-type">DOI</meta>' +
+          '<meta refines="#doomed" property="display-seq">2</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(xml).not.toContain("10.1000/182")
+    expect(xml).not.toContain('refines="#doomed"')
+  })
+
+  it("never removes the unique-identifier element the patch leaves out", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(`<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>`),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(xml).toContain(UUID_IDENTIFIER)
+    expect(xml).toContain('id="pub-id"')
+  })
+
+  it("rewrites the unique-identifier element through the entry marked unique", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="pub-id" opf:scheme="ISBN">0000000000</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "ISBN", value: "9783161484100", unique: true },
+        { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+      ],
+    })
+
+    expect(xml).toContain('id="pub-id"')
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN", unique: true },
+      { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
+    ])
+  })
+
+  it("preserves unrelated metadata fields when inserting an identifier", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
@@ -165,7 +370,9 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfMetadata(xml)).toMatchObject({
       titles: [{ value: "Norwegian Wood" }],
@@ -176,7 +383,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     expect(readOpfIsbn(xml)).toBe("9783161484100")
   })
 
-  it("preserves manifest and spine when inserting an ISBN", async () => {
+  it("preserves manifest and spine when inserting an identifier", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf("<dc:title>Sample</dc:title>", {
@@ -187,7 +394,9 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       }),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).toContain(
@@ -209,7 +418,9 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
         "</package>",
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(xml.startsWith("<?xml")).toBe(true)
   })
@@ -221,7 +432,9 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     )
 
     await expect(
-      buildPatchedOpfXml(entry, { isbn: "9783161484100" }),
+      buildPatchedOpfXml(entry, {
+        identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+      }),
     ).rejects.toThrow(/root element is not <package>/i)
   })
 
@@ -238,7 +451,9 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     )
 
     await expect(
-      buildPatchedOpfXml(entry, { isbn: "9783161484100" }),
+      buildPatchedOpfXml(entry, {
+        identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+      }),
     ).rejects.toThrow(/has no <metadata> element/i)
   })
 
@@ -246,48 +461,37 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     const entry = makeEntry("OEBPS/content.opf", "<package><metadata>")
 
     await expect(
-      buildPatchedOpfXml(entry, { isbn: "9783161484100" }),
+      buildPatchedOpfXml(entry, {
+        identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+      }),
     ).rejects.toThrow(/OPF is malformed/i)
   })
 
-  it("round-trips: the patched output parses back to the patched ISBN", async () => {
+  it("round-trips: patching the output again is a no-op", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
-      opf("<dc:title>Sample</dc:title>"),
+      opf(`<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>`),
+    )
+    const identifiers = [
+      { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+      { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+    ]
+
+    const xml = await buildPatchedOpfXml(entry, { identifiers })
+    const repatched = await buildPatchedOpfXml(
+      makeEntry("OEBPS/content.opf", xml),
+      { identifiers: readOpfIdentifiers(xml) },
     )
 
-    const xml = await buildPatchedOpfXml(entry, {
-      isbn: "9783161484100",
-    })
-
-    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(readOpfIdentifiers(repatched)).toEqual(readOpfIdentifiers(xml))
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
+    ])
   })
 })
 
 describe("OPF editing across container spellings", () => {
-  const reparse = (xml: string): Document => {
-    const doc = new DOMParser().parseFromString(xml, "application/xml")
-    const error = doc.getElementsByTagName("parsererror").item(0)
-
-    if (error) throw new Error(`malformed: ${error.textContent}`)
-
-    return doc
-  }
-
-  it("binds the namespaces of an identifier it creates", async () => {
-    const entry = makeEntry(
-      "OEBPS/content.opf",
-      '<?xml version="1.0" encoding="utf-8"?>' +
-        '<package xmlns="http://www.idpf.org/2007/opf" version="3.0" unique-identifier="pub-id">' +
-        "<metadata/><manifest/><spine/></package>",
-    )
-
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
-
-    expect(() => reparse(xml)).not.toThrow()
-    expect(readOpfIsbn(xml)).toBe("9783161484100")
-  })
-
   it("patches a package that prefixes the OPF namespace", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
@@ -299,7 +503,9 @@ describe("OPF editing across container spellings", () => {
         "<opf:manifest/><opf:spine/></opf:package>",
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(xml).toContain("<dc:title>Sample</dc:title>")
@@ -317,27 +523,53 @@ describe("OPF editing across container spellings", () => {
         "</metadata><manifest/><spine/></package>",
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(readOpfIdentifiers(xml)).toHaveLength(1)
     expect(xml).not.toContain("0000000000")
   })
 
-  it("matches a capitalized opf:Scheme attribute when updating", async () => {
+  it("reuses a capitalized opf:Scheme attribute rather than switching spelling", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf('<dc:identifier opf:Scheme="ISBN">0000000000</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(readOpfIdentifiers(xml)).toHaveLength(1)
+    expect(xml).toContain("opf:Scheme")
     expect(xml).not.toContain("0000000000")
   })
 })
 
-describe("OPF editing with refinement-typed identifiers", () => {
-  it("updates an identifier typed by an ONIX identifier-type refinement", async () => {
+describe("OPF editing alongside a valueless identifier element", () => {
+  it("reconciles onto the tagged element and drops the empty one", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        "<dc:identifier></dc:identifier>" +
+          '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN" },
+    ])
+    expect(xml).not.toContain("0000000000")
+  })
+
+  it("keeps a scheme stated by an ONIX refinement on the element it refines", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
@@ -346,120 +578,79 @@ describe("OPF editing with refinement-typed identifiers", () => {
       ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIsbn(xml)).toBe("9783161484100")
-    expect(xml).not.toContain("0000000000")
-    expect(readOpfMetadata(xml).identifiers).toHaveLength(1)
-  })
-
-  it("updates an identifier typed by a literal identifier-type refinement", async () => {
-    const entry = makeEntry(
-      "OEBPS/content.opf",
-      opf(
-        '<dc:identifier id="book-id">0000000000</dc:identifier>' +
-          '<meta refines="#book-id" property="identifier-type">ISBN</meta>',
-      ),
-    )
-
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
-
-    expect(readOpfIsbn(xml)).toBe("9783161484100")
-    expect(readOpfMetadata(xml).identifiers).toHaveLength(1)
-  })
-
-  it("removes the metadata refining an identifier it deletes", async () => {
-    const entry = makeEntry(
-      "OEBPS/content.opf",
-      opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
-          '<dc:identifier id="isbn-id" opf:scheme="ISBN">9783161484100</dc:identifier>' +
-          '<meta refines="#isbn-id" property="identifier-type" scheme="onix:codelist5">15</meta>',
-      ),
-    )
-
-    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
-
-    expect(readOpfIsbn(xml)).toBeUndefined()
-    expect(xml).not.toContain('refines="#isbn-id"')
-    expect(xml).toContain("urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809")
-  })
-
-  it("keeps the identifier the package points at when clearing the ISBN", async () => {
-    const entry = makeEntry(
-      "OEBPS/content.opf",
-      opf(
-        '<dc:identifier id="pub-id" opf:scheme="ISBN">9783161484100</dc:identifier>',
-      ),
-    )
-
-    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
-
-    expect(xml).toContain('id="pub-id"')
-    expect(xml).toContain("9783161484100")
+    expect(readOpfIdentifiers(xml)).toHaveLength(1)
+    expect(xml).toContain('id="book-id"')
+    expect(xml).toContain('refines="#book-id"')
   })
 })
 
-describe("OPF editing alongside empty identifier elements", () => {
-  it("updates the ISBN rather than an empty element sitting before it", async () => {
+describe("OPF editing under an aliased namespace prefix", () => {
+  const aliased = (metadata: string) =>
+    '<?xml version="1.0" encoding="utf-8"?>' +
+    '<package xmlns="http://www.idpf.org/2007/opf"' +
+    ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+    ' xmlns:pkg="http://www.idpf.org/2007/opf"' +
+    ' version="3.0" unique-identifier="pub-id">' +
+    `<metadata>${metadata}</metadata><manifest/><spine/></package>`
+
+  it("rewrites the aliased element rather than adding one beside it", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
-      '<?xml version="1.0" encoding="utf-8"?>' +
-        '<package xmlns="http://www.idpf.org/2007/opf"' +
-        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
-        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
-        ' version="3.0" unique-identifier="pub-id">' +
-        "<metadata>" +
-        "<dc:identifier></dc:identifier>" +
-        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
-        "</metadata><manifest/><spine/></package>",
+      aliased(
+        '<dc:identifier id="isbn-id" pkg:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<meta refines="#isbn-id" property="display-seq">1</meta>',
+      ),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9780306406157" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBe("9783161484100")
-    expect(xml).not.toContain("0000000000")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9780306406157", scheme: "ISBN" },
+    ])
+    expect(xml).toContain('id="isbn-id"')
+    expect(xml).toContain('refines="#isbn-id"')
+    expect(xml.match(/scheme="/g)).toHaveLength(1)
   })
 
-  it("removes the ISBN rather than an empty element sitting before it", async () => {
+  it("clears an aliased scheme when the identifier becomes untagged", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
-      '<?xml version="1.0" encoding="utf-8"?>' +
-        '<package xmlns="http://www.idpf.org/2007/opf"' +
-        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
-        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
-        ' version="3.0" unique-identifier="pub-id">' +
-        "<metadata>" +
-        "<dc:identifier></dc:identifier>" +
-        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
-        "</metadata><manifest/><spine/></package>",
+      aliased('<dc:identifier pkg:scheme="ISBN">9783161484100</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: undefined })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "Unknown", value: "catalog-42" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBeUndefined()
-    expect(xml).not.toContain("9783161484100")
+    expect(xml).not.toContain("scheme=")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "catalog-42", scheme: "Unknown" },
+    ])
   })
-})
 
-describe("OPF editing alongside identifiers the parser drops", () => {
-  it("updates the ISBN rather than an element holding only a nested element", async () => {
+  it("writes a non-inferrable scheme a package with no opf prefix reads back", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       '<?xml version="1.0" encoding="utf-8"?>' +
         '<package xmlns="http://www.idpf.org/2007/opf"' +
         ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
-        ' xmlns:opf="http://www.idpf.org/2007/opf"' +
         ' version="3.0" unique-identifier="pub-id">' +
-        "<metadata>" +
-        "<dc:identifier><span>ignored</span></dc:identifier>" +
-        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
-        "</metadata><manifest/><spine/></package>",
+        "<metadata/><manifest/><spine/></package>",
     )
 
-    const xml = await buildPatchedOpfXml(entry, { isbn: "9783161484100" })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "GoogleBooks", value: "zyTCAlFPjgYC" }],
+    })
 
-    expect(readOpfIsbn(xml)).toBe("9783161484100")
-    expect(xml).not.toContain("0000000000")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
+    ])
   })
 })
