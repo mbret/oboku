@@ -4,6 +4,7 @@ import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
+import { hasWritableMetadataTarget } from "./targets"
 
 const validateIsbn = (raw: string | boolean): true | string => {
   if (typeof raw !== "string") return true
@@ -21,6 +22,7 @@ export function MetadataForm() {
   const { bookId, control, inspection, isUploading } = useBookOptimize()
   const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading
+  const isStorable = hasWritableMetadataTarget(inspection)
 
   return (
     <Stack spacing={2}>
@@ -32,14 +34,16 @@ export function MetadataForm() {
         size="small"
         fullWidth
         helperText={
-          identifierValue(
-            inspection.resolvedArchive.metadata.identifiers,
-            "ISBN",
-          )
-            ? undefined
-            : "No ISBN found in this book yet."
+          isStorable
+            ? identifierValue(
+                inspection.resolvedArchive.metadata.identifiers,
+                "ISBN",
+              )
+              ? undefined
+              : "No ISBN found in this book yet."
+            : "This book has nowhere to store an ISBN."
         }
-        disabled={isApplying}
+        disabled={isApplying || !isStorable}
       />
     </Stack>
   )

@@ -43,22 +43,50 @@ export const resolveMetadataFixerFormValues = (
 })
 
 /**
- * Writes the ISBN into every container the archive can carry: the OPF when it
- * is readable, plus ComicInfo.xml either patched or synthesized. Keeping them
- * in sync is the point — an archive whose containers disagree has no ISBN the
- * user can trust, and picking a winner per container was never their call.
+ * The containers a save should write.
  *
- * An unreadable OPF is skipped rather than replaced: the package document
- * also carries the manifest and spine, so overwriting it with the fields
- * oboku knows about would cost the book its reading order.
+ * A container the book carries but oboku cannot parse stops the save: it
+ * cannot be patched without being read, and replacing it would discard
+ * whatever it holds that oboku does not model. Falling back to the other
+ * container is not a fix either — a book with a package document is an EPUB
+ * whether or not that document parses, and a comic sidecar does not belong in
+ * one.
+ *
+ * Otherwise every container the book already carries is written, so they cannot
+ * end up disagreeing about the same ISBN — picking a winner per container was
+ * never the user's call. ComicInfo.xml is created only for an archive that
+ * carries no metadata of its own: a bare comic archive.
  */
+export const resolveMetadataTargets = ({
+  resolvedArchive,
+}: FileInspection): ArchiveMetadataTargets => {
+  const { sources, unreadableSources } = resolvedArchive
+
+  if (
+    unreadableSources.includes("opf") ||
+    unreadableSources.includes("comicInfo")
+  ) {
+    return { comicInfo: false, opf: false }
+  }
+
+  const opf = sources.opf !== undefined
+
+  return { comicInfo: sources.comicInfo !== undefined || !opf, opf }
+}
+
+/** Whether a save has any container left to write the metadata into. */
+export const hasWritableMetadataTarget = (
+  inspection: FileInspection,
+): boolean => {
+  const { comicInfo, opf } = resolveMetadataTargets(inspection)
+
+  return comicInfo === true || opf === true
+}
+
 export const resolveArchiveMetadataPatchPlan = (
   values: MetadataFixerFormValues,
   inspection: FileInspection,
 ): ArchiveMetadataPatchPlan => ({
   patch: { isbn: normalizeFormIsbn(values.isbn) },
-  targets: {
-    comicInfo: true,
-    opf: inspection.resolvedArchive.sources.opf !== undefined,
-  },
+  targets: resolveMetadataTargets(inspection),
 })
