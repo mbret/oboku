@@ -329,6 +329,22 @@ const findIdentifierElement = (
   })
 
 /**
+ * The elements a removal may name. The one `<package unique-identifier>` points
+ * at is left out rather than found and declined: it is never removable, and a
+ * document holding a second element of the same scheme and value would
+ * otherwise have that duplicate shadowed by it and survive.
+ */
+const removableElements = (
+  metadata: XmlElement,
+  uniqueElement: XmlElement | undefined,
+): XmlElement[] =>
+  listChildrenByLocalName(metadata, "identifier").filter(
+    function isRemovable(element) {
+      return element !== uniqueElement
+    },
+  )
+
+/**
  * Rewrites the document's identifiers: the removals go, the patched ones are
  * written, and every other element is left alone — including the ones the
  * reader never reported, which no caller could have known to keep.
@@ -351,18 +367,11 @@ const reconcileIdentifiers = (
   for (const identifier of removedIdentifiers ?? []) {
     const element = findIdentifierElement(
       metadata,
-      listChildrenByLocalName(metadata, "identifier"),
+      removableElements(metadata, uniqueElement),
       identifier,
     )
 
-    /**
-     * The element `<package unique-identifier>` names is structural: removing
-     * it would leave the reference dangling, so a caller asking for it is
-     * declined rather than obeyed.
-     */
-    if (element !== undefined && element !== uniqueElement) {
-      removeIdentifier(metadata, element)
-    }
+    if (element !== undefined) removeIdentifier(metadata, element)
   }
 
   const remaining = listChildrenByLocalName(metadata, "identifier")

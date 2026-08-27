@@ -221,14 +221,44 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     )
   })
 
-  it("removes the Web element when no URL identifier remains", async () => {
+  it("removes the Web element when the patch names its only link", async () => {
+    const archive = makeArchive({
+      "ComicInfo.xml": minimalComicInfo("<Web>https://example.com/a</Web>"),
+    })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [],
+      removedIdentifiers: [{ scheme: "URL", value: "https://example.com/a" }],
+    })
+
+    expect(xml).not.toContain("<Web")
+  })
+
+  it("keeps a link the patch names in neither list", async () => {
     const archive = makeArchive({
       "ComicInfo.xml": minimalComicInfo("<Web>https://example.com/a</Web>"),
     })
 
     const xml = await buildPatchedComicInfoXml(archive, { identifiers: [] })
 
-    expect(xml).not.toContain("<Web")
+    expect(xml).toContain("https://example.com/a")
+  })
+
+  it("keeps a Web token its reader does not report as an identifier", async () => {
+    const archive = makeArchive({
+      "ComicInfo.xml": minimalComicInfo(
+        "<Web>https://example.com/a not-a-url</Web>",
+      ),
+    })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "URL", value: "https://example.com/b" }],
+      removedIdentifiers: [{ scheme: "URL", value: "https://example.com/a" }],
+    })
+
+    expect(xml).toContain("not-a-url")
+    expect(xml).toContain("https://example.com/b")
+    expect(xml).not.toContain("https://example.com/a<")
   })
 
   it("stores a catalog identifier as its official Web link", async () => {
@@ -329,7 +359,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     ).toEqual({ value: "zyTCAlFPjgYC", scheme: "GoogleBooks" })
   })
 
-  it("removes the GTIN element when the patch drops every ISBN-bearing identifier", async () => {
+  it("removes the GTIN element when the patch names what it held", async () => {
     const archive = makeArchive({
       "ComicInfo.xml": minimalComicInfo(
         "<Title>Sample</Title><GTIN>9783161484100</GTIN>",
@@ -338,6 +368,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
 
     const xml = await buildPatchedComicInfoXml(archive, {
       identifiers: [{ scheme: "DOI", value: "10.1000/182" }],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml).not.toContain("<GTIN")

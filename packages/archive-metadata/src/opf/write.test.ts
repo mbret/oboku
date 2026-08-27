@@ -780,3 +780,23 @@ describe("OPF editing leaves unnamed identifiers alone", () => {
     expect(xml).toContain('id="pub-id"')
   })
 })
+
+describe("OPF editing a document with duplicate identifiers", () => {
+  it("removes the duplicate the unique element shadows", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier id="pub-id" opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100", unique: true }],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(xml).toContain('id="pub-id"')
+    expect(xml.match(/<dc:identifier/g)).toHaveLength(1)
+  })
+})
