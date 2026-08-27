@@ -25,18 +25,20 @@ export const ControlledConnectorSelector = <
       control={control}
       name={name}
       rules={rules}
-      render={({ field, fieldState }) => (
-        <ConnectorSelector
-          {...field}
-          {...connectorSelectorProps}
-          helperText={
-            fieldState.invalid
-              ? errorToHelperText(fieldState.error)
-              : connectorSelectorProps.helperText
-          }
-          error={fieldState.invalid}
-        />
-      )}
+      render={function renderConnectorSelector({ field, fieldState }) {
+        return (
+          <ConnectorSelector
+            {...field}
+            {...connectorSelectorProps}
+            helperText={
+              fieldState.invalid
+                ? errorToHelperText(fieldState.error)
+                : connectorSelectorProps.helperText
+            }
+            error={fieldState.invalid}
+          />
+        )
+      }}
     />
   )
 }

@@ -6,12 +6,6 @@ import {
   rollbackNotificationCaches,
 } from "./queryKeys"
 
-/**
- * Wires the snapshot / rollback / invalidation cycle every optimistic
- * notification mutation shares. Only `applyOptimisticUpdate` differs between
- * them: it writes the mutation's own view of the notification caches, from the
- * snapshot taken before the request goes out.
- */
 export const createNotificationMutationOptions = <TVariables, TData>({
   queryClient,
   profileId,
