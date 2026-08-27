@@ -1,10 +1,7 @@
 import type { ImageOutputMode } from "@oboku/archive-metadata/web"
 import type { FileInspection } from "./useFileInspection"
-import {
-  EMPTY_METADATA_FIXER_FORM_VALUES,
-  resolveMetadataFixerFormValues,
-} from "./metadata/targets"
-import type { MetadataFixerFormValues } from "./metadata/types"
+import type { MetadataFixerFormValues } from "./metadata/formValues"
+import { resolveMetadataFixerFormValues } from "./metadata/identifiers/resolveMetadataFixerFormValues"
 
 export type BookOptimizeFormValues = MetadataFixerFormValues & {
   compressImages: boolean
@@ -16,7 +13,7 @@ export type BookOptimizeFormValues = MetadataFixerFormValues & {
 const DEFAULT_IMAGE_OUTPUT_MODE: ImageOutputMode = "original"
 
 export const EMPTY_BOOK_OPTIMIZE_FORM_VALUES: BookOptimizeFormValues = {
-  ...EMPTY_METADATA_FIXER_FORM_VALUES,
+  isbn: "",
   compressImages: false,
   imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
   maxWidth: "",

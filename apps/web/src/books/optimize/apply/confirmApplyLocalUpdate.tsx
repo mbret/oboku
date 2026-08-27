@@ -16,7 +16,7 @@ import {
 import { Fragment, type ReactNode } from "react"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { KeyChip } from "../KeyChip"
-import { CONTAINER_LABELS } from "../metadata/targets"
+import { CONTAINER_LABELS } from "../metadata/identifiers/containers"
 
 const BulletListItemIcon = styled(ListItemIcon)(({ theme }) => ({
   minWidth: theme.spacing(3),
