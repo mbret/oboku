@@ -196,3 +196,46 @@ describe("resolveArchiveMetadataPatchPlan", () => {
     expect(targets).toEqual({ comicInfo: true, opf: false })
   })
 })
+
+describe("resolveArchiveMetadataPatchPlan, an ISBN both containers announce", () => {
+  const bothAnnounce = () =>
+    inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
+          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+      "ComicInfo.xml": comicInfo("<GTIN>9783161484100</GTIN>"),
+    })
+
+  it("leaves the previous ISBN behind under no scheme", async () => {
+    const { patch } = resolveArchiveMetadataPatchPlan(
+      { isbn: "9780306406157" },
+      await bothAnnounce(),
+    )
+
+    expect(patch.identifiers).toEqual([
+      {
+        scheme: "Unknown",
+        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
+        unique: true,
+      },
+      { scheme: "ISBN", value: "9780306406157", unique: false },
+    ])
+  })
+
+  it("clears every entry announcing it", async () => {
+    const { patch } = resolveArchiveMetadataPatchPlan(
+      { isbn: "" },
+      await bothAnnounce(),
+    )
+
+    expect(patch.identifiers).toEqual([
+      {
+        scheme: "Unknown",
+        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
+        unique: true,
+      },
+    ])
+  })
+})
