@@ -1,4 +1,5 @@
 import {
+  inferIdentifierScheme,
   normalizeIdentifierScheme,
   OPF_IDENTIFIER_SCHEME_ATTRIBUTES,
   OPF_IDENTIFIER_SCHEME_LOCAL_NAMES,
@@ -170,12 +171,18 @@ const schemeSink = (
   return meta === undefined ? undefined : { kind: "refinement", meta }
 }
 
+/**
+ * The scheme an element is read as, which for one that states none is the one
+ * its value announces — the reader infers a bare Bookland number as an `ISBN`,
+ * so an element holding one has to match a patched `ISBN` rather than look
+ * untagged and be replaced.
+ */
 const elementScheme = (metadata: XmlElement, element: XmlElement): string => {
   const sink = schemeSink(metadata, element)
 
   switch (sink?.kind) {
     case undefined:
-      return ""
+      return inferIdentifierScheme(element.textContent ?? "")
     case "namespaced":
       return element.getAttributeNS(OPF_NAMESPACE, sink.localName)?.trim() ?? ""
     case "attribute":

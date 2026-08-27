@@ -654,3 +654,63 @@ describe("OPF editing under an aliased namespace prefix", () => {
     ])
   })
 })
+
+describe("OPF editing an identifier that states no scheme", () => {
+  it("edits the element whose value the reader reads as an ISBN", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>` +
+          '<dc:identifier id="isbn-id">9783161484100</dc:identifier>' +
+          '<meta refines="#isbn-id" property="display-seq">1</meta>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "ISBN", value: "9780306406157" },
+      ],
+    })
+
+    expect(readOpfIsbn(xml)).toBe("9780306406157")
+    expect(xml).toContain('id="isbn-id"')
+    expect(xml).toContain('refines="#isbn-id"')
+    expect(readOpfIdentifiers(xml)).toHaveLength(2)
+  })
+
+  it("leaves an element whose value announces nothing untagged", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf('<dc:identifier id="catalog-id">catalog-42</dc:identifier>'),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "Unknown", value: "catalog-99" }],
+    })
+
+    expect(xml).toContain('id="catalog-id"')
+    expect(xml).not.toContain("scheme=")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "catalog-99", scheme: "Unknown" },
+    ])
+  })
+
+  it("does not hand a bare UUID to a patched ISBN", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(`<dc:identifier id="uuid-id">${UUID_IDENTIFIER}</dc:identifier>`),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER },
+        { scheme: "ISBN", value: "9783161484100" },
+      ],
+    })
+
+    expect(xml).toContain(UUID_IDENTIFIER)
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+    expect(readOpfIdentifiers(xml)).toHaveLength(2)
+  })
+})
