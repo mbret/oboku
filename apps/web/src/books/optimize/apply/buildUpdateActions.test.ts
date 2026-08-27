@@ -138,3 +138,61 @@ describe("buildUpdateActions, an ISBN both containers announce", () => {
     ])
   })
 })
+
+describe("buildUpdateActions, what it asks to be removed", () => {
+  it("names nothing when the edit only changes a value", async () => {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
+      ),
+    })
+
+    const { patch } = metadataPatch("9783161484100", inspection)
+
+    expect(patch.removedIdentifiers).toEqual([])
+    expect(patch.identifiers).toEqual([
+      { scheme: "ISBN", value: "9783161484100", unique: false },
+      { scheme: "DOI", value: "10.1000/182", unique: false },
+    ])
+  })
+
+  it("names the ISBN it dropped when the field is cleared", async () => {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
+      ),
+    })
+
+    const { patch } = metadataPatch("", inspection)
+
+    expect(patch.removedIdentifiers).toEqual([
+      { scheme: "ISBN", value: "9783161484100", unique: false },
+    ])
+    expect(patch.identifiers).toEqual([
+      { scheme: "DOI", value: "10.1000/182", unique: false },
+    ])
+  })
+
+  it("names both entries when the containers each announced the ISBN", async () => {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+      "ComicInfo.xml": comicInfo("<GTIN>9783161484100</GTIN>"),
+    })
+
+    const { patch } = metadataPatch("9780306406157", inspection)
+
+    expect(patch.identifiers).toEqual([
+      { scheme: "ISBN", value: "9780306406157", unique: false },
+    ])
+    expect(patch.removedIdentifiers).toEqual([
+      { scheme: "GTIN", value: "9783161484100", unique: false },
+    ])
+  })
+})

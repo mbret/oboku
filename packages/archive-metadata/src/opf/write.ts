@@ -29,6 +29,7 @@ import {
  */
 export type OpfMetadataPatch = {
   identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
+  removedIdentifiers?: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 const OPF_LABEL = "OPF"
@@ -71,7 +72,7 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
     throw new Error("OPF document has no <metadata> element")
   }
 
-  reconcileIdentifiers(doc, root, metadata, patch.identifiers)
+  reconcileIdentifiers(doc, root, metadata, patch)
 
   const serialized = serializeXml(doc)
 
@@ -310,14 +311,61 @@ const findUniqueIdentifierElement = (
  * it — an element may be the target of `<meta refines>` entries, and its `id`
  * has to survive an edit for those to keep resolving.
  */
+/**
+ * The element an identifier was read from: the one carrying both its scheme and
+ * its value. Matched on both because a removal names an identifier the reader
+ * reported, and nothing else should be mistaken for it.
+ */
+const findIdentifierElement = (
+  metadata: XmlElement,
+  elements: ReadonlyArray<XmlElement>,
+  { scheme, value }: ArchiveMetadataIdentifier,
+): XmlElement | undefined =>
+  elements.find(function carriesIdentifier(element) {
+    return (
+      element.textContent?.trim() === value.trim() &&
+      schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
+    )
+  })
+
+/**
+ * Rewrites the document's identifiers: the removals go, the patched ones are
+ * written, and every other element is left alone — including the ones the
+ * reader never reported, which no caller could have known to keep.
+ *
+ * An identifier being written reuses the existing element of its scheme rather
+ * than replacing it: that element may be the target of `<meta refines>`
+ * entries, and its `id` has to survive an edit for those to keep resolving.
+ */
 const reconcileIdentifiers = (
   doc: XmlDocument,
   root: XmlElement,
   metadata: XmlElement,
-  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>,
+  { identifiers, removedIdentifiers }: OpfMetadataPatch,
 ): void => {
-  const elements = listChildrenByLocalName(metadata, "identifier")
-  const uniqueElement = findUniqueIdentifierElement(root, elements)
+  const uniqueElement = findUniqueIdentifierElement(
+    root,
+    listChildrenByLocalName(metadata, "identifier"),
+  )
+
+  for (const identifier of removedIdentifiers ?? []) {
+    const element = findIdentifierElement(
+      metadata,
+      listChildrenByLocalName(metadata, "identifier"),
+      identifier,
+    )
+
+    /**
+     * The element `<package unique-identifier>` names is structural: removing
+     * it would leave the reference dangling, so a caller asking for it is
+     * declined rather than obeyed.
+     */
+    if (element !== undefined && element !== uniqueElement) {
+      removeIdentifier(metadata, element)
+    }
+  }
+
+  const remaining = listChildrenByLocalName(metadata, "identifier")
   const uniqueIdentifier = identifiers.find(function isPinnedToUniqueElement({
     unique,
   }) {
@@ -330,7 +378,7 @@ const reconcileIdentifiers = (
 
   const reusable = groupBySchemeKey(
     metadata,
-    elements.filter(function isReconcilable(element) {
+    remaining.filter(function isReconcilable(element) {
       return element !== uniqueElement
     }),
   )
@@ -345,9 +393,5 @@ const reconcileIdentifiers = (
       )
 
     writeIdentifier(metadata, element, identifier)
-  }
-
-  for (const leftovers of reusable.values()) {
-    for (const element of leftovers) removeIdentifier(metadata, element)
   }
 }

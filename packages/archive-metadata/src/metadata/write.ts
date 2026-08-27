@@ -29,11 +29,19 @@ export type ArchiveMetadataIdentifier = {
  * Fields an archive patch may set. Expand in lockstep when a new field
  * becomes writable in at least one container.
  *
- * `identifiers` is the complete set the archive should end up with, not a
- * delta: an identifier the containers hold but the list omits is removed.
+ * `identifiers` are written into the containers, creating or updating as
+ * needed. `removedIdentifiers` are deleted, and **nothing else is** — an
+ * identifier named in neither list is left exactly as the archive holds it, so
+ * a patch that names no removals removes nothing.
+ *
+ * Naming removals rather than inferring them from absence is what keeps the
+ * writer from deleting something no one saw: it has no way to tell an
+ * identifier a caller chose to drop from one the caller never knew about,
+ * because its reader reports fewer elements than the document contains.
  */
 export type ArchiveMetadataPatch = {
   identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
+  removedIdentifiers?: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 /**

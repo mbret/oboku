@@ -160,6 +160,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [{ scheme: "Unknown", value: "custom-id" }],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml).toContain("<dc:identifier>custom-id</dc:identifier>")
@@ -168,7 +169,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     ])
   })
 
-  it("removes the identifiers the patch leaves out", async () => {
+  it("removes only the identifiers the patch names", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf(
@@ -179,6 +180,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [{ scheme: "DOI", value: "10.1000/182" }],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(readOpfIdentifiers(xml)).toEqual([
@@ -187,13 +189,16 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
     expect(xml).not.toContain("9783161484100")
   })
 
-  it("removes every identifier when the patch carries none", async () => {
+  it("removes every identifier the patch names", async () => {
     const entry = makeEntry(
       "OEBPS/content.opf",
       opf('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
     )
 
-    const xml = await buildPatchedOpfXml(entry, { identifiers: [] })
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
 
     expect(readOpfIdentifiers(xml)).toEqual([])
   })
@@ -317,6 +322,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+      removedIdentifiers: [{ scheme: "DOI", value: "10.1000/182" }],
     })
 
     expect(xml).not.toContain("10.1000/182")
@@ -627,6 +633,7 @@ describe("OPF editing under an aliased namespace prefix", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [{ scheme: "Unknown", value: "catalog-42" }],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml).not.toContain("scheme=")
@@ -712,5 +719,64 @@ describe("OPF editing an identifier that states no scheme", () => {
     expect(xml).toContain(UUID_IDENTIFIER)
     expect(readOpfIsbn(xml)).toBe("9783161484100")
     expect(readOpfIdentifiers(xml)).toHaveLength(2)
+  })
+})
+
+describe("OPF editing leaves unnamed identifiers alone", () => {
+  it("keeps an element the patch names in neither list", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: "9783161484100", scheme: "ISBN" },
+      { value: "10.1000/182", scheme: "DOI" },
+    ])
+  })
+
+  it("keeps the elements its reader never reported", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>` +
+          "<dc:identifier><span>hidden</span></dc:identifier>" +
+          "<dc:identifier></dc:identifier>" +
+          '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>',
+      ),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "ISBN", value: "9783161484100" },
+      ],
+    })
+
+    expect(xml).toContain("<span>hidden</span>")
+    expect(xml).toContain("<dc:identifier/>")
+    expect(readOpfIsbn(xml)).toBe("9783161484100")
+  })
+
+  it("declines to remove the element the package points at", async () => {
+    const entry = makeEntry(
+      "OEBPS/content.opf",
+      opf(`<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>`),
+    )
+
+    const xml = await buildPatchedOpfXml(entry, {
+      identifiers: [],
+      removedIdentifiers: [{ scheme: "Unknown", value: UUID_IDENTIFIER }],
+    })
+
+    expect(xml).toContain(UUID_IDENTIFIER)
+    expect(xml).toContain('id="pub-id"')
   })
 })
