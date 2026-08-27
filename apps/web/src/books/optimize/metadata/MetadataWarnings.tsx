@@ -15,12 +15,10 @@ export const MetadataWarnings = memo(function MetadataWarnings() {
       {unreadableSources.includes("opf") && (
         <Alert severity="warning" variant="standard">
           This book&apos;s {CONTAINER_LABELS.opf} could not be read, so none of
-          its own metadata could be recovered. It is left untouched rather than
-          replaced — it also holds the book&apos;s reading order, which oboku
-          cannot rebuild.
+          its own metadata could be recovered and saving cannot write to it.
           {targets.comicInfo
-            ? ` Saving writes your values to ${CONTAINER_LABELS.comicInfo}, which the book already carries and oboku reads.`
-            : ` This book carries no other place to record metadata, so saving cannot store your values. ${CONTAINER_LABELS.comicInfo} describes a comic archive and is not added to an EPUB.`}
+            ? ` Your values go to ${CONTAINER_LABELS.comicInfo} instead, which this book already carries.`
+            : " There is nowhere else in this book to store them, so they cannot be saved."}
         </Alert>
       )}
       {unreadableSources.includes("comicInfo") && (
