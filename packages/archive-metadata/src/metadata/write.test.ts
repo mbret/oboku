@@ -48,7 +48,9 @@ const epub = () =>
     close: () => Promise.resolve(),
   })
 
-const ISBN_PATCH = { isbn: "9783161484100" }
+const ISBN_PATCH = {
+  identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+}
 
 describe("patchArchiveMetadata", () => {
   it("refuses a patch with no container to write it into", async () => {
