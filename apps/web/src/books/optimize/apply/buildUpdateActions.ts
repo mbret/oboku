@@ -1,6 +1,7 @@
 import type { WebArchiveUpdateAction } from "@oboku/archive-metadata/web"
 import type { FileInspection } from "../useFileInspection"
 import {
+  hasWritableMetadataTarget,
   resolveArchiveMetadataPatchPlan,
   resolveMetadataFixerFormValues,
   trimMetadataFixerFormValues,
@@ -15,6 +16,8 @@ const resolveMetadataPatchAction = (
   values: BookOptimizeFormValues,
   inspection: FileInspection,
 ): WebArchiveUpdateAction | undefined => {
+  if (!hasWritableMetadataTarget(inspection)) return undefined
+
   const trimmed = trimMetadataFixerFormValues(values)
   const resolved = resolveMetadataFixerFormValues(inspection)
 
