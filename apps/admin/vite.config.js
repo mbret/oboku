@@ -1,5 +1,6 @@
 import { defineConfig } from "vite"
-import viteReact from "@vitejs/plugin-react"
+import viteReact, { reactCompilerPreset } from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
 import { tanstackRouter } from "@tanstack/router-plugin/vite"
 import { resolve } from "node:path"
 
@@ -8,6 +9,7 @@ export default defineConfig({
   plugins: [
     tanstackRouter({ target: "react", autoCodeSplitting: true }),
     viteReact(),
+    babel({ presets: [reactCompilerPreset()] }),
   ],
   test: {
     globals: true,

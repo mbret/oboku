@@ -125,6 +125,14 @@
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
 
+### React Compiler
+
+- React Compiler is enabled in every React app: `apps/web` and `apps/admin` wire `reactCompilerPreset()` into `@rolldown/plugin-babel` alongside `@vitejs/plugin-react`, and `apps/landing` sets `reactCompiler: true` in `next.config.mjs`.
+- Do not hand-write `useMemo`, `useCallback`, or `memo` for referential stability alone — the compiler does that. Reach for them only when memoization is load-bearing beyond identity (an expensive computation the compiler cannot see, or a dependency the compiler is not allowed to assume stable).
+- The compiler bails out per function, never per file, so a function it cannot compile silently keeps its current behaviour. Bailouts are usually a Rules of React violation (most often a ref read or written during render) — fix the violation rather than annotating around it.
+- `"use no memo"` is the escape hatch for a function that must not be compiled. Treat it as a last resort and say why in a comment.
+- A compiled hook starts with a `_c()` cache call, so it can only run inside a render. Test hooks through `renderHook` from `@testing-library/react`; calling a hook as a plain function no longer works even when all of its own hooks are mocked.
+
 ### React `memo` components
 
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).

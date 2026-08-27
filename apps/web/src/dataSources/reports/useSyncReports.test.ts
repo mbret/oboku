@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { cleanup, renderHook } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const hasQueryFn = <Result>(
   value: unknown,
@@ -16,6 +17,8 @@ describe("useSyncReports", () => {
   beforeEach(() => {
     vi.resetModules()
   })
+
+  afterEach(cleanup)
 
   it("uses fetchOrThrow so HTTP failures reject the query", async () => {
     const fetch = vi.fn()
@@ -56,7 +59,7 @@ describe("useSyncReports", () => {
       ReturnType<typeof useSyncReports>["data"]
     >
 
-    useSyncReports()
+    renderHook(() => useSyncReports())
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -114,7 +117,7 @@ describe("useSyncReports", () => {
       ReturnType<typeof useSyncReports>["data"]
     >
 
-    useSyncReports()
+    renderHook(() => useSyncReports())
 
     const options = useQuery.mock.calls[0]?.[0]
 

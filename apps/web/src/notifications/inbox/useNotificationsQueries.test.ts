@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { cleanup, renderHook } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const hasQueryFn = <Result>(
   value: unknown,
@@ -16,6 +17,8 @@ describe("notifications queries", () => {
   beforeEach(() => {
     vi.resetModules()
   })
+
+  afterEach(cleanup)
 
   it("uses fetchOrThrow for inbox notifications", async () => {
     const fetch = vi.fn()
@@ -56,7 +59,7 @@ describe("notifications queries", () => {
       ReturnType<typeof useInboxNotifications>["data"]
     >
 
-    useInboxNotifications()
+    renderHook(() => useInboxNotifications())
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -115,7 +118,7 @@ describe("notifications queries", () => {
       ReturnType<typeof useUnreadNotificationsCount>["data"]
     >
 
-    const query = useUnreadNotificationsCount()
+    const { result } = renderHook(() => useUnreadNotificationsCount())
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -128,6 +131,6 @@ describe("notifications queries", () => {
       "https://api.example.com/notifications/unread-count",
     )
     expect(fetch).not.toHaveBeenCalled()
-    expect(query.unreadCount).toBe(0)
+    expect(result.current.unreadCount).toBe(0)
   })
 })
