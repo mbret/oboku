@@ -43,35 +43,35 @@ export const resolveMetadataFixerFormValues = (
 })
 
 /**
- * The containers a save should write. Every container the book already carries
- * is written, so they cannot end up disagreeing about the same ISBN — picking a
- * winner per container was never the user's call.
+ * The containers a save should write.
  *
- * ComicInfo.xml is only ever created for an archive that carries no metadata of
- * its own: a bare comic archive. A book that carries a package document is an
- * EPUB and is never given one, whether or not that document turns out to be
- * readable — ComicInfo describes a comic archive, and a broken OPF does not
- * make a book into one.
+ * A container the book carries but oboku cannot parse stops the save: it
+ * cannot be patched without being read, and replacing it would discard
+ * whatever it holds that oboku does not model. Falling back to the other
+ * container is not a fix either — a book with a package document is an EPUB
+ * whether or not that document parses, and a comic sidecar does not belong in
+ * one.
  *
- * An unreadable OPF is skipped rather than replaced: the package document also
- * carries the manifest and spine, so overwriting it with the fields oboku knows
- * about would cost the book its reading order. An EPUB whose OPF cannot be
- * parsed therefore has nowhere to record anything, which
- * {@link hasWritableMetadataTarget} lets callers say out loud.
+ * Otherwise every container the book already carries is written, so they cannot
+ * end up disagreeing about the same ISBN — picking a winner per container was
+ * never the user's call. ComicInfo.xml is created only for an archive that
+ * carries no metadata of its own: a bare comic archive.
  */
 export const resolveMetadataTargets = ({
   resolvedArchive,
 }: FileInspection): ArchiveMetadataTargets => {
   const { sources, unreadableSources } = resolvedArchive
-  const carriesComicInfo =
-    sources.comicInfo !== undefined || unreadableSources.includes("comicInfo")
-  const carriesOpf =
-    sources.opf !== undefined || unreadableSources.includes("opf")
 
-  return {
-    comicInfo: carriesComicInfo || !carriesOpf,
-    opf: sources.opf !== undefined,
+  if (
+    unreadableSources.includes("opf") ||
+    unreadableSources.includes("comicInfo")
+  ) {
+    return { comicInfo: false, opf: false }
   }
+
+  const opf = sources.opf !== undefined
+
+  return { comicInfo: sources.comicInfo !== undefined || !opf, opf }
 }
 
 /** Whether a save has any container left to write the metadata into. */
