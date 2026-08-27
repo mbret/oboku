@@ -800,3 +800,42 @@ describe("OPF editing a document with duplicate identifiers", () => {
     expect(xml.match(/<dc:identifier/g)).toHaveLength(1)
   })
 })
+
+describe("OPF editing around an element its reader passed over", () => {
+  const hiddenBeforeIsbn = () =>
+    makeEntry(
+      "OEBPS/content.opf",
+      opf(
+        `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>` +
+          "<dc:identifier><span>9783161484100</span></dc:identifier>" +
+          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+    )
+
+  it("does not write the edit into it", async () => {
+    const xml = await buildPatchedOpfXml(hiddenBeforeIsbn(), {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "ISBN", value: "9780306406157" },
+      ],
+    })
+
+    expect(xml).toContain("<span>9783161484100</span>")
+    expect(readOpfIdentifiers(xml)).toEqual([
+      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: "9780306406157", scheme: "ISBN" },
+    ])
+  })
+
+  it("does not remove it when a removal names what it appears to hold", async () => {
+    const xml = await buildPatchedOpfXml(hiddenBeforeIsbn(), {
+      identifiers: [
+        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+      ],
+      removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+    })
+
+    expect(xml).toContain("<span>9783161484100</span>")
+    expect(readOpfIsbn(xml)).toBeUndefined()
+  })
+})

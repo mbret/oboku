@@ -98,6 +98,37 @@ const listChildrenByLocalName = (
     return localName(child.tagName) === name
   })
 
+/**
+ * An element's own text, excluding any nested element's — the value the parser
+ * reads, and what it decides by. `textContent` would fold descendants in, and
+ * an element the parser passed over must not look to this writer like one it
+ * reported.
+ */
+const directText = (element: XmlElement): string =>
+  Array.from(element.childNodes)
+    .filter(function isTextual(node) {
+      return (
+        node.nodeType === Node.TEXT_NODE ||
+        node.nodeType === Node.CDATA_SECTION_NODE
+      )
+    })
+    .map(function nodeText(node) {
+      return node.nodeValue ?? ""
+    })
+    .join("")
+
+/**
+ * The identifier elements the parser reports: the ones stating a value of their
+ * own. An element it passes over is named by no patch, so this writer neither
+ * removes nor reuses it — it is left exactly as the book wrote it.
+ */
+const reportedIdentifierElements = (metadata: XmlElement): XmlElement[] =>
+  listChildrenByLocalName(metadata, "identifier").filter(
+    function statesAValue(element) {
+      return directText(element).trim() !== ""
+    },
+  )
+
 const findChildByLocalName = (
   parent: XmlElement,
   name: string,
@@ -183,7 +214,7 @@ const elementScheme = (metadata: XmlElement, element: XmlElement): string => {
 
   switch (sink?.kind) {
     case undefined:
-      return inferIdentifierScheme(element.textContent ?? "")
+      return inferIdentifierScheme(directText(element))
     case "namespaced":
       return element.getAttributeNS(OPF_NAMESPACE, sink.localName)?.trim() ?? ""
     case "attribute":
@@ -338,11 +369,9 @@ const removableElements = (
   metadata: XmlElement,
   uniqueElement: XmlElement | undefined,
 ): XmlElement[] =>
-  listChildrenByLocalName(metadata, "identifier").filter(
-    function isRemovable(element) {
-      return element !== uniqueElement
-    },
-  )
+  reportedIdentifierElements(metadata).filter(function isRemovable(element) {
+    return element !== uniqueElement
+  })
 
 /**
  * Rewrites the document's identifiers: the removals go, the patched ones are
@@ -374,7 +403,7 @@ const reconcileIdentifiers = (
     if (element !== undefined) removeIdentifier(metadata, element)
   }
 
-  const remaining = listChildrenByLocalName(metadata, "identifier")
+  const remaining = reportedIdentifierElements(metadata)
   const uniqueIdentifier = identifiers.find(function isPinnedToUniqueElement({
     unique,
   }) {
