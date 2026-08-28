@@ -28,7 +28,7 @@ This setup assume this final minimal structure on your server:
 /oboku
   .env
   docker-compose.yml
-  /secrets
+  /secrets                 # created on first start
     jwt_private_key.pem
     jwt_public_key.pem
 ```
@@ -51,12 +51,21 @@ POSTGRES_PASSWORD=createastrongpassword
 
 #### Private & Public JWT secret
 
-From the same folder you plan to start your docker compose, run this command.
+oboku signs its sessions with an RSA key pair. CouchDB generates one into `./secrets` the first time the stack starts, so a normal install has nothing to do here.
+
+{% hint style="warning" %}
+Keep `./secrets` across upgrades and include it in your backups. The pair is only ever created when missing, so restarts keep signing with the same keys — but lose it and a new pair is generated, which signs every user out.
+{% endhint %}
+
+To use your own key pair instead, create it before the first start and it will be left alone:
 
 ```bash
+mkdir -p ./secrets
 openssl genrsa -out ./secrets/jwt_private_key.pem 4096
 openssl rsa -in ./secrets/jwt_private_key.pem -pubout -outform PEM -out ./secrets/jwt_public_key.pem
 ```
+
+You can also supply the keys base64 encoded through `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY` rather than as files.
 
 ### Setup compose file
 
