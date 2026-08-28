@@ -59,7 +59,9 @@ describe("useSyncReports", () => {
       ReturnType<typeof useSyncReports>["data"]
     >
 
-    renderHook(() => useSyncReports())
+    renderHook(function renderUseSyncReports() {
+      return useSyncReports()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -117,7 +119,9 @@ describe("useSyncReports", () => {
       ReturnType<typeof useSyncReports>["data"]
     >
 
-    renderHook(() => useSyncReports())
+    renderHook(function renderUseSyncReports() {
+      return useSyncReports()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 

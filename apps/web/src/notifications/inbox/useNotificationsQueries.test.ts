@@ -59,7 +59,9 @@ describe("notifications queries", () => {
       ReturnType<typeof useInboxNotifications>["data"]
     >
 
-    renderHook(() => useInboxNotifications())
+    renderHook(function renderUseInboxNotifications() {
+      return useInboxNotifications()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -118,7 +120,9 @@ describe("notifications queries", () => {
       ReturnType<typeof useUnreadNotificationsCount>["data"]
     >
 
-    const { result } = renderHook(() => useUnreadNotificationsCount())
+    const { result } = renderHook(function renderUseUnreadNotificationsCount() {
+      return useUnreadNotificationsCount()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 
