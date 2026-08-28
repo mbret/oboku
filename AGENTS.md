@@ -132,6 +132,7 @@
 - The compiler bails out per function, never per file, so a function it cannot compile silently keeps its current behaviour. Bailouts are usually a Rules of React violation (most often a ref read or written during render) — fix the violation rather than annotating around it.
 - `"use no memo"` is the escape hatch for a function that must not be compiled. Treat it as a last resort and say why in a comment.
 - A compiled hook starts with a `_c()` cache call, so it can only run inside a render. Test hooks through `renderHook` from `@testing-library/react`; calling a hook as a plain function no longer works even when all of its own hooks are mocked.
+- `packages/*` hold no React today and declare no `react` dependency, so nothing there is compiled. Web consumes them through the `source` condition, which puts `packages/*/src` in its own graph and does compile them; `apps/admin`, `apps/landing` and `apps/api` consume the built `dist`, and the shared library build in `config/vite.lib.ts` has no compiler. So React code added to a package would be compiled for web and uncompiled everywhere else — wire the compiler into `config/vite.lib.ts` at that point.
 
 ### React `memo` components
 
