@@ -48,6 +48,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
             { scheme: "ISBN", value: "9781234567897" },
             { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
           ],
+          removedIdentifiers: [{ scheme: "DOI", value: "10.1000/182" }],
         },
         targets: { comicInfo: true, opf: true },
       },
@@ -76,7 +77,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
       "Set Google Books id to zyTCAlFPjgYC in ComicInfo.xml and OPF package document.",
     )
     expect(listItems[2]?.textContent).toBe(
-      "Remove any other identifier from ComicInfo.xml and OPF package document.",
+      "Remove DOI 10.1000/182 from ComicInfo.xml and OPF package document.",
     )
     expect(listItems[3]?.textContent).toContain("Resize eligible")
     expect(screen.getByText("1200 × 1600 px")).not.toBeNull()
@@ -103,7 +104,10 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const actions: WebArchiveUpdateAction[] = [
       {
         kind: "patch-metadata",
-        patch: { identifiers: [] },
+        patch: {
+          identifiers: [],
+          removedIdentifiers: [{ scheme: "ISBN", value: "9781234567897" }],
+        },
         targets: { comicInfo: true },
       },
       {
@@ -124,7 +128,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
 
     expect(listItems).toHaveLength(5)
     expect(listItems[0]?.textContent).toBe(
-      "Remove every identifier from ComicInfo.xml.",
+      "Remove ISBN 9781234567897 from ComicInfo.xml.",
     )
     expect(screen.getByText("ComicInfo.xml")).not.toBeNull()
     expect(listItems[1]?.textContent).toContain("to a maximum height of")

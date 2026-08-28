@@ -78,15 +78,6 @@ function MetadataUpdateItems({ action }: { action: PatchMetadataAction }) {
     action.targets,
   )
 
-  if (action.patch.identifiers.length === 0) {
-    return (
-      <UpdateListItem>
-        Remove every identifier from{" "}
-        <MetadataTargetChips targets={containers} />.
-      </UpdateListItem>
-    )
-  }
-
   return (
     <>
       {action.patch.identifiers.map(
@@ -99,13 +90,17 @@ function MetadataUpdateItems({ action }: { action: PatchMetadataAction }) {
           const schemeLabel = identifierSchemeLabel(identifier.scheme)
 
           return storedIn.length === 0 ? (
-            <UpdateListItem key={`${identifier.scheme}:${identifier.value}`}>
+            <UpdateListItem
+              key={`set:${identifier.scheme}:${identifier.value}`}
+            >
               Drop <KeyChip label={schemeLabel} />{" "}
               <KeyChip label={identifier.value} />: no container in this book
               can carry it.
             </UpdateListItem>
           ) : (
-            <UpdateListItem key={`${identifier.scheme}:${identifier.value}`}>
+            <UpdateListItem
+              key={`set:${identifier.scheme}:${identifier.value}`}
+            >
               Set <KeyChip label={schemeLabel} /> to{" "}
               <KeyChip label={identifier.value} /> in{" "}
               <MetadataTargetChips targets={storedIn} />.
@@ -113,10 +108,20 @@ function MetadataUpdateItems({ action }: { action: PatchMetadataAction }) {
           )
         },
       )}
-      <UpdateListItem>
-        Remove any other identifier from{" "}
-        <MetadataTargetChips targets={containers} />.
-      </UpdateListItem>
+      {(action.patch.removedIdentifiers ?? []).map(
+        function renderIdentifierRemoval(identifier) {
+          return (
+            <UpdateListItem
+              key={`removed:${identifier.scheme}:${identifier.value}`}
+            >
+              Remove{" "}
+              <KeyChip label={identifierSchemeLabel(identifier.scheme)} />{" "}
+              <KeyChip label={identifier.value} /> from{" "}
+              <MetadataTargetChips targets={containers} />.
+            </UpdateListItem>
+          )
+        },
+      )}
     </>
   )
 }
