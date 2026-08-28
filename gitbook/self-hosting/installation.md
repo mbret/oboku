@@ -54,7 +54,7 @@ POSTGRES_PASSWORD=createastrongpassword
 oboku signs its sessions with an RSA key pair. CouchDB generates one into `./secrets` the first time the stack starts, so a normal install has nothing to do here.
 
 {% hint style="warning" %}
-Keep `./secrets` across upgrades and include it in your backups. The pair is only ever created when missing, so restarts keep signing with the same keys. If you lose it a new pair is generated, and while signed-in users are not logged out — sessions refresh against tokens held server side — any sign-up or magic link already sent out stops working.
+Keep `./secrets` across upgrades and include it in your backups. The pair is only ever created when missing, so restarts keep signing with the same keys. If you lose it a new pair is generated. Signed-in readers are not logged out, because their sessions refresh against tokens held server side, but the admin panel signs its own tokens with this pair, so administrators have to sign in again — and any sign-up or magic link already sent out stops working.
 {% endhint %}
 
 To use your own key pair instead, create it before the first start and it will be left alone:
