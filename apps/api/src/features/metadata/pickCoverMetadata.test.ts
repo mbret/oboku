@@ -2,67 +2,116 @@ import type { BookMetadata } from "@oboku/shared"
 import { describe, expect, it } from "vitest"
 import { pickCoverMetadata } from "./pickCoverMetadata"
 
-const FILE: BookMetadata = {
+const VOLUME_ID = "Ebb6DQAAQBAJ"
+
+const firstPage: BookMetadata = {
   type: "file",
   contentType: "application/x-cbz",
   coverLink: "BLAME! - c001 (v01) - p001.avif",
+  coverIsDeclared: false,
 }
-const GOOGLE: BookMetadata = {
+const declaredCover: BookMetadata = {
+  type: "file",
+  contentType: "application/epub+zip",
+  coverLink: "OEBPS/cover.jpg",
+  coverIsDeclared: true,
+}
+const googleCover: BookMetadata = {
   type: "googleBookApi",
-  coverLink: "https://books.google.com/books/content?id=Ebb6DQAAQBAJ",
+  coverLink: `https://books.google.com/books/content?id=${VOLUME_ID}`,
 }
 
-describe("pickCoverMetadata", () => {
-  it("prefers the archive over the catalog by default", () => {
-    expect(pickCoverMetadata([GOOGLE, FILE], undefined)).toBe(FILE)
+describe("pickCoverMetadata, with no source certain of its cover", () => {
+  it("takes the highest-priority cover", () => {
+    expect(pickCoverMetadata([googleCover, firstPage], undefined)).toBe(
+      firstPage,
+    )
   })
 
   it("honors a reordered priority", () => {
-    expect(pickCoverMetadata([GOOGLE, FILE], ["googleBookApi", "file"])).toBe(
-      GOOGLE,
-    )
+    expect(
+      pickCoverMetadata([googleCover, firstPage], ["googleBookApi", "file"]),
+    ).toBe(googleCover)
   })
 
   it("skips a source carrying no cover", () => {
-    expect(pickCoverMetadata([{ type: "file" }, GOOGLE], undefined)).toBe(
-      GOOGLE,
+    expect(pickCoverMetadata([{ type: "file" }, googleCover], undefined)).toBe(
+      googleCover,
     )
   })
 
-  it("prefers the stated volume's cover over the archive's", () => {
-    expect(
-      pickCoverMetadata([GOOGLE, FILE], undefined, {
-        googleVolumeId: "Ebb6DQAAQBAJ",
-      }),
-    ).toBe(GOOGLE)
-  })
-
-  it("prefers the stated volume's cover over a file-first priority", () => {
-    expect(
-      pickCoverMetadata([GOOGLE, FILE], ["file", "googleBookApi"], {
-        googleVolumeId: "Ebb6DQAAQBAJ",
-      }),
-    ).toBe(GOOGLE)
-  })
-
-  it("falls back to the archive when the stated volume yielded no cover", () => {
-    expect(
-      pickCoverMetadata([FILE], undefined, {
-        googleVolumeId: "Ebb6DQAAQBAJ",
-      }),
-    ).toBe(FILE)
-  })
-
-  it("ignores an absent volume id", () => {
-    expect(
-      pickCoverMetadata([GOOGLE, FILE], undefined, {
-        googleVolumeId: undefined,
-      }),
-    ).toBe(FILE)
-  })
-
-  it("returns nothing for an empty list", () => {
+  it("returns nothing when nothing carries a cover", () => {
+    expect(pickCoverMetadata([{ type: "file" }], undefined)).toBeUndefined()
     expect(pickCoverMetadata([], undefined)).toBeUndefined()
     expect(pickCoverMetadata(undefined, undefined)).toBeUndefined()
+  })
+})
+
+describe("pickCoverMetadata, when one source is certain", () => {
+  it("prefers a stated volume over the archive's first page", () => {
+    expect(
+      pickCoverMetadata([googleCover, firstPage], undefined, {
+        googleVolumeId: VOLUME_ID,
+      }),
+    ).toBe(googleCover)
+  })
+
+  it("prefers a declared cover over an unaddressed catalog match", () => {
+    expect(
+      pickCoverMetadata(
+        [googleCover, declaredCover],
+        ["googleBookApi", "file"],
+      ),
+    ).toBe(declaredCover)
+  })
+
+  it("falls back to the guess when the certain source has no cover", () => {
+    expect(
+      pickCoverMetadata([{ type: "googleBookApi" }, firstPage], undefined, {
+        googleVolumeId: VOLUME_ID,
+      }),
+    ).toBe(firstPage)
+  })
+})
+
+describe("pickCoverMetadata, when both sources are certain", () => {
+  it("defers to the priority order", () => {
+    expect(
+      pickCoverMetadata([googleCover, declaredCover], undefined, {
+        googleVolumeId: VOLUME_ID,
+      }),
+    ).toBe(declaredCover)
+
+    expect(
+      pickCoverMetadata(
+        [googleCover, declaredCover],
+        ["googleBookApi", "file"],
+        {
+          googleVolumeId: VOLUME_ID,
+        },
+      ),
+    ).toBe(googleCover)
+  })
+})
+
+describe("pickCoverMetadata, when the archive never stated its cover", () => {
+  const unknownCover: BookMetadata = {
+    type: "file",
+    contentType: "application/x-cbz",
+    coverLink: "page-001.jpg",
+  }
+
+  it("does not treat an unanswered cover as declared", () => {
+    expect(
+      pickCoverMetadata([googleCover, unknownCover], undefined, {
+        googleVolumeId: VOLUME_ID,
+      }),
+    ).toBe(googleCover)
+  })
+
+  it("still uses it when no source is certain", () => {
+    expect(pickCoverMetadata([googleCover, unknownCover], undefined)).toBe(
+      unknownCover,
+    )
   })
 })

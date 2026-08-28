@@ -29,13 +29,10 @@ const opfWith = (identifiers: string): string =>
   "<manifest/><spine/>" +
   "</package>"
 
-const archiveWith = (opf: string) =>
+const archiveOf = (filename: string, entries: Record<string, string>) =>
   createArchive({
-    filename: "book.epub",
-    records: [
-      { uri: "META-INF/container.xml", body: CONTAINER_XML },
-      { uri: "OEBPS/content.opf", body: opf },
-    ].map(function toRecord({ uri, body }) {
+    filename,
+    records: Object.entries(entries).map(function toRecord([uri, body]) {
       return {
         dir: false,
         basename: uri.split("/").pop() ?? uri,
@@ -49,6 +46,12 @@ const archiveWith = (opf: string) =>
     close: function closeArchive() {
       return Promise.resolve()
     },
+  })
+
+const archiveWith = (opf: string) =>
+  archiveOf("book.epub", {
+    "META-INF/container.xml": CONTAINER_XML,
+    "OEBPS/content.opf": opf,
   })
 
 const EPUB_CONTENT_TYPE = "application/epub+zip"
@@ -102,5 +105,52 @@ describe("getMetadataFromArchive", () => {
     const metadata = await getMetadataFromArchive(archive, EPUB_CONTENT_TYPE)
 
     expect(metadata.googleVolumeId).toBeUndefined()
+  })
+})
+
+describe("getMetadataFromArchive, the cover it reports", () => {
+  const COMIC_CONTENT_TYPE = "application/x-cbz"
+
+  it("declares a cover the package names", async () => {
+    const archive = archiveOf("book.epub", {
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf":
+        '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        "<metadata><dc:title>Sample</dc:title></metadata>" +
+        '<manifest><item id="cover" href="cover.jpg" media-type="image/jpeg"' +
+        ' properties="cover-image"/></manifest><spine/>' +
+        "</package>",
+      "OEBPS/cover.jpg": "binary",
+    })
+
+    const metadata = await getMetadataFromArchive(archive, EPUB_CONTENT_TYPE)
+
+    expect(metadata.coverLink).toBe("OEBPS/cover.jpg")
+    expect(metadata.coverIsDeclared).toBe(true)
+  })
+
+  it("does not declare the first page of an archive that names none", async () => {
+    const archive = archiveOf("book.cbz", {
+      "page-001.jpg": "binary",
+      "page-002.jpg": "binary",
+    })
+
+    const metadata = await getMetadataFromArchive(archive, COMIC_CONTENT_TYPE)
+
+    expect(metadata.coverLink).toBe("page-001.jpg")
+    expect(metadata.coverIsDeclared).toBe(false)
+  })
+
+  it("answers nothing when no cover is derivable", async () => {
+    const metadata = await getMetadataFromArchive(
+      archiveWith(opfWith("")),
+      EPUB_CONTENT_TYPE,
+    )
+
+    expect(metadata.coverLink).toBeUndefined()
+    expect(metadata.coverIsDeclared).toBeUndefined()
   })
 })

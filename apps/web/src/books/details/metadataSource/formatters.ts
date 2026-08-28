@@ -41,6 +41,19 @@ const formatScalar = (
   value === undefined || value === "" ? undefined : String(value)
 
 /**
+ * Names where a file's cover came from, since the two cases carry very
+ * different weight: one is the container's own declaration, the other the
+ * first page of an archive that declares none.
+ */
+export const formatCoverOrigin = (
+  coverIsDeclared: boolean | undefined,
+): string | undefined => {
+  if (coverIsDeclared === undefined) return undefined
+
+  return coverIsDeclared ? "Declared by the file" : "First page"
+}
+
+/**
  * Project a single metadata field into a short human-readable string for
  * caption-style previews. Returns `undefined` when the field is absent or
  * empty so callers can compose preference-ordered fallback lists.

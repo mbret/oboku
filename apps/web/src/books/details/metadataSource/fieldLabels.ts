@@ -10,6 +10,7 @@ export const BOOK_METADATA_FIELD_LABELS = {
   formatType: "Format types",
   rating: "Rating",
   coverLink: "Cover link",
+  coverIsDeclared: "Cover origin",
   pageCount: "Page count",
   contentType: "Content type",
   date: "Date",

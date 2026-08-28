@@ -27,6 +27,17 @@ const toMutableList = (
 ): string[] | undefined =>
   values && values.length > 0 ? [...values] : undefined
 
+/**
+ * archive-reader reports a cover the container names as `derived`, and the
+ * first page of an archive that names none as `assumed`. Undefined when no
+ * cover was reported at all, so the distinction is never asserted about a
+ * cover that does not exist.
+ */
+const declaresItsCover = (metadata: ResolvedMetadata): boolean | undefined =>
+  metadata.cover === undefined
+    ? undefined
+    : metadata.cover.confidence === "derived"
+
 export const getMetadataFromArchive = async (
   archive: Archive,
   contentType: string,
@@ -60,6 +71,7 @@ export const getMetadataFromArchive = async (
     date: metadata.publication?.edition?.date,
     subjects: toMutableList(metadata.subjects),
     coverLink: metadata.cover?.uri,
+    coverIsDeclared: declaresItsCover(metadata),
     pageCount: metadata.numberOfPages,
     isbn,
     googleVolumeId,

@@ -18,6 +18,13 @@ export type BookMetadataFields = {
   formatType?: ("book" | "comics" | "manga" | "audio")[]
   rating?: number
   coverLink?: string
+  /**
+   * Whether the container names {@link coverLink} as its cover, as opposed
+   * to it being the first page of an archive that declares none. Only the
+   * `file` source can answer it, and only for a cover it actually reports;
+   * absent means "not known", never "not declared".
+   */
+  coverIsDeclared?: boolean
   pageCount?: number
   contentType?: string
   date?: { year?: number; month?: number; day?: number }
@@ -87,6 +94,7 @@ export type FileMetadata = BookMetadataVariant<
   | "date"
   | "subjects"
   | "coverLink"
+  | "coverIsDeclared"
   | "pageCount"
   | "contentType"
   | "isbn"

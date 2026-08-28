@@ -3,7 +3,11 @@ import type { FileMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
-import { formatBookMetadataDate, formatList } from "./formatters"
+import {
+  formatBookMetadataDate,
+  formatCoverOrigin,
+  formatList,
+} from "./formatters"
 
 type Props = {
   metadata: DeepReadonlyObject<FileMetadata> | undefined
@@ -28,6 +32,10 @@ export const FileSourceContent = ({ metadata }: Props) => (
       value={formatList(metadata?.subjects)}
     />
     <MetadataFieldRow label={L.coverLink} value={metadata?.coverLink} />
+    <MetadataFieldRow
+      label={L.coverIsDeclared}
+      value={formatCoverOrigin(metadata?.coverIsDeclared)}
+    />
     <MetadataFieldRow
       label={L.pageCount}
       value={
