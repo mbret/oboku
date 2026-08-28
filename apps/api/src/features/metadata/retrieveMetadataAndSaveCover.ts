@@ -119,8 +119,12 @@ export const retrieveMetadataAndSaveCover = async (
         db: ctx.db,
       })
 
-    const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
-      directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
+    const {
+      isbn,
+      ignoreMetadataFile,
+      ignoreMetadataSources,
+      googleVolumeId: directiveGoogleVolumeId,
+    } = directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
     // Collapse the in-memory sentinel back to `undefined` for persistence.
     const persistedModifiedAt =
@@ -251,13 +255,6 @@ export const retrieveMetadataAndSaveCover = async (
             })
         : { filepath: undefined }
 
-    let fileContentLength = 0
-
-    if (tmpFilePath) {
-      const stats = fs.statSync(tmpFilePath)
-      fileContentLength = stats.size
-    }
-
     fileToUnlink = tmpFilePath
 
     console.log(
@@ -326,6 +323,10 @@ export const retrieveMetadataAndSaveCover = async (
       isbn ??
       freshFileMetadata?.isbn ??
       reusedFileMetadata?.isbn
+    const lookupGoogleVolumeId =
+      directiveGoogleVolumeId ??
+      freshFileMetadata?.googleVolumeId ??
+      reusedFileMetadata?.googleVolumeId
 
     const sourcesMetadata =
       ignoreMetadataSources || !externalFetchEnabled
@@ -336,7 +337,7 @@ export const retrieveMetadataAndSaveCover = async (
               // of a clean title; strip the extension for the lookup.
               title: lookupTitle,
               isbn: lookupIsbn,
-              googleVolumeId,
+              googleVolumeId: lookupGoogleVolumeId,
             },
             {
               googleApiKey: ctx.googleApiKey,
@@ -385,17 +386,6 @@ export const retrieveMetadataAndSaveCover = async (
         lastMetadataUpdateError: null,
       }
     })
-
-    /**
-     * Only report a length when we actually downloaded the file —
-     * otherwise the caller would overwrite the previously-recorded
-     * link.contentLength with 0 on every cached refresh.
-     */
-    return {
-      link: {
-        contentLength: tmpFilePath ? fileContentLength : undefined,
-      },
-    }
   } catch (e) {
     console.log(
       `Error while processing book ${ctx.book._id} ${bookNameForDebug}`,

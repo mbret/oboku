@@ -1,5 +1,15 @@
-import { readRecordAsText } from "@prose-reader/archive-reader"
+import {
+  inferIdentifierScheme,
+  normalizeIdentifierScheme,
+  OPF_IDENTIFIER_SCHEME_ATTRIBUTES,
+  OPF_IDENTIFIER_SCHEME_LOCAL_NAMES,
+  OPF_NAMESPACE,
+  opfIdentifierTypeScheme,
+  readRecordAsText,
+} from "@prose-reader/archive-reader"
 import type { ArchiveFileRecord } from "../archive/types"
+import type { ArchiveMetadataIdentifier } from "../metadata/write"
+import { isUntaggedIdentifierScheme } from "../metadata/identifiers"
 import {
   type XmlDocument,
   type XmlElement,
@@ -13,15 +23,20 @@ import {
  * a round-trip contract (read → mutate → re-read returns the same
  * value) we need to keep working across EPUB producers.
  *
- * Today only `isbn` is writable. Adding a new field means deciding
- * which OPF element it maps to *and* updating the ISBN-style
- * "find existing or create" logic for that element.
+ * Today only `identifiers` is writable. Adding a new field means
+ * deciding which OPF element it maps to *and* giving it the same
+ * "find existing or create" reconciliation identifiers get.
  */
 export type OpfMetadataPatch = {
-  isbn?: string | undefined
+  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
+  removedIdentifiers?: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 const OPF_LABEL = "OPF"
+
+const DC_NAMESPACE = "http://purl.org/dc/elements/1.1/"
+
+const IDENTIFIER_ELEMENT_NAME = "dc:identifier"
 
 /**
  * Apply a metadata patch to an existing OPF package document and
@@ -47,17 +62,17 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
   const doc = parseXml(xml, OPF_LABEL)
   const root = doc.documentElement
 
-  if (root?.tagName !== "package") {
+  if (!root || localName(root.tagName) !== "package") {
     throw new Error("OPF root element is not <package>")
   }
 
-  const metadata = root.getElementsByTagName("metadata").item(0)
+  const metadata = findChildByLocalName(root, "metadata")
 
   if (!metadata) {
     throw new Error("OPF document has no <metadata> element")
   }
 
-  upsertIsbnIdentifier(doc, metadata, patch.isbn)
+  reconcileIdentifiers(doc, root, metadata, patch)
 
   const serialized = serializeXml(doc)
 
@@ -67,55 +82,354 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
 }
 
 /**
- * Locate the `<dc:identifier>` carrying an ISBN scheme, if any. Both
- * `opf:scheme="ISBN"` and the bare `scheme="ISBN"` form are accepted,
- * with case-insensitive comparison — same rules the read side uses
- * when extracting the value, so writes target the same node reads
- * pick up.
+ * Elements are matched by local name, the same way the read side does, so a
+ * document that prefixes the OPF namespace — or leaves `<identifier>`
+ * unprefixed under a default one — stays one this writer can reconcile rather
+ * than reject or duplicate into.
  */
-const findIsbnIdentifier = (parent: XmlElement): XmlElement | undefined => {
-  const identifiers = parent.getElementsByTagName("dc:identifier")
+const localName = (tagName: string): string =>
+  tagName.slice(tagName.lastIndexOf(":") + 1).toLowerCase()
 
-  for (let i = 0; i < identifiers.length; i += 1) {
-    const node = identifiers.item(i)
+const listChildrenByLocalName = (
+  parent: XmlElement,
+  name: string,
+): XmlElement[] =>
+  Array.from(parent.children).filter(function matchesLocalName(child) {
+    return localName(child.tagName) === name
+  })
 
-    if (!node) continue
+/**
+ * An element's own text, excluding any nested element's — the value the parser
+ * reads, and what it decides by. `textContent` would fold descendants in, and
+ * an element the parser passed over must not look to this writer like one it
+ * reported.
+ */
+const directText = (element: XmlElement): string =>
+  Array.from(element.childNodes)
+    .filter(function isTextual(node) {
+      return (
+        node.nodeType === Node.TEXT_NODE ||
+        node.nodeType === Node.CDATA_SECTION_NODE
+      )
+    })
+    .map(function nodeText(node) {
+      return node.nodeValue ?? ""
+    })
+    .join("")
 
-    const scheme = (
-      node.getAttribute("opf:scheme") ??
-      node.getAttribute("scheme") ??
-      ""
-    ).toLowerCase()
+/**
+ * The identifier elements the parser reports: the ones stating a value of their
+ * own. An element it passes over is named by no patch, so this writer neither
+ * removes nor reuses it — it is left exactly as the book wrote it.
+ */
+const reportedIdentifierElements = (metadata: XmlElement): XmlElement[] =>
+  listChildrenByLocalName(metadata, "identifier").filter(
+    function statesAValue(element) {
+      return directText(element).trim() !== ""
+    },
+  )
 
-    if (scheme === "isbn") return node
-  }
+const findChildByLocalName = (
+  parent: XmlElement,
+  name: string,
+): XmlElement | undefined => listChildrenByLocalName(parent, name)[0]
 
-  return undefined
+/**
+ * Where an element's scheme is stated. EPUB 2 puts it on the identifier, EPUB 3
+ * refines it from a sibling `<meta>` — a rewrite keeps whichever the document
+ * chose, so the two never end up contradicting each other.
+ */
+type SchemeSink =
+  | { readonly kind: "namespaced"; readonly localName: string }
+  | { readonly kind: "attribute"; readonly name: string }
+  | { readonly kind: "refinement"; readonly meta: XmlElement }
+
+const refiningMetas = (metadata: XmlElement, id: string): XmlElement[] =>
+  id === ""
+    ? []
+    : listChildrenByLocalName(metadata, "meta").filter(
+        function refinesElement(meta) {
+          return meta.getAttribute("refines")?.trim() === `#${id}`
+        },
+      )
+
+const identifierTypeMeta = (
+  metadata: XmlElement,
+  element: XmlElement,
+): XmlElement | undefined =>
+  refiningMetas(metadata, element.getAttribute("id")?.trim() ?? "").find(
+    function statesIdentifierType(meta) {
+      return meta.getAttribute("property")?.trim() === "identifier-type"
+    },
+  )
+
+const metaIdentifierType = (meta: XmlElement): string =>
+  opfIdentifierTypeScheme({
+    value: meta.textContent ?? "",
+    scheme: meta.getAttribute("scheme") ?? "",
+  }) ?? ""
+
+/**
+ * Where an element already states its scheme, preferring the namespace over the
+ * spelling: a package may bind the OPF namespace to any prefix, and a rewrite
+ * has to land on the attribute the reader read rather than beside it.
+ *
+ * The literal `opf:`-prefixed names are still tried, for a package that uses
+ * the prefix without declaring it — invalid, but the read side tolerates it, so
+ * the write side has to find the same attribute.
+ */
+const schemeSink = (
+  metadata: XmlElement,
+  element: XmlElement,
+): SchemeSink | undefined => {
+  const localName = OPF_IDENTIFIER_SCHEME_LOCAL_NAMES.find(
+    function isCarriedInNamespace(name) {
+      return (element.getAttributeNS(OPF_NAMESPACE, name)?.trim() ?? "") !== ""
+    },
+  )
+
+  if (localName !== undefined) return { kind: "namespaced", localName }
+
+  const attribute = OPF_IDENTIFIER_SCHEME_ATTRIBUTES.find(
+    function isCarriedLiterally(name) {
+      return (element.getAttribute(name)?.trim() ?? "") !== ""
+    },
+  )
+
+  if (attribute !== undefined) return { kind: "attribute", name: attribute }
+
+  const meta = identifierTypeMeta(metadata, element)
+
+  return meta === undefined ? undefined : { kind: "refinement", meta }
 }
 
-// Untagged `<dc:identifier>` elements may be the publication UUID
-// referenced by `<package unique-identifier>`; only ISBN-tagged
-// identifiers are touched.
-const upsertIsbnIdentifier = (
-  doc: XmlDocument,
+/**
+ * The scheme an element is read as, which for one that states none is the one
+ * its value announces — the reader infers a bare Bookland number as an `ISBN`,
+ * so an element holding one has to match a patched `ISBN` rather than look
+ * untagged and be replaced.
+ */
+const elementScheme = (metadata: XmlElement, element: XmlElement): string => {
+  const sink = schemeSink(metadata, element)
+
+  switch (sink?.kind) {
+    case undefined:
+      return inferIdentifierScheme(directText(element))
+    case "namespaced":
+      return element.getAttributeNS(OPF_NAMESPACE, sink.localName)?.trim() ?? ""
+    case "attribute":
+      return element.getAttribute(sink.name)?.trim() ?? ""
+    case "refinement":
+      return metaIdentifierType(sink.meta)
+  }
+}
+
+const schemeKey = (scheme: string): string =>
+  isUntaggedIdentifierScheme(scheme) ? "" : scheme.trim().toLowerCase()
+
+const clearScheme = (metadata: XmlElement, element: XmlElement): void => {
+  for (const localName of OPF_IDENTIFIER_SCHEME_LOCAL_NAMES) {
+    element.removeAttributeNS(OPF_NAMESPACE, localName)
+    element.removeAttribute(localName)
+  }
+
+  for (const attribute of OPF_IDENTIFIER_SCHEME_ATTRIBUTES) {
+    element.removeAttribute(attribute)
+  }
+
+  const meta = identifierTypeMeta(metadata, element)
+
+  if (meta) metadata.removeChild(meta)
+}
+
+const writeIdentifier = (
   metadata: XmlElement,
-  isbn: string | undefined,
+  element: XmlElement,
+  { scheme, value }: ArchiveMetadataIdentifier,
 ): void => {
-  const existing = findIsbnIdentifier(metadata)
+  element.textContent = value
 
-  if (isbn === undefined || isbn === "") {
-    if (existing) metadata.removeChild(existing)
+  if (isUntaggedIdentifierScheme(scheme)) {
+    clearScheme(metadata, element)
 
     return
   }
 
-  if (existing) {
-    existing.textContent = isbn
-    return
+  const normalized = normalizeIdentifierScheme(scheme)
+  const sink = schemeSink(metadata, element)
+
+  switch (sink?.kind) {
+    case "refinement":
+      sink.meta.textContent = normalized
+      sink.meta.removeAttribute("scheme")
+
+      return
+    /**
+     * Addressed by namespace and local name, which rewrites the value of the
+     * attribute already there and leaves whichever prefix the package chose
+     * for it alone.
+     */
+    case "namespaced":
+      element.setAttributeNS(OPF_NAMESPACE, sink.localName, normalized)
+
+      return
+    case "attribute":
+      element.setAttribute(sink.name, normalized)
+
+      return
+    /**
+     * Bound rather than set as a plain `opf:scheme` name: a package that uses
+     * the OPF namespace by default need not declare the legacy prefix, and an
+     * unbound one serializes into a document that no longer parses.
+     */
+    case undefined:
+      element.setAttributeNS(OPF_NAMESPACE, "opf:scheme", normalized)
+
+      return
+  }
+}
+
+/**
+ * Removes an identifier along with the metadata refining it, which would
+ * otherwise be left pointing at an id the package no longer has.
+ */
+const removeIdentifier = (metadata: XmlElement, element: XmlElement): void => {
+  for (const meta of refiningMetas(
+    metadata,
+    element.getAttribute("id")?.trim() ?? "",
+  )) {
+    metadata.removeChild(meta)
   }
 
-  const next = doc.createElement("dc:identifier")
-  next.setAttribute("opf:scheme", "ISBN")
-  next.textContent = isbn
-  metadata.appendChild(next)
+  metadata.removeChild(element)
+}
+
+const groupBySchemeKey = (
+  metadata: XmlElement,
+  elements: ReadonlyArray<XmlElement>,
+): Map<string, XmlElement[]> => {
+  const groups = new Map<string, XmlElement[]>()
+
+  for (const element of elements) {
+    const key = schemeKey(elementScheme(metadata, element))
+    const group = groups.get(key)
+
+    if (group) group.push(element)
+    else groups.set(key, [element])
+  }
+
+  return groups
+}
+
+const findUniqueIdentifierElement = (
+  root: XmlElement,
+  elements: ReadonlyArray<XmlElement>,
+): XmlElement | undefined => {
+  const uniqueIdentifierId = root.getAttribute("unique-identifier")?.trim()
+
+  if (uniqueIdentifierId === undefined || uniqueIdentifierId === "") {
+    return undefined
+  }
+
+  return elements.find(function carriesUniqueIdentifierId(element) {
+    return element.getAttribute("id")?.trim() === uniqueIdentifierId
+  })
+}
+
+/**
+ * Rewrites the document's identifiers so it ends up carrying exactly the
+ * patched set, reusing the existing element of a scheme rather than replacing
+ * it — an element may be the target of `<meta refines>` entries, and its `id`
+ * has to survive an edit for those to keep resolving.
+ */
+/**
+ * The element an identifier was read from: the one carrying both its scheme and
+ * its value. Matched on both because a removal names an identifier the reader
+ * reported, and nothing else should be mistaken for it.
+ */
+const findIdentifierElement = (
+  metadata: XmlElement,
+  elements: ReadonlyArray<XmlElement>,
+  { scheme, value }: ArchiveMetadataIdentifier,
+): XmlElement | undefined =>
+  elements.find(function carriesIdentifier(element) {
+    return (
+      element.textContent?.trim() === value.trim() &&
+      schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
+    )
+  })
+
+/**
+ * The elements a removal may name. The one `<package unique-identifier>` points
+ * at is left out rather than found and declined: it is never removable, and a
+ * document holding a second element of the same scheme and value would
+ * otherwise have that duplicate shadowed by it and survive.
+ */
+const removableElements = (
+  metadata: XmlElement,
+  uniqueElement: XmlElement | undefined,
+): XmlElement[] =>
+  reportedIdentifierElements(metadata).filter(function isRemovable(element) {
+    return element !== uniqueElement
+  })
+
+/**
+ * Rewrites the document's identifiers: the removals go, the patched ones are
+ * written, and every other element is left alone — including the ones the
+ * reader never reported, which no caller could have known to keep.
+ *
+ * An identifier being written reuses the existing element of its scheme rather
+ * than replacing it: that element may be the target of `<meta refines>`
+ * entries, and its `id` has to survive an edit for those to keep resolving.
+ */
+const reconcileIdentifiers = (
+  doc: XmlDocument,
+  root: XmlElement,
+  metadata: XmlElement,
+  { identifiers, removedIdentifiers }: OpfMetadataPatch,
+): void => {
+  const uniqueElement = findUniqueIdentifierElement(
+    root,
+    listChildrenByLocalName(metadata, "identifier"),
+  )
+
+  for (const identifier of removedIdentifiers ?? []) {
+    const element = findIdentifierElement(
+      metadata,
+      removableElements(metadata, uniqueElement),
+      identifier,
+    )
+
+    if (element !== undefined) removeIdentifier(metadata, element)
+  }
+
+  const remaining = reportedIdentifierElements(metadata)
+  const uniqueIdentifier = identifiers.find(function isPinnedToUniqueElement({
+    unique,
+  }) {
+    return unique === true
+  })
+
+  if (uniqueElement && uniqueIdentifier) {
+    writeIdentifier(metadata, uniqueElement, uniqueIdentifier)
+  }
+
+  const reusable = groupBySchemeKey(
+    metadata,
+    remaining.filter(function isReconcilable(element) {
+      return element !== uniqueElement
+    }),
+  )
+
+  for (const identifier of identifiers) {
+    if (identifier === uniqueIdentifier && uniqueElement) continue
+
+    const element =
+      reusable.get(schemeKey(identifier.scheme))?.shift() ??
+      metadata.appendChild(
+        doc.createElementNS(DC_NAMESPACE, IDENTIFIER_ELEMENT_NAME),
+      )
+
+    writeIdentifier(metadata, element, identifier)
+  }
 }

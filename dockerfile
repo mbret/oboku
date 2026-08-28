@@ -38,12 +38,14 @@ WORKDIR /usr/src/app/apps/admin
 
 FROM nginx:alpine AS admin
 WORKDIR /usr/src/app
+ENV APP_PREFIX=VITE_
+ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
+ENV ASSET_DIR=/usr/share/nginx/html
 COPY apps/admin/nginx.default.conf /etc/nginx/conf.d/default.conf
-# Copy the runtime injection script into the container
-COPY apps/admin/env.sh /docker-entrypoint.d/env.sh
+COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
 RUN dos2unix /docker-entrypoint.d/env.sh
 RUN chmod +x /docker-entrypoint.d/env.sh
-COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
+COPY --from=admin-build /usr/src/app/apps/admin/dist ${ASSET_TEMPLATE_DIR}
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
@@ -58,8 +60,15 @@ WORKDIR /usr/src/app/apps/web
 
 FROM nginx:alpine AS web
 WORKDIR /usr/src/app
+ENV APP_PREFIX=VITE_
+ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
+ENV ASSET_DIR=/usr/share/nginx/html
 COPY apps/web/nginx.default.conf /etc/nginx/conf.d/default.conf
-COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
+COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
+RUN dos2unix /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
+COPY --from=web-build /usr/src/app/apps/web/dist ${ASSET_TEMPLATE_DIR}
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]
 
 FROM couchdb:3.5.1 AS couchdb

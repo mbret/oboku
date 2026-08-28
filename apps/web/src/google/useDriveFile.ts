@@ -1,4 +1,4 @@
-import { useQuery, type UseQueryOptions } from "@tanstack/react-query"
+import type { UseQueryOptions } from "@tanstack/react-query"
 import { type DriveFileGetResponse, useDriveFilesGet } from "./useDriveFilesGet"
 import { firstValueFrom } from "rxjs"
 import { useCallback } from "react"
@@ -56,10 +56,4 @@ export const useCreateDriveFileQuery = () => {
     }),
     [getFile, gapi, accessToken],
   )
-}
-
-export const useDriveFile = ({ id }: { id?: string }) => {
-  const createQuery = useCreateDriveFileQuery()
-
-  return useQuery(createQuery(id))
 }

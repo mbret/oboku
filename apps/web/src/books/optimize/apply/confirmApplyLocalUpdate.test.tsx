@@ -43,7 +43,13 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const actions: WebArchiveUpdateAction[] = [
       {
         kind: "patch-metadata",
-        patch: { isbn: "9781234567897" },
+        patch: {
+          identifiers: [
+            { scheme: "ISBN", value: "9781234567897" },
+            { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+          ],
+          removedIdentifiers: [{ scheme: "DOI", value: "10.1000/182" }],
+        },
         targets: { comicInfo: true, opf: true },
       },
       {
@@ -63,19 +69,24 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     ).not.toBeNull()
     const listItems = screen.getAllByRole("listitem")
 
-    expect(listItems).toHaveLength(5)
-    expect(listItems[0]?.textContent).toContain("Set the ISBN to")
-    expect(screen.getByText("9781234567897")).not.toBeNull()
-    expect(screen.getByText("ComicInfo.xml")).not.toBeNull()
-    expect(screen.getByText("OPF package document")).not.toBeNull()
-    expect(listItems[1]?.textContent).toContain("Resize eligible")
+    expect(listItems).toHaveLength(7)
+    expect(listItems[0]?.textContent).toBe(
+      "Set ISBN to 9781234567897 in ComicInfo.xml and OPF package document.",
+    )
+    expect(listItems[1]?.textContent).toBe(
+      "Set Google Books id to zyTCAlFPjgYC in ComicInfo.xml and OPF package document.",
+    )
+    expect(listItems[2]?.textContent).toBe(
+      "Remove DOI 10.1000/182 from ComicInfo.xml and OPF package document.",
+    )
+    expect(listItems[3]?.textContent).toContain("Resize eligible")
     expect(screen.getByText("1200 × 1600 px")).not.toBeNull()
     expect(screen.getAllByText("JPG · JPEG · PNG · BMP")).toHaveLength(2)
-    expect(listItems[2]?.textContent).toContain(
+    expect(listItems[4]?.textContent).toContain(
       "Convert JPG · JPEG · PNG · BMP images to WebP",
     )
     expect(screen.getByText("WebP")).not.toBeNull()
-    expect(listItems[3]?.textContent).toBe(
+    expect(listItems[5]?.textContent).toBe(
       "Update references to converted images.",
     )
     expect(
@@ -93,7 +104,10 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const actions: WebArchiveUpdateAction[] = [
       {
         kind: "patch-metadata",
-        patch: { isbn: undefined },
+        patch: {
+          identifiers: [],
+          removedIdentifiers: [{ scheme: "ISBN", value: "9781234567897" }],
+        },
         targets: { comicInfo: true },
       },
       {
@@ -113,7 +127,9 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const listItems = screen.getAllByRole("listitem")
 
     expect(listItems).toHaveLength(5)
-    expect(listItems[0]?.textContent).toContain("Remove the ISBN from")
+    expect(listItems[0]?.textContent).toBe(
+      "Remove ISBN 9781234567897 from ComicInfo.xml.",
+    )
     expect(screen.getByText("ComicInfo.xml")).not.toBeNull()
     expect(listItems[1]?.textContent).toContain("to a maximum height of")
     expect(screen.getByText("1600 px")).not.toBeNull()
@@ -123,6 +139,32 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     )
     expect(listItems[3]?.textContent).toContain(
       "Leave all other image formats unchanged",
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }))
+
+    await expect(confirmation).resolves.toBe(false)
+  })
+
+  it("calls out an identifier no container in the book can carry", async function listUnstorableIdentifier() {
+    const actions: WebArchiveUpdateAction[] = [
+      {
+        kind: "patch-metadata",
+        patch: {
+          identifiers: [{ scheme: "AcmeCatalog", value: "acme-42" }],
+        },
+        targets: { comicInfo: true },
+      },
+    ]
+    renderDialogProvider()
+
+    const confirmation = openConfirmation(actions)
+
+    expect(await screen.findByRole("dialog")).not.toBeNull()
+    const listItems = screen.getAllByRole("listitem")
+
+    expect(listItems[0]?.textContent).toBe(
+      "Drop AcmeCatalog acme-42: no container in this book can carry it.",
     )
 
     fireEvent.click(screen.getByRole("button", { name: "Cancel" }))

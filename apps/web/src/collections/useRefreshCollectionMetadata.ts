@@ -8,10 +8,16 @@ import { getCollectionById } from "./dbHelpers"
 import { CancelError, OfflineError } from "../errors/errors.shared"
 import { useMutation$ } from "reactjrx"
 
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
 export const useRefreshCollectionMetadata = () => {
   const httpClientApi = useHttpClientApi()
-  const { mutateAsync: updateCollection } = useCollectionIncrementalModify()
-  const getRefreshMetadataPluginData = usePluginRefreshMetadata()
+  const { mutateAsync: updateCollection } = useCollectionIncrementalModify(
+    withoutGlobalErrorToast,
+  )
+  const getRefreshMetadataPluginData = usePluginRefreshMetadata(
+    withoutGlobalErrorToast,
+  )
   const withNetwork = useWithNetwork()
 
   return useMutation$({

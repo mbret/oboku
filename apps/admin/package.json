@@ -11,7 +11,6 @@
   },
   "dependencies": {
     "@mantine/core": "^9.5.1",
-    "@mantine/dates": "^9.5.1",
     "@mantine/form": "^9.5.1",
     "@mantine/hooks": "^9.5.1",
     "@mantine/notifications": "^9.5.1",
@@ -22,7 +21,6 @@
     "@tanstack/router-plugin": "^1.168.24",
     "ag-grid-community": "^36.1.0",
     "ag-grid-react": "^36.1.0",
-    "dayjs": "^1.11.21",
     "react": "catalog:",
     "react-dom": "catalog:",
     "reactjrx": "^1.141.6",

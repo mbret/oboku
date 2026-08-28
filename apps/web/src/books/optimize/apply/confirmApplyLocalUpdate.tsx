@@ -15,7 +15,11 @@ import {
 import { Fragment, type ReactNode } from "react"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { KeyChip } from "../KeyChip"
-import { CONTAINER_LABELS } from "../metadata/targets"
+import {
+  CONTAINER_LABELS,
+  identifierDestinations,
+} from "../metadata/identifiers/containers"
+import { identifierSchemeLabel } from "../metadata/identifiers/schemes"
 
 const BulletListItemIcon = styled(ListItemIcon)(({ theme }) => ({
   minWidth: theme.spacing(3),
@@ -53,25 +57,72 @@ function MetadataTargetChips({ targets }: { targets: string[] }) {
   })
 }
 
-function MetadataUpdateItems({
-  action,
-}: {
-  action: Extract<WebArchiveUpdateAction, { kind: "patch-metadata" }>
-}) {
-  const targets: string[] = []
+type PatchMetadataAction = Extract<
+  WebArchiveUpdateAction,
+  { kind: "patch-metadata" }
+>
 
-  if (action.targets.comicInfo) targets.push(CONTAINER_LABELS.comicInfo)
-  if (action.targets.opf) targets.push(CONTAINER_LABELS.opf)
+const patchedContainerLabels = ({ targets }: PatchMetadataAction): string[] => {
+  const labels: string[] = []
 
-  return action.patch.isbn === undefined ? (
-    <UpdateListItem>
-      Remove the ISBN from <MetadataTargetChips targets={targets} />.
-    </UpdateListItem>
-  ) : (
-    <UpdateListItem>
-      Set the ISBN to <KeyChip label={action.patch.isbn} /> in{" "}
-      <MetadataTargetChips targets={targets} />.
-    </UpdateListItem>
+  if (targets.comicInfo) labels.push(CONTAINER_LABELS.comicInfo)
+  if (targets.opf) labels.push(CONTAINER_LABELS.opf)
+
+  return labels
+}
+
+function MetadataUpdateItems({ action }: { action: PatchMetadataAction }) {
+  const containers = patchedContainerLabels(action)
+  const destinations = identifierDestinations(
+    action.patch.identifiers,
+    action.targets,
+  )
+
+  return (
+    <>
+      {action.patch.identifiers.map(
+        function renderIdentifierUpdate(identifier, index) {
+          const storedIn = (destinations[index] ?? []).map(
+            function toContainerLabel(container) {
+              return CONTAINER_LABELS[container]
+            },
+          )
+          const schemeLabel = identifierSchemeLabel(identifier.scheme)
+
+          return storedIn.length === 0 ? (
+            <UpdateListItem
+              key={`set:${identifier.scheme}:${identifier.value}`}
+            >
+              Drop <KeyChip label={schemeLabel} />{" "}
+              <KeyChip label={identifier.value} />: no container in this book
+              can carry it.
+            </UpdateListItem>
+          ) : (
+            <UpdateListItem
+              key={`set:${identifier.scheme}:${identifier.value}`}
+            >
+              Set <KeyChip label={schemeLabel} /> to{" "}
+              <KeyChip label={identifier.value} /> in{" "}
+              <MetadataTargetChips targets={storedIn} />.
+            </UpdateListItem>
+          )
+        },
+      )}
+      {(action.patch.removedIdentifiers ?? []).map(
+        function renderIdentifierRemoval(identifier) {
+          return (
+            <UpdateListItem
+              key={`removed:${identifier.scheme}:${identifier.value}`}
+            >
+              Remove{" "}
+              <KeyChip label={identifierSchemeLabel(identifier.scheme)} />{" "}
+              <KeyChip label={identifier.value} /> from{" "}
+              <MetadataTargetChips targets={containers} />.
+            </UpdateListItem>
+          )
+        },
+      )}
+    </>
   )
 }
 

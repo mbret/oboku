@@ -1,7 +1,6 @@
 import { isFileSupported } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import {
-  browseSynologyDriveItems,
   buildApiUrls,
   buildSynologyDriveGetItemParams,
   buildSynologyDriveLoginParams,
@@ -16,7 +15,6 @@ import {
   parseSynologyDriveListPagePayload,
   parseSynologyDriveLoginPayload,
   type SynologyDriveApiCredentials,
-  type SynologyDriveBrowseNodeId,
   type SynologyDriveItem,
   type SynologyDriveSession,
   type SynologyDriveSessionAuth,
@@ -215,26 +213,6 @@ const listFolderItems = async ({
       }),
     session,
   })
-
-export const browseSynologyDrive = async ({
-  nodeId,
-  session,
-}: {
-  nodeId?: SynologyDriveBrowseNodeId
-  session: SynologyDriveRequestSession
-}) => ({
-  items: await browseSynologyDriveItems({
-    nodeId,
-    requestPage: (params) =>
-      requestJson({
-        allowSelfSigned: session.allowSelfSigned,
-        baseUrl: session.auth.baseUrl,
-        params,
-        parse: parseSynologyDriveListPagePayload,
-      }),
-    session,
-  }),
-})
 
 const getSynologyDriveItem = async ({
   fileId,

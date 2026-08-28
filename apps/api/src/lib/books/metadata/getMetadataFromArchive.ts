@@ -1,7 +1,7 @@
 import type { Archive } from "@oboku/archive-metadata/node"
 import type { FileMetadata } from "@oboku/shared"
 import {
-  isbnIdentifierValue,
+  identifierValue,
   mainTitle,
   type ResolvedMetadata,
   resolveArchive,
@@ -36,10 +36,11 @@ export const getMetadataFromArchive = async (
   })
 
   const title = mainTitle(metadata)
-  const isbn = isbnIdentifierValue(metadata.identifiers)
+  const isbn = identifierValue(metadata.identifiers, "ISBN")
+  const googleVolumeId = identifierValue(metadata.identifiers, "GoogleBooks")
 
   logger.log(
-    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, cover=${metadata.cover !== undefined})`,
+    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, googleVolumeId=${googleVolumeId !== undefined}, cover=${metadata.cover !== undefined})`,
   )
 
   if (unreadableSources.length > 0) {
@@ -61,5 +62,6 @@ export const getMetadataFromArchive = async (
     coverLink: metadata.cover?.uri,
     pageCount: metadata.numberOfPages,
     isbn,
+    googleVolumeId,
   }
 }

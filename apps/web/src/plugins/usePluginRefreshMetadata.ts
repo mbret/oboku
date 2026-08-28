@@ -3,6 +3,7 @@ import {
   type DataSourceDocType,
   type ProviderApiCredentials,
 } from "@oboku/shared"
+import type { UseMutationOptions } from "@tanstack/react-query"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import type {
@@ -15,42 +16,53 @@ type RefreshMetadataResult = {
   providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
-export const usePluginRefreshMetadata = () => {
+export const usePluginRefreshMetadata = (
+  options?: Pick<UseMutationOptions, "meta">,
+) => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
+  const meta = options?.meta
 
   const { mutateAsync: refreshWebdavMetadata } =
     pluginsByType.webdav.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "webdav" }),
+      meta,
     })
   const { mutateAsync: refreshSynologyDriveMetadata } = pluginsByType[
     "synology-drive"
   ].useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+    meta,
   })
   const { mutateAsync: refreshDropboxMetadata } =
     pluginsByType.dropbox.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+      meta,
     })
   const { mutateAsync: refreshDriveMetadata } =
     pluginsByType.DRIVE.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+      meta,
     })
   const { mutateAsync: refreshOneDriveMetadata } = pluginsByType[
     "one-drive"
   ].useRefreshMetadata({
     requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+    meta,
   })
   const { mutateAsync: refreshFileMetadata } =
     pluginsByType.file.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "file" }),
+      meta,
     })
   const { mutateAsync: refreshUriMetadata } =
     pluginsByType.URI.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "URI" }),
+      meta,
     })
   const { mutateAsync: refreshServerMetadata } =
     pluginsByType.server.useRefreshMetadata({
       requestPopup: createRequestPopupDialog({ name: "server" }),
+      meta,
     })
 
   return useCallback(

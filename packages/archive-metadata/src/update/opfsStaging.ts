@@ -2,7 +2,6 @@ import { report } from "../utils/report"
 import type { OpenStagingScope, OpenZipTarget, StageBytes } from "./staging"
 
 const STAGING_DIR = "prose-reader-archive-staging-v1"
-const LEGACY_STAGING_DIR = "oboku-tmp"
 
 const lockNameFor = (updateId: string) => `${STAGING_DIR}:${updateId}`
 
@@ -98,10 +97,6 @@ const removeScopeUnlessOwned = async (
 export const purgeStagedFiles = async (): Promise<void> => {
   try {
     const root = await navigator.storage.getDirectory()
-
-    await root
-      .removeEntry(LEGACY_STAGING_DIR, { recursive: true })
-      .catch(() => {})
 
     const staging = await root.getDirectoryHandle(STAGING_DIR).catch(() => null)
 

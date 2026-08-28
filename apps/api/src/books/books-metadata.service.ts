@@ -58,10 +58,8 @@ export class BooksMetadataService {
     const { fileDownloadMaxSizeBytes } =
       this.instanceConfigService.getConfig().value
 
-    let _data: Awaited<ReturnType<typeof retrieveMetadataAndSaveCover>>
-
     try {
-      _data = await retrieveMetadataAndSaveCover(
+      await retrieveMetadataAndSaveCover(
         {
           userName: userEmail,
           userNameHex,
@@ -85,13 +83,6 @@ export class BooksMetadataService {
       }))
 
       throw e
-    }
-
-    if (_data.link.contentLength !== undefined) {
-      await atomicUpdate(db, "link", link._id, (old) => ({
-        ...old,
-        contentLength: _data.link.contentLength,
-      }))
     }
 
     this.logger.log(`lambda executed with success for ${book._id}`)

@@ -6,6 +6,7 @@ import { getBookFile } from "../../../download/getBookFile.shared"
 import { usePluginUpsertFile } from "../../../plugins/usePluginUpsertFile"
 import { pluginsByType } from "../../../plugins/configure"
 import { notify } from "../../../notifications/toasts"
+import { useRefreshBookMetadata } from "../../useRefreshBookMetadata"
 import { confirmUploadToDataSource } from "./confirmUploadToDataSource"
 
 export const useUploadToDataSource = ({
@@ -19,6 +20,7 @@ export const useUploadToDataSource = ({
 }) => {
   const bookId = book._id
   const plugin = pluginsByType[link.type]
+  const refreshBookMetadata = useRefreshBookMetadata()
   const {
     mutateAsync: upsertFile,
     slot,
@@ -44,6 +46,13 @@ export const useUploadToDataSource = ({
         contentType: file.type,
       })
     },
+    /**
+     * Not awaited: the refresh reports its own outcome and the upload is
+     * already complete, so its failure must not read as an upload failure.
+     */
+    onSuccess: function refreshMetadataDerivedFromUploadedFile() {
+      void refreshBookMetadata(bookId)
+    },
   })
 
   const canUpload = enabled && !isUploading
@@ -62,7 +71,8 @@ export const useUploadToDataSource = ({
       onSuccess: () => {
         notify({
           title: "Upload complete",
-          description: "The file was uploaded to the data source.",
+          description:
+            "The file was uploaded to the data source. Its metadata is being refreshed.",
           severity: "success",
         })
       },

@@ -1,12 +1,11 @@
-import {
-  isbnIdentifierValue,
-  type ResolvedArchiveSourceKind,
-} from "@prose-reader/archive-reader"
+import type { ResolvedArchiveSourceKind } from "@prose-reader/archive-reader"
 import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
 import type { ResolvedBookArchive } from "../useFileInspection"
-import { CONTAINER_LABELS } from "./targets"
+import { CONTAINER_LABELS } from "./identifiers/containers"
+import { resolveMetadataFixerFormValues } from "./identifiers/resolveMetadataFixerFormValues"
+import { identifierSchemeLabel } from "./identifiers/schemes"
 
 const containerValue = (
   kind: ResolvedArchiveSourceKind,
@@ -20,6 +19,7 @@ const containerValue = (
 export const MetadataReport = memo(function MetadataReport() {
   const { inspection } = useBookOptimize()
   const { resolvedArchive } = inspection
+  const { identifiers } = resolveMetadataFixerFormValues(inspection)
 
   return (
     <Report title="Metadata report">
@@ -31,10 +31,19 @@ export const MetadataReport = memo(function MetadataReport() {
         label={CONTAINER_LABELS.opf}
         value={containerValue("opf", resolvedArchive)}
       />
-      <ReportRow
-        label="ISBN"
-        value={isbnIdentifierValue(resolvedArchive.metadata.identifiers) ?? "—"}
-      />
+      {identifiers.length === 0 ? (
+        <ReportRow label="Identifiers" value="—" />
+      ) : (
+        identifiers.map(function renderIdentifier({ scheme, value }) {
+          return (
+            <ReportRow
+              key={`${scheme}:${value}`}
+              label={identifierSchemeLabel(scheme)}
+              value={value}
+            />
+          )
+        })
+      )}
     </Report>
   )
 })

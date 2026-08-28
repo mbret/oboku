@@ -1,7 +1,6 @@
 import { memo } from "react"
-import { Controller, useForm } from "react-hook-form"
-import { errorToHelperText } from "../../common/forms/errorToHelperText"
-import { ConnectorSelector } from "../../connectors/ConnectorSelector"
+import { useForm } from "react-hook-form"
+import { ControlledConnectorSelector } from "../../common/forms/ControlledConnectorSelector"
 import { DataSourceFormLayout } from "../common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
@@ -40,22 +39,11 @@ export const DataSourceForm = memo(
         )}
         submitLabel={submitLabel}
       >
-        <Controller
+        <ControlledConnectorSelector
           control={control}
           name="connectorId"
           rules={{ required: true }}
-          render={({ field, fieldState }) => (
-            <ConnectorSelector
-              {...field}
-              connectorType="server"
-              helperText={
-                fieldState.invalid
-                  ? errorToHelperText(fieldState.error)
-                  : undefined
-              }
-              error={fieldState.invalid}
-            />
-          )}
+          connectorType="server"
         />
       </DataSourceFormLayout>
     )

@@ -1,46 +1,78 @@
-import { Stack } from "@mui/material"
+import { Add } from "@mui/icons-material"
 import {
-  isbnIdentifierValue,
-  normalizeIsbn,
-} from "@prose-reader/archive-reader"
-import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import type { BookOptimizeFormValues } from "../form"
+  Button,
+  FormControl,
+  FormHelperText,
+  FormLabel,
+  Stack,
+  styled,
+} from "@mui/material"
+import { useFieldArray } from "react-hook-form"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
+import { IdentifierField } from "./identifiers/IdentifierField"
+import { hasWritableMetadataTarget } from "./identifiers/containers"
+import { DEFAULT_IDENTIFIER_SCHEME } from "./identifiers/schemes"
 
-const validateIsbn = (raw: string | boolean): true | string => {
-  if (typeof raw !== "string") return true
+const IdentifiersFormHelperText = styled(FormHelperText)(({ theme }) => ({
+  margin: theme.spacing(1, 0),
+}))
 
-  const trimmed = raw.trim()
-
-  if (trimmed === "") return true
-
-  return normalizeIsbn(trimmed) !== undefined
-    ? true
-    : "Not a recognizable ISBN-10 or ISBN-13"
-}
+const AddIdentifierButton = styled(Button)(({ theme }) => ({
+  alignSelf: "flex-start",
+  marginTop: theme.spacing(1),
+}))
 
 export function MetadataForm() {
   const { bookId, control, inspection, isUploading } = useBookOptimize()
   const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading
+  const isStorable = hasWritableMetadataTarget(inspection)
+  const isDisabled = isApplying || !isStorable
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "identifiers",
+  })
 
   return (
-    <Stack spacing={2}>
-      <ControlledTextField<BookOptimizeFormValues>
-        name="isbn"
-        control={control}
-        rules={{ validate: validateIsbn }}
-        label="ISBN"
-        size="small"
-        fullWidth
-        helperText={
-          isbnIdentifierValue(inspection.resolvedArchive.metadata.identifiers)
-            ? undefined
-            : "No ISBN found in this book yet."
-        }
-        disabled={isApplying}
-      />
-    </Stack>
+    <FormControl component="fieldset" disabled={isDisabled}>
+      <FormLabel component="legend">
+        Identifiers (e.g. ISBN, Google Books id)
+      </FormLabel>
+      <IdentifiersFormHelperText>
+        {isStorable
+          ? "Pick a known scheme or name your own. Saving makes the book carry exactly these identifiers."
+          : "This book has nowhere to store identifiers, so they cannot be edited."}
+      </IdentifiersFormHelperText>
+      <Stack spacing={2}>
+        {fields.map(function renderIdentifier(field, index) {
+          return (
+            <IdentifierField
+              key={field.id}
+              control={control}
+              index={index}
+              unique={field.unique}
+              disabled={isDisabled}
+              onRemove={function removeIdentifier() {
+                remove(index)
+              }}
+            />
+          )
+        })}
+      </Stack>
+      <AddIdentifierButton
+        startIcon={<Add />}
+        disabled={isDisabled}
+        onClick={function appendIdentifier() {
+          append({
+            scheme: DEFAULT_IDENTIFIER_SCHEME,
+            value: "",
+            unique: false,
+          })
+        }}
+      >
+        Add identifier
+      </AddIdentifierButton>
+    </FormControl>
   )
 }

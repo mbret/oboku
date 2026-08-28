@@ -8,9 +8,8 @@
  *
  * Also doubles as the shape of the **merged** view returned by consumers
  * (e.g. `getMetadataFromBook`): once values from each source are
- * collapsed by priority, the result is source-agnostic and any field can
- * be present, including filename-directive-only fields like
- * `googleVolumeId` that no concrete variant owns.
+ * collapsed by priority, the result is source-agnostic, so any field may
+ * be present regardless of which variant supplied it.
  */
 export type BookMetadataFields = {
   title?: string | number
@@ -73,9 +72,10 @@ export type GoogleBookApiMetadata = BookMetadataVariant<
 
 /**
  * Metadata extracted from the file's contents (EPUB OPF or RAR/ZIP scan).
- * No descriptions, ratings, format types, or remote identifiers (other
- * than `isbn`, which EPUB's `dc:identifier` and CBZ's ComicInfo `<GTIN>`
- * both embed in the file itself).
+ * No descriptions, ratings or format types. Identifiers are advertised when
+ * the container embeds them: `isbn` from EPUB's `dc:identifier` or CBZ's
+ * ComicInfo `<GTIN>`, and `googleVolumeId` from a `GoogleBooks` identifier
+ * in the OPF.
  */
 export type FileMetadata = BookMetadataVariant<
   "file",
@@ -90,6 +90,7 @@ export type FileMetadata = BookMetadataVariant<
   | "pageCount"
   | "contentType"
   | "isbn"
+  | "googleVolumeId"
 >
 
 /**
