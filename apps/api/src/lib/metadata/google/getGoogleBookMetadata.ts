@@ -9,9 +9,9 @@ import {
 import { AppConfigService } from "src/config/AppConfigService"
 
 /**
- * Lookup input for the Google Books API. ISBN/`googleVolumeId` come from
- * caller-parsed filename directives — they are no longer carried on
- * `LinkMetadata`.
+ * Lookup input for the Google Books API. The caller resolves these from
+ * filename directives and the archive's own identifiers — they are not
+ * carried on `LinkMetadata`.
  */
 export type GoogleBookLookupInput = {
   title?: string
@@ -26,10 +26,15 @@ export const getGoogleBookMetadata = async (
 ): Promise<GoogleBookApiMetadata | undefined> => {
   const { isbn, googleVolumeId, title } = input
   let titleRefined = title ?? ""
-  let response = isbn
-    ? await findByISBN(isbn, apiKey, config)
-    : googleVolumeId
-      ? await findByVolumeId(googleVolumeId, apiKey, config)
+  /**
+   * A volume id addresses one Google Books record, where an ISBN can match
+   * several printings — so it wins here even though ISBN stays the priority
+   * identifier everywhere else.
+   */
+  let response = googleVolumeId
+    ? await findByVolumeId(googleVolumeId, apiKey, config)
+    : isbn
+      ? await findByISBN(isbn, apiKey, config)
       : await findByTitle(titleRefined, apiKey, config)
 
   console.log("[google] [getGoogleBookMetadata]", { response })

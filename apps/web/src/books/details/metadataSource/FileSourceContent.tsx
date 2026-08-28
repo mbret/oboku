@@ -36,5 +36,9 @@ export const FileSourceContent = ({ metadata }: Props) => (
     />
     <MetadataFieldRow label={L.contentType} value={metadata?.contentType} />
     <MetadataFieldRow label={L.isbn} value={metadata?.isbn} />
+    <MetadataFieldRow
+      label={L.googleVolumeId}
+      value={metadata?.googleVolumeId}
+    />
   </List>
 )
