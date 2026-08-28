@@ -1,5 +1,10 @@
+import { readInjectedEnv } from "@oboku/shared"
+
 const resolveBaseApiUrl = () => {
-  if (import.meta.env.VITE_API_URL) return import.meta.env.VITE_API_URL
+  const configured =
+    import.meta.env.VITE_API_URL || readInjectedEnv("__VITE_API_URL__")
+
+  if (configured) return configured
 
   // Read the location from the service worker global (`self`) or the window,
   // so this module resolves correctly whichever context imports it.
@@ -26,9 +31,18 @@ export const API_URL = resolveBaseApiUrl()
  * alternate on a different hostname never receives them and every request to
  * it fails with a 401.
  */
-export const API_URL_2 = import.meta.env.VITE_API_URL_2 || API_URL
-export const API_URL_3 = import.meta.env.VITE_API_URL_3 || API_URL
-export const API_URL_4 = import.meta.env.VITE_API_URL_4 || API_URL
+export const API_URL_2 =
+  import.meta.env.VITE_API_URL_2 ||
+  readInjectedEnv("__VITE_API_URL_2__") ||
+  API_URL
+export const API_URL_3 =
+  import.meta.env.VITE_API_URL_3 ||
+  readInjectedEnv("__VITE_API_URL_3__") ||
+  API_URL
+export const API_URL_4 =
+  import.meta.env.VITE_API_URL_4 ||
+  readInjectedEnv("__VITE_API_URL_4__") ||
+  API_URL
 
 const getHostname = (url: string) => {
   try {

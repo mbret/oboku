@@ -1,8 +1,12 @@
 # Environment Variables
 
-Your environment variables livers under `./.env` file.&#x20;
+Your environment variables live under `./.env` file.&#x20;
 
 Some variables let you enable specific features, visit the [related section](enable-features.md) to see their detailed use.
+
+{% hint style="info" %}
+The `VITE_*` variables configure the web and admin apps, which ship as prebuilt images. Their containers substitute the values into the built assets when they start, so changing one takes effect the next time the container starts — you never need to rebuild the image.
+{% endhint %}
 
 {% code title=".env" %}
 ```bash
