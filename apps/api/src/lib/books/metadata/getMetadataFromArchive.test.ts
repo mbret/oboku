@@ -129,7 +129,7 @@ describe("getMetadataFromArchive, the cover it reports", () => {
     const metadata = await getMetadataFromArchive(archive, EPUB_CONTENT_TYPE)
 
     expect(metadata.coverLink).toBe("OEBPS/cover.jpg")
-    expect(metadata.coverIsDeclared).toBe(true)
+    expect(metadata.coverConfidence).toBe("derived")
   })
 
   it("does not declare the first page of an archive that names none", async () => {
@@ -141,7 +141,7 @@ describe("getMetadataFromArchive, the cover it reports", () => {
     const metadata = await getMetadataFromArchive(archive, COMIC_CONTENT_TYPE)
 
     expect(metadata.coverLink).toBe("page-001.jpg")
-    expect(metadata.coverIsDeclared).toBe(false)
+    expect(metadata.coverConfidence).toBe("assumed")
   })
 
   it("answers nothing when no cover is derivable", async () => {
@@ -151,6 +151,6 @@ describe("getMetadataFromArchive, the cover it reports", () => {
     )
 
     expect(metadata.coverLink).toBeUndefined()
-    expect(metadata.coverIsDeclared).toBeUndefined()
+    expect(metadata.coverConfidence).toBeUndefined()
   })
 })

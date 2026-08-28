@@ -1,5 +1,6 @@
 import {
   type BookMetadata,
+  type BookMetadataFields,
   type BOOK_METADATA_FIELDS_BY_SOURCE,
   assertNever,
   formatBytes,
@@ -41,16 +42,21 @@ const formatScalar = (
   value === undefined || value === "" ? undefined : String(value)
 
 /**
- * Names where a file's cover came from, since the two cases carry very
- * different weight: one is the container's own declaration, the other the
- * first page of an archive that declares none.
+ * Names where a cover came from, since the two cases carry very different
+ * weight: one is the container's own declaration, the other the first page
+ * of an archive that declares none.
  */
-export const formatCoverOrigin = (
-  coverIsDeclared: boolean | undefined,
+export const formatCoverConfidence = (
+  coverConfidence: BookMetadataFields["coverConfidence"],
 ): string | undefined => {
-  if (coverIsDeclared === undefined) return undefined
-
-  return coverIsDeclared ? "Declared by the file" : "First page"
+  switch (coverConfidence) {
+    case "derived":
+      return "Declared by the file"
+    case "assumed":
+      return "First page"
+    default:
+      return undefined
+  }
 }
 
 /**

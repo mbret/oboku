@@ -5,7 +5,7 @@ import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import {
   formatBookMetadataDate,
-  formatCoverOrigin,
+  formatCoverConfidence,
   formatList,
 } from "./formatters"
 
@@ -33,8 +33,8 @@ export const FileSourceContent = ({ metadata }: Props) => (
     />
     <MetadataFieldRow label={L.coverLink} value={metadata?.coverLink} />
     <MetadataFieldRow
-      label={L.coverIsDeclared}
-      value={formatCoverOrigin(metadata?.coverIsDeclared)}
+      label={L.coverConfidence}
+      value={formatCoverConfidence(metadata?.coverConfidence)}
     />
     <MetadataFieldRow
       label={L.pageCount}

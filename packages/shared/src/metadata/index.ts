@@ -19,12 +19,13 @@ export type BookMetadataFields = {
   rating?: number
   coverLink?: string
   /**
-   * Whether the container names {@link coverLink} as its cover, as opposed
-   * to it being the first page of an archive that declares none. Only the
-   * `file` source can answer it, and only for a cover it actually reports;
-   * absent means "not known", never "not declared".
+   * How {@link coverLink} was determined, in archive-reader's vocabulary:
+   * `derived` when the container names the image as its cover, `assumed`
+   * when it names none and this is its first page. Only the `file` source
+   * can answer it, and only for a cover it actually reports; absent means
+   * "not known", never "not derived".
    */
-  coverIsDeclared?: boolean
+  coverConfidence?: "derived" | "assumed"
   pageCount?: number
   contentType?: string
   date?: { year?: number; month?: number; day?: number }
@@ -94,7 +95,7 @@ export type FileMetadata = BookMetadataVariant<
   | "date"
   | "subjects"
   | "coverLink"
-  | "coverIsDeclared"
+  | "coverConfidence"
   | "pageCount"
   | "contentType"
   | "isbn"

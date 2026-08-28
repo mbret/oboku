@@ -4,33 +4,47 @@ import {
   getOrderedBookMetadataSources,
 } from "@oboku/shared"
 
+type CoverCertainty = {
+  /**
+   * Whether the catalog match describes *this* book rather than a plausible
+   * neighbour. Today the lookup either addressed one Google Books volume id
+   * or it searched; `@prose-reader/metadata-fetcher` states it as a 0–1
+   * score that an agreeing ISBN, GTIN or shared identifier pins to 1.
+   */
+  catalogIdentityIsConfirmed?: boolean
+}
+
 /**
- * Whether the source is certain this image is *this book's* cover, rather
- * than the best guess available:
+ * Whether the source is certain this image is *this book's* cover. Two
+ * independent questions both have to answer yes, and each source can only
+ * answer one of them for free:
  *
- *  - `googleBookApi` — only when the lookup was addressed by volume id. A
- *    volume id resolves to exactly one Google Books record, where an ISBN
- *    can match several printings and a title match nothing in particular.
- *  - `file` — only when the container names the image as its cover. A comic
- *    archive names none, so its cover is its first page by convention.
+ *  - does the source describe this book? An archive *is* the book; a catalog
+ *    is only as sure as its identity match ({@link CoverCertainty}).
+ *  - does the source name this image as the cover? An archive answers with
+ *    `coverConfidence`, `assumed` being the first page of a container that
+ *    names none. A catalog's cover is always its own declaration.
  *
- * Certainty must be asserted; an entry that does not answer is not certain.
+ * Certainty must be asserted, so a source that does not answer is not
+ * certain.
  */
-const statesTheBooksCover = (
+const isCertainCover = (
   metadata: BookMetadata,
-  googleVolumeId: string | undefined,
+  { catalogIdentityIsConfirmed }: CoverCertainty,
 ): boolean => {
   if (!metadata.coverLink) return false
 
   switch (metadata.type) {
     case "googleBookApi":
-      return googleVolumeId !== undefined
+      return catalogIdentityIsConfirmed === true
     case "file":
-      return metadata.coverIsDeclared === true
+      return metadata.coverConfidence === "derived"
     default:
       return false
   }
 }
+
+const hasCover = (metadata: BookMetadata): boolean => !!metadata.coverLink
 
 /**
  * Picks the metadata entry that should provide the cover.
@@ -48,7 +62,7 @@ const statesTheBooksCover = (
 export const pickCoverMetadata = (
   metadataList: ReadonlyArray<BookMetadata> | undefined,
   priority: BookDocType["metadataSourcePriority"],
-  { googleVolumeId }: { googleVolumeId?: string | undefined } = {},
+  certainty: CoverCertainty = {},
 ): BookMetadata | undefined => {
   if (!metadataList?.length) return undefined
 
@@ -69,11 +83,8 @@ export const pickCoverMetadata = (
   }
 
   return (
-    highestPriorityCover(function statesIt(metadata) {
-      return statesTheBooksCover(metadata, googleVolumeId)
-    }) ??
-    highestPriorityCover(function hasOne(metadata) {
-      return !!metadata.coverLink
-    })
+    highestPriorityCover(function isCertain(metadata) {
+      return isCertainCover(metadata, certainty)
+    }) ?? highestPriorityCover(hasCover)
   )
 }

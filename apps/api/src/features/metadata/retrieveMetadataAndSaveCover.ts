@@ -369,7 +369,7 @@ export const retrieveMetadataAndSaveCover = async (
       tmpFilePath,
       coversService,
       force: ctx.force,
-      googleVolumeId: lookupGoogleVolumeId,
+      catalogIdentityIsConfirmed: lookupGoogleVolumeId !== undefined,
     })
 
     console.log(
