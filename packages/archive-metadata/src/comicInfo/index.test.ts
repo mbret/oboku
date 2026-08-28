@@ -2,6 +2,7 @@
 import { describe, expect, it } from "vitest"
 import {
   arrayBufferFileAccessors,
+  catalogIdentifierFromUrl,
   createArchive,
   getArchiveHasComicInfo,
   identifierValue,
@@ -9,7 +10,11 @@ import {
   resolveArchiveMetadata,
 } from "@prose-reader/archive-reader"
 import type { Archive, ArchiveRecord } from "../archive/types"
-import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "./index"
+import {
+  COMIC_INFO_FILENAME,
+  buildPatchedComicInfoXml,
+  isComicInfoWritableIdentifierScheme,
+} from "./index"
 
 const basename = (uri: string): string =>
   uri.split("/").filter(Boolean).pop() ?? uri
@@ -131,7 +136,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     const archive = makeArchive({ "page-001.jpg": "binary" })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml.startsWith("<?xml")).toBe(true)
@@ -144,10 +149,10 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     expect(readComicInfoIsbn(xml)).toBe("9783161484100")
   })
 
-  it("emits no GTIN element when synthesising with an undefined ISBN", async () => {
+  it("emits no GTIN element when synthesising without any identifier", async () => {
     const archive = makeArchive({ "page-001.jpg": "binary" })
 
-    const xml = await buildPatchedComicInfoXml(archive, { isbn: undefined })
+    const xml = await buildPatchedComicInfoXml(archive, { identifiers: [] })
 
     expect(xml).not.toContain("<GTIN")
     expect(readComicInfoIsbn(xml)).toBeUndefined()
@@ -164,7 +169,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml).toContain("<Title>Sample</Title>")
@@ -182,7 +187,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     const matches = xml.match(/<GTIN>/g) ?? []
@@ -191,14 +196,149 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     expect(xml).not.toContain("<GTIN>0000000000</GTIN>")
   })
 
-  it("removes the GTIN element when the patch clears it", async () => {
+  it("stores a GTIN-scheme identifier in the same element as an ISBN", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "GTIN", value: "9783161484100" }],
+    })
+
+    expect(xml).toContain("<GTIN>9783161484100</GTIN>")
+  })
+
+  it("stores URL identifiers as a space-separated Web element", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [
+        { scheme: "URL", value: "https://example.com/a" },
+        { scheme: "URL", value: "https://example.com/b" },
+      ],
+    })
+
+    expect(xml).toContain(
+      "<Web>https://example.com/a https://example.com/b</Web>",
+    )
+  })
+
+  it("removes the Web element when no URL identifier remains", async () => {
+    const archive = makeArchive({
+      "ComicInfo.xml": minimalComicInfo("<Web>https://example.com/a</Web>"),
+    })
+
+    const xml = await buildPatchedComicInfoXml(archive, { identifiers: [] })
+
+    expect(xml).not.toContain("<Web")
+  })
+
+  it("stores a catalog identifier as its official Web link", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [
+        { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+        { scheme: "ProjectGutenberg", value: "2701" },
+      ],
+    })
+
+    expect(isComicInfoWritableIdentifierScheme("GoogleBooks")).toBe(true)
+    expect(xml).toContain(
+      "<Web>https://books.google.com/books?id=zyTCAlFPjgYC " +
+        "https://www.gutenberg.org/ebooks/2701</Web>",
+    )
+  })
+
+  it("keeps plain links alongside the catalog ones", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [
+        { scheme: "URL", value: "https://example.com/a" },
+        { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+      ],
+    })
+
+    expect(xml).toContain(
+      "<Web>https://example.com/a " +
+        "https://books.google.com/books?id=zyTCAlFPjgYC</Web>",
+    )
+  })
+
+  it("stores a DOI and an Open Library key as their resolver links", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [
+        { scheme: "DOI", value: "10.1000/182" },
+        { scheme: "OpenLibrary", value: "/books/OL7353617M" },
+      ],
+    })
+
+    expect(xml).toContain(
+      "<Web>https://doi.org/10.1000/182 " +
+        "https://openlibrary.org/books/OL7353617M</Web>",
+    )
+  })
+
+  it("accepts a bare catalog id, addressing it the way the catalog does", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "OpenLibrary", value: "OL7353617M" }],
+    })
+
+    expect(xml).toContain("<Web>https://openlibrary.org/books/OL7353617M</Web>")
+  })
+
+  it("has nowhere to store a scheme with neither a GTIN nor a link form", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "AcmeCatalog", value: "acme-42" }],
+    })
+
+    expect(isComicInfoWritableIdentifierScheme("AcmeCatalog")).toBe(false)
+    expect(xml).not.toContain("acme-42")
+  })
+
+  it("will not write a value its catalog cannot address", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "ProjectGutenberg", value: "not-a-number" }],
+    })
+
+    expect(xml).not.toContain("not-a-number")
+  })
+
+  it("round-trips a catalog identifier through the link the reader parses", async () => {
+    const archive = makeArchive({ "page-001.jpg": "binary" })
+
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "GoogleBooks", value: "zyTCAlFPjgYC" }],
+    })
+    const [webIdentifier] =
+      resolveArchiveMetadata(parseComicInfo(xml)).identifiers ?? []
+
+    expect(webIdentifier).toEqual({
+      value: "https://books.google.com/books?id=zyTCAlFPjgYC",
+      scheme: "URL",
+    })
+    expect(
+      webIdentifier && catalogIdentifierFromUrl(webIdentifier.value),
+    ).toEqual({ value: "zyTCAlFPjgYC", scheme: "GoogleBooks" })
+  })
+
+  it("removes the GTIN element when the patch drops every ISBN-bearing identifier", async () => {
     const archive = makeArchive({
       "ComicInfo.xml": minimalComicInfo(
         "<Title>Sample</Title><GTIN>9783161484100</GTIN>",
       ),
     })
 
-    const xml = await buildPatchedComicInfoXml(archive, { isbn: undefined })
+    const xml = await buildPatchedComicInfoXml(archive, {
+      identifiers: [{ scheme: "DOI", value: "10.1000/182" }],
+    })
 
     expect(xml).not.toContain("<GTIN")
     expect(xml).toContain("<Title>Sample</Title>")
@@ -211,7 +351,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml).toContain("<Title>Sample</Title>")
@@ -224,7 +364,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml.startsWith("<?xml")).toBe(true)
@@ -241,7 +381,9 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     await expect(
-      buildPatchedComicInfoXml(archive, { isbn: "9783161484100" }),
+      buildPatchedComicInfoXml(archive, {
+        identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
+      }),
     ).rejects.toThrow(/root element is not <ComicInfo>/i)
   })
 
@@ -251,7 +393,7 @@ describe("ComicInfo editing (buildPatchedComicInfoXml)", () => {
     })
 
     const xml = await buildPatchedComicInfoXml(archive, {
-      isbn: "9783161484100",
+      identifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
     expect(xml.startsWith("<?xml")).toBe(true)

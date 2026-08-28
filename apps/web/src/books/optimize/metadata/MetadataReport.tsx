@@ -6,7 +6,7 @@ import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { Report, ReportRow } from "../Report"
 import type { ResolvedBookArchive } from "../useFileInspection"
-import { CONTAINER_LABELS } from "./targets"
+import { CONTAINER_LABELS } from "./identifiers/containers"
 
 const containerValue = (
   kind: ResolvedArchiveSourceKind,

@@ -1,19 +1,39 @@
 import {
   getArchiveHasComicInfo,
   getArchiveOpfInfo,
+  type MetadataIdentifierScheme,
 } from "@prose-reader/archive-reader"
 import type { Archive } from "../archive/types"
 import { COMIC_INFO_FILENAME, buildPatchedComicInfoXml } from "../comicInfo"
 import { buildPatchedOpfXml } from "../opf/write"
 
 /**
+ * One identifier an archive should carry after the patch.
+ *
+ * `scheme` accepts any string: the containers hold arbitrary schemes and
+ * the reader reports them verbatim. Known schemes are matched
+ * case-insensitively, and `"Unknown"` means "carry no scheme".
+ *
+ * `unique` marks the identifier the OPF's `<package unique-identifier>`
+ * points at. That element is structural — the writer only ever rewrites it
+ * through this entry and never removes it, so a book keeps a resolvable
+ * unique identifier whatever the caller does with the rest of the list.
+ */
+export type ArchiveMetadataIdentifier = {
+  readonly scheme: MetadataIdentifierScheme
+  readonly value: string
+  readonly unique?: boolean
+}
+
+/**
  * Fields an archive patch may set. Expand in lockstep when a new field
  * becomes writable in at least one container.
  *
- * Today only `isbn` is writable.
+ * `identifiers` is the complete set the archive should end up with, not a
+ * delta: an identifier the containers hold but the list omits is removed.
  */
 export type ArchiveMetadataPatch = {
-  isbn?: string | undefined
+  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 /**
@@ -59,6 +79,9 @@ export type ArchivePatch = {
  *  - `targets.comicInfo` → patch the existing `ComicInfo.xml` if any,
  *    otherwise synthesize a minimal one. This always succeeds and is
  *    the safe default for archives that carry no embedded metadata.
+ *    Identifiers are mapped onto `<GTIN>` and `<Web>`, so ones on a
+ *    scheme neither field represents are not written for this target
+ *    — see `isComicInfoWritableIdentifierScheme` to check up front.
  *  - `targets.opf` → patch the existing OPF package document. Throws
  *    when the archive has no OPF: synthesizing one would turn a CBZ
  *    into an EPUB, which is well outside this writer's scope.
@@ -86,7 +109,7 @@ export const patchArchiveMetadata = async (
   const entries: ArchivePatchedEntry[] = []
 
   if (targets.comicInfo) {
-    const xml = await buildPatchedComicInfoXml(archive, { isbn: patch.isbn })
+    const xml = await buildPatchedComicInfoXml(archive, patch)
     const existingComicInfo = getArchiveHasComicInfo(archive)
     entries.push({ path: existingComicInfo?.uri ?? COMIC_INFO_FILENAME, xml })
   }
@@ -100,7 +123,7 @@ export const patchArchiveMetadata = async (
       )
     }
 
-    const xml = await buildPatchedOpfXml(opfEntry, { isbn: patch.isbn })
+    const xml = await buildPatchedOpfXml(opfEntry, patch)
     entries.push({ path: opfEntry.uri, xml })
   }
 

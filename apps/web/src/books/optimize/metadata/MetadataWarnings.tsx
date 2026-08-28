@@ -1,7 +1,7 @@
 import { Alert, Stack } from "@mui/material"
 import { memo } from "react"
 import { useBookOptimize } from "../BookOptimizeProvider"
-import { CONTAINER_LABELS } from "./targets"
+import { CONTAINER_LABELS } from "./identifiers/containers"
 
 export const MetadataWarnings = memo(function MetadataWarnings() {
   const { inspection } = useBookOptimize()

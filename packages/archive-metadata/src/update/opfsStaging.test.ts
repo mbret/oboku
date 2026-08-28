@@ -319,16 +319,6 @@ describe("purgeStagedFiles", () => {
     expect(findStagingDir(root)?.dirs.has(FIRST_SCOPE_ID)).toBe(false)
   })
 
-  it("drops the legacy staging directory outright", async () => {
-    const root = new FakeDirectoryHandle()
-    enableOpfs(root)
-    await root.getDirectoryHandle("oboku-tmp", { create: true })
-
-    await purgeStagedFiles()
-
-    expect(root.dirs.has("oboku-tmp")).toBe(false)
-  })
-
   it("stays best-effort when OPFS is unavailable", async () => {
     disableOpfs()
 

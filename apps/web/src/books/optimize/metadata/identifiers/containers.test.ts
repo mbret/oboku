@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { CONTAINER_XML, comicInfo, inspect, opf } from "./inspection.fixture"
-import { hasWritableMetadataTarget, resolveMetadataTargets } from "./targets"
+import { hasWritableMetadataTarget, resolveMetadataTargets } from "./containers"
 
 const UNPARSEABLE = "<root><child></wrong></root>"
 

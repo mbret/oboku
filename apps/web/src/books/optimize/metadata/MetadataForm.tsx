@@ -4,7 +4,7 @@ import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { BookOptimizeFormValues } from "../form"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
-import { hasWritableMetadataTarget } from "./targets"
+import { hasWritableMetadataTarget } from "./identifiers/containers"
 
 const validateIsbn = (raw: string | boolean): true | string => {
   if (typeof raw !== "string") return true

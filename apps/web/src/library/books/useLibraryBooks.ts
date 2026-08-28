@@ -1,49 +1,84 @@
-import { useRef } from "react"
-import { useBooksSortedBy } from "../../books/helpers"
+import { isShallowEqual } from "@oboku/shared"
+import { useMemo, useRef } from "react"
+import { sortBooksBy } from "../../books/helpers"
 import { useBooks } from "../../books/states"
-import { DownloadState, useBooksDownloadState } from "../../download/states"
+import {
+  type BooksDownloadState,
+  DownloadState,
+  booksDownloadStateSignal,
+} from "../../download/states"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./states"
+
+const selectDownloadedBookIds = (bookDownloadState: BooksDownloadState) =>
+  Object.keys(bookDownloadState).filter(
+    (bookId) =>
+      bookDownloadState[bookId]?.downloadState === DownloadState.Downloaded,
+  )
 
 export const useLibraryBooks = () => {
   const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
-  const filteredTags = library.tags
   const { data: unsortedBooks } = useBooks()
-  const booksDownloadState = useBooksDownloadState(unsortedBooks)
+  const downloadedBookIds = useSignalValue(
+    booksDownloadStateSignal,
+    selectDownloadedBookIds,
+    isShallowEqual,
+  )
+  const {
+    downloadState,
+    isNotInterested,
+    readingStates,
+    sorting,
+    tags: filteredTags,
+  } = library
+  const downloadedBookIdsFilter =
+    downloadState === DownloadState.Downloaded ? downloadedBookIds : undefined
 
-  const filteredBooks = unsortedBooks?.filter((book) => {
-    if (
-      library.downloadState === DownloadState.Downloaded &&
-      booksDownloadState[book._id]?.downloadState !== DownloadState.Downloaded
-    ) {
-      return false
-    }
+  const bookIds = useMemo(
+    function computeVisibleBookIds() {
+      const downloadedBookIdSet =
+        downloadedBookIdsFilter && new Set(downloadedBookIdsFilter)
 
-    if (
-      filteredTags?.length &&
-      !book?.tags?.some((b) => filteredTags.includes(b))
-    ) {
-      return false
-    }
+      const filteredBooks = (unsortedBooks ?? []).filter(
+        function matchesLibraryFilters(book) {
+          if (downloadedBookIdSet && !downloadedBookIdSet.has(book._id)) {
+            return false
+          }
 
-    if (
-      library.readingStates.length &&
-      !library.readingStates.includes(book.readingStateCurrentState)
-    ) {
-      return false
-    }
+          if (
+            filteredTags?.length &&
+            !book?.tags?.some((tagId) => filteredTags.includes(tagId))
+          ) {
+            return false
+          }
 
-    if (library.isNotInterested !== "only" && book.isNotInterested) return false
+          if (
+            readingStates.length &&
+            !readingStates.includes(book.readingStateCurrentState)
+          ) {
+            return false
+          }
 
-    if (library.isNotInterested === "only" && !book.isNotInterested)
-      return false
+          if (isNotInterested !== "only" && book.isNotInterested) return false
 
-    return true
-  })
+          if (isNotInterested === "only" && !book.isNotInterested) return false
 
-  const sortedList = useBooksSortedBy(filteredBooks, library.sorting)
-  const bookIds = sortedList.map((item) => item._id)
+          return true
+        },
+      )
+
+      return sortBooksBy(filteredBooks, sorting).map((book) => book._id)
+    },
+    [
+      downloadedBookIdsFilter,
+      filteredTags,
+      isNotInterested,
+      readingStates,
+      sorting,
+      unsortedBooks,
+    ],
+  )
 
   if (bookIds.length !== results.current.length) {
     results.current = bookIds

@@ -1,46 +1,12 @@
-import type {
-  ArchiveMetadataPatch,
-  ArchiveMetadataTargets,
-} from "@oboku/archive-metadata/web"
-import { identifierValue } from "@prose-reader/archive-reader"
-import type { FileInspection } from "../useFileInspection"
-import type { MetadataFixerFormValues } from "./types"
+import type { ArchiveMetadataTargets } from "@oboku/archive-metadata/web"
+import type { FileInspection } from "../../useFileInspection"
 
-export type ContainerKey = "comicInfo" | "opf"
-
-export type ArchiveMetadataPatchPlan = {
-  patch: ArchiveMetadataPatch
-  targets: ArchiveMetadataTargets
-}
+type ContainerKey = "comicInfo" | "opf"
 
 export const CONTAINER_LABELS: Record<ContainerKey, string> = {
   comicInfo: "ComicInfo.xml",
   opf: "OPF package document",
 }
-
-export const EMPTY_METADATA_FIXER_FORM_VALUES: MetadataFixerFormValues = {
-  isbn: "",
-}
-
-const normalizeFormIsbn = (isbn: string): string | undefined => {
-  const trimmed = isbn.trim()
-
-  return trimmed === "" ? undefined : trimmed
-}
-
-export const trimMetadataFixerFormValues = ({
-  isbn,
-}: MetadataFixerFormValues): MetadataFixerFormValues => ({
-  isbn: isbn.trim(),
-})
-
-export const resolveMetadataFixerFormValues = (
-  inspection: FileInspection,
-): MetadataFixerFormValues => ({
-  isbn:
-    identifierValue(inspection.resolvedArchive.metadata.identifiers, "ISBN") ??
-    "",
-})
 
 /**
  * The containers a save should write.
@@ -82,11 +48,3 @@ export const hasWritableMetadataTarget = (
 
   return comicInfo === true || opf === true
 }
-
-export const resolveArchiveMetadataPatchPlan = (
-  values: MetadataFixerFormValues,
-  inspection: FileInspection,
-): ArchiveMetadataPatchPlan => ({
-  patch: { isbn: normalizeFormIsbn(values.isbn) },
-  targets: resolveMetadataTargets(inspection),
-})

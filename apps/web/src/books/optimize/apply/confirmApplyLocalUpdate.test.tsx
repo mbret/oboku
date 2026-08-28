@@ -43,7 +43,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const actions: WebArchiveUpdateAction[] = [
       {
         kind: "patch-metadata",
-        patch: { isbn: "9781234567897" },
+        patch: { identifiers: [{ scheme: "ISBN", value: "9781234567897" }] },
         targets: { comicInfo: true, opf: true },
       },
       {
@@ -93,7 +93,7 @@ describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
     const actions: WebArchiveUpdateAction[] = [
       {
         kind: "patch-metadata",
-        patch: { isbn: undefined },
+        patch: { identifiers: [] },
         targets: { comicInfo: true },
       },
       {

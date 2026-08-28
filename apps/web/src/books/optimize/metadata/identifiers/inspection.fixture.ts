@@ -4,7 +4,7 @@ import {
   resolveArchive,
   type ArchiveRecord,
 } from "@prose-reader/archive-reader"
-import type { FileInspection } from "../useFileInspection"
+import type { FileInspection } from "../../useFileInspection"
 
 const toArrayBuffer = (body: string): ArrayBuffer => {
   const bytes = new TextEncoder().encode(body)

@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react"
+import { memo } from "react"
 import List from "@mui/material/List"
 import ListItemText from "@mui/material/ListItemText"
 import { DeleteForeverRounded, EditRounded } from "@mui/icons-material"
@@ -10,43 +10,10 @@ import {
   useTheme,
   useMediaQuery,
 } from "@mui/material"
-import { signal, useLiveRef } from "reactjrx"
 import { useDismissibleOverlay } from "../navigation/modalHistory"
 import { setupSecretDialogSignal } from "./SetupSecretDialog"
 import { useRemoveSecret } from "./useRemoveSecret"
 import { notify } from "../notifications/toasts"
-
-type SignalState = {
-  openedWith: undefined | string
-  actions?: ("removeDownload" | "goToDetails")[]
-  actionsBlackList?: ("removeDownload" | "goToDetails")[]
-  onDeleteBook?: () => void
-}
-
-export const bookActionDrawerSignal = signal<SignalState>({
-  key: "bookActionDrawerState",
-  default: { openedWith: undefined },
-})
-
-export const useBookActionDrawer = ({
-  onDeleteBook,
-}: {
-  onDeleteBook?: () => void
-} = {}) => {
-  const onDeleteBookRef = useLiveRef(onDeleteBook)
-
-  return useCallback(
-    (params: Omit<SignalState, "onDeleteBook">) => {
-      bookActionDrawerSignal.setValue({
-        ...params,
-        onDeleteBook: () => {
-          onDeleteBookRef.current?.()
-        },
-      })
-    },
-    [onDeleteBookRef],
-  )
-}
 
 export const SecretActionDrawer = memo(
   ({

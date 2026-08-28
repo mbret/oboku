@@ -3,6 +3,7 @@ import {
   PRESERVABLE_IMAGE_FORMAT_NAMES,
   type WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
+import { isIsbnBearingScheme } from "@prose-reader/archive-reader"
 import { FiberManualRecord } from "@mui/icons-material"
 import {
   List,
@@ -15,7 +16,7 @@ import {
 import { Fragment, type ReactNode } from "react"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { KeyChip } from "../KeyChip"
-import { CONTAINER_LABELS } from "../metadata/targets"
+import { CONTAINER_LABELS } from "../metadata/identifiers/containers"
 
 const BulletListItemIcon = styled(ListItemIcon)(({ theme }) => ({
   minWidth: theme.spacing(3),
@@ -63,13 +64,19 @@ function MetadataUpdateItems({
   if (action.targets.comicInfo) targets.push(CONTAINER_LABELS.comicInfo)
   if (action.targets.opf) targets.push(CONTAINER_LABELS.opf)
 
-  return action.patch.isbn === undefined ? (
+  const isbn = action.patch.identifiers.find(function announcesIsbn({
+    scheme,
+  }) {
+    return isIsbnBearingScheme(scheme)
+  })?.value
+
+  return isbn === undefined ? (
     <UpdateListItem>
       Remove the ISBN from <MetadataTargetChips targets={targets} />.
     </UpdateListItem>
   ) : (
     <UpdateListItem>
-      Set the ISBN to <KeyChip label={action.patch.isbn} /> in{" "}
+      Set the ISBN to <KeyChip label={isbn} /> in{" "}
       <MetadataTargetChips targets={targets} />.
     </UpdateListItem>
   )
