@@ -1,5 +1,6 @@
 import type {
   ArchiveMetadataIdentifier,
+  ArchiveMetadataPatch,
   WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
 import { isIsbnBearingScheme } from "@prose-reader/archive-reader"
@@ -22,30 +23,30 @@ const announcesIsbn = ({ scheme }: ArchiveMetadataIdentifier): boolean =>
   isIsbnBearingScheme(scheme)
 
 /**
- * The identifiers the archive should end up carrying: the ones it already has,
- * with the edited ISBN in place of every one of them that announced an ISBN.
+ * What the archive should carry after the edit, and what the edit dropped.
  *
- * More than one usually does — a book whose OPF and ComicInfo both carry it is
- * read as an `ISBN` and a `GTIN` of the same value — and they are one fact, so
- * the edit replaces the first and drops the rest. Keeping the others would
- * leave the previous ISBN behind under the other scheme.
+ * The archive's own identifiers are the baseline, so the difference between
+ * them and the edited set is exactly what the user removed — which is the only
+ * thing the writer is asked to delete. An identifier neither list names is left
+ * alone, including ones the reader never reported and no one here could know
+ * about.
  *
- * The patch is the complete set rather than a delta, so every identifier the
- * book carries has to be listed for it to survive the write. Only the ISBN is
- * editable here; the rest are passed through as read.
+ * An ISBN is usually announced more than once: a book whose OPF and ComicInfo
+ * both carry it is read as an `ISBN` and a `GTIN` of the same value. They are
+ * one fact, so the edit lands on the first and the rest are dropped.
  */
-const patchIdentifiers = (
+const identifierPatch = (
   inspection: FileInspection,
   isbn: string | undefined,
-): ArchiveMetadataIdentifier[] => {
-  const identifiers = (
-    inspection.resolvedArchive.metadata.identifiers ?? []
-  ).map(function toPatchIdentifier({ scheme, value, unique }) {
-    return { scheme, value, unique: unique === true }
-  })
-  const editedIndex = identifiers.findIndex(announcesIsbn)
+): Pick<ArchiveMetadataPatch, "identifiers" | "removedIdentifiers"> => {
+  const announced = (inspection.resolvedArchive.metadata.identifiers ?? []).map(
+    function toPatchIdentifier({ scheme, value, unique }) {
+      return { scheme, value, unique: unique === true }
+    },
+  )
+  const editedIndex = announced.findIndex(announcesIsbn)
 
-  const carried = identifiers.flatMap(
+  const identifiers = announced.flatMap(
     function keepOrReplace(identifier, index) {
       if (!announcesIsbn(identifier)) return [identifier]
       if (index !== editedIndex || isbn === undefined) return []
@@ -54,9 +55,22 @@ const patchIdentifiers = (
     },
   )
 
-  return editedIndex === -1 && isbn !== undefined
-    ? [...carried, { scheme: "ISBN", value: isbn }]
-    : carried
+  const removedIdentifiers = announced.filter(
+    function wasDropped(identifier, index) {
+      return (
+        announcesIsbn(identifier) &&
+        (index !== editedIndex || isbn === undefined)
+      )
+    },
+  )
+
+  return {
+    identifiers:
+      editedIndex === -1 && isbn !== undefined
+        ? [...identifiers, { scheme: "ISBN", value: isbn }]
+        : identifiers,
+    removedIdentifiers,
+  }
 }
 
 const resolveMetadataPatchAction = (
@@ -73,7 +87,7 @@ const resolveMetadataPatchAction = (
 
   return {
     kind: "patch-metadata",
-    patch: { identifiers: patchIdentifiers(inspection, isbn) },
+    patch: identifierPatch(inspection, isbn),
     targets,
   }
 }
