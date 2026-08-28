@@ -61,7 +61,7 @@ const INDETERMINATE_PHASE_CASES: [ApplyLocallyProgress, string][] = [
 const values: BookOptimizeFormValues = {
   compressImages: false,
   imageOutputMode: "webp",
-  isbn: "9781234567897",
+  identifiers: [{ scheme: "ISBN", value: "9781234567897", unique: false }],
   maxHeight: "",
   maxWidth: "",
 }

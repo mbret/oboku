@@ -13,7 +13,7 @@ export type BookOptimizeFormValues = MetadataFixerFormValues & {
 const DEFAULT_IMAGE_OUTPUT_MODE: ImageOutputMode = "original"
 
 export const EMPTY_BOOK_OPTIMIZE_FORM_VALUES: BookOptimizeFormValues = {
-  isbn: "",
+  identifiers: [],
   compressImages: false,
   imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
   maxWidth: "",
