@@ -108,6 +108,10 @@ export const useRemoveCollectionFromBook = () => {
 }
 
 export const useAddBook = () => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const { db: database } = useDatabase()
   const refreshMetadata = useRefreshBookMetadata()
 

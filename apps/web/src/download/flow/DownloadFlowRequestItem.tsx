@@ -35,6 +35,10 @@ export const DownloadFlowRequestItem = memo(
     onSettled: () => void
     request: DownloadFlowRequest
   }) => {
+    // React Compiler cannot lower this function yet, so it bails out here.
+    // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+    "use no memo"
+
     const [link, setLink] = useState<DownloadLink | null>(null)
     const [isPreparing, setIsPreparing] = useState(!request.file)
     const { abortController, bookId, file, links, reject, resolve } = request
