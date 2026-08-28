@@ -25,6 +25,7 @@ export const updateCover = async ({
   tmpFilePath,
   coversService,
   force = false,
+  googleVolumeId,
 }: {
   ctx: Context
   book: BookDocType
@@ -37,11 +38,14 @@ export const updateCover = async ({
    * already matches the picked source and the blob exists.
    */
   force?: boolean
+  /** The volume id the Google Books lookup was addressed with, if any. */
+  googleVolumeId?: string | undefined
 }): Promise<UpdateCoverResult> => {
   const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
   const metadataForCover = pickCoverMetadata(
     metadataList,
     book.metadataSourcePriority,
+    { googleVolumeId },
   )
   const expectedBucketCoverKey = metadataForCover?.coverLink
     ? buildBookBucketCoverKey({
