@@ -5,7 +5,7 @@ interface Dictionary<T> {
 }
 
 export function groupBy<T>(
-  collection: Array<T> | null | undefined,
+  collection: ReadonlyArray<T> | null | undefined,
   iteratee: ValueIteratee<T> = (value) => String(value),
 ): Dictionary<T[]> {
   const result: Dictionary<T[]> = {}

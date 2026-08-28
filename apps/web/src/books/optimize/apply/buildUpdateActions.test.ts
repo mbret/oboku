@@ -162,6 +162,43 @@ describe("buildUpdateActions, what it asks to be removed", () => {
     ])
   })
 
+  it("names the surplus identifier a kept scheme leaves behind", async () => {
+    const twoIsbns = {
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        `<dc:identifier opf:scheme="ISBN">${ISBN.value}</dc:identifier>` +
+          '<dc:identifier opf:scheme="ISBN">9780306406157</dc:identifier>',
+      ),
+    }
+
+    const keepingTheFirst = await patchFor([ISBN], twoIsbns)
+    const keepingTheSecond = await patchFor(
+      [{ ...ISBN, value: "9780306406157" }],
+      twoIsbns,
+    )
+
+    expect(keepingTheFirst.removedIdentifiers).toEqual([
+      { scheme: "ISBN", value: "9780306406157" },
+    ])
+    expect(keepingTheSecond.removedIdentifiers).toEqual([
+      { scheme: "ISBN", value: ISBN.value },
+    ])
+  })
+
+  it("names only what a deletion alongside an edit leaves behind", async () => {
+    const patch = await patchFor([{ ...ISBN, value: "9781234567897" }], {
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        `<dc:identifier opf:scheme="ISBN">${ISBN.value}</dc:identifier>` +
+          '<dc:identifier opf:scheme="ISBN">9780306406157</dc:identifier>',
+      ),
+    })
+
+    expect(patch.removedIdentifiers).toEqual([
+      { scheme: "ISBN", value: "9780306406157" },
+    ])
+  })
+
   it("names nothing for the row that stands for both", async () => {
     const patch = await patchFor([ISBN], {
       "META-INF/container.xml": CONTAINER_XML,
