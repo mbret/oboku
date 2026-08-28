@@ -1,16 +1,9 @@
-import { Link, List, ListSubheader, styled } from "@mui/material"
+import { Link, List, ListSubheader } from "@mui/material"
 import type { GoogleBookApiMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import { formatBookMetadataDate, formatList } from "./formatters"
-
-const CoverUriLink = styled(Link)({
-  display: "block",
-  overflow: "hidden",
-  textOverflow: "ellipsis",
-  whiteSpace: "nowrap",
-})
 
 type Props = {
   metadata: DeepReadonlyObject<GoogleBookApiMetadata> | undefined
@@ -37,14 +30,14 @@ export const GoogleBookApiSourceContent = ({ metadata }: Props) => (
       label={L.coverLink}
       value={
         metadata?.coverLink ? (
-          <CoverUriLink
+          <Link
             href={metadata.coverLink}
             target="_blank"
             rel="noopener noreferrer"
             title={metadata.coverLink}
           >
-            {metadata.coverLink}
-          </CoverUriLink>
+            Open image
+          </Link>
         ) : undefined
       }
     />

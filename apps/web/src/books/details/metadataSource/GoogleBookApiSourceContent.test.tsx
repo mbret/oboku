@@ -24,14 +24,17 @@ describe("GoogleBookApiSourceContent, the cover link it renders", () => {
     expect(link.getAttribute("rel")).toContain("noopener")
   })
 
-  it("keeps the whole url reachable on hover", () => {
+  it("keeps the url out of the label and reachable on hover", () => {
     render(
       <GoogleBookApiSourceContent
         metadata={{ type: "googleBookApi", coverLink: COVER_URL }}
       />,
     )
 
-    expect(screen.getByRole("link").getAttribute("title")).toBe(COVER_URL)
+    const link = screen.getByRole("link")
+
+    expect(link.textContent).toBe("Open image")
+    expect(link.getAttribute("title")).toBe(COVER_URL)
   })
 
   it("renders no link when the volume advertises no cover", () => {
