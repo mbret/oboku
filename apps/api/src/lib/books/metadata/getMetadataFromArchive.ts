@@ -60,6 +60,7 @@ export const getMetadataFromArchive = async (
     date: metadata.publication?.edition?.date,
     subjects: toMutableList(metadata.subjects),
     coverLink: metadata.cover?.uri,
+    coverConfidence: metadata.cover?.confidence,
     pageCount: metadata.numberOfPages,
     isbn,
     googleVolumeId,

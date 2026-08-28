@@ -18,6 +18,14 @@ export type BookMetadataFields = {
   formatType?: ("book" | "comics" | "manga" | "audio")[]
   rating?: number
   coverLink?: string
+  /**
+   * How {@link coverLink} was determined, in archive-reader's vocabulary:
+   * `derived` when the container names the image as its cover, `assumed`
+   * when it names none and this is its first page. Only the `file` source
+   * can answer it, and only for a cover it actually reports; absent means
+   * "not known", never "not derived".
+   */
+  coverConfidence?: "derived" | "assumed"
   pageCount?: number
   contentType?: string
   date?: { year?: number; month?: number; day?: number }
@@ -87,6 +95,7 @@ export type FileMetadata = BookMetadataVariant<
   | "date"
   | "subjects"
   | "coverLink"
+  | "coverConfidence"
   | "pageCount"
   | "contentType"
   | "isbn"
