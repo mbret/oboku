@@ -80,6 +80,13 @@ COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
 # an unhealthy couchdb (its depends_on waits for service_healthy).
 RUN command -v curl >/dev/null || { echo "curl missing from couchdb base image; docker-compose healthcheck requires it" >&2; exit 1; }
 
+# update-secrets.sh generates the JWT pair on first start. openssl is only a
+# transitive dependency of the base image, so install it rather than rely on it.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends openssl; \
+    rm -rf /var/lib/apt/lists/*
+
 # Create a custom entrypoint wrapper script
 RUN echo '#!/bin/sh\n\
 # Run your custom script first\n\

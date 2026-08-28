@@ -16,7 +16,8 @@
 # HOW:
 # 1. Checks for public key in environment variables:
 #    - JWT_PUBLIC_KEY (base64 encoded content)
-#    - OR JWT_PUBLIC_KEY_FILE (path to file)
+#    - OR JWT_PUBLIC_KEY_FILE (path to file), generating the pair on first
+#      start when that path does not exist yet
 # 2. Ensures the CouchDB local configuration file exists.
 # 3. Reads the public key and escapes newlines for INI compatibility.
 # 4. Appends the [jwt_keys] section with the formatted public key to
@@ -46,6 +47,29 @@ if [ -n "$JWT_PUBLIC_KEY" ]; then
 elif [ -n "$JWT_PUBLIC_KEY_FILE" ]; then
   echo "Using JWT_PUBLIC_KEY_FILE from path: $JWT_PUBLIC_KEY_FILE"
   PUBLIC_KEY_FILE="$JWT_PUBLIC_KEY_FILE"
+
+  # CouchDB boots before the API, so this is the first thing in the stack to
+  # need the pair and the only place that can create it in time. Keys are only
+  # ever created when absent, so restarts keep signing with the same ones.
+  if [ ! -f "$PUBLIC_KEY_FILE" ]; then
+    if [ -z "$JWT_PRIVATE_KEY_FILE" ]; then
+      echo "ERROR: $PUBLIC_KEY_FILE does not exist and JWT_PRIVATE_KEY_FILE is not set,"
+      echo "so there is nowhere to write a generated key pair."
+      exit 1
+    fi
+
+    mkdir -p "$(dirname "$JWT_PRIVATE_KEY_FILE")" "$(dirname "$PUBLIC_KEY_FILE")"
+
+    if [ ! -f "$JWT_PRIVATE_KEY_FILE" ]; then
+      echo "No JWT private key yet, generating one at $JWT_PRIVATE_KEY_FILE..."
+      openssl genrsa -out "$JWT_PRIVATE_KEY_FILE" 4096
+      chmod 600 "$JWT_PRIVATE_KEY_FILE"
+    fi
+
+    echo "Deriving the JWT public key at $PUBLIC_KEY_FILE..."
+    openssl rsa -in "$JWT_PRIVATE_KEY_FILE" -pubout -outform PEM -out "$PUBLIC_KEY_FILE"
+    chmod 644 "$PUBLIC_KEY_FILE"
+  fi
 else
   echo "ERROR: Neither JWT_PUBLIC_KEY (base64) nor JWT_PUBLIC_KEY_FILE (path) environment variables are set."
   echo "Please define one of them to configure CouchDB JWT authentication."
