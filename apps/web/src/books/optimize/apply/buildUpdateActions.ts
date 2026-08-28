@@ -1,62 +1,87 @@
 import type {
   ArchiveMetadataIdentifier,
+  ArchiveMetadataPatch,
   WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
-import { isIsbnBearingScheme } from "@prose-reader/archive-reader"
 import type { FileInspection } from "../useFileInspection"
+import type {
+  MetadataFixerFormValues,
+  MetadataIdentifierFormValue,
+} from "../metadata/formValues"
+import { canonicalIdentifier } from "../metadata/identifiers/canonicalIdentifier"
 import { resolveMetadataTargets } from "../metadata/identifiers/containers"
-import { resolveMetadataFixerFormValues } from "../metadata/identifiers/resolveMetadataFixerFormValues"
+import {
+  identifierRowScheme,
+  resolveMetadataFixerFormValues,
+  toIdentifierRow,
+} from "../metadata/identifiers/resolveMetadataFixerFormValues"
 import {
   hasImageCompressionOperation,
   parseDimension,
   type BookOptimizeFormValues,
 } from "../form"
 
-const normalizeFormIsbn = (isbn: string): string | undefined => {
-  const trimmed = isbn.trim()
+const trimIdentifiers = ({
+  identifiers,
+}: MetadataFixerFormValues): MetadataIdentifierFormValue[] =>
+  identifiers.map(function trimIdentifier({ scheme, value, unique }) {
+    return { scheme: scheme.trim(), value: value.trim(), unique }
+  })
 
-  return trimmed === "" ? undefined : trimmed
-}
+const haveIdentifiersChanged = (
+  left: ReadonlyArray<MetadataIdentifierFormValue>,
+  right: ReadonlyArray<MetadataIdentifierFormValue>,
+): boolean =>
+  left.length !== right.length ||
+  left.some(function differsFromCounterpart(identifier, index) {
+    const other = right[index]
 
-const announcesIsbn = ({ scheme }: ArchiveMetadataIdentifier): boolean =>
-  isIsbnBearingScheme(scheme)
+    return (
+      identifier.scheme !== other?.scheme || identifier.value !== other?.value
+    )
+  })
+
+const toPatchIdentifier = ({
+  scheme,
+  value,
+  unique,
+}: MetadataIdentifierFormValue): ArchiveMetadataIdentifier => ({
+  ...canonicalIdentifier({ scheme, value }),
+  unique,
+})
 
 /**
- * The identifiers the archive should end up carrying: the ones it already has,
- * with the edited ISBN in place of every one of them that announced an ISBN.
+ * What the archive should carry after the edit, and what the edit dropped.
  *
- * More than one usually does — a book whose OPF and ComicInfo both carry it is
- * read as an `ISBN` and a `GTIN` of the same value — and they are one fact, so
- * the edit replaces the first and drops the rest. Keeping the others would
- * leave the previous ISBN behind under the other scheme.
+ * The archive's own identifiers are the baseline, and one is dropped when the
+ * edited list has no row on its scheme any more. Matching on the scheme rather
+ * than the value is what makes editing a value an edit: the row still stands
+ * for the identifier it was seeded from, so its element keeps its `id` and the
+ * refinements pointing at it instead of being deleted and rebuilt. It also
+ * keeps the one row an ISBN and the `GTIN` of the same value collapse into from
+ * dropping either of them.
  *
- * The patch is the complete set rather than a delta, so every identifier the
- * book carries has to be listed for it to survive the write. Only the ISBN is
- * editable here; the rest are passed through as read.
+ * Nothing else is named, so an identifier the reader never reported — which no
+ * row could stand for and no one here knows about — is left alone.
+ *
+ * The identifiers go to every container the archive can carry. Keeping them in
+ * sync is the point — an archive whose containers disagree has no identifier
+ * the user can trust, and picking a winner per container was never their call.
  */
-const patchIdentifiers = (
+const identifierPatch = (
   inspection: FileInspection,
-  isbn: string | undefined,
-): ArchiveMetadataIdentifier[] => {
-  const identifiers = (
+  rows: ReadonlyArray<MetadataIdentifierFormValue>,
+): Pick<ArchiveMetadataPatch, "identifiers" | "removedIdentifiers"> => {
+  const kept = new Set(rows.map(identifierRowScheme))
+  const removedIdentifiers = (
     inspection.resolvedArchive.metadata.identifiers ?? []
-  ).map(function toPatchIdentifier({ scheme, value, unique }) {
-    return { scheme, value, unique: unique === true }
+  ).flatMap(function whenNoRowStandsForIt(resolved) {
+    return kept.has(identifierRowScheme(toIdentifierRow(resolved)))
+      ? []
+      : [{ scheme: resolved.scheme, value: resolved.value }]
   })
-  const editedIndex = identifiers.findIndex(announcesIsbn)
 
-  const carried = identifiers.flatMap(
-    function keepOrReplace(identifier, index) {
-      if (!announcesIsbn(identifier)) return [identifier]
-      if (index !== editedIndex || isbn === undefined) return []
-
-      return [{ ...identifier, value: isbn }]
-    },
-  )
-
-  return editedIndex === -1 && isbn !== undefined
-    ? [...carried, { scheme: "ISBN", value: isbn }]
-    : carried
+  return { identifiers: rows.map(toPatchIdentifier), removedIdentifiers }
 }
 
 const resolveMetadataPatchAction = (
@@ -67,13 +92,15 @@ const resolveMetadataPatchAction = (
 
   if (targets.comicInfo !== true && targets.opf !== true) return undefined
 
-  const isbn = normalizeFormIsbn(values.isbn)
+  const identifiers = trimIdentifiers(values)
+  const resolved = resolveMetadataFixerFormValues(inspection)
 
-  if (isbn === resolveMetadataFixerFormValues(inspection).isbn) return undefined
+  if (!haveIdentifiersChanged(identifiers, resolved.identifiers))
+    return undefined
 
   return {
     kind: "patch-metadata",
-    patch: { identifiers: patchIdentifiers(inspection, isbn) },
+    patch: identifierPatch(inspection, identifiers),
     targets,
   }
 }

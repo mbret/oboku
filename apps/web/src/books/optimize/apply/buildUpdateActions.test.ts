@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { EMPTY_BOOK_OPTIMIZE_FORM_VALUES } from "../form"
+import type { MetadataIdentifierFormValue } from "../metadata/formValues"
 import type { FileInspection } from "../useFileInspection"
 import {
   CONTAINER_XML,
@@ -10,131 +11,169 @@ import {
 } from "../metadata/identifiers/inspection.fixture"
 import { buildUpdateActions } from "./buildUpdateActions"
 
-const metadataPatch = (isbn: string, inspection: FileInspection) => {
-  const [action] = buildUpdateActions(
-    { ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES, isbn },
+const actionsFor = (
+  identifiers: MetadataIdentifierFormValue[],
+  inspection: FileInspection,
+) =>
+  buildUpdateActions(
+    { ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES, identifiers },
     inspection,
   )
 
-  if (action?.kind !== "patch-metadata") {
-    throw new Error("expected a patch-metadata action")
-  }
-
-  return action
+const GOOGLE_BOOKS: MetadataIdentifierFormValue = {
+  scheme: "GoogleBooks",
+  value: "zyTCAlFPjgYC",
+  unique: false,
 }
 
 describe("buildUpdateActions, the metadata patch it plans", () => {
-  it("carries the identifiers it is not editing through the patch", async () => {
+  it("targets the containers the archive carries", async () => {
+    const withOpf = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
+    })
+    const withoutOpf = await inspect({ "page-001.jpg": "binary" })
+
+    expect(actionsFor([GOOGLE_BOOKS], withOpf)).toEqual([
+      {
+        kind: "patch-metadata",
+        patch: { identifiers: [GOOGLE_BOOKS], removedIdentifiers: [] },
+        targets: { comicInfo: false, opf: true },
+      },
+    ])
+    expect(actionsFor([GOOGLE_BOOKS], withoutOpf)).toEqual([
+      {
+        kind: "patch-metadata",
+        patch: { identifiers: [GOOGLE_BOOKS], removedIdentifiers: [] },
+        targets: { comicInfo: true, opf: false },
+      },
+    ])
+  })
+
+  it("plans nothing when the identifiers are untouched", async () => {
     const inspection = await inspect({
       "META-INF/container.xml": CONTAINER_XML,
       "OEBPS/content.opf": opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
-          '<dc:identifier opf:scheme="ISBN">0000000000</dc:identifier>' +
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+    })
+
+    expect(
+      actionsFor(
+        [{ scheme: "ISBN", value: "9783161484100", unique: false }],
+        inspection,
+      ),
+    ).toEqual([])
+  })
+
+  it("plans a patch for an edited value, a new row and a removed row", async () => {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+      ),
+    })
+    const isbn: MetadataIdentifierFormValue = {
+      scheme: "ISBN",
+      value: "9783161484100",
+      unique: false,
+    }
+
+    expect(
+      actionsFor([{ ...isbn, value: "9780306406157" }], inspection),
+    ).toHaveLength(1)
+    expect(actionsFor([isbn, GOOGLE_BOOKS], inspection)).toHaveLength(1)
+    expect(actionsFor([], inspection)).toHaveLength(1)
+  })
+
+  it("plans nothing for a book with nowhere to store identifiers", async () => {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": "<root><child></wrong></root>",
+    })
+
+    expect(actionsFor([GOOGLE_BOOKS], inspection)).toEqual([])
+  })
+})
+
+describe("buildUpdateActions, what it asks to be removed", () => {
+  const patchFor = async (
+    rows: MetadataIdentifierFormValue[],
+    files: Record<string, string>,
+  ) => {
+    const [action] = actionsFor(rows, await inspect(files))
+
+    if (action?.kind !== "patch-metadata") {
+      throw new Error("expected a patch-metadata action")
+    }
+
+    return action.patch
+  }
+
+  const ISBN: MetadataIdentifierFormValue = {
+    scheme: "ISBN",
+    value: "9783161484100",
+    unique: false,
+  }
+  const DOI: MetadataIdentifierFormValue = {
+    scheme: "DOI",
+    value: "10.1000/182",
+    unique: false,
+  }
+
+  it("names nothing when a row only changes its value", async () => {
+    const patch = await patchFor([{ ...ISBN, value: "9780306406157" }, DOI], {
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
           '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
       ),
     })
 
-    const { patch } = metadataPatch("9783161484100", inspection)
-
-    expect(patch.identifiers).toEqual([
-      {
-        scheme: "Unknown",
-        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
-        unique: true,
-      },
-      { scheme: "ISBN", value: "9783161484100", unique: false },
-      { scheme: "DOI", value: "10.1000/182", unique: false },
-    ])
+    expect(patch.removedIdentifiers).toEqual([])
   })
 
-  it("appends an ISBN a book announced none of", async () => {
-    const inspection = await inspect({
+  it("names the identifier whose row was deleted", async () => {
+    const patch = await patchFor([DOI], {
       "META-INF/container.xml": CONTAINER_XML,
       "OEBPS/content.opf": opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>',
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
       ),
     })
 
-    const { patch } = metadataPatch("9783161484100", inspection)
-
-    expect(patch.identifiers).toEqual([
-      {
-        scheme: "Unknown",
-        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
-        unique: true,
-      },
+    expect(patch.removedIdentifiers).toEqual([
       { scheme: "ISBN", value: "9783161484100" },
     ])
   })
 
-  it("drops only the ISBN when the field is cleared", async () => {
-    const inspection = await inspect({
+  it("names both entries the one row stood for", async () => {
+    const patch = await patchFor([], {
       "META-INF/container.xml": CONTAINER_XML,
       "OEBPS/content.opf": opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
-          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
-      ),
-    })
-
-    const { patch } = metadataPatch("", inspection)
-
-    expect(patch.identifiers).toEqual([
-      {
-        scheme: "Unknown",
-        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
-        unique: true,
-      },
-    ])
-  })
-
-  it("edits a ComicInfo GTIN as the ISBN it announces", async () => {
-    const inspection = await inspect({
-      "ComicInfo.xml": comicInfo("<GTIN>0000000000</GTIN>"),
-      "page-001.jpg": "binary",
-    })
-
-    const { patch, targets } = metadataPatch("9783161484100", inspection)
-
-    expect(patch.identifiers).toEqual([
-      { scheme: "GTIN", value: "9783161484100", unique: false },
-    ])
-    expect(targets).toEqual({ comicInfo: true, opf: false })
-  })
-})
-
-describe("buildUpdateActions, an ISBN both containers announce", () => {
-  const bothAnnounce = () =>
-    inspect({
-      "META-INF/container.xml": CONTAINER_XML,
-      "OEBPS/content.opf": opf(
-        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
-          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
       ),
       "ComicInfo.xml": comicInfo("<GTIN>9783161484100</GTIN>"),
     })
 
-  it("leaves the previous ISBN behind under no scheme", async () => {
-    const { patch } = metadataPatch("9780306406157", await bothAnnounce())
-
-    expect(patch.identifiers).toEqual([
-      {
-        scheme: "Unknown",
-        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
-        unique: true,
-      },
-      { scheme: "ISBN", value: "9780306406157", unique: false },
+    expect(patch.removedIdentifiers).toEqual([
+      { scheme: "ISBN", value: "9783161484100" },
+      { scheme: "GTIN", value: "9783161484100" },
     ])
   })
 
-  it("clears every entry announcing it", async () => {
-    const { patch } = metadataPatch("", await bothAnnounce())
+  it("names nothing for the row that stands for both", async () => {
+    const patch = await patchFor([ISBN], {
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>',
+      ),
+      "ComicInfo.xml": comicInfo("<GTIN>9783161484100</GTIN>"),
+    })
 
-    expect(patch.identifiers).toEqual([
-      {
-        scheme: "Unknown",
-        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
-        unique: true,
-      },
+    expect(patch.removedIdentifiers).toEqual([
+      { scheme: "DOI", value: "10.1000/182" },
     ])
   })
 })

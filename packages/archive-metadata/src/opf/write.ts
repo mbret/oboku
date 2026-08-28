@@ -29,6 +29,7 @@ import {
  */
 export type OpfMetadataPatch = {
   identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
+  removedIdentifiers?: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 const OPF_LABEL = "OPF"
@@ -71,7 +72,7 @@ const serializeOpfXml = (xml: string, patch: OpfMetadataPatch): string => {
     throw new Error("OPF document has no <metadata> element")
   }
 
-  reconcileIdentifiers(doc, root, metadata, patch.identifiers)
+  reconcileIdentifiers(doc, root, metadata, patch)
 
   const serialized = serializeXml(doc)
 
@@ -96,6 +97,37 @@ const listChildrenByLocalName = (
   Array.from(parent.children).filter(function matchesLocalName(child) {
     return localName(child.tagName) === name
   })
+
+/**
+ * An element's own text, excluding any nested element's — the value the parser
+ * reads, and what it decides by. `textContent` would fold descendants in, and
+ * an element the parser passed over must not look to this writer like one it
+ * reported.
+ */
+const directText = (element: XmlElement): string =>
+  Array.from(element.childNodes)
+    .filter(function isTextual(node) {
+      return (
+        node.nodeType === Node.TEXT_NODE ||
+        node.nodeType === Node.CDATA_SECTION_NODE
+      )
+    })
+    .map(function nodeText(node) {
+      return node.nodeValue ?? ""
+    })
+    .join("")
+
+/**
+ * The identifier elements the parser reports: the ones stating a value of their
+ * own. An element it passes over is named by no patch, so this writer neither
+ * removes nor reuses it — it is left exactly as the book wrote it.
+ */
+const reportedIdentifierElements = (metadata: XmlElement): XmlElement[] =>
+  listChildrenByLocalName(metadata, "identifier").filter(
+    function statesAValue(element) {
+      return directText(element).trim() !== ""
+    },
+  )
 
 const findChildByLocalName = (
   parent: XmlElement,
@@ -182,7 +214,7 @@ const elementScheme = (metadata: XmlElement, element: XmlElement): string => {
 
   switch (sink?.kind) {
     case undefined:
-      return inferIdentifierScheme(element.textContent ?? "")
+      return inferIdentifierScheme(directText(element))
     case "namespaced":
       return element.getAttributeNS(OPF_NAMESPACE, sink.localName)?.trim() ?? ""
     case "attribute":
@@ -310,14 +342,68 @@ const findUniqueIdentifierElement = (
  * it — an element may be the target of `<meta refines>` entries, and its `id`
  * has to survive an edit for those to keep resolving.
  */
+/**
+ * The element an identifier was read from: the one carrying both its scheme and
+ * its value. Matched on both because a removal names an identifier the reader
+ * reported, and nothing else should be mistaken for it.
+ */
+const findIdentifierElement = (
+  metadata: XmlElement,
+  elements: ReadonlyArray<XmlElement>,
+  { scheme, value }: ArchiveMetadataIdentifier,
+): XmlElement | undefined =>
+  elements.find(function carriesIdentifier(element) {
+    return (
+      element.textContent?.trim() === value.trim() &&
+      schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
+    )
+  })
+
+/**
+ * The elements a removal may name. The one `<package unique-identifier>` points
+ * at is left out rather than found and declined: it is never removable, and a
+ * document holding a second element of the same scheme and value would
+ * otherwise have that duplicate shadowed by it and survive.
+ */
+const removableElements = (
+  metadata: XmlElement,
+  uniqueElement: XmlElement | undefined,
+): XmlElement[] =>
+  reportedIdentifierElements(metadata).filter(function isRemovable(element) {
+    return element !== uniqueElement
+  })
+
+/**
+ * Rewrites the document's identifiers: the removals go, the patched ones are
+ * written, and every other element is left alone — including the ones the
+ * reader never reported, which no caller could have known to keep.
+ *
+ * An identifier being written reuses the existing element of its scheme rather
+ * than replacing it: that element may be the target of `<meta refines>`
+ * entries, and its `id` has to survive an edit for those to keep resolving.
+ */
 const reconcileIdentifiers = (
   doc: XmlDocument,
   root: XmlElement,
   metadata: XmlElement,
-  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>,
+  { identifiers, removedIdentifiers }: OpfMetadataPatch,
 ): void => {
-  const elements = listChildrenByLocalName(metadata, "identifier")
-  const uniqueElement = findUniqueIdentifierElement(root, elements)
+  const uniqueElement = findUniqueIdentifierElement(
+    root,
+    listChildrenByLocalName(metadata, "identifier"),
+  )
+
+  for (const identifier of removedIdentifiers ?? []) {
+    const element = findIdentifierElement(
+      metadata,
+      removableElements(metadata, uniqueElement),
+      identifier,
+    )
+
+    if (element !== undefined) removeIdentifier(metadata, element)
+  }
+
+  const remaining = reportedIdentifierElements(metadata)
   const uniqueIdentifier = identifiers.find(function isPinnedToUniqueElement({
     unique,
   }) {
@@ -330,7 +416,7 @@ const reconcileIdentifiers = (
 
   const reusable = groupBySchemeKey(
     metadata,
-    elements.filter(function isReconcilable(element) {
+    remaining.filter(function isReconcilable(element) {
       return element !== uniqueElement
     }),
   )
@@ -345,9 +431,5 @@ const reconcileIdentifiers = (
       )
 
     writeIdentifier(metadata, element, identifier)
-  }
-
-  for (const leftovers of reusable.values()) {
-    for (const element of leftovers) removeIdentifier(metadata, element)
   }
 }

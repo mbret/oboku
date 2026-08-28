@@ -119,8 +119,12 @@ export const retrieveMetadataAndSaveCover = async (
         db: ctx.db,
       })
 
-    const { isbn, ignoreMetadataFile, ignoreMetadataSources, googleVolumeId } =
-      directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
+    const {
+      isbn,
+      ignoreMetadataFile,
+      ignoreMetadataSources,
+      googleVolumeId: directiveGoogleVolumeId,
+    } = directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
     // Collapse the in-memory sentinel back to `undefined` for persistence.
     const persistedModifiedAt =
@@ -319,6 +323,10 @@ export const retrieveMetadataAndSaveCover = async (
       isbn ??
       freshFileMetadata?.isbn ??
       reusedFileMetadata?.isbn
+    const lookupGoogleVolumeId =
+      directiveGoogleVolumeId ??
+      freshFileMetadata?.googleVolumeId ??
+      reusedFileMetadata?.googleVolumeId
 
     const sourcesMetadata =
       ignoreMetadataSources || !externalFetchEnabled
@@ -329,7 +337,7 @@ export const retrieveMetadataAndSaveCover = async (
               // of a clean title; strip the extension for the lookup.
               title: lookupTitle,
               isbn: lookupIsbn,
-              googleVolumeId,
+              googleVolumeId: lookupGoogleVolumeId,
             },
             {
               googleApiKey: ctx.googleApiKey,

@@ -1,106 +1,111 @@
 // @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
+import {
+  hasWritableMetadataTarget,
+  identifierDestinations,
+  resolveMetadataTargets,
+} from "./containers"
 import { CONTAINER_XML, comicInfo, inspect, opf } from "./inspection.fixture"
-import { hasWritableMetadataTarget, resolveMetadataTargets } from "./containers"
 
-const UNPARSEABLE = "<root><child></wrong></root>"
+describe("identifierDestinations", function testIdentifierDestinations() {
+  const both = { comicInfo: true, opf: true }
+  const comicInfoOnly = { comicInfo: true }
 
-describe("resolveMetadataTargets", () => {
-  it("writes only the OPF of an EPUB carrying nothing else", async () => {
-    const inspection = await inspect({
-      "META-INF/container.xml": CONTAINER_XML,
-      "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
-    })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: false,
-      opf: true,
-    })
+  it("keeps a scheme ComicInfo cannot represent out of it", function excludeComicInfo() {
+    expect(identifierDestinations([{ scheme: "AcmeCatalog" }], both)).toEqual([
+      ["opf"],
+    ])
+    expect(
+      identifierDestinations([{ scheme: "AcmeCatalog" }], comicInfoOnly),
+    ).toEqual([[]])
   })
 
-  it("writes both when the EPUB also carries a ComicInfo", async () => {
-    const inspection = await inspect({
-      "META-INF/container.xml": CONTAINER_XML,
-      "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
-      "ComicInfo.xml": comicInfo("<Title>Sample</Title>"),
-    })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: true,
-      opf: true,
-    })
+  it("stores identifiers ComicInfo has a field for in both containers", function includeComicInfo() {
+    for (const scheme of [
+      "ISBN",
+      "GTIN",
+      "URL",
+      "GoogleBooks",
+      "ProjectGutenberg",
+      "OpenLibrary",
+      "DOI",
+    ]) {
+      expect(identifierDestinations([{ scheme }], both)).toEqual([
+        ["comicInfo", "opf"],
+      ])
+    }
   })
 
-  it("writes the ComicInfo an archive with no OPF carries", async () => {
-    const inspection = await inspect({
-      "ComicInfo.xml": comicInfo("<Title>Sample</Title>"),
-      "page-001.jpg": "binary",
-    })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: true,
-      opf: false,
-    })
+  it("gives ComicInfo's single GTIN field to the first ISBN-bearing identifier only", function shareOneGtinField() {
+    expect(
+      identifierDestinations([{ scheme: "ISBN" }, { scheme: "GTIN" }], both),
+    ).toEqual([["comicInfo", "opf"], ["opf"]])
+    expect(
+      identifierDestinations(
+        [{ scheme: "ISBN" }, { scheme: "ISBN" }],
+        comicInfoOnly,
+      ),
+    ).toEqual([["comicInfo"], []])
   })
 
-  it("creates a ComicInfo for an archive carrying no metadata at all", async () => {
-    const inspection = await inspect({ "page-001.jpg": "binary" })
+  it("lets several links share the Web field", function shareWebField() {
+    expect(
+      identifierDestinations(
+        [{ scheme: "URL" }, { scheme: "GoogleBooks" }, { scheme: "DOI" }],
+        comicInfoOnly,
+      ),
+    ).toEqual([["comicInfo"], ["comicInfo"], ["comicInfo"]])
+  })
+})
 
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: true,
-      opf: false,
-    })
+describe("resolveMetadataTargets", function testMetadataTargets() {
+  const UNPARSEABLE = "<root><child></wrong></root>"
+
+  it("writes every container the archive carries", async function targetCarried() {
+    expect(
+      resolveMetadataTargets(
+        await inspect({
+          "META-INF/container.xml": CONTAINER_XML,
+          "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
+        }),
+      ),
+    ).toEqual({ comicInfo: false, opf: true })
+
+    expect(
+      resolveMetadataTargets(
+        await inspect({
+          "META-INF/container.xml": CONTAINER_XML,
+          "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
+          "ComicInfo.xml": comicInfo("<Title>Sample</Title>"),
+        }),
+      ),
+    ).toEqual({ comicInfo: true, opf: true })
   })
 
-  it("writes nothing when the OPF cannot be read", async () => {
-    const inspection = await inspect({
+  it("creates a ComicInfo for an archive carrying no metadata", async function synthesizeComicInfo() {
+    expect(
+      resolveMetadataTargets(await inspect({ "page-001.jpg": "binary" })),
+    ).toEqual({ comicInfo: true, opf: false })
+  })
+
+  it("writes nothing when a container it carries cannot be read", async function refuseUnreadable() {
+    const brokenOpf = await inspect({
       "META-INF/container.xml": CONTAINER_XML,
       "OEBPS/content.opf": UNPARSEABLE,
-    })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: false,
-      opf: false,
-    })
-    expect(hasWritableMetadataTarget(inspection)).toBe(false)
-  })
-
-  it("writes nothing when the OPF cannot be read even alongside a ComicInfo", async () => {
-    const inspection = await inspect({
-      "META-INF/container.xml": CONTAINER_XML,
-      "OEBPS/content.opf": UNPARSEABLE,
       "ComicInfo.xml": comicInfo("<Title>Sample</Title>"),
     })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: false,
-      opf: false,
-    })
-  })
-
-  it("writes nothing when the ComicInfo cannot be read", async () => {
-    const inspection = await inspect({
-      "ComicInfo.xml": UNPARSEABLE,
-      "page-001.jpg": "binary",
-    })
-
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: false,
-      opf: false,
-    })
-    expect(hasWritableMetadataTarget(inspection)).toBe(false)
-  })
-
-  it("writes nothing when the ComicInfo cannot be read even alongside a readable OPF", async () => {
-    const inspection = await inspect({
+    const brokenComicInfo = await inspect({
       "META-INF/container.xml": CONTAINER_XML,
       "OEBPS/content.opf": opf("<dc:title>Sample</dc:title>"),
       "ComicInfo.xml": UNPARSEABLE,
     })
 
-    expect(resolveMetadataTargets(inspection)).toEqual({
-      comicInfo: false,
-      opf: false,
-    })
+    for (const inspection of [brokenOpf, brokenComicInfo]) {
+      expect(resolveMetadataTargets(inspection)).toEqual({
+        comicInfo: false,
+        opf: false,
+      })
+      expect(hasWritableMetadataTarget(inspection)).toBe(false)
+    }
   })
 })

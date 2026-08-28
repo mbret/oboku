@@ -13,6 +13,7 @@ import type { ArchiveMetadataIdentifier } from "../metadata/write"
 import { URL_IDENTIFIER_SCHEME } from "../metadata/identifiers"
 import {
   type XmlDocument,
+  type XmlElement,
   parseXml,
   serializeXml,
   upsertChildElement,
@@ -20,6 +21,7 @@ import {
 
 type ComicInfoMetadataPatch = {
   identifiers: ReadonlyArray<ArchiveMetadataIdentifier>
+  removedIdentifiers?: ReadonlyArray<ArchiveMetadataIdentifier>
 }
 
 export { PROSE_COMIC_INFO_FILENAME as COMIC_INFO_FILENAME }
@@ -80,34 +82,77 @@ const tryParseExistingComicInfo = (xml: string): XmlDocument | undefined => {
   }
 }
 
+const childText = (root: XmlElement, tagName: string): string | undefined => {
+  const text = root.getElementsByTagName(tagName)[0]?.textContent?.trim()
+
+  return text !== undefined && text !== "" ? text : undefined
+}
+
+const webUrl = (identifier: ArchiveMetadataIdentifier): string | undefined =>
+  normalizeIdentifierScheme(identifier.scheme) === URL_IDENTIFIER_SCHEME
+    ? identifier.value
+    : catalogUrlFromIdentifier(identifier)
+
+/**
+ * `<GTIN>` holds one value, so the patched ISBN takes it. With none to write,
+ * the field only clears when a removal names what it currently holds —
+ * otherwise it is left as the book had it.
+ */
 const gtinValue = (
-  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>,
-): string | undefined =>
-  identifiers.find(function isGtinBearing({ scheme }) {
+  root: XmlElement,
+  { identifiers, removedIdentifiers }: ComicInfoMetadataPatch,
+): string | undefined => {
+  const patched = identifiers.find(function isGtinBearing({ scheme }) {
     return isIsbnBearingScheme(scheme)
   })?.value
 
-const webValue = (
-  identifiers: ReadonlyArray<ArchiveMetadataIdentifier>,
-): string | undefined => {
-  const urls = identifiers.flatMap(function toWebUrl(identifier) {
-    if (
-      normalizeIdentifierScheme(identifier.scheme) === URL_IDENTIFIER_SCHEME
-    ) {
-      return [identifier.value]
-    }
+  if (patched !== undefined) return patched
 
-    const catalogUrl = catalogUrlFromIdentifier(identifier)
+  const existing = childText(root, "GTIN")
 
-    return catalogUrl === undefined ? [] : [catalogUrl]
+  return (removedIdentifiers ?? []).some(function names({ scheme, value }) {
+    return isIsbnBearingScheme(scheme) && value.trim() === existing
   })
+    ? undefined
+    : existing
+}
+
+/**
+ * `<Web>` is a space-separated list, and not every token in it is an identifier
+ * this writer can read back — the reader reports the links and drops the rest.
+ * So the field is edited rather than regenerated: what a removal names goes,
+ * the patched links are added, and every other token stays where the book put
+ * it.
+ */
+const webValue = (
+  root: XmlElement,
+  { identifiers, removedIdentifiers }: ComicInfoMetadataPatch,
+): string | undefined => {
+  const removedUrls = new Set(
+    (removedIdentifiers ?? []).flatMap(function toRemovedUrl(identifier) {
+      const url = webUrl(identifier)
+
+      return url === undefined ? [] : [url]
+    }),
+  )
+  const kept = (childText(root, "Web") ?? "")
+    .split(/\s+/)
+    .filter(function survives(token) {
+      return token !== "" && !removedUrls.has(token)
+    })
+  const patched = identifiers.flatMap(function toPatchedUrl(identifier) {
+    const url = webUrl(identifier)
+
+    return url === undefined ? [] : [url]
+  })
+  const urls = [...new Set([...kept, ...patched])]
 
   return urls.length > 0 ? urls.join(" ") : undefined
 }
 
 const serializeComicInfoXml = (
   existingXml: string | undefined | null,
-  { identifiers }: ComicInfoMetadataPatch,
+  patch: ComicInfoMetadataPatch,
 ): string => {
   const parsedExisting = existingXml
     ? tryParseExistingComicInfo(existingXml)
@@ -120,8 +165,8 @@ const serializeComicInfoXml = (
     throw new Error("ComicInfo.xml root element is not <ComicInfo>")
   }
 
-  upsertChildElement(doc, root, "GTIN", gtinValue(identifiers))
-  upsertChildElement(doc, root, "Web", webValue(identifiers))
+  upsertChildElement(doc, root, "GTIN", gtinValue(root, patch))
+  upsertChildElement(doc, root, "Web", webValue(root, patch))
 
   const serialized = serializeXml(doc)
 
