@@ -1,6 +1,7 @@
 import { defineConfig } from "vitest/config"
 import { VitePWA } from "vite-plugin-pwa"
-import react from "@vitejs/plugin-react"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
@@ -157,6 +158,7 @@ export default defineConfig(({ mode }) => ({
       }),
     }),
     react({}),
+    babel({ presets: [reactCompilerPreset()] }),
     svgr({}),
     replace({
       // fix for util/util.js

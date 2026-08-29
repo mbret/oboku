@@ -19,6 +19,10 @@ export const TagsSelectionDialog = ({
   title?: string
   hasBackNavigation?: boolean
 } & Omit<ComponentProps<typeof SelectableTagList>, "selected">) => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const selectedData = useMemo(
     () =>
       data?.reduce(

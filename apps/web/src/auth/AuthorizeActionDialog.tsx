@@ -86,6 +86,10 @@ export function useWithAuthorization() {
 }
 
 export const AuthorizeActionDialog = () => {
+  // Reassigns module-scope state from inside the component.
+  // TODO: move that state out of module scope, then drop this opt-out.
+  "use no memo"
+
   const { action, onCancel = () => {} } = useSignalValue(actionSignal) ?? {}
   const open = !!action
   const { control, handleSubmit, setFocus, setError, reset } = useForm<Inputs>({
