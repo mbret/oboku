@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { from, of, switchMap, tap } from "rxjs"
+import { firstValueFrom, from, of, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "src/config/AppConfigService"
 import fs from "node:fs"
@@ -9,6 +9,8 @@ import { CoversS3Service } from "./covers-s3.service"
 
 const logger = new Logger("CoversService")
 
+const WEBP_MIME_TYPE = "image/webp"
+
 export type StoredCover = {
   key: string
   sizeInBytes: number
@@ -17,6 +19,8 @@ export type StoredCover = {
 
 @Injectable()
 export class CoversService {
+  private deliverablePlaceholders = new Map<string, Promise<Buffer>>()
+
   constructor(
     public appConfig: AppConfigService,
     private fsService: CoversFsService,
@@ -29,20 +33,70 @@ export class CoversService {
       : this.fsService
   }
 
-  private getCoverPlaceholder() {
-    return fs.promises.readFile(
-      path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"),
+  private getDeliverablePlaceholder(format: string) {
+    const alreadyEncoded = this.deliverablePlaceholders.get(format)
+
+    if (alreadyEncoded) return alreadyEncoded
+
+    const encoding = fs.promises
+      .readFile(path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"))
+      .then((placeholder) =>
+        firstValueFrom(
+          this.resizeCover(placeholder, {
+            ...this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY,
+            format,
+          }),
+        ),
+      )
+      .catch((error) => {
+        this.deliverablePlaceholders.delete(format)
+
+        throw error
+      })
+
+    this.deliverablePlaceholders.set(format, encoding)
+
+    return encoding
+  }
+
+  private async isDeliverableAsIs(
+    cover: Uint8Array<ArrayBufferLike>,
+    format: string,
+  ) {
+    if (format !== WEBP_MIME_TYPE) return false
+
+    const maximumSize = this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY
+    const metadata = await sharp(cover).metadata()
+
+    return (
+      metadata.format === "webp" &&
+      metadata.width <= maximumSize.width &&
+      metadata.height <= maximumSize.height
     )
   }
 
-  getCover(id: string) {
+  /**
+   * Cover bytes ready to be sent as `format`. Stored covers are already webp
+   * and capped at `COVERS_MAXIMUM_SIZE_FOR_STORAGE`, so they are delivered as
+   * they are and only a format or size mismatch pays for a re-encode.
+   */
+  getCoverForDelivery(id: string, format?: string) {
+    const resolvedFormat = format || WEBP_MIME_TYPE
+
     return from(this.backend.getCover(id)).pipe(
       switchMap((cover) => {
-        if (cover) {
-          return of(cover)
-        }
+        if (!cover) return from(this.getDeliverablePlaceholder(resolvedFormat))
 
-        return from(this.getCoverPlaceholder())
+        return from(this.isDeliverableAsIs(cover, resolvedFormat)).pipe(
+          switchMap((deliverableAsIs) =>
+            deliverableAsIs
+              ? of(cover)
+              : this.resizeCover(cover, {
+                  ...this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY,
+                  format: resolvedFormat,
+                }),
+          ),
+        )
       }),
     )
   }
