@@ -2,13 +2,12 @@ import {
   Controller,
   Get,
   Header,
-  NotFoundException,
   OnModuleInit,
   Param,
   Query,
   StreamableFile,
 } from "@nestjs/common"
-import { defer, map, mergeMap, type Observable } from "rxjs"
+import { defer, map, type Observable } from "rxjs"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
 import { CoversService } from "./covers.service"
 import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
@@ -69,31 +68,15 @@ export class CoversController implements OnModuleInit {
     objectKey: string,
     format?: string,
   ): Observable<StreamableFile> {
-    const resolvedFormat = format || "image/webp"
-
     const response$ = defer(() =>
-      this.coversService.getCover(objectKey).pipe(
-        mergeMap((cover) => {
-          if (!cover) {
-            throw new NotFoundException()
-          }
-
-          const resizedCover$ = this.coversService.resizeCover(cover, {
-            width: 600,
-            height: 600,
-            format: resolvedFormat,
-          })
-
-          return resizedCover$.pipe(
-            map(
-              (buffer) =>
-                new StreamableFile(buffer, {
-                  disposition: `inline`,
-                  type: "image/webp",
-                }),
-            ),
-          )
-        }),
+      this.coversService.getCoverForDelivery(objectKey, format).pipe(
+        map(
+          (cover) =>
+            new StreamableFile(cover, {
+              disposition: `inline`,
+              type: "image/webp",
+            }),
+        ),
       ),
     )
 

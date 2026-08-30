@@ -112,6 +112,10 @@ export class AppConfigService {
     return { width: 400, height: 600 }
   }
 
+  get COVERS_MAXIMUM_SIZE_FOR_DELIVERY() {
+    return { width: 600, height: 600 }
+  }
+
   get COVERS_CLEANUP_GRACE_PERIOD_MS() {
     // Keep dangling covers for 2 days before deleting them.
     return 2 * 24 * 60 * 60 * 1000
