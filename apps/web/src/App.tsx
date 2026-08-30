@@ -24,6 +24,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { SplashScreen } from "./common/SplashScreen"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
@@ -64,7 +65,10 @@ const App = memo(() => {
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
-    isDownloadsHydrated && isAuthHydrated && !isPreloadingQueries
+    !isHydratingProfile &&
+    isDownloadsHydrated &&
+    isAuthHydrated &&
+    !isPreloadingQueries
 
   return (
     <DialogProvider>
@@ -97,6 +101,7 @@ const App = memo(() => {
           </Box>
         </Fade>
       )}
+      <SplashScreen show={!isAppReady} />
       <UpdateAvailableDialog serviceWorker={waitingWorker} />
       <ServiceWorkerBackgroundTasks />
       <PreloadQueries
