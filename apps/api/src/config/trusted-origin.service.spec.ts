@@ -38,6 +38,29 @@ describe("TrustedOriginsService", () => {
     expect(service.isTrusted("https://admin.example.org:444")).toBe(false)
   })
 
+  it("matches configured origins written with a trailing slash or a path", () => {
+    const service = createService({
+      extraOrigins: [
+        "https://admin.example.org/",
+        "https://other.example.org/admin",
+      ],
+    })
+
+    expect(service.isTrusted("https://admin.example.org")).toBe(true)
+    expect(service.isTrusted("https://other.example.org")).toBe(true)
+  })
+
+  it("ignores configured entries that are not URLs", () => {
+    const service = createService({
+      extraOrigins: ["admin.example.org", "https://admin.example.org"],
+    })
+
+    expect(service.isTrusted("https://admin.example.org")).toBe(true)
+    expect(service.trustedOriginsDescription).toBe(
+      "any port on oboku.example.com, https://admin.example.org",
+    )
+  })
+
   it("describes the effective policy for bootstrap logging", () => {
     const service = createService({
       extraOrigins: ["https://admin.example.org"],
