@@ -5,10 +5,10 @@ import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
 import { readFileSync } from "node:fs"
-import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared"
+import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared.ts"
 
 const productVersion = JSON.parse(
-  readFileSync(path.resolve(__dirname, "../../package.json"), "utf8"),
+  readFileSync(path.resolve(import.meta.dirname, "../../package.json"), "utf8"),
 ).version
 
 const commitSha = [
@@ -126,7 +126,7 @@ export default defineConfig(({ mode }) => ({
      */
     conditions: ["source", "module", "browser", "development|production"],
     alias: {
-      stream: path.resolve(__dirname, "./stream-shim.js"),
+      stream: path.resolve(import.meta.dirname, "./stream-shim.js"),
     },
   },
   plugins: [

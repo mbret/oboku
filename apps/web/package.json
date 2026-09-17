@@ -1,6 +1,7 @@
 {
   "name": "@oboku/web",
   "private": true,
+  "type": "module",
   "engines": {
     "node": ">=24"
   },
