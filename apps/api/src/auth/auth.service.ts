@@ -229,7 +229,7 @@ export class AuthService {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })
-      await this.ensureUserDbIndexesWithoutBlockingSignIn(adminNano, dbName)
+      void this.ensureUserDbIndexesInBackground(adminNano, dbName)
     }
 
     const { accessToken, refreshToken, sessionId } = await this.generateTokens({
@@ -252,11 +252,11 @@ export class AuthService {
   }
 
   /**
-   * Indexes only make queries faster, so a failure to create them must not
-   * block the sign-up. The startup pass in `UserDbIndexesService` retries on
-   * the next deploy.
+   * Never awaited: indexes only make queries faster, so neither their retries
+   * nor a failure may delay the sign-up. The startup pass in
+   * `UserDbIndexesService` retries on the next deploy.
    */
-  private async ensureUserDbIndexesWithoutBlockingSignIn(
+  private async ensureUserDbIndexesInBackground(
     adminNano: createNano.ServerScope,
     dbName: string,
   ) {

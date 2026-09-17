@@ -42,14 +42,14 @@ export const ensureUserDbIndexes = async (
   const result: EnsureUserDbIndexesResult = { created: [], existing: [] }
 
   for (const index of USER_DB_INDEXES) {
-    const response = await retryFn(() =>
-      db.createIndex({
+    const response = await retryFn(function createIndexOnce() {
+      return db.createIndex({
         index: { fields: [...index.fields] },
         name: index.name,
         ddoc: toDesignDocName(index.name),
         type: "json",
-      }),
-    )
+      })
+    })
 
     if (response.result === "created") {
       result.created.push(index.name)
