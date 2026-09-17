@@ -21,6 +21,14 @@ export class TrustedOriginsService {
     this.appHostname = parseUrl(this.appConfigService.APP_PUBLIC_URL)?.hostname
   }
 
+  get trustedOriginsDescription(): string {
+    const appHostnameRule = this.appHostname
+      ? [`any port on ${this.appHostname}`]
+      : []
+
+    return [...appHostnameRule, ...this.trustedOrigins].join(", ")
+  }
+
   isTrusted(origin: string | undefined): boolean {
     if (!origin) return false
 

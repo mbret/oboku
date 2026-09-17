@@ -30,6 +30,10 @@ async function bootstrap() {
 
   const trustedOriginsService = app.get(TrustedOriginsService)
 
+  logger.log(
+    `Trusted browser origins: ${trustedOriginsService.trustedOriginsDescription}`,
+  )
+
   // Cookie parsing must precede the proxy mounts so both the raw proxy
   // middlewares and the Nest guard see `req.cookies` (it never reads the
   // body, so mounting it before the body parsers is safe).

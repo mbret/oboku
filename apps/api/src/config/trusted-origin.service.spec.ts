@@ -38,6 +38,16 @@ describe("TrustedOriginsService", () => {
     expect(service.isTrusted("https://admin.example.org:444")).toBe(false)
   })
 
+  it("describes the effective policy for bootstrap logging", () => {
+    const service = createService({
+      extraOrigins: ["https://admin.example.org"],
+    })
+
+    expect(service.trustedOriginsDescription).toBe(
+      "any port on oboku.example.com, https://admin.example.org",
+    )
+  })
+
   it("rejects missing or malformed origins", () => {
     const service = createService()
 
