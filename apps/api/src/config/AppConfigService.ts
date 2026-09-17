@@ -112,6 +112,10 @@ export class AppConfigService {
     return { width: 400, height: 600 }
   }
 
+  get COVERS_MAXIMUM_SIZE_FOR_DELIVERY() {
+    return { width: 600, height: 600 }
+  }
+
   get COVERS_CLEANUP_GRACE_PERIOD_MS() {
     // Keep dangling covers for 2 days before deleting them.
     return 2 * 24 * 60 * 60 * 1000
@@ -179,6 +183,28 @@ export class AppConfigService {
 
   get EMAIL_SMTP_MAX_SEND_RATE() {
     return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
+  }
+
+  /**
+   * ------------------------------------------------------------
+   * QUEUES
+   * ------------------------------------------------------------
+   */
+
+  get QUEUE_COVERS_DELIVERY_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT() {
+    return 3
   }
 
   /**
