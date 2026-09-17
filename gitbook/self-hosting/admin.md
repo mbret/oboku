@@ -2,6 +2,16 @@
 
 The admin panel is available by default at port `3003` . You have to setup a login and password to be able to sign in. This is not a user credential and is specific to the admin. Visit the [configuration](configuration/ "mention") section to setup your credentials.
 
+## Hosting the panel on its own hostname
+
+The API only answers browser requests coming from an origin it trusts: any port on `APP_PUBLIC_URL`'s hostname, plus whatever `API_CORS_TRUSTED_ORIGINS` lists. Serving the panel on a different hostname than the web app (`admin.example.org` next to `app.example.org`) therefore requires adding its origin explicitly:
+
+```
+API_CORS_TRUSTED_ORIGINS=https://admin.example.org
+```
+
+Without it the browser blocks every call the panel makes with a CORS error, and the API answers the preflight with a `404` instead of the expected headers. The origins the API trusts are printed on start-up (`Trusted browser origins: ...`), so compare that line with the origin in the browser error. The default port-`3003` setup shares the web app's hostname and needs no extra configuration.
+
 ## User account creation
 
 Visit the [user-accounts.md](user-accounts.md "mention") section
