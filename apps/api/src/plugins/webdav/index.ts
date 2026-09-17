@@ -131,6 +131,21 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       })),
     }
   },
+  getDownloadTargetUrl: async (link, db) => {
+    const connectorId = link.data.connectorId
+
+    if (!connectorId || !db) {
+      throw new Error("WebDAV connector is required")
+    }
+
+    const connector = await getConnectorById(db, connectorId, "webdav")
+
+    if (!connector) {
+      throw new Error("WebDAV connector not found")
+    }
+
+    return connector.url
+  },
   getFileMetadata: async ({ link, providerCredentials, db }) => {
     const { client, filePath } = await resolveClientAndPath({
       link,

@@ -24,6 +24,7 @@ const createHttpClientApiStub = (
 const baseServerConfig: GetWebConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",
   FEATURE_SERVER_SYNC_ENABLED: false,
+  FEATURE_DOWNLOAD_PROXY_ENABLED: false,
   SHOW_DISABLED_PLUGINS: false,
 }
 

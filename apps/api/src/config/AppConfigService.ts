@@ -15,6 +15,17 @@ export class AppConfigService {
     return this.config.getOrThrow("COUCH_DB_URL", { infer: true })
   }
 
+  get DOWNLOAD_PROXY_ENABLED(): boolean {
+    return this.config.get("DOWNLOAD_PROXY_ENABLED", { infer: true }) === "true"
+  }
+
+  get DOWNLOAD_PROXY_MAX_SIZE_BYTES(): number {
+    return (
+      this.config.get("DOWNLOAD_PROXY_MAX_SIZE_BYTES", { infer: true }) ??
+      2 * 1024 * 1024 * 1024
+    )
+  }
+
   get GOOGLE_CLIENT_ID(): string | undefined {
     return this.config.get("GOOGLE_CLIENT_ID", { infer: true })
   }

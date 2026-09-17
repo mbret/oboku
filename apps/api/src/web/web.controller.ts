@@ -26,6 +26,8 @@ export class WebController {
         config.microsoftApplicationAuthority ||
         DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
       FEATURE_SERVER_SYNC_ENABLED: config.serverSync.enabled,
+      FEATURE_DOWNLOAD_PROXY_ENABLED:
+        this.appConfigService.DOWNLOAD_PROXY_ENABLED,
       SHOW_DISABLED_PLUGINS: config.showDisabledPlugins,
     }
   }

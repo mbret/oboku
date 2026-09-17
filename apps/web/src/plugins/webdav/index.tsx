@@ -7,6 +7,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
+import { useDownloadCredentials } from "./useDownloadCredentials"
 import { UploadBook } from "./UploadBook"
 import { useFilePathLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { SvgIcon } from "@mui/material"
@@ -29,6 +30,8 @@ const plugin: ObokuPlugin<"webdav"> = {
   name: "WebDAV",
   canRemoveResource: false,
   canSynchronize: true,
+  canProxyDownload: true,
+  useDownloadCredentials,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
   DataSourceCreateForm: (props) => (

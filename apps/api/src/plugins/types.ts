@@ -173,6 +173,19 @@ export type DataSourcePlugin<
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
   }>
+  /**
+   * Absolute url the server will connect to when downloading this link.
+   *
+   * Implementing it declares the provider downloadable through the download
+   * proxy: the proxy needs the target up front to apply the instance's
+   * private-network policy before any request is made. Providers reached
+   * through a vendor SDK (Drive, Dropbox, OneDrive) or not over the network
+   * at all (file, server) leave it undefined and are never proxied.
+   */
+  getDownloadTargetUrl?: (
+    link: LinkDocTypeForProvider<TProvider>,
+    db?: createNano.DocumentScope<unknown>,
+  ) => Promise<string>
   /** Find all links that match this item (same resource). Caller cleans/merges and uses one. */
   getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
   /** Find all collections that match this item (same resource / link data). Caller picks one or creates. */

@@ -15,6 +15,7 @@ export const getWebConfigResponseSchema = z.object({
   MICROSOFT_APPLICATION_CLIENT_ID: z.string().optional(),
   MICROSOFT_APPLICATION_AUTHORITY: z.string(),
   FEATURE_SERVER_SYNC_ENABLED: z.boolean(),
+  FEATURE_DOWNLOAD_PROXY_ENABLED: z.boolean(),
   SHOW_DISABLED_PLUGINS: z.boolean(),
 })
 
