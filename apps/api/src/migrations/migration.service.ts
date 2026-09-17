@@ -5,8 +5,8 @@ import { Repository } from "typeorm"
 import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
 import { CouchService } from "src/couch/couch.service"
 import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "./tolerateMissingUserDb"
-import { ensureUserDbIndexes } from "src/lib/couch/userDbIndexes"
+import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
+import { UserDbIndexesService } from "src/couch/user-db-indexes.service"
 import { CoversService } from "src/covers/covers.service"
 import {
   CopyObjectCommand,
@@ -239,6 +239,7 @@ export class MigrationService {
   constructor(
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
+    private readonly userDbIndexesService: UserDbIndexesService,
     @InjectRepository(RefreshTokenPostgresEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
@@ -278,56 +279,13 @@ export class MigrationService {
     return { updated }
   }
 
-  async ensureUserDbIndexes(): Promise<{
-    ranOnUsers: number
-    indexesCreated: number
-    indexesExisting: number
-  }> {
-    /**
-     * Migration: create the Mango indexes on every existing user database.
-     *
-     * Why this exists:
-     * - New indexes are created at sign-in, so a user whose session outlives
-     *   the deploy that introduced them keeps querying an unindexed database
-     *   until they sign in again.
-     *
-     * Idempotency:
-     * - Safe to run more than once. CouchDB reports an index that already
-     *   exists with the same definition as `exists` and creates nothing.
-     */
-    const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
-
-    logger.log(`Ensuring indexes on ${userDbs.length} user databases`)
-
-    let ranOnUsers = 0
-    let indexesCreated = 0
-    let indexesExisting = 0
-
-    for (let i = 0; i < userDbs.length; i++) {
-      const userEntry = userDbs[i]
-      if (!userEntry) continue
-      const { dbName: userDbName, email } = userEntry
-      const progress = `[${i + 1}/${userDbs.length}]`
-
-      await tolerateMissingUserDb(email, async () => {
-        const result = await ensureUserDbIndexes(db.use(userDbName))
-
-        ranOnUsers++
-        indexesCreated += result.created.length
-        indexesExisting += result.existing.length
-
-        logger.log(
-          `${progress} ${email}: ${result.created.length} index(es) created, ${result.existing.length} already present`,
-        )
-      })
-    }
-
-    logger.log(
-      `Ensured user db indexes: ${ranOnUsers} users, ${indexesCreated} created, ${indexesExisting} already present`,
-    )
-
-    return { ranOnUsers, indexesCreated, indexesExisting }
+  /**
+   * Same pass the API runs at startup, exposed so an admin can re-run it on
+   * demand. Idempotent: CouchDB reports an index that already exists with the
+   * same definition as `exists` and creates nothing.
+   */
+  ensureUserDbIndexes() {
+    return this.userDbIndexesService.ensureOnAllUserDatabases()
   }
 
   async migrateWebdavConnectorsToConnectors(): Promise<{

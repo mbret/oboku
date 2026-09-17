@@ -1,16 +1,13 @@
 import { Test, type TestingModule } from "@nestjs/testing"
-import { getRepositoryToken } from "@nestjs/typeorm"
-import { CouchService } from "src/couch/couch.service"
-import { CoversService } from "src/covers/covers.service"
-import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
 import { USER_DB_INDEXES } from "src/lib/couch/userDbIndexes"
-import { MigrationService } from "./migration.service"
+import { CouchService } from "./couch.service"
+import { UserDbIndexesService } from "./user-db-indexes.service"
 
 const emailToDbName = (email: string) =>
   `userdb-${Buffer.from(email).toString("hex")}`
 
-describe("MigrationService.ensureUserDbIndexes", () => {
-  let service: MigrationService
+describe("UserDbIndexesService", () => {
+  let service: UserDbIndexesService
   let createIndex: jest.Mock
   let listDatabases: jest.Mock
   let findUsers: jest.Mock
@@ -29,22 +26,17 @@ describe("MigrationService.ensureUserDbIndexes", () => {
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
-        MigrationService,
+        UserDbIndexesService,
         {
           provide: CouchService,
           useValue: {
             createAdminNanoInstance: jest.fn().mockResolvedValue(adminNano),
           },
         },
-        { provide: CoversService, useValue: {} },
-        {
-          provide: getRepositoryToken(RefreshTokenPostgresEntity),
-          useValue: {},
-        },
       ],
     }).compile()
 
-    service = module.get(MigrationService)
+    service = module.get(UserDbIndexesService)
   })
 
   it("creates the indexes on every user database that exists", async () => {
@@ -61,7 +53,7 @@ describe("MigrationService.ensureUserDbIndexes", () => {
       name,
     }))
 
-    const result = await service.ensureUserDbIndexes()
+    const result = await service.ensureOnAllUserDatabases()
 
     expect(createIndex).toHaveBeenCalledTimes(USER_DB_INDEXES.length * 2)
     expect(result).toEqual({
@@ -69,6 +61,13 @@ describe("MigrationService.ensureUserDbIndexes", () => {
       indexesCreated: (USER_DB_INDEXES.length - 1) * 2,
       indexesExisting: 2,
     })
+  })
+
+  it("does not let a failing startup pass crash the application", async () => {
+    findUsers.mockRejectedValue(new Error("couch is down"))
+
+    expect(() => service.onApplicationBootstrap()).not.toThrow()
+    await new Promise(process.nextTick)
   })
 
   it("skips a user whose database vanished after discovery", async () => {
@@ -91,7 +90,7 @@ describe("MigrationService.ensureUserDbIndexes", () => {
       return { result: "created", id: `_design/${ddoc}`, name: ddoc }
     })
 
-    const result = await service.ensureUserDbIndexes()
+    const result = await service.ensureOnAllUserDatabases()
 
     expect(result).toEqual({
       ranOnUsers: 1,

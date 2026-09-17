@@ -3,8 +3,7 @@ import { Logger } from "@nestjs/common"
 const logger = new Logger("tolerateMissingUserDb")
 
 /**
- * Per-user-DB defensive wrapper for migration loops that iterate over
- * `_users`.
+ * Per-user-DB defensive wrapper for loops that iterate over `_users`.
  *
  * Why this exists:
  * - `_users` can contain entries whose corresponding `userdb-*` database has
@@ -13,10 +12,6 @@ const logger = new Logger("tolerateMissingUserDb")
  * - `listUserDatabases()` already filters known orphans at discovery time,
  *   but a per-user database can still be deleted between discovery and
  *   iteration. This wrapper closes that race.
- *
- * Lives under `migrations/` because migrations are currently the only
- * caller. Promote to a shared location only when a second concern needs the
- * same behavior.
  *
  * Only the very specific CouchDB "Database does not exist." 404 is
  * swallowed. Any other failure (missing index, auth error, malformed

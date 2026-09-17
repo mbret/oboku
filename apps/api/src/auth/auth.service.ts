@@ -229,9 +229,8 @@ export class AuthService {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })
+      await this.ensureUserDbIndexesWithoutBlockingSignIn(adminNano, dbName)
     }
-
-    await this.ensureUserDbIndexesWithoutBlockingSignIn(adminNano, dbName)
 
     const { accessToken, refreshToken, sessionId } = await this.generateTokens({
       email: couchUser.email,
@@ -254,7 +253,8 @@ export class AuthService {
 
   /**
    * Indexes only make queries faster, so a failure to create them must not
-   * lock the user out.
+   * block the sign-up. The startup pass in `UserDbIndexesService` retries on
+   * the next deploy.
    */
   private async ensureUserDbIndexesWithoutBlockingSignIn(
     adminNano: createNano.ServerScope,
