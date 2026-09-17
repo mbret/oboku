@@ -9,7 +9,6 @@ import type { ReactNode } from "react"
 
 export {
   type BookMetadataSource,
-  BOOK_METADATA_SOURCES,
   getOrderedBookMetadataSources,
   isBookMetadataSource,
 } from "@oboku/shared"

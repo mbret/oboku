@@ -105,18 +105,6 @@ export type GetCollectionCandidatesForItem<
   ctx: SyncContext<TProvider>,
 ) => Promise<{ collections: CollectionCandidate[] }>
 
-/**
- * Params shape for the service's public API only. Callers pass this to
- * PluginsService.getFolderMetadata / getFileMetadata. The service narrows by
- * link.type and calls the plugin with strongly-typed per-provider params.
- * Plugins never see this type; they receive only their provider's types.
- */
-export type PluginFacadeParams = {
-  link: Pick<LinkDocType, "type" | "data">
-  providerCredentials?: ProviderApiCredentials<DataSourceType>
-  db?: createNano.DocumentScope<unknown>
-}
-
 /** Per-provider params for getFolderMetadata / getFileMetadata. */
 export type PluginMetadataParams<T extends DataSourceType = DataSourceType> = {
   link: LinkWithCredentials<T>
