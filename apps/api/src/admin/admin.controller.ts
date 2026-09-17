@@ -130,6 +130,15 @@ class UpdateInstanceSettingsDto {
   @IsOptional()
   fileDownloadMaxSizeBytes?: number
 
+  @IsBoolean()
+  @IsOptional()
+  downloadProxyEnabled?: boolean
+
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  downloadProxyMaxSizeBytes?: number
+
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
   @IsString()
@@ -378,6 +387,8 @@ export class AdminController {
     return {
       showDisabledPlugins: config.showDisabledPlugins,
       fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
+      downloadProxyEnabled: config.downloadProxyEnabled,
+      downloadProxyMaxSizeBytes: config.downloadProxyMaxSizeBytes,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }

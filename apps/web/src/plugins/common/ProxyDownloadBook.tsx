@@ -1,3 +1,4 @@
+import { resolveDownloadFileName } from "@oboku/shared"
 import { memo } from "react"
 import { useMutation$ } from "reactjrx"
 import {
@@ -59,7 +60,6 @@ const readBodyWithProgress = async (
 }
 
 type ProxyDownloadBookProps = DownloadBookComponentProps & {
-  fileName: string
   useDownloadCredentials: UseDownloadCredentialsHook
 }
 
@@ -74,11 +74,12 @@ export const ProxyDownloadBook = memo(function ProxyDownloadBook({
   onError,
   onResolve,
   signal,
-  fileName,
   useDownloadCredentials,
 }: ProxyDownloadBookProps) {
   const httpClientApi = useHttpClientApi()
-  const { mutateAsync: resolveCredentials } = useDownloadCredentials()
+  const { mutateAsync: resolveCredentials } = useDownloadCredentials({
+    meta: { suppressGlobalErrorToast: true },
+  })
 
   const { mutate: download } = useMutation$({
     mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
@@ -106,7 +107,11 @@ export const ProxyDownloadBook = memo(function ProxyDownloadBook({
             onDownloadProgress,
             abortController.signal,
           ),
-          fileName,
+          fileName:
+            resolveDownloadFileName({
+              contentDisposition:
+                response.headers.get("content-disposition") ?? undefined,
+            }) || link._id,
         }
       }
 

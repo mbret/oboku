@@ -35,9 +35,13 @@ export type InstanceConfig = {
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
   fileDownloadMaxSizeBytes: number
+  downloadProxyEnabled: boolean
+  downloadProxyMaxSizeBytes: number
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
+
+export const DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES = 2 * 1024 * 1024 * 1024
 
 const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
@@ -46,6 +50,8 @@ const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
   fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  downloadProxyEnabled: false,
+  downloadProxyMaxSizeBytes: DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -80,6 +86,11 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     .integer()
     .min(1)
     .default(DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES),
+  downloadProxyEnabled: Joi.boolean().default(false),
+  downloadProxyMaxSizeBytes: Joi.number()
+    .integer()
+    .min(1)
+    .default(DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {

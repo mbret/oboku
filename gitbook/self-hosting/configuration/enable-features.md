@@ -67,24 +67,16 @@ oboku normally downloads a book straight from the provider to your browser. Brow
 
 With the proxy enabled, the API fetches the file and streams it to the app instead, so no CORS header is needed. It applies to the providers reached over plain HTTP(S): URI, WebDAV and Synology Drive.
 
-```
-DOWNLOAD_PROXY_ENABLED=true
-```
-
-Book files then travel through your instance, so it pays that bandwidth. The default is off for that reason.
+Turn it on from the admin panel, under Downloads. Book files then travel through your instance, so it pays that bandwidth — which is why it is off by default. The same section caps what a single download may stream.
 
 {% hint style="warning" %}
-The proxy makes your instance fetch a url the user controls. Targets that resolve outside public address space are refused, so a link cannot be pointed at your own network. If your providers live on a LAN or on localhost, allow them explicitly:
+The proxy makes your instance fetch a url the user controls. Targets that resolve outside public address space are refused, so a link cannot be pointed at your own network.
+
+If your providers live on a LAN or on localhost, allow them explicitly:
 
 ```
 DOWNLOAD_ALLOW_PRIVATE_NETWORK=true
 ```
 
-Only set it on an instance whose users you trust, since it also lets them reach anything else your instance can reach.
+This one is an environment variable rather than an admin setting on purpose: it widens what your instance can reach, so it should be a deploy-time decision and not something flippable from a web session. Only set it on an instance whose users you trust, since it also lets them reach anything else your instance can reach.
 {% endhint %}
-
-Optionally cap what a single download may stream (defaults to 2GB):
-
-```
-DOWNLOAD_PROXY_MAX_SIZE_BYTES=2147483648
-```

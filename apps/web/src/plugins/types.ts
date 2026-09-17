@@ -103,7 +103,7 @@ export type UseDownloadCredentialsVariables<
  */
 export type UseDownloadCredentialsHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = () => UseMutationResult<
+> = (options?: Pick<UseMutationOptions, "meta">) => UseMutationResult<
   {
     providerCredentials: ProviderApiCredentials<T>
   },

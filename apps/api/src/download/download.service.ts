@@ -1,6 +1,6 @@
 import { Injectable, Logger } from "@nestjs/common"
 import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
-import { AppConfigService } from "src/config/AppConfigService"
+import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 import { CouchService } from "src/couch/couch.service"
 import { findOne } from "src/lib/couch/findOne"
 import {
@@ -28,12 +28,14 @@ export class LinkNotFoundError extends Error {
   }
 }
 
+const DEFAULT_CONTENT_TYPE = "application/octet-stream"
+
 @Injectable()
 export class DownloadService {
   private logger = new Logger(DownloadService.name)
 
   constructor(
-    private readonly appConfigService: AppConfigService,
+    private readonly instanceConfigService: InstanceConfigService,
     private readonly couchService: CouchService,
     private readonly pluginsService: PluginsService,
   ) {}
@@ -47,7 +49,10 @@ export class DownloadService {
     providerCredentials: ProviderApiCredentials<DataSourceType>
     email: string
   }) {
-    if (!this.appConfigService.DOWNLOAD_PROXY_ENABLED) {
+    const { downloadProxyEnabled, downloadProxyMaxSizeBytes } =
+      this.instanceConfigService.getConfig().value
+
+    if (!downloadProxyEnabled) {
       throw new DownloadProxyDisabledError()
     }
 
@@ -75,6 +80,18 @@ export class DownloadService {
       allowPrivateNetwork: isPrivateNetworkAllowed(),
     })
 
+    /**
+     * The provider's own name and content type are fetched before streaming
+     * because the reader classifies an archive by extension or mime type, and
+     * link data alone does not carry either for providers whose identity is an
+     * opaque id (Synology Drive, Google Drive).
+     */
+    const metadata = await this.pluginsService.getFileMetadata({
+      link,
+      providerCredentials,
+      db,
+    })
+
     this.logger.log(`Proxying download of link ${linkId} (${link.type})`)
 
     const { stream } = await this.pluginsService.download({
@@ -83,6 +100,17 @@ export class DownloadService {
       db,
     })
 
-    return { stream, link }
+    const reportedSize = Number(metadata.bookMetadata?.size)
+
+    return {
+      stream,
+      maxSizeBytes: downloadProxyMaxSizeBytes,
+      fileName: metadata.name,
+      contentType:
+        metadata.contentType ??
+        metadata.bookMetadata?.contentType ??
+        DEFAULT_CONTENT_TYPE,
+      sizeBytes: Number.isFinite(reportedSize) ? reportedSize : undefined,
+    }
   }
 }

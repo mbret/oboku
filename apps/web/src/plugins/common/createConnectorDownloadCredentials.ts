@@ -1,17 +1,19 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import type { SettingsConnectorType } from "@oboku/shared"
-import { useMutation } from "@tanstack/react-query"
+import { type UseMutationOptions, useMutation } from "@tanstack/react-query"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 import type { UseDownloadCredentialsVariables } from "../types"
 
 export const createConnectorDownloadCredentials =
   <T extends SettingsConnectorType>(type: T) =>
-  () => {
-    const { mutateAsync: extractConnectorData } = useExtractConnectorData({
-      type,
-    })
+  ({ meta }: Pick<UseMutationOptions, "meta"> = {}) => {
+    const { mutateAsync: extractConnectorData } = useExtractConnectorData(
+      { type },
+      { meta },
+    )
 
     return useMutation({
+      meta,
       mutationFn: async ({ linkData }: UseDownloadCredentialsVariables<T>) => {
         /**
          * Every connector provider carries an optional connectorId on its link

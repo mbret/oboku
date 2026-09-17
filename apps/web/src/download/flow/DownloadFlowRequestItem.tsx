@@ -4,7 +4,6 @@ import { firstValueFrom } from "rxjs"
 import { pluginsByType } from "../../plugins/configure"
 import { ProxyDownloadBook } from "../../plugins/common/ProxyDownloadBook"
 import { useConfig } from "../../config/useConfig"
-import { resolveProxyDownloadFileName } from "./resolveProxyDownloadFileName"
 import type { DownloadBookResult } from "../../plugins/types"
 import { CancelError, ERROR_NO_LINK_MESSAGE } from "../../errors/errors.shared"
 import { latestDatabase$ } from "../../rxdb/RxDbProvider"
@@ -223,7 +222,6 @@ export const DownloadFlowRequestItem = memo(
         <ProxyDownloadBook
           {...downloadProps}
           link={link}
-          fileName={resolveProxyDownloadFileName(link)}
           useDownloadCredentials={plugin.useDownloadCredentials}
         />
       )

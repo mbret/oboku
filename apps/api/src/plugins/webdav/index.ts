@@ -4,7 +4,8 @@
 import type { DataSourcePlugin } from "src/plugins/types"
 import { type WebDAVDataSourceDocType } from "@oboku/shared"
 import { getDataSourceData } from "../helpers"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { createGuardedAgents } from "src/lib/http/httpsAgent"
+import { isPrivateNetworkAllowed } from "src/lib/http/requestTarget"
 import { getConnectorById } from "src/lib/connectors/connectorHelpers"
 import {
   getWebdavModule,
@@ -57,7 +58,10 @@ const createWebdavClient = async (connector: {
   return webdav.createClient(connector.url, {
     username: connector.username,
     password: connector.password,
-    httpsAgent: getHttpsAgent(connector.allowSelfSigned),
+    ...createGuardedAgents({
+      allowSelfSigned: connector.allowSelfSigned,
+      allowPrivateNetwork: isPrivateNetworkAllowed(),
+    }),
   })
 }
 
