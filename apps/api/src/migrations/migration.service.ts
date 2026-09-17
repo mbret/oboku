@@ -6,7 +6,6 @@ import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
 import { CouchService } from "src/couch/couch.service"
 import { listUserDatabases } from "src/lib/couch/listUserDatabases"
 import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
-import { UserDbIndexesService } from "src/couch/user-db-indexes.service"
 import { CoversService } from "src/covers/covers.service"
 import {
   CopyObjectCommand,
@@ -239,7 +238,6 @@ export class MigrationService {
   constructor(
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
-    private readonly userDbIndexesService: UserDbIndexesService,
     @InjectRepository(RefreshTokenPostgresEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
@@ -277,15 +275,6 @@ export class MigrationService {
     logger.log(`Reset created_at on ${updated} refresh token(s)`)
 
     return { updated }
-  }
-
-  /**
-   * Same pass the API runs at startup, exposed so an admin can re-run it on
-   * demand. Idempotent: CouchDB reports an index that already exists with the
-   * same definition as `exists` and creates nothing.
-   */
-  ensureUserDbIndexes() {
-    return this.userDbIndexesService.ensureOnAllUserDatabases()
   }
 
   async migrateWebdavConnectorsToConnectors(): Promise<{

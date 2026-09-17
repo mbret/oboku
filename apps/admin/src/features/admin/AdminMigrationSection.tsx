@@ -4,14 +4,10 @@ import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
 import { useMigrateResourceIdToLinkData } from "../useMigrateResourceIdToLinkData"
 import { useMigrateCollectionCoverKeys } from "../useMigrateCollectionCoverKeys"
 import { useResetRefreshTokenCreatedAt } from "../useResetRefreshTokenCreatedAt"
-import { useEnsureUserDbIndexes } from "../useEnsureUserDbIndexes"
 import { ConfirmButton } from "@/components/ConfirmButton"
 
 const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
   "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
-
-const ENSURE_USER_DB_INDEXES_CONFIRMATION_MESSAGE =
-  "Creates the CouchDB indexes on every user database. Safe to re-run: indexes that already exist are left untouched."
 
 const RUN_ONCE_CONFIRMATION_MESSAGE =
   "Run this EXACTLY ONCE, right after deploying the new refresh-token rotation.\n\nIt resets created_at to now() on every refresh token. Running it again extends every token by another full TTL and defeats the expiry cap."
@@ -41,12 +37,6 @@ export const AdminMigrationSection = () => {
     isPending: isCollectionCoverKeysPending,
     error: collectionCoverKeysError,
   } = useMigrateCollectionCoverKeys()
-  const {
-    mutate: ensureUserDbIndexes,
-    data: ensureUserDbIndexesResult,
-    isPending: isEnsureUserDbIndexesPending,
-    error: ensureUserDbIndexesError,
-  } = useEnsureUserDbIndexes()
   const {
     mutate: resetRefreshTokenCreatedAt,
     data: resetRefreshTokenCreatedAtResult,
@@ -88,14 +78,6 @@ export const AdminMigrationSection = () => {
           onConfirm={() => migrateCollectionCoverKeys()}
         >
           migrate collection cover keys
-        </ConfirmButton>
-        <ConfirmButton
-          variant="light"
-          loading={isEnsureUserDbIndexesPending}
-          confirmMessage={ENSURE_USER_DB_INDEXES_CONFIRMATION_MESSAGE}
-          onConfirm={() => ensureUserDbIndexes()}
-        >
-          ensure user db indexes
         </ConfirmButton>
         <ConfirmButton
           variant="light"
@@ -222,35 +204,6 @@ export const AdminMigrationSection = () => {
         {!collectionCoverKeysResult &&
           !isCollectionCoverKeysPending &&
           !collectionCoverKeysError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          User db indexes
-        </Text>
-        {isEnsureUserDbIndexesPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {ensureUserDbIndexesError && (
-          <Text size="sm" c="red">
-            Error: {ensureUserDbIndexesError.message}
-          </Text>
-        )}
-        {ensureUserDbIndexesResult && !isEnsureUserDbIndexesPending && (
-          <Text size="sm" c="dimmed">
-            Last run: {ensureUserDbIndexesResult.ranOnUsers} user(s) scanned,{" "}
-            {ensureUserDbIndexesResult.indexesCreated} index(es) created,{" "}
-            {ensureUserDbIndexesResult.indexesExisting} already present
-          </Text>
-        )}
-        {!ensureUserDbIndexesResult &&
-          !isEnsureUserDbIndexesPending &&
-          !ensureUserDbIndexesError && (
             <Text size="sm" c="dimmed">
               No migration run yet
             </Text>

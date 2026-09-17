@@ -4,12 +4,6 @@ import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
 import { ensureUserDbIndexes } from "src/lib/couch/userDbIndexes"
 import { CouchService } from "./couch.service"
 
-export type EnsureOnAllUserDatabasesResult = {
-  ranOnUsers: number
-  indexesCreated: number
-  indexesExisting: number
-}
-
 /**
  * Users rarely sign in again once they hold a refresh token, so indexes are
  * rolled out to every existing database at startup instead of on sign-in.
@@ -30,7 +24,7 @@ export class UserDbIndexesService implements OnApplicationBootstrap {
     this.logger.error("Unable to ensure user db indexes at startup", error)
   }
 
-  async ensureOnAllUserDatabases(): Promise<EnsureOnAllUserDatabasesResult> {
+  async ensureOnAllUserDatabases() {
     const db = await this.couchService.createAdminNanoInstance()
     const userDbs = await listUserDatabases(db)
 
