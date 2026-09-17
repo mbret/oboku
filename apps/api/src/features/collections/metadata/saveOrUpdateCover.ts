@@ -1,5 +1,5 @@
 import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
-import { saveCoverFromExternalLinkToBucket } from "src/lib/books/covers/saveCoverFromExternalLinkToBucket"
+import { saveCoverFromExternalLinkToBucket } from "src/covers/saveCoverFromExternalLinkToBucket"
 import { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
 

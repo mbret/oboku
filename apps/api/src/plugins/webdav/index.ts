@@ -4,8 +4,8 @@
 import type { DataSourcePlugin } from "src/plugins/types"
 import { type WebDAVDataSourceDocType } from "@oboku/shared"
 import { getDataSourceData } from "../helpers"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { getHttpsAgent } from "src/http/httpsAgent"
+import { getConnectorById } from "src/plugins/connectorHelpers"
 import {
   getWebdavModule,
   getFileMetadataFromWebdav,
@@ -13,7 +13,7 @@ import {
   downloadFromWebdav,
   walkDirectoryContents,
 } from "./operations"
-import { find } from "src/lib/couch/dbHelpers"
+import { find } from "src/couch/dbHelpers"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 

@@ -1,7 +1,7 @@
 import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type { DataSourcePlugin, PluginMetadataParams } from "src/plugins/types"
 import type { WebDAVClient } from "webdav"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { getConnectorById } from "src/plugins/connectorHelpers"
 import { getDataSourceData } from "../helpers"
 import {
   getWebdavModule,
@@ -10,7 +10,7 @@ import {
   downloadFromWebdav,
   walkDirectoryContents,
 } from "../webdav/operations"
-import { find } from "src/lib/couch/dbHelpers"
+import { find } from "src/couch/dbHelpers"
 
 async function createServerWebdavClient(
   db: Parameters<typeof getConnectorById>[0],

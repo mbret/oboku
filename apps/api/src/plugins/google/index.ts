@@ -8,7 +8,7 @@ import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
 } from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
+import { find } from "src/couch/dbHelpers"
 import { getDataSourceData } from "../helpers"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync"
 
