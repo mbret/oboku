@@ -109,4 +109,15 @@ describe("CoversService", () => {
     expect((await sharp(first).metadata()).format).toBe("webp")
     expect(second).toBe(first)
   })
+
+  it("serves the webp placeholder for a format it cannot produce", async () => {
+    fsService.getCover.mockResolvedValue(null)
+
+    const webp = await firstValueFrom(service.getCoverForDelivery("key"))
+    const unsupported = await firstValueFrom(
+      service.getCoverForDelivery("key", "image/png"),
+    )
+
+    expect(unsupported).toBe(webp)
+  })
 })
