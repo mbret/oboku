@@ -9,6 +9,7 @@ import {
 } from "@nestjs/common"
 import { defer, map, type Observable } from "rxjs"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
+import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "./covers.service"
 import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { emailToNameHex } from "src/couch/couch.service"
@@ -21,12 +22,13 @@ export class CoversController implements OnModuleInit {
   constructor(
     private taskQueueService: InMemoryTaskQueueService,
     private coversService: CoversService,
+    private appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 3,
+      maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
       deduplicate: true,
     })
   }

@@ -187,6 +187,28 @@ export class AppConfigService {
 
   /**
    * ------------------------------------------------------------
+   * QUEUES
+   * ------------------------------------------------------------
+   */
+
+  get QUEUE_COVERS_DELIVERY_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT() {
+    return 3
+  }
+
+  /**
+   * ------------------------------------------------------------
    * SECURITY
    * ------------------------------------------------------------
    */

@@ -4,6 +4,7 @@ import { CollectionMetadataRefreshEvent, Events } from "../../events"
 import { CollectionMetadataService } from "./CollectionMetadataService"
 import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
 import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service"
+import { AppConfigService } from "src/config/AppConfigService"
 import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
 import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
 
@@ -27,12 +28,14 @@ export class CollectionsController implements OnModuleInit {
   constructor(
     private collectionMetadataService: CollectionMetadataService,
     private readonly taskQueueService: InMemoryTaskQueueService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 3,
+      maxConcurrent:
+        this.appConfig.QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })
