@@ -26,7 +26,7 @@ export class CoversController implements OnModuleInit {
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 1,
+      maxConcurrent: 3,
       deduplicate: true,
     })
   }
