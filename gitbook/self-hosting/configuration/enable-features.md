@@ -70,7 +70,7 @@ With the proxy enabled, the API fetches the file and streams it to the app inste
 Turn it on from the admin panel, under Downloads. Book files then travel through your instance, so it pays that bandwidth — which is why it is off by default. The same section caps what a single download may stream.
 
 {% hint style="warning" %}
-The proxy makes your instance fetch a url the user controls. Targets that resolve outside public address space are refused, so a link cannot be pointed at your own network.
+The proxy makes your instance fetch a provider the user configured. Connections whose address resolves outside public address space are refused, so a provider cannot be pointed at your own network.
 
 If your providers live on a LAN or on localhost, allow them explicitly:
 

@@ -144,21 +144,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       }),
     }
   },
-  getDownloadTargetUrl: async (link, db) => {
-    const connectorId = link.data.connectorId
-
-    if (!connectorId || !db) {
-      throw new Error("Synology Drive connector is required")
-    }
-
-    const connector = await getConnectorById(db, connectorId, "synology-drive")
-
-    if (!connector) {
-      throw new Error("Synology Drive connector not found")
-    }
-
-    return connector.url
-  },
+  canProxyDownload: true,
   getFileMetadata: async ({ link, providerCredentials, db }) => {
     const { session, fileId } = await openSynologyDriveSessionForLink({
       link,

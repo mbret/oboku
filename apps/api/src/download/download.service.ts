@@ -3,10 +3,6 @@ import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
 import { CouchService } from "src/couch/couch.service"
 import { findOne } from "src/lib/couch/findOne"
-import {
-  assertSafeRequestTarget,
-  isPrivateNetworkAllowed,
-} from "src/lib/http/requestTarget"
 import { getPlugin } from "src/plugins/plugins"
 import { PluginsService } from "src/plugins/plugins.service"
 
@@ -68,17 +64,9 @@ export class DownloadService {
       throw new LinkNotFoundError(linkId)
     }
 
-    const plugin = getPlugin(link.type)
-
-    if (!plugin?.getDownloadTargetUrl) {
+    if (!getPlugin(link.type)?.canProxyDownload) {
       throw new LinkNotProxyableError(link.type)
     }
-
-    const target = await plugin.getDownloadTargetUrl(link, db)
-
-    await assertSafeRequestTarget(target, {
-      allowPrivateNetwork: isPrivateNetworkAllowed(),
-    })
 
     /**
      * The provider's own name and content type are fetched before streaming

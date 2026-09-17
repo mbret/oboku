@@ -174,18 +174,14 @@ export type DataSourcePlugin<
     stream: NodeJS.ReadableStream | IncomingMessage
   }>
   /**
-   * Absolute url the server will connect to when downloading this link.
-   *
-   * Implementing it declares the provider downloadable through the download
-   * proxy: the proxy needs the target up front to apply the instance's
-   * private-network policy before any request is made. Providers reached
-   * through a vendor SDK (Drive, Dropbox, OneDrive) or not over the network
-   * at all (file, server) leave it undefined and are never proxied.
+   * Whether the API may fetch this provider on the browser's behalf, for
+   * servers that send no CORS headers. Set by providers reached over plain
+   * HTTP(S), whose clients carry the guarded agent that enforces the
+   * instance's private-network policy. Providers reached through a vendor SDK
+   * (Drive, Dropbox, OneDrive) or not over the network at all (file, server)
+   * leave it unset and are never proxied.
    */
-  getDownloadTargetUrl?: (
-    link: LinkDocTypeForProvider<TProvider>,
-    db?: createNano.DocumentScope<unknown>,
-  ) => Promise<string>
+  canProxyDownload?: boolean
   /** Find all links that match this item (same resource). Caller cleans/merges and uses one. */
   getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
   /** Find all collections that match this item (same resource / link data). Caller picks one or creates. */

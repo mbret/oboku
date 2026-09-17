@@ -64,7 +64,7 @@ export const dataSource: DataSourcePlugin<"URI"> = {
       modifiedAt: MODIFIED_AT_UNSUPPORTED,
     }
   },
-  getDownloadTargetUrl: async (link) => resolveUrl(link),
+  canProxyDownload: true,
   download: async (link) => {
     const url = resolveUrl(link)
     const { allowSelfSigned } = link.data
