@@ -282,6 +282,11 @@ export class AdminController {
     return this.signAdminTokens()
   }
 
+  @Post("ensure-user-db-indexes")
+  async ensureUserDbIndexes() {
+    return this.migrationService.ensureUserDbIndexes()
+  }
+
   @Post("migrate-webdav-connectors")
   async migrateWebdavConnectors() {
     return this.migrationService.migrateWebdavConnectorsToConnectors()
