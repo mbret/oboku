@@ -1,5 +1,10 @@
 import type createNano from "nano"
-import { addTagsToBookIfNotExist } from "./dbHelpers"
+import { User } from "../couchDbEntities"
+import {
+  addTagsToBookIfNotExist,
+  doesCouchDatabaseExist,
+  getOrCreateUserFromEmail,
+} from "./dbHelpers"
 
 type StoredDoc = {
   _id: string
@@ -84,5 +89,143 @@ describe("addTagsToBookIfNotExist", () => {
     expect(store.get("book-1")?.tags).toEqual(["tag-a", "tag-b"])
     expect(store.get("tag-a")?.books).toEqual(["book-1"])
     expect(store.get("tag-b")?.books).toEqual(["book-1"])
+  })
+})
+
+const couchError = (statusCode: number, message: string) =>
+  Object.assign(new Error(message), { statusCode })
+
+describe("getOrCreateUserFromEmail", () => {
+  const email = "reader@example.com"
+  const existingUser = new User(`org.couchdb.user:${email}`, email, "secret")
+  existingUser._rev = "3-abc"
+
+  const createFakeServer = ({
+    users,
+    dbExists,
+    insert = jest.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
+  }: {
+    users: User[]
+    dbExists: boolean
+    insert?: jest.Mock
+  }) => {
+    const usersDb = {
+      find: jest.fn().mockResolvedValue({ docs: users }),
+      insert,
+    }
+    const get = jest.fn(async function getDatabaseIfExists() {
+      if (dbExists) return { db_name: "userdb" }
+      throw couchError(404, "not_found")
+    })
+
+    return {
+      // Only `_users` find/insert and `db.get` are exercised; nano's full
+      // ServerScope surface is irrelevant to these tests.
+      server: {
+        use: function useUsersDb() {
+          return usersDb
+        },
+        db: { get },
+      } as unknown as createNano.ServerScope,
+      usersDb,
+    }
+  }
+
+  it("returns an existing user whose database exists without rewriting it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: true,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("re-saves an existing user whose database is missing so couch_peruser recreates it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+    expect(usersDb.insert).toHaveBeenCalledWith(existingUser, existingUser._id)
+  })
+
+  it("treats a conflict on the re-save as a concurrent sign-in having done it", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(409, "conflict")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+  })
+
+  it("rethrows any other failure of the re-save", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(401, "unauthorized")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
+      "unauthorized",
+    )
+  })
+
+  it("creates the user on first sign-in", async () => {
+    const { server, usersDb } = createFakeServer({ users: [], dbExists: false })
+
+    const result = await getOrCreateUserFromEmail(server, email)
+
+    expect(result.userDbPending).toBe(true)
+    expect(result.user.name).toBe(email)
+    expect(usersDb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: `org.couchdb.user:${email}`,
+        name: email,
+      }),
+      `org.couchdb.user:${email}`,
+    )
+  })
+})
+
+describe("doesCouchDatabaseExist", () => {
+  const createFakeServer = (get: jest.Mock) =>
+    // Only `db.get` is exercised; nano's full ServerScope surface is
+    // irrelevant to these tests.
+    ({ db: { get } }) as unknown as createNano.ServerScope
+
+  it("is true when the database answers", async () => {
+    const get = jest.fn().mockResolvedValue({ db_name: "userdb-1" })
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(true)
+  })
+
+  it("is false when the database is missing", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(404, "not_found"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(false)
+  })
+
+  it("rethrows any other failure", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).rejects.toThrow("unauthorized")
   })
 })

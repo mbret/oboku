@@ -42,7 +42,7 @@ import type { AuthTokens } from "./auth-cookies"
  */
 type AuthenticatedSession = AuthTokens & AuthSessionResponse
 
-/** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
+/** Max time to wait for couch_peruser to create `userdb-…` after a `_users` row is written. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
 /**
@@ -216,8 +216,10 @@ export class AuthService {
   }): Promise<AuthenticatedSession> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const { user: couchUser, created: couchUserCreated } =
-      await getOrCreateUserFromEmail(adminNano, email)
+    const { user: couchUser, userDbPending } = await getOrCreateUserFromEmail(
+      adminNano,
+      email,
+    )
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
@@ -225,7 +227,7 @@ export class AuthService {
 
     const dbName = emailToUserDbName(couchUser.name)
 
-    if (couchUserCreated) {
+    if (userDbPending) {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })
