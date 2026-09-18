@@ -3,7 +3,7 @@ import { User } from "../couchDbEntities"
 import {
   addTagsToBookIfNotExist,
   doesCouchDatabaseExist,
-  touchCouchUser,
+  getOrCreateUserFromEmail,
 } from "./dbHelpers"
 
 type StoredDoc = {
@@ -95,41 +95,105 @@ describe("addTagsToBookIfNotExist", () => {
 const couchError = (statusCode: number, message: string) =>
   Object.assign(new Error(message), { statusCode })
 
-describe("touchCouchUser", () => {
-  const user = new User(
-    "org.couchdb.user:reader@example.com",
-    "reader@example.com",
-    "secret",
-  )
-  user._rev = "3-abc"
+describe("getOrCreateUserFromEmail", () => {
+  const email = "reader@example.com"
+  const existingUser = new User(`org.couchdb.user:${email}`, email, "secret")
+  existingUser._rev = "3-abc"
 
-  const createFakeServer = (insert: jest.Mock) =>
-    // Only `_users`.insert is exercised; nano's full ServerScope surface is
-    // irrelevant to these tests.
-    ({ use: () => ({ insert }) }) as unknown as createNano.ServerScope
+  const createFakeServer = ({
+    users,
+    dbExists,
+    insert = jest.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
+  }: {
+    users: User[]
+    dbExists: boolean
+    insert?: jest.Mock
+  }) => {
+    const usersDb = {
+      find: jest.fn().mockResolvedValue({ docs: users }),
+      insert,
+    }
+    const get = jest.fn(async function getDatabaseIfExists() {
+      if (dbExists) return { db_name: "userdb" }
+      throw couchError(404, "not_found")
+    })
 
-  it("re-saves the user doc under its own id", async () => {
-    const insert = jest.fn().mockResolvedValue({ ok: true })
+    return {
+      // Only `_users` find/insert and `db.get` are exercised; nano's full
+      // ServerScope surface is irrelevant to these tests.
+      server: {
+        use: () => usersDb,
+        db: { get },
+      } as unknown as createNano.ServerScope,
+      usersDb,
+    }
+  }
 
-    await touchCouchUser(createFakeServer(insert), user)
+  it("returns an existing user whose database exists without rewriting it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: true,
+    })
 
-    expect(insert).toHaveBeenCalledWith(user, user._id)
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
   })
 
-  it("ignores a conflict, which means a concurrent sign-in already re-saved it", async () => {
-    const insert = jest.fn().mockRejectedValue(couchError(409, "conflict"))
+  it("re-saves an existing user whose database is missing so couch_peruser recreates it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+    })
 
-    await expect(
-      touchCouchUser(createFakeServer(insert), user),
-    ).resolves.toBeUndefined()
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+    expect(usersDb.insert).toHaveBeenCalledWith(existingUser, existingUser._id)
   })
 
-  it("rethrows any other failure", async () => {
-    const insert = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+  it("treats a conflict on the re-save as a concurrent sign-in having done it", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(409, "conflict")),
+    })
 
-    await expect(
-      touchCouchUser(createFakeServer(insert), user),
-    ).rejects.toThrow("unauthorized")
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+  })
+
+  it("rethrows any other failure of the re-save", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(401, "unauthorized")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
+      "unauthorized",
+    )
+  })
+
+  it("creates the user on first sign-in", async () => {
+    const { server, usersDb } = createFakeServer({ users: [], dbExists: false })
+
+    const result = await getOrCreateUserFromEmail(server, email)
+
+    expect(result.userDbPending).toBe(true)
+    expect(result.user.name).toBe(email)
+    expect(usersDb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: `org.couchdb.user:${email}`,
+        name: email,
+      }),
+      `org.couchdb.user:${email}`,
+    )
   })
 })
 

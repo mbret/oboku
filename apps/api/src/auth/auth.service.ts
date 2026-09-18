@@ -14,11 +14,7 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service"
-import {
-  doesCouchDatabaseExist,
-  getOrCreateUserFromEmail,
-  touchCouchUser,
-} from "../lib/couch/dbHelpers"
+import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
 import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
 import bcrypt from "bcrypt"
@@ -220,8 +216,10 @@ export class AuthService {
   }): Promise<AuthenticatedSession> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const { user: couchUser, created: couchUserCreated } =
-      await getOrCreateUserFromEmail(adminNano, email)
+    const { user: couchUser, userDbPending } = await getOrCreateUserFromEmail(
+      adminNano,
+      email,
+    )
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
@@ -229,17 +227,7 @@ export class AuthService {
 
     const dbName = emailToUserDbName(couchUser.name)
 
-    const userDbMissing =
-      !couchUserCreated && !(await doesCouchDatabaseExist(adminNano, dbName))
-
-    if (userDbMissing) {
-      this.logger.warn(
-        `User database ${dbName} is missing for ${couchUser.email}, asking couch_peruser to recreate it`,
-      )
-      await touchCouchUser(adminNano, couchUser)
-    }
-
-    if (couchUserCreated || userDbMissing) {
+    if (userDbPending) {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })

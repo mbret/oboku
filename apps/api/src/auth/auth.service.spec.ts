@@ -480,7 +480,7 @@ describe("AuthService", () => {
     )
   })
 
-  it("signs in an existing user without rewriting their _users doc when their database exists", async () => {
+  const mockReaderSignInDependencies = () => {
     usersService.findUserByEmail.mockResolvedValue({
       id: 1,
       email: "reader@example.com",
@@ -492,6 +492,10 @@ describe("AuthService", () => {
       refreshToken: "refresh-token",
       sessionId: "session-1",
     })
+  }
+
+  it("signs in an existing user without rewriting their _users doc when their database exists", async () => {
+    mockReaderSignInDependencies()
     const { server, usersDb } = createFakeAdminNano({ userDbExists: true })
     couchService.createAdminNanoInstance.mockResolvedValue(server)
 
@@ -502,17 +506,7 @@ describe("AuthService", () => {
   })
 
   it("recreates a missing user database through couch_peruser before signing in", async () => {
-    usersService.findUserByEmail.mockResolvedValue({
-      id: 1,
-      email: "reader@example.com",
-      password: readerPasswordHash,
-      emailVerified: true,
-    })
-    couchService.generateUserJWT.mockResolvedValue("access-token")
-    refreshTokensService.issueTokenForInstallation.mockResolvedValue({
-      refreshToken: "refresh-token",
-      sessionId: "session-1",
-    })
+    mockReaderSignInDependencies()
     const { server, usersDb, couchUser } = createFakeAdminNano({
       userDbExists: false,
     })
