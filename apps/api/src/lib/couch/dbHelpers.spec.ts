@@ -122,7 +122,9 @@ describe("getOrCreateUserFromEmail", () => {
       // Only `_users` find/insert and `db.get` are exercised; nano's full
       // ServerScope surface is irrelevant to these tests.
       server: {
-        use: () => usersDb,
+        use: function useUsersDb() {
+          return usersDb
+        },
         db: { get },
       } as unknown as createNano.ServerScope,
       usersDb,

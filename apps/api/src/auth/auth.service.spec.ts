@@ -13,11 +13,13 @@ import { UsersService } from "../users/users.service"
 import { AuthService } from "./auth.service"
 import { RefreshProofService } from "./refresh-proof.service"
 
-jest.mock("src/lib/couch/userDbIndexes", () => ({
-  ensureUserDbIndexes: jest
-    .fn()
-    .mockResolvedValue({ created: [], existing: [] }),
-}))
+jest.mock("src/lib/couch/userDbIndexes", function mockUserDbIndexes() {
+  return {
+    ensureUserDbIndexes: jest
+      .fn()
+      .mockResolvedValue({ created: [], existing: [] }),
+  }
+})
 
 const readerPasswordHash = bcrypt.hashSync("secret", 4)
 
@@ -47,7 +49,9 @@ const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
     }),
   }
   const server = {
-    use: jest.fn(() => usersDb),
+    use: jest.fn(function useUsersDb() {
+      return usersDb
+    }),
     db: {
       get: jest.fn(async function getDatabaseIfExists() {
         if (dbExists) return { db_name: "userdb" }
