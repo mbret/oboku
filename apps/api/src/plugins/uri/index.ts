@@ -4,7 +4,8 @@ import {
 } from "src/plugins/types"
 import { find } from "src/lib/couch/dbHelpers"
 import axios from "axios"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { createGuardedAgents } from "src/lib/http/httpsAgent"
+import { isPrivateNetworkAllowed } from "src/lib/http/requestTarget"
 
 const URI_TYPE = "URI"
 
@@ -63,13 +64,17 @@ export const dataSource: DataSourcePlugin<"URI"> = {
       modifiedAt: MODIFIED_AT_UNSUPPORTED,
     }
   },
+  canProxyDownload: true,
   download: async (link) => {
     const url = resolveUrl(link)
     const { allowSelfSigned } = link.data
 
     const response = await axios.get(url, {
       responseType: "stream",
-      httpsAgent: getHttpsAgent(allowSelfSigned),
+      ...createGuardedAgents({
+        allowSelfSigned,
+        allowPrivateNetwork: isPrivateNetworkAllowed(),
+      }),
     })
 
     return {

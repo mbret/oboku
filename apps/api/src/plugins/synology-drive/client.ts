@@ -23,7 +23,8 @@ import axios, { AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "src/plugins/types"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { createGuardedAgents } from "src/lib/http/httpsAgent"
+import { isPrivateNetworkAllowed } from "src/lib/http/requestTarget"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean
@@ -120,7 +121,10 @@ const requestJson = async <T>({
         headers: {
           Accept: "application/json",
         },
-        httpsAgent: getHttpsAgent(allowSelfSigned),
+        ...createGuardedAgents({
+          allowSelfSigned,
+          allowPrivateNetwork: isPrivateNetworkAllowed(),
+        }),
         validateStatus: () => true,
       })
     } catch (error) {
@@ -285,7 +289,10 @@ export const downloadSynologyDriveStream = async ({
         headers: {
           Accept: "application/octet-stream",
         },
-        httpsAgent: getHttpsAgent(session.allowSelfSigned),
+        ...createGuardedAgents({
+          allowSelfSigned: session.allowSelfSigned,
+          allowPrivateNetwork: isPrivateNetworkAllowed(),
+        }),
         responseType: "stream",
         validateStatus: () => true,
       })

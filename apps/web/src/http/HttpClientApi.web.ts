@@ -19,6 +19,7 @@ import type {
   SignInWithGoogleRequest,
   SyncDataSourceRequest,
   SyncDataSourceResponse,
+  DownloadLinkRequest,
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
@@ -104,6 +105,16 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       RefreshCollectionMetadataRequest
     >(`${API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: params.soft ?? false },
+    })
+
+  /**
+   * Streams a link's file through the API for providers whose servers serve no
+   * CORS headers. The response body is deliberately left unread: it is not
+   * JSON, so the caller consumes it to report download progress.
+   */
+  downloadLink = (params: DownloadLinkRequest) =>
+    this.postOrThrow<never, DownloadLinkRequest>(`${API_URL}/downloads`, {
+      body: params,
     })
 
   syncDataSource = (params: SyncDataSourceRequest) =>

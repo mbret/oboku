@@ -161,6 +161,15 @@ export type DataSourcePlugin<
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
   }>
+  /**
+   * Whether the API may fetch this provider on the browser's behalf, for
+   * servers that send no CORS headers. Set by providers reached over plain
+   * HTTP(S), whose clients carry the guarded agent that enforces the
+   * instance's private-network policy. Providers reached through a vendor SDK
+   * (Drive, Dropbox, OneDrive) or not over the network at all (file, server)
+   * leave it unset and are never proxied.
+   */
+  canProxyDownload?: boolean
   /** Find all links that match this item (same resource). Caller cleans/merges and uses one. */
   getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
   /** Find all collections that match this item (same resource / link data). Caller picks one or creates. */

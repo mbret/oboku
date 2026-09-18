@@ -35,7 +35,7 @@ export class FileDownloadSizeLimitExceededError extends Error {
   }
 }
 
-const createByteLimitTransform = (maxSizeBytes: number) => {
+export const createByteLimitTransform = (maxSizeBytes: number) => {
   let downloadedBytes = 0
 
   return new Transform({

@@ -144,6 +144,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       }),
     }
   },
+  canProxyDownload: true,
   getFileMetadata: async ({ link, providerCredentials, db }) => {
     const { session, fileId } = await openSynologyDriveSessionForLink({
       link,
