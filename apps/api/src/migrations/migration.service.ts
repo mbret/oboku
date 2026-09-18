@@ -1,4 +1,8 @@
-import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
+import {
+  type CollectionDocType,
+  getCollectionCoverKey,
+  migrateResourceIdToData,
+} from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
@@ -119,14 +123,6 @@ const toCanonicalWebdavResourceId = (resourceId: string) => {
   return generateCanonicalWebdavResourceIdForMigration(filePath)
 }
 
-function safeDecodeURIComponent(value: string): string {
-  try {
-    return decodeURIComponent(value)
-  } catch {
-    return value
-  }
-}
-
 /**
  * Older CouchDB installs may store `data` / `linkData` as a JSON-encoded
  * string rather than an object. This normalises either representation into
@@ -155,75 +151,6 @@ function normalizeDataField(value: unknown): Record<string, unknown> | null {
     return value as Record<string, unknown>
   }
   return null
-}
-
-/**
- * Parses a legacy resourceId / linkResourceId string and returns the identity
- * fields to merge into data / linkData for the given provider type.
- * Returns null if there is nothing to migrate.
- */
-function migrateResourceIdToData(
-  type: string,
-  resourceId: string,
-  existingData: Record<string, unknown> | null,
-): Record<string, unknown> | null {
-  const base = existingData ?? {}
-
-  switch (type) {
-    case "DRIVE": {
-      const fileId = resourceId.startsWith("drive-")
-        ? resourceId.substring("drive-".length)
-        : resourceId
-      return { ...base, fileId }
-    }
-
-    case "dropbox": {
-      const fileId = resourceId.startsWith("dropbox-")
-        ? resourceId.substring("dropbox-".length)
-        : resourceId
-      return { ...base, fileId }
-    }
-
-    case "webdav": {
-      const withoutPrefix = resourceId.startsWith("webdav://")
-        ? resourceId.substring("webdav://".length)
-        : resourceId
-      // Strip the host portion from the legacy "webdav://host:encodedPath"
-      // format. Must stay in sync with the client-side migration in
-      // apps/web/src/rxdb/collections/utils.ts.
-      const encodedFilePath = withoutPrefix.includes(":")
-        ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
-        : withoutPrefix
-      return { ...base, filePath: safeDecodeURIComponent(encodedFilePath) }
-    }
-
-    case "synology-drive": {
-      const withoutPrefix = resourceId.startsWith("synology-drive://")
-        ? resourceId.substring("synology-drive://".length)
-        : resourceId
-      return { ...base, fileId: safeDecodeURIComponent(withoutPrefix) }
-    }
-
-    case "server": {
-      const withoutPrefix = resourceId.startsWith("server://")
-        ? resourceId.substring("server://".length)
-        : resourceId
-      return { ...base, filePath: safeDecodeURIComponent(withoutPrefix) }
-    }
-
-    case "URI": {
-      const url = resourceId.startsWith("oboku-link-")
-        ? resourceId.substring("oboku-link-".length)
-        : resourceId
-      return { ...base, url }
-    }
-
-    case "file":
-      return null
-
-    default:
-      return null
-  }
 }
 
 /**
