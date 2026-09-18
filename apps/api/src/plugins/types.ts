@@ -53,7 +53,9 @@ export type Helpers = {
     model: M,
     data: Omit<D, "rx_model" | "_id" | "_rev">,
   ) => Promise<createNano.DocumentInsertResponse>
-  getOrCreateTagFromName: (name: string) => void
+  getOrCreateTagFromName: (
+    name: string,
+  ) => Promise<{ id: string; created: boolean }>
 }
 
 /** Sync context; generic so `providerCredentials` is the typed API credentials for the provider. */

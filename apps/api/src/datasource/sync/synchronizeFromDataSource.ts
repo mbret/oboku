@@ -7,7 +7,7 @@ import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
 } from "src/plugins/types"
-import { createTagFromName } from "src/couch/dbHelpers"
+import { getOrCreateTagFromName } from "src/couch/dbHelpers"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "src/config/types"
@@ -149,7 +149,7 @@ const syncTags = async ({
 
   await Promise.all(
     tagNames.map(async (tag) => {
-      const { created, id } = await createTagFromName(ctx.db, tag, true)
+      const { created, id } = await getOrCreateTagFromName(ctx.db, tag)
 
       if (created) {
         logger.log(`syncTags ${tag} created with id ${id}`)

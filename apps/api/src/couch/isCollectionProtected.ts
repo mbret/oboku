@@ -1,6 +1,5 @@
 import type createNano from "nano"
 import { find } from "./dbHelpers"
-import { findTags } from "./findTags"
 
 /**
  * A collection is considered protected when at least one of its books carries
@@ -13,7 +12,7 @@ export const isCollectionProtected = async (
 ) => {
   if (!collection.books.length) return false
 
-  const protectedTags = await findTags(db, {
+  const protectedTags = await find(db, "tag", {
     selector: { isProtected: true },
     fields: ["_id"],
   })

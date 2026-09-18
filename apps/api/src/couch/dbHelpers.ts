@@ -240,61 +240,15 @@ export const addTagsToBookIfNotExist = async (
   return [bookUpdate, tagUpdate] as const
 }
 
-/**
- * Attach or create and attach given tags to the book.
- * The tag is automatically retrieved from name or created if it does not exist.
- */
-// export const addTagsFromNameToBook = async (db: createNano.DocumentScope<unknown>, bookId: string, tagNames: string[]) => {
-//   if (tagNames.length === 0) return
-//   // Get all tag ids and create one if it does not exist
-//   const tagIds = await Promise.all(tagNames.map(async (name) => getOrCreateTagFromName(db, name)))
-
-//   return await addTagsToBook(db, bookId, tagIds)
-// }
-
 export const getOrCreateTagFromName = (
   db: createNano.DocumentScope<unknown>,
   name: string,
 ) => {
   return retryFn(async () => {
-    // Get all tag ids and create one if it does not exist
-    const existingTag = await findOne("tag", { selector: { name } }, { db })
-    if (existingTag) {
-      return existingTag._id
-    }
-    const insertedTag = await insert(db, "tag", {
-      isProtected: false,
-      books: [],
-      name,
-      createdAt: new Date().toISOString(),
-      modifiedAt: null,
-      rxdbMeta: {
-        lwt: Date.now(),
-      },
-    })
-
-    return insertedTag.id
-  })
-}
-
-/**
- *
- * @param silent Will not throw an exception if the tag already exists and return its id.
- * @returns
- */
-export const createTagFromName = (
-  db: createNano.DocumentScope<unknown>,
-  name: string,
-  silent: boolean,
-) => {
-  return retryFn(async () => {
     const existingTag = await findOne("tag", { selector: { name } }, { db })
 
     if (existingTag) {
-      if (silent) {
-        return { id: existingTag._id, created: false }
-      }
-      throw new Error(`Tag already exists`)
+      return { id: existingTag._id, created: false }
     }
 
     const insertedTag = await insert(db, "tag", {
