@@ -6,4 +6,5 @@ export type Context = SyncContext & {
   userNameHex: string
   email: string
   plugin: DataSourcePlugin
+  refreshBookMetadata: (opts: { bookId: string }) => Promise<void>
 }

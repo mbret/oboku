@@ -2,27 +2,21 @@ import { repairCollectionBooks } from "./repairCollectionBooks"
 import type { Context } from "src/datasource/sync/types"
 import { addNewCollection } from "./addNewCollection"
 import { updateCollection } from "./updateCollection"
-import {
-  type DataSourcePlugin,
-  SynchronizeAbleDataSource,
-} from "src/plugins/types"
+import type { SynchronizeAbleDataSource } from "src/plugins/types"
 import { Logger } from "@nestjs/common"
 import type { CollectionRefreshQueue } from "src/datasource/sync/synchronizeFromDataSource"
 
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 const logger = new Logger("sync/registerOrUpdateCollection")
 
 export const syncCollection = async ({
   item,
-  helpers,
   ctx,
   collectionRefreshQueue,
 }: {
   ctx: Context
   item: SynchronizeAbleItem
-  helpers: Helpers
   collectionRefreshQueue: CollectionRefreshQueue
 }) => {
   /**
@@ -45,7 +39,6 @@ export const syncCollection = async ({
     await updateCollection({
       collection: bestCandidate,
       ctx,
-      helpers,
       item,
     })
   }

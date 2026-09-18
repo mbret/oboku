@@ -6,8 +6,7 @@ import {
   ObokuSharedError,
   parseProviderApiCredentials,
 } from "@oboku/shared"
-import { createHelpers } from "src/plugins/helpers"
-import { atomicUpdate } from "src/couch/dbHelpers"
+import { atomicUpdate, findOne } from "src/couch/dbHelpers"
 import { emailToNameHex } from "src/couch/couch.service"
 import { getPlugin } from "src/plugins/plugins"
 import { ConfigService } from "@nestjs/config"
@@ -72,12 +71,13 @@ export const sync = async ({
   }
 
   const nameHex = emailToNameHex(email)
-  const helpers = createHelpers(refreshBookMetadata, db)
 
   try {
-    const dataSource = await helpers.findOne("datasource", {
-      selector: { _id: dataSourceId },
-    })
+    const dataSource = await findOne(
+      "datasource",
+      { selector: { _id: dataSourceId } },
+      { db },
+    )
 
     if (!dataSource) throw new Error("Data source not found")
 
@@ -111,6 +111,7 @@ export const sync = async ({
       userNameHex: nameHex,
       email,
       plugin,
+      refreshBookMetadata,
     }
 
     const applyTags = <T extends SynchronizeAbleItem>(item: T): T => ({
@@ -119,7 +120,7 @@ export const sync = async ({
       items: item.items?.map(applyTags),
     })
 
-    const synchronizeAbleDataSource = await plugin.sync(syncOptions, helpers)
+    const synchronizeAbleDataSource = await plugin.sync(syncOptions)
     const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
       ...synchronizeAbleDataSource,
       items: synchronizeAbleDataSource.items.map(applyTags),
@@ -133,7 +134,6 @@ export const sync = async ({
     await synchronizeFromDataSource(
       synchronizeAbleDataSourceWithTags,
       ctx,
-      helpers,
       config,
       eventEmitter,
       coversService,

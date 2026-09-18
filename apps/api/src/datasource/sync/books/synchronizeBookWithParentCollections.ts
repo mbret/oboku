@@ -1,16 +1,15 @@
 import { Logger } from "@nestjs/common"
 import {
   type CollectionCandidate,
-  type DataSourcePlugin,
   type SynchronizeAbleDataSource,
 } from "src/plugins/types"
+import { atomicUpdate, findOne } from "src/couch/dbHelpers"
 import type { BookDocType } from "@oboku/shared"
 import type { Context } from "src/datasource/sync/types"
 
 const logger = new Logger("synchronizeBookWithParentCollections")
 
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 /**
  * For every parent of the book we look up collections that match each parent (same resource / link data)
@@ -20,7 +19,6 @@ type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 export const synchronizeBookWithParentCollections = async (
   book: Partial<BookDocType> & { _id: string },
   parents: SynchronizeAbleItem[],
-  helpers: Helpers,
   context: Context,
 ) => {
   if (parents.length === 0) {
@@ -68,7 +66,8 @@ export const synchronizeBookWithParentCollections = async (
 
     await Promise.all(
       collectionsThatHaveNotThisBookAsReferenceYet.map(async (collection) => {
-        await helpers.atomicUpdate(
+        await atomicUpdate(
+          context.db,
           "obokucollection",
           collection._id,
           (old) => ({
@@ -94,10 +93,14 @@ export const synchronizeBookWithParentCollections = async (
    * Result:
    * We attach all the parent collections to the book.
    */
-  const bookWithCollections = await helpers.findOne("book", {
-    selector: { _id: book._id },
-    fields: ["collections", "_id"],
-  })
+  const bookWithCollections = await findOne(
+    "book",
+    {
+      selector: { _id: book._id },
+      fields: ["collections", "_id"],
+    },
+    { db: context.db },
+  )
 
   if (!bookWithCollections) return
 
@@ -112,7 +115,7 @@ export const synchronizeBookWithParentCollections = async (
       `synchronizeBookWithParentCollections ${book._id} has some missing parent collections. It will be updated to include them`,
     )
 
-    await helpers.atomicUpdate("book", book._id, (old) => ({
+    await atomicUpdate(context.db, "book", book._id, (old) => ({
       ...old,
       collections: [...new Set([...old.collections, ...parentCollectionIds])],
     }))

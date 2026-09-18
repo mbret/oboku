@@ -1,12 +1,8 @@
 import { directives } from "@oboku/shared"
-import type { createHelpers } from "src/plugins/helpers"
 import { syncCollection } from "src/datasource/sync/collections/syncCollection"
 import { createOrUpdateBook } from "src/datasource/sync/books/createOrUpdateBook"
 import type { Context } from "./types"
-import type {
-  DataSourcePlugin,
-  SynchronizeAbleDataSource,
-} from "src/plugins/types"
+import type { SynchronizeAbleDataSource } from "src/plugins/types"
 import { getOrCreateTagFromName } from "src/couch/dbHelpers"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
@@ -16,8 +12,6 @@ import { CoversService } from "src/covers/covers.service"
 import { CollectionMetadataRefreshEvent, Events } from "src/events"
 
 const logger = new Logger("sync")
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
@@ -56,7 +50,6 @@ function isFile(
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
-  helpers: ReturnType<typeof createHelpers>,
   config: ConfigService<EnvironmentVariables>,
   eventEmitter: EventEmitter2,
   coversService: CoversService,
@@ -68,7 +61,6 @@ export const synchronizeFromDataSource = async (
   for (const item of synchronizeAble.items) {
     await syncTags({
       ctx,
-      helpers,
       item,
       hasCollectionAsParent: false,
       parents: [],
@@ -90,7 +82,6 @@ export const synchronizeFromDataSource = async (
   for (const item of synchronizeAble.items) {
     await syncItem({
       ctx,
-      helpers,
       item,
       hasCollectionAsParent: false,
       parents: [],
@@ -114,11 +105,11 @@ export const synchronizeFromDataSource = async (
   }
 }
 
-const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
+const getItemTags = (item: SynchronizeAbleItem): string[] => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
-    return getItemTags(subItem, helpers)
+    return getItemTags(subItem)
   })
 
   const subTags = subTagsAsMap.reduce((acc, tags) => [...acc, ...tags], [])
@@ -131,19 +122,17 @@ const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
  * easily retrieve tags ids.
  */
 const syncTags = async ({
-  helpers,
   item,
   ctx,
 }: {
   ctx: Context
-  helpers: Helpers
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
 }) => {
   console.log(`syncTags for item ${item.name}`)
 
-  const tagNames = Array.from(new Set(getItemTags(item, helpers)))
+  const tagNames = Array.from(new Set(getItemTags(item)))
 
   console.log(`found ${tagNames.length} tags`)
 
@@ -162,7 +151,6 @@ const syncTags = async ({
 
 const syncItem = async ({
   ctx,
-  helpers,
   hasCollectionAsParent,
   item,
   parents,
@@ -172,7 +160,6 @@ const syncItem = async ({
   collectionRefreshQueue,
 }: {
   ctx: Context
-  helpers: Helpers
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
@@ -201,11 +188,11 @@ const syncItem = async ({
   }
 
   await Promise.all(
-    metadataForFolder.tags.map((name) => helpers.getOrCreateTagFromName(name)),
+    metadataForFolder.tags.map((name) => getOrCreateTagFromName(ctx.db, name)),
   )
 
   if (isFolder(item) && isCollection) {
-    await syncCollection({ ctx, item, helpers, collectionRefreshQueue })
+    await syncCollection({ ctx, item, collectionRefreshQueue })
   }
 
   if (isFolder(item)) {
@@ -215,14 +202,12 @@ const syncItem = async ({
           await createOrUpdateBook({
             ctx,
             item: subItem,
-            helpers,
             parents: [...parents, item],
             coversService,
           })
         } else if (isFolder(subItem)) {
           await syncItem({
             ctx,
-            helpers,
             hasCollectionAsParent: isCollection || hasCollectionAsParent,
             item: subItem,
             parents: [...parents, item],
@@ -240,7 +225,6 @@ const syncItem = async ({
     await createOrUpdateBook({
       ctx,
       item,
-      helpers,
       parents: [...parents, item],
       coversService,
     })

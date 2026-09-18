@@ -5,10 +5,7 @@ import {
   getBookCoverKey,
 } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
-import { saveCoverFromRarArchiveToBucket } from "src/covers/saveCoverFromRarArchiveToBucket"
 import type { Context } from "./types"
-import { saveCoverFromExternalLinkToBucket } from "src/covers/saveCoverFromExternalLinkToBucket"
-import { saveCoverFromZipArchiveToBucket } from "src/covers/saveCoverFromZipArchiveToBucket"
 import { CoversService } from "../../covers/covers.service"
 import { firstValueFrom } from "rxjs"
 import { pickCoverMetadata } from "./pickCoverMetadata"
@@ -72,11 +69,10 @@ export const updateCover = async ({
     metadataForCover.coverLink &&
     archiveExtractor
   ) {
-    const saved = await saveCoverFromRarArchiveToBucket(
+    const saved = await coversService.saveCoverFromRarEntry(
       coverObjectKey,
       archiveExtractor,
       metadataForCover.coverLink,
-      coversService,
     )
 
     return saved && expectedBucketCoverKey
@@ -89,11 +85,10 @@ export const updateCover = async ({
     metadataForCover.coverLink &&
     tmpFilePath
   ) {
-    const saved = await saveCoverFromZipArchiveToBucket(
+    const saved = await coversService.saveCoverFromZipEntry(
       coverObjectKey,
       tmpFilePath,
       metadataForCover.coverLink,
-      coversService,
     )
 
     return saved && expectedBucketCoverKey
@@ -105,10 +100,9 @@ export const updateCover = async ({
     metadataForCover?.type === "googleBookApi" &&
     metadataForCover.coverLink
   ) {
-    const saved = await saveCoverFromExternalLinkToBucket(
+    const saved = await coversService.saveCoverFromUrl(
       coverObjectKey,
       metadataForCover.coverLink,
-      coversService,
     )
 
     return saved && expectedBucketCoverKey
