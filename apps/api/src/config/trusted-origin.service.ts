@@ -3,31 +3,56 @@ import { AppConfigService } from "./AppConfigService"
 import { parseUrl } from "../lib/http/url"
 
 /**
- * Decides which browser origins may make credentialed (cookie-carrying)
- * requests. Auth cookies are host-scoped and ignore ports, so every port on
- * the web app's hostname shares the same cookie jar and counts as trusted;
- * anything else (e.g. a separately-hosted admin app) must be listed explicitly
- * via `API_CORS_TRUSTED_ORIGINS`.
+ * Decides what a browser origin is allowed to do, which splits in two because
+ * the web app and the admin panel authenticate differently.
+ *
+ * The app origin may make credentialed (cookie-carrying) requests and is
+ * exempt from the CSRF origin check. Auth cookies are host-scoped and ignore
+ * ports, so every port on the web app's hostname shares the same cookie jar
+ * and qualifies.
+ *
+ * The admin origin only gets CORS on `/admin/*`, without credentials: the
+ * panel authenticates with a Bearer token and never sends cookies, so granting
+ * it cookie powers would widen the blast radius of an admin-host compromise
+ * for nothing. It defaults to the app origins, which already cover the stock
+ * layout of serving the panel on another port of the same hostname.
  */
 @Injectable()
 export class TrustedOriginsService {
-  private readonly trustedOrigins: Set<string>
   private readonly appHostname: string | undefined
+  private readonly adminOrigin: string | undefined
 
   constructor(private appConfigService: AppConfigService) {
-    this.trustedOrigins = new Set(
-      this.appConfigService.API_CORS_TRUSTED_ORIGINS,
-    )
     this.appHostname = parseUrl(this.appConfigService.APP_PUBLIC_URL)?.hostname
+
+    const adminPublicUrl = this.appConfigService.ADMIN_PUBLIC_URL
+
+    this.adminOrigin = adminPublicUrl
+      ? parseUrl(adminPublicUrl)?.origin
+      : undefined
   }
 
-  isTrusted(origin: string | undefined): boolean {
-    if (!origin) return false
+  get originPolicyDescription(): string {
+    const appOrigins = this.appHostname
+      ? `any port on ${this.appHostname}`
+      : "none"
 
-    if (this.trustedOrigins.has(origin)) return true
+    return `app: ${appOrigins}; admin: ${this.adminOrigin ?? "not set"}`
+  }
+
+  isAppOrigin(origin: string | undefined): boolean {
+    if (!origin) return false
 
     const originHostname = parseUrl(origin)?.hostname
 
     return !!originHostname && originHostname === this.appHostname
+  }
+
+  isAdminOrigin(origin: string | undefined): boolean {
+    if (!origin) return false
+
+    if (this.adminOrigin) return origin === this.adminOrigin
+
+    return this.isAppOrigin(origin)
   }
 }

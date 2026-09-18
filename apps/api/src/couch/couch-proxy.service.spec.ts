@@ -44,7 +44,6 @@ const createService = () => {
   const appConfigService = {
     COUCH_DB_URL: "http://couchdb:5984",
     APP_PUBLIC_URL: "https://oboku.example.com",
-    API_CORS_TRUSTED_ORIGINS: ["https://admin.example.org"],
   }
   const trustedOriginsService = new TrustedOriginsService(
     // Config test double limited to what TrustedOriginsService reads.
@@ -75,7 +74,7 @@ describe("CouchProxyService CORS", () => {
     expect(headers.Vary).toBe("Origin")
   })
 
-  it("reflects an explicitly listed extra origin", () => {
+  it("gives the admin origin no CORS headers (it never replicates)", () => {
     const service = createService()
     const { headers, response } = createResponse()
 
@@ -84,9 +83,7 @@ describe("CouchProxyService CORS", () => {
       response,
     )
 
-    expect(headers["Access-Control-Allow-Origin"]).toBe(
-      "https://admin.example.org",
-    )
+    expect(headers["Access-Control-Allow-Origin"]).toBeUndefined()
   })
 
   it("gives an untrusted origin no CORS headers so the browser refuses it", () => {

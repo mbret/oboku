@@ -151,7 +151,7 @@ export class CouchProxyService {
       return
     }
 
-    if (this.trustedOriginsService.isTrusted(origin)) {
+    if (this.trustedOriginsService.isAppOrigin(origin)) {
       res.setHeader("Access-Control-Allow-Origin", origin)
       res.setHeader("Access-Control-Allow-Credentials", "true")
     }

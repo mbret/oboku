@@ -142,19 +142,12 @@ export class AppConfigService {
   }
 
   /**
-   * Extra origins allowed to make credentialed CORS requests, beyond any port
-   * on `APP_PUBLIC_URL`'s hostname (e.g. a separately-hosted admin app).
-   * Comma-separated list of full origins.
+   * Public URL of the admin panel. Only needed when it is served from a
+   * different hostname than the web app, which the stock layout (another port
+   * on `APP_PUBLIC_URL`'s hostname) is not.
    */
-  get API_CORS_TRUSTED_ORIGINS(): string[] {
-    const raw = this.config.get("API_CORS_TRUSTED_ORIGINS", { infer: true })
-
-    return (
-      raw
-        ?.split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean) ?? []
-    )
+  get ADMIN_PUBLIC_URL() {
+    return this.config.get("ADMIN_PUBLIC_URL", { infer: true })
   }
 
   get EMAIL_SMTP_HOST() {

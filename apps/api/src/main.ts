@@ -12,6 +12,7 @@ import { WebDavService } from "./webdav/webdav.service"
 import { CouchProxyService } from "./couch/couch-proxy.service"
 import { TrustedOriginsService } from "./config/trusted-origin.service"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
+import { createAdminCorsMiddleware } from "./admin/admin-cors.middleware"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -30,6 +31,10 @@ async function bootstrap() {
 
   const trustedOriginsService = app.get(TrustedOriginsService)
 
+  logger.log(
+    `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
+  )
+
   // Cookie parsing must precede the proxy mounts so both the raw proxy
   // middlewares and the Nest guard see `req.cookies` (it never reads the
   // body, so mounting it before the body parsers is safe).
@@ -44,6 +49,10 @@ async function bootstrap() {
 
   const couchProxyService = app.get(CouchProxyService)
   app.use("/couchdb", couchProxyService.middleware)
+
+  // The admin panel is Bearer-authenticated, so it gets CORS without
+  // credentials and is not subject to the credentialed policy below.
+  app.use("/admin", createAdminCorsMiddleware(trustedOriginsService))
 
   // CORS must be registered before the body parsers. express.json()/urlencoded()
   // reject a malformed or oversized body by throwing straight to Express's error
@@ -61,7 +70,7 @@ async function bootstrap() {
     origin: (
       origin: string | undefined,
       callback: (error: Error | null, allow?: boolean) => void,
-    ) => callback(null, trustedOriginsService.isTrusted(origin)),
+    ) => callback(null, trustedOriginsService.isAppOrigin(origin)),
     credentials: true,
   })
 

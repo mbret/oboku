@@ -2,6 +2,18 @@
 
 The admin panel is available by default at port `3003` . You have to setup a login and password to be able to sign in. This is not a user credential and is specific to the admin. Visit the [configuration](configuration/ "mention") section to setup your credentials.
 
+## Hosting the panel on its own hostname
+
+The default port-`3003` setup shares the web app's hostname and needs no configuration. Serving the panel from a different hostname (`admin.example.org` next to `app.example.org`) requires naming it:
+
+```
+ADMIN_PUBLIC_URL=https://admin.example.org
+```
+
+Without it the browser blocks every call the panel makes with a CORS error. The origins the API accepts are printed on start-up (`Browser origins — ...`), so compare that line with the origin in the browser error.
+
+The panel signs in with a Bearer token and never sends cookies, so this grants it nothing beyond reaching `/admin/*`: no cookie access, and no exemption from the CSRF origin check that protects reader sessions.
+
 ## User account creation
 
 Visit the [user-accounts.md](user-accounts.md "mention") section

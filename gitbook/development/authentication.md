@@ -42,7 +42,7 @@ The browser attaches `oboku_access_token` automatically ( `credentials: "include
 * **CouchDB**: the `/couchdb` proxy translates the cookie into the `Authorization: Bearer` header CouchDB validates itself, keeps an already-present header untouched (admin), and strips cookies from what it forwards upstream.
 * **Service worker**: inherits the cookie like any other client — the old auth message-passing between worker and main thread is gone. A background 401 simply propagates; the main thread refreshes on its own traffic.
 
-CORS reflects only trusted origins (any port on the web hostname plus `API_CORS_TRUSTED_ORIGINS`) with credentials enabled, and a defense-in-depth middleware refuses cookie-authenticated mutations whose `Origin` is not trusted (CSRF; `SameSite=Lax` is the primary layer).
+CORS splits by how a client authenticates. Cookie origins — any port on the web hostname — are reflected with credentials enabled, and a defense-in-depth middleware refuses cookie-authenticated mutations whose `Origin` is not one of them (CSRF; `SameSite=Lax` is the primary layer). The admin panel authenticates with a Bearer token, so `/admin/*` is reflected without `Access-Control-Allow-Credentials` and takes its origin from `ADMIN_PUBLIC_URL`, defaulting to the cookie origins. Withholding credentials there keeps a compromised admin host from acting as a signed-in reader.
 
 ## Refresh
 
