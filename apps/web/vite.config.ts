@@ -137,6 +137,18 @@ export default defineConfig(({ mode }) => ({
       strategies: "injectManifest",
       injectManifest: {
         rollupFormat: "iife",
+        /**
+         * `@zip.js/zip.js` (2.8.34) reads `import.meta.url` in
+         * `lib/zip-core-base.js` to seed the base URI it resolves external
+         * worker scripts against. We never configure `workerScripts`, and the
+         * read is already wrapped in a `try`/`catch` upstream, so the empty
+         * object rolldown substitutes in the `iife` service worker is correct.
+         */
+        rollupOptions: {
+          checks: {
+            emptyImportMeta: false,
+          },
+        },
         // globPatterns: ["**\/*.{js,css,html,js.mem,ico,json}"],
         // we need to pre-cache the entire assets as the app is fully offline
         globPatterns: ["**/*"],
