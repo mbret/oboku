@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { from, of, switchMap, tap } from "rxjs"
+import { firstValueFrom, from, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "src/config/AppConfigService"
 import fs from "node:fs"
@@ -9,6 +9,17 @@ import { CoversS3Service } from "./covers-s3.service"
 
 const logger = new Logger("CoversService")
 
+const WEBP_MIME_TYPE = "image/webp"
+const JPEG_MIME_TYPE = "image/jpeg"
+
+type DeliveryFormat = typeof WEBP_MIME_TYPE | typeof JPEG_MIME_TYPE
+
+const isDeliveryFormat = (format: string): format is DeliveryFormat =>
+  format === WEBP_MIME_TYPE || format === JPEG_MIME_TYPE
+
+const resolveDeliveryFormat = (format?: string): DeliveryFormat =>
+  format && isDeliveryFormat(format) ? format : WEBP_MIME_TYPE
+
 export type StoredCover = {
   key: string
   sizeInBytes: number
@@ -17,6 +28,8 @@ export type StoredCover = {
 
 @Injectable()
 export class CoversService {
+  private deliverablePlaceholders = new Map<DeliveryFormat, Promise<Buffer>>()
+
   constructor(
     public appConfig: AppConfigService,
     private fsService: CoversFsService,
@@ -29,21 +42,83 @@ export class CoversService {
       : this.fsService
   }
 
-  private getCoverPlaceholder() {
-    return fs.promises.readFile(
-      path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"),
+  private getDeliverablePlaceholder(format: DeliveryFormat) {
+    const alreadyEncoded = this.deliverablePlaceholders.get(format)
+
+    if (alreadyEncoded) return alreadyEncoded
+
+    const encodePlaceholder = (placeholder: Buffer) =>
+      firstValueFrom(
+        this.resizeCover(placeholder, {
+          ...this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY,
+          format,
+        }),
+      )
+
+    const forgetFailedEncoding = (error: unknown) => {
+      this.deliverablePlaceholders.delete(format)
+
+      throw error
+    }
+
+    const encoding = fs.promises
+      .readFile(path.join(this.appConfig.ASSETS_DIR, "cover-placeholder.jpg"))
+      .then(encodePlaceholder)
+      .catch(forgetFailedEncoding)
+
+    this.deliverablePlaceholders.set(format, encoding)
+
+    return encoding
+  }
+
+  private async isDeliverableAsIs(
+    cover: Uint8Array<ArrayBufferLike>,
+    format: DeliveryFormat,
+  ) {
+    if (format !== WEBP_MIME_TYPE) return false
+
+    const maximumSize = this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY
+    const metadata = await sharp(cover).metadata()
+
+    return (
+      metadata.format === "webp" &&
+      metadata.width <= maximumSize.width &&
+      metadata.height <= maximumSize.height
     )
   }
 
-  getCover(id: string) {
-    return from(this.backend.getCover(id)).pipe(
-      switchMap((cover) => {
-        if (cover) {
-          return of(cover)
-        }
+  private async deliverStoredCover(
+    cover: Uint8Array<ArrayBufferLike>,
+    format: DeliveryFormat,
+  ) {
+    if (await this.isDeliverableAsIs(cover, format)) return cover
 
-        return from(this.getCoverPlaceholder())
+    return firstValueFrom(
+      this.resizeCover(cover, {
+        ...this.appConfig.COVERS_MAXIMUM_SIZE_FOR_DELIVERY,
+        format,
       }),
+    )
+  }
+
+  /**
+   * Cover bytes ready to be sent as `format`. Stored covers are already webp
+   * and capped at `COVERS_MAXIMUM_SIZE_FOR_STORAGE`, so they are delivered as
+   * they are and only a format or size mismatch pays for a re-encode. A format
+   * the service cannot produce is served as webp.
+   */
+  getCoverForDelivery(id: string, format?: string) {
+    const deliveryFormat = resolveDeliveryFormat(format)
+
+    const deliverStoredCoverOrPlaceholder = (
+      cover: Uint8Array<ArrayBufferLike> | null,
+    ) =>
+      cover
+        ? this.deliverStoredCover(cover, deliveryFormat)
+        : this.getDeliverablePlaceholder(deliveryFormat)
+
+    return from(this.backend.getCover(id)).pipe(
+      switchMap(deliverStoredCoverOrPlaceholder),
     )
   }
 
@@ -91,7 +166,7 @@ export class CoversService {
       height,
       width,
       format,
-    }: { width: number; height: number; format: string },
+    }: { width: number; height: number; format: DeliveryFormat },
   ) {
     const resized = sharp(cover).resize({
       width,
@@ -101,7 +176,7 @@ export class CoversService {
     })
 
     const converted =
-      format === "image/jpeg"
+      format === JPEG_MIME_TYPE
         ? resized.toFormat("jpeg").jpeg({
             force: true,
           })

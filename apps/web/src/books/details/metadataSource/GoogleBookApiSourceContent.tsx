@@ -1,4 +1,4 @@
-import { List, ListSubheader } from "@mui/material"
+import { Link, List, ListSubheader } from "@mui/material"
 import type { GoogleBookApiMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { MetadataFieldRow } from "./MetadataFieldRow"
@@ -26,7 +26,21 @@ export const GoogleBookApiSourceContent = ({ metadata }: Props) => (
       label={L.rating}
       value={metadata?.rating !== undefined ? `${metadata.rating}` : undefined}
     />
-    <MetadataFieldRow label={L.coverLink} value={metadata?.coverLink} />
+    <MetadataFieldRow
+      label={L.coverLink}
+      value={
+        metadata?.coverLink ? (
+          <Link
+            href={metadata.coverLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            title={metadata.coverLink}
+          >
+            Open image
+          </Link>
+        ) : undefined
+      }
+    />
     <MetadataFieldRow
       label={L.pageCount}
       value={

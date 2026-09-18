@@ -7,7 +7,6 @@ const trustedOrigins = new TrustedOriginsService(
   // Config test double limited to what TrustedOriginsService reads.
   {
     APP_PUBLIC_URL: "https://oboku.example.com",
-    API_CORS_TRUSTED_ORIGINS: [],
   } as unknown as AppConfigService,
 )
 

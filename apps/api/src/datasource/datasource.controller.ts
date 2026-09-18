@@ -7,6 +7,7 @@ import {
   Post,
 } from "@nestjs/common"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
+import { AppConfigService } from "src/config/AppConfigService"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { DataSourceService } from "./datasource.service"
@@ -21,12 +22,13 @@ export class DataSourcesController implements OnModuleInit {
     private readonly taskQueueService: InMemoryTaskQueueService,
     private readonly syncReportPostgresService: SyncReportPostgresService,
     private readonly datasourceService: DataSourceService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.SYNC_QUEUE_NAME,
-      maxConcurrent: 3,
+      maxConcurrent: this.appConfig.QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })

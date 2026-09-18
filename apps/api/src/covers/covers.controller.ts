@@ -2,14 +2,14 @@ import {
   Controller,
   Get,
   Header,
-  NotFoundException,
   OnModuleInit,
   Param,
   Query,
   StreamableFile,
 } from "@nestjs/common"
-import { defer, map, mergeMap, type Observable } from "rxjs"
+import { defer, map, type Observable } from "rxjs"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
+import { AppConfigService } from "src/config/AppConfigService"
 import { CoversService } from "./covers.service"
 import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import { emailToNameHex } from "src/couch/couch.service"
@@ -22,12 +22,13 @@ export class CoversController implements OnModuleInit {
   constructor(
     private taskQueueService: InMemoryTaskQueueService,
     private coversService: CoversService,
+    private appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 1,
+      maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
       deduplicate: true,
     })
   }
@@ -69,31 +70,15 @@ export class CoversController implements OnModuleInit {
     objectKey: string,
     format?: string,
   ): Observable<StreamableFile> {
-    const resolvedFormat = format || "image/webp"
-
     const response$ = defer(() =>
-      this.coversService.getCover(objectKey).pipe(
-        mergeMap((cover) => {
-          if (!cover) {
-            throw new NotFoundException()
-          }
-
-          const resizedCover$ = this.coversService.resizeCover(cover, {
-            width: 600,
-            height: 600,
-            format: resolvedFormat,
-          })
-
-          return resizedCover$.pipe(
-            map(
-              (buffer) =>
-                new StreamableFile(buffer, {
-                  disposition: `inline`,
-                  type: "image/webp",
-                }),
-            ),
-          )
-        }),
+      this.coversService.getCoverForDelivery(objectKey, format).pipe(
+        map(
+          (cover) =>
+            new StreamableFile(cover, {
+              disposition: `inline`,
+              type: "image/webp",
+            }),
+        ),
       ),
     )
 

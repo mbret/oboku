@@ -16,7 +16,9 @@ import {
 } from "../couch/couch.service"
 import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
 import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
+import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
 import bcrypt from "bcrypt"
+import type createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { SecretsService } from "src/config/SecretsService"
@@ -227,6 +229,7 @@ export class AuthService {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })
+      void this.ensureUserDbIndexesInBackground(adminNano, dbName)
     }
 
     const { accessToken, refreshToken, sessionId } = await this.generateTokens({
@@ -245,6 +248,22 @@ export class AuthService {
       nameHex,
       dbName,
       email: couchUser.email,
+    }
+  }
+
+  /**
+   * Never awaited: indexes only make queries faster, so neither their retries
+   * nor a failure may delay the sign-up. The startup pass in
+   * `UserDbIndexesService` retries on the next deploy.
+   */
+  private async ensureUserDbIndexesInBackground(
+    adminNano: createNano.ServerScope,
+    dbName: string,
+  ) {
+    try {
+      await ensureUserDbIndexes(adminNano.use(dbName))
+    } catch (error) {
+      this.logger.error(`Unable to ensure indexes on ${dbName}`, error)
     }
   }
 

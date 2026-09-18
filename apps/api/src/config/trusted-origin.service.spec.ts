@@ -3,46 +3,107 @@ import { TrustedOriginsService } from "./trusted-origin.service"
 
 const createService = ({
   appPublicUrl = "https://oboku.example.com",
-  extraOrigins = [] as string[],
+  adminPublicUrl,
+}: {
+  appPublicUrl?: string
+  adminPublicUrl?: string
 } = {}) =>
   new TrustedOriginsService(
     // Config test double limited to what the service reads.
     {
       APP_PUBLIC_URL: appPublicUrl,
-      API_CORS_TRUSTED_ORIGINS: extraOrigins,
+      ADMIN_PUBLIC_URL: adminPublicUrl,
     } as unknown as AppConfigService,
   )
 
 describe("TrustedOriginsService", () => {
-  it("trusts any port and scheme on the web app hostname (shared cookie jar)", () => {
-    const service = createService()
+  describe("isAppOrigin", () => {
+    it("trusts any port and scheme on the web app hostname (shared cookie jar)", () => {
+      const service = createService()
 
-    expect(service.isTrusted("https://oboku.example.com")).toBe(true)
-    expect(service.isTrusted("https://oboku.example.com:8443")).toBe(true)
-    expect(service.isTrusted("http://oboku.example.com:5173")).toBe(true)
-  })
-
-  it("rejects other hostnames, including subdomains", () => {
-    const service = createService()
-
-    expect(service.isTrusted("https://evil.example.net")).toBe(false)
-    expect(service.isTrusted("https://sub.oboku.example.com")).toBe(false)
-  })
-
-  it("trusts explicitly configured extra origins by exact match", () => {
-    const service = createService({
-      extraOrigins: ["https://admin.example.org"],
+      expect(service.isAppOrigin("https://oboku.example.com")).toBe(true)
+      expect(service.isAppOrigin("https://oboku.example.com:8443")).toBe(true)
+      expect(service.isAppOrigin("http://oboku.example.com:5173")).toBe(true)
     })
 
-    expect(service.isTrusted("https://admin.example.org")).toBe(true)
-    expect(service.isTrusted("https://admin.example.org:444")).toBe(false)
+    it("rejects other hostnames, including subdomains", () => {
+      const service = createService()
+
+      expect(service.isAppOrigin("https://evil.example.net")).toBe(false)
+      expect(service.isAppOrigin("https://sub.oboku.example.com")).toBe(false)
+    })
+
+    it("never trusts the admin origin with cookies", () => {
+      const service = createService({
+        adminPublicUrl: "https://admin.example.org",
+      })
+
+      expect(service.isAppOrigin("https://admin.example.org")).toBe(false)
+    })
+
+    it("rejects missing or malformed origins", () => {
+      const service = createService()
+
+      expect(service.isAppOrigin(undefined)).toBe(false)
+      expect(service.isAppOrigin("null")).toBe(false)
+      expect(service.isAppOrigin("not a url")).toBe(false)
+    })
   })
 
-  it("rejects missing or malformed origins", () => {
-    const service = createService()
+  describe("isAdminOrigin", () => {
+    it("falls back to the app origin when unconfigured", () => {
+      const service = createService()
 
-    expect(service.isTrusted(undefined)).toBe(false)
-    expect(service.isTrusted("null")).toBe(false)
-    expect(service.isTrusted("not a url")).toBe(false)
+      expect(service.isAdminOrigin("https://oboku.example.com:3003")).toBe(true)
+      expect(service.isAdminOrigin("https://admin.example.org")).toBe(false)
+    })
+
+    it("matches the configured admin origin exactly", () => {
+      const service = createService({
+        adminPublicUrl: "https://admin.example.org",
+      })
+
+      expect(service.isAdminOrigin("https://admin.example.org")).toBe(true)
+      expect(service.isAdminOrigin("https://admin.example.org:444")).toBe(false)
+      expect(service.isAdminOrigin("https://evil.example.net")).toBe(false)
+    })
+
+    it("ignores a trailing slash or path on the configured URL", () => {
+      const service = createService({
+        adminPublicUrl: "https://admin.example.org/",
+      })
+
+      expect(service.isAdminOrigin("https://admin.example.org")).toBe(true)
+    })
+
+    it("replaces the app-origin fallback once configured", () => {
+      const service = createService({
+        adminPublicUrl: "https://admin.example.org",
+      })
+
+      expect(service.isAdminOrigin("https://oboku.example.com:3003")).toBe(
+        false,
+      )
+    })
+
+    it("rejects missing origins", () => {
+      const service = createService({
+        adminPublicUrl: "https://admin.example.org",
+      })
+
+      expect(service.isAdminOrigin(undefined)).toBe(false)
+    })
+  })
+
+  it("describes both policies for bootstrap logging", () => {
+    expect(createService().originPolicyDescription).toBe(
+      "app: any port on oboku.example.com; admin: not set",
+    )
+    expect(
+      createService({ adminPublicUrl: "https://admin.example.org" })
+        .originPolicyDescription,
+    ).toBe(
+      "app: any port on oboku.example.com; admin: https://admin.example.org",
+    )
   })
 })

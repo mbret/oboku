@@ -3,6 +3,7 @@ import { OnEvent } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "../events"
 import { BooksMetadataService } from "./books-metadata.service"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
+import { AppConfigService } from "src/config/AppConfigService"
 import { from } from "rxjs"
 import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
 import type { RefreshBookMetadataRequest } from "@oboku/shared"
@@ -15,12 +16,13 @@ export class BooksController implements OnModuleInit {
   constructor(
     private booksMetadataService: BooksMetadataService,
     private readonly taskQueueService: InMemoryTaskQueueService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.BOOKS_METADATA_REFRESH_QUEUE,
-      maxConcurrent: 3,
+      maxConcurrent: this.appConfig.QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })
