@@ -34,7 +34,7 @@ export const createCsrfOriginMiddleware = (
 
     const origin = request.headers.origin
 
-    if (origin && !trustedOrigins.isTrusted(origin)) {
+    if (origin && !trustedOrigins.isCookieOrigin(origin)) {
       response.status(403).json({ message: "Origin not allowed" })
 
       return

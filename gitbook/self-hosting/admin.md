@@ -4,13 +4,15 @@ The admin panel is available by default at port `3003` . You have to setup a log
 
 ## Hosting the panel on its own hostname
 
-The API only answers browser requests coming from an origin it trusts: any port on `APP_PUBLIC_URL`'s hostname, plus whatever `API_CORS_TRUSTED_ORIGINS` lists. Serving the panel on a different hostname than the web app (`admin.example.org` next to `app.example.org`) therefore requires adding its origin explicitly:
+The default port-`3003` setup shares the web app's hostname and needs no configuration. Serving the panel from a different hostname (`admin.example.org` next to `app.example.org`) requires naming it:
 
 ```
-API_CORS_TRUSTED_ORIGINS=https://admin.example.org
+ADMIN_PUBLIC_URL=https://admin.example.org
 ```
 
-Without it the browser blocks every call the panel makes with a CORS error, and the API answers the preflight with a `404` instead of the expected headers. The origins the API trusts are printed on start-up (`Trusted browser origins: ...`), so compare that line with the origin in the browser error. The default port-`3003` setup shares the web app's hostname and needs no extra configuration.
+Without it the browser blocks every call the panel makes with a CORS error. The origins the API accepts are printed on start-up (`Browser origins — ...`), so compare that line with the origin in the browser error.
+
+The panel signs in with a Bearer token and never sends cookies, so this grants it nothing beyond reaching `/admin/*`: no cookie access, and no exemption from the CSRF origin check that protects reader sessions.
 
 ## User account creation
 

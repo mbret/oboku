@@ -32,10 +32,10 @@ VITE_API_URL_4=yourapiurl4
 # Public URL of the web app. Also drives which browser origins may make
 # credentialed (cookie) requests: every port on this hostname is trusted.
 APP_PUBLIC_URL=http://app-public-url
-# (Optional) Extra origins allowed to make credentialed requests, beyond any
-# port on APP_PUBLIC_URL's hostname (e.g. an admin app hosted elsewhere).
-# Comma-separated list of full origins.
-API_CORS_TRUSTED_ORIGINS=https://admin.example.org
+# (Optional) Public URL of the admin panel. Only needed when the panel is
+# served from a different hostname than the web app; the default layout
+# (another port on APP_PUBLIC_URL's hostname) needs nothing here.
+ADMIN_PUBLIC_URL=https://admin.example.org
 ```
 {% endcode %}
 
