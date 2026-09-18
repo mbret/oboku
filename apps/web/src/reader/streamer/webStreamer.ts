@@ -1,11 +1,7 @@
 import { Streamer } from "@prose-reader/streamer"
 import { getBookFile } from "../../download/getBookFile.shared"
-import {
-  getArchiveForRarFile,
-  getArchiveForZipFile,
-  isPdfFile,
-  isRarFile,
-} from "./archives.shared"
+import { getArchiveForZipFile, isPdfFile, isRarFile } from "./archives.shared"
+import { getArchiveForRarFile } from "./rarArchive"
 import { StreamerFileNotFoundError } from "../../errors/errors.shared"
 import { onResourceError } from "./onResourceError.shared"
 import { createArchiveFromPdf } from "@prose-reader/enhancer-pdf"
