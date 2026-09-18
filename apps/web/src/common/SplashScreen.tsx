@@ -1,11 +1,4 @@
-import {
-  Box,
-  Fade,
-  LinearProgress,
-  Stack,
-  Typography,
-  styled,
-} from "@mui/material"
+import { Box, Fade, LinearProgress, styled } from "@mui/material"
 import { memo, useEffect, useState } from "react"
 import { Logo } from "./Logo"
 
@@ -33,22 +26,19 @@ const LogoBox = styled(Box)({
   position: "relative",
 })
 
-const SlowBootStack = styled(Stack)(function styleSlowBootStack({ theme }) {
-  return {
-    position: "absolute",
-    top: "100%",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: 200,
-    marginTop: theme.spacing(3),
-    alignItems: "center",
-    gap: theme.spacing(1),
-  }
-})
-
-const SlowBootLinearProgress = styled(LinearProgress)({
-  width: "100%",
-})
+const SlowBootLinearProgress = styled(LinearProgress)(
+  function styleSlowBootLinearProgress({ theme }) {
+    return {
+      position: "absolute",
+      top: "100%",
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: 200,
+      height: 8,
+      marginTop: theme.spacing(3),
+    }
+  },
+)
 
 /**
  * Covers the whole boot, from the configuration fetch to the app shell being
@@ -85,12 +75,7 @@ export const SplashScreen = memo(function SplashScreen({
             appear={false}
             timeout={FADE_TIMEOUT_MS}
           >
-            <SlowBootStack>
-              <SlowBootLinearProgress />
-              <Typography variant="body2" color="text.secondary" noWrap>
-                Still loading…
-              </Typography>
-            </SlowBootStack>
+            <SlowBootLinearProgress />
           </Fade>
         </LogoBox>
       </SplashScreenBox>
