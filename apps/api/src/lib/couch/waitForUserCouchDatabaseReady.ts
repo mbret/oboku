@@ -1,10 +1,10 @@
 import type createNano from "nano"
-import { isCouchNotFound } from "./dbHelpers"
+import { doesCouchDatabaseExist } from "./dbHelpers"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
 /**
- * After a new `_users` row, couch_peruser creates `userdb-…` asynchronously.
+ * After a `_users` row is written, couch_peruser creates `userdb-…` asynchronously.
  * Poll until it exists so the client does not replicate against a missing DB.
  *
  * @param options.deadline - Absolute time limit in ms (same epoch as `Date.now()`).
@@ -17,16 +17,11 @@ export const waitForUserCouchDatabaseReady = async (
   const { deadline, intervalMs = 80 } = options
 
   while (Date.now() < deadline) {
-    try {
-      await server.db.get(dbName)
-      return
-    } catch (error) {
-      if (!isCouchNotFound(error)) throw error
-    }
+    if (await doesCouchDatabaseExist(server, dbName)) return
     await sleep(intervalMs)
   }
 
   throw new Error(
-    `CouchDB user database "${dbName}" was not created by couch_peruser before the deadline`,
+    `CouchDB user database "${dbName}" was not created by couch_peruser before the deadline. couch_peruser is likely stuck: check the CouchDB log for repeated couch_peruser_sup restarts`,
   )
 }

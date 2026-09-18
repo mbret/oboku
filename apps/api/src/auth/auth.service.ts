@@ -14,7 +14,11 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
+import {
+  doesCouchDatabaseExist,
+  getOrCreateUserFromEmail,
+  touchCouchUser,
+} from "../lib/couch/dbHelpers"
 import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
 import bcrypt from "bcrypt"
@@ -42,7 +46,7 @@ import type { AuthTokens } from "./auth-cookies"
  */
 type AuthenticatedSession = AuthTokens & AuthSessionResponse
 
-/** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
+/** Max time to wait for couch_peruser to create `userdb-…` after a `_users` row is written. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
 /**
@@ -225,7 +229,17 @@ export class AuthService {
 
     const dbName = emailToUserDbName(couchUser.name)
 
-    if (couchUserCreated) {
+    const userDbMissing =
+      !couchUserCreated && !(await doesCouchDatabaseExist(adminNano, dbName))
+
+    if (userDbMissing) {
+      this.logger.warn(
+        `User database ${dbName} is missing for ${couchUser.email}, asking couch_peruser to recreate it`,
+      )
+      await touchCouchUser(adminNano, couchUser)
+    }
+
+    if (couchUserCreated || userDbMissing) {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })

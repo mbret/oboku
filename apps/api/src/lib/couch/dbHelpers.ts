@@ -51,6 +51,27 @@ export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
+export function isCouchConflict(error: unknown): boolean {
+  return isCouchRequestError(error) && error.statusCode === 409
+}
+
+export const doesCouchDatabaseExist = async (
+  server: createNano.ServerScope,
+  dbName: string,
+) => {
+  try {
+    await server.db.get(dbName)
+    return true
+  } catch (error) {
+    if (isCouchNotFound(error)) return false
+    throw error
+  }
+}
+
+/**
+ * Destroys the database before the `_users` doc so the database can never
+ * outlive its user: a later sign-up with the same email must start empty.
+ */
 export const deleteCouchUser = async (
   db: createNano.ServerScope,
   email: string,
@@ -94,6 +115,25 @@ export const getOrCreateUserFromEmail = async (
   const createdUser = await createUser(db, email, generatedPassword)
 
   return { user: createdUser, created: true }
+}
+
+/**
+ * couch_peruser re-runs its create-database-and-set-security step on every
+ * change to a `_users` doc, so re-saving the doc unchanged makes it recreate a
+ * database that vanished under a live user. A conflict means a concurrent
+ * sign-in already did so.
+ */
+export const touchCouchUser = async (
+  db: createNano.ServerScope,
+  user: User,
+) => {
+  const usersDb = db.use<User>("_users")
+
+  try {
+    await usersDb.insert(user, user._id)
+  } catch (error) {
+    if (!isCouchConflict(error)) throw error
+  }
 }
 
 export async function atomicUpdate<

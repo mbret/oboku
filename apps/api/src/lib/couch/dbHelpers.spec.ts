@@ -1,5 +1,10 @@
 import type createNano from "nano"
-import { addTagsToBookIfNotExist } from "./dbHelpers"
+import { User } from "../couchDbEntities"
+import {
+  addTagsToBookIfNotExist,
+  doesCouchDatabaseExist,
+  touchCouchUser,
+} from "./dbHelpers"
 
 type StoredDoc = {
   _id: string
@@ -84,5 +89,77 @@ describe("addTagsToBookIfNotExist", () => {
     expect(store.get("book-1")?.tags).toEqual(["tag-a", "tag-b"])
     expect(store.get("tag-a")?.books).toEqual(["book-1"])
     expect(store.get("tag-b")?.books).toEqual(["book-1"])
+  })
+})
+
+const couchError = (statusCode: number, message: string) =>
+  Object.assign(new Error(message), { statusCode })
+
+describe("touchCouchUser", () => {
+  const user = new User(
+    "org.couchdb.user:reader@example.com",
+    "reader@example.com",
+    "secret",
+  )
+  user._rev = "3-abc"
+
+  const createFakeServer = (insert: jest.Mock) =>
+    // Only `_users`.insert is exercised; nano's full ServerScope surface is
+    // irrelevant to these tests.
+    ({ use: () => ({ insert }) }) as unknown as createNano.ServerScope
+
+  it("re-saves the user doc under its own id", async () => {
+    const insert = jest.fn().mockResolvedValue({ ok: true })
+
+    await touchCouchUser(createFakeServer(insert), user)
+
+    expect(insert).toHaveBeenCalledWith(user, user._id)
+  })
+
+  it("ignores a conflict, which means a concurrent sign-in already re-saved it", async () => {
+    const insert = jest.fn().mockRejectedValue(couchError(409, "conflict"))
+
+    await expect(
+      touchCouchUser(createFakeServer(insert), user),
+    ).resolves.toBeUndefined()
+  })
+
+  it("rethrows any other failure", async () => {
+    const insert = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+
+    await expect(
+      touchCouchUser(createFakeServer(insert), user),
+    ).rejects.toThrow("unauthorized")
+  })
+})
+
+describe("doesCouchDatabaseExist", () => {
+  const createFakeServer = (get: jest.Mock) =>
+    // Only `db.get` is exercised; nano's full ServerScope surface is
+    // irrelevant to these tests.
+    ({ db: { get } }) as unknown as createNano.ServerScope
+
+  it("is true when the database answers", async () => {
+    const get = jest.fn().mockResolvedValue({ db_name: "userdb-1" })
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(true)
+  })
+
+  it("is false when the database is missing", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(404, "not_found"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(false)
+  })
+
+  it("rethrows any other failure", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).rejects.toThrow("unauthorized")
   })
 })
