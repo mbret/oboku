@@ -1,13 +1,14 @@
 import { Injectable, Logger } from "@nestjs/common"
+import axios from "axios"
+import type { Extractor } from "node-unrar-js"
 import { firstValueFrom, from, switchMap, tap } from "rxjs"
 import sharp from "sharp"
+import unzipper from "unzipper"
 import { AppConfigService } from "src/config/AppConfigService"
 import fs from "node:fs"
 import path from "node:path"
 import { CoversFsService } from "./covers-fs.service"
 import { CoversS3Service } from "./covers-s3.service"
-
-const logger = new Logger("CoversService")
 
 const WEBP_MIME_TYPE = "image/webp"
 const JPEG_MIME_TYPE = "image/jpeg"
@@ -20,6 +21,10 @@ const isDeliveryFormat = (format: string): format is DeliveryFormat =>
 const resolveDeliveryFormat = (format?: string): DeliveryFormat =>
   format && isDeliveryFormat(format) ? format : WEBP_MIME_TYPE
 
+const isUnsupportedImageFormatError = (error: unknown) =>
+  error instanceof Error &&
+  error.message === "Input buffer contains unsupported image format"
+
 export type StoredCover = {
   key: string
   sizeInBytes: number
@@ -28,6 +33,7 @@ export type StoredCover = {
 
 @Injectable()
 export class CoversService {
+  private readonly logger = new Logger(CoversService.name)
   private deliverablePlaceholders = new Map<DeliveryFormat, Promise<Buffer>>()
 
   constructor(
@@ -135,13 +141,116 @@ export class CoversService {
           tap(() => {
             const coverSize = Buffer.byteLength(resized)
 
-            logger.debug(
+            this.logger.debug(
               `Saved cover ${objectKey} with a size of ${(coverSize / 1024).toFixed(2)} KB`,
             )
           }),
         ),
       ),
     )
+  }
+
+  async saveCoverFromUrl(objectKey: string, url: string): Promise<boolean> {
+    this.logger.log(`prepare to save cover ${objectKey}`)
+
+    try {
+      const response = await axios.get<ArrayBuffer>(url, {
+        responseType: "arraybuffer",
+      })
+
+      await firstValueFrom(
+        this.saveCover(Buffer.from(response.data), objectKey),
+      )
+
+      this.logger.log(`cover ${objectKey} has been saved/updated`)
+
+      return true
+    } catch (error) {
+      this.logger.error(error)
+
+      return false
+    }
+  }
+
+  async saveCoverFromRarEntry(
+    objectKey: string,
+    extractor: Extractor<Uint8Array>,
+    entryPath: string,
+  ): Promise<boolean> {
+    this.logger.log(`prepare to save cover ${objectKey}`)
+
+    try {
+      const extracted = extractor.extract({ files: [entryPath] })
+      const files = [...extracted.files] // need to iterate till the end to release memory
+      const entry = files[0]
+
+      if (!entry?.extraction) return false
+
+      await firstValueFrom(
+        this.saveCover(Buffer.from(entry.extraction), objectKey),
+      )
+
+      this.logger.log(`cover ${objectKey} has been saved/updated`)
+
+      return true
+    } catch (error) {
+      this.logger.error(error)
+
+      return false
+    }
+  }
+
+  async saveCoverFromZipEntry(
+    objectKey: string,
+    archivePath: string,
+    entryPath: string,
+  ): Promise<boolean> {
+    if (entryPath === "") {
+      this.logger.error(
+        `coverPath is empty string, ignoring process`,
+        objectKey,
+      )
+
+      return false
+    }
+
+    this.logger.log(`prepare to save cover ${objectKey}`)
+
+    const zip = fs
+      .createReadStream(archivePath)
+      .pipe(unzipper.Parse({ forceStream: true }))
+
+    let saved = false
+
+    try {
+      for await (const entry of zip) {
+        if (entry.path !== entryPath) {
+          entry.autodrain()
+          continue
+        }
+
+        await firstValueFrom(this.saveCover(await entry.buffer(), objectKey))
+
+        this.logger.log(`cover ${objectKey} has been saved/updated`)
+
+        saved = true
+      }
+
+      return saved
+    } catch (error) {
+      if (isUnsupportedImageFormatError(error)) {
+        this.logger.error(
+          `It seems input is not a valid image. This can happens when for example the file is encrypted or something else went wrong during archive extraction`,
+          error,
+        )
+
+        return false
+      }
+
+      this.logger.error(error)
+
+      return false
+    }
   }
 
   isCoverExist(objectKey: string) {

@@ -1,7 +1,9 @@
 import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
-import { saveCoverFromExternalLinkToBucket } from "src/covers/saveCoverFromExternalLinkToBucket"
+import { Logger } from "@nestjs/common"
 import { CoversService } from "src/covers/covers.service"
 import { firstValueFrom } from "rxjs"
+
+const logger = new Logger("saveOrUpdateCover")
 
 export const saveOrUpdateCover = async (
   prevCollection: Pick<CollectionDocType, "_id" | "metadata">,
@@ -25,16 +27,14 @@ export const saveOrUpdateCover = async (
     cover.uri === existingCover.uri &&
     (await firstValueFrom(coversService.isCoverExist(coverKey)))
   ) {
-    console.log(`Already have cover ${coverKey} for ${cover.uri}`)
+    logger.log(`Already have cover ${coverKey} for ${cover.uri}`)
 
     return
   }
 
-  try {
-    await saveCoverFromExternalLinkToBucket(coverKey, cover.uri, coversService)
+  const saved = await coversService.saveCoverFromUrl(coverKey, cover.uri)
 
-    console.log(`Successfully saved cover ${cover.uri} at ${coverKey}`)
-  } catch (e) {
-    console.error(e)
+  if (saved) {
+    logger.log(`Successfully saved cover ${cover.uri} at ${coverKey}`)
   }
 }

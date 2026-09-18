@@ -1,8 +1,5 @@
 import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
-import {
-  type DataSourcePlugin,
-  type SynchronizeAbleDataSource,
-} from "src/plugins/types"
+import type { SynchronizeAbleDataSource } from "src/plugins/types"
 import { updateTagsForBook } from "./updateTagsForBook"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections"
 import {
@@ -11,6 +8,7 @@ import {
   atomicUpdate,
   createBook,
   findOne,
+  insert,
 } from "src/couch/dbHelpers"
 import type { Context } from "src/datasource/sync/types"
 import type { CoversService } from "src/covers/covers.service"
@@ -19,7 +17,6 @@ import { deleteDanglingLinks } from "./deleteDanglingLinks"
 import { logger } from "./logger"
 import type { LinkCandidate } from "src/plugins/types"
 
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 /**
@@ -38,9 +35,15 @@ function isFolder(
   return (item as SynchronizeAbleItem).type === "folder"
 }
 
+/**
+ * A metadata refresh is best-effort: its failure must never fail the sync.
+ */
+function logMetadataRefreshFailure(error: unknown) {
+  logger.error(error)
+}
+
 export const createOrUpdateBook = async ({
   ctx,
-  helpers,
   parents,
   item,
   coversService,
@@ -48,7 +51,6 @@ export const createOrUpdateBook = async ({
   ctx: Context
   parents: SynchronizeAbleItem[]
   item: SynchronizeAbleItem
-  helpers: Helpers
   coversService: CoversService
 }) => {
   const { dataSourceType, syncReport, db } = ctx
@@ -97,9 +99,11 @@ export const createOrUpdateBook = async ({
     }
 
     if (linkMatchingItem?.book) {
-      existingBook = await helpers.findOne("book", {
-        selector: { _id: linkMatchingItem.book },
-      })
+      existingBook = await findOne(
+        "book",
+        { selector: { _id: linkMatchingItem.book } },
+        { db },
+      )
 
       if (!existingBook) {
         logger.log(`Phantom book found for link ${linkMatchingItem._id}`)
@@ -110,7 +114,7 @@ export const createOrUpdateBook = async ({
             existingBook._id,
           )
 
-          await helpers.atomicUpdate("book", existingBook._id, (data) => ({
+          await atomicUpdate(db, "book", existingBook._id, (data) => ({
             ...data,
             isAttachedToDataSource: true,
           }))
@@ -171,7 +175,7 @@ export const createOrUpdateBook = async ({
 
         syncReport.updateLink(linkMatchingItem._id)
       } else {
-        const newlyCreatedLink = await helpers.create("link", {
+        const newlyCreatedLink = await insert(db, "link", {
           type: dataSourceType,
           book: bookId,
           data: item.linkData,
@@ -209,14 +213,12 @@ export const createOrUpdateBook = async ({
       await updateTagsForBook(
         { _id: bookId },
         [...metadata.tags, ...parentTagNames],
-        helpers,
         { db, syncReport },
       )
 
       await synchronizeBookWithParentCollections(
         { _id: bookId },
         parentFolders,
-        helpers,
         ctx,
       )
 
@@ -229,9 +231,9 @@ export const createOrUpdateBook = async ({
         ? linkMatchingItem.isUsingSameProviderCredentials
         : true
       if (canRefreshMetadata) {
-        await helpers
-          .refreshBookMetadata({ bookId: bookId })
-          .catch(logger.error)
+        await ctx
+          .refreshBookMetadata({ bookId })
+          .catch(logMetadataRefreshFailure)
       } else {
         syncReport.bookHasDifferentLink(bookId)
       }
@@ -259,9 +261,9 @@ export const createOrUpdateBook = async ({
         linkMatchingItem.isUsingSameProviderCredentials && metadataRefreshNeeded
 
       if (shouldRefreshMetadata) {
-        await helpers
-          .refreshBookMetadata({ bookId: existingBook?._id })
-          .catch(logger.error)
+        await ctx
+          .refreshBookMetadata({ bookId: existingBook._id })
+          .catch(logMetadataRefreshFailure)
 
         console.log(
           `[sync.books] [createOrUpdateBook]`,
@@ -281,14 +283,12 @@ export const createOrUpdateBook = async ({
       await synchronizeBookWithParentCollections(
         existingBook,
         parentFolders,
-        helpers,
         ctx,
       )
 
       await updateTagsForBook(
         existingBook,
         [...metadata.tags, ...parentTagNames],
-        helpers,
         { db, syncReport },
       )
 

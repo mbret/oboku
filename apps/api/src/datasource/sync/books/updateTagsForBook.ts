@@ -1,13 +1,10 @@
-import { addTagsToBookIfNotExist } from "src/couch/dbHelpers"
+import { addTagsToBookIfNotExist, find, findOne } from "src/couch/dbHelpers"
 import { Logger } from "@nestjs/common"
-import type { DataSourcePlugin } from "src/plugins/types"
 import type nano from "nano"
 import type { SyncReport } from "src/datasource/sync/SyncReport"
 import type { BookDocType } from "@oboku/shared"
 
 const logger = new Logger("sync")
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 /**
  * We only add new tags for now, we never remove any old tags.
@@ -16,7 +13,6 @@ type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 export const updateTagsForBook = async (
   book: Partial<BookDocType> & { _id: string },
   tagNames: string[],
-  helpers: Helpers,
   {
     db,
     syncReport,
@@ -24,12 +20,16 @@ export const updateTagsForBook = async (
 ) => {
   try {
     const { tags: existingTags } =
-      (await helpers.findOne(`book`, {
-        selector: { _id: book._id },
-        fields: [`tags`],
-      })) || {}
+      (await findOne(
+        `book`,
+        {
+          selector: { _id: book._id },
+          fields: [`tags`],
+        },
+        { db },
+      )) || {}
 
-    const tags = await helpers.find(`tag`, {
+    const tags = await find(db, `tag`, {
       selector: { name: { $in: tagNames } },
       fields: [`_id`],
     })
