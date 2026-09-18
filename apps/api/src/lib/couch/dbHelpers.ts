@@ -12,6 +12,7 @@ import {
   emailToCouchUserDocId,
   emailToUserDbName,
 } from "src/couch/couch.service"
+import { normalizeEmail } from "src/features/postgres/user-postgres.service"
 import { User } from "../couchDbEntities"
 import { waitForRandomTime } from "../utils"
 import { generatePassword } from "../authentication/generatePassword"
@@ -74,24 +75,46 @@ export const deleteCouchUser = async (
   }
 }
 
+/**
+ * Users created before emails were normalized keep their original casing in
+ * `name` and `_id`, so they cannot be fetched by the normalized doc id.
+ */
+const findLegacyCouchUserByNormalizedName = async (
+  usersDb: createNano.DocumentScope<User>,
+  email: string,
+): Promise<User | undefined> => {
+  const { docs } = await usersDb.find({
+    selector: { type: "user" },
+    limit: 99999,
+  })
+
+  return docs.find((doc) => normalizeEmail(doc.name) === email)
+}
+
+const findCouchUserByEmail = async (
+  usersDb: createNano.DocumentScope<User>,
+  email: string,
+): Promise<User | undefined> => {
+  try {
+    return await usersDb.get(emailToCouchUserDocId(email))
+  } catch (error) {
+    if (!isCouchNotFound(error)) throw error
+  }
+
+  return findLegacyCouchUserByNormalizedName(usersDb, email)
+}
+
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
-  email: string,
+  rawEmail: string,
 ): Promise<{ user: User; created: boolean }> => {
+  const email = normalizeEmail(rawEmail)
   const usersDb = db.use<User>("_users")
-
-  const {
-    docs: [user],
-  } = await usersDb.find({
-    selector: {
-      email,
-    },
-  })
+  const user = await findCouchUserByEmail(usersDb, email)
 
   if (user) return { user, created: false }
 
-  const generatedPassword = generatePassword()
-  const createdUser = await createUser(db, email, generatedPassword)
+  const createdUser = await createUser(db, email, generatePassword())
 
   return { user: createdUser, created: true }
 }
