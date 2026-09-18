@@ -12,17 +12,20 @@ import { SignOutBeforeContinuePage } from "./SignOutBeforeContinuePage"
  * session that appears once the completion has started is this screen's own
  * sign-in and goes home.
  *
- * The session is committed, and `App` remounts the router on the active
- * profile change, before the completion mutation settles: `status` never reads
- * `success` on this screen, so only `idle` is a reliable signal.
+ * `status` never reads `success` on this screen. The completion commits the
+ * session before it settles, and the new active profile hands `App` a new
+ * profile storage adapter, which resets `usePersistSignals` hydration and
+ * unmounts the router until the profile is hydrated. Navigating as soon as the
+ * session appears moves the location home before that remount; the remounted
+ * screen would otherwise sit on an idle mutation with a session.
  */
-export const CompleteAuthenticationGate = ({
+export function CompleteAuthenticationGate({
   completionStatus,
   children,
 }: {
   completionStatus: MutationStatus
   children: ReactNode
-}) => {
+}) {
   const hasSession = !!useActiveProfile().data
   const hasSignedInFromThisScreen = hasSession && completionStatus !== "idle"
 

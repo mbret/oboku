@@ -58,10 +58,10 @@ export function isCouchConflict(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 409
 }
 
-export const doesCouchDatabaseExist = async (
+export async function doesCouchDatabaseExist(
   server: createNano.ServerScope,
   dbName: string,
-) => {
+) {
   try {
     await server.db.get(dbName)
     return true
@@ -104,7 +104,7 @@ export const deleteCouchUser = async (
  * database that vanished under a live user. A conflict means a concurrent
  * sign-in already did so.
  */
-const touchCouchUser = async (db: createNano.ServerScope, user: User) => {
+async function touchCouchUser(db: createNano.ServerScope, user: User) {
   const usersDb = db.use<User>("_users")
 
   try {
