@@ -1,5 +1,5 @@
 import type createNano from "nano"
-import { findTags } from "./findTags"
+import { find } from "./dbHelpers"
 
 export const isBookProtected = async (
   db: createNano.DocumentScope<unknown>,
@@ -7,7 +7,7 @@ export const isBookProtected = async (
 ) => {
   if (!book.tags.length) return false
 
-  const tags = await findTags(db, {
+  const tags = await find(db, "tag", {
     selector: {
       _id: {
         $in: book.tags,

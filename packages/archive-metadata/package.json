@@ -16,6 +16,16 @@
       "require": "./dist/node.cjs"
     }
   },
+  "typesVersions": {
+    "*": {
+      "web": [
+        "./dist/web.d.ts"
+      ],
+      "node": [
+        "./dist/node.d.ts"
+      ]
+    }
+  },
   "license": "GPL-3.0",
   "files": [
     "/dist"
