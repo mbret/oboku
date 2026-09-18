@@ -6,6 +6,7 @@ import {
   OnModuleInit,
   Post,
 } from "@nestjs/common"
+import { from } from "rxjs"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
 import { AppConfigService } from "src/config/AppConfigService"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
@@ -51,11 +52,13 @@ export class DataSourcesController implements OnModuleInit {
     this.taskQueueService.enqueue(
       this.SYNC_QUEUE_NAME,
       () =>
-        this.datasourceService.syncLongProgress({
-          dataSourceId,
-          providerCredentials,
-          user,
-        }),
+        from(
+          this.datasourceService.sync({
+            dataSourceId,
+            providerCredentials,
+            user,
+          }),
+        ),
       {
         id: dataSourceId,
       },
