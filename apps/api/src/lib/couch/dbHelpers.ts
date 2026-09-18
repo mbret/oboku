@@ -91,10 +91,13 @@ const findLegacyCouchUserByNormalizedName = async (
   return docs.find((doc) => normalizeEmail(doc.name) === email)
 }
 
-const findCouchUserByEmail = async (
-  usersDb: createNano.DocumentScope<User>,
-  email: string,
+export const findCouchUserFromEmail = async (
+  db: createNano.ServerScope,
+  rawEmail: string,
 ): Promise<User | undefined> => {
+  const email = normalizeEmail(rawEmail)
+  const usersDb = db.use<User>("_users")
+
   try {
     return await usersDb.get(emailToCouchUserDocId(email))
   } catch (error) {
@@ -108,13 +111,15 @@ export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
   rawEmail: string,
 ): Promise<{ user: User; created: boolean }> => {
-  const email = normalizeEmail(rawEmail)
-  const usersDb = db.use<User>("_users")
-  const user = await findCouchUserByEmail(usersDb, email)
+  const user = await findCouchUserFromEmail(db, rawEmail)
 
   if (user) return { user, created: false }
 
-  const createdUser = await createUser(db, email, generatePassword())
+  const createdUser = await createUser(
+    db,
+    normalizeEmail(rawEmail),
+    generatePassword(),
+  )
 
   return { user: createdUser, created: true }
 }

@@ -11,6 +11,28 @@ import { UsersService } from "../users/users.service"
 import { AuthService } from "./auth.service"
 import { RefreshProofService } from "./refresh-proof.service"
 
+const couchNotFoundError = () =>
+  Object.assign(new Error("missing"), { statusCode: 404 })
+
+const couchServerWithUsers = (names: string[]) => {
+  const docs = names.map((name) => ({
+    _id: `org.couchdb.user:${name}`,
+    type: "user",
+    name,
+    email: name,
+  }))
+  const usersDb = {
+    get: async (id: string) => {
+      const doc = docs.find((candidate) => candidate._id === id)
+      if (!doc) throw couchNotFoundError()
+      return doc
+    },
+    find: async () => ({ docs }),
+  }
+
+  return { use: () => usersDb }
+}
+
 describe("AuthService", () => {
   let service: AuthService
   let usersService: {
@@ -22,6 +44,7 @@ describe("AuthService", () => {
   }
   let couchService: {
     generateUserJWT: jest.Mock
+    createAdminNanoInstance: jest.Mock
   }
   let jwtService: {
     signAsync: jest.Mock
@@ -54,6 +77,7 @@ describe("AuthService", () => {
     }
     couchService = {
       generateUserJWT: jest.fn(),
+      createAdminNanoInstance: jest.fn(),
     }
     jwtService = {
       signAsync: jest.fn().mockResolvedValue("signup-token"),
@@ -243,6 +267,9 @@ describe("AuthService", () => {
       id: 42,
       email: "reader@example.com",
     })
+    couchService.createAdminNanoInstance.mockResolvedValue(
+      couchServerWithUsers(["reader@example.com"]),
+    )
     couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
 
     await expect(
@@ -259,7 +286,77 @@ describe("AuthService", () => {
       presentedRow,
     )
     expect(usersService.findUserById).toHaveBeenCalledWith(42)
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith({
+      email: "reader@example.com",
+      userId: 42,
+    })
     expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
+  })
+
+  it("issues the refreshed access token with the legacy Couch user name", async () => {
+    refreshTokensService.findByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
+      session_id: "session-1",
+    })
+    refreshProofService.isProofValid.mockResolvedValue(true)
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
+    })
+    usersService.findUserById.mockResolvedValue({
+      id: 42,
+      email: "reader@example.com",
+    })
+    couchService.createAdminNanoInstance.mockResolvedValue(
+      couchServerWithUsers(["Reader@Example.com"]),
+    )
+    couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
+
+    await service.refreshToken({
+      refreshToken: "opaque-refresh-token",
+      proof: "valid-proof",
+    })
+
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith({
+      email: "Reader@Example.com",
+      userId: 42,
+    })
+  })
+
+  it("rejects refresh when the Couch user no longer exists", async () => {
+    refreshTokensService.findByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
+      session_id: "session-1",
+    })
+    refreshProofService.isProofValid.mockResolvedValue(true)
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
+    })
+    usersService.findUserById.mockResolvedValue({
+      id: 42,
+      email: "reader@example.com",
+    })
+    couchService.createAdminNanoInstance.mockResolvedValue(
+      couchServerWithUsers([]),
+    )
+
+    await expect(
+      service.refreshToken({
+        refreshToken: "opaque-refresh-token",
+        proof: "valid-proof",
+      }),
+    ).rejects.toThrow()
+
+    expect(couchService.generateUserJWT).not.toHaveBeenCalled()
   })
 
   it("rejects refresh with an unknown token before attempting rotation", async () => {

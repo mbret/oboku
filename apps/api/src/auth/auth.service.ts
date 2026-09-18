@@ -14,7 +14,10 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
+import {
+  findCouchUserFromEmail,
+  getOrCreateUserFromEmail,
+} from "../lib/couch/dbHelpers"
 import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
 import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
 import bcrypt from "bcrypt"
@@ -558,6 +561,10 @@ export class AuthService {
    * A session also must carry an identity (`session_id`) so it can be revoked
    * by id at logout. Sessions issued before session-scoped logout have none;
    * they are rejected here and re-authenticate into one that does.
+   *
+   * The access token names the Couch user, not the Postgres email: for
+   * accounts created before emails were normalized the two differ in casing,
+   * and couch_peruser authorizes the per-user database by the exact name.
    */
   async refreshToken({
     refreshToken,
@@ -606,8 +613,15 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
+    const adminNano = await this.couchService.createAdminNanoInstance()
+    const couchUser = await findCouchUserFromEmail(adminNano, user.email)
+
+    if (!couchUser) {
+      throw new UnauthorizedException()
+    }
+
     const accessToken = await this.couchService.generateUserJWT({
-      email: user.email,
+      email: couchUser.email,
       userId: user.id,
     })
 
