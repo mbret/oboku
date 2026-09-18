@@ -24,7 +24,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
-import { BootSplashScreen } from "./common/boot/BootSplashScreen"
+import { SplashScreen } from "./common/SplashScreen"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
@@ -134,20 +134,9 @@ const App = memo(function App({
   )
 })
 
-const Boot = memo(function Boot() {
+export const AppWithConfig = memo(function AppWithConfig() {
   const [isAppReady, setIsAppReady] = useState(false)
 
-  return (
-    <>
-      <LoadConfiguration>
-        <App onReadyChange={setIsAppReady} />
-      </LoadConfiguration>
-      <BootSplashScreen isAppReady={isAppReady} />
-    </>
-  )
-})
-
-export const AppWithConfig = memo(() => {
   return (
     <ErrorBoundary
       fallback={({ error }) => <AppError error={error} />}
@@ -164,7 +153,10 @@ export const AppWithConfig = memo(() => {
                   <LegacyAuthMigration>
                     <RevokeLoggedOutProfiles />
                     <SyncProfilesAcrossTabs />
-                    <Boot />
+                    <LoadConfiguration>
+                      <App onReadyChange={setIsAppReady} />
+                    </LoadConfiguration>
+                    <SplashScreen show={!isAppReady} />
                   </LegacyAuthMigration>
                   {import.meta.env.DEV && <DebugMenu />}
                 </HttpSessionStoreProvider>
