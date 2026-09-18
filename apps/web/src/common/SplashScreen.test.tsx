@@ -52,7 +52,7 @@ describe("SplashScreen", () => {
     expect(screen.getByText("Still loading…")).toBeTruthy()
   })
 
-  it("mounts the loading indicator without a fade when a later splash takes over", async () => {
+  it("mounts the loading indicator without a fade when the boot is already slow", async () => {
     await advanceBy(SLOW_BOOT_THRESHOLD_MS)
 
     cleanup()

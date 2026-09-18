@@ -6,7 +6,7 @@ import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
-import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
+import { usePersistSignals, QueryClientProvider$, SIGNAL_RESET } from "reactjrx"
 import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
@@ -24,7 +24,8 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
-import { SplashScreen } from "./common/SplashScreen"
+import { BootSplashScreen } from "./common/boot/BootSplashScreen"
+import { isAppReadyStateSignal } from "./common/boot/states"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
@@ -70,6 +71,19 @@ const App = memo(() => {
     isAuthHydrated &&
     !isPreloadingQueries
 
+  useEffect(
+    function publishAppReadiness() {
+      isAppReadyStateSignal.setValue(isAppReady)
+    },
+    [isAppReady],
+  )
+
+  useEffect(function resetAppReadinessOnUnmount() {
+    return function markAppNotReady() {
+      isAppReadyStateSignal.setValue(SIGNAL_RESET)
+    }
+  }, [])
+
   return (
     <DialogProvider>
       {!isHydratingProfile && isAuthHydrated && (
@@ -101,7 +115,6 @@ const App = memo(() => {
           </Box>
         </Fade>
       )}
-      <SplashScreen show={!isAppReady} />
       <UpdateAvailableDialog serviceWorker={waitingWorker} />
       <ServiceWorkerBackgroundTasks />
       <PreloadQueries
@@ -140,6 +153,7 @@ export const AppWithConfig = memo(() => {
                     <LoadConfiguration>
                       <App />
                     </LoadConfiguration>
+                    <BootSplashScreen />
                   </LegacyAuthMigration>
                   {import.meta.env.DEV && <DebugMenu />}
                 </HttpSessionStoreProvider>
