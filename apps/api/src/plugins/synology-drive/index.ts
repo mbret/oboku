@@ -10,8 +10,8 @@ import {
   type DataSourcePlugin,
   MODIFIED_AT_UNSUPPORTED,
 } from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { find } from "src/couch/dbHelpers"
+import { getConnectorById } from "src/plugins/connectorHelpers"
 import {
   downloadSynologyDriveStream,
   getSynchronizeAbleDataSourceFromItems,

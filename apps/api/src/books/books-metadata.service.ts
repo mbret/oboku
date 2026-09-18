@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
+import { atomicUpdate, findOne } from "src/couch/dbHelpers"
 import { retrieveMetadataAndSaveCover } from "../features/metadata/retrieveMetadataAndSaveCover"
 import { CouchService, emailToNameHex } from "src/couch/couch.service"
 import { AppConfigService } from "../config/AppConfigService"

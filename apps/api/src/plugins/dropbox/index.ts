@@ -9,8 +9,8 @@ import {
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
 } from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { createThrottler } from "src/lib/utils"
+import { find } from "src/couch/dbHelpers"
+import { createThrottler } from "src/plugins/createThrottler"
 import { createError, getDataSourceData } from "../helpers"
 
 const DROPBOX_TYPE = "dropbox"

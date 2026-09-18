@@ -5,7 +5,7 @@ import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
 import { TrustedOriginsService } from "../config/trusted-origin.service"
 import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies"
-import { getForwardedProto } from "../lib/http/forwardedProto"
+import { getForwardedProto } from "src/http/forwardedProto"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication
 // does not depend on CouchDB's `[cors]` config and we never emit a header

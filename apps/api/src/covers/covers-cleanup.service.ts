@@ -7,8 +7,8 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { formatDuration } from "src/lib/utils"
+import { listUserDatabases } from "src/couch/listUserDatabases"
+import { formatDuration } from "src/storage/formatDuration"
 import { CoversService } from "./covers.service"
 
 @Injectable()

@@ -3,7 +3,7 @@ import { Cron } from "@nestjs/schedule"
 import { AppConfigService } from "src/config/AppConfigService"
 import fs from "node:fs"
 import path from "node:path"
-import { formatDuration } from "src/lib/utils"
+import { formatDuration } from "./formatDuration"
 
 @Injectable()
 export class StorageService {

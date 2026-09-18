@@ -1,7 +1,7 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
-import { ensureUserDbIndexes } from "src/lib/couch/userDbIndexes"
+import { listUserDatabases } from "./listUserDatabases"
+import { tolerateMissingUserDb } from "./tolerateMissingUserDb"
+import { ensureUserDbIndexes } from "./userDbIndexes"
 import { CouchService } from "./couch.service"
 
 /**

@@ -4,8 +4,8 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
 import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
+import { listUserDatabases } from "src/couch/listUserDatabases"
+import { tolerateMissingUserDb } from "src/couch/tolerateMissingUserDb"
 import { CoversService } from "src/covers/covers.service"
 import {
   CopyObjectCommand,

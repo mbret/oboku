@@ -1,5 +1,5 @@
 import { Test, type TestingModule } from "@nestjs/testing"
-import { USER_DB_INDEXES } from "src/lib/couch/userDbIndexes"
+import { USER_DB_INDEXES } from "./userDbIndexes"
 import { CouchService } from "./couch.service"
 import { UserDbIndexesService } from "./user-db-indexes.service"
 

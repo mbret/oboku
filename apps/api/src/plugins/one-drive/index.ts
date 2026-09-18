@@ -1,5 +1,5 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { find } from "src/lib/couch/dbHelpers"
+import { find } from "src/couch/dbHelpers"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types"
 import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
 import { getDataSourceData } from "../helpers"

@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common"
 import type { CookieOptions, Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService"
-import { getForwardedProto } from "../lib/http/forwardedProto"
-import { parseUrl } from "../lib/http/url"
+import { getForwardedProto } from "src/http/forwardedProto"
+import { parseUrl } from "src/http/url"
 
 export const ACCESS_TOKEN_COOKIE = "oboku_access_token"
 export const REFRESH_TOKEN_COOKIE = "oboku_refresh_token"

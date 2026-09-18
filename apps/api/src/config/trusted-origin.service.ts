@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { AppConfigService } from "./AppConfigService"
-import { parseUrl } from "../lib/http/url"
+import { parseUrl } from "src/http/url"
 
 /**
  * Decides which browser origins may make credentialed (cookie-carrying)

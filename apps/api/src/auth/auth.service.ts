@@ -14,9 +14,9 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
-import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
-import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
+import { getOrCreateUserFromEmail } from "src/couch/dbHelpers"
+import { waitForUserCouchDatabaseReady } from "src/couch/waitForUserCouchDatabaseReady"
+import { ensureUserDbIndexes } from "src/couch/userDbIndexes"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
