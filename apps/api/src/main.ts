@@ -12,7 +12,7 @@ import { WebDavService } from "./webdav/webdav.service"
 import { CouchProxyService } from "./couch/couch-proxy.service"
 import { TrustedOriginsService } from "./config/trusted-origin.service"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
-import { createAdminCorsMiddleware } from "./admin/admin-cors.middleware"
+import { createCorsOptionsDelegate } from "./config/cors-options"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -50,10 +50,6 @@ async function bootstrap() {
   const couchProxyService = app.get(CouchProxyService)
   app.use("/couchdb", couchProxyService.middleware)
 
-  // The admin panel is Bearer-authenticated, so it gets CORS without
-  // credentials and is not subject to the credentialed policy below.
-  app.use("/admin", createAdminCorsMiddleware(trustedOriginsService))
-
   // CORS must be registered before the body parsers. express.json()/urlencoded()
   // reject a malformed or oversized body by throwing straight to Express's error
   // handler, bypassing every middleware registered after them — so with CORS
@@ -63,16 +59,10 @@ async function bootstrap() {
   // which terminate their own requests and own their CORS, so it never
   // double-handles them.
   //
-  // Reflect only trusted origins: with `credentials: true` the browser lets
-  // scripts on the allowed origin make cookie-carrying requests, so a
-  // wildcard/reflect-any policy would hand any website credentialed access.
-  app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allow?: boolean) => void,
-    ) => callback(null, trustedOriginsService.isAppOrigin(origin)),
-    credentials: true,
-  })
+  // The delegate form resolves the policy per request, which the static options
+  // cannot: it only sees the origin, and `/admin` needs a different answer than
+  // the cookie routes for the very same origin.
+  app.enableCors(createCorsOptionsDelegate(trustedOriginsService))
 
   // Re-add the body parsers (disabled above) for the rest of the API.
   app.use(json())
