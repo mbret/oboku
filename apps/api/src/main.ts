@@ -51,7 +51,7 @@ async function bootstrap() {
   app.use("/couchdb", couchProxyService.middleware)
 
   // The admin panel is Bearer-authenticated, so it gets CORS without
-  // credentials and is not subject to the cookie allow-list below.
+  // credentials and is not subject to the credentialed policy below.
   app.use("/admin", createAdminCorsMiddleware(trustedOriginsService))
 
   // CORS must be registered before the body parsers. express.json()/urlencoded()
@@ -70,7 +70,7 @@ async function bootstrap() {
     origin: (
       origin: string | undefined,
       callback: (error: Error | null, allow?: boolean) => void,
-    ) => callback(null, trustedOriginsService.isCookieOrigin(origin)),
+    ) => callback(null, trustedOriginsService.isAppOrigin(origin)),
     credentials: true,
   })
 

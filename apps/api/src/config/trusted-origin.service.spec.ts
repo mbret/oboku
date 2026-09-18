@@ -17,24 +17,20 @@ const createService = ({
   )
 
 describe("TrustedOriginsService", () => {
-  describe("isCookieOrigin", () => {
+  describe("isAppOrigin", () => {
     it("trusts any port and scheme on the web app hostname (shared cookie jar)", () => {
       const service = createService()
 
-      expect(service.isCookieOrigin("https://oboku.example.com")).toBe(true)
-      expect(service.isCookieOrigin("https://oboku.example.com:8443")).toBe(
-        true,
-      )
-      expect(service.isCookieOrigin("http://oboku.example.com:5173")).toBe(true)
+      expect(service.isAppOrigin("https://oboku.example.com")).toBe(true)
+      expect(service.isAppOrigin("https://oboku.example.com:8443")).toBe(true)
+      expect(service.isAppOrigin("http://oboku.example.com:5173")).toBe(true)
     })
 
     it("rejects other hostnames, including subdomains", () => {
       const service = createService()
 
-      expect(service.isCookieOrigin("https://evil.example.net")).toBe(false)
-      expect(service.isCookieOrigin("https://sub.oboku.example.com")).toBe(
-        false,
-      )
+      expect(service.isAppOrigin("https://evil.example.net")).toBe(false)
+      expect(service.isAppOrigin("https://sub.oboku.example.com")).toBe(false)
     })
 
     it("never trusts the admin origin with cookies", () => {
@@ -42,20 +38,20 @@ describe("TrustedOriginsService", () => {
         adminPublicUrl: "https://admin.example.org",
       })
 
-      expect(service.isCookieOrigin("https://admin.example.org")).toBe(false)
+      expect(service.isAppOrigin("https://admin.example.org")).toBe(false)
     })
 
     it("rejects missing or malformed origins", () => {
       const service = createService()
 
-      expect(service.isCookieOrigin(undefined)).toBe(false)
-      expect(service.isCookieOrigin("null")).toBe(false)
-      expect(service.isCookieOrigin("not a url")).toBe(false)
+      expect(service.isAppOrigin(undefined)).toBe(false)
+      expect(service.isAppOrigin("null")).toBe(false)
+      expect(service.isAppOrigin("not a url")).toBe(false)
     })
   })
 
   describe("isAdminOrigin", () => {
-    it("falls back to the cookie origins when unconfigured", () => {
+    it("falls back to the app origin when unconfigured", () => {
       const service = createService()
 
       expect(service.isAdminOrigin("https://oboku.example.com:3003")).toBe(true)
@@ -80,7 +76,7 @@ describe("TrustedOriginsService", () => {
       expect(service.isAdminOrigin("https://admin.example.org")).toBe(true)
     })
 
-    it("replaces the cookie-origin fallback once configured", () => {
+    it("replaces the app-origin fallback once configured", () => {
       const service = createService({
         adminPublicUrl: "https://admin.example.org",
       })
@@ -101,13 +97,13 @@ describe("TrustedOriginsService", () => {
 
   it("describes both policies for bootstrap logging", () => {
     expect(createService().originPolicyDescription).toBe(
-      "cookies: any port on oboku.example.com; admin: not set",
+      "app: any port on oboku.example.com; admin: not set",
     )
     expect(
       createService({ adminPublicUrl: "https://admin.example.org" })
         .originPolicyDescription,
     ).toBe(
-      "cookies: any port on oboku.example.com; admin: https://admin.example.org",
+      "app: any port on oboku.example.com; admin: https://admin.example.org",
     )
   })
 })

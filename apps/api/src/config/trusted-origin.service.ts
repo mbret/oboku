@@ -6,7 +6,7 @@ import { parseUrl } from "../lib/http/url"
  * Decides what a browser origin is allowed to do, which splits in two because
  * the web app and the admin panel authenticate differently.
  *
- * Cookie origins may make credentialed (cookie-carrying) requests and are
+ * The app origin may make credentialed (cookie-carrying) requests and is
  * exempt from the CSRF origin check. Auth cookies are host-scoped and ignore
  * ports, so every port on the web app's hostname shares the same cookie jar
  * and qualifies.
@@ -14,8 +14,8 @@ import { parseUrl } from "../lib/http/url"
  * The admin origin only gets CORS on `/admin/*`, without credentials: the
  * panel authenticates with a Bearer token and never sends cookies, so granting
  * it cookie powers would widen the blast radius of an admin-host compromise
- * for nothing. It defaults to the cookie origins, which already cover the
- * stock layout of serving the panel on another port of the same hostname.
+ * for nothing. It defaults to the app origins, which already cover the stock
+ * layout of serving the panel on another port of the same hostname.
  */
 @Injectable()
 export class TrustedOriginsService {
@@ -33,14 +33,14 @@ export class TrustedOriginsService {
   }
 
   get originPolicyDescription(): string {
-    const cookieOrigins = this.appHostname
+    const appOrigins = this.appHostname
       ? `any port on ${this.appHostname}`
       : "none"
 
-    return `cookies: ${cookieOrigins}; admin: ${this.adminOrigin ?? "not set"}`
+    return `app: ${appOrigins}; admin: ${this.adminOrigin ?? "not set"}`
   }
 
-  isCookieOrigin(origin: string | undefined): boolean {
+  isAppOrigin(origin: string | undefined): boolean {
     if (!origin) return false
 
     const originHostname = parseUrl(origin)?.hostname
@@ -53,6 +53,6 @@ export class TrustedOriginsService {
 
     if (this.adminOrigin) return origin === this.adminOrigin
 
-    return this.isCookieOrigin(origin)
+    return this.isAppOrigin(origin)
   }
 }
