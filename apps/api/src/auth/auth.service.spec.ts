@@ -2,14 +2,72 @@ import { BadRequestException } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { Test, TestingModule } from "@nestjs/testing"
 import { ObokuErrorCode } from "@oboku/shared"
+import bcrypt from "bcrypt"
+import type createNano from "nano"
 import { AppConfigService } from "src/config/AppConfigService"
 import { SecretsService } from "src/config/SecretsService"
-import { CouchService } from "src/couch/couch.service"
+import { CouchService, emailToUserDbName } from "src/couch/couch.service"
 import { EmailService } from "src/email/EmailService"
 import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
 import { UsersService } from "../users/users.service"
 import { AuthService } from "./auth.service"
 import { RefreshProofService } from "./refresh-proof.service"
+
+jest.mock("src/lib/couch/userDbIndexes", function mockUserDbIndexes() {
+  return {
+    ensureUserDbIndexes: jest
+      .fn()
+      .mockResolvedValue({ created: [], existing: [] }),
+  }
+})
+
+const readerPasswordHash = bcrypt.hashSync("secret", 4)
+
+const readerSignIn = {
+  email: "reader@example.com",
+  password: "secret",
+  installation_id: "installation-1",
+  public_key: { kty: "EC", crv: "P-256", x: "x", y: "y" },
+}
+
+const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
+  const couchUser = {
+    _id: "org.couchdb.user:reader@example.com",
+    _rev: "1-abc",
+    name: "reader@example.com",
+    email: "reader@example.com",
+    type: "user",
+    roles: [],
+  }
+  let dbExists = userDbExists
+
+  const usersDb = {
+    find: jest.fn().mockResolvedValue({ docs: [couchUser] }),
+    insert: jest.fn(async function recreateDatabaseLikeCouchPeruser() {
+      dbExists = true
+      return { ok: true, id: couchUser._id, rev: "2-def" }
+    }),
+  }
+  const server = {
+    use: jest.fn(function useUsersDb() {
+      return usersDb
+    }),
+    db: {
+      get: jest.fn(async function getDatabaseIfExists() {
+        if (dbExists) return { db_name: "userdb" }
+        throw Object.assign(new Error("not_found"), { statusCode: 404 })
+      }),
+    },
+  }
+
+  return {
+    // Only `_users` find/insert and `db.get` are exercised by sign-in; nano's
+    // full ServerScope surface is irrelevant to these tests.
+    server: server as unknown as createNano.ServerScope,
+    usersDb,
+    couchUser,
+  }
+}
 
 describe("AuthService", () => {
   let service: AuthService
@@ -22,6 +80,7 @@ describe("AuthService", () => {
   }
   let couchService: {
     generateUserJWT: jest.Mock
+    createAdminNanoInstance: jest.Mock
   }
   let jwtService: {
     signAsync: jest.Mock
@@ -54,6 +113,7 @@ describe("AuthService", () => {
     }
     couchService = {
       generateUserJWT: jest.fn(),
+      createAdminNanoInstance: jest.fn(),
     }
     jwtService = {
       signAsync: jest.fn().mockResolvedValue("signup-token"),
@@ -422,5 +482,43 @@ describe("AuthService", () => {
         publicKey: '{"kty":"EC","crv":"P-256"}',
       },
     )
+  })
+
+  const mockReaderSignInDependencies = () => {
+    usersService.findUserByEmail.mockResolvedValue({
+      id: 1,
+      email: "reader@example.com",
+      password: readerPasswordHash,
+      emailVerified: true,
+    })
+    couchService.generateUserJWT.mockResolvedValue("access-token")
+    refreshTokensService.issueTokenForInstallation.mockResolvedValue({
+      refreshToken: "refresh-token",
+      sessionId: "session-1",
+    })
+  }
+
+  it("signs in an existing user without rewriting their _users doc when their database exists", async () => {
+    mockReaderSignInDependencies()
+    const { server, usersDb } = createFakeAdminNano({ userDbExists: true })
+    couchService.createAdminNanoInstance.mockResolvedValue(server)
+
+    const session = await service.signInWithEmail(readerSignIn)
+
+    expect(usersDb.insert).not.toHaveBeenCalled()
+    expect(session.dbName).toBe(emailToUserDbName("reader@example.com"))
+  })
+
+  it("recreates a missing user database through couch_peruser before signing in", async () => {
+    mockReaderSignInDependencies()
+    const { server, usersDb, couchUser } = createFakeAdminNano({
+      userDbExists: false,
+    })
+    couchService.createAdminNanoInstance.mockResolvedValue(server)
+
+    const session = await service.signInWithEmail(readerSignIn)
+
+    expect(usersDb.insert).toHaveBeenCalledWith(couchUser, couchUser._id)
+    expect(session.dbName).toBe(emailToUserDbName("reader@example.com"))
   })
 })

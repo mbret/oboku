@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common"
 import createNano, { type RequestError } from "nano"
 import {
   type SafeMangoQuery,
@@ -18,6 +19,8 @@ import { generatePassword } from "../authentication/generatePassword"
 import { findOne } from "./findOne"
 
 export { findOne }
+
+const logger = new Logger("dbHelpers")
 
 export const createUser = async (
   db: createNano.ServerScope,
@@ -51,6 +54,27 @@ export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
+export function isCouchConflict(error: unknown): boolean {
+  return isCouchRequestError(error) && error.statusCode === 409
+}
+
+export const doesCouchDatabaseExist = async (
+  server: createNano.ServerScope,
+  dbName: string,
+) => {
+  try {
+    await server.db.get(dbName)
+    return true
+  } catch (error) {
+    if (isCouchNotFound(error)) return false
+    throw error
+  }
+}
+
+/**
+ * Destroys the database before the `_users` doc so the database can never
+ * outlive its user: a later sign-up with the same email must start empty.
+ */
 export const deleteCouchUser = async (
   db: createNano.ServerScope,
   email: string,
@@ -74,10 +98,32 @@ export const deleteCouchUser = async (
   }
 }
 
+/**
+ * couch_peruser re-runs its create-database-and-set-security step on every
+ * change to a `_users` doc, so re-saving the doc unchanged makes it recreate a
+ * database that vanished under a live user. A conflict means a concurrent
+ * sign-in already did so.
+ */
+const touchCouchUser = async (db: createNano.ServerScope, user: User) => {
+  const usersDb = db.use<User>("_users")
+
+  try {
+    await usersDb.insert(user, user._id)
+  } catch (error) {
+    if (!isCouchConflict(error)) throw error
+  }
+}
+
+/**
+ * Resolves the CouchDB user for an email, creating it on first sign-in.
+ * `userDbPending` is true while couch_peruser is creating the user's database,
+ * for a new user or to replace one that vanished under an existing user, so
+ * callers must wait for it before handing the database out.
+ */
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
   email: string,
-): Promise<{ user: User; created: boolean }> => {
+): Promise<{ user: User; userDbPending: boolean }> => {
   const usersDb = db.use<User>("_users")
 
   const {
@@ -88,12 +134,24 @@ export const getOrCreateUserFromEmail = async (
     },
   })
 
-  if (user) return { user, created: false }
+  if (!user) {
+    const createdUser = await createUser(db, email, generatePassword())
 
-  const generatedPassword = generatePassword()
-  const createdUser = await createUser(db, email, generatedPassword)
+    return { user: createdUser, userDbPending: true }
+  }
 
-  return { user: createdUser, created: true }
+  const dbName = emailToUserDbName(user.name)
+
+  if (await doesCouchDatabaseExist(db, dbName)) {
+    return { user, userDbPending: false }
+  }
+
+  logger.warn(
+    `User database ${dbName} is missing for ${user.email}, asking couch_peruser to recreate it`,
+  )
+  await touchCouchUser(db, user)
+
+  return { user, userDbPending: true }
 }
 
 export async function atomicUpdate<
@@ -343,7 +401,7 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
       const isConnectionError =
         e instanceof Error && e.message === "error happened in your connection"
       const isRetryableStatus =
-        isCouchRequestError(e) && (e.statusCode >= 500 || e.statusCode === 409)
+        isCouchConflict(e) || (isCouchRequestError(e) && e.statusCode >= 500)
 
       if ((isConnectionError || isRetryableStatus) && currentRetry > 0) {
         await waitForRandomTime(1, 200)
