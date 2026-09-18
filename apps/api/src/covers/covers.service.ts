@@ -229,9 +229,7 @@ export class CoversService {
           continue
         }
 
-        const entryAsBuffer = (await entry.buffer()) as Buffer
-
-        await firstValueFrom(this.saveCover(entryAsBuffer, objectKey))
+        await firstValueFrom(this.saveCover(await entry.buffer(), objectKey))
 
         this.logger.log(`cover ${objectKey} has been saved/updated`)
 

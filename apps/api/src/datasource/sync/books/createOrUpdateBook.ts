@@ -35,6 +35,13 @@ function isFolder(
   return (item as SynchronizeAbleItem).type === "folder"
 }
 
+/**
+ * A metadata refresh is best-effort: its failure must never fail the sync.
+ */
+function logMetadataRefreshFailure(error: unknown) {
+  logger.error(error)
+}
+
 export const createOrUpdateBook = async ({
   ctx,
   parents,
@@ -224,7 +231,9 @@ export const createOrUpdateBook = async ({
         ? linkMatchingItem.isUsingSameProviderCredentials
         : true
       if (canRefreshMetadata) {
-        await ctx.refreshBookMetadata({ bookId }).catch(logger.error)
+        await ctx
+          .refreshBookMetadata({ bookId })
+          .catch(logMetadataRefreshFailure)
       } else {
         syncReport.bookHasDifferentLink(bookId)
       }
@@ -254,7 +263,7 @@ export const createOrUpdateBook = async ({
       if (shouldRefreshMetadata) {
         await ctx
           .refreshBookMetadata({ bookId: existingBook._id })
-          .catch(logger.error)
+          .catch(logMetadataRefreshFailure)
 
         console.log(
           `[sync.books] [createOrUpdateBook]`,
