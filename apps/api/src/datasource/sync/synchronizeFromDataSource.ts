@@ -5,19 +5,15 @@ import type { Context } from "./types"
 import type { SynchronizeAbleDataSource } from "src/plugins/types"
 import { getOrCreateTagFromName } from "src/couch/dbHelpers"
 import { Logger } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/config/types"
-import { EventEmitter2 } from "@nestjs/event-emitter"
 import { CoversService } from "src/covers/covers.service"
-import { CollectionMetadataRefreshEvent, Events } from "src/events"
 
 const logger = new Logger("sync")
 
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 /**
- * Tracks collection ids whose metadata refresh should be emitted at the very
- * end of the sync. Emitting after all books exist (and have their tags
+ * Tracks collection ids whose metadata refresh the caller should emit once the
+ * whole sync is done. Emitting after all books exist (and have their tags
  * attached) is what allows protection-aware logic in
  * `processRefreshMetadata` to compute `isCollectionProtected` against the
  * up-to-date data.
@@ -47,14 +43,16 @@ function isFile(
   return (item as SynchronizeAbleItem).type === "file"
 }
 
+/**
+ * @returns the ids of the collections whose metadata refresh the caller must
+ * emit now that every book is persisted with its tags.
+ */
 export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
-  config: ConfigService<EnvironmentVariables>,
-  eventEmitter: EventEmitter2,
   coversService: CoversService,
-) => {
-  console.log(
+): Promise<string[]> => {
+  logger.log(
     `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
   )
 
@@ -73,9 +71,9 @@ export const synchronizeFromDataSource = async (
    * - syncItem creates/updates collections (no metadata refresh) and books
    *   (with their tags), so books are tagged before any collection refresh
    *   reads them.
-   * - Collection metadata refresh events are queued and only emitted once all
-   *   books are persisted with their tags, so `isCollectionProtected` sees the
-   *   true picture.
+   * - Collection metadata refreshes are queued and returned to the caller so
+   *   they are only emitted once all books are persisted with their tags and
+   *   `isCollectionProtected` sees the true picture.
    */
   const collectionRefreshQueue = createCollectionRefreshQueue()
 
@@ -85,24 +83,12 @@ export const synchronizeFromDataSource = async (
       item,
       hasCollectionAsParent: false,
       parents: [],
-      config,
-      eventEmitter,
       coversService,
       collectionRefreshQueue,
     })
   }
 
-  for (const collectionId of collectionRefreshQueue.flush()) {
-    eventEmitter.emit(
-      Events.COLLECTION_METADATA_REFRESH,
-      new CollectionMetadataRefreshEvent({
-        collectionId,
-        providerCredentials: ctx.providerCredentials,
-        soft: true,
-        email: ctx.email,
-      }),
-    )
-  }
+  return collectionRefreshQueue.flush()
 }
 
 const getItemTags = (item: SynchronizeAbleItem): string[] => {
@@ -130,11 +116,11 @@ const syncTags = async ({
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
 }) => {
-  console.log(`syncTags for item ${item.name}`)
+  logger.log(`syncTags for item ${item.name}`)
 
   const tagNames = Array.from(new Set(getItemTags(item)))
 
-  console.log(`found ${tagNames.length} tags`)
+  logger.log(`found ${tagNames.length} tags`)
 
   await Promise.all(
     tagNames.map(async (tag) => {
@@ -154,8 +140,6 @@ const syncItem = async ({
   hasCollectionAsParent,
   item,
   parents,
-  config,
-  eventEmitter,
   coversService,
   collectionRefreshQueue,
 }: {
@@ -163,8 +147,6 @@ const syncItem = async ({
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
-  config: ConfigService<EnvironmentVariables>
-  eventEmitter: EventEmitter2
   coversService: CoversService
   collectionRefreshQueue: CollectionRefreshQueue
 }) => {
@@ -211,8 +193,6 @@ const syncItem = async ({
             hasCollectionAsParent: isCollection || hasCollectionAsParent,
             item: subItem,
             parents: [...parents, item],
-            config,
-            eventEmitter,
             coversService,
             collectionRefreshQueue,
           })
@@ -230,9 +210,7 @@ const syncItem = async ({
     })
   }
 
-  console.log(
-    `[syncItem] ${item.name}: with items ${item.items?.length || 0} items`,
+  logger.log(
+    `syncItem ${item.name}: with items ${item.items?.length || 0} items, done`,
   )
-
-  console.log(`[syncItem] ${item.name} DONE!`)
 }
