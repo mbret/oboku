@@ -1,14 +1,15 @@
 // @vitest-environment jsdom
 
 import { act, cleanup, render, screen } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { BootSplashScreen } from "./BootSplashScreen"
-import { isAppReadyStateSignal } from "./states"
 import { useConfig } from "../../config/useConfig"
 
 vi.mock("../../config/useConfig", () => ({
   useConfig: vi.fn(),
 }))
+
+const FADE_TIMEOUT_MS = 500
 
 // test stub: BootSplashScreen only reads `data` off the result
 const stubConfigQuery = (data: unknown) =>
@@ -16,15 +17,9 @@ const stubConfigQuery = (data: unknown) =>
     .mocked(useConfig)
     .mockReturnValue({ data } as unknown as ReturnType<typeof useConfig>)
 
-const FADE_TIMEOUT_MS = 500
-
 const getLogo = () => screen.queryByText("boku")
 
 describe("BootSplashScreen", () => {
-  beforeEach(() => {
-    isAppReadyStateSignal.setValue(false)
-  })
-
   afterEach(() => {
     cleanup()
     vi.clearAllMocks()
@@ -33,7 +28,7 @@ describe("BootSplashScreen", () => {
   it("shows the splash while configuration is still loading", () => {
     stubConfigQuery(undefined)
 
-    render(<BootSplashScreen />)
+    render(<BootSplashScreen isAppReady={false} />)
 
     expect(getLogo()).toBeTruthy()
   })
@@ -41,7 +36,7 @@ describe("BootSplashScreen", () => {
   it("keeps the splash once configuration lands but the app is not ready", () => {
     stubConfigQuery({ API_URL: "https://example.test" })
 
-    render(<BootSplashScreen />)
+    render(<BootSplashScreen isAppReady={false} />)
 
     expect(getLogo()).toBeTruthy()
   })
@@ -49,13 +44,13 @@ describe("BootSplashScreen", () => {
   it("keeps the same splash element across the configuration handover", () => {
     stubConfigQuery(undefined)
 
-    const { rerender } = render(<BootSplashScreen />)
+    const { rerender } = render(<BootSplashScreen isAppReady={false} />)
 
     const splashWhileLoadingConfig = getLogo()
 
     stubConfigQuery({ API_URL: "https://example.test" })
 
-    rerender(<BootSplashScreen />)
+    rerender(<BootSplashScreen isAppReady={false} />)
 
     expect(getLogo()).toBe(splashWhileLoadingConfig)
   })
@@ -64,12 +59,13 @@ describe("BootSplashScreen", () => {
     vi.useFakeTimers()
     stubConfigQuery({ API_URL: "https://example.test" })
 
-    render(<BootSplashScreen />)
+    const { rerender } = render(<BootSplashScreen isAppReady={false} />)
 
     expect(getLogo()).toBeTruthy()
 
+    rerender(<BootSplashScreen isAppReady />)
+
     await act(async () => {
-      isAppReadyStateSignal.setValue(true)
       await vi.advanceTimersByTimeAsync(FADE_TIMEOUT_MS * 2)
     })
 

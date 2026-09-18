@@ -6,7 +6,7 @@ import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
-import { usePersistSignals, QueryClientProvider$, SIGNAL_RESET } from "reactjrx"
+import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
 import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
@@ -25,7 +25,6 @@ import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
 import { BootSplashScreen } from "./common/boot/BootSplashScreen"
-import { isAppReadyStateSignal } from "./common/boot/states"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
@@ -51,7 +50,11 @@ LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js",
 })
 
-const App = memo(() => {
+const App = memo(function App({
+  onReadyChange,
+}: {
+  onReadyChange: (isAppReady: boolean) => void
+}) {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
   const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
@@ -72,17 +75,15 @@ const App = memo(() => {
     !isPreloadingQueries
 
   useEffect(
-    function publishAppReadiness() {
-      isAppReadyStateSignal.setValue(isAppReady)
-    },
-    [isAppReady],
-  )
+    function reportAppReadiness() {
+      onReadyChange(isAppReady)
 
-  useEffect(function resetAppReadinessOnUnmount() {
-    return function markAppNotReady() {
-      isAppReadyStateSignal.setValue(SIGNAL_RESET)
-    }
-  }, [])
+      return function reportAppNotReady() {
+        onReadyChange(false)
+      }
+    },
+    [isAppReady, onReadyChange],
+  )
 
   return (
     <DialogProvider>
@@ -133,6 +134,19 @@ const App = memo(() => {
   )
 })
 
+const Boot = memo(function Boot() {
+  const [isAppReady, setIsAppReady] = useState(false)
+
+  return (
+    <>
+      <LoadConfiguration>
+        <App onReadyChange={setIsAppReady} />
+      </LoadConfiguration>
+      <BootSplashScreen isAppReady={isAppReady} />
+    </>
+  )
+})
+
 export const AppWithConfig = memo(() => {
   return (
     <ErrorBoundary
@@ -150,10 +164,7 @@ export const AppWithConfig = memo(() => {
                   <LegacyAuthMigration>
                     <RevokeLoggedOutProfiles />
                     <SyncProfilesAcrossTabs />
-                    <LoadConfiguration>
-                      <App />
-                    </LoadConfiguration>
-                    <BootSplashScreen />
+                    <Boot />
                   </LegacyAuthMigration>
                   {import.meta.env.DEV && <DebugMenu />}
                 </HttpSessionStoreProvider>
