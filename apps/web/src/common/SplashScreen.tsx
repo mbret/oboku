@@ -15,29 +15,36 @@ const FADE_TIMEOUT_MS = 500
 const getRemainingDelayBeforeSlowBoot = () =>
   Math.max(0, SLOW_BOOT_THRESHOLD_MS - performance.now())
 
-const SplashScreenBox = styled(Box)(({ theme }) => ({
-  position: "fixed",
-  inset: 0,
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  backgroundColor: theme.palette.background.default,
-}))
+const SplashScreenBox = styled(Box)(function styleSplashScreenBox({ theme }) {
+  const aboveBlockingBackdrop = theme.zIndex.tooltip + 2
+
+  return {
+    position: "fixed",
+    inset: 0,
+    zIndex: aboveBlockingBackdrop,
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: theme.palette.background.default,
+  }
+})
 
 const LogoBox = styled(Box)({
   position: "relative",
 })
 
-const SlowBootStack = styled(Stack)(({ theme }) => ({
-  position: "absolute",
-  top: "100%",
-  left: "50%",
-  transform: "translateX(-50%)",
-  width: 200,
-  marginTop: theme.spacing(3),
-  alignItems: "center",
-  gap: theme.spacing(1),
-}))
+const SlowBootStack = styled(Stack)(function styleSlowBootStack({ theme }) {
+  return {
+    position: "absolute",
+    top: "100%",
+    left: "50%",
+    transform: "translateX(-50%)",
+    width: 200,
+    marginTop: theme.spacing(3),
+    alignItems: "center",
+    gap: theme.spacing(1),
+  }
+})
 
 const SlowBootLinearProgress = styled(LinearProgress)({
   width: "100%",
@@ -54,9 +61,9 @@ export const SplashScreen = memo(function SplashScreen({
 }: {
   show: boolean
 }) {
-  const [isBootSlow, setIsBootSlow] = useState(
-    () => getRemainingDelayBeforeSlowBoot() === 0,
-  )
+  const [isBootSlow, setIsBootSlow] = useState(function isBootAlreadySlow() {
+    return getRemainingDelayBeforeSlowBoot() === 0
+  })
 
   useEffect(function revealSlowBootIndicatorWhenBootIsTakingLong() {
     const timeout = setTimeout(function markBootAsSlow() {
@@ -73,7 +80,11 @@ export const SplashScreen = memo(function SplashScreen({
       <SplashScreenBox>
         <LogoBox>
           <Logo />
-          <Fade in={show && isBootSlow} timeout={FADE_TIMEOUT_MS}>
+          <Fade
+            in={show && isBootSlow}
+            appear={false}
+            timeout={FADE_TIMEOUT_MS}
+          >
             <SlowBootStack>
               <SlowBootLinearProgress />
               <Typography variant="body2" color="text.secondary" noWrap>

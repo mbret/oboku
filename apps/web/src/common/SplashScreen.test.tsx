@@ -9,6 +9,8 @@ const SLOW_BOOT_THRESHOLD_MS = 4000
 
 const getLogo = () => screen.queryByText("boku")
 
+const getSlowBootIndicator = () => screen.getByRole("progressbar").parentElement
+
 const advanceBy = async (ms: number) => {
   await act(async () => {
     await vi.advanceTimersByTimeAsync(ms)
@@ -48,6 +50,16 @@ describe("SplashScreen", () => {
 
     expect(screen.getByRole("progressbar")).toBeTruthy()
     expect(screen.getByText("Still loading…")).toBeTruthy()
+  })
+
+  it("mounts the loading indicator without a fade when a later splash takes over", async () => {
+    await advanceBy(SLOW_BOOT_THRESHOLD_MS)
+
+    cleanup()
+
+    render(<SplashScreen show />)
+
+    expect(getSlowBootIndicator()?.style.transition).toBe("")
   })
 
   it("unmounts once the exit transition has run", async () => {
