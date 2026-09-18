@@ -12,7 +12,7 @@ import { WebDavService } from "./webdav/webdav.service"
 import { CouchProxyService } from "./couch/couch-proxy.service"
 import { TrustedOriginsService } from "./config/trusted-origin.service"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
-import { createCorsMiddleware } from "./config/cors.middleware"
+import { createCorsOptionsDelegate } from "./config/cors-options"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -50,9 +50,19 @@ async function bootstrap() {
   const couchProxyService = app.get(CouchProxyService)
   app.use("/couchdb", couchProxyService.middleware)
 
-  // Mounted after the proxies, which terminate their own requests and own
-  // their CORS, and before the body parsers — see the middleware's own doc.
-  app.use(createCorsMiddleware(trustedOriginsService))
+  // CORS must be registered before the body parsers. express.json()/urlencoded()
+  // reject a malformed or oversized body by throwing straight to Express's error
+  // handler, bypassing every middleware registered after them — so with CORS
+  // registered later those 400/413 responses (and any other pre-router failure)
+  // would ship without `Access-Control-Allow-Origin`, and the browser masks the
+  // real status as an opaque cross-origin error. Placed after the proxy mounts,
+  // which terminate their own requests and own their CORS, so it never
+  // double-handles them.
+  //
+  // The delegate form resolves the policy per request, which the static options
+  // cannot: it only sees the origin, and `/admin` needs a different answer than
+  // the cookie routes for the very same origin.
+  app.enableCors(createCorsOptionsDelegate(trustedOriginsService))
 
   // Re-add the body parsers (disabled above) for the rest of the API.
   app.use(json())
