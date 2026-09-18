@@ -22,6 +22,6 @@ export const waitForUserCouchDatabaseReady = async (
   }
 
   throw new Error(
-    `CouchDB user database "${dbName}" was not created by couch_peruser before the deadline. couch_peruser is likely stuck: check the CouchDB log for repeated couch_peruser_sup restarts`,
+    `CouchDB user database "${dbName}" was not created by couch_peruser before the deadline. Check that couch_peruser is enabled with delete_dbs=true on your CouchDB, and look for couch_peruser_sup restarts in its log`,
   )
 }
