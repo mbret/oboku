@@ -125,6 +125,16 @@
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
 
+### React Compiler
+
+- React Compiler is enabled in every React app: `apps/web` and `apps/admin` wire `reactCompilerPreset()` into `@rolldown/plugin-babel` alongside `@vitejs/plugin-react`, and `apps/landing` sets `reactCompiler: true` in `next.config.mjs`.
+- Do not hand-write `useMemo`, `useCallback`, or `memo` for referential stability alone — the compiler does that. Reach for them only when memoization is load-bearing beyond identity (an expensive computation the compiler cannot see, or a dependency the compiler is not allowed to assume stable).
+- The compiler bails out per function, never per file, so a function it cannot compile silently keeps its current behaviour. A bailout is either a Rules of React violation (most often a ref read or written during render) or a gap in what the compiler can lower yet; the message tells you which.
+- `"use no memo"` opts one function out. It must be the **first statement inside the function body**: a module-level directive is silently ignored, and a directive on a function the compiler already bails out of changes nothing, because validation runs before the opt-out is consulted. So an opt-out only does real work on a function that would otherwise compile.
+- Web deliberately opts out three groups, each with a reason and a `TODO` on the directive: every `react-hook-form` component and hook (the compiler treats the library as incompatible but only flags some call sites itself), every function the compiler currently bails out of, and the modal-history mechanism (`ModalHistory`, `useDismissibleOverlay`) whose controllers are mutated in place and tracked by identity. Drop an opt-out when its reason is gone — do not add new ones without one.
+- A compiled hook starts with a `_c()` cache call, so it can only run inside a render. Test hooks through `renderHook` from `@testing-library/react`; calling a hook as a plain function no longer works even when all of its own hooks are mocked.
+- `packages/*` hold no React today and declare no `react` dependency, so nothing there is compiled. Web consumes them through the `source` condition, which puts `packages/*/src` in its own graph and does compile them; `apps/admin`, `apps/landing` and `apps/api` consume the built `dist`, and the shared library build in `config/vite.lib.ts` has no compiler. So React code added to a package would be compiled for web and uncompiled everywhere else — wire the compiler into `config/vite.lib.ts` at that point.
+
 ### React `memo` components
 
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).

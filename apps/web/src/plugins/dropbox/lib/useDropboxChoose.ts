@@ -9,6 +9,10 @@ export const useDropboxChoose = (options: {
   ) => Promise<unknown> | unknown
   onSettled?: () => void
 }) => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const optionsRef = useLiveRef(options)
 
   const choose = useCallback(

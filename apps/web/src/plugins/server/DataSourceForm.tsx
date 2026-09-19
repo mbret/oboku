@@ -19,6 +19,10 @@ export const DataSourceForm = memo(
     onSubmit,
     submitLabel,
   }: DataSourceFormInternalProps<ServerDataSourceDocType>) => {
+    // react-hook-form is on React Compiler's incompatible-library list.
+    // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+    "use no memo"
+
     const { control, handleSubmit } = useForm<ServerFormData>({
       mode: "onChange",
       defaultValues: {

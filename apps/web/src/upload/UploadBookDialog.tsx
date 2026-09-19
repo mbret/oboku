@@ -29,6 +29,10 @@ export const UploadBookDialog = memo(function UploadBookDialog({
   openWith: string | undefined
   onClose: () => void
 } & DOMAttributes<any>) {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const [addBook] = useAddBook()
   const { mutateAsync: downloadFile } = useDownloadBook()
   const dataSource = useDataSourcePlugin(openWith)

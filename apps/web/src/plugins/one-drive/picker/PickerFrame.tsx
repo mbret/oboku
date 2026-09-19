@@ -38,6 +38,10 @@ export const PickerFrame = memo(function PickerFrame({
   selectionMode?: "files" | "folders" | "all"
   selectionPersistence?: boolean
 }) {
+  // Reads/writes a ref during render, which React Compiler refuses to memoize.
+  // TODO: rework so no ref is touched during render, then drop this opt-out.
+  "use no memo"
+
   const iframeNameRef = useRef(`one-drive-picker-${crypto.randomUUID()}`)
   const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null)
   const [isPageLoaded, setIsPageLoaded] = useState(false)

@@ -85,6 +85,10 @@ export const VirtuosoList = memo(
     SharedProps,
     "scrollerRef" | "customScrollParent" | "useWindowScroll"
   >) => {
+    // React Compiler cannot lower this function yet, so it bails out here.
+    // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+    "use no memo"
+
     const virtuosoRef = useRef<VirtuosoHandle>(null)
     const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
     const _ref = useRef<VirtuosoGridListHandle>(null)

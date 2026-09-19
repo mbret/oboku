@@ -24,6 +24,10 @@ const AddIdentifierButton = styled(Button)(({ theme }) => ({
 }))
 
 export function MetadataForm() {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { bookId, control, inspection, isUploading } = useBookOptimize()
   const isApplyingLocally = useIsApplyingLocally(bookId)
   const isApplying = isApplyingLocally || isUploading

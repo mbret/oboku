@@ -25,6 +25,10 @@ export const useDismissibleOverlay = ({
   open: boolean
   onClose: () => void
 }): { close: OverlayCloseFn } => {
+  // Reads/writes a ref during render, which React Compiler refuses to memoize.
+  // TODO: rework so no ref is touched during render, then drop this opt-out.
+  "use no memo"
+
   const { register, reserve, close: closeEntry } = useModalHistory()
 
   const onCloseRef = useRef(onClose)

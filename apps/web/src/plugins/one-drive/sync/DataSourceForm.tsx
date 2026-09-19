@@ -51,6 +51,10 @@ export const DataSourceForm = memo(function DataSourceForm({
   onSubmit,
   submitLabel,
 }: DataSourceFormInternalProps<OneDriveDataSourceDocType>) {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { control, handleSubmit } = useForm<OneDriveFormData>({
     mode: "onChange",
     defaultValues: {

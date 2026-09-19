@@ -50,6 +50,10 @@ export function useLocalSettings(): LocalSettings
 export function useLocalSettings(
   keyOrKeys?: keyof LocalSettings | readonly (keyof LocalSettings)[],
 ) {
+  // useCallback receives a dependency list that is not an array literal.
+  // TODO: inline the dependency array literal, then drop this opt-out.
+  "use no memo"
+
   const keys: DependencyList =
     typeof keyOrKeys === "string" ? [keyOrKeys] : (keyOrKeys ?? [])
 

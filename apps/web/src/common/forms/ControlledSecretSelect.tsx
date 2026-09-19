@@ -34,6 +34,10 @@ export const ControlledSecretSelect = <
   "render"
 > &
   TextFieldProps) => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const { data: secrets = [] } = useSecrets()
 
   const options = secrets.map((secret) => ({
