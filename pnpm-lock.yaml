@@ -524,7 +524,7 @@ importers:
         version: 19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8)
       react-dropzone:
         specifier: ^20.1.1
-        version: 20.1.1(@types/react@19.2.17)(react@19.2.8)
+        version: 20.1.2(@types/react@19.2.17)(react@19.2.8)
       react-hook-form:
         specifier: ^7.84.0
         version: 7.84.0(react@19.2.8)
@@ -2959,8 +2959,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.6.20200806':
     resolution: {integrity: sha512-QN6aGmIbLXcJW0SEf8tz9UWCpQTBMy2u4xSuZ04YofzMGknhWwMeUecySLntCZYAEstHzDoSgwxCf5Gb8GqIRQ==}
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
-    resolution: {integrity: sha512-zu2ppNkOo7puEJLiIcyjtHkc5UsOB9bYkvos5o+FeZXSwKFJcUE18WNBSv23tOmq3JRz+TcM2ElUgphts5Ikng==}
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
+    resolution: {integrity: sha512-DluDUwHSulA3IFiRBty4rlxQt4oNrJEhHhNu7gvB6+Jhc61oWb/ga6r4OlU8ITFjhiN1MBfLdkPphO1/HMyLVQ==}
 
   '@microsoft/api-extractor-model@7.33.10':
     resolution: {integrity: sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==}
@@ -10715,8 +10715,8 @@ packages:
     peerDependencies:
       react: ^19.2.8
 
-  react-dropzone@20.1.1:
-    resolution: {integrity: sha512-2cilRFP8bsjDOHpV0sJ6XY8pzJhmz4/cQ6s9yeckOACWYDR+n4MGGtnJh3Rycq/9SLhDWugqDx1z5mtfmOOZhw==}
+  react-dropzone@20.1.2:
+    resolution: {integrity: sha512-gj2m31ZmYOZjTuW6CDfx38/WW2JlbuQ/X2Il8cOwIWa7Znp7vQSPJFtRfDbAjusBuoXzAYktI+r2R6iKMaRTPw==}
     engines: {node: '>= 22'}
     peerDependencies:
       '@types/react': '*'
@@ -15492,7 +15492,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -17641,7 +17641,7 @@ snapshots:
 
   '@types/gapi.client.drive-v3@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260823
+      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260904
 
   '@types/gapi.client@1.0.8': {}
 
@@ -24674,7 +24674,7 @@ snapshots:
       react: 19.2.8
       scheduler: 0.27.0
 
-  react-dropzone@20.1.1(@types/react@19.2.17)(react@19.2.8):
+  react-dropzone@20.1.2(@types/react@19.2.17)(react@19.2.8):
     dependencies:
       attr-accept: 4.0.0
       file-selector: 5.0.1
