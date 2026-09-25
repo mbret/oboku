@@ -17,7 +17,7 @@ import {
   switchMap,
   takeUntil,
 } from "rxjs"
-import { isShallowEqual, mapKeysTo } from "@prose-reader/core"
+import { isShallowEqual } from "@prose-reader/core"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
 
@@ -50,12 +50,9 @@ export const useSyncBookProgress = (
     const bookProgress$ = reader.pagination.state$.pipe(
       // skip initial state
       skip(1),
-      mapKeysTo(["beginCfi", "percentageEstimateOfBook"]),
-      map((value) => ({
-        ...value,
-        percentageEstimateOfBook: normalizeProgress(
-          value.percentageEstimateOfBook,
-        ),
+      map(({ begin, percentageEstimateOfBook }) => ({
+        beginCfi: begin.cfi,
+        percentageEstimateOfBook: normalizeProgress(percentageEstimateOfBook),
       })),
       distinctUntilChanged(isShallowEqual),
       takeUntil(unmount$),
