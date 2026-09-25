@@ -22,5 +22,9 @@ allowBuilds:
   unrs-resolver: true
 patchedDependencies:
   react-dom@19.2.8: patches/react-dom@19.2.8.patch
+# gesturx has the same author as prose-reader. Its entries name an exact
+# version, the one @prose-reader/enhancer-gestures requires, and each does
+# nothing once that version is a day old.
 minimumReleaseAgeExclude:
   - '@prose-reader/*'
+  - gesturx@1.11.1
