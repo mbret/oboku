@@ -3,6 +3,7 @@ import { ReadingStateState } from "@oboku/shared"
 import {
   bufferTime,
   catchError,
+  combineLatest,
   concatMap,
   distinctUntilChanged,
   EMPTY,
@@ -11,7 +12,6 @@ import {
   map,
   merge,
   share,
-  skip,
   startWith,
   Subject,
   switchMap,
@@ -23,13 +23,7 @@ import { useIncrementalBookModify } from "../../books"
 
 const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
 
-const normalizeProgress = (progress: number | undefined) => {
-  if (typeof progress !== "number") {
-    return undefined
-  }
-
-  return Number(progress.toFixed(4))
-}
+const normalizeProgress = (progress: number) => Number(progress.toFixed(4))
 
 export const useSyncBookProgress = (
   bookId: string,
@@ -43,16 +37,24 @@ export const useSyncBookProgress = (
     if (!reader) return
 
     // Signals that the hook is unmounting. When it emits, takeUntil()
-    // completes the pagination stream downstream, which lets bufferTime
+    // completes the progress stream downstream, which lets bufferTime
     // flush any buffered value and run one last write before teardown.
     const unmount$ = new Subject<void>()
 
-    const bookProgress$ = reader.pagination.state$.pipe(
-      // skip initial state
-      skip(1),
-      map(({ begin, percentageEstimateOfBook }) => ({
-        beginCfi: begin.cfi,
-        percentageEstimateOfBook: normalizeProgress(percentageEstimateOfBook),
+    const settledPercentageEstimateOfBook$ = reader.pagination.state$.pipe(
+      filter((pagination) => pagination.isSettled),
+      map((pagination) =>
+        normalizeProgress(pagination.percentageEstimateOfBook),
+      ),
+    )
+
+    const bookProgress$ = combineLatest([
+      reader.navigation.readingPosition$,
+      settledPercentageEstimateOfBook$,
+    ]).pipe(
+      map(([readingPosition, percentageEstimateOfBook]) => ({
+        readingPosition,
+        percentageEstimateOfBook,
       })),
       distinctUntilChanged(isShallowEqual),
       takeUntil(unmount$),
@@ -90,9 +92,6 @@ export const useSyncBookProgress = (
           const promise = incrementalBookModify({
             doc: bookId,
             mutationFn: (old) => {
-              const hasBookmarkLocation = Boolean(params.beginCfi)
-              const hasProgress =
-                typeof params.percentageEstimateOfBook === "number"
               const nextReadingState =
                 old.readingStateCurrentState === ReadingStateState.Finished
                   ? ReadingStateState.Finished
@@ -101,12 +100,11 @@ export const useSyncBookProgress = (
                     : ReadingStateState.Reading
 
               const didBookmarkLocationChange =
-                hasBookmarkLocation &&
-                old.readingStateCurrentBookmarkLocation !== params.beginCfi
+                old.readingStateCurrentBookmarkLocation !==
+                params.readingPosition
               const didProgressChange =
-                hasProgress &&
                 old.readingStateCurrentBookmarkProgressPercent !==
-                  params.percentageEstimateOfBook
+                params.percentageEstimateOfBook
               const didReadingStateChange =
                 old.readingStateCurrentState !== nextReadingState
 
@@ -120,9 +118,8 @@ export const useSyncBookProgress = (
 
               return {
                 ...old,
-                // cfi will be undefined at the beginning until pagination stabilize
                 ...(didBookmarkLocationChange && {
-                  readingStateCurrentBookmarkLocation: params.beginCfi || null,
+                  readingStateCurrentBookmarkLocation: params.readingPosition,
                 }),
                 readingStateCurrentBookmarkProgressUpdatedAt:
                   new Date().toISOString(),
