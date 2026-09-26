@@ -152,23 +152,33 @@ export const getReadingStateUpdatedTime = ({
 }
 
 /**
- * The progress to show for a book, from 0 to 1: its
- * `readingStateReachedProgressPercent`, or on a book last read before that
- * existed, its bookmark progress, which then held the same estimate. An older
- * version of the app only writes the bookmark progress, so a book it updates
- * shows a stale value until a newer version writes it again.
+ * The progress to show for a book, from 0 to 1. The state decides first: a
+ * finished book is fully read and one not started is at 0, whatever progress
+ * is stored. Otherwise it is the book's `readingStateReachedProgressPercent`,
+ * or on a book last read before that existed, its bookmark progress, which
+ * then held the same estimate. An older version of the app only writes the
+ * bookmark progress, so a book it updates shows a stale value until a newer
+ * version writes it again.
  *
  * TODO(ask the maintainer, added 2026-09): raise dropping this fallback
  * together with the one in getReadingStateUpdatedTime. Like it, it needs a
  * CouchDB backfill first, or books not read since would show 0.
  */
 export const getReadingStateReachedProgress = ({
+  readingStateCurrentState,
   readingStateReachedProgressPercent,
   readingStateCurrentBookmarkProgressPercent,
 }: Pick<
   BookDocType,
+  | "readingStateCurrentState"
   | "readingStateReachedProgressPercent"
   | "readingStateCurrentBookmarkProgressPercent"
->) =>
-  readingStateReachedProgressPercent ??
-  readingStateCurrentBookmarkProgressPercent
+>) => {
+  if (readingStateCurrentState === ReadingStateState.Finished) return 1
+  if (readingStateCurrentState === ReadingStateState.NotStarted) return 0
+
+  return (
+    readingStateReachedProgressPercent ??
+    readingStateCurrentBookmarkProgressPercent
+  )
+}
