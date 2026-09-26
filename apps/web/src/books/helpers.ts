@@ -1,5 +1,6 @@
 import {
   compareDesc,
+  getReadingStateUpdatedTime,
   ReadingStateState,
   sortByTitleComparator,
 } from "@oboku/shared"
@@ -134,7 +135,7 @@ export const useAddBook = () => {
           lastMetadataUpdateError: null,
           metadataUpdateStatus: null,
           readingStateCurrentBookmarkLocation: null,
-          readingStateCurrentBookmarkProgressUpdatedAt: null,
+          readingStateUpdatedAt: null,
           readingStateCurrentBookmarkProgressPercent: 0,
           readingStateCurrentState: ReadingStateState.NotStarted,
           createdAt: Date.now(),
@@ -176,14 +177,14 @@ export const sortBooksBy = (
       return [...books].sort((a, b) => compareDesc(a.createdAt, b.createdAt))
     }
     case "activity": {
-      return [...books].sort((a, b) => {
-        if (!a.readingStateCurrentBookmarkProgressUpdatedAt) return 1
-        if (!b.readingStateCurrentBookmarkProgressUpdatedAt) return -1
+      return [...books].sort(function compareByLatestReadingActivity(a, b) {
+        const aTime = getReadingStateUpdatedTime(a)
+        const bTime = getReadingStateUpdatedTime(b)
 
-        return (
-          new Date(b.readingStateCurrentBookmarkProgressUpdatedAt).getTime() -
-          new Date(a.readingStateCurrentBookmarkProgressUpdatedAt).getTime()
-        )
+        if (aTime === undefined) return 1
+        if (bTime === undefined) return -1
+
+        return bTime - aTime
       })
     }
     case "alpha": {

@@ -47,13 +47,17 @@ export const bookSchemaMigrationStrategies: MigrationStrategies = {
   // uploaded to the bucket; left undefined for existing docs so the next
   // metadata refresh re-uploads once and populates it.
   4: (oldDoc: Record<string, unknown>) => oldDoc,
+  // v5: added optional `readingStateUpdatedAt`, superseding
+  // `readingStateCurrentBookmarkProgressUpdatedAt`; nothing to backfill since
+  // the activity order reads the later of the two.
+  5: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "books",
-  version: 4,
+  version: 5,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -77,6 +81,7 @@ export const bookSchema: RxJsonSchema<
     readingStateCurrentBookmarkProgressUpdatedAt: {
       type: ["string", "null"],
     },
+    readingStateUpdatedAt: { type: ["string", "null"] },
     readingStateCurrentState: { type: ["string"] },
     rights: { type: ["string", "null"] },
     subject: { type: ["array", "null"], items: { type: "string" } },

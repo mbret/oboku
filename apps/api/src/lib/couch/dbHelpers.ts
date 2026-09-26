@@ -244,7 +244,7 @@ export const createBook = async (
     links: [],
     readingStateCurrentBookmarkLocation: null,
     readingStateCurrentBookmarkProgressPercent: 0,
-    readingStateCurrentBookmarkProgressUpdatedAt: null,
+    readingStateUpdatedAt: null,
     readingStateCurrentState: ReadingStateState.NotStarted,
     rx_model: "book",
     tags: [],
