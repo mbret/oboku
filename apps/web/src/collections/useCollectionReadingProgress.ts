@@ -1,4 +1,7 @@
-import { ReadingStateState } from "@oboku/shared"
+import {
+  getReadingStateReachedProgress,
+  ReadingStateState,
+} from "@oboku/shared"
 import { useBooks } from "../books/states"
 import { useCollection } from "./useCollection"
 
@@ -19,7 +22,7 @@ export const useCollectionReadingProgress = ({
       return acc + 1
     }
 
-    return acc + (item.readingStateCurrentBookmarkProgressPercent ?? 0)
+    return acc + getReadingStateReachedProgress(item)
   }, 0)
 
   return totalProgressPercent / books.length

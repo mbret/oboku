@@ -14,7 +14,6 @@ import {
   takeUntil,
 } from "rxjs"
 import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
-import { isDefined } from "reactjrx"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
 
@@ -30,15 +29,27 @@ const normalizeReadingPosition = ({
   percentageEstimateOfBook: normalizeProgress(percentageEstimateOfBook),
 })
 
-const getLatest = <T>(values: T[]) => values[values.length - 1]
-
-const isEndOfBookVisible = ({
-  isSettled,
-  percentageEstimateOfBook,
-}: {
+type PaginationProgress = {
   isSettled: boolean
   percentageEstimateOfBook: number
-}) => isSettled && percentageEstimateOfBook === 1
+}
+
+type BookPatch = (old: BookDocType) => BookDocType
+
+const isSettled = ({ isSettled }: PaginationProgress) => isSettled
+
+const isEndOfBookVisible = (pagination: PaginationProgress) =>
+  isSettled(pagination) && pagination.percentageEstimateOfBook === 1
+
+const toReachedProgress = ({ percentageEstimateOfBook }: PaginationProgress) =>
+  normalizeProgress(percentageEstimateOfBook)
+
+const hasPatches = (patches: BookPatch[]) => patches.length > 0
+
+const composePatches = (patches: BookPatch[]): BookPatch =>
+  function applyPatchesInOrder(old) {
+    return patches.reduce((book, patch) => patch(book), old)
+  }
 
 const createReadingPositionPatch =
   ({ cfi, percentageEstimateOfBook }: ReadingPosition) =>
@@ -79,6 +90,17 @@ const createReadingPositionPatch =
     }
   }
 
+const createReachedProgressPatch =
+  (reachedProgress: number): BookPatch =>
+  (old) =>
+    old.readingStateReachedProgressPercent === reachedProgress
+      ? old
+      : {
+          ...old,
+          readingStateReachedProgressPercent: reachedProgress,
+          readingStateUpdatedAt: new Date().toISOString(),
+        }
+
 /**
  * Finished is a reading state, not a progress (see `BookDocType`): the bookmark
  * and its progress stay the reading position's, which is short of 1 on the
@@ -107,22 +129,34 @@ export const useSyncBookProgress = (
       if (!reader) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
-      // completes the reading position stream downstream, which lets
-      // bufferTime flush any buffered value and run one last write before
-      // teardown.
+      // completes the progress streams downstream, which lets bufferTime
+      // flush any buffered patch and run one last write before teardown.
       const unmount$ = new Subject<void>()
 
-      // bufferTime is preferred over auditTime because it flushes its
-      // pending buffer on source completion, guaranteeing the latest
-      // reading position is written when the hook unmounts.
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(normalizeReadingPosition),
         distinctUntilChanged(isShallowEqual),
+        map(createReadingPositionPatch),
+      )
+
+      const reachedProgressPatch$ = reader.pagination.state$.pipe(
+        filter(isSettled),
+        map(toReachedProgress),
+        distinctUntilChanged(),
+        map(createReachedProgressPatch),
+      )
+
+      // bufferTime is preferred over auditTime because it flushes its
+      // pending buffer on source completion, guaranteeing the latest
+      // progress is written when the hook unmounts.
+      const throttledProgressPatch$ = merge(
+        readingPositionPatch$,
+        reachedProgressPatch$,
+      ).pipe(
         takeUntil(unmount$),
         bufferTime(SYNC_BOOK_PROGRESS_INTERVAL_MS),
-        map(getLatest),
-        filter(isDefined),
-        map(createReadingPositionPatch),
+        filter(hasPatches),
+        map(composePatches),
       )
 
       const endOfBookPatch$ = reader.pagination.state$.pipe(
@@ -132,7 +166,7 @@ export const useSyncBookProgress = (
         }),
       )
 
-      const sub = merge(readingPositionPatch$, endOfBookPatch$)
+      const sub = merge(throttledProgressPatch$, endOfBookPatch$)
         .pipe(
           concatMap(function modifyBook(mutationFn) {
             return from(incrementalBookModify({ doc: bookId, mutationFn }))

@@ -137,6 +137,7 @@ export const useAddBook = () => {
           readingStateCurrentBookmarkLocation: null,
           readingStateUpdatedAt: null,
           readingStateCurrentBookmarkProgressPercent: 0,
+          readingStateReachedProgressPercent: 0,
           readingStateCurrentState: ReadingStateState.NotStarted,
           createdAt: Date.now(),
           tags: tags || [],

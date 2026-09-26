@@ -23,19 +23,28 @@ export type BookDocType = CouchDBMeta &
     readingStateCurrentBookmarkLocation: string | null
     /**
      * How far into the book readingStateCurrentBookmarkLocation is, from 0 to
-     * 1, and `0` when it is `null`. They both represent the last user position.
+     * 1, and `0` when it is `null`. They both represent the last user position:
+     * this is the place to reopen at for a reader that does not understand
+     * cfis. For showing progress, use readingStateReachedProgressPercent.
      *
      * @important
      * This is independent from readingStateCurrentState. A book can be
      * finished but not have a progress of 100%: the position is where the
      * reader's page starts, short of 1 on the last page, and the user can go
-     * back. Anything showing progress reads a finished book as fully read
-     * from its state.
+     * back.
      */
     readingStateCurrentBookmarkProgressPercent: number
     /**
+     * How far into the book what the reader last saw reaches, from 0 to 1:
+     * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
+     * page 1, as the reader itself shows it. The progress to show; it can be
+     * ahead of the bookmark. Missing on a book last read before it existed:
+     * read it through {@link getReadingStateReachedProgress}.
+     */
+    readingStateReachedProgressPercent?: number
+    /**
      * When the reading state last changed, by reading or by hand: the
-     * position, its progress or readingStateCurrentState. Books are ordered by
+     * position, either progress, or readingStateCurrentState. Books are ordered by
      * it for recent activity, together with the date it superseded (see
      * {@link getReadingStateUpdatedTime}). `null` or missing when it has not
      * changed since the book was added, or last changed before this field
@@ -141,3 +150,25 @@ export const getReadingStateUpdatedTime = ({
 
   return times.length > 0 ? Math.max(...times) : undefined
 }
+
+/**
+ * The progress to show for a book, from 0 to 1: its
+ * `readingStateReachedProgressPercent`, or on a book last read before that
+ * existed, its bookmark progress, which then held the same estimate. An older
+ * version of the app only writes the bookmark progress, so a book it updates
+ * shows a stale value until a newer version writes it again.
+ *
+ * TODO(ask the maintainer, added 2026-09): raise dropping this fallback
+ * together with the one in getReadingStateUpdatedTime. Like it, it needs a
+ * CouchDB backfill first, or books not read since would show 0.
+ */
+export const getReadingStateReachedProgress = ({
+  readingStateReachedProgressPercent,
+  readingStateCurrentBookmarkProgressPercent,
+}: Pick<
+  BookDocType,
+  | "readingStateReachedProgressPercent"
+  | "readingStateCurrentBookmarkProgressPercent"
+>) =>
+  readingStateReachedProgressPercent ??
+  readingStateCurrentBookmarkProgressPercent

@@ -6,6 +6,7 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 const createMarkBookAsUnreadPatch = () => ({
   readingStateCurrentState: ReadingStateState.NotStarted,
   readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: new Date().toISOString(),
   readingStateCurrentBookmarkLocation: null,
 })
@@ -13,6 +14,7 @@ const createMarkBookAsUnreadPatch = () => ({
 const createMarkBookAsFinishedPatch = () => ({
   readingStateCurrentState: ReadingStateState.Finished,
   readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateReachedProgressPercent: 1,
   readingStateUpdatedAt: new Date().toISOString(),
   readingStateCurrentBookmarkLocation: null,
 })
