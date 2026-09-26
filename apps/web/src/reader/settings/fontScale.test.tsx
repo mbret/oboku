@@ -6,9 +6,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 import { localSettingsSignal } from "../../settings/useLocalSettings"
 
 const mocks = vi.hoisted(function createFontScaleMocks() {
-  return {
-    accountSettings: {} as { readerGlobalFontScale?: number | null },
-  }
+  const accountSettings: { readerGlobalFontScale?: number | null } = {}
+
+  return { accountSettings }
 })
 
 vi.mock("../../settings/useSettings", function mockSettings() {
@@ -22,7 +22,7 @@ vi.mock("../../settings/useSettings", function mockSettings() {
 import { useReaderFontScale } from "./fontScale"
 
 describe("useReaderFontScale", () => {
-  beforeEach(() => {
+  beforeEach(function resetDeviceAndAccountSettings() {
     localSettingsSignal.update(SIGNAL_RESET)
     mocks.accountSettings = {}
   })
@@ -39,7 +39,7 @@ describe("useReaderFontScale", () => {
     mocks.accountSettings = { readerGlobalFontScale: 1.4 }
     const { result } = renderHook(useReaderFontScale)
 
-    act(() => {
+    act(function changeFontScaleOnDevice() {
       result.current.updateFontScale(1.2)
     })
 

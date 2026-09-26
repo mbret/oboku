@@ -16,7 +16,7 @@ import { useSettings } from "../../settings/useSettings"
  * device that never changed its font scale since would go back to the default.
  * The field stays in the RxDB settings schema while CouchDB documents hold it.
  */
-export const useReaderFontScale = () => {
+export function useReaderFontScale() {
   const deviceFontScale = useLocalSettings("readerFontScale")
   const { data: settings } = useSettings()
 
