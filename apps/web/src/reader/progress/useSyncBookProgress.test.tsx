@@ -79,7 +79,7 @@ const book: BookDocType = {
   modifiedAt: null,
   readingStateCurrentBookmarkLocation: null,
   readingStateCurrentBookmarkProgressPercent: 0,
-  readingStateCurrentBookmarkProgressUpdatedAt: null,
+  readingStateUpdatedAt: null,
   readingStateCurrentState: ReadingStateState.NotStarted,
   rx_model: "book",
   rxdbMeta: { lwt: 1 },
@@ -132,6 +132,7 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkProgressPercent:
         PAGE_BEFORE_LAST.percentageEstimateOfBook,
       readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt: expect.any(String),
     })
   })
 

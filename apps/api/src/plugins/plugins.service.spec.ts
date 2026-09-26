@@ -35,7 +35,7 @@ describe("PluginsService downloadLinkToTmp", () => {
     lastMetadataUpdateError: null,
     readingStateCurrentBookmarkLocation: null,
     readingStateCurrentBookmarkProgressPercent: 0,
-    readingStateCurrentBookmarkProgressUpdatedAt: null,
+    readingStateUpdatedAt: null,
     readingStateCurrentState: ReadingStateState.NotStarted,
     tags: [],
     links: ["link-1"],

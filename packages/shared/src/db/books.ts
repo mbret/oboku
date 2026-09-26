@@ -14,16 +14,39 @@ export type BookDocType = CouchDBMeta &
     lastMetadataUpdatedAt: number | null
     metadataUpdateStatus: null | "fetching"
     lastMetadataUpdateError: null | string
+    /**
+     * Where the reader last was, as a cfi to reopen the book at. `null` when
+     * there is no such place: a book never opened, or marked finished or
+     * unread by hand, which reopens at its start.
+     */
     readingStateCurrentBookmarkLocation: string | null
     /**
+     * How far into the book readingStateCurrentBookmarkLocation is, from 0 to
+     * 1, and `0` when it is `null`. They both represent the last user position.
+     *
      * @important
      * This is independent from readingStateCurrentState. A book can be
-     * finished but not have a progress of 100% because the user want back
-     * for example. Same as readingStateCurrentBookmarkLocation. They both represent
-     * the last user position.
+     * finished but not have a progress of 100%: the position is where the
+     * reader's page starts, short of 1 on the last page, and the user can go
+     * back. Anything showing progress reads a finished book as fully read
+     * from its state.
      */
     readingStateCurrentBookmarkProgressPercent: number
-    readingStateCurrentBookmarkProgressUpdatedAt: string | null
+    /**
+     * @deprecated Superseded by readingStateUpdatedAt, and no longer written.
+     * It is still the only date on a book whose reading state last changed
+     * before readingStateUpdatedAt existed, or on an older version of the app.
+     */
+    readingStateCurrentBookmarkProgressUpdatedAt?: string | null
+    /**
+     * When the reading state last changed, by reading or by hand: the
+     * position, its progress or readingStateCurrentState. Books are ordered by
+     * it for recent activity, together with the deprecated
+     * readingStateCurrentBookmarkProgressUpdatedAt. `null` or missing when it
+     * has not changed since the book was added, or last changed before this
+     * field existed.
+     */
+    readingStateUpdatedAt?: string | null
     /**
      * @important
      * Name is a bit deceptive but a finished book CAN have a bookmark or a progress
@@ -87,3 +110,27 @@ export type BookDocType = CouchDBMeta &
      */
     bucketCoverKey?: string | null
   }
+
+const isDateSet = (date: string | null | undefined): date is string => !!date
+
+/**
+ * When a book's reading state last changed, in milliseconds, or `undefined`
+ * when it never did: the later of `readingStateUpdatedAt` and the deprecated
+ * date it superseded, which older versions of the app still write.
+ */
+export const getReadingStateUpdatedTime = ({
+  readingStateUpdatedAt,
+  readingStateCurrentBookmarkProgressUpdatedAt,
+}: Pick<
+  BookDocType,
+  "readingStateUpdatedAt" | "readingStateCurrentBookmarkProgressUpdatedAt"
+>) => {
+  const times = [
+    readingStateUpdatedAt,
+    readingStateCurrentBookmarkProgressUpdatedAt,
+  ]
+    .filter(isDateSet)
+    .map((date) => new Date(date).getTime())
+
+  return times.length > 0 ? Math.max(...times) : undefined
+}

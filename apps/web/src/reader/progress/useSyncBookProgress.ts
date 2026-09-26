@@ -69,7 +69,7 @@ const createReadingPositionPatch =
       ...(didBookmarkLocationChange && {
         readingStateCurrentBookmarkLocation: cfi,
       }),
-      readingStateCurrentBookmarkProgressUpdatedAt: new Date().toISOString(),
+      readingStateUpdatedAt: new Date().toISOString(),
       ...(didReadingStateChange && {
         readingStateCurrentState: nextReadingState,
       }),
@@ -90,7 +90,7 @@ const markBookAsFinished = (old: BookDocType): BookDocType => {
   return {
     ...old,
     readingStateCurrentState: ReadingStateState.Finished,
-    readingStateCurrentBookmarkProgressUpdatedAt: new Date().toISOString(),
+    readingStateUpdatedAt: new Date().toISOString(),
   }
 }
 
