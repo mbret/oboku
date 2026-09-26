@@ -13,12 +13,7 @@ import {
   Subject,
   takeUntil,
 } from "rxjs"
-import {
-  type BookBoundaryReachedEvent,
-  isShallowEqual,
-  observeBookBoundaryReached,
-  type ReadingPosition,
-} from "@prose-reader/core"
+import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
 import { isDefined } from "reactjrx"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
@@ -37,8 +32,13 @@ const normalizeReadingPosition = ({
 
 const getLatest = <T>(values: T[]) => values[values.length - 1]
 
-const isEndOfBook = ({ boundary }: BookBoundaryReachedEvent) =>
-  boundary === "end"
+const isEndOfBookVisible = ({
+  isSettled,
+  percentageEstimateOfBook,
+}: {
+  isSettled: boolean
+  percentageEstimateOfBook: number
+}) => isSettled && percentageEstimateOfBook === 1
 
 const createReadingPositionPatch =
   ({ cfi, percentageEstimateOfBook }: ReadingPosition) =>
@@ -120,8 +120,8 @@ export const useSyncBookProgress = (
         map(createReadingPositionPatch),
       )
 
-      const endOfBookPatch$ = observeBookBoundaryReached(reader).pipe(
-        filter(isEndOfBook),
+      const endOfBookPatch$ = reader.pagination.state$.pipe(
+        filter(isEndOfBookVisible),
         map(function toFinishedPatch() {
           return markBookAsFinished
         }),
