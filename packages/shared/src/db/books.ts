@@ -126,7 +126,8 @@ const isDateSet = (date: string | null | undefined): date is string => !!date
  * maintainer rather than removing it: dropping it either needs a CouchDB
  * backfill first (the API's `MigrationService`, see AGENTS.md), or sends the
  * books still holding only the deprecated date to the bottom of recent
- * activity.
+ * activity. Its entry in the RxDB book schema goes only once no CouchDB
+ * document holds the field: RxDB rejects undeclared properties.
  */
 export const getReadingStateUpdatedTime = ({
   readingStateUpdatedAt,
