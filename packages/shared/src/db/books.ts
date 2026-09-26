@@ -116,7 +116,17 @@ const isDateSet = (date: string | null | undefined): date is string => !!date
 /**
  * When a book's reading state last changed, in milliseconds, or `undefined`
  * when it never did: the later of `readingStateUpdatedAt` and the deprecated
- * date it superseded, which older versions of the app still write.
+ * date it superseded, which older versions of the app still write. Nothing
+ * backfilled `readingStateUpdatedAt`, so a book unchanged since it existed
+ * only has the deprecated date.
+ *
+ * TODO(ask the maintainer, added 2026-09): this fallback and the deprecated
+ * `readingStateCurrentBookmarkProgressUpdatedAt` are meant to be removed once
+ * older versions of the app are gone. After a few months, raise it with the
+ * maintainer rather than removing it: dropping it either needs a CouchDB
+ * backfill first (the API's `MigrationService`, see AGENTS.md), or sends the
+ * books still holding only the deprecated date to the bottom of recent
+ * activity.
  */
 export const getReadingStateUpdatedTime = ({
   readingStateUpdatedAt,
