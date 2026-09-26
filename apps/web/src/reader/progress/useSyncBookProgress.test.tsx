@@ -1,17 +1,19 @@
 // @vitest-environment jsdom
 
 import { type BookDocType, ReadingStateState } from "@oboku/shared"
-import type {
-  BookBoundaryReachedEvent,
-  ReadingPosition,
-} from "@prose-reader/core"
+import type { ReadingPosition } from "@prose-reader/core"
 import { renderHook } from "@testing-library/react"
 import { Subject } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+type FakePaginationResult = {
+  isSettled: boolean
+  percentageEstimateOfBook: number
+}
+
 type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
-  bookBoundaryReached$: Subject<BookBoundaryReachedEvent>
+  pagination: { state$: Subject<FakePaginationResult> }
 }
 
 const mocks = vi.hoisted(function createSyncBookProgressMocks() {
@@ -48,17 +50,6 @@ vi.mock("../../books", function mockBooks() {
   }
 })
 
-vi.mock("@prose-reader/core", async function mockBookBoundary(importOriginal) {
-  return {
-    ...(await importOriginal<typeof import("@prose-reader/core")>()),
-    observeBookBoundaryReached: function observeFakeBookBoundaryReached(
-      reader: FakeReader,
-    ) {
-      return reader.bookBoundaryReached$
-    },
-  }
-})
-
 import { useSyncBookProgress } from "./useSyncBookProgress"
 
 const LAST_PAGE: ReadingPosition = {
@@ -68,6 +59,11 @@ const LAST_PAGE: ReadingPosition = {
 const PAGE_BEFORE_LAST: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/40/1:0)",
   percentageEstimateOfBook: 0.875,
+}
+
+const END_OF_BOOK_VISIBLE: FakePaginationResult = {
+  isSettled: true,
+  percentageEstimateOfBook: 1,
 }
 
 const book: BookDocType = {
@@ -93,7 +89,7 @@ const book: BookDocType = {
 function createFakeReader() {
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
-    bookBoundaryReached$: new Subject(),
+    pagination: { state$: new Subject() },
   }
 
   mocks.state.reader = reader
@@ -118,13 +114,17 @@ describe("useSyncBookProgress", () => {
     vi.useRealTimers()
   })
 
-  it("saves the reading position with its own progress", async () => {
+  it("saves the reading position with its own progress, not pagination's", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
     reader.navigation.readingPosition$.next(LAST_PAGE)
     await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: 0.95,
+    })
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book).toMatchObject({
@@ -135,7 +135,36 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("does not mark the book finished for being on its last page", async () => {
+  it("marks the book finished as soon as its end is visible, keeping the reading position", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Finished,
+    })
+  })
+
+  it("does not mark the book finished from an estimate that has not settled", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.pagination.state$.next({
+      ...END_OF_BOOK_VISIBLE,
+      isSettled: false,
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
+  })
+
+  it("does not mark the book finished from the reading position's progress", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
@@ -148,32 +177,6 @@ describe("useSyncBookProgress", () => {
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentState: ReadingStateState.Reading,
     })
-  })
-
-  it("marks the book finished as soon as the reader reaches its end, keeping the reading position", async () => {
-    const reader = createFakeReader()
-    renderSyncBookProgress()
-
-    reader.navigation.readingPosition$.next(LAST_PAGE)
-    await vi.advanceTimersByTimeAsync(1000)
-    reader.bookBoundaryReached$.next({ boundary: "end" })
-
-    expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkProgressPercent:
-        LAST_PAGE.percentageEstimateOfBook,
-      readingStateCurrentState: ReadingStateState.Finished,
-    })
-  })
-
-  it("does not mark the book finished when the reader reaches its start", async () => {
-    const reader = createFakeReader()
-    renderSyncBookProgress()
-
-    reader.bookBoundaryReached$.next({ boundary: "start" })
-    await vi.advanceTimersByTimeAsync(1000)
-
-    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
   })
 
   it("keeps a finished book finished as the reader moves in it", async () => {
