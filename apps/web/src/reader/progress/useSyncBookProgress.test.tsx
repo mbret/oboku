@@ -259,6 +259,34 @@ describe("useSyncBookProgress", () => {
     })
   })
 
+  it("saves the pending reading position when unmounted while the finished write is still running", async () => {
+    const reader = createFakeReader()
+    const { unmount } = renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
+    unmount()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentState: ReadingStateState.Finished,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateReachedProgressPercent: 1,
+    })
+  })
+
+  it("writes nothing once unmounted", async () => {
+    const reader = createFakeReader()
+    const { unmount } = renderSyncBookProgress()
+
+    unmount()
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
+  })
+
   it("saves the pending reading position when unmounted", () => {
     const reader = createFakeReader()
     const { unmount } = renderSyncBookProgress()

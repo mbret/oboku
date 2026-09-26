@@ -54,9 +54,11 @@ const composePatches = (patches: BookPatch[]): BookPatch =>
     return patches.reduce((book, patch) => patch(book), old)
   }
 
-const createReadingPositionPatch =
-  ({ cfi, percentageEstimateOfBook }: ReadingPosition) =>
-  (old: BookDocType): BookDocType => {
+const createReadingPositionPatch = ({
+  cfi,
+  percentageEstimateOfBook,
+}: ReadingPosition): BookPatch =>
+  function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
@@ -93,16 +95,16 @@ const createReadingPositionPatch =
     }
   }
 
-const createReachedProgressPatch =
-  (reachedProgress: number): BookPatch =>
-  (old) =>
-    old.readingStateReachedProgressPercent === reachedProgress
-      ? old
-      : {
-          ...old,
-          readingStateReachedProgressPercent: reachedProgress,
-          readingStateUpdatedAt: new Date().toISOString(),
-        }
+const createReachedProgressPatch = (reachedProgress: number): BookPatch =>
+  function applyReachedProgress(old) {
+    if (old.readingStateReachedProgressPercent === reachedProgress) return old
+
+    return {
+      ...old,
+      readingStateReachedProgressPercent: reachedProgress,
+      readingStateUpdatedAt: new Date().toISOString(),
+    }
+  }
 
 /**
  * Finished is a reading state, not a progress (see `BookDocType`): the bookmark
@@ -133,7 +135,7 @@ export const useSyncBookProgress = (
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
       // completes the progress streams downstream, which lets bufferTime
-      // flush any buffered patch and run one last write before teardown.
+      // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
@@ -172,9 +174,10 @@ export const useSyncBookProgress = (
         map(function toFinishedPatch() {
           return markBookAsFinished
         }),
+        takeUntil(unmount$),
       )
 
-      const sub = merge(throttledProgressPatch$, endOfBookPatch$)
+      merge(throttledProgressPatch$, endOfBookPatch$)
         .pipe(
           concatMap(function modifyBook(mutationFn) {
             return from(incrementalBookModify({ doc: bookId, mutationFn }))
@@ -188,12 +191,11 @@ export const useSyncBookProgress = (
         .subscribe()
 
       return function flushBookProgressOnUnmount() {
-        // Complete the source synchronously so bufferTime can flush its
-        // pending value and the final mutation is dispatched before we
-        // tear down the subscription.
+        // Completing the sources rather than unsubscribing lets concatMap
+        // run every write still queued, such as the last flush waiting on a
+        // finished write in flight. The subscription then ends on its own.
         unmount$.next()
         unmount$.complete()
-        sub.unsubscribe()
       }
     },
     [reader, bookId, incrementalBookModify, enabled],
