@@ -18,6 +18,8 @@ export type LocalSettings = {
   readerFloatingTime?: "bottom" | "off"
   readerFloatingProgress?: "bottom" | "off"
   readerWakeLockEnabled?: boolean
+  /** `null` until changed on this device: see `useReaderSettings`. */
+  readerFontScale?: number | null
 }
 
 export const localSettingsDefaultValues: Required<LocalSettings> = {
@@ -33,6 +35,7 @@ export const localSettingsDefaultValues: Required<LocalSettings> = {
   readerFloatingTime: "bottom",
   readerFloatingProgress: "bottom",
   readerWakeLockEnabled: true,
+  readerFontScale: null,
 }
 
 export const localSettingsSignal = signal<LocalSettings>({
