@@ -21,10 +21,15 @@ const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
 
 const normalizeProgress = (progress: number) => Number(progress.toFixed(4))
 
-const normalizeReadingPosition = ({
+type SavedReadingPosition = Pick<
+  ReadingPosition,
+  "cfi" | "percentageEstimateOfBook"
+>
+
+const toSavedReadingPosition = ({
   cfi,
   percentageEstimateOfBook,
-}: ReadingPosition): ReadingPosition => ({
+}: ReadingPosition): SavedReadingPosition => ({
   cfi,
   percentageEstimateOfBook: normalizeProgress(percentageEstimateOfBook),
 })
@@ -57,7 +62,7 @@ const composePatches = (patches: BookPatch[]): BookPatch =>
 const createReadingPositionPatch = ({
   cfi,
   percentageEstimateOfBook,
-}: ReadingPosition): BookPatch =>
+}: SavedReadingPosition): BookPatch =>
   function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
@@ -139,7 +144,7 @@ export const useSyncBookProgress = (
       const unmount$ = new Subject<void>()
 
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
-        map(normalizeReadingPosition),
+        map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
         map(createReadingPositionPatch),
       )

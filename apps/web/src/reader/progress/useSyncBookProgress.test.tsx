@@ -55,24 +55,35 @@ import { useSyncBookProgress } from "./useSyncBookProgress"
 const LAST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/8!/4/2/1:0)",
   percentageEstimateOfBook: 0.9375,
+  isFinal: true,
 }
 const PAGE_BEFORE_LAST: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/40/1:0)",
   percentageEstimateOfBook: 0.875,
+  isFinal: true,
 }
 
 const FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/2!/4/2/1:0)",
   percentageEstimateOfBook: 0,
+  isFinal: true,
+}
+
+const LAST_CHAPTER_START_STANDING_IN: ReadingPosition = {
+  cfi: "epubcfi(/6/8!)",
+  percentageEstimateOfBook: 0.9375,
+  isFinal: false,
 }
 
 const SPREAD_FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/4!/4/2/1:0)",
   percentageEstimateOfBook: 0.5,
+  isFinal: true,
 }
 const SPREAD_SECOND_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/2/1:0)",
   percentageEstimateOfBook: 0.5625,
+  isFinal: true,
 }
 const SPREAD_ESTIMATE = 0.625
 
@@ -150,6 +161,37 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentState: ReadingStateState.Reading,
       readingStateUpdatedAt: expect.any(String),
     })
+  })
+
+  it("saves a reading position that is not final yet over the bookmark the book opened at", () => {
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+    }
+    const reader = createFakeReader()
+    const { unmount } = renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_CHAPTER_START_STANDING_IN)
+    unmount()
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+    })
+  })
+
+  it("writes nothing more when the reading position only becomes final", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next({ ...LAST_PAGE, isFinal: false })
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.incrementalBookModify).toHaveBeenCalledTimes(1)
   })
 
   it("writes the reading position and the reached progress of an interval at once", async () => {
