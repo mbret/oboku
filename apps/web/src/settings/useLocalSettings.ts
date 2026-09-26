@@ -4,6 +4,7 @@
 import { signal, useSignalValue } from "reactjrx"
 import { isShallowEqual } from "@oboku/shared"
 import { useCallback, type DependencyList } from "react"
+import type { CoreInputSettings } from "@prose-reader/core"
 
 import type { ThemeProviderProps } from "@mui/material"
 
@@ -18,6 +19,7 @@ export type LocalSettings = {
   readerFloatingTime?: "bottom" | "off"
   readerFloatingProgress?: "bottom" | "off"
   readerWakeLockEnabled?: boolean
+  readerSpreadMode?: CoreInputSettings["spreadMode"]
 }
 
 export const localSettingsDefaultValues: Required<LocalSettings> = {
@@ -33,6 +35,7 @@ export const localSettingsDefaultValues: Required<LocalSettings> = {
   readerFloatingTime: "bottom",
   readerFloatingProgress: "bottom",
   readerWakeLockEnabled: true,
+  readerSpreadMode: "auto",
 }
 
 export const localSettingsSignal = signal<LocalSettings>({

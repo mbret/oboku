@@ -6,7 +6,10 @@ import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
 import { searchEnhancer } from "@prose-reader/enhancer-search"
 import type { Manifest } from "@prose-reader/shared"
 import { readerSignal } from "./states"
-import { localSettingsSignal } from "../settings/useLocalSettings"
+import {
+  localSettingsDefaultValues,
+  localSettingsSignal,
+} from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
 import { from, of } from "rxjs"
@@ -72,6 +75,9 @@ export const useCreateReader = ({
     const instance = createAppReader({
       manifest,
       target: cfi ? { type: "cfi", value: cfi } : undefined,
+      spreadMode:
+        localSettingsSignal.getValue().readerSpreadMode ??
+        localSettingsDefaultValues.readerSpreadMode,
       ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
         pageTurnAnimation: "none",
       }),

@@ -12,6 +12,7 @@ import {
 import { readerSignal } from "./states"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
+import { usePersistSpreadMode } from "./settings/spreadMode"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
@@ -138,6 +139,7 @@ const Effects = memo(function Effects({
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview })
+  usePersistSpreadMode()
 
   return null
 })
