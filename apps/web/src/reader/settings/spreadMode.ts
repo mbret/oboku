@@ -1,6 +1,6 @@
 import { useEffect } from "react"
-import { localSettingsSignal } from "../../settings/useLocalSettings"
 import { useReader } from "../states"
+import { useReaderSettings } from "./useReaderSettings"
 
 /**
  * Saves the spread mode chosen in the reader's layout menu as a device
@@ -8,6 +8,7 @@ import { useReader } from "../states"
  */
 export function usePersistSpreadMode() {
   const reader = useReader()
+  const { updateReaderSettings } = useReaderSettings()
 
   useEffect(
     function saveSpreadModeWhenReaderChangesIt() {
@@ -16,15 +17,13 @@ export function usePersistSpreadMode() {
       const subscription = reader.settings
         .watch(["spreadMode"])
         .subscribe(function saveSpreadMode({ spreadMode }) {
-          localSettingsSignal.update(function withSpreadMode(localSettings) {
-            return { ...localSettings, readerSpreadMode: spreadMode }
-          })
+          updateReaderSettings({ readerSpreadMode: spreadMode })
         })
 
       return function stopSavingSpreadMode() {
         subscription.unsubscribe()
       }
     },
-    [reader],
+    [reader, updateReaderSettings],
   )
 }

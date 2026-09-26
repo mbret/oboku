@@ -6,7 +6,10 @@ import {
 } from "../../settings/useLocalSettings"
 import { useSettings } from "../../settings/useSettings"
 
-type ReaderSettingsOnDevice = Pick<LocalSettings, "readerFontScale">
+type ReaderSettingsOnDevice = Pick<
+  LocalSettings,
+  "readerFontScale" | "readerSpreadMode"
+>
 
 /**
  * The reader settings the user changes from react-reader's menus, kept on the

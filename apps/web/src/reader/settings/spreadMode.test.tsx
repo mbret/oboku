@@ -22,6 +22,14 @@ const mocks = vi.hoisted(function createSpreadModeMocks() {
   return { state }
 })
 
+vi.mock("../../settings/useSettings", function mockAccountSettings() {
+  return {
+    useSettings: function useMockAccountSettings() {
+      return { data: undefined }
+    },
+  }
+})
+
 vi.mock("../states", function mockReaderState() {
   return {
     useReader: function useMockReader() {
