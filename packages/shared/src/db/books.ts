@@ -1,5 +1,6 @@
 import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
+import type { DeprecatedBookDocType } from "./docTypes"
 import type { RxDbMeta } from "./rxdb"
 
 export enum ReadingStateState {
@@ -33,18 +34,12 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkProgressPercent: number
     /**
-     * @deprecated Superseded by readingStateUpdatedAt, and no longer written.
-     * It is still the only date on a book whose reading state last changed
-     * before readingStateUpdatedAt existed, or on an older version of the app.
-     */
-    readingStateCurrentBookmarkProgressUpdatedAt?: string | null
-    /**
      * When the reading state last changed, by reading or by hand: the
      * position, its progress or readingStateCurrentState. Books are ordered by
-     * it for recent activity, together with the deprecated
-     * readingStateCurrentBookmarkProgressUpdatedAt. `null` or missing when it
-     * has not changed since the book was added, or last changed before this
-     * field existed.
+     * it for recent activity, together with the date it superseded (see
+     * {@link getReadingStateUpdatedTime}). `null` or missing when it has not
+     * changed since the book was added, or last changed before this field
+     * existed.
      */
     readingStateUpdatedAt?: string | null
     /**
@@ -132,10 +127,11 @@ const isDateSet = (date: string | null | undefined): date is string => !!date
 export const getReadingStateUpdatedTime = ({
   readingStateUpdatedAt,
   readingStateCurrentBookmarkProgressUpdatedAt,
-}: Pick<
-  BookDocType,
-  "readingStateUpdatedAt" | "readingStateCurrentBookmarkProgressUpdatedAt"
->) => {
+}: Pick<BookDocType, "readingStateUpdatedAt"> &
+  Pick<
+    DeprecatedBookDocType,
+    "readingStateCurrentBookmarkProgressUpdatedAt"
+  >) => {
   const times = [
     readingStateUpdatedAt,
     readingStateCurrentBookmarkProgressUpdatedAt,

@@ -68,27 +68,15 @@ export const bookSchema: RxJsonSchema<
       items: { type: "string" },
     },
     createdAt: { type: ["number"] },
-    creator: { type: ["string", "null"] },
-    date: { type: ["number", "null"] },
-    lang: { type: ["string", "null"] },
     lastMetadataUpdatedAt: { type: ["number", "null"] },
     lastMetadataUpdateError: { type: ["string", "null"] },
     metadataUpdateStatus: { type: ["string", "null"] },
     links: { ref: "link", type: "array", items: { type: "string" } },
-    publisher: { type: ["string", "null"] },
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
-    // Deprecated, but still held by legacy books and written by older versions
-    // of the app: see the TODO on getReadingStateUpdatedTime.
-    readingStateCurrentBookmarkProgressUpdatedAt: {
-      type: ["string", "null"],
-    },
     readingStateUpdatedAt: { type: ["string", "null"] },
     readingStateCurrentState: { type: ["string"] },
-    rights: { type: ["string", "null"] },
-    subject: { type: ["array", "null"], items: { type: "string" } },
     tags: { type: "array", ref: "tag", items: { type: "string" } },
-    title: { type: ["string", "null"] },
     modifiedAt: { type: ["string", "null"] },
     isAttachedToDataSource: { type: ["boolean"] },
     isNotInterested: { type: ["boolean"] },
@@ -98,6 +86,35 @@ export const bookSchema: RxJsonSchema<
     metadataSourcePriority: { type: ["array"], items: { type: "string" } },
     bucketCoverKey: { type: ["string", "null"] },
     ...getReplicationProperties(`book`),
+
+    // -------------------------------------------------------------------------
+    // Legacy properties
+    // -------------------------------------------------------------------------
+    /**
+     * Properties the app no longer writes (`DeprecatedBookDocType`). They stay
+     * declared because stored books can still hold them and RxDB rejects
+     * undeclared properties. One can only be removed once no CouchDB document
+     * holds it, which takes a CouchDB migration first (AGENTS.md, "Data
+     * migrations"), not an RxDB one.
+     *
+     * - `creator`, `date`, `lang`, `publisher`, `rights`, `subject`, `title`:
+     *   superseded by the `metadata` entries, and read nowhere. Whether
+     *   CouchDB documents still hold them has not been checked.
+     * - `readingStateCurrentBookmarkProgressUpdatedAt`: superseded by
+     *   `readingStateUpdatedAt`, but still on books unchanged since, written by
+     *   older versions of the app, and read by `getReadingStateUpdatedTime`
+     *   (see its TODO).
+     */
+    creator: { type: ["string", "null"] },
+    date: { type: ["number", "null"] },
+    lang: { type: ["string", "null"] },
+    publisher: { type: ["string", "null"] },
+    rights: { type: ["string", "null"] },
+    subject: { type: ["array", "null"], items: { type: "string" } },
+    title: { type: ["string", "null"] },
+    readingStateCurrentBookmarkProgressUpdatedAt: {
+      type: ["string", "null"],
+    },
   },
   required: [],
 }
