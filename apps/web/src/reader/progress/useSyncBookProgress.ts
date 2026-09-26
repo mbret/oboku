@@ -79,6 +79,14 @@ const createReadingPositionPatch =
     }
   }
 
+/**
+ * Finished is a reading state, not a progress. The bookmark and its progress
+ * stay the reading position's, which is short of 1 on the last page, so a
+ * finished book can store 0.9: anything showing progress treats a finished
+ * book as fully read from its state. Marking a book finished by hand
+ * (`useMarkBooksAsFinished`) clears the bookmark and stores 1 instead; reaching
+ * the end while reading keeps where the reader is.
+ */
 const markBookAsFinished = (old: BookDocType): BookDocType => {
   if (old.readingStateCurrentState === ReadingStateState.Finished) return old
 
