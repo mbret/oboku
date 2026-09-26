@@ -18,7 +18,7 @@ export type LocalSettings = {
   readerFloatingTime?: "bottom" | "off"
   readerFloatingProgress?: "bottom" | "off"
   readerWakeLockEnabled?: boolean
-  /** `null` until changed on this device: see `useReaderFontScale`. */
+  /** `null` until changed on this device: see `useReaderSettings`. */
   readerFontScale?: number | null
 }
 
