@@ -66,6 +66,16 @@ const FIRST_PAGE: ReadingPosition = {
   percentageEstimateOfBook: 0,
 }
 
+const SPREAD_FIRST_PAGE: ReadingPosition = {
+  cfi: "epubcfi(/6/4!/4/2/1:0)",
+  percentageEstimateOfBook: 0.5,
+}
+const SPREAD_SECOND_PAGE: ReadingPosition = {
+  cfi: "epubcfi(/6/6!/4/2/1:0)",
+  percentageEstimateOfBook: 0.5625,
+}
+const SPREAD_ESTIMATE = 0.625
+
 const END_OF_BOOK_VISIBLE: FakePaginationResult = {
   isSettled: true,
   percentageEstimateOfBook: 1,
@@ -182,6 +192,35 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
       readingStateCurrentBookmarkProgressPercent: 0,
       readingStateReachedProgressPercent: 0,
+    })
+  })
+
+  it("takes the settled estimate back as the reached progress when the reading position moves within the pages shown", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(SPREAD_FIRST_PAGE)
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: SPREAD_ESTIMATE,
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.navigation.readingPosition$.next(SPREAD_SECOND_PAGE)
+    reader.pagination.state$.next({
+      isSettled: false,
+      percentageEstimateOfBook: SPREAD_ESTIMATE,
+    })
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: SPREAD_ESTIMATE,
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: SPREAD_SECOND_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        SPREAD_SECOND_PAGE.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: SPREAD_ESTIMATE,
     })
   })
 
