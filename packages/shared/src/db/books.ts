@@ -37,9 +37,11 @@ export type BookDocType = CouchDBMeta &
     /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
-     * page 1, as the reader itself shows it. The progress to show; it can be
-     * ahead of the bookmark. Missing on a book last read before it existed:
-     * read it through {@link getReadingStateReachedProgress}.
+     * page 1, as the reader itself shows it. Until that estimate settles for
+     * the reader's latest navigation, it is the bookmark's progress. The
+     * progress to show; it can be ahead of the bookmark. Missing on a book
+     * last read before it existed: read it through
+     * {@link getReadingStateReachedProgress}.
      */
     readingStateReachedProgressPercent?: number
     /**

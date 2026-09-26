@@ -44,6 +44,9 @@ const isEndOfBookVisible = (pagination: PaginationProgress) =>
 const toReachedProgress = ({ percentageEstimateOfBook }: PaginationProgress) =>
   normalizeProgress(percentageEstimateOfBook)
 
+const toPositionProgress = ({ percentageEstimateOfBook }: ReadingPosition) =>
+  normalizeProgress(percentageEstimateOfBook)
+
 const hasPatches = (patches: BookPatch[]) => patches.length > 0
 
 const composePatches = (patches: BookPatch[]): BookPatch =>
@@ -139,12 +142,17 @@ export const useSyncBookProgress = (
         map(createReadingPositionPatch),
       )
 
-      const reachedProgressPatch$ = reader.pagination.state$.pipe(
-        filter(isSettled),
-        map(toReachedProgress),
-        distinctUntilChanged(),
-        map(createReachedProgressPatch),
-      )
+      // The latest of the two wins. Pagination settles after the reading
+      // position moves, so its estimate replaces the position's own progress,
+      // which stands in until then: a book left before the new place settles
+      // does not keep the previous place's progress.
+      const reachedProgressPatch$ = merge(
+        reader.navigation.readingPosition$.pipe(map(toPositionProgress)),
+        reader.pagination.state$.pipe(
+          filter(isSettled),
+          map(toReachedProgress),
+        ),
+      ).pipe(distinctUntilChanged(), map(createReachedProgressPatch))
 
       // bufferTime is preferred over auditTime because it flushes its
       // pending buffer on source completion, guaranteeing the latest

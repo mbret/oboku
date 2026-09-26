@@ -61,6 +61,11 @@ const PAGE_BEFORE_LAST: ReadingPosition = {
   percentageEstimateOfBook: 0.875,
 }
 
+const FIRST_PAGE: ReadingPosition = {
+  cfi: "epubcfi(/6/2!/4/2/1:0)",
+  percentageEstimateOfBook: 0,
+}
+
 const END_OF_BOOK_VISIBLE: FakePaginationResult = {
   isSettled: true,
   percentageEstimateOfBook: 1,
@@ -153,6 +158,30 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkProgressPercent:
         PAGE_BEFORE_LAST.percentageEstimateOfBook,
       readingStateReachedProgressPercent: 0.9375,
+    })
+  })
+
+  it("takes the reading position's progress as the reached progress until the new place settles", async () => {
+    const reader = createFakeReader()
+    const { unmount } = renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: 0.9375,
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.navigation.readingPosition$.next(FIRST_PAGE)
+    reader.pagination.state$.next({
+      isSettled: false,
+      percentageEstimateOfBook: 0.9375,
+    })
+    unmount()
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent: 0,
+      readingStateReachedProgressPercent: 0,
     })
   })
 
