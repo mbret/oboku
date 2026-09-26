@@ -71,7 +71,7 @@ export const useCreateReader = ({
 
     const instance = createAppReader({
       manifest,
-      ...(cfi ? { cfi } : {}),
+      target: cfi ? { type: "cfi", value: cfi } : undefined,
       ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
         pageTurnAnimation: "none",
       }),
