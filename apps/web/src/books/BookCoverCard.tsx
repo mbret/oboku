@@ -20,7 +20,10 @@ import {
 } from "@mui/icons-material"
 import { Cover } from "./Cover"
 import { useBook, useIsBookProtected } from "./states"
-import { ReadingStateState } from "@oboku/shared"
+import {
+  getReadingStateReachedProgress,
+  ReadingStateState,
+} from "@oboku/shared"
 import { useLink } from "../links/states"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
@@ -246,8 +249,7 @@ export const BookCoverCard: FC<
                   }}
                 >
                   {Math.floor(
-                    (item?.readingStateCurrentBookmarkProgressPercent || 0) *
-                      100,
+                    (item ? getReadingStateReachedProgress(item) : 0) * 100,
                   ) || 1}
                   %
                 </Typography>

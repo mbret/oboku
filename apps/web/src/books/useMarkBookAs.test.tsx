@@ -74,11 +74,12 @@ describe("useMarkBooksAs", () => {
     mocks.incrementalPatch.mockClear()
   })
 
-  it("marks a book finished without a reading position, so it reopens at its start", async () => {
+  it("marks a book finished without a reading position, so it reopens at its start, and as fully reached", async () => {
     expect(await markBook(useMarkBooksAsFinished)).toEqual({
       readingStateCurrentState: ReadingStateState.Finished,
       readingStateCurrentBookmarkLocation: null,
       readingStateCurrentBookmarkProgressPercent: 0,
+      readingStateReachedProgressPercent: 1,
       readingStateUpdatedAt: expect.any(String),
     })
   })
@@ -88,6 +89,7 @@ describe("useMarkBooksAs", () => {
       readingStateCurrentState: ReadingStateState.NotStarted,
       readingStateCurrentBookmarkLocation: null,
       readingStateCurrentBookmarkProgressPercent: 0,
+      readingStateReachedProgressPercent: 0,
       readingStateUpdatedAt: expect.any(String),
     })
   })

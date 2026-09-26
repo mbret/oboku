@@ -48,8 +48,10 @@ export const bookSchemaMigrationStrategies: MigrationStrategies = {
   // metadata refresh re-uploads once and populates it.
   4: (oldDoc: Record<string, unknown>) => oldDoc,
   // v5: added optional `readingStateUpdatedAt`, superseding
-  // `readingStateCurrentBookmarkProgressUpdatedAt`; nothing to backfill since
-  // the activity order reads the later of the two.
+  // `readingStateCurrentBookmarkProgressUpdatedAt`, and optional
+  // `readingStateReachedProgressPercent`; nothing to backfill since the
+  // activity order reads the later of the two dates, and the shown progress
+  // falls back to the bookmark progress.
   5: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
@@ -74,6 +76,7 @@ export const bookSchema: RxJsonSchema<
     links: { ref: "link", type: "array", items: { type: "string" } },
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
+    readingStateReachedProgressPercent: { type: ["number"] },
     readingStateUpdatedAt: { type: ["string", "null"] },
     readingStateCurrentState: { type: ["string"] },
     tags: { type: "array", ref: "tag", items: { type: "string" } },

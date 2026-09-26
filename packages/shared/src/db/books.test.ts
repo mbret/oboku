@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest"
-import { getReadingStateUpdatedTime } from "./books"
+import {
+  getReadingStateReachedProgress,
+  getReadingStateUpdatedTime,
+  ReadingStateState,
+} from "./books"
 
 const EARLIER = "2026-09-01T10:00:00.000Z"
 const LATER = "2026-09-20T10:00:00.000Z"
@@ -32,5 +36,43 @@ describe(`getReadingStateUpdatedTime`, () => {
         readingStateCurrentBookmarkProgressUpdatedAt: EARLIER,
       }),
     ).toBe(new Date(LATER).getTime())
+  })
+})
+
+describe(`getReadingStateReachedProgress`, () => {
+  it(`is the reached progress of a book being read`, () => {
+    expect(
+      getReadingStateReachedProgress({
+        readingStateCurrentState: ReadingStateState.Reading,
+        readingStateReachedProgressPercent: 0.9,
+        readingStateCurrentBookmarkProgressPercent: 0.8,
+      }),
+    ).toBe(0.9)
+  })
+
+  it(`is the bookmark progress of a book last read before the reached progress existed`, () => {
+    expect(
+      getReadingStateReachedProgress({
+        readingStateCurrentState: ReadingStateState.Reading,
+        readingStateCurrentBookmarkProgressPercent: 0.5,
+      }),
+    ).toBe(0.5)
+  })
+
+  it(`is 1 for a finished book and 0 for one not started, whatever is stored`, () => {
+    expect(
+      getReadingStateReachedProgress({
+        readingStateCurrentState: ReadingStateState.Finished,
+        readingStateReachedProgressPercent: 0.9,
+        readingStateCurrentBookmarkProgressPercent: 0.8,
+      }),
+    ).toBe(1)
+    expect(
+      getReadingStateReachedProgress({
+        readingStateCurrentState: ReadingStateState.NotStarted,
+        readingStateReachedProgressPercent: 0.4,
+        readingStateCurrentBookmarkProgressPercent: 0.4,
+      }),
+    ).toBe(0)
   })
 })

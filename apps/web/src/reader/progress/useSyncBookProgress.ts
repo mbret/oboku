@@ -14,7 +14,6 @@ import {
   takeUntil,
 } from "rxjs"
 import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
-import { isDefined } from "reactjrx"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
 
@@ -30,19 +29,36 @@ const normalizeReadingPosition = ({
   percentageEstimateOfBook: normalizeProgress(percentageEstimateOfBook),
 })
 
-const getLatest = <T>(values: T[]) => values[values.length - 1]
-
-const isEndOfBookVisible = ({
-  isSettled,
-  percentageEstimateOfBook,
-}: {
+type PaginationProgress = {
   isSettled: boolean
   percentageEstimateOfBook: number
-}) => isSettled && percentageEstimateOfBook === 1
+}
 
-const createReadingPositionPatch =
-  ({ cfi, percentageEstimateOfBook }: ReadingPosition) =>
-  (old: BookDocType): BookDocType => {
+type BookPatch = (old: BookDocType) => BookDocType
+
+const isSettled = ({ isSettled }: PaginationProgress) => isSettled
+
+const isEndOfBookVisible = (pagination: PaginationProgress) =>
+  isSettled(pagination) && pagination.percentageEstimateOfBook === 1
+
+const toReachedProgress = ({ percentageEstimateOfBook }: PaginationProgress) =>
+  normalizeProgress(percentageEstimateOfBook)
+
+const toPositionProgress = ({ percentageEstimateOfBook }: ReadingPosition) =>
+  normalizeProgress(percentageEstimateOfBook)
+
+const hasPatches = (patches: BookPatch[]) => patches.length > 0
+
+const composePatches = (patches: BookPatch[]): BookPatch =>
+  function applyPatchesInOrder(old) {
+    return patches.reduce((book, patch) => patch(book), old)
+  }
+
+const createReadingPositionPatch = ({
+  cfi,
+  percentageEstimateOfBook,
+}: ReadingPosition): BookPatch =>
+  function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
@@ -79,6 +95,17 @@ const createReadingPositionPatch =
     }
   }
 
+const createReachedProgressPatch = (reachedProgress: number): BookPatch =>
+  function applyReachedProgress(old) {
+    if (old.readingStateReachedProgressPercent === reachedProgress) return old
+
+    return {
+      ...old,
+      readingStateReachedProgressPercent: reachedProgress,
+      readingStateUpdatedAt: new Date().toISOString(),
+    }
+  }
+
 /**
  * Finished is a reading state, not a progress (see `BookDocType`): the bookmark
  * and its progress stay the reading position's, which is short of 1 on the
@@ -107,22 +134,39 @@ export const useSyncBookProgress = (
       if (!reader) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
-      // completes the reading position stream downstream, which lets
-      // bufferTime flush any buffered value and run one last write before
-      // teardown.
+      // completes the progress streams downstream, which lets bufferTime
+      // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
-      // bufferTime is preferred over auditTime because it flushes its
-      // pending buffer on source completion, guaranteeing the latest
-      // reading position is written when the hook unmounts.
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(normalizeReadingPosition),
         distinctUntilChanged(isShallowEqual),
+        map(createReadingPositionPatch),
+      )
+
+      // The latest of the two wins. Pagination settles after the reading
+      // position moves, so its estimate replaces the position's own progress,
+      // which stands in until then: a book left before the new place settles
+      // does not keep the previous place's progress.
+      const reachedProgressPatch$ = merge(
+        reader.navigation.readingPosition$.pipe(map(toPositionProgress)),
+        reader.pagination.state$.pipe(
+          filter(isSettled),
+          map(toReachedProgress),
+        ),
+      ).pipe(distinctUntilChanged(), map(createReachedProgressPatch))
+
+      // bufferTime is preferred over auditTime because it flushes its
+      // pending buffer on source completion, guaranteeing the latest
+      // progress is written when the hook unmounts.
+      const throttledProgressPatch$ = merge(
+        readingPositionPatch$,
+        reachedProgressPatch$,
+      ).pipe(
         takeUntil(unmount$),
         bufferTime(SYNC_BOOK_PROGRESS_INTERVAL_MS),
-        map(getLatest),
-        filter(isDefined),
-        map(createReadingPositionPatch),
+        filter(hasPatches),
+        map(composePatches),
       )
 
       const endOfBookPatch$ = reader.pagination.state$.pipe(
@@ -130,9 +174,10 @@ export const useSyncBookProgress = (
         map(function toFinishedPatch() {
           return markBookAsFinished
         }),
+        takeUntil(unmount$),
       )
 
-      const sub = merge(readingPositionPatch$, endOfBookPatch$)
+      merge(throttledProgressPatch$, endOfBookPatch$)
         .pipe(
           concatMap(function modifyBook(mutationFn) {
             return from(incrementalBookModify({ doc: bookId, mutationFn }))
@@ -146,12 +191,11 @@ export const useSyncBookProgress = (
         .subscribe()
 
       return function flushBookProgressOnUnmount() {
-        // Complete the source synchronously so bufferTime can flush its
-        // pending value and the final mutation is dispatched before we
-        // tear down the subscription.
+        // Completing the sources rather than unsubscribing lets concatMap
+        // run every write still queued, such as the last flush waiting on a
+        // finished write in flight. The subscription then ends on its own.
         unmount$.next()
         unmount$.complete()
-        sub.unsubscribe()
       }
     },
     [reader, bookId, incrementalBookModify, enabled],
