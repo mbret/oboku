@@ -236,8 +236,8 @@ importers:
         specifier: ^18.2.3
         version: 18.2.3
       jose:
-        specifier: ^5.10.0
-        version: 5.10.0
+        specifier: ^6.2.12
+        version: 6.2.12
       mime-types:
         specifier: ^3.0.2
         version: 3.0.2
@@ -503,7 +503,7 @@ importers:
         version: 1.11.1(rxjs@7.8.2)
       jose:
         specifier: ^6.2.8
-        version: 6.2.10
+        version: 6.2.12
       libarchive.js:
         specifier: ^2.0.2
         version: 2.0.2
@@ -2959,8 +2959,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.6.20200806':
     resolution: {integrity: sha512-QN6aGmIbLXcJW0SEf8tz9UWCpQTBMy2u4xSuZ04YofzMGknhWwMeUecySLntCZYAEstHzDoSgwxCf5Gb8GqIRQ==}
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
-    resolution: {integrity: sha512-zu2ppNkOo7puEJLiIcyjtHkc5UsOB9bYkvos5o+FeZXSwKFJcUE18WNBSv23tOmq3JRz+TcM2ElUgphts5Ikng==}
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
+    resolution: {integrity: sha512-DluDUwHSulA3IFiRBty4rlxQt4oNrJEhHhNu7gvB6+Jhc61oWb/ga6r4OlU8ITFjhiN1MBfLdkPphO1/HMyLVQ==}
 
   '@microsoft/api-extractor-model@7.33.10':
     resolution: {integrity: sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==}
@@ -8990,8 +8990,8 @@ packages:
   jose@5.9.6:
     resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
 
-  jose@6.2.10:
-    resolution: {integrity: sha512-iiW7J9qRFlGxvCOIBDBDxFePQSn7ZMAnrYGhrrOo6siO/MIqwfyilLR27pkfDgUk+raLuzADS8A3S/KLBisc0g==}
+  jose@6.2.12:
+    resolution: {integrity: sha512-9NiFmJEex0sy2Dk58j2UGBSHgUs2ypF9eZSu4L6vjOX3Dp96Sw1F3uL+H+D1sx02jZZdzUT0HgvCy59CuvXcWw==}
 
   jose@6.2.3:
     resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
@@ -15498,7 +15498,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -17653,7 +17653,7 @@ snapshots:
 
   '@types/gapi.client.drive-v3@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260823
+      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260904
 
   '@types/gapi.client@1.0.8': {}
 
@@ -22608,7 +22608,7 @@ snapshots:
 
   jose@5.9.6: {}
 
-  jose@6.2.10: {}
+  jose@6.2.12: {}
 
   jose@6.2.3: {}
 

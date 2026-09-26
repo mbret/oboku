@@ -45,7 +45,7 @@
     "googleapis": "^176.0.0",
     "http-proxy-3": "^1.23.3",
     "joi": "^18.2.3",
-    "jose": "^5.10.0",
+    "jose": "^6.2.12",
     "mime-types": "^3.0.2",
     "nano": "^11.0.6",
     "node-domexception": "^2.0.2",
