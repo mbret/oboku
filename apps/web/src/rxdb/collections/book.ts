@@ -78,6 +78,8 @@ export const bookSchema: RxJsonSchema<
     publisher: { type: ["string", "null"] },
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
+    // Deprecated, but still held by legacy books and written by older versions
+    // of the app: see the TODO on getReadingStateUpdatedTime.
     readingStateCurrentBookmarkProgressUpdatedAt: {
       type: ["string", "null"],
     },
