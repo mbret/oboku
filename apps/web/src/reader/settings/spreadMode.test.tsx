@@ -17,7 +17,9 @@ type FakeReader = {
 }
 
 const mocks = vi.hoisted(function createSpreadModeMocks() {
-  return { state: {} as { reader?: FakeReader } }
+  const state: { reader?: FakeReader } = {}
+
+  return { state }
 })
 
 vi.mock("../states", function mockReaderState() {
@@ -45,7 +47,7 @@ function createFakeReader() {
 }
 
 describe("usePersistSpreadMode", () => {
-  beforeEach(() => {
+  beforeEach(function resetDeviceSettings() {
     localSettingsSignal.update(SIGNAL_RESET)
   })
 

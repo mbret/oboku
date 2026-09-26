@@ -6,7 +6,7 @@ import { useReader } from "../states"
  * Saves the spread mode chosen in the reader's layout menu as a device
  * setting, which the next reader is created with.
  */
-export const usePersistSpreadMode = () => {
+export function usePersistSpreadMode() {
   const reader = useReader()
 
   useEffect(
