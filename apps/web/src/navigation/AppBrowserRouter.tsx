@@ -30,6 +30,7 @@ import { useActiveProfile } from "../profiles"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
+import { KoreaderSyncScreen } from "../pages/profile/KoreaderSyncScreen"
 import { PluginsScreen } from "../plugins/common/PluginsScreen"
 import { PluginScreen } from "../plugins/common/PluginScreen"
 import { ROUTES } from "./routes"
@@ -160,6 +161,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.SECRETS.slice(1)}
                 element={<SecretsScreen />}
+              />
+              <Route
+                path={ROUTES.KOREADER_SYNC.slice(1)}
+                element={<KoreaderSyncScreen />}
               />
               <Route
                 path={ROUTES.SETTINGS.slice(1)}
