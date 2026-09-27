@@ -86,6 +86,10 @@ docker compose pull
 docker compose up -d
 ```
 
+{% hint style="warning" %}
+An image name without a tag, as in the default compose file, means `latest`: the current release. Don't run the `preview` tag (e.g. `mbret/oboku-api:preview`) against data you want to keep. It is rebuilt from unreleased work on the `develop` branch every time it changes, so it can break at any time and can leave your data in a shape no release supports.
+{% endhint %}
+
 ## Installation with Cosmos
 
 TODO
