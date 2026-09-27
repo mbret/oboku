@@ -1,11 +1,5 @@
 import { Logger } from "@nestjs/common"
-import {
-  exportJWK,
-  generateKeyPair,
-  SignJWT,
-  type JWK,
-  type KeyLike,
-} from "jose"
+import { exportJWK, generateKeyPair, SignJWT, type JWK } from "jose"
 import { RefreshProofService } from "./refresh-proof.service"
 
 const signProof = async ({
@@ -15,7 +9,7 @@ const signProof = async ({
   jti = "jti-1",
   issuedAt,
 }: {
-  privateKey: KeyLike
+  privateKey: CryptoKey
   headerJwk: JWK
   htm?: string
   jti?: string | null
@@ -38,7 +32,7 @@ const signProof = async ({
 
 describe("RefreshProofService", () => {
   let service: RefreshProofService
-  let boundKeys: { privateKey: KeyLike; publicJwk: JWK }
+  let boundKeys: { privateKey: CryptoKey; publicJwk: JWK }
 
   beforeAll(async () => {
     const { privateKey, publicKey } = await generateKeyPair("ES256")
