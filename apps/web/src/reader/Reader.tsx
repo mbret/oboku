@@ -12,7 +12,6 @@ import {
 import { readerSignal } from "./states"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { usePersistSpreadMode } from "./settings/spreadMode"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
@@ -44,7 +43,8 @@ export const Reader = memo(function Reader({
     "readerFloatingProgress",
     "readerFloatingTime",
   ])
-  const { readerFontScale, updateReaderSettings } = useReaderSettings()
+  const { readerFontScale, readerSpreadMode, updateReaderSettings } =
+    useReaderSettings()
   const { goBack } = useSafeGoBack()
   const openMoreDialog = useOpenMoreDialog()
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
@@ -90,6 +90,10 @@ export const Reader = memo(function Reader({
           fontSize={readerFontScale}
           onFontSizeChange={(_scope, fontSize) => {
             updateReaderSettings({ readerFontScale: fontSize })
+          }}
+          spreadMode={readerSpreadMode}
+          onSpreadModeChange={(_scope, spreadMode) => {
+            updateReaderSettings({ readerSpreadMode: spreadMode })
           }}
           enableFloatingProgress={
             localSettings.readerFloatingProgress === "bottom"
@@ -139,7 +143,6 @@ const Effects = memo(function Effects({
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview })
-  usePersistSpreadMode()
 
   return null
 })
