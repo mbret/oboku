@@ -3,7 +3,10 @@
 import { act, renderHook } from "@testing-library/react"
 import { SIGNAL_RESET } from "reactjrx"
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { localSettingsSignal } from "../../settings/useLocalSettings"
+import {
+  type LocalSettings,
+  localSettingsSignal,
+} from "../../settings/useLocalSettings"
 
 const mocks = vi.hoisted(function createAccountSettingsMocks() {
   const accountSettings: { readerGlobalFontScale?: number | null } = {}
@@ -51,5 +54,24 @@ describe("useReaderSettings", () => {
     const { result } = renderHook(useReaderSettings)
 
     expect(result.current.readerFontScale).toBeUndefined()
+  })
+
+  it("saves the spread mode on the device, keeping the other device settings", () => {
+    localSettingsSignal.update(function withDarkTheme(settings): LocalSettings {
+      return { ...settings, themeMode: "dark" }
+    })
+    const { result } = renderHook(useReaderSettings)
+
+    expect(result.current.readerSpreadMode).toBe("auto")
+
+    act(function changeSpreadModeOnDevice() {
+      result.current.updateReaderSettings({ readerSpreadMode: "always" })
+    })
+
+    expect(result.current.readerSpreadMode).toBe("always")
+    expect(localSettingsSignal.getValue()).toMatchObject({
+      readerSpreadMode: "always",
+      themeMode: "dark",
+    })
   })
 })
