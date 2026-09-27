@@ -35,7 +35,7 @@ The preview stack shares no data, credentials or containers with production. The
 2. In ServApps, use **Import Docker Compose** with the template below. Replace the `CHANGE_ME_*` values with new passwords. The Postgres one appears twice and both must match.
 3. Create three new URLs from the table above. On the API URL, turn on **Disable Header Hardening** as on production's API URL, or the browser rejects every API response (see [Installation with Cosmos](../self-hosting/installation.md#disable-header-hardening-on-the-api-url)). Match production's Smart Shield settings there too, since replication sends many requests.
 4. Turn on auto-update for the four `oboku-preview-*` containers running oboku images.
-5. Check the API log on start. It should print `Browser origins — app: any port on app.preview.oboku.me; admin: https://admin.preview.oboku.me`. Any other hostname there means `APP_PUBLIC_URL` or `ADMIN_PUBLIC_URL` is wrong.
+5. Check the API log on start. It should print `Browser origins — app: any port on app.preview.oboku.me; admin: https://admin.preview.oboku.me`. Any other hostname there means `APP_PUBLIC_URL` or `ADMIN_PUBLIC_URL` is wrong. If it logs `Unable to ensure user db indexes at startup`, the API started before CouchDB was ready: restart the API.
 6. Create accounts from the preview admin panel, since the template configures no email provider (see [Account Sign in / Sign up](../self-hosting/account-sign-in-sign-up.md)). Adding the `EMAIL_*` variables to the API works too: their links point at `APP_PUBLIC_URL`.
 
 Google, Dropbox and OneDrive stay off, because the template sets none of their client IDs. Register the preview hostnames with those providers before turning them on.
@@ -55,6 +55,12 @@ services:
       - oboku-preview-secrets:/secrets
       - oboku-preview-couchdb-data:/opt/couchdb/data
       - oboku-preview-couchdb-config:/opt/couchdb/etc/local.d
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
     networks:
       - oboku-preview
 
@@ -75,8 +81,10 @@ services:
     container_name: oboku-preview-api
     restart: always
     depends_on:
-      - oboku-preview-couchdb
-      - oboku-preview-postgres
+      oboku-preview-couchdb:
+        condition: service_healthy
+      oboku-preview-postgres:
+        condition: service_started
     environment:
       NODE_ENV: production
       APP_PUBLIC_URL: https://app.preview.oboku.me
