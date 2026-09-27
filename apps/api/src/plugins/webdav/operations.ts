@@ -1,3 +1,4 @@
+import { Readable } from "node:stream"
 import { isFileSupported } from "@oboku/shared"
 import { type createClient, type WebDAVClient } from "webdav"
 
@@ -125,7 +126,11 @@ export async function downloadFromWebdav(
   client: WebDAVClient,
   filePath: string,
 ) {
-  return {
-    stream: client.createReadStream(filePath),
+  const stream = client.createReadStream(filePath)
+
+  if (!(stream instanceof Readable)) {
+    throw new Error("webdav did not return a node readable stream")
   }
+
+  return { stream }
 }

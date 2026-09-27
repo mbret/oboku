@@ -11,6 +11,7 @@ publicHoistPattern:
   - '@internationalized/*'
 allowBuilds:
   '@firebase/util': true
+  '@parcel/watcher': false
   '@sentry/node-cpu-profiler': true
   '@swc/core': true
   aws-sdk: false
