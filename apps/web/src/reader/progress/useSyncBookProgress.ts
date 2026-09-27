@@ -160,16 +160,17 @@ export const useSyncBookProgress = (
         return isSettled(pagination) && !didLastVisiblePageFailToLoad
       }
 
-      // The latest of the two wins. Pagination settles after the reading
-      // position moves, so its estimate replaces the position's own progress,
-      // which stands in until then: a book left before the new place settles
-      // does not keep the previous place's progress.
+      const progressUntilPaginationSettles$ =
+        reader.navigation.readingPosition$.pipe(map(toPositionProgress))
+
+      const progressOncePaginationSettles$ = reader.pagination.state$.pipe(
+        filter(isSettledOnLoadedPage),
+        map(toReachedProgress),
+      )
+
       const reachedProgressPatch$ = merge(
-        reader.navigation.readingPosition$.pipe(map(toPositionProgress)),
-        reader.pagination.state$.pipe(
-          filter(isSettledOnLoadedPage),
-          map(toReachedProgress),
-        ),
+        progressUntilPaginationSettles$,
+        progressOncePaginationSettles$,
       ).pipe(distinctUntilChanged(), map(createReachedProgressPatch))
 
       // bufferTime is preferred over auditTime because it flushes its
