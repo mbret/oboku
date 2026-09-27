@@ -3,6 +3,7 @@ import { CouchService } from "../couch/couch.service"
 import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
+import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { UserPostgresService } from "../features/postgres/user-postgres.service"
 import { UsersService } from "./users.service"
@@ -39,6 +40,7 @@ describe("UsersService", () => {
         { provide: NotificationPostgresService, useValue: {} },
         { provide: SyncReportPostgresService, useValue: {} },
         { provide: RefreshTokensService, useValue: refreshTokensService },
+        { provide: KoreaderSyncPostgresService, useValue: {} },
       ],
     }).compile()
 
