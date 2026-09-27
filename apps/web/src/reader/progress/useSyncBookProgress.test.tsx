@@ -12,7 +12,7 @@ type FakePaginationResult = {
   end: { spineItemIndex: number }
 }
 
-type FakeSpineItem = { value: { isReady: boolean } }
+type FakeSpineItem = { value: { isError: boolean } }
 
 type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
@@ -130,7 +130,7 @@ function createFakeReader({
     spineItemsManager: {
       get: function getFakeSpineItem(spineItemIndex) {
         return {
-          value: { isReady: !failedSpineItemIndexes.includes(spineItemIndex) },
+          value: { isError: failedSpineItemIndexes.includes(spineItemIndex) },
         }
       },
     },

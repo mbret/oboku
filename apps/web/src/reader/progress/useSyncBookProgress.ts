@@ -177,13 +177,14 @@ export const useSyncBookProgress = (
 
       const endOfBookPatch$ = reader.pagination.state$.pipe(
         filter(isEndOfBookVisible),
-        // Pagination also settles on an item that failed to load.
-        filter(function isLastVisiblePageLoaded({ end }) {
-          const lastVisibleSpineItem = reader.spineItemsManager.get(
+        filter(function didLastPageLoadSuccessfully({ end }) {
+          const lastPageSpineItem = reader.spineItemsManager.get(
             end.spineItemIndex,
           )
+          const didLastPageFailToLoad =
+            lastPageSpineItem?.value.isError === true
 
-          return lastVisibleSpineItem?.value.isReady === true
+          return !didLastPageFailToLoad
         }),
         map(function toFinishedPatch() {
           return markBookAsFinished
