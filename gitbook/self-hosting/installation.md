@@ -86,6 +86,10 @@ docker compose pull
 docker compose up -d
 ```
 
+{% hint style="warning" %}
+Stay on `latest` or a version tag. The `preview` tag is rebuilt from unreleased work on the `develop` branch every time it changes, so it can break at any time and can leave your data in a shape no release supports. Never run it against data you want to keep.
+{% endhint %}
+
 ## Installation with Cosmos
 
 TODO
