@@ -33,7 +33,7 @@ The preview stack shares no data, credentials or containers with production. The
 
 1. Point `app.preview.oboku.me`, `api.preview.oboku.me` and `admin.preview.oboku.me` at the Cosmos server before creating their URLs, so Cosmos can get their certificates.
 2. In ServApps, use **Import Docker Compose** with the template below. Replace the `CHANGE_ME_*` values with new passwords. The Postgres one appears twice and both must match.
-3. Create three new URLs from the table above. On the API URL, turn on **Disable Header Hardening**, as on production's API URL: otherwise Cosmos replaces the API's CORS headers with its own and the browser rejects every API response. Match production's Smart Shield settings there too, since replication sends many requests.
+3. Create three new URLs from the table above. On the API URL, turn on **Disable Header Hardening** as on production's API URL, or the browser rejects every API response (see [Installation with Cosmos](../self-hosting/installation.md#disable-header-hardening-on-the-api-url)). Match production's Smart Shield settings there too, since replication sends many requests.
 4. Turn on auto-update for the four `oboku-preview-*` containers running oboku images.
 5. Check the API log on start. It should print `Browser origins — app: any port on app.preview.oboku.me; admin: https://admin.preview.oboku.me`. Any other hostname there means `APP_PUBLIC_URL` or `ADMIN_PUBLIC_URL` is wrong.
 6. Create accounts from the preview admin panel, since the template configures no email provider (see [Account Sign in / Sign up](../self-hosting/account-sign-in-sign-up.md)). Adding the `EMAIL_*` variables to the API works too: their links point at `APP_PUBLIC_URL`.
