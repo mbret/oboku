@@ -352,7 +352,7 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("does not mark the book finished when its last page failed to load", async () => {
+  it("keeps the reading position's progress and does not finish the book when its last page failed to load", async () => {
     const reader = createFakeReader({
       failedSpineItemIndexes: [LAST_SPINE_ITEM_INDEX],
     })
@@ -367,6 +367,8 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateReachedProgressPercent:
+        LAST_CHAPTER_START_STANDING_IN.percentageEstimateOfBook,
       readingStateCurrentState: ReadingStateState.Reading,
     })
   })

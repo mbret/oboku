@@ -44,8 +44,8 @@ type BookPatch = (old: BookDocType) => BookDocType
 
 const isSettled = ({ isSettled }: PaginationProgress) => isSettled
 
-const isEndOfBookVisible = (pagination: PaginationProgress) =>
-  isSettled(pagination) && pagination.percentageEstimateOfBook === 1
+const isAtEndOfBook = ({ percentageEstimateOfBook }: PaginationProgress) =>
+  percentageEstimateOfBook === 1
 
 const toReachedProgress = ({ percentageEstimateOfBook }: PaginationProgress) =>
   normalizeProgress(percentageEstimateOfBook)
@@ -150,16 +150,27 @@ export const useSyncBookProgress = (
         map(createReadingPositionPatch),
       )
 
-      // The latest of the two wins. Pagination settles after the reading
-      // position moves, so its estimate replaces the position's own progress,
-      // which stands in until then: a book left before the new place settles
-      // does not keep the previous place's progress.
+      const isSettledOnLoadedPage = (pagination: PaginationProgress) => {
+        const lastVisibleSpineItem = reader.spineItemsManager.get(
+          pagination.end.spineItemIndex,
+        )
+        const didLastVisiblePageFailToLoad =
+          lastVisibleSpineItem?.value.isError === true
+
+        return isSettled(pagination) && !didLastVisiblePageFailToLoad
+      }
+
+      const progressUntilPaginationSettles$ =
+        reader.navigation.readingPosition$.pipe(map(toPositionProgress))
+
+      const progressOncePaginationSettles$ = reader.pagination.state$.pipe(
+        filter(isSettledOnLoadedPage),
+        map(toReachedProgress),
+      )
+
       const reachedProgressPatch$ = merge(
-        reader.navigation.readingPosition$.pipe(map(toPositionProgress)),
-        reader.pagination.state$.pipe(
-          filter(isSettled),
-          map(toReachedProgress),
-        ),
+        progressUntilPaginationSettles$,
+        progressOncePaginationSettles$,
       ).pipe(distinctUntilChanged(), map(createReachedProgressPatch))
 
       // bufferTime is preferred over auditTime because it flushes its
@@ -176,16 +187,8 @@ export const useSyncBookProgress = (
       )
 
       const endOfBookPatch$ = reader.pagination.state$.pipe(
-        filter(isEndOfBookVisible),
-        filter(function didLastPageLoadSuccessfully({ end }) {
-          const lastPageSpineItem = reader.spineItemsManager.get(
-            end.spineItemIndex,
-          )
-          const didLastPageFailToLoad =
-            lastPageSpineItem?.value.isError === true
-
-          return !didLastPageFailToLoad
-        }),
+        filter(isSettledOnLoadedPage),
+        filter(isAtEndOfBook),
         map(function toFinishedPatch() {
           return markBookAsFinished
         }),
