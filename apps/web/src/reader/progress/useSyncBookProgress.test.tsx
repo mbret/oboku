@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import { type BookDocType, ReadingStateState } from "@oboku/shared"
-import type { ReadingPosition } from "@prose-reader/core"
+import type { DocumentLoadStatus, ReadingPosition } from "@prose-reader/core"
 import { renderHook } from "@testing-library/react"
 import { Subject } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -12,7 +12,7 @@ type FakePaginationResult = {
   end: { spineItemIndex: number }
 }
 
-type FakeSpineItem = { value: { isError: boolean } }
+type FakeSpineItem = { value: { loadStatus: DocumentLoadStatus } }
 
 type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
@@ -129,8 +129,10 @@ function createFakeReader({
     pagination: { state$: new Subject() },
     spineItemsManager: {
       get: function getFakeSpineItem(spineItemIndex) {
+        const didFailToLoad = failedSpineItemIndexes.includes(spineItemIndex)
+
         return {
-          value: { isError: failedSpineItemIndexes.includes(spineItemIndex) },
+          value: { loadStatus: didFailToLoad ? "error" : "loaded" },
         }
       },
     },
