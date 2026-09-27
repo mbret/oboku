@@ -92,5 +92,11 @@ An image name without a tag, as in the default compose file, means `latest`: the
 
 ## Installation with Cosmos
 
-TODO
+Cosmos runs the same images as the docker compose installation above and serves them through its own reverse proxy.
+
+### Disable header hardening on the API URL
+
+By default Cosmos hardens the headers of every URL it serves. On the API that breaks the web app: Cosmos drops the API's `Access-Control-Allow-Origin` and `Access-Control-Allow-Credentials` headers and sends its own, set to the URL's hostname, so the browser rejects every API response. In the settings of the URL that serves the API, turn on **Disable Header Hardening** so the API's own CORS headers reach the browser. The web app and admin panel URLs can keep hardening.
+
+Setting a CORS origin on the URL is not enough: Cosmos would send that one origin on every response, and the admin panel's requests come from another origin.
 
