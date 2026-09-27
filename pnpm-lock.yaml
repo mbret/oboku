@@ -66,6 +66,9 @@ importers:
       vercel:
         specifier: ^59.3.0
         version: 59.3.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.62.4)(supports-color@7.2.0)
+      vite:
+        specifier: ^8.2.0
+        version: 8.2.0(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0)
       vitest:
         specifier: ^4.1.10
         version: 4.1.10(@edge-runtime/vm@3.2.0)(@opentelemetry/api@1.9.1)(@types/node@24.13.3)(jsdom@30.0.1(@noble/hashes@1.8.0))(vite@8.2.0(@types/node@24.13.3)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.1(postcss@8.5.25))(terser@5.49.2)(tsx@4.21.0)(yaml@2.9.0))
@@ -191,8 +194,8 @@ importers:
         specifier: workspace:*
         version: link:../../packages/synology
       '@prose-reader/archive-reader':
-        specifier: ^1.362.0
-        version: 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+        specifier: ^22.0.0
+        version: 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@sentry/nestjs':
         specifier: ^10.69.0
         version: 10.69.0(@nestjs/common@11.2.1(class-transformer@0.5.1)(class-validator@0.15.1)(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@8.1.1))(@nestjs/core@11.1.28)(@opentelemetry/core@2.10.0(@opentelemetry/api@1.9.1))(supports-color@8.1.1)
@@ -433,41 +436,41 @@ importers:
         specifier: workspace:*
         version: link:../../packages/synology
       '@prose-reader/archive-reader':
-        specifier: ^1.362.0
-        version: 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+        specifier: ^22.0.0
+        version: 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/cbz':
-        specifier: ^1.362.0
-        version: 1.362.0(@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@1.362.0)(@prose-reader/core@1.362.0(rxjs@7.8.2))(@prose-reader/shared@1.362.0)(@prose-reader/streamer@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))
+        specifier: ^22.0.0
+        version: 22.0.0(@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@22.0.0)(@prose-reader/core@22.0.0(rxjs@7.8.2))(@prose-reader/shared@22.0.0)(@prose-reader/streamer@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))
       '@prose-reader/core':
-        specifier: ^1.362.0
-        version: 1.362.0(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(rxjs@7.8.2)
       '@prose-reader/enhancer-audio':
-        specifier: ^1.362.0
-        version: 1.362.0(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(rxjs@7.8.2)
       '@prose-reader/enhancer-gallery':
-        specifier: ^1.362.0
-        version: 1.362.0(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(rxjs@7.8.2)
       '@prose-reader/enhancer-gestures':
-        specifier: ^1.362.0
-        version: 1.362.0(gesturx@1.11.0(rxjs@7.8.2))(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(gesturx@1.11.1(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-pdf':
-        specifier: ^1.362.0
-        version: 1.362.0(@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@1.362.0(rxjs@7.8.2))(pdfjs-dist@5.7.284)(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@22.0.0(rxjs@7.8.2))(pdfjs-dist@6.3.289)(rxjs@7.8.2)
       '@prose-reader/enhancer-refit':
-        specifier: ^1.362.0
-        version: 1.362.0(@prose-reader/core@1.362.0(rxjs@7.8.2))
+        specifier: ^22.0.0
+        version: 22.0.0(@prose-reader/core@22.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-search':
-        specifier: ^1.362.0
-        version: 1.362.0(rxjs@7.8.2)
+        specifier: ^22.0.0
+        version: 22.0.0(rxjs@7.8.2)
       '@prose-reader/react-reader':
-        specifier: ^1.362.0
-        version: 1.362.0(f447108486c27ce222a8096c910d3378)
+        specifier: ^22.0.0
+        version: 22.0.0(76f72d1971fd8d63b89722890b1863eb)
       '@prose-reader/shared':
-        specifier: ^1.362.0
-        version: 1.362.0
+        specifier: ^22.0.0
+        version: 22.0.0
       '@prose-reader/streamer':
-        specifier: ^1.362.0
-        version: 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)
+        specifier: ^22.0.0
+        version: 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)
       '@sentry/react':
         specifier: ^10.69.0
         version: 10.69.0(react@19.2.8)
@@ -496,8 +499,8 @@ importers:
         specifier: ^7.5.0
         version: 7.5.0
       gesturx:
-        specifier: ^1.11.0
-        version: 1.11.0(rxjs@7.8.2)
+        specifier: ^1.11.1
+        version: 1.11.1(rxjs@7.8.2)
       jose:
         specifier: ^6.2.8
         version: 6.2.10
@@ -508,8 +511,8 @@ importers:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
       pdfjs-dist:
-        specifier: ^5.7.284
-        version: 5.7.284
+        specifier: ^6.3.289
+        version: 6.3.289
       rc-slider:
         specifier: ^11.1.9
         version: 11.1.9(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
@@ -614,11 +617,11 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@prose-reader/archive-reader':
-        specifier: ^1.362.0
-        version: 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+        specifier: ^22.0.0
+        version: 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/shared':
-        specifier: ^1.362.0
-        version: 1.362.0
+        specifier: ^22.0.0
+        version: 22.0.0
       '@zip.js/zip.js':
         specifier: ^2.8.34
         version: 2.8.34
@@ -2956,8 +2959,8 @@ packages:
   '@maxim_mazurok/gapi.client.discovery-v1@0.6.20200806':
     resolution: {integrity: sha512-QN6aGmIbLXcJW0SEf8tz9UWCpQTBMy2u4xSuZ04YofzMGknhWwMeUecySLntCZYAEstHzDoSgwxCf5Gb8GqIRQ==}
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
-    resolution: {integrity: sha512-zu2ppNkOo7puEJLiIcyjtHkc5UsOB9bYkvos5o+FeZXSwKFJcUE18WNBSv23tOmq3JRz+TcM2ElUgphts5Ikng==}
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
+    resolution: {integrity: sha512-DluDUwHSulA3IFiRBty4rlxQt4oNrJEhHhNu7gvB6+Jhc61oWb/ga6r4OlU8ITFjhiN1MBfLdkPphO1/HMyLVQ==}
 
   '@microsoft/api-extractor-model@7.33.10':
     resolution: {integrity: sha512-uPUK17xGxeQ3av6TN7awp+dTTSTvx8fZC0XFL1gyt7hFapYuxND3XLXH8vkmI7UjfW92oogzFAFqHSifmJROaw==}
@@ -3103,79 +3106,79 @@ packages:
       '@emotion/styled':
         optional: true
 
-  '@napi-rs/canvas-android-arm64@0.1.100':
-    resolution: {integrity: sha512-hjhCKhntPv9+t4ckHymdx0phYNcVW+GKQR6Lzw2zE+pOVjOplSmtx9nNNknTjbEDLcuLZqA1y8ufKg1XfgftzQ==}
+  '@napi-rs/canvas-android-arm64@1.0.9':
+    resolution: {integrity: sha512-4LGXk2/0HVzE29K8SzML5WubgCp++B1FH3qgl35XmSZE+lLdr6P9VRQEnZ0MCLZMTSuJP41yyhtoiVNEuvrTIA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [android]
 
-  '@napi-rs/canvas-darwin-arm64@0.1.100':
-    resolution: {integrity: sha512-2PcswRaC7Ly645DGt88///zuFDhJxJYdKAs1uU3mfk1atYkXufgcgLfBpk6Tm12nCQBaNt1wpybuPZ4qOhTo8A==}
+  '@napi-rs/canvas-darwin-arm64@1.0.9':
+    resolution: {integrity: sha512-YNdfLBzY0W/Pep9fo2L6RmoNlNksnn05LRnX66W63R3ij58S25QOTcjdtEt2v8+PnCESzqZsYzUo+QPeIR44NA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@napi-rs/canvas-darwin-x64@0.1.100':
-    resolution: {integrity: sha512-ePNZtj7pNIva/siZMg+HmbeozkIjqUIYdoymH8HaA3qK7LfzFN4WMBM8G6HQ9ZC+H3+Dnn5pqtiXpgLykaPOhw==}
+  '@napi-rs/canvas-darwin-x64@1.0.9':
+    resolution: {integrity: sha512-ceZQSknTEcy3dOXoekv59LTCkXjvnLsq+VW5PeNNDHEPQbRS5Ervkm1EaDa7WLAjiYWMLuSQTRTHao1dEX4prg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.100':
-    resolution: {integrity: sha512-d5cDB48oWFGU8/XPhUOFAlySgb/VAu7D+s8fi55K1Pcfg8aPplHWqMgibhVLU8ky7Pyg/fuiVLz4Nf3JrSTuUA==}
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.9':
+    resolution: {integrity: sha512-XhfI0Wwv4llhd6nnWDtY3kQKjq0r+y1i91PlJlJI24ag2U9WrnwbG1qS3+fDLEyouwEVFchiKkTEHozK+5iUNA==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.100':
-    resolution: {integrity: sha512-rDxgxRu69RvDlX/bh9o22DxLsGr8EqsNgotL9+RwQE1S0b0cqeatqsw6aW45mukm0B42DIAaAacKaYQ8cqS1nw==}
+  '@napi-rs/canvas-linux-arm64-gnu@1.0.9':
+    resolution: {integrity: sha512-012oiYtKaE7i9oxc8q7nraT7kDOpLcaCmFLzVe9Ty34RHDdoDzbWLrVh827CNxYh/EADX1eSikA3ymLjo/nNuw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-arm64-musl@0.1.100':
-    resolution: {integrity: sha512-K3mDW66N+xT2/V439u1alFANiBUjdEx2gLiNYnCmUsva5jZMxWTjafBYwTzYK+EMFMHrUoabuU+T1BIP5CgbYQ==}
+  '@napi-rs/canvas-linux-arm64-musl@1.0.9':
+    resolution: {integrity: sha512-Ls5UWYFFn63casTZEczbeyEg3vRDRkv9lscuGwfchtY5yLLQhgOB8SN4YGxmfJ5vTaBwZ2YUxBS3NtmjJmFXdA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.100':
-    resolution: {integrity: sha512-mooqUBTIsccZpnoQC4NgrC1v6C1vof39etLNMnBwCY+p0gajWJvAHLGQ6g/gGyS5YrpDW+GefSN4+Cvcr08UWw==}
+  '@napi-rs/canvas-linux-riscv64-gnu@1.0.9':
+    resolution: {integrity: sha512-hLKEGxV7ZiRHqndePTokgDMdBlo/rDfzg7P4p4QIv9pUhuYobnu3R2NIFLCRghG0nwfo+s2sw+c1xZFeCmEAsw==}
     engines: {node: '>= 10'}
     cpu: [riscv64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-x64-gnu@0.1.100':
-    resolution: {integrity: sha512-1eCvkDCazm7FFhsT7DfGOdSaHgZVK3bt/dSBl5EWHOWmnz+I7j8tPseJqqD81NF+MH21jKUK4wQSDjN0mdhnTg==}
+  '@napi-rs/canvas-linux-x64-gnu@1.0.9':
+    resolution: {integrity: sha512-6kaz3w0QMy77PDWk6rJ1ksIihdad3qzEyX2o2oGT8GwCaypfT5mhjr8buOO5hstyLxcWXDScuz56RsINLtBPIQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@napi-rs/canvas-linux-x64-musl@0.1.100':
-    resolution: {integrity: sha512-20arT6lnI19S68qNlii73TSEDbECNgzMz2EpldC1V3mZFuRkeujXkcebRk0LRJe9SEUAooYiLokfMViY8IX7yA==}
+  '@napi-rs/canvas-linux-x64-musl@1.0.9':
+    resolution: {integrity: sha512-xrGvmS3v55hmZ86ls/kBLVNMUTYio3f6Ik0DireemG994VfPAwiA3ZXA0Uf1bByctkB3NQ1Sfb+H5bkdUnnzfQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@napi-rs/canvas-win32-arm64-msvc@0.1.100':
-    resolution: {integrity: sha512-DZFFT1wIAg37LJw37yhMRFfjATd3vTQzjZ1Yki8u2vhO6Hi5VE6BVaGQ1aaDu7xb4iMErz+9EOwjpS7xcxFeBw==}
+  '@napi-rs/canvas-win32-arm64-msvc@1.0.9':
+    resolution: {integrity: sha512-yjmVS3ArZeRVCP7jqbPq4rpZa/BhTeI7ELE2XqJg3snICQBDevLZyArxswHkiTnT34KRic33/4fLirrHI+SY8A==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@napi-rs/canvas-win32-x64-msvc@0.1.100':
-    resolution: {integrity: sha512-MyT1j3mHC2+Lu4pBi9mKyMJhtP6U7k7EldY7sj/uS5gJA65gTXt8MefJQXLJo5d/vZbuWmfxzkEUNc/urV3pHA==}
+  '@napi-rs/canvas-win32-x64-msvc@1.0.9':
+    resolution: {integrity: sha512-QlSYQdMQslB81nlABo9wNfQ6npFhE7/O+saCZdqVGueGanyRk4jCogD5EwQenfP3kIq9e+mm6GreQBjX5MrA8g==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@napi-rs/canvas@0.1.100':
-    resolution: {integrity: sha512-xglYA6q3XO5P3BNJYxVZ1IV7DLVjp1Py6nwag88YntrS+3vKHyYcMqXVS4ZztJmwz2uGvz1FWhI/4LgbR5uQDA==}
+  '@napi-rs/canvas@1.0.9':
+    resolution: {integrity: sha512-QviPdJImDi/jMAvBfqaw+19BndMd/sizXVW3NnpMd3VJGz++QXkOHcP9kWR/smHG0hNjHeyuHFyrx/5lD0oNcQ==}
     engines: {node: '>= 10'}
 
   '@napi-rs/keyring-darwin-arm64@1.2.0':
@@ -4042,8 +4045,9 @@ packages:
   '@popperjs/core@2.11.8':
     resolution: {integrity: sha512-P1st0aksCrn9sGZhp8GMYwBnQsbvAWsZAX44oXNNvLHGqAOcoVxmjZiohstwQ7SqKnbR47akdNi+uleWD8+g6A==}
 
-  '@prose-reader/archive-reader@1.362.0':
-    resolution: {integrity: sha512-pAZpcVM72OJYWEJ1YzEBFX0moecbNJGX5DjHmz2IH2yj4SI2rJqp2+1NlZpZiMZ3s0XjD/vRv9nn0n5G2BpWMw==}
+  '@prose-reader/archive-reader@22.0.0':
+    resolution: {integrity: sha512-ukw/7Lm0o4Tw3XnkTzb6Ov0dQxnBkZQyGJYOgf0Icx0aUdAghETWvUCxhmCFUdQPZn5WD4bOilzbXE8Qslx8rA==}
+    engines: {node: '>=22.12'}
     peerDependencies:
       '@zip.js/zip.js': ^2.8.33
       buffer: ^6.0.3
@@ -4065,90 +4069,95 @@ packages:
       unzipper:
         optional: true
 
-  '@prose-reader/cbz@1.362.0':
-    resolution: {integrity: sha512-SnaryTidKtj822vhjCZPS8TxyEIYDVwQ0l+L3Vbb10ugTNofmBp65MN5vOVvEhqO/VcL79Uv9HuWbmWj6wSM8Q==}
+  '@prose-reader/cbz@22.0.0':
+    resolution: {integrity: sha512-qmGlLyX/DwAUtBpUm8PxAdLDCHGCT1ONSK0cUJpZEU1Z7RZOqn6YQFlSJs+S9Hernq9OvGiWK9gDxIP0qk0bSQ==}
     peerDependencies:
-      '@prose-reader/archive-reader': ^1.320.0
-      '@prose-reader/cfi': ^1.296.0
-      '@prose-reader/core': ^1.296.0
-      '@prose-reader/shared': ^1.320.0
-      '@prose-reader/streamer': ^1.296.0
+      '@prose-reader/archive-reader': ^22.0.0
+      '@prose-reader/cfi': ^22.0.0
+      '@prose-reader/core': ^22.0.0
+      '@prose-reader/shared': ^22.0.0
+      '@prose-reader/streamer': ^22.0.0
 
-  '@prose-reader/cfi@1.362.0':
-    resolution: {integrity: sha512-z7yhZDtELpvD8Qje3wZgPtfH7jKI5SK5VkYAgZBtabKN5w554K75HrdQksI6PK2zuSGq6rxWv/A7D/Ypq5AYLw==}
+  '@prose-reader/cfi@22.0.0':
+    resolution: {integrity: sha512-U/PmYSRQOml9SMQMYO9TLLpDx9BFojUAl6FjHxNS3DbF+d5thKE/K4xQtF8GvmycWG/Q2ACH0e+3SJ1zsMtRBg==}
 
-  '@prose-reader/core@1.362.0':
-    resolution: {integrity: sha512-IVZa2aP4TYPBS8LWAc5LL5xolYXXnOMTtVo0EivqyOsUMJeZx/J8Px70aEzrvlBJJ+4ju/WDKZ1ch2zJK7nsUA==}
+  '@prose-reader/core@22.0.0':
+    resolution: {integrity: sha512-efml3dvawUUx/ng2K4q2ar0qr8zUbH18GI5gaDcH3wa9cfA1WmEqUWdwM32qpPf7nAVSoO88q3dPqQvaqiRoeg==}
     peerDependencies:
-      rxjs: '*'
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-annotations@1.328.0':
-    resolution: {integrity: sha512-oqObwWlXAOKQ3Lj029Fd/jGbHgHkMGjuO89yQOtZTNN4GRYNiqRvLYNZuE1SG3pu4qnNPAc17KHu2eUuXAcssw==}
+  '@prose-reader/enhancer-annotations@22.0.1':
+    resolution: {integrity: sha512-bPymslabHeaG5XVL684cHXYlIoLJq0fQZf+NTmLZPOSyShr4kiTwJpO3WOt/xH3uweI9hmfKXmZ/YuxzIJ4g/w==}
     peerDependencies:
-      '@prose-reader/core': ^1.117.0
+      '@prose-reader/core': ^22.0.1
+      '@prose-reader/shared': ^22.0.0
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-audio@1.362.0':
-    resolution: {integrity: sha512-5b41rM4Soe+NmAxtnYJe0wrH6FAmk9vAlm1GsXWr8hiIaPLMY2slZDIh0NjjFei6u9Z4pbG3nCr6yCd5wwBC2w==}
+  '@prose-reader/enhancer-audio@22.0.0':
+    resolution: {integrity: sha512-hy/we/HiOWzMKsoZea46S7SfHZwqWREkJUfgNJ1YaPtpYgEKTP5D0WRbBcE/4b8lrQIVTVTrcDuawqDQV4NwEQ==}
     peerDependencies:
-      rxjs: '*'
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-gallery@1.362.0':
-    resolution: {integrity: sha512-7T+DGK3AuUlZd2WPovjz/SJCu3EbxTgVK/RbqFsNsKwrNxOgjvBs11Rv9duKS7U13cXAG/ln7MQD1qsJFji2bg==}
+  '@prose-reader/enhancer-gallery@22.0.0':
+    resolution: {integrity: sha512-Fp6g4LbFTizt8j1gEWqWuN1BRVmwS4gSouL5wIVVi84ZMNjjxReaF0ZUI9gwhO789NsXOGbpxUmmKfWXx/vz6A==}
     peerDependencies:
-      rxjs: '*'
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-gestures@1.362.0':
-    resolution: {integrity: sha512-4qoyFPRfM6bWf7XIOZ+ix+lKiXnBNCHbs+wlu10Ej1htTsbcoILOfQEnl+UvdYf7QJrVK8c3ViUr4JrUFwoyxA==}
+  '@prose-reader/enhancer-gestures@22.0.0':
+    resolution: {integrity: sha512-Joe+ggn9sHxdQO6Gjw0CrRox+4MRfEUtqdVFiw74pUWPy7fGUMp9iBuI4AILG/0wzzh5IOFCrSkkDSg1CfIRLQ==}
     peerDependencies:
-      gesturx: 1.x
-      rxjs: 7.x
+      gesturx: ^1.11.1
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-pdf@1.362.0':
-    resolution: {integrity: sha512-CSVpIfAZ1LBUbmi0G3H9EMPUTVlavpHEguH8YY/WPnCILBIpRPzkbEp5n4bsWs5JzG1rpeYeGUiDmIzoSROIdA==}
+  '@prose-reader/enhancer-pdf@22.0.0':
+    resolution: {integrity: sha512-bPegONnQHNxHvNlZ3UNU1yIU7NKXM5LOpHjWQH1qahTOvAhtC3M2T2p/d74mVxkk026gImRrDuKcDSJgW7mUrQ==}
     peerDependencies:
-      '@prose-reader/archive-reader': ^1.320.0
-      '@prose-reader/core': ^1.117.0
-      pdfjs-dist: 5.x
-      rxjs: '*'
+      '@prose-reader/archive-reader': ^22.0.0
+      '@prose-reader/core': ^22.0.0
+      pdfjs-dist: '>=6.2.108 <7'
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-refit@1.362.0':
-    resolution: {integrity: sha512-X8iDEY/SPuYi/VS4oWX8QNiQREyYhD6Bs0Hb8inqIokzk+54E89KUzSAmT4nyygTDsGv8/kuHLjli/nQEk/eig==}
+  '@prose-reader/enhancer-refit@22.0.0':
+    resolution: {integrity: sha512-58OrR8q+8V6Sr8Ak0x+/0C90i3Wcns/xMPpyUrazc2KXvQzljouMAw/k0MR81g7KCnWnI+WYsW+DcWJea9lXZw==}
     peerDependencies:
-      '@prose-reader/core': ^1.117.0
+      '@prose-reader/core': ^22.0.0
+      rxjs: ^7.5.5
 
-  '@prose-reader/enhancer-search@1.362.0':
-    resolution: {integrity: sha512-ZbNpcYZ02jdJ6Gj2eaugfcBkVXHoAQR0S9Zq7N7kkC3Z1hlxxx3xINgsAVULX3Z70XuFnIpVBcQ2ElJN9JArYg==}
+  '@prose-reader/enhancer-search@22.0.0':
+    resolution: {integrity: sha512-T9kcKb35zbwVkNQoZPUTmFL9ZKbPxhAdUgTAyOI1B0U5NxjoVcVhR/FfDFOw/6ggRgkcFNg93+/rkjZLQXkrYw==}
     peerDependencies:
-      rxjs: '*'
+      rxjs: ^7.5.5
 
-  '@prose-reader/react-reader@1.362.0':
-    resolution: {integrity: sha512-91Lc0haXGqX7DDMNMFmmzLfente9a9jqP8USv0vv4Tusoxv/Fg4cJKR8QcbPCNDu0bxWjcU4pqF+NzGaGD0qmg==}
+  '@prose-reader/react-reader@22.0.0':
+    resolution: {integrity: sha512-Wo6j+HX/GM3z2YWnx14+tj1wgwt+VTnNfRm8+JfJO/TapJ/GI/g1HqrANoKmgN3mrJ8pj9Yg/KLB+RtJZMax5g==}
     peerDependencies:
       '@chakra-ui/react': 3.x
       '@emotion/react': 11.x
-      '@prose-reader/cbz': ^1.169.0
-      '@prose-reader/core': ^1.169.0
-      '@prose-reader/enhancer-annotations': ^1.169.0
-      '@prose-reader/enhancer-audio': ^1.169.0
-      '@prose-reader/enhancer-gallery': ^1.169.0
-      '@prose-reader/enhancer-gestures': ^1.169.0
-      '@prose-reader/enhancer-refit': ^1.169.0
-      '@prose-reader/enhancer-search': ^1.169.0
-      '@prose-reader/shared': ^1.169.0
+      '@prose-reader/cbz': ^22.0.0
+      '@prose-reader/core': ^22.0.0
+      '@prose-reader/enhancer-annotations': ^22.0.0
+      '@prose-reader/enhancer-audio': ^22.0.0
+      '@prose-reader/enhancer-gallery': ^22.0.0
+      '@prose-reader/enhancer-gestures': ^22.0.0
+      '@prose-reader/enhancer-refit': ^22.0.0
+      '@prose-reader/enhancer-search': ^22.0.0
+      '@prose-reader/shared': ^22.0.0
       rc-slider: 11.1.x
       react: 19.x || 18.x
       react-dom: 19.x || 18.x
       react-icons: ^5.4.0
       reactjrx: 1.x
+      rxjs: ^7.5.5
       screenfull: ^6.0.2
 
-  '@prose-reader/shared@1.362.0':
-    resolution: {integrity: sha512-iZxDvBjv54vv7dIwss6gKnJjrOdJDIdI+Elf0Bf4BfaRb1twTS/YzhVYMo7uLHkwZsJDXP9xTlV12r6X+9qMnw==}
+  '@prose-reader/shared@22.0.0':
+    resolution: {integrity: sha512-vP4QWenJAvhmFp23Oyj/5USeHfp/iJDXYAPd2Nrb41iH2t6Lq+98bMugH+D9GrXfOtU9ZC3zZ7KWcoro0+VsgA==}
 
-  '@prose-reader/streamer@1.362.0':
-    resolution: {integrity: sha512-583mOMnihlP+Z/u8pzZP/FPc7m6K0MyT41lSVPCAZj0aVgiv775dHM0L8JdtQtNxF/NC8HilnADOWnuReFyBxw==}
+  '@prose-reader/streamer@22.0.0':
+    resolution: {integrity: sha512-svF0QkLldgP0FKlp7xhhN6v6DPGWrMNHmcJTdjV+j3jhjhoZacslMvwNBLgYImVVFXt1MQDYRgHKcqIBPcz5zA==}
+    engines: {node: '>=22.12'}
     peerDependencies:
-      rxjs: '*'
+      rxjs: ^7.5.5
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -8070,8 +8079,8 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
-  gesturx@1.11.0:
-    resolution: {integrity: sha512-dPFEnTYuY1/2+a0dd9mmast5x9+wcN3M/WO5ijZO43ejcscw05RqdjSIXmdSBZdBwQ/JYOtgZMwPoVel9scn1Q==}
+  gesturx@1.11.1:
+    resolution: {integrity: sha512-5QHHE5htkLJRUbbdbvdUH06Q0WTwmrRdM68vESVaZvJ06Ex4KBN0DjU4vGVZwflt9EVEm0O4ZacDbBDmopEXDQ==}
     peerDependencies:
       rxjs: 7.x
 
@@ -10388,8 +10397,8 @@ packages:
   pathe@2.0.3:
     resolution: {integrity: sha512-WUjGcAqP1gQacoQe+OBJsFA7Ld4DyXuUIjZ5cc75cLHvJ7dtNsTugphxIADwspS+AraAUePCKrSVtPLFj/F88w==}
 
-  pdfjs-dist@5.7.284:
-    resolution: {integrity: sha512-h4EdYQczmGhbOlqc3PPZwxevn7ApdWPbovAuWXOB/DjIyigSnwfy2oze7c6mRcSr9XgLp3eN3EeL4DyySTPMFw==}
+  pdfjs-dist@6.3.289:
+    resolution: {integrity: sha512-ZHjSVpDa3D6izMq8/04lvkhkATUmL9px6ChPaXc1k6nU2Mrhlg1/7F0bdUqCwUjw3NsPTfPZsMDUU6ZIcRaeQw==}
     engines: {node: '>=22.13.0 || >=24'}
 
   pend@1.2.0:
@@ -12769,9 +12778,9 @@ packages:
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
 
-  xmldoc@2.0.3:
-    resolution: {integrity: sha512-6gRk4NY/Jvg67xn7OzJuxLRsGgiXBaPUQplVJ/9l99uIugxh4FTOewYz5ic8WScj7Xx/2WvhENiQKwkK9RpE4w==}
-    engines: {node: '>=12.0.0'}
+  xmldoc@3.0.0:
+    resolution: {integrity: sha512-lwxfsv7+O+0vSVSDlfK60afS7kWWGMFeJmbZQwRfHPY37oPDBQ1iI4sCE14bE+NeJeNG0hC0M4RETUavPcvk6w==}
+    engines: {node: '>=22.0.0'}
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -15489,7 +15498,7 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260823':
+  '@maxim_mazurok/gapi.client.drive-v3@0.3.20260904':
     dependencies:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
@@ -15658,52 +15667,52 @@ snapshots:
     transitivePeerDependencies:
       - '@types/react'
 
-  '@napi-rs/canvas-android-arm64@0.1.100':
+  '@napi-rs/canvas-android-arm64@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-darwin-arm64@0.1.100':
+  '@napi-rs/canvas-darwin-arm64@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-darwin-x64@0.1.100':
+  '@napi-rs/canvas-darwin-x64@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-arm-gnueabihf@0.1.100':
+  '@napi-rs/canvas-linux-arm-gnueabihf@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-arm64-gnu@0.1.100':
+  '@napi-rs/canvas-linux-arm64-gnu@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-arm64-musl@0.1.100':
+  '@napi-rs/canvas-linux-arm64-musl@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-riscv64-gnu@0.1.100':
+  '@napi-rs/canvas-linux-riscv64-gnu@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-x64-gnu@0.1.100':
+  '@napi-rs/canvas-linux-x64-gnu@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-linux-x64-musl@0.1.100':
+  '@napi-rs/canvas-linux-x64-musl@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-win32-arm64-msvc@0.1.100':
+  '@napi-rs/canvas-win32-arm64-msvc@1.0.9':
     optional: true
 
-  '@napi-rs/canvas-win32-x64-msvc@0.1.100':
+  '@napi-rs/canvas-win32-x64-msvc@1.0.9':
     optional: true
 
-  '@napi-rs/canvas@0.1.100':
+  '@napi-rs/canvas@1.0.9':
     optionalDependencies:
-      '@napi-rs/canvas-android-arm64': 0.1.100
-      '@napi-rs/canvas-darwin-arm64': 0.1.100
-      '@napi-rs/canvas-darwin-x64': 0.1.100
-      '@napi-rs/canvas-linux-arm-gnueabihf': 0.1.100
-      '@napi-rs/canvas-linux-arm64-gnu': 0.1.100
-      '@napi-rs/canvas-linux-arm64-musl': 0.1.100
-      '@napi-rs/canvas-linux-riscv64-gnu': 0.1.100
-      '@napi-rs/canvas-linux-x64-gnu': 0.1.100
-      '@napi-rs/canvas-linux-x64-musl': 0.1.100
-      '@napi-rs/canvas-win32-arm64-msvc': 0.1.100
-      '@napi-rs/canvas-win32-x64-msvc': 0.1.100
+      '@napi-rs/canvas-android-arm64': 1.0.9
+      '@napi-rs/canvas-darwin-arm64': 1.0.9
+      '@napi-rs/canvas-darwin-x64': 1.0.9
+      '@napi-rs/canvas-linux-arm-gnueabihf': 1.0.9
+      '@napi-rs/canvas-linux-arm64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-arm64-musl': 1.0.9
+      '@napi-rs/canvas-linux-riscv64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-x64-gnu': 1.0.9
+      '@napi-rs/canvas-linux-x64-musl': 1.0.9
+      '@napi-rs/canvas-win32-arm64-msvc': 1.0.9
+      '@napi-rs/canvas-win32-x64-msvc': 1.0.9
     optional: true
 
   '@napi-rs/keyring-darwin-arm64@1.2.0':
@@ -16508,10 +16517,10 @@ snapshots:
 
   '@popperjs/core@2.11.8': {}
 
-  '@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)':
+  '@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)':
     dependencies:
-      '@prose-reader/shared': 1.362.0
-      xmldoc: 2.0.3
+      '@prose-reader/shared': 22.0.0
+      xmldoc: 3.0.0
     optionalDependencies:
       '@zip.js/zip.js': 2.8.34
       buffer: 6.0.3
@@ -16519,86 +16528,92 @@ snapshots:
       node-unrar-js: 2.0.2
       unzipper: 0.12.5
 
-  '@prose-reader/cbz@1.362.0(@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@1.362.0)(@prose-reader/core@1.362.0(rxjs@7.8.2))(@prose-reader/shared@1.362.0)(@prose-reader/streamer@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))':
+  '@prose-reader/cbz@22.0.0(@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@22.0.0)(@prose-reader/core@22.0.0(rxjs@7.8.2))(@prose-reader/shared@22.0.0)(@prose-reader/streamer@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))':
     dependencies:
-      '@prose-reader/archive-reader': 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
-      '@prose-reader/cfi': 1.362.0
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-      '@prose-reader/shared': 1.362.0
-      '@prose-reader/streamer': 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)
+      '@prose-reader/archive-reader': 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/cfi': 22.0.0
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/shared': 22.0.0
+      '@prose-reader/streamer': 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)
 
-  '@prose-reader/cfi@1.362.0': {}
+  '@prose-reader/cfi@22.0.0': {}
 
-  '@prose-reader/core@1.362.0(rxjs@7.8.2)':
+  '@prose-reader/core@22.0.0(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/cfi': 1.362.0
-      '@prose-reader/shared': 1.362.0
+      '@prose-reader/cfi': 22.0.0
+      '@prose-reader/shared': 22.0.0
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-annotations@1.328.0(@prose-reader/core@1.362.0(rxjs@7.8.2))':
+  '@prose-reader/enhancer-annotations@22.0.1(@prose-reader/core@22.0.0(rxjs@7.8.2))(@prose-reader/shared@22.0.0)(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-
-  '@prose-reader/enhancer-audio@1.362.0(rxjs@7.8.2)':
-    dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/shared': 22.0.0
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-gallery@1.362.0(rxjs@7.8.2)':
+  '@prose-reader/enhancer-audio@22.0.0(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/shared': 22.0.0
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-gestures@1.362.0(gesturx@1.11.0(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@prose-reader/enhancer-gallery@22.0.0(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-      gesturx: 1.11.0(rxjs@7.8.2)
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-pdf@1.362.0(@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@1.362.0(rxjs@7.8.2))(pdfjs-dist@5.7.284)(rxjs@7.8.2)':
+  '@prose-reader/enhancer-gestures@22.0.0(gesturx@1.11.1(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/archive-reader': 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-      pdfjs-dist: 5.7.284
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      gesturx: 1.11.1(rxjs@7.8.2)
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-refit@1.362.0(@prose-reader/core@1.362.0(rxjs@7.8.2))':
+  '@prose-reader/enhancer-pdf@22.0.0(@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@22.0.0(rxjs@7.8.2))(pdfjs-dist@6.3.289)(rxjs@7.8.2)':
     dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-
-  '@prose-reader/enhancer-search@1.362.0(rxjs@7.8.2)':
-    dependencies:
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
+      '@prose-reader/archive-reader': 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      pdfjs-dist: 6.3.289
       rxjs: 7.8.2
 
-  '@prose-reader/react-reader@1.362.0(f447108486c27ce222a8096c910d3378)':
+  '@prose-reader/enhancer-refit@22.0.0(@prose-reader/core@22.0.0(rxjs@7.8.2))(rxjs@7.8.2)':
+    dependencies:
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      rxjs: 7.8.2
+
+  '@prose-reader/enhancer-search@22.0.0(rxjs@7.8.2)':
+    dependencies:
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/shared': 22.0.0
+      rxjs: 7.8.2
+
+  '@prose-reader/react-reader@22.0.0(76f72d1971fd8d63b89722890b1863eb)':
     dependencies:
       '@chakra-ui/react': 3.36.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@8.1.1))(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
       '@emotion/react': 11.14.0(@types/react@19.2.17)(react@19.2.8)(supports-color@8.1.1)
-      '@prose-reader/cbz': 1.362.0(@prose-reader/archive-reader@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@1.362.0)(@prose-reader/core@1.362.0(rxjs@7.8.2))(@prose-reader/shared@1.362.0)(@prose-reader/streamer@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))
-      '@prose-reader/core': 1.362.0(rxjs@7.8.2)
-      '@prose-reader/enhancer-annotations': 1.328.0(@prose-reader/core@1.362.0(rxjs@7.8.2))
-      '@prose-reader/enhancer-audio': 1.362.0(rxjs@7.8.2)
-      '@prose-reader/enhancer-gallery': 1.362.0(rxjs@7.8.2)
-      '@prose-reader/enhancer-gestures': 1.362.0(gesturx@1.11.0(rxjs@7.8.2))(rxjs@7.8.2)
-      '@prose-reader/enhancer-refit': 1.362.0(@prose-reader/core@1.362.0(rxjs@7.8.2))
-      '@prose-reader/enhancer-search': 1.362.0(rxjs@7.8.2)
-      '@prose-reader/shared': 1.362.0
+      '@prose-reader/cbz': 22.0.0(@prose-reader/archive-reader@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@22.0.0)(@prose-reader/core@22.0.0(rxjs@7.8.2))(@prose-reader/shared@22.0.0)(@prose-reader/streamer@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))
+      '@prose-reader/core': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/enhancer-annotations': 22.0.1(@prose-reader/core@22.0.0(rxjs@7.8.2))(@prose-reader/shared@22.0.0)(rxjs@7.8.2)
+      '@prose-reader/enhancer-audio': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/enhancer-gallery': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/enhancer-gestures': 22.0.0(gesturx@1.11.1(rxjs@7.8.2))(rxjs@7.8.2)
+      '@prose-reader/enhancer-refit': 22.0.0(@prose-reader/core@22.0.0(rxjs@7.8.2))(rxjs@7.8.2)
+      '@prose-reader/enhancer-search': 22.0.0(rxjs@7.8.2)
+      '@prose-reader/shared': 22.0.0
       rc-slider: 11.1.9(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)
       react: 19.2.8
       react-dom: 19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8)
       react-icons: 5.7.0(react@19.2.8)
       reactjrx: 1.141.6(@tanstack/react-query@5.101.4(react@19.2.8))(react-dom@19.2.8(patch_hash=eda7f72ff7076aa1e9cbd0658e127b62fc003ed7c2288ee37641781916dad53e)(react@19.2.8))(react@19.2.8)(rxjs@7.8.2)
+      rxjs: 7.8.2
       screenfull: 6.0.2
 
-  '@prose-reader/shared@1.362.0': {}
+  '@prose-reader/shared@22.0.0': {}
 
-  '@prose-reader/streamer@1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)':
+  '@prose-reader/streamer@22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)':
     dependencies:
-      '@prose-reader/archive-reader': 1.362.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
-      '@prose-reader/shared': 1.362.0
+      '@prose-reader/archive-reader': 22.0.0(@zip.js/zip.js@2.8.34)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/shared': 22.0.0
       rxjs: 7.8.2
-      xmldoc: 2.0.3
+      xmldoc: 3.0.0
     transitivePeerDependencies:
       - '@zip.js/zip.js'
       - buffer
@@ -17638,7 +17653,7 @@ snapshots:
 
   '@types/gapi.client.drive-v3@0.0.5':
     dependencies:
-      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260823
+      '@maxim_mazurok/gapi.client.drive-v3': 0.3.20260904
 
   '@types/gapi.client@1.0.8': {}
 
@@ -21408,7 +21423,7 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  gesturx@1.11.0(rxjs@7.8.2):
+  gesturx@1.11.1(rxjs@7.8.2):
     dependencies:
       rxjs: 7.8.2
 
@@ -24366,9 +24381,9 @@ snapshots:
 
   pathe@2.0.3: {}
 
-  pdfjs-dist@5.7.284:
+  pdfjs-dist@6.3.289:
     optionalDependencies:
-      '@napi-rs/canvas': 0.1.100
+      '@napi-rs/canvas': 1.0.9
 
   pend@1.2.0: {}
 
@@ -27071,7 +27086,7 @@ snapshots:
 
   xmlchars@2.2.0: {}
 
-  xmldoc@2.0.3:
+  xmldoc@3.0.0:
     dependencies:
       sax: 1.6.1
 

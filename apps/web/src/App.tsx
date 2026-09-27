@@ -24,6 +24,7 @@ import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDo
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
 import { LoadConfiguration } from "./config/LoadConfiguration"
+import { SplashScreen } from "./common/SplashScreen"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
 import { useLoadGsi } from "./google/gsi"
@@ -49,7 +50,11 @@ LibArchive.init({
   workerUrl: "/libarchive.js.worker-bundle.js",
 })
 
-const App = memo(() => {
+const App = memo(function App({
+  onReadyChange,
+}: {
+  onReadyChange: (isAppReady: boolean) => void
+}) {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
   const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
   const { waitingWorker } = useRegisterServiceWorker()
@@ -64,7 +69,21 @@ const App = memo(() => {
 
   const isHydratingProfile = !!profileSignalStorageAdapter && !isProfileHydrated
   const isAppReady =
-    isDownloadsHydrated && isAuthHydrated && !isPreloadingQueries
+    !isHydratingProfile &&
+    isDownloadsHydrated &&
+    isAuthHydrated &&
+    !isPreloadingQueries
+
+  useEffect(
+    function reportAppReadiness() {
+      onReadyChange(isAppReady)
+
+      return function reportAppNotReady() {
+        onReadyChange(false)
+      }
+    },
+    [isAppReady, onReadyChange],
+  )
 
   return (
     <DialogProvider>
@@ -115,7 +134,9 @@ const App = memo(() => {
   )
 })
 
-export const AppWithConfig = memo(() => {
+export const AppWithConfig = memo(function AppWithConfig() {
+  const [isAppReady, setIsAppReady] = useState(false)
+
   return (
     <ErrorBoundary
       fallback={({ error }) => <AppError error={error} />}
@@ -133,8 +154,9 @@ export const AppWithConfig = memo(() => {
                     <RevokeLoggedOutProfiles />
                     <SyncProfilesAcrossTabs />
                     <LoadConfiguration>
-                      <App />
+                      <App onReadyChange={setIsAppReady} />
                     </LoadConfiguration>
+                    <SplashScreen show={!isAppReady} />
                   </LegacyAuthMigration>
                   {import.meta.env.DEV && <DebugMenu />}
                 </HttpSessionStoreProvider>

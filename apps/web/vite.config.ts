@@ -5,10 +5,10 @@ import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
 import { readFileSync } from "node:fs"
-import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared"
+import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared.ts"
 
 const productVersion = JSON.parse(
-  readFileSync(path.resolve(__dirname, "../../package.json"), "utf8"),
+  readFileSync(path.resolve(import.meta.dirname, "../../package.json"), "utf8"),
 ).version
 
 const commitSha = [
@@ -126,7 +126,7 @@ export default defineConfig(({ mode }) => ({
      */
     conditions: ["source", "module", "browser", "development|production"],
     alias: {
-      stream: path.resolve(__dirname, "./stream-shim.js"),
+      stream: path.resolve(import.meta.dirname, "./stream-shim.js"),
     },
   },
   plugins: [
@@ -137,6 +137,26 @@ export default defineConfig(({ mode }) => ({
       strategies: "injectManifest",
       injectManifest: {
         rollupFormat: "iife",
+        rollupOptions: {
+          onwarn(warning, defaultHandler) {
+            /**
+             * `@zip.js/zip.js` (2.8.34) reads `import.meta.url` in
+             * `lib/zip-core-base.js`, which every entry point of the library
+             * loads, to seed the base URI it resolves `workerScripts` against.
+             * We configure no `workerScripts` and the read is already wrapped
+             * in a `try`/`catch` upstream, so the empty object rolldown
+             * substitutes here is correct. Any other module's `import.meta`
+             * still gets reported.
+             */
+            const isZipJsEmptyImportMeta =
+              warning.code === "EMPTY_IMPORT_META" &&
+              warning.id?.replaceAll("\\", "/").includes("/@zip.js/zip.js/")
+
+            if (isZipJsEmptyImportMeta) return
+
+            defaultHandler(warning)
+          },
+        },
         // globPatterns: ["**\/*.{js,css,html,js.mem,ico,json}"],
         // we need to pre-cache the entire assets as the app is fully offline
         globPatterns: ["**/*"],
