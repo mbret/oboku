@@ -1,30 +1,30 @@
 import { Module } from "@nestjs/common"
-import { AppController } from "./app.controller"
-import { AppService } from "./app.service"
+import { AppController } from "./app.controller.js"
+import { AppService } from "./app.service.js"
 import { ConfigModule } from "@nestjs/config"
 import path from "node:path"
 import Joi from "joi"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { CollectionsController } from "./features/collections/collections.controller"
-import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
-import { QueueModule } from "./queue/queue.module"
+import { CollectionsController } from "./features/collections/collections.controller.js"
+import { CollectionMetadataService } from "./features/collections/CollectionMetadataService.js"
+import { QueueModule } from "./queue/queue.module.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
-import { PostgresModule } from "./features/postgres/postgres.module"
-import { AppConfigModule } from "./config/config.module"
-import { WebController } from "./web/web.controller"
-import { UsersModule } from "./users/users.module"
-import { AuthModule } from "./auth/auth.module"
-import { CouchModule } from "./couch/couch.module"
-import { CoversModule } from "./covers/covers.module"
+import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService.js"
+import { PostgresModule } from "./features/postgres/postgres.module.js"
+import { AppConfigModule } from "./config/config.module.js"
+import { WebController } from "./web/web.controller.js"
+import { UsersModule } from "./users/users.module.js"
+import { AuthModule } from "./auth/auth.module.js"
+import { CouchModule } from "./couch/couch.module.js"
+import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
-import { AdminModule } from "./admin/admin.module"
-import { DataSourceModule } from "./datasource/datasource.module"
-import { StorageModule } from "./storage/storage.module"
-import { WebDavModule } from "./webdav/webdav.module"
-import { NotificationsModule } from "./notifications/notifications.module"
-import { BooksModule } from "./books/books.module"
-import { PluginsModule } from "./plugins/plugins.module"
+import { AdminModule } from "./admin/admin.module.js"
+import { DataSourceModule } from "./datasource/datasource.module.js"
+import { StorageModule } from "./storage/storage.module.js"
+import { WebDavModule } from "./webdav/webdav.module.js"
+import { NotificationsModule } from "./notifications/notifications.module.js"
+import { BooksModule } from "./books/books.module.js"
+import { PluginsModule } from "./plugins/plugins.module.js"
 
 @Module({
   imports: [
@@ -42,7 +42,7 @@ import { PluginsModule } from "./plugins/plugins.module"
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
       // as env variables directly to the docker container
-      envFilePath: path.join(__dirname, "../.env"),
+      envFilePath: path.join(import.meta.dirname, "../.env"),
       cache: true,
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid("development", "production"),

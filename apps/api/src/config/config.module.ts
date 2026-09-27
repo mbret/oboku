@@ -1,7 +1,7 @@
 import { Module, Global } from "@nestjs/common"
-import { AppConfigService } from "./AppConfigService"
-import { SecretsService } from "./SecretsService"
-import { TrustedOriginsService } from "./trusted-origin.service"
+import { AppConfigService } from "./AppConfigService.js"
+import { SecretsService } from "./SecretsService.js"
+import { TrustedOriginsService } from "./trusted-origin.service.js"
 
 @Global()
 @Module({

@@ -1,18 +1,19 @@
+import type { Mock } from "vitest"
 import { buildDriveItemUrl } from "@oboku/shared"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 describe("OneDrive sync", () => {
   const originalFetch = global.fetch
-  let fetchMock: jest.Mock
+  let fetchMock: Mock
 
   beforeEach(() => {
-    fetchMock = jest.fn()
+    fetchMock = vi.fn()
     global.fetch = fetchMock
   })
 
   afterEach(() => {
     global.fetch = originalFetch
-    jest.resetAllMocks()
+    vi.resetAllMocks()
   })
 
   it("builds the same tree structure Google Drive sync expects", async () => {

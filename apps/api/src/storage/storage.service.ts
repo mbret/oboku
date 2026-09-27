@@ -1,9 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 import fs from "node:fs"
 import path from "node:path"
-import { formatDuration } from "src/lib/utils"
+import { formatDuration } from "../lib/utils.js"
 
 @Injectable()
 export class StorageService {

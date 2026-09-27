@@ -5,13 +5,13 @@ import {
   getBookCoverKey,
 } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
-import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket"
-import type { Context } from "./types"
-import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket"
-import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket"
-import { CoversService } from "../../covers/covers.service"
+import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket.js"
+import type { Context } from "./types.js"
+import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket.js"
+import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket.js"
+import { CoversService } from "../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
-import { pickCoverMetadata } from "./pickCoverMetadata"
+import { pickCoverMetadata } from "./pickCoverMetadata.js"
 
 export type UpdateCoverResult = {
   bucketCoverKey?: string

@@ -1,5 +1,5 @@
 import type createNano from "nano"
-import { retryFn } from "./dbHelpers"
+import { retryFn } from "./dbHelpers.js"
 
 type UserDbIndexDefinition = {
   name: string

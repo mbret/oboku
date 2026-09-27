@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
-import { searchManga } from "./searchManga"
+import { searchManga } from "./searchManga.js"
 import type { CollectionMetadata } from "@oboku/shared"
-import { getStatistics } from "./getStatistics"
+import { getStatistics } from "./getStatistics.js"
 
 export const getSeriesMetadata = async (metadata: {
   title: string

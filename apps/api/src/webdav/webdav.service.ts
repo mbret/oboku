@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import type { Request, Response } from "express"
 import nodePath from "node:path"
-import { handleAuth } from "./handleAuth"
-import { handlePropfind } from "./handlePropfind"
-import { handleGet } from "./handleGet"
-import { handleOptions } from "./handleOptions"
+import { handleAuth } from "./handleAuth.js"
+import { handlePropfind } from "./handlePropfind.js"
+import { handleGet } from "./handleGet.js"
+import { handleOptions } from "./handleOptions.js"
 
 /**
  * Read-only WebDAV endpoint that exposes enabled server sources.

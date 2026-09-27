@@ -10,8 +10,8 @@ import {
 import { Reflector } from "@nestjs/core"
 import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { Request } from "express"
-import { SecretsService } from "src/config/SecretsService"
-import { ACCESS_TOKEN_COOKIE } from "./auth-cookies"
+import { SecretsService } from "../config/SecretsService.js"
+import { ACCESS_TOKEN_COOKIE } from "./auth-cookies.js"
 
 export const IS_PUBLIC_KEY = "isPublic"
 export const Public = () => SetMetadata(IS_PUBLIC_KEY, true)

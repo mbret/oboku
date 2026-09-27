@@ -1,6 +1,6 @@
 import { Logger, Module, OnModuleInit } from "@nestjs/common"
-import { AppConfigService } from "src/config/AppConfigService"
-import { StorageService } from "./storage.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { StorageService } from "./storage.service.js"
 import fs from "node:fs"
 
 @Module({

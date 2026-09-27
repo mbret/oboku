@@ -8,7 +8,7 @@ import {
   S3ServiceException,
 } from "@aws-sdk/client-s3"
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 
 @Injectable()
 export class CoversS3Service {

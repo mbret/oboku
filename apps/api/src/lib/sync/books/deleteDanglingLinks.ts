@@ -1,8 +1,8 @@
-import { exists } from "src/lib/couch/exists"
-import { logger } from "./logger"
-import { Context } from "../types"
-import { bulkDelete } from "src/lib/couch/bulkDelete"
-import type { LinkCandidate } from "src/plugins/types"
+import { exists } from "../../couch/exists.js"
+import { logger } from "./logger.js"
+import { Context } from "../types.js"
+import { bulkDelete } from "../../couch/bulkDelete.js"
+import type { LinkCandidate } from "../../../plugins/types.js"
 
 /**
  * Deletes dangling links for a resource: links that have no book or whose book

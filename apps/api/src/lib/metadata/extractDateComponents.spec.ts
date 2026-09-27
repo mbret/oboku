@@ -1,4 +1,4 @@
-import { extractDateComponents } from "./extractDateComponents"
+import { extractDateComponents } from "./extractDateComponents.js"
 
 describe("extractDateComponents", () => {
   it("extracts the calendar day and 1-based month from a full date", () => {

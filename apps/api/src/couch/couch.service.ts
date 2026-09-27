@@ -1,8 +1,8 @@
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 import createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
-import { SecretsService } from "src/config/SecretsService"
+import { SecretsService } from "../config/SecretsService.js"
 import type { StringValue } from "ms"
 
 export const emailToNameHex = (email: string) =>

@@ -3,9 +3,9 @@ import type {
   GetNotificationsResponse,
   GetUnreadNotificationsCountResponse,
 } from "@oboku/shared"
-import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
-import { NotificationsService } from "./notifications.service"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
+import { NotificationsService } from "./notifications.service.js"
 
 @Controller("notifications")
 export class NotificationsController {

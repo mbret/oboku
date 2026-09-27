@@ -1,7 +1,7 @@
 import type { FileMetadata } from "@oboku/shared"
 import { createArchiveFromNodeUnrarJs } from "@prose-reader/archive-reader/archives/createArchiveFromNodeUnrarJs"
 import type { Extractor } from "node-unrar-js"
-import { getMetadataFromArchive } from "./getMetadataFromArchive"
+import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
 
 export const getMetadataFromRarArchive = async (
   extractor: Extractor<Uint8Array>,

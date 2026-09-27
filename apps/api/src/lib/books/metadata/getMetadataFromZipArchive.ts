@@ -1,6 +1,6 @@
 import type { FileMetadata } from "@oboku/shared"
-import { getMetadataFromArchive } from "./getMetadataFromArchive"
-import { createUnzipperArchiveSource } from "./unzipperArchive"
+import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
+import { createUnzipperArchiveSource } from "./unzipperArchive.js"
 
 export const getMetadataFromZipArchive = async (
   tmpFilePath: string,

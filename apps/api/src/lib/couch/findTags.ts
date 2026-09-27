@@ -1,7 +1,7 @@
 import type { SafeMangoQuery, TagsDocType } from "@oboku/shared"
 import type createNano from "nano"
 import type { MangoResponse } from "nano"
-import { retryFn } from "./dbHelpers"
+import { retryFn } from "./dbHelpers.js"
 
 export const findTags = async (
   db: createNano.DocumentScope<unknown>,

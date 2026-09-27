@@ -1,8 +1,8 @@
-import { addTagsToBookIfNotExist } from "src/lib/couch/dbHelpers"
+import { addTagsToBookIfNotExist } from "../../couch/dbHelpers.js"
 import { Logger } from "@nestjs/common"
-import type { DataSourcePlugin } from "src/plugins/types"
+import type { DataSourcePlugin } from "../../../plugins/types.js"
 import type nano from "nano"
-import type { SyncReport } from "../SyncReport"
+import type { SyncReport } from "../SyncReport.js"
 import type { BookDocType } from "@oboku/shared"
 
 const logger = new Logger("sync")

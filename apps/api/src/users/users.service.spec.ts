@@ -1,33 +1,34 @@
+import type { Mock } from "vitest"
 import { Test, TestingModule } from "@nestjs/testing"
-import { CouchService } from "../couch/couch.service"
-import { CoversService } from "../covers/covers.service"
-import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
-import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
-import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
-import { UserPostgresService } from "../features/postgres/user-postgres.service"
-import { UsersService } from "./users.service"
+import { CouchService } from "../couch/couch.service.js"
+import { CoversService } from "../covers/covers.service.js"
+import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
+import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { UsersService } from "./users.service.js"
 
 describe("UsersService", () => {
   let service: UsersService
   let userPostgresService: {
-    findByEmail: jest.Mock
-    create: jest.Mock
-    save: jest.Mock
-    deleteById: jest.Mock
+    findByEmail: Mock
+    create: Mock
+    save: Mock
+    deleteById: Mock
   }
   let refreshTokensService: {
-    deleteByUserId: jest.Mock
+    deleteByUserId: Mock
   }
 
   beforeEach(async () => {
     userPostgresService = {
-      findByEmail: jest.fn(),
-      create: jest.fn(),
-      save: jest.fn(),
-      deleteById: jest.fn(),
+      findByEmail: vi.fn(),
+      create: vi.fn(),
+      save: vi.fn(),
+      deleteById: vi.fn(),
     }
     refreshTokensService = {
-      deleteByUserId: jest.fn(),
+      deleteByUserId: vi.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({

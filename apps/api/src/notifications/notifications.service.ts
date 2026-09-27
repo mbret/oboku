@@ -12,11 +12,11 @@ import {
   type AdminNotificationRow,
   NotificationPostgresService,
   type UserNotificationRow,
-} from "src/features/postgres/notification-postgres.service"
+} from "../features/postgres/notification-postgres.service.js"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
-} from "src/features/postgres/user-postgres.service"
+} from "../features/postgres/user-postgres.service.js"
 
 export const toIsoString = (value: Date | string | null) => {
   if (!value) {

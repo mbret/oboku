@@ -1,10 +1,11 @@
+import type { Mock } from "vitest"
 import type createNano from "nano"
-import { User } from "../couchDbEntities"
+import { User } from "../couchDbEntities.js"
 import {
   addTagsToBookIfNotExist,
   doesCouchDatabaseExist,
   getOrCreateUserFromEmail,
-} from "./dbHelpers"
+} from "./dbHelpers.js"
 
 type StoredDoc = {
   _id: string
@@ -103,17 +104,17 @@ describe("getOrCreateUserFromEmail", () => {
   const createFakeServer = ({
     users,
     dbExists,
-    insert = jest.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
+    insert = vi.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
   }: {
     users: User[]
     dbExists: boolean
-    insert?: jest.Mock
+    insert?: Mock
   }) => {
     const usersDb = {
-      find: jest.fn().mockResolvedValue({ docs: users }),
+      find: vi.fn().mockResolvedValue({ docs: users }),
       insert,
     }
-    const get = jest.fn(async function getDatabaseIfExists() {
+    const get = vi.fn(async function getDatabaseIfExists() {
       if (dbExists) return { db_name: "userdb" }
       throw couchError(404, "not_found")
     })
@@ -161,7 +162,7 @@ describe("getOrCreateUserFromEmail", () => {
     const { server } = createFakeServer({
       users: [existingUser],
       dbExists: false,
-      insert: jest.fn().mockRejectedValue(couchError(409, "conflict")),
+      insert: vi.fn().mockRejectedValue(couchError(409, "conflict")),
     })
 
     await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
@@ -174,7 +175,7 @@ describe("getOrCreateUserFromEmail", () => {
     const { server } = createFakeServer({
       users: [existingUser],
       dbExists: false,
-      insert: jest.fn().mockRejectedValue(couchError(401, "unauthorized")),
+      insert: vi.fn().mockRejectedValue(couchError(401, "unauthorized")),
     })
 
     await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
@@ -200,13 +201,13 @@ describe("getOrCreateUserFromEmail", () => {
 })
 
 describe("doesCouchDatabaseExist", () => {
-  const createFakeServer = (get: jest.Mock) =>
+  const createFakeServer = (get: Mock) =>
     // Only `db.get` is exercised; nano's full ServerScope surface is
     // irrelevant to these tests.
     ({ db: { get } }) as unknown as createNano.ServerScope
 
   it("is true when the database answers", async () => {
-    const get = jest.fn().mockResolvedValue({ db_name: "userdb-1" })
+    const get = vi.fn().mockResolvedValue({ db_name: "userdb-1" })
 
     await expect(
       doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
@@ -214,7 +215,7 @@ describe("doesCouchDatabaseExist", () => {
   })
 
   it("is false when the database is missing", async () => {
-    const get = jest.fn().mockRejectedValue(couchError(404, "not_found"))
+    const get = vi.fn().mockRejectedValue(couchError(404, "not_found"))
 
     await expect(
       doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
@@ -222,7 +223,7 @@ describe("doesCouchDatabaseExist", () => {
   })
 
   it("rethrows any other failure", async () => {
-    const get = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+    const get = vi.fn().mockRejectedValue(couchError(401, "unauthorized"))
 
     await expect(
       doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),

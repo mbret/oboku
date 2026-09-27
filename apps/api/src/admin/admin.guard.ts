@@ -7,7 +7,7 @@ import {
 } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
-import { SecretsService } from "src/config/SecretsService"
+import { SecretsService } from "../config/SecretsService.js"
 
 const IS_ADMIN_PUBLIC_KEY = "isAdminPublic"
 

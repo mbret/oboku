@@ -1,11 +1,11 @@
 import { Logger } from "@nestjs/common"
 import type { CollectionMetadata } from "@oboku/shared"
 import { isAxiosError } from "axios"
-import { getSeriesMetadata } from "src/lib/metadata/biblioreads/getSeriesMetadata"
-import { getGoogleSeriesMetadata } from "src/lib/metadata/google/getGoogleSeriesMetadata"
-import { getSeriesMetadata as getMangadexSeriesMetadata } from "src/lib/metadata/mangadex/getSeriesMetadata"
-import { getSeriesMetadata as getComicVineSeriesMetadata } from "src/lib/metadata/comicvine/getSeriesMetadata"
-import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "src/lib/metadata/mangaupdates/getSeriesMetadata"
+import { getSeriesMetadata } from "../../../lib/metadata/biblioreads/getSeriesMetadata.js"
+import { getGoogleSeriesMetadata } from "../../../lib/metadata/google/getGoogleSeriesMetadata.js"
+import { getSeriesMetadata as getMangadexSeriesMetadata } from "../../../lib/metadata/mangadex/getSeriesMetadata.js"
+import { getSeriesMetadata as getComicVineSeriesMetadata } from "../../../lib/metadata/comicvine/getSeriesMetadata.js"
+import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "../../../lib/metadata/mangaupdates/getSeriesMetadata.js"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
   try {

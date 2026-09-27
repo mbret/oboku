@@ -2,10 +2,10 @@ import { Injectable, Logger } from "@nestjs/common"
 import * as httpProxy from "http-proxy-3"
 import http from "node:http"
 import type { Request, Response } from "express"
-import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/trusted-origin.service"
-import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies"
-import { getForwardedProto } from "../lib/http/forwardedProto"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { TrustedOriginsService } from "../config/trusted-origin.service.js"
+import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies.js"
+import { getForwardedProto } from "../lib/http/forwardedProto.js"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication
 // does not depend on CouchDB's `[cors]` config and we never emit a header

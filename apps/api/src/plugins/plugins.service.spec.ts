@@ -10,7 +10,7 @@ import {
 import {
   FileDownloadSizeLimitExceededError,
   PluginsService,
-} from "./plugins.service"
+} from "./plugins.service.js"
 
 describe("PluginsService downloadLinkToTmp", () => {
   const createdDirectories: string[] = []
@@ -70,9 +70,9 @@ describe("PluginsService downloadLinkToTmp", () => {
   }
 
   const mockDownloadStream = (service: PluginsService, chunks: Buffer[]) => {
-    jest
-      .spyOn(service, "download")
-      .mockResolvedValue({ stream: Readable.from(chunks) })
+    vi.spyOn(service, "download").mockResolvedValue({
+      stream: Readable.from(chunks),
+    })
   }
 
   it("writes the downloaded stream to a tmp file when under the size limit", async () => {

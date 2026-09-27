@@ -1,5 +1,5 @@
-import { GoogleBooksApiVolumesResponseData } from "src/lib/google/googleBooksApi"
-import { parseGoogleMetadata } from "./parseGoogleMetadata"
+import { GoogleBooksApiVolumesResponseData } from "../../google/googleBooksApi.js"
+import { parseGoogleMetadata } from "./parseGoogleMetadata.js"
 import { describe, it, expect } from "vitest"
 
 const getDefaultData = (): GoogleBooksApiVolumesResponseData => ({

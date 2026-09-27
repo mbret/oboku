@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./types"
+import { EnvironmentVariables } from "./types.js"
 import path from "node:path"
 
 @Injectable()
@@ -91,7 +91,7 @@ export class AppConfigService {
   }
 
   get ASSETS_DIR() {
-    return path.join(__dirname, "..", "assets")
+    return path.join(import.meta.dirname, "..", "assets")
   }
 
   /**
