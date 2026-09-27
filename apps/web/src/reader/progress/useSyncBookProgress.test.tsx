@@ -55,35 +55,35 @@ import { useSyncBookProgress } from "./useSyncBookProgress"
 const LAST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/8!/4/2/1:0)",
   percentageEstimateOfBook: 0.9375,
-  isFinal: true,
+  state: "final",
 }
 const PAGE_BEFORE_LAST: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/40/1:0)",
   percentageEstimateOfBook: 0.875,
-  isFinal: true,
+  state: "final",
 }
 
 const FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/2!/4/2/1:0)",
   percentageEstimateOfBook: 0,
-  isFinal: true,
+  state: "final",
 }
 
 const LAST_CHAPTER_START_STANDING_IN: ReadingPosition = {
   cfi: "epubcfi(/6/8!)",
   percentageEstimateOfBook: 0.9375,
-  isFinal: false,
+  state: "standIn",
 }
 
 const SPREAD_FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/4!/4/2/1:0)",
   percentageEstimateOfBook: 0.5,
-  isFinal: true,
+  state: "final",
 }
 const SPREAD_SECOND_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/2/1:0)",
   percentageEstimateOfBook: 0.5625,
-  isFinal: true,
+  state: "final",
 }
 const SPREAD_ESTIMATE = 0.625
 
@@ -186,7 +186,10 @@ describe("useSyncBookProgress", () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
-    reader.navigation.readingPosition$.next({ ...LAST_PAGE, isFinal: false })
+    reader.navigation.readingPosition$.next({
+      ...LAST_PAGE,
+      state: "targetPlace",
+    })
     await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(LAST_PAGE)
     await vi.advanceTimersByTimeAsync(1000)

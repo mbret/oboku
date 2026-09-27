@@ -26,8 +26,8 @@
   },
   "dependencies": {
     "@jsquash/avif": "2.1.1",
-    "@prose-reader/archive-reader": "^19.0.0",
-    "@prose-reader/shared": "^19.0.0",
+    "@prose-reader/archive-reader": "^21.0.0",
+    "@prose-reader/shared": "^21.0.0",
     "@zip.js/zip.js": "^2.8.34"
   },
   "devDependencies": {
