@@ -42,15 +42,15 @@
     "dropbox": "^10.47.0",
     "express": "^5.2.1",
     "google-auth-library": "^11.1.0",
-    "googleapis": "^176.0.0",
-    "http-proxy-3": "^1.23.3",
+    "googleapis": "^182.0.0",
+    "http-proxy-3": "^2.0.1",
     "joi": "^18.2.9",
-    "jose": "^5.10.0",
+    "jose": "^6.2.12",
     "mime-types": "^3.0.2",
     "nano": "^11.0.7",
     "node-domexception": "^2.0.2",
     "node-unrar-js": "^2.0.2",
-    "nodemailer": "^9.1.1",
+    "nodemailer": "^10.0.10",
     "pg": "^8.23.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.2",
@@ -63,7 +63,7 @@
     "@nestjs/cli": "^11.0.24",
     "@nestjs/schematics": "^11.1.0",
     "@nestjs/testing": "^11.2.6",
-    "@swc/cli": "^0.7.10",
+    "@swc/cli": "^0.8.1",
     "@swc/core": "^1.16.2",
     "@types/bcrypt": "^6.0.0",
     "@types/cookie-parser": "^1.4.10",
@@ -72,7 +72,6 @@
     "@types/mime-types": "^3.0.1",
     "@types/ms": "^2.1.0",
     "@types/node": "^24.19.0",
-    "@types/nodemailer": "^8.0.2",
     "@types/supertest": "^7.2.1",
     "@types/unzipper": "^0.10.11",
     "globals": "^17.12.0",
@@ -94,6 +93,16 @@
     "rootDir": "src",
     "testRegex": ".*\\.spec\\.ts$",
     "transform": {
+      "^.+/node_modules/jose/dist/.+\\.js$": [
+        "ts-jest",
+        {
+          "tsconfig": {
+            "allowJs": true,
+            "module": "commonjs",
+            "target": "es2022"
+          }
+        }
+      ],
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
@@ -103,6 +112,9 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^src/(.*)$": "<rootDir>/$1"
-    }
+    },
+    "transformIgnorePatterns": [
+      "/node_modules/(?!(\\.pnpm/jose@[^/]+/node_modules/)?jose/)"
+    ]
   }
 }
