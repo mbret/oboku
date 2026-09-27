@@ -8,11 +8,11 @@ import {
   StreamableFile,
 } from "@nestjs/common"
 import { defer, map, type Observable } from "rxjs"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
-import { AppConfigService } from "src/config/AppConfigService"
-import { CoversService } from "./covers.service"
-import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { emailToNameHex } from "src/couch/couch.service"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { CoversService } from "./covers.service.js"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { emailToNameHex } from "../couch/couch.service.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 
 @Controller("covers")

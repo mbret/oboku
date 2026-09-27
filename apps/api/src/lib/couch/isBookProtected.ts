@@ -1,5 +1,5 @@
 import type createNano from "nano"
-import { findTags } from "./findTags"
+import { findTags } from "./findTags.js"
 
 export const isBookProtected = async (
   db: createNano.DocumentScope<unknown>,

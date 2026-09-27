@@ -7,17 +7,17 @@ import {
   ProviderApiCredentials,
   resolveMetadataFetchEnabled,
 } from "@oboku/shared"
-import { fetchMetadata } from "./fetchMetadata"
+import { fetchMetadata } from "./fetchMetadata.js"
 import type nano from "nano"
-import { saveOrUpdateCover } from "./saveOrUpdateCover"
+import { saveOrUpdateCover } from "./saveOrUpdateCover.js"
 import { from, lastValueFrom, of, switchMap } from "rxjs"
-import { markCollectionAsFetching } from "./collections"
+import { markCollectionAsFetching } from "./collections.js"
 import { Logger } from "@nestjs/common"
-import { findOne } from "src/lib/couch/findOne"
-import { atomicUpdate } from "src/lib/couch/dbHelpers"
-import { isCollectionProtected } from "src/lib/couch/isCollectionProtected"
-import { CoversService } from "src/covers/covers.service"
-import { PluginsService } from "src/plugins/plugins.service"
+import { findOne } from "../../../lib/couch/findOne.js"
+import { atomicUpdate } from "../../../lib/couch/dbHelpers.js"
+import { isCollectionProtected } from "../../../lib/couch/isCollectionProtected.js"
+import { CoversService } from "../../../covers/covers.service.js"
+import { PluginsService } from "../../../plugins/plugins.service.js"
 
 export const processRefreshMetadata = async (
   collection: CollectionDocType,

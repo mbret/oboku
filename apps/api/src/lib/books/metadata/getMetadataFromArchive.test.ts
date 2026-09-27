@@ -3,7 +3,7 @@ import {
   arrayBufferFileAccessors,
   createArchive,
 } from "@prose-reader/archive-reader"
-import { getMetadataFromArchive } from "./getMetadataFromArchive"
+import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
 
 const toArrayBuffer = (body: string): ArrayBuffer => {
   const bytes = new TextEncoder().encode(body)

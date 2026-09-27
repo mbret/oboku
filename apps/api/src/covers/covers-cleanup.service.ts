@@ -6,10 +6,10 @@ import {
 } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { formatDuration } from "src/lib/utils"
-import { CoversService } from "./covers.service"
+import { CouchService } from "../couch/couch.service.js"
+import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
+import { formatDuration } from "../lib/utils.js"
+import { CoversService } from "./covers.service.js"
 
 @Injectable()
 export class CoversCleanupService {

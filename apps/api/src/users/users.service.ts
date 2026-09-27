@@ -1,17 +1,17 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserPostgresEntity } from "../features/postgres/entities"
-import { UserPostgresService } from "../features/postgres/user-postgres.service"
+import { UserPostgresEntity } from "../features/postgres/entities.js"
+import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import {
   CouchService,
   emailToNameHex,
   emailToUserDbName,
-} from "../couch/couch.service"
-import { deleteCouchUser, find } from "../lib/couch/dbHelpers"
+} from "../couch/couch.service.js"
+import { deleteCouchUser, find } from "../lib/couch/dbHelpers.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
-import { CoversService } from "../covers/covers.service"
-import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
-import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
-import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
+import { CoversService } from "../covers/covers.service.js"
+import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
+import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 
 @Injectable()
 export class UsersService {

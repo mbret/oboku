@@ -1,19 +1,19 @@
 import { directives } from "@oboku/shared"
-import type { createHelpers } from "src/plugins/helpers"
-import { syncCollection } from "./collections/syncCollection"
-import { createOrUpdateBook } from "./books/createOrUpdateBook"
-import type { Context } from "./types"
+import type { createHelpers } from "../../plugins/helpers.js"
+import { syncCollection } from "./collections/syncCollection.js"
+import { createOrUpdateBook } from "./books/createOrUpdateBook.js"
+import type { Context } from "./types.js"
 import type {
   DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "src/plugins/types"
-import { createTagFromName } from "../couch/dbHelpers"
+} from "../../plugins/types.js"
+import { createTagFromName } from "../couch/dbHelpers.js"
 import { Logger } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/config/types"
+import { EnvironmentVariables } from "../../config/types.js"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { CoversService } from "src/covers/covers.service"
-import { CollectionMetadataRefreshEvent, Events } from "src/events"
+import { CoversService } from "../../covers/covers.service.js"
+import { CollectionMetadataRefreshEvent, Events } from "../../events.js"
 
 const logger = new Logger("sync")
 

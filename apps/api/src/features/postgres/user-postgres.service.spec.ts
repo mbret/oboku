@@ -1,22 +1,23 @@
+import type { Mock } from "vitest"
 import { ConflictException } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
-import { UserPostgresEntity } from "./entities"
-import { UserPostgresService } from "./user-postgres.service"
+import { UserPostgresEntity } from "./entities.js"
+import { UserPostgresService } from "./user-postgres.service.js"
 
 describe("UserPostgresService", () => {
   let service: UserPostgresService
   let repository: {
-    create: jest.Mock
-    save: jest.Mock
-    createQueryBuilder: jest.Mock
+    create: Mock
+    save: Mock
+    createQueryBuilder: Mock
   }
 
   beforeEach(async () => {
     repository = {
-      create: jest.fn(),
-      save: jest.fn(),
-      createQueryBuilder: jest.fn(),
+      create: vi.fn(),
+      save: vi.fn(),
+      createQueryBuilder: vi.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -37,8 +38,8 @@ describe("UserPostgresService", () => {
   })
 
   it("looks up users with a normalized email", async () => {
-    const where = jest.fn().mockReturnThis()
-    const getMany = jest.fn().mockResolvedValue([])
+    const where = vi.fn().mockReturnThis()
+    const getMany = vi.fn().mockResolvedValue([])
 
     repository.createQueryBuilder.mockReturnValue({
       where,
@@ -55,8 +56,8 @@ describe("UserPostgresService", () => {
   })
 
   it("rejects ambiguous case-insensitive email matches", async () => {
-    const where = jest.fn().mockReturnThis()
-    const getMany = jest.fn().mockResolvedValue([
+    const where = vi.fn().mockReturnThis()
+    const getMany = vi.fn().mockResolvedValue([
       { id: 1, email: "Reader@example.com" },
       { id: 2, email: "reader@example.com" },
     ])

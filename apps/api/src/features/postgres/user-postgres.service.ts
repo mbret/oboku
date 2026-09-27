@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
-import { UserPostgresEntity } from "./entities"
+import { UserPostgresEntity } from "./entities.js"
 
 export const normalizeEmail = (email: string) => email.trim().toLowerCase()
 

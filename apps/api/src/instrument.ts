@@ -1,4 +1,4 @@
-import Sentry from "@sentry/nestjs"
+import * as Sentry from "@sentry/nestjs"
 
 type SentryIntegrations = NonNullable<
   Parameters<typeof Sentry.init>[0]
@@ -7,12 +7,11 @@ type SentryIntegrations = NonNullable<
 const integrations: Exclude<SentryIntegrations, undefined> = []
 
 try {
-  // `@sentry/profiling-node` loads a native binding at require time and only
+  // `@sentry/profiling-node` loads a native binding when imported and only
   // ships prebuilt binaries for a subset of Node ABIs (none for Node 25 /
   // ABI 141 as of v10.55.0). Guard the load so a missing binary disables
   // profiling instead of crashing API startup.
-  const { nodeProfilingIntegration } =
-    require("@sentry/profiling-node") as typeof import("@sentry/profiling-node")
+  const { nodeProfilingIntegration } = await import("@sentry/profiling-node")
 
   integrations.push(nodeProfilingIntegration())
 } catch (error) {
@@ -22,7 +21,7 @@ try {
   )
 }
 
-// Ensure to call this before requiring any other modules!
+// Loaded with `node --import`, before the application's modules.
 Sentry.init({
   dsn: process.env.SENTRY_DSN,
   integrations,

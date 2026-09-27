@@ -4,13 +4,13 @@ import path from "node:path"
 import { ConflictException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { filter, firstValueFrom } from "rxjs"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService.js"
 import {
   DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
   InstanceConfigService,
-} from "./instance-config.service"
-import { EnvironmentVariables } from "src/config/types"
-import { ServerSourcesService } from "./server-sources.service"
+} from "./instance-config.service.js"
+import { EnvironmentVariables } from "../../config/types.js"
+import { ServerSourcesService } from "./server-sources.service.js"
 
 describe("InstanceConfigService server sources", () => {
   const createdDirectories: string[] = []

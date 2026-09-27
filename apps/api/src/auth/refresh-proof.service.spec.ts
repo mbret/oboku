@@ -1,6 +1,6 @@
 import { Logger } from "@nestjs/common"
 import { exportJWK, generateKeyPair, SignJWT, type JWK } from "jose"
-import { RefreshProofService } from "./refresh-proof.service"
+import { RefreshProofService } from "./refresh-proof.service.js"
 
 const signProof = async ({
   privateKey,
@@ -41,13 +41,13 @@ describe("RefreshProofService", () => {
   })
 
   beforeEach(() => {
-    jest.spyOn(Logger.prototype, "warn").mockImplementation(() => undefined)
+    vi.spyOn(Logger.prototype, "warn").mockImplementation(() => undefined)
 
     service = new RefreshProofService()
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it("accepts a fresh proof signed by the bound key", async () => {
@@ -181,12 +181,12 @@ describe("RefreshProofService", () => {
   })
 
   it("remembers a jti until the proof stops verifying, even with a fast client clock", async () => {
-    jest.useFakeTimers()
+    vi.useFakeTimers()
 
     try {
       const clockToleranceSeconds = 5 * 60
       const firstUseSeconds = 1_700_000_000
-      jest.setSystemTime(firstUseSeconds * 1000)
+      vi.setSystemTime(firstUseSeconds * 1000)
 
       const boundPublicKey = JSON.stringify(boundKeys.publicJwk)
       const fastClientIat = firstUseSeconds + clockToleranceSeconds
@@ -200,13 +200,13 @@ describe("RefreshProofService", () => {
         service.isProofValid({ proof, boundPublicKey }),
       ).resolves.toBe(true)
 
-      jest.setSystemTime((firstUseSeconds + 700) * 1000)
+      vi.setSystemTime((firstUseSeconds + 700) * 1000)
 
       await expect(
         service.isProofValid({ proof, boundPublicKey }),
       ).resolves.toBe(false)
     } finally {
-      jest.useRealTimers()
+      vi.useRealTimers()
     }
   })
 

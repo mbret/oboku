@@ -1,6 +1,6 @@
 import axios from "axios"
-import { getBook } from "./getBook"
-import { getBooks } from "./getBooks"
+import { getBook } from "./getBook.js"
+import { getBooks } from "./getBooks.js"
 
 type Result = {
   title?: string

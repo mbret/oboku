@@ -6,7 +6,7 @@ import type {
   SettingsConnectorType,
 } from "@oboku/shared"
 import type createNano from "nano"
-import { getSettings } from "src/lib/couch/dbHelpers"
+import { getSettings } from "../couch/dbHelpers.js"
 
 /**
  * Fetches a single connector by id and type from the user's settings.

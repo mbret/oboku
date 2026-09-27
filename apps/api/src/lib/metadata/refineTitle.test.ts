@@ -5,7 +5,7 @@ import {
   removeZeroDigitFromMaybeVolumeNumber,
   removeZeroDigitFromVolumeNumber,
   renameVolumeNumber,
-} from "./refineTitle"
+} from "./refineTitle.js"
 
 describe("replaceString function", () => {
   test('Replaces "something v02" correctly', () => {

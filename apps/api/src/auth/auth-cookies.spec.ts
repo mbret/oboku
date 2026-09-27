@@ -1,6 +1,6 @@
 import type { Request, Response } from "express"
-import { AppConfigService } from "../config/AppConfigService"
-import { AuthCookiesService } from "./auth-cookies"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { AuthCookiesService } from "./auth-cookies.js"
 
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000
 
@@ -18,7 +18,7 @@ const createRequest = (headers: Record<string, string> = {}, secure = false) =>
   ({ headers, secure }) as unknown as Request
 
 const createResponse = () => {
-  const cookie = jest.fn()
+  const cookie = vi.fn()
 
   return {
     mocks: { cookie },

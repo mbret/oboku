@@ -12,8 +12,8 @@ import {
   type ProviderApiCredentials,
   parseProviderApiCredentials,
 } from "@oboku/shared"
-import { AppConfigService } from "src/config/AppConfigService"
-import { getPlugin } from "./plugins"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { getPlugin } from "./plugins.js"
 
 type MetadataParams<T extends DataSourceType = DataSourceType> = {
   link: LinkWithCredentials<T>

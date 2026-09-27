@@ -10,13 +10,13 @@ import {
   UnauthorizedException,
 } from "@nestjs/common"
 import type { Request, Response } from "express"
-import { AuthService } from "./auth.service"
-import { type AuthUser, Public, WithAuthUser } from "./auth.guard"
+import { AuthService } from "./auth.service.js"
+import { type AuthUser, Public, WithAuthUser } from "./auth.guard.js"
 import {
   type AuthTokens,
   AuthCookiesService,
   REFRESH_TOKEN_COOKIE,
-} from "./auth-cookies"
+} from "./auth-cookies.js"
 import { Type } from "class-transformer"
 import {
   Equals,

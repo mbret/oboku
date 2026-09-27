@@ -1,18 +1,19 @@
+import type { Mock } from "vitest"
 import { JwtService } from "@nestjs/jwt"
 import { Test, TestingModule } from "@nestjs/testing"
-import { AppConfigService } from "src/config/AppConfigService"
-import { SecretsService } from "src/config/SecretsService"
-import { CouchService } from "./couch.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { CouchService } from "./couch.service.js"
 
 describe("CouchService", () => {
   let service: CouchService
   let jwtService: {
-    signAsync: jest.Mock
+    signAsync: Mock
   }
 
   beforeEach(async () => {
     jwtService = {
-      signAsync: jest.fn().mockResolvedValue("signed-jwt"),
+      signAsync: vi.fn().mockResolvedValue("signed-jwt"),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -23,7 +24,7 @@ describe("CouchService", () => {
           useValue: {
             COUCH_DB_URL: "http://localhost:5984",
             config: {
-              get: jest.fn(),
+              get: vi.fn(),
             },
           },
         },
@@ -34,7 +35,7 @@ describe("CouchService", () => {
         {
           provide: SecretsService,
           useValue: {
-            getJwtPrivateKey: jest.fn().mockResolvedValue("private-key"),
+            getJwtPrivateKey: vi.fn().mockResolvedValue("private-key"),
           },
         },
       ],

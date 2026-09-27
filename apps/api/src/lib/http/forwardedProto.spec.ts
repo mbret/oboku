@@ -1,4 +1,4 @@
-import { getForwardedProto } from "./forwardedProto"
+import { getForwardedProto } from "./forwardedProto.js"
 
 describe("getForwardedProto", () => {
   it("returns undefined when the header is absent", () => {

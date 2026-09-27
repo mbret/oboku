@@ -4,11 +4,11 @@ import path from "node:path"
 import bcrypt from "bcrypt"
 import Joi from "joi"
 import { BehaviorSubject } from "rxjs"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService.js"
 import {
   PublicServerSource,
   ServerSourcesService,
-} from "./server-sources.service"
+} from "./server-sources.service.js"
 
 export type ServerSourceConfig = {
   id: string

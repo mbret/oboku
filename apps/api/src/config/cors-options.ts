@@ -1,5 +1,5 @@
 import type { Request } from "express"
-import type { TrustedOriginsService } from "./trusted-origin.service"
+import type { TrustedOriginsService } from "./trusted-origin.service.js"
 
 const ADMIN_PATH_PREFIX = "/admin"
 

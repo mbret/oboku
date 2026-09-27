@@ -30,13 +30,13 @@ import type {
   UpdateServerSyncResponse,
 } from "@oboku/shared"
 import { createHash, timingSafeEqual } from "node:crypto"
-import { AuthService } from "src/auth/auth.service"
-import { AdminAuthGuard, AdminPublic } from "./admin.guard"
-import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "./instance-config/instance-config.service"
-import { SecretsService } from "src/config/SecretsService"
-import { MigrationService } from "src/migrations/migration.service"
-import { AdminCoversService } from "./admin-covers.service"
+import { AuthService } from "../auth/auth.service.js"
+import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { InstanceConfigService } from "./instance-config/instance-config.service.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { MigrationService } from "../migrations/migration.service.js"
+import { AdminCoversService } from "./admin-covers.service.js"
 import {
   ArrayMaxSize,
   IsArray,
@@ -51,10 +51,10 @@ import {
   MinLength,
   ValidateIf,
 } from "class-validator"
-import { NotificationsService } from "src/notifications/notifications.service"
-import { AdminEmailService } from "./admin-email.service"
-import { AdminSecurityService } from "./admin-security.service"
-import { UserPostgresService } from "src/features/postgres/user-postgres.service"
+import { NotificationsService } from "../notifications/notifications.service.js"
+import { AdminEmailService } from "./admin-email.service.js"
+import { AdminSecurityService } from "./admin-security.service.js"
+import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const hashA = createHash("sha256").update(a).digest()

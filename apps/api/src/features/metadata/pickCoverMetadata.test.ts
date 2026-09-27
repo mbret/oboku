@@ -1,6 +1,6 @@
 import type { BookMetadata } from "@oboku/shared"
 import { describe, expect, it } from "vitest"
-import { pickCoverMetadata } from "./pickCoverMetadata"
+import { pickCoverMetadata } from "./pickCoverMetadata.js"
 
 const firstPage: BookMetadata = {
   type: "file",

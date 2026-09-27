@@ -1,10 +1,10 @@
 import type { Request, Response } from "express"
-import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/trusted-origin.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { TrustedOriginsService } from "../config/trusted-origin.service.js"
 import {
   CouchProxyService,
   moveAuthCookieToAuthorizationHeader,
-} from "./couch-proxy.service"
+} from "./couch-proxy.service.js"
 
 // Test doubles carrying only the members the proxy touches.
 const createRequest = ({
@@ -33,8 +33,8 @@ const createResponse = () => {
       setHeader: (name: string, value: unknown) => {
         headers[name] = value
       },
-      writeHead: jest.fn(),
-      end: jest.fn(),
+      writeHead: vi.fn(),
+      end: vi.fn(),
       // Response test double, see above.
     } as unknown as Response,
   }

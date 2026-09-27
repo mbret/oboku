@@ -2,11 +2,11 @@ import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
-import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
-import { CoversService } from "src/covers/covers.service"
+import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
+import { CouchService } from "../couch/couch.service.js"
+import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
+import { tolerateMissingUserDb } from "../lib/couch/tolerateMissingUserDb.js"
+import { CoversService } from "../covers/covers.service.js"
 import {
   CopyObjectCommand,
   DeleteObjectCommand,

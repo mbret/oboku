@@ -3,9 +3,9 @@ import {
   type CollectionCandidate,
   type DataSourcePlugin,
   type SynchronizeAbleDataSource,
-} from "src/plugins/types"
+} from "../../../plugins/types.js"
 import type { BookDocType } from "@oboku/shared"
-import type { Context } from "../types"
+import type { Context } from "../types.js"
 
 const logger = new Logger("synchronizeBookWithParentCollections")
 

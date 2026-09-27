@@ -1,10 +1,7 @@
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { find } from "../../lib/couch/dbHelpers.js"
 import axios from "axios"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
 
 const URI_TYPE = "URI"
 

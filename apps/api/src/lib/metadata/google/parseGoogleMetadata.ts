@@ -1,6 +1,6 @@
 import type { GoogleBookApiMetadata } from "@oboku/shared"
-import { extractDateComponents } from "../extractDateComponents"
-import type { GoogleBooksApiVolumesResponseData } from "src/lib/google/googleBooksApi"
+import { extractDateComponents } from "../extractDateComponents.js"
+import type { GoogleBooksApiVolumesResponseData } from "../../google/googleBooksApi.js"
 
 /**
  * Google Books cover URLs look like:

@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { difference } from "@oboku/shared"
-import type { Context } from "../types"
-import { atomicUpdate, find, findOne } from "src/lib/couch/dbHelpers"
+import type { Context } from "../types.js"
+import { atomicUpdate, find, findOne } from "../../couch/dbHelpers.js"
 
 const logger = new Logger("sync/repairCollectionBooks")
 

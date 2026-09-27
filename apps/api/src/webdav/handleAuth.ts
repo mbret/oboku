@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import { createHash, timingSafeEqual } from "node:crypto"
 import bcrypt from "bcrypt"
-import type { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
+import type { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 
 function timingSafeStringEqual(a: string, b: string): boolean {
   const hashA = createHash("sha256").update(a).digest()

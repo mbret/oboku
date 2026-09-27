@@ -1,6 +1,6 @@
 import type { CollectionMetadata } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
-import { getSeries } from "./getSeries"
+import { getSeries } from "./getSeries.js"
 
 export const getSeriesMetadata = async (metadata: {
   title: string
