@@ -37,6 +37,7 @@ const toSavedReadingPosition = ({
 type PaginationProgress = {
   isSettled: boolean
   percentageEstimateOfBook: number
+  end: { spineItemIndex: number | undefined }
 }
 
 type BookPatch = (old: BookDocType) => BookDocType
@@ -176,6 +177,15 @@ export const useSyncBookProgress = (
 
       const endOfBookPatch$ = reader.pagination.state$.pipe(
         filter(isEndOfBookVisible),
+        filter(function didLastPageLoadSuccessfully({ end }) {
+          const lastPageSpineItem = reader.spineItemsManager.get(
+            end.spineItemIndex,
+          )
+          const didLastPageFailToLoad =
+            lastPageSpineItem?.value.isError === true
+
+          return !didLastPageFailToLoad
+        }),
         map(function toFinishedPatch() {
           return markBookAsFinished
         }),

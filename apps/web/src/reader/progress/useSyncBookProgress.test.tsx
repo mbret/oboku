@@ -9,11 +9,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 type FakePaginationResult = {
   isSettled: boolean
   percentageEstimateOfBook: number
+  end: { spineItemIndex: number }
 }
+
+type FakeSpineItem = { value: { isError: boolean } }
 
 type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
   pagination: { state$: Subject<FakePaginationResult> }
+  spineItemsManager: { get: (spineItemIndex: number) => FakeSpineItem }
 }
 
 const mocks = vi.hoisted(function createSyncBookProgressMocks() {
@@ -55,41 +59,44 @@ import { useSyncBookProgress } from "./useSyncBookProgress"
 const LAST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/8!/4/2/1:0)",
   percentageEstimateOfBook: 0.9375,
-  state: "final",
+  status: "success",
 }
 const PAGE_BEFORE_LAST: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/40/1:0)",
   percentageEstimateOfBook: 0.875,
-  state: "final",
+  status: "success",
 }
 
 const FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/2!/4/2/1:0)",
   percentageEstimateOfBook: 0,
-  state: "final",
+  status: "success",
 }
 
 const LAST_CHAPTER_START_STANDING_IN: ReadingPosition = {
   cfi: "epubcfi(/6/8!)",
   percentageEstimateOfBook: 0.9375,
-  state: "standIn",
+  status: "pending",
 }
 
 const SPREAD_FIRST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/4!/4/2/1:0)",
   percentageEstimateOfBook: 0.5,
-  state: "final",
+  status: "success",
 }
 const SPREAD_SECOND_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/6!/4/2/1:0)",
   percentageEstimateOfBook: 0.5625,
-  state: "final",
+  status: "success",
 }
 const SPREAD_ESTIMATE = 0.625
+
+const LAST_SPINE_ITEM_INDEX = 3
 
 const END_OF_BOOK_VISIBLE: FakePaginationResult = {
   isSettled: true,
   percentageEstimateOfBook: 1,
+  end: { spineItemIndex: LAST_SPINE_ITEM_INDEX },
 }
 
 const book: BookDocType = {
@@ -112,10 +119,21 @@ const book: BookDocType = {
   tags: [],
 }
 
-function createFakeReader() {
+function createFakeReader({
+  failedSpineItemIndexes = [],
+}: {
+  failedSpineItemIndexes?: number[]
+} = {}) {
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
     pagination: { state$: new Subject() },
+    spineItemsManager: {
+      get: function getFakeSpineItem(spineItemIndex) {
+        return {
+          value: { isError: failedSpineItemIndexes.includes(spineItemIndex) },
+        }
+      },
+    },
   }
 
   mocks.state.reader = reader
@@ -150,6 +168,7 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: 0.95,
+      end: { spineItemIndex: LAST_SPINE_ITEM_INDEX },
     })
     await vi.advanceTimersByTimeAsync(1000)
 
@@ -182,13 +201,13 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("writes nothing more when the reading position only becomes final", async () => {
+  it("writes nothing more when the reading position only changes status", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
     reader.navigation.readingPosition$.next({
       ...LAST_PAGE,
-      state: "targetPlace",
+      status: "pending",
     })
     await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(LAST_PAGE)
@@ -205,6 +224,7 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: 0.9375,
+      end: { spineItemIndex: 2 },
     })
     await vi.advanceTimersByTimeAsync(1000)
 
@@ -224,12 +244,14 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: 0.9375,
+      end: { spineItemIndex: 2 },
     })
     await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(FIRST_PAGE)
     reader.pagination.state$.next({
       isSettled: false,
       percentageEstimateOfBook: 0.9375,
+      end: { spineItemIndex: 2 },
     })
     unmount()
 
@@ -248,16 +270,19 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: SPREAD_ESTIMATE,
+      end: { spineItemIndex: 2 },
     })
     await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(SPREAD_SECOND_PAGE)
     reader.pagination.state$.next({
       isSettled: false,
       percentageEstimateOfBook: SPREAD_ESTIMATE,
+      end: { spineItemIndex: 2 },
     })
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: SPREAD_ESTIMATE,
+      end: { spineItemIndex: 2 },
     })
     await vi.advanceTimersByTimeAsync(1000)
 
@@ -276,6 +301,7 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: false,
       percentageEstimateOfBook: 0.5,
+      end: { spineItemIndex: 0 },
     })
     await vi.advanceTimersByTimeAsync(1000)
 
@@ -323,6 +349,40 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentState: ReadingStateState.Reading,
+    })
+  })
+
+  it("does not mark the book finished when its last page failed to load", async () => {
+    const reader = createFakeReader({
+      failedSpineItemIndexes: [LAST_SPINE_ITEM_INDEX],
+    })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next({
+      ...LAST_CHAPTER_START_STANDING_IN,
+      status: "error",
+    })
+    reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateCurrentState: ReadingStateState.Reading,
+    })
+  })
+
+  it("marks the book finished when its last page loaded, whatever the reading position's status", async () => {
+    const reader = createFakeReader({ failedSpineItemIndexes: [2] })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next({
+      ...PAGE_BEFORE_LAST,
+      status: "error",
+    })
+    reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentState: ReadingStateState.Finished,
     })
   })
 
@@ -379,6 +439,7 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next({
       isSettled: true,
       percentageEstimateOfBook: 0.97,
+      end: { spineItemIndex: LAST_SPINE_ITEM_INDEX },
     })
     unmount()
 
