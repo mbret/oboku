@@ -2,8 +2,8 @@ packages:
   - packages/*
   - apps/*
 catalog:
-  react: 19.2.8
-  react-dom: 19.2.8
+  react: 19.3.0
+  react-dom: 19.3.0
 # apps/web/tsconfig.json redirects @internationalized/* to
 # ../../node_modules/@internationalized/*/dist/types — keep that scope
 # physically hoisted at the root like npm used to.
@@ -22,7 +22,7 @@ allowBuilds:
   sharp: true
   unrs-resolver: true
 patchedDependencies:
-  react-dom@19.2.8: patches/react-dom@19.2.8.patch
+  react-dom@19.3.0: patches/react-dom@19.3.0.patch
 # gesturx has the same author as prose-reader. Its entries name an exact
 # version, the one @prose-reader/enhancer-gestures requires, and each does
 # nothing once that version is a day old.
