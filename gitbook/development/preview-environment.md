@@ -11,8 +11,8 @@ The preview stack runs those images in Cosmos:
 | URL                              | Container             | Port |
 | -------------------------------- | --------------------- | ---- |
 | `https://preview.oboku.me`       | `oboku-preview-web`   | 80   |
-| `https://preview-api.oboku.me`   | `oboku-preview-api`   | 3000 |
-| `https://preview-admin.oboku.me` | `oboku-preview-admin` | 80   |
+| `https://api.preview.oboku.me`   | `oboku-preview-api`   | 3000 |
+| `https://admin.preview.oboku.me` | `oboku-preview-admin` | 80   |
 
 With auto-update on, Cosmos checks for new `preview` images every 6 hours. Update the containers by hand to pick up a push sooner.
 
@@ -31,11 +31,11 @@ The preview stack shares no data, credentials or containers with production. The
 
 ## Setting up the stack in Cosmos
 
-1. Point `preview.oboku.me`, `preview-api.oboku.me` and `preview-admin.oboku.me` at the Cosmos server before creating their URLs, so Cosmos can get their certificates. The names stay one level deep so a `*.oboku.me` wildcard certificate covers them.
+1. Point `preview.oboku.me`, `api.preview.oboku.me` and `admin.preview.oboku.me` at the Cosmos server before creating their URLs, so Cosmos can get their certificates.
 2. In ServApps, use **Import Docker Compose** with the template below. Replace the `CHANGE_ME_*` values with new passwords. The Postgres one appears twice and both must match.
 3. Create three new URLs from the table above. Give the API URL the same settings as production's API URL (Smart Shield, rate limits), since replication sends many requests.
 4. Turn on auto-update for the four `oboku-preview-*` containers running oboku images.
-5. Check the API log on start. It should print `Browser origins — app: any port on preview.oboku.me; admin: https://preview-admin.oboku.me`. Any other hostname there means `APP_PUBLIC_URL` or `ADMIN_PUBLIC_URL` is wrong.
+5. Check the API log on start. It should print `Browser origins — app: any port on preview.oboku.me; admin: https://admin.preview.oboku.me`. Any other hostname there means `APP_PUBLIC_URL` or `ADMIN_PUBLIC_URL` is wrong.
 6. Create accounts from the preview admin panel, since the template configures no email provider (see [Account Sign in / Sign up](../self-hosting/account-sign-in-sign-up.md)). Adding the `EMAIL_*` variables to the API works too: their links point at `APP_PUBLIC_URL`.
 
 Google, Dropbox and OneDrive stay off, because the template sets none of their client IDs. Register the preview hostnames with those providers before turning them on.
@@ -80,7 +80,7 @@ services:
     environment:
       NODE_ENV: production
       APP_PUBLIC_URL: https://preview.oboku.me
-      ADMIN_PUBLIC_URL: https://preview-admin.oboku.me
+      ADMIN_PUBLIC_URL: https://admin.preview.oboku.me
       COUCH_DB_URL: http://oboku-preview-couchdb:5984
       POSTGRES_HOST: oboku-preview-postgres
       POSTGRES_DB: oboku
@@ -103,7 +103,7 @@ services:
     container_name: oboku-preview-web
     restart: always
     environment:
-      VITE_API_URL: https://preview-api.oboku.me
+      VITE_API_URL: https://api.preview.oboku.me
     networks:
       - oboku-preview
 
@@ -112,7 +112,7 @@ services:
     container_name: oboku-preview-admin
     restart: always
     environment:
-      VITE_API_URL: https://preview-api.oboku.me
+      VITE_API_URL: https://api.preview.oboku.me
     networks:
       - oboku-preview
 
