@@ -27,7 +27,7 @@
     "@nestjs/jwt": "^11.0.2",
     "@nestjs/platform-express": "^11.2.6",
     "@nestjs/schedule": "^6.1.3",
-    "@nestjs/typeorm": "^11.0.3",
+    "@nestjs/typeorm": "^12.0.1",
     "@oboku/archive-metadata": "workspace:*",
     "@oboku/shared": "workspace:*",
     "@oboku/synology": "workspace:*",
