@@ -89,6 +89,28 @@ export type UseRefreshMetadataHook<
   UseRefreshMetadataVariables<T>
 >
 
+export type UseDownloadCredentialsVariables<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  linkData?: LinkDataForProvider<T> | null
+}
+
+/**
+ * Resolves the provider credentials the API needs to fetch a link on the
+ * user's behalf. Connector passwords are end-to-end encrypted with a
+ * client-held key, so the proxy cannot resolve them server-side and every
+ * proxied download carries them in its request.
+ */
+export type UseDownloadCredentialsHook<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (options?: Pick<UseMutationOptions, "meta">) => UseMutationResult<
+  {
+    providerCredentials: ProviderApiCredentials<T>
+  },
+  Error | null,
+  UseDownloadCredentialsVariables<T>
+>
+
 export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
@@ -147,6 +169,23 @@ type UpsertFileCapability<
       canUpsertFile?: false
       upsertPrunesVersionHistory?: undefined
       UpsertFileComponent?: undefined
+    }
+
+/**
+ * Whether the provider can be fetched by the API on the browser's behalf.
+ * Declared only by providers reached over plain HTTP(S) whose servers may
+ * serve no CORS headers; the vendor SDK providers download directly.
+ */
+type ProxyDownloadCapability<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> =
+  | {
+      canProxyDownload: true
+      useDownloadCredentials: UseDownloadCredentialsHook<T>
+    }
+  | {
+      canProxyDownload?: false
+      useDownloadCredentials?: undefined
     }
 
 export type UseSyncSourceInfo<
@@ -252,4 +291,4 @@ type ObokuPluginBase<
 
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = ObokuPluginBase<T> & UpsertFileCapability<T>
+> = ObokuPluginBase<T> & UpsertFileCapability<T> & ProxyDownloadCapability<T>

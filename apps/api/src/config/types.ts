@@ -31,4 +31,5 @@ export interface EnvironmentVariables {
   EMAIL_FROM?: string
   EMAIL_FROM_NAME?: string
   EMAIL_SMTP_MAX_SEND_RATE?: number
+  DOWNLOAD_ALLOW_PRIVATE_NETWORK?: string
 }

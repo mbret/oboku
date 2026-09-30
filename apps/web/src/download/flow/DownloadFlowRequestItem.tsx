@@ -2,6 +2,8 @@ import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { firstValueFrom } from "rxjs"
 import { pluginsByType } from "../../plugins/configure"
+import { ProxyDownloadBook } from "../../plugins/common/ProxyDownloadBook"
+import { useConfig } from "../../config/useConfig"
 import type { DownloadBookResult } from "../../plugins/types"
 import { CancelError, ERROR_NO_LINK_MESSAGE } from "../../errors/errors.shared"
 import { latestDatabase$ } from "../../rxdb/RxDbProvider"
@@ -35,6 +37,8 @@ export const DownloadFlowRequestItem = memo(
     onSettled: () => void
     request: DownloadFlowRequest
   }) => {
+    const { data: config } = useConfig()
+    const isDownloadProxyEnabled = !!config?.FEATURE_DOWNLOAD_PROXY_ENABLED
     const [link, setLink] = useState<DownloadLink | null>(null)
     const [isPreparing, setIsPreparing] = useState(!request.file)
     const { abortController, bookId, file, links, reject, resolve } = request
@@ -204,6 +208,23 @@ export const DownloadFlowRequestItem = memo(
       onError,
       onResolve,
       signal: abortController.signal,
+    }
+
+    const plugin = pluginsByType[link.type]
+
+    /**
+     * Instances that enable the proxy route every provider that declares it
+     * through the API, because those providers are reached over plain HTTP(S)
+     * and their servers may serve no CORS headers.
+     */
+    if (isDownloadProxyEnabled && plugin.canProxyDownload) {
+      return (
+        <ProxyDownloadBook
+          {...downloadProps}
+          link={link}
+          useDownloadCredentials={plugin.useDownloadCredentials}
+        />
+      )
     }
 
     switch (link.type) {

@@ -29,3 +29,7 @@ export type SyncDataSourceRequest = ProviderRequest & {
 }
 
 export type SyncDataSourceResponse = Record<string, never>
+
+export type DownloadLinkRequest = ProviderRequest & {
+  linkId: string
+}

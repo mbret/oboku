@@ -25,6 +25,7 @@ import { WebDavModule } from "./webdav/webdav.module"
 import { NotificationsModule } from "./notifications/notifications.module"
 import { BooksModule } from "./books/books.module"
 import { PluginsModule } from "./plugins/plugins.module"
+import { DownloadModule } from "./download/download.module"
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { PluginsModule } from "./plugins/plugins.module"
     WebDavModule,
     BooksModule,
     PluginsModule,
+    DownloadModule,
   ],
   providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
   controllers: [AppController, CollectionsController, WebController],

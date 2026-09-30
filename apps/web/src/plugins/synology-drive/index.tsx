@@ -5,6 +5,7 @@ import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useDownloadCredentials } from "./useDownloadCredentials"
 import { DownloadBook } from "./DownloadBook"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
@@ -30,6 +31,8 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   name: "Synology Drive",
   canRemoveResource: false,
   canSynchronize: true,
+  canProxyDownload: true,
+  useDownloadCredentials,
   Icon: SynologyDriveIcon,
   InfoScreen,
   UploadBookComponent: UploadBook,

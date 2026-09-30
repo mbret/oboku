@@ -6,6 +6,7 @@ import { ConfigService } from "@nestjs/config"
 import { filter, firstValueFrom } from "rxjs"
 import { AppConfigService } from "src/config/AppConfigService"
 import {
+  DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES,
   DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
   InstanceConfigService,
 } from "./instance-config.service"
@@ -104,6 +105,8 @@ describe("InstanceConfigService server sources", () => {
       },
       showDisabledPlugins: true,
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+      downloadProxyEnabled: false,
+      downloadProxyMaxSizeBytes: DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES,
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -266,6 +269,8 @@ describe("InstanceConfigService server sources", () => {
     expect(instanceConfigService.getConfig().value).toMatchObject({
       showDisabledPlugins: true,
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+      downloadProxyEnabled: false,
+      downloadProxyMaxSizeBytes: DEFAULT_DOWNLOAD_PROXY_MAX_SIZE_BYTES,
     })
   })
 })

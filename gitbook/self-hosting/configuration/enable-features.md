@@ -56,3 +56,27 @@ You need to provide:
 * `AWS_ACCESS_KEY_ID`: Create an amazon access key&#x20;
 * `AWS_SECRET_ACCESS_KEY`: Then pass the secret key
 * `COVERS_STORAGE_STRATEGY`: Set this value to `s3`
+
+## Enable the download proxy
+
+{% hint style="success" %}
+Lets the app download books from providers whose server sends no CORS headers
+{% endhint %}
+
+oboku normally downloads a book straight from the provider to your browser. Browsers only allow that when the provider's server opts in with CORS headers, which the vendor APIs (Google Drive, Dropbox, OneDrive) do but a plain HTTP server often does not. Without CORS the library still syncs — that part runs on the API — but opening the book fails.
+
+With the proxy enabled, the API fetches the file and streams it to the app instead, so no CORS header is needed. It applies to the providers reached over plain HTTP(S): URI, WebDAV and Synology Drive.
+
+Turn it on from the admin panel, under Downloads. Book files then travel through your instance, so it pays that bandwidth — which is why it is off by default. The same section caps what a single download may stream.
+
+{% hint style="warning" %}
+The proxy makes your instance fetch a provider the user configured. Connections whose address resolves outside public address space are refused, so a provider cannot be pointed at your own network.
+
+If your providers live on a LAN or on localhost, allow them explicitly:
+
+```
+DOWNLOAD_ALLOW_PRIVATE_NETWORK=true
+```
+
+This one is an environment variable rather than an admin setting on purpose: it widens what your instance can reach, so it should be a deploy-time decision and not something flippable from a web session. Only set it on an instance whose users you trust, since it also lets them reach anything else your instance can reach.
+{% endhint %}

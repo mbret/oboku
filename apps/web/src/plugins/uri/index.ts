@@ -8,6 +8,7 @@ import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useDownloadCredentials } from "./useDownloadCredentials"
 
 const useSynchronize: ObokuPlugin<"URI">["useSynchronize"] = () => {
   return useMutation({
@@ -28,6 +29,8 @@ const plugin: ObokuPlugin<"URI"> = {
   name: "uri",
   canRemoveResource: false,
   canSynchronize: false,
+  canProxyDownload: true,
+  useDownloadCredentials,
   Icon: HttpRounded,
   UploadBookComponent,
   DownloadBookComponent: DownloadBook,
