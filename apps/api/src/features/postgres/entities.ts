@@ -246,3 +246,57 @@ export class RefreshTokenPostgresEntity {
   @Column({ type: "text", nullable: true })
   successor_token!: string | null
 }
+
+/**
+ * A user's KOReader sync login. Devices send the MD5 of the password as
+ * `x-auth-key` on every request; only a SHA-256 of that key is kept.
+ */
+@Entity({ name: "koreader_sync_credentials" })
+@Index(["user_id"], { unique: true })
+export class KoreaderSyncCredentialPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  key_hash!: string
+
+  /** When the current password was generated. */
+  @Column({ type: "timestamp with time zone" })
+  created_at!: Date
+}
+
+/**
+ * The last position a KOReader sync client pushed for a document, one row per
+ * user and document, as koreader-sync-server keeps it. `progress` is opaque:
+ * an xpointer for a reflowable book, a page number for a fixed layout one.
+ */
+@Entity({ name: "koreader_sync_progress" })
+@Index(["user_id", "document"], { unique: true })
+export class KoreaderSyncProgressPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  document!: string
+
+  @Column({ type: "text" })
+  progress!: string
+
+  @Column({ type: "double precision" })
+  percentage!: number
+
+  @Column({ type: "text" })
+  device!: string
+
+  @Column({ type: "text", nullable: true })
+  device_id!: string | null
+
+  @Column({ type: "timestamp with time zone" })
+  updated_at!: Date
+}

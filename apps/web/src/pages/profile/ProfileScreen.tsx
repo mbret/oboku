@@ -10,6 +10,7 @@ import {
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
+  SyncRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
@@ -166,6 +167,19 @@ export const ProfileScreen = () => {
             <KeyRounded />
           </ListItemIcon>
           <ListItemText primary="Secrets" />
+        </ListItemButton>
+        <ListItemButton
+          onClick={() => {
+            navigate(ROUTES.KOREADER_SYNC)
+          }}
+        >
+          <ListItemIcon>
+            <SyncRounded />
+          </ListItemIcon>
+          <ListItemText
+            primary="KOReader sync"
+            secondary="Sync your reading position with KOReader, Readest, Crosspoint…"
+          />
         </ListItemButton>
         <ListItemButton
           onClick={() => {

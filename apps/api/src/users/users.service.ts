@@ -12,6 +12,7 @@ import { CoversService } from "../covers/covers.service"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
+import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service"
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,7 @@ export class UsersService {
     private notificationPostgresService: NotificationPostgresService,
     private syncReportPostgresService: SyncReportPostgresService,
     private refreshTokensService: RefreshTokensService,
+    private koreaderSyncPostgresService: KoreaderSyncPostgresService,
   ) {}
 
   async findUserByEmail(email: string) {
@@ -47,8 +49,8 @@ export class UsersService {
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
    * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
-   * notifications, sync reports, user row). Cover object deletion is
-   * fire-and-forget afterward.
+   * notifications, sync reports, KOReader sync data, user row). Cover object
+   * deletion is fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
    * Postgres are both cleared for that account, so re-registration with the
@@ -92,6 +94,7 @@ export class UsersService {
     await this.refreshTokensService.deleteByUserId(userId)
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
     await this.syncReportPostgresService.deleteByUserName(email)
+    await this.koreaderSyncPostgresService.deleteByUserId(userId)
     await this.userPostgresService.deleteById(userId)
 
     if (coverKeys.length > 0) {
