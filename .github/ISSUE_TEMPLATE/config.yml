@@ -1,8 +1,5 @@
 blank_issues_enabled: true
 contact_links:
-  - name: Report a security vulnerability
-    url: https://github.com/mbret/oboku/security/advisories/new
-    about: Report it privately, never in a public issue.
   - name: Ask on Discord
     url: https://discord.gg/eB6MrMmmPN
     about: Questions about using, self-hosting or developing oboku.
