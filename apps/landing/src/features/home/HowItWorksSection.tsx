@@ -66,7 +66,7 @@ const StepNumberFeatureIconBox = styled(FeatureIconBox)(
 const StepDescriptionTypography = styled(Typography)(
   function styleStepDescriptionTypography({ theme }) {
     return {
-      color: theme.palette.text.secondary,
+      color: theme.vars.palette.text.secondary,
     }
   },
 )
