@@ -22,7 +22,7 @@ import {
 
 /**
  * The KOReader sync protocol as koreader-sync-server serves it, so KOReader,
- * Readest, Crosspoint and the other clients can use oboku as their server.
+ * Readest, CrossPoint and the other clients can use oboku as their server.
  * Clients sign in with the account email and a password generated in the app,
  * never with a session: the app's own auth does not apply here.
  */
