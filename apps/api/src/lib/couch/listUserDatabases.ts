@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common"
 import type createNano from "nano"
 import { emailToNameHex, emailToUserDbName } from "../../couch/couch.service.js"
 import { UserCouchEntity } from "../couchDbEntities.js"
+import { findAll } from "./dbHelpers.js"
 
 const logger = new Logger("listUserDatabases")
 
@@ -9,10 +10,7 @@ export const listUserDatabases = async (db: createNano.ServerScope) => {
   logger.log("Listing user databases (querying _users + db list)...")
 
   const usersDb = db.use<UserCouchEntity>("_users")
-  const result = await usersDb.find({
-    selector: { type: "user" },
-    limit: 99999,
-  })
+  const users = await findAll(usersDb, { selector: { type: "user" } })
 
   // Cross-reference _users with the actual database list so orphan _users
   // docs (whose per-user `userdb-*` database has been deleted or never
@@ -21,7 +19,7 @@ export const listUserDatabases = async (db: createNano.ServerScope) => {
   // care about the per-user ones.
   const existingDbs = new Set(await db.db.list())
 
-  const entries = result.docs.map((user) => ({
+  const entries = users.map((user) => ({
     email: user.name,
     userNameHex: emailToNameHex(user.name),
     dbName: emailToUserDbName(user.name),

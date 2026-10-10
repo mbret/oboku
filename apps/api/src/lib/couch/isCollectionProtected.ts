@@ -1,6 +1,5 @@
 import type createNano from "nano"
-import { find } from "./dbHelpers.js"
-import { findTags } from "./findTags.js"
+import { find, findOne } from "./dbHelpers.js"
 
 /**
  * A collection is considered protected when at least one of its books carries
@@ -13,7 +12,7 @@ export const isCollectionProtected = async (
 ) => {
   if (!collection.books.length) return false
 
-  const protectedTags = await findTags(db, {
+  const protectedTags = await find(db, "tag", {
     selector: { isProtected: true },
     fields: ["_id"],
   })
@@ -22,14 +21,17 @@ export const isCollectionProtected = async (
 
   const protectedTagIds = protectedTags.map(({ _id }) => _id)
 
-  const docs = await find(db, "book", {
-    selector: {
-      _id: { $in: collection.books },
-      tags: { $in: protectedTagIds },
+  const protectedBook = await findOne(
+    "book",
+    {
+      selector: {
+        _id: { $in: collection.books },
+        tags: { $in: protectedTagIds },
+      },
+      fields: ["_id"],
     },
-    fields: ["_id"],
-    limit: 1,
-  })
+    { db },
+  )
 
-  return docs.length > 0
+  return protectedBook !== null
 }

@@ -75,8 +75,8 @@ export class UsersService {
       const userDb = adminNano.use(emailToUserDbName(email))
 
       const [books, collections] = await Promise.all([
-        find(userDb, "book", { fields: ["_id"], limit: 999999 }),
-        find(userDb, "obokucollection", { fields: ["_id"], limit: 999999 }),
+        find(userDb, "book", { fields: ["_id"] }),
+        find(userDb, "obokucollection", { fields: ["_id"] }),
       ])
 
       coverKeys = [
