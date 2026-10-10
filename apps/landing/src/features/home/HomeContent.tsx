@@ -266,18 +266,23 @@ export const HomeContent = () => {
                 >
                   Examples:
                 </Typography>
-                {syncProviders.map(({ label, docsPath }) => (
-                  <Chip
-                    key={label}
-                    label={label}
-                    size="small"
-                    variant="outlined"
-                    component="a"
-                    href={`${links.documentation}/${docsPath}`}
-                    target="_blank"
-                    clickable
-                  />
-                ))}
+                {syncProviders.map(function renderSyncProviderChip({
+                  label,
+                  docsPath,
+                }) {
+                  return (
+                    <Chip
+                      key={label}
+                      label={label}
+                      size="small"
+                      variant="outlined"
+                      component="a"
+                      href={`${links.documentation}/${docsPath}`}
+                      target="_blank"
+                      clickable
+                    />
+                  )
+                })}
               </Box>
             </Stack>
             <Stack
@@ -312,14 +317,18 @@ export const HomeContent = () => {
                 >
                   Examples:
                 </Typography>
-                {supportedExtensions.map((extension) => (
-                  <Chip
-                    key={extension}
-                    label={extension}
-                    size="small"
-                    variant="outlined"
-                  />
-                ))}
+                {supportedExtensions.map(
+                  function renderSupportedExtensionChip(extension) {
+                    return (
+                      <Chip
+                        key={extension}
+                        label={extension}
+                        size="small"
+                        variant="outlined"
+                      />
+                    )
+                  },
+                )}
               </Box>
               <Typography
                 variant="body2"

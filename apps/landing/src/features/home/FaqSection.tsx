@@ -49,7 +49,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   },
 ]
 
-export const FaqSection = () => {
+export function FaqSection() {
   return (
     <Container>
       <Stack
@@ -68,25 +68,27 @@ export const FaqSection = () => {
             gap: 4,
           }}
         >
-          {questions.map(({ question, answer }) => (
-            <Stack
-              key={question}
-              sx={{
-                gap: 1,
-              }}
-            >
-              <Typography variant="h6" component="h3">
-                {question}
-              </Typography>
-              <Typography
+          {questions.map(function renderQuestion({ question, answer }) {
+            return (
+              <Stack
+                key={question}
                 sx={{
-                  color: "text.secondary",
+                  gap: 1,
                 }}
               >
-                {answer}
-              </Typography>
-            </Stack>
-          ))}
+                <Typography variant="h6" component="h3">
+                  {question}
+                </Typography>
+                <Typography
+                  sx={{
+                    color: "text.secondary",
+                  }}
+                >
+                  {answer}
+                </Typography>
+              </Stack>
+            )
+          })}
         </Box>
       </Stack>
     </Container>
