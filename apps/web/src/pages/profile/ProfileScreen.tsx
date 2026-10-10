@@ -10,6 +10,7 @@ import {
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
+  SyncRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
@@ -28,7 +29,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes } from "@oboku/shared"
+import { formatBytes, type GetKoreaderSyncServerResponse } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -56,6 +57,20 @@ import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnread
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
+
+const KOREADER_SYNC_SERVER_PURPOSE =
+  "Let KOReader, Readest, Crosspoint… sync their reading position through oboku"
+
+const describeKoreaderSyncServer = (
+  koreaderSyncServer?: GetKoreaderSyncServerResponse,
+) => {
+  if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
+
+  return koreaderSyncServer.passwordCreatedAt
+    ? "On"
+    : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
+}
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -65,6 +80,7 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
+  const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -175,6 +191,21 @@ export const ProfileScreen = () => {
               <BarChartRounded />
             </ListItemIcon>
             <ListItemText primary="Statistics" />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Other apps">
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.KOREADER_SYNC_SERVER)
+            }}
+          >
+            <ListItemIcon>
+              <SyncRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="KOReader sync server"
+              secondary={describeKoreaderSyncServer(koreaderSyncServer)}
+            />
           </ListItemButton>
         </PageSection>
         <PageSection title="Device">

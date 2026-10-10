@@ -32,6 +32,7 @@
 * [Privacy & Parental (Secure) control](guides/privacy-and-parental-secure-control.md)
 * [Directives](guides/directives.md)
 * [Secrets](guides/secrets.md)
+* [KOReader Sync Server](guides/koreader-sync-server.md)
 * [Connectors](guides/connectors.md)
 * [Collections](guides/collections.md)
 * [Tags](guides/tags.md)

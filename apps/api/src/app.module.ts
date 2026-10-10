@@ -25,6 +25,7 @@ import { WebDavModule } from "./webdav/webdav.module.js"
 import { NotificationsModule } from "./notifications/notifications.module.js"
 import { BooksModule } from "./books/books.module.js"
 import { PluginsModule } from "./plugins/plugins.module.js"
+import { KoreaderSyncServerModule } from "./koreader-sync-server/koreader-sync-server.module.js"
 
 @Module({
   imports: [
@@ -106,6 +107,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
     WebDavModule,
     BooksModule,
     PluginsModule,
+    KoreaderSyncServerModule,
   ],
   providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
   controllers: [AppController, CollectionsController, WebController],
