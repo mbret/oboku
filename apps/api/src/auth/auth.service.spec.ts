@@ -1,21 +1,22 @@
+import type { Mock } from "vitest"
 import { BadRequestException } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { Test, TestingModule } from "@nestjs/testing"
 import { ObokuErrorCode } from "@oboku/shared"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
-import { AppConfigService } from "src/config/AppConfigService"
-import { SecretsService } from "src/config/SecretsService"
-import { CouchService, emailToUserDbName } from "src/couch/couch.service"
-import { EmailService } from "src/email/EmailService"
-import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
-import { UsersService } from "../users/users.service"
-import { AuthService } from "./auth.service"
-import { RefreshProofService } from "./refresh-proof.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { CouchService, emailToUserDbName } from "../couch/couch.service.js"
+import { EmailService } from "../email/EmailService.js"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import { UsersService } from "../users/users.service.js"
+import { AuthService } from "./auth.service.js"
+import { RefreshProofService } from "./refresh-proof.service.js"
 
-jest.mock("src/lib/couch/userDbIndexes", function mockUserDbIndexes() {
+vi.mock("../lib/couch/userDbIndexes.js", function mockUserDbIndexes() {
   return {
-    ensureUserDbIndexes: jest
+    ensureUserDbIndexes: vi
       .fn()
       .mockResolvedValue({ created: [], existing: [] }),
   }
@@ -42,18 +43,18 @@ const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
   let dbExists = userDbExists
 
   const usersDb = {
-    find: jest.fn().mockResolvedValue({ docs: [couchUser] }),
-    insert: jest.fn(async function recreateDatabaseLikeCouchPeruser() {
+    find: vi.fn().mockResolvedValue({ docs: [couchUser] }),
+    insert: vi.fn(async function recreateDatabaseLikeCouchPeruser() {
       dbExists = true
       return { ok: true, id: couchUser._id, rev: "2-def" }
     }),
   }
   const server = {
-    use: jest.fn(function useUsersDb() {
+    use: vi.fn(function useUsersDb() {
       return usersDb
     }),
     db: {
-      get: jest.fn(async function getDatabaseIfExists() {
+      get: vi.fn(async function getDatabaseIfExists() {
         if (dbExists) return { db_name: "userdb" }
         throw Object.assign(new Error("not_found"), { statusCode: 404 })
       }),
@@ -72,72 +73,72 @@ const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
 describe("AuthService", () => {
   let service: AuthService
   let usersService: {
-    findUserByEmail: jest.Mock
-    findUserById: jest.Mock
-    registerUser: jest.Mock
-    saveUser: jest.Mock
-    deleteAccount: jest.Mock
+    findUserByEmail: Mock
+    findUserById: Mock
+    registerUser: Mock
+    saveUser: Mock
+    deleteAccount: Mock
   }
   let couchService: {
-    generateUserJWT: jest.Mock
-    createAdminNanoInstance: jest.Mock
+    generateUserJWT: Mock
+    createAdminNanoInstance: Mock
   }
   let jwtService: {
-    signAsync: jest.Mock
-    verifyAsync: jest.Mock
-    decode: jest.Mock
+    signAsync: Mock
+    verifyAsync: Mock
+    decode: Mock
   }
   let refreshTokensService: {
-    issueTokenForInstallation: jest.Mock
-    findByToken: jest.Mock
-    rotateForRefresh: jest.Mock
-    deleteById: jest.Mock
-    revokeBySessionId: jest.Mock
+    issueTokenForInstallation: Mock
+    findByToken: Mock
+    rotateForRefresh: Mock
+    deleteById: Mock
+    revokeBySessionId: Mock
   }
   let refreshProofService: {
-    isProofValid: jest.Mock
+    isProofValid: Mock
   }
   let emailService: {
-    getSignUpLink: jest.Mock
-    sendSignUpLink: jest.Mock
-    sendMagicLink: jest.Mock
+    getSignUpLink: Mock
+    sendSignUpLink: Mock
+    sendMagicLink: Mock
   }
 
   beforeEach(async () => {
     usersService = {
-      findUserByEmail: jest.fn(),
-      findUserById: jest.fn(),
-      registerUser: jest.fn(),
-      saveUser: jest.fn(),
-      deleteAccount: jest.fn().mockResolvedValue(undefined),
+      findUserByEmail: vi.fn(),
+      findUserById: vi.fn(),
+      registerUser: vi.fn(),
+      saveUser: vi.fn(),
+      deleteAccount: vi.fn().mockResolvedValue(undefined),
     }
     couchService = {
-      generateUserJWT: jest.fn(),
-      createAdminNanoInstance: jest.fn(),
+      generateUserJWT: vi.fn(),
+      createAdminNanoInstance: vi.fn(),
     }
     jwtService = {
-      signAsync: jest.fn().mockResolvedValue("signup-token"),
-      verifyAsync: jest.fn(),
-      decode: jest.fn(),
+      signAsync: vi.fn().mockResolvedValue("signup-token"),
+      verifyAsync: vi.fn(),
+      decode: vi.fn(),
     }
     refreshTokensService = {
-      issueTokenForInstallation: jest.fn(),
-      findByToken: jest.fn(),
-      rotateForRefresh: jest.fn(),
-      deleteById: jest.fn().mockResolvedValue(undefined),
-      revokeBySessionId: jest.fn().mockResolvedValue(undefined),
+      issueTokenForInstallation: vi.fn(),
+      findByToken: vi.fn(),
+      rotateForRefresh: vi.fn(),
+      deleteById: vi.fn().mockResolvedValue(undefined),
+      revokeBySessionId: vi.fn().mockResolvedValue(undefined),
     }
     refreshProofService = {
-      isProofValid: jest.fn(),
+      isProofValid: vi.fn(),
     }
     emailService = {
-      getSignUpLink: jest
+      getSignUpLink: vi
         .fn()
         .mockReturnValue(
           "https://app.example.com/signup/complete?token=signup-token",
         ),
-      sendSignUpLink: jest.fn(),
-      sendMagicLink: jest.fn(),
+      sendSignUpLink: vi.fn(),
+      sendMagicLink: vi.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -166,7 +167,7 @@ describe("AuthService", () => {
         {
           provide: SecretsService,
           useValue: {
-            getJwtPrivateKey: jest.fn().mockResolvedValue("private-key"),
+            getJwtPrivateKey: vi.fn().mockResolvedValue("private-key"),
           },
         },
         {

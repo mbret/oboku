@@ -1,5 +1,5 @@
 import type nano from "nano"
-import type { DataSourcePlugin, SyncContext } from "src/plugins/types"
+import type { DataSourcePlugin, SyncContext } from "../../plugins/types.js"
 
 export type Context = SyncContext & {
   db: nano.DocumentScope<unknown>

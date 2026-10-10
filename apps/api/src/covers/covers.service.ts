@@ -1,11 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { firstValueFrom, from, switchMap, tap } from "rxjs"
 import sharp from "sharp"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 import fs from "node:fs"
 import path from "node:path"
-import { CoversFsService } from "./covers-fs.service"
-import { CoversS3Service } from "./covers-s3.service"
+import { CoversFsService } from "./covers-fs.service.js"
+import { CoversS3Service } from "./covers-s3.service.js"
 
 const logger = new Logger("CoversService")
 

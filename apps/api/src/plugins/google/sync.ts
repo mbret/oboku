@@ -3,8 +3,8 @@
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
 import { type drive_v3 } from "googleapis"
-import type { SynchronizeAbleItem } from "src/plugins/types"
-import { createThrottler } from "src/lib/utils"
+import type { SynchronizeAbleItem } from "../types.js"
+import { createThrottler } from "../../lib/utils.js"
 import { isDefined } from "class-validator"
 
 const isFolder = (

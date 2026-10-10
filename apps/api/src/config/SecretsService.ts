@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "./AppConfigService"
+import { AppConfigService } from "./AppConfigService.js"
 import fs from "node:fs"
 
 @Injectable()

@@ -1,15 +1,16 @@
+import type { Mock } from "vitest"
 import type createNano from "nano"
-import { USER_DB_INDEXES, ensureUserDbIndexes } from "./userDbIndexes"
+import { USER_DB_INDEXES, ensureUserDbIndexes } from "./userDbIndexes.js"
 
 const createDb = (
-  createIndex: jest.Mock,
+  createIndex: Mock,
 ): Pick<createNano.DocumentScope<unknown>, "createIndex"> => ({
   createIndex,
 })
 
 describe("ensureUserDbIndexes", () => {
   it("creates every index in its own design document", async () => {
-    const createIndex = jest.fn().mockImplementation(async ({ name }) => ({
+    const createIndex = vi.fn().mockImplementation(async ({ name }) => ({
       result: "created",
       id: `_design/idx-${name}`,
       name,
@@ -33,7 +34,7 @@ describe("ensureUserDbIndexes", () => {
   })
 
   it("reports indexes CouchDB already had", async () => {
-    const createIndex = jest.fn().mockImplementation(async ({ name }) => ({
+    const createIndex = vi.fn().mockImplementation(async ({ name }) => ({
       result: name === "rx_model" ? "exists" : "created",
       id: `_design/idx-${name}`,
       name,
@@ -51,7 +52,7 @@ describe("ensureUserDbIndexes", () => {
 
   it("rethrows a non-retryable CouchDB failure", async () => {
     const forbidden = Object.assign(new Error("forbidden"), { statusCode: 403 })
-    const createIndex = jest.fn().mockRejectedValue(forbidden)
+    const createIndex = vi.fn().mockRejectedValue(forbidden)
 
     await expect(ensureUserDbIndexes(createDb(createIndex))).rejects.toBe(
       forbidden,

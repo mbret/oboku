@@ -1,8 +1,5 @@
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { find } from "../../lib/couch/dbHelpers.js"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const plugin: DataSourcePlugin<"file"> = {

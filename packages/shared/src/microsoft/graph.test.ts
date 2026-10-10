@@ -8,19 +8,19 @@ import {
 } from "./graph"
 
 describe("Microsoft Graph helpers", () => {
-  const originalFetch = global.fetch
+  const originalFetch = globalThis.fetch
 
   beforeEach(() => {
-    global.fetch = vi.fn()
+    globalThis.fetch = vi.fn()
   })
 
   afterEach(() => {
-    global.fetch = originalFetch
+    globalThis.fetch = originalFetch
     vi.resetAllMocks()
   })
 
   it("fetches Microsoft Graph JSON with a bearer token", async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce(
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
       new Response(JSON.stringify({ value: 42 }), {
         headers: {
           "Content-Type": "application/json",
@@ -36,7 +36,7 @@ describe("Microsoft Graph helpers", () => {
       ),
     ).resolves.toEqual({ value: 42 })
 
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       "https://graph.microsoft.com/v1.0/me/drive",
       {
         headers: {
@@ -47,7 +47,7 @@ describe("Microsoft Graph helpers", () => {
   })
 
   it("builds and fetches a drive item URL", async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce(
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           name: "Book.epub",
@@ -71,7 +71,7 @@ describe("Microsoft Graph helpers", () => {
       name: "Book.epub",
     })
 
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       buildDriveItemUrl("drive-id", "file-id"),
       {
         headers: {
@@ -82,7 +82,7 @@ describe("Microsoft Graph helpers", () => {
   })
 
   it("maps 404 responses to the shared resource-not-found error", async () => {
-    vi.mocked(global.fetch).mockResolvedValueOnce(
+    vi.mocked(globalThis.fetch).mockResolvedValueOnce(
       new Response(
         JSON.stringify({
           error: {

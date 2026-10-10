@@ -1,8 +1,8 @@
 import { Controller, Get } from "@nestjs/common"
 import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
-import { AppConfigService } from "../config/AppConfigService"
-import { Public } from "src/auth/auth.guard"
-import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { Public } from "../auth/auth.guard.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import type { GetWebConfigResponse } from "@oboku/shared"
 
 @Controller("web")

@@ -4,11 +4,11 @@ import type {
   RevokeTokensRequest,
   RevokeTokensResponse,
 } from "@oboku/shared"
-import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
-} from "src/features/postgres/user-postgres.service"
+} from "../features/postgres/user-postgres.service.js"
 
 const logger = new Logger("AdminSecurityService")
 

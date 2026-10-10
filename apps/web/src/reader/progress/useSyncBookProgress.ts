@@ -155,7 +155,7 @@ export const useSyncBookProgress = (
           pagination.end.spineItemIndex,
         )
         const didLastVisiblePageFailToLoad =
-          lastVisibleSpineItem?.value.isError === true
+          lastVisibleSpineItem?.value.loadStatus === "error"
 
         return isSettled(pagination) && !didLastVisiblePageFailToLoad
       }

@@ -1,13 +1,13 @@
-import { repairCollectionBooks } from "./repairCollectionBooks"
-import type { Context } from "../types"
-import { addNewCollection } from "./addNewCollection"
-import { updateCollection } from "./updateCollection"
+import { repairCollectionBooks } from "./repairCollectionBooks.js"
+import type { Context } from "../types.js"
+import { addNewCollection } from "./addNewCollection.js"
+import { updateCollection } from "./updateCollection.js"
 import {
   type DataSourcePlugin,
   SynchronizeAbleDataSource,
-} from "src/plugins/types"
+} from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
-import type { CollectionRefreshQueue } from "../synchronizeFromDataSource"
+import type { CollectionRefreshQueue } from "../synchronizeFromDataSource.js"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]

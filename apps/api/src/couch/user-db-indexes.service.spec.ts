@@ -1,24 +1,25 @@
+import type { Mock } from "vitest"
 import { Test, type TestingModule } from "@nestjs/testing"
-import { USER_DB_INDEXES } from "src/lib/couch/userDbIndexes"
-import { CouchService } from "./couch.service"
-import { UserDbIndexesService } from "./user-db-indexes.service"
+import { USER_DB_INDEXES } from "../lib/couch/userDbIndexes.js"
+import { CouchService } from "./couch.service.js"
+import { UserDbIndexesService } from "./user-db-indexes.service.js"
 
 const emailToDbName = (email: string) =>
   `userdb-${Buffer.from(email).toString("hex")}`
 
 describe("UserDbIndexesService", () => {
   let service: UserDbIndexesService
-  let createIndex: jest.Mock
-  let listDatabases: jest.Mock
-  let findUsers: jest.Mock
+  let createIndex: Mock
+  let listDatabases: Mock
+  let findUsers: Mock
 
   beforeEach(async () => {
-    createIndex = jest.fn()
-    listDatabases = jest.fn()
-    findUsers = jest.fn()
+    createIndex = vi.fn()
+    listDatabases = vi.fn()
+    findUsers = vi.fn()
 
     const adminNano = {
-      use: jest.fn((dbName: string) =>
+      use: vi.fn((dbName: string) =>
         dbName === "_users" ? { find: findUsers } : { createIndex },
       ),
       db: { list: listDatabases },
@@ -30,7 +31,7 @@ describe("UserDbIndexesService", () => {
         {
           provide: CouchService,
           useValue: {
-            createAdminNanoInstance: jest.fn().mockResolvedValue(adminNano),
+            createAdminNanoInstance: vi.fn().mockResolvedValue(adminNano),
           },
         },
       ],

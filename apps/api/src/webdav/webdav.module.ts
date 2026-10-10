@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common"
-import { AdminModule } from "src/admin/admin.module"
-import { WebDavService } from "./webdav.service"
+import { AdminModule } from "../admin/admin.module.js"
+import { WebDavService } from "./webdav.service.js"
 
 @Module({
   imports: [AdminModule],

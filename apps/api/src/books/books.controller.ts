@@ -1,11 +1,11 @@
 import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { BooksMetadataRefreshEvent, Events } from "../events"
-import { BooksMetadataService } from "./books-metadata.service"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
-import { AppConfigService } from "src/config/AppConfigService"
+import { BooksMetadataRefreshEvent, Events } from "../events.js"
+import { BooksMetadataService } from "./books-metadata.service.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
 import { from } from "rxjs"
-import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import type { RefreshBookMetadataRequest } from "@oboku/shared"
 
 @Controller("books")

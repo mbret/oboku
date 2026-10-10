@@ -2,15 +2,12 @@
  * 401 credentials error
  * [{"domain":"global","reason":"authError","message":"Invalid Credentials","locationType":"header","location":"Authorization"}]
  */
-import { authorize } from "./helpers"
+import { authorize } from "./helpers.js"
 import { google } from "googleapis"
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { getDataSourceData } from "../helpers"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { find } from "../../lib/couch/dbHelpers.js"
+import { getDataSourceData } from "../helpers.js"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 const DRIVE_TYPE = "DRIVE"
 

@@ -1,19 +1,19 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { findOne } from "src/lib/couch/findOne"
+import { findOne } from "../../lib/couch/findOne.js"
 import { from, tap } from "rxjs"
 import { mergeMap, of, switchMap } from "rxjs"
 import {
   markCollectionAsError,
   markCollectionAsIdle,
-} from "./metadata/collections"
-import { onBeforeError, switchMapCombineOuter } from "src/lib/utils"
-import { processRefreshMetadata } from "./metadata/processRefreshMetadata"
-import { CouchService, emailToNameHex } from "src/couch/couch.service"
-import { AppConfigService } from "../../config/AppConfigService"
-import { CoversService } from "src/covers/covers.service"
+} from "./metadata/collections.js"
+import { onBeforeError, switchMapCombineOuter } from "../../lib/utils.js"
+import { processRefreshMetadata } from "./metadata/processRefreshMetadata.js"
+import { CouchService, emailToNameHex } from "../../couch/couch.service.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { CoversService } from "../../covers/covers.service.js"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
-import { PluginsService } from "src/plugins/plugins.service"
+import { PluginsService } from "../../plugins/plugins.service.js"
 
 @Injectable()
 export class CollectionMetadataService {
