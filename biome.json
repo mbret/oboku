@@ -105,6 +105,15 @@
       "linter": {
         "domains": {
           "next": "all"
+        },
+        "rules": {
+          "performance": {
+            "noSyncScripts": "error"
+          },
+          "suspicious": {
+            "noDocumentImportInPage": "error",
+            "noHeadImportInDocument": "error"
+          }
         }
       }
     }
