@@ -19,7 +19,6 @@ allowBuilds:
   nx: true
   protobufjs: false
   sharp: true
-  unrs-resolver: true
 patchedDependencies:
   react-dom@19.3.0: patches/react-dom@19.3.0.patch
 # prose-reader shares oboku's maintainer, so its releases are installed as
