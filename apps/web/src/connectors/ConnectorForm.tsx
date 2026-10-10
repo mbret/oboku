@@ -2,7 +2,6 @@ import { memo, type ReactNode } from "react"
 import {
   Button,
   Checkbox,
-  Container,
   FormControlLabel,
   Stack,
   Typography,
@@ -22,6 +21,7 @@ import { useAddConnector } from "./useAddConnector"
 import { useConnector } from "./useConnector"
 import { useUpdateConnector } from "./useUpdateConnector"
 import { ErrorAlert } from "../errors/ErrorMessage"
+import { PageContainer } from "../common/PageContainer"
 
 const FORM_ID = "connector-form"
 
@@ -123,103 +123,101 @@ export const ConnectorForm = memo(
     })
 
     return (
-      <>
-        {topAlert}
-        <Container maxWidth="md">
-          <Stack
-            component="form"
-            id={FORM_ID}
-            onSubmit={handleSubmit((values) => submit(values))}
-            sx={{
-              alignSelf: "stretch",
-              gap: 2,
-              mt: 2,
-            }}
-          >
-            {showUrl && (
-              <ControlledTextField
-                control={control}
-                fullWidth
-                label="URL"
-                name="urlValue"
-                rules={{ required: true, pattern: URL_PATTERN }}
-              />
-            )}
+      <PageContainer>
+        <Stack
+          component="form"
+          id={FORM_ID}
+          onSubmit={handleSubmit((values) => submit(values))}
+          sx={{
+            alignSelf: "stretch",
+            gap: 2,
+            mt: 2,
+          }}
+        >
+          {topAlert}
+          {showUrl && (
             <ControlledTextField
               control={control}
               fullWidth
-              label="Username"
-              name="username"
-              rules={{ required: true }}
+              label="URL"
+              name="urlValue"
+              rules={{ required: true, pattern: URL_PATTERN }}
             />
-            <ControlledSecretSelect
+          )}
+          <ControlledTextField
+            control={control}
+            fullWidth
+            label="Username"
+            name="username"
+            rules={{ required: true }}
+          />
+          <ControlledSecretSelect
+            control={control}
+            fullWidth
+            label={passwordFieldLabel}
+            name="passwordAsSecretId"
+            rules={{ required: true }}
+          />
+          {showUrl && (
+            <Controller
               control={control}
-              fullWidth
-              label={passwordFieldLabel}
-              name="passwordAsSecretId"
-              rules={{ required: true }}
-            />
-            {showUrl && (
-              <Controller
-                control={control}
-                name="allowSelfSigned"
-                render={({ field }) => (
-                  <Stack
+              name="allowSelfSigned"
+              render={({ field }) => (
+                <Stack
+                  sx={{
+                    gap: 0.5,
+                  }}
+                >
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={!!field.value}
+                        onChange={(_, checked) => field.onChange(checked)}
+                      />
+                    }
+                    label="Allow self-signed certificate"
+                  />
+                  <Typography
+                    variant="caption"
                     sx={{
-                      gap: 0.5,
+                      color: "text.secondary",
                     }}
                   >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={!!field.value}
-                          onChange={(_, checked) => field.onChange(checked)}
-                        />
-                      }
-                      label="Allow self-signed certificate"
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "text.secondary",
-                      }}
-                    >
-                      Used by API sync, metadata, and download requests. Browser
-                      connection tests may still require trusting the
-                      certificate in your browser.
-                    </Typography>
-                  </Stack>
-                )}
-              />
-            )}
-            {!!errors.root && <ErrorAlert error={errors.root.message} />}
-            {testConnection && (
-              <TestConnection
-                connectionData={{ ...data, url: data.urlValue }}
-                connectorType={connectorType}
-                testConnection={testConnection}
-              />
-            )}
-          </Stack>
-          <Stack
-            sx={{
-              gap: 1,
-              mt: 4,
-            }}
+                    Used by API sync, metadata, and download requests. Browser
+                    connection tests may still require trusting the certificate
+                    in your browser.
+                  </Typography>
+                </Stack>
+              )}
+            />
+          )}
+          {!!errors.root && <ErrorAlert error={errors.root.message} />}
+          {testConnection && (
+            <TestConnection
+              connectionData={{ ...data, url: data.urlValue }}
+              connectorType={connectorType}
+              testConnection={testConnection}
+            />
+          )}
+        </Stack>
+        <Stack
+          sx={{
+            gap: 1,
+            mt: 4,
+          }}
+        >
+          {renderExtraActions?.()}
+          <Button
+            disabled={disabled || !isValid}
+            form={FORM_ID}
+            type="submit"
+            variant="contained"
           >
-            {renderExtraActions?.()}
-            <Button
-              disabled={disabled || !isValid}
-              form={FORM_ID}
-              type="submit"
-              variant="contained"
-            >
-              Confirm
-            </Button>
-            {children}
-          </Stack>
-        </Container>
-      </>
+            Confirm
+          </Button>
+          {children}
+        </Stack>
+      </PageContainer>
     )
   },
 )

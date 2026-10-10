@@ -2,7 +2,6 @@ import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   capitalize,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -16,6 +15,8 @@ import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
 } from "../useIsPluginEnabled"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const PluginsScreen = memo(function PluginsScreen() {
   const isPluginVisible = useGetIsPluginVisible()
@@ -29,24 +30,26 @@ export const PluginsScreen = memo(function PluginsScreen() {
       }}
     >
       <TopBarNavigation title={"Plugins"} showBack={false} />
-      <List>
-        {plugins.filter(isPluginVisible).map((plugin) => (
-          <ListItemButton
-            key={plugin.type}
-            component={Link}
-            disabled={!isPluginEnabled(plugin)}
-            to={ROUTES.PLUGINS_TYPE.replace(":type", plugin.type)}
-          >
-            <ListItemIcon>
-              {plugin.Icon ? <plugin.Icon /> : <ExtensionRounded />}
-            </ListItemIcon>
-            <ListItemText
-              primary={capitalize(plugin.name)}
-              secondary={plugin.description}
-            />
-          </ListItemButton>
-        ))}
-      </List>
+      <PageContainer disableGutters>
+        <PageSection>
+          {plugins.filter(isPluginVisible).map((plugin) => (
+            <ListItemButton
+              key={plugin.type}
+              component={Link}
+              disabled={!isPluginEnabled(plugin)}
+              to={ROUTES.PLUGINS_TYPE.replace(":type", plugin.type)}
+            >
+              <ListItemIcon>
+                {plugin.Icon ? <plugin.Icon /> : <ExtensionRounded />}
+              </ListItemIcon>
+              <ListItemText
+                primary={capitalize(plugin.name)}
+                secondary={plugin.description}
+              />
+            </ListItemButton>
+          ))}
+        </PageSection>
+      </PageContainer>
     </Stack>
   )
 })

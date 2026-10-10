@@ -47,7 +47,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
@@ -57,6 +57,14 @@ export const Footer = () => {
                 underline="hover"
               >
                 App
+              </MuiLink>
+              <MuiLink
+                component={Link}
+                href="/features"
+                variant="body2"
+                underline="hover"
+              >
+                Features
               </MuiLink>
               <MuiLink
                 href={links.documentation}
@@ -94,7 +102,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
@@ -130,7 +138,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink

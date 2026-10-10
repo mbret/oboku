@@ -1,15 +1,9 @@
-import {
-  Alert,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Stack,
-} from "@mui/material"
+import { Alert, IconButton, ListItem, ListItemText, Stack } from "@mui/material"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { DeleteRounded } from "@mui/icons-material"
 import { dropboxAuthSignal } from "./lib/auth"
 import { useEffect, useState } from "react"
+import { PageSection } from "../../common/PageSection"
 
 export const InfoScreen = () => {
   const dropboxAuth = useSignalValue(dropboxAuthSignal)
@@ -36,11 +30,11 @@ export const InfoScreen = () => {
 
   return (
     <Stack>
-      <Alert severity="warning">
+      <Alert severity="warning" sx={{ mx: 2, mt: 2 }}>
         Due to Dropbox API limitations, the picker authentication will not be
         reset when switching accounts.
       </Alert>
-      <List>
+      <PageSection>
         <ListItem
           secondaryAction={
             !accessToken ? undefined : (
@@ -65,7 +59,7 @@ export const InfoScreen = () => {
             }
           />
         </ListItem>
-      </List>
+      </PageSection>
     </Stack>
   )
 }

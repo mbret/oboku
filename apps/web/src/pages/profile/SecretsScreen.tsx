@@ -4,9 +4,7 @@ import {
   Alert,
   Box,
   Button,
-  Container,
   Link,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -21,6 +19,8 @@ import { useSecret } from "../../secrets/useSecret"
 import { KeyRounded } from "@mui/icons-material"
 import { SecretActionDrawer } from "../../secrets/SecretActionDrawer"
 import { useUnlockMasterKey } from "../../secrets/useUnlockMasterKey"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 const SecretListItem = memo(
   ({
@@ -92,16 +92,7 @@ export const SecretsScreen = memo(() => {
         }}
       >
         <TopBarNavigation title={"Secrets"} />
-        <Alert severity="info" variant="standard">
-          Learn more about secrets{" "}
-          <Link href={links.documentationSecrets}>here</Link>
-        </Alert>
-        {!hasMasterPassword && (
-          <Alert severity="warning">
-            You need to initialize your Master Password to use secrets
-          </Alert>
-        )}
-        <Container maxWidth="sm">
+        <PageContainer>
           <Stack
             sx={{
               gap: 1,
@@ -109,6 +100,15 @@ export const SecretsScreen = memo(() => {
               mt: 2,
             }}
           >
+            <Alert severity="info" variant="standard">
+              Learn more about secrets{" "}
+              <Link href={links.documentationSecrets}>here</Link>
+            </Alert>
+            {!hasMasterPassword && (
+              <Alert severity="warning">
+                You need to initialize your Master Password to use secrets
+              </Alert>
+            )}
             <Button
               disabled={!hasMasterPassword || !!masterKey}
               onClick={unlockMasterKey}
@@ -123,17 +123,19 @@ export const SecretsScreen = memo(() => {
               Add a secret
             </Button>
           </Stack>
-        </Container>
-        <List>
-          {secrets?.map((secret) => (
-            <SecretListItem
-              key={secret._id}
-              id={secret._id}
-              masterKey={masterKey}
-              onClick={() => setDrawerOpenWith(secret._id)}
-            />
-          ))}
-        </List>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection>
+            {secrets?.map((secret) => (
+              <SecretListItem
+                key={secret._id}
+                id={secret._id}
+                masterKey={masterKey}
+                onClick={() => setDrawerOpenWith(secret._id)}
+              />
+            ))}
+          </PageSection>
+        </PageContainer>
       </Box>
       <SecretActionDrawer
         openWidth={drawerOpenWith}

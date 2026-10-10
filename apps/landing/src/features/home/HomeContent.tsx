@@ -16,20 +16,21 @@ import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iP
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { links } from "@oboku/shared"
 import { AppHighlightSection } from "./AppHighlightSection"
-import { landingDescription, landingTagline } from "./content"
+import {
+  landingDescription,
+  landingTagline,
+  supportedExtensions,
+  syncProviders,
+} from "./content"
 import { FaqSection } from "./FaqSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"
 
-const syncProviders = [
-  { label: "Google Drive", docsPath: "sync-providers/google-drive" },
-  { label: "Dropbox", docsPath: "sync-providers/dropbox" },
-  { label: "OneDrive", docsPath: "sync-providers/one-drive" },
-  { label: "Synology", docsPath: "sync-providers/synology-drive" },
-  { label: "WebDAV", docsPath: "sync-providers/webdav" },
-]
-
-const supportedExtensions = [".epub", ".cbz", ".cbr", ".pdf", ".txt"]
+const heroScreenshotMobileHeightVh = 50
+const heroScreenshotMobileWidthVh = Math.ceil(
+  (heroScreenshotMobileHeightVh * image1.width) / image1.height,
+)
+const heroScreenshotSizes = `(max-width: 599px) ${heroScreenshotMobileWidthVh}vh, 300px`
 
 const HighlightImage = styled(Image)(({ theme }) => ({
   width: "100%",
@@ -37,7 +38,7 @@ const HighlightImage = styled(Image)(({ theme }) => ({
   height: "auto",
   [theme.breakpoints.down("sm")]: {
     width: "auto",
-    maxHeight: "50vh",
+    height: `${heroScreenshotMobileHeightVh}vh`,
     margin: "0 auto",
   },
 }))
@@ -184,6 +185,8 @@ export const HomeContent = () => {
           <HighlightImage
             alt="oboku library view showing a collection of books on mobile"
             src={image1}
+            sizes={heroScreenshotSizes}
+            preload
           />
         </Paper>
         <Paper
@@ -208,6 +211,7 @@ export const HomeContent = () => {
           <HighlightImage
             alt="oboku book reader interface on mobile"
             src={image2}
+            sizes={heroScreenshotSizes}
           />
         </Paper>
       </Stack>

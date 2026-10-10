@@ -1,5 +1,6 @@
 import {
   Box,
+  Button,
   Card,
   CardContent,
   Container,
@@ -15,6 +16,7 @@ import image6 from "./assets/image6.png"
 import image8 from "./assets/image8.png"
 import image9 from "./assets/image9.png"
 import Image, { type StaticImageData } from "next/image"
+import Link from "next/link"
 
 const KeyCardPoint = ({
   description,
@@ -45,6 +47,7 @@ const KeyCardPoint = ({
       <Image
         style={{ width: "50%", height: "auto" }}
         src={imageSrc}
+        sizes="(max-width: 599px) 50vw, (max-width: 1199px) 25vw, 300px"
         alt={imageAlt}
       />
     </Card>
@@ -122,6 +125,15 @@ export const AppHighlightSection = () => {
             imageAlt="Black and white manga page open in the oboku reader"
           />
         </Box>
+        <Button
+          component={Link}
+          href="/features"
+          variant="outlined"
+          size="large"
+          sx={{ alignSelf: "center", mt: 4 }}
+        >
+          See all features
+        </Button>
       </Stack>
     </Container>
   )
