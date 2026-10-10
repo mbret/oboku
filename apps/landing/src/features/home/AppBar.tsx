@@ -14,7 +14,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Link as MuiLink,
   styled,
   SwipeableDrawer,
   useScrollTrigger,
@@ -28,6 +27,7 @@ import {
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "../common/DiscordMarkBlueIcon"
+import { ObokuLogoIcon } from "../common/ObokuLogoIcon"
 import Link from "next/link"
 
 const ScrollAwareAppBar = styled(MuiAppBar)(function styleScrollAwareAppBar({
@@ -42,6 +42,18 @@ const ScrollAwareAppBar = styled(MuiAppBar)(function styleScrollAwareAppBar({
       backgroundColor: theme.palette.background.paper,
       borderBottomColor: theme.palette.divider,
     },
+  }
+})
+
+const LogoLink = styled(Link)(function styleLogoLink({ theme }) {
+  return {
+    ...theme.typography.h6,
+    display: "flex",
+    alignItems: "center",
+    gap: theme.spacing(1),
+    flexGrow: 1,
+    color: "inherit",
+    textDecoration: "none",
   }
 })
 
@@ -134,16 +146,10 @@ export default function AppBar() {
             >
               <MenuIcon />
             </IconButton>
-            <MuiLink
-              href="/"
-              variant="h6"
-              underline="none"
-              color="inherit"
-              sx={{ flexGrow: 1 }}
-              component={Link}
-            >
+            <LogoLink href="/">
+              <ObokuLogoIcon height={26} />
               oboku
-            </MuiLink>
+            </LogoLink>
             <Button
               sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
               color="inherit"
