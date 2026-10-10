@@ -1,5 +1,5 @@
 import type { Metadata } from "next"
-import { Inter, Roboto } from "next/font/google"
+import { Roboto } from "next/font/google"
 import "./globals.css"
 import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
 import { CssBaseline, Stack, ThemeProvider } from "@mui/material"
@@ -9,7 +9,6 @@ import { landingDescription, landingTagline } from "../features/home/content"
 import { Footer } from "../features/home/Footer"
 import { links } from "@oboku/shared"
 
-const inter = Inter({ subsets: ["latin"] })
 const roboto = Roboto({
   subsets: ["latin"],
   weight: ["300", "400", "500", "700"],
@@ -43,7 +42,7 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className={`${inter.className} ${roboto.className}`}>
+    <html lang="en" className={roboto.className}>
       <head>
         <link rel="icon" href="/favicon.ico" sizes="any" />
       </head>
