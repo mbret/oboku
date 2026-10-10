@@ -1,6 +1,7 @@
 import { type FC, useCallback, useEffect, useState } from "react"
 import {
   BarChartRounded,
+  CloudSyncRounded,
   GavelRounded,
   KeyRounded,
   LaunchRounded,
@@ -29,7 +30,11 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes, type GetKoreaderSyncServerResponse } from "@oboku/shared"
+import {
+  formatBytes,
+  type GetKoreaderSyncConnectionResponse,
+  type GetKoreaderSyncServerResponse,
+} from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -58,6 +63,7 @@ import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
+import { useKoreaderSyncConnection } from "../../koreaderSyncConnection/useKoreaderSyncConnection"
 
 const KOREADER_SYNC_SERVER_PURPOSE =
   "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
@@ -70,6 +76,37 @@ const describeKoreaderSyncServer = (
   return koreaderSyncServer.passwordCreatedAt
     ? "On"
     : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
+}
+
+const KOREADER_PROGRESS_SYNC_PURPOSE =
+  "Sync oboku's reading position through a KOReader sync server"
+
+const describeKoreaderSyncConnection = (
+  response?: GetKoreaderSyncConnectionResponse,
+) =>
+  response?.connection
+    ? `Connected to ${response.connection.serverUrl}`
+    : KOREADER_PROGRESS_SYNC_PURPOSE
+
+function KoreaderProgressSyncListItem() {
+  const navigate = useNavigate()
+  const { data: koreaderSyncConnection } = useKoreaderSyncConnection()
+
+  return (
+    <ListItemButton
+      onClick={() => {
+        navigate(ROUTES.KOREADER_PROGRESS_SYNC)
+      }}
+    >
+      <ListItemIcon>
+        <CloudSyncRounded />
+      </ListItemIcon>
+      <ListItemText
+        primary="KOReader progress sync"
+        secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
+      />
+    </ListItemButton>
+  )
 }
 
 export const ProfileScreen = () => {
@@ -207,6 +244,8 @@ export const ProfileScreen = () => {
               secondary={describeKoreaderSyncServer(koreaderSyncServer)}
             />
           </ListItemButton>
+          {/* TODO: show it to everyone once oboku's reader syncs books through it. */}
+          {isDebugEnabled() && <KoreaderProgressSyncListItem />}
         </PageSection>
         <PageSection title="Device">
           <ListItemButton
