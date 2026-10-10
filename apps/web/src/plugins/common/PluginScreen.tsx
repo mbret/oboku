@@ -3,6 +3,7 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { capitalize, Stack } from "@mui/material"
 import { plugins } from "../configure"
 import { useParams } from "react-router"
+import { PageContainer } from "../../common/PageContainer"
 
 export const PluginScreen = memo(() => {
   const { type } = useParams<{ type: string }>()
@@ -17,7 +18,11 @@ export const PluginScreen = memo(() => {
       }}
     >
       <TopBarNavigation title={capitalize(plugin?.name ?? "plugin")} showBack />
-      {!!plugin?.InfoScreen && <plugin.InfoScreen />}
+      {!!plugin?.InfoScreen && (
+        <PageContainer disableGutters>
+          <plugin.InfoScreen />
+        </PageContainer>
+      )}
     </Stack>
   )
 })

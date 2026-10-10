@@ -2,6 +2,7 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { Box, List, ListItem, ListItemText, ListSubheader } from "@mui/material"
 import { useCollections } from "../collections/useCollections"
 import { useBooks } from "../books/states"
+import { PageContainer } from "../common/PageContainer"
 
 export const StatisticsScreen = () => {
   const { data: books } = useBooks()
@@ -17,19 +18,21 @@ export const StatisticsScreen = () => {
       }}
     >
       <TopBarNavigation title={"Statistics"} />
-      <List>
-        <ListSubheader disableSticky>Books</ListSubheader>
-        <ListItem>
-          <ListItemText primary="Total of books" secondary={books?.length} />
-        </ListItem>
-        <ListSubheader disableSticky>Collections</ListSubheader>
-        <ListItem>
-          <ListItemText
-            primary="Total of collections"
-            secondary={collectionsAsArray.length}
-          />
-        </ListItem>
-      </List>
+      <PageContainer disableGutters>
+        <List>
+          <ListSubheader disableSticky>Books</ListSubheader>
+          <ListItem>
+            <ListItemText primary="Total of books" secondary={books?.length} />
+          </ListItem>
+          <ListSubheader disableSticky>Collections</ListSubheader>
+          <ListItem>
+            <ListItemText
+              primary="Total of collections"
+              secondary={collectionsAsArray.length}
+            />
+          </ListItem>
+        </List>
+      </PageContainer>
     </Box>
   )
 }

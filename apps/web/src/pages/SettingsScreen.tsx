@@ -9,6 +9,7 @@ import { ListItemSelect, ListItemSwitch } from "../common/lists"
 import { Page } from "../common/Page"
 import { themeOptions } from "../theme/themeOptions"
 import { ReadingSettings } from "../settings/ReadingSettings"
+import { PageContainer } from "../common/PageContainer"
 
 type LocalSettings = ReturnType<typeof useLocalSettings>
 
@@ -35,64 +36,68 @@ export const SettingsScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={"Settings"} />
-      <List>
-        <ListSubheader disableSticky>General</ListSubheader>
-        <ListItem>
-          <ListItemText primary="Language" secondary={navigator.language} />
-        </ListItem>
-        <ListItemSwitch
-          primary="Automatically hide directives from collection name"
-          secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
-          onClick={() => {
-            localSettingsSignal.update((old) => ({
-              ...old,
-              hideDirectivesFromCollectionName:
-                !old.hideDirectivesFromCollectionName,
-            }))
-          }}
-          checked={localSettings.hideDirectivesFromCollectionName}
-        />
-      </List>
-      <List>
-        <ListSubheader disableSticky>Privacy & sensitive content</ListSubheader>
-        <ListItemSelect
-          primary="Show collections containing protected content"
-          value={localSettings.showCollectionWithProtectedContent}
-          choices={showCollectionWithProtectedContentChoices}
-          onChange={(value) => {
-            localSettingsSignal.update((old) => ({
-              ...old,
-              showCollectionWithProtectedContent: value,
-            }))
-          }}
-        />
-        <ListItemSwitch
-          primary="Unblur cover when protected content is visible"
-          onClick={() => {
-            localSettingsSignal.update((old) => ({
-              ...old,
-              unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible,
-            }))
-          }}
-          checked={localSettings.unBlurWhenProtectedVisible}
-        />
-      </List>
-      <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
-        <ReadingSettings />
-      </List>
-      <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
-        <ListItemSelect
-          primary="Color mode"
-          value={localSettings.themeMode ?? "system"}
-          choices={themeOptions}
-          onChange={(value) => {
-            localSettingsSignal.update((old) => ({
-              ...old,
-              themeMode: value,
-            }))
-          }}
-        />
-      </List>
+      <PageContainer disableGutters>
+        <List>
+          <ListSubheader disableSticky>General</ListSubheader>
+          <ListItem>
+            <ListItemText primary="Language" secondary={navigator.language} />
+          </ListItem>
+          <ListItemSwitch
+            primary="Automatically hide directives from collection name"
+            secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
+            onClick={() => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                hideDirectivesFromCollectionName:
+                  !old.hideDirectivesFromCollectionName,
+              }))
+            }}
+            checked={localSettings.hideDirectivesFromCollectionName}
+          />
+        </List>
+        <List>
+          <ListSubheader disableSticky>
+            Privacy & sensitive content
+          </ListSubheader>
+          <ListItemSelect
+            primary="Show collections containing protected content"
+            value={localSettings.showCollectionWithProtectedContent}
+            choices={showCollectionWithProtectedContentChoices}
+            onChange={(value) => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                showCollectionWithProtectedContent: value,
+              }))
+            }}
+          />
+          <ListItemSwitch
+            primary="Unblur cover when protected content is visible"
+            onClick={() => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                unBlurWhenProtectedVisible: !old.unBlurWhenProtectedVisible,
+              }))
+            }}
+            checked={localSettings.unBlurWhenProtectedVisible}
+          />
+        </List>
+        <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
+          <ReadingSettings />
+        </List>
+        <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
+          <ListItemSelect
+            primary="Color mode"
+            value={localSettings.themeMode ?? "system"}
+            choices={themeOptions}
+            onChange={(value) => {
+              localSettingsSignal.update((old) => ({
+                ...old,
+                themeMode: value,
+              }))
+            }}
+          />
+        </List>
+      </PageContainer>
     </Page>
   )
 })

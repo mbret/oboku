@@ -33,6 +33,7 @@ import { useDownloadedBooks } from "../../../download/useDownloadedBooks"
 import { useBooks } from "../../../books/states"
 import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
 import { StoragePersistenceListItem } from "./StoragePersistenceListItem"
+import { PageContainer } from "../../../common/PageContainer"
 
 const bookListStyle = { width: "100%" }
 
@@ -97,81 +98,83 @@ export const ManageStorageScreen = () => {
   return (
     <Page ref={setScrollerEl} bottomGutter={false}>
       <TopBarNavigation title={"Manage storage"} />
-      <List>
-        <ListItem>
-          <ListItemIcon>
-            <StorageRounded />
-          </ListItemIcon>
-          <ListItemText
-            primary="Available storage"
-            disableTypography
-            secondary={
-              <div>
-                <Box
-                  sx={{
-                    marginY: 1,
-                  }}
-                >
-                  <LinearProgress
-                    variant="determinate"
-                    value={quotaUsed * 100}
-                  />
-                </Box>
-                <Typography
-                  gutterBottom
-                  variant="body2"
-                >{`${formatBytes(usage)} used of ${formatBytes(quota)} (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
-              </div>
-            }
-          />
-        </ListItem>
-        <StoragePersistenceListItem />
-        <ListItemButton onClick={() => removeCoversInCache()}>
-          <ListItemIcon>
-            <ImageRounded />
-          </ListItemIcon>
-          <ListItemText
-            primary="Delete all covers cached"
-            secondary={`${covers} covers are cached for a total of ${formatBytes(coversWeightBytes)}`}
-          />
-        </ListItemButton>
-        {bookIdsToDisplay.length > 0 && (
-          <ListItemButton onClick={() => removeAllDownloads()}>
+      <PageContainer disableGutters>
+        <List>
+          <ListItem>
             <ListItemIcon>
-              <DeleteRounded />
+              <StorageRounded />
             </ListItemIcon>
             <ListItemText
-              primary="Delete all downloads"
-              secondary="Local books will not be deleted"
+              primary="Available storage"
+              disableTypography
+              secondary={
+                <div>
+                  <Box
+                    sx={{
+                      marginY: 1,
+                    }}
+                  >
+                    <LinearProgress
+                      variant="determinate"
+                      value={quotaUsed * 100}
+                    />
+                  </Box>
+                  <Typography
+                    gutterBottom
+                    variant="body2"
+                  >{`${formatBytes(usage)} used of ${formatBytes(quota)} (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
+                </div>
+              }
+            />
+          </ListItem>
+          <StoragePersistenceListItem />
+          <ListItemButton onClick={() => removeCoversInCache()}>
+            <ListItemIcon>
+              <ImageRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Delete all covers cached"
+              secondary={`${covers} covers are cached for a total of ${formatBytes(coversWeightBytes)}`}
             />
           </ListItemButton>
+          {bookIdsToDisplay.length > 0 && (
+            <ListItemButton onClick={() => removeAllDownloads()}>
+              <ListItemIcon>
+                <DeleteRounded />
+              </ListItemIcon>
+              <ListItemText
+                primary="Delete all downloads"
+                secondary="Local books will not be deleted"
+              />
+            </ListItemButton>
+          )}
+        </List>
+        {extraDownloadFilesIds.length > 0 && (
+          <Alert severity="warning" style={{ marginBottom: theme.spacing(0) }}>
+            <div style={{ marginBottom: theme.spacing(1) }}>
+              It seems that you have some extra downloaded files not linked to
+              your current library.
+            </div>
+            <Button
+              variant="outlined"
+              color="secondary"
+              onClick={removeExtraBooks}
+            >
+              Remove to free up space
+            </Button>
+          </Alert>
         )}
-      </List>
-      {extraDownloadFilesIds.length > 0 && (
-        <Alert severity="warning" style={{ marginBottom: theme.spacing(0) }}>
-          <div style={{ marginBottom: theme.spacing(1) }}>
-            It seems that you have some extra downloaded files not linked to
-            your current library.
-          </div>
-          <Button
-            variant="outlined"
-            color="secondary"
-            onClick={removeExtraBooks}
-          >
-            Remove to free up space
-          </Button>
-        </Alert>
-      )}
-      <Divider />
-      <BookList
-        viewMode={"list"}
-        data={bookIdsToDisplay}
-        density="dense"
-        withDrawerActions={false}
-        style={bookListStyle}
-        customScrollParent={scrollerEl ?? undefined}
-        onItemClick={onItemClick}
-      />
+        <Divider />
+        <BookList
+          viewMode={"list"}
+          data={bookIdsToDisplay}
+          density="dense"
+          withDrawerActions={false}
+          style={bookListStyle}
+          customScrollParent={scrollerEl ?? undefined}
+          onItemClick={onItemClick}
+        />
+      </PageContainer>
     </Page>
   )
 }
