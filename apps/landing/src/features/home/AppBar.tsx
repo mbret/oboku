@@ -15,7 +15,9 @@ import {
   ListItemIcon,
   ListItemText,
   Link as MuiLink,
+  styled,
   SwipeableDrawer,
+  useScrollTrigger,
 } from "@mui/material"
 import {
   AutoAwesomeRounded,
@@ -28,8 +30,27 @@ import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
 import Link from "next/link"
 
+const ScrollAwareAppBar = styled(MuiAppBar)(function styleScrollAwareAppBar({
+  theme,
+}) {
+  return {
+    borderBottom: "1px solid transparent",
+    transition: theme.transitions.create(["background-color", "border-color"], {
+      duration: theme.transitions.duration.shorter,
+    }),
+    "&[data-page-scrolled=true]": {
+      backgroundColor: theme.palette.background.paper,
+      borderBottomColor: theme.palette.divider,
+    },
+  }
+})
+
 export default function AppBar() {
   const [open, setOpen] = React.useState(false)
+  const isPageScrolled = useScrollTrigger({
+    disableHysteresis: true,
+    threshold: 0,
+  })
 
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen)
@@ -96,15 +117,11 @@ export default function AppBar() {
   return (
     <>
       <Box sx={{ flexGrow: 1 }}>
-        <MuiAppBar
+        <ScrollAwareAppBar
           position="fixed"
-          variant="outlined"
           elevation={0}
           color="transparent"
-          style={{
-            border: "none",
-            backgroundColor: "white",
-          }}
+          data-page-scrolled={isPageScrolled}
         >
           <Toolbar sx={{ justifyContent: "space-between" }}>
             <IconButton
@@ -167,7 +184,7 @@ export default function AppBar() {
               app
             </Button>
           </Toolbar>
-        </MuiAppBar>
+        </ScrollAwareAppBar>
       </Box>
       <SwipeableDrawer
         open={open}
