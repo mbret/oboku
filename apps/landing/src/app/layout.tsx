@@ -48,8 +48,8 @@ export default function RootLayout({
       </head>
       <body>
         <AppRouterCacheProvider>
-          <CssBaseline />
           <ThemeProvider theme={theme}>
+            <CssBaseline />
             <Stack>
               <AppBar />
               {children}

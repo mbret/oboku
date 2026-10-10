@@ -1,4 +1,4 @@
-import { alpha, Box, styled } from "@mui/material"
+import { Box, styled } from "@mui/material"
 
 export const FeatureIconBox = styled(Box)(function styleFeatureIconBox({
   theme,
@@ -11,7 +11,7 @@ export const FeatureIconBox = styled(Box)(function styleFeatureIconBox({
     width: 40,
     height: 40,
     borderRadius: theme.spacing(1.25),
-    color: theme.palette.primary.main,
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+    color: theme.vars.palette.primary.main,
+    backgroundColor: theme.alpha(theme.vars.palette.primary.main, 0.1),
   }
 })
