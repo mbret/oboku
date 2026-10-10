@@ -68,7 +68,7 @@ export default function AppBar() {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton href={links.app} target="_blank">
+          <ListItemButton href={links.app}>
             <ListItemIcon>
               <PhoneIphoneRounded />
             </ListItemIcon>
@@ -179,7 +179,6 @@ export default function AppBar() {
               variant="contained"
               startIcon={<PhoneIphoneRounded />}
               href={links.app}
-              target="_blank"
             >
               app
             </Button>

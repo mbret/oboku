@@ -11,7 +11,7 @@ export function GetStartedActions() {
         width: { xs: "100%", sm: "auto" },
       }}
     >
-      <Button variant="contained" size="large" href={links.app} target="_blank">
+      <Button variant="contained" size="large" href={links.app}>
         Start using oboku
       </Button>
       <Button

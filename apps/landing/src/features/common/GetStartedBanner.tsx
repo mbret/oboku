@@ -44,7 +44,6 @@ export function GetStartedBanner() {
           }}
           size="large"
           href={links.app}
-          target="_blank"
         >
           Start using oboku
         </Button>
