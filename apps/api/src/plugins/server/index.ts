@@ -1,10 +1,9 @@
 import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
-import type { WebDAVClient } from "webdav"
+import { createClient, type WebDAVClient } from "webdav"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import { getDataSourceData } from "../helpers.js"
 import {
-  getWebdavModule,
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
@@ -23,9 +22,7 @@ async function createServerWebdavClient(
     throw new Error("Server connector not found")
   }
 
-  const webdav = await getWebdavModule()
-
-  return webdav.createClient(`http://localhost:${process.env.PORT}/webdav`, {
+  return createClient(`http://localhost:${process.env.PORT}/webdav`, {
     username: connector.username,
     password,
   })
