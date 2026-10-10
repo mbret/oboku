@@ -26,18 +26,14 @@ export const theme = createTheme({
     dark: {
       palette: {
         primary: {
-          light: `#E7835B`,
           main: design.palette.orangeLight,
-          dark: design.palette.orangeDark,
         },
       },
     },
     light: {
       palette: {
         primary: {
-          light: `#E7835B`,
           main: design.palette.orange,
-          dark: design.palette.orangeDark,
         },
       },
     },
