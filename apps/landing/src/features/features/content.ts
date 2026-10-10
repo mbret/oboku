@@ -159,10 +159,9 @@ export const featureGroups: FeatureGroup[] = [
         alt: "Adding an oboku data source from Dropbox or Google Drive",
       },
     ],
-    chips: syncProviders.map(({ label, docsPath }) => ({
-      label,
-      href: `${links.documentation}/${docsPath}`,
-    })),
+    chips: syncProviders.map(function toDocumentationChip({ label, docsPath }) {
+      return { label, href: `${links.documentation}/${docsPath}` }
+    }),
     features: [
       {
         Icon: CloudRounded,

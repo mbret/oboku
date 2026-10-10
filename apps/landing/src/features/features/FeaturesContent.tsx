@@ -14,72 +14,86 @@ import { links } from "@oboku/shared"
 import { featureGroups, featureHighlights } from "./content"
 import { FeatureGroupSection } from "./FeatureGroupSection"
 
-const HeroSection = styled("section")(({ theme }) => ({
-  paddingTop: theme.spacing(14),
-  paddingBottom: theme.spacing(6),
-  background: `radial-gradient(ellipse at top, ${alpha(theme.palette.primary.main, 0.12)}, transparent 70%)`,
-  [theme.breakpoints.up("sm")]: {
-    paddingTop: theme.spacing(18),
-    paddingBottom: theme.spacing(8),
-  },
-}))
+const HeroSection = styled("section")(function styleHeroSection({ theme }) {
+  return {
+    paddingTop: theme.spacing(14),
+    paddingBottom: theme.spacing(6),
+    background: `radial-gradient(ellipse at top, ${alpha(theme.palette.primary.main, 0.12)}, transparent 70%)`,
+    [theme.breakpoints.up("sm")]: {
+      paddingTop: theme.spacing(18),
+      paddingBottom: theme.spacing(8),
+    },
+  }
+})
 
-const HighlightsBox = styled(Box)(({ theme }) => ({
-  display: "grid",
-  gridTemplateColumns: "1fr 1fr",
-  gap: theme.spacing(2),
-  marginTop: theme.spacing(6),
-  [theme.breakpoints.up("md")]: {
-    gridTemplateColumns: "repeat(4, 1fr)",
-  },
-}))
+const HighlightsBox = styled(Box)(function styleHighlightsBox({ theme }) {
+  return {
+    display: "grid",
+    gridTemplateColumns: "1fr 1fr",
+    gap: theme.spacing(2),
+    marginTop: theme.spacing(6),
+    [theme.breakpoints.up("md")]: {
+      gridTemplateColumns: "repeat(4, 1fr)",
+    },
+  }
+})
 
-const HighlightStack = styled(Stack)(({ theme }) => ({
-  gap: theme.spacing(0.5),
-  padding: theme.spacing(2.5),
-  borderRadius: theme.spacing(1.5),
-  border: `1px solid ${theme.palette.divider}`,
-  backgroundColor: theme.palette.background.paper,
-  textAlign: "center",
-}))
+const HighlightStack = styled(Stack)(function styleHighlightStack({ theme }) {
+  return {
+    gap: theme.spacing(0.5),
+    padding: theme.spacing(2.5),
+    borderRadius: theme.spacing(1.5),
+    border: `1px solid ${theme.palette.divider}`,
+    backgroundColor: theme.palette.background.paper,
+    textAlign: "center",
+  }
+})
 
-const SectionNav = styled("nav")(({ theme }) => ({
-  position: "sticky",
-  top: 56,
-  zIndex: theme.zIndex.appBar - 1,
-  backgroundColor: alpha(theme.palette.background.paper, 0.9),
-  backdropFilter: "blur(8px)",
-  borderTop: `1px solid ${theme.palette.divider}`,
-  borderBottom: `1px solid ${theme.palette.divider}`,
-  [theme.breakpoints.up("sm")]: {
-    top: 64,
-  },
-}))
+const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
+  return {
+    position: "sticky",
+    top: 56,
+    zIndex: theme.zIndex.appBar - 1,
+    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+    backdropFilter: "blur(8px)",
+    borderTop: `1px solid ${theme.palette.divider}`,
+    borderBottom: `1px solid ${theme.palette.divider}`,
+    [theme.breakpoints.up("sm")]: {
+      top: 64,
+    },
+  }
+})
 
-const SectionNavStack = styled(Stack)(({ theme }) => ({
-  flexDirection: "row",
-  gap: theme.spacing(1),
-  paddingTop: theme.spacing(1.5),
-  paddingBottom: theme.spacing(1.5),
-  overflowX: "auto",
-  scrollbarWidth: "none",
-  [theme.breakpoints.up("md")]: {
-    justifyContent: "center",
-  },
-}))
+const SectionNavStack = styled(Stack)(function styleSectionNavStack({ theme }) {
+  return {
+    flexDirection: "row",
+    gap: theme.spacing(1),
+    paddingTop: theme.spacing(1.5),
+    paddingBottom: theme.spacing(1.5),
+    overflowX: "auto",
+    scrollbarWidth: "none",
+    [theme.breakpoints.up("md")]: {
+      justifyContent: "center",
+    },
+  }
+})
 
-const CallToActionStack = styled(Stack)(({ theme }) => ({
-  alignItems: "center",
-  textAlign: "center",
-  gap: theme.spacing(2),
-  padding: theme.spacing(6, 3),
-  borderRadius: theme.spacing(3),
-  color: theme.palette.primary.contrastText,
-  backgroundColor: theme.palette.primary.main,
-  [theme.breakpoints.up("sm")]: {
-    padding: theme.spacing(8, 6),
-  },
-}))
+const CallToActionStack = styled(Stack)(function styleCallToActionStack({
+  theme,
+}) {
+  return {
+    alignItems: "center",
+    textAlign: "center",
+    gap: theme.spacing(2),
+    padding: theme.spacing(6, 3),
+    borderRadius: theme.spacing(3),
+    color: theme.palette.primary.contrastText,
+    backgroundColor: theme.palette.primary.main,
+    [theme.breakpoints.up("sm")]: {
+      padding: theme.spacing(8, 6),
+    },
+  }
+})
 
 export function FeaturesContent() {
   return (
