@@ -12,6 +12,7 @@ import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService.js"
 import { PostgresModule } from "./features/postgres/postgres.module.js"
 import { AppConfigModule } from "./config/config.module.js"
+import { AppConfigService } from "./config/AppConfigService.js"
 import { WebController } from "./web/web.controller.js"
 import { UsersModule } from "./users/users.module.js"
 import { AuthModule } from "./auth/auth.module.js"
@@ -28,15 +29,22 @@ import { PluginsModule } from "./plugins/plugins.module.js"
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.POSTGRES_HOST ?? "postgres",
-      port: 5432,
-      username: process.env.POSTGRES_USER ?? "postgres",
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [AppConfigService],
+      useFactory: function getPostgresConnectionOptions(
+        config: AppConfigService,
+      ) {
+        return {
+          type: "postgres",
+          host: config.POSTGRES_HOST,
+          port: 5432,
+          username: config.POSTGRES_USER,
+          password: config.POSTGRES_PASSWORD,
+          database: config.POSTGRES_DB,
+          autoLoadEntities: true,
+          synchronize: true,
+        }
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -59,7 +67,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
         GOOGLE_API_KEY: Joi.string().optional(),
         DROPBOX_CLIENT_ID: Joi.string().optional(),
         POSTGRES_DB: Joi.string().optional(),
-        POSTGRES_USER: Joi.string().optional(),
+        POSTGRES_USER: Joi.string().default("postgres"),
         POSTGRES_PASSWORD: Joi.string().required(),
         // use default docker service name
         POSTGRES_HOST: Joi.string().default("postgres"),
