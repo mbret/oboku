@@ -17,6 +17,7 @@ export const links = {
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
+  sponsor: `https://github.com/sponsors/mbret`,
   discord: `https://discord.gg/eB6MrMmmPN`,
   reddit: `https://www.reddit.com/r/oboku/`,
 }

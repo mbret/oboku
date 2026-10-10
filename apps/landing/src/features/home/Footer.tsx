@@ -80,6 +80,14 @@ export const Footer = () => {
               >
                 Github
               </MuiLink>
+              <MuiLink
+                href={links.sponsor}
+                target="_blank"
+                variant="body2"
+                underline="hover"
+              >
+                Sponsor
+              </MuiLink>
             </Stack>
           </Stack>
           <Stack
