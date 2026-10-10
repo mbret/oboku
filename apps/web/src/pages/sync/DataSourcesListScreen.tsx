@@ -2,8 +2,6 @@ import { memo, useState } from "react"
 import {
   Link,
   Button,
-  Toolbar,
-  List,
   ListItemText,
   SvgIcon,
   ListItemIcon,
@@ -30,6 +28,8 @@ import { useNavigate, Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const DataSourcesListScreen = memo(() => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -50,102 +50,113 @@ export const DataSourcesListScreen = memo(() => {
           flexFlow: "column",
         }}
       >
-        <Alert severity="info">
-          Automatically synchronize books from an external source (eg: Google
-          Drive shared folder).{" "}
-          <Link href="https://docs.oboku.me" target="__blank">
-            Learn more
-          </Link>
-        </Alert>
-        <Toolbar>
-          <Button
-            style={{
-              width: "100%",
+        <PageContainer>
+          <Stack
+            sx={{
+              gap: 1,
+              mt: 2,
+              mb: 1,
             }}
-            variant="outlined"
-            color="primary"
-            onClick={() => setIsDrawerOpened(true)}
           >
-            Add a new source
-          </Button>
-        </Toolbar>
-        <List>
-          {syncSources?.map((syncSource) => {
-            const dataSource = dataSourcePlugins.find(
-              (dataSource) => dataSource.type === syncSource.type,
-            )
+            <Alert severity="info">
+              Automatically synchronize books from an external source (eg:
+              Google Drive shared folder).{" "}
+              <Link href="https://docs.oboku.me" target="__blank">
+                Learn more
+              </Link>
+            </Alert>
+            <Button
+              variant="outlined"
+              color="primary"
+              onClick={() => setIsDrawerOpened(true)}
+            >
+              Add a new source
+            </Button>
+          </Stack>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection>
+            {syncSources?.map((syncSource) => {
+              const dataSource = dataSourcePlugins.find(
+                (dataSource) => dataSource.type === syncSource.type,
+              )
 
-            return (
-              <ListItemButton
-                key={syncSource._id}
-                component={RouterLink}
-                to={ROUTES.DATASOURCE_DETAILS.replace(":id", syncSource._id)}
-              >
-                {dataSource && (
-                  <ListItemIcon>
-                    <SvgIcon>{dataSource.Icon && <dataSource.Icon />}</SvgIcon>
-                  </ListItemIcon>
-                )}
-                <ListItemText
-                  primary={<SyncSourceLabel syncSource={syncSource} />}
-                  secondary={
-                    syncSource?.syncStatus === "fetching" ? (
-                      "Syncing..."
-                    ) : syncSource?.lastSyncErrorCode ? (
-                      <Box
-                        component="span"
-                        style={{ flexDirection: "row", display: "flex" }}
-                      >
-                        <ErrorIcon
-                          fontSize="small"
-                          style={{ marginRight: theme.spacing(1) }}
-                        />
-                        <Typography variant="body2" component="span">
-                          {`Sync did not succeed`}
-                          {syncSource?.lastSyncErrorCode ===
-                            ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
-                            `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`}
-                          {syncSource?.lastSyncErrorCode ===
-                            ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED &&
-                            `. Your datasource seems to have exceeded its allowed access limit`}
-                          {syncSource?.lastSyncErrorCode ===
-                            ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
-                            `. Our server seems unreachable, make sure you are online to start the synchronization`}
-                        </Typography>
-                      </Box>
-                    ) : syncSource?.lastSyncedAt ? (
-                      `Last synced at ${new Date(
-                        syncSource?.lastSyncedAt,
-                      ).toDateString()}`
-                    ) : (
-                      "Not synced yet"
-                    )
-                  }
-                />
-                <Stack
-                  direction="row"
-                  spacing={1}
-                  sx={{
-                    alignItems: "center",
-                  }}
+              return (
+                <ListItemButton
+                  key={syncSource._id}
+                  component={RouterLink}
+                  to={ROUTES.DATASOURCE_DETAILS.replace(":id", syncSource._id)}
                 >
-                  {syncSource?.isProtected && <LockRounded color="disabled" />}
-                  <IconButton
-                    edge="end"
-                    disableTouchRipple
-                    onClick={(e) => {
-                      e.preventDefault()
-                      e.stopPropagation()
-                      setIsActionsDrawerOpenWith(syncSource._id)
+                  {dataSource && (
+                    <ListItemIcon>
+                      <SvgIcon>
+                        {dataSource.Icon && <dataSource.Icon />}
+                      </SvgIcon>
+                    </ListItemIcon>
+                  )}
+                  <ListItemText
+                    primary={<SyncSourceLabel syncSource={syncSource} />}
+                    secondary={
+                      syncSource?.syncStatus === "fetching" ? (
+                        "Syncing..."
+                      ) : syncSource?.lastSyncErrorCode ? (
+                        <Box
+                          component="span"
+                          style={{ flexDirection: "row", display: "flex" }}
+                        >
+                          <ErrorIcon
+                            fontSize="small"
+                            style={{ marginRight: theme.spacing(1) }}
+                          />
+                          <Typography variant="body2" component="span">
+                            {`Sync did not succeed`}
+                            {syncSource?.lastSyncErrorCode ===
+                              ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
+                              `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`}
+                            {syncSource?.lastSyncErrorCode ===
+                              ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED &&
+                              `. Your datasource seems to have exceeded its allowed access limit`}
+                            {syncSource?.lastSyncErrorCode ===
+                              ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
+                              `. Our server seems unreachable, make sure you are online to start the synchronization`}
+                          </Typography>
+                        </Box>
+                      ) : syncSource?.lastSyncedAt ? (
+                        `Last synced at ${new Date(
+                          syncSource?.lastSyncedAt,
+                        ).toDateString()}`
+                      ) : (
+                        "Not synced yet"
+                      )
+                    }
+                  />
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{
+                      alignItems: "center",
                     }}
                   >
-                    <MoreVertOutlined />
-                  </IconButton>
-                </Stack>
-              </ListItemButton>
-            )
-          })}
-        </List>
+                    {syncSource?.isProtected && (
+                      <LockRounded color="disabled" />
+                    )}
+                    <IconButton
+                      edge="end"
+                      disableTouchRipple
+                      onClick={(e) => {
+                        e.preventDefault()
+                        e.stopPropagation()
+                        setIsActionsDrawerOpenWith(syncSource._id)
+                      }}
+                    >
+                      <MoreVertOutlined />
+                    </IconButton>
+                  </Stack>
+                </ListItemButton>
+              )
+            })}
+          </PageSection>
+        </PageContainer>
       </div>
       <DataSourcesAddDrawer
         open={isDrawerOpened}

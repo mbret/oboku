@@ -2,7 +2,6 @@ import { DeleteRounded } from "@mui/icons-material"
 import {
   Box,
   IconButton,
-  List,
   ListItem,
   ListItemText,
   Stack,
@@ -16,6 +15,7 @@ import {
   clearSynologyDriveSession,
   synologyDriveSessionSignal,
 } from "./auth/auth"
+import { PageSection } from "../../common/PageSection"
 
 const SESSION_MAX_AGE_MINUTES = SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS / (60 * 1000)
 
@@ -94,20 +94,19 @@ export const InfoScreen = () => (
       flex: 1,
     }}
   >
-    <Stack sx={{ px: 2, pt: 2 }}>
-      <Typography
-        variant="subtitle2"
-        gutterBottom
-        sx={{
-          color: "text.secondary",
-        }}
-      >
-        Current session
-      </Typography>
-      <List disablePadding>
-        <CurrentSessionSection />
-      </List>
-    </Stack>
+    <Typography
+      variant="subtitle2"
+      sx={{
+        color: "text.secondary",
+        px: 2,
+        pt: 2,
+      }}
+    >
+      Current session
+    </Typography>
+    <PageSection>
+      <CurrentSessionSection />
+    </PageSection>
     <ConnectorInfoSection connectorType="synology-drive" />
   </Box>
 )

@@ -1,5 +1,5 @@
 import type { DataSourceDocType } from "@oboku/shared"
-import { Alert, Button, Container, Divider, Stack } from "@mui/material"
+import { Alert, Button, Divider, Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
@@ -17,6 +17,7 @@ import { NotFoundPage } from "../../common/NotFoundPage"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { Page } from "../../common/Page"
 import { getPluginByType } from "../../plugins/configure"
+import { PageContainer } from "../../common/PageContainer"
 
 function renderDataSourceEditForm<T extends DataSourceDocType["type"]>({
   dataSource,
@@ -64,7 +65,7 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
   return (
     <Page>
       <TopBarNavigation title={`${label}`} />
-      <Container maxWidth="md">
+      <PageContainer>
         <Stack
           sx={{
             py: 2,
@@ -109,7 +110,7 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
             </Button>
           </Stack>
         </Stack>
-      </Container>
+      </PageContainer>
     </Page>
   )
 })
