@@ -10,13 +10,27 @@ const CallToActionStack = styled(Stack)(function styleCallToActionStack({
     gap: theme.spacing(2),
     padding: theme.spacing(6, 3),
     borderRadius: theme.spacing(3),
-    color: theme.palette.primary.contrastText,
-    backgroundColor: theme.palette.primary.main,
+    color: theme.vars.palette.primary.contrastText,
+    backgroundColor: theme.vars.palette.primary.main,
     [theme.breakpoints.up("sm")]: {
       padding: theme.spacing(8, 6),
     },
   }
 })
+
+// Cast preserves Button's `href` overload (an anchor accepting `target`),
+// which MUI's `styled` otherwise erases.
+const InvertedButton = styled(Button)(function styleInvertedButton({ theme }) {
+  const hoverOverlay = theme.vars.palette.action.hover
+
+  return {
+    color: theme.vars.palette.primary.main,
+    backgroundColor: theme.vars.palette.primary.contrastText,
+    "&:hover": {
+      backgroundImage: `linear-gradient(${hoverOverlay}, ${hoverOverlay})`,
+    },
+  }
+}) as typeof Button
 
 export function GetStartedBanner() {
   return (
@@ -35,19 +49,14 @@ export function GetStartedBanner() {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <Button
+        <InvertedButton
           variant="contained"
-          sx={{
-            color: "primary.main",
-            bgcolor: "common.white",
-            "&:hover": { bgcolor: "grey.100" },
-          }}
           size="large"
           href={links.app}
           target="_blank"
         >
           Start using oboku
-        </Button>
+        </InvertedButton>
         <Button
           variant="outlined"
           color="inherit"
