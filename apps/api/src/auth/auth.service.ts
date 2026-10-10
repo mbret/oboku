@@ -224,7 +224,9 @@ export class AuthService {
       throw new Error("Unable to retrieve user")
     }
 
-    if (user.couchName !== couchUser.name) {
+    const isCouchNameRecorded = user.couchName === couchUser.name
+
+    if (!isCouchNameRecorded) {
       user.couchName = couchUser.name
       await this.usersService.saveUser(user)
     }
