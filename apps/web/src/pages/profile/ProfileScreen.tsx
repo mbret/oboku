@@ -33,7 +33,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes } from "@oboku/shared"
+import { formatBytes, type GetKoreaderSyncResponse } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -59,6 +59,18 @@ import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
+import { useKoreaderSync } from "../../koreaderSync/useKoreaderSync"
+
+const KOREADER_SYNC_PURPOSE =
+  "Sync your reading position with KOReader, Readest, Crosspoint…"
+
+const describeKoreaderSync = (koreaderSync?: GetKoreaderSyncResponse) => {
+  if (!koreaderSync) return KOREADER_SYNC_PURPOSE
+
+  return koreaderSync.passwordCreatedAt
+    ? "On"
+    : `Off · ${KOREADER_SYNC_PURPOSE}`
+}
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -68,6 +80,7 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
+  const { data: koreaderSync } = useKoreaderSync()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -170,6 +183,18 @@ export const ProfileScreen = () => {
         </ListItemButton>
         <ListItemButton
           onClick={() => {
+            navigate(ROUTES.STATISTICS)
+          }}
+        >
+          <ListItemIcon>
+            <BarChartRounded />
+          </ListItemIcon>
+          <ListItemText primary="Statistics" />
+        </ListItemButton>
+      </List>
+      <List subheader={<ListSubheader disableSticky>Other apps</ListSubheader>}>
+        <ListItemButton
+          onClick={() => {
             navigate(ROUTES.KOREADER_SYNC)
           }}
         >
@@ -178,18 +203,8 @@ export const ProfileScreen = () => {
           </ListItemIcon>
           <ListItemText
             primary="KOReader sync"
-            secondary="Sync your reading position with KOReader, Readest, Crosspoint…"
+            secondary={describeKoreaderSync(koreaderSync)}
           />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.STATISTICS)
-          }}
-        >
-          <ListItemIcon>
-            <BarChartRounded />
-          </ListItemIcon>
-          <ListItemText primary="Statistics" />
         </ListItemButton>
       </List>
       <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
