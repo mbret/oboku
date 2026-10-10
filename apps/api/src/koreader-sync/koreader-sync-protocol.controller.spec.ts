@@ -46,14 +46,16 @@ const createUserStore = (): Pick<UserPostgresService, "findByEmail"> => {
   }
 }
 
-const createKoreaderSyncStore = (): Pick<
+type KoreaderSyncStore = Pick<
   KoreaderSyncPostgresService,
   | "findCredentialByUserId"
   | "saveCredential"
   | "findProgress"
   | "saveProgress"
   | "deleteByUserId"
-> => {
+>
+
+const createKoreaderSyncStore = (): KoreaderSyncStore => {
   const credentials = new Map<number, KoreaderSyncCredentialPostgresEntity>()
   const progresses = new Map<string, KoreaderSyncProgressPostgresEntity>()
   const toProgressKey = (userId: number, document: string) =>
@@ -72,10 +74,14 @@ const createKoreaderSyncStore = (): Pick<
     findProgress: async ({ userId, document }) =>
       progresses.get(toProgressKey(userId, document)) ?? null,
     saveProgress: async (progress: KoreaderSyncProgress) => {
+      if (!credentials.has(progress.user_id)) return false
+
       progresses.set(toProgressKey(progress.user_id, progress.document), {
         id: progresses.size + 1,
         ...progress,
       })
+
+      return true
     },
     deleteByUserId: async (userId) => {
       credentials.delete(userId)
@@ -90,6 +96,7 @@ const createKoreaderSyncStore = (): Pick<
 describe("KoreaderSyncProtocolController", () => {
   let app: INestApplication<App>
   let koreaderSyncService: KoreaderSyncService
+  let koreaderSyncStore: KoreaderSyncStore
   let readerKey: string
 
   const authorizedAs = (username: string, key: string) => ({
@@ -118,16 +125,15 @@ describe("KoreaderSyncProtocolController", () => {
       .set(headers)
 
   beforeEach(async () => {
+    koreaderSyncStore = createKoreaderSyncStore()
+
     const module = await Test.createTestingModule({
       controllers: [KoreaderSyncProtocolController],
       providers: [
         KoreaderSyncService,
         KoreaderSyncAuthGuard,
         { provide: UserPostgresService, useValue: createUserStore() },
-        {
-          provide: KoreaderSyncPostgresService,
-          useValue: createKoreaderSyncStore(),
-        },
+        { provide: KoreaderSyncPostgresService, useValue: koreaderSyncStore },
         { provide: APP_GUARD, useClass: AuthGuard },
         {
           provide: JwtService,
@@ -341,6 +347,27 @@ describe("KoreaderSyncProtocolController", () => {
       expect(pushed.body).toEqual(UNAUTHORIZED)
       expect(pulled.status).toBe(401)
       expect(pulled.body).toEqual(UNAUTHORIZED)
+    })
+
+    it("refuses a push whose credential is deleted before it is saved", async () => {
+      const saveProgress = koreaderSyncStore.saveProgress
+      vi.spyOn(koreaderSyncStore, "saveProgress").mockImplementationOnce(
+        async function turnOffBeforeSaving(progress) {
+          await koreaderSyncStore.deleteByUserId(progress.user_id)
+
+          return saveProgress(progress)
+        },
+      )
+
+      const pushed = await pushProgress(koreaderPush)
+
+      expect(pushed.status).toBe(401)
+      expect(pushed.body).toEqual(UNAUTHORIZED)
+
+      readerKey = toSyncKey(await koreaderSyncService.createPassword(READER.id))
+      const pulled = await pullProgress(DOCUMENT)
+
+      expect(pulled.body).toEqual({})
     })
 
     it("forgets the pushed positions once sync is turned off", async () => {

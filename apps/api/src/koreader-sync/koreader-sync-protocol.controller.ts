@@ -52,7 +52,7 @@ export class KoreaderSyncProtocolController {
       parseProgressUpdate(body)
     const updatedAt = new Date()
 
-    await this.koreaderSyncService.saveProgress({
+    const isSaved = await this.koreaderSyncService.saveProgress({
       user_id: userId,
       document,
       progress,
@@ -61,6 +61,8 @@ export class KoreaderSyncProtocolController {
       device_id: deviceId,
       updated_at: updatedAt,
     })
+
+    if (!isSaved) throw createKoreaderSyncError("unauthorized")
 
     return { document, timestamp: toSyncTimestamp(updatedAt) }
   }
