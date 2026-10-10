@@ -1,12 +1,16 @@
-# KOReader Sync
+# KOReader Sync Server
 
-oboku can be the sync server of KOReader and of the other apps that speak its sync protocol, such as Readest and Crosspoint. Point every device at oboku and the reading position follows you from one to the next.
+oboku can be the sync server of KOReader and of the other apps that speak its sync protocol, such as Readest and Crosspoint. Point every device at oboku and they sync their reading position with each other through it.
+
+{% hint style="info" %}
+This does not sync your reading in oboku itself: oboku's reader neither sends its position to the server nor follows the positions your devices send.
+{% endhint %}
 
 This only syncs reading positions, as the KOReader sync server does. It does not sync files, highlights or the library.
 
 ## Turn it on
 
-In oboku, open **Profile**, then **KOReader sync** under **Other apps**, and generate a password. The screen then shows the three values a device needs:
+In oboku, open **Profile**, then **KOReader sync server** under **Other apps**, and generate a password. The screen then shows the three values a device needs:
 
 * **Server**: your oboku API address followed by `/kosync`. Copy it from the screen rather than typing it from memory.
 * **Username**: the email of your oboku account.
@@ -29,4 +33,4 @@ Devices recognize a book only when they identify it the same way. KOReader ident
 
 ## Turn it off
 
-**Profile > KOReader sync > Turn off KOReader sync** signs every device out and deletes the reading positions they synced. Deleting your account does the same.
+**Profile > KOReader sync server > Turn off the KOReader sync server** signs every device out and deletes the reading positions they synced. Deleting your account does the same.

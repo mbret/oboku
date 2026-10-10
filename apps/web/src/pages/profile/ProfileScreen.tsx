@@ -33,7 +33,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes, type GetKoreaderSyncResponse } from "@oboku/shared"
+import { formatBytes, type GetKoreaderSyncServerResponse } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -59,17 +59,19 @@ import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
-import { useKoreaderSync } from "../../koreaderSync/useKoreaderSync"
+import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
 
-const KOREADER_SYNC_PURPOSE =
-  "Sync your reading position with KOReader, Readest, Crosspoint…"
+const KOREADER_SYNC_SERVER_PURPOSE =
+  "Let KOReader, Readest, Crosspoint… sync their reading position through oboku"
 
-const describeKoreaderSync = (koreaderSync?: GetKoreaderSyncResponse) => {
-  if (!koreaderSync) return KOREADER_SYNC_PURPOSE
+const describeKoreaderSyncServer = (
+  koreaderSyncServer?: GetKoreaderSyncServerResponse,
+) => {
+  if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
 
-  return koreaderSync.passwordCreatedAt
+  return koreaderSyncServer.passwordCreatedAt
     ? "On"
-    : `Off · ${KOREADER_SYNC_PURPOSE}`
+    : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
 }
 
 export const ProfileScreen = () => {
@@ -80,7 +82,7 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
-  const { data: koreaderSync } = useKoreaderSync()
+  const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -195,15 +197,15 @@ export const ProfileScreen = () => {
       <List subheader={<ListSubheader disableSticky>Other apps</ListSubheader>}>
         <ListItemButton
           onClick={() => {
-            navigate(ROUTES.KOREADER_SYNC)
+            navigate(ROUTES.KOREADER_SYNC_SERVER)
           }}
         >
           <ListItemIcon>
             <SyncRounded />
           </ListItemIcon>
           <ListItemText
-            primary="KOReader sync"
-            secondary={describeKoreaderSync(koreaderSync)}
+            primary="KOReader sync server"
+            secondary={describeKoreaderSyncServer(koreaderSyncServer)}
           />
         </ListItemButton>
       </List>

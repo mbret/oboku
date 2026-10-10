@@ -13,7 +13,7 @@ import {
   KoreaderSyncAuthGuard,
   WithKoreaderSyncUserId,
 } from "./koreader-sync-auth.guard.js"
-import { KoreaderSyncService } from "./koreader-sync.service.js"
+import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
 import {
   parseProgressUpdate,
   toProgressResponse,
@@ -29,7 +29,9 @@ import {
 @Public()
 @Controller("kosync")
 export class KoreaderSyncProtocolController {
-  constructor(private readonly koreaderSyncService: KoreaderSyncService) {}
+  constructor(
+    private readonly koreaderSyncServerService: KoreaderSyncServerService,
+  ) {}
 
   @Post("users/create")
   register(): never {
@@ -52,7 +54,7 @@ export class KoreaderSyncProtocolController {
       parseProgressUpdate(body)
     const updatedAt = new Date()
 
-    const isSaved = await this.koreaderSyncService.saveProgress({
+    const isSaved = await this.koreaderSyncServerService.saveProgress({
       user_id: userId,
       document,
       progress,
@@ -73,7 +75,7 @@ export class KoreaderSyncProtocolController {
     @WithKoreaderSyncUserId() userId: number,
     @Param("document") document: string,
   ) {
-    const progress = await this.koreaderSyncService.findProgress({
+    const progress = await this.koreaderSyncServerService.findProgress({
       userId,
       document,
     })

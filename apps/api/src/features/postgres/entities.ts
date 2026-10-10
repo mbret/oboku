@@ -248,8 +248,9 @@ export class RefreshTokenPostgresEntity {
 }
 
 /**
- * A user's KOReader sync login. Devices send the MD5 of the password as
- * `x-auth-key` on every request; only a SHA-256 of that key is kept.
+ * A user's login to oboku's KOReader sync server. Devices send the MD5 of
+ * the password as `x-auth-key` on every request; only a SHA-256 of that key
+ * is kept.
  */
 @Entity({ name: "koreader_sync_credentials" })
 @Index(["user_id"], { unique: true })

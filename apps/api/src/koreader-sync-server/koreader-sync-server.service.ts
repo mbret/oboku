@@ -12,7 +12,7 @@ import {
 } from "./credentials.js"
 
 @Injectable()
-export class KoreaderSyncService {
+export class KoreaderSyncServerService {
   constructor(
     private readonly userPostgresService: UserPostgresService,
     private readonly koreaderSyncPostgresService: KoreaderSyncPostgresService,

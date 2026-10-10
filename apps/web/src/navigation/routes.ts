@@ -12,7 +12,7 @@ export const ROUTES = {
   NOTIFICATIONS: "/profile/notifications",
   SECURITY: "/profile/security",
   SECRETS: "/profile/secrets",
-  KOREADER_SYNC: "/profile/koreader-sync",
+  KOREADER_SYNC_SERVER: "/profile/koreader-sync-server",
   SETTINGS: "/profile/settings",
   STATISTICS: "/profile/statistics",
   PLUGINS: "/plugins",

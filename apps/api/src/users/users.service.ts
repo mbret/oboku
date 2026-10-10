@@ -49,8 +49,8 @@ export class UsersService {
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
    * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
-   * notifications, sync reports, KOReader sync data, user row). Cover object
-   * deletion is fire-and-forget afterward.
+   * notifications, sync reports, KOReader sync server data, user row). Cover
+   * object deletion is fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
    * Postgres are both cleared for that account, so re-registration with the

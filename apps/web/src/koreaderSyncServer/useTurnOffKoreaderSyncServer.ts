@@ -1,18 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { useActiveProfileId } from "../profiles/active/activeProfileId"
-import { koreaderSyncQueryKey } from "./queryKeys"
+import { koreaderSyncServerQueryKey } from "./queryKeys"
 
-export const useTurnOffKoreaderSync = () => {
+export const useTurnOffKoreaderSyncServer = () => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
 
   return useMutation({
-    mutationFn: httpClientApi.turnOffKoreaderSync,
-    onSuccess: function refreshKoreaderSync() {
+    mutationFn: httpClientApi.turnOffKoreaderSyncServer,
+    onSuccess: function refreshKoreaderSyncServer() {
       return queryClient.invalidateQueries({
-        queryKey: koreaderSyncQueryKey(activeProfileId),
+        queryKey: koreaderSyncServerQueryKey(activeProfileId),
       })
     },
   })

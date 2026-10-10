@@ -22,7 +22,7 @@ import {
 import { toSyncKey } from "./credentials.js"
 import { KoreaderSyncAuthGuard } from "./koreader-sync-auth.guard.js"
 import { KoreaderSyncProtocolController } from "./koreader-sync-protocol.controller.js"
-import { KoreaderSyncService } from "./koreader-sync.service.js"
+import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
 
 const READER = { id: 1, email: "reader@example.com" }
 const OTHER_READER = { id: 2, email: "other@example.com" }
@@ -95,7 +95,7 @@ const createKoreaderSyncStore = (): KoreaderSyncStore => {
 
 describe("KoreaderSyncProtocolController", () => {
   let app: INestApplication<App>
-  let koreaderSyncService: KoreaderSyncService
+  let koreaderSyncServerService: KoreaderSyncServerService
   let koreaderSyncStore: KoreaderSyncStore
   let readerKey: string
 
@@ -130,7 +130,7 @@ describe("KoreaderSyncProtocolController", () => {
     const module = await Test.createTestingModule({
       controllers: [KoreaderSyncProtocolController],
       providers: [
-        KoreaderSyncService,
+        KoreaderSyncServerService,
         KoreaderSyncAuthGuard,
         { provide: UserPostgresService, useValue: createUserStore() },
         { provide: KoreaderSyncPostgresService, useValue: koreaderSyncStore },
@@ -148,8 +148,10 @@ describe("KoreaderSyncProtocolController", () => {
     app = module.createNestApplication()
     await app.init()
 
-    koreaderSyncService = module.get(KoreaderSyncService)
-    readerKey = toSyncKey(await koreaderSyncService.createPassword(READER.id))
+    koreaderSyncServerService = module.get(KoreaderSyncServerService)
+    readerKey = toSyncKey(
+      await koreaderSyncServerService.createPassword(READER.id),
+    )
   })
 
   afterEach(async () => {
@@ -211,7 +213,7 @@ describe("KoreaderSyncProtocolController", () => {
 
     it("refuses the previous password once a new one is generated", async () => {
       const previousKey = readerKey
-      await koreaderSyncService.createPassword(READER.id)
+      await koreaderSyncServerService.createPassword(READER.id)
 
       const response = await request(app.getHttpServer())
         .get("/kosync/users/auth")
@@ -221,7 +223,7 @@ describe("KoreaderSyncProtocolController", () => {
     })
 
     it("refuses every device once sync is turned off", async () => {
-      await koreaderSyncService.turnOff(READER.id)
+      await koreaderSyncServerService.turnOff(READER.id)
 
       const response = await request(app.getHttpServer())
         .get("/kosync/users/auth")
@@ -291,7 +293,7 @@ describe("KoreaderSyncProtocolController", () => {
     it("keeps each user's documents apart", async () => {
       await pushProgress(koreaderPush)
       const otherKey = toSyncKey(
-        await koreaderSyncService.createPassword(OTHER_READER.id),
+        await koreaderSyncServerService.createPassword(OTHER_READER.id),
       )
 
       const pulled = await pullProgress(
@@ -364,7 +366,9 @@ describe("KoreaderSyncProtocolController", () => {
       expect(pushed.status).toBe(401)
       expect(pushed.body).toEqual(UNAUTHORIZED)
 
-      readerKey = toSyncKey(await koreaderSyncService.createPassword(READER.id))
+      readerKey = toSyncKey(
+        await koreaderSyncServerService.createPassword(READER.id),
+      )
       const pulled = await pullProgress(DOCUMENT)
 
       expect(pulled.body).toEqual({})
@@ -372,8 +376,10 @@ describe("KoreaderSyncProtocolController", () => {
 
     it("forgets the pushed positions once sync is turned off", async () => {
       await pushProgress(koreaderPush)
-      await koreaderSyncService.turnOff(READER.id)
-      readerKey = toSyncKey(await koreaderSyncService.createPassword(READER.id))
+      await koreaderSyncServerService.turnOff(READER.id)
+      readerKey = toSyncKey(
+        await koreaderSyncServerService.createPassword(READER.id),
+      )
 
       const pulled = await pullProgress(DOCUMENT)
 

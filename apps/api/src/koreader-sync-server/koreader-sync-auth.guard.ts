@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common"
 import type { Request } from "express"
 import { createKoreaderSyncError } from "./errors.js"
-import { KoreaderSyncService } from "./koreader-sync.service.js"
+import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
 
 type KoreaderSyncRequest = Request & { koreaderSyncUserId?: number }
 
@@ -16,7 +16,9 @@ type KoreaderSyncRequest = Request & { koreaderSyncUserId?: number }
  */
 @Injectable()
 export class KoreaderSyncAuthGuard implements CanActivate {
-  constructor(private readonly koreaderSyncService: KoreaderSyncService) {}
+  constructor(
+    private readonly koreaderSyncServerService: KoreaderSyncServerService,
+  ) {}
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<KoreaderSyncRequest>()
@@ -25,7 +27,7 @@ export class KoreaderSyncAuthGuard implements CanActivate {
 
     const userId =
       username && key
-        ? await this.koreaderSyncService.authorize({ username, key })
+        ? await this.koreaderSyncServerService.authorize({ username, key })
         : undefined
 
     if (userId === undefined) throw createKoreaderSyncError("unauthorized")

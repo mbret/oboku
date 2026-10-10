@@ -1,22 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { useActiveProfileId } from "../profiles/active/activeProfileId"
-import { koreaderSyncQueryKey } from "./queryKeys"
+import { koreaderSyncServerQueryKey } from "./queryKeys"
 
-export const useCreateKoreaderSyncPassword = () => {
+export const useCreateKoreaderSyncServerPassword = () => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
 
   return useMutation({
-    mutationFn: async function createKoreaderSyncPassword() {
-      const { data } = await httpClientApi.createKoreaderSyncPassword()
+    mutationFn: async function createKoreaderSyncServerPassword() {
+      const { data } = await httpClientApi.createKoreaderSyncServerPassword()
 
       return data
     },
-    onSuccess: function refreshKoreaderSync() {
+    onSuccess: function refreshKoreaderSyncServer() {
       return queryClient.invalidateQueries({
-        queryKey: koreaderSyncQueryKey(activeProfileId),
+        queryKey: koreaderSyncServerQueryKey(activeProfileId),
       })
     },
   })

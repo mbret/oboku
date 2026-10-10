@@ -25,7 +25,7 @@ const KOREADER_SYNC_ERRORS = {
     status: HttpStatus.PAYMENT_REQUIRED,
     code: 2005,
     message:
-      "User registration is disabled. Generate your password in oboku, under Profile > KOReader sync.",
+      "User registration is disabled. Generate your password in oboku, under Profile > KOReader sync server.",
   },
   documentNotServable: {
     status: HttpStatus.FORBIDDEN,

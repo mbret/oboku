@@ -1,23 +1,23 @@
 import { useQuery } from "@tanstack/react-query"
-import type { GetKoreaderSyncResponse } from "@oboku/shared"
+import type { GetKoreaderSyncServerResponse } from "@oboku/shared"
 import { useQueryOptionsWithAuthentication } from "../auth"
 import { useConfig } from "../config/useConfig"
 import { useHttpClientApi } from "../http"
 import { useActiveProfileId } from "../profiles/active/activeProfileId"
-import { koreaderSyncQueryKey } from "./queryKeys"
+import { koreaderSyncServerQueryKey } from "./queryKeys"
 
-export const useKoreaderSync = () => {
+export const useKoreaderSyncServer = () => {
   const httpClientApi = useHttpClientApi()
   const { data: config } = useConfig()
   const activeProfileId = useActiveProfileId()
 
   return useQuery(
     useQueryOptionsWithAuthentication({
-      queryKey: koreaderSyncQueryKey(activeProfileId),
-      queryFn: async function fetchKoreaderSync() {
+      queryKey: koreaderSyncServerQueryKey(activeProfileId),
+      queryFn: async function fetchKoreaderSyncServer() {
         const { data } =
-          await httpClientApi.fetchOrThrow<GetKoreaderSyncResponse>(
-            `${config?.API_URL}/koreader-sync`,
+          await httpClientApi.fetchOrThrow<GetKoreaderSyncServerResponse>(
+            `${config?.API_URL}/koreader-sync-server`,
           )
 
         return data
