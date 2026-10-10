@@ -49,7 +49,6 @@
     "jose": "^6.2.12",
     "mime-types": "^3.0.2",
     "nano": "^11.0.7",
-    "node-domexception": "^2.0.2",
     "node-unrar-js": "^2.0.2",
     "nodemailer": "^10.0.16",
     "pg": "^8.23.1",
