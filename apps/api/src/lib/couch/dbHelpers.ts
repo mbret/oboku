@@ -13,6 +13,7 @@ import {
   emailToCouchUserDocId,
   emailToUserDbName,
 } from "../../couch/couch.service.js"
+import { normalizeEmail } from "../../features/postgres/user-postgres.service.js"
 import { User } from "../couchDbEntities.js"
 import { waitForRandomTime } from "../utils.js"
 import { generatePassword } from "../authentication/generatePassword.js"
@@ -99,6 +100,38 @@ export const deleteCouchUser = async (
 }
 
 /**
+ * Users created before emails were normalized keep their original casing in
+ * `name` and `_id`, so they cannot be fetched by the normalized doc id.
+ */
+async function findLegacyCouchUserByNormalizedName(
+  usersDb: createNano.DocumentScope<User>,
+  email: string,
+): Promise<User | undefined> {
+  const { docs } = await usersDb.find({
+    selector: { type: "user" },
+    limit: 99999,
+  })
+
+  return docs.find((doc) => normalizeEmail(doc.name) === email)
+}
+
+async function findCouchUserFromEmail(
+  db: createNano.ServerScope,
+  rawEmail: string,
+): Promise<User | undefined> {
+  const email = normalizeEmail(rawEmail)
+  const usersDb = db.use<User>("_users")
+
+  try {
+    return await usersDb.get(emailToCouchUserDocId(email))
+  } catch (error) {
+    if (!isCouchNotFound(error)) throw error
+  }
+
+  return findLegacyCouchUserByNormalizedName(usersDb, email)
+}
+
+/**
  * couch_peruser re-runs its create-database-and-set-security step on every
  * change to a `_users` doc, so re-saving the doc unchanged makes it recreate a
  * database that vanished under a live user. A conflict means a concurrent
@@ -122,20 +155,16 @@ async function touchCouchUser(db: createNano.ServerScope, user: User) {
  */
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
-  email: string,
+  rawEmail: string,
 ): Promise<{ user: User; userDbPending: boolean }> => {
-  const usersDb = db.use<User>("_users")
-
-  const {
-    docs: [user],
-  } = await usersDb.find({
-    selector: {
-      email,
-    },
-  })
+  const user = await findCouchUserFromEmail(db, rawEmail)
 
   if (!user) {
-    const createdUser = await createUser(db, email, generatePassword())
+    const createdUser = await createUser(
+      db,
+      normalizeEmail(rawEmail),
+      generatePassword(),
+    )
 
     return { user: createdUser, userDbPending: true }
   }

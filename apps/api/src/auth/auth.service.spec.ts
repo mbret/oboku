@@ -31,18 +31,30 @@ const readerSignIn = {
   public_key: { kty: "EC", crv: "P-256", x: "x", y: "y" },
 }
 
-const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
+const createFakeAdminNano = ({
+  userDbExists,
+  couchUserName = "reader@example.com",
+}: {
+  userDbExists: boolean
+  couchUserName?: string
+}) => {
   const couchUser = {
-    _id: "org.couchdb.user:reader@example.com",
+    _id: `org.couchdb.user:${couchUserName}`,
     _rev: "1-abc",
-    name: "reader@example.com",
-    email: "reader@example.com",
+    name: couchUserName,
+    email: couchUserName,
     type: "user",
     roles: [],
   }
   let dbExists = userDbExists
 
   const usersDb = {
+    get: vi.fn(async function getUserDocIfExists(id: string) {
+      if (id !== couchUser._id) {
+        throw Object.assign(new Error("not_found"), { statusCode: 404 })
+      }
+      return couchUser
+    }),
     find: vi.fn().mockResolvedValue({ docs: [couchUser] }),
     insert: vi.fn(async function recreateDatabaseLikeCouchPeruser() {
       dbExists = true
@@ -62,8 +74,8 @@ const createFakeAdminNano = ({ userDbExists }: { userDbExists: boolean }) => {
   }
 
   return {
-    // Only `_users` find/insert and `db.get` are exercised by sign-in; nano's
-    // full ServerScope surface is irrelevant to these tests.
+    // Only `_users` get/find/insert and `db.get` are exercised; nano's full
+    // ServerScope surface is irrelevant to these tests.
     server: server as unknown as createNano.ServerScope,
     usersDb,
     couchUser,
@@ -303,6 +315,7 @@ describe("AuthService", () => {
     usersService.findUserById.mockResolvedValue({
       id: 42,
       email: "reader@example.com",
+      couchName: "reader@example.com",
     })
     couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
 
@@ -320,6 +333,73 @@ describe("AuthService", () => {
       presentedRow,
     )
     expect(usersService.findUserById).toHaveBeenCalledWith(42)
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith({
+      email: "reader@example.com",
+      userId: 42,
+    })
+    expect(couchService.createAdminNanoInstance).not.toHaveBeenCalled()
+    expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
+  })
+
+  it("issues the refreshed access token with the recorded legacy Couch name", async () => {
+    refreshTokensService.findByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
+      session_id: "session-1",
+    })
+    refreshProofService.isProofValid.mockResolvedValue(true)
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
+    })
+    usersService.findUserById.mockResolvedValue({
+      id: 42,
+      email: "reader@example.com",
+      couchName: "Reader@Example.com",
+    })
+    couchService.generateUserJWT.mockResolvedValue("fresh-access-token")
+
+    await service.refreshToken({
+      refreshToken: "opaque-refresh-token",
+      proof: "valid-proof",
+    })
+
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith({
+      email: "Reader@Example.com",
+      userId: 42,
+    })
+  })
+
+  it("rejects refresh for an account that has not signed in since couchName was recorded", async () => {
+    refreshTokensService.findByToken.mockResolvedValue({
+      id: 7,
+      user_id: 42,
+      installation_id: "installation-1",
+      public_key: '{"kty":"EC"}',
+      session_id: "session-1",
+    })
+    refreshProofService.isProofValid.mockResolvedValue(true)
+    refreshTokensService.rotateForRefresh.mockResolvedValue({
+      status: "rotated",
+      session: { id: 7, user_id: 42, installation_id: "installation-1" },
+      refreshToken: "rotated-refresh-token",
+    })
+    usersService.findUserById.mockResolvedValue({
+      id: 42,
+      email: "reader@example.com",
+    })
+
+    await expect(
+      service.refreshToken({
+        refreshToken: "opaque-refresh-token",
+        proof: "valid-proof",
+      }),
+    ).rejects.toThrow()
+
+    expect(couchService.generateUserJWT).not.toHaveBeenCalled()
     expect(refreshTokensService.deleteById).not.toHaveBeenCalled()
   })
 
@@ -485,12 +565,17 @@ describe("AuthService", () => {
     )
   })
 
-  const mockReaderSignInDependencies = () => {
+  const mockReaderSignInDependencies = ({
+    couchName,
+  }: {
+    couchName?: string
+  } = {}) => {
     usersService.findUserByEmail.mockResolvedValue({
       id: 1,
       email: "reader@example.com",
       password: readerPasswordHash,
       emailVerified: true,
+      couchName,
     })
     couchService.generateUserJWT.mockResolvedValue("access-token")
     refreshTokensService.issueTokenForInstallation.mockResolvedValue({
@@ -521,5 +606,47 @@ describe("AuthService", () => {
 
     expect(usersDb.insert).toHaveBeenCalledWith(couchUser, couchUser._id)
     expect(session.dbName).toBe(emailToUserDbName("reader@example.com"))
+  })
+
+  it("records the Couch name on the account at sign-in", async () => {
+    mockReaderSignInDependencies()
+    const { server } = createFakeAdminNano({ userDbExists: true })
+    couchService.createAdminNanoInstance.mockResolvedValue(server)
+
+    await service.signInWithEmail(readerSignIn)
+
+    expect(usersService.saveUser).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1, couchName: "reader@example.com" }),
+    )
+  })
+
+  it("keeps a legacy account on its original Couch name and database", async () => {
+    mockReaderSignInDependencies()
+    const { server, usersDb } = createFakeAdminNano({
+      userDbExists: true,
+      couchUserName: "Reader@Example.com",
+    })
+    couchService.createAdminNanoInstance.mockResolvedValue(server)
+
+    const session = await service.signInWithEmail(readerSignIn)
+
+    expect(usersDb.insert).not.toHaveBeenCalled()
+    expect(session.dbName).toBe(emailToUserDbName("Reader@Example.com"))
+    expect(couchService.generateUserJWT).toHaveBeenCalledWith(
+      expect.objectContaining({ email: "Reader@Example.com" }),
+    )
+    expect(usersService.saveUser).toHaveBeenCalledWith(
+      expect.objectContaining({ id: 1, couchName: "Reader@Example.com" }),
+    )
+  })
+
+  it("does not rewrite the account when its Couch name is already recorded", async () => {
+    mockReaderSignInDependencies({ couchName: "reader@example.com" })
+    const { server } = createFakeAdminNano({ userDbExists: true })
+    couchService.createAdminNanoInstance.mockResolvedValue(server)
+
+    await service.signInWithEmail(readerSignIn)
+
+    expect(usersService.saveUser).not.toHaveBeenCalled()
   })
 })
