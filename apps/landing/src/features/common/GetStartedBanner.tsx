@@ -53,7 +53,6 @@ export function GetStartedBanner() {
           variant="contained"
           size="large"
           href={links.app}
-          target="_blank"
         >
           Start using oboku
         </InvertedButton>
