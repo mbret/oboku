@@ -1,3 +1,5 @@
+"use client"
+
 import { alpha, styled } from "@mui/material"
 
 export const GlowHeroSection = styled("section")(function styleGlowHeroSection({

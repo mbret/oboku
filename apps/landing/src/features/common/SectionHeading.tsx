@@ -1,3 +1,5 @@
+"use client"
+
 import { Stack, styled, Typography } from "@mui/material"
 
 const OverlineTypography = styled(Typography)(function styleOverlineTypography({

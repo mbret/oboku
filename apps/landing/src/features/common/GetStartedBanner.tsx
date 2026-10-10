@@ -1,22 +1,6 @@
-import { Button, Stack, styled, Typography } from "@mui/material"
+import { Button, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
-
-const CallToActionStack = styled(Stack)(function styleCallToActionStack({
-  theme,
-}) {
-  return {
-    alignItems: "center",
-    textAlign: "center",
-    gap: theme.spacing(2),
-    padding: theme.spacing(6, 3),
-    borderRadius: theme.spacing(3),
-    color: theme.palette.primary.contrastText,
-    backgroundColor: theme.palette.primary.main,
-    [theme.breakpoints.up("sm")]: {
-      padding: theme.spacing(8, 6),
-    },
-  }
-})
+import { CallToActionStack } from "./GetStartedBanner.styled"
 
 export function GetStartedBanner() {
   return (

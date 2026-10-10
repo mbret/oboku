@@ -1,3 +1,5 @@
+"use client"
+
 import { styled } from "@mui/material"
 
 export const BandSection = styled("section")(function styleBandSection({

@@ -1,70 +1,15 @@
-"use client"
-
-import {
-  alpha,
-  Box,
-  Chip,
-  Container,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material"
+import { Box, Chip, Container, Stack, Typography } from "@mui/material"
 import { GetStartedActions } from "../common/GetStartedActions"
 import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
-import { outlinedCardStyles } from "../common/outlinedCardStyles"
 import { featureGroups, featureHighlights } from "./content"
 import { FeatureGroupSection } from "./FeatureGroupSection"
-
-const HighlightsBox = styled(Box)(function styleHighlightsBox({ theme }) {
-  return {
-    display: "grid",
-    gridTemplateColumns: "1fr 1fr",
-    gap: theme.spacing(2),
-    marginTop: theme.spacing(6),
-    [theme.breakpoints.up("md")]: {
-      gridTemplateColumns: "repeat(4, 1fr)",
-    },
-  }
-})
-
-const HighlightStack = styled(Stack)(function styleHighlightStack({ theme }) {
-  return {
-    ...outlinedCardStyles(theme),
-    gap: theme.spacing(0.5),
-    padding: theme.spacing(2.5),
-    textAlign: "center",
-  }
-})
-
-const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
-  return {
-    position: "sticky",
-    top: 56,
-    zIndex: theme.zIndex.appBar - 1,
-    backgroundColor: alpha(theme.palette.background.paper, 0.9),
-    backdropFilter: "blur(8px)",
-    borderTop: `1px solid ${theme.palette.divider}`,
-    borderBottom: `1px solid ${theme.palette.divider}`,
-    [theme.breakpoints.up("sm")]: {
-      top: 64,
-    },
-  }
-})
-
-const SectionNavStack = styled(Stack)(function styleSectionNavStack({ theme }) {
-  return {
-    flexDirection: "row",
-    gap: theme.spacing(1),
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
-    overflowX: "auto",
-    scrollbarWidth: "none",
-    [theme.breakpoints.up("md")]: {
-      justifyContent: "center",
-    },
-  }
-})
+import {
+  HighlightsBox,
+  HighlightStack,
+  SectionNav,
+  SectionNavStack,
+} from "./FeaturesContent.styled"
 
 export function FeaturesContent() {
   return (

@@ -1,45 +1,13 @@
-import {
-  Box,
-  Chip,
-  Container,
-  Link,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material"
+import { Chip, Container, Link, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
 import { BandSection } from "../common/BandSection"
-import { outlinedCardStyles } from "../common/outlinedCardStyles"
 import { SectionHeading } from "../common/SectionHeading"
+import {
+  AboutLayoutBox,
+  ChipsStack,
+  InfoCardStack,
+} from "./AboutSection.styled"
 import { supportedExtensions, syncProviders } from "./content"
-
-const AboutLayoutBox = styled(Box)(function styleAboutLayoutBox({ theme }) {
-  return {
-    display: "grid",
-    gap: theme.spacing(5),
-    [theme.breakpoints.up("md")]: {
-      gridTemplateColumns: "7fr 5fr",
-      gap: theme.spacing(8),
-      alignItems: "start",
-    },
-  }
-})
-
-const InfoCardStack = styled(Stack)(function styleInfoCardStack({ theme }) {
-  return {
-    ...outlinedCardStyles(theme),
-    gap: theme.spacing(1.5),
-  }
-})
-
-const ChipsStack = styled(Stack)(function styleChipsStack({ theme }) {
-  return {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    alignItems: "center",
-    gap: theme.spacing(1),
-  }
-})
 
 export function AboutSection() {
   return (

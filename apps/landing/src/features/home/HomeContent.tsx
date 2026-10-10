@@ -1,6 +1,4 @@
-"use client"
-
-import { Box, Container, Stack, styled, Typography } from "@mui/material"
+import { Box, Container, Typography } from "@mui/material"
 import comicReaderScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import libraryScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { GetStartedActions } from "../common/GetStartedActions"
@@ -11,31 +9,8 @@ import { AboutSection } from "./AboutSection"
 import { landingDescription, landingTagline } from "./content"
 import { FaqSection } from "./FaqSection"
 import { FeatureOverviewSection } from "./FeatureOverviewSection"
+import { HeroLayoutBox, HeroTextStack } from "./HomeContent.styled"
 import { LastWords } from "./LastWords"
-
-const HeroLayoutBox = styled(Box)(function styleHeroLayoutBox({ theme }) {
-  return {
-    display: "grid",
-    gap: theme.spacing(6),
-    alignItems: "center",
-    [theme.breakpoints.up("md")]: {
-      gridTemplateColumns: "7fr 5fr",
-      gap: theme.spacing(8),
-    },
-  }
-})
-
-const HeroTextStack = styled(Stack)(function styleHeroTextStack({ theme }) {
-  return {
-    gap: theme.spacing(2),
-    alignItems: "center",
-    textAlign: "center",
-    [theme.breakpoints.up("md")]: {
-      alignItems: "flex-start",
-      textAlign: "left",
-    },
-  }
-})
 
 export function HomeContent() {
   return (

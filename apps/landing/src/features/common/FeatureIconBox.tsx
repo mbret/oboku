@@ -1,3 +1,5 @@
+"use client"
+
 import { alpha, Box, styled } from "@mui/material"
 
 export const FeatureIconBox = styled(Box)(function styleFeatureIconBox({
