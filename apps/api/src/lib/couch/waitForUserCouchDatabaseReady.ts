@@ -1,5 +1,5 @@
 import type createNano from "nano"
-import { doesCouchDatabaseExist } from "./dbHelpers"
+import { doesCouchDatabaseExist } from "./dbHelpers.js"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

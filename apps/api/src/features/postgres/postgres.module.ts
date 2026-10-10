@@ -1,18 +1,21 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { NotificationPostgresService } from "./notification-postgres.service"
-import { SyncReportPostgresService } from "./SyncReportPostgresService"
-import { AppConfigService } from "../../config/AppConfigService"
+import { NotificationPostgresService } from "./notification-postgres.service.js"
+import { SyncReportPostgresService } from "./SyncReportPostgresService.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
 import {
+  KoreaderSyncCredentialPostgresEntity,
+  KoreaderSyncProgressPostgresEntity,
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
-} from "./entities"
-import { RefreshTokensService } from "./refreshTokens.service"
-import { UserPostgresService } from "./user-postgres.service"
+} from "./entities.js"
+import { RefreshTokensService } from "./refreshTokens.service.js"
+import { UserPostgresService } from "./user-postgres.service.js"
 import { JwtService } from "@nestjs/jwt"
+import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js"
 
 @Module({
   imports: [
@@ -22,6 +25,8 @@ import { JwtService } from "@nestjs/jwt"
       NotificationDeliveryPostgresEntity,
       UserPostgresEntity,
       RefreshTokenPostgresEntity,
+      KoreaderSyncCredentialPostgresEntity,
+      KoreaderSyncProgressPostgresEntity,
     ]),
   ],
   providers: [
@@ -30,6 +35,7 @@ import { JwtService } from "@nestjs/jwt"
     NotificationPostgresService,
     RefreshTokensService,
     UserPostgresService,
+    KoreaderSyncPostgresService,
     JwtService,
   ],
   exports: [
@@ -38,6 +44,7 @@ import { JwtService } from "@nestjs/jwt"
     SyncReportPostgresService,
     NotificationPostgresService,
     UserPostgresService,
+    KoreaderSyncPostgresService,
   ],
 })
 export class PostgresModule {}

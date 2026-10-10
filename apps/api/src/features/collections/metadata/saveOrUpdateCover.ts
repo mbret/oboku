@@ -1,6 +1,6 @@
 import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
-import { saveCoverFromExternalLinkToBucket } from "src/lib/books/covers/saveCoverFromExternalLinkToBucket"
-import { CoversService } from "src/covers/covers.service"
+import { saveCoverFromExternalLinkToBucket } from "../../../lib/books/covers/saveCoverFromExternalLinkToBucket.js"
+import { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 
 export const saveOrUpdateCover = async (

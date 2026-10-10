@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
-import { CoversService } from "src/covers/covers.service"
+import { CoversService } from "../covers/covers.service.js"
 
 type CoverCleanupStats = {
   storageStrategy: "fs" | "s3"

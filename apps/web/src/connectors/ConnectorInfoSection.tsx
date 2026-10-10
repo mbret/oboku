@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Link as MuiLink,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -18,6 +17,7 @@ import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useConnector } from "./useConnector"
 import { useConnectors } from "./useConnectors"
 import { links } from "@oboku/shared"
+import { PageSection } from "../common/PageSection"
 
 const ConnectorListItem = memo(
   ({
@@ -115,7 +115,7 @@ export const ConnectorInfoSection = memo(
             </Button>
           </Box>
         )}
-        <List>
+        <PageSection>
           {connectors?.map((connector) => (
             <ConnectorListItem
               id={connector.id}
@@ -126,7 +126,7 @@ export const ConnectorInfoSection = memo(
               }}
             />
           ))}
-        </List>
+        </PageSection>
       </Box>
     )
   },

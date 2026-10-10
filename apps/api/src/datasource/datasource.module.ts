@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common"
-import { DataSourcesController } from "./datasource.controller"
-import { PostgresModule } from "src/features/postgres/postgres.module"
-import { CouchModule } from "src/couch/couch.module"
-import { CoversModule } from "src/covers/covers.module"
-import { DataSourceService } from "./datasource.service"
-import { NotificationsModule } from "src/notifications/notifications.module"
+import { DataSourcesController } from "./datasource.controller.js"
+import { PostgresModule } from "../features/postgres/postgres.module.js"
+import { CouchModule } from "../couch/couch.module.js"
+import { CoversModule } from "../covers/covers.module.js"
+import { DataSourceService } from "./datasource.service.js"
+import { NotificationsModule } from "../notifications/notifications.module.js"
 
 @Module({
   imports: [PostgresModule, CouchModule, CoversModule, NotificationsModule],

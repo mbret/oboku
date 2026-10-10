@@ -12,6 +12,7 @@ import { useInboxNotifications } from "./useInboxNotifications"
 import { useMarkAllNotificationsAsSeen } from "./useMarkAllNotificationsAsSeen"
 import { useUnreadNotificationsCount } from "./useUnreadNotificationsCount"
 import { NotificationCard } from "./NotificationCard"
+import { PageContainer } from "../../common/PageContainer"
 
 export const NotificationsScreen = memo(function NotificationsScreen() {
   const {
@@ -48,31 +49,36 @@ export const NotificationsScreen = memo(function NotificationsScreen() {
           </Button>
         }
       />
-      <Stack
-        sx={{
-          p: 2,
-          gap: 2,
-        }}
-      >
-        {localNotifications.map((notification) => (
-          <LocalNotificationCard
-            key={notification.id}
-            notification={notification}
-          />
-        ))}
+      <PageContainer>
+        <Stack
+          sx={{
+            py: 2,
+            gap: 2,
+          }}
+        >
+          {localNotifications.map((notification) => (
+            <LocalNotificationCard
+              key={notification.id}
+              notification={notification}
+            />
+          ))}
 
-        {isInitialLoading && <LoadingAlert subject="notifications" />}
+          {isInitialLoading && <LoadingAlert subject="notifications" />}
 
-        {hasError && <FetchErrorAlert subject="notifications" />}
+          {hasError && <FetchErrorAlert subject="notifications" />}
 
-        {isUnavailable && <UnavailableAlert subject="notifications" />}
+          {isUnavailable && <UnavailableAlert subject="notifications" />}
 
-        {isEmpty && <EmptyAlert subject="notifications" />}
+          {isEmpty && <EmptyAlert subject="notifications" />}
 
-        {notifications?.map((notification) => (
-          <NotificationCard key={notification.id} notification={notification} />
-        ))}
-      </Stack>
+          {notifications?.map((notification) => (
+            <NotificationCard
+              key={notification.id}
+              notification={notification}
+            />
+          ))}
+        </Stack>
+      </PageContainer>
     </Page>
   )
 })

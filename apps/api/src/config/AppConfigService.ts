@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./types"
+import { EnvironmentVariables } from "./types.js"
 import path from "node:path"
 
 @Injectable()
@@ -13,6 +13,22 @@ export class AppConfigService {
 
   get COUCH_DB_URL(): string {
     return this.config.getOrThrow("COUCH_DB_URL", { infer: true })
+  }
+
+  get POSTGRES_HOST() {
+    return this.config.getOrThrow("POSTGRES_HOST", { infer: true })
+  }
+
+  get POSTGRES_USER() {
+    return this.config.getOrThrow("POSTGRES_USER", { infer: true })
+  }
+
+  get POSTGRES_PASSWORD() {
+    return this.config.getOrThrow("POSTGRES_PASSWORD", { infer: true })
+  }
+
+  get POSTGRES_DB() {
+    return this.config.get("POSTGRES_DB", { infer: true })
   }
 
   get GOOGLE_CLIENT_ID(): string | undefined {
@@ -91,7 +107,7 @@ export class AppConfigService {
   }
 
   get ASSETS_DIR() {
-    return path.join(__dirname, "..", "assets")
+    return path.join(import.meta.dirname, "..", "assets")
   }
 
   /**

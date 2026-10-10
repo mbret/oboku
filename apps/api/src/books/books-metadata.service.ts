@@ -1,13 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { atomicUpdate, findOne } from "src/lib/couch/dbHelpers"
-import { retrieveMetadataAndSaveCover } from "../features/metadata/retrieveMetadataAndSaveCover"
-import { CouchService, emailToNameHex } from "src/couch/couch.service"
-import { AppConfigService } from "../config/AppConfigService"
-import { CoversService } from "src/covers/covers.service"
+import { atomicUpdate, findOne } from "../lib/couch/dbHelpers.js"
+import { retrieveMetadataAndSaveCover } from "../features/metadata/retrieveMetadataAndSaveCover.js"
+import { CouchService, emailToNameHex } from "../couch/couch.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { CoversService } from "../covers/covers.service.js"
 import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
-import { PluginsService } from "src/plugins/plugins.service"
-import { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
+import { PluginsService } from "../plugins/plugins.service.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 
 @Injectable()
 export class BooksMetadataService {

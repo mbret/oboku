@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
-import { CoversController } from "./covers.controller"
-import { AppConfigModule } from "src/config/config.module"
-import { CoversService } from "./covers.service"
-import { CoversFsService } from "./covers-fs.service"
-import { CoversS3Service } from "./covers-s3.service"
-import { CoversCleanupService } from "./covers-cleanup.service"
-import { CouchModule } from "src/couch/couch.module"
+import { CoversController } from "./covers.controller.js"
+import { AppConfigModule } from "../config/config.module.js"
+import { CoversService } from "./covers.service.js"
+import { CoversFsService } from "./covers-fs.service.js"
+import { CoversS3Service } from "./covers-s3.service.js"
+import { CoversCleanupService } from "./covers-cleanup.service.js"
+import { CouchModule } from "../couch/couch.module.js"
 
 @Module({
   providers: [

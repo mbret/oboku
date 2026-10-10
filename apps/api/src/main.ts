@@ -1,18 +1,16 @@
-import "./instrument"
-
 import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
+import { AppModule } from "./app.module.js"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./config/types"
+import { EnvironmentVariables } from "./config/types.js"
 import { Logger, ValidationPipe } from "@nestjs/common"
 import cookieParser from "cookie-parser"
 import { json, urlencoded } from "express"
 import path from "node:path"
-import { WebDavService } from "./webdav/webdav.service"
-import { CouchProxyService } from "./couch/couch-proxy.service"
-import { TrustedOriginsService } from "./config/trusted-origin.service"
-import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
-import { createCorsOptionsDelegate } from "./config/cors-options"
+import { WebDavService } from "./webdav/webdav.service.js"
+import { CouchProxyService } from "./couch/couch-proxy.service.js"
+import { TrustedOriginsService } from "./config/trusted-origin.service.js"
+import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
+import { createCorsOptionsDelegate } from "./config/cors-options.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies

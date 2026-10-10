@@ -1,5 +1,5 @@
 import { Global, Module } from "@nestjs/common"
-import { InMemoryTaskQueueService } from "./in-memory-task-queue.service"
+import { InMemoryTaskQueueService } from "./in-memory-task-queue.service.js"
 
 @Global()
 @Module({

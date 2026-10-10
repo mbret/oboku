@@ -1,6 +1,6 @@
 import type createNano from "nano"
 import type { SafeMangoQuery, DocType, ModelOf } from "@oboku/shared"
-import { retryFn } from "./dbHelpers"
+import { retryFn } from "./dbHelpers.js"
 
 type FindOneOptionsBase = {
   db: createNano.DocumentScope<unknown>

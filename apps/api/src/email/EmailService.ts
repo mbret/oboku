@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common"
 import { renderMagicLinkEmail, renderSignUpEmail } from "@oboku/shared"
 import nodemailer, { type Transporter } from "nodemailer"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 
 export const EMAIL_MAX_CONNECTIONS = 5
 

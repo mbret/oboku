@@ -1,11 +1,11 @@
 import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { CollectionMetadataRefreshEvent, Events } from "../../events"
-import { CollectionMetadataService } from "./CollectionMetadataService"
+import { CollectionMetadataRefreshEvent, Events } from "../../events.js"
+import { CollectionMetadataService } from "./CollectionMetadataService.js"
 import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
-import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service"
-import { AppConfigService } from "src/config/AppConfigService"
-import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
+import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { WithAuthUser, type AuthUser } from "../../auth/auth.guard.js"
 import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
 
 class PostMetadataRefreshDto {

@@ -1,4 +1,4 @@
-import { Container, Stack } from "@mui/material"
+import { Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Navigate, useParams } from "react-router"
@@ -9,6 +9,7 @@ import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { notify } from "../../notifications/toasts"
 import type { DataSourceSubmitPayload } from "../../plugins/types"
 import { Page } from "../../common/Page"
+import { PageContainer } from "../../common/PageContainer"
 
 export const NewDataSourceScreen = memo(() => {
   const { id } = useParams<{ id: string }>()
@@ -44,7 +45,7 @@ export const NewDataSourceScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={`New ${plugin.name} data source`} />
-      <Container maxWidth="md">
+      <PageContainer>
         <Stack
           sx={{
             py: 2,
@@ -53,7 +54,7 @@ export const NewDataSourceScreen = memo(() => {
         >
           {PluginForm && <PluginForm onSubmit={handleSubmit} />}
         </Stack>
-      </Container>
+      </PageContainer>
     </Page>
   )
 })

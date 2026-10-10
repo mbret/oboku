@@ -7,17 +7,16 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint ."
+    "start": "next start"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@mui/icons-material": "^9.4.0",
-    "@mui/material": "^9.4.0",
-    "@mui/material-nextjs": "^9.4.0",
+    "@mui/icons-material": "^9.5.0",
+    "@mui/material": "^9.5.0",
+    "@mui/material-nextjs": "^9.5.0",
     "@oboku/shared": "workspace:*",
-    "next": "16.3.6",
+    "next": "16.4.0",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
@@ -25,9 +24,7 @@
   },
   "devDependencies": {
     "@types/react": "19.3.0",
-    "@types/react-dom": "19.3.0",
-    "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.6"
+    "@types/react-dom": "19.3.0"
   },
   "overrides": {
     "@types/react": "19.3.0",

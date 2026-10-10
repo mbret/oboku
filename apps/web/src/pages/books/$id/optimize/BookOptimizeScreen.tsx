@@ -1,12 +1,4 @@
-import {
-  Alert,
-  Container,
-  Stack,
-  Tab,
-  Tabs,
-  Typography,
-  styled,
-} from "@mui/material"
+import { Alert, Stack, Tab, Tabs, Typography, styled } from "@mui/material"
 import { memo, type SyntheticEvent, useCallback } from "react"
 import { useParams, useSearchParams } from "react-router"
 import { Page } from "../../../../common/Page"
@@ -27,6 +19,7 @@ import {
   isBookOptimizeTab,
   type BookOptimizeTab,
 } from "../../../../books/optimize/tabs"
+import { PageContainer } from "../../../../common/PageContainer"
 
 type ScreenParams = {
   id: string
@@ -38,17 +31,19 @@ const TopBarActionsStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-const PageContainer = styled(Container)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  flex: 1,
-  minHeight: 0,
-  marginLeft: 0,
-  marginRight: "auto",
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
-  gap: theme.spacing(2),
-}))
+const OptimizePageContainer = styled(PageContainer)(
+  function styleOptimizePageContainer({ theme }) {
+    return {
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+      minHeight: 0,
+      paddingTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      gap: theme.spacing(2),
+    }
+  },
+)
 
 export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
   const { id: bookId } = useParams<ScreenParams>()
@@ -119,7 +114,7 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
           <Tab label="Content" value={BOOK_OPTIMIZE_TABS.CONTENT} />
         </Tabs>
       )}
-      <PageContainer maxWidth="md">
+      <OptimizePageContainer>
         {!book || !link ? (
           <Typography variant="body2" color="text.secondary">
             Loading book…
@@ -134,7 +129,7 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
             currentTab={currentTab}
           />
         )}
-      </PageContainer>
+      </OptimizePageContainer>
     </Page>
   )
 })

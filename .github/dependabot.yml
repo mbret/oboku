@@ -6,3 +6,8 @@ updates:
       interval: weekly
       time: '01:00'
     open-pull-requests-limit: 5
+    ignore:
+      # Stays on v9 until @semantic-release/release-notes-generator renders
+      # with conventional-changelog-writer 9: see release.config.mjs.
+      - dependency-name: conventional-changelog-conventionalcommits
+        update-types: ['version-update:semver-major']

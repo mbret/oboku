@@ -1,19 +1,19 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import type { DataSourcePlugin } from "src/plugins/types"
+import type { DataSourcePlugin } from "../types.js"
 import { type WebDAVDataSourceDocType } from "@oboku/shared"
-import { getDataSourceData } from "../helpers"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { createClient } from "webdav"
+import { getDataSourceData } from "../helpers.js"
+import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
+import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
-  getWebdavModule,
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
   walkDirectoryContents,
-} from "./operations"
-import { find } from "src/lib/couch/dbHelpers"
+} from "./operations.js"
+import { find } from "../../lib/couch/dbHelpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
@@ -38,7 +38,7 @@ async function resolveClientAndPath(params: {
     throw new Error("WebDAV connector not found")
   }
 
-  const client = await createWebdavClient({
+  const client = createWebdavClient({
     ...connector,
     password: providerCredentials.password,
   })
@@ -46,20 +46,17 @@ async function resolveClientAndPath(params: {
   return { client, filePath }
 }
 
-const createWebdavClient = async (connector: {
+const createWebdavClient = (connector: {
   allowSelfSigned?: boolean
   password: string
   url: string
   username: string
-}) => {
-  const webdav = await getWebdavModule()
-
-  return webdav.createClient(connector.url, {
+}) =>
+  createClient(connector.url, {
     username: connector.username,
     password: connector.password,
     httpsAgent: getHttpsAgent(connector.allowSelfSigned),
   })
-}
 
 export const dataSource: DataSourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,

@@ -1,17 +1,18 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { UserPostgresEntity } from "../features/postgres/entities"
-import { UserPostgresService } from "../features/postgres/user-postgres.service"
+import { UserPostgresEntity } from "../features/postgres/entities.js"
+import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import {
   CouchService,
   emailToNameHex,
   emailToUserDbName,
-} from "../couch/couch.service"
-import { deleteCouchUser, find } from "../lib/couch/dbHelpers"
+} from "../couch/couch.service.js"
+import { deleteCouchUser, find } from "../lib/couch/dbHelpers.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
-import { CoversService } from "../covers/covers.service"
-import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
-import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
-import { RefreshTokensService } from "../features/postgres/refreshTokens.service"
+import { CoversService } from "../covers/covers.service.js"
+import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
+import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 
 @Injectable()
 export class UsersService {
@@ -24,6 +25,7 @@ export class UsersService {
     private notificationPostgresService: NotificationPostgresService,
     private syncReportPostgresService: SyncReportPostgresService,
     private refreshTokensService: RefreshTokensService,
+    private koreaderSyncPostgresService: KoreaderSyncPostgresService,
   ) {}
 
   async findUserByEmail(email: string) {
@@ -47,8 +49,8 @@ export class UsersService {
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
    * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
-   * notifications, sync reports, user row). Cover object deletion is
-   * fire-and-forget afterward.
+   * notifications, sync reports, KOReader sync server data, user row). Cover
+   * object deletion is fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
    * Postgres are both cleared for that account, so re-registration with the
@@ -92,6 +94,7 @@ export class UsersService {
     await this.refreshTokensService.deleteByUserId(userId)
     await this.notificationPostgresService.deleteDeliveriesByUserId(userId)
     await this.syncReportPostgresService.deleteByUserName(email)
+    await this.koreaderSyncPostgresService.deleteByUserId(userId)
     await this.userPostgresService.deleteById(userId)
 
     if (coverKeys.length > 0) {

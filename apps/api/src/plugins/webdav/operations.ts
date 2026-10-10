@@ -1,13 +1,6 @@
 import { Readable } from "node:stream"
 import { isFileSupported } from "@oboku/shared"
-import { type createClient, type WebDAVClient } from "webdav"
-
-// @important needs "node-domexception" which did not seem to be installed by default
-export async function getWebdavModule(): Promise<{
-  createClient: typeof createClient
-}> {
-  return await import("webdav")
-}
+import type { WebDAVClient } from "webdav"
 
 /**
  * Webdav's `lastmod` is an HTTP-date (RFC 1123, e.g.

@@ -8,6 +8,7 @@ import {
   Link,
 } from "@mui/material"
 import type { FC } from "react"
+import { links } from "@oboku/shared"
 import { lock } from "../common/locks/utils"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
@@ -26,7 +27,7 @@ export const UpdateAvailableDialog: FC<{
         <DialogContentText>
           A new version of the app is available. (
           <b>This action is mandatory right now until release</b>). See the full{" "}
-          <Link href="https://docs.oboku.me/changelog" target="_blank">
+          <Link href={`${links.github}/releases`} target="_blank">
             changelog here.
           </Link>
         </DialogContentText>
