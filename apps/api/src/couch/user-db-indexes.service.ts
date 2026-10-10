@@ -1,8 +1,8 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "src/lib/couch/tolerateMissingUserDb"
-import { ensureUserDbIndexes } from "src/lib/couch/userDbIndexes"
-import { CouchService } from "./couch.service"
+import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
+import { tolerateMissingUserDb } from "../lib/couch/tolerateMissingUserDb.js"
+import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes.js"
+import { CouchService } from "./couch.service.js"
 
 /**
  * Users rarely sign in again once they hold a refresh token, so indexes are

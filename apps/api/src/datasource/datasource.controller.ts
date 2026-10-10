@@ -6,11 +6,11 @@ import {
   OnModuleInit,
   Post,
 } from "@nestjs/common"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
-import { AppConfigService } from "src/config/AppConfigService"
-import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
-import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { DataSourceService } from "./datasource.service"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { DataSourceService } from "./datasource.service.js"
 import type { SyncDataSourceRequest } from "@oboku/shared"
 
 @Controller("datasources")

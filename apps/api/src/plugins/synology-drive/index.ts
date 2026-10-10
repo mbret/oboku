@@ -6,19 +6,16 @@ import {
 } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import type createNano from "nano"
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { find } from "../../lib/couch/dbHelpers.js"
+import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
   downloadSynologyDriveStream,
   getSynchronizeAbleDataSourceFromItems,
   getSynologyDriveItemMetadata,
   getSynologyDriveSession,
-} from "./client"
-import { getDataSourceData } from "../helpers"
+} from "./client.js"
+import { getDataSourceData } from "../helpers.js"
 
 const logger = new Logger("SynologyDrivePlugin")
 

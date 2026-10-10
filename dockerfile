@@ -27,7 +27,7 @@ COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
-CMD ["node", "dist/main"]
+CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
 FROM node-pnpm AS admin-build
 WORKDIR /usr/src/app

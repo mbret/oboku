@@ -1,12 +1,13 @@
+import type { Mock } from "vitest"
 import {
   BadRequestException,
   ConflictException,
   InternalServerErrorException,
   Logger,
 } from "@nestjs/common"
-import type { EmailService } from "src/email/EmailService"
-import type { UserPostgresService } from "src/features/postgres/user-postgres.service"
-import { AdminEmailService } from "./admin-email.service"
+import type { EmailService } from "../email/EmailService.js"
+import type { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { AdminEmailService } from "./admin-email.service.js"
 
 // setImmediate fires after the microtask queue drains, by which point the
 // fire-and-forget background delivery has fully run (mocks resolve synchronously).
@@ -16,18 +17,18 @@ const flushBackgroundWork = () =>
   })
 
 describe("AdminEmailService", () => {
-  let sendEmail: jest.Mock
-  let verifyTransport: jest.Mock
-  let getAllUserEmails: jest.Mock
+  let sendEmail: Mock
+  let verifyTransport: Mock
+  let getAllUserEmails: Mock
   let service: AdminEmailService
 
   beforeEach(() => {
-    jest.spyOn(Logger.prototype, "log").mockImplementation(() => undefined)
-    jest.spyOn(Logger.prototype, "error").mockImplementation(() => undefined)
+    vi.spyOn(Logger.prototype, "log").mockImplementation(() => undefined)
+    vi.spyOn(Logger.prototype, "error").mockImplementation(() => undefined)
 
-    sendEmail = jest.fn().mockResolvedValue(undefined)
-    verifyTransport = jest.fn().mockResolvedValue(undefined)
-    getAllUserEmails = jest.fn().mockResolvedValue([])
+    sendEmail = vi.fn().mockResolvedValue(undefined)
+    verifyTransport = vi.fn().mockResolvedValue(undefined)
+    getAllUserEmails = vi.fn().mockResolvedValue([])
 
     service = new AdminEmailService(
       { getAllUserEmails } as unknown as UserPostgresService,
@@ -36,7 +37,7 @@ describe("AdminEmailService", () => {
   })
 
   afterEach(() => {
-    jest.restoreAllMocks()
+    vi.restoreAllMocks()
   })
 
   it("rejects a whitespace-only subject without sending", async () => {

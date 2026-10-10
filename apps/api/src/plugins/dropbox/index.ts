@@ -8,10 +8,10 @@ import {
   type DataSourcePlugin,
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { createThrottler } from "src/lib/utils"
-import { createError, getDataSourceData } from "../helpers"
+} from "../types.js"
+import { find } from "../../lib/couch/dbHelpers.js"
+import { createThrottler } from "../../lib/utils.js"
+import { createError, getDataSourceData } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 

@@ -1,6 +1,6 @@
 import type createNano from "nano"
-import { find } from "./dbHelpers"
-import { findTags } from "./findTags"
+import { find } from "./dbHelpers.js"
+import { findTags } from "./findTags.js"
 
 /**
  * A collection is considered protected when at least one of its books carries

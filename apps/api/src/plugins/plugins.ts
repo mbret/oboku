@@ -1,13 +1,13 @@
 import type { DataSourceType } from "@oboku/shared"
-import { dataSource as googleDataSource } from "./google"
-import { dataSource as dropboxDataSource } from "./dropbox"
-import { dataSource as oneDriveDataSource } from "./one-drive"
-import { dataSource as synologyDriveDataSource } from "./synology-drive"
-import { dataSource as urlDataSource } from "./uri"
-import { dataSource as webdavDataSource } from "./webdav"
-import { plugin as filePlugin } from "./file"
-import { dataSource as serverDataSource } from "./server"
-import type { DataSourcePlugin } from "./types"
+import { dataSource as googleDataSource } from "./google/index.js"
+import { dataSource as dropboxDataSource } from "./dropbox/index.js"
+import { dataSource as oneDriveDataSource } from "./one-drive/index.js"
+import { dataSource as synologyDriveDataSource } from "./synology-drive/index.js"
+import { dataSource as urlDataSource } from "./uri/index.js"
+import { dataSource as webdavDataSource } from "./webdav/index.js"
+import { plugin as filePlugin } from "./file/index.js"
+import { dataSource as serverDataSource } from "./server/index.js"
+import type { DataSourcePlugin } from "./types.js"
 
 /**
  * Registry keyed by provider type so that getPlugin(type) returns

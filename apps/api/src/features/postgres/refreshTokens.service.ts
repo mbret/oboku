@@ -9,8 +9,8 @@ import {
   randomUUID,
 } from "node:crypto"
 import { EntityManager, Repository } from "typeorm"
-import { AppConfigService } from "../../config/AppConfigService"
-import { RefreshTokenPostgresEntity } from "./entities"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { RefreshTokenPostgresEntity } from "./entities.js"
 
 export type RotationResult =
   | {

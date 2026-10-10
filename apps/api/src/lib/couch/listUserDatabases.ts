@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import type createNano from "nano"
-import { emailToNameHex, emailToUserDbName } from "src/couch/couch.service"
-import { UserCouchEntity } from "src/lib/couchDbEntities"
+import { emailToNameHex, emailToUserDbName } from "../../couch/couch.service.js"
+import { UserCouchEntity } from "../couchDbEntities.js"
 
 const logger = new Logger("listUserDatabases")
 

@@ -5,25 +5,25 @@ import {
   Logger,
   UnauthorizedException,
 } from "@nestjs/common"
-import { UsersService } from "../users/users.service"
+import { UsersService } from "../users/users.service.js"
 import { OAuth2Client } from "google-auth-library"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 import { ObokuErrorCode } from "@oboku/shared"
 import {
   CouchService,
   emailToNameHex,
   emailToUserDbName,
-} from "../couch/couch.service"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
-import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
-import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes"
+} from "../couch/couch.service.js"
+import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers.js"
+import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady.js"
+import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes.js"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
-import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
-import { SecretsService } from "src/config/SecretsService"
-import { EmailService } from "../email/EmailService"
-import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { EmailService } from "../email/EmailService.js"
+import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
 import type {
   AuthProofPublicKeyJwk,
   AuthSessionResponse,
@@ -32,8 +32,8 @@ import type {
   SignInWithEmailRequest,
   SignInWithGoogleRequest,
 } from "@oboku/shared"
-import { RefreshProofService } from "./refresh-proof.service"
-import type { AuthTokens } from "./auth-cookies"
+import { RefreshProofService } from "./refresh-proof.service.js"
+import type { AuthTokens } from "./auth-cookies.js"
 
 /**
  * A completed authentication: the session metadata the client renders plus the

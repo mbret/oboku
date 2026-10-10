@@ -1,12 +1,12 @@
 import type { GoogleBookApiMetadata } from "@oboku/shared"
-import { parseGoogleMetadata } from "./parseGoogleMetadata"
-import { refineTitle } from "../refineTitle"
+import { parseGoogleMetadata } from "./parseGoogleMetadata.js"
+import { refineTitle } from "../refineTitle.js"
 import {
   findByISBN,
   findByTitle,
   findByVolumeId,
-} from "src/lib/google/googleBooksApi"
-import { AppConfigService } from "src/config/AppConfigService"
+} from "../../google/googleBooksApi.js"
+import { AppConfigService } from "../../../config/AppConfigService.js"
 
 /**
  * Lookup input for the Google Books API. The caller resolves these from

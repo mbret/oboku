@@ -1,6 +1,6 @@
 import axios from "axios"
 import { Logger } from "@nestjs/common"
-import { CoversService } from "src/covers/covers.service"
+import { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 
 const logger = new Logger("books/covers/saveCoverFromExternalLinkToBucket")

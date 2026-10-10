@@ -2,8 +2,8 @@ import type { Request, Response } from "express"
 import fs from "node:fs"
 import nodePath from "node:path"
 import { lookup } from "mime-types"
-import type { InstanceConfigService } from "src/admin/instance-config/instance-config.service"
-import { type ResourceInfo, buildMultiStatusXml } from "./webdav.xml"
+import type { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
+import { type ResourceInfo, buildMultiStatusXml } from "./webdav.xml.js"
 
 export type PropfindSource = {
   fsPath: string

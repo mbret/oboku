@@ -1,6 +1,9 @@
 import { type CollectionDocType, directives } from "@oboku/shared"
-import type { Context } from "../types"
-import { DataSourcePlugin, SynchronizeAbleDataSource } from "src/plugins/types"
+import type { Context } from "../types.js"
+import {
+  DataSourcePlugin,
+  SynchronizeAbleDataSource,
+} from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
 
 type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]

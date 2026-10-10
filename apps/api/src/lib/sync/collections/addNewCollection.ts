@@ -5,8 +5,8 @@ import {
   directives,
   LinkDataForProvider,
 } from "@oboku/shared"
-import type { Context } from "../types"
-import { insert } from "src/lib/couch/dbHelpers"
+import type { Context } from "../types.js"
+import { insert } from "../../couch/dbHelpers.js"
 
 const logger = new Logger("sync/addNewCollection")
 
