@@ -5,6 +5,8 @@ body:
   - type: markdown
     attributes:
       value: |
+        Found a security vulnerability? Don't report it here: [report it privately](https://github.com/mbret/oboku/security/advisories/new), as the [security policy](https://github.com/mbret/oboku/security/policy) explains.
+
         Search the [existing issues](https://github.com/mbret/oboku/issues) before opening a new one. For questions, ask on [Discord](https://discord.gg/eB6MrMmmPN) or [Reddit](https://www.reddit.com/r/oboku/).
   - type: textarea
     id: what-happened
