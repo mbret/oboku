@@ -11,10 +11,7 @@ import type {
   KoreaderSyncProgressPostgresEntity,
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
-import {
-  type KoreaderSyncProgress,
-  KoreaderSyncPostgresService,
-} from "../features/postgres/koreader-sync-postgres.service.js"
+import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 import {
   normalizeEmail,
   UserPostgresService,
@@ -73,8 +70,8 @@ const createKoreaderSyncStore = (): KoreaderSyncStore => {
     },
     findProgress: async ({ userId, document }) =>
       progresses.get(toProgressKey(userId, document)) ?? null,
-    saveProgress: async (progress: KoreaderSyncProgress) => {
-      if (!credentials.has(progress.user_id)) return false
+    saveProgress: async ({ progress, keyHash }) => {
+      if (credentials.get(progress.user_id)?.key_hash !== keyHash) return false
 
       progresses.set(toProgressKey(progress.user_id, progress.document), {
         id: progresses.size + 1,
@@ -354,10 +351,10 @@ describe("KoreaderSyncProtocolController", () => {
     it("refuses a push whose credential is deleted before it is saved", async () => {
       const saveProgress = koreaderSyncStore.saveProgress
       vi.spyOn(koreaderSyncStore, "saveProgress").mockImplementationOnce(
-        async function turnOffBeforeSaving(progress) {
-          await koreaderSyncStore.deleteByUserId(progress.user_id)
+        async function turnOffBeforeSaving(params) {
+          await koreaderSyncStore.deleteByUserId(params.progress.user_id)
 
-          return saveProgress(progress)
+          return saveProgress(params)
         },
       )
 
@@ -369,6 +366,30 @@ describe("KoreaderSyncProtocolController", () => {
       readerKey = toSyncKey(
         await koreaderSyncServerService.createPassword(READER.id),
       )
+      const pulled = await pullProgress(DOCUMENT)
+
+      expect(pulled.body).toEqual({})
+    })
+
+    it("refuses a push whose password is replaced before it is saved", async () => {
+      const saveProgress = koreaderSyncStore.saveProgress
+      vi.spyOn(koreaderSyncStore, "saveProgress").mockImplementationOnce(
+        async function replacePasswordBeforeSaving(params) {
+          readerKey = toSyncKey(
+            await koreaderSyncServerService.createPassword(
+              params.progress.user_id,
+            ),
+          )
+
+          return saveProgress(params)
+        },
+      )
+
+      const pushed = await pushProgress(koreaderPush)
+
+      expect(pushed.status).toBe(401)
+      expect(pushed.body).toEqual(UNAUTHORIZED)
+
       const pulled = await pullProgress(DOCUMENT)
 
       expect(pulled.body).toEqual({})
