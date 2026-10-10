@@ -12,11 +12,6 @@ vi.mock("./useConfig", () => ({
   seedWebConfigFromCache: vi.fn(),
 }))
 
-vi.mock("../common/SplashScreen", () => ({
-  SplashScreen: ({ show }: { show: boolean }) =>
-    show ? <div data-testid="splash" /> : null,
-}))
-
 class CaughtErrorProbe extends Component<
   { children: ReactNode },
   { errorName: string | null }
@@ -106,7 +101,7 @@ describe("LoadConfiguration", () => {
     expect(boundary.textContent).toBe("CriticalError")
   })
 
-  it("shows the splash while the cache seed is still in flight rather than escalating", async () => {
+  it("renders nothing while the cache seed is still in flight rather than escalating", async () => {
     vi.mocked(seedWebConfigFromCache).mockReturnValue(new Promise(() => {}))
     stubConfigQuery({
       data: undefined,
@@ -114,9 +109,13 @@ describe("LoadConfiguration", () => {
       error: new Error("config endpoint down"),
     })
 
-    renderBoot()
+    const { container } = renderBoot()
 
-    expect(await screen.findByTestId("splash")).toBeTruthy()
+    await waitFor(() => {
+      expect(vi.mocked(seedWebConfigFromCache)).toHaveBeenCalled()
+    })
+
+    expect(container.innerHTML).toBe("")
     expect(screen.queryByTestId("boundary")).toBeNull()
     expect(screen.queryByTestId("app")).toBeNull()
   })

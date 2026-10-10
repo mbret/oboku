@@ -32,7 +32,7 @@ export const listUserDatabases = async (db: createNano.ServerScope) => {
 
   if (missing.length > 0) {
     logger.warn(
-      `Skipping ${missing.length} orphan _users doc(s) without a userdb: ${missing
+      `Skipping ${missing.length} orphan _users doc(s) without a userdb. couch_peruser recreates these on every CouchDB restart, so orphans that persist across restarts mean it is not processing _users changes: ${missing
         .map((entry) => entry.email)
         .join(", ")}`,
     )

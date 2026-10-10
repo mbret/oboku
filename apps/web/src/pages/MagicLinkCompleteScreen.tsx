@@ -1,95 +1,87 @@
 import { Alert, Box, Button, Stack } from "@mui/material"
 import { Login } from "@mui/icons-material"
-import { Link, Navigate, useSearchParams } from "react-router"
+import { Link, useSearchParams } from "react-router"
 import { AuthPage } from "../auth/AuthPage"
 import { useCompleteMagicLink } from "../auth/useCompleteMagicLink"
 import { isCancelError } from "../errors/errors.shared"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { ROUTES } from "../navigation/routes"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { useActiveProfile } from "../profiles"
-import { SignOutBeforeContinuePage } from "../auth/SignOutBeforeContinuePage"
+import { CompleteAuthenticationGate } from "../auth/CompleteAuthenticationGate"
 
 export const MagicLinkCompleteScreen = () => {
   const [searchParams] = useSearchParams()
   const token = searchParams.get("token")
-  const hasSession = !!useActiveProfile().data
   const { mutate, error, isPending, status } = useCompleteMagicLink()
 
-  if (status === "success" && hasSession) {
-    return <Navigate to={ROUTES.HOME} replace />
-  }
-
-  if (hasSession) {
-    return <SignOutBeforeContinuePage />
-  }
-
   return (
-    <AuthPage>
-      {!token ? (
-        <Box
-          sx={{
-            mb: 2,
-          }}
-        >
-          <ErrorAlert
-            error={
-              new ObokuSharedError(
-                ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN,
-              )
-            }
-          />
-        </Box>
-      ) : null}
-      {error && !isCancelError(error) ? (
-        <Box
-          sx={{
-            mb: 2,
-          }}
-        >
-          <ErrorAlert error={error} />
-        </Box>
-      ) : null}
-      {token && !error ? (
-        <Box
-          sx={{
-            mb: 2,
-          }}
-        >
-          <Alert severity="info">
-            {isPending
-              ? "Verifying your email and signing you in..."
-              : "Continue to verify your email and sign in."}
-          </Alert>
-        </Box>
-      ) : null}
-      <Stack
-        sx={{
-          gap: 1,
-          mt: 3,
-        }}
-      >
-        {token ? (
-          <Button
-            variant="contained"
-            size="large"
-            disabled={isPending}
-            onClick={() => {
-              mutate({ token })
+    <CompleteAuthenticationGate completionStatus={status}>
+      <AuthPage>
+        {!token ? (
+          <Box
+            sx={{
+              mb: 2,
             }}
           >
-            Continue with magic link
-          </Button>
+            <ErrorAlert
+              error={
+                new ObokuSharedError(
+                  ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN,
+                )
+              }
+            />
+          </Box>
         ) : null}
-        <Button
-          component={Link}
-          to={ROUTES.LOGIN}
-          size="large"
-          startIcon={<Login />}
+        {error && !isCancelError(error) ? (
+          <Box
+            sx={{
+              mb: 2,
+            }}
+          >
+            <ErrorAlert error={error} />
+          </Box>
+        ) : null}
+        {token && !error ? (
+          <Box
+            sx={{
+              mb: 2,
+            }}
+          >
+            <Alert severity="info">
+              {isPending
+                ? "Verifying your email and signing you in..."
+                : "Continue to verify your email and sign in."}
+            </Alert>
+          </Box>
+        ) : null}
+        <Stack
+          sx={{
+            gap: 1,
+            mt: 3,
+          }}
         >
-          Back to sign in
-        </Button>
-      </Stack>
-    </AuthPage>
+          {token ? (
+            <Button
+              variant="contained"
+              size="large"
+              disabled={isPending}
+              onClick={() => {
+                mutate({ token })
+              }}
+            >
+              Continue with magic link
+            </Button>
+          ) : null}
+          <Button
+            component={Link}
+            to={ROUTES.LOGIN}
+            size="large"
+            startIcon={<Login />}
+          >
+            Back to sign in
+          </Button>
+        </Stack>
+      </AuthPage>
+    </CompleteAuthenticationGate>
   )
 }

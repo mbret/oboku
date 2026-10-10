@@ -1,6 +1,5 @@
 import { memo, type ReactNode, useEffect, useState } from "react"
 import { useIsRestoring, useQueryClient } from "@tanstack/react-query"
-import { SplashScreen } from "../common/SplashScreen"
 import { CriticalError } from "../errors/errors.shared"
 import { seedWebConfigFromCache, useConfig } from "./useConfig"
 
@@ -59,5 +58,5 @@ export const LoadConfiguration = memo(function LoadConfiguration({
     })
   }
 
-  return <SplashScreen show />
+  return null
 })

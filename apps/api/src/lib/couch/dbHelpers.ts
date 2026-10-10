@@ -1,3 +1,4 @@
+import { Logger } from "@nestjs/common"
 import createNano, { type RequestError } from "nano"
 import {
   type SafeMangoQuery,
@@ -19,6 +20,8 @@ import { generatePassword } from "../authentication/generatePassword"
 import { findOne } from "./findOne"
 
 export { findOne }
+
+const logger = new Logger("dbHelpers")
 
 export const createUser = async (
   db: createNano.ServerScope,
@@ -52,6 +55,27 @@ export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
+export function isCouchConflict(error: unknown): boolean {
+  return isCouchRequestError(error) && error.statusCode === 409
+}
+
+export async function doesCouchDatabaseExist(
+  server: createNano.ServerScope,
+  dbName: string,
+) {
+  try {
+    await server.db.get(dbName)
+    return true
+  } catch (error) {
+    if (isCouchNotFound(error)) return false
+    throw error
+  }
+}
+
+/**
+ * Destroys the database before the `_users` doc so the database can never
+ * outlive its user: a later sign-up with the same email must start empty.
+ */
 export const deleteCouchUser = async (
   db: createNano.ServerScope,
   email: string,
@@ -79,10 +103,10 @@ export const deleteCouchUser = async (
  * Users created before emails were normalized keep their original casing in
  * `name` and `_id`, so they cannot be fetched by the normalized doc id.
  */
-const findLegacyCouchUserByNormalizedName = async (
+async function findLegacyCouchUserByNormalizedName(
   usersDb: createNano.DocumentScope<User>,
   email: string,
-): Promise<User | undefined> => {
+): Promise<User | undefined> {
   const { docs } = await usersDb.find({
     selector: { type: "user" },
     limit: 99999,
@@ -91,10 +115,10 @@ const findLegacyCouchUserByNormalizedName = async (
   return docs.find((doc) => normalizeEmail(doc.name) === email)
 }
 
-export const findCouchUserFromEmail = async (
+export async function findCouchUserFromEmail(
   db: createNano.ServerScope,
   rawEmail: string,
-): Promise<User | undefined> => {
+): Promise<User | undefined> {
   const email = normalizeEmail(rawEmail)
   const usersDb = db.use<User>("_users")
 
@@ -107,21 +131,56 @@ export const findCouchUserFromEmail = async (
   return findLegacyCouchUserByNormalizedName(usersDb, email)
 }
 
+/**
+ * couch_peruser re-runs its create-database-and-set-security step on every
+ * change to a `_users` doc, so re-saving the doc unchanged makes it recreate a
+ * database that vanished under a live user. A conflict means a concurrent
+ * sign-in already did so.
+ */
+async function touchCouchUser(db: createNano.ServerScope, user: User) {
+  const usersDb = db.use<User>("_users")
+
+  try {
+    await usersDb.insert(user, user._id)
+  } catch (error) {
+    if (!isCouchConflict(error)) throw error
+  }
+}
+
+/**
+ * Resolves the CouchDB user for an email, creating it on first sign-in.
+ * `userDbPending` is true while couch_peruser is creating the user's database,
+ * for a new user or to replace one that vanished under an existing user, so
+ * callers must wait for it before handing the database out.
+ */
 export const getOrCreateUserFromEmail = async (
   db: createNano.ServerScope,
   rawEmail: string,
-): Promise<{ user: User; created: boolean }> => {
+): Promise<{ user: User; userDbPending: boolean }> => {
   const user = await findCouchUserFromEmail(db, rawEmail)
 
-  if (user) return { user, created: false }
+  if (!user) {
+    const createdUser = await createUser(
+      db,
+      normalizeEmail(rawEmail),
+      generatePassword(),
+    )
 
-  const createdUser = await createUser(
-    db,
-    normalizeEmail(rawEmail),
-    generatePassword(),
+    return { user: createdUser, userDbPending: true }
+  }
+
+  const dbName = emailToUserDbName(user.name)
+
+  if (await doesCouchDatabaseExist(db, dbName)) {
+    return { user, userDbPending: false }
+  }
+
+  logger.warn(
+    `User database ${dbName} is missing for ${user.email}, asking couch_peruser to recreate it`,
   )
+  await touchCouchUser(db, user)
 
-  return { user: createdUser, created: true }
+  return { user, userDbPending: true }
 }
 
 export async function atomicUpdate<
@@ -214,7 +273,8 @@ export const createBook = async (
     links: [],
     readingStateCurrentBookmarkLocation: null,
     readingStateCurrentBookmarkProgressPercent: 0,
-    readingStateCurrentBookmarkProgressUpdatedAt: null,
+    readingStateReachedProgressPercent: 0,
+    readingStateUpdatedAt: null,
     readingStateCurrentState: ReadingStateState.NotStarted,
     rx_model: "book",
     tags: [],
@@ -371,7 +431,7 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
       const isConnectionError =
         e instanceof Error && e.message === "error happened in your connection"
       const isRetryableStatus =
-        isCouchRequestError(e) && (e.statusCode >= 500 || e.statusCode === 409)
+        isCouchConflict(e) || (isCouchRequestError(e) && e.statusCode >= 500)
 
       if ((isConnectionError || isRetryableStatus) && currentRetry > 0) {
         await waitForRandomTime(1, 200)

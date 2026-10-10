@@ -25,7 +25,10 @@ import {
   type BoxProps,
   type ListItemProps,
 } from "@mui/material"
-import { ReadingStateState } from "@oboku/shared"
+import {
+  getReadingStateReachedProgress,
+  ReadingStateState,
+} from "@oboku/shared"
 import { memo, useCallback } from "react"
 import { useBookDownloadState } from "../../download/states"
 import { useLink } from "../../links/states"
@@ -133,7 +136,7 @@ function BookMetadataStatus({
             <MenuBookRounded color="action" />
             <Typography variant="body2">
               {Math.floor(
-                (book?.readingStateCurrentBookmarkProgressPercent || 0) * 100,
+                (book ? getReadingStateReachedProgress(book) : 0) * 100,
               ) || 1}
               %
             </Typography>

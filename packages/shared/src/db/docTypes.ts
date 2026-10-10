@@ -162,7 +162,8 @@ export type DataSourceDataForProvider<T extends DataSourceType> = Extract<
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
 /**
- * @deprecated
+ * @deprecated Book properties the app no longer writes, still declared in the
+ * legacy group of the RxDB book schema, which says what each is waiting on.
  */
 export type DeprecatedBookDocType = {
   creator: string | null
@@ -172,6 +173,12 @@ export type DeprecatedBookDocType = {
   rights: string | null
   subject: string[] | null
   title: string | null
+  /**
+   * Superseded by `readingStateUpdatedAt` and no longer written, but still on
+   * legacy books and written by older versions of the app. Only
+   * `getReadingStateUpdatedTime` reads it.
+   */
+  readingStateCurrentBookmarkProgressUpdatedAt?: string | null
 }
 
 export type TagsDocType = CommonBase & {

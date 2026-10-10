@@ -2,12 +2,10 @@ import {
   type Archive,
   createArchiveFromText,
 } from "@prose-reader/archive-reader"
-import { createArchiveFromLibArchive } from "@prose-reader/archive-reader/archives/createArchiveFromLibArchive"
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
-import { Archive as LibARchive } from "libarchive.js"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
 import { isPotentialZipFile } from "@oboku/shared"
 
@@ -40,7 +38,7 @@ export const isPdfFile = (
   )
 }
 
-const getEncodingFormat = (
+export const getEncodingFormat = (
   file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
 ) => (file.data.type.length > 0 ? file.data.type : undefined)
 
@@ -87,21 +85,4 @@ export const getArchiveForZipFile = async (
 
     throw e
   }
-}
-
-/**
- * Does not work within service worker context yet.
- * Library use XhtmlHttpRequest which exist in worker and main thread but not SW.
- * We fallback to app main thread for rar archives
- */
-export const getArchiveForRarFile = async (
-  file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
-) => {
-  const archive = await LibARchive.open(file.data)
-
-  return createArchiveFromLibArchive(archive, {
-    orderByAlpha: true,
-    name: file.data.name,
-    encodingFormat: getEncodingFormat(file),
-  })
 }

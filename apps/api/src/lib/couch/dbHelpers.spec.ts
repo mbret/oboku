@@ -1,6 +1,10 @@
 import type createNano from "nano"
-import { addTagsToBookIfNotExist, getOrCreateUserFromEmail } from "./dbHelpers"
-import type { User } from "../couchDbEntities"
+import { User } from "../couchDbEntities"
+import {
+  addTagsToBookIfNotExist,
+  doesCouchDatabaseExist,
+  getOrCreateUserFromEmail,
+} from "./dbHelpers"
 
 type StoredDoc = {
   _id: string
@@ -88,127 +92,216 @@ describe("addTagsToBookIfNotExist", () => {
   })
 })
 
-type StoredCouchUser = {
-  _id: string
-  _rev: string
-  type: "user"
-  name: string
-  email: string
-  roles: string[]
-}
-
-const storedCouchUser = (email: string): StoredCouchUser => ({
-  _id: `org.couchdb.user:${email}`,
-  _rev: "1",
-  type: "user",
-  name: email,
-  email,
-  roles: [],
-})
-
-const couchNotFoundError = () =>
-  Object.assign(new Error("missing"), { statusCode: 404 })
-
-const createFakeCouchServer = (
-  users: StoredCouchUser[],
-  { getError }: { getError?: Error } = {},
-) => {
-  const store = new Map(users.map((user) => [user._id, user]))
-  const inserted: User[] = []
-
-  const usersDb = {
-    get: async (id: string) => {
-      if (getError) throw getError
-      const doc = store.get(id)
-      if (!doc) throw couchNotFoundError()
-      return { ...doc }
-    },
-    find: async ({ selector }: { selector: { type?: string } }) => ({
-      docs: [...store.values()].filter((doc) => doc.type === selector.type),
-    }),
-    insert: async (doc: User, id: string) => {
-      inserted.push(doc)
-      return { ok: true, id, rev: "1-next" }
-    },
-  }
-
-  const fakeServer = {
-    use: () => usersDb,
-    // Only `_users` get/find/insert are exercised by getOrCreateUserFromEmail;
-    // nano's full ServerScope surface is irrelevant to these tests.
-  } as unknown as createNano.ServerScope
-
-  return { fakeServer, inserted }
-}
+const couchError = (statusCode: number, message: string) =>
+  Object.assign(new Error(message), { statusCode })
 
 describe("getOrCreateUserFromEmail", () => {
-  it("returns the user whose doc id matches the normalized email", async () => {
-    const { fakeServer, inserted } = createFakeCouchServer([
-      storedCouchUser("foo@example.com"),
-    ])
+  const email = "reader@example.com"
+  const existingUser = new User(`org.couchdb.user:${email}`, email, "secret")
+  existingUser._rev = "3-abc"
+  const legacyUser = new User(
+    "org.couchdb.user:Reader@Example.com",
+    "Reader@Example.com",
+    "secret",
+  )
 
-    const result = await getOrCreateUserFromEmail(
-      fakeServer,
-      " Foo@Example.com ",
-    )
-
-    expect(result.created).toBe(false)
-    expect(result.user._id).toBe("org.couchdb.user:foo@example.com")
-    expect(inserted).toHaveLength(0)
-  })
-
-  it("reuses a legacy user whose doc kept its original casing", async () => {
-    const { fakeServer, inserted } = createFakeCouchServer([
-      storedCouchUser("Foo@Example.com"),
-    ])
-
-    const result = await getOrCreateUserFromEmail(fakeServer, "foo@example.com")
-
-    expect(result.created).toBe(false)
-    expect(result.user._id).toBe("org.couchdb.user:Foo@Example.com")
-    expect(result.user.name).toBe("Foo@Example.com")
-    expect(inserted).toHaveLength(0)
-  })
-
-  it("prefers the normalized doc when a legacy casing also exists", async () => {
-    const { fakeServer } = createFakeCouchServer([
-      storedCouchUser("Foo@Example.com"),
-      storedCouchUser("foo@example.com"),
-    ])
-
-    const result = await getOrCreateUserFromEmail(fakeServer, "foo@example.com")
-
-    expect(result.user._id).toBe("org.couchdb.user:foo@example.com")
-  })
-
-  it("creates the user with the normalized email when none matches", async () => {
-    const { fakeServer, inserted } = createFakeCouchServer([
-      storedCouchUser("someone-else@example.com"),
-    ])
-
-    const result = await getOrCreateUserFromEmail(
-      fakeServer,
-      " New@Example.com",
-    )
-
-    expect(result.created).toBe(true)
-    expect(inserted).toHaveLength(1)
-    expect(inserted[0]?._id).toBe("org.couchdb.user:new@example.com")
-    expect(inserted[0]?.name).toBe("new@example.com")
-    expect(inserted[0]?.email).toBe("new@example.com")
-  })
-
-  it("rethrows lookup failures other than not found", async () => {
-    const couchServerError = Object.assign(new Error("boom"), {
-      statusCode: 500,
+  const createFakeServer = ({
+    users,
+    dbExists,
+    insert = jest.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
+    getUserDoc = jest.fn(async function getUserDocIfExists(id: string) {
+      const doc = users.find((candidate) => candidate._id === id)
+      if (!doc) throw couchError(404, "not_found")
+      return doc
+    }),
+  }: {
+    users: User[]
+    dbExists: boolean
+    insert?: jest.Mock
+    getUserDoc?: jest.Mock
+  }) => {
+    const usersDb = {
+      get: getUserDoc,
+      find: jest.fn().mockResolvedValue({ docs: users }),
+      insert,
+    }
+    const get = jest.fn(async function getDatabaseIfExists() {
+      if (dbExists) return { db_name: "userdb" }
+      throw couchError(404, "not_found")
     })
-    const { fakeServer, inserted } = createFakeCouchServer([], {
-      getError: couchServerError,
+
+    return {
+      // Only `_users` get/find/insert and `db.get` are exercised; nano's full
+      // ServerScope surface is irrelevant to these tests.
+      server: {
+        use: function useUsersDb() {
+          return usersDb
+        },
+        db: { get },
+      } as unknown as createNano.ServerScope,
+      usersDb,
+    }
+  }
+
+  it("returns an existing user whose database exists without rewriting it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: true,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("re-saves an existing user whose database is missing so couch_peruser recreates it", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+    expect(usersDb.insert).toHaveBeenCalledWith(existingUser, existingUser._id)
+  })
+
+  it("treats a conflict on the re-save as a concurrent sign-in having done it", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(409, "conflict")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: existingUser,
+      userDbPending: true,
+    })
+  })
+
+  it("rethrows any other failure of the re-save", async () => {
+    const { server } = createFakeServer({
+      users: [existingUser],
+      dbExists: false,
+      insert: jest.fn().mockRejectedValue(couchError(401, "unauthorized")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
+      "unauthorized",
+    )
+  })
+
+  it("creates the user on first sign-in", async () => {
+    const { server, usersDb } = createFakeServer({ users: [], dbExists: false })
+
+    const result = await getOrCreateUserFromEmail(server, email)
+
+    expect(result.userDbPending).toBe(true)
+    expect(result.user.name).toBe(email)
+    expect(usersDb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: `org.couchdb.user:${email}`,
+        name: email,
+      }),
+      `org.couchdb.user:${email}`,
+    )
+  })
+
+  it("finds the user by the normalized email", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: true,
     })
 
     await expect(
-      getOrCreateUserFromEmail(fakeServer, "foo@example.com"),
-    ).rejects.toBe(couchServerError)
-    expect(inserted).toHaveLength(0)
+      getOrCreateUserFromEmail(server, " Reader@Example.com "),
+    ).resolves.toEqual({ user: existingUser, userDbPending: false })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("reuses a legacy user whose doc kept its original casing", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [legacyUser],
+      dbExists: true,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: legacyUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("prefers the normalized doc when a legacy casing also exists", async () => {
+    const { server } = createFakeServer({
+      users: [legacyUser, existingUser],
+      dbExists: true,
+    })
+
+    const result = await getOrCreateUserFromEmail(server, email)
+
+    expect(result.user).toBe(existingUser)
+  })
+
+  it("creates the user with the normalized email", async () => {
+    const { server, usersDb } = createFakeServer({ users: [], dbExists: false })
+
+    const result = await getOrCreateUserFromEmail(server, " New@Example.com")
+
+    expect(result.user.name).toBe("new@example.com")
+    expect(usersDb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: "org.couchdb.user:new@example.com",
+        email: "new@example.com",
+      }),
+      "org.couchdb.user:new@example.com",
+    )
+  })
+
+  it("rethrows lookup failures other than not found", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [],
+      dbExists: true,
+      getUserDoc: jest.fn().mockRejectedValue(couchError(500, "boom")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
+      "boom",
+    )
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+})
+
+describe("doesCouchDatabaseExist", () => {
+  const createFakeServer = (get: jest.Mock) =>
+    // Only `db.get` is exercised; nano's full ServerScope surface is
+    // irrelevant to these tests.
+    ({ db: { get } }) as unknown as createNano.ServerScope
+
+  it("is true when the database answers", async () => {
+    const get = jest.fn().mockResolvedValue({ db_name: "userdb-1" })
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(true)
+  })
+
+  it("is false when the database is missing", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(404, "not_found"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).resolves.toBe(false)
+  })
+
+  it("rethrows any other failure", async () => {
+    const get = jest.fn().mockRejectedValue(couchError(401, "unauthorized"))
+
+    await expect(
+      doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).rejects.toThrow("unauthorized")
   })
 })

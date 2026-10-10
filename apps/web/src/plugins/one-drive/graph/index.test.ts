@@ -104,7 +104,7 @@ describe("getOneDrivePickerBaseUrl", () => {
       name: "Book.epub",
     })
 
-    expect(global.fetch).toHaveBeenCalledWith(
+    expect(globalThis.fetch).toHaveBeenCalledWith(
       "https://graph.microsoft.com/v1.0/drives/drive-id/items/file-id?%24select=id%2Cname%2CparentReference%2Cfile%2Cfolder%2Cpackage",
       {
         headers: {

@@ -69,6 +69,13 @@
 - Keep content strings colocated in the consuming app (e.g. web) so they can be localized and adjusted per product without touching shared code.
 - The shared package may define error codes, types, and structure; the app defines the human-readable messages.
 
+### Data migrations: RxDB is local, CouchDB is the data
+
+- **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).
+- Use RxDB migrations only as pass-throughs when a field is added (bump the schema version, return the document unchanged), or for data that never leaves the device.
+- **To change stored data, migrate CouchDB.** Add a method to the API's `MigrationService` and an admin endpoint in `admin.controller.ts`, following the existing ones: idempotent, one bulk write per user database. Devices receive the result through replication.
+- Older versions of the app keep running against the same data. When a field replaces another, keep reading the old one until they are gone, and say in a TODO when it can be removed.
+
 ### Package manager
 
 - Use `pnpm` as the package manager for this repository (pinned via the `packageManager` field in the root `package.json`).
@@ -78,21 +85,25 @@
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 
-### prose-reader: read its docs before writing code against it
+### prose-reader: read its docs, then confirm in its source
 
 - **prose-reader and oboku have the same maintainer.** prose-reader is not a
   third-party black box: its repository is available, its behaviour is
   changeable, and a gap there is fixable rather than something to work around
   locally.
-- `@prose-reader/*` is a documented library. Its guides live in the prose-reader
-  repo under `gitbook/<package>/` (e.g. `gitbook/archive-reader/`) and are the
-  source of truth for what each package owns, what its vocabulary means, and why
-  a field is shaped the way it is. Read them before writing code against it.
-- **The guides can be stale, wrong, or silent** — they are hand-written
-  alongside the code. When one does not answer the question, or contradicts what
-  you observe, read prose-reader's `src/`: it is typed, commented, and states
-  intent. Trust the source over the guide when they disagree, say so, and offer
-  to correct the guide upstream.
+- **Docs for the overview, source for the facts.** Its guides live in the
+  prose-reader repo under `gitbook/<package>/` (e.g. `gitbook/archive-reader/`).
+  Read them first for the broad picture: what each package owns, what its
+  vocabulary means, how it is meant to be used. Then confirm every behaviour you
+  rely on in prose-reader's `src/` and its tests, whether writing code against
+  it or explaining it: the source is typed, commented, and states intent. The
+  guides are hand-written alongside the code and can be stale, wrong, or silent.
+- **oboku is prose-reader's first consumer and its debugging ground.** A guide
+  that disagrees with the source, or prose-reader behaviour that looks wrong
+  from oboku, is a finding, not something to route around. Say so, go with the
+  source, and fix it upstream with a prose-reader issue or PR, for the guide or
+  the code. When oboku cannot wait for the fix, link the upstream issue from the
+  workaround.
 - **Never reverse-engineer behaviour from `dist/`.** The published bundles are
   minified: they tell you what the code does and nothing about what it intends.
   Read `src/` in the repository instead — reaching for the built artifact when

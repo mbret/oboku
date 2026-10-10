@@ -23,7 +23,7 @@ import "@prose-reader/react-reader/index.css"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
-import { useSettingsFormValues } from "./settings/useSettingsFormValues"
+import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 
 export const Reader = memo(function Reader({
@@ -43,7 +43,8 @@ export const Reader = memo(function Reader({
     "readerFloatingProgress",
     "readerFloatingTime",
   ])
-  const { globalFontScale, updateGlobalFontScale } = useSettingsFormValues()
+  const { readerFontScale, readerSpreadMode, updateReaderSettings } =
+    useReaderSettings()
   const { goBack } = useSafeGoBack()
   const openMoreDialog = useOpenMoreDialog()
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
@@ -86,9 +87,13 @@ export const Reader = memo(function Reader({
           onItemClick={onItemClick}
           enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
           reader={reader}
-          fontSize={globalFontScale ?? undefined}
+          fontSize={readerFontScale}
           onFontSizeChange={(_scope, fontSize) => {
-            updateGlobalFontScale(fontSize)
+            updateReaderSettings({ readerFontScale: fontSize })
+          }}
+          spreadMode={readerSpreadMode}
+          onSpreadModeChange={(_scope, spreadMode) => {
+            updateReaderSettings({ readerSpreadMode: spreadMode })
           }}
           enableFloatingProgress={
             localSettings.readerFloatingProgress === "bottom"
