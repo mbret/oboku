@@ -16,9 +16,20 @@ import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iP
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { links } from "@oboku/shared"
 import { AppHighlightSection } from "./AppHighlightSection"
-import { landingSubtitle } from "./content"
+import { landingDescription, landingTagline } from "./content"
+import { FaqSection } from "./FaqSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"
+
+const syncProviders = [
+  { label: "Google Drive", docsPath: "sync-providers/google-drive" },
+  { label: "Dropbox", docsPath: "sync-providers/dropbox" },
+  { label: "OneDrive", docsPath: "sync-providers/one-drive" },
+  { label: "Synology", docsPath: "sync-providers/synology-drive" },
+  { label: "WebDAV", docsPath: "sync-providers/webdav" },
+]
+
+const supportedExtensions = [".epub", ".cbz", ".cbr", ".pdf", ".txt"]
 
 const HighlightImage = styled(Image)(({ theme }) => ({
   width: "100%",
@@ -61,8 +72,22 @@ export const HomeContent = () => {
             mb: 2,
           }}
         >
-          <Typography variant="h2" component="h1">
-            oboku
+          <Typography
+            variant="h2"
+            component="h1"
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              textAlign: "center",
+            }}
+          >
+            <Typography variant="h2" component="span">
+              oboku
+            </Typography>{" "}
+            <Typography variant="h5" component="span">
+              {landingTagline}
+            </Typography>
           </Typography>
         </Box>
         <div
@@ -76,9 +101,10 @@ export const HomeContent = () => {
         >
           <Typography
             variant="subtitle1"
+            component="p"
             style={{ fontWeight: "normal", paddingBottom: theme.spacing(1) }}
           >
-            {landingSubtitle}
+            {landingDescription}
           </Typography>
           <div style={{ paddingBottom: theme.spacing(3) }} />
           <Box
@@ -115,7 +141,7 @@ export const HomeContent = () => {
                 <Button
                   // variant="outlined"
                   size="large"
-                  href="https://docs.oboku.me/self-hosting/installation"
+                  href={links.documentationSelfHosting}
                   target="_blank"
                 >
                   or Self host
@@ -201,10 +227,12 @@ export const HomeContent = () => {
               What is oboku?
             </Typography>
             <Typography>
-              Oboku is a cloud or self-hostable book reader built to keep your
-              library under your control. What differentiates it from other
-              solutions is the range of supported contents and the possibility
-              to synchronize from external locations.
+              Oboku is a free and open-source ebook and comic reader that runs
+              in your web browser. Instead of uploading your books to yet
+              another service, you connect the places where they already live
+              and oboku builds your library from them, on every device. Use the
+              cloud version, or self-host it to keep everything under your
+              control.
             </Typography>
             <Stack
               sx={{
@@ -238,10 +266,18 @@ export const HomeContent = () => {
                 >
                   Examples:
                 </Typography>
-                <Chip label="Google Drive" size="small" variant="outlined" />
-                <Chip label="Dropbox" size="small" variant="outlined" />
-                <Chip label="Synology" size="small" variant="outlined" />
-                <Chip label="WebDAV" size="small" variant="outlined" />
+                {syncProviders.map(({ label, docsPath }) => (
+                  <Chip
+                    key={label}
+                    label={label}
+                    size="small"
+                    variant="outlined"
+                    component="a"
+                    href={`${links.documentation}/${docsPath}`}
+                    target="_blank"
+                    clickable
+                  />
+                ))}
               </Box>
             </Stack>
             <Stack
@@ -276,10 +312,14 @@ export const HomeContent = () => {
                 >
                   Examples:
                 </Typography>
-                <Chip label=".epub" size="small" variant="outlined" />
-                <Chip label=".cbz" size="small" variant="outlined" />
-                <Chip label=".cbr" size="small" variant="outlined" />
-                <Chip label=".pdf" size="small" variant="outlined" />
+                {supportedExtensions.map((extension) => (
+                  <Chip
+                    key={extension}
+                    label={extension}
+                    size="small"
+                    variant="outlined"
+                  />
+                ))}
               </Box>
               <Typography
                 variant="body2"
@@ -308,6 +348,13 @@ export const HomeContent = () => {
         }}
       >
         <AppHighlightSection />
+      </Box>
+      <Box
+        sx={{
+          mb: [8, 8],
+        }}
+      >
+        <FaqSection />
       </Box>
       <LastWords />
     </Box>

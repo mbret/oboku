@@ -5,7 +5,7 @@ import { AppRouterCacheProvider } from "@mui/material-nextjs/v15-appRouter"
 import { CssBaseline, Stack, ThemeProvider } from "@mui/material"
 import { theme } from "../theme"
 import AppBar from "../features/home/AppBar"
-import { landingSubtitle } from "../features/home/content"
+import { landingDescription, landingTagline } from "../features/home/content"
 import { Footer } from "../features/home/Footer"
 import { links } from "@oboku/shared"
 
@@ -16,33 +16,16 @@ const roboto = Roboto({
   display: "swap",
 })
 
-const siteTitle = "oboku | Your digital library"
-
 // Every page inherits this. `./` resolves against each page's own pathname,
 // and Next.js fills the Open Graph and Twitter title and description from each
 // page's own: absolute values here would make every page claim the home page's.
 export const metadata: Metadata = {
   metadataBase: new URL(links.site),
   title: {
-    default: siteTitle,
+    default: `oboku – ${landingTagline}`,
     template: "%s | oboku",
   },
-  description: landingSubtitle,
-  keywords: [
-    "ebook reader",
-    "digital library",
-    "epub reader",
-    "cbz reader",
-    "self-hosted",
-    "open source",
-    "cloud library",
-    "book reader",
-    "offline reading",
-    "Google Drive books",
-    "Dropbox books",
-    "WebDAV",
-    "Synology",
-  ],
+  description: landingDescription,
   openGraph: {
     url: "./",
     siteName: "oboku",
