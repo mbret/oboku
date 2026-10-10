@@ -15,6 +15,22 @@ export class AppConfigService {
     return this.config.getOrThrow("COUCH_DB_URL", { infer: true })
   }
 
+  get POSTGRES_HOST() {
+    return this.config.getOrThrow("POSTGRES_HOST", { infer: true })
+  }
+
+  get POSTGRES_USER() {
+    return this.config.getOrThrow("POSTGRES_USER", { infer: true })
+  }
+
+  get POSTGRES_PASSWORD() {
+    return this.config.getOrThrow("POSTGRES_PASSWORD", { infer: true })
+  }
+
+  get POSTGRES_DB() {
+    return this.config.get("POSTGRES_DB", { infer: true })
+  }
+
   get GOOGLE_CLIENT_ID(): string | undefined {
     return this.config.get("GOOGLE_CLIENT_ID", { infer: true })
   }
