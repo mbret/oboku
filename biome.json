@@ -99,6 +99,14 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/apps/landing/**"],
+      "linter": {
+        "domains": {
+          "next": "all"
+        }
+      }
     }
   ]
 }
