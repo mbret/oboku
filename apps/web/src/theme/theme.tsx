@@ -4,6 +4,7 @@
  */
 import { createTheme, alpha } from "@mui/material/styles"
 import { deepmerge } from "@mui/utils"
+import { design } from "@oboku/shared"
 
 declare module "@mui/material/styles" {
   interface Theme {
@@ -26,8 +27,8 @@ export const theme = createTheme({
       palette: {
         primary: {
           light: `#E7835B`,
-          main: "#e16432", // #e16432
-          dark: `#9D4623`,
+          main: design.palette.orangeHex,
+          dark: design.palette.orangeDarkHex,
         },
       },
     },
@@ -35,8 +36,8 @@ export const theme = createTheme({
       palette: {
         primary: {
           light: `#E7835B`,
-          main: "#e16432", // #e16432
-          dark: `#9D4623`,
+          main: design.palette.orangeOnLightHex,
+          dark: design.palette.orangeDarkHex,
         },
       },
     },
