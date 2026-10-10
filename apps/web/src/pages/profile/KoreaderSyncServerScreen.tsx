@@ -1,14 +1,13 @@
 import { memo } from "react"
 import {
   Alert,
-  alpha,
   Button,
   Container,
+  Divider,
   IconButton,
   InputAdornment,
   List,
   ListItem,
-  ListItemButton,
   ListItemText,
   ListSubheader,
   Stack,
@@ -30,14 +29,6 @@ const DetailsStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(2),
   paddingTop: theme.spacing(2),
   paddingBottom: theme.spacing(2),
-}))
-
-const DangerZoneList = styled(List)(({ theme }) => ({
-  backgroundColor: alpha(theme.palette.error.light, 0.2),
-}))
-
-const DangerZoneListSubheader = styled(ListSubheader)(({ theme }) => ({
-  color: theme.palette.error.dark,
 }))
 
 const SETUP_STEPS = [
@@ -177,35 +168,34 @@ export const KoreaderSyncServerScreen = memo(
             >
               {isEnabled ? "Generate a new password" : "Generate a password"}
             </Button>
+            <List
+              disablePadding
+              subheader={
+                <ListSubheader disableGutters disableSticky>
+                  Set up a device
+                </ListSubheader>
+              }
+            >
+              {SETUP_STEPS.map((step, index) => (
+                <ListItem key={step} disableGutters>
+                  <ListItemText primary={`${index + 1}. ${step}`} />
+                </ListItem>
+              ))}
+            </List>
+            {isEnabled && (
+              <>
+                <Divider />
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={confirmThenTurnOff}
+                >
+                  Turn off the KOReader sync server
+                </Button>
+              </>
+            )}
           </DetailsStack>
         </Container>
-        <List
-          subheader={
-            <ListSubheader disableSticky>Set up a device</ListSubheader>
-          }
-        >
-          {SETUP_STEPS.map((step, index) => (
-            <ListItem key={step}>
-              <ListItemText primary={`${index + 1}. ${step}`} />
-            </ListItem>
-          ))}
-        </List>
-        {isEnabled && (
-          <DangerZoneList
-            subheader={
-              <DangerZoneListSubheader disableSticky>
-                Danger zone
-              </DangerZoneListSubheader>
-            }
-          >
-            <ListItemButton onClick={confirmThenTurnOff}>
-              <ListItemText
-                primary="Turn off the KOReader sync server"
-                secondary="Signs every device out and deletes the reading positions they synced"
-              />
-            </ListItemButton>
-          </DangerZoneList>
-        )}
       </Page>
     )
   },
