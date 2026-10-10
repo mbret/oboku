@@ -9,6 +9,17 @@
     "build": "next build",
     "start": "next start"
   },
+  "nx": {
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/.next",
+          "!{projectRoot}/.next/cache",
+          "!{projectRoot}/.next/dev"
+        ]
+      }
+    }
+  },
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
