@@ -2,11 +2,9 @@ name: check
 
 on:
   push:
-    branches-ignore:
-      - 'master'
-  pull_request:
     branches:
-      - 'master'
+      - 'develop'
+  pull_request:
 
 jobs:
   build:
