@@ -115,7 +115,7 @@ async function findLegacyCouchUserByNormalizedName(
   return docs.find((doc) => normalizeEmail(doc.name) === email)
 }
 
-export async function findCouchUserFromEmail(
+async function findCouchUserFromEmail(
   db: createNano.ServerScope,
   rawEmail: string,
 ): Promise<User | undefined> {
