@@ -25,14 +25,18 @@ type ScreenParams = {
   source: string
 }
 
-const MetadataSourcePageContainer = styled(PageContainer)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  flex: 1,
-  minHeight: 0,
-  paddingTop: theme.spacing(1),
-  gap: theme.spacing(2),
-}))
+const MetadataSourcePageContainer = styled(PageContainer)(
+  function styleMetadataSourcePageContainer({ theme }) {
+    return {
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+      minHeight: 0,
+      paddingTop: theme.spacing(1),
+      gap: theme.spacing(2),
+    }
+  },
+)
 
 const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
   link: "Information exposed on the storage provider link.",

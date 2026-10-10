@@ -31,15 +31,19 @@ const TopBarActionsStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-const OptimizePageContainer = styled(PageContainer)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  flex: 1,
-  minHeight: 0,
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
-  gap: theme.spacing(2),
-}))
+const OptimizePageContainer = styled(PageContainer)(
+  function styleOptimizePageContainer({ theme }) {
+    return {
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+      minHeight: 0,
+      paddingTop: theme.spacing(2),
+      paddingBottom: theme.spacing(2),
+      gap: theme.spacing(2),
+    }
+  },
+)
 
 export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
   const { id: bookId } = useParams<ScreenParams>()
