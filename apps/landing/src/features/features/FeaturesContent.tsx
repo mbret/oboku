@@ -3,28 +3,18 @@
 import {
   alpha,
   Box,
-  Button,
   Chip,
   Container,
   Stack,
   styled,
   Typography,
 } from "@mui/material"
-import { links } from "@oboku/shared"
+import { GetStartedActions } from "../common/GetStartedActions"
+import { GetStartedBanner } from "../common/GetStartedBanner"
+import { GlowHeroSection } from "../common/GlowHeroSection"
+import { outlinedCardStyles } from "../common/outlinedCardStyles"
 import { featureGroups, featureHighlights } from "./content"
 import { FeatureGroupSection } from "./FeatureGroupSection"
-
-const HeroSection = styled("section")(function styleHeroSection({ theme }) {
-  return {
-    paddingTop: theme.spacing(14),
-    paddingBottom: theme.spacing(6),
-    background: `radial-gradient(ellipse at top, ${alpha(theme.palette.primary.main, 0.12)}, transparent 70%)`,
-    [theme.breakpoints.up("sm")]: {
-      paddingTop: theme.spacing(18),
-      paddingBottom: theme.spacing(8),
-    },
-  }
-})
 
 const HighlightsBox = styled(Box)(function styleHighlightsBox({ theme }) {
   return {
@@ -40,11 +30,9 @@ const HighlightsBox = styled(Box)(function styleHighlightsBox({ theme }) {
 
 const HighlightStack = styled(Stack)(function styleHighlightStack({ theme }) {
   return {
+    ...outlinedCardStyles(theme),
     gap: theme.spacing(0.5),
     padding: theme.spacing(2.5),
-    borderRadius: theme.spacing(1.5),
-    border: `1px solid ${theme.palette.divider}`,
-    backgroundColor: theme.palette.background.paper,
     textAlign: "center",
   }
 })
@@ -78,27 +66,10 @@ const SectionNavStack = styled(Stack)(function styleSectionNavStack({ theme }) {
   }
 })
 
-const CallToActionStack = styled(Stack)(function styleCallToActionStack({
-  theme,
-}) {
-  return {
-    alignItems: "center",
-    textAlign: "center",
-    gap: theme.spacing(2),
-    padding: theme.spacing(6, 3),
-    borderRadius: theme.spacing(3),
-    color: theme.palette.primary.contrastText,
-    backgroundColor: theme.palette.primary.main,
-    [theme.breakpoints.up("sm")]: {
-      padding: theme.spacing(8, 6),
-    },
-  }
-})
-
 export function FeaturesContent() {
   return (
     <Box component="main">
-      <HeroSection>
+      <GlowHeroSection>
         <Container maxWidth="md">
           <Stack sx={{ alignItems: "center", textAlign: "center", gap: 2 }}>
             <Chip label="Features" color="primary" variant="outlined" />
@@ -117,31 +88,7 @@ export function FeaturesContent() {
               Ebooks, comics and manga from the storage you already use, in one
               reader that works offline on every device. Free and open source.
             </Typography>
-            <Stack
-              sx={{
-                mt: 2,
-                gap: 2,
-                flexDirection: { xs: "column", sm: "row" },
-                width: { xs: "100%", sm: "auto" },
-              }}
-            >
-              <Button
-                variant="contained"
-                size="large"
-                href={links.app}
-                target="_blank"
-              >
-                Start using oboku
-              </Button>
-              <Button
-                variant="outlined"
-                size="large"
-                href={links.documentationSelfHosting}
-                target="_blank"
-              >
-                Self host
-              </Button>
-            </Stack>
+            <GetStartedActions />
           </Stack>
           <HighlightsBox>
             {featureHighlights.map(function renderHighlight({ value, label }) {
@@ -162,7 +109,7 @@ export function FeaturesContent() {
             })}
           </HighlightsBox>
         </Container>
-      </HeroSection>
+      </GlowHeroSection>
       <SectionNav aria-label="Feature categories">
         <Container>
           <SectionNavStack>
@@ -191,45 +138,7 @@ export function FeaturesContent() {
         )
       })}
       <Container>
-        <CallToActionStack>
-          <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
-            Your library is waiting
-          </Typography>
-          <Typography sx={{ maxWidth: 520, opacity: 0.9 }}>
-            Sign in, connect a data source and start reading in minutes. No
-            installation, no credit card.
-          </Typography>
-          <Stack
-            sx={{
-              mt: 1,
-              gap: 2,
-              flexDirection: { xs: "column", sm: "row" },
-            }}
-          >
-            <Button
-              variant="contained"
-              sx={{
-                color: "primary.main",
-                bgcolor: "common.white",
-                "&:hover": { bgcolor: "grey.100" },
-              }}
-              size="large"
-              href={links.app}
-              target="_blank"
-            >
-              Start using oboku
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              size="large"
-              href={links.documentation}
-              target="_blank"
-            >
-              Read the documentation
-            </Button>
-          </Stack>
-        </CallToActionStack>
+        <GetStartedBanner />
       </Container>
     </Box>
   )

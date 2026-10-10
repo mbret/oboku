@@ -27,7 +27,7 @@ import {
   Reddit,
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
-import { DiscordMarkBlueIcon } from "./DiscordMarkBlueIcon"
+import { DiscordMarkBlueIcon } from "../common/DiscordMarkBlueIcon"
 import Link from "next/link"
 
 const ScrollAwareAppBar = styled(MuiAppBar)(function styleScrollAwareAppBar({

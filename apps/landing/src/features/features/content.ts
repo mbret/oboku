@@ -38,14 +38,16 @@ import {
   WifiOffRounded,
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
-import type { StaticImageData } from "next/image"
 import { links } from "@oboku/shared"
+import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
 import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import epubReaderScreenshot from "../home/assets/image1.png"
 import bookDetailsScreenshot from "../home/assets/image2.png"
 import storageScreenshot from "../home/assets/image3.png"
 import dataSourcesScreenshot from "../home/assets/image4.png"
+import mangaReaderScreenshot from "../home/assets/image5.png"
+import homeScreenshot from "../home/assets/image6.png"
 import profileScreenshot from "../home/assets/image7.png"
 import addDataSourceScreenshot from "../home/assets/image8.png"
 import einkScreenshot from "../home/assets/image9.png"
@@ -57,11 +59,6 @@ type Feature = {
   Icon: SvgIconComponent
 }
 
-type Screenshot = {
-  src: StaticImageData
-  alt: string
-}
-
 type FeatureChip = {
   label: string
   href?: string
@@ -69,12 +66,13 @@ type FeatureChip = {
 
 export type FeatureGroup = {
   id: string
+  Icon: SvgIconComponent
   navLabel: string
   overline: string
   title: string
   description: string
   features: Feature[]
-  screenshots: Screenshot[]
+  screenshots?: PhoneScreenshotSet
   chips?: FeatureChip[]
 }
 
@@ -88,21 +86,26 @@ export const featureHighlights = [
 export const featureGroups: FeatureGroup[] = [
   {
     id: "reader",
+    Icon: AutoStoriesRounded,
     navLabel: "Reader",
     overline: "Reader",
     title: "One reader for every kind of book",
     description:
       "Novels reflow to your screen, manga turns right to left, webtoons scroll. The reader is built on Prose, an engine designed to open any kind of content.",
-    screenshots: [
-      {
+    screenshots: {
+      primary: {
         src: comicReaderScreenshot,
         alt: "A comic page open in the oboku reader with the progress bar",
       },
-      {
+      secondary: {
         src: epubReaderScreenshot,
         alt: "oboku reader displaying a chapter of an EPUB novel",
       },
-    ],
+      tertiary: {
+        src: mangaReaderScreenshot,
+        alt: "Black and white manga page open in the oboku reader",
+      },
+    },
     chips: supportedExtensions.map((extension) => ({ label: extension })),
     features: [
       {
@@ -144,21 +147,22 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "sources",
+    Icon: CloudRounded,
     navLabel: "Sync",
     overline: "Your storage",
     title: "Your books stay where they already are",
     description:
       "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library, collections and progress are synced.",
-    screenshots: [
-      {
+    screenshots: {
+      primary: {
         src: dataSourcesScreenshot,
         alt: "oboku data sources screen with a Google Drive library being synchronized",
       },
-      {
+      secondary: {
         src: addDataSourceScreenshot,
         alt: "Adding an oboku data source from Dropbox or Google Drive",
       },
-    ],
+    },
     chips: syncProviders.map(function toDocumentationChip({ label, docsPath }) {
       return { label, href: `${links.documentation}/${docsPath}` }
     }),
@@ -195,21 +199,26 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "library",
+    Icon: CollectionsBookmarkRounded,
     navLabel: "Library",
     overline: "Library",
     title: "A library that organizes itself",
     description:
       "Covers, titles, authors and series details are filled in for you. Organize the rest with collections, tags and filters.",
-    screenshots: [
-      {
+    screenshots: {
+      primary: {
         src: libraryScreenshot,
         alt: "oboku library grid with books, collections and tags tabs",
       },
-      {
+      secondary: {
         src: bookDetailsScreenshot,
         alt: "oboku book details page with cover, authors and download button",
       },
-    ],
+      tertiary: {
+        src: homeScreenshot,
+        alt: "oboku home screen with continue reading and recently added books",
+      },
+    },
     features: [
       {
         Icon: AutoAwesomeRounded,
@@ -251,21 +260,22 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "offline",
+    Icon: WifiOffRounded,
     navLabel: "Offline",
     overline: "Offline & devices",
     title: "Offline-first, on every device",
     description:
       "oboku is a progressive web app: anything with a modern browser runs it, and it keeps working when the connection drops.",
-    screenshots: [
-      {
+    screenshots: {
+      primary: {
         src: storageScreenshot,
         alt: "oboku storage screen listing books downloaded for offline reading",
       },
-      {
+      secondary: {
         src: einkScreenshot,
         alt: "oboku library in e-ink mode, with a high-contrast monochrome interface",
       },
-    ],
+    },
     features: [
       {
         Icon: WifiOffRounded,
@@ -307,17 +317,18 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "privacy",
+    Icon: LockRounded,
     navLabel: "Privacy",
     overline: "Privacy & control",
     title: "Private by design, safe to share",
     description:
       "Share an account with your family without sharing everything in it. Sensitive content stays hidden, and your credentials stay yours.",
-    screenshots: [
-      {
+    screenshots: {
+      primary: {
         src: profileScreenshot,
         alt: "oboku profile screen with the app password and hidden protected contents",
       },
-    ],
+    },
     features: [
       {
         Icon: LockRounded,
@@ -346,12 +357,12 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "optimize",
+    Icon: CompressRounded,
     navLabel: "Optimize",
     overline: "Book tools",
     title: "Make your books lighter and cleaner",
     description:
       "Inspect any book, shrink oversized comics, fix its identifiers, and save the result back to where it came from.",
-    screenshots: [],
     features: [
       {
         Icon: CompressRounded,
@@ -386,12 +397,12 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "open-source",
+    Icon: CodeRounded,
     navLabel: "Open source",
     overline: "Open source",
     title: "Free, open source and self-hostable",
     description:
       "No ads, no paywall. Use the cloud version, or run everything on your own hardware.",
-    screenshots: [],
     features: [
       {
         Icon: CodeRounded,

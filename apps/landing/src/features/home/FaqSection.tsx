@@ -1,6 +1,8 @@
 import { Box, Container, Link, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
 import type { ReactNode } from "react"
+import { BandSection } from "../common/BandSection"
+import { SectionHeading } from "../common/SectionHeading"
 
 const questions: { question: string; answer: ReactNode }[] = [
   {
@@ -51,18 +53,16 @@ const questions: { question: string; answer: ReactNode }[] = [
 
 export function FaqSection() {
   return (
-    <Container>
-      <Stack
-        sx={{
-          gap: 2,
-        }}
-      >
-        <Typography variant="h4" component="h2">
-          Frequently asked questions
-        </Typography>
+    <BandSection aria-labelledby="faq-title">
+      <Container>
+        <SectionHeading
+          overline="FAQ"
+          title="Frequently asked questions"
+          titleId="faq-title"
+        />
         <Box
           sx={{
-            mt: 2,
+            mt: 6,
             display: "grid",
             gridTemplateColumns: ["1fr", "1fr 1fr"],
             gap: 4,
@@ -90,7 +90,7 @@ export function FaqSection() {
             )
           })}
         </Box>
-      </Stack>
-    </Container>
+      </Container>
+    </BandSection>
   )
 }

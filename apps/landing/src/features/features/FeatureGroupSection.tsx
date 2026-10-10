@@ -1,36 +1,14 @@
-import {
-  alpha,
-  Box,
-  Chip,
-  Container,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material"
-import Image from "next/image"
+import { Box, Chip, Container, Stack, styled, Typography } from "@mui/material"
+import { BandSection } from "../common/BandSection"
+import { FeatureIconBox } from "../common/FeatureIconBox"
+import { PhoneScreenshots } from "../common/PhoneScreenshots"
+import { SectionHeading } from "../common/SectionHeading"
 import type { FeatureGroup } from "./content"
 
 const sectionScrollMargin = 140
 
-type ScreenshotWidths = { xs: number; sm: number }
-
-const primaryScreenshotWidths: ScreenshotWidths = { xs: 200, sm: 260 }
-const secondaryScreenshotWidths: ScreenshotWidths = { xs: 140, sm: 180 }
-
-function toImageSizes({ xs, sm }: ScreenshotWidths) {
-  return `(max-width: 599px) ${xs}px, ${sm}px`
-}
-
-const BandSection = styled("section")(function styleBandSection({ theme }) {
-  return {
-    paddingTop: theme.spacing(8),
-    paddingBottom: theme.spacing(8),
-    scrollMarginTop: sectionScrollMargin,
-    [theme.breakpoints.up("md")]: {
-      paddingTop: theme.spacing(12),
-      paddingBottom: theme.spacing(12),
-    },
-  }
+const FeatureGroupBandSection = styled(BandSection)({
+  scrollMarginTop: sectionScrollMargin,
 })
 
 const LayoutBox = styled(Box)(function styleLayoutBox({ theme }) {
@@ -63,14 +41,8 @@ const TextStack = styled(Stack)(function styleTextStack({ theme }) {
   }
 })
 
-const OverlineTypography = styled(Typography)(function styleOverlineTypography({
-  theme,
-}) {
-  return {
-    color: theme.palette.primary.main,
-    fontWeight: 700,
-    letterSpacing: "0.12em",
-  }
+const ScreenshotsAreaBox = styled(Box)({
+  gridArea: "screenshots",
 })
 
 const FeatureGridBox = styled(Box)(function styleFeatureGridBox({ theme }) {
@@ -80,6 +52,9 @@ const FeatureGridBox = styled(Box)(function styleFeatureGridBox({ theme }) {
     [theme.breakpoints.up("sm")]: {
       gridTemplateColumns: "1fr 1fr",
       columnGap: theme.spacing(4),
+    },
+    [theme.breakpoints.between("md", "lg")]: {
+      gridTemplateColumns: "1fr",
     },
   }
 })
@@ -94,72 +69,8 @@ const WideFeatureGridBox = styled(FeatureGridBox)(
   },
 )
 
-const FeatureIconBox = styled(Box)(function styleFeatureIconBox({ theme }) {
-  return {
-    flexShrink: 0,
-    display: "flex",
-    alignItems: "center",
-    justifyContent: "center",
-    width: 40,
-    height: 40,
-    borderRadius: theme.spacing(1.25),
-    color: theme.palette.primary.main,
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  }
-})
-
-const ScreenshotsBox = styled(Box)({
-  gridArea: "screenshots",
-  display: "flex",
-  justifyContent: "center",
-})
-
-const PhonesBox = styled(Box)(function stylePhonesBox({ theme }) {
-  return {
-    position: "relative",
-    paddingBottom: theme.spacing(5),
-    "&[data-has-secondary=true]": {
-      paddingRight: 72,
-      [theme.breakpoints.up("sm")]: {
-        paddingRight: 100,
-      },
-    },
-  }
-})
-
-const ScreenshotImage = styled(Image)(function styleScreenshotImage({ theme }) {
-  return {
-    display: "block",
-    height: "auto",
-    borderRadius: theme.spacing(3),
-    border: `6px solid ${theme.palette.grey[900]}`,
-    boxShadow: theme.shadows[8],
-    backgroundColor: theme.palette.common.white,
-    width: primaryScreenshotWidths.xs,
-    [theme.breakpoints.up("sm")]: {
-      width: primaryScreenshotWidths.sm,
-    },
-  }
-})
-
-const SecondaryScreenshotImage = styled(ScreenshotImage)(
-  function styleSecondaryScreenshotImage({ theme }) {
-    return {
-      position: "absolute",
-      right: 0,
-      bottom: 0,
-      width: secondaryScreenshotWidths.xs,
-      boxShadow: theme.shadows[16],
-      [theme.breakpoints.up("sm")]: {
-        width: secondaryScreenshotWidths.sm,
-      },
-    }
-  },
-)
-
 function FeatureList({ group }: { group: FeatureGroup }) {
-  const FeatureGrid =
-    group.screenshots.length > 0 ? FeatureGridBox : WideFeatureGridBox
+  const FeatureGrid = group.screenshots ? FeatureGridBox : WideFeatureGridBox
 
   return (
     <FeatureGrid>
@@ -188,31 +99,6 @@ function FeatureList({ group }: { group: FeatureGroup }) {
   )
 }
 
-function Screenshots({ group }: { group: FeatureGroup }) {
-  const [primaryScreenshot, secondaryScreenshot] = group.screenshots
-
-  if (!primaryScreenshot) return null
-
-  return (
-    <ScreenshotsBox>
-      <PhonesBox data-has-secondary={!!secondaryScreenshot}>
-        <ScreenshotImage
-          src={primaryScreenshot.src}
-          alt={primaryScreenshot.alt}
-          sizes={toImageSizes(primaryScreenshotWidths)}
-        />
-        {secondaryScreenshot && (
-          <SecondaryScreenshotImage
-            src={secondaryScreenshot.src}
-            alt={secondaryScreenshot.alt}
-            sizes={toImageSizes(secondaryScreenshotWidths)}
-          />
-        )}
-      </PhonesBox>
-    </ScreenshotsBox>
-  )
-}
-
 export function FeatureGroupSection({
   group,
   isAlternate,
@@ -220,35 +106,25 @@ export function FeatureGroupSection({
   group: FeatureGroup
   isAlternate: boolean
 }) {
-  const hasScreenshots = group.screenshots.length > 0
   const screenshotsLayout = isAlternate ? "screenshots-first" : "text-first"
-  const layout = hasScreenshots ? screenshotsLayout : "text-only"
+  const layout = group.screenshots ? screenshotsLayout : "text-only"
+  const titleId = `${group.id}-title`
 
   return (
-    <BandSection
+    <FeatureGroupBandSection
       id={group.id}
-      aria-labelledby={`${group.id}-title`}
-      sx={{ bgcolor: isAlternate ? "grey.50" : "background.paper" }}
+      aria-labelledby={titleId}
+      data-tinted={isAlternate}
     >
       <Container>
         <LayoutBox data-layout={layout}>
           <TextStack>
-            <Stack sx={{ gap: 1.5, maxWidth: 640 }}>
-              <OverlineTypography variant="overline">
-                {group.overline}
-              </OverlineTypography>
-              <Typography
-                variant="h4"
-                component="h2"
-                id={`${group.id}-title`}
-                sx={{ fontWeight: 700 }}
-              >
-                {group.title}
-              </Typography>
-              <Typography sx={{ color: "text.secondary" }}>
-                {group.description}
-              </Typography>
-            </Stack>
+            <SectionHeading
+              overline={group.overline}
+              title={group.title}
+              titleId={titleId}
+              description={group.description}
+            />
             {group.chips && (
               <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap" }}>
                 {group.chips.map(function renderChip({ label, href }) {
@@ -278,9 +154,13 @@ export function FeatureGroupSection({
               <FeatureList group={group} />
             </Box>
           </TextStack>
-          <Screenshots group={group} />
+          {group.screenshots && (
+            <ScreenshotsAreaBox>
+              <PhoneScreenshots {...group.screenshots} />
+            </ScreenshotsAreaBox>
+          )}
         </LayoutBox>
       </Container>
-    </BandSection>
+    </FeatureGroupBandSection>
   )
 }
