@@ -21,6 +21,7 @@ import bcrypt from "bcrypt"
 import type createNano from "nano"
 import { JwtService } from "@nestjs/jwt"
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { EmailService } from "../email/EmailService.js"
 import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
@@ -204,13 +205,11 @@ export class AuthService {
   }
 
   private async completeSignIn({
-    email,
-    userId,
+    user,
     installationId,
     publicKey,
   }: {
-    email: string
-    userId: number
+    user: UserPostgresEntity
     installationId: string
     publicKey: string
   }): Promise<AuthenticatedSession> {
@@ -218,11 +217,18 @@ export class AuthService {
 
     const { user: couchUser, userDbPending } = await getOrCreateUserFromEmail(
       adminNano,
-      email,
+      user.email,
     )
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
+    }
+
+    const isCouchNameRecorded = user.couchName === couchUser.name
+
+    if (!isCouchNameRecorded) {
+      user.couchName = couchUser.name
+      await this.usersService.saveUser(user)
     }
 
     const dbName = emailToUserDbName(couchUser.name)
@@ -236,7 +242,7 @@ export class AuthService {
 
     const { accessToken, refreshToken, sessionId } = await this.generateTokens({
       email: couchUser.email,
-      userId,
+      userId: user.id,
       installationId,
       publicKey,
     })
@@ -278,8 +284,7 @@ export class AuthService {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
-      email: retrievedUser.email,
-      userId: retrievedUser.id,
+      user: retrievedUser,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
@@ -293,8 +298,7 @@ export class AuthService {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
     return this.completeSignIn({
-      email: retrievedUser.email,
-      userId: retrievedUser.id,
+      user: retrievedUser,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
@@ -544,8 +548,7 @@ export class AuthService {
     await this.usersService.saveUser(user)
 
     return this.completeSignIn({
-      email: user.email,
-      userId: user.id,
+      user,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
@@ -560,6 +563,10 @@ export class AuthService {
    * A session also must carry an identity (`session_id`) so it can be revoked
    * by id at logout. Sessions issued before session-scoped logout have none;
    * they are rejected here and re-authenticate into one that does.
+   *
+   * The access token names the account's Couch user (`couchName`), recorded at
+   * sign-in. Accounts that have not signed in since that column was added have
+   * none; their sessions are rejected here and re-authenticate to record it.
    */
   async refreshToken({
     refreshToken,
@@ -608,8 +615,14 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
+    // TODO(legacy, ~2027-04): drop this guard once refresh tokens issued before
+    // couchName was recorded (TTL 6 months) have expired; see the column doc.
+    if (typeof user.couchName !== "string") {
+      throw new UnauthorizedException()
+    }
+
     const accessToken = await this.couchService.generateUserJWT({
-      email: user.email,
+      email: user.couchName,
       userId: user.id,
     })
 

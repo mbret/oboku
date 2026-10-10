@@ -1,6 +1,6 @@
 import { ArrowForwardRounded, AutoAwesomeRounded } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
-import { alpha, Box, Container, Stack, styled, Typography } from "@mui/material"
+import { Box, Container, Stack, styled, Typography } from "@mui/material"
 import Link from "next/link"
 import { BandSection } from "../common/BandSection"
 import { FeatureIconBox } from "../common/FeatureIconBox"
@@ -35,13 +35,12 @@ const FeatureCardLink = styled(Link)(function styleFeatureCardLink({ theme }) {
       { duration: theme.transitions.duration.shorter },
     ),
     "&:hover, &:focus-visible": {
-      borderColor: theme.palette.primary.main,
+      borderColor: theme.vars.palette.primary.main,
       boxShadow: theme.shadows[4],
       transform: "translateY(-2px)",
     },
     "&[data-emphasized=true]": {
-      borderColor: alpha(theme.palette.primary.main, 0.4),
-      backgroundColor: alpha(theme.palette.primary.main, 0.06),
+      borderColor: theme.alpha(theme.vars.palette.primary.main, 0.4),
       [theme.breakpoints.only("sm")]: {
         gridColumn: "1 / -1",
       },
@@ -55,7 +54,7 @@ const CardActionStack = styled(Stack)(function styleCardActionStack({ theme }) {
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing(0.5),
-    color: theme.palette.primary.main,
+    color: theme.vars.palette.primary.main,
   }
 })
 

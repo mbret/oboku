@@ -60,9 +60,9 @@ const ScreenshotImage = styled(Image)(function styleScreenshotImage({ theme }) {
     display: "block",
     height: "auto",
     borderRadius: theme.spacing(3),
-    border: `6px solid ${theme.palette.grey[900]}`,
+    border: `6px solid ${theme.vars.palette.grey[900]}`,
     boxShadow: theme.shadows[8],
-    backgroundColor: theme.palette.common.white,
+    backgroundColor: theme.vars.palette.common.white,
     width: shrinkOnNarrowerViewports(primaryScreenshotWidths.xs),
     [theme.breakpoints.up("sm")]: {
       width: primaryScreenshotWidths.sm,

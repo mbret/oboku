@@ -7,8 +7,17 @@ import { SectionHeading } from "../common/SectionHeading"
 const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "Is oboku free?",
-    answer:
-      "Yes, and we intend to keep it that way: no ads, no paywall, and open-source code under the GPL-3.0 license. Donations and sponsorship will be available to help sustain the project, and the cloud version will stay online for as long as we can cover its infrastructure costs.",
+    answer: (
+      <>
+        Yes, and we intend to keep it that way: no ads, no paywall, and
+        open-source code under the GPL-3.0 license. You can help sustain it by{" "}
+        <Link href={links.sponsor} target="_blank">
+          sponsoring oboku on GitHub
+        </Link>
+        . The cloud version will stay online for as long as we can cover its
+        infrastructure costs.
+      </>
+    ),
   },
   {
     question: "Which formats can I read?",

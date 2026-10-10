@@ -1,8 +1,15 @@
 export const design = {
   palette: {
-    orange: `rgb(225, 100, 50, 1)`,
-    orangeHex: `#e16432`,
-    orangeDarkHex: `#9d4623`,
+    /**
+     * The brand orange: the lightest shade of `orangeLight`'s hue and chroma
+     * whose text and buttons stay above WCAG AA (4.5:1) on white and on MUI's
+     * grey[50] (#fafafa). Dark backgrounds need `orangeLight` instead.
+     */
+    orange: `#c64b12`,
+    /** The brand orange on dark backgrounds, where `orange` falls below AA. */
+    orangeLight: `#e16432`,
+    /** A darker shade of the brand orange, for links and hover states. */
+    orangeDark: `#9d4623`,
   },
 }
 
@@ -17,6 +24,7 @@ export const links = {
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
+  sponsor: `https://github.com/sponsors/mbret`,
   discord: `https://discord.gg/eB6MrMmmPN`,
   reddit: `https://www.reddit.com/r/oboku/`,
 }
