@@ -2,14 +2,11 @@ import { memo } from "react"
 import {
   Alert,
   Button,
-  Container,
-  Divider,
   IconButton,
   InputAdornment,
-  List,
   ListItem,
+  ListItemButton,
   ListItemText,
-  ListSubheader,
   Stack,
   styled,
   TextField,
@@ -18,6 +15,8 @@ import {
 import { ContentCopyRounded } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Page } from "../../common/Page"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 import { useConfig } from "../../config/useConfig"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { notify } from "../../notifications/toasts"
@@ -25,11 +24,13 @@ import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncS
 import { useCreateKoreaderSyncServerPassword } from "../../koreaderSyncServer/useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "../../koreaderSyncServer/useTurnOffKoreaderSyncServer"
 
-const DetailsStack = styled(Stack)(({ theme }) => ({
-  gap: theme.spacing(2),
-  paddingTop: theme.spacing(2),
-  paddingBottom: theme.spacing(2),
-}))
+const DetailsStack = styled(Stack)(function styleDetailsStack({ theme }) {
+  return {
+    gap: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(2),
+  }
+})
 
 const SETUP_STEPS = [
   "In KOReader, open Tools > Progress sync > Custom sync server and enter the server above.",
@@ -126,7 +127,7 @@ export const KoreaderSyncServerScreen = memo(
     return (
       <Page>
         <TopBarNavigation title="KOReader sync server" />
-        <Container maxWidth="sm">
+        <PageContainer>
           <DetailsStack>
             <Typography>
               oboku can be the sync server of KOReader, Readest, Crosspoint and
@@ -169,34 +170,27 @@ export const KoreaderSyncServerScreen = memo(
             >
               {isEnabled ? "Generate a new password" : "Generate a password"}
             </Button>
-            <List
-              disablePadding
-              subheader={
-                <ListSubheader disableGutters disableSticky>
-                  Set up a device
-                </ListSubheader>
-              }
-            >
-              {SETUP_STEPS.map((step, index) => (
-                <ListItem key={step} disableGutters>
-                  <ListItemText primary={`${index + 1}. ${step}`} />
-                </ListItem>
-              ))}
-            </List>
-            {isEnabled && (
-              <>
-                <Divider />
-                <Button
-                  variant="outlined"
-                  color="error"
-                  onClick={confirmThenTurnOff}
-                >
-                  Turn off the KOReader sync server
-                </Button>
-              </>
-            )}
           </DetailsStack>
-        </Container>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection title="Set up a device">
+            {SETUP_STEPS.map((step, index) => (
+              <ListItem key={step}>
+                <ListItemText primary={`${index + 1}. ${step}`} />
+              </ListItem>
+            ))}
+          </PageSection>
+          {isEnabled && (
+            <PageSection title="Danger zone" tone="danger">
+              <ListItemButton onClick={confirmThenTurnOff}>
+                <ListItemText
+                  primary="Turn off the KOReader sync server"
+                  secondary="Signs every device out and deletes the reading positions they synced"
+                />
+              </ListItemButton>
+            </PageSection>
+          )}
+        </PageContainer>
       </Page>
     )
   },
