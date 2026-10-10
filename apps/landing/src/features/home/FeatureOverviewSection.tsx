@@ -17,7 +17,7 @@ const OverviewGridBox = styled(Box)(function styleOverviewGridBox({ theme }) {
       gridTemplateColumns: "1fr 1fr",
     },
     [theme.breakpoints.up("md")]: {
-      gridTemplateColumns: "repeat(4, 1fr)",
+      gridTemplateColumns: "repeat(3, 1fr)",
     },
   }
 })
@@ -42,6 +42,9 @@ const FeatureCardLink = styled(Link)(function styleFeatureCardLink({ theme }) {
     "&[data-emphasized=true]": {
       borderColor: alpha(theme.palette.primary.main, 0.4),
       backgroundColor: alpha(theme.palette.primary.main, 0.06),
+      [theme.breakpoints.only("sm")]: {
+        gridColumn: "1 / -1",
+      },
     },
   }
 })
