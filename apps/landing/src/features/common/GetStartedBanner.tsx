@@ -27,6 +27,7 @@ const InvertedButton = styled(Button)(function styleInvertedButton({ theme }) {
     color: theme.vars.palette.primary.main,
     backgroundColor: theme.vars.palette.primary.contrastText,
     "&:hover": {
+      color: theme.vars.palette.primary.dark,
       backgroundImage: `linear-gradient(${hoverOverlay}, ${hoverOverlay})`,
     },
   }
@@ -49,11 +50,7 @@ export function GetStartedBanner() {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <InvertedButton
-          variant="contained"
-          size="large"
-          href={links.app}
-        >
+        <InvertedButton variant="contained" size="large" href={links.app}>
           Start using oboku
         </InvertedButton>
         <Button
