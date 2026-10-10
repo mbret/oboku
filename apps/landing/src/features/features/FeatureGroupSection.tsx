@@ -12,6 +12,15 @@ import type { FeatureGroup } from "./content"
 
 const sectionScrollMargin = 140
 
+type ScreenshotWidths = { xs: number; sm: number }
+
+const primaryScreenshotWidths: ScreenshotWidths = { xs: 200, sm: 260 }
+const secondaryScreenshotWidths: ScreenshotWidths = { xs: 140, sm: 180 }
+
+function toImageSizes({ xs, sm }: ScreenshotWidths) {
+  return `(max-width: 599px) ${xs}px, ${sm}px`
+}
+
 const BandSection = styled("section")(({ theme }) => ({
   paddingTop: theme.spacing(8),
   paddingBottom: theme.spacing(8),
@@ -97,14 +106,14 @@ const PhonesBox = styled(Box)(({ theme }) => ({
 
 const ScreenshotImage = styled(Image)(({ theme }) => ({
   display: "block",
-  width: 200,
   height: "auto",
   borderRadius: theme.spacing(3),
   border: `6px solid ${theme.palette.grey[900]}`,
   boxShadow: theme.shadows[8],
   backgroundColor: theme.palette.common.white,
+  width: primaryScreenshotWidths.xs,
   [theme.breakpoints.up("sm")]: {
-    width: 260,
+    width: primaryScreenshotWidths.sm,
   },
 }))
 
@@ -112,10 +121,10 @@ const SecondaryScreenshotImage = styled(ScreenshotImage)(({ theme }) => ({
   position: "absolute",
   right: 0,
   bottom: 0,
-  width: 140,
+  width: secondaryScreenshotWidths.xs,
   boxShadow: theme.shadows[16],
   [theme.breakpoints.up("sm")]: {
-    width: 180,
+    width: secondaryScreenshotWidths.sm,
   },
 }))
 
@@ -161,13 +170,13 @@ function Screenshots({ group }: { group: FeatureGroup }) {
         <ScreenshotImage
           src={primaryScreenshot.src}
           alt={primaryScreenshot.alt}
-          sizes="260px"
+          sizes={toImageSizes(primaryScreenshotWidths)}
         />
         {secondaryScreenshot && (
           <SecondaryScreenshotImage
             src={secondaryScreenshot.src}
             alt={secondaryScreenshot.alt}
-            sizes="180px"
+            sizes={toImageSizes(secondaryScreenshotWidths)}
           />
         )}
       </PhonesBox>
