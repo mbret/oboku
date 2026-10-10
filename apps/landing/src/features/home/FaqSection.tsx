@@ -31,6 +31,21 @@ const questions: { question: string; answer: ReactNode }[] = [
       "Anything with a modern web browser: phones, tablets, computers and e-ink devices. Oboku is a progressive web app, so you can install it to your home screen and use it like a native app. E-ink mode raises contrast and removes animations.",
   },
   {
+    question: "Does oboku work with KOReader?",
+    answer: (
+      <>
+        Yes. Oboku can be the sync server of KOReader, Readest, CrossPoint and
+        the other apps that support KOReader sync: point them at oboku and they
+        keep the same reading position wherever you read with them. Turn it on
+        from your profile and follow the{" "}
+        <Link href={links.documentationKoreaderSyncServer} target="_blank">
+          setup guide
+        </Link>
+        . These apps sync with each other, not with the oboku reader itself.
+      </>
+    ),
+  },
+  {
     question: "Can I self-host oboku?",
     answer: (
       <>

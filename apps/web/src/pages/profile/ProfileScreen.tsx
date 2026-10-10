@@ -60,7 +60,7 @@ import { PageSection } from "../../common/PageSection"
 import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
 
 const KOREADER_SYNC_SERVER_PURPOSE =
-  "Let KOReader, Readest, Crosspoint… sync their reading position through oboku"
+  "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
 
 const describeKoreaderSyncServer = (
   koreaderSyncServer?: GetKoreaderSyncServerResponse,

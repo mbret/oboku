@@ -5,11 +5,13 @@ import {
   AutoStoriesRounded,
   BlurOnRounded,
   CloudRounded,
+  CloudSyncRounded,
   CloudUploadRounded,
   CodeRounded,
   CollectionsBookmarkRounded,
   CompressRounded,
   ContrastRounded,
+  DevicesOtherRounded,
   DevicesRounded,
   DnsRounded,
   DownloadForOfflineRounded,
@@ -24,6 +26,7 @@ import {
   KeyRounded,
   LocalOfferRounded,
   LockRounded,
+  PasswordRounded,
   SearchRounded,
   ShareRounded,
   ShieldRounded,
@@ -312,6 +315,40 @@ export const featureGroups: FeatureGroup[] = [
         title: "Storage protection",
         description:
           "Ask the browser to never clear oboku's data on its own to reclaim space.",
+      },
+    ],
+  },
+  {
+    id: "koreader",
+    Icon: CloudSyncRounded,
+    navLabel: "KOReader",
+    overline: "KOReader sync",
+    title: "A KOReader sync server, built in",
+    description:
+      "Point KOReader at oboku and every device running it keeps the same reading position, whichever one you pick up. No server to install and no extra account: it comes with oboku, in the cloud or self-hosted.",
+    chips: [
+      { label: "KOReader" },
+      { label: "Readest" },
+      { label: "CrossPoint" },
+    ],
+    features: [
+      {
+        Icon: SyncRounded,
+        title: "Set up from your profile",
+        description:
+          "Generate a password in oboku, then enter it in KOReader's progress sync settings with the server and your username.",
+      },
+      {
+        Icon: DevicesOtherRounded,
+        title: "Not just KOReader",
+        description:
+          "Readest, CrossPoint and the other apps that support KOReader sync connect the same way.",
+      },
+      {
+        Icon: PasswordRounded,
+        title: "A password for your devices",
+        description:
+          "Devices sign in with a password generated for them, not your account password. Replace it or turn the server off at any time.",
       },
     ],
   },

@@ -47,6 +47,7 @@ export default function Home() {
           "Synology sync",
           "WebDAV sync",
           "E-ink support",
+          "KOReader sync server",
           "Self-hosting",
         ],
       },

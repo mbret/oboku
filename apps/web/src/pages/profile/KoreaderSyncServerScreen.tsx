@@ -36,7 +36,7 @@ const SETUP_STEPS = [
   "In KOReader, open Tools > Progress sync > Custom sync server and enter the server above.",
   "In the same Progress sync menu, tap Register / Login, enter the username and password above, then tap Login. Do not tap Register: the account already exists, it was created when you generated the password.",
   "Still in Progress sync, turn on Automatically keep documents in sync: KOReader then pulls the position when a book opens and pushes it as you read. It is off by default, and KOReader then syncs only when you tap Push progress from this device now or Pull progress from other devices now.",
-  "Readest, Crosspoint and the other apps that support KOReader sync take the same three values in their KOReader sync settings.",
+  "Readest, CrossPoint and the other apps that support KOReader sync take the same three values in their KOReader sync settings.",
   "Devices recognize a book only when they identify it the same way: keep the same document matching method (binary by default) on all of them.",
 ]
 
@@ -130,7 +130,7 @@ export const KoreaderSyncServerScreen = memo(
         <PageContainer>
           <DetailsStack>
             <Typography>
-              oboku can be the sync server of KOReader, Readest, Crosspoint and
+              oboku can be the sync server of KOReader, Readest, CrossPoint and
               the other apps that support KOReader sync: point them at oboku and
               they sync their reading position with each other through it.
             </Typography>
