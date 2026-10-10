@@ -13,4 +13,7 @@ The report opens a private security advisory that only you and the maintainer ca
 
 ## Supported versions
 
-Security fixes ship in a new release, and only the latest release gets them. app.oboku.me always runs it. A self-hosted instance gets the fix by pulling the latest images.
+Security fixes ship in a new release, and only the latest release gets them. app.oboku.me always runs it. A self-hosted instance gets the fix by moving to that release:
+
+- with untagged or `latest` images, run `docker compose pull`, then `docker compose up -d`;
+- with a pinned tag, such as `2.5.0`, first change every oboku image to the release with the fix, since pulling again only fetches the pinned version.
