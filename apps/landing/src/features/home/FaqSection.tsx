@@ -1,6 +1,8 @@
 import { Box, Container, Link, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
 import type { ReactNode } from "react"
+import { BandSection } from "../common/BandSection"
+import { SectionHeading } from "../common/SectionHeading"
 
 const questions: { question: string; answer: ReactNode }[] = [
   {
@@ -29,6 +31,21 @@ const questions: { question: string; answer: ReactNode }[] = [
       "Anything with a modern web browser: phones, tablets, computers and e-ink devices. Oboku is a progressive web app, so you can install it to your home screen and use it like a native app. E-ink mode raises contrast and removes animations.",
   },
   {
+    question: "Does oboku work with KOReader?",
+    answer: (
+      <>
+        Yes. Oboku can be the sync server of KOReader, Readest, CrossPoint and
+        the other apps that support KOReader sync: point them at oboku and they
+        keep the same reading position wherever you read with them. Turn it on
+        from your profile and follow the{" "}
+        <Link href={links.documentationKoreaderSyncServer} target="_blank">
+          setup guide
+        </Link>
+        . These apps sync with each other, not with the oboku reader itself.
+      </>
+    ),
+  },
+  {
     question: "Can I self-host oboku?",
     answer: (
       <>
@@ -51,18 +68,16 @@ const questions: { question: string; answer: ReactNode }[] = [
 
 export function FaqSection() {
   return (
-    <Container>
-      <Stack
-        sx={{
-          gap: 2,
-        }}
-      >
-        <Typography variant="h4" component="h2">
-          Frequently asked questions
-        </Typography>
+    <BandSection aria-labelledby="faq-title">
+      <Container>
+        <SectionHeading
+          overline="FAQ"
+          title="Frequently asked questions"
+          titleId="faq-title"
+        />
         <Box
           sx={{
-            mt: 2,
+            mt: 6,
             display: "grid",
             gridTemplateColumns: ["1fr", "1fr 1fr"],
             gap: 4,
@@ -90,7 +105,7 @@ export function FaqSection() {
             )
           })}
         </Box>
-      </Stack>
-    </Container>
+      </Container>
+    </BandSection>
   )
 }

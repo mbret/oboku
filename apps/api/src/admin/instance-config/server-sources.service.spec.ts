@@ -50,6 +50,7 @@ describe("InstanceConfigService server sources", () => {
       PORT: 3000,
       COUCH_DB_URL: "http://localhost:5984",
       GOOGLE_BOOK_API_URL: "https://www.googleapis.com/books/v1",
+      POSTGRES_HOST: "postgres",
       POSTGRES_USER: "postgres",
       POSTGRES_PASSWORD: "postgres",
       JWT_PRIVATE_KEY_FILE: "/tmp/private.pem",

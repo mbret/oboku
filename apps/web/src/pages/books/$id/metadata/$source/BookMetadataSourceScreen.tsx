@@ -1,6 +1,6 @@
 import { memo, useMemo } from "react"
 import { useParams } from "react-router"
-import { Container, Stack, Typography, styled } from "@mui/material"
+import { Stack, Typography, styled } from "@mui/material"
 import type { BookMetadata } from "@oboku/shared"
 import type { DeepReadonlyArray, DeepReadonlyObject } from "rxdb"
 import { NotFoundPage } from "../../../../../common/NotFoundPage"
@@ -18,20 +18,25 @@ import {
   LinkSourceContent,
   UserSourceContent,
 } from "../../../../../books/details/metadataSource"
+import { PageContainer } from "../../../../../common/PageContainer"
 
 type ScreenParams = {
   id: string
   source: string
 }
 
-const PageContainer = styled(Container)(({ theme }) => ({
-  display: "flex",
-  flexDirection: "column",
-  flex: 1,
-  minHeight: 0,
-  paddingTop: theme.spacing(1),
-  gap: theme.spacing(2),
-}))
+const MetadataSourcePageContainer = styled(PageContainer)(
+  function styleMetadataSourcePageContainer({ theme }) {
+    return {
+      display: "flex",
+      flexDirection: "column",
+      flex: 1,
+      minHeight: 0,
+      paddingTop: theme.spacing(1),
+      gap: theme.spacing(2),
+    }
+  },
+)
 
 const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
   link: "Information exposed on the storage provider link.",
@@ -79,7 +84,7 @@ export const BookMetadataSourceScreen = memo(
           title={getBookMetadataSourceLabel(validSource)}
           showBack
         />
-        <PageContainer maxWidth="md">
+        <MetadataSourcePageContainer>
           <Stack>
             <Typography variant="overline" color="text.secondary">
               Metadata source
@@ -111,7 +116,7 @@ export const BookMetadataSourceScreen = memo(
               metadata={metadata?.type === "user" ? metadata : undefined}
             />
           )}
-        </PageContainer>
+        </MetadataSourcePageContainer>
       </Page>
     )
   },

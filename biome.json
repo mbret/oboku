@@ -99,6 +99,23 @@
           }
         }
       }
+    },
+    {
+      "includes": ["**/apps/landing/**"],
+      "linter": {
+        "domains": {
+          "next": "all"
+        },
+        "rules": {
+          "performance": {
+            "noSyncScripts": "error"
+          },
+          "suspicious": {
+            "noDocumentImportInPage": "error",
+            "noHeadImportInDocument": "error"
+          }
+        }
+      }
     }
   ]
 }

@@ -33,6 +33,10 @@ oboku is a free and open-source ebook and comic reader that runs in your browser
 - [Discord](https://discord.gg/eB6MrMmmPN)
 - [Reddit](https://www.reddit.com/r/oboku/)
 
+## Contributing
+
+[CONTRIBUTING.md](CONTRIBUTING.md) explains how to report a bug, run oboku locally and open a pull request. Everyone who takes part follows the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Creators
 
 **Maxime Bret**
@@ -41,6 +45,6 @@ oboku is a free and open-source ebook and comic reader that runs in your browser
 
 ## Copyright and license
 
-Code released under the [GNU General Public License v3.0](https://github.com/mbret/oboku/blob/master/LICENCE).
+Code released under the [GNU General Public License v3.0](LICENSE).
 
 Enjoy :metal:

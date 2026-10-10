@@ -59,6 +59,14 @@ export const Footer = () => {
                 App
               </MuiLink>
               <MuiLink
+                component={Link}
+                href="/features"
+                variant="body2"
+                underline="hover"
+              >
+                Features
+              </MuiLink>
+              <MuiLink
                 href={links.documentation}
                 target="_blank"
                 variant="body2"

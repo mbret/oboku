@@ -52,9 +52,7 @@ const cleanupPaths = cleanupRoots.flatMap(
     const incrementalBuildFiles = existsSync(cleanupRoot)
       ? readdirSync(cleanupRoot)
           .filter(function isIncrementalBuildFile(fileName) {
-            return (
-              fileName.endsWith(".tsbuildinfo") || fileName === ".eslintcache"
-            )
+            return fileName.endsWith(".tsbuildinfo")
           })
           .map(function getIncrementalBuildFile(fileName) {
             return join(cleanupRoot, fileName)

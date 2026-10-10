@@ -4,6 +4,7 @@ import type {
   CompleteMagicLinkResponse,
   CompleteSignUpRequest,
   CompleteSignUpResponse,
+  CreateKoreaderSyncServerPasswordResponse,
   DeleteAccountResponse,
   LogoutRequest,
   LogoutResponse,
@@ -171,6 +172,14 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
   archiveNotification = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
+
+  createKoreaderSyncServerPassword = () =>
+    this.postOrThrow<CreateKoreaderSyncServerPasswordResponse>(
+      `${API_URL}/koreader-sync-server/password`,
+    )
+
+  turnOffKoreaderSyncServer = () =>
+    this.fetchOrThrow(`${API_URL}/koreader-sync-server`, { method: "DELETE" })
 
   refreshToken = () => refreshTokenRequest(this, API_URL)
 

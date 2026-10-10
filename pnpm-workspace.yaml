@@ -19,12 +19,9 @@ allowBuilds:
   nx: true
   protobufjs: false
   sharp: true
-  unrs-resolver: true
 patchedDependencies:
   react-dom@19.3.0: patches/react-dom@19.3.0.patch
-# gesturx has the same author as prose-reader. Its entries name an exact
-# version, the one @prose-reader/enhancer-gestures requires, and each does
-# nothing once that version is a day old.
+# prose-reader shares oboku's maintainer, so its releases are installed as
+# soon as they are out.
 minimumReleaseAgeExclude:
   - '@prose-reader/*'
-  - gesturx@1.11.1

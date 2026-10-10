@@ -10,6 +10,7 @@ import {
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
+  SyncRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
@@ -21,18 +22,14 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  alpha,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
-  useTheme,
   FormControlLabel,
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes } from "@oboku/shared"
+import { formatBytes, type GetKoreaderSyncServerResponse } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -58,6 +55,22 @@ import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
+import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
+
+const KOREADER_SYNC_SERVER_PURPOSE =
+  "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
+
+const describeKoreaderSyncServer = (
+  koreaderSyncServer?: GetKoreaderSyncServerResponse,
+) => {
+  if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
+
+  return koreaderSyncServer.passwordCreatedAt
+    ? "On"
+    : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
+}
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -67,12 +80,12 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
+  const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
   const signOut = useSignOut()
-  const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
   const { unreadCount } = useUnreadNotificationsCount()
   const { db } = useDatabase()
@@ -107,179 +120,184 @@ export const ProfileScreen = () => {
   return (
     <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
-      <List>
-        <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItemButton onClick={confirmThenSignOut}>
-          <ListItemText primary="Sign out" secondary={auth?.email} />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            if (isLibraryUnlocked) {
-              lockLibrary()
-            } else {
-              unlockLibrary()
-            }
-          }}
-        >
-          <ListItemText
-            primary={
-              isLibraryUnlocked
-                ? "Protected contents are visible"
-                : "Protected contents are hidden"
-            }
-            secondary={isLibraryUnlocked ? "Click to lock" : "Click to unlock"}
-          />
-          {isLibraryUnlocked && <LockOpenRounded color="action" />}
-          {!isLibraryUnlocked && <LockRounded color="action" />}
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.NOTIFICATIONS)
-          }}
-        >
-          <ListItemIcon>
-            <Badge badgeContent={unreadCount} color="error">
-              <NotificationsRounded />
-            </Badge>
-          </ListItemIcon>
-          <ListItemText
-            primary="Notifications"
-            secondary={unreadCount > 0 ? `${unreadCount} unread` : "Inbox"}
-          />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SECURITY)
-          }}
-        >
-          <ListItemIcon>
-            <SecurityRounded />
-          </ListItemIcon>
-          <ListItemText primary="Security" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SECRETS)
-          }}
-        >
-          <ListItemIcon>
-            <KeyRounded />
-          </ListItemIcon>
-          <ListItemText primary="Secrets" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.STATISTICS)
-          }}
-        >
-          <ListItemIcon>
-            <BarChartRounded />
-          </ListItemIcon>
-          <ListItemText primary="Statistics" />
-        </ListItemButton>
-      </List>
-      <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SETTINGS)
-          }}
-        >
-          <ListItemIcon>
-            <SettingsRounded />
-          </ListItemIcon>
-          <ListItemText primary="Device settings" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(`${ROUTES.PROFILE}/manage-storage`)
-          }}
-        >
-          <ListItemIcon>
-            <StorageRounded />
-          </ListItemIcon>
-          <ListItemText
-            primary="Storage"
-            secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
-          />
-        </ListItemButton>
-      </List>
-      <List
-        subheader={<ListSubheader disableSticky>Information</ListSubheader>}
-      >
-        <ListItemButton target="__blank" href={`https://docs.oboku.me/support`}>
-          <ListItemIcon>
-            <LaunchRounded />
-          </ListItemIcon>
-          <ListItemText primary={`Support Page`} />
-        </ListItemButton>
-        <ListItemButton target="__blank" href="https://docs.oboku.me">
-          <ListItemIcon>
-            <LaunchRounded />
-          </ListItemIcon>
-          <ListItemText primary={`Documentation Page`} />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => showDialog(createNotImplementedDialogOptions())}
-        >
-          <ListItemIcon>
-            <GavelRounded />
-          </ListItemIcon>
-          <ListItemText primary="Terms of Service" />
-        </ListItemButton>
-        <ListItem>
-          <ListItemText primary="App Version" secondary={__APP_VERSION__} />
-        </ListItem>
-      </List>
-      <List
-        subheader={
-          <ListSubheader disableSticky>Developer options</ListSubheader>
-        }
-      >
-        <ListItemButton onClick={toggleDebug}>
-          <ListItemText
-            primary={
-              isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
-            }
-          />
-        </ListItemButton>
-        {/* <ListItem
+      <PageContainer disableGutters>
+        <PageSection title="Account">
+          <ListItemButton onClick={confirmThenSignOut}>
+            <ListItemText primary="Sign out" secondary={auth?.email} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              if (isLibraryUnlocked) {
+                lockLibrary()
+              } else {
+                unlockLibrary()
+              }
+            }}
+          >
+            <ListItemText
+              primary={
+                isLibraryUnlocked
+                  ? "Protected contents are visible"
+                  : "Protected contents are hidden"
+              }
+              secondary={
+                isLibraryUnlocked ? "Click to lock" : "Click to unlock"
+              }
+            />
+            {isLibraryUnlocked && <LockOpenRounded color="action" />}
+            {!isLibraryUnlocked && <LockRounded color="action" />}
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.NOTIFICATIONS)
+            }}
+          >
+            <ListItemIcon>
+              <Badge badgeContent={unreadCount} color="error">
+                <NotificationsRounded />
+              </Badge>
+            </ListItemIcon>
+            <ListItemText
+              primary="Notifications"
+              secondary={unreadCount > 0 ? `${unreadCount} unread` : "Inbox"}
+            />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SECURITY)
+            }}
+          >
+            <ListItemIcon>
+              <SecurityRounded />
+            </ListItemIcon>
+            <ListItemText primary="Security" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SECRETS)
+            }}
+          >
+            <ListItemIcon>
+              <KeyRounded />
+            </ListItemIcon>
+            <ListItemText primary="Secrets" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.STATISTICS)
+            }}
+          >
+            <ListItemIcon>
+              <BarChartRounded />
+            </ListItemIcon>
+            <ListItemText primary="Statistics" />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Other apps">
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.KOREADER_SYNC_SERVER)
+            }}
+          >
+            <ListItemIcon>
+              <SyncRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="KOReader sync server"
+              secondary={describeKoreaderSyncServer(koreaderSyncServer)}
+            />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Device">
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SETTINGS)
+            }}
+          >
+            <ListItemIcon>
+              <SettingsRounded />
+            </ListItemIcon>
+            <ListItemText primary="Device settings" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(`${ROUTES.PROFILE}/manage-storage`)
+            }}
+          >
+            <ListItemIcon>
+              <StorageRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Storage"
+              secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
+            />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Information">
+          <ListItemButton
+            target="__blank"
+            href={`https://docs.oboku.me/support`}
+          >
+            <ListItemIcon>
+              <LaunchRounded />
+            </ListItemIcon>
+            <ListItemText primary={`Support Page`} />
+          </ListItemButton>
+          <ListItemButton target="__blank" href="https://docs.oboku.me">
+            <ListItemIcon>
+              <LaunchRounded />
+            </ListItemIcon>
+            <ListItemText primary={`Documentation Page`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => showDialog(createNotImplementedDialogOptions())}
+          >
+            <ListItemIcon>
+              <GavelRounded />
+            </ListItemIcon>
+            <ListItemText primary="Terms of Service" />
+          </ListItemButton>
+          <ListItem>
+            <ListItemText primary="App Version" secondary={__APP_VERSION__} />
+          </ListItem>
+        </PageSection>
+        <PageSection title="Developer options">
+          <ListItemButton onClick={toggleDebug}>
+            <ListItemText
+              primary={
+                isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
+              }
+            />
+          </ListItemButton>
+          {/* <ListItem
             button
             onClick={() => setIsDeleteMyDataDialogOpened(true)}
           >
             <ListItemText primary="Delete my data" />
           </ListItem> */}
-      </List>
-      <List
-        subheader={
-          <ListSubheader
-            disableSticky
-            style={{ color: theme.palette.error.dark }}
+        </PageSection>
+        <PageSection title="Danger zone" tone="danger">
+          <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
+            <ListItemText
+              primary="Repair my account / anomalies"
+              secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
+            />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              removeAllContents()
+            }}
           >
-            Danger zone
-          </ListSubheader>
-        }
-        style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
-      >
-        <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
-          <ListItemText
-            primary="Repair my account / anomalies"
-            secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
-          />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            removeAllContents()
-          }}
-        >
-          <ListItemText
-            primary="Reset account"
-            secondary="Remove all contents from your account"
-          />
-        </ListItemButton>
-        <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
-          <ListItemText primary="Delete my account" />
-        </ListItemButton>
-      </List>
+            <ListItemText
+              primary="Reset account"
+              secondary="Remove all contents from your account"
+            />
+          </ListItemButton>
+          <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
+            <ListItemText primary="Delete my account" />
+          </ListItemButton>
+        </PageSection>
+      </PageContainer>
       <DeleteMyDataDialog
         open={isDeleteMyDataDialogOpened}
         onClose={() => setIsDeleteMyDataDialogOpened(false)}
