@@ -3,7 +3,7 @@ import {
   hashSyncKey,
   isSyncKeyMatchingHash,
   toSyncKey,
-} from "./credentials"
+} from "./credentials.js"
 
 describe("KOReader sync credentials", () => {
   it("generates passwords that are easy to type on an e-reader", () => {

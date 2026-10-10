@@ -1,9 +1,9 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { find } from "src/lib/couch/dbHelpers"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types"
-import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
-import { getDataSourceData } from "../helpers"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync"
+import { find } from "../../lib/couch/dbHelpers.js"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph.js"
+import { getDataSourceData } from "../helpers.js"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 export const dataSource: DataSourcePlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,

@@ -43,7 +43,8 @@ export const Reader = memo(function Reader({
     "readerFloatingProgress",
     "readerFloatingTime",
   ])
-  const { readerFontScale, updateReaderSettings } = useReaderSettings()
+  const { readerFontScale, readerSpreadMode, updateReaderSettings } =
+    useReaderSettings()
   const { goBack } = useSafeGoBack()
   const openMoreDialog = useOpenMoreDialog()
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
@@ -89,6 +90,10 @@ export const Reader = memo(function Reader({
           fontSize={readerFontScale}
           onFontSizeChange={(_scope, fontSize) => {
             updateReaderSettings({ readerFontScale: fontSize })
+          }}
+          spreadMode={readerSpreadMode}
+          onSpreadModeChange={(_scope, spreadMode) => {
+            updateReaderSettings({ readerSpreadMode: spreadMode })
           }}
           enableFloatingProgress={
             localSettings.readerFloatingProgress === "bottom"

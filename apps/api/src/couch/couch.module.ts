@@ -1,8 +1,8 @@
 import { Module } from "@nestjs/common"
-import { CouchService } from "./couch.service"
-import { CouchProxyService } from "./couch-proxy.service"
-import { UserDbIndexesService } from "./user-db-indexes.service"
-import { AppConfigService } from "src/config/AppConfigService"
+import { CouchService } from "./couch.service.js"
+import { CouchProxyService } from "./couch-proxy.service.js"
+import { UserDbIndexesService } from "./user-db-indexes.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
 import { JwtService } from "@nestjs/jwt"
 
 @Module({

@@ -1,9 +1,10 @@
+import type { Mock } from "vitest"
 import type { ExecutionContext } from "@nestjs/common"
 import { Reflector } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test, TestingModule } from "@nestjs/testing"
-import { SecretsService } from "src/config/SecretsService"
-import { AuthGuard } from "./auth.guard"
+import { SecretsService } from "../config/SecretsService.js"
+import { AuthGuard } from "./auth.guard.js"
 
 const createContext = ({
   cookies,
@@ -25,11 +26,11 @@ const createContext = ({
 
 describe("AuthGuard", () => {
   let guard: AuthGuard
-  let jwtService: { verifyAsync: jest.Mock }
+  let jwtService: { verifyAsync: Mock }
 
   beforeEach(async () => {
     jwtService = {
-      verifyAsync: jest.fn().mockResolvedValue({
+      verifyAsync: vi.fn().mockResolvedValue({
         name: "reader@example.com",
         sub: "reader@example.com",
         userId: 42,
@@ -43,12 +44,12 @@ describe("AuthGuard", () => {
         { provide: JwtService, useValue: jwtService },
         {
           provide: Reflector,
-          useValue: { getAllAndOverride: jest.fn().mockReturnValue(false) },
+          useValue: { getAllAndOverride: vi.fn().mockReturnValue(false) },
         },
         {
           provide: SecretsService,
           useValue: {
-            getJwtPublicKey: jest.fn().mockResolvedValue("public-key"),
+            getJwtPublicKey: vi.fn().mockResolvedValue("public-key"),
           },
         },
       ],

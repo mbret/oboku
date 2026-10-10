@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
-import { AppConfigService } from "./AppConfigService"
-import { parseUrl } from "../lib/http/url"
+import { AppConfigService } from "./AppConfigService.js"
+import { parseUrl } from "../lib/http/url.js"
 
 /**
  * Decides what a browser origin is allowed to do, which splits in two because

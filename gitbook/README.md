@@ -1,5 +1,5 @@
 ---
-description: Welcome to the documentation of oboku
+description: oboku is a free, open-source ebook and comic reader that syncs your library from Google Drive, Dropbox, OneDrive, WebDAV, Synology or your own server.
 ---
 
 # Welcome

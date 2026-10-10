@@ -1,0 +1,19 @@
+name: Deploy preview
+
+on:
+  push:
+    branches: [develop]
+
+concurrency:
+  group: deploy-preview
+  cancel-in-progress: true
+
+jobs:
+  deploy-docker:
+    name: 'Deploy docker'
+    uses: ./.github/workflows/_deploy-docker.yml
+    with:
+      sha: ${{ github.sha }}
+      tags: preview
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

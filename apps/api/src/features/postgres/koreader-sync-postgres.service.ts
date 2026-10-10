@@ -4,7 +4,7 @@ import type { Repository } from "typeorm"
 import {
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
-} from "./entities"
+} from "./entities.js"
 
 export type KoreaderSyncProgress = Omit<
   KoreaderSyncProgressPostgresEntity,

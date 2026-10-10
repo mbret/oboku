@@ -12,11 +12,11 @@ import {
 import {
   emailToCouchUserDocId,
   emailToUserDbName,
-} from "src/couch/couch.service"
-import { User } from "../couchDbEntities"
-import { waitForRandomTime } from "../utils"
-import { generatePassword } from "../authentication/generatePassword"
-import { findOne } from "./findOne"
+} from "../../couch/couch.service.js"
+import { User } from "../couchDbEntities.js"
+import { waitForRandomTime } from "../utils.js"
+import { generatePassword } from "../authentication/generatePassword.js"
+import { findOne } from "./findOne.js"
 
 export { findOne }
 

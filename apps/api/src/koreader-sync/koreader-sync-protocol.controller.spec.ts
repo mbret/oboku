@@ -3,26 +3,26 @@ import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
-import type { App } from "supertest/types"
-import { AuthGuard } from "../auth/auth.guard"
-import { SecretsService } from "../config/SecretsService"
+import type { App } from "supertest/types.js"
+import { AuthGuard } from "../auth/auth.guard.js"
+import { SecretsService } from "../config/SecretsService.js"
 import type {
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
   UserPostgresEntity,
-} from "../features/postgres/entities"
+} from "../features/postgres/entities.js"
 import {
   type KoreaderSyncProgress,
   KoreaderSyncPostgresService,
-} from "../features/postgres/koreader-sync-postgres.service"
+} from "../features/postgres/koreader-sync-postgres.service.js"
 import {
   normalizeEmail,
   UserPostgresService,
-} from "../features/postgres/user-postgres.service"
-import { toSyncKey } from "./credentials"
-import { KoreaderSyncAuthGuard } from "./koreader-sync-auth.guard"
-import { KoreaderSyncProtocolController } from "./koreader-sync-protocol.controller"
-import { KoreaderSyncService } from "./koreader-sync.service"
+} from "../features/postgres/user-postgres.service.js"
+import { toSyncKey } from "./credentials.js"
+import { KoreaderSyncAuthGuard } from "./koreader-sync-auth.guard.js"
+import { KoreaderSyncProtocolController } from "./koreader-sync-protocol.controller.js"
+import { KoreaderSyncService } from "./koreader-sync.service.js"
 
 const READER = { id: 1, email: "reader@example.com" }
 const OTHER_READER = { id: 2, email: "other@example.com" }
@@ -132,10 +132,10 @@ describe("KoreaderSyncProtocolController", () => {
         {
           provide: JwtService,
           useValue: {
-            verifyAsync: jest.fn().mockRejectedValue(new Error("no session")),
+            verifyAsync: vi.fn().mockRejectedValue(new Error("no session")),
           },
         },
-        { provide: SecretsService, useValue: { getJwtPublicKey: jest.fn() } },
+        { provide: SecretsService, useValue: { getJwtPublicKey: vi.fn() } },
       ],
     }).compile()
 

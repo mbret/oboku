@@ -6,13 +6,16 @@ import {
 } from "../../settings/useLocalSettings"
 import { useSettings } from "../../settings/useSettings"
 
-type ReaderSettingsOnDevice = Pick<LocalSettings, "readerFontScale">
+type ReaderSettingsOnDevice = Pick<
+  LocalSettings,
+  "readerFontScale" | "readerSpreadMode"
+>
 
 /**
- * The reader settings the user changes from react-reader's menus, kept on the
- * device, each resolved to what the reader should use. A device that has not
- * changed its font scale yet uses the account-wide `readerGlobalFontScale`,
- * which older versions of the app save.
+ * The reader settings the user changes from react-reader's menus, the font
+ * scale and the spread mode, kept on the device and each resolved to what the
+ * reader should use. A device that has not changed its font scale yet uses the
+ * account-wide `readerGlobalFontScale`, which older versions of the app save.
  *
  * TODO(ask the maintainer, added 2026-09): after a few months, once older
  * versions of the app are gone, raise dropping the fallback to
@@ -21,7 +24,10 @@ type ReaderSettingsOnDevice = Pick<LocalSettings, "readerFontScale">
  * The field stays in the RxDB settings schema while CouchDB documents hold it.
  */
 export function useReaderSettings() {
-  const { readerFontScale } = useLocalSettings(["readerFontScale"])
+  const { readerFontScale, readerSpreadMode } = useLocalSettings([
+    "readerFontScale",
+    "readerSpreadMode",
+  ])
   const { data: accountSettings } = useSettings()
 
   const updateReaderSettings = useCallback(function saveReaderSettingsOnDevice(
@@ -35,6 +41,7 @@ export function useReaderSettings() {
   return {
     readerFontScale:
       readerFontScale ?? accountSettings?.readerGlobalFontScale ?? undefined,
+    readerSpreadMode,
     updateReaderSettings,
   }
 }

@@ -5,7 +5,7 @@ import type { DeepPartial, Repository } from "typeorm"
 import {
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
-} from "./entities"
+} from "./entities.js"
 
 export type AdminNotificationRow = {
   notification_id: number

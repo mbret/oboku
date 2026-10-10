@@ -1,5 +1,5 @@
-import type { KoreaderSyncProgressPostgresEntity } from "../features/postgres/entities"
-import { createKoreaderSyncError } from "./errors"
+import type { KoreaderSyncProgressPostgresEntity } from "../features/postgres/entities.js"
+import { createKoreaderSyncError } from "./errors.js"
 
 const MAX_DOCUMENT_LENGTH = 128
 const MAX_PROGRESS_LENGTH = 4096

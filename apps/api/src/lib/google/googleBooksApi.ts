@@ -1,7 +1,7 @@
 import axios, { isAxiosError } from "axios"
-import type { Item } from "./types"
-import { performWithBackoff } from "../utils"
-import { AppConfigService } from "src/config/AppConfigService"
+import type { Item } from "./types.js"
+import { performWithBackoff } from "../utils.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
 
 export type GoogleBooksApiVolumesResponseData = {
   kind: `books#volumes` | `unknown`

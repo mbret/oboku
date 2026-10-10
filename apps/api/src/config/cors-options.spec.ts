@@ -1,7 +1,7 @@
 import type { Request } from "express"
-import { AppConfigService } from "./AppConfigService"
-import { createCorsOptionsDelegate } from "./cors-options"
-import { TrustedOriginsService } from "./trusted-origin.service"
+import { AppConfigService } from "./AppConfigService.js"
+import { createCorsOptionsDelegate } from "./cors-options.js"
+import { TrustedOriginsService } from "./trusted-origin.service.js"
 
 const APP_PUBLIC_URL = "https://oboku.example.com"
 const ADMIN_PORT_ORIGIN = `${APP_PUBLIC_URL}:3003`

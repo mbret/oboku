@@ -7,18 +7,18 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common"
-import { Public } from "../auth/auth.guard"
-import { createKoreaderSyncError } from "./errors"
+import { Public } from "../auth/auth.guard.js"
+import { createKoreaderSyncError } from "./errors.js"
 import {
   KoreaderSyncAuthGuard,
   WithKoreaderSyncUserId,
-} from "./koreader-sync-auth.guard"
-import { KoreaderSyncService } from "./koreader-sync.service"
+} from "./koreader-sync-auth.guard.js"
+import { KoreaderSyncService } from "./koreader-sync.service.js"
 import {
   parseProgressUpdate,
   toProgressResponse,
   toSyncTimestamp,
-} from "./progress"
+} from "./progress.js"
 
 /**
  * The KOReader sync protocol as koreader-sync-server serves it, so KOReader,

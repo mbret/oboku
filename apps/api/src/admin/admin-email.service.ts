@@ -9,11 +9,11 @@ import {
   type SendAdminEmailRequest,
   type SendAdminEmailResponse,
 } from "@oboku/shared"
-import { EMAIL_MAX_CONNECTIONS, EmailService } from "src/email/EmailService"
+import { EMAIL_MAX_CONNECTIONS, EmailService } from "../email/EmailService.js"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
-} from "src/features/postgres/user-postgres.service"
+} from "../features/postgres/user-postgres.service.js"
 
 const logger = new Logger("AdminEmailService")
 

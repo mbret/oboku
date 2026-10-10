@@ -1,8 +1,8 @@
 import fs from "node:fs"
 import unzipper from "unzipper"
 import { Logger } from "@nestjs/common"
-import { asError } from "src/lib/utils"
-import { CoversService } from "src/covers/covers.service"
+import { asError } from "../../utils.js"
+import { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 
 const logger = new Logger("books/covers/saveCoverFromZipArchiveToBucket")

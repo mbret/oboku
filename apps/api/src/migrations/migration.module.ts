@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { CouchModule } from "src/couch/couch.module"
-import { CoversModule } from "src/covers/covers.module"
-import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
-import { MigrationService } from "./migration.service"
+import { CouchModule } from "../couch/couch.module.js"
+import { CoversModule } from "../covers/covers.module.js"
+import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
+import { MigrationService } from "./migration.service.js"
 
 @Module({
   imports: [

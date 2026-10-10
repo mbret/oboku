@@ -1,18 +1,19 @@
+import type { Mock } from "vitest"
 import { buildDriveItemUrl } from "@oboku/shared"
-import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
+import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph.js"
 
 describe("OneDrive Graph helpers", () => {
   const originalFetch = global.fetch
-  let fetchMock: jest.Mock
+  let fetchMock: Mock
 
   beforeEach(() => {
-    fetchMock = jest.fn()
+    fetchMock = vi.fn()
     global.fetch = fetchMock
   })
 
   afterEach(() => {
     global.fetch = originalFetch
-    jest.resetAllMocks()
+    vi.resetAllMocks()
   })
 
   it("retrieves OneDrive drive item metadata from Microsoft Graph", async () => {

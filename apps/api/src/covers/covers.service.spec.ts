@@ -1,11 +1,12 @@
+import type { Mock } from "vitest"
 import { Test, type TestingModule } from "@nestjs/testing"
 import path from "node:path"
 import { firstValueFrom } from "rxjs"
 import sharp from "sharp"
-import { AppConfigService } from "src/config/AppConfigService"
-import { CoversFsService } from "./covers-fs.service"
-import { CoversS3Service } from "./covers-s3.service"
-import { CoversService } from "./covers.service"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { CoversFsService } from "./covers-fs.service.js"
+import { CoversS3Service } from "./covers-s3.service.js"
+import { CoversService } from "./covers.service.js"
 
 const DELIVERY_SIZE = { width: 600, height: 600 }
 
@@ -32,10 +33,10 @@ const createCover = ({
 
 describe("CoversService", () => {
   let service: CoversService
-  let fsService: { getCover: jest.Mock }
+  let fsService: { getCover: Mock }
 
   beforeEach(async () => {
-    fsService = { getCover: jest.fn() }
+    fsService = { getCover: vi.fn() }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -46,7 +47,7 @@ describe("CoversService", () => {
             COVERS_STORAGE_STRATEGY: "fs",
             COVERS_MAXIMUM_SIZE_FOR_DELIVERY: DELIVERY_SIZE,
             COVERS_MAXIMUM_SIZE_FOR_STORAGE: { width: 400, height: 600 },
-            ASSETS_DIR: path.join(__dirname, "..", "assets"),
+            ASSETS_DIR: path.join(import.meta.dirname, "..", "assets"),
           },
         },
         { provide: CoversFsService, useValue: fsService },

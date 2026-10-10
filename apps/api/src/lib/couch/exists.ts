@@ -1,5 +1,5 @@
 import type nano from "nano"
-import { isCouchNotFound } from "./dbHelpers"
+import { isCouchNotFound } from "./dbHelpers.js"
 
 export const exists = async (db: nano.DocumentScope<unknown>, id: string) => {
   try {

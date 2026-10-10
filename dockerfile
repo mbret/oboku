@@ -27,7 +27,7 @@ COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
-CMD ["node", "dist/main"]
+CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
 FROM node-pnpm AS admin-build
 WORKDIR /usr/src/app
@@ -74,6 +74,12 @@ CMD ["nginx", "-g", "daemon off;"]
 FROM couchdb:3.5.1 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
+
+# Erlang sizes its port table from the open-files limit, which some Docker hosts
+# leave effectively unlimited. CouchDB then dies at boot trying to allocate 2 GiB
+# ("Cannot allocate ... port_tab"). +Q pins the table to Erlang's usual size.
+# https://docs.couchdb.org/en/stable/install/troubleshooting.html
+ENV ERL_FLAGS="+Q 65536"
 
 # The docker-compose healthcheck curls /_up; if a base-image bump ever drops
 # curl, fail the build here rather than let the API silently block forever on

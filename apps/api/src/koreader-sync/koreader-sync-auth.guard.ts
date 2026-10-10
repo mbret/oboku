@@ -5,8 +5,8 @@ import {
   Injectable,
 } from "@nestjs/common"
 import type { Request } from "express"
-import { createKoreaderSyncError } from "./errors"
-import { KoreaderSyncService } from "./koreader-sync.service"
+import { createKoreaderSyncError } from "./errors.js"
+import { KoreaderSyncService } from "./koreader-sync.service.js"
 
 type KoreaderSyncRequest = Request & { koreaderSyncUserId?: number }
 

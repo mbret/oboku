@@ -11,6 +11,7 @@ export const links = {
   documentationConnectors: `https://docs.oboku.me/guides/connectors`,
   documentationSecrets: `https://docs.oboku.me/secrets`,
   documentationStorage: `https://docs.oboku.me/guides/storage`,
+  documentationSelfHosting: `https://docs.oboku.me/self-hosting/installation`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,

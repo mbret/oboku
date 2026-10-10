@@ -3,8 +3,8 @@ import type {
   CreateKoreaderSyncPasswordResponse,
   GetKoreaderSyncResponse,
 } from "@oboku/shared"
-import { type AuthUser, WithAuthUser } from "../auth/auth.guard"
-import { KoreaderSyncService } from "./koreader-sync.service"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { KoreaderSyncService } from "./koreader-sync.service.js"
 
 /** The signed-in user's KOReader sync login, managed from the app. */
 @Controller("koreader-sync")

@@ -1,16 +1,16 @@
 import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
-import type { DataSourcePlugin, PluginMetadataParams } from "src/plugins/types"
+import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
 import type { WebDAVClient } from "webdav"
-import { getConnectorById } from "src/lib/connectors/connectorHelpers"
-import { getDataSourceData } from "../helpers"
+import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
+import { getDataSourceData } from "../helpers.js"
 import {
   getWebdavModule,
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
   walkDirectoryContents,
-} from "../webdav/operations"
-import { find } from "src/lib/couch/dbHelpers"
+} from "../webdav/operations.js"
+import { find } from "../../lib/couch/dbHelpers.js"
 
 async function createServerWebdavClient(
   db: Parameters<typeof getConnectorById>[0],
