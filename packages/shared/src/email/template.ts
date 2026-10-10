@@ -1,6 +1,6 @@
 import { design, links } from "../design"
 
-const BRAND_COLOR = design.palette.orangeHex
+const BRAND_COLOR = design.palette.orangeOnLightHex
 const BRAND_COLOR_DARK = design.palette.orangeDarkHex
 const TEXT_COLOR = "#27272a"
 const MUTED_COLOR = "#71717a"
