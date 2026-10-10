@@ -5,6 +5,7 @@ import { CoversService } from "../covers/covers.service.js"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
+import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { UsersService } from "./users.service.js"
@@ -42,6 +43,7 @@ describe("UsersService", () => {
         { provide: SyncReportPostgresService, useValue: {} },
         { provide: RefreshTokensService, useValue: refreshTokensService },
         { provide: KoreaderSyncPostgresService, useValue: {} },
+        { provide: KoreaderSyncConnectionPostgresService, useValue: {} },
       ],
     }).compile()
 

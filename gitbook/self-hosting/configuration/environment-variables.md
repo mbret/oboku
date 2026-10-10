@@ -70,3 +70,11 @@ EMAIL_SMTP_MAX_SEND_RATE=14
 > Providers also enforce a daily sending quota (eg: Amazon SES allows 50,000
 > emails / 24h by default). A single broadcast larger than your quota will have
 > its overflow rejected by the provider; request a quota increase if needed.
+
+## KOReader sync servers on a private network
+
+When oboku's reader connects to a KOReader sync server, the API makes the requests, and by default it only reaches servers on the public internet. Allow private networks to connect to a sync server on your home network, or to this instance's own server when the API is only reachable at a private address.
+
+```
+KOREADER_SYNC_ALLOW_PRIVATE_NETWORK=true
+```

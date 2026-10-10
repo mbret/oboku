@@ -312,3 +312,31 @@ export class KoreaderSyncProgressPostgresEntity {
   @Column({ type: "timestamp with time zone" })
   updated_at!: Date
 }
+
+/**
+ * The KOReader sync server a user connected oboku's reader to, one per user.
+ * `encrypted_key` is the `x-auth-key` sent to that server, encrypted at rest;
+ * the password it was derived from is never kept.
+ */
+@Entity({ name: "koreader_sync_connections" })
+@Index(["user_id"], { unique: true })
+export class KoreaderSyncConnectionPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  server_url!: string
+
+  @Column({ type: "text" })
+  username!: string
+
+  @Column({ type: "text" })
+  encrypted_key!: string
+
+  /** When the user signed in to the server from oboku. */
+  @Column({ type: "timestamp with time zone" })
+  connected_at!: Date
+}
