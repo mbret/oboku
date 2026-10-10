@@ -25,7 +25,7 @@ The password is not your oboku password and gives access to nothing but your syn
 In KOReader:
 
 1. Open **Tools > Progress sync > Custom sync server** and enter the server.
-2. Still in **Progress sync**, choose **Register / Login**, then **Login** with the username and password. There is no need to register: registering on oboku's server is disabled.
+2. In the same **Progress sync** menu, tap **Register / Login**. In the form that opens, enter the username and password, then tap **Login**. Do not tap **Register**: the account already exists, it was created when you generated the password.
 
 Readest, Crosspoint and the other compatible apps ask for the same three values in their KOReader sync settings.
 

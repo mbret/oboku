@@ -42,7 +42,7 @@ const DangerZoneListSubheader = styled(ListSubheader)(({ theme }) => ({
 
 const SETUP_STEPS = [
   "In KOReader, open Tools > Progress sync > Custom sync server and enter the server above.",
-  "Still in Progress sync, choose Register / Login, then Login with the username and password above. There is no need to register.",
+  "In the same Progress sync menu, tap Register / Login, enter the username and password above, then tap Login. Do not tap Register: the account already exists, it was created when you generated the password.",
   "Readest, Crosspoint and the other apps that support KOReader sync take the same three values in their KOReader sync settings.",
   "Devices recognize a book only when they identify it the same way: keep the same document matching method (binary by default) on all of them.",
 ]
