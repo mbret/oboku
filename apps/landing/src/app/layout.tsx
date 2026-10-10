@@ -18,6 +18,9 @@ const roboto = Roboto({
 
 const siteTitle = "oboku | Your digital library"
 
+// Every page inherits this. `./` resolves against each page's own pathname,
+// and Next.js fills the Open Graph and Twitter title and description from each
+// page's own: absolute values here would make every page claim the home page's.
 export const metadata: Metadata = {
   metadataBase: new URL(links.site),
   title: {
@@ -41,20 +44,13 @@ export const metadata: Metadata = {
     "Synology",
   ],
   openGraph: {
-    title: siteTitle,
-    description: landingSubtitle,
-    url: links.site,
+    url: "./",
     siteName: "oboku",
     locale: "en_US",
     type: "website",
   },
-  twitter: {
-    card: "summary",
-    title: siteTitle,
-    description: landingSubtitle,
-  },
   alternates: {
-    canonical: links.site,
+    canonical: "./",
   },
 }
 

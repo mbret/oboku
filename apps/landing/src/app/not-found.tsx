@@ -1,4 +1,12 @@
 import { Stack, Typography } from "@mui/material"
+import type { Metadata } from "next"
+
+export const metadata: Metadata = {
+  title: "Page not found",
+  alternates: {
+    canonical: null,
+  },
+}
 
 export default async function NotFound() {
   return (
