@@ -26,13 +26,19 @@ import { FaqSection } from "./FaqSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"
 
+const heroScreenshotMobileHeightVh = 50
+const heroScreenshotMobileWidthVh = Math.ceil(
+  (heroScreenshotMobileHeightVh * image1.width) / image1.height,
+)
+const heroScreenshotSizes = `(max-width: 599px) ${heroScreenshotMobileWidthVh}vh, 300px`
+
 const HighlightImage = styled(Image)(({ theme }) => ({
   width: "100%",
   maxWidth: "100%",
   height: "auto",
   [theme.breakpoints.down("sm")]: {
     width: "auto",
-    maxHeight: "50vh",
+    height: `${heroScreenshotMobileHeightVh}vh`,
     margin: "0 auto",
   },
 }))
@@ -179,6 +185,8 @@ export const HomeContent = () => {
           <HighlightImage
             alt="oboku library view showing a collection of books on mobile"
             src={image1}
+            sizes={heroScreenshotSizes}
+            preload
           />
         </Paper>
         <Paper
@@ -203,6 +211,7 @@ export const HomeContent = () => {
           <HighlightImage
             alt="oboku book reader interface on mobile"
             src={image2}
+            sizes={heroScreenshotSizes}
           />
         </Paper>
       </Stack>

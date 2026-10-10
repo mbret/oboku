@@ -47,6 +47,7 @@ const KeyCardPoint = ({
       <Image
         style={{ width: "50%", height: "auto" }}
         src={imageSrc}
+        sizes="(max-width: 599px) 50vw, (max-width: 1199px) 25vw, 300px"
         alt={imageAlt}
       />
     </Card>

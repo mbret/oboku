@@ -47,7 +47,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
@@ -102,7 +102,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
@@ -138,7 +138,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink

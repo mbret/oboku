@@ -43,7 +43,7 @@
     "dropbox": "^10.47.0",
     "express": "^5.2.1",
     "google-auth-library": "^11.2.0",
-    "googleapis": "^182.0.0",
+    "googleapis": "^185.0.0",
     "http-proxy-3": "^2.0.1",
     "joi": "^18.2.9",
     "jose": "^6.2.12",
