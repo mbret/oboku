@@ -41,7 +41,6 @@ const FeatureCardLink = styled(Link)(function styleFeatureCardLink({ theme }) {
     },
     "&[data-emphasized=true]": {
       borderColor: theme.alpha(theme.vars.palette.primary.main, 0.4),
-      backgroundColor: theme.alpha(theme.vars.palette.primary.main, 0.06),
       [theme.breakpoints.only("sm")]: {
         gridColumn: "1 / -1",
       },

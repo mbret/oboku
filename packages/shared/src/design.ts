@@ -1,7 +1,12 @@
 export const design = {
   palette: {
-    orange: `rgb(225, 100, 50, 1)`,
     orangeHex: `#e16432`,
+    /**
+     * `orangeHex` darkened, keeping its hue and chroma, to the lightest shade
+     * whose text and buttons stay above WCAG AA (4.5:1) on white and on MUI's
+     * grey[50] (#fafafa). Dark backgrounds need `orangeHex` instead.
+     */
+    orangeOnLightHex: `#c64b12`,
     orangeDarkHex: `#9d4623`,
   },
 }

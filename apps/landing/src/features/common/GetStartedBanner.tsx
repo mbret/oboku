@@ -38,7 +38,7 @@ export function GetStartedBanner() {
       <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
         Your library is waiting
       </Typography>
-      <Typography sx={{ maxWidth: 520, opacity: 0.9 }}>
+      <Typography sx={{ maxWidth: 520 }}>
         Sign in, connect a data source and start reading in minutes. No
         installation, no credit card.
       </Typography>
