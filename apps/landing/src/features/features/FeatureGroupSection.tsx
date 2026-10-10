@@ -39,6 +39,9 @@ const LayoutBox = styled(Box)(function styleLayoutBox({ theme }) {
     gap: theme.spacing(6),
     alignItems: "center",
     gridTemplateAreas: '"text" "screenshots"',
+    "&[data-layout=text-only]": {
+      gridTemplateAreas: '"text"',
+    },
     [theme.breakpoints.up("md")]: {
       gap: theme.spacing(10),
       "&[data-layout=text-first]": {
