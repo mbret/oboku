@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   Param,
   Post,
   Put,
@@ -48,6 +49,7 @@ export class KoreaderSyncProtocolController {
   @UseGuards(KoreaderSyncAuthGuard)
   async updateProgress(
     @WithKoreaderSyncUserId() userId: number,
+    @Headers("x-auth-key") key: string,
     @Body() body: unknown,
   ) {
     const { document, progress, percentage, device, deviceId } =
@@ -55,13 +57,16 @@ export class KoreaderSyncProtocolController {
     const updatedAt = new Date()
 
     const isSaved = await this.koreaderSyncServerService.saveProgress({
-      user_id: userId,
-      document,
-      progress,
-      percentage,
-      device,
-      device_id: deviceId,
-      updated_at: updatedAt,
+      progress: {
+        user_id: userId,
+        document,
+        progress,
+        percentage,
+        device,
+        device_id: deviceId,
+        updated_at: updatedAt,
+      },
+      key,
     })
 
     if (!isSaved) throw createKoreaderSyncError("unauthorized")

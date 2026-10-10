@@ -44,19 +44,26 @@ export class KoreaderSyncPostgresService {
   }
 
   /**
-   * Saves the position only while the user still has a credential, which a
-   * share lock keeps in place until the save commits, so a push authorized
-   * just before `deleteByUserId` cannot bring back a position it deleted.
+   * Saves the position only while the credential that authorized the push is
+   * still the user's, which a share lock keeps in place until the save
+   * commits, so a push authorized just before `deleteByUserId` or a new
+   * password cannot bring back a position or overwrite one with a revoked key.
    *
-   * @returns `false` when the credential is gone.
+   * @returns `false` when the credential is gone or replaced.
    */
-  saveProgress(progress: KoreaderSyncProgress) {
+  saveProgress({
+    progress,
+    keyHash,
+  }: {
+    progress: KoreaderSyncProgress
+    keyHash: string
+  }) {
     return this.progressRepository.manager.transaction(
-      async function saveWhileCredentialExists(manager) {
+      async function saveWhileCredentialIsCurrent(manager) {
         const credential = await manager.findOne(
           KoreaderSyncCredentialPostgresEntity,
           {
-            where: { user_id: progress.user_id },
+            where: { user_id: progress.user_id, key_hash: keyHash },
             lock: { mode: "pessimistic_read" },
           },
         )

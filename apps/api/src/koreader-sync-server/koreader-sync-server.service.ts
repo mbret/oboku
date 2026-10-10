@@ -66,7 +66,17 @@ export class KoreaderSyncServerService {
     return this.koreaderSyncPostgresService.findProgress(params)
   }
 
-  saveProgress(progress: KoreaderSyncProgress) {
-    return this.koreaderSyncPostgresService.saveProgress(progress)
+  /** @returns `false` when `key` no longer signs the user in. */
+  saveProgress({
+    progress,
+    key,
+  }: {
+    progress: KoreaderSyncProgress
+    key: string
+  }) {
+    return this.koreaderSyncPostgresService.saveProgress({
+      progress,
+      keyHash: hashSyncKey(key),
+    })
   }
 }
