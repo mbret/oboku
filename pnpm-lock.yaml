@@ -227,8 +227,8 @@ importers:
         specifier: ^11.2.0
         version: 11.2.0(supports-color@8.1.1)
       googleapis:
-        specifier: ^182.0.0
-        version: 182.0.0(supports-color@8.1.1)
+        specifier: ^185.0.0
+        version: 185.0.0(supports-color@8.1.1)
       http-proxy-3:
         specifier: ^2.0.1
         version: 2.0.1(supports-color@8.1.1)
@@ -8143,8 +8143,8 @@ packages:
     resolution: {integrity: sha512-OYCBMfAPDJSB4E1RiQQzrIxCJLGMVrCgeVvuUKzSLBgnSSA+hH3X16/q76UMjS/HCJmOjcVVopwhUUnTo2SHyg==}
     engines: {node: '>=22'}
 
-  googleapis@182.0.0:
-    resolution: {integrity: sha512-W8K/yy5kb1j6TiKEtSj4I4DgjeImVfSzYmdmp8Bdn3dHBamBjmpJUteF0R7QQ9Ym++2Yq+ZYXvIFBC7ywBohAA==}
+  googleapis@185.0.0:
+    resolution: {integrity: sha512-w/rO9+ank7JpAj65X6DzUoSLbxvHtsTf4F2kD9+8AScA3KEzDjeTFOUFVldDSePSuRSlpJkP/s36fMaqgFX3sw==}
     engines: {node: '>=22.0.0'}
 
   gopd@1.2.0:
@@ -20875,7 +20875,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  googleapis@182.0.0(supports-color@8.1.1):
+  googleapis@185.0.0(supports-color@8.1.1):
     dependencies:
       google-auth-library: 11.2.0(supports-color@8.1.1)
       googleapis-common: 9.2.0(supports-color@8.1.1)
