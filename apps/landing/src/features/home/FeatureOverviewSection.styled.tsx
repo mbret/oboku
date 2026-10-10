@@ -1,6 +1,6 @@
 "use client"
 
-import { alpha, Box, Stack, styled } from "@mui/material"
+import { Box, Stack, styled } from "@mui/material"
 import Link from "next/link"
 import { outlinedCardStyles } from "../common/outlinedCardStyles"
 
@@ -35,13 +35,12 @@ export const FeatureCardLink = styled(Link)(function styleFeatureCardLink({
       { duration: theme.transitions.duration.shorter },
     ),
     "&:hover, &:focus-visible": {
-      borderColor: theme.palette.primary.main,
+      borderColor: theme.vars.palette.primary.main,
       boxShadow: theme.shadows[4],
       transform: "translateY(-2px)",
     },
     "&[data-emphasized=true]": {
-      borderColor: alpha(theme.palette.primary.main, 0.4),
-      backgroundColor: alpha(theme.palette.primary.main, 0.06),
+      borderColor: theme.alpha(theme.vars.palette.primary.main, 0.4),
       [theme.breakpoints.only("sm")]: {
         gridColumn: "1 / -1",
       },
@@ -57,6 +56,6 @@ export const CardActionStack = styled(Stack)(function styleCardActionStack({
     flexDirection: "row",
     alignItems: "center",
     gap: theme.spacing(0.5),
-    color: theme.palette.primary.main,
+    color: theme.vars.palette.primary.main,
   }
 })

@@ -6,7 +6,7 @@ const OverlineTypography = styled(Typography)(function styleOverlineTypography({
   theme,
 }) {
   return {
-    color: theme.palette.primary.main,
+    color: theme.vars.palette.primary.main,
     fontWeight: 700,
     letterSpacing: "0.12em",
   }

@@ -13,7 +13,10 @@ export const BandSection = styled("section")(function styleBandSection({
       paddingBottom: theme.spacing(12),
     },
     "&[data-tinted=true]": {
-      backgroundColor: theme.palette.grey[50],
+      backgroundColor: theme.alpha(
+        theme.vars.palette.common.onBackground,
+        0.02,
+      ),
     },
   }
 })

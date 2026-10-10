@@ -21,8 +21,8 @@ const ScrollAwareAppBar = styled(AppBar)(function styleScrollAwareAppBar({
       duration: theme.transitions.duration.shorter,
     }),
     "&[data-page-scrolled=true]": {
-      backgroundColor: theme.palette.background.paper,
-      borderBottomColor: theme.palette.divider,
+      backgroundColor: theme.vars.palette.background.paper,
+      borderBottomColor: theme.vars.palette.divider,
     },
   }
 })

@@ -48,12 +48,7 @@ export const Footer = () => {
                 gap: 1,
               }}
             >
-              <MuiLink
-                href={links.app}
-                target="_blank"
-                variant="body2"
-                underline="hover"
-              >
+              <MuiLink href={links.app} variant="body2" underline="hover">
                 App
               </MuiLink>
               <MuiLink
@@ -82,6 +77,14 @@ export const Footer = () => {
                 underline="hover"
               >
                 Github
+              </MuiLink>
+              <MuiLink
+                href={links.sponsor}
+                target="_blank"
+                variant="body2"
+                underline="hover"
+              >
+                Sponsor
               </MuiLink>
             </Stack>
           </Stack>

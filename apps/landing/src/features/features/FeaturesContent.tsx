@@ -17,7 +17,14 @@ export function FeaturesContent() {
       <GlowHeroSection>
         <Container maxWidth="md">
           <Stack sx={{ alignItems: "center", textAlign: "center", gap: 2 }}>
-            <Chip label="Features" color="primary" variant="outlined" />
+            <Chip
+              label="Features"
+              color="primary"
+              variant="outlined"
+              // The hero glow is strongest here: without a solid backdrop the
+              // label drops below WCAG AA, which Lighthouse cannot measure.
+              sx={{ bgcolor: "background.paper" }}
+            />
             <Typography
               variant="h3"
               component="h1"

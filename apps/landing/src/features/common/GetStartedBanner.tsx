@@ -1,6 +1,6 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
-import { CallToActionStack } from "./GetStartedBanner.styled"
+import { CallToActionStack, InvertedButton } from "./GetStartedBanner.styled"
 
 export function GetStartedBanner() {
   return (
@@ -8,7 +8,7 @@ export function GetStartedBanner() {
       <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
         Your library is waiting
       </Typography>
-      <Typography sx={{ maxWidth: 520, opacity: 0.9 }}>
+      <Typography sx={{ maxWidth: 520 }}>
         Sign in, connect a data source and start reading in minutes. No
         installation, no credit card.
       </Typography>
@@ -19,19 +19,9 @@ export function GetStartedBanner() {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <Button
-          variant="contained"
-          sx={{
-            color: "primary.main",
-            bgcolor: "common.white",
-            "&:hover": { bgcolor: "grey.100" },
-          }}
-          size="large"
-          href={links.app}
-          target="_blank"
-        >
+        <InvertedButton variant="contained" size="large" href={links.app}>
           Start using oboku
-        </Button>
+        </InvertedButton>
         <Button
           variant="outlined"
           color="inherit"

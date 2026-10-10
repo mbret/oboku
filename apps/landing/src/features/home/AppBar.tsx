@@ -6,7 +6,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Link as MuiLink,
 } from "@mui/material"
 import {
   AutoAwesomeRounded,
@@ -18,6 +17,8 @@ import {
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "../common/DiscordMarkBlueIcon"
 import { NextLink } from "../common/NextLink"
+import { ObokuLogoIcon } from "../common/ObokuLogoIcon"
+import { LogoLink } from "./AppBar.styled"
 import { DrawerAppBar } from "./DrawerAppBar"
 
 export default function AppBar() {
@@ -33,7 +34,7 @@ export default function AppBar() {
           </ListItemButton>
         </ListItem>
         <ListItem disablePadding>
-          <ListItemButton href={links.app} target="_blank">
+          <ListItemButton href={links.app}>
             <ListItemIcon>
               <PhoneIphoneRounded />
             </ListItemIcon>
@@ -81,16 +82,10 @@ export default function AppBar() {
 
   return (
     <DrawerAppBar drawerContent={drawerLinks}>
-      <MuiLink
-        href="/"
-        variant="h6"
-        underline="none"
-        color="inherit"
-        sx={{ flexGrow: 1 }}
-        component={NextLink}
-      >
+      <LogoLink href="/">
+        <ObokuLogoIcon height={26} />
         oboku
-      </MuiLink>
+      </LogoLink>
       <Button
         sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
         color="inherit"
@@ -126,7 +121,6 @@ export default function AppBar() {
         variant="contained"
         startIcon={<PhoneIphoneRounded />}
         href={links.app}
-        target="_blank"
       >
         app
       </Button>

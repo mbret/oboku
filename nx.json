@@ -5,10 +5,6 @@
       "outputs": ["{projectRoot}/dist"],
       "cache": true
     },
-    "landing:build": {
-      "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/dist"]
-    },
     "lint": {
       "cache": true
     },

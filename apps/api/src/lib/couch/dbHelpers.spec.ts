@@ -100,17 +100,29 @@ describe("getOrCreateUserFromEmail", () => {
   const email = "reader@example.com"
   const existingUser = new User(`org.couchdb.user:${email}`, email, "secret")
   existingUser._rev = "3-abc"
+  const legacyUser = new User(
+    "org.couchdb.user:Reader@Example.com",
+    "Reader@Example.com",
+    "secret",
+  )
 
   const createFakeServer = ({
     users,
     dbExists,
     insert = vi.fn().mockResolvedValue({ ok: true, rev: "4-def" }),
+    getUserDoc = vi.fn(async function getUserDocIfExists(id: string) {
+      const doc = users.find((candidate) => candidate._id === id)
+      if (!doc) throw couchError(404, "not_found")
+      return doc
+    }),
   }: {
     users: User[]
     dbExists: boolean
     insert?: Mock
+    getUserDoc?: Mock
   }) => {
     const usersDb = {
+      get: getUserDoc,
       find: vi.fn().mockResolvedValue({ docs: users }),
       insert,
     }
@@ -120,7 +132,7 @@ describe("getOrCreateUserFromEmail", () => {
     })
 
     return {
-      // Only `_users` find/insert and `db.get` are exercised; nano's full
+      // Only `_users` get/find/insert and `db.get` are exercised; nano's full
       // ServerScope surface is irrelevant to these tests.
       server: {
         use: function useUsersDb() {
@@ -197,6 +209,70 @@ describe("getOrCreateUserFromEmail", () => {
       }),
       `org.couchdb.user:${email}`,
     )
+  })
+
+  it("finds the user by the normalized email", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [existingUser],
+      dbExists: true,
+    })
+
+    await expect(
+      getOrCreateUserFromEmail(server, " Reader@Example.com "),
+    ).resolves.toEqual({ user: existingUser, userDbPending: false })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("reuses a legacy user whose doc kept its original casing", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [legacyUser],
+      dbExists: true,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: legacyUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("prefers the normalized doc when a legacy casing also exists", async () => {
+    const { server } = createFakeServer({
+      users: [legacyUser, existingUser],
+      dbExists: true,
+    })
+
+    const result = await getOrCreateUserFromEmail(server, email)
+
+    expect(result.user).toBe(existingUser)
+  })
+
+  it("creates the user with the normalized email", async () => {
+    const { server, usersDb } = createFakeServer({ users: [], dbExists: false })
+
+    const result = await getOrCreateUserFromEmail(server, " New@Example.com")
+
+    expect(result.user.name).toBe("new@example.com")
+    expect(usersDb.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: "org.couchdb.user:new@example.com",
+        email: "new@example.com",
+      }),
+      "org.couchdb.user:new@example.com",
+    )
+  })
+
+  it("rethrows lookup failures other than not found", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [],
+      dbExists: true,
+      getUserDoc: vi.fn().mockRejectedValue(couchError(500, "boom")),
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).rejects.toThrow(
+      "boom",
+    )
+    expect(usersDb.insert).not.toHaveBeenCalled()
   })
 })
 

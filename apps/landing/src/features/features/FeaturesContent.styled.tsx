@@ -1,6 +1,6 @@
 "use client"
 
-import { alpha, Box, Stack, styled } from "@mui/material"
+import { Box, Stack, styled } from "@mui/material"
 import { outlinedCardStyles } from "../common/outlinedCardStyles"
 
 export const HighlightsBox = styled(Box)(function styleHighlightsBox({
@@ -33,10 +33,10 @@ export const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
     position: "sticky",
     top: 56,
     zIndex: theme.zIndex.appBar - 1,
-    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+    backgroundColor: theme.alpha(theme.vars.palette.background.paper, 0.9),
     backdropFilter: "blur(8px)",
-    borderTop: `1px solid ${theme.palette.divider}`,
-    borderBottom: `1px solid ${theme.palette.divider}`,
+    borderTop: `1px solid ${theme.vars.palette.divider}`,
+    borderBottom: `1px solid ${theme.vars.palette.divider}`,
     [theme.breakpoints.up("sm")]: {
       top: 64,
     },
