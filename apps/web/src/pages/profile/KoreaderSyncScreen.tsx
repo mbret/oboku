@@ -127,8 +127,7 @@ export const KoreaderSyncScreen = memo(function KoreaderSyncScreen() {
 
     if (!confirmed) return
 
-    forgetCreatedPassword()
-    turnOff()
+    turnOff(undefined, { onSuccess: forgetCreatedPassword })
   }
 
   return (
