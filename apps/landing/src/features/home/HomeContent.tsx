@@ -16,20 +16,15 @@ import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iP
 import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import { links } from "@oboku/shared"
 import { AppHighlightSection } from "./AppHighlightSection"
-import { landingDescription, landingTagline } from "./content"
+import {
+  landingDescription,
+  landingTagline,
+  supportedExtensions,
+  syncProviders,
+} from "./content"
 import { FaqSection } from "./FaqSection"
 import { LastWords } from "./LastWords"
 import Image from "next/image"
-
-const syncProviders = [
-  { label: "Google Drive", docsPath: "sync-providers/google-drive" },
-  { label: "Dropbox", docsPath: "sync-providers/dropbox" },
-  { label: "OneDrive", docsPath: "sync-providers/one-drive" },
-  { label: "Synology", docsPath: "sync-providers/synology-drive" },
-  { label: "WebDAV", docsPath: "sync-providers/webdav" },
-]
-
-const supportedExtensions = [".epub", ".cbz", ".cbr", ".pdf", ".txt"]
 
 const HighlightImage = styled(Image)(({ theme }) => ({
   width: "100%",

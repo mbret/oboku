@@ -18,6 +18,7 @@ import {
   SwipeableDrawer,
 } from "@mui/material"
 import {
+  AutoAwesomeRounded,
   AutoStoriesRounded,
   GitHub,
   PhoneIphoneRounded,
@@ -37,6 +38,14 @@ export default function AppBar() {
   const DrawerList = (
     <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
       <List>
+        <ListItem disablePadding>
+          <ListItemButton component={Link} href="/features">
+            <ListItemIcon>
+              <AutoAwesomeRounded />
+            </ListItemIcon>
+            <ListItemText primary="Features" />
+          </ListItemButton>
+        </ListItem>
         <ListItem disablePadding>
           <ListItemButton href={links.app} target="_blank">
             <ListItemIcon>
@@ -118,6 +127,15 @@ export default function AppBar() {
             >
               oboku
             </MuiLink>
+            <Button
+              sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
+              color="inherit"
+              startIcon={<AutoAwesomeRounded />}
+              component={Link}
+              href="/features"
+            >
+              features
+            </Button>
             <Button
               sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
               color="inherit"
