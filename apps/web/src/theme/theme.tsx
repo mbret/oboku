@@ -27,8 +27,8 @@ export const theme = createTheme({
       palette: {
         primary: {
           light: `#E7835B`,
-          main: design.palette.orangeHex,
-          dark: design.palette.orangeDarkHex,
+          main: design.palette.orangeLight,
+          dark: design.palette.orangeDark,
         },
       },
     },
@@ -36,8 +36,8 @@ export const theme = createTheme({
       palette: {
         primary: {
           light: `#E7835B`,
-          main: design.palette.orangeOnLightHex,
-          dark: design.palette.orangeDarkHex,
+          main: design.palette.orange,
+          dark: design.palette.orangeDark,
         },
       },
     },

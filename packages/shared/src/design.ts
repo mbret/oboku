@@ -1,13 +1,15 @@
 export const design = {
   palette: {
-    orangeHex: `#e16432`,
     /**
-     * `orangeHex` darkened, keeping its hue and chroma, to the lightest shade
+     * The brand orange: the lightest shade of `orangeLight`'s hue and chroma
      * whose text and buttons stay above WCAG AA (4.5:1) on white and on MUI's
-     * grey[50] (#fafafa). Dark backgrounds need `orangeHex` instead.
+     * grey[50] (#fafafa). Dark backgrounds need `orangeLight` instead.
      */
-    orangeOnLightHex: `#c64b12`,
-    orangeDarkHex: `#9d4623`,
+    orange: `#c64b12`,
+    /** The brand orange on dark backgrounds, where `orange` falls below AA. */
+    orangeLight: `#e16432`,
+    /** A darker shade of the brand orange, for links and hover states. */
+    orangeDark: `#9d4623`,
   },
 }
 
