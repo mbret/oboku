@@ -45,7 +45,7 @@ export default async function OpenGraphImage() {
             style={{
               fontSize: 112,
               letterSpacing: -2,
-              color: design.palette.orangeHex,
+              color: design.palette.orange,
             }}
           >
             oboku

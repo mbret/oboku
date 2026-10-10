@@ -27,6 +27,7 @@ const InvertedButton = styled(Button)(function styleInvertedButton({ theme }) {
     color: theme.vars.palette.primary.main,
     backgroundColor: theme.vars.palette.primary.contrastText,
     "&:hover": {
+      color: theme.vars.palette.primary.dark,
       backgroundImage: `linear-gradient(${hoverOverlay}, ${hoverOverlay})`,
     },
   }
@@ -38,7 +39,7 @@ export function GetStartedBanner() {
       <Typography variant="h4" component="h2" sx={{ fontWeight: 700 }}>
         Your library is waiting
       </Typography>
-      <Typography sx={{ maxWidth: 520, opacity: 0.9 }}>
+      <Typography sx={{ maxWidth: 520 }}>
         Sign in, connect a data source and start reading in minutes. No
         installation, no credit card.
       </Typography>
@@ -49,11 +50,7 @@ export function GetStartedBanner() {
           flexDirection: { xs: "column", sm: "row" },
         }}
       >
-        <InvertedButton
-          variant="contained"
-          size="large"
-          href={links.app}
-        >
+        <InvertedButton variant="contained" size="large" href={links.app}>
           Start using oboku
         </InvertedButton>
         <Button
