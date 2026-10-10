@@ -21,13 +21,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-  alpha,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
-  useTheme,
   FormControlLabel,
   ListItemButton,
 } from "@mui/material"
@@ -59,6 +55,7 @@ import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -73,7 +70,6 @@ export const ProfileScreen = () => {
     selectIsLibraryUnlocked,
   )
   const signOut = useSignOut()
-  const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
   const { unreadCount } = useUnreadNotificationsCount()
   const { db } = useDatabase()
@@ -109,8 +105,7 @@ export const ProfileScreen = () => {
     <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
       <PageContainer disableGutters>
-        <List>
-          <ListSubheader disableSticky>Account</ListSubheader>
+        <PageSection title="Account">
           <ListItemButton onClick={confirmThenSignOut}>
             <ListItemText primary="Sign out" secondary={auth?.email} />
           </ListItemButton>
@@ -181,8 +176,8 @@ export const ProfileScreen = () => {
             </ListItemIcon>
             <ListItemText primary="Statistics" />
           </ListItemButton>
-        </List>
-        <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
+        </PageSection>
+        <PageSection title="Device">
           <ListItemButton
             onClick={() => {
               navigate(ROUTES.SETTINGS)
@@ -206,10 +201,8 @@ export const ProfileScreen = () => {
               secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
             />
           </ListItemButton>
-        </List>
-        <List
-          subheader={<ListSubheader disableSticky>Information</ListSubheader>}
-        >
+        </PageSection>
+        <PageSection title="Information">
           <ListItemButton
             target="__blank"
             href={`https://docs.oboku.me/support`}
@@ -236,12 +229,8 @@ export const ProfileScreen = () => {
           <ListItem>
             <ListItemText primary="App Version" secondary={__APP_VERSION__} />
           </ListItem>
-        </List>
-        <List
-          subheader={
-            <ListSubheader disableSticky>Developer options</ListSubheader>
-          }
-        >
+        </PageSection>
+        <PageSection title="Developer options">
           <ListItemButton onClick={toggleDebug}>
             <ListItemText
               primary={
@@ -255,18 +244,8 @@ export const ProfileScreen = () => {
           >
             <ListItemText primary="Delete my data" />
           </ListItem> */}
-        </List>
-        <List
-          subheader={
-            <ListSubheader
-              disableSticky
-              style={{ color: theme.palette.error.dark }}
-            >
-              Danger zone
-            </ListSubheader>
-          }
-          style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
-        >
+        </PageSection>
+        <PageSection title="Danger zone" tone="danger">
           <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
             <ListItemText
               primary="Repair my account / anomalies"
@@ -286,7 +265,7 @@ export const ProfileScreen = () => {
           <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
             <ListItemText primary="Delete my account" />
           </ListItemButton>
-        </List>
+        </PageSection>
       </PageContainer>
       <DeleteMyDataDialog
         open={isDeleteMyDataDialogOpened}

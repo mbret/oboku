@@ -5,7 +5,6 @@ import {
   Box,
   Button,
   Link,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -21,6 +20,7 @@ import { KeyRounded } from "@mui/icons-material"
 import { SecretActionDrawer } from "../../secrets/SecretActionDrawer"
 import { useUnlockMasterKey } from "../../secrets/useUnlockMasterKey"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 const SecretListItem = memo(
   ({
@@ -125,7 +125,7 @@ export const SecretsScreen = memo(() => {
           </Stack>
         </PageContainer>
         <PageContainer disableGutters>
-          <List>
+          <PageSection>
             {secrets?.map((secret) => (
               <SecretListItem
                 key={secret._id}
@@ -134,7 +134,7 @@ export const SecretsScreen = memo(() => {
                 onClick={() => setDrawerOpenWith(secret._id)}
               />
             ))}
-          </List>
+          </PageSection>
         </PageContainer>
       </Box>
       <SecretActionDrawer

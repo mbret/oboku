@@ -1,18 +1,11 @@
 import { memo, useState } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import {
-  alpha,
-  Box,
-  List,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
-} from "@mui/material"
-import { theme } from "../../theme/theme"
+import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { useSettings } from "../../settings/useSettings"
 import { SetupMasterPasswordDialog } from "../../secrets/SetupMasterPasswordDialog"
 import { useRemoveMasterKey } from "../../secrets/useRemoveMasterKey"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
@@ -34,7 +27,7 @@ export const SecurityScreen = memo(() => {
       >
         <TopBarNavigation title={"Security"} />
         <PageContainer disableGutters>
-          <List>
+          <PageSection>
             <ListItemButton
               onClick={() => {
                 setIsEditContentPasswordDialogOpened(true)
@@ -51,18 +44,8 @@ export const SecurityScreen = memo(() => {
                 }
               />
             </ListItemButton>
-          </List>
-          <List
-            subheader={
-              <ListSubheader
-                disableSticky
-                style={{ color: theme.palette.error.dark }}
-              >
-                Danger zone
-              </ListSubheader>
-            }
-            style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
-          >
+          </PageSection>
+          <PageSection title="Danger zone" tone="danger">
             {!!accountSettings?.masterEncryptionKey && (
               <ListItemButton
                 onClick={() => {
@@ -75,7 +58,7 @@ export const SecurityScreen = memo(() => {
                 />
               </ListItemButton>
             )}
-          </List>
+          </PageSection>
         </PageContainer>
       </Box>
       <SetupMasterPasswordDialog

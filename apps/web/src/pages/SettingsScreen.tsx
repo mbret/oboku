@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { List, ListItem, ListItemText, ListSubheader } from "@mui/material"
+import { ListItem, ListItemText } from "@mui/material"
 import {
   localSettingsSignal,
   useLocalSettings,
@@ -10,6 +10,7 @@ import { Page } from "../common/Page"
 import { themeOptions } from "../theme/themeOptions"
 import { ReadingSettings } from "../settings/ReadingSettings"
 import { PageContainer } from "../common/PageContainer"
+import { PageSection } from "../common/PageSection"
 
 type LocalSettings = ReturnType<typeof useLocalSettings>
 
@@ -37,8 +38,7 @@ export const SettingsScreen = memo(() => {
     <Page>
       <TopBarNavigation title={"Settings"} />
       <PageContainer disableGutters>
-        <List>
-          <ListSubheader disableSticky>General</ListSubheader>
+        <PageSection title="General">
           <ListItem>
             <ListItemText primary="Language" secondary={navigator.language} />
           </ListItem>
@@ -54,11 +54,8 @@ export const SettingsScreen = memo(() => {
             }}
             checked={localSettings.hideDirectivesFromCollectionName}
           />
-        </List>
-        <List>
-          <ListSubheader disableSticky>
-            Privacy & sensitive content
-          </ListSubheader>
+        </PageSection>
+        <PageSection title="Privacy & sensitive content">
           <ListItemSelect
             primary="Show collections containing protected content"
             value={localSettings.showCollectionWithProtectedContent}
@@ -80,11 +77,11 @@ export const SettingsScreen = memo(() => {
             }}
             checked={localSettings.unBlurWhenProtectedVisible}
           />
-        </List>
-        <List subheader={<ListSubheader disableSticky>Reading</ListSubheader>}>
+        </PageSection>
+        <PageSection title="Reading">
           <ReadingSettings />
-        </List>
-        <List subheader={<ListSubheader disableSticky>Theming</ListSubheader>}>
+        </PageSection>
+        <PageSection title="Theming">
           <ListItemSelect
             primary="Color mode"
             value={localSettings.themeMode ?? "system"}
@@ -96,7 +93,7 @@ export const SettingsScreen = memo(() => {
               }))
             }}
           />
-        </List>
+        </PageSection>
       </PageContainer>
     </Page>
   )

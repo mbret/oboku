@@ -2,7 +2,6 @@ import { useCallback, useMemo, useState } from "react"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import {
   ListItem,
-  List,
   ListItemText,
   LinearProgress,
   ListItemIcon,
@@ -34,6 +33,7 @@ import { useBooks } from "../../../books/states"
 import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
 import { StoragePersistenceListItem } from "./StoragePersistenceListItem"
 import { PageContainer } from "../../../common/PageContainer"
+import { PageSection } from "../../../common/PageSection"
 
 const bookListStyle = { width: "100%" }
 
@@ -99,7 +99,7 @@ export const ManageStorageScreen = () => {
     <Page ref={setScrollerEl} bottomGutter={false}>
       <TopBarNavigation title={"Manage storage"} />
       <PageContainer disableGutters>
-        <List>
+        <PageSection>
           <ListItem>
             <ListItemIcon>
               <StorageRounded />
@@ -148,8 +148,10 @@ export const ManageStorageScreen = () => {
               />
             </ListItemButton>
           )}
-        </List>
-        {extraDownloadFilesIds.length > 0 && (
+        </PageSection>
+      </PageContainer>
+      {extraDownloadFilesIds.length > 0 && (
+        <PageContainer>
           <Alert severity="warning" style={{ marginBottom: theme.spacing(0) }}>
             <div style={{ marginBottom: theme.spacing(1) }}>
               It seems that you have some extra downloaded files not linked to
@@ -163,7 +165,9 @@ export const ManageStorageScreen = () => {
               Remove to free up space
             </Button>
           </Alert>
-        )}
+        </PageContainer>
+      )}
+      <PageContainer disableGutters>
         <Divider />
         <BookList
           viewMode={"list"}

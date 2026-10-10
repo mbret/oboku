@@ -2,8 +2,6 @@ import { memo, useState } from "react"
 import {
   Link,
   Button,
-  Toolbar,
-  List,
   ListItemText,
   SvgIcon,
   ListItemIcon,
@@ -31,6 +29,7 @@ import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const DataSourcesListScreen = memo(() => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -51,27 +50,32 @@ export const DataSourcesListScreen = memo(() => {
           flexFlow: "column",
         }}
       >
-        <PageContainer disableGutters>
-          <Alert severity="info">
-            Automatically synchronize books from an external source (eg: Google
-            Drive shared folder).{" "}
-            <Link href="https://docs.oboku.me" target="__blank">
-              Learn more
-            </Link>
-          </Alert>
-          <Toolbar>
+        <PageContainer>
+          <Stack
+            sx={{
+              gap: 1,
+              mt: 2,
+              mb: 1,
+            }}
+          >
+            <Alert severity="info">
+              Automatically synchronize books from an external source (eg:
+              Google Drive shared folder).{" "}
+              <Link href="https://docs.oboku.me" target="__blank">
+                Learn more
+              </Link>
+            </Alert>
             <Button
-              style={{
-                width: "100%",
-              }}
               variant="outlined"
               color="primary"
               onClick={() => setIsDrawerOpened(true)}
             >
               Add a new source
             </Button>
-          </Toolbar>
-          <List>
+          </Stack>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection>
             {syncSources?.map((syncSource) => {
               const dataSource = dataSourcePlugins.find(
                 (dataSource) => dataSource.type === syncSource.type,
@@ -151,7 +155,7 @@ export const DataSourcesListScreen = memo(() => {
                 </ListItemButton>
               )
             })}
-          </List>
+          </PageSection>
         </PageContainer>
       </div>
       <DataSourcesAddDrawer

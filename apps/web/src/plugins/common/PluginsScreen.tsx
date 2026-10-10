@@ -2,7 +2,6 @@ import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   capitalize,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -17,6 +16,7 @@ import {
   useGetIsPluginVisible,
 } from "../useIsPluginEnabled"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
 
 export const PluginsScreen = memo(function PluginsScreen() {
   const isPluginVisible = useGetIsPluginVisible()
@@ -31,7 +31,7 @@ export const PluginsScreen = memo(function PluginsScreen() {
     >
       <TopBarNavigation title={"Plugins"} showBack={false} />
       <PageContainer disableGutters>
-        <List>
+        <PageSection>
           {plugins.filter(isPluginVisible).map((plugin) => (
             <ListItemButton
               key={plugin.type}
@@ -48,7 +48,7 @@ export const PluginsScreen = memo(function PluginsScreen() {
               />
             </ListItemButton>
           ))}
-        </List>
+        </PageSection>
       </PageContainer>
     </Stack>
   )

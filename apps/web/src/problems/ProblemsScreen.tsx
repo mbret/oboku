@@ -1,6 +1,5 @@
 import {
   Box,
-  List,
   ListItem,
   ListItemButton,
   ListItemIcon,
@@ -25,6 +24,7 @@ import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
 import { useFixableLinks } from "./useFixableLinks"
 import { PageContainer } from "../common/PageContainer"
+import { PageSection } from "../common/PageSection"
 
 const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
   DRIVE: ["fileId"],
@@ -101,8 +101,8 @@ export const ProblemsScreen = memo(() => {
           flex: 1,
         }}
       >
-        <PageContainer disableGutters>
-          <Alert severity="warning">
+        <PageContainer>
+          <Alert severity="warning" sx={{ mt: 2 }}>
             PLEASE READ THIS:
             <p>
               This is an <b>EXPERIMENTAL</b> section which can help you find
@@ -130,7 +130,9 @@ export const ProblemsScreen = memo(() => {
               </b>
             </p>
           </Alert>
-          <List>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection>
             {duplicatedCollections.length > 0 && (
               <ListItem alignItems="flex-start">
                 <ListItemText
@@ -276,7 +278,7 @@ export const ProblemsScreen = memo(() => {
               />
             </ListItem>
           )} */}
-          </List>
+          </PageSection>
         </PageContainer>
       </Box>
     </>
