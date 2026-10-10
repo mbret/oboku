@@ -1,14 +1,6 @@
 "use client"
 
-import {
-  alpha,
-  Box,
-  Chip,
-  Container,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material"
+import { Box, Chip, Container, Stack, styled, Typography } from "@mui/material"
 import { GetStartedActions } from "../common/GetStartedActions"
 import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
@@ -42,10 +34,10 @@ const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
     position: "sticky",
     top: 56,
     zIndex: theme.zIndex.appBar - 1,
-    backgroundColor: alpha(theme.palette.background.paper, 0.9),
+    backgroundColor: theme.alpha(theme.vars.palette.background.paper, 0.9),
     backdropFilter: "blur(8px)",
-    borderTop: `1px solid ${theme.palette.divider}`,
-    borderBottom: `1px solid ${theme.palette.divider}`,
+    borderTop: `1px solid ${theme.vars.palette.divider}`,
+    borderBottom: `1px solid ${theme.vars.palette.divider}`,
     [theme.breakpoints.up("sm")]: {
       top: 64,
     },
@@ -72,7 +64,14 @@ export function FeaturesContent() {
       <GlowHeroSection>
         <Container maxWidth="md">
           <Stack sx={{ alignItems: "center", textAlign: "center", gap: 2 }}>
-            <Chip label="Features" color="primary" variant="outlined" />
+            <Chip
+              label="Features"
+              color="primary"
+              variant="outlined"
+              // The hero glow is strongest here: without a solid backdrop the
+              // label drops below WCAG AA, which Lighthouse cannot measure.
+              sx={{ bgcolor: "background.paper" }}
+            />
             <Typography
               variant="h3"
               component="h1"

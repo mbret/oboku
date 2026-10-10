@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { ImageResponse } from "next/og"
 import { design } from "@oboku/shared"
+import { ObokuLogoIcon } from "../features/common/ObokuLogoIcon"
 import { landingTagline } from "../features/home/content"
 
 export const alt = `oboku – ${landingTagline}, next to a phone showing an oboku library`
@@ -39,25 +40,12 @@ export default async function OpenGraphImage() {
         }}
       >
         <div style={{ display: "flex", alignItems: "center", gap: 28 }}>
-          <div
-            style={{
-              display: "flex",
-              width: 88,
-              height: 100,
-              borderRadius: 12,
-              overflow: "hidden",
-              backgroundColor: "#ff7043",
-            }}
-          >
-            <div
-              style={{ width: 18, height: "100%", backgroundColor: "#bf360c" }}
-            />
-          </div>
+          <ObokuLogoIcon height={100} />
           <div
             style={{
               fontSize: 112,
               letterSpacing: -2,
-              color: design.palette.orangeHex,
+              color: design.palette.orange,
             }}
           >
             oboku

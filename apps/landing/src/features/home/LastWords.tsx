@@ -1,4 +1,5 @@
-import { Container, Stack, Typography } from "@mui/material"
+import { Container, Link, Stack, Typography } from "@mui/material"
+import { links } from "@oboku/shared"
 import { BandSection } from "../common/BandSection"
 import { CommunityButtons } from "../common/CommunityButtons"
 import { SectionHeading } from "../common/SectionHeading"
@@ -21,9 +22,12 @@ export function LastWords() {
           </Typography>
           <Typography sx={{ color: "text.secondary" }}>
             The project is free, open source, and ad-free — and we intend to
-            keep it that way. Donations and sponsorship will be available to
-            help sustain the project. The cloud version will stay online for as
-            long as we can cover the infrastructure costs.
+            keep it that way. You can help sustain it by{" "}
+            <Link href={links.sponsor} target="_blank">
+              sponsoring oboku on GitHub
+            </Link>
+            . The cloud version will stay online for as long as we can cover the
+            infrastructure costs.
           </Typography>
           <CommunityButtons />
         </Stack>

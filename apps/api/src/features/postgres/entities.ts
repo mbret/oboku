@@ -107,6 +107,17 @@ export class UserPostgresEntity {
   password?: string
 
   /**
+   * The CouchDB `_users` name this account signs in as. Recorded at sign-in,
+   * the only place the Couch user is resolved or created, and read when
+   * issuing access tokens. Accounts created before emails were normalized
+   * keep their original casing here while `email` is lowercase; couch_peruser
+   * authorizes the per-user database by this exact name. Null until the
+   * account's first sign-in since the column was added.
+   */
+  @Column({ type: "text", nullable: true })
+  couchName?: string
+
+  /**
    * This flag represents whether Oboku trusts the local email/password side of
    * this merged account as having proven mailbox ownership.
    *

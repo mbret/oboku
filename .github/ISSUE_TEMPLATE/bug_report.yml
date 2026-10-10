@@ -1,0 +1,58 @@
+name: Bug report
+description: Something in oboku doesn't work as expected
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Found a security vulnerability? Don't report it here: [report it privately](https://github.com/mbret/oboku/security/advisories/new), as the [security policy](https://github.com/mbret/oboku/security/policy) explains.
+
+        Search the [existing issues](https://github.com/mbret/oboku/issues) before opening a new one. For questions, ask on [Discord](https://discord.gg/eB6MrMmmPN) or [Reddit](https://www.reddit.com/r/oboku/).
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What you did, what you expected and what happened instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open …
+        2. Tap …
+        3. See …
+  - type: dropdown
+    id: deployment
+    attributes:
+      label: Where does oboku run?
+      options:
+        - Cloud (app.oboku.me)
+        - Self-hosted
+    validations:
+      required: true
+  - type: input
+    id: image-tag
+    attributes:
+      label: Image tag
+      description: Self-hosted only. The Docker image tag you run, such as `latest` or `2.5.0`.
+  - type: input
+    id: browser
+    attributes:
+      label: Browser and device
+      placeholder: Chrome on a Pixel 8, Safari on an iPad, the browser of a Kobo e-reader…
+    validations:
+      required: true
+  - type: input
+    id: book
+    attributes:
+      label: Book format and sync provider
+      description: When the bug involves a book or a data source.
+      placeholder: EPUB from Google Drive, CBZ from a WebDAV server…
+  - type: textarea
+    id: logs
+    attributes:
+      label: Errors or logs
+      description: Errors from the browser console, or from the API logs when self-hosted.
+      render: text
