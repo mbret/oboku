@@ -64,6 +64,7 @@ type FeatureChip = {
 
 export type FeatureGroup = {
   id: string
+  Icon: SvgIconComponent
   navLabel: string
   overline: string
   title: string
@@ -83,6 +84,7 @@ export const featureHighlights = [
 export const featureGroups: FeatureGroup[] = [
   {
     id: "reader",
+    Icon: AutoStoriesRounded,
     navLabel: "Reader",
     overline: "Reader",
     title: "One reader for every kind of book",
@@ -139,6 +141,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "sources",
+    Icon: CloudRounded,
     navLabel: "Sync",
     overline: "Your storage",
     title: "Your books stay where they already are",
@@ -190,6 +193,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "library",
+    Icon: CollectionsBookmarkRounded,
     navLabel: "Library",
     overline: "Library",
     title: "A library that organizes itself",
@@ -246,6 +250,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "offline",
+    Icon: WifiOffRounded,
     navLabel: "Offline",
     overline: "Offline & devices",
     title: "Offline-first, on every device",
@@ -302,6 +307,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "privacy",
+    Icon: LockRounded,
     navLabel: "Privacy",
     overline: "Privacy & control",
     title: "Private by design, safe to share",
@@ -341,6 +347,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "optimize",
+    Icon: CompressRounded,
     navLabel: "Optimize",
     overline: "Book tools",
     title: "Make your books lighter and cleaner",
@@ -380,6 +387,7 @@ export const featureGroups: FeatureGroup[] = [
   },
   {
     id: "open-source",
+    Icon: CodeRounded,
     navLabel: "Open source",
     overline: "Open source",
     title: "Free, open source and self-hostable",
