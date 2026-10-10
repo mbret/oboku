@@ -19,12 +19,6 @@ export function LastWords() {
             and want something, let us know. There is no better motivation than
             knowing someone will benefit from it.
           </Typography>
-          <Typography sx={{ color: "text.secondary" }}>
-            The project is free, open source, and ad-free — and we intend to
-            keep it that way. Donations and sponsorship will be available to
-            help sustain the project. The cloud version will stay online for as
-            long as we can cover the infrastructure costs.
-          </Typography>
           <CommunityButtons />
         </Stack>
       </Container>

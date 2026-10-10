@@ -41,7 +41,8 @@ import {
   WifiOffRounded,
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
-import { links } from "@oboku/shared"
+import { Link } from "@mui/material"
+import type { ReactNode } from "react"
 import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
 import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
@@ -73,7 +74,7 @@ export type FeatureGroup = {
   navLabel: string
   overline: string
   title: string
-  description: string
+  description: ReactNode
   features: Feature[]
   screenshots?: PhoneScreenshotSet
   chips?: FeatureChip[]
@@ -93,8 +94,16 @@ export const featureGroups: FeatureGroup[] = [
     navLabel: "Reader",
     overline: "Reader",
     title: "One reader for every kind of book",
-    description:
-      "Novels reflow to your screen, manga turns right to left, webtoons scroll. The reader is built on Prose, an engine designed to open any kind of content.",
+    description: (
+      <>
+        Novels reflow to your screen, manga turns right to left, webtoons
+        scroll. The reader is built on{" "}
+        <Link href="https://prose-reader.com/" target="_blank" rel="noreferrer">
+          Prose
+        </Link>
+        , an engine designed to open any kind of content.
+      </>
+    ),
     screenshots: {
       primary: {
         src: comicReaderScreenshot,
@@ -166,9 +175,7 @@ export const featureGroups: FeatureGroup[] = [
         alt: "Adding an oboku data source from Dropbox or Google Drive",
       },
     },
-    chips: syncProviders.map(function toDocumentationChip({ label, docsPath }) {
-      return { label, href: `${links.documentation}/${docsPath}` }
-    }),
+    chips: syncProviders,
     features: [
       {
         Icon: CloudRounded,

@@ -1,4 +1,5 @@
 import { Stack, styled, Typography } from "@mui/material"
+import type { ReactNode } from "react"
 
 const OverlineTypography = styled(Typography)(function styleOverlineTypography({
   theme,
@@ -19,7 +20,7 @@ export function SectionHeading({
   overline: string
   title: string
   titleId: string
-  description?: string
+  description?: ReactNode
 }) {
   return (
     <Stack sx={{ gap: 1.5, maxWidth: 640 }}>
