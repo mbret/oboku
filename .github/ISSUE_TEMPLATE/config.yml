@@ -1,0 +1,11 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Ask on Discord
+    url: https://discord.gg/eB6MrMmmPN
+    about: Questions about using, self-hosting or developing oboku.
+  - name: Ask on Reddit
+    url: https://www.reddit.com/r/oboku/
+    about: Questions and discussions with the community.
+  - name: Read the documentation
+    url: https://docs.oboku.me
+    about: Guides, self-hosting and sync providers.
