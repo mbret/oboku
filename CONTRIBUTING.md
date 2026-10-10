@@ -8,7 +8,7 @@ Ask on [Discord](https://discord.gg/eB6MrMmmPN) or [Reddit](https://www.reddit.c
 
 ## Report a bug or request a feature
 
-Open an issue on [GitHub](https://github.com/mbret/oboku/issues) after checking that nobody reported it already.
+Open an issue on [GitHub](https://github.com/mbret/oboku/issues) after checking that nobody reported it already. Report a security vulnerability privately instead, as [SECURITY.md](SECURITY.md) explains.
 
 A useful bug report says:
 
