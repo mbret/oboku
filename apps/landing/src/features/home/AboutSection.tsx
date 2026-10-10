@@ -83,6 +83,10 @@ export function AboutSection() {
                   )
                 })}
               </ChipsStack>
+              <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                Want to share your library? Simply share your drive and your
+                friends will be able to build their own library just as easily.
+              </Typography>
             </InfoCardStack>
             <InfoCardStack>
               <Typography variant="h6" component="h3">

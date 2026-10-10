@@ -39,13 +39,15 @@ import {
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
 import { links } from "@oboku/shared"
-import type { PhoneScreenshotPair } from "../common/PhoneScreenshots"
+import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
 import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
 import epubReaderScreenshot from "../home/assets/image1.png"
 import bookDetailsScreenshot from "../home/assets/image2.png"
 import storageScreenshot from "../home/assets/image3.png"
 import dataSourcesScreenshot from "../home/assets/image4.png"
+import mangaReaderScreenshot from "../home/assets/image5.png"
+import homeScreenshot from "../home/assets/image6.png"
 import profileScreenshot from "../home/assets/image7.png"
 import addDataSourceScreenshot from "../home/assets/image8.png"
 import einkScreenshot from "../home/assets/image9.png"
@@ -70,7 +72,7 @@ export type FeatureGroup = {
   title: string
   description: string
   features: Feature[]
-  screenshots?: PhoneScreenshotPair
+  screenshots?: PhoneScreenshotSet
   chips?: FeatureChip[]
 }
 
@@ -98,6 +100,10 @@ export const featureGroups: FeatureGroup[] = [
       secondary: {
         src: epubReaderScreenshot,
         alt: "oboku reader displaying a chapter of an EPUB novel",
+      },
+      tertiary: {
+        src: mangaReaderScreenshot,
+        alt: "Black and white manga page open in the oboku reader",
       },
     },
     chips: supportedExtensions.map((extension) => ({ label: extension })),
@@ -207,6 +213,10 @@ export const featureGroups: FeatureGroup[] = [
       secondary: {
         src: bookDetailsScreenshot,
         alt: "oboku book details page with cover, authors and download button",
+      },
+      tertiary: {
+        src: homeScreenshot,
+        alt: "oboku home screen with continue reading and recently added books",
       },
     },
     features: [

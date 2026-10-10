@@ -6,15 +6,24 @@ export type Screenshot = {
   alt: string
 }
 
-export type PhoneScreenshotPair = {
+export type PhoneScreenshotSet = {
   primary: Screenshot
   secondary?: Screenshot
+  tertiary?: Screenshot
 }
 
 type ScreenshotWidths = { xs: number; sm: number }
 
 const primaryScreenshotWidths: ScreenshotWidths = { xs: 200, sm: 260 }
-const secondaryScreenshotWidths: ScreenshotWidths = { xs: 140, sm: 180 }
+const sideScreenshotWidths: ScreenshotWidths = { xs: 140, sm: 180 }
+const sideScreenshotOffsets: ScreenshotWidths = { xs: 72, sm: 100 }
+
+const narrowestFullSizeViewportWidth = 390
+
+function shrinkOnNarrowerViewports(width: number) {
+  const viewportShare = (width / narrowestFullSizeViewportWidth) * 100
+  return `min(${width}px, ${viewportShare.toFixed(2)}vw)`
+}
 
 function toImageSizes({ xs, sm }: ScreenshotWidths) {
   return `(max-width: 599px) ${xs}px, ${sm}px`
@@ -30,9 +39,15 @@ const PhonesBox = styled(Box)(function stylePhonesBox({ theme }) {
     position: "relative",
     paddingBottom: theme.spacing(5),
     "&[data-has-secondary=true]": {
-      paddingRight: 72,
+      paddingRight: shrinkOnNarrowerViewports(sideScreenshotOffsets.xs),
       [theme.breakpoints.up("sm")]: {
-        paddingRight: 100,
+        paddingRight: sideScreenshotOffsets.sm,
+      },
+    },
+    "&[data-has-tertiary=true]": {
+      paddingLeft: shrinkOnNarrowerViewports(sideScreenshotOffsets.xs),
+      [theme.breakpoints.up("sm")]: {
+        paddingLeft: sideScreenshotOffsets.sm,
       },
     },
   }
@@ -40,30 +55,50 @@ const PhonesBox = styled(Box)(function stylePhonesBox({ theme }) {
 
 const ScreenshotImage = styled(Image)(function styleScreenshotImage({ theme }) {
   return {
+    position: "relative",
+    zIndex: 1,
     display: "block",
     height: "auto",
     borderRadius: theme.spacing(3),
     border: `6px solid ${theme.palette.grey[900]}`,
     boxShadow: theme.shadows[8],
     backgroundColor: theme.palette.common.white,
-    width: primaryScreenshotWidths.xs,
+    width: shrinkOnNarrowerViewports(primaryScreenshotWidths.xs),
     [theme.breakpoints.up("sm")]: {
       width: primaryScreenshotWidths.sm,
     },
   }
 })
 
-const SecondaryScreenshotImage = styled(ScreenshotImage)(
-  function styleSecondaryScreenshotImage({ theme }) {
+const SideScreenshotImage = styled(ScreenshotImage)(
+  function styleSideScreenshotImage({ theme }) {
     return {
       position: "absolute",
+      width: shrinkOnNarrowerViewports(sideScreenshotWidths.xs),
+      [theme.breakpoints.up("sm")]: {
+        width: sideScreenshotWidths.sm,
+      },
+    }
+  },
+)
+
+const SecondaryScreenshotImage = styled(SideScreenshotImage)(
+  function styleSecondaryScreenshotImage({ theme }) {
+    return {
       right: 0,
       bottom: 0,
-      width: secondaryScreenshotWidths.xs,
+      zIndex: 2,
       boxShadow: theme.shadows[16],
-      [theme.breakpoints.up("sm")]: {
-        width: secondaryScreenshotWidths.sm,
-      },
+    }
+  },
+)
+
+const TertiaryScreenshotImage = styled(SideScreenshotImage)(
+  function styleTertiaryScreenshotImage({ theme }) {
+    return {
+      left: 0,
+      top: theme.spacing(6),
+      zIndex: 0,
     }
   },
 )
@@ -71,11 +106,17 @@ const SecondaryScreenshotImage = styled(ScreenshotImage)(
 export function PhoneScreenshots({
   primary,
   secondary,
+  tertiary,
   preload,
-}: PhoneScreenshotPair & { preload?: boolean }) {
+}: PhoneScreenshotSet & { preload?: boolean }) {
+  const sideImageSizes = toImageSizes(sideScreenshotWidths)
+
   return (
     <CenteredBox>
-      <PhonesBox data-has-secondary={secondary !== undefined}>
+      <PhonesBox
+        data-has-secondary={secondary !== undefined}
+        data-has-tertiary={tertiary !== undefined}
+      >
         <ScreenshotImage
           src={primary.src}
           alt={primary.alt}
@@ -86,7 +127,14 @@ export function PhoneScreenshots({
           <SecondaryScreenshotImage
             src={secondary.src}
             alt={secondary.alt}
-            sizes={toImageSizes(secondaryScreenshotWidths)}
+            sizes={sideImageSizes}
+          />
+        )}
+        {tertiary && (
+          <TertiaryScreenshotImage
+            src={tertiary.src}
+            alt={tertiary.alt}
+            sizes={sideImageSizes}
           />
         )}
       </PhonesBox>

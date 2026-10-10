@@ -53,6 +53,9 @@ const FeatureGridBox = styled(Box)(function styleFeatureGridBox({ theme }) {
       gridTemplateColumns: "1fr 1fr",
       columnGap: theme.spacing(4),
     },
+    [theme.breakpoints.between("md", "lg")]: {
+      gridTemplateColumns: "1fr",
+    },
   }
 })
 
