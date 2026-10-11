@@ -36,13 +36,15 @@ const isAxiosNetworkError = (error: unknown): error is AxiosError =>
   axios.isAxiosError(error) && !error.response
 
 /**
- * Keeps the cause of a failed request but not the AxiosError around it, whose
- * config holds the request URL: its query carries the DSM password or the
- * session id.
+ * Keeps only the message and code of a failed request. The query of the
+ * request URL carries the DSM password, the OTP code or the session id, and
+ * the AxiosError holds that URL in its config and request. So can its causes:
+ * Node keeps it as `base` when a redirect leads to an invalid URL.
  */
-function toNetworkFailure(description: string, error: AxiosError) {
-  return new Error(`${description}: ${error.message}`, { cause: error.cause })
-}
+const toRequestFailure = (description: string, error: AxiosError) =>
+  Object.assign(new Error(`${description}: ${error.message}`), {
+    code: error.code,
+  })
 
 const mapWithConcurrency = async <TInput, TOutput>(
   items: readonly TInput[],
@@ -133,15 +135,21 @@ const requestJson = async <T>({
         validateStatus: () => true,
       })
     } catch (error) {
+      if (!axios.isAxiosError(error)) {
+        throw error
+      }
+
+      const requestFailure = toRequestFailure(
+        `Synology Drive request failed for ${url.origin}`,
+        error,
+      )
+
       if (isAxiosNetworkError(error)) {
-        lastError = toNetworkFailure(
-          `Synology Drive request failed for ${url.origin}`,
-          error,
-        )
+        lastError = requestFailure
         continue
       }
 
-      throw error
+      throw requestFailure
     }
 
     lastStatus = response.status
@@ -302,15 +310,21 @@ export const downloadSynologyDriveStream = async ({
         validateStatus: () => true,
       })
     } catch (error) {
+      if (!axios.isAxiosError(error)) {
+        throw error
+      }
+
+      const downloadFailure = toRequestFailure(
+        `Synology Drive download failed for ${new URL(url).origin}`,
+        error,
+      )
+
       if (isAxiosNetworkError(error)) {
-        lastError = toNetworkFailure(
-          `Synology Drive download failed for ${new URL(url).origin}`,
-          error,
-        )
+        lastError = downloadFailure
         continue
       }
 
-      throw error
+      throw downloadFailure
     }
 
     lastStatus = response.status

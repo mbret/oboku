@@ -246,7 +246,10 @@ export const retrieveMetadataAndSaveCover = async (
                * is no more space left. We have about 500mb of space. In case of failure
                * we don't fail the entire process, we just keep the file metadata
                */
-              logger.error(error)
+              logger.error(
+                `File download failed for ${ctx.book._id}: ${error.message}`,
+                error.stack,
+              )
 
               return {
                 filepath: undefined,
