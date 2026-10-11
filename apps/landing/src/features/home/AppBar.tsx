@@ -1,12 +1,4 @@
-"use client"
-
-import * as React from "react"
-import MuiAppBar from "@mui/material/AppBar"
-import Box from "@mui/material/Box"
-import Toolbar from "@mui/material/Toolbar"
 import Button from "@mui/material/Button"
-import IconButton from "@mui/material/IconButton"
-import MenuIcon from "@mui/icons-material/Menu"
 import {
   Divider,
   List,
@@ -14,9 +6,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  styled,
-  SwipeableDrawer,
-  useScrollTrigger,
 } from "@mui/material"
 import {
   AutoAwesomeRounded,
@@ -27,52 +16,17 @@ import {
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
 import { DiscordMarkBlueIcon } from "../common/DiscordMarkBlueIcon"
+import { NextLink } from "../common/NextLink"
 import { ObokuLogoIcon } from "../common/ObokuLogoIcon"
-import Link from "next/link"
-
-const ScrollAwareAppBar = styled(MuiAppBar)(function styleScrollAwareAppBar({
-  theme,
-}) {
-  return {
-    borderBottom: "1px solid transparent",
-    transition: theme.transitions.create(["background-color", "border-color"], {
-      duration: theme.transitions.duration.shorter,
-    }),
-    "&[data-page-scrolled=true]": {
-      backgroundColor: theme.vars.palette.background.paper,
-      borderBottomColor: theme.vars.palette.divider,
-    },
-  }
-})
-
-const LogoLink = styled(Link)(function styleLogoLink({ theme }) {
-  return {
-    ...theme.typography.h6,
-    display: "flex",
-    alignItems: "center",
-    gap: theme.spacing(1),
-    flexGrow: 1,
-    color: "inherit",
-    textDecoration: "none",
-  }
-})
+import { LogoLink } from "./AppBar.styled"
+import { DrawerAppBar } from "./DrawerAppBar"
 
 export default function AppBar() {
-  const [open, setOpen] = React.useState(false)
-  const isPageScrolled = useScrollTrigger({
-    disableHysteresis: true,
-    threshold: 0,
-  })
-
-  const toggleDrawer = (newOpen: boolean) => () => {
-    setOpen(newOpen)
-  }
-
-  const DrawerList = (
-    <Box sx={{ width: 250 }} role="presentation" onClick={toggleDrawer(false)}>
+  const drawerLinks = (
+    <>
       <List>
         <ListItem disablePadding>
-          <ListItemButton component={Link} href="/features">
+          <ListItemButton component={NextLink} href="/features">
             <ListItemIcon>
               <AutoAwesomeRounded />
             </ListItemIcon>
@@ -123,81 +77,53 @@ export default function AppBar() {
           </ListItemButton>
         </ListItem>
       </List>
-    </Box>
+    </>
   )
 
   return (
-    <>
-      <Box sx={{ flexGrow: 1 }}>
-        <ScrollAwareAppBar
-          position="fixed"
-          elevation={0}
-          color="transparent"
-          data-page-scrolled={isPageScrolled}
-        >
-          <Toolbar sx={{ justifyContent: "space-between" }}>
-            <IconButton
-              sx={{ mr: 2, display: { xs: "flex", sm: "none" } }}
-              size="large"
-              edge="start"
-              color="inherit"
-              aria-label="menu"
-              onClick={toggleDrawer(true)}
-            >
-              <MenuIcon />
-            </IconButton>
-            <LogoLink href="/">
-              <ObokuLogoIcon height={26} />
-              oboku
-            </LogoLink>
-            <Button
-              sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
-              color="inherit"
-              startIcon={<AutoAwesomeRounded />}
-              component={Link}
-              href="/features"
-            >
-              features
-            </Button>
-            <Button
-              sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
-              color="inherit"
-              startIcon={<GitHub />}
-              href={links.github}
-              target="_blank"
-            >
-              github
-            </Button>
-            <Button
-              sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
-              color="inherit"
-              // variant="contained"
-              startIcon={<AutoStoriesRounded />}
-              href={links.documentation}
-              target="_blank"
-            >
-              documentation
-            </Button>
-            <Button
-              sx={{ display: { xs: "none", sm: "flex" } }}
-              color="inherit"
-              size="small"
-              variant="contained"
-              startIcon={<PhoneIphoneRounded />}
-              href={links.app}
-            >
-              app
-            </Button>
-          </Toolbar>
-        </ScrollAwareAppBar>
-      </Box>
-      <SwipeableDrawer
-        open={open}
-        onOpen={toggleDrawer(true)}
-        onClose={toggleDrawer(false)}
+    <DrawerAppBar drawerContent={drawerLinks}>
+      <LogoLink href="/">
+        <ObokuLogoIcon height={26} />
+        oboku
+      </LogoLink>
+      <Button
+        sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
+        color="inherit"
+        startIcon={<AutoAwesomeRounded />}
+        component={NextLink}
+        href="/features"
       >
-        {DrawerList}
-      </SwipeableDrawer>
-    </>
+        features
+      </Button>
+      <Button
+        sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
+        color="inherit"
+        startIcon={<GitHub />}
+        href={links.github}
+        target="_blank"
+      >
+        github
+      </Button>
+      <Button
+        sx={{ mr: 2, display: { xs: "none", sm: "flex" } }}
+        color="inherit"
+        // variant="contained"
+        startIcon={<AutoStoriesRounded />}
+        href={links.documentation}
+        target="_blank"
+      >
+        documentation
+      </Button>
+      <Button
+        sx={{ display: { xs: "none", sm: "flex" } }}
+        color="inherit"
+        size="small"
+        variant="contained"
+        startIcon={<PhoneIphoneRounded />}
+        href={links.app}
+      >
+        app
+      </Button>
+    </DrawerAppBar>
   )
 }

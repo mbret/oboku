@@ -18,6 +18,12 @@ The panel signs in with a Bearer token and never sends cookies, so this grants i
 
 Visit the [user-accounts.md](user-accounts.md "mention") section
 
+## Private networks
+
+The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API.
+
+If your users keep their books on your network, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
+
 ## Security
 
 The **Security** section lists the refresh tokens currently issued and lets you revoke them, either for every user or for specific email addresses. Revoked tokens are deleted outright, so the affected users have to sign in again.

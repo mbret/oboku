@@ -1,5 +1,6 @@
 import type { LookupAddress } from "node:dns"
 import {
+  isNonPublicAddressError,
   isPublicAddress,
   lookupPublicAddress,
   NonPublicAddressError,
@@ -29,12 +30,16 @@ const lookup = (hostname: string, options: { all?: boolean } = {}) =>
   })
 
 describe("isPublicAddress", () => {
-  it.each(["8.8.8.8", "1.1.1.1", "2606:4700:4700::1111", "::ffff:8.8.8.8"])(
-    "accepts %s",
-    (address) => {
-      expect(isPublicAddress(address)).toBe(true)
-    },
-  )
+  it.each([
+    "8.8.8.8",
+    "1.1.1.1",
+    "2606:4700:4700::1111",
+    "2001:4860:4860::8888",
+    "::ffff:8.8.8.8",
+    "64:ff9b::808:808",
+  ])("accepts %s", (address) => {
+    expect(isPublicAddress(address)).toBe(true)
+  })
 
   it.each([
     "0.0.0.0",
@@ -52,10 +57,19 @@ describe("isPublicAddress", () => {
     "::1",
     "::ffff:127.0.0.1",
     "::ffff:a9fe:a9fe",
+    "64:ff9b::a9fe:a9fe",
+    "64:ff9b::10.0.0.5",
+    "64:ff9b:1::a00:5",
+    "100:0:0:1::1",
+    "2001::1",
+    "2001:2::1",
+    "2001:db8::1",
+    "2002:a00:1::1",
+    "3fff::1",
+    "5f00::1",
     "fd00::1",
     "fe80::1",
     "ff02::1",
-    "2001:db8::1",
     "not an address",
   ])("refuses %s", (address) => {
     expect(isPublicAddress(address)).toBe(false)
@@ -101,5 +115,40 @@ describe("lookupPublicAddress", () => {
     const { error } = await lookup("nowhere.example")
 
     expect(error).toBeInstanceOf(NonPublicAddressError)
+  })
+})
+
+describe("isNonPublicAddressError", () => {
+  it("recognizes the refusal itself", () => {
+    expect(isNonPublicAddressError(new NonPublicAddressError("10.0.0.5"))).toBe(
+      true,
+    )
+  })
+
+  it("recognizes it as the cause of another error", () => {
+    const wrapped = new Error("request failed", {
+      cause: new Error("connection failed", {
+        cause: new NonPublicAddressError("10.0.0.5"),
+      }),
+    })
+
+    expect(isNonPublicAddressError(wrapped)).toBe(true)
+  })
+
+  it("recognizes an error that only copied its code", () => {
+    const copied = Object.assign(new Error("request failed"), {
+      code: new NonPublicAddressError("10.0.0.5").code,
+    })
+
+    expect(isNonPublicAddressError(copied)).toBe(true)
+  })
+
+  it("does not recognize other errors", () => {
+    const refusedConnection = Object.assign(new Error("connect failed"), {
+      code: "ECONNREFUSED",
+    })
+
+    expect(isNonPublicAddressError(refusedConnection)).toBe(false)
+    expect(isNonPublicAddressError("ERR_NON_PUBLIC_ADDRESS")).toBe(false)
   })
 })

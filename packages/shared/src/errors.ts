@@ -20,6 +20,7 @@ export enum ObokuErrorCode {
   ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED = "8000",
   ERROR_KOREADER_SYNC_SERVER_UNREACHABLE = "8001",
   ERROR_KOREADER_SYNC_SERVER_ADDRESS_NOT_ALLOWED = "8002",
+  ERROR_ADDRESS_NOT_ALLOWED = "9000",
 }
 
 export type ObokuErrorSeverity = "internal" | "user"
@@ -46,6 +47,7 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED]: "user",
   [ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE]: "user",
   [ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_ADDRESS_NOT_ALLOWED]: "user",
+  [ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED]: "user",
 }
 
 export class ObokuSharedError extends Error {

@@ -130,6 +130,10 @@ class UpdateInstanceSettingsDto {
   @IsOptional()
   fileDownloadMaxSizeBytes?: number
 
+  @IsBoolean()
+  @IsOptional()
+  allowPrivateNetworkRequests?: boolean
+
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
   @IsString()
@@ -378,6 +382,7 @@ export class AdminController {
     return {
       showDisabledPlugins: config.showDisabledPlugins,
       fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
+      allowPrivateNetworkRequests: config.allowPrivateNetworkRequests,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }

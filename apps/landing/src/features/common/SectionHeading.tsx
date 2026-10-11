@@ -1,3 +1,5 @@
+"use client"
+
 import { Stack, styled, Typography } from "@mui/material"
 import type { ReactNode } from "react"
 

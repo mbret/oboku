@@ -2,6 +2,7 @@
   "name": "@oboku/shared",
   "private": true,
   "type": "module",
+  "sideEffects": false,
   "types": "./dist/index.d.ts",
   "main": "./dist/index.js",
   "module": "./dist/index.js",
