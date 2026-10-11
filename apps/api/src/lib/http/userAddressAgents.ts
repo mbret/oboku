@@ -3,6 +3,12 @@ import { Agent as HttpsAgent, type RequestOptions } from "node:https"
 import { isIP } from "node:net"
 import type { Duplex } from "node:stream"
 import {
+  type AllowedHost,
+  isAllowedHost,
+  parseAllowedHost,
+  toComparableHostname,
+} from "./allowedHosts.js"
+import {
   isPublicAddress,
   lookupPublicAddress,
   NonPublicAddressError,
@@ -43,6 +49,21 @@ function refuseNonPublicAddressLiteral(
   return true
 }
 
+const HTTP_DEFAULT_PORT = 80
+const HTTPS_DEFAULT_PORT = 443
+
+let privateNetworkAllowedHosts: AllowedHost[] = []
+
+function isAllowedConnection(
+  options: Pick<ClientRequestArgs, "host" | "hostname" | "port">,
+  defaultPort: number,
+) {
+  return isAllowedHost(privateNetworkAllowedHosts, {
+    hostname: toComparableHostname(options.host ?? options.hostname ?? ""),
+    port: Number(options.port ?? defaultPort),
+  })
+}
+
 class PublicAddressHttpAgent extends HttpAgent {
   constructor() {
     super({ lookup: lookupPublicAddress })
@@ -52,6 +73,10 @@ class PublicAddressHttpAgent extends HttpAgent {
     options: ClientRequestArgs,
     callback?: CreateConnectionCallback,
   ) {
+    if (isAllowedConnection(options, HTTP_DEFAULT_PORT)) {
+      return super.createConnection({ ...options, lookup: undefined }, callback)
+    }
+
     const isRefused = refuseNonPublicAddressLiteral(options, callback)
 
     return isRefused ? undefined : super.createConnection(options, callback)
@@ -67,10 +92,24 @@ class PublicAddressHttpsAgent extends HttpsAgent {
     options: RequestOptions,
     callback?: CreateConnectionCallback,
   ) {
+    if (isAllowedConnection(options, HTTPS_DEFAULT_PORT)) {
+      return super.createConnection({ ...options, lookup: undefined }, callback)
+    }
+
     const isRefused = refuseNonPublicAddressLiteral(options, callback)
 
     return isRefused ? undefined : super.createConnection(options, callback)
   }
+}
+
+/**
+ * The hosts the instance's `privateNetworkAllowedHosts` setting lets through
+ * while private networks are refused, as `host` or `host:port`.
+ */
+export function setPrivateNetworkAllowedHosts(entries: string[]) {
+  privateNetworkAllowedHosts = entries.flatMap(
+    (entry) => parseAllowedHost(entry) ?? [],
+  )
 }
 
 let isPrivateNetworkAllowed = false
@@ -102,9 +141,10 @@ type UserAddressRequestOptions = {
 /**
  * The options for a request to an address a user entered: a data source, a
  * connector, a link. Unless private networks are allowed, every connection
- * the request opens, redirects included, has to reach the public internet. It
- * then bypasses the proxy from `HTTP_PROXY`/`HTTPS_PROXY`, which would reach
- * the address in the agents' place and leave them checking the proxy's.
+ * the request opens, redirects included, has to reach the public internet or
+ * a host the instance allows. It then bypasses the proxy from
+ * `HTTP_PROXY`/`HTTPS_PROXY`, which would reach the address in the agents'
+ * place and leave them checking the proxy's.
  */
 export function getUserAddressRequestOptions({
   allowSelfSigned = false,

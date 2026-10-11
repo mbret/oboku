@@ -13,7 +13,10 @@ import { TrustedOriginsService } from "./config/trusted-origin.service.js"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
 import { createCorsOptionsDelegate } from "./config/cors-options.js"
 import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
-import { setPrivateNetworkRequestsAllowed } from "./lib/http/userAddressAgents.js"
+import {
+  setPrivateNetworkAllowedHosts,
+  setPrivateNetworkRequestsAllowed,
+} from "./lib/http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -36,17 +39,35 @@ async function bootstrap() {
     `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
   )
 
-  app
-    .get(InstanceConfigService)
-    .getConfig()
+  const instanceConfig$ = app.get(InstanceConfigService).getConfig()
+
+  instanceConfig$
     .pipe(
-      map((config) => config.allowPrivateNetworkRequests),
+      map(function readAllowPrivateNetworkRequests(config) {
+        return config.allowPrivateNetworkRequests
+      }),
       distinctUntilChanged(),
     )
     .subscribe(function applyPrivateNetworkRequestsSetting(allowed) {
       setPrivateNetworkRequestsAllowed(allowed)
       logger.log(
         `Requests to private networks — ${allowed ? "allowed" : "refused"}`,
+      )
+    })
+
+  instanceConfig$
+    .pipe(
+      map(function readPrivateNetworkAllowedHosts(config) {
+        return config.privateNetworkAllowedHosts
+      }),
+      distinctUntilChanged(function isSameHostList(previous, current) {
+        return previous.join(" ") === current.join(" ")
+      }),
+    )
+    .subscribe(function applyPrivateNetworkAllowedHostsSetting(hosts) {
+      setPrivateNetworkAllowedHosts(hosts)
+      logger.log(
+        `Hosts allowed on private networks — ${hosts.join(", ") || "none"}`,
       )
     })
 
