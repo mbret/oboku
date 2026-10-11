@@ -1,7 +1,7 @@
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { find } from "../../lib/couch/dbHelpers.js"
 import axios from "axios"
-import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 
 const URI_TYPE = "URI"
 
@@ -66,7 +66,7 @@ export const dataSource: DataSourcePlugin<"URI"> = {
 
     const response = await axios.get(url, {
       responseType: "stream",
-      httpsAgent: getHttpsAgent(allowSelfSigned),
+      ...getUserAddressRequestOptions({ allowSelfSigned }),
     })
 
     return {

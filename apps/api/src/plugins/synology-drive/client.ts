@@ -23,7 +23,7 @@ import axios, { type AxiosError, AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
-import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean
@@ -32,7 +32,7 @@ type SynologyDriveRequestSession = SynologyDriveSession & {
 const logger = new Logger("SynologyDriveClient")
 const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
 
-const isAxiosNetworkError = (error: unknown) =>
+const isAxiosNetworkError = (error: unknown): error is AxiosError =>
   axios.isAxiosError(error) && !error.response
 
 /**
@@ -131,7 +131,7 @@ const requestJson = async <T>({
         headers: {
           Accept: "application/json",
         },
-        httpsAgent: getHttpsAgent(allowSelfSigned),
+        ...getUserAddressRequestOptions({ allowSelfSigned }),
         validateStatus: () => true,
       })
     } catch (error) {
@@ -303,7 +303,9 @@ export const downloadSynologyDriveStream = async ({
         headers: {
           Accept: "application/octet-stream",
         },
-        httpsAgent: getHttpsAgent(session.allowSelfSigned),
+        ...getUserAddressRequestOptions({
+          allowSelfSigned: session.allowSelfSigned,
+        }),
         responseType: "stream",
         validateStatus: () => true,
       })

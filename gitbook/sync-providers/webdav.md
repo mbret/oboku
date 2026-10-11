@@ -12,6 +12,10 @@ Your browser will not sends the credentials for a preflight request (see [https:
 
 You can configure a reverse proxy in front of your WebDAV server and intercept OPTIONS requests to return a 200 status
 
+## Servers on your local network
+
+oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow them from the [admin panel](../self-hosting/admin.md#private-networks) to use a server on your local network or on that machine.
+
 ## Sync behavior
 
 When you sync you can prodive a directory as "root" or leave it empty for `/` path. This directory is from where the sync begins and therefore all sub folders will start being detected as collection.
