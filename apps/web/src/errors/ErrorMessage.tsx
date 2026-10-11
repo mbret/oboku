@@ -44,8 +44,6 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
       return "No connector is configured for this link. Please set one up first."
-    case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
-      return "This address is on a private network, which this oboku server does not connect to. On a self-hosted instance, an admin can allow it."
     default:
       return `Something went wrong. Error code: ${error}`
   }
