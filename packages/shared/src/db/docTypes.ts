@@ -360,9 +360,6 @@ interface MangoQuery<RxDocType> {
         $or: SafeMangoSelector<RxDocType>[]
       }
 
-  // Maximum number of results returned. Default is 25.
-  limit?: number
-
   // http://docs.couchdb.org/en/latest/api/database/find.html#filtering-fields
   fields?: (keyof RxDocType)[]
 }

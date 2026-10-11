@@ -7,28 +7,37 @@ import { SectionHeading } from "../common/SectionHeading"
 const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "Is oboku free?",
-    answer:
-      "Yes. Oboku is free, ad-free and open source under the GPL-3.0 license. Use the cloud version at no cost, or host it yourself.",
+    answer: (
+      <>
+        Yes, and we intend to keep it that way: no ads, no paywall, and
+        open-source code under the GPL-3.0 license. You can help sustain it by{" "}
+        <Link href={links.sponsor} target="_blank">
+          sponsoring oboku on GitHub
+        </Link>
+        . The cloud version will stay online for as long as we can cover its
+        infrastructure costs.
+      </>
+    ),
   },
   {
     question: "Which formats can I read?",
     answer:
-      "EPUB ebooks, comics and manga in CBZ or CBR, PDF documents, plain text, and ZIP or RAR archives of images or audio. The reader is built on Prose, an engine designed to open any kind of content.",
+      "EPUB ebooks, comics and manga in CBZ or CBR, PDF documents, plain text, and ZIP or RAR archives of images or audio.",
   },
   {
     question: "Where are my books stored?",
     answer:
-      "Where they already are. Oboku links your books from Google Drive, Dropbox, OneDrive, Synology, a WebDAV server or your device, and downloads them from there when you open them. Your book files are never stored on oboku's servers: only your library, collections and reading progress are synced between your devices.",
+      "Where they already are: oboku's servers sync your library and reading progress, never the book files. Books you add from your device stay on that device, so they can only be read there.",
   },
   {
     question: "Can I read offline?",
     answer:
-      "Yes. Oboku is offline-first: download a book once and read it without a connection. Anything you change offline syncs when you are back online.",
+      "Yes, every book you have downloaded. oboku itself starts without a connection after your first visit, and what you change offline syncs to your other devices once you are back online.",
   },
   {
     question: "Which devices does oboku work on?",
     answer:
-      "Anything with a modern web browser: phones, tablets, computers and e-ink devices. Oboku is a progressive web app, so you can install it to your home screen and use it like a native app. E-ink mode raises contrast and removes animations.",
+      "Anything with a modern web browser: phones, tablets, computers and e-ink tablets. Devices without a usable browser, such as Kobo e-readers or the reMarkable, can't run it.",
   },
   {
     question: "Does oboku work with KOReader?",
