@@ -35,7 +35,9 @@ const SectionCardBox = styled(Box)(function styleSectionCardBox({ theme }) {
   return {
     [theme.breakpoints.up("md")]: {
       margin: theme.spacing(1, 2, 3),
-      overflow: "hidden",
+      // Unlike `hidden`, `clip` does not let the card shrink below its
+      // content when it sits in a flex column.
+      overflow: "clip",
       border: `1px solid ${theme.palette.divider}`,
       borderRadius: theme.spacing(1.5),
     },
