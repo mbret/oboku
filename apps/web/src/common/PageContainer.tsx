@@ -23,8 +23,8 @@ const LeftAlignedContainer = styled(Container)(
 /**
  * The column a screen's content sits in below its top bar: aligned with the
  * top bar's start and capped at a readable width on wide screens, for forms
- * and lists alike. Lists pass `disableGutters` to keep their rows' own
- * padding.
+ * and lists alike. Content built from `PageSection`s passes `disableGutters`,
+ * since sections pad their own rows and fields.
  */
 export function PageContainer(props: ContainerProps) {
   return <LeftAlignedContainer maxWidth="md" {...props} />
