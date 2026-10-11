@@ -1,4 +1,5 @@
 import type { LookupAddress } from "node:dns"
+import type { NetworkInterfaceInfo } from "node:os"
 import {
   isNonPublicAddressError,
   isPublicAddress,
@@ -10,6 +11,12 @@ const resolvedAddresses = vi.hoisted(() => ({
   current: [] as LookupAddress[],
 }))
 
+const serverInterfaceAddresses = vi.hoisted(() => {
+  const current: Pick<NetworkInterfaceInfo, "address" | "family">[] = []
+
+  return { current }
+})
+
 vi.mock("node:dns", () => ({
   lookup: (
     _hostname: string,
@@ -17,6 +24,14 @@ vi.mock("node:dns", () => ({
     callback: (error: Error | null, addresses: LookupAddress[]) => void,
   ) => callback(null, resolvedAddresses.current),
 }))
+
+vi.mock("node:os", () => ({
+  networkInterfaces: () => ({ eth0: serverInterfaceAddresses.current }),
+}))
+
+afterEach(() => {
+  serverInterfaceAddresses.current = []
+})
 
 const lookup = (hostname: string, options: { all?: boolean } = {}) =>
   new Promise<{
@@ -39,6 +54,20 @@ describe("isPublicAddress", () => {
     "64:ff9b::808:808",
   ])("accepts %s", (address) => {
     expect(isPublicAddress(address)).toBe(true)
+  })
+
+  it("refuses the server's own addresses, public ones included", () => {
+    serverInterfaceAddresses.current = [
+      { address: "93.184.215.14", family: "IPv4" },
+      { address: "2606:2800:21f:cb07:6820:80da:af6b:8b2c", family: "IPv6" },
+    ]
+
+    expect(isPublicAddress("93.184.215.14")).toBe(false)
+    expect(isPublicAddress("::ffff:93.184.215.14")).toBe(false)
+    expect(isPublicAddress("64:ff9b::5db8:d70e")).toBe(false)
+    expect(isPublicAddress("2606:2800:21f:cb07:6820:80da:af6b:8b2c")).toBe(
+      false,
+    )
   })
 
   it.each([
@@ -69,7 +98,10 @@ describe("isPublicAddress", () => {
     "5f00::1",
     "fd00::1",
     "fe80::1",
+    "fec0::1",
     "ff02::1",
+    "::ffff:0:a00:1",
+    "4000::1",
     "not an address",
   ])("refuses %s", (address) => {
     expect(isPublicAddress(address)).toBe(false)
@@ -105,6 +137,17 @@ describe("lookupPublicAddress", () => {
     ]
 
     const { error } = await lookup("rebinding.example")
+
+    expect(error).toBeInstanceOf(NonPublicAddressError)
+  })
+
+  it("refuses a host that resolves to the server itself", async () => {
+    serverInterfaceAddresses.current = [
+      { address: "93.184.215.14", family: "IPv4" },
+    ]
+    resolvedAddresses.current = [{ address: "93.184.215.14", family: 4 }]
+
+    const { error } = await lookup("oboku.example")
 
     expect(error).toBeInstanceOf(NonPublicAddressError)
   })

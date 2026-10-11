@@ -1,14 +1,15 @@
 import { type LookupAddress, lookup as dnsLookup } from "node:dns"
 import { BlockList, isIP, type LookupFunction } from "node:net"
+import { networkInterfaces } from "node:os"
 
 /**
  * Networks that do not lead to the public internet, from the IANA
  * special-purpose address registries (RFC 6890): this host, loopback, private
  * and link-local networks (cloud metadata services included), carrier-grade
- * NAT, local IPv4/IPv6 translation, protocol assignments (Teredo included),
- * 6to4, documentation, benchmarking, segment routing, multicast and reserved
- * ranges. An IPv4 entry also matches the IPv4-mapped IPv6 form of its
- * addresses.
+ * NAT, protocol assignments (Teredo included), 6to4, documentation,
+ * benchmarking, multicast and reserved ranges. The IPv6 entries are the ones
+ * inside `PUBLIC_IPV6_SUBNETS`, outside of which no IPv6 address is public. An
+ * IPv4 entry also matches the IPv4-mapped IPv6 form of its addresses.
  */
 const NON_PUBLIC_SUBNETS = {
   ipv4: [
@@ -29,18 +30,10 @@ const NON_PUBLIC_SUBNETS = {
     { network: "240.0.0.0", prefix: 4 },
   ],
   ipv6: [
-    { network: "::", prefix: 96 },
-    { network: "64:ff9b:1::", prefix: 48 },
-    { network: "100::", prefix: 64 },
-    { network: "100:0:0:1::", prefix: 64 },
     { network: "2001::", prefix: 23 },
     { network: "2001:db8::", prefix: 32 },
     { network: "2002::", prefix: 16 },
     { network: "3fff::", prefix: 20 },
-    { network: "5f00::", prefix: 16 },
-    { network: "fc00::", prefix: 7 },
-    { network: "fe80::", prefix: 10 },
-    { network: "ff00::", prefix: 8 },
   ],
 }
 
@@ -51,12 +44,27 @@ const NON_PUBLIC_SUBNETS = {
  */
 const NAT64_WELL_KNOWN_PREFIX = { network: "64:ff9b::", prefix: 96 }
 
+/**
+ * The only IPv6 space where an address can be public: global unicast (IANA
+ * IPv6 address space registry), and the IPv4-mapped and NAT64 forms of IPv4
+ * addresses, which the IPv4 entries judge.
+ */
+const PUBLIC_IPV6_SUBNETS = [
+  { network: "2000::", prefix: 3 },
+  { network: "::ffff:0:0", prefix: 96 },
+  NAT64_WELL_KNOWN_PREFIX,
+]
+
+function toNat64Address(ipv4Address: string) {
+  return `${NAT64_WELL_KNOWN_PREFIX.network}${ipv4Address}`
+}
+
 const nonPublicNetworks = new BlockList()
 
 for (const { network, prefix } of NON_PUBLIC_SUBNETS.ipv4) {
   nonPublicNetworks.addSubnet(network, prefix, "ipv4")
   nonPublicNetworks.addSubnet(
-    `${NAT64_WELL_KNOWN_PREFIX.network}${network}`,
+    toNat64Address(network),
     NAT64_WELL_KNOWN_PREFIX.prefix + prefix,
     "ipv6",
   )
@@ -66,13 +74,50 @@ for (const { network, prefix } of NON_PUBLIC_SUBNETS.ipv6) {
   nonPublicNetworks.addSubnet(network, prefix, "ipv6")
 }
 
+const publicIpv6Networks = new BlockList()
+
+for (const { network, prefix } of PUBLIC_IPV6_SUBNETS) {
+  publicIpv6Networks.addSubnet(network, prefix, "ipv6")
+}
+
+/** Read on every check: interfaces and their addresses come and go. */
+function getServerAddresses() {
+  const serverAddresses = new BlockList()
+
+  for (const interfaceAddresses of Object.values(networkInterfaces())) {
+    for (const { address, family } of interfaceAddresses ?? []) {
+      if (family === "IPv4") {
+        serverAddresses.addAddress(address, "ipv4")
+        serverAddresses.addAddress(toNat64Address(address), "ipv6")
+      } else {
+        serverAddresses.addAddress(address, "ipv6")
+      }
+    }
+  }
+
+  return serverAddresses
+}
+
+/**
+ * Whether a connection to `address` reaches the public internet: it is not a
+ * special-purpose address, nor one of this server's own addresses, whose
+ * connections never leave the machine whatever their range.
+ */
 export function isPublicAddress(address: string) {
   const family = isIP(address)
   const isIpAddress = family !== 0
 
   if (!isIpAddress) return false
 
-  return !nonPublicNetworks.check(address, family === 4 ? "ipv4" : "ipv6")
+  const type = family === 4 ? "ipv4" : "ipv6"
+  const isServerAddress = getServerAddresses().check(address, type)
+
+  if (isServerAddress) return false
+  if (type === "ipv4") return !nonPublicNetworks.check(address, type)
+
+  const isInPublicIpv6Space = publicIpv6Networks.check(address, type)
+
+  return isInPublicIpv6Space && !nonPublicNetworks.check(address, type)
 }
 
 function isPublicLookupAddress({ address }: LookupAddress) {
