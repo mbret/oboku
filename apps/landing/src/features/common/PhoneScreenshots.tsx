@@ -1,3 +1,5 @@
+"use client"
+
 import { Box, styled } from "@mui/material"
 import Image, { type StaticImageData } from "next/image"
 

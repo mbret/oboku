@@ -149,6 +149,12 @@
 - When `styled(Component)` strips a polymorphic prop (most commonly `Typography`'s `component`), cast the result back to `typeof Component` and add a one-line comment explaining the cast — see the `as` rule above.
 - Rationale: named styled components show up as themselves in React DevTools, eliminate repeated inline blocks, and let readers understand the rendered DOM without crawling through `sx` props.
 
+### Landing: `styled` and server components
+
+- `apps/landing` renders static content as server components. `styled()` only runs in client modules there: MUI's `styled` is `"use client"`, and emotion reads the theme from React context.
+- Keep a content component on the server and put its styled declarations in a sibling `X.styled.tsx` that starts with `"use client"`. Mark the component itself `"use client"` only when it needs interactivity, or when it only renders its props (`SectionHeading`).
+- From a server component, `sx` takes plain values only (no `theme => …` callbacks), and MUI's `component` prop takes `NextLink` from `features/common/NextLink` instead of `next/link`.
+
 ### React components: do not use `FC`
 
 - Never use `React.FC`, `FC`, or `FunctionComponent` to type components. Treat that pattern as deprecated and do not add it in new code.

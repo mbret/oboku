@@ -1,73 +1,16 @@
-import { Box, Chip, Container, Stack, styled, Typography } from "@mui/material"
-import { BandSection } from "../common/BandSection"
+import { Box, Chip, Container, Stack, Typography } from "@mui/material"
 import { FeatureIconBox } from "../common/FeatureIconBox"
 import { PhoneScreenshots } from "../common/PhoneScreenshots"
 import { SectionHeading } from "../common/SectionHeading"
 import type { FeatureGroup } from "./content"
-
-const sectionScrollMargin = 140
-
-const FeatureGroupBandSection = styled(BandSection)({
-  scrollMarginTop: sectionScrollMargin,
-})
-
-const LayoutBox = styled(Box)(function styleLayoutBox({ theme }) {
-  return {
-    display: "grid",
-    gap: theme.spacing(6),
-    alignItems: "center",
-    gridTemplateAreas: '"text" "screenshots"',
-    "&[data-layout=text-only]": {
-      gridTemplateAreas: '"text"',
-    },
-    [theme.breakpoints.up("md")]: {
-      gap: theme.spacing(10),
-      "&[data-layout=text-first]": {
-        gridTemplateColumns: "7fr 5fr",
-        gridTemplateAreas: '"text screenshots"',
-      },
-      "&[data-layout=screenshots-first]": {
-        gridTemplateColumns: "5fr 7fr",
-        gridTemplateAreas: '"screenshots text"',
-      },
-    },
-  }
-})
-
-const TextStack = styled(Stack)(function styleTextStack({ theme }) {
-  return {
-    gridArea: "text",
-    gap: theme.spacing(3),
-  }
-})
-
-const ScreenshotsAreaBox = styled(Box)({
-  gridArea: "screenshots",
-})
-
-const FeatureGridBox = styled(Box)(function styleFeatureGridBox({ theme }) {
-  return {
-    display: "grid",
-    gap: theme.spacing(3),
-    [theme.breakpoints.up("sm")]: {
-      gridTemplateColumns: "1fr 1fr",
-      columnGap: theme.spacing(4),
-    },
-    [theme.breakpoints.between("md", "lg")]: {
-      gridTemplateColumns: "1fr",
-    },
-  }
-})
-
-const WideFeatureGridBox = styled(FeatureGridBox)(
-  function styleWideFeatureGridBox({ theme }) {
-    return {
-      [theme.breakpoints.up("md")]: {
-        gridTemplateColumns: "1fr 1fr 1fr",
-      },
-    }
-  },
-)
+import {
+  FeatureGridBox,
+  FeatureGroupBandSection,
+  LayoutBox,
+  ScreenshotsAreaBox,
+  TextStack,
+  WideFeatureGridBox,
+} from "./FeatureGroupSection.styled"
 
 function FeatureList({ group }: { group: FeatureGroup }) {
   const FeatureGrid = group.screenshots ? FeatureGridBox : WideFeatureGridBox
