@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Box,
   Container,
@@ -8,7 +6,7 @@ import {
   Typography,
 } from "@mui/material"
 import { links } from "@oboku/shared"
-import Link from "next/link"
+import { NextLink } from "../common/NextLink"
 
 export const Footer = () => {
   return (
@@ -54,7 +52,7 @@ export const Footer = () => {
                 App
               </MuiLink>
               <MuiLink
-                component={Link}
+                component={NextLink}
                 href="/features"
                 variant="body2"
                 underline="hover"
@@ -145,7 +143,7 @@ export const Footer = () => {
               }}
             >
               <MuiLink
-                component={Link}
+                component={NextLink}
                 href="/privacy-policy"
                 variant="body2"
                 underline="hover"

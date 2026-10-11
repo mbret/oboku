@@ -1,5 +1,3 @@
-"use client"
-
 import { Container, Stack } from "@mui/material"
 import { Markdown } from "../../features/common/Markdown"
 
