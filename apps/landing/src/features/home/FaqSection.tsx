@@ -27,7 +27,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "Where are my books stored?",
     answer:
-      "Where they already are: oboku's servers sync your library, collections and reading progress, never the book files. Books you add from your device stay on that device, so they can only be read there.",
+      "Where they already are: oboku's servers sync your library and reading progress, never the book files. Books you add from your device stay on that device, so they can only be read there.",
   },
   {
     question: "Can I read offline?",

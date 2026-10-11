@@ -25,7 +25,7 @@ const steps: Step[] = [
   {
     title: "oboku builds your library",
     description:
-      "Folders become collections, and books get their covers and details from the files or online sources. Book files are never stored on oboku's servers: each one is downloaded from its source when you open it.",
+      "Your books are organized for you, with their covers and metadata retrieved automatically. Book files are never stored on oboku's servers: each one is downloaded from its source when you open it.",
   },
   {
     title: "Read anywhere, even offline",
