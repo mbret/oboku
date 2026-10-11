@@ -41,7 +41,8 @@ import {
   WifiOffRounded,
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
-import { links } from "@oboku/shared"
+import { Link } from "@mui/material"
+import type { ReactNode } from "react"
 import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
 import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
 import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
@@ -73,7 +74,7 @@ export type FeatureGroup = {
   navLabel: string
   overline: string
   title: string
-  description: string
+  description: ReactNode
   features: Feature[]
   screenshots?: PhoneScreenshotSet
   chips?: FeatureChip[]
@@ -93,8 +94,16 @@ export const featureGroups: FeatureGroup[] = [
     navLabel: "Reader",
     overline: "Reader",
     title: "One reader for every kind of book",
-    description:
-      "Novels reflow to your screen, manga turns right to left, webtoons scroll. The reader is built on Prose, an engine designed to open any kind of content.",
+    description: (
+      <>
+        Novels reflow to your screen, manga turns right to left, webtoons
+        scroll. The reader is built on{" "}
+        <Link href="https://prose-reader.com/" target="_blank" rel="noreferrer">
+          Prose
+        </Link>
+        , an engine designed to open any kind of content.
+      </>
+    ),
     screenshots: {
       primary: {
         src: comicReaderScreenshot,
@@ -155,7 +164,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "Your storage",
     title: "Your books stay where they already are",
     description:
-      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library, collections and progress are synced.",
+      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library and reading progress are synced.",
     screenshots: {
       primary: {
         src: dataSourcesScreenshot,
@@ -166,9 +175,7 @@ export const featureGroups: FeatureGroup[] = [
         alt: "Adding an oboku data source from Dropbox or Google Drive",
       },
     },
-    chips: syncProviders.map(function toDocumentationChip({ label, docsPath }) {
-      return { label, href: `${links.documentation}/${docsPath}` }
-    }),
+    chips: syncProviders,
     features: [
       {
         Icon: CloudRounded,
@@ -207,7 +214,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "Library",
     title: "A library that organizes itself",
     description:
-      "Covers, titles, authors and series details are filled in for you. Organize the rest with collections, tags and filters.",
+      "Covers, titles, authors and series details are filled in for you. Organize the rest with shelves, tags and filters.",
     screenshots: {
       primary: {
         src: libraryScreenshot,
@@ -231,9 +238,9 @@ export const featureGroups: FeatureGroup[] = [
       },
       {
         Icon: CollectionsBookmarkRounded,
-        title: "Collections and series",
+        title: "Shelves and series",
         description:
-          "Folders become collections. Turn one into a series to get its publisher, status, start year and rating.",
+          "Shelves keep related books together, and series get their publisher, status, start year and rating.",
       },
       {
         Icon: LocalOfferRounded,
@@ -251,7 +258,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: FilterListRounded,
         title: "Search, sort and filter",
         description:
-          "Find any book or collection, and filter your library by tag, reading state or what is downloaded.",
+          "Find any book or shelf, and filter your library by tag, reading state or what is downloaded.",
       },
       {
         Icon: TaskAltRounded,
@@ -296,7 +303,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: DevicesRounded,
         title: "The same library everywhere",
         description:
-          "Your library, collections and progress are synced between all your devices.",
+          "Your library and reading progress are synced between all your devices.",
       },
       {
         Icon: ContrastRounded,
