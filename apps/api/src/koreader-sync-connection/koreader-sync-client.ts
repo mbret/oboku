@@ -59,13 +59,11 @@ export function requestKoreaderSyncServer({
 }): Promise<KoreaderSyncServerResponse> {
   const endpoint = toServerEndpoint(serverUrl, path)
   const hostAddress = toHostAddress(endpoint.hostname)
-  const isAddressLiteral = isIP(hostAddress) !== 0
+  // Node does not call `lookup` for a host that is already an address.
+  const isNonPublicAddressLiteral =
+    isIP(hostAddress) !== 0 && !isPublicAddress(hostAddress)
 
-  if (
-    !allowNonPublicAddress &&
-    isAddressLiteral &&
-    !isPublicAddress(hostAddress)
-  ) {
+  if (!allowNonPublicAddress && isNonPublicAddressLiteral) {
     return Promise.reject(new NonPublicAddressError(hostAddress))
   }
 

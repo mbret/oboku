@@ -120,13 +120,17 @@ export class KoreaderSyncConnectionService {
       throw toConnectionError(error)
     }
 
-    if (UNAUTHORIZED_STATUSES.includes(response.status)) {
+    const isCredentialRefused = UNAUTHORIZED_STATUSES.includes(response.status)
+
+    if (isCredentialRefused) {
       throw createConnectionError(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
       )
     }
 
-    if (response.status !== HTTP_OK) {
+    const isSignedIn = response.status === HTTP_OK
+
+    if (!isSignedIn) {
       throw createConnectionError(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
       )

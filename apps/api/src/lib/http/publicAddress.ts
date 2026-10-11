@@ -40,8 +40,9 @@ for (const { network, prefix, type } of NON_PUBLIC_SUBNETS) {
 
 export function isPublicAddress(address: string) {
   const family = isIP(address)
+  const isIpAddress = family !== 0
 
-  if (family === 0) return false
+  if (!isIpAddress) return false
 
   return !nonPublicNetworks.check(address, family === 4 ? "ipv4" : "ipv6")
 }
@@ -75,8 +76,9 @@ export const lookupPublicAddress: LookupFunction = function lookupPublicAddress(
       if (error) return callback(error, "")
 
       const [firstAddress] = addresses
+      const isEveryAddressPublic = addresses.every(isPublicLookupAddress)
 
-      if (!firstAddress || !addresses.every(isPublicLookupAddress)) {
+      if (!firstAddress || !isEveryAddressPublic) {
         return callback(new NonPublicAddressError(hostname), "")
       }
 
