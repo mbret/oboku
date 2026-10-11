@@ -94,7 +94,7 @@ function KoreaderProgressSyncListItem() {
 
   return (
     <ListItemButton
-      onClick={() => {
+      onClick={function openKoreaderProgressSync() {
         navigate(ROUTES.KOREADER_PROGRESS_SYNC)
       }}
     >
