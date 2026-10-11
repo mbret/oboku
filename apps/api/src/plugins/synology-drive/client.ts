@@ -19,7 +19,7 @@ import {
   type SynologyDriveSession,
   type SynologyDriveSessionAuth,
 } from "@oboku/synology"
-import axios, { AxiosResponse } from "axios"
+import axios, { type AxiosError, AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
@@ -32,8 +32,17 @@ type SynologyDriveRequestSession = SynologyDriveSession & {
 const logger = new Logger("SynologyDriveClient")
 const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
 
-const isAxiosNetworkError = (error: unknown) =>
+const isAxiosNetworkError = (error: unknown): error is AxiosError =>
   axios.isAxiosError(error) && !error.response
+
+/**
+ * Keeps the cause of a failed request but not the AxiosError around it, whose
+ * config holds the request URL: its query carries the DSM password or the
+ * session id.
+ */
+function toNetworkFailure(description: string, error: AxiosError) {
+  return new Error(`${description}: ${error.message}`, { cause: error.cause })
+}
 
 const mapWithConcurrency = async <TInput, TOutput>(
   items: readonly TInput[],
@@ -125,9 +134,9 @@ const requestJson = async <T>({
       })
     } catch (error) {
       if (isAxiosNetworkError(error)) {
-        lastError = new Error(
-          `Synology Drive request failed for ${url.origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
-          { cause: error },
+        lastError = toNetworkFailure(
+          `Synology Drive request failed for ${url.origin}`,
+          error,
         )
         continue
       }
@@ -294,9 +303,9 @@ export const downloadSynologyDriveStream = async ({
       })
     } catch (error) {
       if (isAxiosNetworkError(error)) {
-        lastError = new Error(
-          `Synology Drive download failed for ${new URL(url).origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
-          { cause: error },
+        lastError = toNetworkFailure(
+          `Synology Drive download failed for ${new URL(url).origin}`,
+          error,
         )
         continue
       }
