@@ -96,7 +96,6 @@ import { KoreaderSyncConnectionModule } from "./koreader-sync-connection/koreade
         EMAIL_FROM: Joi.string().email().optional(),
         EMAIL_FROM_NAME: Joi.string().optional(),
         EMAIL_SMTP_MAX_SEND_RATE: Joi.number().positive().optional(),
-        KOREADER_SYNC_ALLOW_PRIVATE_NETWORK: Joi.boolean().default(false),
       })
         .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
         .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),

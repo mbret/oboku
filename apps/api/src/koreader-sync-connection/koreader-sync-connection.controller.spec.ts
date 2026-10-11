@@ -8,7 +8,6 @@ import type { AddressInfo } from "node:net"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
-import { AppConfigService } from "../config/AppConfigService.js"
 import { SecretsService } from "../config/SecretsService.js"
 import type {
   KoreaderSyncConnectionPostgresEntity,
@@ -22,6 +21,7 @@ import { toSyncKey } from "../koreader-sync-server/credentials.js"
 import { KoreaderSyncAuthGuard } from "../koreader-sync-server/koreader-sync-auth.guard.js"
 import { KoreaderSyncProtocolController } from "../koreader-sync-server/koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "../koreader-sync-server/koreader-sync-server.service.js"
+import { setPrivateNetworkRequestsAllowed } from "../lib/http/userAddressAgents.js"
 import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
 import { KoreaderSyncConnectionController } from "./koreader-sync-connection.controller.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
@@ -116,7 +116,6 @@ describe("KoreaderSyncConnectionController", () => {
   let readerPassword: string
   let connections: Map<number, KoreaderSyncConnectionPostgresEntity>
   let keyCipher: KoreaderSyncConnectionKeyCipher
-  const appConfig = { KOREADER_SYNC_ALLOW_PRIVATE_NETWORK: true }
   const upstreamServers: Server[] = []
 
   const connect = (body: Record<string, unknown>) =>
@@ -139,7 +138,7 @@ describe("KoreaderSyncConnectionController", () => {
   }
 
   beforeEach(async () => {
-    appConfig.KOREADER_SYNC_ALLOW_PRIVATE_NETWORK = true
+    setPrivateNetworkRequestsAllowed(true)
     const connectionStore = createConnectionStore()
     connections = connectionStore.connections
 
@@ -153,7 +152,6 @@ describe("KoreaderSyncConnectionController", () => {
         KoreaderSyncConnectionKeyCipher,
         KoreaderSyncServerService,
         KoreaderSyncAuthGuard,
-        { provide: AppConfigService, useValue: appConfig },
         { provide: UserPostgresService, useValue: createUserStore() },
         {
           provide: KoreaderSyncPostgresService,
@@ -196,6 +194,7 @@ describe("KoreaderSyncConnectionController", () => {
   })
 
   afterEach(async () => {
+    setPrivateNetworkRequestsAllowed(false)
     await app.close()
     await Promise.all(
       upstreamServers
@@ -283,7 +282,7 @@ describe("KoreaderSyncConnectionController", () => {
   })
 
   it("refuses a server on a private network unless the instance allows it", async () => {
-    appConfig.KOREADER_SYNC_ALLOW_PRIVATE_NETWORK = false
+    setPrivateNetworkRequestsAllowed(false)
 
     const response = await connect({
       serverUrl: obokuServerUrl,
@@ -293,7 +292,7 @@ describe("KoreaderSyncConnectionController", () => {
 
     expect(response.status).toBe(400)
     expect(response.body.errors).toEqual([
-      { code: ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_ADDRESS_NOT_ALLOWED },
+      { code: ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED },
     ])
   })
 
@@ -310,6 +309,15 @@ describe("KoreaderSyncConnectionController", () => {
       listener: function answerHtml(_req, res) {
         res.writeHead(200, { "content-type": "text/html" })
         res.end("<html>Not a sync server</html>")
+      } satisfies RequestListener,
+    },
+    {
+      server: "answers too much",
+      listener: function answerTooMuch(_req, res) {
+        res.writeHead(200, { "content-type": "application/json" })
+        res.end(
+          JSON.stringify({ authorized: "OK", padding: "x".repeat(65_536) }),
+        )
       } satisfies RequestListener,
     },
   ])("reports a server that $server as unreachable", async ({ listener }) => {

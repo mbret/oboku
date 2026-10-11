@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
 import { type KoreaderSyncConnection, ObokuErrorCode } from "@oboku/shared"
-import { AppConfigService } from "../config/AppConfigService.js"
 import type { KoreaderSyncConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { toSyncKey } from "../koreader-sync-server/credentials.js"
-import { NonPublicAddressError } from "../lib/http/publicAddress.js"
+import { isNonPublicAddressError } from "../lib/http/publicAddress.js"
 import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
 import {
   type KoreaderSyncServerResponse,
@@ -19,10 +18,8 @@ const createConnectionError = (code: ObokuErrorCode) =>
   new BadRequestException({ errors: [{ code }] })
 
 const toConnectionError = (error: unknown) => {
-  if (error instanceof NonPublicAddressError) {
-    return createConnectionError(
-      ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_ADDRESS_NOT_ALLOWED,
-    )
+  if (isNonPublicAddressError(error)) {
+    return createConnectionError(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
   }
 
   if (error instanceof KoreaderSyncServerUnreachableError) {
@@ -52,7 +49,6 @@ export class KoreaderSyncConnectionService {
   constructor(
     private readonly connectionPostgresService: KoreaderSyncConnectionPostgresService,
     private readonly keyCipher: KoreaderSyncConnectionKeyCipher,
-    private readonly appConfig: AppConfigService,
   ) {}
 
   async find(userId: number) {
@@ -113,8 +109,6 @@ export class KoreaderSyncConnectionService {
         method: "GET",
         username,
         key,
-        allowNonPublicAddress:
-          this.appConfig.KOREADER_SYNC_ALLOW_PRIVATE_NETWORK,
       })
     } catch (error) {
       throw toConnectionError(error)

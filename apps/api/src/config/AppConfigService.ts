@@ -195,18 +195,6 @@ export class AppConfigService {
   }
 
   /**
-   * Whether the KOReader sync connection may reach servers outside the public
-   * internet, such as one on the home network of a self-hosted instance.
-   */
-  get KOREADER_SYNC_ALLOW_PRIVATE_NETWORK(): boolean {
-    return (
-      this.config.get("KOREADER_SYNC_ALLOW_PRIVATE_NETWORK", {
-        infer: true,
-      }) ?? false
-    )
-  }
-
-  /**
    * ------------------------------------------------------------
    * QUEUES
    * ------------------------------------------------------------
