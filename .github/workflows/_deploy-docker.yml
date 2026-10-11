@@ -18,48 +18,14 @@ on:
 jobs:
   deploy:
     name: 'Deploy ${{ matrix.target }}'
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         target: [api, couchdb, web, admin]
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          ref: ${{ inputs.sha }}
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v4
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v4
-
-      - name: Login to DockerHub
-        uses: docker/login-action@v4
-        with:
-          username: ${{ vars.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
-
-      - name: Resolve image tags
-        id: image
-        env:
-          IMAGE: mbret/oboku-${{ matrix.target }}
-          TAGS: ${{ inputs.tags }}
-        run: |
-          {
-            echo 'tags<<EOF'
-            for tag in $TAGS; do
-              echo "$IMAGE:$tag"
-            done
-            echo 'EOF'
-          } >> "$GITHUB_OUTPUT"
-
-      - name: Build and push
-        uses: docker/build-push-action@v7
-        with:
-          context: ./
-          file: dockerfile
-          target: ${{ matrix.target }}
-          build-args: |
-            GITHUB_SHA=${{ inputs.sha }}
-          platforms: linux/amd64,linux/arm64
-          push: true
-          tags: ${{ steps.image.outputs.tags }}
+    uses: ./.github/workflows/_deploy-docker-image.yml
+    with:
+      sha: ${{ inputs.sha }}
+      tags: ${{ inputs.tags }}
+      target: ${{ matrix.target }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

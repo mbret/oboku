@@ -19,7 +19,9 @@ export const AdminPrivateNetworksSection = () => {
             to, the links they add and the covers their collections point to. By
             default it only connects to servers on the public internet, so that
             nobody with an account can use those requests to reach your network
-            or the services running next to the server.
+            or the services running next to the server. The server's own
+            addresses count as private, public ones included: a request to them
+            never leaves the machine.
           </Text>
         </div>
 
@@ -38,7 +40,7 @@ export const AdminPrivateNetworksSection = () => {
         {data && (
           <Checkbox
             label="Allow requests to private networks"
-            description="For users who keep their books on your network, on a NAS or a WebDAV server at home for instance. Only allow it when you trust everyone with an account."
+            description="For users who keep their books on your network or on this machine, on a NAS or a WebDAV server at home for instance. Only allow it when you trust everyone with an account."
             checked={data.allowPrivateNetworkRequests}
             disabled={isPending}
             onChange={function updatePrivateNetworkRequestsSetting(event) {
