@@ -55,12 +55,16 @@ const PUBLIC_IPV6_SUBNETS = [
   NAT64_WELL_KNOWN_PREFIX,
 ]
 
+function toNat64Address(ipv4Address: string) {
+  return `${NAT64_WELL_KNOWN_PREFIX.network}${ipv4Address}`
+}
+
 const nonPublicNetworks = new BlockList()
 
 for (const { network, prefix } of NON_PUBLIC_SUBNETS.ipv4) {
   nonPublicNetworks.addSubnet(network, prefix, "ipv4")
   nonPublicNetworks.addSubnet(
-    `${NAT64_WELL_KNOWN_PREFIX.network}${network}`,
+    toNat64Address(network),
     NAT64_WELL_KNOWN_PREFIX.prefix + prefix,
     "ipv6",
   )
@@ -82,7 +86,12 @@ function getServerAddresses() {
 
   for (const interfaceAddresses of Object.values(networkInterfaces())) {
     for (const { address, family } of interfaceAddresses ?? []) {
-      serverAddresses.addAddress(address, family === "IPv4" ? "ipv4" : "ipv6")
+      if (family === "IPv4") {
+        serverAddresses.addAddress(address, "ipv4")
+        serverAddresses.addAddress(toNat64Address(address), "ipv6")
+      } else {
+        serverAddresses.addAddress(address, "ipv6")
+      }
     }
   }
 

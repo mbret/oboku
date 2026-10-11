@@ -64,6 +64,7 @@ describe("isPublicAddress", () => {
 
     expect(isPublicAddress("93.184.215.14")).toBe(false)
     expect(isPublicAddress("::ffff:93.184.215.14")).toBe(false)
+    expect(isPublicAddress("64:ff9b::5db8:d70e")).toBe(false)
     expect(isPublicAddress("2606:2800:21f:cb07:6820:80da:af6b:8b2c")).toBe(
       false,
     )
