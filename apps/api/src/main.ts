@@ -13,9 +13,7 @@ import { TrustedOriginsService } from "./config/trusted-origin.service.js"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
 import { createCorsOptionsDelegate } from "./config/cors-options.js"
 import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
-import { AppConfigService } from "./config/AppConfigService.js"
 import {
-  setApiAddresses,
   setPrivateNetworkAllowedHosts,
   setPrivateNetworkRequestsAllowed,
 } from "./lib/http/userAddressAgents.js"
@@ -39,14 +37,6 @@ async function bootstrap() {
 
   logger.log(
     `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
-  )
-
-  const apiPublicUrls = app.get(AppConfigService).API_PUBLIC_URLS
-  const port = configService.getOrThrow("PORT")
-
-  setApiAddresses({ publicUrls: apiPublicUrls, port })
-  logger.log(
-    `Requests to the API itself — allowed: ${[...apiPublicUrls, `localhost:${port}`].join(", ")}`,
   )
 
   const instanceConfig$ = app.get(InstanceConfigService).getConfig()
@@ -116,7 +106,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe())
 
-  await app.listen(port)
+  await app.listen(configService.getOrThrow("PORT"))
 }
 
 bootstrap()

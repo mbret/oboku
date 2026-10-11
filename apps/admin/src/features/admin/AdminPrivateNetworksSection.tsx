@@ -46,7 +46,7 @@ function AllowedHostsForm({ savedHosts }: { savedHosts: string[] }) {
       <Stack gap="xs">
         <Textarea
           label="Allowed hosts"
-          description="Reached even while private networks are refused, one per line: a host, a host:port, or a URL such as http://192.168.1.20:5005. Without a port, every service on that host is reachable. The API itself always is."
+          description="Reached even while private networks are refused, one per line: a host, a host:port, or a URL such as http://192.168.1.20:5005. Without a port, every service on that host is reachable."
           placeholder={"nas.local:5001\nhttp://192.168.1.20:5005"}
           autosize
           minRows={3}

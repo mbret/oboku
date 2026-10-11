@@ -5,7 +5,6 @@ import { createClient } from "webdav"
 import { isNonPublicAddressError } from "./publicAddress.js"
 import {
   getUserAddressRequestOptions,
-  setApiAddresses,
   setPrivateNetworkAllowedHosts,
   setPrivateNetworkRequestsAllowed,
 } from "./userAddressAgents.js"
@@ -57,7 +56,6 @@ describe("getUserAddressRequestOptions", () => {
   afterEach(async () => {
     setPrivateNetworkRequestsAllowed(false)
     setPrivateNetworkAllowedHosts([])
-    setApiAddresses({ publicUrls: [], port: 0 })
     vi.unstubAllEnvs()
     await closeServer(server)
   })
@@ -188,27 +186,5 @@ describe("getUserAddressRequestOptions", () => {
     } finally {
       await closeServer(redirecting.server)
     }
-  })
-
-  it("reaches the API itself on its port", async () => {
-    setApiAddresses({ publicUrls: [], port })
-
-    const response = await axios.get(
-      `http://127.0.0.1:${port}/`,
-      getUserAddressRequestOptions(),
-    )
-
-    expect(response.data).toBe("ok")
-  })
-
-  it("reaches the API at the URL the web app reaches it at", async () => {
-    setApiAddresses({ publicUrls: [`http://127.0.0.1:${port}/`], port: 1 })
-
-    const response = await axios.get(
-      `http://127.0.0.1:${port}/`,
-      getUserAddressRequestOptions(),
-    )
-
-    expect(response.data).toBe("ok")
   })
 })

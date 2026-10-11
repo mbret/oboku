@@ -26,8 +26,6 @@ If your users keep their books on your network or on the machine running oboku, 
 
 To let only some servers through, list them under **Allowed hosts** instead, one per line: a host (`nas.local`), a host and port (`nas.local:5001`), or a URL (`http://192.168.1.20:5005`), of which only the host and port count. A host without a port opens every service on it, so give the port whenever you can, and always for the machine running oboku.
 
-Requests to the API itself always go through: to the URLs the web app reaches it at (`VITE_API_URL` and its variants, or without them the web app's address on port 3000), and to `localhost` on the API's port. They only reach the API, which users can call anyway.
-
 The API cannot tell when a public address leads back into your own network, for instance the host's public IP seen from inside a container, or another of your servers. Keep internal services such as CouchDB and Postgres off public addresses: bind them to loopback or a private network, or leave their ports unpublished, as the provided `docker-compose.yml` does.
 
 ## Security

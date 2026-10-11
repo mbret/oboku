@@ -51,16 +51,14 @@ function refuseNonPublicAddressLiteral(
 
 const HTTP_DEFAULT_PORT = 80
 const HTTPS_DEFAULT_PORT = 443
-const LOOPBACK_HOSTNAMES = ["localhost", "127.0.0.1", "::1"]
 
-let apiHosts: AllowedHost[] = []
-let adminAllowedHosts: AllowedHost[] = []
+let privateNetworkAllowedHosts: AllowedHost[] = []
 
 function isAllowedConnection(
   options: Pick<ClientRequestArgs, "host" | "hostname" | "port">,
   defaultPort: number,
 ) {
-  return isAllowedHost([...apiHosts, ...adminAllowedHosts], {
+  return isAllowedHost(privateNetworkAllowedHosts, {
     hostname: toComparableHostname(options.host ?? options.hostname ?? ""),
     port: Number(options.port ?? defaultPort),
   })
@@ -105,32 +103,13 @@ class PublicAddressHttpsAgent extends HttpsAgent {
 }
 
 /**
- * The API's own addresses: the public URLs the web app reaches it at, and the
- * loopback names of the port it listens on, on every interface. Requests to
- * them only reach the API, so they are never refused.
- */
-export function setApiAddresses({
-  publicUrls,
-  port,
-}: {
-  publicUrls: string[]
-  port: number
-}) {
-  const publicHosts = publicUrls.flatMap((url) => parseAllowedHost(url) ?? [])
-  const loopbackHosts = LOOPBACK_HOSTNAMES.map((hostname) => ({
-    hostname,
-    port,
-  }))
-
-  apiHosts = [...publicHosts, ...loopbackHosts]
-}
-
-/**
  * The hosts the instance's `privateNetworkAllowedHosts` setting lets through
  * while private networks are refused, as `host` or `host:port`.
  */
 export function setPrivateNetworkAllowedHosts(entries: string[]) {
-  adminAllowedHosts = entries.flatMap((entry) => parseAllowedHost(entry) ?? [])
+  privateNetworkAllowedHosts = entries.flatMap(
+    (entry) => parseAllowedHost(entry) ?? [],
+  )
 }
 
 let isPrivateNetworkAllowed = false
@@ -162,10 +141,10 @@ type UserAddressRequestOptions = {
 /**
  * The options for a request to an address a user entered: a data source, a
  * connector, a link. Unless private networks are allowed, every connection
- * the request opens, redirects included, has to reach the public internet,
- * the API itself or a host the instance allows. It then bypasses the proxy
- * from `HTTP_PROXY`/`HTTPS_PROXY`, which would reach the address in the
- * agents' place and leave them checking the proxy's.
+ * the request opens, redirects included, has to reach the public internet or
+ * a host the instance allows. It then bypasses the proxy from
+ * `HTTP_PROXY`/`HTTPS_PROXY`, which would reach the address in the agents'
+ * place and leave them checking the proxy's.
  */
 export function getUserAddressRequestOptions({
   allowSelfSigned = false,

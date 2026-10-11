@@ -3,9 +3,6 @@ import { ConfigService } from "@nestjs/config"
 import { EnvironmentVariables } from "./types.js"
 import path from "node:path"
 
-/** The port `resolveBaseApiUrl` in the web app falls back to. */
-const WEB_APP_DEFAULT_API_PORT = 3000
-
 @Injectable()
 export class AppConfigService {
   constructor(public config: ConfigService<EnvironmentVariables>) {}
@@ -195,25 +192,6 @@ export class AppConfigService {
 
   get EMAIL_SMTP_MAX_SEND_RATE() {
     return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
-  }
-
-  /**
-   * The URLs the web app reaches the API at: its `VITE_API_URL` variables,
-   * which a stock deployment shares with the API through `.env`. Without
-   * `VITE_API_URL`, the web app's own origin on port 3000, as the web app
-   * defaults to.
-   */
-  get API_PUBLIC_URLS() {
-    const webAppUrl = new URL(this.APP_PUBLIC_URL)
-    const webAppDefaultApiUrl = `${webAppUrl.protocol}//${webAppUrl.hostname}:${WEB_APP_DEFAULT_API_PORT}`
-    const urls = [
-      this.config.get("VITE_API_URL", { infer: true }) || webAppDefaultApiUrl,
-      this.config.get("VITE_API_URL_2", { infer: true }),
-      this.config.get("VITE_API_URL_3", { infer: true }),
-      this.config.get("VITE_API_URL_4", { infer: true }),
-    ]
-
-    return urls.flatMap((url) => (url ? [url] : []))
   }
 
   /**
