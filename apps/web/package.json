@@ -35,7 +35,7 @@
     "@tanstack/react-query-persist-client": "^5.104.1",
     "@zip.js/zip.js": "^2.23.0",
     "buffer": "^6.0.3",
-    "dexie": "4.4.2",
+    "dexie": "4.4.6",
     "dropbox": "^10.47.0",
     "firebase": "^13.0.0",
     "fuse.js": "^7.5.0",
