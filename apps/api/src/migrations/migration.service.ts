@@ -4,6 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
+import { findAll } from "../lib/couch/dbHelpers.js"
 import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
 import { tolerateMissingUserDb } from "../lib/couch/tolerateMissingUserDb.js"
 import { CoversService } from "../covers/covers.service.js"
@@ -492,16 +493,15 @@ export class MigrationService {
         let userLinksUpdated = 0
         let userCollectionsUpdated = 0
 
-        const links = await userDbInstance.find({
+        const links = await findAll(userDbInstance, {
           selector: {
             rx_model: "link",
             type: "webdav",
             resourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const link of links.docs) {
+        for (const link of links) {
           if (typeof link.resourceId !== "string") {
             continue
           }
@@ -521,16 +521,15 @@ export class MigrationService {
           userLinksUpdated += 1
         }
 
-        const collections = await userDbInstance.find({
+        const collections = await findAll(userDbInstance, {
           selector: {
             rx_model: "obokucollection",
             linkType: "webdav",
             linkResourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           if (typeof collection.linkResourceId !== "string") {
             continue
           }
@@ -627,12 +626,11 @@ export class MigrationService {
         let userLinksUpdated = 0
         let userCollectionsUpdated = 0
 
-        const links = await userDb.find({
+        const links = await findAll(userDb, {
           selector: { rx_model: "link", resourceId: { $exists: true } },
-          limit: 99999,
         })
 
-        for (const link of links.docs) {
+        for (const link of links) {
           if (typeof link.resourceId !== "string") {
             continue
           }
@@ -654,15 +652,14 @@ export class MigrationService {
           userLinksUpdated += 1
         }
 
-        const collections = await userDb.find({
+        const collections = await findAll(userDb, {
           selector: {
             rx_model: "obokucollection",
             linkResourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           if (typeof collection.linkResourceId !== "string") {
             continue
           }
@@ -773,13 +770,12 @@ export class MigrationService {
           userDb.dbName,
         )
 
-        const collections = await userDbInstance.find({
+        const collections = await findAll(userDbInstance, {
           selector: { rx_model: "obokucollection" },
           fields: ["_id"],
-          limit: 99999,
         })
 
-        if (collections.docs.length === 0) {
+        if (collections.length === 0) {
           logger.log(`${progress} ${userDb.email}: skipped (no collections)`)
           return
         }
@@ -788,7 +784,7 @@ export class MigrationService {
         let userSkippedDestinationExists = 0
         let userSkippedSourceMissing = 0
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           const oldKey = `collection-${collection._id}`
           const newKey = getCollectionCoverKey(
             userDb.userNameHex,
@@ -811,7 +807,7 @@ export class MigrationService {
         skippedSourceMissing += userSkippedSourceMissing
 
         logger.log(
-          `${progress} ${userDb.email}: ${collections.docs.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
+          `${progress} ${userDb.email}: ${collections.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
         )
       })
     }

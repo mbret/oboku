@@ -107,12 +107,15 @@ async function findLegacyCouchUserByNormalizedName(
   usersDb: createNano.DocumentScope<User>,
   email: string,
 ): Promise<User | undefined> {
-  const { docs } = await usersDb.find({
+  for await (const users of findPages(usersDb, {
     selector: { type: "user" },
-    limit: 99999,
-  })
+  })) {
+    const legacyUser = users.find((doc) => normalizeEmail(doc.name) === email)
 
-  return docs.find((doc) => normalizeEmail(doc.name) === email)
+    if (legacyUser) return legacyUser
+  }
+
+  return undefined
 }
 
 async function findCouchUserFromEmail(
@@ -241,23 +244,65 @@ export const getSettings = async (
   }
 }
 
+export const FIND_PAGE_SIZE = 1000
+
+type MangoQueryWithoutPaging = Omit<
+  createNano.MangoQuery,
+  "limit" | "skip" | "bookmark"
+>
+
+/**
+ * Yields every document matching `query`, one page at a time. A single
+ * `_find` stops at its `limit` (25 when omitted), so each page resumes from
+ * the previous page's bookmark until CouchDB returns a short page.
+ */
+export async function* findPages<D>(
+  db: createNano.DocumentScope<D>,
+  query: MangoQueryWithoutPaging,
+) {
+  let bookmark: string | undefined
+  let isLastPage = false
+
+  while (!isLastPage) {
+    const page = await retryFn(() =>
+      db.find({ ...query, limit: FIND_PAGE_SIZE, bookmark }),
+    )
+
+    yield page.docs
+
+    isLastPage = page.docs.length < FIND_PAGE_SIZE
+    bookmark = page.bookmark
+  }
+}
+
+export async function findAll<D>(
+  db: createNano.DocumentScope<D>,
+  query: MangoQueryWithoutPaging,
+) {
+  const docs: createNano.MangoResponse<D>["docs"] = []
+
+  for await (const page of findPages(db, query)) {
+    docs.push(...page)
+  }
+
+  return docs
+}
+
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
   query: SafeMangoQuery<D>,
 ) => {
   const { fields, ...restQuery } = query
-  const response = await retryFn(() =>
-    db.find({
-      ...restQuery,
-      // nano's find() expects fields?: string[]; SafeMangoQuery uses (keyof D)[], which is string keys for our doc types
-      fields: fields === undefined ? undefined : ([...fields] as string[]),
-      selector: { rx_model: rxModel, ...query?.selector },
-    }),
-  )
+  const docs = await findAll(db, {
+    ...restQuery,
+    // nano's find() expects fields?: string[]; SafeMangoQuery uses (keyof D)[], which is string keys for our doc types
+    fields: fields === undefined ? undefined : ([...fields] as string[]),
+    selector: { rx_model: rxModel, ...query?.selector },
+  })
 
-  return response.docs as (createNano.MangoResponse<unknown>["docs"][number] &
-    D)[]
+  // db is untyped; the rx_model selector is what makes these D documents.
+  return docs as (createNano.MangoResponse<unknown>["docs"][number] & D)[]
 }
 
 export const createBook = async (

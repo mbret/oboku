@@ -4,6 +4,8 @@ import { User } from "../couchDbEntities.js"
 import {
   addTagsToBookIfNotExist,
   doesCouchDatabaseExist,
+  find,
+  FIND_PAGE_SIZE,
   getOrCreateUserFromEmail,
 } from "./dbHelpers.js"
 
@@ -96,6 +98,39 @@ describe("addTagsToBookIfNotExist", () => {
 const couchError = (statusCode: number, message: string) =>
   Object.assign(new Error(message), { statusCode })
 
+const createPagedFind = <D>(docs: D[]) =>
+  vi.fn(async function findPage({
+    limit = 25,
+    bookmark,
+  }: createNano.MangoQuery) {
+    const start = Number(bookmark ?? 0)
+    const end = start + limit
+
+    return { docs: docs.slice(start, end), bookmark: String(end) }
+  })
+
+describe("find", () => {
+  it("returns every match, resuming each page from the previous bookmark", async () => {
+    const books = Array.from(
+      { length: FIND_PAGE_SIZE * 2 + 1 },
+      (_, index) => ({ _id: `book-${index}`, _rev: "1", rx_model: "book" }),
+    )
+    const findPage = createPagedFind(books)
+    // Only find is exercised; nano's full DocumentScope surface is
+    // irrelevant to these tests.
+    const db = {
+      find: findPage,
+    } as unknown as createNano.DocumentScope<unknown>
+
+    await expect(find(db, "book", {})).resolves.toHaveLength(books.length)
+    expect(findPage.mock.calls.map(([query]) => query.bookmark)).toEqual([
+      undefined,
+      String(FIND_PAGE_SIZE),
+      String(FIND_PAGE_SIZE * 2),
+    ])
+  })
+})
+
 describe("getOrCreateUserFromEmail", () => {
   const email = "reader@example.com"
   const existingUser = new User(`org.couchdb.user:${email}`, email, "secret")
@@ -105,6 +140,16 @@ describe("getOrCreateUserFromEmail", () => {
     "Reader@Example.com",
     "secret",
   )
+  const createOtherUsers = (count: number) =>
+    Array.from(
+      { length: count },
+      (_, index) =>
+        new User(
+          `org.couchdb.user:other-${index}@example.com`,
+          `other-${index}@example.com`,
+          "secret",
+        ),
+    )
 
   const createFakeServer = ({
     users,
@@ -123,7 +168,7 @@ describe("getOrCreateUserFromEmail", () => {
   }) => {
     const usersDb = {
       get: getUserDoc,
-      find: vi.fn().mockResolvedValue({ docs: users }),
+      find: createPagedFind(users),
       insert,
     }
     const get = vi.fn(async function getDatabaseIfExists() {
@@ -234,6 +279,34 @@ describe("getOrCreateUserFromEmail", () => {
       userDbPending: false,
     })
     expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("reuses a legacy user past the first page of _users", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [...createOtherUsers(FIND_PAGE_SIZE), legacyUser],
+      dbExists: true,
+    })
+
+    await expect(getOrCreateUserFromEmail(server, email)).resolves.toEqual({
+      user: legacyUser,
+      userDbPending: false,
+    })
+    expect(usersDb.insert).not.toHaveBeenCalled()
+  })
+
+  it("stops reading _users at the page holding the legacy user", async () => {
+    const { server, usersDb } = createFakeServer({
+      users: [
+        ...createOtherUsers(FIND_PAGE_SIZE - 1),
+        legacyUser,
+        ...createOtherUsers(1),
+      ],
+      dbExists: true,
+    })
+
+    await getOrCreateUserFromEmail(server, email)
+
+    expect(usersDb.find).toHaveBeenCalledTimes(1)
   })
 
   it("prefers the normalized doc when a legacy casing also exists", async () => {
