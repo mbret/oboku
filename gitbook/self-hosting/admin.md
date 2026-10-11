@@ -18,6 +18,16 @@ The panel signs in with a Bearer token and never sends cookies, so this grants i
 
 Visit the [user-accounts.md](user-accounts.md "mention") section
 
+## Private networks
+
+The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API. The machine's own addresses count as private too, public ones included: a request to them never leaves the machine, so it would reach whatever listens there.
+
+If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
+
+To let only some servers through, list them under **Allowed hosts** instead, one per line: a host (`nas.local`), a host and port (`nas.local:5001`), or a URL (`http://192.168.1.20:5005`), of which only the host and port count. A host without a port opens every service on it, so give the port whenever you can, and always for the machine running oboku.
+
+The API cannot tell when a public address leads back into your own network, for instance the host's public IP seen from inside a container, or another of your servers. Keep internal services such as CouchDB and Postgres off public addresses: bind them to loopback or a private network, or leave their ports unpublished, as the provided `docker-compose.yml` does.
+
 ## Security
 
 The **Security** section lists the refresh tokens currently issued and lets you revoke them, either for every user or for specific email addresses. Revoked tokens are deleted outright, so the affected users have to sign in again.

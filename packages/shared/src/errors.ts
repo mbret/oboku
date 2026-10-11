@@ -17,6 +17,7 @@ export enum ObokuErrorCode {
   ERROR_LINK_INVALID = "6000",
   ERROR_NO_LINK = "6001",
   ERROR_CONNECTOR_NOT_CONFIGURED = "7000",
+  ERROR_ADDRESS_NOT_ALLOWED = "9000",
 }
 
 export type ObokuErrorSeverity = "internal" | "user"
@@ -40,6 +41,7 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_LINK_INVALID]: "user",
   [ObokuErrorCode.ERROR_NO_LINK]: "user",
   [ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED]: "user",
+  [ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED]: "user",
 }
 
 export class ObokuSharedError extends Error {

@@ -6,11 +6,17 @@ import { Logger, ValidationPipe } from "@nestjs/common"
 import cookieParser from "cookie-parser"
 import { json, urlencoded } from "express"
 import path from "node:path"
+import { distinctUntilChanged, map } from "rxjs"
 import { WebDavService } from "./webdav/webdav.service.js"
 import { CouchProxyService } from "./couch/couch-proxy.service.js"
 import { TrustedOriginsService } from "./config/trusted-origin.service.js"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
 import { createCorsOptionsDelegate } from "./config/cors-options.js"
+import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
+import {
+  setPrivateNetworkAllowedHosts,
+  setPrivateNetworkRequestsAllowed,
+} from "./lib/http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -32,6 +38,38 @@ async function bootstrap() {
   logger.log(
     `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
   )
+
+  const instanceConfig$ = app.get(InstanceConfigService).getConfig()
+
+  instanceConfig$
+    .pipe(
+      map(function readAllowPrivateNetworkRequests(config) {
+        return config.allowPrivateNetworkRequests
+      }),
+      distinctUntilChanged(),
+    )
+    .subscribe(function applyPrivateNetworkRequestsSetting(allowed) {
+      setPrivateNetworkRequestsAllowed(allowed)
+      logger.log(
+        `Requests to private networks — ${allowed ? "allowed" : "refused"}`,
+      )
+    })
+
+  instanceConfig$
+    .pipe(
+      map(function readPrivateNetworkAllowedHosts(config) {
+        return config.privateNetworkAllowedHosts
+      }),
+      distinctUntilChanged(function isSameHostList(previous, current) {
+        return previous.join(" ") === current.join(" ")
+      }),
+    )
+    .subscribe(function applyPrivateNetworkAllowedHostsSetting(hosts) {
+      setPrivateNetworkAllowedHosts(hosts)
+      logger.log(
+        `Hosts allowed on private networks — ${hosts.join(", ") || "none"}`,
+      )
+    })
 
   // Cookie parsing must precede the proxy mounts so both the raw proxy
   // middlewares and the Nest guard see `req.cookies` (it never reads the

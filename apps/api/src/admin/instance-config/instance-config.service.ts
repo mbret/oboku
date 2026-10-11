@@ -5,6 +5,7 @@ import bcrypt from "bcrypt"
 import Joi from "joi"
 import { BehaviorSubject } from "rxjs"
 import { AppConfigService } from "../../config/AppConfigService.js"
+import { parseAllowedHost } from "../../lib/http/allowedHosts.js"
 import {
   PublicServerSource,
   ServerSourcesService,
@@ -35,6 +36,8 @@ export type InstanceConfig = {
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
   fileDownloadMaxSizeBytes: number
+  allowPrivateNetworkRequests: boolean
+  privateNetworkAllowedHosts: string[]
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
@@ -46,6 +49,8 @@ const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
   fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  allowPrivateNetworkRequests: false,
+  privateNetworkAllowedHosts: [],
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -80,6 +85,14 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     .integer()
     .min(1)
     .default(DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES),
+  allowPrivateNetworkRequests: Joi.boolean().default(false),
+  privateNetworkAllowedHosts: Joi.array()
+    .items(
+      Joi.string().custom(function validateAllowedHost(value: string, helpers) {
+        return parseAllowedHost(value) ? value : helpers.error("any.invalid")
+      }),
+    )
+    .default([]),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {

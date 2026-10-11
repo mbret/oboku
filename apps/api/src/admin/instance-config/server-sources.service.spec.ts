@@ -105,6 +105,8 @@ describe("InstanceConfigService server sources", () => {
       },
       showDisabledPlugins: true,
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+      allowPrivateNetworkRequests: false,
+      privateNetworkAllowedHosts: [],
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -213,6 +215,47 @@ describe("InstanceConfigService server sources", () => {
     expect(rebootedService.getConfig().value).toMatchObject({
       microsoftApplicationAuthority: "",
     })
+  })
+
+  it("refuses private networks in a config file that predates the setting", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({
+        version: 1,
+        serverSync: { enabled: false, credentials: null, sources: [] },
+        showDisabledPlugins: true,
+      }),
+      "utf8",
+    )
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    expect(rebootedService.getConfig().value).toMatchObject({
+      allowPrivateNetworkRequests: false,
+      privateNetworkAllowedHosts: [],
+    })
+  })
+
+  it("refuses a config file with an allowed host it cannot read", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({
+        version: 1,
+        serverSync: { enabled: false, credentials: null, sources: [] },
+        privateNetworkAllowedHosts: ["nas.local/books"],
+      }),
+      "utf8",
+    )
+
+    expect(
+      () => new InstanceConfigService(appConfig, serverSourcesService),
+    ).toThrow(/privateNetworkAllowedHosts/)
   })
 
   it("notifies config subscribers on update", async () => {

@@ -19,6 +19,7 @@ import { SyncReportPostgresService } from "../../features/postgres/SyncReportPos
 import { CoversService } from "../../covers/covers.service.js"
 import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import type { AuthUser } from "../../auth/auth.guard.js"
+import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
@@ -153,7 +154,9 @@ export const sync = async ({
     syncReport.fail()
 
     let lastSyncErrorCode = ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
-    if (e instanceof ObokuSharedError) {
+    if (isNonPublicAddressError(e)) {
+      lastSyncErrorCode = ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED
+    } else if (e instanceof ObokuSharedError) {
       lastSyncErrorCode = e.code
     }
 
