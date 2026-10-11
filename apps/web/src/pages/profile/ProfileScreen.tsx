@@ -85,7 +85,7 @@ const describeKoreaderSyncConnection = (
   response?: GetKoreaderSyncConnectionResponse,
 ) =>
   response?.connection
-    ? `Connected to ${response.connection.serverUrl}`
+    ? `Syncing with ${response.connection.serverUrl}`
     : KOREADER_PROGRESS_SYNC_PURPOSE
 
 function KoreaderProgressSyncListItem() {

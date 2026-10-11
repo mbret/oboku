@@ -111,8 +111,8 @@ const ConnectionForm = memo(function ConnectionForm() {
       >
         <Typography>
           oboku's reader can sync its reading position through a KOReader sync
-          server, like KOReader, Readest or CrossPoint do. Sign in with the
-          account you use on your devices.
+          server, like KOReader, Readest or CrossPoint do. Use the server and
+          account your devices use.
         </Typography>
         <ObokuSyncServerShortcut
           onUse={function fillInObokuSyncServer({ serverUrl, username }) {
@@ -160,7 +160,7 @@ const ConnectionForm = memo(function ConnectionForm() {
           loading={isPending}
           disabled={!isValid}
         >
-          Connect
+          Turn on
         </Button>
       </Stack>
     </PageContainer>
@@ -176,10 +176,10 @@ const ConnectionDetails = memo(function ConnectionDetails({
 
   const confirmThenDisconnect = async () => {
     const confirmed = await showConfirmDialog({
-      title: "Disconnect from this sync server?",
+      title: "Turn off progress sync?",
       message:
-        "oboku's reader stops syncing with it. Reading positions already on the server stay there.",
-      actions: [{ title: "Disconnect" }],
+        "oboku's reader stops syncing with this server. The reading positions already on it stay there.",
+      actions: [{ title: "Turn off" }],
     })
 
     if (!confirmed) return
@@ -189,7 +189,7 @@ const ConnectionDetails = memo(function ConnectionDetails({
 
   return (
     <PageContainer disableGutters>
-      <PageSection title="Connected to">
+      <PageSection title="Syncing with">
         <ListItem>
           <ListItemText primary="Server" secondary={connection.serverUrl} />
         </ListItem>
@@ -198,7 +198,7 @@ const ConnectionDetails = memo(function ConnectionDetails({
         </ListItem>
         <ListItem>
           <ListItemText
-            primary="Connected on"
+            primary="Turned on"
             secondary={new Date(connection.connectedAt).toLocaleString()}
           />
         </ListItem>
@@ -206,7 +206,7 @@ const ConnectionDetails = memo(function ConnectionDetails({
       <PageSection title="Danger zone" tone="danger">
         <ListItemButton onClick={confirmThenDisconnect}>
           <ListItemText
-            primary="Disconnect"
+            primary="Turn off progress sync"
             secondary="oboku's reader stops syncing with this server"
           />
         </ListItemButton>
