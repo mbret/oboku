@@ -22,9 +22,11 @@ Visit the [user-accounts.md](user-accounts.md "mention") section
 
 The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers, the KOReader sync server they connect to, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API. The machine's own addresses count as private too, public ones included: a request to them never leaves the machine, so it would reach whatever listens there.
 
-If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. A KOReader sync server there needs it too, and so does this instance's own when the API reaches it at a private address or one of the machine's own. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
+If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
 
 To let only some servers through, list them under **Allowed hosts** instead, one per line: a host (`nas.local`), a host and port (`nas.local:5001`), or a URL (`http://192.168.1.20:5005`), of which only the host and port count. A host without a port opens every service on it, so give the port whenever you can, and always for the machine running oboku.
+
+A KOReader sync server on your network takes an entry too. So does this instance's own when the API reaches it at a private address or one of the machine's own: list the API's host and port, such as `192.168.1.10:3000`, or `localhost:3000` in development.
 
 The API cannot tell when a public address leads back into your own network, for instance the host's public IP seen from inside a container, or another of your servers. Keep internal services such as CouchDB and Postgres off public addresses: bind them to loopback or a private network, or leave their ports unpublished, as the provided `docker-compose.yml` does.
 
