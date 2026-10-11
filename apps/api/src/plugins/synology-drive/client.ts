@@ -19,7 +19,7 @@ import {
   type SynologyDriveSession,
   type SynologyDriveSessionAuth,
 } from "@oboku/synology"
-import axios, { AxiosResponse } from "axios"
+import axios, { type AxiosError, AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
@@ -34,6 +34,17 @@ const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
 
 const isAxiosNetworkError = (error: unknown) =>
   axios.isAxiosError(error) && !error.response
+
+/**
+ * Keeps only the message and code of a failed request. The query of the
+ * request URL carries the DSM password, the OTP code or the session id, and
+ * the AxiosError holds that URL in its config and request. So can its causes:
+ * Node keeps it as `base` when a redirect leads to an invalid URL.
+ */
+const toRequestFailure = (description: string, error: AxiosError) =>
+  Object.assign(new Error(`${description}: ${error.message}`), {
+    code: error.code,
+  })
 
 const mapWithConcurrency = async <TInput, TOutput>(
   items: readonly TInput[],
@@ -124,14 +135,21 @@ const requestJson = async <T>({
         validateStatus: () => true,
       })
     } catch (error) {
+      if (!axios.isAxiosError(error)) {
+        throw error
+      }
+
+      const requestFailure = toRequestFailure(
+        `Synology Drive request failed for ${url.origin}`,
+        error,
+      )
+
       if (isAxiosNetworkError(error)) {
-        lastError = new Error(
-          `Synology Drive request failed for ${url.origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
-        )
+        lastError = requestFailure
         continue
       }
 
-      throw error
+      throw requestFailure
     }
 
     lastStatus = response.status
@@ -290,14 +308,21 @@ export const downloadSynologyDriveStream = async ({
         validateStatus: () => true,
       })
     } catch (error) {
+      if (!axios.isAxiosError(error)) {
+        throw error
+      }
+
+      const downloadFailure = toRequestFailure(
+        `Synology Drive download failed for ${new URL(url).origin}`,
+        error,
+      )
+
       if (isAxiosNetworkError(error)) {
-        lastError = new Error(
-          `Synology Drive download failed for ${new URL(url).origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
-        )
+        lastError = downloadFailure
         continue
       }
 
-      throw error
+      throw downloadFailure
     }
 
     lastStatus = response.status
