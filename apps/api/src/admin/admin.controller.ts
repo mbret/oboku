@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -34,6 +35,10 @@ import { AuthService } from "../auth/auth.service.js"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { InstanceConfigService } from "./instance-config/instance-config.service.js"
+import {
+  formatAllowedHost,
+  parseAllowedHost,
+} from "../lib/http/allowedHosts.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { MigrationService } from "../migrations/migration.service.js"
 import { AdminCoversService } from "./admin-covers.service.js"
@@ -120,6 +125,23 @@ class SetWebDavCredentialsDto {
   password!: string
 }
 
+/** As `host` or `host:port`, without duplicates. */
+function normalizeAllowedHosts(entries: string[]) {
+  const allowedHosts = entries.map(function toAllowedHost(entry) {
+    const allowedHost = parseAllowedHost(entry)
+
+    if (!allowedHost) {
+      throw new BadRequestException(
+        `"${entry}" is not a host, a host:port or an http(s) URL`,
+      )
+    }
+
+    return formatAllowedHost(allowedHost)
+  })
+
+  return [...new Set(allowedHosts)]
+}
+
 class UpdateInstanceSettingsDto {
   @IsBoolean()
   @IsOptional()
@@ -133,6 +155,12 @@ class UpdateInstanceSettingsDto {
   @IsBoolean()
   @IsOptional()
   allowPrivateNetworkRequests?: boolean
+
+  @IsArray()
+  @ArrayMaxSize(100)
+  @IsString({ each: true })
+  @IsOptional()
+  privateNetworkAllowedHosts?: string[]
 
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
@@ -383,6 +411,7 @@ export class AdminController {
       showDisabledPlugins: config.showDisabledPlugins,
       fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
       allowPrivateNetworkRequests: config.allowPrivateNetworkRequests,
+      privateNetworkAllowedHosts: config.privateNetworkAllowedHosts,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }
@@ -392,10 +421,19 @@ export class AdminController {
   async updateSettings(
     @Body() body: UpdateInstanceSettingsDto,
   ): Promise<UpdateInstanceSettingsResponse> {
-    await this.instanceConfigService.updateConfig((prev) => ({
-      ...prev,
-      ...body,
-    }))
+    const privateNetworkAllowedHosts =
+      body.privateNetworkAllowedHosts &&
+      normalizeAllowedHosts(body.privateNetworkAllowedHosts)
+
+    await this.instanceConfigService.updateConfig(
+      function withUpdatedSettings(config) {
+        return {
+          ...config,
+          ...body,
+          ...(privateNetworkAllowedHosts && { privateNetworkAllowedHosts }),
+        }
+      },
+    )
 
     return {}
   }
