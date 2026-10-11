@@ -14,7 +14,7 @@ You can configure a reverse proxy in front of your WebDAV server and intercept O
 
 ## Servers on your local network
 
-oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow them from the [admin panel](../self-hosting/admin.md#private-networks) to use a server on your local network or on that machine.
+oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](../self-hosting/admin.md#private-networks) to use a server on your local network or on that machine.
 
 ## Sync behavior
 

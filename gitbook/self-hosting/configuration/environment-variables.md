@@ -18,7 +18,8 @@ COUCHDB_PASSWORD=createastrongpassword
 POSTGRES_PASSWORD=createastrongpassword
 # This is the API url endpoint used by the web apps
 # By default, it will point to the same origin as the web app
-# and port 3000.
+# and port 3000. The API reads it too: requests to it reach the
+# API itself, so they are never refused as private.
 VITE_API_URL=yourapiurl
 # Additional API origins used by the web apps. CouchDB is proxied by the API,
 # so replication runs against the API itself. Due to a limitation with HTTP/1

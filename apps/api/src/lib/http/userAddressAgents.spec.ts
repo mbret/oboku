@@ -1,10 +1,12 @@
 import axios from "axios"
-import { createServer, type Server } from "node:http"
+import { createServer, type RequestListener, type Server } from "node:http"
 import type { AddressInfo } from "node:net"
 import { createClient } from "webdav"
 import { isNonPublicAddressError } from "./publicAddress.js"
 import {
   getUserAddressRequestOptions,
+  setApiAddresses,
+  setPrivateNetworkAllowedHosts,
   setPrivateNetworkRequestsAllowed,
 } from "./userAddressAgents.js"
 
@@ -20,6 +22,21 @@ const isPortAddress = (
   address: string | AddressInfo | null,
 ): address is AddressInfo => typeof address === "object" && address !== null
 
+const startServer = async (listener: RequestListener) => {
+  const server = createServer(listener)
+
+  await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
+
+  const address = server.address()
+
+  if (!isPortAddress(address)) throw new Error("Not listening on a port")
+
+  return { server, port: address.port }
+}
+
+const closeServer = (server: Server) =>
+  new Promise((resolve) => server.close(resolve))
+
 describe("getUserAddressRequestOptions", () => {
   let server: Server
   let port: number
@@ -31,23 +48,18 @@ describe("getUserAddressRequestOptions", () => {
     )
 
   beforeEach(async () => {
-    server = createServer((_req, res) => {
+    ;({ server, port } = await startServer(function answerOk(_req, res) {
       res.writeHead(200, { "content-type": "text/plain" })
       res.end("ok")
-    })
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve))
-
-    const address = server.address()
-
-    if (!isPortAddress(address)) throw new Error("Not listening on a port")
-
-    port = address.port
+    }))
   })
 
   afterEach(async () => {
     setPrivateNetworkRequestsAllowed(false)
+    setPrivateNetworkAllowedHosts([])
+    setApiAddresses({ publicUrls: [], port: 0 })
     vi.unstubAllEnvs()
-    await new Promise((resolve) => server.close(resolve))
+    await closeServer(server)
   })
 
   it("refuses an address on a private network", async () => {
@@ -116,6 +128,81 @@ describe("getUserAddressRequestOptions", () => {
 
   it("reaches private networks once the instance allows them", async () => {
     setPrivateNetworkRequestsAllowed(true)
+
+    const response = await axios.get(
+      `http://127.0.0.1:${port}/`,
+      getUserAddressRequestOptions(),
+    )
+
+    expect(response.data).toBe("ok")
+  })
+
+  it("reaches a host the instance allows, on the port it allows", async () => {
+    setPrivateNetworkAllowedHosts([`127.0.0.1:${port}`])
+
+    const response = await axios.get(
+      `http://127.0.0.1:${port}/`,
+      getUserAddressRequestOptions(),
+    )
+
+    expect(response.data).toBe("ok")
+  })
+
+  it("refuses the other ports of an allowed host", async () => {
+    setPrivateNetworkAllowedHosts([`127.0.0.1:${port + 1}`])
+
+    const error = await getError(
+      axios.get(`http://127.0.0.1:${port}/`, getUserAddressRequestOptions()),
+    )
+
+    expect(isNonPublicAddressError(error)).toBe(true)
+  })
+
+  it("reaches every port of a host allowed without one", async () => {
+    setPrivateNetworkAllowedHosts(["127.0.0.1"])
+
+    const response = await axios.get(
+      `http://127.0.0.1:${port}/`,
+      getUserAddressRequestOptions(),
+    )
+
+    expect(response.data).toBe("ok")
+  })
+
+  it("checks a redirect from an allowed host again", async () => {
+    const redirecting = await startServer(function redirectToServer(_req, res) {
+      res.writeHead(302, { location: `http://127.0.0.1:${port}/` })
+      res.end()
+    })
+    setPrivateNetworkAllowedHosts([`127.0.0.1:${redirecting.port}`])
+
+    try {
+      const error = await getError(
+        axios.get(
+          `http://127.0.0.1:${redirecting.port}/`,
+          getUserAddressRequestOptions(),
+        ),
+      )
+
+      expect(isNonPublicAddressError(error)).toBe(true)
+    } finally {
+      await closeServer(redirecting.server)
+    }
+  })
+
+  it("reaches the API itself on its port", async () => {
+    setApiAddresses({ publicUrls: [], port })
+
+    const response = await axios.get(
+      `http://127.0.0.1:${port}/`,
+      getUserAddressRequestOptions(),
+    )
+
+    expect(response.data).toBe("ok")
+  })
+
+  it("reaches the API at the URL the web app reaches it at", async () => {
+    setApiAddresses({ publicUrls: [`http://127.0.0.1:${port}/`], port: 1 })
 
     const response = await axios.get(
       `http://127.0.0.1:${port}/`,

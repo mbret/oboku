@@ -13,7 +13,12 @@ import { TrustedOriginsService } from "./config/trusted-origin.service.js"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
 import { createCorsOptionsDelegate } from "./config/cors-options.js"
 import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
-import { setPrivateNetworkRequestsAllowed } from "./lib/http/userAddressAgents.js"
+import { AppConfigService } from "./config/AppConfigService.js"
+import {
+  setApiAddresses,
+  setPrivateNetworkAllowedHosts,
+  setPrivateNetworkRequestsAllowed,
+} from "./lib/http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -36,9 +41,17 @@ async function bootstrap() {
     `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
   )
 
-  app
-    .get(InstanceConfigService)
-    .getConfig()
+  const apiPublicUrls = app.get(AppConfigService).API_PUBLIC_URLS
+  const port = configService.getOrThrow("PORT")
+
+  setApiAddresses({ publicUrls: apiPublicUrls, port })
+  logger.log(
+    `Requests to the API itself — allowed: ${[...apiPublicUrls, `localhost:${port}`].join(", ")}`,
+  )
+
+  const instanceConfig$ = app.get(InstanceConfigService).getConfig()
+
+  instanceConfig$
     .pipe(
       map((config) => config.allowPrivateNetworkRequests),
       distinctUntilChanged(),
@@ -47,6 +60,20 @@ async function bootstrap() {
       setPrivateNetworkRequestsAllowed(allowed)
       logger.log(
         `Requests to private networks — ${allowed ? "allowed" : "refused"}`,
+      )
+    })
+
+  instanceConfig$
+    .pipe(
+      map((config) => config.privateNetworkAllowedHosts),
+      distinctUntilChanged(function isSameHostList(previous, current) {
+        return previous.join(" ") === current.join(" ")
+      }),
+    )
+    .subscribe(function applyPrivateNetworkAllowedHostsSetting(hosts) {
+      setPrivateNetworkAllowedHosts(hosts)
+      logger.log(
+        `Hosts allowed on private networks — ${hosts.join(", ") || "none"}`,
       )
     })
 
@@ -85,7 +112,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe())
 
-  await app.listen(configService.getOrThrow("PORT"))
+  await app.listen(port)
 }
 
 bootstrap()

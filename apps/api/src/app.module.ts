@@ -95,6 +95,10 @@ import { KoreaderSyncServerModule } from "./koreader-sync-server/koreader-sync-s
         EMAIL_FROM: Joi.string().email().optional(),
         EMAIL_FROM_NAME: Joi.string().optional(),
         EMAIL_SMTP_MAX_SEND_RATE: Joi.number().positive().optional(),
+        VITE_API_URL: Joi.string().optional(),
+        VITE_API_URL_2: Joi.string().optional(),
+        VITE_API_URL_3: Joi.string().optional(),
+        VITE_API_URL_4: Joi.string().optional(),
       })
         .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
         .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),

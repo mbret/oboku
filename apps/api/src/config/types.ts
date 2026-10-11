@@ -33,4 +33,8 @@ export interface EnvironmentVariables {
   EMAIL_FROM?: string
   EMAIL_FROM_NAME?: string
   EMAIL_SMTP_MAX_SEND_RATE?: number
+  VITE_API_URL?: string
+  VITE_API_URL_2?: string
+  VITE_API_URL_3?: string
+  VITE_API_URL_4?: string
 }
