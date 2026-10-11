@@ -17,7 +17,7 @@ import type {
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
 import { KoreaderSyncPostgresService } from "../../features/postgres/koreader-sync-postgres.service.js"
 import { UserPostgresService } from "../../features/postgres/user-postgres.service.js"
-import { toSyncKey } from "../sync-server/credentials.js"
+import { toSyncKey } from "../protocol.js"
 import { KoreaderSyncAuthGuard } from "../sync-server/koreader-sync-auth.guard.js"
 import { KoreaderSyncProtocolController } from "../sync-server/koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "../sync-server/koreader-sync-server.service.js"

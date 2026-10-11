@@ -16,7 +16,7 @@ import {
   normalizeEmail,
   UserPostgresService,
 } from "../../features/postgres/user-postgres.service.js"
-import { toSyncKey } from "./credentials.js"
+import { toSyncKey } from "../protocol.js"
 import { KoreaderSyncAuthGuard } from "./koreader-sync-auth.guard.js"
 import { KoreaderSyncProtocolController } from "./koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"

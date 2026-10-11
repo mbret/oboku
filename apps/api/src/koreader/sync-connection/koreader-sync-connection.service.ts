@@ -2,7 +2,7 @@ import { BadRequestException, Injectable } from "@nestjs/common"
 import { type KoreaderSyncConnection, ObokuErrorCode } from "@oboku/shared"
 import type { KoreaderSyncConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
-import { toSyncKey } from "../sync-server/credentials.js"
+import { KOREADER_SYNC_AUTHORIZE_ROUTE, toSyncKey } from "../protocol.js"
 import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
 import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
 import {
@@ -105,7 +105,7 @@ export class KoreaderSyncConnectionService {
     try {
       response = await requestKoreaderSyncServer({
         serverUrl,
-        path: "/users/auth",
+        route: KOREADER_SYNC_AUTHORIZE_ROUTE,
         method: "GET",
         username,
         key,

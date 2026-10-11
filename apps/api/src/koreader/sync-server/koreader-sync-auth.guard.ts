@@ -5,6 +5,10 @@ import {
   Injectable,
 } from "@nestjs/common"
 import type { Request } from "express"
+import {
+  KOREADER_SYNC_KEY_HEADER,
+  KOREADER_SYNC_USERNAME_HEADER,
+} from "../protocol.js"
 import { createKoreaderSyncError } from "./errors.js"
 import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
 
@@ -22,8 +26,8 @@ export class KoreaderSyncAuthGuard implements CanActivate {
 
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest<KoreaderSyncRequest>()
-    const username = request.header("x-auth-user")
-    const key = request.header("x-auth-key")
+    const username = request.header(KOREADER_SYNC_USERNAME_HEADER)
+    const key = request.header(KOREADER_SYNC_KEY_HEADER)
 
     const userId =
       username && key

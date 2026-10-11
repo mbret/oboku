@@ -1,11 +1,13 @@
 import axios from "axios"
 import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
+import {
+  KOREADER_SYNC_KEY_HEADER,
+  KOREADER_SYNC_MEDIA_TYPE,
+  KOREADER_SYNC_USERNAME_HEADER,
+} from "../protocol.js"
 
 const REQUEST_DEADLINE_MS = 10_000
 const MAX_RESPONSE_BYTES = 64 * 1024
-
-/** The media type KOReader's sync client accepts (its `api.json`). */
-const KOREADER_SYNC_ACCEPT = "application/vnd.koreader.v1+json"
 
 export type KoreaderSyncServerResponse = {
   status: number
@@ -24,8 +26,8 @@ export class KoreaderSyncServerUnreachableError extends Error {
   }
 }
 
-const toServerEndpoint = (serverUrl: string, path: string) =>
-  `${serverUrl.replace(/\/+$/, "")}${path}`
+const toServerEndpoint = (serverUrl: string, route: string) =>
+  `${serverUrl.replace(/\/+$/, "")}/${route}`
 
 const acceptEveryStatus = () => true
 
@@ -35,14 +37,14 @@ const acceptEveryStatus = () => true
  */
 export async function requestKoreaderSyncServer({
   serverUrl,
-  path,
+  route,
   method,
   username,
   key,
   body,
 }: {
   serverUrl: string
-  path: string
+  route: string
   method: "GET" | "PUT"
   username: string
   key: string
@@ -50,13 +52,13 @@ export async function requestKoreaderSyncServer({
 }): Promise<KoreaderSyncServerResponse> {
   try {
     const response = await axios.request<unknown>({
-      url: toServerEndpoint(serverUrl, path),
+      url: toServerEndpoint(serverUrl, route),
       method,
       data: body,
       headers: {
-        Accept: KOREADER_SYNC_ACCEPT,
-        "x-auth-user": username,
-        "x-auth-key": key,
+        Accept: KOREADER_SYNC_MEDIA_TYPE,
+        [KOREADER_SYNC_USERNAME_HEADER]: username,
+        [KOREADER_SYNC_KEY_HEADER]: key,
       },
       responseType: "json",
       transitional: { silentJSONParsing: false },

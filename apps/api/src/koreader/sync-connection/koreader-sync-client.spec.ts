@@ -1,5 +1,5 @@
 import { inspect } from "node:util"
-import { toSyncKey } from "../sync-server/credentials.js"
+import { KOREADER_SYNC_AUTHORIZE_ROUTE, toSyncKey } from "../protocol.js"
 import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
 import { requestKoreaderSyncServer } from "./koreader-sync-client.js"
 
@@ -9,7 +9,7 @@ describe("requestKoreaderSyncServer", () => {
 
     const error = await requestKoreaderSyncServer({
       serverUrl: "https://127.0.0.1:7200",
-      path: "/users/auth",
+      route: KOREADER_SYNC_AUTHORIZE_ROUTE,
       method: "GET",
       username: "kobo",
       key,
