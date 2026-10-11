@@ -7,10 +7,10 @@ import { GetStartedActions } from "../common/GetStartedActions"
 import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
 import { PhoneScreenshots } from "../common/PhoneScreenshots"
-import { AboutSection } from "./AboutSection"
 import { landingDescription, landingTagline } from "./content"
 import { FaqSection } from "./FaqSection"
 import { FeatureOverviewSection } from "./FeatureOverviewSection"
+import { HowItWorksSection } from "./HowItWorksSection"
 import { LastWords } from "./LastWords"
 
 const HeroLayoutBox = styled(Box)(function styleHeroLayoutBox({ theme }) {
@@ -89,7 +89,7 @@ export function HomeContent() {
           </HeroLayoutBox>
         </Container>
       </GlowHeroSection>
-      <AboutSection />
+      <HowItWorksSection />
       <FeatureOverviewSection />
       <FaqSection />
       <LastWords />
