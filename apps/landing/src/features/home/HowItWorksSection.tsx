@@ -1,4 +1,6 @@
+import { AddRounded } from "@mui/icons-material"
 import { Chip, Container, Stack, styled, Typography } from "@mui/material"
+import Link from "next/link"
 import { BandSection } from "../common/BandSection"
 import { FeatureIconBox } from "../common/FeatureIconBox"
 import { outlinedCardStyles } from "../common/outlinedCardStyles"
@@ -9,6 +11,7 @@ type Step = {
   title: string
   description: string
   chips?: { label: string; href: string }[]
+  moreChipHref?: string
 }
 
 const steps: Step[] = [
@@ -17,6 +20,7 @@ const steps: Step[] = [
     description:
       "Link folders from your cloud drive, NAS or WebDAV server, or add files from your device. Sharing a folder shares its books: friends who connect it get a library of their own.",
     chips: syncProviders,
+    moreChipHref: "/features#sources",
   },
   {
     title: "oboku builds your library",
@@ -90,7 +94,10 @@ export function HowItWorksSection() {
           description="oboku is a free, open-source ebook and comic reader that syncs your library from the cloud drive or server you already use."
         />
         <StepsOrderedList>
-          {steps.map(function renderStep({ title, description, chips }, index) {
+          {steps.map(function renderStep(
+            { title, description, chips, moreChipHref },
+            index,
+          ) {
             return (
               <StepListItem key={title}>
                 <StepNumberFeatureIconBox>{index + 1}</StepNumberFeatureIconBox>
@@ -116,6 +123,17 @@ export function HowItWorksSection() {
                         />
                       )
                     })}
+                    {moreChipHref && (
+                      <Chip
+                        icon={<AddRounded />}
+                        label="More"
+                        size="small"
+                        variant="outlined"
+                        component={Link}
+                        href={moreChipHref}
+                        clickable
+                      />
+                    )}
                   </ChipsStack>
                 )}
               </StepListItem>
