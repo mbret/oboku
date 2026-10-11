@@ -164,7 +164,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "Your storage",
     title: "Your books stay where they already are",
     description:
-      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library, collections and progress are synced.",
+      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library and reading progress are synced.",
     screenshots: {
       primary: {
         src: dataSourcesScreenshot,
@@ -214,7 +214,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "Library",
     title: "A library that organizes itself",
     description:
-      "Covers, titles, authors and series details are filled in for you. Organize the rest with collections, tags and filters.",
+      "Covers, titles, authors and series details are filled in for you. Organize the rest with shelves, tags and filters.",
     screenshots: {
       primary: {
         src: libraryScreenshot,
@@ -238,9 +238,9 @@ export const featureGroups: FeatureGroup[] = [
       },
       {
         Icon: CollectionsBookmarkRounded,
-        title: "Collections and series",
+        title: "Shelves and series",
         description:
-          "Folders become collections. Turn one into a series to get its publisher, status, start year and rating.",
+          "Shelves keep related books together, and series get their publisher, status, start year and rating.",
       },
       {
         Icon: LocalOfferRounded,
@@ -258,7 +258,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: FilterListRounded,
         title: "Search, sort and filter",
         description:
-          "Find any book or collection, and filter your library by tag, reading state or what is downloaded.",
+          "Find any book or shelf, and filter your library by tag, reading state or what is downloaded.",
       },
       {
         Icon: TaskAltRounded,
@@ -303,7 +303,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: DevicesRounded,
         title: "The same library everywhere",
         description:
-          "Your library, collections and progress are synced between all your devices.",
+          "Your library and reading progress are synced between all your devices.",
       },
       {
         Icon: ContrastRounded,
