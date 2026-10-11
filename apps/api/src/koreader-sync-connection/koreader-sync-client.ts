@@ -1,7 +1,7 @@
 import axios from "axios"
 import { getUserAddressRequestOptions } from "../lib/http/userAddressAgents.js"
 
-const REQUEST_TIMEOUT_MS = 10_000
+const REQUEST_DEADLINE_MS = 10_000
 const MAX_RESPONSE_BYTES = 64 * 1024
 
 /** The media type KOReader's sync client accepts (its `api.json`). */
@@ -60,7 +60,7 @@ export async function requestKoreaderSyncServer({
       },
       responseType: "json",
       transitional: { silentJSONParsing: false },
-      timeout: REQUEST_TIMEOUT_MS,
+      signal: AbortSignal.timeout(REQUEST_DEADLINE_MS),
       maxContentLength: MAX_RESPONSE_BYTES,
       ...getUserAddressRequestOptions(),
       validateStatus: acceptEveryStatus,
@@ -70,9 +70,12 @@ export async function requestKoreaderSyncServer({
   } catch (error) {
     if (!axios.isAxiosError(error)) throw error
 
+    const isPastDeadline = axios.isCancel(error)
+    const reason = isPastDeadline
+      ? `no answer within ${REQUEST_DEADLINE_MS} ms`
+      : error.message
+
     // Not the AxiosError itself: its config holds the key.
-    throw new KoreaderSyncServerUnreachableError(error.message, {
-      cause: error.cause,
-    })
+    throw new KoreaderSyncServerUnreachableError(reason, { cause: error.cause })
   }
 }

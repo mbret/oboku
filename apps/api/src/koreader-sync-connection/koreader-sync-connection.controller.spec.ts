@@ -195,6 +195,7 @@ describe("KoreaderSyncConnectionController", () => {
 
   afterEach(async () => {
     setPrivateNetworkRequestsAllowed(false)
+    vi.restoreAllMocks()
     await app.close()
     await Promise.all(
       upstreamServers
@@ -330,6 +331,36 @@ describe("KoreaderSyncConnectionController", () => {
     })
 
     expect(response.status).toBe(400)
+    expect(response.body.errors).toEqual([
+      { code: ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE },
+    ])
+  })
+
+  it("reports a server still answering at the deadline as unreachable", async () => {
+    const shortenedDeadlineMs = 100
+    const createDeadline = AbortSignal.timeout.bind(AbortSignal)
+    vi.spyOn(AbortSignal, "timeout").mockImplementation(
+      function shortenDeadline() {
+        return createDeadline(shortenedDeadlineMs)
+      },
+    )
+    const serverUrl = await startUpstream(function dripAnswer(_req, res) {
+      res.writeHead(200, { "content-type": "application/json" })
+      res.write("{")
+      const drip = setInterval(function writeOneMoreByte() {
+        res.write(" ")
+      }, 10)
+      res.on("close", function stopDripping() {
+        clearInterval(drip)
+      })
+    })
+
+    const response = await connect({
+      serverUrl,
+      username: "kobo",
+      password: "secret",
+    })
+
     expect(response.body.errors).toEqual([
       { code: ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE },
     ])
