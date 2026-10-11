@@ -22,7 +22,7 @@ import {
 } from "@mui/icons-material"
 import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../../plugins/configure"
-import { ObokuErrorCode } from "@oboku/shared"
+import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
 import { useNavigate, Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
@@ -109,19 +109,7 @@ export const DataSourcesListScreen = memo(() => {
                             style={{ marginRight: theme.spacing(1) }}
                           />
                           <Typography variant="body2" component="span">
-                            {`Sync did not succeed`}
-                            {syncSource?.lastSyncErrorCode ===
-                              ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED &&
-                              `. We could not connect to ${dataSource?.name}. If the problem persist try to reload the app`}
-                            {syncSource?.lastSyncErrorCode ===
-                              ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED &&
-                              `. Your datasource seems to have exceeded its allowed access limit`}
-                            {syncSource?.lastSyncErrorCode ===
-                              ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
-                              `. Our server seems unreachable, make sure you are online to start the synchronization`}
-                            {syncSource?.lastSyncErrorCode ===
-                              ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED &&
-                              `. Its address is on a private network, which this oboku server does not connect to. On a self-hosted instance, an admin can allow it`}
+                            {`Sync did not succeed. ${errorToMessage(syncSource.lastSyncErrorCode)}`}
                           </Typography>
                         </Box>
                       ) : syncSource?.lastSyncedAt ? (
