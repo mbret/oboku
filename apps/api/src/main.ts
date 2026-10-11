@@ -53,7 +53,9 @@ async function bootstrap() {
 
   instanceConfig$
     .pipe(
-      map((config) => config.allowPrivateNetworkRequests),
+      map(function readAllowPrivateNetworkRequests(config) {
+        return config.allowPrivateNetworkRequests
+      }),
       distinctUntilChanged(),
     )
     .subscribe(function applyPrivateNetworkRequestsSetting(allowed) {
@@ -65,7 +67,9 @@ async function bootstrap() {
 
   instanceConfig$
     .pipe(
-      map((config) => config.privateNetworkAllowedHosts),
+      map(function readPrivateNetworkAllowedHosts(config) {
+        return config.privateNetworkAllowedHosts
+      }),
       distinctUntilChanged(function isSameHostList(previous, current) {
         return previous.join(" ") === current.join(" ")
       }),

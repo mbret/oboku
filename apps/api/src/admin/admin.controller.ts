@@ -425,11 +425,15 @@ export class AdminController {
       body.privateNetworkAllowedHosts &&
       normalizeAllowedHosts(body.privateNetworkAllowedHosts)
 
-    await this.instanceConfigService.updateConfig((prev) => ({
-      ...prev,
-      ...body,
-      ...(privateNetworkAllowedHosts && { privateNetworkAllowedHosts }),
-    }))
+    await this.instanceConfigService.updateConfig(
+      function withUpdatedSettings(config) {
+        return {
+          ...config,
+          ...body,
+          ...(privateNetworkAllowedHosts && { privateNetworkAllowedHosts }),
+        }
+      },
+    )
 
     return {}
   }
