@@ -51,7 +51,7 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
       return "No connector is configured for this link. Please set one up first."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
-      return "This address is on a private network, which this oboku server does not connect to. On a self-hosted instance, an admin can allow private networks."
+      return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow private networks."
     default:
       return `Something went wrong. Error code: ${error}`
   }

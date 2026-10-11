@@ -1,5 +1,6 @@
 import { type LookupAddress, lookup as dnsLookup } from "node:dns"
 import { BlockList, isIP, type LookupFunction } from "node:net"
+import { networkInterfaces } from "node:os"
 
 /**
  * Networks that do not lead to the public internet, from the IANA
@@ -75,17 +76,39 @@ for (const { network, prefix } of PUBLIC_IPV6_SUBNETS) {
   publicIpv6Networks.addSubnet(network, prefix, "ipv6")
 }
 
+/** Read on every check: interfaces and their addresses come and go. */
+function getServerAddresses() {
+  const serverAddresses = new BlockList()
+
+  for (const interfaceAddresses of Object.values(networkInterfaces())) {
+    for (const { address, family } of interfaceAddresses ?? []) {
+      serverAddresses.addAddress(address, family === "IPv4" ? "ipv4" : "ipv6")
+    }
+  }
+
+  return serverAddresses
+}
+
+/**
+ * Whether a connection to `address` reaches the public internet: it is not a
+ * special-purpose address, nor one of this server's own addresses, whose
+ * connections never leave the machine whatever their range.
+ */
 export function isPublicAddress(address: string) {
   const family = isIP(address)
   const isIpAddress = family !== 0
 
   if (!isIpAddress) return false
 
-  if (family === 4) return !nonPublicNetworks.check(address, "ipv4")
+  const type = family === 4 ? "ipv4" : "ipv6"
+  const isServerAddress = getServerAddresses().check(address, type)
 
-  const isInPublicIpv6Space = publicIpv6Networks.check(address, "ipv6")
+  if (isServerAddress) return false
+  if (type === "ipv4") return !nonPublicNetworks.check(address, type)
 
-  return isInPublicIpv6Space && !nonPublicNetworks.check(address, "ipv6")
+  const isInPublicIpv6Space = publicIpv6Networks.check(address, type)
+
+  return isInPublicIpv6Space && !nonPublicNetworks.check(address, type)
 }
 
 function isPublicLookupAddress({ address }: LookupAddress) {
