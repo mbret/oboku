@@ -23,7 +23,7 @@ import axios, { AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
-import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean
@@ -120,13 +120,14 @@ const requestJson = async <T>({
         headers: {
           Accept: "application/json",
         },
-        httpsAgent: getHttpsAgent(allowSelfSigned),
+        ...getUserAddressRequestOptions({ allowSelfSigned }),
         validateStatus: () => true,
       })
     } catch (error) {
       if (isAxiosNetworkError(error)) {
         lastError = new Error(
           `Synology Drive request failed for ${url.origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
+          { cause: error },
         )
         continue
       }
@@ -285,7 +286,9 @@ export const downloadSynologyDriveStream = async ({
         headers: {
           Accept: "application/octet-stream",
         },
-        httpsAgent: getHttpsAgent(session.allowSelfSigned),
+        ...getUserAddressRequestOptions({
+          allowSelfSigned: session.allowSelfSigned,
+        }),
         responseType: "stream",
         validateStatus: () => true,
       })
@@ -293,6 +296,7 @@ export const downloadSynologyDriveStream = async ({
       if (isAxiosNetworkError(error)) {
         lastError = new Error(
           `Synology Drive download failed for ${new URL(url).origin}: ${axios.isAxiosError(error) ? error.message : "network error"}`,
+          { cause: error },
         )
         continue
       }

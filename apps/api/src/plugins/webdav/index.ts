@@ -5,7 +5,7 @@ import type { DataSourcePlugin } from "../types.js"
 import { type WebDAVDataSourceDocType } from "@oboku/shared"
 import { createClient } from "webdav"
 import { getDataSourceData } from "../helpers.js"
-import { getHttpsAgent } from "../../lib/http/httpsAgent.js"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
   getFileMetadataFromWebdav,
@@ -55,7 +55,9 @@ const createWebdavClient = (connector: {
   createClient(connector.url, {
     username: connector.username,
     password: connector.password,
-    httpsAgent: getHttpsAgent(connector.allowSelfSigned),
+    ...getUserAddressRequestOptions({
+      allowSelfSigned: connector.allowSelfSigned,
+    }),
   })
 
 export const dataSource: DataSourcePlugin<"webdav"> = {

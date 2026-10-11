@@ -35,6 +35,7 @@ export type InstanceConfig = {
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
   fileDownloadMaxSizeBytes: number
+  allowPrivateNetworkRequests: boolean
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
@@ -46,6 +47,7 @@ const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
   fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+  allowPrivateNetworkRequests: false,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -80,6 +82,7 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     .integer()
     .min(1)
     .default(DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES),
+  allowPrivateNetworkRequests: Joi.boolean().default(false),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {

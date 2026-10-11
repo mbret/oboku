@@ -6,11 +6,14 @@ import { Logger, ValidationPipe } from "@nestjs/common"
 import cookieParser from "cookie-parser"
 import { json, urlencoded } from "express"
 import path from "node:path"
+import { distinctUntilChanged, map } from "rxjs"
 import { WebDavService } from "./webdav/webdav.service.js"
 import { CouchProxyService } from "./couch/couch-proxy.service.js"
 import { TrustedOriginsService } from "./config/trusted-origin.service.js"
 import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
 import { createCorsOptionsDelegate } from "./config/cors-options.js"
+import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
+import { setPrivateNetworkRequestsAllowed } from "./lib/http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -32,6 +35,20 @@ async function bootstrap() {
   logger.log(
     `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
   )
+
+  app
+    .get(InstanceConfigService)
+    .getConfig()
+    .pipe(
+      map((config) => config.allowPrivateNetworkRequests),
+      distinctUntilChanged(),
+    )
+    .subscribe(function applyPrivateNetworkRequestsSetting(allowed) {
+      setPrivateNetworkRequestsAllowed(allowed)
+      logger.log(
+        `Requests to private networks — ${allowed ? "allowed" : "refused"}`,
+      )
+    })
 
   // Cookie parsing must precede the proxy mounts so both the raw proxy
   // middlewares and the Nest guard see `req.cookies` (it never reads the

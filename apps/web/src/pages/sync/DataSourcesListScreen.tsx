@@ -119,6 +119,9 @@ export const DataSourcesListScreen = memo(() => {
                             {syncSource?.lastSyncErrorCode ===
                               ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE &&
                               `. Our server seems unreachable, make sure you are online to start the synchronization`}
+                            {syncSource?.lastSyncErrorCode ===
+                              ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED &&
+                              `. Its address is on a private network, which this oboku server does not connect to. On a self-hosted instance, an admin can allow it`}
                           </Typography>
                         </Box>
                       ) : syncSource?.lastSyncedAt ? (
