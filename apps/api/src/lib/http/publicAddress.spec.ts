@@ -69,7 +69,10 @@ describe("isPublicAddress", () => {
     "5f00::1",
     "fd00::1",
     "fe80::1",
+    "fec0::1",
     "ff02::1",
+    "::ffff:0:a00:1",
+    "4000::1",
     "not an address",
   ])("refuses %s", (address) => {
     expect(isPublicAddress(address)).toBe(false)
