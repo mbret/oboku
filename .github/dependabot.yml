@@ -11,3 +11,8 @@ updates:
       # with conventional-changelog-writer 9: see release.config.mjs.
       - dependency-name: conventional-changelog-conventionalcommits
         update-types: ['version-update:semver-major']
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      time: '01:00'
