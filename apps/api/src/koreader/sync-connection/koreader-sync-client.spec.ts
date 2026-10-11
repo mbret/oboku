@@ -1,6 +1,6 @@
 import { inspect } from "node:util"
-import { toSyncKey } from "../koreader-sync-server/credentials.js"
-import { isNonPublicAddressError } from "../lib/http/publicAddress.js"
+import { toSyncKey } from "../sync-server/credentials.js"
+import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
 import { requestKoreaderSyncServer } from "./koreader-sync-client.js"
 
 describe("requestKoreaderSyncServer", () => {

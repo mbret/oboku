@@ -20,9 +20,9 @@ import { PageSection } from "../../common/PageSection"
 import { useConfig } from "../../config/useConfig"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { notify } from "../../notifications/toasts"
-import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
-import { useCreateKoreaderSyncServerPassword } from "../../koreaderSyncServer/useCreateKoreaderSyncServerPassword"
-import { useTurnOffKoreaderSyncServer } from "../../koreaderSyncServer/useTurnOffKoreaderSyncServer"
+import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
+import { useCreateKoreaderSyncServerPassword } from "../../koreader/syncServer/useCreateKoreaderSyncServerPassword"
+import { useTurnOffKoreaderSyncServer } from "../../koreader/syncServer/useTurnOffKoreaderSyncServer"
 
 const DetailsStack = styled(Stack)(function styleDetailsStack({ theme }) {
   return {

@@ -8,7 +8,7 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common"
-import { Public } from "../auth/auth.guard.js"
+import { Public } from "../../auth/auth.guard.js"
 import { createKoreaderSyncError } from "./errors.js"
 import {
   KoreaderSyncAuthGuard,

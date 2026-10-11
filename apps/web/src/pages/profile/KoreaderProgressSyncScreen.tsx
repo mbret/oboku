@@ -21,10 +21,10 @@ import { ControlledTextField } from "../../common/forms/ControlledTextField"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { ErrorAlert } from "../../errors/ErrorMessage"
 import { useConfig } from "../../config/useConfig"
-import { useKoreaderSyncServer } from "../../koreaderSyncServer/useKoreaderSyncServer"
-import { useKoreaderSyncConnection } from "../../koreaderSyncConnection/useKoreaderSyncConnection"
-import { useConnectKoreaderSyncServer } from "../../koreaderSyncConnection/useConnectKoreaderSyncServer"
-import { useDisconnectKoreaderSyncServer } from "../../koreaderSyncConnection/useDisconnectKoreaderSyncServer"
+import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
+import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
+import { useConnectKoreaderSyncServer } from "../../koreader/syncConnection/useConnectKoreaderSyncServer"
+import { useDisconnectKoreaderSyncServer } from "../../koreader/syncConnection/useDisconnectKoreaderSyncServer"
 
 type ConnectionFormValues = {
   serverUrl: string

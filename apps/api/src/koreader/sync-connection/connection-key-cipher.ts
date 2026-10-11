@@ -1,7 +1,10 @@
 import { hkdfSync } from "node:crypto"
 import { Injectable } from "@nestjs/common"
-import { SecretsService } from "../config/SecretsService.js"
-import { decryptAes256Gcm, encryptAes256Gcm } from "../lib/crypto/aes256Gcm.js"
+import { SecretsService } from "../../config/SecretsService.js"
+import {
+  decryptAes256Gcm,
+  encryptAes256Gcm,
+} from "../../lib/crypto/aes256Gcm.js"
 
 const ENCRYPTION_KEY_INFO = "oboku/koreader-sync-connection/key"
 const ENCRYPTION_KEY_BYTES = 32

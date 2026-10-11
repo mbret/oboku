@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useHttpClientApi } from "../http"
-import { useActiveProfileId } from "../profiles/active/activeProfileId"
+import { useHttpClientApi } from "../../http"
+import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { koreaderSyncConnectionQueryKey } from "./queryKeys"
 
 export const useDisconnectKoreaderSyncServer = () => {

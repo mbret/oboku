@@ -1,5 +1,5 @@
 import axios from "axios"
-import { getUserAddressRequestOptions } from "../lib/http/userAddressAgents.js"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 
 const REQUEST_DEADLINE_MS = 10_000
 const MAX_RESPONSE_BYTES = 64 * 1024

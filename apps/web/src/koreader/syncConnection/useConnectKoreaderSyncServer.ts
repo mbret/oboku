@@ -8,8 +8,8 @@ import type {
   ConnectKoreaderSyncServerRequest,
   GetKoreaderSyncConnectionResponse,
 } from "@oboku/shared"
-import { useHttpClientApi } from "../http"
-import { useActiveProfileId } from "../profiles/active/activeProfileId"
+import { useHttpClientApi } from "../../http"
+import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { koreaderSyncConnectionQueryKey } from "./queryKeys"
 
 export const useConnectKoreaderSyncServer = (

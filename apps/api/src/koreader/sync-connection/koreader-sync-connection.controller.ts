@@ -4,7 +4,7 @@ import type {
   GetKoreaderSyncConnectionResponse,
 } from "@oboku/shared"
 import { IsString, IsUrl, MinLength } from "class-validator"
-import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
 
 class ConnectKoreaderSyncServerDto implements ConnectKoreaderSyncServerRequest {

@@ -26,8 +26,8 @@ import { WebDavModule } from "./webdav/webdav.module.js"
 import { NotificationsModule } from "./notifications/notifications.module.js"
 import { BooksModule } from "./books/books.module.js"
 import { PluginsModule } from "./plugins/plugins.module.js"
-import { KoreaderSyncServerModule } from "./koreader-sync-server/koreader-sync-server.module.js"
-import { KoreaderSyncConnectionModule } from "./koreader-sync-connection/koreader-sync-connection.module.js"
+import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
+import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 
 @Module({
   imports: [
