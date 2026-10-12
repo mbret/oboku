@@ -1,8 +1,9 @@
-import { Button, ListSubheader, Stack, styled } from "@mui/material"
+import { Button, Stack, styled } from "@mui/material"
 import type { BookMetadata, UserMetadata } from "@oboku/shared"
 import { useForm } from "react-hook-form"
 import type { DeepReadonlyObject } from "rxdb"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
+import { PageSection } from "../../../common/PageSection"
 import { notify, notifyError } from "../../../notifications/toasts"
 import { useIncrementalBookModify } from "../../useIncrementalBookModify"
 
@@ -38,12 +39,7 @@ const FORM_ID = "user-metadata-form"
  */
 const SaveActionStack = styled(Stack)(({ theme }) => ({
   marginTop: "auto",
-  paddingTop: theme.spacing(1.5),
-  paddingBottom: theme.spacing(1.5),
-}))
-
-const FieldsStack = styled(Stack)(({ theme }) => ({
-  gap: theme.spacing(2),
+  padding: theme.spacing(1.5, 2),
 }))
 
 /**
@@ -103,8 +99,7 @@ export const UserSourceContent = ({ bookId, metadata }: Props) => {
       noValidate
       sx={{ flex: 1, minHeight: 0 }}
     >
-      <FieldsStack>
-        <ListSubheader disableGutters>Fields</ListSubheader>
+      <PageSection title="Fields" variant="stack">
         <ControlledTextField
           control={control}
           name="isbn"
@@ -113,7 +108,7 @@ export const UserSourceContent = ({ bookId, metadata }: Props) => {
           fullWidth
           disabled={isPending}
         />
-      </FieldsStack>
+      </PageSection>
       <SaveActionStack>
         <Button
           type="submit"

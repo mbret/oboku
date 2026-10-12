@@ -1,6 +1,6 @@
-import { List, ListSubheader } from "@mui/material"
 import type { FileMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
+import { PageSection } from "../../../common/PageSection"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import {
@@ -14,7 +14,7 @@ type Props = {
 }
 
 export const FileSourceContent = ({ metadata }: Props) => (
-  <List dense subheader={<ListSubheader disableGutters>Fields</ListSubheader>}>
+  <PageSection title="Fields" dense>
     <MetadataFieldRow label={L.title} value={metadata?.title?.toString()} />
     <MetadataFieldRow label={L.authors} value={formatList(metadata?.authors)} />
     <MetadataFieldRow label={L.publisher} value={metadata?.publisher} />
@@ -48,5 +48,5 @@ export const FileSourceContent = ({ metadata }: Props) => (
       label={L.googleVolumeId}
       value={metadata?.googleVolumeId}
     />
-  </List>
+  </PageSection>
 )

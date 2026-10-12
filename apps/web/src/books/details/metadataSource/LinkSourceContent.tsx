@@ -1,13 +1,8 @@
-import {
-  List,
-  ListItem,
-  ListItemText,
-  ListSubheader,
-  Stack,
-} from "@mui/material"
+import { ListItem, ListItemText } from "@mui/material"
 import { type LinkMetadata, directives, formatBytes } from "@oboku/shared"
 import { useMemo } from "react"
 import type { DeepReadonlyObject } from "rxdb"
+import { PageSection } from "../../../common/PageSection"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS } from "./fieldLabels"
 
@@ -66,13 +61,8 @@ const DirectivesSection = ({
   const rows = useMemo(() => buildDirectiveRows(parsed), [parsed])
 
   return (
-    <List
-      dense
-      subheader={
-        <ListSubheader disableGutters>Inferred from directives</ListSubheader>
-      }
-    >
-      <ListItem disableGutters>
+    <PageSection title="Inferred from directives" dense>
+      <ListItem>
         <ListItemText
           secondary={
             rows.length
@@ -82,11 +72,11 @@ const DirectivesSection = ({
         />
       </ListItem>
       {rows.map((row) => (
-        <ListItem key={row.key} disableGutters>
+        <ListItem key={row.key}>
           <ListItemText primary={row.label} secondary={row.value} />
         </ListItem>
       ))}
-    </List>
+    </PageSection>
   )
 }
 
@@ -103,11 +93,8 @@ export const LinkSourceContent = ({ metadata }: Props) => {
     : undefined
 
   return (
-    <Stack spacing={2}>
-      <List
-        dense
-        subheader={<ListSubheader disableGutters>Fields</ListSubheader>}
-      >
+    <>
+      <PageSection title="Fields" dense>
         <MetadataFieldRow label="Title (raw)" value={rawTitle} />
         <MetadataFieldRow
           label={BOOK_METADATA_FIELD_LABELS.title}
@@ -129,8 +116,8 @@ export const LinkSourceContent = ({ metadata }: Props) => {
               : undefined
           }
         />
-      </List>
+      </PageSection>
       <DirectivesSection title={metadata?.title} />
-    </Stack>
+    </>
   )
 }

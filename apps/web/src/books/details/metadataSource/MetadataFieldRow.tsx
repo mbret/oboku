@@ -23,7 +23,7 @@ export const MetadataFieldRow = ({
   label: ReactNode
   value: ReactNode
 }) => (
-  <ListItem disableGutters>
+  <ListItem>
     <ListItemText
       primary={label}
       secondary={

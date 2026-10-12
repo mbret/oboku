@@ -7,6 +7,7 @@ import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { ConnectorForm as WebdavConnectorForm } from "../plugins/webdav/connectors/ConnectorForm"
 import { ConnectorForm as SynologyDriveConnectorForm } from "../plugins/synology-drive/connectors/ConnectorForm"
 import { ConnectorForm as ServerConnectorForm } from "../plugins/server/connectors/ConnectorForm"
+import { Page } from "../common/Page"
 
 export function getConnectorForm(type: SettingsConnectorType) {
   switch (type) {
@@ -33,9 +34,9 @@ export const AddConnectorScreen = memo(() => {
   if (!details || !Form) return null
 
   return (
-    <>
+    <Page>
       <TopBarNavigation title={`${details.label}: New connector`} />
       <Form onSubmitSuccess={() => goBack(details.manageRoute)} />
-    </>
+    </Page>
   )
 })

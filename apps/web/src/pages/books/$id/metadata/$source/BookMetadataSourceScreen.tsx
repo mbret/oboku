@@ -25,18 +25,20 @@ type ScreenParams = {
   source: string
 }
 
-const MetadataSourcePageContainer = styled(PageContainer)(
-  function styleMetadataSourcePageContainer({ theme }) {
-    return {
-      display: "flex",
-      flexDirection: "column",
-      flex: 1,
-      minHeight: 0,
-      paddingTop: theme.spacing(1),
-      gap: theme.spacing(2),
-    }
-  },
-)
+const MetadataSourcePageContainer = styled(PageContainer)({
+  display: "flex",
+  flexDirection: "column",
+  flex: 1,
+  minHeight: 0,
+})
+
+const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
+  theme,
+}) {
+  return {
+    padding: theme.spacing(1, 2, 2),
+  }
+})
 
 const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
   link: "Information exposed on the storage provider link.",
@@ -84,15 +86,15 @@ export const BookMetadataSourceScreen = memo(
           title={getBookMetadataSourceLabel(validSource)}
           showBack
         />
-        <MetadataSourcePageContainer>
-          <Stack>
+        <MetadataSourcePageContainer disableGutters>
+          <SourceIntroStack>
             <Typography variant="overline" color="text.secondary">
               Metadata source
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {SOURCE_DESCRIPTIONS[validSource]}
             </Typography>
-          </Stack>
+          </SourceIntroStack>
           {validSource === "link" && (
             <LinkSourceContent
               metadata={metadata?.type === "link" ? metadata : undefined}

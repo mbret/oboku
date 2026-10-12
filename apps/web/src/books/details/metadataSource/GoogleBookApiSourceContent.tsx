@@ -1,6 +1,7 @@
-import { Link, List, ListSubheader } from "@mui/material"
+import { Link } from "@mui/material"
 import type { GoogleBookApiMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
+import { PageSection } from "../../../common/PageSection"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import { formatBookMetadataDate, formatList } from "./formatters"
@@ -14,7 +15,7 @@ type Props = {
  * fields mirror what `parseGoogleMetadata` extracts from a volume entry.
  */
 export const GoogleBookApiSourceContent = ({ metadata }: Props) => (
-  <List dense subheader={<ListSubheader disableGutters>Fields</ListSubheader>}>
+  <PageSection title="Fields" dense>
     <MetadataFieldRow label={L.title} value={metadata?.title?.toString()} />
     <MetadataFieldRow label={L.authors} value={formatList(metadata?.authors)} />
     <MetadataFieldRow label={L.description} value={metadata?.description} />
@@ -60,5 +61,5 @@ export const GoogleBookApiSourceContent = ({ metadata }: Props) => (
       label={L.subjects}
       value={formatList(metadata?.subjects)}
     />
-  </List>
+  </PageSection>
 )

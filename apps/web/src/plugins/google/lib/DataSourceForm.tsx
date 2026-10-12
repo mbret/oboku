@@ -100,7 +100,6 @@ export const DataSourceForm = ({
       <Stack
         sx={{
           gap: 2,
-          pb: 2,
           overflow: "auto",
         }}
       >
