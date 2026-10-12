@@ -1,4 +1,3 @@
-import { Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Navigate, useParams } from "react-router"
@@ -45,15 +44,8 @@ export const NewDataSourceScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={`New ${plugin.name} data source`} />
-      <PageContainer>
-        <Stack
-          sx={{
-            py: 2,
-            gap: 2,
-          }}
-        >
-          {PluginForm && <PluginForm onSubmit={handleSubmit} />}
-        </Stack>
+      <PageContainer disableGutters>
+        {PluginForm && <PluginForm onSubmit={handleSubmit} />}
       </PageContainer>
     </Page>
   )
