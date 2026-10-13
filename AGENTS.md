@@ -92,7 +92,9 @@
   changeable, and a gap there is fixable rather than something to work around
   locally.
 - **Docs for the overview, source for the facts.** Its guides live in the
-  prose-reader repo under `gitbook/<package>/` (e.g. `gitbook/archive-reader/`).
+  prose-reader repo under `apps/docs/src/content/docs/<package>/` (e.g.
+  `apps/docs/src/content/docs/archive-reader/`), published at
+  [doc.prose-reader.com](https://doc.prose-reader.com).
   Read them first for the broad picture: what each package owns, what its
   vocabulary means, how it is meant to be used. Then confirm every behaviour you
   rely on in prose-reader's `src/` and its tests, whether writing code against
