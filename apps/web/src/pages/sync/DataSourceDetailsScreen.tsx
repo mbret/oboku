@@ -1,5 +1,12 @@
 import type { DataSourceDocType } from "@oboku/shared"
-import { Alert, Button, Divider, Stack } from "@mui/material"
+import {
+  Alert,
+  Button,
+  ListItemButton,
+  ListItemText,
+  Stack,
+  styled,
+} from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useParams } from "react-router"
@@ -18,6 +25,22 @@ import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { Page } from "../../common/Page"
 import { getPluginByType } from "../../plugins/configure"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
+
+const SyncStatusAlert = styled(Alert)(function styleSyncStatusAlert({ theme }) {
+  return {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+  }
+})
+
+const SynchronizeButtonStack = styled(Stack)(
+  function styleSynchronizeButtonStack({ theme }) {
+    return {
+      padding: theme.spacing(2),
+    }
+  },
+)
 
 function renderDataSourceEditForm<T extends DataSourceDocType["type"]>({
   dataSource,
@@ -60,56 +83,44 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
     )
   }
 
+  const removeDataSourceThenGoBack = () => {
+    if (!id) return
+
+    removeDataSource({ id }, { onSuccess: () => goBack() })
+  }
+
   if (dataSource === null) return <NotFoundPage />
 
   return (
     <Page>
       <TopBarNavigation title={`${label}`} />
       <PageContainer>
-        <Stack
-          sx={{
-            py: 2,
-            gap: 2,
-          }}
+        <SyncStatusAlert
+          severity={dataSource?.lastSyncErrorCode ? "error" : "info"}
         >
-          <Alert severity={dataSource?.lastSyncErrorCode ? "error" : "info"}>
-            {dataSource?.syncStatus === "fetching"
-              ? "Synchronizing"
-              : dataSource?.lastSyncErrorCode
-                ? `Last sync did not succeed`
-                : `Last synced on ${new Date(dataSource?.lastSyncedAt ?? 0).toLocaleString()}`}
-          </Alert>
-          {dataSource &&
-            renderDataSourceEditForm({
-              dataSource,
-              onSubmit: handleSubmit,
-            })}
-          <Stack
-            sx={{
-              gap: 1,
-            }}
-          >
-            <Button variant="outlined" onClick={() => id && syncDataSource(id)}>
-              Synchronize
-            </Button>
-            <Divider />
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() =>
-                id &&
-                removeDataSource(
-                  { id },
-                  {
-                    onSuccess: () => goBack(),
-                  },
-                )
-              }
-            >
-              Delete
-            </Button>
-          </Stack>
-        </Stack>
+          {dataSource?.syncStatus === "fetching"
+            ? "Synchronizing"
+            : dataSource?.lastSyncErrorCode
+              ? `Last sync did not succeed`
+              : `Last synced on ${new Date(dataSource?.lastSyncedAt ?? 0).toLocaleString()}`}
+        </SyncStatusAlert>
+      </PageContainer>
+      <PageContainer disableGutters>
+        {dataSource &&
+          renderDataSourceEditForm({
+            dataSource,
+            onSubmit: handleSubmit,
+          })}
+        <SynchronizeButtonStack>
+          <Button variant="outlined" onClick={() => id && syncDataSource(id)}>
+            Synchronize
+          </Button>
+        </SynchronizeButtonStack>
+        <PageSection title="Danger zone" tone="danger">
+          <ListItemButton onClick={removeDataSourceThenGoBack}>
+            <ListItemText primary="Delete this data source" />
+          </ListItemButton>
+        </PageSection>
       </PageContainer>
     </Page>
   )

@@ -1,4 +1,12 @@
-import { Alert, Box, Chip, Stack, Typography } from "@mui/material"
+import {
+  Alert,
+  Box,
+  Chip,
+  ListItem,
+  Stack,
+  styled,
+  Typography,
+} from "@mui/material"
 import { Fragment } from "react/jsx-runtime"
 import { EmptyAlert } from "../../common/alerts/EmptyAlert"
 import {
@@ -11,6 +19,12 @@ import { SkeletonLoader } from "./SkeletonLoader"
 import { ReportSummary } from "./ReportSummary"
 import { memo } from "react"
 import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
+
+const ReportListItem = styled(ListItem)({
+  flexDirection: "column",
+  alignItems: "stretch",
+})
 
 export const DataSourcesReportsScreen = memo(
   function DataSourcesReportsScreen() {
@@ -26,20 +40,14 @@ export const DataSourcesReportsScreen = memo(
           {isLoading ? (
             <SkeletonLoader />
           ) : !data?.length ? (
-            <EmptyAlert>
+            <EmptyAlert sx={{ m: 2 }}>
               You don't have any reports yet. They will appears after you start
               a sync.
             </EmptyAlert>
           ) : (
-            <Stack
-              sx={{
-                py: 2,
-                px: 1,
-                gap: 2,
-              }}
-            >
+            <PageSection>
               {data?.map((entry, index) => (
-                <Stack key={index}>
+                <ReportListItem key={index}>
                   <Stack
                     direction="row"
                     sx={{
@@ -266,9 +274,9 @@ export const DataSourcesReportsScreen = memo(
                       </Stack>
                     )}
                   </Stack>
-                </Stack>
+                </ReportListItem>
               ))}
-            </Stack>
+            </PageSection>
           )}
         </PageContainer>
       </Stack>

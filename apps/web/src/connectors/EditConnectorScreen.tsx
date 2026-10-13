@@ -1,4 +1,4 @@
-import { Button } from "@mui/material"
+import { ListItemButton, ListItemText } from "@mui/material"
 import { memo } from "react"
 import { useParams } from "react-router"
 import { useConfirmation } from "../common/useConfirmation"
@@ -10,6 +10,7 @@ import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
 import { getConnectorForm } from "./AddConnectorScreen"
 import { Page } from "../common/Page"
+import { PageSection } from "../common/PageSection"
 
 export const EditConnectorScreen = memo(() => {
   const { type, id = "-1" } = useParams<{
@@ -27,6 +28,22 @@ export const EditConnectorScreen = memo(() => {
 
   if (!details || !Form) return null
 
+  const confirmThenDeleteConnector = () => {
+    const confirm = confirmation()
+
+    if (confirm) {
+      deleteConnector(
+        { id },
+        {
+          onSuccess: () => {
+            notify("actionSuccess")
+            goBack(details.manageRoute)
+          },
+        },
+      )
+    }
+  }
+
   return (
     <Page>
       <TopBarNavigation title={`${details.label}: Edit connector`} />
@@ -34,27 +51,11 @@ export const EditConnectorScreen = memo(() => {
         connectorId={id}
         onSubmitSuccess={() => goBack(details.manageRoute)}
       >
-        <Button
-          color="error"
-          onClick={() => {
-            const confirm = confirmation()
-
-            if (confirm) {
-              deleteConnector(
-                { id },
-                {
-                  onSuccess: () => {
-                    notify("actionSuccess")
-                    goBack(details.manageRoute)
-                  },
-                },
-              )
-            }
-          }}
-          variant="contained"
-        >
-          Delete
-        </Button>
+        <PageSection title="Danger zone" tone="danger">
+          <ListItemButton onClick={confirmThenDeleteConnector}>
+            <ListItemText primary="Delete this connector" />
+          </ListItemButton>
+        </PageSection>
       </Form>
     </Page>
   )

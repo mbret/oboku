@@ -4,6 +4,7 @@ import {
   Checkbox,
   FormControlLabel,
   Stack,
+  styled,
   Typography,
 } from "@mui/material"
 import { Controller, useForm } from "react-hook-form"
@@ -22,8 +23,25 @@ import { useConnector } from "./useConnector"
 import { useUpdateConnector } from "./useUpdateConnector"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { PageContainer } from "../common/PageContainer"
+import { PageSection } from "../common/PageSection"
 
 const FORM_ID = "connector-form"
+
+const TopAlertStack = styled(Stack)(function styleTopAlertStack({ theme }) {
+  return {
+    marginTop: theme.spacing(2),
+    marginBottom: theme.spacing(1),
+  }
+})
+
+const FormActionsStack = styled(Stack)(function styleFormActionsStack({
+  theme,
+}) {
+  return {
+    gap: theme.spacing(1),
+    padding: theme.spacing(0, 2, 2),
+  }
+})
 
 function getConnectorUrl(
   connector: SettingsConnectorDocType | undefined,
@@ -47,6 +65,7 @@ export type ConnectorFormConfig = {
   connectorType: SettingsConnectorType
   connectorId?: string
   onSubmitSuccess: () => void
+  /** Rendered below the form's actions, in a `PageContainer` with `disableGutters`. */
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
@@ -123,101 +142,96 @@ export const ConnectorForm = memo(
     })
 
     return (
-      <PageContainer>
-        <Stack
-          component="form"
-          id={FORM_ID}
-          onSubmit={handleSubmit((values) => submit(values))}
-          sx={{
-            alignSelf: "stretch",
-            gap: 2,
-            mt: 2,
-          }}
-        >
-          {topAlert}
-          {showUrl && (
-            <ControlledTextField
-              control={control}
-              fullWidth
-              label="URL"
-              name="urlValue"
-              rules={{ required: true, pattern: URL_PATTERN }}
-            />
-          )}
-          <ControlledTextField
-            control={control}
-            fullWidth
-            label="Username"
-            name="username"
-            rules={{ required: true }}
-          />
-          <ControlledSecretSelect
-            control={control}
-            fullWidth
-            label={passwordFieldLabel}
-            name="passwordAsSecretId"
-            rules={{ required: true }}
-          />
-          {showUrl && (
-            <Controller
-              control={control}
-              name="allowSelfSigned"
-              render={({ field }) => (
-                <Stack
-                  sx={{
-                    gap: 0.5,
-                  }}
-                >
-                  <FormControlLabel
-                    control={
-                      <Checkbox
-                        checked={!!field.value}
-                        onChange={(_, checked) => field.onChange(checked)}
-                      />
-                    }
-                    label="Allow self-signed certificate"
-                  />
-                  <Typography
-                    variant="caption"
-                    sx={{
-                      color: "text.secondary",
-                    }}
-                  >
-                    Used by API sync, metadata, and download requests. Browser
-                    connection tests may still require trusting the certificate
-                    in your browser.
-                  </Typography>
-                </Stack>
-              )}
-            />
-          )}
-          {!!errors.root && <ErrorAlert error={errors.root.message} />}
-          {testConnection && (
-            <TestConnection
-              connectionData={{ ...data, url: data.urlValue }}
-              connectorType={connectorType}
-              testConnection={testConnection}
-            />
-          )}
-        </Stack>
-        <Stack
-          sx={{
-            gap: 1,
-            mt: 4,
-          }}
-        >
-          {renderExtraActions?.()}
-          <Button
-            disabled={disabled || !isValid}
-            form={FORM_ID}
-            type="submit"
-            variant="contained"
+      <>
+        <PageContainer>
+          <TopAlertStack>{topAlert}</TopAlertStack>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <form
+            id={FORM_ID}
+            onSubmit={handleSubmit((values) => submit(values))}
           >
-            Confirm
-          </Button>
+            <PageSection variant="stack">
+              {showUrl && (
+                <ControlledTextField
+                  control={control}
+                  fullWidth
+                  label="URL"
+                  name="urlValue"
+                  rules={{ required: true, pattern: URL_PATTERN }}
+                />
+              )}
+              <ControlledTextField
+                control={control}
+                fullWidth
+                label="Username"
+                name="username"
+                rules={{ required: true }}
+              />
+              <ControlledSecretSelect
+                control={control}
+                fullWidth
+                label={passwordFieldLabel}
+                name="passwordAsSecretId"
+                rules={{ required: true }}
+              />
+              {showUrl && (
+                <Controller
+                  control={control}
+                  name="allowSelfSigned"
+                  render={({ field }) => (
+                    <Stack
+                      sx={{
+                        gap: 0.5,
+                      }}
+                    >
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={!!field.value}
+                            onChange={(_, checked) => field.onChange(checked)}
+                          />
+                        }
+                        label="Allow self-signed certificate"
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "text.secondary",
+                        }}
+                      >
+                        Used by API sync, metadata, and download requests.
+                        Browser connection tests may still require trusting the
+                        certificate in your browser.
+                      </Typography>
+                    </Stack>
+                  )}
+                />
+              )}
+              {!!errors.root && <ErrorAlert error={errors.root.message} />}
+              {testConnection && (
+                <TestConnection
+                  connectionData={{ ...data, url: data.urlValue }}
+                  connectorType={connectorType}
+                  testConnection={testConnection}
+                />
+              )}
+            </PageSection>
+          </form>
+          <FormActionsStack>
+            {renderExtraActions?.()}
+            <Button
+              disabled={disabled || !isValid}
+              form={FORM_ID}
+              type="submit"
+              variant="contained"
+            >
+              Confirm
+            </Button>
+          </FormActionsStack>
           {children}
-        </Stack>
-      </PageContainer>
+        </PageContainer>
+      </>
     )
   },
 )

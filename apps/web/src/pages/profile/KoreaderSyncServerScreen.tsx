@@ -24,11 +24,11 @@ import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSync
 import { useCreateKoreaderSyncServerPassword } from "../../koreader/syncServer/useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "../../koreader/syncServer/useTurnOffKoreaderSyncServer"
 
-const DetailsStack = styled(Stack)(function styleDetailsStack({ theme }) {
+const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
   return {
     gap: theme.spacing(2),
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(2),
+    paddingBottom: theme.spacing(1),
   }
 })
 
@@ -128,7 +128,7 @@ export const KoreaderSyncServerScreen = memo(
       <Page>
         <TopBarNavigation title="KOReader sync server" />
         <PageContainer>
-          <DetailsStack>
+          <IntroStack>
             <Typography>
               oboku can be the sync server of KOReader, Readest, CrossPoint and
               the other apps that support KOReader sync: point them at oboku and
@@ -138,6 +138,10 @@ export const KoreaderSyncServerScreen = memo(
               This does not sync your reading in oboku itself: only the apps you
               point at this server sync with each other.
             </Alert>
+          </IntroStack>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <PageSection variant="stack">
             <CopyableField
               label="Server"
               value={config?.API_KOREADER_SYNC_SERVER_URL ?? ""}
@@ -170,9 +174,7 @@ export const KoreaderSyncServerScreen = memo(
             >
               {isEnabled ? "Generate a new password" : "Generate a password"}
             </Button>
-          </DetailsStack>
-        </PageContainer>
-        <PageContainer disableGutters>
+          </PageSection>
           <PageSection title="Set up a device">
             {SETUP_STEPS.map((step, index) => (
               <ListItem key={step}>
