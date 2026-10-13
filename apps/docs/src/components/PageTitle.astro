@@ -1,0 +1,16 @@
+---
+import DefaultPageTitle from "@astrojs/starlight/components/PageTitle.astro"
+
+const { description } = Astro.locals.starlightRoute.entry.data
+---
+
+<DefaultPageTitle />
+{description && <p class="page-description">{description}</p>}
+
+<style>
+  .page-description {
+    margin-top: 0.5rem;
+    font-size: var(--sl-text-lg);
+    color: var(--sl-color-gray-2);
+  }
+</style>
