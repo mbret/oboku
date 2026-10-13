@@ -155,6 +155,14 @@
 - Keep a content component on the server and put its styled declarations in a sibling `X.styled.tsx` that starts with `"use client"`. Mark the component itself `"use client"` only when it needs interactivity, or when it only renders its props (`SectionHeading`).
 - From a server component, `sx` takes plain values only (no `theme => …` callbacks), and MUI's `component` prop takes `NextLink` from `features/common/NextLink` instead of `next/link`.
 
+### Docs: `apps/docs`
+
+- The user, self-hosting and development docs are the Markdown in `apps/docs/src/content/docs/`, built with Starlight and published to docs.oboku.me. Update them in the same change as the behaviour they document.
+- A page's title is its `title` frontmatter, and the body starts at `##`. A new page needs an entry in the `sidebar` of `apps/docs/astro.config.ts`.
+- Link another page by its path on the site (`/guides/directives`), not by its file. The build fails on a broken internal link or anchor.
+- A heading that ends in `{ #id }` keeps the anchor the GitBook site gave it, which published links point to. Keep the `{ #id }` when you reword the heading.
+- A published URL stays valid: when a page moves or is renamed, add a permanent redirect from its old path to `redirects` in `apps/docs/vercel.json`.
+
 ### React components: do not use `FC`
 
 - Never use `React.FC`, `FC`, or `FunctionComponent` to type components. Treat that pattern as deprecated and do not add it in new code.

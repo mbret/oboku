@@ -1,0 +1,72 @@
+---
+title: "Environment Variables"
+---
+
+Your environment variables live under `./.env` file.&#x20;
+
+Some variables let you enable specific features, visit the [related section](/self-hosting/configuration/enable-features) to see their detailed use.
+
+:::note
+The `VITE_*` variables configure the web and admin apps, which ship as prebuilt images. Their containers substitute the values into the built assets when they start, so changing one takes effect the next time the container starts — you never need to rebuild the image.
+:::
+
+```bash title=".env"
+# couchdb is reachable only through the API (proxied under /couchdb).
+# Set a strong admin password.
+COUCHDB_PASSWORD=createastrongpassword
+# postgres does not need to be exposed publicly but you should 
+# still consider a strong password.
+POSTGRES_PASSWORD=createastrongpassword
+# This is the API url endpoint used by the web apps
+# By default, it will point to the same origin as the web app
+# and port 3000.
+VITE_API_URL=yourapiurl
+# Additional API origins used by the web apps. CouchDB is proxied by the API,
+# so replication runs against the API itself. Due to a limitation with HTTP/1
+# (a low cap on connections per origin), replicating many collections at once
+# needs several origins. These are extra origins serving the same API; hits are
+# distributed across them. They default to VITE_API_URL. If you serve the API
+# over HTTP/2 you can leave them unset, since HTTP/2 has no per-origin limit.
+VITE_API_URL_2=yourapiurl2
+VITE_API_URL_3=yourapiurl3
+VITE_API_URL_4=yourapiurl4
+# Public URL of the web app. Also drives which browser origins may make
+# credentialed (cookie) requests: every port on this hostname is trusted.
+APP_PUBLIC_URL=http://app-public-url
+# (Optional) Public URL of the admin panel. Only needed when the panel is
+# served from a different hostname than the web app; the default layout
+# (another port on APP_PUBLIC_URL's hostname) needs nothing here.
+ADMIN_PUBLIC_URL=https://admin.example.org
+```
+
+## Admin credentials
+
+Needed to sign in through the admin panel.
+
+```
+ADMIN_LOGIN=admin
+ADMIN_PASSWORD=password
+```
+
+## Email provider
+
+Not mandatory but will unlock more features (eg: user self-registration flow). `APP_PUBLIC_URL` is required when using email provider because it is used in some emails for redirection.
+
+```
+EMAIL_SMTP_HOST=email-smtp.your-provider.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=user
+EMAIL_SMTP_PASSWORD=password
+EMAIL_FROM=yourcontactemail
+# Optional. Display name shown to recipients, producing a From header of
+# "oboku <yourcontactemail>". Defaults to "oboku".
+EMAIL_FROM_NAME=oboku
+# Optional. Max emails sent per second across the SMTP pool. Set this to your
+# provider's maximum send rate (eg: Amazon SES "Maximum send rate") so large
+# admin broadcasts stay under it. Left unset, sends are not rate limited.
+EMAIL_SMTP_MAX_SEND_RATE=14
+```
+
+> Providers also enforce a daily sending quota (eg: Amazon SES allows 50,000
+> emails / 24h by default). A single broadcast larger than your quota will have
+> its overflow rejected by the provider; request a quota increase if needed.

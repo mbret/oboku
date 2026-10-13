@@ -1,0 +1,18 @@
+{
+  "installCommand": "npm i -g pnpm@11 && cd ../.. && $(npm prefix -g)/bin/pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm build:docs",
+  "outputDirectory": "dist",
+  "trailingSlash": false,
+  "redirects": [
+    {
+      "source": "/sitemap.xml",
+      "destination": "/sitemap-index.xml",
+      "permanent": true
+    }
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "master": false
+    }
+  }
+}
