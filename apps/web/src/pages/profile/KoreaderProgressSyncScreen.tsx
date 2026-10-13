@@ -7,6 +7,7 @@ import {
   ListItemButton,
   ListItemText,
   Stack,
+  styled,
   Typography,
 } from "@mui/material"
 import type { KoreaderSyncConnection } from "@oboku/shared"
@@ -25,6 +26,22 @@ import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSync
 import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
 import { useConnectKoreaderSyncServer } from "../../koreader/syncConnection/useConnectKoreaderSyncServer"
 import { useDisconnectKoreaderSyncServer } from "../../koreader/syncConnection/useDisconnectKoreaderSyncServer"
+
+const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
+  return {
+    gap: theme.spacing(2),
+    paddingTop: theme.spacing(2),
+    paddingBottom: theme.spacing(1),
+  }
+})
+
+const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
+  theme,
+}) {
+  return {
+    padding: theme.spacing(0, 2, 2),
+  }
+})
 
 type ConnectionFormValues = {
   serverUrl: string
@@ -101,69 +118,77 @@ const ConnectionForm = memo(function ConnectionForm() {
   })
 
   return (
-    <PageContainer>
-      <Stack
-        component="form"
-        onSubmit={handleSubmit(function connectWithFormValues(values) {
-          connect(values)
-        })}
-        sx={{ gap: 2, py: 2 }}
-      >
-        <Typography>
-          oboku's reader can sync its reading position through a KOReader sync
-          server, like KOReader, Readest or CrossPoint do. Use the server and
-          account your devices use.
-        </Typography>
-        <ObokuSyncServerShortcut
-          onUse={function fillInObokuSyncServer({ serverUrl, username }) {
-            setValue("serverUrl", serverUrl, { shouldValidate: true })
-            setValue("username", username, { shouldValidate: true })
-          }}
-        />
-        <ControlledTextField
-          control={control}
-          name="serverUrl"
-          label="Server"
-          placeholder="https://sync.koreader.rocks"
-          fullWidth
-          rules={{
-            required: true,
-            validate: function validateServerUrl(value) {
-              return (
-                isHttpUrl(value) ||
-                "Enter an address starting with http:// or https://"
-              )
-            },
-          }}
-        />
-        <ControlledTextField
-          control={control}
-          name="username"
-          label="Username"
-          autoComplete="username"
-          fullWidth
-          rules={{ required: true }}
-        />
-        <ControlledTextField
-          control={control}
-          name="password"
-          label="Password"
-          type="password"
-          autoComplete="current-password"
-          fullWidth
-          rules={{ required: true }}
-        />
-        {!!error && <ErrorAlert error={error} />}
-        <Button
-          type="submit"
-          variant="contained"
-          loading={isPending}
-          disabled={!isValid}
+    <>
+      <PageContainer>
+        <IntroStack>
+          <Typography>
+            oboku's reader can sync its reading position through a KOReader sync
+            server, like KOReader, Readest or CrossPoint do. Use the server and
+            account your devices use.
+          </Typography>
+          <ObokuSyncServerShortcut
+            onUse={function fillInObokuSyncServer({ serverUrl, username }) {
+              setValue("serverUrl", serverUrl, { shouldValidate: true })
+              setValue("username", username, { shouldValidate: true })
+            }}
+          />
+        </IntroStack>
+      </PageContainer>
+      <PageContainer disableGutters>
+        <form
+          onSubmit={handleSubmit(function connectWithFormValues(values) {
+            connect(values)
+          })}
         >
-          Turn on
-        </Button>
-      </Stack>
-    </PageContainer>
+          <PageSection variant="stack">
+            <ControlledTextField
+              control={control}
+              name="serverUrl"
+              label="Server"
+              placeholder="https://sync.koreader.rocks"
+              fullWidth
+              rules={{
+                required: true,
+                validate: function validateServerUrl(value) {
+                  return (
+                    isHttpUrl(value) ||
+                    "Enter an address starting with http:// or https://"
+                  )
+                },
+              }}
+            />
+            <ControlledTextField
+              control={control}
+              name="username"
+              label="Username"
+              autoComplete="username"
+              fullWidth
+              rules={{ required: true }}
+            />
+            <ControlledTextField
+              control={control}
+              name="password"
+              label="Password"
+              type="password"
+              autoComplete="current-password"
+              fullWidth
+              rules={{ required: true }}
+            />
+            {!!error && <ErrorAlert error={error} />}
+          </PageSection>
+          <SubmitButtonStack>
+            <Button
+              type="submit"
+              variant="contained"
+              loading={isPending}
+              disabled={!isValid}
+            >
+              Turn on
+            </Button>
+          </SubmitButtonStack>
+        </form>
+      </PageContainer>
+    </>
   )
 })
 
