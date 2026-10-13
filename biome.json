@@ -13,6 +13,7 @@
       "!**/.test",
       "!**/dist",
       "!**/.next",
+      "!**/.astro",
       "!**/.esbuild",
       "!**/web/public",
       "!**/playwright-report",
@@ -113,6 +114,17 @@
           "suspicious": {
             "noDocumentImportInPage": "error",
             "noHeadImportInDocument": "error"
+          }
+        }
+      }
+    },
+    {
+      "includes": ["**/*.astro"],
+      "linter": {
+        "rules": {
+          "correctness": {
+            "noUnusedImports": "off",
+            "noUnusedVariables": "off"
           }
         }
       }

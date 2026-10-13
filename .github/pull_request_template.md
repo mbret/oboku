@@ -16,4 +16,4 @@ Title the pull request as a Conventional Commit, such as `fix(web): keep the rea
 - [ ] `pnpm lint`
 - [ ] `pnpm build`
 - [ ] `pnpm test`
-- [ ] Docs in `gitbook/` updated, if behaviour changed
+- [ ] Docs in `apps/docs` updated, if behaviour changed

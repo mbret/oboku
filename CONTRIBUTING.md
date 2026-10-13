@@ -69,7 +69,7 @@ ADMIN_PASSWORD=password
 
 On its first start, the CouchDB container writes a JWT key pair to `secrets/` at the repository root. `JWT_PRIVATE_KEY_FILE` and `JWT_PUBLIC_KEY_FILE` point there.
 
-The [environment variables](gitbook/self-hosting/configuration/environment-variables.md) page covers the optional settings, such as an email provider for signing up by email.
+The [environment variables](apps/docs/src/content/docs/self-hosting/configuration/environment-variables.md) page covers the optional settings, such as an email provider for signing up by email.
 
 ### Run
 
@@ -141,9 +141,18 @@ Use the format for every commit and for the pull request title, since either can
 
 ## Documentation
 
-The user and self-hosting docs live in [`gitbook/`](gitbook/) and are published to [docs.oboku.me](https://docs.oboku.me) through GitBook. Edit the Markdown there, in the same pull request as the change it documents. A new page also needs an entry in [`gitbook/SUMMARY.md`](gitbook/SUMMARY.md), the table of contents.
+The user and self-hosting docs live in [`apps/docs/src/content/docs/`](apps/docs/src/content/docs/), built with [Starlight](https://starlight.astro.build/) and published to [docs.oboku.me](https://docs.oboku.me). Edit the Markdown there, in the same pull request as the change it documents.
 
-[`gitbook/development/`](gitbook/development/) explains parts of the internals, such as [authentication](gitbook/development/authentication.md).
+- A page's title is the `title` field of its frontmatter, and its body starts at `##`.
+- A new page needs an entry in the `sidebar` of [`apps/docs/astro.config.ts`](apps/docs/astro.config.ts).
+- Link another page by its path on the site, such as `/guides/directives`, not by its file. The docs build fails on a broken link or anchor.
+- Callouts are `:::note`, `:::tip`, `:::caution` or `:::danger`, closed by `:::`.
+- Images go in `apps/docs/public/images/`, referenced as `/images/<name>.png`.
+- A heading that ends in `{ #id }` keeps the anchor older links point to. Keep it when you reword the heading.
+- When you move or rename a page, redirect its old path in [`apps/docs/vercel.json`](apps/docs/vercel.json).
+- `pnpm start:docs` serves the site while you write.
+
+[`apps/docs/src/content/docs/development/`](apps/docs/src/content/docs/development/) explains parts of the internals, such as [authentication](apps/docs/src/content/docs/development/authentication.md).
 
 ## License
 
