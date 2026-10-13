@@ -10,9 +10,9 @@ export const { getStaticPaths, GET } = await OGImageRoute({
   getSlug: (docsEntryId) => `${docsEntryId}.png`,
   getImageOptions: (_docsEntryId, docsPageData) => ({
     title: docsPageData.title,
-    description: "prose",
+    description: "oboku",
     bgGradient: [
-      [190, 208, 243],
+      [251, 200, 150],
       [255, 255, 255],
     ],
     padding: 80,
@@ -26,7 +26,7 @@ export const { getStaticPaths, GET } = await OGImageRoute({
         weight: "Bold",
         size: 80,
         lineHeight: 1.1,
-        color: [52, 109, 219],
+        color: [247, 125, 5],
       },
       description: {
         families: ["Inter"],

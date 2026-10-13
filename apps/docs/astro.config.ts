@@ -40,6 +40,7 @@ export default defineConfig({
       editLink: {
         baseUrl: "https://github.com/mbret/oboku/edit/develop/apps/docs/",
       },
+      customCss: ["./src/styles/theme.css"],
       components: {
         PageTitle: "./src/components/PageTitle.astro",
       },

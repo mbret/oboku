@@ -8,6 +8,106 @@
       "source": "/sitemap.xml",
       "destination": "/sitemap-index.xml",
       "permanent": true
+    },
+    {
+      "source": "/cloud",
+      "destination": "/cloud/installation-and-usage",
+      "permanent": true
+    },
+    {
+      "source": "/collections",
+      "destination": "/guides/collections",
+      "permanent": true
+    },
+    {
+      "source": "/configuration",
+      "destination": "/self-hosting/configuration",
+      "permanent": true
+    },
+    {
+      "source": "/development",
+      "destination": "/development/local-profile",
+      "permanent": true
+    },
+    {
+      "source": "/dropbox",
+      "destination": "/sync-providers/dropbox",
+      "permanent": true
+    },
+    {
+      "source": "/guides",
+      "destination": "/guides/adding-a-book",
+      "permanent": true
+    },
+    {
+      "source": "/guides/webdav",
+      "destination": "/sync-providers/webdav",
+      "permanent": true
+    },
+    {
+      "source": "/installation-and-usage",
+      "destination": "/cloud/installation-and-usage",
+      "permanent": true
+    },
+    {
+      "source": "/secrets",
+      "destination": "/guides/secrets",
+      "permanent": true
+    },
+    {
+      "source": "/self-hosting",
+      "destination": "/self-hosting/installation",
+      "permanent": true
+    },
+    {
+      "source": "/sync-providers",
+      "destination": "/sync-providers/webdav",
+      "permanent": true
+    },
+    {
+      "source": "/wiki",
+      "destination": "/guides/adding-a-book",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/adding-a-book",
+      "destination": "/guides/adding-a-book",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/collections",
+      "destination": "/guides/collections",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/datasources",
+      "destination": "/guides/datasources",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/directives",
+      "destination": "/guides/directives",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/reader",
+      "destination": "/guides/reader",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/tags",
+      "destination": "/guides/tags",
+      "permanent": true
+    },
+    {
+      "source": "/wiki/supported-media",
+      "destination": "/guides/supported-contents",
+      "permanent": true
+    },
+    {
+      "source": "/changelog",
+      "destination": "/self-hosting/changelog",
+      "permanent": true
     }
   ],
   "git": {

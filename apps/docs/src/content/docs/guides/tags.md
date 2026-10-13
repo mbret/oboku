@@ -40,4 +40,4 @@ Delete the tag and all links with your content. This does not delete your conten
 
 ## Automatic creation / organization with directives { #automatic-creation-organization-with-directives }
 
-Because creating and organizing your tags manually can be time consuming and annoying you can take advantage of oboku directives when using data sources to let oboku handle the tags for you. Please see the [directive](https://docs.oboku.me/wiki/datasources#personalize-your-content-with-directives) section for more information.
+Because creating and organizing your tags manually can be time consuming and annoying you can take advantage of oboku directives when using data sources to let oboku handle the tags for you. Please see the [directive](/guides/directives) section for more information.

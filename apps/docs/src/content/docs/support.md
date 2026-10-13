@@ -20,11 +20,11 @@ This is most likely because there is a crash in the app which prevent it to even
 
 ### My content is not being synchronized or visible&#x20; { #my-content-is-not-being-synchronized-or-visible }
 
-When synchronizing your content with data sources there could be several reasons for your content to not be synchronized. oboku will only synchronize the content it recognize so make sure your are using [supported formats](https://docs.oboku.me/wiki/supported-media). If you are using supported content then it is most likely an internal problem. Please contact the support for further assistance.
+When synchronizing your content with data sources there could be several reasons for your content to not be synchronized. oboku will only synchronize the content it recognize so make sure your are using [supported formats](/guides/supported-contents). If you are using supported content then it is most likely an internal problem. Please contact the support for further assistance.
 
 ### The metadata are not synchronized and/or in error. { #the-metadata-are-not-synchronized-and-or-in-error }
 
-As a reminder only epubs or files with the isbn directive will be parsed for metadata. Any other format will only have the title filled. However it is still possible for the metadata extraction to fail completely. One of the possible reason for oboku to not parse metadata is if the file is too big. If your file is around 500mb or above there is a high chance we will not be able to extract it. If that is the case the best workaround is to use the `isbn` directive. Visit the [datasources](https://docs.oboku.me/wiki/datasources) section for more info. If you are under this size and still get troubles getting the metadata please contact the support for further assistance.
+As a reminder only epubs or files with the isbn directive will be parsed for metadata. Any other format will only have the title filled. However it is still possible for the metadata extraction to fail completely. One of the possible reason for oboku to not parse metadata is if the file is too big. If your file is around 500mb or above there is a high chance we will not be able to extract it. If that is the case the best workaround is to use the `isbn` directive. Visit the [datasources](/guides/datasources) section for more info. If you are under this size and still get troubles getting the metadata please contact the support for further assistance.
 
 ### I have some flickers when turning pages for comics / manga on safari { #i-have-some-flickers-when-turning-pages-for-comics-manga-on-safari }
 
