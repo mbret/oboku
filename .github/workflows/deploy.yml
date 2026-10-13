@@ -98,3 +98,15 @@ jobs:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
+
+  deploy-docs-vercel:
+    name: 'Deploy docs vercel'
+    needs: [build-and-test]
+    uses: ./.github/workflows/_deploy-vercel.yml
+    with:
+      app_directory: 'apps/docs'
+      deployment_name: 'docs production'
+    secrets:
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_DOCS_PROJECT_ID }}
