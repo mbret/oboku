@@ -1,7 +1,10 @@
 {
   "git": {
     "deploymentEnabled": {
-      "master": false
+      "master": false,
+      "claude/**": false,
+      "codex/**": false,
+      "dependabot/**": false
     }
   }
 }
