@@ -111,11 +111,6 @@
     }
   ],
   "git": {
-    "deploymentEnabled": {
-      "master": false,
-      "claude/**": false,
-      "codex/**": false,
-      "dependabot/**": false
-    }
+    "deploymentEnabled": false
   }
 }
