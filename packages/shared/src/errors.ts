@@ -17,6 +17,8 @@ export enum ObokuErrorCode {
   ERROR_LINK_INVALID = "6000",
   ERROR_NO_LINK = "6001",
   ERROR_CONNECTOR_NOT_CONFIGURED = "7000",
+  ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED = "8000",
+  ERROR_KOREADER_SYNC_SERVER_UNREACHABLE = "8001",
   ERROR_ADDRESS_NOT_ALLOWED = "9000",
 }
 
@@ -41,6 +43,8 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_LINK_INVALID]: "user",
   [ObokuErrorCode.ERROR_NO_LINK]: "user",
   [ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED]: "user",
+  [ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED]: "user",
+  [ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE]: "user",
   [ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED]: "user",
 }
 

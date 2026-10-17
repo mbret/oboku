@@ -1,14 +1,14 @@
 import { Injectable } from "@nestjs/common"
-import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { UserPostgresService } from "../../features/postgres/user-postgres.service.js"
 import {
   type KoreaderSyncProgress,
   KoreaderSyncPostgresService,
-} from "../features/postgres/koreader-sync-postgres.service.js"
+} from "../../features/postgres/koreader-sync-postgres.service.js"
+import { toSyncKey } from "../protocol.js"
 import {
   generateSyncPassword,
   hashSyncKey,
   isSyncKeyMatchingHash,
-  toSyncKey,
 } from "./credentials.js"
 
 @Injectable()
