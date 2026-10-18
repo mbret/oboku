@@ -74,37 +74,20 @@ const createReadingPositionPatch = ({
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
         : ReadingStateState.Reading
-
-    const didBookmarkLocationChange =
-      old.readingStateCurrentBookmarkLocation !== cfi
-    const didProgressChange =
-      old.readingStateCurrentBookmarkProgressPercent !==
-      percentageEstimateOfBook
     const didReadingStateChange =
+      old.readingStateCurrentBookmarkLocation !== cfi ||
+      old.readingStateCurrentBookmarkProgressPercent !==
+        percentageEstimateOfBook ||
       old.readingStateCurrentState !== nextReadingState
-    const didKoreaderProgressChange =
-      old.readingStateCurrentBookmarkKoreaderProgress !== koreaderProgress
-    const isReadingStateUpdate =
-      didBookmarkLocationChange || didProgressChange || didReadingStateChange
-
-    if (!isReadingStateUpdate && !didKoreaderProgressChange) return old
 
     return {
       ...old,
-      ...(didBookmarkLocationChange && {
-        readingStateCurrentBookmarkLocation: cfi,
-      }),
-      ...(didKoreaderProgressChange && {
-        readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
-      }),
-      ...(isReadingStateUpdate && {
-        readingStateUpdatedAt: new Date().toISOString(),
-      }),
+      readingStateCurrentBookmarkLocation: cfi,
+      readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
+      readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
+      readingStateCurrentState: nextReadingState,
       ...(didReadingStateChange && {
-        readingStateCurrentState: nextReadingState,
-      }),
-      ...(didProgressChange && {
-        readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
+        readingStateUpdatedAt: new Date().toISOString(),
       }),
     }
   }

@@ -196,6 +196,28 @@ describe("useSyncBookProgress", () => {
     })
   })
 
+  it("moves the book up in recent activity when its bookmark moves", async () => {
+    const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        PAGE_BEFORE_LAST.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateUpdatedAt).not.toBe(
+      readingStateUpdatedAt,
+    )
+  })
+
   it("saves the KOReader progress with the bookmark", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
