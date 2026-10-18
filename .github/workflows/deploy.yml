@@ -23,6 +23,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run lint
           pnpm run build
+          pnpm --filter @oboku/archive-metadata exec playwright install --with-deps --only-shell chromium
           pnpm run test
 
   release:

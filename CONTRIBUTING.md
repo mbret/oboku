@@ -40,6 +40,12 @@ cd oboku
 pnpm install
 ```
 
+Some tests run in a real browser. Install the Chromium they use once, then again whenever Playwright is upgraded:
+
+```bash
+pnpm --filter @oboku/archive-metadata exec playwright install chromium
+```
+
 ### Configure
 
 Create `.env` at the repository root. Docker Compose reads it to start CouchDB and Postgres. Any password works locally.
@@ -105,7 +111,7 @@ CI runs these three commands ([`.github/workflows/check.yml`](.github/workflows/
 | --- | --- |
 | `pnpm lint` | Lint and formatting, with Biome. `pnpm format` fixes the formatting. |
 | `pnpm build` | Builds every package. Each build runs the TypeScript compiler, so this is also the typecheck. |
-| `pnpm test` | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. |
+| `pnpm test` | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. Files named `*.browser.test.ts` run in headless Chromium, through [Vitest browser mode](https://vitest.dev/guide/browser/). |
 
 A pre-commit hook runs Biome on the staged files and applies its fixes.
 
