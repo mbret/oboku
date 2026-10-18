@@ -67,6 +67,43 @@ export type LogoutDto = {
     session_id: string;
 };
 
+export type AdminBroadcastNotificationDto = {
+    data: null;
+    kind: 'admin_broadcast';
+    id: number;
+    createdAt: string;
+    severity: 'info' | 'success' | 'warning' | 'error';
+    title: string;
+    body: string | null;
+    seenAt: string | null;
+    archivedAt: string | null;
+};
+
+export type SyncFinishedNotificationDataDto = {
+    datasourceId: string;
+    state: 'success' | 'error';
+};
+
+export type SyncFinishedNotificationDto = {
+    kind: 'sync_finished';
+    data: SyncFinishedNotificationDataDto;
+    id: number;
+    createdAt: string;
+    severity: 'info' | 'success' | 'warning' | 'error';
+    title: string;
+    body: string | null;
+    seenAt: string | null;
+    archivedAt: string | null;
+};
+
+export type UnreadNotificationsCountResponseDto = {
+    count: number;
+};
+
+export type OkResponseDto = {
+    ok: boolean;
+};
+
 export type KoreaderSyncServerResponseDto = {
     /**
      * What devices sign in with as username: the account email.
@@ -84,10 +121,6 @@ export type KoreaderSyncServerPasswordResponseDto = {
      * Shown once: only a hash of it is kept.
      */
     password: string;
-};
-
-export type OkResponseDto = {
-    ok: boolean;
 };
 
 export type KoreaderSyncConnectionDto = {
@@ -233,6 +266,75 @@ export type AuthDeleteAccountResponses = {
 };
 
 export type AuthDeleteAccountResponse = AuthDeleteAccountResponses[keyof AuthDeleteAccountResponses];
+
+export type NotificationsListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/notifications';
+};
+
+export type NotificationsListResponses = {
+    200: Array<AdminBroadcastNotificationDto | SyncFinishedNotificationDto>;
+};
+
+export type NotificationsListResponse = NotificationsListResponses[keyof NotificationsListResponses];
+
+export type NotificationsUnreadCountData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/notifications/unread-count';
+};
+
+export type NotificationsUnreadCountResponses = {
+    200: UnreadNotificationsCountResponseDto;
+};
+
+export type NotificationsUnreadCountResponse = NotificationsUnreadCountResponses[keyof NotificationsUnreadCountResponses];
+
+export type NotificationsMarkAllAsSeenData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/notifications/seen';
+};
+
+export type NotificationsMarkAllAsSeenResponses = {
+    201: OkResponseDto;
+};
+
+export type NotificationsMarkAllAsSeenResponse = NotificationsMarkAllAsSeenResponses[keyof NotificationsMarkAllAsSeenResponses];
+
+export type NotificationsMarkAsSeenData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/notifications/{id}/seen';
+};
+
+export type NotificationsMarkAsSeenResponses = {
+    201: OkResponseDto;
+};
+
+export type NotificationsMarkAsSeenResponse = NotificationsMarkAsSeenResponses[keyof NotificationsMarkAsSeenResponses];
+
+export type NotificationsArchiveData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/notifications/{id}/archive';
+};
+
+export type NotificationsArchiveResponses = {
+    201: OkResponseDto;
+};
+
+export type NotificationsArchiveResponse = NotificationsArchiveResponses[keyof NotificationsArchiveResponses];
 
 export type KoreaderSyncServerTurnOffData = {
     body?: never;

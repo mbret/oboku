@@ -273,6 +273,146 @@
         ]
       }
     },
+    "/notifications": {
+      "get": {
+        "operationId": "Notifications_list",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "oneOf": [
+                      {
+                        "$ref": "#/components/schemas/AdminBroadcastNotificationDto"
+                      },
+                      {
+                        "$ref": "#/components/schemas/SyncFinishedNotificationDto"
+                      }
+                    ],
+                    "discriminator": {
+                      "propertyName": "kind",
+                      "mapping": {
+                        "admin_broadcast": "#/components/schemas/AdminBroadcastNotificationDto",
+                        "sync_finished": "#/components/schemas/SyncFinishedNotificationDto"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/unread-count": {
+      "get": {
+        "operationId": "Notifications_unreadCount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnreadNotificationsCountResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/seen": {
+      "post": {
+        "operationId": "Notifications_markAllAsSeen",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/seen": {
+      "post": {
+        "operationId": "Notifications_markAsSeen",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
+    "/notifications/{id}/archive": {
+      "post": {
+        "operationId": "Notifications_archive",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Notifications"
+        ]
+      }
+    },
     "/koreader-sync-server": {
       "get": {
         "operationId": "KoreaderSyncServer_get",
@@ -592,6 +732,161 @@
           "session_id"
         ]
       },
+      "AdminBroadcastNotificationDto": {
+        "type": "object",
+        "properties": {
+          "data": {
+            "type": "number",
+            "nullable": true,
+            "enum": [
+              null
+            ]
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "admin_broadcast"
+            ]
+          },
+          "id": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "success",
+              "warning",
+              "error"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "seenAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "data",
+          "kind",
+          "id",
+          "createdAt",
+          "severity",
+          "title",
+          "body",
+          "seenAt",
+          "archivedAt"
+        ]
+      },
+      "SyncFinishedNotificationDataDto": {
+        "type": "object",
+        "properties": {
+          "datasourceId": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string",
+            "enum": [
+              "success",
+              "error"
+            ]
+          }
+        },
+        "required": [
+          "datasourceId",
+          "state"
+        ]
+      },
+      "SyncFinishedNotificationDto": {
+        "type": "object",
+        "properties": {
+          "kind": {
+            "type": "string",
+            "enum": [
+              "sync_finished"
+            ]
+          },
+          "data": {
+            "$ref": "#/components/schemas/SyncFinishedNotificationDataDto"
+          },
+          "id": {
+            "type": "number"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "severity": {
+            "type": "string",
+            "enum": [
+              "info",
+              "success",
+              "warning",
+              "error"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string",
+            "nullable": true
+          },
+          "seenAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "archivedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "kind",
+          "data",
+          "id",
+          "createdAt",
+          "severity",
+          "title",
+          "body",
+          "seenAt",
+          "archivedAt"
+        ]
+      },
+      "UnreadNotificationsCountResponseDto": {
+        "type": "object",
+        "properties": {
+          "count": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "count"
+        ]
+      },
+      "OkResponseDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
       "KoreaderSyncServerResponseDto": {
         "type": "object",
         "properties": {
@@ -624,17 +919,6 @@
         "required": [
           "username",
           "password"
-        ]
-      },
-      "OkResponseDto": {
-        "type": "object",
-        "properties": {
-          "ok": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "ok"
         ]
       },
       "KoreaderSyncConnectionDto": {

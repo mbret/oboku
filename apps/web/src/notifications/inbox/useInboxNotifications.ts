@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { GetNotificationsResponse } from "@oboku/shared"
+import type { NotificationsListResponse } from "@oboku/shared"
 import { useConfig } from "../../config/useConfig"
 import { useHttpClientApi } from "../../http"
 import { useQueryOptionsWithAuthentication } from "../../auth"
@@ -14,9 +14,9 @@ export const useInboxNotifications = () => {
   return useQuery(
     useQueryOptionsWithAuthentication({
       queryKey: inboxNotificationsQueryKey(activeProfileId),
-      queryFn: async (): Promise<GetNotificationsResponse> => {
+      queryFn: async (): Promise<NotificationsListResponse> => {
         const { data } =
-          await httpClientApi.fetchOrThrow<GetNotificationsResponse>(
+          await httpClientApi.fetchOrThrow<NotificationsListResponse>(
             `${config?.API_URL}/notifications`,
           )
 

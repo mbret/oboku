@@ -4,8 +4,6 @@ import type {
   CreateAdminNotificationRequest,
   CreateAdminNotificationResponse,
   GetAdminNotificationsResponse,
-  GetNotificationsResponse,
-  UserNotification,
 } from "@oboku/shared"
 import { syncFinishedNotificationDataSchema } from "@oboku/shared"
 import {
@@ -17,6 +15,7 @@ import {
   normalizeAudienceEmails,
   UserPostgresService,
 } from "../features/postgres/user-postgres.service.js"
+import type { UserNotificationDto } from "./notifications.dto.js"
 
 export const toIsoString = (value: Date | string | null) => {
   if (!value) {
@@ -40,7 +39,7 @@ const logger = new Logger("NotificationService")
 
 const mapUserNotification = (
   row: UserNotificationRow,
-): UserNotification | null => {
+): UserNotificationDto | null => {
   const base = {
     id: row.notification_id,
     createdAt:
@@ -98,12 +97,12 @@ export class NotificationsService {
     userId,
   }: {
     userId: number
-  }): Promise<GetNotificationsResponse> {
+  }): Promise<UserNotificationDto[]> {
     const rows = await this.notificationPostgresService.getUserNotificationRows(
       { userId },
     )
 
-    return rows.reduce<UserNotification[]>((acc, row) => {
+    return rows.reduce<UserNotificationDto[]>((acc, row) => {
       const notification = mapUserNotification(row)
 
       if (notification) {

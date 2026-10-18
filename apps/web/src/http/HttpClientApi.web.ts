@@ -19,6 +19,11 @@ import type {
   KoreaderSyncConnectionDisconnectResponse,
   KoreaderSyncServerCreatePasswordResponse,
   KoreaderSyncServerTurnOffResponse,
+  NotificationsArchiveData,
+  NotificationsArchiveResponse,
+  NotificationsMarkAllAsSeenResponse,
+  NotificationsMarkAsSeenData,
+  NotificationsMarkAsSeenResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
@@ -172,14 +177,20 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       body: data,
     })
 
-  markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/seen`)
+  markNotificationAsSeen = ({ id }: NotificationsMarkAsSeenData["path"]) =>
+    this.postOrThrow<NotificationsMarkAsSeenResponse>(
+      `${API_URL}/notifications/${id}/seen`,
+    )
 
   markAllNotificationsAsSeen = () =>
-    this.postOrThrow(`${API_URL}/notifications/seen`)
+    this.postOrThrow<NotificationsMarkAllAsSeenResponse>(
+      `${API_URL}/notifications/seen`,
+    )
 
-  archiveNotification = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
+  archiveNotification = ({ id }: NotificationsArchiveData["path"]) =>
+    this.postOrThrow<NotificationsArchiveResponse>(
+      `${API_URL}/notifications/${id}/archive`,
+    )
 
   createKoreaderSyncServerPassword = () =>
     this.postOrThrow<KoreaderSyncServerCreatePasswordResponse>(

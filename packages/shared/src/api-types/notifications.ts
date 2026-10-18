@@ -11,29 +11,7 @@ export type SyncFinishedNotificationData = z.infer<
   typeof syncFinishedNotificationDataSchema
 >
 
-type BaseUserNotification = {
-  id: number
-  createdAt: string
-  severity: NotificationSeverity
-  title: string
-  body: string | null
-  seenAt: string | null
-  archivedAt: string | null
-}
-
-export type UserNotification =
-  | (BaseUserNotification & {
-      kind: "admin_broadcast"
-      data: null
-    })
-  | (BaseUserNotification & {
-      kind: "sync_finished"
-      data: SyncFinishedNotificationData
-    })
-
-export type NotificationKind = UserNotification["kind"]
-
-export type GetNotificationsResponse = UserNotification[]
+export type NotificationKind = "admin_broadcast" | "sync_finished"
 
 export type CreateAdminNotificationRequest = {
   title: string
@@ -57,7 +35,3 @@ export type AdminNotificationSummary = {
 export type GetAdminNotificationsResponse = AdminNotificationSummary[]
 
 export type CreateAdminNotificationResponse = AdminNotificationSummary
-
-export type GetUnreadNotificationsCountResponse = {
-  count: number
-}

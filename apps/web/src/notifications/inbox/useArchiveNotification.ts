@@ -4,8 +4,8 @@ import {
   type QueryClient,
 } from "@tanstack/react-query"
 import type {
-  GetNotificationsResponse,
-  GetUnreadNotificationsCountResponse,
+  NotificationsListResponse,
+  NotificationsUnreadCountResponse,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -29,13 +29,13 @@ export const archiveMutationOptions = (
     applyOptimisticUpdate: ({ id }: { id: number }, snapshot) => {
       const removed = snapshot.previousNotifications?.find((n) => n.id === id)
 
-      queryClient.setQueryData<GetNotificationsResponse>(
+      queryClient.setQueryData<NotificationsListResponse>(
         inboxNotificationsQueryKey(profileId),
         (old) => old?.filter((n) => n.id !== id),
       )
 
       if (removed && !removed.seenAt) {
-        queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
+        queryClient.setQueryData<NotificationsUnreadCountResponse>(
           unreadCountQueryKey(profileId),
           (old) => (old ? { count: Math.max(0, old.count - 1) } : old),
         )
