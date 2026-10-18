@@ -19,7 +19,6 @@
       "!**/playwright-report",
       "!apps/web/stream-shim.js",
       "!apps/admin/src/routeTree.gen.ts",
-      "!apps/api/openapi.json",
       "!packages/shared/src/api-types/generated",
       "!**/*.svg",
       "!**/next-env.d.ts",

@@ -59,7 +59,7 @@ const document = SwaggerModule.createDocument(
 )
 
 await writeFile(
-  new URL("../openapi.json", import.meta.url),
+  new URL("./openapi.json", import.meta.url),
   `${JSON.stringify(document, null, 2)}\n`,
 )
 
