@@ -46,6 +46,16 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkKoreaderProgress?: string | null
     /**
+     * The `document` a KOReader sync server files
+     * readingStateCurrentBookmarkKoreaderProgress under: the digest of the
+     * file the bookmark was saved in, as KOReader computes it by default
+     * ("Binary" document matching). Written with it, from the same file, so a
+     * changed file takes its own document with the next position saved.
+     * `null` when there is no bookmark. Missing on a book last read before
+     * it existed.
+     */
+    readingStateCurrentBookmarkKoreaderDocument?: string | null
+    /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
      * page 1, as the reader itself shows it. Until that estimate settles for
@@ -129,6 +139,18 @@ export type BookDocType = CouchDBMeta &
   }
 
 /**
+ * The bookmark of a book that has none, so it opens at its start. Whatever
+ * clears a bookmark spreads it, so the bookmark's progress and KOReader form
+ * go with it.
+ */
+export const emptyBookmark = {
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateCurrentBookmarkKoreaderProgress: null,
+  readingStateCurrentBookmarkKoreaderDocument: null,
+} satisfies Partial<BookDocType>
+
+/**
  * A book nothing has happened to yet: no metadata fetched, never opened, in
  * no collection. The web app and the API create their books from it, with
  * what they know of each on top.
@@ -147,9 +169,7 @@ export const createBookDefaults = (): Omit<
   lastMetadataUpdateError: null,
   metadataUpdateStatus: null,
   readingStateCurrentState: ReadingStateState.NotStarted,
-  readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkKoreaderProgress: null,
-  readingStateCurrentBookmarkProgressPercent: 0,
+  ...emptyBookmark,
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: null,
 })

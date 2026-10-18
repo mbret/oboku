@@ -26,8 +26,9 @@ type SavedReadingPosition = Pick<
   "cfi" | "percentageEstimateOfBook"
 >
 
-type SavedReadingPositionWithKoreaderProgress = SavedReadingPosition & {
+type SavedReadingPositionWithKoreaderForm = SavedReadingPosition & {
   koreaderProgress: string | null
+  koreaderDocument: string
 }
 
 const toSavedReadingPosition = ({
@@ -68,7 +69,8 @@ const createReadingPositionPatch = ({
   cfi,
   percentageEstimateOfBook,
   koreaderProgress,
-}: SavedReadingPositionWithKoreaderProgress): BookPatch =>
+  koreaderDocument,
+}: SavedReadingPositionWithKoreaderForm): BookPatch =>
   function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
@@ -85,6 +87,7 @@ const createReadingPositionPatch = ({
       readingStateCurrentBookmarkLocation: cfi,
       readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
       readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
+      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
       readingStateCurrentState: nextReadingState,
       ...(didReadingStateChange && {
         readingStateUpdatedAt: new Date().toISOString(),
@@ -120,7 +123,14 @@ const markBookAsFinished = (old: BookDocType): BookDocType => {
 
 export const useSyncBookProgress = (
   bookId: string,
-  { enabled = true }: { enabled?: boolean } = {},
+  {
+    enabled = true,
+    koreaderDocument,
+  }: {
+    enabled?: boolean
+    /** The KOReader document of the book's file, `undefined` until the book is loaded. */
+    koreaderDocument: string | undefined
+  },
 ) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
@@ -129,6 +139,7 @@ export const useSyncBookProgress = (
     function syncBookProgressWhileReading() {
       if (!enabled) return
       if (!reader) return
+      if (koreaderDocument === undefined) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
       // completes the progress streams downstream, which lets bufferTime
@@ -138,11 +149,12 @@ export const useSyncBookProgress = (
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
-        map(function withKoreaderProgress(position) {
+        map(function withKoreaderForm(position) {
           return {
             ...position,
             koreaderProgress:
               reader.koreader.cfiToXPointer(position.cfi) ?? null,
+            koreaderDocument,
           }
         }),
         map(createReadingPositionPatch),
@@ -214,6 +226,6 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [reader, bookId, incrementalBookModify, enabled],
+    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
   )
 }

@@ -496,6 +496,9 @@ importers:
       '@prose-reader/enhancer-search':
         specifier: ^25.1.0
         version: 25.1.0(rxjs@7.8.2)
+      '@prose-reader/koreader':
+        specifier: ^25.1.0
+        version: 25.1.0
       '@prose-reader/react-reader':
         specifier: ^25.1.0
         version: 25.1.0(ac91b22fc25d60180b727341023e5c7a)

@@ -1,24 +1,31 @@
-import { ReadingStateState } from "@oboku/shared"
+import {
+  type BookDocType,
+  emptyBookmark,
+  ReadingStateState,
+} from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
 import { from, mergeMap, toArray } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 
-const createMarkBookAsUnreadPatch = () => ({
-  readingStateCurrentState: ReadingStateState.NotStarted,
-  readingStateCurrentBookmarkProgressPercent: 0,
-  readingStateReachedProgressPercent: 0,
-  readingStateUpdatedAt: new Date().toISOString(),
-  readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkKoreaderProgress: null,
-})
+type MarkedReadingState = Pick<
+  BookDocType,
+  "readingStateCurrentState" | "readingStateReachedProgressPercent"
+>
 
-const createMarkBookAsFinishedPatch = () => ({
+const unread: MarkedReadingState = {
+  readingStateCurrentState: ReadingStateState.NotStarted,
+  readingStateReachedProgressPercent: 0,
+}
+
+const finished: MarkedReadingState = {
   readingStateCurrentState: ReadingStateState.Finished,
-  readingStateCurrentBookmarkProgressPercent: 0,
   readingStateReachedProgressPercent: 1,
+}
+
+const createMarkBookAsPatch = (markedReadingState: MarkedReadingState) => ({
+  ...emptyBookmark,
+  ...markedReadingState,
   readingStateUpdatedAt: new Date().toISOString(),
-  readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkKoreaderProgress: null,
 })
 
 type UseMarkBooksAsOptions = {
@@ -27,7 +34,7 @@ type UseMarkBooksAsOptions = {
 }
 
 function useMarkBooksAs(
-  createPatch: typeof createMarkBookAsUnreadPatch,
+  markedReadingState: MarkedReadingState,
   options: UseMarkBooksAsOptions = {},
 ) {
   return useMutation$({
@@ -38,7 +45,13 @@ function useMarkBooksAs(
         ),
         mergeMap((books) =>
           from(Array.from(books.values())).pipe(
-            mergeMap((book) => from(book.incrementalPatch(createPatch()))),
+            mergeMap((book) =>
+              from(
+                book.incrementalPatch(
+                  createMarkBookAsPatch(markedReadingState),
+                ),
+              ),
+            ),
             toArray(),
           ),
         ),
@@ -48,7 +61,7 @@ function useMarkBooksAs(
 }
 
 export const useMarkBooksAsUnread = (options: UseMarkBooksAsOptions = {}) =>
-  useMarkBooksAs(createMarkBookAsUnreadPatch, options)
+  useMarkBooksAs(unread, options)
 
 export const useMarkBooksAsFinished = (options: UseMarkBooksAsOptions = {}) =>
-  useMarkBooksAs(createMarkBookAsFinishedPatch, options)
+  useMarkBooksAs(finished, options)

@@ -36,8 +36,10 @@ export const Reader = memo(function Reader({
   const reader = useSignalValue(readerSignal)
   const { data: isReaderMounted } = useObserve(() => reader?.mounted$, [reader])
   const readerContainerRef = useRef<HTMLDivElement>(null)
-  const { data: { isUsingWebStreamer, manifest } = {}, error: manifestError } =
-    useManifest(bookId)
+  const {
+    data: { isUsingWebStreamer, manifest, koreaderDocument } = {},
+    error: manifestError,
+  } = useManifest(bookId)
   const isBookError = !!manifestError
   const localSettings = useLocalSettings([
     "readerFloatingProgress",
@@ -116,6 +118,7 @@ export const Reader = memo(function Reader({
         isPreview={isPreview}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
+        koreaderDocument={koreaderDocument}
         containerRef={readerContainerRef}
       />
     </>
@@ -127,12 +130,14 @@ const Effects = memo(function Effects({
   isPreview,
   isUsingWebStreamer,
   manifest,
+  koreaderDocument,
   containerRef,
 }: {
   bookId: string
   isPreview: boolean
   isUsingWebStreamer?: boolean
   manifest?: Manifest
+  koreaderDocument?: string
   containerRef: RefObject<HTMLElement | null>
 }) {
   useCreateReader({
@@ -142,7 +147,7 @@ const Effects = memo(function Effects({
     manifest,
     containerRef,
   })
-  useSyncBookProgress(bookId, { enabled: !isPreview })
+  useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
 
   return null
 })

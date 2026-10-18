@@ -56,13 +56,16 @@ export const bookSchemaMigrationStrategies: MigrationStrategies = {
   // v6: added optional `readingStateCurrentBookmarkKoreaderProgress`; nothing
   // to backfill since the reader writes it the next time the book is opened.
   6: (oldDoc: Record<string, unknown>) => oldDoc,
+  // v7: added optional `readingStateCurrentBookmarkKoreaderDocument`; nothing
+  // to backfill since the reader writes it the next time the book is opened.
+  7: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const bookSchema: RxJsonSchema<
   Omit<BookDocType & DeprecatedBookDocType, `_rev` | `rxdbMeta`>
 > = {
   title: "books",
-  version: 6,
+  version: 7,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -80,6 +83,7 @@ export const bookSchema: RxJsonSchema<
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
     readingStateCurrentBookmarkKoreaderProgress: { type: ["string", "null"] },
+    readingStateCurrentBookmarkKoreaderDocument: { type: ["string", "null"] },
     readingStateReachedProgressPercent: { type: ["number"] },
     readingStateUpdatedAt: { type: ["string", "null"] },
     readingStateCurrentState: { type: ["string"] },
