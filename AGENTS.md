@@ -73,7 +73,7 @@
 
 - The request and response types for API routes are generated from the API's controllers and DTO classes. After changing a route, run `pnpm generate:api-types` and commit `packages/shared/src/api-types/generated/`. Never edit those files by hand, and never hand-write a request or response type, or a zod schema for one, for a route the document covers.
 - Declare DTOs in `*.dto.ts` files and return a class from every route. The `@nestjs/swagger` plugin ignores classes declared in controller files and cannot read `type` aliases.
-- At an HTTP call site, type the request and response with the route's generated types (`AuthSignInWithEmailData["body"]`, `AuthSignInWithEmailResponse`), so the call follows the route when its DTOs change.
+- Call an API route through its generated function, with the app's client: `notificationsList({ client: httpClientApi.sdkClient })` in the web app. A call that does not use the functions yet types its request and response with the route's generated types (`AuthSignInWithEmailData["body"]`, `AuthSignInWithEmailResponse`), so it follows the route when its DTOs change.
 - `apps/docs/src/content/docs/development/api-types.md` covers the workflow and the decorators a route needs when the plugin cannot infer its schema.
 
 ### Data migrations: RxDB is local, CouchDB is the data

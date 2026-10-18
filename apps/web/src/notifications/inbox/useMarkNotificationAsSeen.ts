@@ -3,9 +3,11 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query"
-import type {
-  NotificationsListResponse,
-  NotificationsUnreadCountResponse,
+import {
+  type NotificationsListResponse,
+  type NotificationsMarkAsSeenData,
+  type NotificationsUnreadCountResponse,
+  notificationsMarkAsSeen,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -25,7 +27,14 @@ export const markSeenMutationOptions = (
     queryClient,
     profileId,
     mutationKey: markSeenMutationKey,
-    mutationFn: httpClientApi.markNotificationAsSeen,
+    mutationFn: function markNotificationAsSeen({
+      id,
+    }: NotificationsMarkAsSeenData["path"]) {
+      return notificationsMarkAsSeen({
+        client: httpClientApi.sdkClient,
+        path: { id },
+      })
+    },
     applyOptimisticUpdate: ({ id }: { id: number }, snapshot) => {
       const target = snapshot.previousNotifications?.find((n) => n.id === id)
 
