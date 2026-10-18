@@ -37,17 +37,14 @@ export type BookDocType = CouchDBMeta &
     /**
      * readingStateCurrentBookmarkLocation in KOReader's form: the `progress` a
      * KOReader sync server keeps for a book, an xpointer for a reflowable book
-     * and a page number for one with pages, with the cfi it was computed
-     * from. It is that bookmark's only while `cfi` equals
-     * readingStateCurrentBookmarkLocation: a version of the app that predates
-     * it moves the bookmark and leaves it behind. `null` or missing when the
-     * bookmark has none: no bookmark, or a place prose's KOReader enhancer
-     * cannot express.
+     * and a page number for one with pages. Whatever writes the bookmark
+     * writes this too, `null` when the bookmark has none: no bookmark, or a
+     * place prose's KOReader enhancer cannot express. Missing on a book last
+     * read before it existed. An older version of the app only writes the
+     * bookmark, so a book it updates keeps a stale value until a newer
+     * version writes it again.
      */
-    readingStateCurrentBookmarkKoreaderProgress?: {
-      cfi: string
-      progress: string
-    } | null
+    readingStateCurrentBookmarkKoreaderProgress?: string | null
     /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last

@@ -196,7 +196,7 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("saves the bookmark's KOReader progress with the cfi it was computed from", async () => {
+  it("saves the KOReader progress with the bookmark", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
@@ -205,10 +205,9 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkKoreaderProgress: {
-        cfi: LAST_PAGE.cfi,
-        progress: toFakeXPointer(LAST_PAGE.cfi),
-      },
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        LAST_PAGE.cfi,
+      ),
     })
   })
 
@@ -230,10 +229,9 @@ describe("useSyncBookProgress", () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkKoreaderProgress: {
-        cfi: LAST_PAGE.cfi,
-        progress: toFakeXPointer(LAST_PAGE.cfi),
-      },
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        LAST_PAGE.cfi,
+      ),
       readingStateUpdatedAt,
     })
   })
@@ -242,10 +240,9 @@ describe("useSyncBookProgress", () => {
     mocks.state.book = {
       ...book,
       readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
-      readingStateCurrentBookmarkKoreaderProgress: {
-        cfi: PAGE_BEFORE_LAST.cfi,
-        progress: toFakeXPointer(PAGE_BEFORE_LAST.cfi),
-      },
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        PAGE_BEFORE_LAST.cfi,
+      ),
     }
     const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
     renderSyncBookProgress()

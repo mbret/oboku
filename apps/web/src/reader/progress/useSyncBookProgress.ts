@@ -27,7 +27,7 @@ type SavedReadingPosition = Pick<
 >
 
 type SavedReadingPositionWithKoreaderProgress = SavedReadingPosition & {
-  koreaderProgress: string | undefined
+  koreaderProgress: string | null
 }
 
 const toSavedReadingPosition = ({
@@ -74,10 +74,6 @@ const createReadingPositionPatch = ({
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
         : ReadingStateState.Reading
-    const nextKoreaderProgress =
-      koreaderProgress === undefined
-        ? null
-        : { cfi, progress: koreaderProgress }
 
     const didBookmarkLocationChange =
       old.readingStateCurrentBookmarkLocation !== cfi
@@ -87,10 +83,7 @@ const createReadingPositionPatch = ({
     const didReadingStateChange =
       old.readingStateCurrentState !== nextReadingState
     const didKoreaderProgressChange =
-      old.readingStateCurrentBookmarkKoreaderProgress?.cfi !==
-        nextKoreaderProgress?.cfi ||
-      old.readingStateCurrentBookmarkKoreaderProgress?.progress !==
-        nextKoreaderProgress?.progress
+      old.readingStateCurrentBookmarkKoreaderProgress !== koreaderProgress
     const isReadingStateUpdate =
       didBookmarkLocationChange || didProgressChange || didReadingStateChange
 
@@ -102,7 +95,7 @@ const createReadingPositionPatch = ({
         readingStateCurrentBookmarkLocation: cfi,
       }),
       ...(didKoreaderProgressChange && {
-        readingStateCurrentBookmarkKoreaderProgress: nextKoreaderProgress,
+        readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
       }),
       ...(isReadingStateUpdate && {
         readingStateUpdatedAt: new Date().toISOString(),
@@ -165,7 +158,8 @@ export const useSyncBookProgress = (
         map(function withKoreaderProgress(position) {
           return {
             ...position,
-            koreaderProgress: reader.koreader.cfiToXPointer(position.cfi),
+            koreaderProgress:
+              reader.koreader.cfiToXPointer(position.cfi) ?? null,
           }
         }),
         map(createReadingPositionPatch),

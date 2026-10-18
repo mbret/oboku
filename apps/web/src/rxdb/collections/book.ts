@@ -79,14 +79,7 @@ export const bookSchema: RxJsonSchema<
     links: { ref: "link", type: "array", items: { type: "string" } },
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
-    readingStateCurrentBookmarkKoreaderProgress: {
-      type: ["object", "null"],
-      properties: {
-        cfi: { type: "string" },
-        progress: { type: "string" },
-      },
-      required: ["cfi", "progress"],
-    },
+    readingStateCurrentBookmarkKoreaderProgress: { type: ["string", "null"] },
     readingStateReachedProgressPercent: { type: ["number"] },
     readingStateUpdatedAt: { type: ["string", "null"] },
     readingStateCurrentState: { type: ["string"] },
