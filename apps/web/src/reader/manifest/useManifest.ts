@@ -1,7 +1,7 @@
 import type { Manifest } from "@prose-reader/shared"
 import { webStreamer } from "../streamer/webStreamer"
 import { STREAMER_URL_PREFIX } from "../../config"
-import { useQuery } from "@tanstack/react-query"
+import { skipToken, useQuery } from "@tanstack/react-query"
 import { type Database, useDatabase } from "../../rxdb"
 import { getMetadataFromBook } from "../../books/metadata"
 import { httpClient } from "../../http/httpClient.shared"
@@ -15,8 +15,8 @@ const loadManifest = async ({
   bookId,
   db,
 }: {
-  bookId: string | undefined
-  db: Database | undefined
+  bookId: string
+  db: Database
 }) => {
   // A service worker only intercepts fetches for pages it controls, so its
   // streamer is usable exactly when it controls this page.
@@ -30,7 +30,7 @@ const loadManifest = async ({
     : { response: undefined }
 
   const enrichManifest = async (_manifest: Manifest) => {
-    const book = await db?.book.findOne(bookId).exec()
+    const book = await db.book.findOne(bookId).exec()
     const metadata = getMetadataFromBook(book)
 
     return {
@@ -49,8 +49,8 @@ const loadManifest = async ({
     swStreamerResponse.headers.get("Content-Type") === "text/html"
   ) {
     const webStreamerResponse = await webStreamer.fetchManifest({
-      key: bookId ?? ``,
-      baseUrl: getManifestBaseUrl(window.location.origin, bookId ?? ""),
+      key: bookId,
+      baseUrl: getManifestBaseUrl(window.location.origin, bookId),
     })
 
     if (webStreamerResponse.status >= 400) {
@@ -68,23 +68,24 @@ const loadManifest = async ({
   return { manifest: await enrichManifest(data), isUsingWebStreamer: false }
 }
 
-export const useManifest = (bookId: string | undefined) => {
+export const useManifest = (bookId: string) => {
   const { db } = useDatabase()
 
   return useQuery({
     queryKey: ["reader/streamer/manifest", { bookId }],
     networkMode: "always",
-    queryFn: async function loadBook() {
-      const [{ manifest, isUsingWebStreamer }, koreaderDocument] =
-        await Promise.all([
-          loadManifest({ bookId, db }),
-          getBookKoreaderDocument(bookId ?? ""),
-        ])
+    queryFn: db
+      ? async function loadBook() {
+          const [{ manifest, isUsingWebStreamer }, koreaderDocument] =
+            await Promise.all([
+              loadManifest({ bookId, db }),
+              getBookKoreaderDocument(bookId),
+            ])
 
-      return { manifest, isUsingWebStreamer, koreaderDocument }
-    },
+          return { manifest, isUsingWebStreamer, koreaderDocument }
+        }
+      : skipToken,
     staleTime: Infinity,
     retry: (_, error) => !(error instanceof Response && error.status === 415),
-    enabled: !!bookId && !!db,
   })
 }
