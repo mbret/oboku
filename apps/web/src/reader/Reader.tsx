@@ -137,7 +137,7 @@ const Effects = memo(function Effects({
   isPreview: boolean
   isUsingWebStreamer?: boolean
   manifest?: Manifest
-  koreaderDocument?: string | null
+  koreaderDocument?: string
   containerRef: RefObject<HTMLElement | null>
 }) {
   useCreateReader({

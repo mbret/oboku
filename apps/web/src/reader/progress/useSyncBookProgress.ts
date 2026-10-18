@@ -28,7 +28,7 @@ type SavedReadingPosition = Pick<
 
 type SavedReadingPositionWithKoreaderForm = SavedReadingPosition & {
   koreaderProgress: string | null
-  koreaderDocument: string | null
+  koreaderDocument: string
 }
 
 const toSavedReadingPosition = ({
@@ -129,7 +129,7 @@ export const useSyncBookProgress = (
   }: {
     enabled?: boolean
     /** The KOReader document of the book's file, `undefined` until the book is loaded. */
-    koreaderDocument: string | null | undefined
+    koreaderDocument: string | undefined
   },
 ) => {
   const reader = useReader()

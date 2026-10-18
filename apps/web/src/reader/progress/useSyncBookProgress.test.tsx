@@ -160,7 +160,7 @@ function createFakeReader({
 function renderSyncBookProgress({
   koreaderDocument = KOREADER_DOCUMENT,
 }: {
-  koreaderDocument?: string | null
+  koreaderDocument?: string
 } = {}) {
   return renderHook(function renderUseSyncBookProgress() {
     useSyncBookProgress(book._id, { koreaderDocument })
@@ -290,19 +290,6 @@ describe("useSyncBookProgress", () => {
       ),
       readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
       readingStateUpdatedAt,
-    })
-  })
-
-  it("keeps saving the reading position of a book without a KOReader document", async () => {
-    const reader = createFakeReader()
-    renderSyncBookProgress({ koreaderDocument: null })
-
-    reader.navigation.readingPosition$.next(LAST_PAGE)
-    await vi.advanceTimersByTimeAsync(1000)
-
-    expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkKoreaderDocument: null,
     })
   })
 

@@ -3,13 +3,12 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(function createManifestMocks() {
   return {
     fetchManifest: vi.fn<() => Promise<Response>>(),
-    getBookKoreaderDocument:
-      vi.fn<(bookId: string) => Promise<string | null>>(),
+    getBookKoreaderDocument: vi.fn<(bookId: string) => Promise<string>>(),
   }
 })
 
@@ -83,10 +82,6 @@ describe("useManifest", () => {
     mocks.getBookKoreaderDocument.mockReset()
   })
 
-  afterEach(() => {
-    vi.restoreAllMocks()
-  })
-
   it("loads the KOReader document of the book's file with its manifest", async () => {
     mocks.getBookKoreaderDocument.mockResolvedValue(KOREADER_DOCUMENT)
 
@@ -99,23 +94,5 @@ describe("useManifest", () => {
       })
     })
     expect(mocks.getBookKoreaderDocument).toHaveBeenCalledWith(BOOK_ID)
-  })
-
-  it("opens the book without a KOReader document when its file cannot be read", async () => {
-    vi.spyOn(console, "error").mockImplementation(
-      function ignoreLoggedError() {},
-    )
-    mocks.getBookKoreaderDocument.mockRejectedValue(
-      new Error("The book file cannot be read"),
-    )
-
-    const { result } = renderManifest()
-
-    await waitFor(function expectBookLoaded() {
-      expect(result.current.data).toMatchObject({
-        manifest: { filename: "a-book.epub" },
-        koreaderDocument: null,
-      })
-    })
   })
 })
