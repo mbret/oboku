@@ -140,6 +140,18 @@ export type BookDocType = CouchDBMeta &
   }
 
 /**
+ * The bookmark of a book that has none, so it opens at its start. Whatever
+ * clears a bookmark spreads it, so the bookmark's progress and KOReader form
+ * go with it.
+ */
+export const emptyBookmark = {
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateCurrentBookmarkKoreaderProgress: null,
+  readingStateCurrentBookmarkKoreaderDocument: null,
+} satisfies Partial<BookDocType>
+
+/**
  * A book nothing has happened to yet: no metadata fetched, never opened, in
  * no collection. The web app and the API create their books from it, with
  * what they know of each on top.
@@ -158,10 +170,7 @@ export const createBookDefaults = (): Omit<
   lastMetadataUpdateError: null,
   metadataUpdateStatus: null,
   readingStateCurrentState: ReadingStateState.NotStarted,
-  readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkKoreaderProgress: null,
-  readingStateCurrentBookmarkKoreaderDocument: null,
-  readingStateCurrentBookmarkProgressPercent: 0,
+  ...emptyBookmark,
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: null,
 })
