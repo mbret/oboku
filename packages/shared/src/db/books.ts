@@ -35,6 +35,20 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkProgressPercent: number
     /**
+     * readingStateCurrentBookmarkLocation as a KOReader (crengine) xpointer,
+     * the progress a KOReader sync server keeps for a book, with the cfi it
+     * was computed from. It is that bookmark's only while `cfi` equals
+     * readingStateCurrentBookmarkLocation: a version of the app that predates
+     * it moves the bookmark and leaves it behind. `null` or missing when the
+     * bookmark has none: no bookmark, a place outside the book's (X)HTML
+     * documents, such as a comic's or a PDF's, or one crengine has no node
+     * for.
+     */
+    readingStateCurrentBookmarkXPointer?: {
+      cfi: string
+      xpointer: string
+    } | null
+    /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
      * page 1, as the reader itself shows it. Until that estimate settles for

@@ -9,6 +9,7 @@ const createMarkBookAsUnreadPatch = () => ({
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: new Date().toISOString(),
   readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkXPointer: null,
 })
 
 const createMarkBookAsFinishedPatch = () => ({
@@ -17,6 +18,7 @@ const createMarkBookAsFinishedPatch = () => ({
   readingStateReachedProgressPercent: 1,
   readingStateUpdatedAt: new Date().toISOString(),
   readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkXPointer: null,
 })
 
 type UseMarkBooksAsOptions = {

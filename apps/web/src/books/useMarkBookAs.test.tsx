@@ -78,6 +78,7 @@ describe("useMarkBooksAs", () => {
     expect(await markBook(useMarkBooksAsFinished)).toEqual({
       readingStateCurrentState: ReadingStateState.Finished,
       readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkXPointer: null,
       readingStateCurrentBookmarkProgressPercent: 0,
       readingStateReachedProgressPercent: 1,
       readingStateUpdatedAt: expect.any(String),
@@ -88,6 +89,7 @@ describe("useMarkBooksAs", () => {
     expect(await markBook(useMarkBooksAsUnread)).toEqual({
       readingStateCurrentState: ReadingStateState.NotStarted,
       readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkXPointer: null,
       readingStateCurrentBookmarkProgressPercent: 0,
       readingStateReachedProgressPercent: 0,
       readingStateUpdatedAt: expect.any(String),

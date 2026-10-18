@@ -12,12 +12,17 @@ type FakePaginationResult = {
   end: { spineItemIndex: number }
 }
 
-type FakeSpineItem = { value: { loadStatus: DocumentLoadStatus } }
+type FakeSpineItem = {
+  value: { loadStatus: DocumentLoadStatus }
+  item: { href: string; mediaType: string }
+}
 
 type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
   pagination: { state$: Subject<FakePaginationResult> }
   spineItemsManager: { get: (spineItemIndex: number) => FakeSpineItem }
+  cfi: { getSpineItemFromCfi: (cfi: string) => FakeSpineItem }
+  koreader: { cfiToXPointer: (cfi: string) => string | undefined }
 }
 
 const mocks = vi.hoisted(function createSyncBookProgressMocks() {
@@ -119,21 +124,40 @@ const book: BookDocType = {
   tags: [],
 }
 
+const toFakeXPointer = (cfi: string) => `/body/DocFragment[1]/body/p.${cfi}`
+
 function createFakeReader({
   failedSpineItemIndexes = [],
+  spineItemMediaType = "application/xhtml+xml",
+  cfisWithoutXPointer = [],
 }: {
   failedSpineItemIndexes?: number[]
+  spineItemMediaType?: string
+  cfisWithoutXPointer?: string[]
 } = {}) {
+  const getFakeSpineItem = (spineItemIndex: number): FakeSpineItem => {
+    const didFailToLoad = failedSpineItemIndexes.includes(spineItemIndex)
+
+    return {
+      value: { loadStatus: didFailToLoad ? "error" : "loaded" },
+      item: { href: "chapter", mediaType: spineItemMediaType },
+    }
+  }
+
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
     pagination: { state$: new Subject() },
-    spineItemsManager: {
-      get: function getFakeSpineItem(spineItemIndex) {
-        const didFailToLoad = failedSpineItemIndexes.includes(spineItemIndex)
-
-        return {
-          value: { loadStatus: didFailToLoad ? "error" : "loaded" },
-        }
+    spineItemsManager: { get: getFakeSpineItem },
+    cfi: {
+      getSpineItemFromCfi: function getFakeSpineItemFromCfi() {
+        return getFakeSpineItem(0)
+      },
+    },
+    koreader: {
+      cfiToXPointer: function toFakeXPointerUnlessUnconvertible(cfi) {
+        return cfisWithoutXPointer.includes(cfi)
+          ? undefined
+          : toFakeXPointer(cfi)
       },
     },
   }
@@ -181,6 +205,84 @@ describe("useSyncBookProgress", () => {
       readingStateReachedProgressPercent: 0.95,
       readingStateCurrentState: ReadingStateState.Reading,
       readingStateUpdatedAt: expect.any(String),
+    })
+  })
+
+  it("saves the bookmark's xpointer with the cfi it was computed from", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkXPointer: {
+        cfi: LAST_PAGE.cfi,
+        xpointer: toFakeXPointer(LAST_PAGE.cfi),
+      },
+    })
+  })
+
+  it("adds the xpointer to a bookmark saved without one, leaving its place in recent activity", async () => {
+    const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkXPointer: {
+        cfi: LAST_PAGE.cfi,
+        xpointer: toFakeXPointer(LAST_PAGE.cfi),
+      },
+      readingStateUpdatedAt,
+    })
+  })
+
+  it("saves no xpointer for a place outside the book's (X)HTML documents, such as a comic page", async () => {
+    const reader = createFakeReader({ spineItemMediaType: "image/jpeg" })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+    })
+    expect(
+      mocks.state.book?.readingStateCurrentBookmarkXPointer ?? null,
+    ).toBeNull()
+  })
+
+  it("drops the xpointer of the previous bookmark when the new one has none", async () => {
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkXPointer: {
+        cfi: PAGE_BEFORE_LAST.cfi,
+        xpointer: toFakeXPointer(PAGE_BEFORE_LAST.cfi),
+      },
+    }
+    const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkXPointer: null,
     })
   })
 

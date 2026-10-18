@@ -317,6 +317,7 @@ export const createBook = async (
     metadataUpdateStatus: null,
     links: [],
     readingStateCurrentBookmarkLocation: null,
+    readingStateCurrentBookmarkXPointer: null,
     readingStateCurrentBookmarkProgressPercent: 0,
     readingStateReachedProgressPercent: 0,
     readingStateUpdatedAt: null,

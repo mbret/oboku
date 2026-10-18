@@ -135,6 +135,7 @@ export const useAddBook = () => {
           lastMetadataUpdateError: null,
           metadataUpdateStatus: null,
           readingStateCurrentBookmarkLocation: null,
+          readingStateCurrentBookmarkXPointer: null,
           readingStateUpdatedAt: null,
           readingStateCurrentBookmarkProgressPercent: 0,
           readingStateReachedProgressPercent: 0,
