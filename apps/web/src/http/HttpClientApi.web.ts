@@ -14,6 +14,12 @@ import type {
   AuthSignInWithEmailResponse,
   AuthSignInWithGoogleData,
   AuthSignInWithGoogleResponse,
+  BooksRefreshMetadataData,
+  BooksRefreshMetadataResponse,
+  CollectionsRefreshMetadataData,
+  CollectionsRefreshMetadataResponse,
+  DataSourcesSyncData,
+  DataSourcesSyncResponse,
   KoreaderSyncConnectionConnectData,
   KoreaderSyncConnectionConnectResponse,
   KoreaderSyncConnectionDisconnectResponse,
@@ -24,12 +30,6 @@ import type {
   NotificationsMarkAllAsSeenResponse,
   NotificationsMarkAsSeenData,
   NotificationsMarkAsSeenResponse,
-  RefreshBookMetadataRequest,
-  RefreshBookMetadataResponse,
-  RefreshCollectionMetadataRequest,
-  RefreshCollectionMetadataResponse,
-  SyncDataSourceRequest,
-  SyncDataSourceResponse,
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
@@ -101,24 +101,26 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       }),
     )
 
-  refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
-    this.postOrThrow<RefreshBookMetadataResponse, RefreshBookMetadataRequest>(
-      `${API_URL}/books/metadata/refresh`,
-      {
-        body: params,
-      },
-    )
-
-  refreshCollectionMetadata = (params: RefreshCollectionMetadataRequest) =>
+  refreshBookMetadata = (params: BooksRefreshMetadataData["body"]) =>
     this.postOrThrow<
-      RefreshCollectionMetadataResponse,
-      RefreshCollectionMetadataRequest
+      BooksRefreshMetadataResponse,
+      BooksRefreshMetadataData["body"]
+    >(`${API_URL}/books/metadata/refresh`, {
+      body: params,
+    })
+
+  refreshCollectionMetadata = (
+    params: CollectionsRefreshMetadataData["body"],
+  ) =>
+    this.postOrThrow<
+      CollectionsRefreshMetadataResponse,
+      CollectionsRefreshMetadataData["body"]
     >(`${API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: params.soft ?? false },
     })
 
-  syncDataSource = (params: SyncDataSourceRequest) =>
-    this.postOrThrow<SyncDataSourceResponse, SyncDataSourceRequest>(
+  syncDataSource = (params: DataSourcesSyncData["body"]) =>
+    this.postOrThrow<DataSourcesSyncResponse, DataSourcesSyncData["body"]>(
       `${API_URL}/datasources/sync`,
       {
         body: params,

@@ -22,6 +22,11 @@ for (const [name, value] of Object.entries(placeholderEnvironment)) {
 
 const { AppModule } = await import("./app.module.js")
 const { AuthModule } = await import("./auth/auth.module.js")
+const { BooksModule } = await import("./books/books.module.js")
+const { CollectionsModule } = await import(
+  "./features/collections/collections.module.js"
+)
+const { DataSourceModule } = await import("./datasource/datasource.module.js")
 const { KoreaderSyncConnectionModule } = await import(
   "./koreader/sync-connection/koreader-sync-connection.module.js"
 )
@@ -36,6 +41,9 @@ const { NotificationsModule } = await import(
 // and returns classes, so the document covers the whole API.
 const documentedModules = [
   AuthModule,
+  BooksModule,
+  CollectionsModule,
+  DataSourceModule,
   KoreaderSyncConnectionModule,
   KoreaderSyncServerModule,
   NotificationsModule,

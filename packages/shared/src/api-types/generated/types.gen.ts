@@ -72,7 +72,7 @@ export type AdminBroadcastNotificationDto = {
     kind: 'admin_broadcast';
     id: number;
     createdAt: string;
-    severity: 'info' | 'success' | 'warning' | 'error';
+    severity: 'error' | 'success' | 'info' | 'warning';
     title: string;
     body: string | null;
     seenAt: string | null;
@@ -81,7 +81,7 @@ export type AdminBroadcastNotificationDto = {
 
 export type SyncFinishedNotificationDataDto = {
     datasourceId: string;
-    state: 'success' | 'error';
+    state: 'error' | 'success';
 };
 
 export type SyncFinishedNotificationDto = {
@@ -89,7 +89,7 @@ export type SyncFinishedNotificationDto = {
     data: SyncFinishedNotificationDataDto;
     id: number;
     createdAt: string;
-    severity: 'info' | 'success' | 'warning' | 'error';
+    severity: 'error' | 'success' | 'info' | 'warning';
     title: string;
     body: string | null;
     seenAt: string | null;
@@ -102,6 +102,76 @@ export type UnreadNotificationsCountResponseDto = {
 
 export type OkResponseDto = {
     ok: boolean;
+};
+
+export type SyncReportRelationDto = {
+    id: string;
+    label?: string;
+    rx_model: 'link' | 'datasource' | 'obokucollection' | 'tag' | 'book';
+};
+
+export type SyncReportEntryDto = {
+    rx_model: 'link' | 'datasource' | 'obokucollection' | 'tag' | 'book';
+    id: string;
+    label?: string;
+    /**
+     * Used for links and books.
+     */
+    linkedTo?: Array<SyncReportRelationDto>;
+    /**
+     * Used for links and books.
+     */
+    unlinkedTo?: Array<SyncReportRelationDto>;
+    fetchedMetadata?: boolean;
+    /**
+     * True when this book or collection was synced but metadata could not be refreshed (link uses different connector/credentials).
+     */
+    hasDifferentProviderCredentials?: boolean;
+    added?: boolean;
+    updated?: boolean;
+    deleted?: boolean;
+};
+
+export type SyncReportDto = {
+    id: number;
+    created_at: string;
+    ended_at: string;
+    state: 'error' | 'success';
+    report: Array<SyncReportEntryDto>;
+    datasource_id: string;
+    user_name: string;
+    /**
+     * True when at least one book or collection was synced but could not be refreshed because it uses a different link/connector.
+     */
+    has_different_provider_credentials: boolean | null;
+};
+
+export type SyncDataSourceDto = {
+    dataSourceId: string;
+    providerCredentials: {
+        [key: string]: unknown;
+    };
+};
+
+export type RefreshBookMetadataDto = {
+    bookId: string;
+    /**
+     * Hard refresh: bypass every reuse cache (file metadata, cover blob) so the
+     * file is re-downloaded (when allowed) and the cover regenerated even if
+     * nothing changed.
+     */
+    force?: boolean;
+    providerCredentials: {
+        [key: string]: unknown;
+    };
+};
+
+export type RefreshCollectionMetadataDto = {
+    collectionId: string;
+    soft?: boolean;
+    providerCredentials: {
+        [key: string]: unknown;
+    };
 };
 
 export type KoreaderSyncServerResponseDto = {
@@ -335,6 +405,58 @@ export type NotificationsArchiveResponses = {
 };
 
 export type NotificationsArchiveResponse = NotificationsArchiveResponses[keyof NotificationsArchiveResponses];
+
+export type DataSourcesListSyncReportsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/datasources/sync-reports';
+};
+
+export type DataSourcesListSyncReportsResponses = {
+    200: Array<SyncReportDto>;
+};
+
+export type DataSourcesListSyncReportsResponse = DataSourcesListSyncReportsResponses[keyof DataSourcesListSyncReportsResponses];
+
+export type DataSourcesSyncData = {
+    body: SyncDataSourceDto;
+    path?: never;
+    query?: never;
+    url: '/datasources/sync';
+};
+
+export type DataSourcesSyncResponses = {
+    201: EmptyResponseDto;
+};
+
+export type DataSourcesSyncResponse = DataSourcesSyncResponses[keyof DataSourcesSyncResponses];
+
+export type BooksRefreshMetadataData = {
+    body: RefreshBookMetadataDto;
+    path?: never;
+    query?: never;
+    url: '/books/metadata/refresh';
+};
+
+export type BooksRefreshMetadataResponses = {
+    201: EmptyResponseDto;
+};
+
+export type BooksRefreshMetadataResponse = BooksRefreshMetadataResponses[keyof BooksRefreshMetadataResponses];
+
+export type CollectionsRefreshMetadataData = {
+    body: RefreshCollectionMetadataDto;
+    path?: never;
+    query?: never;
+    url: '/collections/metadata/refresh';
+};
+
+export type CollectionsRefreshMetadataResponses = {
+    201: EmptyResponseDto;
+};
+
+export type CollectionsRefreshMetadataResponse = CollectionsRefreshMetadataResponses[keyof CollectionsRefreshMetadataResponses];
 
 export type KoreaderSyncServerTurnOffData = {
     body?: never;

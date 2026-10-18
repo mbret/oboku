@@ -3,6 +3,10 @@ import type {
   NotificationSeverity,
   SyncFinishedNotificationData,
 } from "@oboku/shared"
+import type {
+  SyncReportDto,
+  SyncReportEntryDto,
+} from "../../lib/sync/sync-report.dto.js"
 import {
   Column,
   CreateDateColumn,
@@ -23,7 +27,7 @@ export class SyncReportPostgresEntity {
   ended_at!: Date
 
   @Column({ type: "json" })
-  report!: object
+  report!: SyncReportEntryDto[]
 
   @Column({ type: "uuid" })
   datasource_id!: string
@@ -32,7 +36,7 @@ export class SyncReportPostgresEntity {
   user_name!: string
 
   @Column({ type: "text" })
-  state!: string
+  state!: SyncReportDto["state"]
 
   @Column({ type: "boolean", nullable: true })
   has_different_provider_credentials!: boolean | null

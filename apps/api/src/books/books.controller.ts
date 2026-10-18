@@ -6,7 +6,8 @@ import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.
 import { AppConfigService } from "../config/AppConfigService.js"
 import { from } from "rxjs"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
-import type { RefreshBookMetadataRequest } from "@oboku/shared"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { RefreshBookMetadataDto } from "./books.dto.js"
 
 @Controller("books")
 export class BooksController implements OnModuleInit {
@@ -29,10 +30,10 @@ export class BooksController implements OnModuleInit {
   }
 
   @Post("metadata/refresh")
-  async metadataRefresh(
-    @Body() { bookId, providerCredentials, force }: RefreshBookMetadataRequest,
+  async refreshMetadata(
+    @Body() { bookId, providerCredentials, force }: RefreshBookMetadataDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log("metadataRefresh", bookId, { force })
 
     this.taskQueueService.enqueue(
