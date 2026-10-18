@@ -16,10 +16,6 @@ const generatePasswordGroup = () =>
 export const generateSyncPassword = () =>
   Array.from({ length: PASSWORD_GROUP_COUNT }, generatePasswordGroup).join("-")
 
-/** The `x-auth-key` a KOReader sync client sends for a password. */
-export const toSyncKey = (password: string) =>
-  createHash("md5").update(password).digest("hex")
-
 export const hashSyncKey = (key: string) =>
   createHash("sha256").update(key).digest("hex")
 

@@ -14,7 +14,9 @@ import type {
   AuthSignInWithEmailResponse,
   AuthSignInWithGoogleData,
   AuthSignInWithGoogleResponse,
+  ConnectKoreaderSyncServerRequest,
   CreateKoreaderSyncServerPasswordResponse,
+  GetKoreaderSyncConnectionResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
@@ -184,6 +186,21 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
   turnOffKoreaderSyncServer = () =>
     this.fetchOrThrow(`${API_URL}/koreader-sync-server`, { method: "DELETE" })
+
+  connectKoreaderSyncServer = (body: ConnectKoreaderSyncServerRequest) =>
+    this.fetchOrThrow<GetKoreaderSyncConnectionResponse>(
+      `${API_URL}/koreader-sync-connection`,
+      {
+        method: "PUT",
+        body: JSON.stringify(body),
+        headers: { "Content-Type": "application/json" },
+      },
+    )
+
+  disconnectKoreaderSyncServer = () =>
+    this.fetchOrThrow(`${API_URL}/koreader-sync-connection`, {
+      method: "DELETE",
+    })
 
   refreshToken = () => refreshTokenRequest(this, API_URL)
 

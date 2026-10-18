@@ -8,7 +8,14 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common"
-import { Public } from "../auth/auth.guard.js"
+import { Public } from "../../auth/auth.guard.js"
+import {
+  KOREADER_SYNC_AUTHORIZE_ROUTE,
+  KOREADER_SYNC_HEALTHCHECK_ROUTE,
+  KOREADER_SYNC_KEY_HEADER,
+  KOREADER_SYNC_PROGRESS_ROUTE,
+  KOREADER_SYNC_REGISTER_ROUTE,
+} from "../protocol.js"
 import { createKoreaderSyncError } from "./errors.js"
 import {
   KoreaderSyncAuthGuard,
@@ -34,22 +41,22 @@ export class KoreaderSyncProtocolController {
     private readonly koreaderSyncServerService: KoreaderSyncServerService,
   ) {}
 
-  @Post("users/create")
+  @Post(KOREADER_SYNC_REGISTER_ROUTE)
   register(): never {
     throw createKoreaderSyncError("registrationDisabled")
   }
 
-  @Get("users/auth")
+  @Get(KOREADER_SYNC_AUTHORIZE_ROUTE)
   @UseGuards(KoreaderSyncAuthGuard)
   authorize() {
     return { authorized: "OK" }
   }
 
-  @Put("syncs/progress")
+  @Put(KOREADER_SYNC_PROGRESS_ROUTE)
   @UseGuards(KoreaderSyncAuthGuard)
   async updateProgress(
     @WithKoreaderSyncUserId() userId: number,
-    @Headers("x-auth-key") key: string,
+    @Headers(KOREADER_SYNC_KEY_HEADER) key: string,
     @Body() body: unknown,
   ) {
     const { document, progress, percentage, device, deviceId } =
@@ -74,7 +81,7 @@ export class KoreaderSyncProtocolController {
     return { document, timestamp: toSyncTimestamp(updatedAt) }
   }
 
-  @Get("syncs/progress/:document")
+  @Get(`${KOREADER_SYNC_PROGRESS_ROUTE}/:document`)
   @UseGuards(KoreaderSyncAuthGuard)
   async getProgress(
     @WithKoreaderSyncUserId() userId: number,
@@ -88,7 +95,7 @@ export class KoreaderSyncProtocolController {
     return progress ? toProgressResponse(progress) : {}
   }
 
-  @Get("healthcheck")
+  @Get(KOREADER_SYNC_HEALTHCHECK_ROUTE)
   healthcheck() {
     return { state: "OK" }
   }
