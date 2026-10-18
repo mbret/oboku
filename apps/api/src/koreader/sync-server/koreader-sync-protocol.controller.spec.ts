@@ -4,19 +4,19 @@ import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
 import type { App } from "supertest/types.js"
-import { AuthGuard } from "../auth/auth.guard.js"
-import { SecretsService } from "../config/SecretsService.js"
+import { AuthGuard } from "../../auth/auth.guard.js"
+import { SecretsService } from "../../config/SecretsService.js"
 import type {
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
   UserPostgresEntity,
-} from "../features/postgres/entities.js"
-import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
+} from "../../features/postgres/entities.js"
+import { KoreaderSyncPostgresService } from "../../features/postgres/koreader-sync-postgres.service.js"
 import {
   normalizeEmail,
   UserPostgresService,
-} from "../features/postgres/user-postgres.service.js"
-import { toSyncKey } from "./credentials.js"
+} from "../../features/postgres/user-postgres.service.js"
+import { toSyncKey } from "../protocol.js"
 import { KoreaderSyncAuthGuard } from "./koreader-sync-auth.guard.js"
 import { KoreaderSyncProtocolController } from "./koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"

@@ -1,15 +1,13 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { InjectRepository } from "@nestjs/typeorm"
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-  randomUUID,
-} from "node:crypto"
+import { createHash, randomBytes, randomUUID } from "node:crypto"
 import { EntityManager, Repository } from "typeorm"
 import { AppConfigService } from "../../config/AppConfigService.js"
+import {
+  decryptAes256Gcm,
+  encryptAes256Gcm,
+} from "../../lib/crypto/aes256Gcm.js"
 import { RefreshTokenPostgresEntity } from "./entities.js"
 
 export type RotationResult =
@@ -27,9 +25,6 @@ const WHERE_TOKEN_EXPIRED = "created_at < :expiryCutoff"
 const WHERE_TOKEN_SUPERSEDED_PAST_GRACE = "superseded_at < :graceCutoff"
 const WHERE_SUCCESSOR_TOKEN_UNCHANGED =
   "successor_token IS NOT DISTINCT FROM :expectedSuccessorToken"
-
-const GCM_IV_BYTES = 12
-const GCM_AUTH_TAG_BYTES = 16
 
 @Injectable()
 export class RefreshTokensService {
@@ -304,38 +299,11 @@ export class RefreshTokensService {
   }
 
   private encryptSuccessor(token: string): string {
-    const iv = randomBytes(GCM_IV_BYTES)
-    const cipher = createCipheriv("aes-256-gcm", this.successorKey, iv)
-    const ciphertext = Buffer.concat([
-      cipher.update(token, "utf8"),
-      cipher.final(),
-    ])
-
-    return Buffer.concat([iv, cipher.getAuthTag(), ciphertext]).toString(
-      "base64",
-    )
+    return encryptAes256Gcm(token, this.successorKey)
   }
 
   private decryptSuccessor(payload: string): string | null {
-    try {
-      const packed = Buffer.from(payload, "base64")
-      const iv = packed.subarray(0, GCM_IV_BYTES)
-      const authTag = packed.subarray(
-        GCM_IV_BYTES,
-        GCM_IV_BYTES + GCM_AUTH_TAG_BYTES,
-      )
-      const ciphertext = packed.subarray(GCM_IV_BYTES + GCM_AUTH_TAG_BYTES)
-
-      const decipher = createDecipheriv("aes-256-gcm", this.successorKey, iv)
-      decipher.setAuthTag(authTag)
-
-      return Buffer.concat([
-        decipher.update(ciphertext),
-        decipher.final(),
-      ]).toString("utf8")
-    } catch {
-      return null
-    }
+    return decryptAes256Gcm(payload, this.successorKey)
   }
 
   async deleteById(id: number) {
