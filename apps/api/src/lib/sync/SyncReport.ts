@@ -1,16 +1,11 @@
-import type {
-  BookDocType,
-  CollectionDocType,
-  ReportEntry,
-  SyncReportPostgresEntityShared,
-  TagsDocType,
-} from "@oboku/shared"
+import type { BookDocType, CollectionDocType, TagsDocType } from "@oboku/shared"
+import type { SyncReportDto, SyncReportEntryDto } from "./sync-report.dto.js"
 
 export class SyncReport {
   protected readonly report: {
     created_at: string
     ended_at: string
-    report: ReportEntry[]
+    report: SyncReportEntryDto[]
   } = {
     created_at: new Date().toISOString(),
     ended_at: new Date().toISOString(),
@@ -19,7 +14,7 @@ export class SyncReport {
 
   protected readonly references: Record<string, string> = {}
 
-  protected state: SyncReportPostgresEntityShared["state"] = "success"
+  protected state: SyncReportDto["state"] = "success"
 
   protected hasDifferentProviderCredentials = false
 
@@ -36,14 +31,14 @@ export class SyncReport {
     this.state = "error"
   }
 
-  protected hasEntry(rx_model: ReportEntry["rx_model"], id: string) {
+  protected hasEntry(rx_model: SyncReportEntryDto["rx_model"], id: string) {
     return this.report.report.find(
       (entry) => entry.rx_model === rx_model && entry.id === id,
     )
   }
 
   protected getOrCreateEntry(
-    rx_model: ReportEntry["rx_model"],
+    rx_model: SyncReportEntryDto["rx_model"],
     { id, label }: { id: string; label?: string | null },
   ) {
     const found = this.report.report.find(
@@ -51,7 +46,7 @@ export class SyncReport {
     )
 
     if (!found) {
-      const entry: ReportEntry = {
+      const entry: SyncReportEntryDto = {
         id,
         rx_model,
         label: label || undefined,
@@ -82,7 +77,7 @@ export class SyncReport {
   }
 
   addItem(
-    rx_model: ReportEntry["rx_model"],
+    rx_model: SyncReportEntryDto["rx_model"],
     { id, label }: { id: string; label?: string },
   ) {
     const item = this.getOrCreateEntry(rx_model, { id, label })

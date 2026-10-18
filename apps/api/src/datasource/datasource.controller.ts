@@ -11,7 +11,9 @@ import { AppConfigService } from "../config/AppConfigService.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { DataSourceService } from "./datasource.service.js"
-import type { SyncDataSourceRequest } from "@oboku/shared"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { SyncReportDto } from "../lib/sync/sync-report.dto.js"
+import { SyncDataSourceDto } from "./datasource.dto.js"
 
 @Controller("datasources")
 export class DataSourcesController implements OnModuleInit {
@@ -35,17 +37,19 @@ export class DataSourcesController implements OnModuleInit {
   }
 
   @Get("sync-reports")
-  async signin(@WithAuthUser() user: AuthUser) {
+  async listSyncReports(
+    @WithAuthUser() user: AuthUser,
+  ): Promise<SyncReportDto[]> {
     return await this.syncReportPostgresService.getAllSyncReportsByUser({
       userName: user.email,
     })
   }
 
   @Post("sync")
-  async syncDataSource(
-    @Body() { dataSourceId, providerCredentials }: SyncDataSourceRequest,
+  async sync(
+    @Body() { dataSourceId, providerCredentials }: SyncDataSourceDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log(`syncDataSource ${dataSourceId}`)
 
     this.taskQueueService.enqueue(
