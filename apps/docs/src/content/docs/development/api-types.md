@@ -2,7 +2,7 @@
 title: "API types"
 ---
 
-The types the web and admin apps use for API requests and responses are generated from the API's NestJS controllers. Change a controller or a DTO, then regenerate:
+The types and zod schemas the web and admin apps use for API requests and responses are generated from the API's NestJS controllers. Change a controller or a DTO, then regenerate:
 
 ```bash
 pnpm generate:api-types
@@ -11,9 +11,9 @@ pnpm generate:api-types
 The command builds the API, then runs two generators:
 
 1. `@nestjs/swagger` writes the API's OpenAPI document to `apps/api/dist/openapi.json`, from the controllers and their DTO classes.
-2. `@hey-api/openapi-ts` turns that document into the types in `packages/shared/src/api-types/generated/`.
+2. `@hey-api/openapi-ts` turns that document into the types and zod schemas in `packages/shared/src/api-types/generated/`.
 
-Only the generated types are committed. CI runs the command again and fails when its output differs from them. Never edit them by hand.
+Only the generated files are committed. CI runs the command again and fails when its output differs from them. Never edit them by hand.
 
 ## Writing a route
 
@@ -39,6 +39,8 @@ signUp = (data: AuthRequestSignUpData["body"]) =>
 `Data` holds the route's `body`, its `path` and `query` parameters, and its `url`. Typing a call with them keeps it in step with the route when the route's DTOs change.
 
 The DTO classes are exported under their own names too, such as `AuthSessionResponseDto`, for code that handles a shape several routes return.
+
+Responses and DTOs also have a zod schema named after their type with a `z` prefix, such as `zWebGetConfigResponse`, and a route's parameters have schemas such as `zAuthSignInWithEmailBody` and `zNotificationsArchivePath`. Validate API data at runtime with these instead of writing a schema: the web app checks the config it restores from local storage with `zWebGetConfigResponse`.
 
 ## Documented modules
 

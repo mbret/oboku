@@ -1,8 +1,5 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
-import {
-  getWebConfigResponseSchema,
-  type GetWebConfigResponse,
-} from "@oboku/shared"
+import { type WebGetConfigResponse, zWebGetConfigResponse } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { readWebConfigCache, saveWebConfigCache } from "./configCache"
@@ -47,14 +44,14 @@ type DerivedConfig = {
   FEATURE_ONE_DRIVE_ENABLED: boolean
 }
 
-export type Config = typeof staticConfig & GetWebConfigResponse & DerivedConfig
+export type Config = typeof staticConfig & WebGetConfigResponse & DerivedConfig
 
 /**
  * Consolidates the server response, the static build/env values and the flags
  * derived from them into a single config object. This is the single read
  * surface consumed through `useConfig` in React and the query cache.
  */
-export const buildConfig = (server: GetWebConfigResponse): Config => {
+export const buildConfig = (server: WebGetConfigResponse): Config => {
   const googleAppId = server.GOOGLE_CLIENT_ID?.split("-")[0]
 
   return {
@@ -78,11 +75,11 @@ export const webConfigQueryKey = [
 export const fetchConfig = async (
   httpClientApi: HttpApiClientWeb,
 ): Promise<Config> => {
-  const { data } = await httpClientApi.fetchOrThrow<GetWebConfigResponse>(
+  const { data } = await httpClientApi.fetchOrThrow<WebGetConfigResponse>(
     `${API_URL}/web/config`,
   )
 
-  const server = getWebConfigResponseSchema.parse(data)
+  const server = zWebGetConfigResponse.parse(data)
 
   void saveWebConfigCache(server)
 

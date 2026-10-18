@@ -6,5 +6,5 @@ export default defineConfig({
     path: "../../packages/shared/src/api-types/generated",
     tsConfigPath: "../../packages/shared/tsconfig.json",
   },
-  plugins: ["@hey-api/typescript"],
+  plugins: ["@hey-api/typescript", { name: "zod", includeInEntry: true }],
 })

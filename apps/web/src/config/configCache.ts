@@ -1,7 +1,4 @@
-import {
-  getWebConfigResponseSchema,
-  type GetWebConfigResponse,
-} from "@oboku/shared"
+import { type WebGetConfigResponse, zWebGetConfigResponse } from "@oboku/shared"
 import { dexieDb } from "../rxdb/dexie"
 import { Logger } from "../debug/logger.shared"
 
@@ -9,7 +6,7 @@ const CONFIG_CACHE_KEY = "config.webConfig"
 
 /**
  * Version for the offline web-config seed. Bump only when the cached server
- * payload changes in a way `getWebConfigResponseSchema` cannot reject on its
+ * payload changes in a way `zWebGetConfigResponse` cannot reject on its
  * own. Deliberately independent of the app version and the react-query snapshot
  * buster (see queries/persister): a normal release busts that snapshot, so
  * keeping the config here — under its own version — is what lets a user boot
@@ -19,7 +16,7 @@ const CONFIG_CACHE_VERSION = 1
 
 export type CachedWebConfig = {
   version: number
-  server: GetWebConfigResponse
+  server: WebGetConfigResponse
 }
 
 const isCachedWebConfig = (value: unknown): value is CachedWebConfig =>
@@ -29,7 +26,7 @@ const isCachedWebConfig = (value: unknown): value is CachedWebConfig =>
   value.version === CONFIG_CACHE_VERSION &&
   "server" in value
 
-export const saveWebConfigCache = async (server: GetWebConfigResponse) => {
+export const saveWebConfigCache = async (server: WebGetConfigResponse) => {
   try {
     await dexieDb.keyValue.put({
       key: CONFIG_CACHE_KEY,
@@ -44,14 +41,14 @@ export const saveWebConfigCache = async (server: GetWebConfigResponse) => {
 }
 
 export const readWebConfigCache = async (): Promise<
-  GetWebConfigResponse | undefined
+  WebGetConfigResponse | undefined
 > => {
   try {
     const entry = await dexieDb.keyValue.get(CONFIG_CACHE_KEY)
 
     if (!isCachedWebConfig(entry?.value)) return undefined
 
-    const result = getWebConfigResponseSchema.safeParse(entry.value.server)
+    const result = zWebGetConfigResponse.safeParse(entry.value.server)
 
     return result.success ? result.data : undefined
   } catch (error) {

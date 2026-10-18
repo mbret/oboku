@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { GetWebConfigResponse } from "@oboku/shared"
+import type { WebGetConfigResponse } from "@oboku/shared"
 import type { HttpApiClientWeb } from "../http"
 import {
   buildConfig,
@@ -21,7 +21,7 @@ const createHttpClientApiStub = (
 ): HttpApiClientWeb =>
   ({ fetch: vi.fn(), ...overrides }) as unknown as HttpApiClientWeb
 
-const baseServerConfig: GetWebConfigResponse = {
+const baseServerConfig: WebGetConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",
   FEATURE_SERVER_SYNC_ENABLED: false,
   SHOW_DISABLED_PLUGINS: false,
