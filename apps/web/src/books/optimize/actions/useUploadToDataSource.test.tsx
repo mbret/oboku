@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import {
   MutationCache,
   QueryClient,
@@ -47,28 +45,63 @@ const {
   }
 })
 
-vi.mock("../../../download/getBookFile.shared", function mockBookFile() {
-  return { getBookFile }
-})
 vi.mock(
-  "../../../plugins/usePluginUpsertFile",
-  function mockPluginUpsertFile() {
-    return { usePluginUpsertFile }
+  "../../../download/getBookFile.shared",
+  async function mockBookFile(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../../download/getBookFile.shared")
+      >()),
+      getBookFile,
+    }
   },
 )
-vi.mock("../../../common/dialogs/presets", function mockDialogs() {
-  return { showConfirmDialog }
-})
-vi.mock("../../../notifications/toasts", function mockToasts() {
-  return { notify }
-})
-vi.mock("../../useRefreshBookMetadata", function mockRefreshBookMetadata() {
-  return {
-    useRefreshBookMetadata: function useMockRefreshBookMetadata() {
-      return refreshBookMetadata
-    },
-  }
-})
+vi.mock(
+  "../../../plugins/usePluginUpsertFile",
+  async function mockPluginUpsertFile(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../../plugins/usePluginUpsertFile")
+      >()),
+      usePluginUpsertFile,
+    }
+  },
+)
+vi.mock(
+  "../../../common/dialogs/presets",
+  async function mockDialogs(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../../common/dialogs/presets")
+      >()),
+      showConfirmDialog,
+    }
+  },
+)
+vi.mock(
+  "../../../notifications/toasts",
+  async function mockToasts(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../../notifications/toasts")
+      >()),
+      notify,
+    }
+  },
+)
+vi.mock(
+  "../../useRefreshBookMetadata",
+  async function mockRefreshBookMetadata(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../useRefreshBookMetadata")
+      >()),
+      useRefreshBookMetadata: function useMockRefreshBookMetadata() {
+        return refreshBookMetadata
+      },
+    }
+  },
+)
 
 import { useUploadToDataSource } from "./useUploadToDataSource"
 

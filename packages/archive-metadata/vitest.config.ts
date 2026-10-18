@@ -1,5 +1,5 @@
-import { playwright } from "@vitest/browser-playwright"
 import { defineConfig } from "vitest/config"
+import { headlessChromium } from "../../config/vitest.browser.ts"
 
 const browserTestFiles = "src/**/*.browser.test.ts"
 
@@ -17,13 +17,7 @@ export default defineConfig({
         test: {
           name: "browser",
           include: [browserTestFiles],
-          browser: {
-            enabled: true,
-            headless: true,
-            screenshotFailures: false,
-            provider: playwright(),
-            instances: [{ browser: "chromium" }],
-          },
+          browser: headlessChromium,
         },
       },
     ],

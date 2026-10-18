@@ -36,6 +36,9 @@ importers:
       '@types/node':
         specifier: ^24.19.2
         version: 24.19.2
+      '@vitest/browser-playwright':
+        specifier: ^5.0.3
+        version: 5.0.3(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.29))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(vitest@5.0.3)
       conventional-changelog-conventionalcommits:
         specifier: ^9.3.1
         version: 9.3.1
@@ -48,6 +51,9 @@ importers:
       lint-staged:
         specifier: ^17.6.0
         version: 17.6.0
+      playwright:
+        specifier: ^1.64.1
+        version: 1.64.1
       rollup:
         specifier: ^4.64.4
         version: 4.64.4
@@ -645,12 +651,6 @@ importers:
         specifier: ^2.23.0
         version: 2.23.0
     devDependencies:
-      '@vitest/browser-playwright':
-        specifier: ^5.0.3
-        version: 5.0.3(playwright@1.64.1)(vite@8.3.4(@types/node@24.19.2)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.29))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(vitest@5.0.3)
-      playwright:
-        specifier: ^1.64.1
-        version: 1.64.1
       vite:
         specifier: ^8.3.4
         version: 8.3.4(@types/node@24.19.2)(esbuild@0.27.7)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.29))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)

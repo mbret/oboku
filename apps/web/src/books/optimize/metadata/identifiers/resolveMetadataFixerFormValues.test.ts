@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { resolveMetadataFixerFormValues } from "./resolveMetadataFixerFormValues"
 import { CONTAINER_XML, comicInfo, inspect, opf } from "./inspection.fixture"

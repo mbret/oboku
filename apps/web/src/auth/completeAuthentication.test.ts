@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { QueryClient } from "@tanstack/react-query"
 import { firstValueFrom } from "rxjs"
 import { describe, expect, it, vi } from "vitest"

@@ -6,21 +6,38 @@ import {
   ONE_DRIVE_GRAPH_SCOPES,
 } from "../constants"
 
+const { getOneDrivePickerBaseUrl, requestMicrosoftAccessToken } = vi.hoisted(
+  function createOneDriveMocks() {
+    return {
+      getOneDrivePickerBaseUrl: vi.fn(),
+      requestMicrosoftAccessToken: vi.fn(),
+    }
+  },
+)
+
+vi.mock("../auth/auth", function mockAuth() {
+  return { requestMicrosoftAccessToken }
+})
+vi.mock("../graph", function mockGraph() {
+  return { getOneDrivePickerBaseUrl }
+})
+
+import {
+  buildPickerOptions,
+  requestOneDrivePickerLaunchData,
+  requestPickerAccessTokenForResource,
+} from "./picker"
+
+beforeEach(function resetOneDriveMocks() {
+  getOneDrivePickerBaseUrl.mockReset()
+  requestMicrosoftAccessToken.mockReset()
+})
+
 describe("requestPickerAccessTokenForResource", () => {
-  beforeEach(() => {
-    vi.resetModules()
-  })
-
   it("uses the default Microsoft Graph flow for graph resources", async () => {
-    const requestMicrosoftAccessToken = vi.fn(async () => ({
+    requestMicrosoftAccessToken.mockResolvedValue({
       accessToken: "graph-token",
-    }))
-
-    vi.doMock("../auth/auth", () => ({
-      requestMicrosoftAccessToken,
-    }))
-
-    const { requestPickerAccessTokenForResource } = await import("./picker")
+    })
 
     await expect(
       requestPickerAccessTokenForResource({
@@ -37,15 +54,9 @@ describe("requestPickerAccessTokenForResource", () => {
   })
 
   it("uses consumer authority and scopes for personal OneDrive resources", async () => {
-    const requestMicrosoftAccessToken = vi.fn(async () => ({
+    requestMicrosoftAccessToken.mockResolvedValue({
       accessToken: "consumer-token",
-    }))
-
-    vi.doMock("../auth/auth", () => ({
-      requestMicrosoftAccessToken,
-    }))
-
-    const { requestPickerAccessTokenForResource } = await import("./picker")
+    })
 
     await expect(
       requestPickerAccessTokenForResource({
@@ -63,15 +74,9 @@ describe("requestPickerAccessTokenForResource", () => {
   })
 
   it("requests resource-specific scopes for SharePoint-backed OneDrive", async () => {
-    const requestMicrosoftAccessToken = vi.fn(async () => ({
+    requestMicrosoftAccessToken.mockResolvedValue({
       accessToken: "sharepoint-token",
-    }))
-
-    vi.doMock("../auth/auth", () => ({
-      requestMicrosoftAccessToken,
-    }))
-
-    const { requestPickerAccessTokenForResource } = await import("./picker")
+    })
 
     await expect(
       requestPickerAccessTokenForResource({
@@ -91,7 +96,6 @@ describe("requestPickerAccessTokenForResource", () => {
   })
 
   it("builds picker options for mixed file and folder synchronization", async () => {
-    const { buildPickerOptions } = await import("./picker")
     const fileFilters = [".epub", ".pdf"]
 
     expect(
@@ -125,13 +129,8 @@ describe("requestPickerAccessTokenForResource", () => {
 })
 
 describe("requestOneDrivePickerLaunchData", () => {
-  beforeEach(() => {
-    vi.resetModules()
-  })
-
   it("uses the consumer picker bootstrap for personal accounts", async () => {
-    const requestMicrosoftAccessToken = vi
-      .fn()
+    requestMicrosoftAccessToken
       .mockResolvedValueOnce({
         accessToken: "graph-token",
         account: {
@@ -142,12 +141,6 @@ describe("requestOneDrivePickerLaunchData", () => {
       .mockResolvedValueOnce({
         accessToken: "consumer-picker-token",
       })
-
-    vi.doMock("../auth/auth", () => ({
-      requestMicrosoftAccessToken,
-    }))
-
-    const { requestOneDrivePickerLaunchData } = await import("./picker")
 
     await expect(
       requestOneDrivePickerLaunchData({
@@ -172,8 +165,7 @@ describe("requestOneDrivePickerLaunchData", () => {
   })
 
   it("discovers the business picker base URL and requests a resource token", async () => {
-    const requestMicrosoftAccessToken = vi
-      .fn()
+    requestMicrosoftAccessToken
       .mockResolvedValueOnce({
         accessToken: "graph-token",
         account: {
@@ -184,18 +176,9 @@ describe("requestOneDrivePickerLaunchData", () => {
       .mockResolvedValueOnce({
         accessToken: "sharepoint-picker-token",
       })
-    const getOneDrivePickerBaseUrl = vi.fn(async () => {
-      return "https://contoso-my.sharepoint.com/personal/reader_contoso_com"
-    })
-
-    vi.doMock("../auth/auth", () => ({
-      requestMicrosoftAccessToken,
-    }))
-    vi.doMock("../graph", () => ({
-      getOneDrivePickerBaseUrl,
-    }))
-
-    const { requestOneDrivePickerLaunchData } = await import("./picker")
+    getOneDrivePickerBaseUrl.mockResolvedValue(
+      "https://contoso-my.sharepoint.com/personal/reader_contoso_com",
+    )
 
     await expect(
       requestOneDrivePickerLaunchData({

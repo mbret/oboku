@@ -1,4 +1,3 @@
-// @vitest-environment jsdom
 import { describe, expect, it } from "vitest"
 import { EMPTY_BOOK_OPTIMIZE_FORM_VALUES } from "../form"
 import type { MetadataIdentifierFormValue } from "../metadata/formValues"

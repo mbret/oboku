@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { API_URL } from "../config"
 import type { Profile } from "../profiles/types"
 import type { StoredProofKey } from "../auth/proofKey"
 import type { HttpClientResponse } from "./httpClient.shared"
@@ -45,10 +46,11 @@ const createDeferred = <T>() => {
   }
 }
 
-const REFRESH_URL =
-  "https://api.example.com/auth/token?grant_type=refresh_token"
-const SIGNIN_URL = "https://api.example.com/auth/signin/email"
-const LOGOUT_URL = "https://api.example.com/auth/logout"
+import { HttpApiClientWeb } from "./HttpClientApi.web"
+
+const REFRESH_URL = `${API_URL}/auth/token?grant_type=refresh_token`
+const SIGNIN_URL = `${API_URL}/auth/signin/email`
+const LOGOUT_URL = `${API_URL}/auth/logout`
 
 const createSignInRequest = () => ({
   email: "b@example.com",
@@ -103,8 +105,6 @@ const createUnauthorized = (
  * and independent of that wiring.
  */
 const createClient = async (initialSession: Profile | null = null) => {
-  const { HttpApiClientWeb } = await import("./HttpClientApi.web")
-
   let session = initialSession
 
   const client = new HttpApiClientWeb()
@@ -127,16 +127,11 @@ const createClient = async (initialSession: Profile | null = null) => {
 
 describe("HttpApiClientWeb auth refresh", () => {
   beforeEach(() => {
-    vi.resetModules()
     vi.unstubAllGlobals()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
     persistProofKey.mockReset()
     persistProofKey.mockResolvedValue(undefined)
-    vi.doMock("../config", async (importOriginal) => ({
-      ...(await importOriginal<typeof import("../config")>()),
-      API_URL: "https://api.example.com",
-    }))
   })
 
   it("refreshes over the cookie with a DPoP proof and no token in the URL", async () => {

@@ -1,4 +1,4 @@
-import { defineConfig } from "vitest/config"
+import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
 import react from "@vitejs/plugin-react"
 import svgr from "vite-plugin-svgr"
@@ -50,16 +50,6 @@ const getManualChunkName = (id: string) => {
 }
 
 export default defineConfig(({ mode }) => ({
-  test: {
-    /**
-     * Node 24+ ships an experimental global Web Storage `localStorage`. Without
-     * a `--localstorage-file` path its methods are missing (accessing
-     * `localStorage.getItem` throws "is not a function"), and it shadows the
-     * jsdom `localStorage` that our jsdom-environment tests rely on. Disable it
-     * in the test workers so jsdom provides a working implementation.
-     */
-    execArgv: ["--no-experimental-webstorage"],
-  },
   define: {
     __APP_VERSION__: JSON.stringify(productVersion),
     __BUILD_ID__: JSON.stringify(buildId),
