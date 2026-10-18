@@ -10,7 +10,6 @@
       {
         "name": "@nestjs/swagger",
         "options": {
-          "esmCompatible": true,
           "introspectComments": true
         }
       }
