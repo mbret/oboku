@@ -160,8 +160,11 @@ function renderSyncBookProgress({
 }: {
   koreaderDocument?: string
 } = {}) {
+  const savedBookmarkLocation =
+    mocks.state.book?.readingStateCurrentBookmarkLocation
+
   return renderHook(function renderUseSyncBookProgress() {
-    useSyncBookProgress(book._id, { koreaderDocument })
+    useSyncBookProgress(book._id, { koreaderDocument, savedBookmarkLocation })
   })
 }
 
@@ -254,6 +257,31 @@ describe("useSyncBookProgress", () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book?.readingStateUpdatedAt).not.toBe(openedAt)
+    expect(
+      mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
+    ).not.toBe(lastReadAt)
+  })
+
+  it("dates the bookmark when the book opens somewhere other than where it was saved", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_CHAPTER_START_STANDING_IN.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_CHAPTER_START_STANDING_IN)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+      LAST_PAGE.cfi,
+    )
     expect(
       mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
     ).not.toBe(lastReadAt)

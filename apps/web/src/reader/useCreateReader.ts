@@ -130,4 +130,8 @@ export const useCreateReader = ({
     bookOnce,
     containerRef,
   ])
+
+  return {
+    savedBookmarkLocation: bookOnce?.readingStateCurrentBookmarkLocation,
+  }
 }

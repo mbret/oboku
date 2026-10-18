@@ -11,7 +11,8 @@ import {
   map,
   merge,
   of,
-  skip,
+  pairwise,
+  startWith,
   Subject,
   takeUntil,
 } from "rxjs"
@@ -62,6 +63,12 @@ const toPositionProgress = ({ percentageEstimateOfBook }: ReadingPosition) =>
 
 const isFinalReadingPosition = ({ status }: ReadingPosition) =>
   status === "success"
+
+/** A saved `null` is no place, so where a book without a bookmark opens is not a move. */
+const didBookmarkMove = ([previousLocation, location]: [
+  string | null,
+  string | null,
+]) => previousLocation !== null && previousLocation !== location
 
 const hasPatches = (patches: BookPatch[]) => patches.length > 0
 
@@ -135,10 +142,13 @@ export const useSyncBookProgress = (
   {
     enabled = true,
     koreaderDocument,
+    savedBookmarkLocation,
   }: {
     enabled?: boolean
     /** The KOReader document of the book's file, `undefined` until the book is loaded. */
     koreaderDocument: string | undefined
+    /** The bookmark as saved when the book opened, `undefined` until it is read. */
+    savedBookmarkLocation: string | null | undefined
   },
 ) => {
   const reader = useReader()
@@ -149,6 +159,7 @@ export const useSyncBookProgress = (
       if (!enabled) return
       if (!reader) return
       if (koreaderDocument === undefined) return
+      if (savedBookmarkLocation === undefined) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
       // completes the progress streams downstream, which lets bufferTime
@@ -174,14 +185,12 @@ export const useSyncBookProgress = (
         map(function toBookmarkLocation({ cfi }) {
           return cfi
         }),
-        distinctUntilChanged(),
       )
 
-      const bookmarkLocationsAfterOpening$ = finalBookmarkLocation$.pipe(
-        skip(1),
-      )
-
-      const bookmarkMovedPatch$ = bookmarkLocationsAfterOpening$.pipe(
+      const bookmarkMovedPatch$ = finalBookmarkLocation$.pipe(
+        startWith(savedBookmarkLocation),
+        pairwise(),
+        filter(didBookmarkMove),
         map(function toBookmarkMovedPatch() {
           return markBookmarkAsMoved
         }),
@@ -255,6 +264,13 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
+    [
+      reader,
+      bookId,
+      incrementalBookModify,
+      enabled,
+      koreaderDocument,
+      savedBookmarkLocation,
+    ],
   )
 }

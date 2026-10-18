@@ -140,14 +140,18 @@ const Effects = memo(function Effects({
   koreaderDocument?: string
   containerRef: RefObject<HTMLElement | null>
 }) {
-  useCreateReader({
+  const { savedBookmarkLocation } = useCreateReader({
     bookId,
     isPreview,
     isUsingWebStreamer,
     manifest,
     containerRef,
   })
-  useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
+  useSyncBookProgress(bookId, {
+    enabled: !isPreview,
+    koreaderDocument,
+    savedBookmarkLocation,
+  })
 
   return null
 })
