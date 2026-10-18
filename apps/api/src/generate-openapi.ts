@@ -28,6 +28,9 @@ const { KoreaderSyncConnectionModule } = await import(
 const { KoreaderSyncServerModule } = await import(
   "./koreader/sync-server/koreader-sync-server.module.js"
 )
+const { NotificationsModule } = await import(
+  "./notifications/notifications.module.js"
+)
 
 // TODO: drop `include` once every controller keeps its DTOs in `*.dto.ts`
 // and returns classes, so the document covers the whole API.
@@ -35,6 +38,7 @@ const documentedModules = [
   AuthModule,
   KoreaderSyncConnectionModule,
   KoreaderSyncServerModule,
+  NotificationsModule,
 ]
 
 const app = await NestFactory.create(AppModule, {
@@ -55,7 +59,7 @@ const document = SwaggerModule.createDocument(
 )
 
 await writeFile(
-  new URL("../openapi.json", import.meta.url),
+  new URL("./openapi.json", import.meta.url),
   `${JSON.stringify(document, null, 2)}\n`,
 )
 

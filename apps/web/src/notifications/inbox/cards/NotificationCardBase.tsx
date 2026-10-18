@@ -8,7 +8,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material"
-import type { UserNotification } from "@oboku/shared"
+import type { NotificationsListResponse } from "@oboku/shared"
 import { MarkAsReadIcon } from "../../../common/icon"
 import { useMarkNotificationAsSeen } from "../useMarkNotificationAsSeen"
 import { useArchiveNotification } from "../useArchiveNotification"
@@ -17,7 +17,7 @@ export const NotificationCardBase = memo(function NotificationCardBase({
   notification,
   cta,
 }: {
-  notification: UserNotification
+  notification: NotificationsListResponse[number]
   cta?: ReactNode
 }) {
   const markAsSeen = useMarkNotificationAsSeen()

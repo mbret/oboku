@@ -1,22 +1,17 @@
 import { memo } from "react"
 import { LaunchRounded } from "@mui/icons-material"
 import { Button } from "@mui/material"
-import type { UserNotification } from "@oboku/shared"
+import type { SyncFinishedNotificationDto } from "@oboku/shared"
 import { useNavigate } from "react-router"
 import { ROUTES } from "../../../navigation/routes"
 import { useMarkNotificationAsSeen } from "../useMarkNotificationAsSeen"
 import { NotificationCardBase } from "./NotificationCardBase"
 
-type SyncFinishedNotification = Extract<
-  UserNotification,
-  { kind: "sync_finished" }
->
-
 export const SyncFinishedNotificationCard = memo(
   function SyncFinishedNotificationCard({
     notification,
   }: {
-    notification: SyncFinishedNotification
+    notification: SyncFinishedNotificationDto
   }) {
     const navigate = useNavigate()
     const markAsSeen = useMarkNotificationAsSeen()
