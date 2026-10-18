@@ -40,9 +40,8 @@ export type BookDocType = CouchDBMeta &
      * was computed from. It is that bookmark's only while `cfi` equals
      * readingStateCurrentBookmarkLocation: a version of the app that predates
      * it moves the bookmark and leaves it behind. `null` or missing when the
-     * bookmark has none: no bookmark, a place outside the book's (X)HTML
-     * documents, such as a comic's or a PDF's, or one crengine has no node
-     * for.
+     * bookmark has none: no bookmark, or a place prose's KOReader enhancer
+     * has no xpointer for.
      */
     readingStateCurrentBookmarkXPointer?: {
       cfi: string

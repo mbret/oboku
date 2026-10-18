@@ -14,18 +14,10 @@ import {
   takeUntil,
 } from "rxjs"
 import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
-import { detectMimeTypeFromName } from "@prose-reader/shared"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
 
 const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
-
-/**
- * Spine items a KOReader xpointer can name a place in: crengine's
- * DocFragments are a book's (X)HTML documents. KOReader keeps a page number
- * for comics and PDFs instead.
- */
-const XPOINTER_DOCUMENT_MEDIA_TYPES = ["application/xhtml+xml", "text/html"]
 
 const normalizeProgress = (progress: number) => Number(progress.toFixed(4))
 
@@ -163,26 +155,14 @@ export const useSyncBookProgress = (
       // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
-      const toXPointer = (cfi: string) => {
-        const spineItem = reader.cfi.getSpineItemFromCfi(cfi)
-        const mediaType =
-          spineItem &&
-          (spineItem.item.mediaType ??
-            detectMimeTypeFromName(spineItem.item.href))
-        const isXPointerDocument =
-          mediaType !== undefined &&
-          XPOINTER_DOCUMENT_MEDIA_TYPES.includes(mediaType)
-
-        return isXPointerDocument
-          ? reader.koreader.cfiToXPointer(cfi)
-          : undefined
-      }
-
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
         map(function withXPointer(position) {
-          return { ...position, xpointer: toXPointer(position.cfi) }
+          return {
+            ...position,
+            xpointer: reader.koreader.cfiToXPointer(position.cfi),
+          }
         }),
         map(createReadingPositionPatch),
       )
