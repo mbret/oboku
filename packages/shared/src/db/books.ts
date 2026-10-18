@@ -1,6 +1,6 @@
 import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
-import type { DeprecatedBookDocType } from "./docTypes"
+import type { DeprecatedBookDocType, InsertAbleBookDocType } from "./docTypes"
 import type { RxDbMeta } from "./rxdb"
 
 export enum ReadingStateState {
@@ -130,6 +130,32 @@ export type BookDocType = CouchDBMeta &
      */
     bucketCoverKey?: string | null
   }
+
+/**
+ * A book nothing has happened to yet: no metadata fetched, never opened, in
+ * no collection. The web app and the API create their books from it, with
+ * what they know of each on top.
+ */
+export const createBookDefaults = (): Omit<
+  InsertAbleBookDocType,
+  "rx_model" | "rxdbMeta"
+> => ({
+  createdAt: Date.now(),
+  modifiedAt: null,
+  collections: [],
+  links: [],
+  tags: [],
+  isAttachedToDataSource: false,
+  lastMetadataUpdatedAt: null,
+  lastMetadataUpdateError: null,
+  metadataUpdateStatus: null,
+  readingStateCurrentState: ReadingStateState.NotStarted,
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkXPointer: null,
+  readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateReachedProgressPercent: 0,
+  readingStateUpdatedAt: null,
+})
 
 const isDateSet = (date: string | null | undefined): date is string => !!date
 

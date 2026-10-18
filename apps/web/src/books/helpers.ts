@@ -1,7 +1,7 @@
 import {
   compareDesc,
+  createBookDefaults,
   getReadingStateUpdatedTime,
-  ReadingStateState,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { useDatabase } from "../rxdb"
@@ -131,21 +131,9 @@ export const useAddBook = () => {
 
         const { tags, ...rest } = book || {}
         const newBook = await database.book.post({
-          lastMetadataUpdatedAt: null,
-          lastMetadataUpdateError: null,
-          metadataUpdateStatus: null,
-          readingStateCurrentBookmarkLocation: null,
-          readingStateCurrentBookmarkXPointer: null,
-          readingStateUpdatedAt: null,
-          readingStateCurrentBookmarkProgressPercent: 0,
-          readingStateReachedProgressPercent: 0,
-          readingStateCurrentState: ReadingStateState.NotStarted,
-          createdAt: Date.now(),
+          ...createBookDefaults(),
           tags: tags || [],
           links: [linkAdded.primary],
-          collections: [],
-          modifiedAt: null,
-          isAttachedToDataSource: false,
           ...rest,
         })
 
