@@ -40,6 +40,7 @@ const { NotificationsModule } = await import(
 // TODO: drop `include` once every controller keeps its DTOs in `*.dto.ts`
 // and returns classes, so the document covers the whole API.
 const documentedModules = [
+  AppModule,
   AuthModule,
   BooksModule,
   CollectionsModule,

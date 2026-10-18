@@ -4,6 +4,21 @@ export type ClientOptions = {
     baseUrl: string;
 };
 
+export type WebConfigResponseDto = {
+    GOOGLE_CLIENT_ID?: string;
+    GOOGLE_API_KEY?: string;
+    DROPBOX_CLIENT_ID?: string;
+    MICROSOFT_APPLICATION_CLIENT_ID?: string;
+    MICROSOFT_APPLICATION_AUTHORITY: string;
+    FEATURE_SERVER_SYNC_ENABLED: boolean;
+    SHOW_DISABLED_PLUGINS: boolean;
+};
+
+export type PublicServerSourceDto = {
+    id: string;
+    name: string;
+};
+
 export type AuthProofPublicKeyDto = {
     kty: string;
     crv: string;
@@ -217,6 +232,45 @@ export type ConnectKoreaderSyncServerDto = {
      */
     password: string;
 };
+
+export type AppGetHelloData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/';
+};
+
+export type AppGetHelloResponses = {
+    200: string;
+};
+
+export type AppGetHelloResponse = AppGetHelloResponses[keyof AppGetHelloResponses];
+
+export type WebGetConfigData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/web/config';
+};
+
+export type WebGetConfigResponses = {
+    200: WebConfigResponseDto;
+};
+
+export type WebGetConfigResponse = WebGetConfigResponses[keyof WebGetConfigResponses];
+
+export type WebListServerSourcesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/web/server-sources';
+};
+
+export type WebListServerSourcesResponses = {
+    200: Array<PublicServerSourceDto>;
+};
+
+export type WebListServerSourcesResponse = WebListServerSourcesResponses[keyof WebListServerSourcesResponses];
 
 export type AuthSignInWithEmailData = {
     body: SignInWithEmailDto;
