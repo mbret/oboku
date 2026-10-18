@@ -10,6 +10,7 @@ import {
   from,
   map,
   merge,
+  of,
   Subject,
   takeUntil,
 } from "rxjs"
@@ -72,12 +73,15 @@ const createReadingPositionPatch = ({
   koreaderDocument,
 }: SavedReadingPositionWithKoreaderForm): BookPatch =>
   function applyReadingPosition(old) {
+    const savedAt = new Date().toISOString()
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
         : ReadingStateState.Reading
+    const didBookmarkLocationChange =
+      old.readingStateCurrentBookmarkLocation !== cfi
     const didReadingStateChange =
-      old.readingStateCurrentBookmarkLocation !== cfi ||
+      didBookmarkLocationChange ||
       old.readingStateCurrentBookmarkProgressPercent !==
         percentageEstimateOfBook ||
       old.readingStateCurrentState !== nextReadingState
@@ -85,26 +89,28 @@ const createReadingPositionPatch = ({
     return {
       ...old,
       readingStateCurrentBookmarkLocation: cfi,
+      ...(didBookmarkLocationChange && {
+        readingStateCurrentBookmarkLocationUpdatedAt: savedAt,
+      }),
       readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
       readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
       readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
       readingStateCurrentState: nextReadingState,
       ...(didReadingStateChange && {
-        readingStateUpdatedAt: new Date().toISOString(),
+        readingStateUpdatedAt: savedAt,
       }),
     }
   }
 
 const createReachedProgressPatch = (reachedProgress: number): BookPatch =>
   function applyReachedProgress(old) {
-    if (old.readingStateReachedProgressPercent === reachedProgress) return old
-
-    return {
-      ...old,
-      readingStateReachedProgressPercent: reachedProgress,
-      readingStateUpdatedAt: new Date().toISOString(),
-    }
+    return { ...old, readingStateReachedProgressPercent: reachedProgress }
   }
+
+const markBookAsOpened = (old: BookDocType): BookDocType => ({
+  ...old,
+  readingStateUpdatedAt: new Date().toISOString(),
+})
 
 /**
  * Finished is a reading state, not a progress (see `BookDocType`): the bookmark
@@ -187,6 +193,7 @@ export const useSyncBookProgress = (
       // pending buffer on source completion, guaranteeing the latest
       // progress is written when the hook unmounts.
       const throttledProgressPatch$ = merge(
+        of(markBookAsOpened),
         readingPositionPatch$,
         reachedProgressPatch$,
       ).pipe(
