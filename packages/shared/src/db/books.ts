@@ -22,13 +22,13 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkLocation: string | null
     /**
-     * When readingStateCurrentBookmarkLocation last changed: the reader moved
-     * to another place, or the book was marked finished or unread by hand.
-     * Its KOReader progress and document change with it. Unlike
-     * readingStateUpdatedAt, opening the book leaves it, and so does a
-     * progress recomputed for the same place: it tells how recent the
-     * position is. `null` on a book never read. Missing on a book last read
-     * before it existed.
+     * When readingStateCurrentBookmarkLocation last moved: the reader went to
+     * another place, or the book was marked finished or unread by hand. Its
+     * KOReader progress and document move with it. Unlike
+     * readingStateUpdatedAt, opening the book leaves it, even when the place
+     * it opens at is saved, and so does a progress recomputed for the same
+     * place: it tells how recent the position is. `null` on a book never
+     * read. Missing on a book last read before it existed.
      */
     readingStateCurrentBookmarkLocationUpdatedAt?: string | null
     /**
