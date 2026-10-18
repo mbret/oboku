@@ -581,6 +581,46 @@ export type AuthDeleteAccountResponses = {
 
 export type AuthDeleteAccountResponse = AuthDeleteAccountResponses[keyof AuthDeleteAccountResponses];
 
+export type CoversFindBookCoverData = {
+    body?: never;
+    path: {
+        bookId: string;
+    };
+    query?: {
+        /**
+         * Defaults to `image/webp`, which any other value also falls back to.
+         */
+        format?: 'image/webp' | 'image/jpeg';
+    };
+    url: '/covers/books/{bookId}';
+};
+
+export type CoversFindBookCoverResponses = {
+    200: Blob | File;
+};
+
+export type CoversFindBookCoverResponse = CoversFindBookCoverResponses[keyof CoversFindBookCoverResponses];
+
+export type CoversFindCollectionCoverData = {
+    body?: never;
+    path: {
+        collectionId: string;
+    };
+    query?: {
+        /**
+         * Defaults to `image/webp`, which any other value also falls back to.
+         */
+        format?: 'image/webp' | 'image/jpeg';
+    };
+    url: '/covers/collections/{collectionId}';
+};
+
+export type CoversFindCollectionCoverResponses = {
+    200: Blob | File;
+};
+
+export type CoversFindCollectionCoverResponse = CoversFindCollectionCoverResponses[keyof CoversFindCollectionCoverResponses];
+
 export type AdminSignInData = {
     body: AdminSignInDto;
     path?: never;

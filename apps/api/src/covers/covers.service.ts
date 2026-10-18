@@ -12,6 +12,8 @@ const logger = new Logger("CoversService")
 const WEBP_MIME_TYPE = "image/webp"
 const JPEG_MIME_TYPE = "image/jpeg"
 
+export const COVER_DELIVERY_FORMATS = [WEBP_MIME_TYPE, JPEG_MIME_TYPE]
+
 type DeliveryFormat = typeof WEBP_MIME_TYPE | typeof JPEG_MIME_TYPE
 
 const isDeliveryFormat = (format: string): format is DeliveryFormat =>
