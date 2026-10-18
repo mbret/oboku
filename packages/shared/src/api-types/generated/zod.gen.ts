@@ -140,7 +140,7 @@ export const zSignUpLinkResponseDto = z.object({
 });
 
 export const zAdminNotificationSummaryDto = z.object({
-    data: z.unknown().nullable(),
+    data: z.null(),
     id: z.number(),
     createdAt: z.string(),
     kind: z.enum(['admin_broadcast']),
@@ -278,7 +278,7 @@ export const zOkResponseDto = z.object({
 });
 
 export const zAdminBroadcastNotificationDto = z.object({
-    data: z.unknown().nullable(),
+    data: z.null(),
     kind: z.enum(['admin_broadcast']),
     id: z.number(),
     createdAt: z.string(),
@@ -446,6 +446,26 @@ export const zAuthLogoutBody = zLogoutDto;
 export const zAuthLogoutResponse = zEmptyResponseDto;
 
 export const zAuthDeleteAccountResponse = zEmptyResponseDto;
+
+export const zCoversFindBookCoverPath = z.object({
+    bookId: z.string()
+});
+
+export const zCoversFindBookCoverQuery = z.object({
+    format: z.enum(['image/webp', 'image/jpeg']).optional()
+});
+
+export const zCoversFindBookCoverResponse = z.string();
+
+export const zCoversFindCollectionCoverPath = z.object({
+    collectionId: z.string()
+});
+
+export const zCoversFindCollectionCoverQuery = z.object({
+    format: z.enum(['image/webp', 'image/jpeg']).optional()
+});
+
+export const zCoversFindCollectionCoverResponse = z.string();
 
 export const zAdminSignInBody = zAdminSignInDto;
 

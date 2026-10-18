@@ -3,9 +3,6 @@ import type { NotificationSeverity } from "@oboku/shared"
 import { IsIn, IsOptional, IsString, MinLength } from "class-validator"
 import { AudienceDto } from "../lib/audience.dto.js"
 
-// OpenAPI 3.0 has no `null` type: `type: "null"` would generate `unknown`.
-const alwaysNullProperty = { nullable: true, enum: [null] }
-
 export class SyncFinishedNotificationDataDto {
   datasourceId!: string
   state!: "success" | "error"
@@ -24,7 +21,7 @@ class BaseUserNotificationDto {
 export class AdminBroadcastNotificationDto extends BaseUserNotificationDto {
   kind!: "admin_broadcast"
 
-  @ApiProperty(alwaysNullProperty)
+  @ApiProperty({ type: "null" })
   data!: null
 }
 
@@ -64,7 +61,7 @@ export class AdminNotificationSummaryDto {
   title!: string
   body!: string | null
 
-  @ApiProperty(alwaysNullProperty)
+  @ApiProperty({ type: "null" })
   data!: null
 
   deliveredCount!: number
