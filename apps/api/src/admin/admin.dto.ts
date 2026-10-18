@@ -1,3 +1,4 @@
+import { ApiProperty } from "@nestjs/swagger"
 import {
   ArrayMaxSize,
   IsArray,
@@ -119,6 +120,8 @@ export class UpdateInstanceSettingsDto {
   @IsOptional()
   showDisabledPlugins?: boolean
 
+  // The swagger plugin does not document `@IsInt` as an integer.
+  @ApiProperty({ type: "integer" })
   @IsInt()
   @Min(1)
   @IsOptional()
@@ -137,9 +140,16 @@ export class UpdateInstanceSettingsDto {
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
   @IsString()
-  @MinLength(1)
   microsoftApplicationClientId?: string
 
+  // The swagger plugin cannot see `@ValidateIf`, so it would document `""`,
+  // which clears the setting, as invalid.
+  @ApiProperty({
+    anyOf: [
+      { type: "string", format: "uri" },
+      { type: "string", enum: [""] },
+    ],
+  })
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")
   @IsUrl({

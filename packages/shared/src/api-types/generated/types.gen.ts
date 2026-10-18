@@ -217,12 +217,12 @@ export type InstanceSettingsResponseDto = {
 };
 
 export type UpdateInstanceSettingsDto = {
-    showDisabledPlugins?: boolean;
     fileDownloadMaxSizeBytes?: number;
+    microsoftApplicationAuthority?: string | '';
+    showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
     microsoftApplicationClientId?: string;
-    microsoftApplicationAuthority?: string;
 };
 
 export type ServerSyncCredentialsDto = {

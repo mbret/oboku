@@ -215,12 +215,15 @@ export const zInstanceSettingsResponseDto = z.object({
 });
 
 export const zUpdateInstanceSettingsDto = z.object({
+    fileDownloadMaxSizeBytes: z.int().gte(1).optional(),
+    microsoftApplicationAuthority: z.union([
+        z.url(),
+        z.enum([''])
+    ]).optional(),
     showDisabledPlugins: z.boolean().optional(),
-    fileDownloadMaxSizeBytes: z.number().gte(1).optional(),
     allowPrivateNetworkRequests: z.boolean().optional(),
     privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
-    microsoftApplicationClientId: z.string().min(1).optional(),
-    microsoftApplicationAuthority: z.url().optional()
+    microsoftApplicationClientId: z.string().optional()
 });
 
 export const zServerSyncCredentialsDto = z.object({
