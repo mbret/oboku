@@ -15,14 +15,17 @@ import { audioEnhancer } from "@prose-reader/enhancer-audio"
 import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
+import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
 import { createBookQueryOptions } from "../books/states"
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 
-export const createAppReader = pdfEnhancer(
-  audioEnhancer(
-    refitEnhancer(
-      galleryEnhancer(
-        gesturesEnhancer(searchEnhancer(cbzEnhancer(createReader))),
+export const createAppReader = koreaderEnhancer(
+  pdfEnhancer(
+    audioEnhancer(
+      refitEnhancer(
+        galleryEnhancer(
+          gesturesEnhancer(searchEnhancer(cbzEnhancer(createReader))),
+        ),
       ),
     ),
   ),

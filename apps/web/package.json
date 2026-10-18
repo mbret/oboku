@@ -24,6 +24,7 @@
     "@prose-reader/enhancer-audio": "^25.1.0",
     "@prose-reader/enhancer-gallery": "^25.1.0",
     "@prose-reader/enhancer-gestures": "^25.1.0",
+    "@prose-reader/enhancer-koreader": "^25.1.0",
     "@prose-reader/enhancer-pdf": "^25.1.0",
     "@prose-reader/enhancer-refit": "^25.1.0",
     "@prose-reader/enhancer-search": "^25.1.0",

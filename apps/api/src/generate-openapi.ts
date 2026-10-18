@@ -22,19 +22,31 @@ for (const [name, value] of Object.entries(placeholderEnvironment)) {
 
 const { AppModule } = await import("./app.module.js")
 const { AuthModule } = await import("./auth/auth.module.js")
+const { BooksModule } = await import("./books/books.module.js")
+const { CollectionsModule } = await import(
+  "./features/collections/collections.module.js"
+)
+const { DataSourceModule } = await import("./datasource/datasource.module.js")
 const { KoreaderSyncConnectionModule } = await import(
   "./koreader/sync-connection/koreader-sync-connection.module.js"
 )
 const { KoreaderSyncServerModule } = await import(
   "./koreader/sync-server/koreader-sync-server.module.js"
 )
+const { NotificationsModule } = await import(
+  "./notifications/notifications.module.js"
+)
 
 // TODO: drop `include` once every controller keeps its DTOs in `*.dto.ts`
 // and returns classes, so the document covers the whole API.
 const documentedModules = [
   AuthModule,
+  BooksModule,
+  CollectionsModule,
+  DataSourceModule,
   KoreaderSyncConnectionModule,
   KoreaderSyncServerModule,
+  NotificationsModule,
 ]
 
 const app = await NestFactory.create(AppModule, {
@@ -55,7 +67,7 @@ const document = SwaggerModule.createDocument(
 )
 
 await writeFile(
-  new URL("../openapi.json", import.meta.url),
+  new URL("./openapi.json", import.meta.url),
   `${JSON.stringify(document, null, 2)}\n`,
 )
 

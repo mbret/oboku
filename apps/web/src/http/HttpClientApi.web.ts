@@ -14,17 +14,22 @@ import type {
   AuthSignInWithEmailResponse,
   AuthSignInWithGoogleData,
   AuthSignInWithGoogleResponse,
+  BooksRefreshMetadataData,
+  BooksRefreshMetadataResponse,
+  CollectionsRefreshMetadataData,
+  CollectionsRefreshMetadataResponse,
+  DataSourcesSyncData,
+  DataSourcesSyncResponse,
   KoreaderSyncConnectionConnectData,
   KoreaderSyncConnectionConnectResponse,
   KoreaderSyncConnectionDisconnectResponse,
   KoreaderSyncServerCreatePasswordResponse,
   KoreaderSyncServerTurnOffResponse,
-  RefreshBookMetadataRequest,
-  RefreshBookMetadataResponse,
-  RefreshCollectionMetadataRequest,
-  RefreshCollectionMetadataResponse,
-  SyncDataSourceRequest,
-  SyncDataSourceResponse,
+  NotificationsArchiveData,
+  NotificationsArchiveResponse,
+  NotificationsMarkAllAsSeenResponse,
+  NotificationsMarkAsSeenData,
+  NotificationsMarkAsSeenResponse,
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
@@ -96,24 +101,26 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       }),
     )
 
-  refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
-    this.postOrThrow<RefreshBookMetadataResponse, RefreshBookMetadataRequest>(
-      `${API_URL}/books/metadata/refresh`,
-      {
-        body: params,
-      },
-    )
-
-  refreshCollectionMetadata = (params: RefreshCollectionMetadataRequest) =>
+  refreshBookMetadata = (params: BooksRefreshMetadataData["body"]) =>
     this.postOrThrow<
-      RefreshCollectionMetadataResponse,
-      RefreshCollectionMetadataRequest
+      BooksRefreshMetadataResponse,
+      BooksRefreshMetadataData["body"]
+    >(`${API_URL}/books/metadata/refresh`, {
+      body: params,
+    })
+
+  refreshCollectionMetadata = (
+    params: CollectionsRefreshMetadataData["body"],
+  ) =>
+    this.postOrThrow<
+      CollectionsRefreshMetadataResponse,
+      CollectionsRefreshMetadataData["body"]
     >(`${API_URL}/collections/metadata/refresh`, {
       body: { ...params, soft: params.soft ?? false },
     })
 
-  syncDataSource = (params: SyncDataSourceRequest) =>
-    this.postOrThrow<SyncDataSourceResponse, SyncDataSourceRequest>(
+  syncDataSource = (params: DataSourcesSyncData["body"]) =>
+    this.postOrThrow<DataSourcesSyncResponse, DataSourcesSyncData["body"]>(
       `${API_URL}/datasources/sync`,
       {
         body: params,
@@ -172,14 +179,20 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       body: data,
     })
 
-  markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/seen`)
+  markNotificationAsSeen = ({ id }: NotificationsMarkAsSeenData["path"]) =>
+    this.postOrThrow<NotificationsMarkAsSeenResponse>(
+      `${API_URL}/notifications/${id}/seen`,
+    )
 
   markAllNotificationsAsSeen = () =>
-    this.postOrThrow(`${API_URL}/notifications/seen`)
+    this.postOrThrow<NotificationsMarkAllAsSeenResponse>(
+      `${API_URL}/notifications/seen`,
+    )
 
-  archiveNotification = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
+  archiveNotification = ({ id }: NotificationsArchiveData["path"]) =>
+    this.postOrThrow<NotificationsArchiveResponse>(
+      `${API_URL}/notifications/${id}/archive`,
+    )
 
   createKoreaderSyncServerPassword = () =>
     this.postOrThrow<KoreaderSyncServerCreatePasswordResponse>(

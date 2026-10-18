@@ -1,7 +1,7 @@
 import type { useQueryClient } from "@tanstack/react-query"
 import type {
-  GetNotificationsResponse,
-  GetUnreadNotificationsCountResponse,
+  NotificationsListResponse,
+  NotificationsUnreadCountResponse,
 } from "@oboku/shared"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
 
@@ -58,13 +58,12 @@ export const cancelAndSnapshotNotificationQueries = async (
   ])
 
   return {
-    previousNotifications: queryClient.getQueryData<GetNotificationsResponse>(
+    previousNotifications: queryClient.getQueryData<NotificationsListResponse>(
       inboxNotificationsQueryKey(profileId),
     ),
-    previousCount:
-      queryClient.getQueryData<GetUnreadNotificationsCountResponse>(
-        unreadCountQueryKey(profileId),
-      ),
+    previousCount: queryClient.getQueryData<NotificationsUnreadCountResponse>(
+      unreadCountQueryKey(profileId),
+    ),
   }
 }
 

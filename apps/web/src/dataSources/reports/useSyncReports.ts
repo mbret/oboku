@@ -1,6 +1,6 @@
 import {
   compareDesc,
-  type SyncReportPostgresEntitiesShared,
+  type DataSourcesListSyncReportsResponse,
 } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
@@ -23,7 +23,7 @@ export const useSyncReports = () => {
       queryKey: ["api/datasourceReport"],
       queryFn: async () => {
         const { data } =
-          await httpClientApi.fetchOrThrow<SyncReportPostgresEntitiesShared>(
+          await httpClientApi.fetchOrThrow<DataSourcesListSyncReportsResponse>(
             `${config?.API_URL}/datasources/sync-reports`,
           )
 

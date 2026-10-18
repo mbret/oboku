@@ -3,7 +3,7 @@ import createNano, { type RequestError } from "nano"
 import {
   type SafeMangoQuery,
   type InsertAbleBookDocType,
-  ReadingStateState,
+  createBookDefaults,
   type DocType,
   type ModelOf,
   type SettingsDocType,
@@ -310,21 +310,8 @@ export const createBook = async (
   data: Partial<InsertAbleBookDocType> = {},
 ) => {
   const insertData: InsertAbleBookDocType = {
-    collections: [],
-    createdAt: Date.now(),
-    lastMetadataUpdatedAt: null,
-    lastMetadataUpdateError: null,
-    metadataUpdateStatus: null,
-    links: [],
-    readingStateCurrentBookmarkLocation: null,
-    readingStateCurrentBookmarkProgressPercent: 0,
-    readingStateReachedProgressPercent: 0,
-    readingStateUpdatedAt: null,
-    readingStateCurrentState: ReadingStateState.NotStarted,
+    ...createBookDefaults(),
     rx_model: "book",
-    tags: [],
-    modifiedAt: null,
-    isAttachedToDataSource: false,
     rxdbMeta: { lwt: Date.now() },
     ...data,
   }

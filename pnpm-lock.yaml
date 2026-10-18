@@ -484,6 +484,9 @@ importers:
       '@prose-reader/enhancer-gestures':
         specifier: ^25.1.0
         version: 25.1.0(gesturx@2.0.0(rxjs@7.8.2))(rxjs@7.8.2)
+      '@prose-reader/enhancer-koreader':
+        specifier: ^25.1.0
+        version: 25.1.0(@prose-reader/core@25.1.0(rxjs@7.8.2))
       '@prose-reader/enhancer-pdf':
         specifier: ^25.1.0
         version: 25.1.0(@prose-reader/archive-reader@25.1.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@25.1.0(rxjs@7.8.2))(pdfjs-dist@6.4.299)(rxjs@7.8.2)
@@ -4312,6 +4315,11 @@ packages:
       gesturx: ^2.0.0
       rxjs: ^7.5.5
 
+  '@prose-reader/enhancer-koreader@25.1.0':
+    resolution: {integrity: sha512-xblttUL5b+yIiIGp529uYqOQAbefmGxS1LzAiiGVM+Yso42iXop43xkC57JbJZ0X841ac459vmFVw1+sRtIZnQ==}
+    peerDependencies:
+      '@prose-reader/core': ^25.1.0
+
   '@prose-reader/enhancer-pdf@25.1.0':
     resolution: {integrity: sha512-9bhii0iz3n06TAFX6bTbRVctpqt18O88FKzXH7IXoKZDVLC9drWRc3k/c2PxE+vL9f9clfAZ0owcr36uovRutw==}
     peerDependencies:
@@ -4330,6 +4338,9 @@ packages:
     resolution: {integrity: sha512-DWKOK2sphwqf039k2/AKjDAlNIaE4sRKSf2SftArpBIOUUCYdFkgLrobJlF9+Z1puYshaW2aGtm5i71XgPI07g==}
     peerDependencies:
       rxjs: ^7.5.5
+
+  '@prose-reader/koreader@25.1.0':
+    resolution: {integrity: sha512-ytbPcI5DdBjm8ptA+WYDrBocUiLDkw01nZlnWGrMyoi9kaOpRuJer91kES862g4D144RhJtWbMPcrFZgHvv2BQ==}
 
   '@prose-reader/react-reader@25.1.0':
     resolution: {integrity: sha512-YPCJ1NHFXuMlwVTjeyMRZCphzxkfT3N69Q4TiRJq8wD6JLpG9mqKubmfEuqbHmx18kHpeEEgj/o1eY5LpEaOzQ==}
@@ -16787,6 +16798,12 @@ snapshots:
       gesturx: 2.0.0(rxjs@7.8.2)
       rxjs: 7.8.2
 
+  '@prose-reader/enhancer-koreader@25.1.0(@prose-reader/core@25.1.0(rxjs@7.8.2))':
+    dependencies:
+      '@prose-reader/core': 25.1.0(rxjs@7.8.2)
+      '@prose-reader/koreader': 25.1.0
+      '@prose-reader/shared': 25.1.0
+
   '@prose-reader/enhancer-pdf@25.1.0(@prose-reader/archive-reader@25.1.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@25.1.0(rxjs@7.8.2))(pdfjs-dist@6.4.299)(rxjs@7.8.2)':
     dependencies:
       '@prose-reader/archive-reader': 25.1.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
@@ -16804,6 +16821,11 @@ snapshots:
       '@prose-reader/core': 25.1.0(rxjs@7.8.2)
       '@prose-reader/shared': 25.1.0
       rxjs: 7.8.2
+
+  '@prose-reader/koreader@25.1.0':
+    dependencies:
+      '@prose-reader/cfi': 25.0.1
+      '@prose-reader/shared': 25.1.0
 
   '@prose-reader/react-reader@25.1.0(ac91b22fc25d60180b727341023e5c7a)':
     dependencies:

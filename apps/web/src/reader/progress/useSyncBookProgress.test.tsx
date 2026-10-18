@@ -16,6 +16,7 @@ type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
   pagination: { state$: Subject<FakePaginationResult> }
   spineItemsManager: { get: (spineItemIndex: number) => FakeSpineItem }
+  koreader: { cfiToXPointer: (cfi: string) => string | undefined }
 }
 
 const mocks = vi.hoisted(function createSyncBookProgressMocks() {
@@ -117,10 +118,14 @@ const book: BookDocType = {
   tags: [],
 }
 
+const toFakeXPointer = (cfi: string) => `/body/DocFragment[1]/body/p.${cfi}`
+
 function createFakeReader({
   failedSpineItemIndexes = [],
+  cfisWithoutXPointer = [],
 }: {
   failedSpineItemIndexes?: number[]
+  cfisWithoutXPointer?: string[]
 } = {}) {
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
@@ -132,6 +137,13 @@ function createFakeReader({
         return {
           value: { loadStatus: didFailToLoad ? "error" : "loaded" },
         }
+      },
+    },
+    koreader: {
+      cfiToXPointer: function toFakeXPointerUnlessUnconvertible(cfi) {
+        return cfisWithoutXPointer.includes(cfi)
+          ? undefined
+          : toFakeXPointer(cfi)
       },
     },
   }
@@ -179,6 +191,88 @@ describe("useSyncBookProgress", () => {
       readingStateReachedProgressPercent: 0.95,
       readingStateCurrentState: ReadingStateState.Reading,
       readingStateUpdatedAt: expect.any(String),
+    })
+  })
+
+  it("moves the book up in recent activity when its bookmark moves", async () => {
+    const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        PAGE_BEFORE_LAST.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateUpdatedAt).not.toBe(
+      readingStateUpdatedAt,
+    )
+  })
+
+  it("saves the KOReader progress with the bookmark", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        LAST_PAGE.cfi,
+      ),
+    })
+  })
+
+  it("adds the KOReader progress to a bookmark saved without one, leaving its place in recent activity", async () => {
+    const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        LAST_PAGE.cfi,
+      ),
+      readingStateUpdatedAt,
+    })
+  })
+
+  it("drops the KOReader progress of the previous bookmark when the new one has none", async () => {
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+        PAGE_BEFORE_LAST.cfi,
+      ),
+    }
+    const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: null,
     })
   })
 
