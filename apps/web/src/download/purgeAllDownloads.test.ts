@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { describe, expect, it, vi } from "vitest"
 
 const { clear } = vi.hoisted(() => ({ clear: vi.fn(async () => {}) }))

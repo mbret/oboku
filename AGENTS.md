@@ -145,6 +145,13 @@
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
 
+### Web app tests: a real browser, one page per file
+
+- Every web app test runs in headless Chromium through Vitest browser mode (`apps/web/vitest.config.ts`). Use the browser's own APIs (storage, `crypto`, `ProgressEvent`, workers, popups) instead of stubbing them.
+- **A module is evaluated once per test file.** `vi.resetModules()` does nothing in a browser, so module-level state (a singleton client, a run-once promise) is shared by every test in the file. Declare mocks with a hoisted `vi.mock`, set each test's behaviour on `vi.hoisted` spies, and give a test that needs a module in its initial state a file of its own (see `auth.unconfigured.test.ts`).
+- **A mock factory must export every name its importers use.** The browser refuses to load a module whose import the mock lacks. Spreading `await importOriginal()` covers that, but deadlocks when the real module's imports lead back to another mocked module: return the full export list instead.
+- **Storage can outlive a test file.** localStorage, IndexedDB and OPFS can persist across the test files of a run, so a test clears the stores it relies on.
+
 ### React `memo` components
 
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).

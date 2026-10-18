@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { BrowserRouter, useLocation, useNavigate } from "react-router"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
@@ -9,9 +7,9 @@ import { useSafeGoBack } from "./useSafeGoBack"
 /**
  * `useSafeGoBack` reasons about the real `window.history` stack, so these tests
  * drive a `BrowserRouter` (a `MemoryRouter` never touches `window.history`).
- * jsdom keeps one history stack per file, so each test starts by wiping the
- * current entry's state, which makes the router re-seed it at index 0 — the
- * same situation as opening a deep link in a fresh tab.
+ * The test page keeps one history stack per file, so each test starts by
+ * wiping the current entry's state, which makes the router re-seed it at
+ * index 0. That is the situation of a deep link opened in a fresh tab.
  */
 
 const BOOK_OPTIMIZE_PATH = "/books/book-1/optimize"

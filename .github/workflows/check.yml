@@ -21,6 +21,7 @@ jobs:
           pnpm install --frozen-lockfile
           pnpm run lint
           pnpm run build
+          pnpm exec playwright install --with-deps --only-shell chromium
           pnpm run test
       - name: Check the generated API types are up to date
         run: |

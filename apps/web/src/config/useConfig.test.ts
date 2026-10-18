@@ -4,6 +4,7 @@ import type { GetWebConfigResponse } from "@oboku/shared"
 import type { HttpApiClientWeb } from "../http"
 import {
   buildConfig,
+  fetchConfig,
   seedWebConfigFromCache,
   webConfigQueryKey,
 } from "./useConfig"
@@ -91,11 +92,6 @@ describe("buildConfig", () => {
 })
 
 describe("fetchConfig", () => {
-  beforeEach(() => {
-    vi.resetModules()
-    vi.unstubAllGlobals()
-  })
-
   it("fetches, validates and consolidates the web config", async () => {
     const fetchOrThrow = vi.fn().mockResolvedValue({
       data: {
@@ -108,19 +104,10 @@ describe("fetchConfig", () => {
     })
     const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
 
-    vi.stubGlobal("window", {
-      location: {
-        protocol: "https:",
-        hostname: "reader.example.com",
-      },
-    })
-
-    const { fetchConfig } = await import("./useConfig")
-
     const config = await fetchConfig(httpClientApi)
 
     expect(fetchOrThrow).toHaveBeenCalledWith(
-      "https://reader.example.com:3000/web/config",
+      `${location.protocol}//${location.hostname}:3000/web/config`,
     )
     expect(httpClientApi.fetch).not.toHaveBeenCalled()
     expect(config.GOOGLE_CLIENT_ID).toBe("12345-client")
@@ -133,15 +120,6 @@ describe("fetchConfig", () => {
     const error = new Error("boom")
     const fetchOrThrow = vi.fn().mockRejectedValue(error)
     const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
-
-    vi.stubGlobal("window", {
-      location: {
-        protocol: "https:",
-        hostname: "reader.example.com",
-      },
-    })
-
-    const { fetchConfig } = await import("./useConfig")
 
     await expect(fetchConfig(httpClientApi)).rejects.toBe(error)
   })

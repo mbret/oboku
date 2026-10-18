@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { type BookDocType, ReadingStateState } from "@oboku/shared"
 import type { DocumentLoadStatus, ReadingPosition } from "@prose-reader/core"
 import { renderHook } from "@testing-library/react"
