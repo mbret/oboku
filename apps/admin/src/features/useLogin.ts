@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query"
+import type { AdminSignInData, AdminSignInResponse } from "@oboku/shared"
 import { authState, persistTokens } from "./states"
 import { config } from "@/config"
 
 export const useLogin = () => {
   return useMutation({
-    mutationFn: async (values: { login: string; password: string }) => {
+    mutationFn: async (values: AdminSignInData["body"]) => {
       const response = await fetch(`${config.apiUrl}/admin/signin`, {
         method: "POST",
         body: JSON.stringify(values),
@@ -21,7 +22,7 @@ export const useLogin = () => {
         )
       }
 
-      const data = await response.json()
+      const data: AdminSignInResponse = await response.json()
 
       if (!data.access_token) {
         throw new Error("Unable to sign in")

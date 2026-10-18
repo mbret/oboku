@@ -4,16 +4,16 @@ import {
   Injectable,
   Logger,
 } from "@nestjs/common"
-import {
-  renderBroadcastEmail,
-  type SendAdminEmailRequest,
-  type SendAdminEmailResponse,
-} from "@oboku/shared"
+import { renderBroadcastEmail } from "@oboku/shared"
 import { EMAIL_MAX_CONNECTIONS, EmailService } from "../email/EmailService.js"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
 } from "../features/postgres/user-postgres.service.js"
+import type {
+  SendAdminEmailDto,
+  SendAdminEmailResponseDto,
+} from "./admin.dto.js"
 
 const logger = new Logger("AdminEmailService")
 
@@ -28,9 +28,7 @@ export class AdminEmailService {
     private readonly emailService: EmailService,
   ) {}
 
-  private async resolveRecipients(
-    input: SendAdminEmailRequest,
-  ): Promise<string[]> {
+  private async resolveRecipients(input: SendAdminEmailDto): Promise<string[]> {
     if (input.audienceType === "all") {
       return this.userPostgresService.getAllUserEmails()
     }
@@ -42,8 +40,8 @@ export class AdminEmailService {
   }
 
   async sendBroadcast(
-    input: SendAdminEmailRequest,
-  ): Promise<SendAdminEmailResponse> {
+    input: SendAdminEmailDto,
+  ): Promise<SendAdminEmailResponseDto> {
     const subject = input.subject.trim()
     const body = input.body.trim()
 
@@ -129,7 +127,7 @@ export class AdminEmailService {
       subject: string
       body: string
       html: string
-      audienceType: SendAdminEmailRequest["audienceType"]
+      audienceType: SendAdminEmailDto["audienceType"]
     },
   ): Promise<void> {
     let deliveredCount = 0

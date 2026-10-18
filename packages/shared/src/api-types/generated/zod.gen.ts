@@ -73,6 +73,210 @@ export const zLogoutDto = z.object({
     session_id: z.uuid()
 });
 
+export const zAdminSignInDto = z.object({
+    login: z.string(),
+    password: z.string()
+});
+
+export const zAdminTokensResponseDto = z.object({
+    access_token: z.string(),
+    refresh_token: z.string()
+});
+
+export const zAdminRefreshTokenDto = z.object({
+    refresh_token: z.string()
+});
+
+export const zWebdavConnectorsMigrationResponseDto = z.object({
+    usersMigrated: z.number(),
+    connectorsCreated: z.number()
+});
+
+export const zResourceIdMigrationResponseDto = z.object({
+    usersMigrated: z.number(),
+    linksUpdated: z.number(),
+    collectionsUpdated: z.number()
+});
+
+export const zCollectionCoverKeysMigrationResponseDto = z.object({
+    storageStrategy: z.enum(['s3', 'fs']),
+    ranOnUsers: z.number(),
+    renamed: z.number(),
+    skippedDestinationExists: z.number(),
+    skippedSourceMissing: z.number()
+});
+
+export const zRefreshTokenCreatedAtResetResponseDto = z.object({
+    updated: z.number()
+});
+
+export const zCoverCleanupStatsResponseDto = z.object({
+    storageStrategy: z.enum(['s3', 'fs']),
+    storageLocation: z.string(),
+    storedCovers: z.number().nullable(),
+    storedSizeInBytes: z.number().nullable(),
+    canDeleteAllCovers: z.boolean()
+});
+
+export const zFailedCoverDeletionDto = z.object({
+    key: z.string(),
+    message: z.string()
+});
+
+export const zDeleteAllCoversResponseDto = z.object({
+    deletedCovers: z.number(),
+    deletedSizeInBytes: z.number(),
+    failedCovers: z.number(),
+    failedKeys: z.array(zFailedCoverDeletionDto)
+});
+
+export const zGenerateSignUpLinkDto = z.object({
+    email: z.email(),
+    appPublicUrl: z.url().optional()
+});
+
+export const zSignUpLinkResponseDto = z.object({
+    signUpLink: z.string()
+});
+
+export const zAdminNotificationSummaryDto = z.object({
+    data: z.unknown().nullable(),
+    id: z.number(),
+    createdAt: z.string(),
+    kind: z.enum(['admin_broadcast']),
+    severity: z.enum([
+        'error',
+        'success',
+        'info',
+        'warning'
+    ]),
+    title: z.string(),
+    body: z.string().nullable(),
+    deliveredCount: z.number()
+});
+
+export const zCreateAdminNotificationDto = z.object({
+    title: z.string().min(1),
+    body: z.string().optional(),
+    severity: z.enum([
+        'info',
+        'success',
+        'warning',
+        'error'
+    ]).optional(),
+    audienceType: z.enum(['all', 'emails']),
+    emails: z.array(z.email()).max(1000).optional()
+});
+
+export const zAdminUserSummaryDto = z.object({
+    id: z.number(),
+    email: z.string(),
+    username: z.string(),
+    emailVerified: z.boolean(),
+    hasPassword: z.boolean(),
+    createdAt: z.string()
+});
+
+export const zSendAdminEmailDto = z.object({
+    subject: z.string().min(1),
+    body: z.string().min(1),
+    audienceType: z.enum(['all', 'emails']),
+    emails: z.array(z.email()).max(1000).optional()
+});
+
+export const zSendAdminEmailResponseDto = z.object({
+    recipientCount: z.number()
+});
+
+export const zTokenStatsResponseDto = z.object({
+    totalTokens: z.number(),
+    activeTokens: z.number(),
+    distinctUsers: z.number(),
+    distinctSessions: z.number()
+});
+
+export const zRevokeTokensDto = z.object({
+    audienceType: z.enum(['all', 'emails']),
+    emails: z.array(z.email()).max(1000).optional()
+});
+
+export const zRevokeTokensResponseDto = z.object({
+    revokedTokens: z.number(),
+    targetedUsers: z.number().nullable()
+});
+
+export const zInstanceSettingsResponseDto = z.object({
+    showDisabledPlugins: z.boolean(),
+    fileDownloadMaxSizeBytes: z.number(),
+    allowPrivateNetworkRequests: z.boolean(),
+    privateNetworkAllowedHosts: z.array(z.string()),
+    microsoftApplicationClientId: z.string().optional(),
+    microsoftApplicationAuthority: z.string().optional()
+});
+
+export const zUpdateInstanceSettingsDto = z.object({
+    fileDownloadMaxSizeBytes: z.int().gte(1).optional(),
+    microsoftApplicationAuthority: z.union([
+        z.url(),
+        z.enum([''])
+    ]).optional(),
+    showDisabledPlugins: z.boolean().optional(),
+    allowPrivateNetworkRequests: z.boolean().optional(),
+    privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
+    microsoftApplicationClientId: z.string().optional()
+});
+
+export const zServerSyncCredentialsDto = z.object({
+    configured: z.boolean(),
+    username: z.string().nullable()
+});
+
+export const zServerSyncResponseDto = z.object({
+    enabled: z.boolean(),
+    credentials: zServerSyncCredentialsDto
+});
+
+export const zUpdateServerSyncDto = z.object({
+    enabled: z.boolean()
+});
+
+export const zUpdateServerSyncResponseDto = z.object({
+    enabled: z.boolean()
+});
+
+export const zSetWebDavCredentialsDto = z.object({
+    username: z.string().min(1),
+    password: z.string().min(8)
+});
+
+export const zWebDavCredentialsResponseDto = z.object({
+    configured: z.boolean(),
+    username: z.string()
+});
+
+export const zServerSourceDto = z.object({
+    id: z.string(),
+    name: z.string(),
+    path: z.string(),
+    enabled: z.boolean()
+});
+
+export const zCreateServerSourceDto = z.object({
+    name: z.string().min(1),
+    path: z.string().min(1),
+    enabled: z.boolean().optional()
+});
+
+export const zUpdateServerSourceDto = z.object({
+    name: z.string().min(1).optional(),
+    path: z.string().min(1).optional(),
+    enabled: z.boolean().optional()
+});
+
+export const zOkResponseDto = z.object({
+    ok: z.boolean()
+});
+
 export const zAdminBroadcastNotificationDto = z.object({
     data: z.unknown().nullable(),
     kind: z.enum(['admin_broadcast']),
@@ -114,10 +318,6 @@ export const zSyncFinishedNotificationDto = z.object({
 
 export const zUnreadNotificationsCountResponseDto = z.object({
     count: z.number()
-});
-
-export const zOkResponseDto = z.object({
-    ok: z.boolean()
 });
 
 export const zSyncReportRelationDto = z.object({
@@ -246,6 +446,88 @@ export const zAuthLogoutBody = zLogoutDto;
 export const zAuthLogoutResponse = zEmptyResponseDto;
 
 export const zAuthDeleteAccountResponse = zEmptyResponseDto;
+
+export const zAdminSignInBody = zAdminSignInDto;
+
+export const zAdminSignInResponse = zAdminTokensResponseDto;
+
+export const zAdminRefreshTokenBody = zAdminRefreshTokenDto;
+
+export const zAdminRefreshTokenResponse = zAdminTokensResponseDto;
+
+export const zAdminMigrateWebdavConnectorsResponse = zWebdavConnectorsMigrationResponseDto;
+
+export const zAdminMigrateWebdavResourceIdsResponse = zResourceIdMigrationResponseDto;
+
+export const zAdminMigrateResourceIdToLinkDataResponse = zResourceIdMigrationResponseDto;
+
+export const zAdminMigrateCollectionCoverKeysResponse = zCollectionCoverKeysMigrationResponseDto;
+
+export const zAdminResetRefreshTokenCreatedAtResponse = zRefreshTokenCreatedAtResetResponseDto;
+
+export const zAdminGetCoversCleanupStatsResponse = zCoverCleanupStatsResponseDto;
+
+export const zAdminDeleteAllCoversResponse = zDeleteAllCoversResponseDto;
+
+export const zAdminGenerateSignUpLinkBody = zGenerateSignUpLinkDto;
+
+export const zAdminGenerateSignUpLinkResponse = zSignUpLinkResponseDto;
+
+export const zAdminListNotificationsResponse = z.array(zAdminNotificationSummaryDto);
+
+export const zAdminCreateNotificationBody = zCreateAdminNotificationDto;
+
+export const zAdminCreateNotificationResponse = zAdminNotificationSummaryDto;
+
+export const zAdminListUsersResponse = z.array(zAdminUserSummaryDto);
+
+export const zAdminSendEmailBody = zSendAdminEmailDto;
+
+export const zAdminSendEmailResponse = zSendAdminEmailResponseDto;
+
+export const zAdminGetTokenStatsResponse = zTokenStatsResponseDto;
+
+export const zAdminRevokeTokensBody = zRevokeTokensDto;
+
+export const zAdminRevokeTokensResponse = zRevokeTokensResponseDto;
+
+export const zAdminGetSettingsResponse = zInstanceSettingsResponseDto;
+
+export const zAdminUpdateSettingsBody = zUpdateInstanceSettingsDto;
+
+export const zAdminUpdateSettingsResponse = zEmptyResponseDto;
+
+export const zAdminGetServerSyncResponse = zServerSyncResponseDto;
+
+export const zAdminUpdateServerSyncBody = zUpdateServerSyncDto;
+
+export const zAdminUpdateServerSyncResponse = zUpdateServerSyncResponseDto;
+
+export const zAdminSetWebDavCredentialsBody = zSetWebDavCredentialsDto;
+
+export const zAdminSetWebDavCredentialsResponse = zWebDavCredentialsResponseDto;
+
+export const zAdminListServerSourcesResponse = z.array(zServerSourceDto);
+
+export const zAdminCreateServerSourceBody = zCreateServerSourceDto;
+
+export const zAdminCreateServerSourceResponse = zServerSourceDto;
+
+export const zAdminDeleteServerSourcePath = z.object({
+    id: z.string()
+});
+
+export const zAdminDeleteServerSourceResponse = zOkResponseDto;
+
+export const zAdminUpdateServerSourceBody = zUpdateServerSourceDto;
+
+export const zAdminUpdateServerSourcePath = z.object({
+    id: z.string()
+});
+
+export const zAdminUpdateServerSourceResponse = zServerSourceDto;
+
+export const zAdminGetSessionResponse = zOkResponseDto;
 
 export const zNotificationsListResponse = z.array(z.union([zAdminBroadcastNotificationDto, zSyncFinishedNotificationDto]));
 

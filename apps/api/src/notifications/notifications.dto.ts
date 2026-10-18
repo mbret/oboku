@@ -1,5 +1,10 @@
 import { ApiProperty } from "@nestjs/swagger"
 import type { NotificationSeverity } from "@oboku/shared"
+import { IsIn, IsOptional, IsString, MinLength } from "class-validator"
+import { AudienceDto } from "../lib/audience.dto.js"
+
+// OpenAPI 3.0 has no `null` type: `type: "null"` would generate `unknown`.
+const alwaysNullProperty = { nullable: true, enum: [null] }
 
 export class SyncFinishedNotificationDataDto {
   datasourceId!: string
@@ -19,8 +24,7 @@ class BaseUserNotificationDto {
 export class AdminBroadcastNotificationDto extends BaseUserNotificationDto {
   kind!: "admin_broadcast"
 
-  // OpenAPI 3.0 has no `null` type: `type: "null"` would generate `unknown`.
-  @ApiProperty({ nullable: true, enum: [null] })
+  @ApiProperty(alwaysNullProperty)
   data!: null
 }
 
@@ -35,4 +39,33 @@ export type UserNotificationDto =
 
 export class UnreadNotificationsCountResponseDto {
   count!: number
+}
+
+export class CreateAdminNotificationDto extends AudienceDto {
+  @IsString()
+  @MinLength(1)
+  title!: string
+
+  @IsString()
+  @IsOptional()
+  body?: string
+
+  @IsString()
+  @IsIn(["info", "success", "warning", "error"])
+  @IsOptional()
+  severity?: NotificationSeverity
+}
+
+export class AdminNotificationSummaryDto {
+  id!: number
+  createdAt!: string
+  kind!: "admin_broadcast"
+  severity!: NotificationSeverity
+  title!: string
+  body!: string | null
+
+  @ApiProperty(alwaysNullProperty)
+  data!: null
+
+  deliveredCount!: number
 }

@@ -82,6 +82,200 @@ export type LogoutDto = {
     session_id: string;
 };
 
+export type AdminSignInDto = {
+    login: string;
+    password: string;
+};
+
+export type AdminTokensResponseDto = {
+    access_token: string;
+    refresh_token: string;
+};
+
+export type AdminRefreshTokenDto = {
+    refresh_token: string;
+};
+
+export type WebdavConnectorsMigrationResponseDto = {
+    usersMigrated: number;
+    connectorsCreated: number;
+};
+
+export type ResourceIdMigrationResponseDto = {
+    usersMigrated: number;
+    linksUpdated: number;
+    collectionsUpdated: number;
+};
+
+export type CollectionCoverKeysMigrationResponseDto = {
+    storageStrategy: 's3' | 'fs';
+    ranOnUsers: number;
+    renamed: number;
+    skippedDestinationExists: number;
+    skippedSourceMissing: number;
+};
+
+export type RefreshTokenCreatedAtResetResponseDto = {
+    updated: number;
+};
+
+export type CoverCleanupStatsResponseDto = {
+    storageStrategy: 's3' | 'fs';
+    storageLocation: string;
+    storedCovers: number | null;
+    storedSizeInBytes: number | null;
+    canDeleteAllCovers: boolean;
+};
+
+export type FailedCoverDeletionDto = {
+    key: string;
+    message: string;
+};
+
+export type DeleteAllCoversResponseDto = {
+    deletedCovers: number;
+    deletedSizeInBytes: number;
+    failedCovers: number;
+    failedKeys: Array<FailedCoverDeletionDto>;
+};
+
+export type GenerateSignUpLinkDto = {
+    email: string;
+    appPublicUrl?: string;
+};
+
+export type SignUpLinkResponseDto = {
+    signUpLink: string;
+};
+
+export type AdminNotificationSummaryDto = {
+    data: null;
+    id: number;
+    createdAt: string;
+    kind: 'admin_broadcast';
+    severity: 'error' | 'success' | 'info' | 'warning';
+    title: string;
+    body: string | null;
+    deliveredCount: number;
+};
+
+export type CreateAdminNotificationDto = {
+    title: string;
+    body?: string;
+    severity?: 'info' | 'success' | 'warning' | 'error';
+    audienceType: 'all' | 'emails';
+    emails?: Array<string>;
+};
+
+export type AdminUserSummaryDto = {
+    id: number;
+    email: string;
+    username: string;
+    emailVerified: boolean;
+    hasPassword: boolean;
+    createdAt: string;
+};
+
+export type SendAdminEmailDto = {
+    subject: string;
+    body: string;
+    audienceType: 'all' | 'emails';
+    emails?: Array<string>;
+};
+
+export type SendAdminEmailResponseDto = {
+    recipientCount: number;
+};
+
+export type TokenStatsResponseDto = {
+    totalTokens: number;
+    activeTokens: number;
+    distinctUsers: number;
+    distinctSessions: number;
+};
+
+export type RevokeTokensDto = {
+    audienceType: 'all' | 'emails';
+    emails?: Array<string>;
+};
+
+export type RevokeTokensResponseDto = {
+    revokedTokens: number;
+    /**
+     * Number of matched users when targeting emails; null for a full revoke.
+     */
+    targetedUsers: number | null;
+};
+
+export type InstanceSettingsResponseDto = {
+    showDisabledPlugins: boolean;
+    fileDownloadMaxSizeBytes: number;
+    allowPrivateNetworkRequests: boolean;
+    privateNetworkAllowedHosts: Array<string>;
+    microsoftApplicationClientId?: string;
+    microsoftApplicationAuthority?: string;
+};
+
+export type UpdateInstanceSettingsDto = {
+    fileDownloadMaxSizeBytes?: number;
+    microsoftApplicationAuthority?: string | '';
+    showDisabledPlugins?: boolean;
+    allowPrivateNetworkRequests?: boolean;
+    privateNetworkAllowedHosts?: Array<string>;
+    microsoftApplicationClientId?: string;
+};
+
+export type ServerSyncCredentialsDto = {
+    configured: boolean;
+    username: string | null;
+};
+
+export type ServerSyncResponseDto = {
+    enabled: boolean;
+    credentials: ServerSyncCredentialsDto;
+};
+
+export type UpdateServerSyncDto = {
+    enabled: boolean;
+};
+
+export type UpdateServerSyncResponseDto = {
+    enabled: boolean;
+};
+
+export type SetWebDavCredentialsDto = {
+    username: string;
+    password: string;
+};
+
+export type WebDavCredentialsResponseDto = {
+    configured: boolean;
+    username: string;
+};
+
+export type ServerSourceDto = {
+    id: string;
+    name: string;
+    path: string;
+    enabled: boolean;
+};
+
+export type CreateServerSourceDto = {
+    name: string;
+    path: string;
+    enabled?: boolean;
+};
+
+export type UpdateServerSourceDto = {
+    name?: string;
+    path?: string;
+    enabled?: boolean;
+};
+
+export type OkResponseDto = {
+    ok: boolean;
+};
+
 export type AdminBroadcastNotificationDto = {
     data: null;
     kind: 'admin_broadcast';
@@ -113,10 +307,6 @@ export type SyncFinishedNotificationDto = {
 
 export type UnreadNotificationsCountResponseDto = {
     count: number;
-};
-
-export type OkResponseDto = {
-    ok: boolean;
 };
 
 export type SyncReportRelationDto = {
@@ -390,6 +580,348 @@ export type AuthDeleteAccountResponses = {
 };
 
 export type AuthDeleteAccountResponse = AuthDeleteAccountResponses[keyof AuthDeleteAccountResponses];
+
+export type AdminSignInData = {
+    body: AdminSignInDto;
+    path?: never;
+    query?: never;
+    url: '/admin/signin';
+};
+
+export type AdminSignInResponses = {
+    201: AdminTokensResponseDto;
+};
+
+export type AdminSignInResponse = AdminSignInResponses[keyof AdminSignInResponses];
+
+export type AdminRefreshTokenData = {
+    body: AdminRefreshTokenDto;
+    path?: never;
+    query?: never;
+    url: '/admin/refresh';
+};
+
+export type AdminRefreshTokenResponses = {
+    201: AdminTokensResponseDto;
+};
+
+export type AdminRefreshTokenResponse = AdminRefreshTokenResponses[keyof AdminRefreshTokenResponses];
+
+export type AdminMigrateWebdavConnectorsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/migrate-webdav-connectors';
+};
+
+export type AdminMigrateWebdavConnectorsResponses = {
+    201: WebdavConnectorsMigrationResponseDto;
+};
+
+export type AdminMigrateWebdavConnectorsResponse = AdminMigrateWebdavConnectorsResponses[keyof AdminMigrateWebdavConnectorsResponses];
+
+export type AdminMigrateWebdavResourceIdsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/migrate-webdav-resource-ids';
+};
+
+export type AdminMigrateWebdavResourceIdsResponses = {
+    201: ResourceIdMigrationResponseDto;
+};
+
+export type AdminMigrateWebdavResourceIdsResponse = AdminMigrateWebdavResourceIdsResponses[keyof AdminMigrateWebdavResourceIdsResponses];
+
+export type AdminMigrateResourceIdToLinkDataData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/migrate-resource-id-to-link-data';
+};
+
+export type AdminMigrateResourceIdToLinkDataResponses = {
+    201: ResourceIdMigrationResponseDto;
+};
+
+export type AdminMigrateResourceIdToLinkDataResponse = AdminMigrateResourceIdToLinkDataResponses[keyof AdminMigrateResourceIdToLinkDataResponses];
+
+export type AdminMigrateCollectionCoverKeysData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/migrate-collection-cover-keys';
+};
+
+export type AdminMigrateCollectionCoverKeysResponses = {
+    201: CollectionCoverKeysMigrationResponseDto;
+};
+
+export type AdminMigrateCollectionCoverKeysResponse = AdminMigrateCollectionCoverKeysResponses[keyof AdminMigrateCollectionCoverKeysResponses];
+
+export type AdminResetRefreshTokenCreatedAtData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/reset-refresh-token-created-at';
+};
+
+export type AdminResetRefreshTokenCreatedAtResponses = {
+    201: RefreshTokenCreatedAtResetResponseDto;
+};
+
+export type AdminResetRefreshTokenCreatedAtResponse = AdminResetRefreshTokenCreatedAtResponses[keyof AdminResetRefreshTokenCreatedAtResponses];
+
+export type AdminGetCoversCleanupStatsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/covers';
+};
+
+export type AdminGetCoversCleanupStatsResponses = {
+    200: CoverCleanupStatsResponseDto;
+};
+
+export type AdminGetCoversCleanupStatsResponse = AdminGetCoversCleanupStatsResponses[keyof AdminGetCoversCleanupStatsResponses];
+
+export type AdminDeleteAllCoversData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/covers/delete-all';
+};
+
+export type AdminDeleteAllCoversResponses = {
+    201: DeleteAllCoversResponseDto;
+};
+
+export type AdminDeleteAllCoversResponse = AdminDeleteAllCoversResponses[keyof AdminDeleteAllCoversResponses];
+
+export type AdminGenerateSignUpLinkData = {
+    body: GenerateSignUpLinkDto;
+    path?: never;
+    query?: never;
+    url: '/admin/signup-links';
+};
+
+export type AdminGenerateSignUpLinkResponses = {
+    201: SignUpLinkResponseDto;
+};
+
+export type AdminGenerateSignUpLinkResponse = AdminGenerateSignUpLinkResponses[keyof AdminGenerateSignUpLinkResponses];
+
+export type AdminListNotificationsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/notifications';
+};
+
+export type AdminListNotificationsResponses = {
+    200: Array<AdminNotificationSummaryDto>;
+};
+
+export type AdminListNotificationsResponse = AdminListNotificationsResponses[keyof AdminListNotificationsResponses];
+
+export type AdminCreateNotificationData = {
+    body: CreateAdminNotificationDto;
+    path?: never;
+    query?: never;
+    url: '/admin/notifications';
+};
+
+export type AdminCreateNotificationResponses = {
+    201: AdminNotificationSummaryDto;
+};
+
+export type AdminCreateNotificationResponse = AdminCreateNotificationResponses[keyof AdminCreateNotificationResponses];
+
+export type AdminListUsersData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/users';
+};
+
+export type AdminListUsersResponses = {
+    200: Array<AdminUserSummaryDto>;
+};
+
+export type AdminListUsersResponse = AdminListUsersResponses[keyof AdminListUsersResponses];
+
+export type AdminSendEmailData = {
+    body: SendAdminEmailDto;
+    path?: never;
+    query?: never;
+    url: '/admin/email';
+};
+
+export type AdminSendEmailResponses = {
+    202: SendAdminEmailResponseDto;
+};
+
+export type AdminSendEmailResponse = AdminSendEmailResponses[keyof AdminSendEmailResponses];
+
+export type AdminGetTokenStatsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/tokens/stats';
+};
+
+export type AdminGetTokenStatsResponses = {
+    200: TokenStatsResponseDto;
+};
+
+export type AdminGetTokenStatsResponse = AdminGetTokenStatsResponses[keyof AdminGetTokenStatsResponses];
+
+export type AdminRevokeTokensData = {
+    body: RevokeTokensDto;
+    path?: never;
+    query?: never;
+    url: '/admin/tokens/revoke';
+};
+
+export type AdminRevokeTokensResponses = {
+    200: RevokeTokensResponseDto;
+};
+
+export type AdminRevokeTokensResponse = AdminRevokeTokensResponses[keyof AdminRevokeTokensResponses];
+
+export type AdminGetSettingsData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/settings';
+};
+
+export type AdminGetSettingsResponses = {
+    200: InstanceSettingsResponseDto;
+};
+
+export type AdminGetSettingsResponse = AdminGetSettingsResponses[keyof AdminGetSettingsResponses];
+
+export type AdminUpdateSettingsData = {
+    body: UpdateInstanceSettingsDto;
+    path?: never;
+    query?: never;
+    url: '/admin/settings';
+};
+
+export type AdminUpdateSettingsResponses = {
+    200: EmptyResponseDto;
+};
+
+export type AdminUpdateSettingsResponse = AdminUpdateSettingsResponses[keyof AdminUpdateSettingsResponses];
+
+export type AdminGetServerSyncData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/server-sync';
+};
+
+export type AdminGetServerSyncResponses = {
+    200: ServerSyncResponseDto;
+};
+
+export type AdminGetServerSyncResponse = AdminGetServerSyncResponses[keyof AdminGetServerSyncResponses];
+
+export type AdminUpdateServerSyncData = {
+    body: UpdateServerSyncDto;
+    path?: never;
+    query?: never;
+    url: '/admin/server-sync';
+};
+
+export type AdminUpdateServerSyncResponses = {
+    200: UpdateServerSyncResponseDto;
+};
+
+export type AdminUpdateServerSyncResponse = AdminUpdateServerSyncResponses[keyof AdminUpdateServerSyncResponses];
+
+export type AdminSetWebDavCredentialsData = {
+    body: SetWebDavCredentialsDto;
+    path?: never;
+    query?: never;
+    url: '/admin/server-sync/credentials';
+};
+
+export type AdminSetWebDavCredentialsResponses = {
+    200: WebDavCredentialsResponseDto;
+};
+
+export type AdminSetWebDavCredentialsResponse = AdminSetWebDavCredentialsResponses[keyof AdminSetWebDavCredentialsResponses];
+
+export type AdminListServerSourcesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/server-sync/sources';
+};
+
+export type AdminListServerSourcesResponses = {
+    200: Array<ServerSourceDto>;
+};
+
+export type AdminListServerSourcesResponse = AdminListServerSourcesResponses[keyof AdminListServerSourcesResponses];
+
+export type AdminCreateServerSourceData = {
+    body: CreateServerSourceDto;
+    path?: never;
+    query?: never;
+    url: '/admin/server-sync/sources';
+};
+
+export type AdminCreateServerSourceResponses = {
+    201: ServerSourceDto;
+};
+
+export type AdminCreateServerSourceResponse = AdminCreateServerSourceResponses[keyof AdminCreateServerSourceResponses];
+
+export type AdminDeleteServerSourceData = {
+    body?: never;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/admin/server-sync/sources/{id}';
+};
+
+export type AdminDeleteServerSourceResponses = {
+    200: OkResponseDto;
+};
+
+export type AdminDeleteServerSourceResponse = AdminDeleteServerSourceResponses[keyof AdminDeleteServerSourceResponses];
+
+export type AdminUpdateServerSourceData = {
+    body: UpdateServerSourceDto;
+    path: {
+        id: string;
+    };
+    query?: never;
+    url: '/admin/server-sync/sources/{id}';
+};
+
+export type AdminUpdateServerSourceResponses = {
+    200: ServerSourceDto;
+};
+
+export type AdminUpdateServerSourceResponse = AdminUpdateServerSourceResponses[keyof AdminUpdateServerSourceResponses];
+
+export type AdminGetSessionData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/session';
+};
+
+export type AdminGetSessionResponses = {
+    200: OkResponseDto;
+};
+
+export type AdminGetSessionResponse = AdminGetSessionResponses[keyof AdminGetSessionResponses];
 
 export type NotificationsListData = {
     body?: never;

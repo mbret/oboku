@@ -1,15 +1,11 @@
 import { useMutation } from "@tanstack/react-query"
+import type { AdminMigrateWebdavConnectorsResponse } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "./authenticatedFetch"
 
-export type WebdavMigrationResult = {
-  usersMigrated: number
-  connectorsCreated: number
-}
-
 export const useMigrateWebdavConnectors = () => {
   return useMutation({
-    mutationFn: async (): Promise<WebdavMigrationResult> => {
+    mutationFn: async (): Promise<AdminMigrateWebdavConnectorsResponse> => {
       const res = await authenticatedFetch(
         `${config.apiUrl}/admin/migrate-webdav-connectors`,
         {

@@ -44,7 +44,7 @@ Responses and DTOs also have a zod schema named after their type with a `z` pref
 
 ## Documented modules
 
-The document only covers the modules listed in `documentedModules` in `apps/api/src/generate-openapi.ts`. The other routes still use the hand-written types in `packages/shared/src/api-types/`.
+The document only covers the modules listed in `documentedModules` in `apps/api/src/generate-openapi.ts`. It lists every module with a controller except `CoversModule`, whose routes serve cover images.
 
 To move a module over:
 

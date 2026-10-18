@@ -1,8 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
 import type {
-  GetServerSyncResponse,
-  SetWebDavCredentialsResponse,
-  UpdateServerSyncResponse,
+  AdminGetServerSyncResponse,
+  AdminSetWebDavCredentialsData,
+  AdminSetWebDavCredentialsResponse,
+  AdminUpdateServerSyncData,
+  AdminUpdateServerSyncResponse,
 } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
@@ -13,7 +15,7 @@ const serverSyncQueryKey = ["admin", "server-sync"] as const
 export const useServerSync = () => {
   return useQuery({
     queryKey: serverSyncQueryKey,
-    queryFn: async (): Promise<GetServerSyncResponse> => {
+    queryFn: async (): Promise<AdminGetServerSyncResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/server-sync`,
       )
@@ -36,9 +38,9 @@ export const useUpdateServerSync = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: {
-      enabled: boolean
-    }): Promise<UpdateServerSyncResponse> => {
+    mutationFn: async (
+      input: AdminUpdateServerSyncData["body"],
+    ): Promise<AdminUpdateServerSyncResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/server-sync`,
         {
@@ -69,10 +71,9 @@ export const useSetWebDavCredentials = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (input: {
-      username: string
-      password: string
-    }): Promise<SetWebDavCredentialsResponse> => {
+    mutationFn: async (
+      input: AdminSetWebDavCredentialsData["body"],
+    ): Promise<AdminSetWebDavCredentialsResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/server-sync/credentials`,
         {

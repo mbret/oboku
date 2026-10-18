@@ -1,9 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router"
 import { Button, Code, Group, Paper, Stack, Text } from "@mantine/core"
-import {
-  useServerSources,
-  type ServerSource,
-} from "@/features/serverSources/useServerSources"
+import type { ServerSourceDto } from "@oboku/shared"
+import { useServerSources } from "@/features/serverSources/useServerSources"
 import { useUpdateServerSource } from "@/features/serverSources/useUpdateServerSource"
 import { useDeleteServerSource } from "@/features/serverSources/useDeleteServerSource"
 import {
@@ -46,7 +44,7 @@ function ServerSourceDetailPage() {
   return <ServerSourceEditForm source={source} />
 }
 
-function ServerSourceEditForm({ source }: { source: ServerSource }) {
+function ServerSourceEditForm({ source }: { source: ServerSourceDto }) {
   const navigate = useNavigate()
   const updateServerSource = useUpdateServerSource()
   const deleteServerSource = useDeleteServerSource()

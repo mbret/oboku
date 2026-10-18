@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
 import type {
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
+  AdminCreateNotificationData,
+  AdminCreateNotificationResponse,
 } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
@@ -14,8 +14,8 @@ export const useCreateAdminNotification = () => {
 
   return useMutation({
     mutationFn: async (
-      input: CreateAdminNotificationRequest,
-    ): Promise<CreateAdminNotificationResponse> => {
+      input: AdminCreateNotificationData["body"],
+    ): Promise<AdminCreateNotificationResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/notifications`,
         {

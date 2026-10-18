@@ -1,16 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
+import type {
+  AdminUpdateServerSourceData,
+  AdminUpdateServerSourceResponse,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
 import { readResponseErrorMessage } from "../readResponseErrorMessage"
-import { serverSourcesQueryKey, type ServerSource } from "./useServerSources"
+import { serverSourcesQueryKey } from "./useServerSources"
 
-export type UpdateServerSourceInput = {
-  id: string
-  name: string
-  path: string
-  enabled: boolean
-}
+type UpdateServerSourceVariables = AdminUpdateServerSourceData["path"] &
+  AdminUpdateServerSourceData["body"]
 
 export const useUpdateServerSource = () => {
   const queryClient = useQueryClient()
@@ -19,7 +19,7 @@ export const useUpdateServerSource = () => {
     mutationFn: async ({
       id,
       ...input
-    }: UpdateServerSourceInput): Promise<ServerSource> => {
+    }: UpdateServerSourceVariables): Promise<AdminUpdateServerSourceResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/server-sync/sources/${id}`,
         {
@@ -42,14 +42,14 @@ export const useUpdateServerSource = () => {
 
       return response.json()
     },
-    onSuccess: async (_data, variables) => {
+    onSuccess: async (savedSource) => {
       await queryClient.invalidateQueries({
         queryKey: serverSourcesQueryKey,
       })
 
       notifications.show({
         title: "Source updated",
-        message: `"${variables.name}" has been saved.`,
+        message: `"${savedSource.name}" has been saved.`,
         color: "green",
       })
     },

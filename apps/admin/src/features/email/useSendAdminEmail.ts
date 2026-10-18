@@ -1,9 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type {
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
-} from "@oboku/shared"
+import type { AdminSendEmailData, AdminSendEmailResponse } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
 import { readResponseErrorMessage } from "../readResponseErrorMessage"
@@ -11,8 +8,8 @@ import { readResponseErrorMessage } from "../readResponseErrorMessage"
 export const useSendAdminEmail = () => {
   return useMutation({
     mutationFn: async (
-      input: SendAdminEmailRequest,
-    ): Promise<SendAdminEmailResponse> => {
+      input: AdminSendEmailData["body"],
+    ): Promise<AdminSendEmailResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/email`,
         {

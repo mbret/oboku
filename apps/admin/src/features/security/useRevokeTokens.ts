@@ -1,6 +1,9 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type { RevokeTokensRequest, RevokeTokensResponse } from "@oboku/shared"
+import type {
+  AdminRevokeTokensData,
+  AdminRevokeTokensResponse,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
 import { readResponseErrorMessage } from "../readResponseErrorMessage"
@@ -11,8 +14,8 @@ export const useRevokeTokens = () => {
 
   return useMutation({
     mutationFn: async (
-      input: RevokeTokensRequest,
-    ): Promise<RevokeTokensResponse> => {
+      input: AdminRevokeTokensData["body"],
+    ): Promise<AdminRevokeTokensResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/tokens/revoke`,
         {
