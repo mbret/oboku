@@ -1,4 +1,5 @@
 import type {
+  ApiClient,
   AuthCompleteMagicLinkData,
   AuthCompleteMagicLinkResponse,
   AuthCompleteSignUpData,
@@ -25,12 +26,8 @@ import type {
   KoreaderSyncConnectionDisconnectResponse,
   KoreaderSyncServerCreatePasswordResponse,
   KoreaderSyncServerTurnOffResponse,
-  NotificationsArchiveData,
-  NotificationsArchiveResponse,
-  NotificationsMarkAllAsSeenResponse,
-  NotificationsMarkAsSeenData,
-  NotificationsMarkAsSeenResponse,
 } from "@oboku/shared"
+import { createApiClient } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
 import { withAuthCookiesLock } from "./authCookiesLock"
@@ -47,6 +44,13 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
+/**
+ * TODO: incomplete while the API calls move to the generated functions, one
+ * module at a time. The methods below that still build a route's URL by hand
+ * go as their module moves. This class then keeps only the transport the
+ * generated client runs on: the session cookies, the refresh and replay on a
+ * 401, the session store, and the cookies lock around sign-in.
+ */
 export class HttpApiClientWeb extends RefreshingHttpClient {
   private sessionStore: SessionStore = {
     get: async () => null,
@@ -56,6 +60,42 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   constructor() {
     super({ credentials: "include" })
   }
+
+  /**
+   * Sends a request of the generated API functions through this client, so it
+   * carries the session cookies, is replayed once after a refresh on a 401,
+   * and fails with an `HttpClientError` holding the parsed body, like every
+   * other call. The body is read into a string so the replay can send it again.
+   */
+  private sendGeneratedRequest = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ): Promise<Response> => {
+    const request = new Request(input, init)
+    const { response, status, config } = await this.fetch(request.url, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body ? await request.text() : undefined,
+      signal: request.signal,
+      unwrap: false,
+    })
+
+    if (status >= 400) {
+      throw new HttpClientError(
+        await this.createResponse(response, { ...config, unwrap: true }),
+        undefined,
+      )
+    }
+
+    return response
+  }
+
+  /** The `client` to pass to the generated API functions. */
+  sdkClient: ApiClient = createApiClient({
+    baseUrl: API_URL,
+    throwOnError: true,
+    fetch: this.sendGeneratedRequest,
+  })
 
   configureSessionStore = (store: SessionStore) => {
     this.sessionStore = store
@@ -178,21 +218,6 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     >(`${API_URL}/auth/magic-link`, {
       body: data,
     })
-
-  markNotificationAsSeen = ({ id }: NotificationsMarkAsSeenData["path"]) =>
-    this.postOrThrow<NotificationsMarkAsSeenResponse>(
-      `${API_URL}/notifications/${id}/seen`,
-    )
-
-  markAllNotificationsAsSeen = () =>
-    this.postOrThrow<NotificationsMarkAllAsSeenResponse>(
-      `${API_URL}/notifications/seen`,
-    )
-
-  archiveNotification = ({ id }: NotificationsArchiveData["path"]) =>
-    this.postOrThrow<NotificationsArchiveResponse>(
-      `${API_URL}/notifications/${id}/archive`,
-    )
 
   createKoreaderSyncServerPassword = () =>
     this.postOrThrow<KoreaderSyncServerCreatePasswordResponse>(

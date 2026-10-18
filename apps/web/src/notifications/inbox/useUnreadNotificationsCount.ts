@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { NotificationsUnreadCountResponse } from "@oboku/shared"
-import { useConfig } from "../../config/useConfig"
+import { notificationsUnreadCount } from "@oboku/shared"
 import { useHttpClientApi } from "../../http"
 import { useQueryOptionsWithAuthentication } from "../../auth"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -9,18 +8,16 @@ import { unreadCountQueryKey } from "./queryKeys"
 
 export const useUnreadNotificationsCount = () => {
   const httpClientApi = useHttpClientApi()
-  const { data: config } = useConfig()
   const localNotifications = useLocalNotifications()
   const activeProfileId = useActiveProfileId()
 
   const query = useQuery(
     useQueryOptionsWithAuthentication({
       queryKey: unreadCountQueryKey(activeProfileId),
-      queryFn: async (): Promise<NotificationsUnreadCountResponse> => {
-        const { data } =
-          await httpClientApi.fetchOrThrow<NotificationsUnreadCountResponse>(
-            `${config?.API_URL}/notifications/unread-count`,
-          )
+      queryFn: async function fetchUnreadNotificationsCount() {
+        const { data } = await notificationsUnreadCount({
+          client: httpClientApi.sdkClient,
+        })
 
         return data
       },

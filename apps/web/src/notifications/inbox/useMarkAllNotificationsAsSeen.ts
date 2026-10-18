@@ -3,9 +3,10 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query"
-import type {
-  NotificationsListResponse,
-  NotificationsUnreadCountResponse,
+import {
+  type NotificationsListResponse,
+  type NotificationsUnreadCountResponse,
+  notificationsMarkAllAsSeen,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -25,7 +26,9 @@ export const markAllSeenMutationOptions = (
     queryClient,
     profileId,
     mutationKey: markAllSeenMutationKey,
-    mutationFn: httpClientApi.markAllNotificationsAsSeen,
+    mutationFn: function markAllNotificationsAsSeen() {
+      return notificationsMarkAllAsSeen({ client: httpClientApi.sdkClient })
+    },
     applyOptimisticUpdate: (_vars: undefined) => {
       queryClient.setQueryData<NotificationsListResponse>(
         inboxNotificationsQueryKey(profileId),

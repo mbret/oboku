@@ -3,9 +3,11 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query"
-import type {
-  NotificationsListResponse,
-  NotificationsUnreadCountResponse,
+import {
+  type NotificationsArchiveData,
+  type NotificationsListResponse,
+  type NotificationsUnreadCountResponse,
+  notificationsArchive,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -25,7 +27,14 @@ export const archiveMutationOptions = (
     queryClient,
     profileId,
     mutationKey: archiveMutationKey,
-    mutationFn: httpClientApi.archiveNotification,
+    mutationFn: function archiveNotification({
+      id,
+    }: NotificationsArchiveData["path"]) {
+      return notificationsArchive({
+        client: httpClientApi.sdkClient,
+        path: { id },
+      })
+    },
     applyOptimisticUpdate: ({ id }: { id: number }, snapshot) => {
       const removed = snapshot.previousNotifications?.find((n) => n.id === id)
 

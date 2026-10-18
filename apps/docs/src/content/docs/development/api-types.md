@@ -2,7 +2,7 @@
 title: "API types"
 ---
 
-The types and zod schemas the web and admin apps use for API requests and responses are generated from the API's NestJS controllers. Change a controller or a DTO, then regenerate:
+The functions, types and zod schemas the web and admin apps use to call the API are generated from the API's NestJS controllers. Change a controller or a DTO, then regenerate:
 
 ```bash
 pnpm generate:api-types
@@ -11,7 +11,7 @@ pnpm generate:api-types
 The command builds the API, then runs two generators:
 
 1. `@nestjs/swagger` writes the API's OpenAPI 3.1 document to `apps/api/dist/openapi.json`, from every controller and its DTO classes.
-2. `@hey-api/openapi-ts` turns that document into the types and zod schemas in `packages/shared/src/api-types/generated/`.
+2. `@hey-api/openapi-ts` turns that document into the functions, types and zod schemas in `packages/shared/src/api-types/generated/`, along with the fetch client the functions run on.
 
 Only the generated files are committed. CI runs the command again and fails when its output differs from them. Never edit them by hand.
 
@@ -27,9 +27,21 @@ The `@nestjs/swagger` compiler plugin reads the TypeScript types of controllers 
 - A route that returns a file declares its content types with `@ApiProduces` and its body with `@ApiOkResponse({ schema: { type: "string", format: "binary" } })`, like the cover routes.
 - `@ApiExcludeController()` leaves a controller out of the document, like the KOReader sync protocol, which only KOReader devices call.
 
+## Calling a route
+
+Each route gets a function named after its controller and method, exported by `@oboku/shared`: `NotificationsController.list` gives `notificationsList`. It sends the request through the `client` it is given, and resolves with the route's parsed and typed response in `data`:
+
+```ts
+const { data } = await notificationsList({ client: httpClientApi.sdkClient })
+```
+
+The functions require a `client`. In the web app, `HttpApiClientWeb.sdkClient` sends the request through `HttpApiClientWeb`, so it carries the session cookies, is replayed after a refresh on a 401, and fails with an `HttpClientError` that holds the parsed body.
+
+The web app's notification calls use the functions so far. The other calls type their request and response with the route's types.
+
 ## Using the types
 
-Each route gets types named after its controller and method. `AuthController.signInWithEmail` gives `AuthSignInWithEmailData` and `AuthSignInWithEmailResponse`, exported by `@oboku/shared`:
+Each route also gets types named after its controller and method. `AuthController.signInWithEmail` gives `AuthSignInWithEmailData` and `AuthSignInWithEmailResponse`, exported by `@oboku/shared`:
 
 ```ts
 signUp = (data: AuthRequestSignUpData["body"]) =>

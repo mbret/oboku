@@ -26,7 +26,10 @@ jobs:
       - name: Check the generated API types are up to date
         run: |
           pnpm run generate:api-types
-          if ! git diff --exit-code -- packages/shared/src/api-types/generated; then
+          generated=packages/shared/src/api-types/generated
+          if [ -n "$(git status --porcelain -- "$generated")" ]; then
+            git status --short -- "$generated"
+            git diff -- "$generated"
             echo "::error::The API types are out of date. Run pnpm generate:api-types and commit the result."
             exit 1
           fi
