@@ -5,6 +5,15 @@
   "exec": "node --import ./dist/instrument.js",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["assets/**/*"]
+    "assets": ["assets/**/*"],
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "esmCompatible": true,
+          "introspectComments": true
+        }
+      }
+    ]
   }
 }

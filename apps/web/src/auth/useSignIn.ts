@@ -1,4 +1,4 @@
-import type { SignInWithGoogleRequest } from "@oboku/shared"
+import type { AuthSignInWithGoogleData } from "@oboku/shared"
 import { from, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
 import { useHttpClientApi } from "../http"
@@ -57,7 +57,7 @@ export const useSignIn = (
                         token: authResponse.credential,
                         installation_id: installationId,
                         public_key: proofKey.publicJwk,
-                      } satisfies SignInWithGoogleRequest,
+                      } satisfies AuthSignInWithGoogleData["body"],
                       proofKey,
                     ),
                   ),

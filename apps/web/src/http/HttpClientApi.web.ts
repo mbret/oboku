@@ -1,23 +1,24 @@
 import type {
-  AuthSessionResponse,
-  CompleteMagicLinkRequest,
-  CompleteMagicLinkResponse,
-  CompleteSignUpRequest,
-  CompleteSignUpResponse,
+  AuthCompleteMagicLinkData,
+  AuthCompleteMagicLinkResponse,
+  AuthCompleteSignUpData,
+  AuthCompleteSignUpResponse,
+  AuthDeleteAccountResponse,
+  AuthLogoutData,
+  AuthLogoutResponse,
+  AuthRequestMagicLinkData,
+  AuthRequestMagicLinkResponse,
+  AuthRequestSignUpData,
+  AuthRequestSignUpResponse,
+  AuthSignInWithEmailData,
+  AuthSignInWithEmailResponse,
+  AuthSignInWithGoogleData,
+  AuthSignInWithGoogleResponse,
   CreateKoreaderSyncServerPasswordResponse,
-  DeleteAccountResponse,
-  LogoutRequest,
-  LogoutResponse,
   RefreshBookMetadataRequest,
   RefreshBookMetadataResponse,
   RefreshCollectionMetadataRequest,
   RefreshCollectionMetadataResponse,
-  RequestMagicLinkRequest,
-  RequestMagicLinkResponse,
-  RequestSignUpRequest,
-  RequestSignUpResponse,
-  SignInWithEmailRequest,
-  SignInWithGoogleRequest,
   SyncDataSourceRequest,
   SyncDataSourceResponse,
 } from "@oboku/shared"
@@ -78,17 +79,17 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     })
 
   authWithMagicLink = (
-    data: CompleteMagicLinkRequest,
+    data: AuthCompleteMagicLinkData["body"],
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
-        `${API_URL}/auth/magic-link/complete`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
+      this.postOrThrow<
+        AuthCompleteMagicLinkResponse,
+        AuthCompleteMagicLinkData["body"]
+      >(`${API_URL}/auth/magic-link/complete`, {
+        body: data,
+        useInterceptors: false,
+      }),
     )
 
   refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
@@ -115,54 +116,57 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       },
     )
 
-  signInWithEmail = (data: SignInWithEmailRequest, proofKey: StoredProofKey) =>
-    this.establishSession(proofKey, () =>
-      this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
-        `${API_URL}/auth/signin/email`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
-    )
-
-  signInWithGoogle = (
-    data: SignInWithGoogleRequest,
+  signInWithEmail = (
+    data: AuthSignInWithEmailData["body"],
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
-        `${API_URL}/auth/signin/google`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
+      this.postOrThrow<
+        AuthSignInWithEmailResponse,
+        AuthSignInWithEmailData["body"]
+      >(`${API_URL}/auth/signin/email`, {
+        body: data,
+        useInterceptors: false,
+      }),
     )
 
-  signUp = (data: RequestSignUpRequest) =>
-    this.postOrThrow<RequestSignUpResponse, RequestSignUpRequest>(
+  signInWithGoogle = (
+    data: AuthSignInWithGoogleData["body"],
+    proofKey: StoredProofKey,
+  ) =>
+    this.establishSession(proofKey, () =>
+      this.postOrThrow<
+        AuthSignInWithGoogleResponse,
+        AuthSignInWithGoogleData["body"]
+      >(`${API_URL}/auth/signin/google`, {
+        body: data,
+        useInterceptors: false,
+      }),
+    )
+
+  signUp = (data: AuthRequestSignUpData["body"]) =>
+    this.postOrThrow<AuthRequestSignUpResponse, AuthRequestSignUpData["body"]>(
       `${API_URL}/auth/signup`,
       {
         body: data,
       },
     )
 
-  completeSignUp = (data: CompleteSignUpRequest) =>
-    this.postOrThrow<CompleteSignUpResponse, CompleteSignUpRequest>(
-      `${API_URL}/auth/signup/complete`,
-      {
-        body: data,
-      },
-    )
+  completeSignUp = (data: AuthCompleteSignUpData["body"]) =>
+    this.postOrThrow<
+      AuthCompleteSignUpResponse,
+      AuthCompleteSignUpData["body"]
+    >(`${API_URL}/auth/signup/complete`, {
+      body: data,
+    })
 
-  requestMagicLink = (data: RequestMagicLinkRequest) =>
-    this.postOrThrow<RequestMagicLinkResponse, RequestMagicLinkRequest>(
-      `${API_URL}/auth/magic-link`,
-      {
-        body: data,
-      },
-    )
+  requestMagicLink = (data: AuthRequestMagicLinkData["body"]) =>
+    this.postOrThrow<
+      AuthRequestMagicLinkResponse,
+      AuthRequestMagicLinkData["body"]
+    >(`${API_URL}/auth/magic-link`, {
+      body: data,
+    })
 
   markNotificationAsSeen = ({ id }: { id: number }) =>
     this.postOrThrow(`${API_URL}/notifications/${id}/seen`)
@@ -191,13 +195,16 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
    * session being killed.
    */
   logout = (sessionId: string) =>
-    this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
-      body: { session_id: sessionId },
-      useInterceptors: false,
-    })
+    this.postOrThrow<AuthLogoutResponse, AuthLogoutData["body"]>(
+      `${API_URL}/auth/logout`,
+      {
+        body: { session_id: sessionId },
+        useInterceptors: false,
+      },
+    )
 
   deleteAccount = () =>
-    this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {
+    this.fetchOrThrow<AuthDeleteAccountResponse>(`${API_URL}/auth/account`, {
       method: "DELETE",
     })
 

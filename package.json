@@ -22,6 +22,7 @@
     "build:api": "lerna run build --scope=@oboku/api",
     "build:landing": "lerna run build --scope=@oboku/landing",
     "build:docs": "lerna run build --scope=@oboku/docs",
+    "generate:api-types": "pnpm run build:api && lerna run generate:api-types --scope=@oboku/api",
     "test": "lerna run test",
     "tsc": "lerna run tsc",
     "format": "biome format --write .",
