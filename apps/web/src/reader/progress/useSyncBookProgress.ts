@@ -3,24 +3,19 @@ import { type BookDocType, ReadingStateState } from "@oboku/shared"
 import {
   bufferTime,
   catchError,
-  combineLatest,
   concatMap,
-  defer,
   distinctUntilChanged,
   EMPTY,
   filter,
   from,
   map,
   merge,
-  of,
-  startWith,
   Subject,
   takeUntil,
 } from "rxjs"
 import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
-import { getBookKoreaderDocument } from "../../koreader/getBookKoreaderDocument"
 
 const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
 
@@ -128,7 +123,14 @@ const markBookAsFinished = (old: BookDocType): BookDocType => {
 
 export const useSyncBookProgress = (
   bookId: string,
-  { enabled = true }: { enabled?: boolean } = {},
+  {
+    enabled = true,
+    koreaderDocument,
+  }: {
+    enabled?: boolean
+    /** The KOReader document of the book's file, `undefined` until the book is loaded. */
+    koreaderDocument: string | null | undefined
+  },
 ) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
@@ -137,40 +139,23 @@ export const useSyncBookProgress = (
     function syncBookProgressWhileReading() {
       if (!enabled) return
       if (!reader) return
+      if (koreaderDocument === undefined) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
       // completes the progress streams downstream, which lets bufferTime
       // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
-      const koreaderDocument$ = defer(function readKoreaderDocument() {
-        return getBookKoreaderDocument(bookId)
-      }).pipe(
-        catchError(function saveWithoutKoreaderDocument(error) {
-          console.error(error)
-
-          return of(null)
-        }),
-        startWith(null),
-        distinctUntilChanged(),
-      )
-
-      const readingPositionPatch$ = combineLatest([
-        reader.navigation.readingPosition$.pipe(
-          map(toSavedReadingPosition),
-          distinctUntilChanged(isShallowEqual),
-          map(function withKoreaderProgress(position) {
-            return {
-              ...position,
-              koreaderProgress:
-                reader.koreader.cfiToXPointer(position.cfi) ?? null,
-            }
-          }),
-        ),
-        koreaderDocument$,
-      ]).pipe(
-        map(function withKoreaderDocument([position, koreaderDocument]) {
-          return { ...position, koreaderDocument }
+      const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
+        map(toSavedReadingPosition),
+        distinctUntilChanged(isShallowEqual),
+        map(function withKoreaderForm(position) {
+          return {
+            ...position,
+            koreaderProgress:
+              reader.koreader.cfiToXPointer(position.cfi) ?? null,
+            koreaderDocument,
+          }
         }),
         map(createReadingPositionPatch),
       )
@@ -241,6 +226,6 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [reader, bookId, incrementalBookModify, enabled],
+    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
   )
 }

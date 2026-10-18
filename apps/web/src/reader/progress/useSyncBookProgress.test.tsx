@@ -36,10 +36,7 @@ const mocks = vi.hoisted(function createSyncBookProgressMocks() {
     return state.book
   })
 
-  const getBookKoreaderDocument =
-    vi.fn<(bookId: string) => Promise<string | null>>()
-
-  return { state, incrementalBookModify, getBookKoreaderDocument }
+  return { state, incrementalBookModify }
 })
 
 vi.mock("../states", function mockReaderState() {
@@ -57,13 +54,6 @@ vi.mock("../../books", function mockBooks() {
     },
   }
 })
-
-vi.mock(
-  "../../koreader/getBookKoreaderDocument",
-  function mockKoreaderDocument() {
-    return { getBookKoreaderDocument: mocks.getBookKoreaderDocument }
-  },
-)
 
 import { useSyncBookProgress } from "./useSyncBookProgress"
 
@@ -167,9 +157,13 @@ function createFakeReader({
   return reader
 }
 
-function renderSyncBookProgress() {
+function renderSyncBookProgress({
+  koreaderDocument = KOREADER_DOCUMENT,
+}: {
+  koreaderDocument?: string | null
+} = {}) {
   return renderHook(function renderUseSyncBookProgress() {
-    useSyncBookProgress(book._id)
+    useSyncBookProgress(book._id, { koreaderDocument })
   })
 }
 
@@ -177,14 +171,11 @@ describe("useSyncBookProgress", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     mocks.incrementalBookModify.mockClear()
-    mocks.getBookKoreaderDocument.mockReset()
-    mocks.getBookKoreaderDocument.mockResolvedValue(KOREADER_DOCUMENT)
     mocks.state.book = book
   })
 
   afterEach(() => {
     vi.useRealTimers()
-    vi.restoreAllMocks()
   })
 
   it("saves the reading position with its own progress, and pagination's as the reached progress", async () => {
@@ -247,7 +238,6 @@ describe("useSyncBookProgress", () => {
       ),
       readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
     })
-    expect(mocks.getBookKoreaderDocument).toHaveBeenCalledWith(book._id)
   })
 
   it("takes the document of the file being read for a bookmark saved in another file, leaving its place in recent activity", async () => {
@@ -277,51 +267,6 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("saves a position reported before the file's KOReader document is read, and adds the document once it is", async () => {
-    const { promise: koreaderDocument, resolve: readKoreaderDocument } =
-      Promise.withResolvers<string | null>()
-    mocks.getBookKoreaderDocument.mockReturnValue(koreaderDocument)
-    const reader = createFakeReader()
-    renderSyncBookProgress()
-
-    reader.navigation.readingPosition$.next(LAST_PAGE)
-    await vi.advanceTimersByTimeAsync(1000)
-
-    expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkKoreaderDocument: null,
-    })
-
-    readKoreaderDocument(KOREADER_DOCUMENT)
-    await vi.advanceTimersByTimeAsync(1000)
-
-    expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
-    })
-  })
-
-  it("keeps saving the reading position when the file's KOReader document cannot be read", async () => {
-    vi.spyOn(console, "error").mockImplementation(
-      function ignoreLoggedError() {},
-    )
-    mocks.getBookKoreaderDocument.mockRejectedValue(
-      new Error("The book file cannot be read"),
-    )
-    const reader = createFakeReader()
-    renderSyncBookProgress()
-
-    reader.navigation.readingPosition$.next(LAST_PAGE)
-    await vi.advanceTimersByTimeAsync(1000)
-    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
-    await vi.advanceTimersByTimeAsync(1000)
-
-    expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
-      readingStateCurrentBookmarkKoreaderDocument: null,
-    })
-  })
-
   it("adds the KOReader progress and document to a bookmark saved without them, leaving its place in recent activity", async () => {
     const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
     mocks.state.book = {
@@ -345,6 +290,19 @@ describe("useSyncBookProgress", () => {
       ),
       readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
       readingStateUpdatedAt,
+    })
+  })
+
+  it("keeps saving the reading position of a book without a KOReader document", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress({ koreaderDocument: null })
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkKoreaderDocument: null,
     })
   })
 

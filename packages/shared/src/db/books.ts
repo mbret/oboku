@@ -51,9 +51,8 @@ export type BookDocType = CouchDBMeta &
      * file the bookmark was saved in, as KOReader computes it by default
      * ("Binary" document matching). Written with it, from the same file, so a
      * changed file takes its own document with the next position saved.
-     * `null` when there is no bookmark, when the file could not be read, or
-     * when the book was closed before it was. Missing on a book last read
-     * before it existed.
+     * `null` when there is no bookmark, or the file could not be read.
+     * Missing on a book last read before it existed.
      */
     readingStateCurrentBookmarkKoreaderDocument?: string | null
     /**

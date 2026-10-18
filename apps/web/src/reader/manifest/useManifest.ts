@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query"
 import { useDatabase } from "../../rxdb"
 import { getMetadataFromBook } from "../../books/metadata"
 import { httpClient } from "../../http/httpClient.shared"
+import { getBookKoreaderDocument } from "../../koreader/getBookKoreaderDocument"
 
 const getManifestBaseUrl = (origin: string, epubFileName: string) => {
   return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`
@@ -17,6 +18,14 @@ export const useManifest = (bookId: string | undefined) => {
     queryKey: ["reader/streamer/manifest", { bookId }],
     networkMode: "always",
     queryFn: async () => {
+      const koreaderDocument = getBookKoreaderDocument(bookId ?? "").catch(
+        function openWithoutKoreaderDocument(error) {
+          console.error(error)
+
+          return null
+        },
+      )
+
       // A service worker only intercepts fetches for pages it controls, so its
       // streamer is usable exactly when it controls this page.
       const isSwStreamerAvailable = !!navigator.serviceWorker?.controller
@@ -59,12 +68,17 @@ export const useManifest = (bookId: string | undefined) => {
         return {
           manifest: await enrichManifest(await webStreamerResponse.json()),
           isUsingWebStreamer: true,
+          koreaderDocument: await koreaderDocument,
         }
       }
 
       const data: Manifest = await swStreamerResponse.json()
 
-      return { manifest: await enrichManifest(data), isUsingWebStreamer: false }
+      return {
+        manifest: await enrichManifest(data),
+        isUsingWebStreamer: false,
+        koreaderDocument: await koreaderDocument,
+      }
     },
     staleTime: Infinity,
     retry: (_, error) => !(error instanceof Response && error.status === 415),
