@@ -3,19 +3,24 @@ import { type BookDocType, ReadingStateState } from "@oboku/shared"
 import {
   bufferTime,
   catchError,
+  combineLatest,
   concatMap,
+  defer,
   distinctUntilChanged,
   EMPTY,
   filter,
   from,
   map,
   merge,
+  of,
+  startWith,
   Subject,
   takeUntil,
 } from "rxjs"
 import { isShallowEqual, type ReadingPosition } from "@prose-reader/core"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
+import { getBookKoreaderDocument } from "../../koreader/getBookKoreaderDocument"
 
 const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
 
@@ -26,8 +31,9 @@ type SavedReadingPosition = Pick<
   "cfi" | "percentageEstimateOfBook"
 >
 
-type SavedReadingPositionWithKoreaderProgress = SavedReadingPosition & {
+type SavedReadingPositionWithKoreaderForm = SavedReadingPosition & {
   koreaderProgress: string | null
+  koreaderDocument: string | null
 }
 
 const toSavedReadingPosition = ({
@@ -68,7 +74,8 @@ const createReadingPositionPatch = ({
   cfi,
   percentageEstimateOfBook,
   koreaderProgress,
-}: SavedReadingPositionWithKoreaderProgress): BookPatch =>
+  koreaderDocument,
+}: SavedReadingPositionWithKoreaderForm): BookPatch =>
   function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
@@ -85,6 +92,7 @@ const createReadingPositionPatch = ({
       readingStateCurrentBookmarkLocation: cfi,
       readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
       readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
+      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
       readingStateCurrentState: nextReadingState,
       ...(didReadingStateChange && {
         readingStateUpdatedAt: new Date().toISOString(),
@@ -135,15 +143,34 @@ export const useSyncBookProgress = (
       // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
-      const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
-        map(toSavedReadingPosition),
-        distinctUntilChanged(isShallowEqual),
-        map(function withKoreaderProgress(position) {
-          return {
-            ...position,
-            koreaderProgress:
-              reader.koreader.cfiToXPointer(position.cfi) ?? null,
-          }
+      const koreaderDocument$ = defer(function readKoreaderDocument() {
+        return getBookKoreaderDocument(bookId)
+      }).pipe(
+        catchError(function saveWithoutKoreaderDocument(error) {
+          console.error(error)
+
+          return of(null)
+        }),
+        startWith(null),
+        distinctUntilChanged(),
+      )
+
+      const readingPositionPatch$ = combineLatest([
+        reader.navigation.readingPosition$.pipe(
+          map(toSavedReadingPosition),
+          distinctUntilChanged(isShallowEqual),
+          map(function withKoreaderProgress(position) {
+            return {
+              ...position,
+              koreaderProgress:
+                reader.koreader.cfiToXPointer(position.cfi) ?? null,
+            }
+          }),
+        ),
+        koreaderDocument$,
+      ]).pipe(
+        map(function withKoreaderDocument([position, koreaderDocument]) {
+          return { ...position, koreaderDocument }
         }),
         map(createReadingPositionPatch),
       )

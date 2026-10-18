@@ -28,6 +28,7 @@
     "@prose-reader/enhancer-pdf": "^25.1.0",
     "@prose-reader/enhancer-refit": "^25.1.0",
     "@prose-reader/enhancer-search": "^25.1.0",
+    "@prose-reader/koreader": "^25.1.0",
     "@prose-reader/react-reader": "^25.1.0",
     "@prose-reader/shared": "^25.1.0",
     "@prose-reader/streamer": "^25.1.0",
