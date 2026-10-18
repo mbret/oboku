@@ -26,6 +26,10 @@ type SavedReadingPosition = Pick<
   "cfi" | "percentageEstimateOfBook"
 >
 
+type SavedReadingPositionWithKoreaderProgress = SavedReadingPosition & {
+  koreaderProgress: string | null
+}
+
 const toSavedReadingPosition = ({
   cfi,
   percentageEstimateOfBook,
@@ -63,40 +67,27 @@ const composePatches = (patches: BookPatch[]): BookPatch =>
 const createReadingPositionPatch = ({
   cfi,
   percentageEstimateOfBook,
-}: SavedReadingPosition): BookPatch =>
+  koreaderProgress,
+}: SavedReadingPositionWithKoreaderProgress): BookPatch =>
   function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
         : ReadingStateState.Reading
-
-    const didBookmarkLocationChange =
-      old.readingStateCurrentBookmarkLocation !== cfi
-    const didProgressChange =
-      old.readingStateCurrentBookmarkProgressPercent !==
-      percentageEstimateOfBook
     const didReadingStateChange =
+      old.readingStateCurrentBookmarkLocation !== cfi ||
+      old.readingStateCurrentBookmarkProgressPercent !==
+        percentageEstimateOfBook ||
       old.readingStateCurrentState !== nextReadingState
-
-    if (
-      !didBookmarkLocationChange &&
-      !didProgressChange &&
-      !didReadingStateChange
-    ) {
-      return old
-    }
 
     return {
       ...old,
-      ...(didBookmarkLocationChange && {
-        readingStateCurrentBookmarkLocation: cfi,
-      }),
-      readingStateUpdatedAt: new Date().toISOString(),
+      readingStateCurrentBookmarkLocation: cfi,
+      readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
+      readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
+      readingStateCurrentState: nextReadingState,
       ...(didReadingStateChange && {
-        readingStateCurrentState: nextReadingState,
-      }),
-      ...(didProgressChange && {
-        readingStateCurrentBookmarkProgressPercent: percentageEstimateOfBook,
+        readingStateUpdatedAt: new Date().toISOString(),
       }),
     }
   }
@@ -147,6 +138,13 @@ export const useSyncBookProgress = (
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
+        map(function withKoreaderProgress(position) {
+          return {
+            ...position,
+            koreaderProgress:
+              reader.koreader.cfiToXPointer(position.cfi) ?? null,
+          }
+        }),
         map(createReadingPositionPatch),
       )
 

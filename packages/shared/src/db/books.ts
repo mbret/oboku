@@ -1,6 +1,6 @@
 import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
-import type { DeprecatedBookDocType } from "./docTypes"
+import type { DeprecatedBookDocType, InsertAbleBookDocType } from "./docTypes"
 import type { RxDbMeta } from "./rxdb"
 
 export enum ReadingStateState {
@@ -34,6 +34,17 @@ export type BookDocType = CouchDBMeta &
      * back.
      */
     readingStateCurrentBookmarkProgressPercent: number
+    /**
+     * readingStateCurrentBookmarkLocation in KOReader's form: the `progress` a
+     * KOReader sync server keeps for a book, an xpointer for a reflowable book
+     * and a page number for one with pages. Whatever writes the bookmark
+     * writes this too, `null` when the bookmark has none: no bookmark, or a
+     * place prose's KOReader enhancer cannot express. Missing on a book last
+     * read before it existed. An older version of the app only writes the
+     * bookmark, so a book it updates keeps a stale value until a newer
+     * version writes it again.
+     */
+    readingStateCurrentBookmarkKoreaderProgress?: string | null
     /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
@@ -116,6 +127,32 @@ export type BookDocType = CouchDBMeta &
      */
     bucketCoverKey?: string | null
   }
+
+/**
+ * A book nothing has happened to yet: no metadata fetched, never opened, in
+ * no collection. The web app and the API create their books from it, with
+ * what they know of each on top.
+ */
+export const createBookDefaults = (): Omit<
+  InsertAbleBookDocType,
+  "rx_model" | "rxdbMeta"
+> => ({
+  createdAt: Date.now(),
+  modifiedAt: null,
+  collections: [],
+  links: [],
+  tags: [],
+  isAttachedToDataSource: false,
+  lastMetadataUpdatedAt: null,
+  lastMetadataUpdateError: null,
+  metadataUpdateStatus: null,
+  readingStateCurrentState: ReadingStateState.NotStarted,
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkKoreaderProgress: null,
+  readingStateCurrentBookmarkProgressPercent: 0,
+  readingStateReachedProgressPercent: 0,
+  readingStateUpdatedAt: null,
+})
 
 const isDateSet = (date: string | null | undefined): date is string => !!date
 
