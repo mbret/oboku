@@ -43,4 +43,4 @@ signUp = (data: AuthRequestSignUpData["body"]) =>
 
 The DTO classes are exported under their own names too, such as `AuthSessionResponseDto`, for code that handles a shape several routes return.
 
-Responses and DTOs also have a zod schema named after their type with a `z` prefix, such as `zWebGetConfigResponse`, and a route's parameters have schemas such as `zAuthSignInWithEmailBody` and `zNotificationsArchivePath`. Validate API data at runtime with these instead of writing a schema: the web app checks the config it restores from local storage with `zWebGetConfigResponse`.
+Responses and DTOs also have a zod schema named after their type with a `z` prefix, such as `zWebGetConfigResponse`, and a route's parameters have schemas such as `zAuthSignInWithEmailBody` and `zNotificationsArchivePath`. Validate API data at runtime with these instead of writing a schema: the web app checks the config it restores from local storage with `zWebGetConfigResponse`. File responses are the exception: their type is `Blob | File`, but the zod plugin generates `z.string()` for them.
