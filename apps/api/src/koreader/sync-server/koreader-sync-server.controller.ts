@@ -1,9 +1,10 @@
 import { Controller, Delete, Get, Post } from "@nestjs/common"
-import type {
-  CreateKoreaderSyncServerPasswordResponse,
-  GetKoreaderSyncServerResponse,
-} from "@oboku/shared"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
+import { OkResponseDto } from "../../lib/ok-response.dto.js"
+import {
+  KoreaderSyncServerPasswordResponseDto,
+  KoreaderSyncServerResponseDto,
+} from "./koreader-sync-server.dto.js"
 import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
 
 /** The signed-in user's login to oboku's KOReader sync server, managed from the app. */
@@ -16,7 +17,7 @@ export class KoreaderSyncServerController {
   @Get()
   async get(
     @WithAuthUser() user: AuthUser,
-  ): Promise<GetKoreaderSyncServerResponse> {
+  ): Promise<KoreaderSyncServerResponseDto> {
     const credential = await this.koreaderSyncServerService.findCredential(
       user.userId,
     )
@@ -30,7 +31,7 @@ export class KoreaderSyncServerController {
   @Post("password")
   async createPassword(
     @WithAuthUser() user: AuthUser,
-  ): Promise<CreateKoreaderSyncServerPasswordResponse> {
+  ): Promise<KoreaderSyncServerPasswordResponseDto> {
     const password = await this.koreaderSyncServerService.createPassword(
       user.userId,
     )
@@ -39,7 +40,7 @@ export class KoreaderSyncServerController {
   }
 
   @Delete()
-  async turnOff(@WithAuthUser() user: AuthUser) {
+  async turnOff(@WithAuthUser() user: AuthUser): Promise<OkResponseDto> {
     await this.koreaderSyncServerService.turnOff(user.userId)
 
     return { ok: true }

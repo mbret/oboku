@@ -56,7 +56,7 @@ const createSignInRequest = () => ({
   email: "b@example.com",
   password: "secret",
   installation_id: "installation",
-  public_key: { kty: "EC" },
+  public_key: { kty: "EC", crv: "P-256", x: "x", y: "y" },
 })
 
 /** Deterministic single-queue stand-in for `navigator.locks`. */

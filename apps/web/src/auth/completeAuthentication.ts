@@ -1,6 +1,6 @@
 import { from, of, switchMap } from "rxjs"
 import { setUser } from "@sentry/react"
-import type { AuthSessionResponse } from "@oboku/shared"
+import type { AuthSessionResponseDto } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
   ensureActiveProfile,
@@ -18,7 +18,7 @@ export const completeAuthentication = ({
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
-  auth: AuthSessionResponse
+  auth: AuthSessionResponseDto
   queryClient: QueryClient
 }) => {
   return from(ensureActiveProfile(queryClient, getActiveProfileId())).pipe(

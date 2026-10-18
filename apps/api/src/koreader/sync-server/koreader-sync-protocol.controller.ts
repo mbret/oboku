@@ -8,6 +8,7 @@ import {
   Put,
   UseGuards,
 } from "@nestjs/common"
+import { ApiExcludeController } from "@nestjs/swagger"
 import { Public } from "../../auth/auth.guard.js"
 import {
   KOREADER_SYNC_AUTHORIZE_ROUTE,
@@ -35,6 +36,7 @@ import {
  * never with a session: the app's own auth does not apply here.
  */
 @Public()
+@ApiExcludeController()
 @Controller("kosync")
 export class KoreaderSyncProtocolController {
   constructor(

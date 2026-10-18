@@ -23,3 +23,10 @@ jobs:
           pnpm run build
           pnpm exec playwright install --with-deps --only-shell chromium
           pnpm run test
+      - name: Check the generated API types are up to date
+        run: |
+          pnpm run generate:api-types
+          if ! git diff --exit-code -- apps/api/openapi.json packages/shared/src/api-types/generated; then
+            echo "::error::The API types are out of date. Run pnpm generate:api-types and commit the result."
+            exit 1
+          fi

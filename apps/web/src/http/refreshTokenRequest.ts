@@ -1,4 +1,4 @@
-import type { RefreshTokenResponse } from "@oboku/shared"
+import type { AuthRefreshTokenResponse } from "@oboku/shared"
 import { signRefreshProof } from "../auth/proofKey"
 import { withAuthCookiesLock } from "./authCookiesLock"
 import type { HttpClient } from "./httpClient.shared"
@@ -26,7 +26,7 @@ export const refreshTokenRequest = (
     const url = `${apiUrl}/auth/token?grant_type=refresh_token`
     const proof = await signRefreshProof(url)
 
-    return client.postOrThrow<RefreshTokenResponse, never>(url, {
+    return client.postOrThrow<AuthRefreshTokenResponse, never>(url, {
       headers: proof ? { DPoP: proof } : {},
       useInterceptors: false,
       signal: AbortSignal.timeout(REFRESH_REQUEST_TIMEOUT_MS),

@@ -105,13 +105,14 @@ This setup configures no email provider, so create your account from the admin p
 
 ## Check your change
 
-CI runs these three commands ([`.github/workflows/check.yml`](.github/workflows/check.yml)). Run them before you open a pull request.
+CI runs these commands ([`.github/workflows/check.yml`](.github/workflows/check.yml)). Run them before you open a pull request.
 
 | Command | What it checks |
 | --- | --- |
 | `pnpm lint` | Lint and formatting, with Biome. `pnpm format` fixes the formatting. |
 | `pnpm build` | Builds every package. Each build runs the TypeScript compiler, so this is also the typecheck. |
 | `pnpm test` | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. The web app's tests, and files named `*.browser.test.ts` in the packages, run in headless Chromium through [Vitest browser mode](https://vitest.dev/guide/browser/). |
+| `pnpm generate:api-types` | Regenerates the [API types](apps/docs/src/content/docs/development/api-types.md) from the API's controllers. CI fails when the output differs from the committed files. |
 
 A pre-commit hook runs Biome on the staged files and applies its fixes.
 

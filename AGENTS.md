@@ -69,6 +69,13 @@
 - Keep content strings colocated in the consuming app (e.g. web) so they can be localized and adjusted per product without touching shared code.
 - The shared package may define error codes, types, and structure; the app defines the human-readable messages.
 
+### API types are generated
+
+- The request and response types for API routes are generated from the API's controllers and DTO classes. After changing a route, run `pnpm generate:api-types` and commit `apps/api/openapi.json` with `packages/shared/src/api-types/generated/`. Never edit those files by hand, and never hand-write a request or response type for a route the document covers.
+- Declare DTOs in `*.dto.ts` files and return a class from every route. The `@nestjs/swagger` plugin ignores classes declared in controller files and cannot read `type` aliases.
+- At an HTTP call site, type the request and response with the route's generated types (`AuthSignInWithEmailData["body"]`, `AuthSignInWithEmailResponse`), so the call follows the route when its DTOs change.
+- `apps/docs/src/content/docs/development/api-types.md` covers the workflow and which modules the document covers so far.
+
 ### Data migrations: RxDB is local, CouchDB is the data
 
 - **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).

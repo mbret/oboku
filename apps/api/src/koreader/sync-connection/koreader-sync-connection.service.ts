@@ -1,10 +1,11 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
-import { type KoreaderSyncConnection, ObokuErrorCode } from "@oboku/shared"
+import { ObokuErrorCode } from "@oboku/shared"
 import type { KoreaderSyncConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
 import { KOREADER_SYNC_AUTHORIZE_ROUTE, toSyncKey } from "../protocol.js"
 import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
 import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
+import type { KoreaderSyncConnectionDto } from "./koreader-sync-connection.dto.js"
 import {
   type KoreaderSyncServerResponse,
   KoreaderSyncServerUnreachableError,
@@ -33,7 +34,7 @@ const toConnectionError = (error: unknown) => {
 
 const toKoreaderSyncConnection = (
   connection: KoreaderSyncConnectionPostgresEntity,
-): KoreaderSyncConnection => ({
+): KoreaderSyncConnectionDto => ({
   serverUrl: connection.server_url,
   username: connection.username,
   connectedAt: connection.connected_at.toISOString(),

@@ -17,136 +17,19 @@ import {
   AuthCookiesService,
   REFRESH_TOKEN_COOKIE,
 } from "./auth-cookies.js"
-import { Type } from "class-transformer"
 import {
-  Equals,
-  IsEmail,
-  IsNotEmpty,
-  IsObject,
-  IsString,
-  IsUUID,
-  MaxLength,
-  MinLength,
-  ValidateNested,
-} from "class-validator"
-import type {
-  AuthProofPublicKeyJwk,
-  AuthSessionResponse,
-  CompleteMagicLinkRequest,
-  CompleteMagicLinkResponse,
-  CompleteSignUpRequest,
-  CompleteSignUpResponse,
-  DeleteAccountResponse,
-  LogoutRequest,
-  LogoutResponse,
-  RefreshTokenResponse,
-  RequestMagicLinkRequest,
-  RequestMagicLinkResponse,
-  RequestSignUpRequest,
-  RequestSignUpResponse,
-  SignInWithEmailRequest,
-  SignInWithGoogleRequest,
-} from "@oboku/shared"
-
-/**
- * The exact P-256 JWK shape needed to compute an RFC 7638 thumbprint at
- * refresh. Anything looser would bind a session that signs in fine but can
- * never refresh. Coordinate lengths are a lax bound (P-256 encodes to 43
- * base64url chars) that mainly keeps the stored key small.
- */
-export class AuthProofPublicKeyDto implements AuthProofPublicKeyJwk {
-  @Equals("EC")
-  kty!: string
-
-  @Equals("P-256")
-  crv!: string
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(256)
-  x!: string
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(256)
-  y!: string
-}
-
-export class RequestSignUpDto implements RequestSignUpRequest {
-  @IsEmail()
-  email!: string
-}
-
-export class RequestMagicLinkDto implements RequestMagicLinkRequest {
-  @IsEmail()
-  email!: string
-}
-
-export class CompleteSignUpDto implements CompleteSignUpRequest {
-  @IsNotEmpty()
-  token!: string
-
-  @IsNotEmpty()
-  @MinLength(8)
-  password!: string
-}
-
-export class CompleteMagicLinkDto implements CompleteMagicLinkRequest {
-  @IsNotEmpty()
-  token!: string
-
-  @IsNotEmpty()
-  installation_id!: string
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => AuthProofPublicKeyDto)
-  public_key!: AuthProofPublicKeyDto
-}
-
-export class SignInWithEmailDto implements SignInWithEmailRequest {
-  @IsEmail()
-  email!: string
-
-  @IsString()
-  @IsNotEmpty()
-  password!: string
-
-  @IsString()
-  @IsNotEmpty()
-  installation_id!: string
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => AuthProofPublicKeyDto)
-  public_key!: AuthProofPublicKeyDto
-}
-
-export class SignInWithGoogleDto implements SignInWithGoogleRequest {
-  @IsString()
-  @IsNotEmpty()
-  token!: string
-
-  @IsString()
-  @IsNotEmpty()
-  installation_id!: string
-
-  @IsObject()
-  @ValidateNested()
-  @Type(() => AuthProofPublicKeyDto)
-  public_key!: AuthProofPublicKeyDto
-}
-
-export class RefreshTokenQueryDto {
-  @IsString()
-  @IsNotEmpty()
-  grant_type!: "refresh_token"
-}
-
-export class LogoutDto implements LogoutRequest {
-  @IsUUID()
-  session_id!: string
-}
+  AuthSessionResponseDto,
+  CompleteMagicLinkDto,
+  CompleteSignUpDto,
+  CompleteSignUpResponseDto,
+  LogoutDto,
+  RefreshTokenQueryDto,
+  RequestMagicLinkDto,
+  RequestSignUpDto,
+  SignInWithEmailDto,
+  SignInWithGoogleDto,
+} from "./auth.dto.js"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
 
 @Controller("auth")
 export class AuthController {
@@ -164,8 +47,12 @@ export class AuthController {
   private issueSession(
     request: Request,
     response: Response,
-    { accessToken, refreshToken, ...session }: AuthTokens & AuthSessionResponse,
-  ): AuthSessionResponse {
+    {
+      accessToken,
+      refreshToken,
+      ...session
+    }: AuthTokens & AuthSessionResponseDto,
+  ): AuthSessionResponseDto {
     this.authCookiesService.set(request, response, {
       accessToken,
       refreshToken,
@@ -176,11 +63,11 @@ export class AuthController {
 
   @Public()
   @Post("signin/email")
-  async signinWithEmail(
+  async signInWithEmail(
     @Body() body: SignInWithEmailDto,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthSessionResponse> {
+  ): Promise<AuthSessionResponseDto> {
     return this.issueSession(
       request,
       response,
@@ -190,11 +77,11 @@ export class AuthController {
 
   @Public()
   @Post("signin/google")
-  async signinWithGoogle(
+  async signInWithGoogle(
     @Body() body: SignInWithGoogleDto,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<AuthSessionResponse> {
+  ): Promise<AuthSessionResponseDto> {
     return this.issueSession(
       request,
       response,
@@ -204,7 +91,9 @@ export class AuthController {
 
   @Public()
   @Post("signup")
-  async signup(@Body() body: RequestSignUpDto): Promise<RequestSignUpResponse> {
+  async requestSignUp(
+    @Body() body: RequestSignUpDto,
+  ): Promise<EmptyResponseDto> {
     await this.authService.requestSignUp({
       email: body.email,
     })
@@ -214,9 +103,9 @@ export class AuthController {
 
   @Public()
   @Post("signup/complete")
-  async completeSignup(
+  async completeSignUp(
     @Body() body: CompleteSignUpDto,
-  ): Promise<CompleteSignUpResponse> {
+  ): Promise<CompleteSignUpResponseDto> {
     return this.authService.completeSignUp(body)
   }
 
@@ -224,7 +113,7 @@ export class AuthController {
   @Post("magic-link")
   async requestMagicLink(
     @Body() body: RequestMagicLinkDto,
-  ): Promise<RequestMagicLinkResponse> {
+  ): Promise<EmptyResponseDto> {
     await this.authService.requestMagicLink({
       email: body.email,
     })
@@ -238,7 +127,7 @@ export class AuthController {
     @Body() body: CompleteMagicLinkDto,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<CompleteMagicLinkResponse> {
+  ): Promise<AuthSessionResponseDto> {
     return this.issueSession(
       request,
       response,
@@ -248,12 +137,12 @@ export class AuthController {
 
   @Public()
   @Post("token")
-  async refreshTokens(
+  async refreshToken(
     @Query() _query: RefreshTokenQueryDto,
     @Headers("dpop") proof: string | undefined,
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
-  ): Promise<RefreshTokenResponse> {
+  ): Promise<EmptyResponseDto> {
     const refreshToken: string | undefined =
       request.cookies?.[REFRESH_TOKEN_COOKIE]
 
@@ -279,7 +168,7 @@ export class AuthController {
    */
   @Public()
   @Post("logout")
-  async logout(@Body() body: LogoutDto): Promise<LogoutResponse> {
+  async logout(@Body() body: LogoutDto): Promise<EmptyResponseDto> {
     await this.authService.logout({ sessionId: body.session_id })
 
     return {}
@@ -288,7 +177,7 @@ export class AuthController {
   @Delete("account")
   async deleteAccount(
     @WithAuthUser() user: AuthUser,
-  ): Promise<DeleteAccountResponse> {
+  ): Promise<EmptyResponseDto> {
     await this.authService.deleteAccount({
       userId: user.userId,
       email: user.email,
