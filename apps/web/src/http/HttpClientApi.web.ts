@@ -44,6 +44,13 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
+/**
+ * TODO: incomplete while the API calls move to the generated functions, one
+ * module at a time. The methods below that still build a route's URL by hand
+ * go as their module moves. This class then keeps only the transport the
+ * generated client runs on: the session cookies, the refresh and replay on a
+ * 401, the session store, and the cookies lock around sign-in.
+ */
 export class HttpApiClientWeb extends RefreshingHttpClient {
   private sessionStore: SessionStore = {
     get: async () => null,
