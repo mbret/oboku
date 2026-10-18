@@ -22,10 +22,20 @@ for (const [name, value] of Object.entries(placeholderEnvironment)) {
 
 const { AppModule } = await import("./app.module.js")
 const { AuthModule } = await import("./auth/auth.module.js")
+const { KoreaderSyncConnectionModule } = await import(
+  "./koreader/sync-connection/koreader-sync-connection.module.js"
+)
+const { KoreaderSyncServerModule } = await import(
+  "./koreader/sync-server/koreader-sync-server.module.js"
+)
 
 // TODO: drop `include` once every controller keeps its DTOs in `*.dto.ts`
 // and returns classes, so the document covers the whole API.
-const documentedModules = [AuthModule]
+const documentedModules = [
+  AuthModule,
+  KoreaderSyncConnectionModule,
+  KoreaderSyncServerModule,
+]
 
 const app = await NestFactory.create(AppModule, {
   preview: true,

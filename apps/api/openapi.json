@@ -272,6 +272,136 @@
           "Auth"
         ]
       }
+    },
+    "/koreader-sync-server": {
+      "get": {
+        "operationId": "KoreaderSyncServer_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KoreaderSyncServerResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncServer"
+        ]
+      },
+      "delete": {
+        "operationId": "KoreaderSyncServer_turnOff",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncServer"
+        ]
+      }
+    },
+    "/koreader-sync-server/password": {
+      "post": {
+        "operationId": "KoreaderSyncServer_createPassword",
+        "parameters": [],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KoreaderSyncServerPasswordResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncServer"
+        ]
+      }
+    },
+    "/koreader-sync-connection": {
+      "get": {
+        "operationId": "KoreaderSyncConnection_get",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KoreaderSyncConnectionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncConnection"
+        ]
+      },
+      "put": {
+        "operationId": "KoreaderSyncConnection_connect",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ConnectKoreaderSyncServerDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KoreaderSyncConnectionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncConnection"
+        ]
+      },
+      "delete": {
+        "operationId": "KoreaderSyncConnection_disconnect",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OkResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "KoreaderSyncConnection"
+        ]
+      }
     }
   },
   "info": {
@@ -460,6 +590,112 @@
         },
         "required": [
           "session_id"
+        ]
+      },
+      "KoreaderSyncServerResponseDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string",
+            "description": "What devices sign in with as username: the account email."
+          },
+          "passwordCreatedAt": {
+            "type": "string",
+            "nullable": true,
+            "description": "When the current password was generated, `null` while sync is off."
+          }
+        },
+        "required": [
+          "username",
+          "passwordCreatedAt"
+        ]
+      },
+      "KoreaderSyncServerPasswordResponseDto": {
+        "type": "object",
+        "properties": {
+          "username": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "description": "Shown once: only a hash of it is kept."
+          }
+        },
+        "required": [
+          "username",
+          "password"
+        ]
+      },
+      "OkResponseDto": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ]
+      },
+      "KoreaderSyncConnectionDto": {
+        "type": "object",
+        "properties": {
+          "serverUrl": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "connectedAt": {
+            "type": "string",
+            "description": "When the user signed in to the server from oboku."
+          }
+        },
+        "required": [
+          "serverUrl",
+          "username",
+          "connectedAt"
+        ]
+      },
+      "KoreaderSyncConnectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "connection": {
+            "nullable": true,
+            "description": "`null` while oboku's reader is not connected to a sync server.",
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/KoreaderSyncConnectionDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "connection"
+        ]
+      },
+      "ConnectKoreaderSyncServerDto": {
+        "type": "object",
+        "properties": {
+          "serverUrl": {
+            "type": "string",
+            "format": "uri"
+          },
+          "username": {
+            "type": "string",
+            "minLength": 1
+          },
+          "password": {
+            "type": "string",
+            "description": "Sent once: the API keeps only the key sync clients derive from it.",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "serverUrl",
+          "username",
+          "password"
         ]
       }
     }
