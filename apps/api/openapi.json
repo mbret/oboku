@@ -1,0 +1,467 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/auth/signin/email": {
+      "post": {
+        "operationId": "Auth_signInWithEmail",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInWithEmailDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/signin/google": {
+      "post": {
+        "operationId": "Auth_signInWithGoogle",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SignInWithGoogleDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/signup": {
+      "post": {
+        "operationId": "Auth_requestSignUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestSignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/signup/complete": {
+      "post": {
+        "operationId": "Auth_completeSignUp",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteSignUpDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CompleteSignUpResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/magic-link": {
+      "post": {
+        "operationId": "Auth_requestMagicLink",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequestMagicLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/magic-link/complete": {
+      "post": {
+        "operationId": "Auth_completeMagicLink",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CompleteMagicLinkDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthSessionResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/token": {
+      "post": {
+        "operationId": "Auth_refreshToken",
+        "parameters": [
+          {
+            "name": "grant_type",
+            "required": true,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "refresh_token"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "Auth_logout",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Revokes the session by its identity and leaves the cookies untouched — they\nmay belong to whoever is active now, and the revoked session's rows are\ndeleted so any lingering cookie is inert (it dies on next sign-in or at\ncookie expiry).",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/auth/account": {
+      "delete": {
+        "operationId": "Auth_deleteAccount",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EmptyResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "oboku API",
+    "description": "",
+    "version": "1.0.0",
+    "contact": {}
+  },
+  "tags": [],
+  "servers": [],
+  "components": {
+    "schemas": {
+      "AuthProofPublicKeyDto": {
+        "type": "object",
+        "properties": {
+          "kty": {
+            "type": "string"
+          },
+          "crv": {
+            "type": "string"
+          },
+          "x": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "y": {
+            "type": "string",
+            "maxLength": 256
+          }
+        },
+        "required": [
+          "kty",
+          "crv",
+          "x",
+          "y"
+        ]
+      },
+      "SignInWithEmailDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "password": {
+            "type": "string"
+          },
+          "installation_id": {
+            "type": "string"
+          },
+          "public_key": {
+            "$ref": "#/components/schemas/AuthProofPublicKeyDto"
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "installation_id",
+          "public_key"
+        ]
+      },
+      "AuthSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "dbName": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "nameHex": {
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string",
+            "description": "Non-secret identity minted fresh for this sign-in. The client stores it on\nthe session and later presents it to `logout` to revoke exactly this\nsession, regardless of which refresh cookie currently sits in the jar."
+          }
+        },
+        "required": [
+          "dbName",
+          "email",
+          "nameHex",
+          "sessionId"
+        ]
+      },
+      "SignInWithGoogleDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "installation_id": {
+            "type": "string"
+          },
+          "public_key": {
+            "$ref": "#/components/schemas/AuthProofPublicKeyDto"
+          }
+        },
+        "required": [
+          "token",
+          "installation_id",
+          "public_key"
+        ]
+      },
+      "RequestSignUpDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "EmptyResponseDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "CompleteSignUpDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8
+          }
+        },
+        "required": [
+          "token",
+          "password"
+        ]
+      },
+      "CompleteSignUpResponseDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "RequestMagicLinkDto": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email"
+          }
+        },
+        "required": [
+          "email"
+        ]
+      },
+      "CompleteMagicLinkDto": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "installation_id": {
+            "type": "string"
+          },
+          "public_key": {
+            "$ref": "#/components/schemas/AuthProofPublicKeyDto"
+          }
+        },
+        "required": [
+          "token",
+          "installation_id",
+          "public_key"
+        ]
+      },
+      "LogoutDto": {
+        "type": "object",
+        "properties": {
+          "session_id": {
+            "type": "string",
+            "format": "uuid"
+          }
+        },
+        "required": [
+          "session_id"
+        ]
+      }
+    }
+  }
+}

@@ -3,12 +3,12 @@ import { BadRequestException, UnauthorizedException } from "@nestjs/common"
 import { ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import type { Request, Response } from "express"
+import { AuthController } from "./auth.controller.js"
 import {
-  AuthController,
   RefreshTokenQueryDto,
   SignInWithEmailDto,
   SignInWithGoogleDto,
-} from "./auth.controller.js"
+} from "./auth.dto.js"
 import { AuthService } from "./auth.service.js"
 import { AuthCookiesService } from "./auth-cookies.js"
 
@@ -79,7 +79,7 @@ describe("AuthController", () => {
   })
 
   it("does not forward a request-derived app public url for public signup", async () => {
-    await controller.signup({
+    await controller.requestSignUp({
       email: "reader@example.com",
     })
 
@@ -116,7 +116,7 @@ describe("AuthController", () => {
     const response = createResponse()
 
     await expect(
-      controller.signinWithEmail(body, request, response),
+      controller.signInWithEmail(body, request, response),
     ).resolves.toEqual({
       sessionId: "session-1",
       dbName: "db-name",
@@ -216,7 +216,7 @@ describe("AuthController", () => {
       },
     )
 
-    await controller.signinWithGoogle(body, createRequest(), createResponse())
+    await controller.signInWithGoogle(body, createRequest(), createResponse())
 
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
@@ -272,7 +272,7 @@ describe("AuthController", () => {
     const response = createResponse()
 
     await expect(
-      controller.refreshTokens(
+      controller.refreshToken(
         { grant_type: "refresh_token" },
         "proof-jwt",
         request,
@@ -292,7 +292,7 @@ describe("AuthController", () => {
 
   it("rejects refresh without the cookie", async () => {
     await expect(
-      controller.refreshTokens(
+      controller.refreshToken(
         { grant_type: "refresh_token" },
         undefined,
         createRequest(),

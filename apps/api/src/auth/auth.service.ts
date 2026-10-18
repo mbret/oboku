@@ -26,13 +26,13 @@ import { SecretsService } from "../config/SecretsService.js"
 import { EmailService } from "../email/EmailService.js"
 import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
 import type {
-  AuthProofPublicKeyJwk,
-  AuthSessionResponse,
-  CompleteMagicLinkRequest,
-  CompleteSignUpResponse,
-  SignInWithEmailRequest,
-  SignInWithGoogleRequest,
-} from "@oboku/shared"
+  AuthProofPublicKeyDto,
+  AuthSessionResponseDto,
+  CompleteMagicLinkDto,
+  CompleteSignUpResponseDto,
+  SignInWithEmailDto,
+  SignInWithGoogleDto,
+} from "./auth.dto.js"
 import { RefreshProofService } from "./refresh-proof.service.js"
 import type { AuthTokens } from "./auth-cookies.js"
 
@@ -41,7 +41,7 @@ import type { AuthTokens } from "./auth-cookies.js"
  * {@link AuthTokens} the controller writes to httpOnly cookies. Only the
  * metadata half is serialized to the response body.
  */
-type AuthenticatedSession = AuthTokens & AuthSessionResponse
+type AuthenticatedSession = AuthTokens & AuthSessionResponseDto
 
 /** Max time to wait for couch_peruser to create `userdb-…` after a `_users` row is written. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
@@ -51,7 +51,7 @@ const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
  * at refresh needs nothing else, and dropping the rest bounds the stored
  * text no matter what extra properties a client sends.
  */
-const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyJwk) =>
+const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyDto) =>
   JSON.stringify({ kty, crv, x, y })
 
 type SignUpTokenPayload = {
@@ -280,7 +280,7 @@ export class AuthService {
     password,
     installation_id,
     public_key,
-  }: SignInWithEmailRequest): Promise<AuthenticatedSession> {
+  }: SignInWithEmailDto): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
@@ -294,7 +294,7 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: SignInWithGoogleRequest): Promise<AuthenticatedSession> {
+  }: SignInWithGoogleDto): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
     return this.completeSignIn({
@@ -497,7 +497,7 @@ export class AuthService {
   }: {
     token: string
     password: string
-  }): Promise<CompleteSignUpResponse> {
+  }): Promise<CompleteSignUpResponseDto> {
     const email = await this.verifySignUpToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -530,7 +530,7 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: CompleteMagicLinkRequest): Promise<AuthenticatedSession> {
+  }: CompleteMagicLinkDto): Promise<AuthenticatedSession> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
 

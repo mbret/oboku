@@ -117,6 +117,7 @@ export default defineConfig({
             "development/local-database",
             "development/covers-cache",
             "development/authentication",
+            "development/api-types",
             "development/preview-environment",
           ],
         },

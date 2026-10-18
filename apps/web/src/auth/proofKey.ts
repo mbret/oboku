@@ -1,3 +1,4 @@
+import type { AuthProofPublicKeyDto } from "@oboku/shared"
 import { SignJWT } from "jose"
 import { dexieDb } from "../rxdb/dexie"
 
@@ -21,7 +22,7 @@ const ECDSA_P256_KEY_PARAMS = { name: "ECDSA", namedCurve: "P-256" }
 
 export type StoredProofKey = {
   privateKey: CryptoKey
-  publicJwk: JsonWebKey & { kty: string }
+  publicJwk: JsonWebKey & AuthProofPublicKeyDto
 }
 
 export const createProofKey = async (): Promise<StoredProofKey> => {
@@ -31,13 +32,17 @@ export const createProofKey = async (): Promise<StoredProofKey> => {
     ["sign", "verify"],
   )
   const publicJwk = await crypto.subtle.exportKey("jwk", keyPair.publicKey)
-  const { kty } = publicJwk
+  const { kty, crv, x, y } = publicJwk
+  const hasThumbprintMembers = !!kty && !!crv && !!x && !!y
 
-  if (!kty) {
-    throw new Error("Exported proof public JWK is missing kty")
+  if (!hasThumbprintMembers) {
+    throw new Error("Exported proof public JWK is missing kty, crv, x or y")
   }
 
-  return { privateKey: keyPair.privateKey, publicJwk: { ...publicJwk, kty } }
+  return {
+    privateKey: keyPair.privateKey,
+    publicJwk: { ...publicJwk, kty, crv, x, y },
+  }
 }
 
 export const persistProofKey = (proofKey: StoredProofKey) =>

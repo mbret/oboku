@@ -1,4 +1,4 @@
-import type { CompleteSignUpRequest } from "@oboku/shared"
+import type { AuthCompleteSignUpData } from "@oboku/shared"
 import { from, switchMap } from "rxjs"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
@@ -10,7 +10,7 @@ export const useCompleteSignUp = () => {
   const { mutateAsync: signIn } = useSignIn()
 
   return useMutation$({
-    mutationFn: (data: CompleteSignUpRequest) =>
+    mutationFn: (data: AuthCompleteSignUpData["body"]) =>
       from(httpClientApi.completeSignUp(data)).pipe(
         switchMap(({ data: { email } }) =>
           signIn({ email, password: data.password }),
