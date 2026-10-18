@@ -84,7 +84,7 @@ const disableOpfs = () => {
 
 const stageFromWorker = async () => {
   const worker = new Worker(
-    new URL("./opfsStaging.fixture.worker.ts", import.meta.url),
+    new URL("./opfsStaging.browser.test.worker.ts", import.meta.url),
     { type: "module" },
   )
 
@@ -97,7 +97,7 @@ const stageFromWorker = async () => {
       resolve()
     })
     worker.addEventListener("error", function rejectWithWorkerError(event) {
-      reject(new Error(`fixture worker failed: ${event.message}`))
+      reject(new Error(`test worker failed: ${event.message}`))
     })
   })
 
