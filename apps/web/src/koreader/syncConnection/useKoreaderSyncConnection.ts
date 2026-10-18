@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query"
-import type { GetKoreaderSyncConnectionResponse } from "@oboku/shared"
+import type { KoreaderSyncConnectionGetResponse } from "@oboku/shared"
 import { useQueryOptionsWithAuthentication } from "../../auth"
 import { useConfig } from "../../config/useConfig"
 import { useHttpClientApi } from "../../http"
@@ -16,7 +16,7 @@ export const useKoreaderSyncConnection = () => {
       queryKey: koreaderSyncConnectionQueryKey(activeProfileId),
       queryFn: async function fetchKoreaderSyncConnection() {
         const { data } =
-          await httpClientApi.fetchOrThrow<GetKoreaderSyncConnectionResponse>(
+          await httpClientApi.fetchOrThrow<KoreaderSyncConnectionGetResponse>(
             `${config?.API_URL}/koreader-sync-connection`,
           )
 

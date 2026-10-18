@@ -32,8 +32,8 @@ import {
 import { useNavigate } from "react-router"
 import {
   formatBytes,
-  type GetKoreaderSyncConnectionResponse,
-  type GetKoreaderSyncServerResponse,
+  type KoreaderSyncConnectionGetResponse,
+  type KoreaderSyncServerGetResponse,
 } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
@@ -69,7 +69,7 @@ const KOREADER_SYNC_SERVER_PURPOSE =
   "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
 
 const describeKoreaderSyncServer = (
-  koreaderSyncServer?: GetKoreaderSyncServerResponse,
+  koreaderSyncServer?: KoreaderSyncServerGetResponse,
 ) => {
   if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
 
@@ -82,7 +82,7 @@ const KOREADER_PROGRESS_SYNC_PURPOSE =
   "Sync oboku's reading position through a KOReader sync server"
 
 const describeKoreaderSyncConnection = (
-  response?: GetKoreaderSyncConnectionResponse,
+  response?: KoreaderSyncConnectionGetResponse,
 ) =>
   response?.connection
     ? `Syncing with ${response.connection.serverUrl}`

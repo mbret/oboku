@@ -1,28 +1,11 @@
 import { Body, Controller, Delete, Get, Put } from "@nestjs/common"
-import type {
-  ConnectKoreaderSyncServerRequest,
-  GetKoreaderSyncConnectionResponse,
-} from "@oboku/shared"
-import { IsString, IsUrl, MinLength } from "class-validator"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
+import { OkResponseDto } from "../../lib/ok-response.dto.js"
+import {
+  ConnectKoreaderSyncServerDto,
+  KoreaderSyncConnectionResponseDto,
+} from "./koreader-sync-connection.dto.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
-
-class ConnectKoreaderSyncServerDto implements ConnectKoreaderSyncServerRequest {
-  @IsUrl({
-    require_tld: false,
-    require_protocol: true,
-    protocols: ["http", "https"],
-  })
-  serverUrl!: string
-
-  @IsString()
-  @MinLength(1)
-  username!: string
-
-  @IsString()
-  @MinLength(1)
-  password!: string
-}
 
 /** The KOReader sync server the signed-in user connects oboku's reader to. */
 @Controller("koreader-sync-connection")
@@ -34,7 +17,7 @@ export class KoreaderSyncConnectionController {
   @Get()
   async get(
     @WithAuthUser() user: AuthUser,
-  ): Promise<GetKoreaderSyncConnectionResponse> {
+  ): Promise<KoreaderSyncConnectionResponseDto> {
     return {
       connection: await this.koreaderSyncConnectionService.find(user.userId),
     }
@@ -44,7 +27,7 @@ export class KoreaderSyncConnectionController {
   async connect(
     @WithAuthUser() user: AuthUser,
     @Body() body: ConnectKoreaderSyncServerDto,
-  ): Promise<GetKoreaderSyncConnectionResponse> {
+  ): Promise<KoreaderSyncConnectionResponseDto> {
     return {
       connection: await this.koreaderSyncConnectionService.connect({
         userId: user.userId,
@@ -56,7 +39,7 @@ export class KoreaderSyncConnectionController {
   }
 
   @Delete()
-  async disconnect(@WithAuthUser() user: AuthUser) {
+  async disconnect(@WithAuthUser() user: AuthUser): Promise<OkResponseDto> {
     await this.koreaderSyncConnectionService.disconnect(user.userId)
 
     return { ok: true }

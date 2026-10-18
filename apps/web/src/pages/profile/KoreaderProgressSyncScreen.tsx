@@ -10,7 +10,7 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import type { KoreaderSyncConnection } from "@oboku/shared"
+import type { KoreaderSyncConnectionDto } from "@oboku/shared"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink } from "react-router"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
@@ -195,7 +195,7 @@ const ConnectionForm = memo(function ConnectionForm() {
 const ConnectionDetails = memo(function ConnectionDetails({
   connection,
 }: {
-  connection: KoreaderSyncConnection
+  connection: KoreaderSyncConnectionDto
 }) {
   const { mutate: disconnect } = useDisconnectKoreaderSyncServer()
 

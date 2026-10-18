@@ -67,6 +67,54 @@ export type LogoutDto = {
     session_id: string;
 };
 
+export type KoreaderSyncServerResponseDto = {
+    /**
+     * What devices sign in with as username: the account email.
+     */
+    username: string;
+    /**
+     * When the current password was generated, `null` while sync is off.
+     */
+    passwordCreatedAt: string | null;
+};
+
+export type KoreaderSyncServerPasswordResponseDto = {
+    username: string;
+    /**
+     * Shown once: only a hash of it is kept.
+     */
+    password: string;
+};
+
+export type OkResponseDto = {
+    ok: boolean;
+};
+
+export type KoreaderSyncConnectionDto = {
+    serverUrl: string;
+    username: string;
+    /**
+     * When the user signed in to the server from oboku.
+     */
+    connectedAt: string;
+};
+
+export type KoreaderSyncConnectionResponseDto = {
+    /**
+     * `null` while oboku's reader is not connected to a sync server.
+     */
+    connection: KoreaderSyncConnectionDto | null;
+};
+
+export type ConnectKoreaderSyncServerDto = {
+    serverUrl: string;
+    username: string;
+    /**
+     * Sent once: the API keeps only the key sync clients derive from it.
+     */
+    password: string;
+};
+
 export type AuthSignInWithEmailData = {
     body: SignInWithEmailDto;
     path?: never;
@@ -185,3 +233,81 @@ export type AuthDeleteAccountResponses = {
 };
 
 export type AuthDeleteAccountResponse = AuthDeleteAccountResponses[keyof AuthDeleteAccountResponses];
+
+export type KoreaderSyncServerTurnOffData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-server';
+};
+
+export type KoreaderSyncServerTurnOffResponses = {
+    200: OkResponseDto;
+};
+
+export type KoreaderSyncServerTurnOffResponse = KoreaderSyncServerTurnOffResponses[keyof KoreaderSyncServerTurnOffResponses];
+
+export type KoreaderSyncServerGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-server';
+};
+
+export type KoreaderSyncServerGetResponses = {
+    200: KoreaderSyncServerResponseDto;
+};
+
+export type KoreaderSyncServerGetResponse = KoreaderSyncServerGetResponses[keyof KoreaderSyncServerGetResponses];
+
+export type KoreaderSyncServerCreatePasswordData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-server/password';
+};
+
+export type KoreaderSyncServerCreatePasswordResponses = {
+    201: KoreaderSyncServerPasswordResponseDto;
+};
+
+export type KoreaderSyncServerCreatePasswordResponse = KoreaderSyncServerCreatePasswordResponses[keyof KoreaderSyncServerCreatePasswordResponses];
+
+export type KoreaderSyncConnectionDisconnectData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-connection';
+};
+
+export type KoreaderSyncConnectionDisconnectResponses = {
+    200: OkResponseDto;
+};
+
+export type KoreaderSyncConnectionDisconnectResponse = KoreaderSyncConnectionDisconnectResponses[keyof KoreaderSyncConnectionDisconnectResponses];
+
+export type KoreaderSyncConnectionGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-connection';
+};
+
+export type KoreaderSyncConnectionGetResponses = {
+    200: KoreaderSyncConnectionResponseDto;
+};
+
+export type KoreaderSyncConnectionGetResponse = KoreaderSyncConnectionGetResponses[keyof KoreaderSyncConnectionGetResponses];
+
+export type KoreaderSyncConnectionConnectData = {
+    body: ConnectKoreaderSyncServerDto;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-connection';
+};
+
+export type KoreaderSyncConnectionConnectResponses = {
+    200: KoreaderSyncConnectionResponseDto;
+};
+
+export type KoreaderSyncConnectionConnectResponse = KoreaderSyncConnectionConnectResponses[keyof KoreaderSyncConnectionConnectResponses];

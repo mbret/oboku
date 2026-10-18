@@ -1,12 +1,12 @@
-export type GetKoreaderSyncServerResponse = {
+export class KoreaderSyncServerResponseDto {
   /** What devices sign in with as username: the account email. */
-  username: string
+  username!: string
   /** When the current password was generated, `null` while sync is off. */
-  passwordCreatedAt: string | null
+  passwordCreatedAt!: string | null
 }
 
-export type CreateKoreaderSyncServerPasswordResponse = {
-  username: string
+export class KoreaderSyncServerPasswordResponseDto {
+  username!: string
   /** Shown once: only a hash of it is kept. */
-  password: string
+  password!: string
 }
