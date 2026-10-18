@@ -196,7 +196,7 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("saves the bookmark's xpointer with the cfi it was computed from", async () => {
+  it("saves the bookmark's KOReader progress with the cfi it was computed from", async () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
@@ -205,14 +205,14 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkXPointer: {
+      readingStateCurrentBookmarkKoreaderProgress: {
         cfi: LAST_PAGE.cfi,
-        xpointer: toFakeXPointer(LAST_PAGE.cfi),
+        progress: toFakeXPointer(LAST_PAGE.cfi),
       },
     })
   })
 
-  it("adds the xpointer to a bookmark saved without one, leaving its place in recent activity", async () => {
+  it("adds the KOReader progress to a bookmark saved without one, leaving its place in recent activity", async () => {
     const readingStateUpdatedAt = "2026-01-01T00:00:00.000Z"
     mocks.state.book = {
       ...book,
@@ -230,21 +230,21 @@ describe("useSyncBookProgress", () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkXPointer: {
+      readingStateCurrentBookmarkKoreaderProgress: {
         cfi: LAST_PAGE.cfi,
-        xpointer: toFakeXPointer(LAST_PAGE.cfi),
+        progress: toFakeXPointer(LAST_PAGE.cfi),
       },
       readingStateUpdatedAt,
     })
   })
 
-  it("drops the xpointer of the previous bookmark when the new one has none", async () => {
+  it("drops the KOReader progress of the previous bookmark when the new one has none", async () => {
     mocks.state.book = {
       ...book,
       readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
-      readingStateCurrentBookmarkXPointer: {
+      readingStateCurrentBookmarkKoreaderProgress: {
         cfi: PAGE_BEFORE_LAST.cfi,
-        xpointer: toFakeXPointer(PAGE_BEFORE_LAST.cfi),
+        progress: toFakeXPointer(PAGE_BEFORE_LAST.cfi),
       },
     }
     const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
@@ -255,7 +255,7 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkXPointer: null,
+      readingStateCurrentBookmarkKoreaderProgress: null,
     })
   })
 

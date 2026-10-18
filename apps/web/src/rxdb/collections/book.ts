@@ -53,8 +53,8 @@ export const bookSchemaMigrationStrategies: MigrationStrategies = {
   // activity order reads the later of the two dates, and the shown progress
   // falls back to the bookmark progress.
   5: (oldDoc: Record<string, unknown>) => oldDoc,
-  // v6: added optional `readingStateCurrentBookmarkXPointer`; nothing to
-  // backfill since the reader writes it the next time the book is opened.
+  // v6: added optional `readingStateCurrentBookmarkKoreaderProgress`; nothing
+  // to backfill since the reader writes it the next time the book is opened.
   6: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
@@ -79,13 +79,13 @@ export const bookSchema: RxJsonSchema<
     links: { ref: "link", type: "array", items: { type: "string" } },
     readingStateCurrentBookmarkLocation: { type: ["string", "null"] },
     readingStateCurrentBookmarkProgressPercent: { type: ["number"] },
-    readingStateCurrentBookmarkXPointer: {
+    readingStateCurrentBookmarkKoreaderProgress: {
       type: ["object", "null"],
       properties: {
         cfi: { type: "string" },
-        xpointer: { type: "string" },
+        progress: { type: "string" },
       },
-      required: ["cfi", "xpointer"],
+      required: ["cfi", "progress"],
     },
     readingStateReachedProgressPercent: { type: ["number"] },
     readingStateUpdatedAt: { type: ["string", "null"] },

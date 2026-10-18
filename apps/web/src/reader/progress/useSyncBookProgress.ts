@@ -26,8 +26,8 @@ type SavedReadingPosition = Pick<
   "cfi" | "percentageEstimateOfBook"
 >
 
-type SavedReadingPositionWithXPointer = SavedReadingPosition & {
-  xpointer: string | undefined
+type SavedReadingPositionWithKoreaderProgress = SavedReadingPosition & {
+  koreaderProgress: string | undefined
 }
 
 const toSavedReadingPosition = ({
@@ -67,14 +67,17 @@ const composePatches = (patches: BookPatch[]): BookPatch =>
 const createReadingPositionPatch = ({
   cfi,
   percentageEstimateOfBook,
-  xpointer,
-}: SavedReadingPositionWithXPointer): BookPatch =>
+  koreaderProgress,
+}: SavedReadingPositionWithKoreaderProgress): BookPatch =>
   function applyReadingPosition(old) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
         : ReadingStateState.Reading
-    const nextXPointer = xpointer === undefined ? null : { cfi, xpointer }
+    const nextKoreaderProgress =
+      koreaderProgress === undefined
+        ? null
+        : { cfi, progress: koreaderProgress }
 
     const didBookmarkLocationChange =
       old.readingStateCurrentBookmarkLocation !== cfi
@@ -83,22 +86,23 @@ const createReadingPositionPatch = ({
       percentageEstimateOfBook
     const didReadingStateChange =
       old.readingStateCurrentState !== nextReadingState
-    const didXPointerChange =
-      old.readingStateCurrentBookmarkXPointer?.cfi !== nextXPointer?.cfi ||
-      old.readingStateCurrentBookmarkXPointer?.xpointer !==
-        nextXPointer?.xpointer
+    const didKoreaderProgressChange =
+      old.readingStateCurrentBookmarkKoreaderProgress?.cfi !==
+        nextKoreaderProgress?.cfi ||
+      old.readingStateCurrentBookmarkKoreaderProgress?.progress !==
+        nextKoreaderProgress?.progress
     const isReadingStateUpdate =
       didBookmarkLocationChange || didProgressChange || didReadingStateChange
 
-    if (!isReadingStateUpdate && !didXPointerChange) return old
+    if (!isReadingStateUpdate && !didKoreaderProgressChange) return old
 
     return {
       ...old,
       ...(didBookmarkLocationChange && {
         readingStateCurrentBookmarkLocation: cfi,
       }),
-      ...(didXPointerChange && {
-        readingStateCurrentBookmarkXPointer: nextXPointer,
+      ...(didKoreaderProgressChange && {
+        readingStateCurrentBookmarkKoreaderProgress: nextKoreaderProgress,
       }),
       ...(isReadingStateUpdate && {
         readingStateUpdatedAt: new Date().toISOString(),
@@ -158,10 +162,10 @@ export const useSyncBookProgress = (
       const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
         map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
-        map(function withXPointer(position) {
+        map(function withKoreaderProgress(position) {
           return {
             ...position,
-            xpointer: reader.koreader.cfiToXPointer(position.cfi),
+            koreaderProgress: reader.koreader.cfiToXPointer(position.cfi),
           }
         }),
         map(createReadingPositionPatch),

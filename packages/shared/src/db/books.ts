@@ -35,17 +35,18 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkProgressPercent: number
     /**
-     * readingStateCurrentBookmarkLocation as a KOReader (crengine) xpointer,
-     * the progress a KOReader sync server keeps for a book, with the cfi it
-     * was computed from. It is that bookmark's only while `cfi` equals
+     * readingStateCurrentBookmarkLocation in KOReader's form: the `progress` a
+     * KOReader sync server keeps for a book, an xpointer for a reflowable book
+     * and a page number for one with pages, with the cfi it was computed
+     * from. It is that bookmark's only while `cfi` equals
      * readingStateCurrentBookmarkLocation: a version of the app that predates
      * it moves the bookmark and leaves it behind. `null` or missing when the
      * bookmark has none: no bookmark, or a place prose's KOReader enhancer
-     * has no xpointer for.
+     * cannot express.
      */
-    readingStateCurrentBookmarkXPointer?: {
+    readingStateCurrentBookmarkKoreaderProgress?: {
       cfi: string
-      xpointer: string
+      progress: string
     } | null
     /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
@@ -150,7 +151,7 @@ export const createBookDefaults = (): Omit<
   metadataUpdateStatus: null,
   readingStateCurrentState: ReadingStateState.NotStarted,
   readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkXPointer: null,
+  readingStateCurrentBookmarkKoreaderProgress: null,
   readingStateCurrentBookmarkProgressPercent: 0,
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: null,
