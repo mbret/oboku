@@ -1,18 +1,11 @@
 import { useMutation } from "@tanstack/react-query"
+import type { AdminMigrateCollectionCoverKeysResponse } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "./authenticatedFetch"
 
-export type CollectionCoverKeysMigrationResult = {
-  storageStrategy: "fs" | "s3"
-  ranOnUsers: number
-  renamed: number
-  skippedDestinationExists: number
-  skippedSourceMissing: number
-}
-
 export const useMigrateCollectionCoverKeys = () => {
   return useMutation({
-    mutationFn: async (): Promise<CollectionCoverKeysMigrationResult> => {
+    mutationFn: async (): Promise<AdminMigrateCollectionCoverKeysResponse> => {
       const res = await authenticatedFetch(
         `${config.apiUrl}/admin/migrate-collection-cover-keys`,
         {

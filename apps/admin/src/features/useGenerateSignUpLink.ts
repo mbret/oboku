@@ -1,17 +1,16 @@
 import { useMutation } from "@tanstack/react-query"
+import type {
+  AdminGenerateSignUpLinkData,
+  AdminGenerateSignUpLinkResponse,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "./authenticatedFetch"
 
-export type GenerateSignUpLinkResult = {
-  signUpLink: string
-}
-
 export const useGenerateSignUpLink = () => {
   return useMutation({
-    mutationFn: async (values: {
-      email: string
-      appPublicUrl?: string
-    }): Promise<GenerateSignUpLinkResult> => {
+    mutationFn: async (
+      values: AdminGenerateSignUpLinkData["body"],
+    ): Promise<AdminGenerateSignUpLinkResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/signup-links`,
         {

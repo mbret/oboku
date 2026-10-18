@@ -21,6 +21,7 @@ for (const [name, value] of Object.entries(placeholderEnvironment)) {
 }
 
 const { AppModule } = await import("./app.module.js")
+const { AdminModule } = await import("./admin/admin.module.js")
 const { AuthModule } = await import("./auth/auth.module.js")
 const { BooksModule } = await import("./books/books.module.js")
 const { CollectionsModule } = await import(
@@ -40,6 +41,7 @@ const { NotificationsModule } = await import(
 // TODO: drop `include` once every controller keeps its DTOs in `*.dto.ts`
 // and returns classes, so the document covers the whole API.
 const documentedModules = [
+  AdminModule,
   AppModule,
   AuthModule,
   BooksModule,

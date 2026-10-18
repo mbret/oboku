@@ -5,8 +5,8 @@ import { authenticatedFetch } from "./authenticatedFetch"
 import { readResponseErrorMessage } from "./readResponseErrorMessage"
 import { instanceSettingsQueryKey } from "./useInstanceSettings"
 import type {
-  UpdateInstanceSettingsRequest,
-  UpdateInstanceSettingsResponse,
+  AdminUpdateSettingsData,
+  AdminUpdateSettingsResponse,
 } from "@oboku/shared"
 
 export const useUpdateInstanceSettings = () => {
@@ -14,8 +14,8 @@ export const useUpdateInstanceSettings = () => {
 
   return useMutation({
     mutationFn: async (
-      body: UpdateInstanceSettingsRequest,
-    ): Promise<UpdateInstanceSettingsResponse> => {
+      body: AdminUpdateSettingsData["body"],
+    ): Promise<AdminUpdateSettingsResponse> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/settings`,
         {

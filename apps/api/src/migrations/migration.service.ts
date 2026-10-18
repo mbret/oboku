@@ -17,6 +17,12 @@ import {
 } from "@aws-sdk/client-s3"
 import fs from "node:fs"
 import path from "node:path"
+import type {
+  CollectionCoverKeysMigrationResponseDto,
+  RefreshTokenCreatedAtResetResponseDto,
+  ResourceIdMigrationResponseDto,
+  WebdavConnectorsMigrationResponseDto,
+} from "./migration.dto.js"
 
 const logger = new Logger("MigrationService")
 
@@ -59,14 +65,6 @@ type CollectionDoc = {
   linkData?: Record<string, unknown> | string | null
   modifiedAt?: string | null
   [key: string]: unknown
-}
-
-type LegacyCollectionCoverMigrationResult = {
-  storageStrategy: "fs" | "s3"
-  ranOnUsers: number
-  renamed: number
-  skippedDestinationExists: number
-  skippedSourceMissing: number
 }
 
 /**
@@ -243,7 +241,7 @@ export class MigrationService {
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
 
-  async resetRefreshTokenCreatedAt(): Promise<{ updated: number }> {
+  async resetRefreshTokenCreatedAt(): Promise<RefreshTokenCreatedAtResetResponseDto> {
     /**
      * Migration: reset `created_at` to now for every refresh token row.
      *
@@ -278,10 +276,7 @@ export class MigrationService {
     return { updated }
   }
 
-  async migrateWebdavConnectorsToConnectors(): Promise<{
-    usersMigrated: number
-    connectorsCreated: number
-  }> {
+  async migrateWebdavConnectorsToConnectors(): Promise<WebdavConnectorsMigrationResponseDto> {
     /**
      * Migration: `settings.webdavConnectors` -> `settings.connectors`
      *
@@ -424,11 +419,7 @@ export class MigrationService {
     return { usersMigrated, connectorsCreated }
   }
 
-  async migrateWebdavResourceIds(): Promise<{
-    usersMigrated: number
-    linksUpdated: number
-    collectionsUpdated: number
-  }> {
+  async migrateWebdavResourceIds(): Promise<ResourceIdMigrationResponseDto> {
     /**
      * Migration: legacy WebDAV `resourceId` / `linkResourceId` -> canonical WebDAV ID format
      *
@@ -576,11 +567,7 @@ export class MigrationService {
     return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 
-  async migrateResourceIdToLinkData(): Promise<{
-    usersMigrated: number
-    linksUpdated: number
-    collectionsUpdated: number
-  }> {
+  async migrateResourceIdToLinkData(): Promise<ResourceIdMigrationResponseDto> {
     /**
      * Migration: `resourceId` -> `data` identity fields on links,
      *            `linkResourceId` -> `linkData` identity fields on collections.
@@ -705,7 +692,7 @@ export class MigrationService {
     return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 
-  async migrateLegacyCollectionCoverKeys(): Promise<LegacyCollectionCoverMigrationResult> {
+  async migrateLegacyCollectionCoverKeys(): Promise<CollectionCoverKeysMigrationResponseDto> {
     /**
      * Migration: legacy collection cover keys -> per-user-scoped collection
      * cover keys.

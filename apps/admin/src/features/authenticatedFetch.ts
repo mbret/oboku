@@ -1,3 +1,7 @@
+import type {
+  AdminRefreshTokenData,
+  AdminRefreshTokenResponse,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { authState, clearTokens, persistTokens } from "./states"
 
@@ -10,9 +14,11 @@ const refreshAccessToken = async () => {
     throw new Error("No refresh token")
   }
 
+  const body: AdminRefreshTokenData["body"] = { refresh_token }
+
   const response = await fetch(`${config.apiUrl}/admin/refresh`, {
     method: "POST",
-    body: JSON.stringify({ refresh_token }),
+    body: JSON.stringify(body),
     headers: { "Content-Type": "application/json" },
   })
 
@@ -20,7 +26,7 @@ const refreshAccessToken = async () => {
     throw new Error("Refresh failed")
   }
 
-  const data = await response.json()
+  const data: AdminRefreshTokenResponse = await response.json()
 
   persistTokens({
     access_token: data.access_token,

@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
+import type { AdminDeleteServerSourceData } from "@oboku/shared"
 import { config } from "@/config"
 import { authenticatedFetch } from "../authenticatedFetch"
 import { readResponseErrorMessage } from "../readResponseErrorMessage"
@@ -9,7 +10,9 @@ export const useDeleteServerSource = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id }: { id: string }): Promise<void> => {
+    mutationFn: async ({
+      id,
+    }: AdminDeleteServerSourceData["path"]): Promise<void> => {
       const response = await authenticatedFetch(
         `${config.apiUrl}/admin/server-sync/sources/${id}`,
         {
