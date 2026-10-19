@@ -1,9 +1,5 @@
-import {
-  compareDesc,
-  type DataSourcesListSyncReportsResponse,
-} from "@oboku/shared"
+import { compareDesc, dataSourcesListSyncReports } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
-import { useConfig } from "../../config/useConfig"
 import { useHttpClientApi } from "../../http"
 import { useQueryOptionsWithAuthentication } from "../../auth"
 
@@ -16,16 +12,14 @@ const emptyCounts = () => ({
 
 export const useSyncReports = () => {
   const httpClientApi = useHttpClientApi()
-  const { data: config } = useConfig()
 
   return useQuery(
     useQueryOptionsWithAuthentication({
       queryKey: ["api/datasourceReport"],
-      queryFn: async () => {
-        const { data } =
-          await httpClientApi.fetchOrThrow<DataSourcesListSyncReportsResponse>(
-            `${config?.API_URL}/datasources/sync-reports`,
-          )
+      queryFn: async function fetchSyncReports() {
+        const { data } = await dataSourcesListSyncReports({
+          client: httpClientApi.sdkClient,
+        })
 
         const entries = data
           .map((report) => {

@@ -1,3 +1,4 @@
+import { koreaderSyncConnectionDisconnect } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -9,7 +10,11 @@ export const useDisconnectKoreaderSyncServer = () => {
   const activeProfileId = useActiveProfileId()
 
   return useMutation({
-    mutationFn: httpClientApi.disconnectKoreaderSyncServer,
+    mutationFn: function disconnectKoreaderSyncServer() {
+      return koreaderSyncConnectionDisconnect({
+        client: httpClientApi.sdkClient,
+      })
+    },
     onSuccess: function refreshKoreaderSyncConnection() {
       return queryClient.invalidateQueries({
         queryKey: koreaderSyncConnectionQueryKey(activeProfileId),

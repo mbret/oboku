@@ -1,35 +1,30 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-const { httpClientFetch, httpClientFetchOrThrow, useQuery } = vi.hoisted(
-  function createQueryMocks() {
-    return {
-      httpClientFetch: vi.fn(),
-      httpClientFetchOrThrow: vi.fn(),
-      useQuery: vi.fn((options) => options),
-    }
-  },
-)
+const { sdkFetch, useQuery } = vi.hoisted(function createQueryMocks() {
+  return {
+    sdkFetch: vi.fn<typeof fetch>(),
+    useQuery: vi.fn((options) => options),
+  }
+})
 
 vi.mock(
   "../../http/HttpClientApiContext",
   async function mockHttpClientApi(importOriginal) {
+    const { createApiClient } = await import("@oboku/shared")
+    const sdkClient = createApiClient({
+      baseUrl: "https://api.example.com",
+      throwOnError: true,
+      fetch: sdkFetch,
+    })
+
     return {
       ...(await importOriginal<
         typeof import("../../http/HttpClientApiContext")
       >()),
-      useHttpClientApi: () => ({
-        fetch: httpClientFetch,
-        fetchOrThrow: httpClientFetchOrThrow,
-      }),
+      useHttpClientApi: () => ({ sdkClient }),
     }
   },
 )
-vi.mock("../../config/useConfig", async function mockConfig(importOriginal) {
-  return {
-    ...(await importOriginal<typeof import("../../config/useConfig")>()),
-    useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
-  }
-})
 vi.mock("@tanstack/react-query", async function mockUseQuery(importOriginal) {
   return {
     ...(await importOriginal<typeof import("@tanstack/react-query")>()),
@@ -54,14 +49,31 @@ const hasQueryFn = <Result>(
   "queryFn" in value &&
   typeof value.queryFn === "function"
 
+const createJsonResponse = (body: unknown) =>
+  new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+  })
+
+const getQueryFn = () => {
+  useSyncReports()
+
+  const options = useQuery.mock.calls[0]?.[0]
+
+  if (!hasQueryFn<SyncReportEntries>(options)) {
+    throw new Error("Expected useQuery to be called with a queryFn")
+  }
+
+  return options.queryFn
+}
+
 describe("useSyncReports", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
-  it("uses fetchOrThrow so HTTP failures reject the query", async () => {
-    httpClientFetchOrThrow.mockResolvedValue({
-      data: [
+  it("counts the entries of the fetched sync reports", async () => {
+    sdkFetch.mockResolvedValue(
+      createJsonResponse([
         {
           created_at: "2026-04-06T19:00:00.000Z",
           ended_at: "2026-04-06T19:01:00.000Z",
@@ -75,31 +87,30 @@ describe("useSyncReports", () => {
             },
           ],
         },
-      ],
-    })
+      ]),
+    )
 
-    useSyncReports()
+    const result = await getQueryFn()()
 
-    const options = useQuery.mock.calls[0]?.[0]
+    const [request] = sdkFetch.mock.calls[0] ?? []
 
-    if (!hasQueryFn<SyncReportEntries>(options)) {
-      throw new Error("Expected useQuery to be called with a queryFn")
-    }
-
-    const result = await options.queryFn()
-
-    expect(httpClientFetchOrThrow).toHaveBeenCalledWith(
+    expect(request instanceof Request ? request.url : String(request)).toBe(
       "https://api.example.com/datasources/sync-reports",
     )
-    expect(httpClientFetch).not.toHaveBeenCalled()
     expect(result).toHaveLength(1)
     expect(result[0]?.book.added).toBe(1)
     expect(result[0]?.book.fetchedMetadata).toBe(1)
   })
 
+  it("rejects the query when the request fails", async () => {
+    sdkFetch.mockResolvedValue(new Response("boom", { status: 500 }))
+
+    await expect(getQueryFn()()).rejects.toBeDefined()
+  })
+
   it("ignores report models outside the seeded set instead of crashing", async () => {
-    httpClientFetchOrThrow.mockResolvedValue({
-      data: [
+    sdkFetch.mockResolvedValue(
+      createJsonResponse([
         {
           created_at: "2026-04-06T19:00:00.000Z",
           ended_at: "2026-04-06T19:01:00.000Z",
@@ -113,18 +124,10 @@ describe("useSyncReports", () => {
             },
           ],
         },
-      ],
-    })
+      ]),
+    )
 
-    useSyncReports()
-
-    const options = useQuery.mock.calls[0]?.[0]
-
-    if (!hasQueryFn<SyncReportEntries>(options)) {
-      throw new Error("Expected useQuery to be called with a queryFn")
-    }
-
-    const result = await options.queryFn()
+    const result = await getQueryFn()()
 
     expect(result).toHaveLength(1)
     expect(result[0]?.book.added).toBe(0)

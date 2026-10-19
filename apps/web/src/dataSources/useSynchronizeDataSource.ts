@@ -1,4 +1,4 @@
-import { ObokuErrorCode } from "@oboku/shared"
+import { dataSourcesSync, ObokuErrorCode } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useMutation$, isDefined } from "reactjrx"
 import { from, filter, switchMap, catchError, map, of } from "rxjs"
@@ -48,9 +48,12 @@ export const useSynchronizeDataSource = () => {
           ).pipe(
             switchMap(() =>
               from(
-                httpClientApi.syncDataSource({
-                  dataSourceId: _id,
-                  providerCredentials: data.providerCredentials,
+                dataSourcesSync({
+                  client: httpClientApi.sdkClient,
+                  body: {
+                    dataSourceId: _id,
+                    providerCredentials: data.providerCredentials,
+                  },
                 }),
               ),
             ),

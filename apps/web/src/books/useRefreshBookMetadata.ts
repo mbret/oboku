@@ -1,3 +1,4 @@
+import { booksRefreshMetadata } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useHttpClientApi } from "../http"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
@@ -60,10 +61,9 @@ export const useRefreshBookMetadata = () => {
       })
 
       try {
-        await httpClientApi.refreshBookMetadata({
-          bookId,
-          providerCredentials,
-          force,
+        await booksRefreshMetadata({
+          client: httpClientApi.sdkClient,
+          body: { bookId, providerCredentials, force },
         })
       } catch (e) {
         await incrementalPatchBook({

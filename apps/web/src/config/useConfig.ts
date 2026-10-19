@@ -1,5 +1,9 @@
 import { type QueryClient, useQuery } from "@tanstack/react-query"
-import { type WebGetConfigResponse, zWebGetConfigResponse } from "@oboku/shared"
+import {
+  type WebGetConfigResponse,
+  webGetConfig,
+  zWebGetConfigResponse,
+} from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
 import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
 import { readWebConfigCache, saveWebConfigCache } from "./configCache"
@@ -75,9 +79,7 @@ export const webConfigQueryKey = [
 export const fetchConfig = async (
   httpClientApi: HttpApiClientWeb,
 ): Promise<Config> => {
-  const { data } = await httpClientApi.fetchOrThrow<WebGetConfigResponse>(
-    `${API_URL}/web/config`,
-  )
+  const { data } = await webGetConfig({ client: httpClientApi.sdkClient })
 
   const server = zWebGetConfigResponse.parse(data)
 

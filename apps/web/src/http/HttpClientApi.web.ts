@@ -15,17 +15,6 @@ import type {
   AuthSignInWithEmailResponse,
   AuthSignInWithGoogleData,
   AuthSignInWithGoogleResponse,
-  BooksRefreshMetadataData,
-  BooksRefreshMetadataResponse,
-  CollectionsRefreshMetadataData,
-  CollectionsRefreshMetadataResponse,
-  DataSourcesSyncData,
-  DataSourcesSyncResponse,
-  KoreaderSyncConnectionConnectData,
-  KoreaderSyncConnectionConnectResponse,
-  KoreaderSyncConnectionDisconnectResponse,
-  KoreaderSyncServerCreatePasswordResponse,
-  KoreaderSyncServerTurnOffResponse,
 } from "@oboku/shared"
 import { createApiClient } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
@@ -141,32 +130,6 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       }),
     )
 
-  refreshBookMetadata = (params: BooksRefreshMetadataData["body"]) =>
-    this.postOrThrow<
-      BooksRefreshMetadataResponse,
-      BooksRefreshMetadataData["body"]
-    >(`${API_URL}/books/metadata/refresh`, {
-      body: params,
-    })
-
-  refreshCollectionMetadata = (
-    params: CollectionsRefreshMetadataData["body"],
-  ) =>
-    this.postOrThrow<
-      CollectionsRefreshMetadataResponse,
-      CollectionsRefreshMetadataData["body"]
-    >(`${API_URL}/collections/metadata/refresh`, {
-      body: { ...params, soft: params.soft ?? false },
-    })
-
-  syncDataSource = (params: DataSourcesSyncData["body"]) =>
-    this.postOrThrow<DataSourcesSyncResponse, DataSourcesSyncData["body"]>(
-      `${API_URL}/datasources/sync`,
-      {
-        body: params,
-      },
-    )
-
   signInWithEmail = (
     data: AuthSignInWithEmailData["body"],
     proofKey: StoredProofKey,
@@ -218,35 +181,6 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     >(`${API_URL}/auth/magic-link`, {
       body: data,
     })
-
-  createKoreaderSyncServerPassword = () =>
-    this.postOrThrow<KoreaderSyncServerCreatePasswordResponse>(
-      `${API_URL}/koreader-sync-server/password`,
-    )
-
-  turnOffKoreaderSyncServer = () =>
-    this.fetchOrThrow<KoreaderSyncServerTurnOffResponse>(
-      `${API_URL}/koreader-sync-server`,
-      { method: "DELETE" },
-    )
-
-  connectKoreaderSyncServer = (
-    body: KoreaderSyncConnectionConnectData["body"],
-  ) =>
-    this.fetchOrThrow<KoreaderSyncConnectionConnectResponse>(
-      `${API_URL}/koreader-sync-connection`,
-      {
-        method: "PUT",
-        body: JSON.stringify(body),
-        headers: { "Content-Type": "application/json" },
-      },
-    )
-
-  disconnectKoreaderSyncServer = () =>
-    this.fetchOrThrow<KoreaderSyncConnectionDisconnectResponse>(
-      `${API_URL}/koreader-sync-connection`,
-      { method: "DELETE" },
-    )
 
   refreshToken = () => refreshTokenRequest(this, API_URL)
 
