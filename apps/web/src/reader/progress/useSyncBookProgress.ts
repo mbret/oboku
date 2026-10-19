@@ -16,6 +16,12 @@ import type { BookChange } from "./bookProgressPatches"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
 import { syncBookmarkToKoreader } from "./syncBookmarkToKoreader"
 
+const logSyncError = (error: unknown) => {
+  console.error(error)
+
+  return EMPTY
+}
+
 export const useSyncBookProgress = (
   bookId: string,
   {
@@ -66,13 +72,10 @@ export const useSyncBookProgress = (
             map(function toBookChange() {
               return change
             }),
+            catchError(logSyncError),
           )
         }),
-        catchError(function logSyncError(error) {
-          console.error(error)
-
-          return EMPTY
-        }),
+        catchError(logSyncError),
         share(),
       )
 
