@@ -1,6 +1,7 @@
 import { writeFile } from "node:fs/promises"
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
+import { HttpErrorResponseDto } from "./lib/error-response.dto.js"
 
 /**
  * `AppModule` validates the environment as soon as it is imported, so these
@@ -33,6 +34,11 @@ const document = SwaggerModule.createDocument(
   new DocumentBuilder()
     .setTitle("oboku API")
     .setOpenAPIVersion("3.1.0")
+    .addGlobalResponse({
+      status: "default",
+      description: "The request failed",
+      type: HttpErrorResponseDto,
+    })
     .build(),
   {
     operationIdFactory: function toOperationId(controllerKey, methodKey) {

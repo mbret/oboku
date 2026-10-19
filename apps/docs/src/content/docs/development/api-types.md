@@ -25,6 +25,8 @@ The `@nestjs/swagger` compiler plugin reads the TypeScript types of controllers 
 - A union of classes, or a property typed `null`, needs an explicit `@ApiOkResponse` or `@ApiProperty` schema.
 - The plugin turns each class-validator decorator into a schema keyword. It cannot see `@ValidateIf` and does not map `@IsInt`, so a property that uses them declares its schema with `@ApiProperty`, like `UpdateInstanceSettingsDto` does.
 - A route that returns a file declares its content types with `@ApiProduces` and its body with `@ApiOkResponse({ schema: { type: "string", format: "binary" } })`, like the cover routes.
+- Errors need no decorator: `generate-openapi.ts` documents NestJS's error body, `HttpErrorResponseDto`, as the default response of every route. A route whose 400 can carry one of oboku's error codes, `{ errors: [{ code }] }`, adds `@ApiObokuErrors()`, like the sign-in routes.
+- A decorator named `Api…Response` must name an error status, like `ApiBadRequestResponse`. The plugin reads any other such name as the route's success response, and stops documenting the one it infers.
 - `@ApiExcludeController()` leaves a controller out of the document, like the KOReader sync protocol, which only KOReader devices call.
 
 ## Calling a route
@@ -57,5 +59,7 @@ mutationFn: async (input: AdminSendEmailData["body"]) => {
 `Data` holds the route's `body`, its `path` and `query` parameters, and its `url`. A request that does not go through the functions, like the web app's token refresh, types its request and response with them, which keeps it in step with the route when the route's DTOs change.
 
 The DTO classes are exported under their own names too, such as `AuthSessionResponseDto`, for code that handles a shape several routes return.
+
+Errors are typed the same way: `AuthSignInWithEmailErrors` maps each status the route documents to its body, `ObokuErrorResponseDto` or `HttpErrorResponseDto`. An error body comes from the network, so check it against its zod schema before reading it, like the web app's `isApiError` does with `zObokuErrorResponseDto`.
 
 Responses and DTOs also have a zod schema named after their type with a `z` prefix, such as `zWebGetConfigResponse`, and a route's parameters have schemas such as `zAuthSignInWithEmailBody` and `zNotificationsArchivePath`. Validate API data at runtime with these instead of writing a schema: the web app checks the config it restores from local storage with `zWebGetConfigResponse`. File responses are the exception: their type is `Blob | File`, but the zod plugin generates `z.string()` for them.

@@ -16,6 +16,7 @@ import {
 import { JwtService } from "@nestjs/jwt"
 import { createHash, timingSafeEqual } from "node:crypto"
 import { AuthService } from "../auth/auth.service.js"
+import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { InstanceConfigService } from "./instance-config/instance-config.service.js"
@@ -211,6 +212,7 @@ export class AdminController {
     return this.adminCoversService.deleteAllCovers()
   }
 
+  @ApiObokuErrors()
   @Post("signup-links")
   async generateSignUpLink(
     @Body() body: GenerateSignUpLinkDto,

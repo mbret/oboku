@@ -2,6 +2,15 @@
 
 import * as z from 'zod';
 
+export const zHttpErrorResponseDto = z.object({
+    message: z.union([
+        z.string(),
+        z.array(z.string())
+    ]),
+    statusCode: z.number(),
+    error: z.string().optional()
+});
+
 export const zWebConfigResponseDto = z.object({
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_API_KEY: z.string().optional(),
@@ -15,6 +24,36 @@ export const zWebConfigResponseDto = z.object({
 export const zPublicServerSourceDto = z.object({
     id: z.string(),
     name: z.string()
+});
+
+export const zObokuErrorDto = z.object({
+    code: z.enum([
+        '0',
+        '2000',
+        '3000',
+        '3001',
+        '3002',
+        '3003',
+        '3004',
+        '3005',
+        '3006',
+        '4000',
+        '4001',
+        '4002',
+        '4003',
+        '4004',
+        '5000',
+        '6000',
+        '6001',
+        '7000',
+        '8000',
+        '8001',
+        '9000'
+    ])
+});
+
+export const zObokuErrorResponseDto = z.object({
+    errors: z.array(zObokuErrorDto)
 });
 
 export const zAuthProofPublicKeyDto = z.object({

@@ -1,45 +1,30 @@
+import { zHttpErrorResponseDto } from "@oboku/shared"
+
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return undefined
+  }
+}
+
 export const readResponseErrorMessage = async (
   response: Response,
   fallbackMessage: string,
 ) => {
-  const contentType = response.headers.get("content-type") ?? ""
   const text = await response.text()
 
   if (!text) {
     return fallbackMessage
   }
 
-  if (contentType.includes("application/json")) {
-    try {
-      const data: unknown = JSON.parse(text)
+  const apiError = zHttpErrorResponseDto.safeParse(parseJson(text))
 
-      if (
-        typeof data === "object" &&
-        data !== null &&
-        "message" in data &&
-        typeof data.message === "string"
-      ) {
-        return data.message
-      }
-
-      if (
-        typeof data === "object" &&
-        data !== null &&
-        "message" in data &&
-        Array.isArray(data.message)
-      ) {
-        const messages = data.message.filter(
-          (message): message is string => typeof message === "string",
-        )
-
-        if (messages.length > 0) {
-          return messages.join(", ")
-        }
-      }
-    } catch {
-      return text || fallbackMessage
-    }
+  if (!apiError.success) {
+    return text
   }
 
-  return text || fallbackMessage
+  const { message } = apiError.data
+
+  return Array.isArray(message) ? message.join(", ") : message
 }
