@@ -24,12 +24,18 @@ const POSITION = {
 
 const KOREADER_SYNC_CONNECTION_GC_TIME_MS = 5 * 60 * 1000
 
-const createApiError = (code: ObokuErrorCode) =>
+const createPushRefusal = ({
+  status,
+  data,
+}: {
+  status: number
+  data: unknown
+}) =>
   new HttpClientError(
     {
       response: new Response(),
-      data: { errors: [{ code }] },
-      status: 400,
+      data,
+      status,
       statusText: "",
       headers: {},
       config: {
@@ -38,6 +44,9 @@ const createApiError = (code: ObokuErrorCode) =>
     },
     undefined,
   )
+
+const createApiError = (code: ObokuErrorCode) =>
+  createPushRefusal({ status: 400, data: { errors: [{ code }] } })
 
 const renderConnectionHooks = ({
   pushRefusal,
@@ -102,17 +111,26 @@ describe("useEnsureKoreaderSyncConnection", () => {
   it.each([
     {
       refusal: "no connection",
-      code: ObokuErrorCode.ERROR_KOREADER_SYNC_NOT_CONNECTED,
+      createRefusal: () =>
+        createPushRefusal({
+          status: 404,
+          data: {
+            message: "No KOReader sync server connected",
+            error: "Not Found",
+            statusCode: 404,
+          },
+        }),
     },
     {
       refusal: "a key the server no longer accepts",
-      code: ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
+      createRefusal: () =>
+        createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     },
   ])(
     "answers that there is no connection once a push is refused for $refusal",
-    async ({ code }) => {
+    async ({ createRefusal }) => {
       const { result, sdkClient } = renderConnectionHooks({
-        pushRefusal: createApiError(code),
+        pushRefusal: createRefusal(),
       })
       await result.current.ensureConnection()
 

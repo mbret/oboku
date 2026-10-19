@@ -59,8 +59,6 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "No connector is configured for this link. Please set one up first."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED:
       return "The sync server did not accept this username and password."
-    case ObokuErrorCode.ERROR_KOREADER_SYNC_NOT_CONNECTED:
-      return "oboku is not connected to a KOReader sync server."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE:
       return "The sync server could not be reached, or did not answer like a KOReader sync server. Check the address."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:

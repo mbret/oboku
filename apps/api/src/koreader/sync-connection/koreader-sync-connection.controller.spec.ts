@@ -628,15 +628,8 @@ describe("KoreaderSyncConnectionController", () => {
   })
 
   it("answers that no server is connected when pushing or pulling without one", async () => {
-    for (const response of [
-      await pushPosition(POSITION),
-      await pullPosition(DOCUMENT),
-    ]) {
-      expect(response.status).toBe(400)
-      expect(response.body.errors).toEqual([
-        { code: ObokuErrorCode.ERROR_KOREADER_SYNC_NOT_CONNECTED },
-      ])
-    }
+    expect((await pushPosition(POSITION)).status).toBe(404)
+    expect((await pullPosition(DOCUMENT)).status).toBe(404)
   })
 
   it("reports the server refusing the key it was connected with", async () => {
