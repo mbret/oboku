@@ -1,7 +1,4 @@
-import type {
-  KoreaderSyncConnectionGetResponse,
-  KoreaderSyncConnectionPushPositionData,
-} from "@oboku/shared"
+import type { KoreaderSyncConnectionPushPositionData } from "@oboku/shared"
 import {
   catchError,
   concatMap,
@@ -16,6 +13,7 @@ import {
 } from "rxjs"
 import { getOrCreateInstallationId } from "../../common/browser"
 import { navigatorOnLine$ } from "../../common/network/onLine"
+import { isKoreaderSyncConnectionUnusableError } from "../../koreader/syncConnection/errors"
 import type { BookChange } from "./bookProgressPatches"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
@@ -47,14 +45,14 @@ const toKoreaderPosition = ({ book }: BookChange) => {
  * once the book closes, after its last write. It comes before dropping the
  * places KOReader cannot open, so such a move cancels the push pending before
  * it. Offline, the push waits for the network, keeping only the latest
- * position, and the connection is checked once it is sent: both can happen
- * after the reader closed.
+ * position. A push is skipped while the account is known to have no
+ * connection, which a push refused for that reason records.
  */
 export const syncBookmarkToKoreader = ({
-  ensureKoreaderSyncConnection,
+  isKoreaderSyncDisconnected,
   pushKoreaderPosition,
 }: {
-  ensureKoreaderSyncConnection: () => Promise<KoreaderSyncConnectionGetResponse>
+  isKoreaderSyncDisconnected: () => boolean
   pushKoreaderPosition: (position: KoreaderPosition) => Promise<unknown>
 }): OperatorFunction<BookChange | undefined, unknown> =>
   function pushBookmarkMoves(bookChange$) {
@@ -79,20 +77,18 @@ export const syncBookmarkToKoreader = ({
         )
       }),
       concatMap(function pushToKoreader(position) {
-        return from(ensureKoreaderSyncConnection()).pipe(
-          filter(function isKoreaderSyncConnected({ connection }) {
-            return connection !== null
+        if (isKoreaderSyncDisconnected()) return EMPTY
+
+        return from(
+          pushKoreaderPosition({
+            ...position,
+            deviceId: getOrCreateInstallationId(),
           }),
-          concatMap(function pushToConnectedServer() {
-            return from(
-              pushKoreaderPosition({
-                ...position,
-                deviceId: getOrCreateInstallationId(),
-              }),
-            )
-          }),
-          catchError(function logKoreaderSyncError(error) {
-            console.error(error)
+        ).pipe(
+          catchError(function logUnexpectedKoreaderSyncError(error) {
+            if (!isKoreaderSyncConnectionUnusableError(error)) {
+              console.error(error)
+            }
 
             return EMPTY
           }),

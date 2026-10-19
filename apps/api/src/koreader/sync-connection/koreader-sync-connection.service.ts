@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common"
+import { BadRequestException, Injectable } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
 import type { KoreaderSyncConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
@@ -186,7 +182,9 @@ export class KoreaderSyncConnectionService {
     const connection = await this.connectionPostgresService.findByUserId(userId)
 
     if (!connection) {
-      throw new NotFoundException("No KOReader sync server connected")
+      throw createConnectionError(
+        ObokuErrorCode.ERROR_KOREADER_SYNC_NOT_CONNECTED,
+      )
     }
 
     const key = await this.keyCipher.decrypt(connection.encrypted_key)

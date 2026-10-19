@@ -48,6 +48,7 @@ export const zObokuErrorDto = z.object({
         '7000',
         '8000',
         '8001',
+        '8002',
         '9000'
     ])
 });

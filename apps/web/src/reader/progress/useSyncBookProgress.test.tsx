@@ -1,6 +1,5 @@
 import {
   type BookDocType,
-  type KoreaderSyncConnectionDto,
   type KoreaderSyncConnectionPushPositionData,
   ReadingStateState,
 } from "@oboku/shared"
@@ -30,7 +29,7 @@ const mocks = await vi.hoisted(async function createSyncBookProgressMocks() {
   const state: {
     reader?: FakeReader
     book?: BookDocType
-    koreaderSyncConnection?: KoreaderSyncConnectionDto | null
+    isKoreaderSyncDisconnected?: boolean
   } = {}
 
   const incrementalBookModify = vi.fn(async function modifyStoredBook({
@@ -51,18 +50,11 @@ const mocks = await vi.hoisted(async function createSyncBookProgressMocks() {
     return { ok: true as const }
   })
 
-  const ensureKoreaderSyncConnection = vi.fn(
-    async function answerFakeConnection() {
-      return { connection: state.koreaderSyncConnection ?? null }
-    },
-  )
-
   return {
     state,
     onLine$,
     incrementalBookModify,
     pushKoreaderPosition,
-    ensureKoreaderSyncConnection,
   }
 })
 
@@ -87,12 +79,14 @@ vi.mock("../../books", function mockBooks() {
 })
 
 vi.mock(
-  "../../koreader/syncConnection/useKoreaderSyncConnection",
-  function mockKoreaderSyncConnection() {
+  "../../koreader/syncConnection/useIsKoreaderSyncDisconnected",
+  function mockIsKoreaderSyncDisconnected() {
     return {
-      useEnsureKoreaderSyncConnection:
-        function useMockEnsureKoreaderSyncConnection() {
-          return mocks.ensureKoreaderSyncConnection
+      useIsKoreaderSyncDisconnected:
+        function useMockIsKoreaderSyncDisconnected() {
+          return function isMockKoreaderSyncDisconnected() {
+            return !!mocks.state.isKoreaderSyncDisconnected
+          }
         },
     }
   },
@@ -114,11 +108,6 @@ import { useSyncBookProgress } from "./useSyncBookProgress"
 
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
-const KOREADER_SYNC_CONNECTION: KoreaderSyncConnectionDto = {
-  serverUrl: "https://sync.example.com",
-  username: "reader",
-  connectedAt: "2026-01-01T00:00:00.000Z",
-}
 
 const LAST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/8!/4/2/1:0)",
@@ -233,10 +222,9 @@ describe("useSyncBookProgress", () => {
     vi.useFakeTimers()
     mocks.incrementalBookModify.mockClear()
     mocks.pushKoreaderPosition.mockReset()
-    mocks.ensureKoreaderSyncConnection.mockReset()
     mocks.onLine$.next(true)
     mocks.state.book = book
-    mocks.state.koreaderSyncConnection = null
+    mocks.state.isKoreaderSyncDisconnected = false
   })
 
   afterEach(() => {
@@ -794,7 +782,7 @@ describe("useSyncBookProgress", () => {
       readingStateReachedProgressPercent: 0.97,
     })
   })
-  describe("with a KOReader sync server connected", () => {
+  describe("syncing with KOReader", () => {
     const bookReadOnPageBeforeLast: BookDocType = {
       ...book,
       readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
@@ -811,7 +799,6 @@ describe("useSyncBookProgress", () => {
     })
 
     beforeEach(() => {
-      mocks.state.koreaderSyncConnection = KOREADER_SYNC_CONNECTION
       mocks.state.book = bookReadOnPageBeforeLast
     })
 
@@ -877,28 +864,20 @@ describe("useSyncBookProgress", () => {
       expect(mocks.pushKoreaderPosition).not.toHaveBeenCalled()
     })
 
-    it("pushes a move saved before the connection is known", async () => {
-      const connectionAnswerMs = 10_000
-      mocks.ensureKoreaderSyncConnection.mockImplementationOnce(
-        function answerConnectionLate() {
-          return new Promise(function resolveLater(resolve) {
-            setTimeout(function answerConnected() {
-              resolve({ connection: KOREADER_SYNC_CONNECTION })
-            }, connectionAnswerMs)
-          })
-        },
-      )
+    it("stops pushing once the account is known to have no connection", async () => {
       const reader = createFakeReader()
-      const { unmount } = renderSyncBookProgress()
+      renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
       await vi.advanceTimersByTimeAsync(1000)
 
+      reader.navigation.readingPosition$.next(FIRST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000 + KOREADER_SYNC_DEBOUNCE_MS)
+      mocks.state.isKoreaderSyncDisconnected = true
       reader.navigation.readingPosition$.next(LAST_PAGE)
-      unmount()
-      await vi.advanceTimersByTimeAsync(connectionAnswerMs)
+      await vi.advanceTimersByTimeAsync(1000 + KOREADER_SYNC_DEBOUNCE_MS)
 
       expect(mocks.pushKoreaderPosition).toHaveBeenCalledExactlyOnceWith(
-        toPushedPosition(LAST_PAGE),
+        toPushedPosition(FIRST_PAGE),
       )
     })
 
@@ -980,7 +959,8 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("does not push the bookmark while no KOReader sync server is connected", async () => {
+  it("does not push the bookmark while the account is known to have no connection", async () => {
+    mocks.state.isKoreaderSyncDisconnected = true
     const reader = createFakeReader()
     renderSyncBookProgress()
     reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
