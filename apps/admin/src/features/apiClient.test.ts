@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { adminGetTokenStats, adminSendEmail } from "@oboku/shared"
+import {
+  adminGetTokenStats,
+  adminSendEmail,
+  ObokuErrorCode,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { apiClient } from "./apiClient"
 import { authState } from "./states"
@@ -109,45 +113,58 @@ describe("apiClient", () => {
   it.each([
     [
       "the API's message",
-      () =>
-        createJsonResponse(
-          {
-            message: "Subject is required",
-            error: "Bad Request",
-            statusCode: 400,
-          },
-          400,
-        ),
+      createJsonResponse(
+        {
+          message: "Subject is required",
+          error: "Bad Request",
+          statusCode: 400,
+        },
+        400,
+      ),
       "Subject is required",
     ],
     [
       "the API's validation messages",
-      () =>
-        createJsonResponse(
-          {
-            message: ["a is empty", "b is empty"],
-            error: "Bad Request",
-            statusCode: 400,
-          },
-          400,
-        ),
+      createJsonResponse(
+        {
+          message: ["a is empty", "b is empty"],
+          error: "Bad Request",
+          statusCode: 400,
+        },
+        400,
+      ),
       "a is empty, b is empty",
     ],
     [
+      "the message of an oboku error code",
+      createJsonResponse(
+        {
+          errors: [{ code: ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS }],
+        },
+        400,
+      ),
+      "An account already exists for this email.",
+    ],
+    [
+      "an oboku error code the admin app has no message for",
+      createJsonResponse(
+        { errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }] },
+        400,
+      ),
+      `Request failed with error code ${ObokuErrorCode.ERROR_MAGIC_LINK_INVALID}`,
+    ],
+    [
       "the status text of an empty body",
-      () => new Response(null, { status: 502, statusText: "Bad Gateway" }),
+      new Response(null, { status: 502, statusText: "Bad Gateway" }),
       "Bad Gateway",
     ],
     [
       "the status of an empty body without status text",
-      () => new Response(null, { status: 502 }),
+      new Response(null, { status: 502 }),
       "Request failed with status 502",
     ],
-  ])("fails with %s", async (_case, createResponse, message) => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn<typeof fetch>(async () => createResponse()),
-    )
+  ])("fails with %s", async (_case, response, message) => {
+    vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockResolvedValue(response))
 
     await expect(adminGetTokenStats({ client: apiClient })).rejects.toThrow(
       new Error(message),
