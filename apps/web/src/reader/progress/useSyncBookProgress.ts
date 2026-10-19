@@ -10,7 +10,6 @@ import {
 } from "rxjs"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
-import { useEnsureKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
 import { usePushKoreaderPosition } from "../../koreader/syncConnection/usePushKoreaderPosition"
 import { useReader } from "../states"
 import type { BookChange } from "./bookProgressPatches"
@@ -30,7 +29,6 @@ export const useSyncBookProgress = (
 ) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
-  const ensureKoreaderSyncConnection = useEnsureKoreaderSyncConnection()
   const { mutateAsync: pushKoreaderPosition } = usePushKoreaderPosition({
     meta: { suppressGlobalErrorToast: true },
   })
@@ -79,10 +77,7 @@ export const useSyncBookProgress = (
       )
 
       const koreaderSync$ = bookChange$.pipe(
-        syncBookmarkToKoreader({
-          ensureKoreaderSyncConnection,
-          pushKoreaderPosition,
-        }),
+        syncBookmarkToKoreader({ pushKoreaderPosition }),
       )
 
       merge(bookChange$, koreaderSync$).subscribe()
@@ -101,7 +96,6 @@ export const useSyncBookProgress = (
       incrementalBookModify,
       enabled,
       koreaderDocument,
-      ensureKoreaderSyncConnection,
       pushKoreaderPosition,
     ],
   )

@@ -1,19 +1,18 @@
-import { queryOptions, useQuery, useQueryClient } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { koreaderSyncConnectionGet } from "@oboku/shared"
-import { useCallback } from "react"
 import { useQueryOptionsWithAuthentication } from "../../auth"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { koreaderSyncConnectionQueryKey } from "./queryKeys"
 
 /**
- * Pushes take the connection from the cache, and nothing shows it while a
- * book is open: with the app's `gcTime` of 0, the answer would be dropped as
- * soon as it arrives and every push would ask the API again.
+ * Keeps the answer once nothing shows it, where the app's default `gcTime` is
+ * 0: the screens showing the connection open with it, and pushes read it
+ * without asking the API each time.
  */
 const KOREADER_SYNC_CONNECTION_GC_TIME_MS = 5 * 60 * 1000
 
-const createKoreaderSyncConnectionQueryOptions = ({
+export const createKoreaderSyncConnectionQueryOptions = ({
   httpClientApi,
   profileId,
 }: {
@@ -43,28 +42,5 @@ export const useKoreaderSyncConnection = () => {
         profileId: activeProfileId,
       }),
     ),
-  )
-}
-
-/**
- * The connection for code that runs outside rendering, such as a push: the
- * cached answer when there is one, otherwise the API's. The returned function
- * keeps working once the component that got it has unmounted.
- */
-export const useEnsureKoreaderSyncConnection = () => {
-  const queryClient = useQueryClient()
-  const httpClientApi = useHttpClientApi()
-  const activeProfileId = useActiveProfileId()
-
-  return useCallback(
-    function ensureKoreaderSyncConnection() {
-      return queryClient.ensureQueryData(
-        createKoreaderSyncConnectionQueryOptions({
-          httpClientApi,
-          profileId: activeProfileId,
-        }),
-      )
-    },
-    [queryClient, httpClientApi, activeProfileId],
   )
 }

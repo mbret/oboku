@@ -6,7 +6,6 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
-import { useEnsureKoreaderSyncConnection } from "./useKoreaderSyncConnection"
 import { usePushKoreaderPosition } from "./usePushKoreaderPosition"
 
 const CONNECTION: KoreaderSyncConnectionDto = {
@@ -48,16 +47,16 @@ const createPushRefusal = ({
 const createApiError = (code: ObokuErrorCode) =>
   createPushRefusal({ status: 400, data: { errors: [{ code }] } })
 
-const renderConnectionHooks = ({
-  pushRefusal,
+const renderPushKoreaderPosition = ({
+  connection = CONNECTION,
 }: {
-  pushRefusal?: HttpClientError
+  connection?: KoreaderSyncConnectionDto | null
 } = {}) => {
   const sdkClient = {
-    get: vi.fn().mockResolvedValue({ data: { connection: CONNECTION } }),
-    put: vi.fn().mockRejectedValue(pushRefusal),
+    get: vi.fn().mockResolvedValue({ data: { connection } }),
+    put: vi.fn().mockResolvedValue({ data: {} }),
   }
-  // test double: the hooks only call the generated client's `get` and `put`
+  // test double: the push only calls the generated client's `get` and `put`
   const client = { sdkClient } as unknown as HttpApiClientWeb
   const queryClient = new QueryClient({
     defaultOptions: { queries: { gcTime: 0 } },
@@ -71,39 +70,66 @@ const renderConnectionHooks = ({
     </QueryClientProvider>
   )
 
-  const { result } = renderHook(
-    () => ({
-      ensureConnection: useEnsureKoreaderSyncConnection(),
-      push: usePushKoreaderPosition(),
-    }),
-    { wrapper },
-  )
+  const { result } = renderHook(() => usePushKoreaderPosition(), { wrapper })
 
-  return { result, sdkClient }
+  return {
+    push: () => result.current.mutateAsync(POSITION),
+    sdkClient,
+  }
 }
 
-describe("useEnsureKoreaderSyncConnection", () => {
+describe("usePushKoreaderPosition", () => {
   afterEach(() => {
     cleanup()
     vi.useRealTimers()
   })
 
-  it("asks the API once, then answers from the cache for a few minutes", async () => {
+  it("pushes the position once the API says the account has a connection", async () => {
     vi.useFakeTimers()
-    const { result, sdkClient } = renderConnectionHooks()
-
-    await expect(result.current.ensureConnection()).resolves.toEqual({
-      connection: CONNECTION,
+    const connectionAnswerMs = 10_000
+    const { push, sdkClient } = renderPushKoreaderPosition()
+    sdkClient.get.mockImplementationOnce(function answerConnectionLate() {
+      return new Promise(function resolveLater(resolve) {
+        setTimeout(function answerConnected() {
+          resolve({ data: { connection: CONNECTION } })
+        }, connectionAnswerMs)
+      })
     })
-    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_CONNECTION_GC_TIME_MS - 1)
-    await expect(result.current.ensureConnection()).resolves.toEqual({
-      connection: CONNECTION,
-    })
 
-    expect(sdkClient.get).toHaveBeenCalledTimes(1)
+    const pushed = push()
+    await vi.advanceTimersByTimeAsync(connectionAnswerMs - 1)
+
+    expect(sdkClient.put).not.toHaveBeenCalled()
 
     await vi.advanceTimersByTimeAsync(1)
-    await result.current.ensureConnection()
+    await pushed
+
+    expect(sdkClient.put).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ body: POSITION }),
+    )
+  })
+
+  it("does not push when the account has no connection", async () => {
+    const { push, sdkClient } = renderPushKoreaderPosition({ connection: null })
+
+    await push()
+
+    expect(sdkClient.put).not.toHaveBeenCalled()
+  })
+
+  it("asks for the connection once, then takes it from the cache for a few minutes", async () => {
+    vi.useFakeTimers()
+    const { push, sdkClient } = renderPushKoreaderPosition()
+
+    await push()
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_CONNECTION_GC_TIME_MS - 1)
+    await push()
+
+    expect(sdkClient.get).toHaveBeenCalledOnce()
+    expect(sdkClient.put).toHaveBeenCalledTimes(2)
+
+    await vi.advanceTimersByTimeAsync(1)
+    await push()
 
     expect(sdkClient.get).toHaveBeenCalledTimes(2)
   })
@@ -127,34 +153,28 @@ describe("useEnsureKoreaderSyncConnection", () => {
         createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     },
   ])(
-    "answers that there is no connection once a push is refused for $refusal",
+    "stops pushing after a push refused for $refusal",
     async ({ createRefusal }) => {
-      const { result, sdkClient } = renderConnectionHooks({
-        pushRefusal: createRefusal(),
-      })
-      await result.current.ensureConnection()
+      const { push, sdkClient } = renderPushKoreaderPosition()
+      sdkClient.put.mockRejectedValueOnce(createRefusal())
 
-      await expect(result.current.push.mutateAsync(POSITION)).rejects.toThrow()
+      await expect(push()).rejects.toThrow()
+      await push()
 
-      await expect(result.current.ensureConnection()).resolves.toEqual({
-        connection: null,
-      })
-      expect(sdkClient.get).toHaveBeenCalledTimes(1)
+      expect(sdkClient.put).toHaveBeenCalledOnce()
+      expect(sdkClient.get).toHaveBeenCalledOnce()
     },
   )
 
-  it("keeps the connection after a push fails for another reason", async () => {
-    const { result } = renderConnectionHooks({
-      pushRefusal: createApiError(
-        ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
-      ),
-    })
-    await result.current.ensureConnection()
+  it("keeps pushing after a push fails for another reason", async () => {
+    const { push, sdkClient } = renderPushKoreaderPosition()
+    sdkClient.put.mockRejectedValueOnce(
+      createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE),
+    )
 
-    await expect(result.current.push.mutateAsync(POSITION)).rejects.toThrow()
+    await expect(push()).rejects.toThrow()
+    await push()
 
-    await expect(result.current.ensureConnection()).resolves.toEqual({
-      connection: CONNECTION,
-    })
+    expect(sdkClient.put).toHaveBeenCalledTimes(2)
   })
 })

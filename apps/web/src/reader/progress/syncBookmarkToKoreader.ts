@@ -1,7 +1,4 @@
-import type {
-  KoreaderSyncConnectionGetResponse,
-  KoreaderSyncConnectionPushPositionData,
-} from "@oboku/shared"
+import type { KoreaderSyncConnectionPushPositionData } from "@oboku/shared"
 import {
   catchError,
   concatMap,
@@ -47,14 +44,11 @@ const toKoreaderPosition = ({ book }: BookChange) => {
  * once the book closes, after its last write. It comes before dropping the
  * places KOReader cannot open, so such a move cancels the push pending before
  * it. Offline, the push waits for the network, keeping only the latest
- * position, and the connection is checked once it is sent: both can happen
- * after the reader closed.
+ * position, and the push can go out after the reader closed.
  */
 export const syncBookmarkToKoreader = ({
-  ensureKoreaderSyncConnection,
   pushKoreaderPosition,
 }: {
-  ensureKoreaderSyncConnection: () => Promise<KoreaderSyncConnectionGetResponse>
   pushKoreaderPosition: (position: KoreaderPosition) => Promise<unknown>
 }): OperatorFunction<BookChange | undefined, unknown> =>
   function pushBookmarkMoves(bookChange$) {
@@ -79,18 +73,12 @@ export const syncBookmarkToKoreader = ({
         )
       }),
       concatMap(function pushToKoreader(position) {
-        return from(ensureKoreaderSyncConnection()).pipe(
-          filter(function isKoreaderSyncConnected({ connection }) {
-            return connection !== null
+        return from(
+          pushKoreaderPosition({
+            ...position,
+            deviceId: getOrCreateInstallationId(),
           }),
-          concatMap(function pushToConnectedServer() {
-            return from(
-              pushKoreaderPosition({
-                ...position,
-                deviceId: getOrCreateInstallationId(),
-              }),
-            )
-          }),
+        ).pipe(
           catchError(function logKoreaderSyncError(error) {
             console.error(error)
 
