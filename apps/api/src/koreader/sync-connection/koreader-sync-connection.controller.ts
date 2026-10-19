@@ -1,9 +1,11 @@
-import { Body, Controller, Delete, Get, Put } from "@nestjs/common"
+import { Body, Controller, Delete, Get, Param, Put } from "@nestjs/common"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
 import { OkResponseDto } from "../../lib/ok-response.dto.js"
 import {
   ConnectKoreaderSyncServerDto,
   KoreaderSyncConnectionResponseDto,
+  KoreaderSyncPositionResponseDto,
+  PushKoreaderSyncPositionDto,
 } from "./koreader-sync-connection.dto.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
 
@@ -43,5 +45,31 @@ export class KoreaderSyncConnectionController {
     await this.koreaderSyncConnectionService.disconnect(user.userId)
 
     return { ok: true }
+  }
+
+  @Put("progress")
+  async pushPosition(
+    @WithAuthUser() user: AuthUser,
+    @Body() body: PushKoreaderSyncPositionDto,
+  ): Promise<OkResponseDto> {
+    await this.koreaderSyncConnectionService.pushPosition({
+      userId: user.userId,
+      position: body,
+    })
+
+    return { ok: true }
+  }
+
+  @Get("progress/:document")
+  async pullPosition(
+    @WithAuthUser() user: AuthUser,
+    @Param("document") document: string,
+  ): Promise<KoreaderSyncPositionResponseDto> {
+    return {
+      position: await this.koreaderSyncConnectionService.pullPosition({
+        userId: user.userId,
+        document,
+      }),
+    }
   }
 }
