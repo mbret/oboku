@@ -79,10 +79,10 @@ export class CoversController implements OnModuleInit {
     const response$ = defer(() =>
       this.coversService.getCoverForDelivery(objectKey, format).pipe(
         map(
-          (cover) =>
-            new StreamableFile(cover, {
+          (delivered) =>
+            new StreamableFile(delivered.cover, {
               disposition: `inline`,
-              type: "image/webp",
+              type: delivered.format,
             }),
         ),
       ),
