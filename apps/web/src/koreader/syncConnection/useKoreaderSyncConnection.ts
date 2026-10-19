@@ -19,6 +19,7 @@ export const useKoreaderSyncConnection = () => {
 
         return data
       },
+      gcTime: 5 * 60 * 1000,
     }),
   )
 }
