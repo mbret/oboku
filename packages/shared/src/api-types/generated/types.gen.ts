@@ -423,6 +423,55 @@ export type ConnectKoreaderSyncServerDto = {
     password: string;
 };
 
+export type PushKoreaderSyncPositionDto = {
+    /**
+     * The book's KOReader document: the digest of its file.
+     */
+    document: string;
+    /**
+     * The position in KOReader's form: an xpointer, or a page number for a book with pages.
+     */
+    progress: string;
+    /**
+     * How far into the book the position is, from 0 to 1.
+     */
+    percentage: number;
+    /**
+     * The oboku installation pushing it, sent as KOReader's `device_id`.
+     */
+    deviceId: string;
+};
+
+export type KoreaderSyncPositionDto = {
+    /**
+     * In KOReader's form: an xpointer, or a page number for a book with pages.
+     */
+    progress: string;
+    /**
+     * How far into the book the position is, from 0 to 1.
+     */
+    percentage: number;
+    /**
+     * The name of the device that pushed it, which KOReader shows. `null` when the server does not say.
+     */
+    device: string | null;
+    /**
+     * The id of the device that pushed it, `null` when it sent none.
+     */
+    deviceId: string | null;
+    /**
+     * When the server received it, `null` when the server does not say.
+     */
+    updatedAt: string | null;
+};
+
+export type KoreaderSyncPositionResponseDto = {
+    /**
+     * `null` while the server keeps no position for the book.
+     */
+    position: KoreaderSyncPositionDto | null;
+};
+
 export type AppGetHelloData = {
     body?: never;
     path?: never;
@@ -1161,3 +1210,31 @@ export type KoreaderSyncConnectionConnectResponses = {
 };
 
 export type KoreaderSyncConnectionConnectResponse = KoreaderSyncConnectionConnectResponses[keyof KoreaderSyncConnectionConnectResponses];
+
+export type KoreaderSyncConnectionPushPositionData = {
+    body: PushKoreaderSyncPositionDto;
+    path?: never;
+    query?: never;
+    url: '/koreader-sync-connection/progress';
+};
+
+export type KoreaderSyncConnectionPushPositionResponses = {
+    200: OkResponseDto;
+};
+
+export type KoreaderSyncConnectionPushPositionResponse = KoreaderSyncConnectionPushPositionResponses[keyof KoreaderSyncConnectionPushPositionResponses];
+
+export type KoreaderSyncConnectionPullPositionData = {
+    body?: never;
+    path: {
+        document: string;
+    };
+    query?: never;
+    url: '/koreader-sync-connection/progress/{document}';
+};
+
+export type KoreaderSyncConnectionPullPositionResponses = {
+    200: KoreaderSyncPositionResponseDto;
+};
+
+export type KoreaderSyncConnectionPullPositionResponse = KoreaderSyncConnectionPullPositionResponses[keyof KoreaderSyncConnectionPullPositionResponses];

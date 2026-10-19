@@ -16,6 +16,7 @@ import {
   KOREADER_SYNC_KEY_HEADER,
   KOREADER_SYNC_PROGRESS_ROUTE,
   KOREADER_SYNC_REGISTER_ROUTE,
+  toSyncTimestamp,
 } from "../protocol.js"
 import { createKoreaderSyncError } from "./errors.js"
 import {
@@ -23,11 +24,7 @@ import {
   WithKoreaderSyncUserId,
 } from "./koreader-sync-auth.guard.js"
 import { KoreaderSyncServerService } from "./koreader-sync-server.service.js"
-import {
-  parseProgressUpdate,
-  toProgressResponse,
-  toSyncTimestamp,
-} from "./progress.js"
+import { parseProgressUpdate, toProgressResponse } from "./progress.js"
 
 /**
  * The KOReader sync protocol as koreader-sync-server serves it, so KOReader,

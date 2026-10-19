@@ -405,6 +405,25 @@ export const zConnectKoreaderSyncServerDto = z.object({
     password: z.string().min(1)
 });
 
+export const zPushKoreaderSyncPositionDto = z.object({
+    document: z.string().regex(/^[A-Za-z0-9_]+$/),
+    progress: z.string().min(1),
+    percentage: z.number().gte(0).lte(1),
+    deviceId: z.string().min(1)
+});
+
+export const zKoreaderSyncPositionDto = z.object({
+    progress: z.string(),
+    percentage: z.number(),
+    device: z.string().nullable(),
+    deviceId: z.string().nullable(),
+    updatedAt: z.string().nullable()
+});
+
+export const zKoreaderSyncPositionResponseDto = z.object({
+    position: zKoreaderSyncPositionDto.nullable()
+});
+
 export const zAppGetHelloResponse = z.string();
 
 export const zWebGetConfigResponse = zWebConfigResponseDto;
@@ -594,3 +613,13 @@ export const zKoreaderSyncConnectionGetResponse = zKoreaderSyncConnectionRespons
 export const zKoreaderSyncConnectionConnectBody = zConnectKoreaderSyncServerDto;
 
 export const zKoreaderSyncConnectionConnectResponse = zKoreaderSyncConnectionResponseDto;
+
+export const zKoreaderSyncConnectionPushPositionBody = zPushKoreaderSyncPositionDto;
+
+export const zKoreaderSyncConnectionPushPositionResponse = zOkResponseDto;
+
+export const zKoreaderSyncConnectionPullPositionPath = z.object({
+    document: z.string()
+});
+
+export const zKoreaderSyncConnectionPullPositionResponse = zKoreaderSyncPositionResponseDto;
