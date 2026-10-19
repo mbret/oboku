@@ -47,9 +47,11 @@ const authenticatedFetch = async (request: Request) => {
   }
 
   if (!refreshPromise) {
-    refreshPromise = refreshAccessToken().finally(() => {
-      refreshPromise = null
-    })
+    refreshPromise = refreshAccessToken().finally(
+      function clearSettledRefresh() {
+        refreshPromise = null
+      },
+    )
   }
 
   try {
@@ -62,11 +64,6 @@ const authenticatedFetch = async (request: Request) => {
   return fetch(withAccessToken(replay))
 }
 
-/**
- * Sends a request of the generated API functions with the admin's access
- * token, refreshes the token and replays the request once on a 401, and fails
- * with an `Error` holding the API's message.
- */
 const sendGeneratedRequest = async (
   input: RequestInfo | URL,
   init?: RequestInit,

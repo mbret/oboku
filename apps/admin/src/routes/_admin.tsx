@@ -134,7 +134,9 @@ function AdminLayout() {
       return
     }
 
-    void adminGetSession({ client: apiClient }).catch(() => {})
+    void adminGetSession({ client: apiClient }).catch(
+      function ignoreFailedSessionCheck() {},
+    )
   }, [])
 
   if (!isAuthenticated) {
