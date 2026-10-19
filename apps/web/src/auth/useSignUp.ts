@@ -1,4 +1,4 @@
-import type { AuthRequestSignUpData } from "@oboku/shared"
+import { type AuthRequestSignUpData, authRequestSignUp } from "@oboku/shared"
 import { from } from "rxjs"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
@@ -9,6 +9,8 @@ export const useSignUp = () => {
 
   return useMutation$({
     mutationFn: (data: AuthRequestSignUpData["body"]) =>
-      from(httpClientApi.signUp(data)).pipe(withLock("signup")),
+      from(
+        authRequestSignUp({ client: httpClientApi.sdkClient, body: data }),
+      ).pipe(withLock("signup")),
   })
 }

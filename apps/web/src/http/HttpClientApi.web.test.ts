@@ -354,7 +354,9 @@ describe("HttpApiClientWeb auth refresh", () => {
     refreshDeferred.resolve(createRefreshResponse())
 
     await expect(refreshPromise).resolves.toBe(true)
-    await expect(signInPromise).resolves.toMatchObject({ status: 200 })
+    await expect(signInPromise).resolves.toMatchObject({
+      response: { status: 200 },
+    })
 
     expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
       REFRESH_URL,

@@ -1,27 +1,25 @@
 import type {
   ApiClient,
   AuthCompleteMagicLinkData,
-  AuthCompleteMagicLinkResponse,
-  AuthCompleteSignUpData,
-  AuthCompleteSignUpResponse,
-  AuthDeleteAccountResponse,
-  AuthLogoutData,
-  AuthLogoutResponse,
-  AuthRequestMagicLinkData,
-  AuthRequestMagicLinkResponse,
-  AuthRequestSignUpData,
-  AuthRequestSignUpResponse,
   AuthSignInWithEmailData,
-  AuthSignInWithEmailResponse,
   AuthSignInWithGoogleData,
-  AuthSignInWithGoogleResponse,
 } from "@oboku/shared"
-import { createApiClient } from "@oboku/shared"
+import {
+  authCompleteMagicLink,
+  authLogout,
+  authSignInWithEmail,
+  authSignInWithGoogle,
+  createApiClient,
+} from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
 import { withAuthCookiesLock } from "./authCookiesLock"
 import { persistProofKey, type StoredProofKey } from "../auth/proofKey"
-import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
+import {
+  type FetchConfig,
+  HttpClientError,
+  RefreshingHttpClient,
+} from "./httpClient.shared"
 import { refreshTokenRequest } from "./refreshTokenRequest"
 
 export type SessionStore = {
@@ -33,13 +31,6 @@ const refreshTokenWasRejected = (error: unknown) =>
   error instanceof HttpClientError &&
   (error.response?.status === 401 || error.response?.status === 403)
 
-/**
- * TODO: incomplete while the API calls move to the generated functions, one
- * module at a time. The methods below that still build a route's URL by hand
- * go as their module moves. This class then keeps only the transport the
- * generated client runs on: the session cookies, the refresh and replay on a
- * 401, the session store, and the cookies lock around sign-in.
- */
 export class HttpApiClientWeb extends RefreshingHttpClient {
   private sessionStore: SessionStore = {
     get: async () => null,
@@ -52,13 +43,15 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
   /**
    * Sends a request of the generated API functions through this client, so it
-   * carries the session cookies, is replayed once after a refresh on a 401,
-   * and fails with an `HttpClientError` holding the parsed body, like every
-   * other call. The body is read into a string so the replay can send it again.
+   * carries the session cookies, is replayed once after a refresh on a 401
+   * unless `useInterceptors` is `false`, and fails with an `HttpClientError`
+   * holding the parsed body, like every other call. The body is read into a
+   * string so the replay can send it again.
    */
   private sendGeneratedRequest = async (
     input: RequestInfo | URL,
     init?: RequestInit,
+    { useInterceptors }: Pick<FetchConfig, "useInterceptors"> = {},
   ): Promise<Response> => {
     const request = new Request(input, init)
     const { response, status, config } = await this.fetch(request.url, {
@@ -67,6 +60,7 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
       body: request.body ? await request.text() : undefined,
       signal: request.signal,
       unwrap: false,
+      useInterceptors,
     })
 
     if (status >= 400) {
@@ -78,6 +72,16 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
 
     return response
   }
+
+  /**
+   * The `fetch` to pass to the generated API functions of the routes that
+   * start or end a session, so their 401 reaches the caller instead of
+   * refreshing the session and replaying them.
+   */
+  private sendGeneratedRequestWithoutRefresh = (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => this.sendGeneratedRequest(input, init, { useInterceptors: false })
 
   /** The `client` to pass to the generated API functions. */
   sdkClient: ApiClient = createApiClient({
@@ -121,12 +125,10 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<
-        AuthCompleteMagicLinkResponse,
-        AuthCompleteMagicLinkData["body"]
-      >(`${API_URL}/auth/magic-link/complete`, {
+      authCompleteMagicLink({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
         body: data,
-        useInterceptors: false,
       }),
     )
 
@@ -135,12 +137,10 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<
-        AuthSignInWithEmailResponse,
-        AuthSignInWithEmailData["body"]
-      >(`${API_URL}/auth/signin/email`, {
+      authSignInWithEmail({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
         body: data,
-        useInterceptors: false,
       }),
     )
 
@@ -149,38 +149,12 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<
-        AuthSignInWithGoogleResponse,
-        AuthSignInWithGoogleData["body"]
-      >(`${API_URL}/auth/signin/google`, {
+      authSignInWithGoogle({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
         body: data,
-        useInterceptors: false,
       }),
     )
-
-  signUp = (data: AuthRequestSignUpData["body"]) =>
-    this.postOrThrow<AuthRequestSignUpResponse, AuthRequestSignUpData["body"]>(
-      `${API_URL}/auth/signup`,
-      {
-        body: data,
-      },
-    )
-
-  completeSignUp = (data: AuthCompleteSignUpData["body"]) =>
-    this.postOrThrow<
-      AuthCompleteSignUpResponse,
-      AuthCompleteSignUpData["body"]
-    >(`${API_URL}/auth/signup/complete`, {
-      body: data,
-    })
-
-  requestMagicLink = (data: AuthRequestMagicLinkData["body"]) =>
-    this.postOrThrow<
-      AuthRequestMagicLinkResponse,
-      AuthRequestMagicLinkData["body"]
-    >(`${API_URL}/auth/magic-link`, {
-      body: data,
-    })
 
   refreshToken = () => refreshTokenRequest(this, API_URL)
 
@@ -192,17 +166,10 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
    * session being killed.
    */
   logout = (sessionId: string) =>
-    this.postOrThrow<AuthLogoutResponse, AuthLogoutData["body"]>(
-      `${API_URL}/auth/logout`,
-      {
-        body: { session_id: sessionId },
-        useInterceptors: false,
-      },
-    )
-
-  deleteAccount = () =>
-    this.fetchOrThrow<AuthDeleteAccountResponse>(`${API_URL}/auth/account`, {
-      method: "DELETE",
+    authLogout({
+      client: this.sdkClient,
+      fetch: this.sendGeneratedRequestWithoutRefresh,
+      body: { session_id: sessionId },
     })
 
   private flagSessionForRelogin = async (sessionId: string) => {
