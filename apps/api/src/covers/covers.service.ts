@@ -1,5 +1,5 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { firstValueFrom, from, switchMap, tap } from "rxjs"
+import { firstValueFrom, from, map, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "../config/AppConfigService.js"
 import fs from "node:fs"
@@ -104,10 +104,11 @@ export class CoversService {
   }
 
   /**
-   * Cover bytes ready to be sent as `format`. Stored covers are already webp
-   * and capped at `COVERS_MAXIMUM_SIZE_FOR_STORAGE`, so they are delivered as
-   * they are and only a format or size mismatch pays for a re-encode. A format
-   * the service cannot produce is served as webp.
+   * Cover bytes ready to be sent as `format`, along with the format they are
+   * in: a format the service cannot produce is served as webp. Stored covers
+   * are already webp and capped at `COVERS_MAXIMUM_SIZE_FOR_STORAGE`, so they
+   * are delivered as they are and only a format or size mismatch pays for a
+   * re-encode.
    */
   getCoverForDelivery(id: string, format?: string) {
     const deliveryFormat = resolveDeliveryFormat(format)
@@ -119,8 +120,14 @@ export class CoversService {
         ? this.deliverStoredCover(cover, deliveryFormat)
         : this.getDeliverablePlaceholder(deliveryFormat)
 
+    const withDeliveryFormat = (cover: Uint8Array<ArrayBufferLike>) => ({
+      cover,
+      format: deliveryFormat,
+    })
+
     return from(this.backend.getCover(id)).pipe(
       switchMap(deliverStoredCoverOrPlaceholder),
+      map(withDeliveryFormat),
     )
   }
 
