@@ -11,8 +11,6 @@ import {
   map,
   merge,
   of,
-  pairwise,
-  startWith,
   Subject,
   takeUntil,
 } from "rxjs"
@@ -61,14 +59,8 @@ const toReachedProgress = ({ percentageEstimateOfBook }: PaginationProgress) =>
 const toPositionProgress = ({ percentageEstimateOfBook }: ReadingPosition) =>
   normalizeProgress(percentageEstimateOfBook)
 
-const isFinalReadingPosition = ({ status }: ReadingPosition) =>
+const isFoundReadingPosition = ({ status }: ReadingPosition) =>
   status === "success"
-
-/** A saved `null` is no place, so where a book without a bookmark opens is not a move. */
-const didBookmarkMove = ([previousLocation, location]: [
-  string | null,
-  string | null,
-]) => previousLocation !== null && previousLocation !== location
 
 const hasPatches = (patches: BookPatch[]) => patches.length > 0
 
@@ -84,6 +76,7 @@ const createReadingPositionPatch = ({
   koreaderDocument,
 }: SavedReadingPositionWithKoreaderForm): BookPatch =>
   function applyReadingPosition(old) {
+    const savedAt = new Date().toISOString()
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
@@ -93,6 +86,9 @@ const createReadingPositionPatch = ({
       old.readingStateCurrentBookmarkProgressPercent !==
         percentageEstimateOfBook ||
       old.readingStateCurrentState !== nextReadingState
+    const hadBookmark = old.readingStateCurrentBookmarkLocation !== null
+    const didBookmarkMove =
+      hadBookmark && old.readingStateCurrentBookmarkLocation !== cfi
 
     return {
       ...old,
@@ -101,8 +97,9 @@ const createReadingPositionPatch = ({
       readingStateCurrentBookmarkKoreaderProgress: koreaderProgress,
       readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
       readingStateCurrentState: nextReadingState,
-      ...(didReadingStateChange && {
-        readingStateUpdatedAt: new Date().toISOString(),
+      ...(didReadingStateChange && { readingStateUpdatedAt: savedAt }),
+      ...(didBookmarkMove && {
+        readingStateCurrentBookmarkLocationUpdatedAt: savedAt,
       }),
     }
   }
@@ -115,11 +112,6 @@ const createReachedProgressPatch = (reachedProgress: number): BookPatch =>
 const markBookAsOpened = (old: BookDocType): BookDocType => ({
   ...old,
   readingStateUpdatedAt: new Date().toISOString(),
-})
-
-const markBookmarkAsMoved = (old: BookDocType): BookDocType => ({
-  ...old,
-  readingStateCurrentBookmarkLocationUpdatedAt: new Date().toISOString(),
 })
 
 /**
@@ -142,13 +134,10 @@ export const useSyncBookProgress = (
   {
     enabled = true,
     koreaderDocument,
-    savedBookmarkLocation,
   }: {
     enabled?: boolean
     /** The KOReader document of the book's file, `undefined` until the book is loaded. */
     koreaderDocument: string | undefined
-    /** The bookmark as saved when the book opened, `undefined` until it is read. */
-    savedBookmarkLocation: string | null | undefined
   },
 ) => {
   const reader = useReader()
@@ -159,14 +148,17 @@ export const useSyncBookProgress = (
       if (!enabled) return
       if (!reader) return
       if (koreaderDocument === undefined) return
-      if (savedBookmarkLocation === undefined) return
 
       // Signals that the hook is unmounting. When it emits, takeUntil()
       // completes the progress streams downstream, which lets bufferTime
       // flush any buffered patch as one last write.
       const unmount$ = new Subject<void>()
 
-      const readingPositionPatch$ = reader.navigation.readingPosition$.pipe(
+      const foundReadingPosition$ = reader.navigation.readingPosition$.pipe(
+        filter(isFoundReadingPosition),
+      )
+
+      const readingPositionPatch$ = foundReadingPosition$.pipe(
         map(toSavedReadingPosition),
         distinctUntilChanged(isShallowEqual),
         map(function withKoreaderForm(position) {
@@ -180,22 +172,6 @@ export const useSyncBookProgress = (
         map(createReadingPositionPatch),
       )
 
-      const finalBookmarkLocation$ = reader.navigation.readingPosition$.pipe(
-        filter(isFinalReadingPosition),
-        map(function toBookmarkLocation({ cfi }) {
-          return cfi
-        }),
-      )
-
-      const bookmarkMovedPatch$ = finalBookmarkLocation$.pipe(
-        startWith(savedBookmarkLocation),
-        pairwise(),
-        filter(didBookmarkMove),
-        map(function toBookmarkMovedPatch() {
-          return markBookmarkAsMoved
-        }),
-      )
-
       const isSettledOnLoadedPage = (pagination: PaginationProgress) => {
         const lastVisibleSpineItem = reader.spineItemsManager.get(
           pagination.end.spineItemIndex,
@@ -206,8 +182,9 @@ export const useSyncBookProgress = (
         return isSettled(pagination) && !didLastVisiblePageFailToLoad
       }
 
-      const progressUntilPaginationSettles$ =
-        reader.navigation.readingPosition$.pipe(map(toPositionProgress))
+      const progressUntilPaginationSettles$ = foundReadingPosition$.pipe(
+        map(toPositionProgress),
+      )
 
       const progressOncePaginationSettles$ = reader.pagination.state$.pipe(
         filter(isSettledOnLoadedPage),
@@ -225,7 +202,6 @@ export const useSyncBookProgress = (
       const throttledProgressPatch$ = merge(
         of(markBookAsOpened),
         readingPositionPatch$,
-        bookmarkMovedPatch$,
         reachedProgressPatch$,
       ).pipe(
         takeUntil(unmount$),
@@ -264,13 +240,6 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [
-      reader,
-      bookId,
-      incrementalBookModify,
-      enabled,
-      koreaderDocument,
-      savedBookmarkLocation,
-    ],
+    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
   )
 }

@@ -16,21 +16,21 @@ export type BookDocType = CouchDBMeta &
     metadataUpdateStatus: null | "fetching"
     lastMetadataUpdateError: null | string
     /**
-     * Where the reader last was, as a cfi to reopen the book at. `null` when
-     * there is no such place: a book never opened, or marked finished or
-     * unread by hand, which reopens at its start.
+     * Where the reader last was, as a cfi to reopen the book at. Only a place
+     * the reader has found is saved: a book closed before the reader finds
+     * where a navigation leads keeps the place it had. `null` when there is
+     * no such place: a book never opened, or marked finished or unread by
+     * hand, which reopens at its start.
      */
     readingStateCurrentBookmarkLocation: string | null
     /**
-     * When readingStateCurrentBookmarkLocation last moved: a final position of
-     * the reader landed somewhere other than the previous one, which at
-     * opening is the saved bookmark, or the book was marked finished or unread
-     * by hand. Its KOReader progress and document move with it. Unlike
-     * readingStateUpdatedAt, opening the book at its bookmark leaves it, as
-     * does a progress recomputed for the same place: it tells how recent the
-     * position is. A book without a bookmark opens at its start without
-     * moving it. `null` on a book never read. Missing on a book last read
-     * before it existed.
+     * When readingStateCurrentBookmarkLocation last moved to another place,
+     * or the book was marked finished or unread by hand. Its KOReader
+     * progress and document move with it. Unlike readingStateUpdatedAt,
+     * opening the book at its bookmark leaves it, as does a progress
+     * recomputed for the same place: it tells how recent the position is. A
+     * book without a bookmark opens at its start without moving it. `null` on
+     * a book never read. Missing on a book last read before it existed.
      */
     readingStateCurrentBookmarkLocationUpdatedAt?: string | null
     /**
