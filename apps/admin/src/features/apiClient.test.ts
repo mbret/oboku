@@ -1,5 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
-import { adminGetTokenStats, adminSendEmail } from "@oboku/shared"
+import {
+  adminGetTokenStats,
+  adminSendEmail,
+  ObokuErrorCode,
+} from "@oboku/shared"
 import { config } from "@/config"
 import { apiClient } from "./apiClient"
 import { authState } from "./states"
@@ -132,6 +136,26 @@ describe("apiClient", () => {
           400,
         ),
       "a is empty, b is empty",
+    ],
+    [
+      "the message of an oboku error code",
+      () =>
+        createJsonResponse(
+          {
+            errors: [{ code: ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS }],
+          },
+          400,
+        ),
+      "An account already exists for this email.",
+    ],
+    [
+      "an oboku error code the admin app has no message for",
+      () =>
+        createJsonResponse(
+          { errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }] },
+          400,
+        ),
+      `Request failed with error code ${ObokuErrorCode.ERROR_MAGIC_LINK_INVALID}`,
     ],
     [
       "the status text of an empty body",
