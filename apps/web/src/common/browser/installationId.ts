@@ -1,6 +1,8 @@
-import { STORAGE_PREFIX_KEY } from "../storage/constants"
+import { STORAGE_PREFIX_KEY } from "../../storage/constants"
 
-const AUTH_INSTALLATION_ID_STORAGE_KEY = `${STORAGE_PREFIX_KEY}:auth_installation_id`
+// Named after its first use, sign-in. Renaming it would give every existing
+// installation a new id.
+const INSTALLATION_ID_STORAGE_KEY = `${STORAGE_PREFIX_KEY}:auth_installation_id`
 
 /**
  * Returns a stable identifier for this browser installation/profile.
@@ -15,9 +17,9 @@ const AUTH_INSTALLATION_ID_STORAGE_KEY = `${STORAGE_PREFIX_KEY}:auth_installatio
  * - clearing browser storage intentionally creates a new installation id
  * - the auth API receives this as `installation_id`
  */
-export const getOrCreateAuthInstallationId = () => {
+export const getOrCreateInstallationId = () => {
   const existingInstallationId = localStorage.getItem(
-    AUTH_INSTALLATION_ID_STORAGE_KEY,
+    INSTALLATION_ID_STORAGE_KEY,
   )
 
   if (existingInstallationId) {
@@ -26,9 +28,9 @@ export const getOrCreateAuthInstallationId = () => {
 
   const installationId = crypto.randomUUID()
 
-  localStorage.setItem(AUTH_INSTALLATION_ID_STORAGE_KEY, installationId)
+  localStorage.setItem(INSTALLATION_ID_STORAGE_KEY, installationId)
 
   return installationId
 }
 
-getOrCreateAuthInstallationId()
+getOrCreateInstallationId()
