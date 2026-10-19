@@ -94,17 +94,14 @@ const toPushedPosition = (position: KoreaderPosition) => ({
 })
 
 const holdNextPush = () => {
-  let answerPush = () => {}
+  const { promise: heldPush, resolve: answerHeldPush } =
+    Promise.withResolvers<void>()
 
   mocks.pushKoreaderPosition.mockImplementationOnce(function answerLater() {
-    return new Promise<void>(function waitForAnswer(resolve) {
-      answerPush = resolve
-    })
+    return heldPush
   })
 
-  return function answerHeldPush() {
-    answerPush()
-  }
+  return answerHeldPush
 }
 
 const toggleNetwork = () => {
@@ -148,7 +145,7 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("forgets a position once it is pushed", async () => {
+  it("pushes a position only once, even when the network comes back", async () => {
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
@@ -159,22 +156,32 @@ describe("useSyncKoreaderPositions", () => {
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
   })
 
-  it("pushes the positions of several books one after another", async () => {
-    const answerFirstPush = holdNextPush()
+  it("pushes the latest position of each book", async () => {
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     moveBookmarkTo(BOOK_B_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
 
-    expect(mocks.pushKoreaderPosition).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
+    expect(mocks.pushKoreaderPosition).toHaveBeenNthCalledWith(
+      1,
       toPushedPosition(BOOK_A_POSITION),
     )
-
-    answerFirstPush()
-    await vi.advanceTimersByTimeAsync(0)
-
-    expect(mocks.pushKoreaderPosition).toHaveBeenLastCalledWith(
+    expect(mocks.pushKoreaderPosition).toHaveBeenNthCalledWith(
+      2,
       toPushedPosition(BOOK_B_POSITION),
+    )
+  })
+
+  it("waits for each book's position on its own, whatever happens in another book", async () => {
+    renderSyncKoreaderPositions()
+    moveBookmarkTo(BOOK_A_POSITION)
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS - 1000)
+    moveBookmarkTo(BOOK_B_POSITION)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledExactlyOnceWith(
+      toPushedPosition(BOOK_A_POSITION),
     )
   })
 
@@ -218,6 +225,8 @@ describe("useSyncKoreaderPositions", () => {
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
 
     toggleNetwork()
     await vi.advanceTimersByTimeAsync(0)

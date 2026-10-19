@@ -36,6 +36,8 @@ export const usePushKoreaderPosition = (
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
+  // TODO: once the API reports a refused key on the connection, read it from
+  // the connection query instead of remembering it here.
   const refusedKeyConnectedAtRef = useRef<string | undefined>(undefined)
   const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
     httpClientApi,

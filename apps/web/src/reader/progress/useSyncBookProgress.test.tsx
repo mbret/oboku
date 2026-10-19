@@ -33,6 +33,12 @@ const mocks = vi.hoisted(function createSyncBookProgressMocks() {
     book?: BookDocType
   } = {}
 
+  const toStoredDocument = (storedBook: BookDocType) => ({
+    toJSON: function toStoredBook() {
+      return storedBook
+    },
+  })
+
   const incrementalBookModify = vi.fn(async function modifyStoredBook({
     mutationFn,
   }: {
@@ -42,10 +48,10 @@ const mocks = vi.hoisted(function createSyncBookProgressMocks() {
 
     state.book = mutationFn(state.book)
 
-    return state.book
+    return toStoredDocument(state.book)
   })
 
-  return { state, incrementalBookModify }
+  return { state, incrementalBookModify, toStoredDocument }
 })
 
 vi.mock("../states", function mockReaderState() {
@@ -773,31 +779,23 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentState: ReadingStateState.Reading,
     }
 
-    const collectMovedBookmarks = () => {
-      const movedBooks: BookDocType[] = []
-      const subscription = bookmarkMoved$.subscribe(
-        function collectMovedBook(movedBook) {
-          movedBooks.push(movedBook)
-        },
-      )
+    const observeMovedBookmarks = () => {
+      const onBookmarkMoved = vi.fn()
+      const subscription = bookmarkMoved$.subscribe(onBookmarkMoved)
 
-      onTestFinished(function stopCollectingMovedBookmarks() {
+      onTestFinished(function stopObservingMovedBookmarks() {
         subscription.unsubscribe()
       })
 
-      return movedBooks
+      return onBookmarkMoved
     }
-
-    const toBookmarkLocation = ({
-      readingStateCurrentBookmarkLocation,
-    }: BookDocType) => readingStateCurrentBookmarkLocation
 
     beforeEach(() => {
       mocks.state.book = bookReadOnPageBeforeLast
     })
 
     it("dispatches the book as saved after each move of its bookmark", async () => {
-      const movedBooks = collectMovedBookmarks()
+      const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
@@ -808,15 +806,18 @@ describe("useSyncBookProgress", () => {
       reader.navigation.readingPosition$.next(LAST_PAGE)
       await vi.advanceTimersByTimeAsync(1000)
 
-      expect(movedBooks.map(toBookmarkLocation)).toEqual([
-        FIRST_PAGE.cfi,
-        LAST_PAGE.cfi,
-      ])
-      expect(movedBooks.at(-1)).toBe(mocks.state.book)
+      expect(onBookmarkMoved).toHaveBeenCalledTimes(2)
+      expect(onBookmarkMoved).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
+        }),
+      )
+      expect(onBookmarkMoved).toHaveBeenLastCalledWith(mocks.state.book)
     })
 
     it("does not dispatch the place the book opens at", async () => {
-      const movedBooks = collectMovedBookmarks()
+      const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       renderSyncBookProgress()
 
@@ -824,11 +825,11 @@ describe("useSyncBookProgress", () => {
       await vi.advanceTimersByTimeAsync(1000)
 
       expect(mocks.incrementalBookModify).toHaveBeenCalled()
-      expect(movedBooks).toEqual([])
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
     })
 
     it("dispatches the last move once the book closes, after it is saved", async () => {
-      const movedBooks = collectMovedBookmarks()
+      const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       const { unmount } = renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
@@ -838,15 +839,17 @@ describe("useSyncBookProgress", () => {
       unmount()
       await vi.advanceTimersByTimeAsync(0)
 
-      expect(movedBooks.map(toBookmarkLocation)).toEqual([LAST_PAGE.cfi])
-      expect(movedBooks.at(-1)).toBe(mocks.state.book)
+      expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+        LAST_PAGE.cfi,
+      )
+      expect(onBookmarkMoved).toHaveBeenCalledExactlyOnceWith(mocks.state.book)
     })
 
     it("does not dispatch a move whose save fails", async () => {
       vi.spyOn(console, "error").mockImplementation(
         function silenceFailedWrite() {},
       )
-      const movedBooks = collectMovedBookmarks()
+      const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
@@ -862,7 +865,7 @@ describe("useSyncBookProgress", () => {
       reader.navigation.readingPosition$.next(LAST_PAGE)
       await vi.advanceTimersByTimeAsync(1000)
 
-      expect(movedBooks).toEqual([])
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
     })
 
     it("does not dispatch a move made only by a run RxDB discarded on a conflict", async () => {
@@ -874,7 +877,7 @@ describe("useSyncBookProgress", () => {
         readingStateCurrentBookmarkProgressPercent:
           LAST_PAGE.percentageEstimateOfBook,
       }
-      const movedBooks = collectMovedBookmarks()
+      const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
@@ -884,14 +887,14 @@ describe("useSyncBookProgress", () => {
           mutationFn(bookReadOnPageBeforeLast)
           mocks.state.book = mutationFn(bookMovedToLastPageElsewhere)
 
-          return mocks.state.book
+          return mocks.toStoredDocument(mocks.state.book)
         },
       )
 
       reader.navigation.readingPosition$.next(LAST_PAGE)
       await vi.advanceTimersByTimeAsync(1000)
 
-      expect(movedBooks).toEqual([])
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
     })
   })
 })

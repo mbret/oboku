@@ -27,6 +27,17 @@
 - **Name intermediate values** rather than commenting what a literal or expression means. A descriptive `const` is preferable to an inline value plus a comment.
 - **The goal:** a reader should understand *what* and *why* from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
 
+### Values flow through the code, they aren't written aside
+
+- **A value a later step needs reaches it as a value**: returned, mapped, or part of what the stream emits. Never assign an outer variable from one callback for another callback to read, like a `let` set inside an RxDB modifier and read in a `tap` once the write resolves. What it holds then depends on which callbacks ran, how many times and in what order (a retry, a resubscription, RxDB running a modifier again on a conflict), and none of that shows in the code.
+- **Derive state rather than writing it from several places.** In RxJS, rework these rather than extend them:
+    - a variable or holder set mid-stream and read downstream;
+    - a subject used as a state container and updated from `tap`s (`state.next(update(state.getValue()))`);
+    - a `tap` that writes state where a `map`, a `scan`, or an operator that keeps the latest value (`switchMap`, `debounceTime`, `groupBy`) could carry it.
+- **When an API hands a value only to its callback, change what flows instead of capturing it.** Decide the input up front and pass it in, or use what the call resolves with. `useSyncBookProgress` gives each save's time to its patches, then finds a bookmark move in the book the write resolves with.
+- **Tests too**: observe a stream or a callback with a `vi.fn()` and assert on its calls, and hold a promise open with `Promise.withResolvers()`.
+- Imperative code is sometimes clearer, and readability counts: a `scan` nobody can follow is no improvement. Derive where you can, and say why when you deliberately don't. The `rxjs-like-a-pro` skill in `.agents/skills/` goes deeper.
+
 ### Reuse before creating
 
 - Always look for existing components, hooks, utilities, routes, and data-access patterns before adding new ones.

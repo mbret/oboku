@@ -1,9 +1,19 @@
-import { catchError, concatMap, EMPTY, from, Subject, tap } from "rxjs"
+import {
+  catchError,
+  concatMap,
+  EMPTY,
+  filter,
+  from,
+  map,
+  Subject,
+  tap,
+} from "rxjs"
 import { useEffect } from "react"
+import { isDefined } from "reactjrx"
 import { useIncrementalBookModify } from "../../books"
 import { dispatchBookmarkMoved } from "../events"
 import { useReader } from "../states"
-import { type BookWrite, didWriteMoveBookmark } from "./bookProgressPatches"
+import { isBookmarkMovedAt } from "./bookProgressPatches"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
 
 const logSyncError = (error: unknown) => {
@@ -38,26 +48,25 @@ export const useSyncBookProgress = (
 
       observeBookProgressPatches({ reader, koreaderDocument, stop$: unmount$ })
         .pipe(
-          concatMap(function modifyBook(patch) {
-            let written: BookWrite | undefined
+          concatMap(function saveBookProgress(patch) {
+            const savedAt = new Date().toISOString()
 
             return from(
               incrementalBookModify({
                 doc: bookId,
-                mutationFn: function applyPatchNotingBooks(old) {
-                  // RxDB runs it again on a conflict: the last run is the one written.
-                  const book = patch(old)
-                  written = { old, book }
-
-                  return book
+                mutationFn: function applyPatchAsOfSave(old) {
+                  return patch(old, savedAt)
                 },
               }),
             ).pipe(
-              tap(function dispatchBookmarkMove() {
-                if (written && didWriteMoveBookmark(written)) {
-                  dispatchBookmarkMoved(written.book)
-                }
+              filter(isDefined),
+              map(function toSavedBook(document) {
+                return document.toJSON()
               }),
+              filter(function isBookmarkMovedBySave(book) {
+                return isBookmarkMovedAt(book, savedAt)
+              }),
+              tap(dispatchBookmarkMoved),
               catchError(logSyncError),
             )
           }),
