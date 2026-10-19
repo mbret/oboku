@@ -92,6 +92,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   )
 
   const isCollectionFromDataSource = !!collection?.linkType
+  const canRemoveCollection = !!collection && !isCollectionFromDataSource
 
   return (
     <>
@@ -226,7 +227,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
         <List>
           <ListItemButton
             onClick={() => onRemoveCollection(collectionId ?? ``)}
-            disabled={isCollectionFromDataSource}
+            disabled={!canRemoveCollection}
           >
             <ListItemIcon>
               <DeleteForeverRounded />
