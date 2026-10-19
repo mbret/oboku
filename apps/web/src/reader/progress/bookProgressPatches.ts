@@ -66,6 +66,13 @@ export const createReadingPositionPatch = ({
     }
   }
 
+export type BookWrite = { old: BookDocType; book: BookDocType }
+
+/** Only the reading position patch dates the bookmark, and only when it moves. */
+export const didWriteMoveBookmark = ({ old, book }: BookWrite) =>
+  book.readingStateCurrentBookmarkLocationUpdatedAt !==
+  old.readingStateCurrentBookmarkLocationUpdatedAt
+
 export const createReachedProgressPatch = (
   reachedProgress: number,
 ): BookPatch =>

@@ -1,10 +1,9 @@
-import type { BookDocType } from "@oboku/shared"
 import { catchError, concatMap, EMPTY, from, Subject, tap } from "rxjs"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
-import { recordBookmarkWriteForKoreader } from "../../koreader/syncConnection/koreaderPositionsToPush"
-import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { dispatchBookmarkMoved } from "../events"
 import { useReader } from "../states"
+import { type BookWrite, didWriteMoveBookmark } from "./bookProgressPatches"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
 
 const logSyncError = (error: unknown) => {
@@ -25,7 +24,6 @@ export const useSyncBookProgress = (
   },
 ) => {
   const reader = useReader()
-  const activeProfileId = useActiveProfileId()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
 
   useEffect(
@@ -41,7 +39,7 @@ export const useSyncBookProgress = (
       observeBookProgressPatches({ reader, koreaderDocument, stop$: unmount$ })
         .pipe(
           concatMap(function modifyBook(patch) {
-            let written: { old: BookDocType; book: BookDocType } | undefined
+            let written: BookWrite | undefined
 
             return from(
               incrementalBookModify({
@@ -55,13 +53,10 @@ export const useSyncBookProgress = (
                 },
               }),
             ).pipe(
-              tap(function recordBookmarkForKoreader() {
-                if (!written || !activeProfileId) return
-
-                recordBookmarkWriteForKoreader({
-                  profileId: activeProfileId,
-                  ...written,
-                })
+              tap(function dispatchBookmarkMove() {
+                if (written && didWriteMoveBookmark(written)) {
+                  dispatchBookmarkMoved(written.book)
+                }
               }),
               catchError(logSyncError),
             )
@@ -78,13 +73,6 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [
-      reader,
-      bookId,
-      incrementalBookModify,
-      enabled,
-      koreaderDocument,
-      activeProfileId,
-    ],
+    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
   )
 }
