@@ -21,7 +21,6 @@ import { markAllSeenMutationOptions } from "../notifications/inbox/useMarkAllNot
 import { archiveMutationOptions } from "../notifications/inbox/useArchiveNotification"
 import { useActiveProfileId } from "../profiles/active/activeProfileId"
 import { type HttpApiClientWeb, useHttpClientApi } from "../http"
-import { setKoreaderSyncConnectionQueryDefaults } from "../koreader/syncConnection/queryKeys"
 import { shouldPersistQueryState } from "./queryClient"
 import { persistBuster, persister } from "./persister"
 
@@ -109,7 +108,6 @@ const createClients = (
   })
 
   setNotificationMutationDefaults(queryClient, httpClientApi, profileId)
-  setKoreaderSyncConnectionQueryDefaults(queryClient)
 
   return queryClient
 }
