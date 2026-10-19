@@ -3,6 +3,9 @@ import type { ReadingPosition } from "@prose-reader/core"
 
 export type BookPatch = (old: BookDocType) => BookDocType
 
+/** A patch as written: the book before it and after it. */
+export type BookChange = { old: BookDocType; book: BookDocType }
+
 type SavedReadingPosition = Pick<
   ReadingPosition,
   "cfi" | "percentageEstimateOfBook"
