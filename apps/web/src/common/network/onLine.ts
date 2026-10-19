@@ -1,4 +1,4 @@
-import { fromEvent, map, merge, share, startWith } from "rxjs"
+import { fromEvent, map, merge, shareReplay, startWith } from "rxjs"
 
 const windowOnlineEvent$ = fromEvent(window, "online")
 const windowOfflineEvent$ = fromEvent(window, "offline")
@@ -9,5 +9,5 @@ export const navigatorOnLine$ = merge(
 ).pipe(
   startWith(null),
   map(() => navigator.onLine),
-  share(),
+  shareReplay({ bufferSize: 1, refCount: true }),
 )
