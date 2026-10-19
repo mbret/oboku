@@ -1,3 +1,4 @@
+import { koreaderSyncServerCreatePassword } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -10,7 +11,9 @@ export const useCreateKoreaderSyncServerPassword = () => {
 
   return useMutation({
     mutationFn: async function createKoreaderSyncServerPassword() {
-      const { data } = await httpClientApi.createKoreaderSyncServerPassword()
+      const { data } = await koreaderSyncServerCreatePassword({
+        client: httpClientApi.sdkClient,
+      })
 
       return data
     },

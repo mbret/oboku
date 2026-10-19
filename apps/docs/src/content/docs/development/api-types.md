@@ -37,7 +37,7 @@ const { data } = await notificationsList({ client: httpClientApi.sdkClient })
 
 The functions require a `client`. In the web app, `HttpApiClientWeb.sdkClient` sends the request through `HttpApiClientWeb`, so it carries the session cookies, is replayed after a refresh on a 401, and fails with an `HttpClientError` that holds the parsed body.
 
-The web app's notification calls use the functions so far. The other calls type their request and response with the route's types.
+In the web app, every request to a documented route goes through the functions, except the auth routes, which move next, the token refresh, which signs a DPoP proof for its request, and the cover images, which load as `<img>` URLs. The admin app's calls type their request and response with the route's types.
 
 ## Using the types
 

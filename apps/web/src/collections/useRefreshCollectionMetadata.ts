@@ -1,3 +1,4 @@
+import { collectionsRefreshMetadata } from "@oboku/shared"
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
@@ -49,9 +50,14 @@ export const useRefreshCollectionMetadata = () => {
                   ).pipe(
                     switchMap(() =>
                       from(
-                        httpClientApi.refreshCollectionMetadata({
-                          collectionId,
-                          providerCredentials,
+                        collectionsRefreshMetadata({
+                          client: httpClientApi.sdkClient,
+                          body: {
+                            collectionId,
+                            providerCredentials,
+                            // The API refreshes softly when `soft` is missing.
+                            soft: false,
+                          },
                         }),
                       ),
                     ),

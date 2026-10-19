@@ -4,9 +4,10 @@ import {
   useMutation,
   useQueryClient,
 } from "@tanstack/react-query"
-import type {
-  KoreaderSyncConnectionConnectData,
-  KoreaderSyncConnectionConnectResponse,
+import {
+  type KoreaderSyncConnectionConnectData,
+  type KoreaderSyncConnectionConnectResponse,
+  koreaderSyncConnectionConnect,
 } from "@oboku/shared"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -31,7 +32,10 @@ export const useConnectKoreaderSyncServer = (
     mutationFn: async function connectKoreaderSyncServer(
       request: KoreaderSyncConnectionConnectData["body"],
     ) {
-      const { data } = await httpClientApi.connectKoreaderSyncServer(request)
+      const { data } = await koreaderSyncConnectionConnect({
+        client: httpClientApi.sdkClient,
+        body: request,
+      })
 
       return data
     },
