@@ -260,7 +260,7 @@ export const ProfileScreen = () => {
           </ListItemButton>
           <ListItemButton
             onClick={() => {
-              navigate(`${ROUTES.PROFILE}/manage-storage`)
+              navigate(ROUTES.MANAGE_STORAGE)
             }}
           >
             <ListItemIcon>

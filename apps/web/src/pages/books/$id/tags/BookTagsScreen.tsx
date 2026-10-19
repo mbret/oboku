@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { AddRounded } from "@mui/icons-material"
 import { IconButton } from "@mui/material"
@@ -18,6 +18,7 @@ import { SelectableTagList } from "../../../../tags/tagList/SelectableTagList"
 import { openAddTagDialog } from "../../../../tags/AddTagDialog"
 import { EntitySelectionView } from "../../../../common/selection"
 import { notify, notifyError } from "../../../../notifications/toasts"
+import type { ROUTES } from "../../../../navigation/routes"
 
 const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
   tag.name ?? ""
@@ -25,12 +26,8 @@ const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
 const EMPTY_TAGS: DeepReadonlyObject<TagsDocType>[] = []
 const listStyle = { flex: 1 }
 
-type ScreenParams = {
-  id: string
-}
-
 export const BookTagsScreen = memo(function BookTagsScreen() {
-  const { id: bookId } = useParams<ScreenParams>()
+  const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_TAGS>>()
   const { data: tags = EMPTY_TAGS } = useTags()
   const { data: book } = useBook({ id: bookId })
   const { mutateAsync: addTagToBook } = useAddTagToBook()

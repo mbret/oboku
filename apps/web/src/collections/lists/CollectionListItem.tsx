@@ -15,7 +15,7 @@ import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollection } from "../useCollection"
 import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 import { useConfig } from "../../config/useConfig"
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
@@ -44,7 +44,7 @@ export const CollectionListItem = memo(
       <ListItem
         onClick={() => {
           if (item) {
-            navigate(ROUTES.COLLECTION_DETAILS.replace(":id", item._id))
+            navigate(generatePath(ROUTES.COLLECTION_DETAILS, { id: item._id }))
           }
         }}
         component="div"

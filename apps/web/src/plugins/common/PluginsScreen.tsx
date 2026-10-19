@@ -9,7 +9,7 @@ import {
 } from "@mui/material"
 import { plugins } from "../configure"
 import { ExtensionRounded } from "@mui/icons-material"
-import { Link } from "react-router"
+import { generatePath, Link } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import {
   useGetIsPluginEnabled,
@@ -37,7 +37,7 @@ export const PluginsScreen = memo(function PluginsScreen() {
               key={plugin.type}
               component={Link}
               disabled={!isPluginEnabled(plugin)}
-              to={ROUTES.PLUGINS_TYPE.replace(":type", plugin.type)}
+              to={generatePath(ROUTES.PLUGINS_TYPE, { type: plugin.type })}
             >
               <ListItemIcon>
                 {plugin.Icon ? <plugin.Icon /> : <ExtensionRounded />}

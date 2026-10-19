@@ -76,6 +76,12 @@
 - Call an API route through its generated function, with the app's client: `notificationsList({ client: httpClientApi.sdkClient })` in the web app, `adminListUsers({ client: apiClient })` in the admin app. A request that cannot use the functions, like the web app's token refresh, types its request and response with the route's generated types (`AuthRefreshTokenResponse`), so it follows the route when its DTOs change.
 - `apps/docs/src/content/docs/development/api-types.md` covers the workflow and the decorators a route needs when the plugin cannot infer its schema.
 
+### Web app routes
+
+- `ROUTES` in `apps/web/src/navigation/routes.ts` holds the pattern of every route the web app defines. A new route gets its entry there.
+- Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
+- Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
+
 ### Data migrations: RxDB is local, CouchDB is the data
 
 - **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).

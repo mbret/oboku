@@ -98,7 +98,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
         />
         {hasSession ? (
           <>
-            <Route path="/reader/:bookId" element={<ReaderScreen />} />
+            <Route path={ROUTES.READER} element={<ReaderScreen />} />
             <Route path="*" element={<AppShellRouteWrapper />}>
               <Route
                 path={`${ROUTES.PROBLEMS.slice(1)}`}
@@ -144,7 +144,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 />
               </Route>
               <Route
-                path="profile/manage-storage"
+                path={ROUTES.MANAGE_STORAGE.slice(1)}
                 element={<ManageStorageScreen />}
               />
               <Route

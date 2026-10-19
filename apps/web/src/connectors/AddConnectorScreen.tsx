@@ -1,9 +1,10 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { generatePath, type PathParam, useParams } from "react-router"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
+import { ROUTES } from "../navigation/routes"
 import type { SettingsConnectorType } from "@oboku/shared"
-import { CONNECTOR_DETAILS } from "./connectorDetails"
+import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { ConnectorForm as WebdavConnectorForm } from "../plugins/webdav/connectors/ConnectorForm"
 import { ConnectorForm as SynologyDriveConnectorForm } from "../plugins/synology-drive/connectors/ConnectorForm"
 import { ConnectorForm as ServerConnectorForm } from "../plugins/server/connectors/ConnectorForm"
@@ -23,20 +24,24 @@ export function getConnectorForm(type: SettingsConnectorType) {
 }
 
 export const AddConnectorScreen = memo(() => {
-  const { type } = useParams<{ type: SettingsConnectorType }>()
+  const { type } = useParams<PathParam<typeof ROUTES.PLUGINS_CONNECTORS_NEW>>()
   const { goBack } = useSafeGoBack()
 
-  if (!type) return null
+  if (!isSettingsConnectorType(type)) return null
 
   const details = CONNECTOR_DETAILS[type]
   const Form = getConnectorForm(type)
 
-  if (!details || !Form) return null
+  if (!Form) return null
 
   return (
     <Page>
       <TopBarNavigation title={`${details.label}: New connector`} />
-      <Form onSubmitSuccess={() => goBack(details.manageRoute)} />
+      <Form
+        onSubmitSuccess={() =>
+          goBack(generatePath(ROUTES.PLUGINS_TYPE, { type }))
+        }
+      />
     </Page>
   )
 })

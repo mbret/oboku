@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { useSignalValue } from "reactjrx"
 import { BookSelectionView } from "../../../../books/BookSelectionView"
@@ -19,13 +19,11 @@ import {
   selectIsLibraryUnlocked,
 } from "../../../../library/books/states"
 import { ProtectedContentGuard } from "../../../../library/ProtectedContentGuard"
-
-type ScreenParams = {
-  id: string
-}
+import type { ROUTES } from "../../../../navigation/routes"
 
 export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
-  const { id: collectionId } = useParams<ScreenParams>()
+  const { id: collectionId } =
+    useParams<PathParam<typeof ROUTES.COLLECTION_BOOKS>>()
   const { data: collection } = useCollection({ id: collectionId })
   const metadata = useCollectionComputedMetadata(collection)
   const { data: isCollectionProtected } = useIsCollectionProtected(collection)

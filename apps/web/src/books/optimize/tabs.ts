@@ -1,3 +1,4 @@
+import { generatePath } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 
 export const BOOK_OPTIMIZE_TAB_PARAM = "tab"
@@ -24,7 +25,7 @@ export const getBookOptimizeRoute = ({
   bookId: string
   tab?: BookOptimizeTab
 }) => {
-  const path = ROUTES.BOOK_OPTIMIZE.replace(":id", bookId)
+  const path = generatePath(ROUTES.BOOK_OPTIMIZE, { id: bookId })
 
   if (!tab) return path
 

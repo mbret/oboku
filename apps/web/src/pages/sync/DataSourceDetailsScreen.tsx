@@ -9,7 +9,8 @@ import {
 } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { useParams } from "react-router"
+import type { ROUTES } from "../../navigation/routes"
+import { type PathParam, useParams } from "react-router"
 import { useDataSource } from "../../dataSources/useDataSource"
 import { notify } from "../../notifications/toasts"
 import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceIncrementalModify"
@@ -56,7 +57,7 @@ function renderDataSourceEditForm<T extends DataSourceDocType["type"]>({
 }
 
 export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
-  const { id } = useParams<{ id: string }>()
+  const { id } = useParams<PathParam<typeof ROUTES.DATASOURCE_DETAILS>>()
   const { data: dataSource } = useDataSource(id)
   const { goBack } = useSafeGoBack()
   const { mutateAsync: modifyDataSource } = useDataSourceIncrementalModify()
