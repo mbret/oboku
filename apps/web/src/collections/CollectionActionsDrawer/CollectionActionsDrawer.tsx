@@ -91,6 +91,8 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
       COLLECTION_METADATA_LOCK_MN
   )
 
+  const isCollectionFromDataSource = !!collection?.linkType
+
   return (
     <>
       <Drawer
@@ -224,11 +226,19 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
         <List>
           <ListItemButton
             onClick={() => onRemoveCollection(collectionId ?? ``)}
+            disabled={isCollectionFromDataSource}
           >
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>
-            <ListItemText primary="Remove" />
+            <ListItemText
+              primary="Remove"
+              secondary={
+                isCollectionFromDataSource
+                  ? "Managed by its data source"
+                  : undefined
+              }
+            />
           </ListItemButton>
         </List>
       </Drawer>
