@@ -18,10 +18,10 @@ import {
   Text,
 } from "@mantine/core"
 import { useDisclosure } from "@mantine/hooks"
+import { adminGetSession } from "@oboku/shared"
 import { useIsAuthenticated } from "@/features/useIsAuthenticated"
 import { authState } from "@/features/states"
-import { authenticatedFetch } from "@/features/authenticatedFetch"
-import { config } from "@/config"
+import { apiClient } from "@/features/apiClient"
 import { SignInPage } from "../pages/SignInPage"
 
 export const Route = createFileRoute("/_admin")({
@@ -134,7 +134,7 @@ function AdminLayout() {
       return
     }
 
-    void authenticatedFetch(`${config.apiUrl}/admin/session`).catch(() => {})
+    void adminGetSession({ client: apiClient }).catch(() => {})
   }, [])
 
   if (!isAuthenticated) {

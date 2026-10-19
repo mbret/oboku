@@ -1,39 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type {
-  AdminRevokeTokensData,
-  AdminRevokeTokensResponse,
-} from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { type AdminRevokeTokensData, adminRevokeTokens } from "@oboku/shared"
+import { apiClient } from "../apiClient"
 import { tokenStatsQueryKey } from "./useTokenStats"
 
 export const useRevokeTokens = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: AdminRevokeTokensData["body"],
-    ): Promise<AdminRevokeTokensResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/tokens/revoke`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminRevokeTokensData["body"]) => {
+      const { data } = await adminRevokeTokens({
+        client: apiClient,
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(response, "Could not revoke tokens"),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async (data) => {
       notifications.show({

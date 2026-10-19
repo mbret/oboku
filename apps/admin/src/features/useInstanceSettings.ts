@@ -1,25 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
-import { config } from "@/config"
-import { authenticatedFetch } from "./authenticatedFetch"
-import type { AdminGetSettingsResponse } from "@oboku/shared"
+import { adminGetSettings } from "@oboku/shared"
+import { apiClient } from "./apiClient"
 
 export const instanceSettingsQueryKey = ["admin", "settings"] as const
 
 export const useInstanceSettings = () => {
   return useQuery({
     queryKey: instanceSettingsQueryKey,
-    queryFn: async (): Promise<AdminGetSettingsResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/settings`,
-      )
+    queryFn: async () => {
+      const { data } = await adminGetSettings({ client: apiClient })
 
-      if (!response.ok) {
-        throw new Error(
-          response.statusText || "Could not load instance settings",
-        )
-      }
-
-      return response.json()
+      return data
     },
   })
 }

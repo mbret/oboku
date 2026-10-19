@@ -1,40 +1,20 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import { config } from "@/config"
-import { authenticatedFetch } from "./authenticatedFetch"
-import { readResponseErrorMessage } from "./readResponseErrorMessage"
-import { instanceSettingsQueryKey } from "./useInstanceSettings"
-import type {
-  AdminUpdateSettingsData,
-  AdminUpdateSettingsResponse,
+import {
+  type AdminUpdateSettingsData,
+  adminUpdateSettings,
 } from "@oboku/shared"
+import { apiClient } from "./apiClient"
+import { instanceSettingsQueryKey } from "./useInstanceSettings"
 
 export const useUpdateInstanceSettings = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      body: AdminUpdateSettingsData["body"],
-    ): Promise<AdminUpdateSettingsResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/settings`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        },
-      )
+    mutationFn: async (body: AdminUpdateSettingsData["body"]) => {
+      const { data } = await adminUpdateSettings({ client: apiClient, body })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not update instance settings",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({
