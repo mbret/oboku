@@ -173,6 +173,7 @@ describe("useSyncBookProgress", () => {
   })
 
   afterEach(() => {
+    vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
@@ -726,5 +727,24 @@ describe("useSyncBookProgress", () => {
         LAST_PAGE.percentageEstimateOfBook,
       readingStateReachedProgressPercent: 0.97,
     })
+  })
+
+  it("keeps saving the reading position after a write fails", async () => {
+    mocks.incrementalBookModify.mockRejectedValueOnce(new Error("write failed"))
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(function silenceFailedWrite() {})
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(consoleError).toHaveBeenCalledOnce()
+    expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+      LAST_PAGE.cfi,
+    )
   })
 })
