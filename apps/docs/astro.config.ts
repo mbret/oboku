@@ -43,6 +43,7 @@ export default defineConfig({
       customCss: ["./src/styles/theme.css"],
       components: {
         PageTitle: "./src/components/PageTitle.astro",
+        SocialIcons: "./src/components/SocialIcons.astro",
       },
       routeMiddleware: "./src/routeData.ts",
       plugins: [starlightLinksValidator(), starlightLlmsTxt()],
