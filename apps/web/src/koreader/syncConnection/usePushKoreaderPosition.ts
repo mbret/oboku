@@ -5,21 +5,23 @@ import {
   useQueryClient,
 } from "@tanstack/react-query"
 import {
-  type KoreaderSyncConnectionGetResponse,
   type KoreaderSyncConnectionPushPositionData,
   koreaderSyncConnectionPushPosition,
 } from "@oboku/shared"
+import { useRef } from "react"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
-import { isKoreaderSyncConnectionUnusableError } from "./errors"
-import { koreaderSyncConnectionQueryKey } from "./queryKeys"
+import {
+  isKoreaderSyncConnectionMissingError,
+  isKoreaderSyncKeyRefusedError,
+} from "./errors"
 import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 /**
  * Pushes a position to the account's KOReader sync server, and does nothing
- * when the account has none. A push refused because the account has no
- * connection, or because the server no longer accepts its key, records that
- * there is none, so the pushes after it are skipped.
+ * when the account has none. A push refused because the connection is gone
+ * refreshes the cached connection. Once the server refuses the key, the pushes
+ * from this hook stop, since each would be refused the same way.
  */
 export const usePushKoreaderPosition = (
   options?: Pick<
@@ -34,6 +36,11 @@ export const usePushKoreaderPosition = (
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
+  const isKeyRefusedRef = useRef(false)
+  const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
+    httpClientApi,
+    profileId: activeProfileId,
+  })
 
   return useMutation({
     ...options,
@@ -41,11 +48,10 @@ export const usePushKoreaderPosition = (
     mutationFn: async function pushKoreaderPositionWhenConnected(
       position: KoreaderSyncConnectionPushPositionData["body"],
     ) {
+      if (isKeyRefusedRef.current) return
+
       const { connection } = await queryClient.ensureQueryData(
-        createKoreaderSyncConnectionQueryOptions({
-          httpClientApi,
-          profileId: activeProfileId,
-        }),
+        connectionQueryOptions,
       )
 
       if (!connection) return
@@ -55,13 +61,17 @@ export const usePushKoreaderPosition = (
         body: position,
       })
     },
-    onError: function forgetUnusableKoreaderSyncConnection(error) {
-      if (!isKoreaderSyncConnectionUnusableError(error)) return
+    onError: function noteUnusableKoreaderSyncConnection(error) {
+      if (isKoreaderSyncKeyRefusedError(error)) {
+        isKeyRefusedRef.current = true
+      }
 
-      queryClient.setQueryData<KoreaderSyncConnectionGetResponse>(
-        koreaderSyncConnectionQueryKey(activeProfileId),
-        { connection: null },
-      )
+      if (isKoreaderSyncConnectionMissingError(error)) {
+        return queryClient.invalidateQueries({
+          queryKey: connectionQueryOptions.queryKey,
+          refetchType: "all",
+        })
+      }
     },
   })
 }

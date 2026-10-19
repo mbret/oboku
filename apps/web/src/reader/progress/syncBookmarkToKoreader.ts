@@ -1,4 +1,7 @@
-import type { KoreaderSyncConnectionPushPositionData } from "@oboku/shared"
+import type {
+  BookDocType,
+  KoreaderSyncConnectionPushPositionData,
+} from "@oboku/shared"
 import {
   catchError,
   concatMap,
@@ -13,9 +16,11 @@ import {
 } from "rxjs"
 import { getOrCreateInstallationId } from "../../common/browser"
 import { navigatorOnLine$ } from "../../common/network/onLine"
-import type { BookChange } from "./bookProgressPatches"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
+
+/** A patch as written: the book before it and after it. */
+export type BookChange = { old: BookDocType; book: BookDocType }
 
 type KoreaderPosition = KoreaderSyncConnectionPushPositionData["body"]
 

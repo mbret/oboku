@@ -12,9 +12,11 @@ import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
 import { usePushKoreaderPosition } from "../../koreader/syncConnection/usePushKoreaderPosition"
 import { useReader } from "../states"
-import type { BookChange } from "./bookProgressPatches"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
-import { syncBookmarkToKoreader } from "./syncBookmarkToKoreader"
+import {
+  type BookChange,
+  syncBookmarkToKoreader,
+} from "./syncBookmarkToKoreader"
 
 const logSyncError = (error: unknown) => {
   console.error(error)

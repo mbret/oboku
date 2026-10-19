@@ -7,6 +7,7 @@ import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
 import { usePushKoreaderPosition } from "./usePushKoreaderPosition"
+import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 const CONNECTION: KoreaderSyncConnectionDto = {
   serverUrl: "https://sync.example.com",
@@ -47,7 +48,7 @@ const createPushRefusal = ({
 const createApiError = (code: ObokuErrorCode) =>
   createPushRefusal({ status: 400, data: { errors: [{ code }] } })
 
-const renderPushKoreaderPosition = ({
+const createPushHarness = ({
   connection = CONNECTION,
 }: {
   connection?: KoreaderSyncConnectionDto | null
@@ -70,12 +71,29 @@ const renderPushKoreaderPosition = ({
     </QueryClientProvider>
   )
 
-  const { result } = renderHook(() => usePushKoreaderPosition(), { wrapper })
+  const openReader = () => {
+    const { result } = renderHook(() => usePushKoreaderPosition(), { wrapper })
 
-  return {
-    push: () => result.current.mutateAsync(POSITION),
-    sdkClient,
+    return { push: () => result.current.mutateAsync(POSITION) }
   }
+
+  const getCachedConnection = () =>
+    queryClient.getQueryData(
+      createKoreaderSyncConnectionQueryOptions({
+        httpClientApi: client,
+        profileId: undefined,
+      }).queryKey,
+    )
+
+  return { sdkClient, openReader, getCachedConnection }
+}
+
+const renderPushKoreaderPosition = (
+  options?: Parameters<typeof createPushHarness>[0],
+) => {
+  const { sdkClient, openReader } = createPushHarness(options)
+
+  return { ...openReader(), sdkClient }
 }
 
 describe("usePushKoreaderPosition", () => {
@@ -134,37 +152,58 @@ describe("usePushKoreaderPosition", () => {
     expect(sdkClient.get).toHaveBeenCalledTimes(2)
   })
 
-  it.each([
-    {
-      refusal: "no connection",
-      createRefusal: () =>
-        createPushRefusal({
-          status: 404,
-          data: {
-            message: "No KOReader sync server connected",
-            error: "Not Found",
-            statusCode: 404,
-          },
-        }),
-    },
-    {
-      refusal: "a key the server no longer accepts",
-      createRefusal: () =>
-        createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
-    },
-  ])(
-    "stops pushing after a push refused for $refusal",
-    async ({ createRefusal }) => {
-      const { push, sdkClient } = renderPushKoreaderPosition()
-      sdkClient.put.mockRejectedValueOnce(createRefusal())
+  it("asks the API for the connection again after a push refused because it is gone", async () => {
+    const { sdkClient, openReader, getCachedConnection } = createPushHarness()
+    const { push } = openReader()
+    sdkClient.get
+      .mockResolvedValueOnce({ data: { connection: CONNECTION } })
+      .mockResolvedValue({ data: { connection: null } })
+    sdkClient.put.mockRejectedValueOnce(
+      createPushRefusal({
+        status: 404,
+        data: {
+          message: "No KOReader sync server connected",
+          error: "Not Found",
+          statusCode: 404,
+        },
+      }),
+    )
 
-      await expect(push()).rejects.toThrow()
-      await push()
+    await expect(push()).rejects.toThrow()
 
-      expect(sdkClient.put).toHaveBeenCalledOnce()
-      expect(sdkClient.get).toHaveBeenCalledOnce()
-    },
-  )
+    expect(getCachedConnection()).toEqual({ connection: null })
+
+    await push()
+
+    expect(sdkClient.get).toHaveBeenCalledTimes(2)
+    expect(sdkClient.put).toHaveBeenCalledOnce()
+  })
+
+  it("stops pushing once the server refuses the key, keeping the connection", async () => {
+    const { sdkClient, openReader, getCachedConnection } = createPushHarness()
+    const { push } = openReader()
+    sdkClient.put.mockRejectedValueOnce(
+      createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
+    )
+
+    await expect(push()).rejects.toThrow()
+    await push()
+
+    expect(sdkClient.put).toHaveBeenCalledOnce()
+    expect(getCachedConnection()).toEqual({ connection: CONNECTION })
+  })
+
+  it("pushes again from the next reader after the server refused the key", async () => {
+    const { sdkClient, openReader } = createPushHarness()
+    sdkClient.put.mockRejectedValueOnce(
+      createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
+    )
+
+    await expect(openReader().push()).rejects.toThrow()
+    await openReader().push()
+
+    expect(sdkClient.put).toHaveBeenCalledTimes(2)
+  })
 
   it("keeps pushing after a push fails for another reason", async () => {
     const { push, sdkClient } = renderPushKoreaderPosition()
