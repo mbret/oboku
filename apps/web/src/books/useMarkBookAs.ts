@@ -22,11 +22,16 @@ const finished: MarkedReadingState = {
   readingStateReachedProgressPercent: 1,
 }
 
-const createMarkBookAsPatch = (markedReadingState: MarkedReadingState) => ({
-  ...emptyBookmark,
-  ...markedReadingState,
-  readingStateUpdatedAt: new Date().toISOString(),
-})
+const createMarkBookAsPatch = (markedReadingState: MarkedReadingState) => {
+  const markedAt = new Date().toISOString()
+
+  return {
+    ...emptyBookmark,
+    ...markedReadingState,
+    readingStateCurrentBookmarkLocationUpdatedAt: markedAt,
+    readingStateUpdatedAt: markedAt,
+  }
+}
 
 type UseMarkBooksAsOptions = {
   onSuccess?: () => void

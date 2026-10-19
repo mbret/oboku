@@ -16,11 +16,23 @@ export type BookDocType = CouchDBMeta &
     metadataUpdateStatus: null | "fetching"
     lastMetadataUpdateError: null | string
     /**
-     * Where the reader last was, as a cfi to reopen the book at. `null` when
-     * there is no such place: a book never opened, or marked finished or
-     * unread by hand, which reopens at its start.
+     * Where the reader last was, as a cfi to reopen the book at. Only a place
+     * the reader has found is saved: a book closed before the reader finds
+     * where a navigation leads keeps the place it had. `null` when there is
+     * no such place: a book never opened, or marked finished or unread by
+     * hand, which reopens at its start.
      */
     readingStateCurrentBookmarkLocation: string | null
+    /**
+     * When readingStateCurrentBookmarkLocation last moved to another place,
+     * or the book was marked finished or unread by hand. Unlike
+     * readingStateUpdatedAt, opening the book at its bookmark leaves it, as
+     * does a progress recomputed for the same place: it tells how recent the
+     * position is. A book without a bookmark opens at its start without
+     * moving it. `null` on a book never read. Missing on a book last read
+     * before it existed.
+     */
+    readingStateCurrentBookmarkLocationUpdatedAt?: string | null
     /**
      * How far into the book readingStateCurrentBookmarkLocation is, from 0 to
      * 1, and `0` when it is `null`. They both represent the last user position:
@@ -66,12 +78,14 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateReachedProgressPercent?: number
     /**
-     * When the reading state last changed, by reading or by hand: the
-     * position, either progress, or readingStateCurrentState. Books are ordered by
-     * it for recent activity, together with the date it superseded (see
-     * {@link getReadingStateUpdatedTime}). `null` or missing when it has not
-     * changed since the book was added, or last changed before this field
-     * existed.
+     * When the book was last opened, read or marked by hand: opening it in
+     * the reader, or a change of the position, its progress, or
+     * readingStateCurrentState. Books are ordered by it for recent activity,
+     * together with the date it superseded (see
+     * {@link getReadingStateUpdatedTime}). For how recent the position is,
+     * read readingStateCurrentBookmarkLocationUpdatedAt. `null` or missing
+     * when none of this happened since the book was added, or last happened
+     * before this field existed.
      */
     readingStateUpdatedAt?: string | null
     /**
@@ -170,6 +184,7 @@ export const createBookDefaults = (): Omit<
   metadataUpdateStatus: null,
   readingStateCurrentState: ReadingStateState.NotStarted,
   ...emptyBookmark,
+  readingStateCurrentBookmarkLocationUpdatedAt: null,
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: null,
 })
@@ -177,11 +192,11 @@ export const createBookDefaults = (): Omit<
 const isDateSet = (date: string | null | undefined): date is string => !!date
 
 /**
- * When a book's reading state last changed, in milliseconds, or `undefined`
- * when it never did: the later of `readingStateUpdatedAt` and the deprecated
- * date it superseded, which older versions of the app still write. Nothing
- * backfilled `readingStateUpdatedAt`, so a book unchanged since it existed
- * only has the deprecated date.
+ * When a book was last opened, read or marked by hand, in milliseconds, or
+ * `undefined` when it never was: the later of `readingStateUpdatedAt` and
+ * the deprecated date it superseded, which older versions of the app still
+ * write. Nothing backfilled `readingStateUpdatedAt`, so a book unchanged
+ * since it existed only has the deprecated date.
  *
  * TODO(ask the maintainer, added 2026-09): this fallback and the deprecated
  * `readingStateCurrentBookmarkProgressUpdatedAt` are meant to be removed once
