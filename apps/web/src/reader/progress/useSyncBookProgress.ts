@@ -4,6 +4,12 @@ import { useIncrementalBookModify } from "../../books"
 import { useReader } from "../states"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
 
+const logSyncError = (error: unknown) => {
+  console.error(error)
+
+  return EMPTY
+}
+
 export const useSyncBookProgress = (
   bookId: string,
   {
@@ -31,13 +37,11 @@ export const useSyncBookProgress = (
       observeBookProgressPatches({ reader, koreaderDocument, stop$: unmount$ })
         .pipe(
           concatMap(function modifyBook(mutationFn) {
-            return from(incrementalBookModify({ doc: bookId, mutationFn }))
+            return from(
+              incrementalBookModify({ doc: bookId, mutationFn }),
+            ).pipe(catchError(logSyncError))
           }),
-          catchError(function logSyncError(error) {
-            console.error(error)
-
-            return EMPTY
-          }),
+          catchError(logSyncError),
         )
         .subscribe()
 
