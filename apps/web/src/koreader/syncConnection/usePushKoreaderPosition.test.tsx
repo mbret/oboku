@@ -79,15 +79,17 @@ const createPushHarness = ({
     }
   }
 
-  const getCachedConnection = () =>
-    queryClient.getQueryData(
-      createKoreaderSyncConnectionQueryOptions({
-        httpClientApi: client,
-        profileId: undefined,
-      }).queryKey,
-    )
+  const connectionQueryKey = createKoreaderSyncConnectionQueryOptions({
+    httpClientApi: client,
+    profileId: undefined,
+  }).queryKey
 
-  return { sdkClient, openReader, getCachedConnection }
+  const getCachedConnection = () => queryClient.getQueryData(connectionQueryKey)
+
+  const setCachedConnection = (connection: KoreaderSyncConnectionDto) =>
+    queryClient.setQueryData(connectionQueryKey, { connection })
+
+  return { sdkClient, openReader, getCachedConnection, setCachedConnection }
 }
 
 const renderPushKoreaderPosition = (
@@ -227,14 +229,19 @@ describe("usePushKoreaderPosition", () => {
     expect(getCachedConnection()).toEqual({ connection: CONNECTION })
   })
 
-  it("pushes again from the next reader after the server refused the key", async () => {
-    const { sdkClient, openReader } = createPushHarness()
+  it("pushes again once the account connects again after the server refused the key", async () => {
+    const { sdkClient, openReader, setCachedConnection } = createPushHarness()
+    const { push } = openReader()
     sdkClient.put.mockRejectedValueOnce(
       createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     )
 
-    await expect(openReader().push()).rejects.toThrow()
-    await openReader().push()
+    await expect(push()).rejects.toThrow()
+    setCachedConnection({
+      ...CONNECTION,
+      connectedAt: "2026-02-01T00:00:00.000Z",
+    })
+    await push()
 
     expect(sdkClient.put).toHaveBeenCalledTimes(2)
   })

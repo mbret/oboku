@@ -20,8 +20,8 @@ import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConne
 /**
  * Pushes a position to the account's KOReader sync server, and does nothing
  * when the account has none. A push refused because the connection is gone
- * refreshes the cached connection. Once the server refuses the key, the pushes
- * from this hook stop, since each would be refused the same way.
+ * refreshes the cached connection. Once the server refuses the key, pushes stop
+ * until the account connects again, since each would be refused the same way.
  */
 export const usePushKoreaderPosition = (
   options?: Pick<
@@ -36,7 +36,7 @@ export const usePushKoreaderPosition = (
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
-  const isKeyRefusedRef = useRef(false)
+  const refusedKeyConnectedAtRef = useRef<string | undefined>(undefined)
   const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
     httpClientApi,
     profileId: activeProfileId,
@@ -45,19 +45,22 @@ export const usePushKoreaderPosition = (
   return useMutation({
     ...options,
     networkMode: "online",
-    // Pushes held offline go out together on reconnect. One after another,
-    // the last one made is the one the server keeps.
+    // One at a time, in the order they were made: the last position made is
+    // the one the server keeps.
     scope: { id: "koreader-sync-push" },
     mutationFn: async function pushKoreaderPositionWhenConnected(
       position: KoreaderSyncConnectionPushPositionData["body"],
     ) {
-      if (isKeyRefusedRef.current) return
-
       const { connection } = await queryClient.ensureQueryData(
         connectionQueryOptions,
       )
 
       if (!connection) return
+
+      const isKeyRefused =
+        connection.connectedAt === refusedKeyConnectedAtRef.current
+
+      if (isKeyRefused) return
 
       await koreaderSyncConnectionPushPosition({
         client: httpClientApi.sdkClient,
@@ -66,7 +69,9 @@ export const usePushKoreaderPosition = (
     },
     onError: function noteUnusableKoreaderSyncConnection(error) {
       if (isKoreaderSyncKeyRefusedError(error)) {
-        isKeyRefusedRef.current = true
+        refusedKeyConnectedAtRef.current = queryClient.getQueryData(
+          connectionQueryOptions.queryKey,
+        )?.connection?.connectedAt
       }
 
       if (isKoreaderSyncConnectionMissingError(error)) {

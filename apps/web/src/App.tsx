@@ -44,6 +44,7 @@ import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 import { useSyncSentryUser } from "./debug/useSyncSentryUser"
+import { SyncKoreaderPositions } from "./koreader/syncConnection/SyncKoreaderPositions"
 
 // @todo move to sw
 LibArchive.init({
@@ -106,6 +107,7 @@ const App = memo(function App({
                 <SetupSecretDialog />
                 <AddTagDialog />
                 <AddCollectionDialog />
+                <SyncKoreaderPositions />
               </WithAuthentication>
               <AuthorizeActionDialog />
               <BackgroundReplication />
