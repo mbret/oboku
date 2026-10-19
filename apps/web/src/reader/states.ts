@@ -1,7 +1,7 @@
 import { signal, useSignalValue } from "reactjrx"
 import type { createAppReader } from "./useCreateReader"
 
-type ReaderInstance = ReturnType<typeof createAppReader>
+export type ReaderInstance = ReturnType<typeof createAppReader>
 
 export const readerSignal = signal<ReaderInstance | undefined>({
   key: "readerState",
