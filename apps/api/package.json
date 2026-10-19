@@ -33,7 +33,7 @@
     "@oboku/archive-metadata": "workspace:*",
     "@oboku/shared": "workspace:*",
     "@oboku/synology": "workspace:*",
-    "@prose-reader/archive-reader": "^25.1.0",
+    "@prose-reader/archive-reader": "^30.0.0",
     "@sentry/nestjs": "^11.6.0",
     "@sentry/profiling-node": "^11.6.0",
     "axios": "^1.20.0",

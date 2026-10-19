@@ -67,7 +67,7 @@ export const observeBookProgressPatches = ({
     map(function withKoreaderForm(position) {
       return {
         ...position,
-        koreaderProgress: reader.koreader.cfiToXPointer(position.cfi) ?? null,
+        koreaderProgress: reader.koreader.cfiToProgress(position.cfi) ?? null,
         koreaderDocument,
       }
     }),

@@ -20,7 +20,7 @@ type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
   pagination: { state$: Subject<FakePaginationResult> }
   spineItemsManager: { get: (spineItemIndex: number) => FakeSpineItem }
-  koreader: { cfiToXPointer: (cfi: string) => string | undefined }
+  koreader: { cfiToProgress: (cfi: string) => string | undefined }
 }
 
 const mocks = await vi.hoisted(async function createSyncBookProgressMocks() {
@@ -157,14 +157,15 @@ const book: BookDocType = {
   tags: [],
 }
 
-const toFakeXPointer = (cfi: string) => `/body/DocFragment[1]/body/p.${cfi}`
+const toFakeKoreaderProgress = (cfi: string) =>
+  `/body/DocFragment[1]/body/p.${cfi}`
 
 function createFakeReader({
   failedSpineItemIndexes = [],
-  cfisWithoutXPointer = [],
+  cfisWithoutKoreaderProgress = [],
 }: {
   failedSpineItemIndexes?: number[]
-  cfisWithoutXPointer?: string[]
+  cfisWithoutKoreaderProgress?: string[]
 } = {}) {
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
@@ -179,10 +180,10 @@ function createFakeReader({
       },
     },
     koreader: {
-      cfiToXPointer: function toFakeXPointerUnlessUnconvertible(cfi) {
-        return cfisWithoutXPointer.includes(cfi)
+      cfiToProgress: function toFakeKoreaderProgressUnlessUnconvertible(cfi) {
+        return cfisWithoutKoreaderProgress.includes(cfi)
           ? undefined
-          : toFakeXPointer(cfi)
+          : toFakeKoreaderProgress(cfi)
       },
     },
   }
@@ -393,7 +394,7 @@ describe("useSyncBookProgress", () => {
 
     expect(mocks.state.book).toMatchObject({
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         LAST_PAGE.cfi,
       ),
       readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
@@ -408,7 +409,7 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
       readingStateCurrentBookmarkProgressPercent:
         LAST_PAGE.percentageEstimateOfBook,
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         LAST_PAGE.cfi,
       ),
       readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
@@ -447,7 +448,7 @@ describe("useSyncBookProgress", () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         LAST_PAGE.cfi,
       ),
       readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
@@ -459,11 +460,13 @@ describe("useSyncBookProgress", () => {
     mocks.state.book = {
       ...book,
       readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         PAGE_BEFORE_LAST.cfi,
       ),
     }
-    const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
+    const reader = createFakeReader({
+      cfisWithoutKoreaderProgress: [LAST_PAGE.cfi],
+    })
     renderSyncBookProgress()
 
     reader.navigation.readingPosition$.next(LAST_PAGE)
@@ -481,7 +484,7 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
       readingStateCurrentBookmarkProgressPercent:
         LAST_PAGE.percentageEstimateOfBook,
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         LAST_PAGE.cfi,
       ),
       readingStateReachedProgressPercent: 0.97,
@@ -501,7 +504,7 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
       readingStateCurrentBookmarkProgressPercent:
         LAST_PAGE.percentageEstimateOfBook,
-      readingStateCurrentBookmarkKoreaderProgress: toFakeXPointer(
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
         LAST_PAGE.cfi,
       ),
       readingStateReachedProgressPercent: 0.97,
@@ -798,7 +801,7 @@ describe("useSyncBookProgress", () => {
 
     const toPushedPosition = (position: ReadingPosition) => ({
       document: KOREADER_DOCUMENT,
-      progress: toFakeXPointer(position.cfi),
+      progress: toFakeKoreaderProgress(position.cfi),
       percentage: position.percentageEstimateOfBook,
       deviceId: getOrCreateInstallationId(),
     })
@@ -856,7 +859,9 @@ describe("useSyncBookProgress", () => {
     })
 
     it("lets a move KOReader cannot open cancel the push pending before it", async () => {
-      const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
+      const reader = createFakeReader({
+        cfisWithoutKoreaderProgress: [LAST_PAGE.cfi],
+      })
       renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
       await vi.advanceTimersByTimeAsync(1000)
@@ -913,7 +918,9 @@ describe("useSyncBookProgress", () => {
     })
 
     it("does not push a bookmark KOReader cannot open", async () => {
-      const reader = createFakeReader({ cfisWithoutXPointer: [LAST_PAGE.cfi] })
+      const reader = createFakeReader({
+        cfisWithoutKoreaderProgress: [LAST_PAGE.cfi],
+      })
       renderSyncBookProgress()
       reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
       await vi.advanceTimersByTimeAsync(1000)
