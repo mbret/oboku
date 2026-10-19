@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { useSignalValue } from "reactjrx"
 import { BookSelectionView } from "../../../../../books/BookSelectionView"
@@ -17,13 +17,10 @@ import {
   selectIsLibraryUnlocked,
 } from "../../../../../library/books/states"
 import { ProtectedContentGuard } from "../../../../../library/ProtectedContentGuard"
-
-type ScreenParams = {
-  id: string
-}
+import type { ROUTES } from "../../../../../navigation/routes"
 
 export const TagBooksScreen = memo(function TagBooksScreen() {
-  const { id: tagId } = useParams<ScreenParams>()
+  const { id: tagId } = useParams<PathParam<typeof ROUTES.TAG_BOOKS>>()
   const { data: tag } = useTag(tagId)
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,

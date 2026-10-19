@@ -1,6 +1,6 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Navigate, useParams } from "react-router"
+import { Navigate, type PathParam, useParams } from "react-router"
 import { plugins } from "../../dataSources"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
@@ -11,9 +11,11 @@ import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 
 export const NewDataSourceScreen = memo(() => {
-  const { id } = useParams<{ id: string }>()
+  const { type } = useParams<PathParam<typeof ROUTES.SYNC_NEW_DATASOURCES>>()
   const { goBack } = useSafeGoBack()
-  const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
+  const plugin = plugins.find(
+    (p) => p.type.toLowerCase() === type?.toLowerCase(),
+  )
   const PluginForm = plugin?.DataSourceCreateForm
   const { mutate: createDataSource } = useCreateDataSource()
 

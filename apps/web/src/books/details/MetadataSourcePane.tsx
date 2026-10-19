@@ -17,7 +17,7 @@ import {
   LocalOfferOutlined,
 } from "@mui/icons-material"
 import { Fragment, type ReactNode, useMemo } from "react"
-import { Link } from "react-router"
+import { generatePath, Link } from "react-router"
 import { BOOK_METADATA_FIELDS_BY_SOURCE, directives } from "@oboku/shared"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
@@ -214,7 +214,7 @@ function SourceRow({
 }
 
 const buildSourceRoute = (bookId: string, source: string) =>
-  ROUTES.BOOK_METADATA_SOURCE.replace(":id", bookId).replace(":source", source)
+  generatePath(ROUTES.BOOK_METADATA_SOURCE, { id: bookId, source })
 
 /**
  * Synthetic row in the metadata sources list. Directives are not a real
