@@ -1,8 +1,22 @@
-import { catchError, concatMap, EMPTY, from, Subject } from "rxjs"
+import {
+  catchError,
+  concatMap,
+  EMPTY,
+  from,
+  map,
+  merge,
+  Subject,
+  share,
+} from "rxjs"
 import { useEffect } from "react"
 import { useIncrementalBookModify } from "../../books"
+import { usePushKoreaderPosition } from "../../koreader/syncConnection/usePushKoreaderPosition"
 import { useReader } from "../states"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
+import {
+  type BookChange,
+  syncBookmarkToKoreader,
+} from "./syncBookmarkToKoreader"
 
 const logSyncError = (error: unknown) => {
   console.error(error)
@@ -23,6 +37,9 @@ export const useSyncBookProgress = (
 ) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
+  const { mutateAsync: pushKoreaderPosition } = usePushKoreaderPosition({
+    meta: { suppressGlobalErrorToast: true },
+  })
 
   useEffect(
     function syncBookProgressWhileReading() {
@@ -34,16 +51,41 @@ export const useSyncBookProgress = (
       // complete, which flushes the patches still batched as one last write.
       const unmount$ = new Subject<void>()
 
-      observeBookProgressPatches({ reader, koreaderDocument, stop$: unmount$ })
-        .pipe(
-          concatMap(function modifyBook(mutationFn) {
-            return from(
-              incrementalBookModify({ doc: bookId, mutationFn }),
-            ).pipe(catchError(logSyncError))
-          }),
-          catchError(logSyncError),
-        )
-        .subscribe()
+      const bookChange$ = observeBookProgressPatches({
+        reader,
+        koreaderDocument,
+        stop$: unmount$,
+      }).pipe(
+        concatMap(function modifyBook(patch) {
+          let change: BookChange | undefined
+
+          return from(
+            incrementalBookModify({
+              doc: bookId,
+              mutationFn: function applyPatchNotingChange(old) {
+                // RxDB runs it again on a conflict: the last run is the one written.
+                const book = patch(old)
+                change = { old, book }
+
+                return book
+              },
+            }),
+          ).pipe(
+            map(function toBookChange() {
+              return change
+            }),
+            catchError(logSyncError),
+          )
+        }),
+        catchError(logSyncError),
+        share(),
+      )
+
+      const koreaderSync$ = bookChange$.pipe(
+        syncBookmarkToKoreader({ pushKoreaderPosition }),
+      )
+
+      merge(bookChange$, koreaderSync$).subscribe()
 
       return function flushBookProgressOnUnmount() {
         // Completing the sources rather than unsubscribing lets concatMap
@@ -53,6 +95,13 @@ export const useSyncBookProgress = (
         unmount$.complete()
       }
     },
-    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
+    [
+      reader,
+      bookId,
+      incrementalBookModify,
+      enabled,
+      koreaderDocument,
+      pushKoreaderPosition,
+    ],
   )
 }
