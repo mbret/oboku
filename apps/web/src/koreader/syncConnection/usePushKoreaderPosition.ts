@@ -45,6 +45,9 @@ export const usePushKoreaderPosition = (
   return useMutation({
     ...options,
     networkMode: "online",
+    // Pushes held offline go out together on reconnect. One after another,
+    // the last one made is the one the server keeps.
+    scope: { id: "koreader-sync-push" },
     mutationFn: async function pushKoreaderPositionWhenConnected(
       position: KoreaderSyncConnectionPushPositionData["body"],
     ) {
