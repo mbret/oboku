@@ -55,6 +55,14 @@ export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
+export function isCouchMissingDatabase(error: unknown): boolean {
+  return (
+    isCouchRequestError(error) &&
+    error.statusCode === 404 &&
+    error.reason === "Database does not exist."
+  )
+}
+
 export function isCouchConflict(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 409
 }

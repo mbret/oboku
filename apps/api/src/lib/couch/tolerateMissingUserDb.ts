@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common"
+import { isCouchMissingDatabase } from "./dbHelpers.js"
 
 const logger = new Logger("tolerateMissingUserDb")
 
@@ -24,19 +25,10 @@ export const tolerateMissingUserDb = async <T>(
   try {
     return await fn()
   } catch (err: unknown) {
-    if (isMissingDbError(err)) {
+    if (isCouchMissingDatabase(err)) {
       logger.warn(`User database vanished mid-iteration for ${email}, skipping`)
       return null
     }
     throw err
   }
-}
-
-const isMissingDbError = (err: unknown): boolean => {
-  if (typeof err !== "object" || err === null) return false
-  const candidate = err as { statusCode?: number; reason?: string }
-  return (
-    candidate.statusCode === 404 &&
-    candidate.reason === "Database does not exist."
-  )
 }
