@@ -1,29 +1,16 @@
 import { useQuery } from "@tanstack/react-query"
-import type { AdminListNotificationsResponse } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { adminListNotifications } from "@oboku/shared"
+import { apiClient } from "../apiClient"
 
 export const adminNotificationsQueryKey = ["admin", "notifications"] as const
 
 export const useAdminNotifications = () => {
   return useQuery({
     queryKey: adminNotificationsQueryKey,
-    queryFn: async (): Promise<AdminListNotificationsResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/notifications`,
-      )
+    queryFn: async () => {
+      const { data } = await adminListNotifications({ client: apiClient })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not load notifications",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
   })
 }

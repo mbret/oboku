@@ -35,27 +35,26 @@ Each route gets a function named after its controller and method, exported by `@
 const { data } = await notificationsList({ client: httpClientApi.sdkClient })
 ```
 
-The functions require a `client`. In the web app, `HttpApiClientWeb.sdkClient` sends the request through `HttpApiClientWeb`, so it carries the session cookies, is replayed after a refresh on a 401, and fails with an `HttpClientError` that holds the parsed body. The routes that start or end a session go through `HttpApiClientWeb`'s own methods instead, such as `signInWithEmail`, which skip that refresh.
+The functions require a `client`:
 
-In the web app, every request to a documented route goes through the functions, except the token refresh, which signs a DPoP proof for its request, and the cover images, which load as `<img>` URLs. The admin app's calls type their request and response with the route's types.
+- In the web app, `HttpApiClientWeb.sdkClient` sends the request through `HttpApiClientWeb`, so it carries the session cookies, is replayed after a refresh on a 401, and fails with an `HttpClientError` that holds the parsed body. The routes that start or end a session go through `HttpApiClientWeb`'s own methods instead, such as `signInWithEmail`, which skip that refresh.
+- In the admin app, `apiClient` sends the request with the admin's access token, is replayed after a refresh on a 401, and fails with an `Error` that holds the API's message. Sign-in and the token refresh pass the browser's `fetch` along with it, so they send no token.
+
+Every request to a documented route goes through the functions, except the web app's token refresh, which signs a DPoP proof for its request, and its cover images, which load as `<img>` URLs.
 
 ## Using the types
 
-Each route also gets types named after its controller and method. `AdminController.signIn` gives `AdminSignInData` and `AdminSignInResponse`, exported by `@oboku/shared`:
+Each route also gets types named after its controller and method. `AdminController.sendEmail` gives `AdminSendEmailData` and `AdminSendEmailResponse`, exported by `@oboku/shared`. A hook types its variables with them:
 
 ```ts
-mutationFn: async (values: AdminSignInData["body"]) => {
-  const response = await fetch(`${config.apiUrl}/admin/signin`, {
-    method: "POST",
-    body: JSON.stringify(values),
-    headers: { "Content-Type": "application/json" },
-  })
-  const data: AdminSignInResponse = await response.json()
-  // ...
-}
+mutationFn: async (input: AdminSendEmailData["body"]) => {
+  const { data } = await adminSendEmail({ client: apiClient, body: input })
+
+  return data
+},
 ```
 
-`Data` holds the route's `body`, its `path` and `query` parameters, and its `url`. Typing a call with them keeps it in step with the route when the route's DTOs change.
+`Data` holds the route's `body`, its `path` and `query` parameters, and its `url`. A request that does not go through the functions, like the web app's token refresh, types its request and response with them, which keeps it in step with the route when the route's DTOs change.
 
 The DTO classes are exported under their own names too, such as `AuthSessionResponseDto`, for code that handles a shape several routes return.
 

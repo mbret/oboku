@@ -1,24 +1,15 @@
 import { useMutation } from "@tanstack/react-query"
-import type { AdminMigrateResourceIdToLinkDataResponse } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "./authenticatedFetch"
+import { adminMigrateResourceIdToLinkData } from "@oboku/shared"
+import { apiClient } from "./apiClient"
 
 export const useMigrateResourceIdToLinkData = () => {
   return useMutation({
-    mutationFn: async (): Promise<AdminMigrateResourceIdToLinkDataResponse> => {
-      const res = await authenticatedFetch(
-        `${config.apiUrl}/admin/migrate-resource-id-to-link-data`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
-      if (!res.ok) {
-        throw new Error(res.statusText || "Migration failed")
-      }
-      return res.json()
+    mutationFn: async () => {
+      const { data } = await adminMigrateResourceIdToLinkData({
+        client: apiClient,
+      })
+
+      return data
     },
   })
 }

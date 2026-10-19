@@ -1,41 +1,22 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import type {
-  AdminCreateServerSourceData,
-  AdminCreateServerSourceResponse,
+import {
+  type AdminCreateServerSourceData,
+  adminCreateServerSource,
 } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { apiClient } from "../apiClient"
 import { serverSourcesQueryKey } from "./useServerSources"
 
 export const useCreateServerSource = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: AdminCreateServerSourceData["body"],
-    ): Promise<AdminCreateServerSourceResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync/sources`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminCreateServerSourceData["body"]) => {
+      const { data } = await adminCreateServerSource({
+        client: apiClient,
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not create server source",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({

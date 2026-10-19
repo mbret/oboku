@@ -1,12 +1,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type {
-  AdminUpdateServerSourceData,
-  AdminUpdateServerSourceResponse,
+import {
+  type AdminUpdateServerSourceData,
+  adminUpdateServerSource,
 } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { apiClient } from "../apiClient"
 import { serverSourcesQueryKey } from "./useServerSources"
 
 type UpdateServerSourceVariables = AdminUpdateServerSourceData["path"] &
@@ -16,31 +14,14 @@ export const useUpdateServerSource = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({
-      id,
-      ...input
-    }: UpdateServerSourceVariables): Promise<AdminUpdateServerSourceResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync/sources/${id}`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async ({ id, ...input }: UpdateServerSourceVariables) => {
+      const { data } = await adminUpdateServerSource({
+        client: apiClient,
+        path: { id },
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not update server source",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async (savedSource) => {
       await queryClient.invalidateQueries({

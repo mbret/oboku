@@ -1,35 +1,22 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query"
-import type {
-  AdminGetServerSyncResponse,
-  AdminSetWebDavCredentialsData,
-  AdminSetWebDavCredentialsResponse,
-  AdminUpdateServerSyncData,
-  AdminUpdateServerSyncResponse,
+import {
+  type AdminSetWebDavCredentialsData,
+  type AdminUpdateServerSyncData,
+  adminGetServerSync,
+  adminSetWebDavCredentials,
+  adminUpdateServerSync,
 } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { apiClient } from "../apiClient"
 
 const serverSyncQueryKey = ["admin", "server-sync"] as const
 
 export const useServerSync = () => {
   return useQuery({
     queryKey: serverSyncQueryKey,
-    queryFn: async (): Promise<AdminGetServerSyncResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync`,
-      )
+    queryFn: async () => {
+      const { data } = await adminGetServerSync({ client: apiClient })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not load server sync config",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
   })
 }
@@ -38,28 +25,13 @@ export const useUpdateServerSync = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: AdminUpdateServerSyncData["body"],
-    ): Promise<AdminUpdateServerSyncResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync`,
-        {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminUpdateServerSyncData["body"]) => {
+      const { data } = await adminUpdateServerSync({
+        client: apiClient,
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not update server sync config",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: serverSyncQueryKey })
@@ -71,28 +43,13 @@ export const useSetWebDavCredentials = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: AdminSetWebDavCredentialsData["body"],
-    ): Promise<AdminSetWebDavCredentialsResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync/credentials`,
-        {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminSetWebDavCredentialsData["body"]) => {
+      const { data } = await adminSetWebDavCredentials({
+        client: apiClient,
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not save WebDAV credentials",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: serverSyncQueryKey })

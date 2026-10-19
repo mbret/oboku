@@ -1,24 +1,15 @@
 import { useMutation } from "@tanstack/react-query"
-import type { AdminMigrateWebdavResourceIdsResponse } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "./authenticatedFetch"
+import { adminMigrateWebdavResourceIds } from "@oboku/shared"
+import { apiClient } from "./apiClient"
 
 export const useMigrateWebdavResourceIds = () => {
   return useMutation({
-    mutationFn: async (): Promise<AdminMigrateWebdavResourceIdsResponse> => {
-      const res = await authenticatedFetch(
-        `${config.apiUrl}/admin/migrate-webdav-resource-ids`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-        },
-      )
-      if (!res.ok) {
-        throw new Error(res.statusText || "Migration failed")
-      }
-      return res.json()
+    mutationFn: async () => {
+      const { data } = await adminMigrateWebdavResourceIds({
+        client: apiClient,
+      })
+
+      return data
     },
   })
 }
