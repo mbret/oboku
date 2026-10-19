@@ -7,7 +7,7 @@
     "start:dev": "vite --port 3003",
     "build": "vite build && tsc",
     "serve": "vite preview",
-    "test": "echo 1"
+    "test": "vitest run"
   },
   "dependencies": {
     "@mantine/core": "^9.7.1",
