@@ -5,13 +5,6 @@ import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { koreaderSyncConnectionQueryKey } from "./queryKeys"
 
-/**
- * Keeps the answer once nothing shows it, where the app's default `gcTime` is
- * 0: the screens showing the connection open with it, and pushes read it
- * without asking the API each time.
- */
-const KOREADER_SYNC_CONNECTION_GC_TIME_MS = 5 * 60 * 1000
-
 export const createKoreaderSyncConnectionQueryOptions = ({
   httpClientApi,
   profileId,
@@ -28,7 +21,7 @@ export const createKoreaderSyncConnectionQueryOptions = ({
 
       return data
     },
-    gcTime: KOREADER_SYNC_CONNECTION_GC_TIME_MS,
+    gcTime: 5 * 60 * 1000,
   })
 
 export const useKoreaderSyncConnection = () => {
