@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Put } from "@nestjs/common"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
 import { OkResponseDto } from "../../lib/ok-response.dto.js"
+import { ApiObokuErrors } from "../../lib/api-oboku-errors.decorator.js"
 import {
   ConnectKoreaderSyncServerDto,
   KoreaderSyncConnectionResponseDto,
@@ -25,6 +26,7 @@ export class KoreaderSyncConnectionController {
     }
   }
 
+  @ApiObokuErrors()
   @Put()
   async connect(
     @WithAuthUser() user: AuthUser,
@@ -47,6 +49,7 @@ export class KoreaderSyncConnectionController {
     return { ok: true }
   }
 
+  @ApiObokuErrors()
   @Put("progress")
   async pushPosition(
     @WithAuthUser() user: AuthUser,
@@ -60,6 +63,7 @@ export class KoreaderSyncConnectionController {
     return { ok: true }
   }
 
+  @ApiObokuErrors()
   @Get("progress/:document")
   async pullPosition(
     @WithAuthUser() user: AuthUser,

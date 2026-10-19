@@ -111,7 +111,7 @@ export class AuthService {
     const payload = ticket.getPayload()
 
     if (!payload) {
-      throw new BadRequestException({})
+      throw new BadRequestException()
     }
 
     const { email: rawEmail, email_verified } = payload

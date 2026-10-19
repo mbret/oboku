@@ -4,6 +4,18 @@ export type ClientOptions = {
     baseUrl: string;
 };
 
+export type HttpErrorResponseDto = {
+    /**
+     * Every failed constraint when the request does not validate.
+     */
+    message: string | Array<string>;
+    statusCode: number;
+    /**
+     * The status's name, such as `Bad Request`.
+     */
+    error?: string;
+};
+
 export type WebConfigResponseDto = {
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_API_KEY?: string;
@@ -17,6 +29,14 @@ export type WebConfigResponseDto = {
 export type PublicServerSourceDto = {
     id: string;
     name: string;
+};
+
+export type ObokuErrorDto = {
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000';
+};
+
+export type ObokuErrorResponseDto = {
+    errors: Array<ObokuErrorDto>;
 };
 
 export type AuthProofPublicKeyDto = {
@@ -479,6 +499,15 @@ export type AppGetHelloData = {
     url: '/';
 };
 
+export type AppGetHelloErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AppGetHelloError = AppGetHelloErrors[keyof AppGetHelloErrors];
+
 export type AppGetHelloResponses = {
     200: string;
 };
@@ -491,6 +520,15 @@ export type WebGetConfigData = {
     query?: never;
     url: '/web/config';
 };
+
+export type WebGetConfigErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type WebGetConfigError = WebGetConfigErrors[keyof WebGetConfigErrors];
 
 export type WebGetConfigResponses = {
     200: WebConfigResponseDto;
@@ -505,6 +543,15 @@ export type WebListServerSourcesData = {
     url: '/web/server-sources';
 };
 
+export type WebListServerSourcesErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type WebListServerSourcesError = WebListServerSourcesErrors[keyof WebListServerSourcesErrors];
+
 export type WebListServerSourcesResponses = {
     200: Array<PublicServerSourceDto>;
 };
@@ -517,6 +564,16 @@ export type AuthSignInWithEmailData = {
     query?: never;
     url: '/auth/signin/email';
 };
+
+export type AuthSignInWithEmailErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthSignInWithEmailError = AuthSignInWithEmailErrors[keyof AuthSignInWithEmailErrors];
 
 export type AuthSignInWithEmailResponses = {
     201: AuthSessionResponseDto;
@@ -531,6 +588,16 @@ export type AuthSignInWithGoogleData = {
     url: '/auth/signin/google';
 };
 
+export type AuthSignInWithGoogleErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthSignInWithGoogleError = AuthSignInWithGoogleErrors[keyof AuthSignInWithGoogleErrors];
+
 export type AuthSignInWithGoogleResponses = {
     201: AuthSessionResponseDto;
 };
@@ -543,6 +610,16 @@ export type AuthRequestSignUpData = {
     query?: never;
     url: '/auth/signup';
 };
+
+export type AuthRequestSignUpErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthRequestSignUpError = AuthRequestSignUpErrors[keyof AuthRequestSignUpErrors];
 
 export type AuthRequestSignUpResponses = {
     201: EmptyResponseDto;
@@ -557,6 +634,16 @@ export type AuthCompleteSignUpData = {
     url: '/auth/signup/complete';
 };
 
+export type AuthCompleteSignUpErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthCompleteSignUpError = AuthCompleteSignUpErrors[keyof AuthCompleteSignUpErrors];
+
 export type AuthCompleteSignUpResponses = {
     201: CompleteSignUpResponseDto;
 };
@@ -570,6 +657,15 @@ export type AuthRequestMagicLinkData = {
     url: '/auth/magic-link';
 };
 
+export type AuthRequestMagicLinkErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthRequestMagicLinkError = AuthRequestMagicLinkErrors[keyof AuthRequestMagicLinkErrors];
+
 export type AuthRequestMagicLinkResponses = {
     201: EmptyResponseDto;
 };
@@ -582,6 +678,16 @@ export type AuthCompleteMagicLinkData = {
     query?: never;
     url: '/auth/magic-link/complete';
 };
+
+export type AuthCompleteMagicLinkErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthCompleteMagicLinkError = AuthCompleteMagicLinkErrors[keyof AuthCompleteMagicLinkErrors];
 
 export type AuthCompleteMagicLinkResponses = {
     201: AuthSessionResponseDto;
@@ -598,6 +704,15 @@ export type AuthRefreshTokenData = {
     url: '/auth/token';
 };
 
+export type AuthRefreshTokenErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthRefreshTokenError = AuthRefreshTokenErrors[keyof AuthRefreshTokenErrors];
+
 export type AuthRefreshTokenResponses = {
     201: EmptyResponseDto;
 };
@@ -611,6 +726,15 @@ export type AuthLogoutData = {
     url: '/auth/logout';
 };
 
+export type AuthLogoutErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthLogoutError = AuthLogoutErrors[keyof AuthLogoutErrors];
+
 export type AuthLogoutResponses = {
     201: EmptyResponseDto;
 };
@@ -623,6 +747,15 @@ export type AuthDeleteAccountData = {
     query?: never;
     url: '/auth/account';
 };
+
+export type AuthDeleteAccountErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AuthDeleteAccountError = AuthDeleteAccountErrors[keyof AuthDeleteAccountErrors];
 
 export type AuthDeleteAccountResponses = {
     200: EmptyResponseDto;
@@ -644,6 +777,15 @@ export type CoversFindBookCoverData = {
     url: '/covers/books/{bookId}';
 };
 
+export type CoversFindBookCoverErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type CoversFindBookCoverError = CoversFindBookCoverErrors[keyof CoversFindBookCoverErrors];
+
 export type CoversFindBookCoverResponses = {
     200: Blob | File;
 };
@@ -664,6 +806,15 @@ export type CoversFindCollectionCoverData = {
     url: '/covers/collections/{collectionId}';
 };
 
+export type CoversFindCollectionCoverErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type CoversFindCollectionCoverError = CoversFindCollectionCoverErrors[keyof CoversFindCollectionCoverErrors];
+
 export type CoversFindCollectionCoverResponses = {
     200: Blob | File;
 };
@@ -676,6 +827,15 @@ export type AdminSignInData = {
     query?: never;
     url: '/admin/signin';
 };
+
+export type AdminSignInErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminSignInError = AdminSignInErrors[keyof AdminSignInErrors];
 
 export type AdminSignInResponses = {
     201: AdminTokensResponseDto;
@@ -690,6 +850,15 @@ export type AdminRefreshTokenData = {
     url: '/admin/refresh';
 };
 
+export type AdminRefreshTokenErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminRefreshTokenError = AdminRefreshTokenErrors[keyof AdminRefreshTokenErrors];
+
 export type AdminRefreshTokenResponses = {
     201: AdminTokensResponseDto;
 };
@@ -702,6 +871,15 @@ export type AdminMigrateWebdavConnectorsData = {
     query?: never;
     url: '/admin/migrate-webdav-connectors';
 };
+
+export type AdminMigrateWebdavConnectorsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminMigrateWebdavConnectorsError = AdminMigrateWebdavConnectorsErrors[keyof AdminMigrateWebdavConnectorsErrors];
 
 export type AdminMigrateWebdavConnectorsResponses = {
     201: WebdavConnectorsMigrationResponseDto;
@@ -716,6 +894,15 @@ export type AdminMigrateWebdavResourceIdsData = {
     url: '/admin/migrate-webdav-resource-ids';
 };
 
+export type AdminMigrateWebdavResourceIdsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminMigrateWebdavResourceIdsError = AdminMigrateWebdavResourceIdsErrors[keyof AdminMigrateWebdavResourceIdsErrors];
+
 export type AdminMigrateWebdavResourceIdsResponses = {
     201: ResourceIdMigrationResponseDto;
 };
@@ -728,6 +915,15 @@ export type AdminMigrateResourceIdToLinkDataData = {
     query?: never;
     url: '/admin/migrate-resource-id-to-link-data';
 };
+
+export type AdminMigrateResourceIdToLinkDataErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminMigrateResourceIdToLinkDataError = AdminMigrateResourceIdToLinkDataErrors[keyof AdminMigrateResourceIdToLinkDataErrors];
 
 export type AdminMigrateResourceIdToLinkDataResponses = {
     201: ResourceIdMigrationResponseDto;
@@ -742,6 +938,15 @@ export type AdminMigrateCollectionCoverKeysData = {
     url: '/admin/migrate-collection-cover-keys';
 };
 
+export type AdminMigrateCollectionCoverKeysErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminMigrateCollectionCoverKeysError = AdminMigrateCollectionCoverKeysErrors[keyof AdminMigrateCollectionCoverKeysErrors];
+
 export type AdminMigrateCollectionCoverKeysResponses = {
     201: CollectionCoverKeysMigrationResponseDto;
 };
@@ -754,6 +959,15 @@ export type AdminResetRefreshTokenCreatedAtData = {
     query?: never;
     url: '/admin/reset-refresh-token-created-at';
 };
+
+export type AdminResetRefreshTokenCreatedAtErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminResetRefreshTokenCreatedAtError = AdminResetRefreshTokenCreatedAtErrors[keyof AdminResetRefreshTokenCreatedAtErrors];
 
 export type AdminResetRefreshTokenCreatedAtResponses = {
     201: RefreshTokenCreatedAtResetResponseDto;
@@ -768,6 +982,15 @@ export type AdminGetCoversCleanupStatsData = {
     url: '/admin/covers';
 };
 
+export type AdminGetCoversCleanupStatsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetCoversCleanupStatsError = AdminGetCoversCleanupStatsErrors[keyof AdminGetCoversCleanupStatsErrors];
+
 export type AdminGetCoversCleanupStatsResponses = {
     200: CoverCleanupStatsResponseDto;
 };
@@ -780,6 +1003,15 @@ export type AdminDeleteAllCoversData = {
     query?: never;
     url: '/admin/covers/delete-all';
 };
+
+export type AdminDeleteAllCoversErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminDeleteAllCoversError = AdminDeleteAllCoversErrors[keyof AdminDeleteAllCoversErrors];
 
 export type AdminDeleteAllCoversResponses = {
     201: DeleteAllCoversResponseDto;
@@ -794,6 +1026,16 @@ export type AdminGenerateSignUpLinkData = {
     url: '/admin/signup-links';
 };
 
+export type AdminGenerateSignUpLinkErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGenerateSignUpLinkError = AdminGenerateSignUpLinkErrors[keyof AdminGenerateSignUpLinkErrors];
+
 export type AdminGenerateSignUpLinkResponses = {
     201: SignUpLinkResponseDto;
 };
@@ -806,6 +1048,15 @@ export type AdminListNotificationsData = {
     query?: never;
     url: '/admin/notifications';
 };
+
+export type AdminListNotificationsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminListNotificationsError = AdminListNotificationsErrors[keyof AdminListNotificationsErrors];
 
 export type AdminListNotificationsResponses = {
     200: Array<AdminNotificationSummaryDto>;
@@ -820,6 +1071,15 @@ export type AdminCreateNotificationData = {
     url: '/admin/notifications';
 };
 
+export type AdminCreateNotificationErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminCreateNotificationError = AdminCreateNotificationErrors[keyof AdminCreateNotificationErrors];
+
 export type AdminCreateNotificationResponses = {
     201: AdminNotificationSummaryDto;
 };
@@ -832,6 +1092,15 @@ export type AdminListUsersData = {
     query?: never;
     url: '/admin/users';
 };
+
+export type AdminListUsersErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminListUsersError = AdminListUsersErrors[keyof AdminListUsersErrors];
 
 export type AdminListUsersResponses = {
     200: Array<AdminUserSummaryDto>;
@@ -846,6 +1115,15 @@ export type AdminSendEmailData = {
     url: '/admin/email';
 };
 
+export type AdminSendEmailErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminSendEmailError = AdminSendEmailErrors[keyof AdminSendEmailErrors];
+
 export type AdminSendEmailResponses = {
     202: SendAdminEmailResponseDto;
 };
@@ -858,6 +1136,15 @@ export type AdminGetTokenStatsData = {
     query?: never;
     url: '/admin/tokens/stats';
 };
+
+export type AdminGetTokenStatsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetTokenStatsError = AdminGetTokenStatsErrors[keyof AdminGetTokenStatsErrors];
 
 export type AdminGetTokenStatsResponses = {
     200: TokenStatsResponseDto;
@@ -872,6 +1159,15 @@ export type AdminRevokeTokensData = {
     url: '/admin/tokens/revoke';
 };
 
+export type AdminRevokeTokensErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminRevokeTokensError = AdminRevokeTokensErrors[keyof AdminRevokeTokensErrors];
+
 export type AdminRevokeTokensResponses = {
     200: RevokeTokensResponseDto;
 };
@@ -884,6 +1180,15 @@ export type AdminGetSettingsData = {
     query?: never;
     url: '/admin/settings';
 };
+
+export type AdminGetSettingsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetSettingsError = AdminGetSettingsErrors[keyof AdminGetSettingsErrors];
 
 export type AdminGetSettingsResponses = {
     200: InstanceSettingsResponseDto;
@@ -898,6 +1203,15 @@ export type AdminUpdateSettingsData = {
     url: '/admin/settings';
 };
 
+export type AdminUpdateSettingsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminUpdateSettingsError = AdminUpdateSettingsErrors[keyof AdminUpdateSettingsErrors];
+
 export type AdminUpdateSettingsResponses = {
     200: EmptyResponseDto;
 };
@@ -910,6 +1224,15 @@ export type AdminGetServerSyncData = {
     query?: never;
     url: '/admin/server-sync';
 };
+
+export type AdminGetServerSyncErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetServerSyncError = AdminGetServerSyncErrors[keyof AdminGetServerSyncErrors];
 
 export type AdminGetServerSyncResponses = {
     200: ServerSyncResponseDto;
@@ -924,6 +1247,15 @@ export type AdminUpdateServerSyncData = {
     url: '/admin/server-sync';
 };
 
+export type AdminUpdateServerSyncErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminUpdateServerSyncError = AdminUpdateServerSyncErrors[keyof AdminUpdateServerSyncErrors];
+
 export type AdminUpdateServerSyncResponses = {
     200: UpdateServerSyncResponseDto;
 };
@@ -936,6 +1268,15 @@ export type AdminSetWebDavCredentialsData = {
     query?: never;
     url: '/admin/server-sync/credentials';
 };
+
+export type AdminSetWebDavCredentialsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminSetWebDavCredentialsError = AdminSetWebDavCredentialsErrors[keyof AdminSetWebDavCredentialsErrors];
 
 export type AdminSetWebDavCredentialsResponses = {
     200: WebDavCredentialsResponseDto;
@@ -950,6 +1291,15 @@ export type AdminListServerSourcesData = {
     url: '/admin/server-sync/sources';
 };
 
+export type AdminListServerSourcesErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminListServerSourcesError = AdminListServerSourcesErrors[keyof AdminListServerSourcesErrors];
+
 export type AdminListServerSourcesResponses = {
     200: Array<ServerSourceDto>;
 };
@@ -962,6 +1312,15 @@ export type AdminCreateServerSourceData = {
     query?: never;
     url: '/admin/server-sync/sources';
 };
+
+export type AdminCreateServerSourceErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminCreateServerSourceError = AdminCreateServerSourceErrors[keyof AdminCreateServerSourceErrors];
 
 export type AdminCreateServerSourceResponses = {
     201: ServerSourceDto;
@@ -978,6 +1337,15 @@ export type AdminDeleteServerSourceData = {
     url: '/admin/server-sync/sources/{id}';
 };
 
+export type AdminDeleteServerSourceErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminDeleteServerSourceError = AdminDeleteServerSourceErrors[keyof AdminDeleteServerSourceErrors];
+
 export type AdminDeleteServerSourceResponses = {
     200: OkResponseDto;
 };
@@ -993,6 +1361,15 @@ export type AdminUpdateServerSourceData = {
     url: '/admin/server-sync/sources/{id}';
 };
 
+export type AdminUpdateServerSourceErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminUpdateServerSourceError = AdminUpdateServerSourceErrors[keyof AdminUpdateServerSourceErrors];
+
 export type AdminUpdateServerSourceResponses = {
     200: ServerSourceDto;
 };
@@ -1005,6 +1382,15 @@ export type AdminGetSessionData = {
     query?: never;
     url: '/admin/session';
 };
+
+export type AdminGetSessionErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetSessionError = AdminGetSessionErrors[keyof AdminGetSessionErrors];
 
 export type AdminGetSessionResponses = {
     200: OkResponseDto;
@@ -1019,6 +1405,15 @@ export type NotificationsListData = {
     url: '/notifications';
 };
 
+export type NotificationsListErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type NotificationsListError = NotificationsListErrors[keyof NotificationsListErrors];
+
 export type NotificationsListResponses = {
     200: Array<AdminBroadcastNotificationDto | SyncFinishedNotificationDto>;
 };
@@ -1032,6 +1427,15 @@ export type NotificationsUnreadCountData = {
     url: '/notifications/unread-count';
 };
 
+export type NotificationsUnreadCountErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type NotificationsUnreadCountError = NotificationsUnreadCountErrors[keyof NotificationsUnreadCountErrors];
+
 export type NotificationsUnreadCountResponses = {
     200: UnreadNotificationsCountResponseDto;
 };
@@ -1044,6 +1448,15 @@ export type NotificationsMarkAllAsSeenData = {
     query?: never;
     url: '/notifications/seen';
 };
+
+export type NotificationsMarkAllAsSeenErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type NotificationsMarkAllAsSeenError = NotificationsMarkAllAsSeenErrors[keyof NotificationsMarkAllAsSeenErrors];
 
 export type NotificationsMarkAllAsSeenResponses = {
     201: OkResponseDto;
@@ -1060,6 +1473,15 @@ export type NotificationsMarkAsSeenData = {
     url: '/notifications/{id}/seen';
 };
 
+export type NotificationsMarkAsSeenErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type NotificationsMarkAsSeenError = NotificationsMarkAsSeenErrors[keyof NotificationsMarkAsSeenErrors];
+
 export type NotificationsMarkAsSeenResponses = {
     201: OkResponseDto;
 };
@@ -1075,6 +1497,15 @@ export type NotificationsArchiveData = {
     url: '/notifications/{id}/archive';
 };
 
+export type NotificationsArchiveErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type NotificationsArchiveError = NotificationsArchiveErrors[keyof NotificationsArchiveErrors];
+
 export type NotificationsArchiveResponses = {
     201: OkResponseDto;
 };
@@ -1087,6 +1518,15 @@ export type DataSourcesListSyncReportsData = {
     query?: never;
     url: '/datasources/sync-reports';
 };
+
+export type DataSourcesListSyncReportsErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type DataSourcesListSyncReportsError = DataSourcesListSyncReportsErrors[keyof DataSourcesListSyncReportsErrors];
 
 export type DataSourcesListSyncReportsResponses = {
     200: Array<SyncReportDto>;
@@ -1101,6 +1541,15 @@ export type DataSourcesSyncData = {
     url: '/datasources/sync';
 };
 
+export type DataSourcesSyncErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type DataSourcesSyncError = DataSourcesSyncErrors[keyof DataSourcesSyncErrors];
+
 export type DataSourcesSyncResponses = {
     201: EmptyResponseDto;
 };
@@ -1113,6 +1562,15 @@ export type BooksRefreshMetadataData = {
     query?: never;
     url: '/books/metadata/refresh';
 };
+
+export type BooksRefreshMetadataErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type BooksRefreshMetadataError = BooksRefreshMetadataErrors[keyof BooksRefreshMetadataErrors];
 
 export type BooksRefreshMetadataResponses = {
     201: EmptyResponseDto;
@@ -1127,6 +1585,15 @@ export type CollectionsRefreshMetadataData = {
     url: '/collections/metadata/refresh';
 };
 
+export type CollectionsRefreshMetadataErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type CollectionsRefreshMetadataError = CollectionsRefreshMetadataErrors[keyof CollectionsRefreshMetadataErrors];
+
 export type CollectionsRefreshMetadataResponses = {
     201: EmptyResponseDto;
 };
@@ -1139,6 +1606,15 @@ export type KoreaderSyncServerTurnOffData = {
     query?: never;
     url: '/koreader-sync-server';
 };
+
+export type KoreaderSyncServerTurnOffErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncServerTurnOffError = KoreaderSyncServerTurnOffErrors[keyof KoreaderSyncServerTurnOffErrors];
 
 export type KoreaderSyncServerTurnOffResponses = {
     200: OkResponseDto;
@@ -1153,6 +1629,15 @@ export type KoreaderSyncServerGetData = {
     url: '/koreader-sync-server';
 };
 
+export type KoreaderSyncServerGetErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncServerGetError = KoreaderSyncServerGetErrors[keyof KoreaderSyncServerGetErrors];
+
 export type KoreaderSyncServerGetResponses = {
     200: KoreaderSyncServerResponseDto;
 };
@@ -1165,6 +1650,15 @@ export type KoreaderSyncServerCreatePasswordData = {
     query?: never;
     url: '/koreader-sync-server/password';
 };
+
+export type KoreaderSyncServerCreatePasswordErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncServerCreatePasswordError = KoreaderSyncServerCreatePasswordErrors[keyof KoreaderSyncServerCreatePasswordErrors];
 
 export type KoreaderSyncServerCreatePasswordResponses = {
     201: KoreaderSyncServerPasswordResponseDto;
@@ -1179,6 +1673,15 @@ export type KoreaderSyncConnectionDisconnectData = {
     url: '/koreader-sync-connection';
 };
 
+export type KoreaderSyncConnectionDisconnectErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncConnectionDisconnectError = KoreaderSyncConnectionDisconnectErrors[keyof KoreaderSyncConnectionDisconnectErrors];
+
 export type KoreaderSyncConnectionDisconnectResponses = {
     200: OkResponseDto;
 };
@@ -1191,6 +1694,15 @@ export type KoreaderSyncConnectionGetData = {
     query?: never;
     url: '/koreader-sync-connection';
 };
+
+export type KoreaderSyncConnectionGetErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncConnectionGetError = KoreaderSyncConnectionGetErrors[keyof KoreaderSyncConnectionGetErrors];
 
 export type KoreaderSyncConnectionGetResponses = {
     200: KoreaderSyncConnectionResponseDto;
@@ -1205,6 +1717,16 @@ export type KoreaderSyncConnectionConnectData = {
     url: '/koreader-sync-connection';
 };
 
+export type KoreaderSyncConnectionConnectErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncConnectionConnectError = KoreaderSyncConnectionConnectErrors[keyof KoreaderSyncConnectionConnectErrors];
+
 export type KoreaderSyncConnectionConnectResponses = {
     200: KoreaderSyncConnectionResponseDto;
 };
@@ -1217,6 +1739,16 @@ export type KoreaderSyncConnectionPushPositionData = {
     query?: never;
     url: '/koreader-sync-connection/progress';
 };
+
+export type KoreaderSyncConnectionPushPositionErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncConnectionPushPositionError = KoreaderSyncConnectionPushPositionErrors[keyof KoreaderSyncConnectionPushPositionErrors];
 
 export type KoreaderSyncConnectionPushPositionResponses = {
     200: OkResponseDto;
@@ -1232,6 +1764,16 @@ export type KoreaderSyncConnectionPullPositionData = {
     query?: never;
     url: '/koreader-sync-connection/progress/{document}';
 };
+
+export type KoreaderSyncConnectionPullPositionErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KoreaderSyncConnectionPullPositionError = KoreaderSyncConnectionPullPositionErrors[keyof KoreaderSyncConnectionPullPositionErrors];
 
 export type KoreaderSyncConnectionPullPositionResponses = {
     200: KoreaderSyncPositionResponseDto;

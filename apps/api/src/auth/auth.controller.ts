@@ -11,6 +11,7 @@ import {
 } from "@nestjs/common"
 import type { Request, Response } from "express"
 import { AuthService } from "./auth.service.js"
+import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard.js"
 import {
   type AuthTokens,
@@ -62,6 +63,7 @@ export class AuthController {
   }
 
   @Public()
+  @ApiObokuErrors()
   @Post("signin/email")
   async signInWithEmail(
     @Body() body: SignInWithEmailDto,
@@ -76,6 +78,7 @@ export class AuthController {
   }
 
   @Public()
+  @ApiObokuErrors()
   @Post("signin/google")
   async signInWithGoogle(
     @Body() body: SignInWithGoogleDto,
@@ -90,6 +93,7 @@ export class AuthController {
   }
 
   @Public()
+  @ApiObokuErrors()
   @Post("signup")
   async requestSignUp(
     @Body() body: RequestSignUpDto,
@@ -102,6 +106,7 @@ export class AuthController {
   }
 
   @Public()
+  @ApiObokuErrors()
   @Post("signup/complete")
   async completeSignUp(
     @Body() body: CompleteSignUpDto,
@@ -122,6 +127,7 @@ export class AuthController {
   }
 
   @Public()
+  @ApiObokuErrors()
   @Post("magic-link/complete")
   async completeMagicLink(
     @Body() body: CompleteMagicLinkDto,
