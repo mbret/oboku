@@ -38,6 +38,8 @@ type KoreaderPosition = Omit<
 
 const PROFILE_ID = "profile-1"
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
+const PUSH_RETRY_DELAY_MS = 1000
+const PUSH_RETRY_MAX_DELAY_MS = 5 * 60 * 1000
 
 const BOOK_A_POSITION: KoreaderPosition = {
   document: "document-a",
@@ -217,20 +219,47 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("pushes a position again after its push failed", async () => {
-    mocks.pushKoreaderPosition.mockRejectedValueOnce(new Error("unreachable"))
+  it("pushes a position again a second after its push failed, then twice as long after each failure", async () => {
+    mocks.pushKoreaderPosition
+      .mockRejectedValueOnce(new Error("unreachable"))
+      .mockRejectedValueOnce(new Error("unreachable"))
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+    await vi.advanceTimersByTimeAsync(PUSH_RETRY_DELAY_MS - 1)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
 
     await vi.advanceTimersByTimeAsync(1)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
+
+    await vi.advanceTimersByTimeAsync(2 * PUSH_RETRY_DELAY_MS - 1)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
+
+    await vi.advanceTimersByTimeAsync(1)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(3)
     expect(mocks.pushKoreaderPosition).toHaveBeenLastCalledWith(
       toPushedPosition(BOOK_A_POSITION),
     )
+  })
+
+  it("waits for the device to be back online to push a failed position again", async () => {
+    mocks.pushKoreaderPosition.mockRejectedValueOnce(new Error("unreachable"))
+    renderSyncKoreaderPositions()
+    moveBookmarkTo(BOOK_A_POSITION)
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+    setOnLine(false)
+    await vi.advanceTimersByTimeAsync(PUSH_RETRY_MAX_DELAY_MS)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
+
+    setOnLine(true)
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
   })
 
   it("drops the waiting position of a book whose bookmark moves somewhere KOReader cannot open", async () => {
