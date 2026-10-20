@@ -1,4 +1,5 @@
 import {
+  getDataFromDataSource,
   isCollectionOfType,
   type LinkWithCredentials,
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
@@ -15,7 +16,6 @@ import {
   getSynologyDriveItemMetadata,
   getSynologyDriveSession,
 } from "./client.js"
-import { getDataSourceData } from "../helpers.js"
 
 const logger = new Logger("SynologyDrivePlugin")
 
@@ -83,12 +83,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       },
     })
 
-    const datasourceData = ctx.dataSource
-
-    const datasourceConnectorId =
-      datasourceData.type === "synology-drive"
-        ? datasourceData.data_v2?.connectorId
-        : null
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
 
     return {
       links: links.map((link) => {
@@ -119,11 +114,7 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
         linkData: { connectorId, fileId: item.linkData.fileId },
       },
     })
-    const datasourceData = ctx.dataSource
-    const datasourceConnectorId =
-      datasourceData.type === "synology-drive"
-        ? datasourceData.data_v2?.connectorId
-        : undefined
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
     return {
       collections: collections.map((c) => {
         const collectionConnectorId = isCollectionOfType(
@@ -190,12 +181,9 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       session,
     })
   },
-  sync: async ({ dataSourceId, db, providerCredentials }) => {
+  sync: async ({ dataSource, dataSourceId, db, providerCredentials }) => {
     const { connectorId, items = [] } =
-      (await getDataSourceData<"synology-drive">({
-        dataSourceId,
-        db,
-      })) ?? {}
+      getDataFromDataSource<"synology-drive">(dataSource) ?? {}
 
     if (!connectorId || items.length === 0 || !providerCredentials) {
       throw new Error("datasource not found or invalid")

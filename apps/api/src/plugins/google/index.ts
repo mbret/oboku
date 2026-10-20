@@ -4,9 +4,9 @@
  */
 import { authorize } from "./helpers.js"
 import { google } from "googleapis"
+import { getDataFromDataSource } from "@oboku/shared"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { find } from "../../lib/couch/dbHelpers.js"
-import { getDataSourceData } from "../helpers.js"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 const DRIVE_TYPE = "DRIVE"
@@ -114,11 +114,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     }
   },
   sync: async (ctx) => {
-    const { items = [] } =
-      (await getDataSourceData<"DRIVE">({
-        db: ctx.db,
-        dataSourceId: ctx.dataSourceId,
-      })) ?? {}
+    const { items = [] } = getDataFromDataSource<"DRIVE">(ctx.dataSource) ?? {}
 
     const auth = await authorize({
       credentials: ctx.providerCredentials,

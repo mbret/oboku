@@ -1,8 +1,7 @@
-import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
+import { getDataFromDataSource, PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
 import { createClient, type WebDAVClient } from "webdav"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
-import { getDataSourceData } from "../helpers.js"
 import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
@@ -63,10 +62,7 @@ export const dataSource: DataSourcePlugin<"server"> = {
 
     if (!connectorId) return { links: [] }
 
-    const datasourceConnectorId =
-      ctx.dataSource.type === "server"
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
 
     const links = await find(ctx.db, "link", {
       selector: {
@@ -87,10 +83,7 @@ export const dataSource: DataSourcePlugin<"server"> = {
 
     if (!connectorId) return { collections: [] }
 
-    const datasourceConnectorId =
-      ctx.dataSource.type === PLUGIN_SERVER_TYPE
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
 
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
@@ -126,9 +119,8 @@ export const dataSource: DataSourcePlugin<"server"> = {
     return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
-    const { providerCredentials, dataSourceId, db } = options
-    const { connectorId } =
-      (await getDataSourceData<"server">({ db, dataSourceId })) ?? {}
+    const { providerCredentials, dataSource, db } = options
+    const { connectorId } = getDataFromDataSource<"server">(dataSource) ?? {}
 
     if (!connectorId || !providerCredentials?.password) {
       throw new Error("datasource not found or invalid")

@@ -3,7 +3,10 @@
  */
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
-import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
+import {
+  getDataFromDataSource,
+  READER_ACCEPTED_EXTENSIONS,
+} from "@oboku/shared"
 import {
   type DataSourcePlugin,
   type SynchronizeAbleItem,
@@ -11,7 +14,7 @@ import {
 } from "../types.js"
 import { find } from "../../lib/couch/dbHelpers.js"
 import { createThrottler } from "../../lib/utils.js"
-import { createError, getDataSourceData } from "../helpers.js"
+import { createError } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 
@@ -130,7 +133,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       stream,
     }
   },
-  sync: async ({ providerCredentials, dataSourceId, db }) => {
+  sync: async ({ providerCredentials, dataSource }) => {
     const throttle = createThrottler(50)
 
     const token = providerCredentials.accessToken
@@ -138,11 +141,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       accessToken: token ?? undefined,
     })
 
-    const { folderId } =
-      (await getDataSourceData<"dropbox">({
-        db,
-        dataSourceId: dataSourceId,
-      })) ?? {}
+    const { folderId } = getDataFromDataSource<"dropbox">(dataSource) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

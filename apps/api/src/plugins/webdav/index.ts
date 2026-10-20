@@ -2,9 +2,11 @@
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
 import type { DataSourcePlugin } from "../types.js"
-import { type WebDAVDataSourceDocType } from "@oboku/shared"
+import {
+  getDataFromDataSource,
+  type WebDAVDataSourceDocType,
+} from "@oboku/shared"
 import { createClient } from "webdav"
-import { getDataSourceData } from "../helpers.js"
 import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
@@ -87,10 +89,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
 
     if (!connectorId) return { links: [] }
 
-    const datasourceConnectorId =
-      ctx.dataSource.type === "webdav"
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
 
     const links = await find(ctx.db, "link", {
       selector: {
@@ -111,10 +110,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
 
     if (!connectorId) return { collections: [] }
 
-    const datasourceConnectorId =
-      ctx.dataSource.type === "webdav"
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
+    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
 
     const collections = await find(ctx.db, "obokucollection", {
       selector: {
@@ -158,12 +154,9 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
-    const { providerCredentials, dataSourceId, db } = options
+    const { providerCredentials, dataSource, db } = options
     const { connectorId, directory } =
-      (await getDataSourceData<"webdav">({
-        db,
-        dataSourceId,
-      })) ?? {}
+      getDataFromDataSource<"webdav">(dataSource) ?? {}
 
     const rootDirectory = `/${directory ?? ""}`
 
