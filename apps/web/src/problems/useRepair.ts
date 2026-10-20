@@ -43,25 +43,17 @@ export const useRepair = () => {
           mergeMap((db) =>
             from(
               db.obokucollection
-                .findOne({ selector: { _id: action.doc._id } })
-                .exec(),
-            ).pipe(
-              mergeMap((item) => {
-                if (!item) return of(null)
+                .findOne(action.doc._id)
+                .incrementalModify((old) => {
+                  const nonDanglingBooks = old.books.filter(
+                    (id) => !action.danglingItems.includes(id),
+                  )
 
-                return from(
-                  item.incrementalModify((old) => {
-                    const nonDanglingBooks = old.books.filter(
-                      (id) => !action.danglingItems.includes(id),
-                    )
-
-                    return {
-                      ...old,
-                      books: nonDanglingBooks,
-                    }
-                  }),
-                )
-              }),
+                  return {
+                    ...old,
+                    books: nonDanglingBooks,
+                  }
+                }),
             ),
           ),
           map(() => null),
@@ -80,23 +72,15 @@ export const useRepair = () => {
         return db$.pipe(
           mergeMap((db) =>
             from(
-              db.book.findOne({ selector: { _id: action.doc._id } }).exec(),
-            ).pipe(
-              mergeMap((item) => {
-                if (!item) return of(null)
-
-                return from(
-                  item.incrementalModify((old) => {
-                    const nonDanglingCollections = old.collections.filter(
-                      (id) => !action.danglingItems.includes(id),
-                    )
-
-                    return {
-                      ...old,
-                      collections: nonDanglingCollections,
-                    }
-                  }),
+              db.book.findOne(action.doc._id).incrementalModify((old) => {
+                const nonDanglingCollections = old.collections.filter(
+                  (id) => !action.danglingItems.includes(id),
                 )
+
+                return {
+                  ...old,
+                  collections: nonDanglingCollections,
+                }
               }),
             ),
           ),
@@ -116,23 +100,15 @@ export const useRepair = () => {
         return db$.pipe(
           mergeMap((db) =>
             from(
-              db.book.findOne({ selector: { _id: action.doc._id } }).exec(),
-            ).pipe(
-              mergeMap((item) => {
-                if (!item) return of(null)
-
-                return from(
-                  item.incrementalModify((old) => {
-                    const nonDanglingLinks = old.links.filter(
-                      (id) => !action.danglingItems.includes(id),
-                    )
-
-                    return {
-                      ...old,
-                      links: nonDanglingLinks,
-                    }
-                  }),
+              db.book.findOne(action.doc._id).incrementalModify((old) => {
+                const nonDanglingLinks = old.links.filter(
+                  (id) => !action.danglingItems.includes(id),
                 )
+
+                return {
+                  ...old,
+                  links: nonDanglingLinks,
+                }
               }),
             ),
           ),
