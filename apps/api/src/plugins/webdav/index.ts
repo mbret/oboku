@@ -15,7 +15,7 @@ import {
   downloadFromWebdav,
   walkDirectoryContents,
 } from "./operations.js"
-import { find } from "../../lib/couch/dbHelpers.js"
+import { findConnectorCandidates } from "../helpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
@@ -64,68 +64,24 @@ const createWebdavClient = (connector: {
 
 export const dataSource: DataSourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
-  /**
-   * Finds persisted link candidates using the exact stored link identity.
-   *
-   * Why this is intentionally strict:
-   * - A datasource does not own content; it only syncs what it can see.
-   * - The same WebDAV resource may legitimately be reachable through multiple
-   *   datasources or connectors with different valid credentials.
-   * - We must therefore avoid destructive merges across "same server"
-   *   connectors, even when their normalized URL matches.
-   *
-   * Matching rule:
-   * - same provider type
-   * - same data.filePath
-   * - same data.connectorId
-   *
-   * In other words, "same normalized server" is not enough to treat two links
-   * as the same persisted identity. That broader notion may be useful for other
-   * convenience flows, but sync candidate reuse must stay exact and
-   * non-destructive.
-   */
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const { connectorId, filePath } = item.linkData
-
-    if (!connectorId) return { links: [] }
-
-    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
-
-    const links = await find(ctx.db, "link", {
-      selector: {
-        type: WEBDAV_TYPE,
-        data: { connectorId, filePath },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findConnectorCandidates(ctx, "link", {
+      type: WEBDAV_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        filePath: item.linkData.filePath,
       },
-    })
-
-    return {
-      links: links.map((link) => ({
-        ...link,
-        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const { connectorId, filePath } = item.linkData
-
-    if (!connectorId) return { collections: [] }
-
-    const datasourceConnectorId = ctx.dataSource.data_v2?.connectorId
-
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: WEBDAV_TYPE,
-        linkData: { connectorId, filePath },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findConnectorCandidates(ctx, "obokucollection", {
+      type: WEBDAV_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        filePath: item.linkData.filePath,
       },
-    })
-
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
-      })),
-    }
-  },
+    }),
+  }),
   getFileMetadata: async ({ link, providerCredentials, db }) => {
     const { client, filePath } = await resolveClientAndPath({
       link,

@@ -12,44 +12,25 @@ import {
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
 } from "../types.js"
-import { find } from "../../lib/couch/dbHelpers.js"
 import { createThrottler } from "../../lib/utils.js"
-import { createError } from "../helpers.js"
+import { createError, findCandidates } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 
 export const dataSource: DataSourcePlugin<"dropbox"> = {
   type: DROPBOX_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: { type: DROPBOX_TYPE, data: { fileId: item.linkData.fileId } },
-    })
-    return {
-      links: links.map((link) => ({
-        ...link,
-        /**
-         * In principle, if the user is syncing a resource ID he will
-         * always have valid credentials for this ID.
-         */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: DROPBOX_TYPE,
-        linkData: { fileId: item.linkData.fileId },
-      },
-    })
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        /** Same as links: when syncing this resource, credentials apply. */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: DROPBOX_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: DROPBOX_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
   getFolderMetadata: async ({ link, providerCredentials }) => {
     const token = providerCredentials.accessToken
     const dbx = new Dropbox({
