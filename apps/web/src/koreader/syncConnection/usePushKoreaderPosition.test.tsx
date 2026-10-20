@@ -74,18 +74,22 @@ const createPushHarness = ({
   const openReader = () => {
     const { result } = renderHook(() => usePushKoreaderPosition(), { wrapper })
 
-    return { push: () => result.current.mutateAsync(POSITION) }
+    return {
+      push: (position = POSITION) => result.current.mutateAsync(position),
+    }
   }
 
-  const getCachedConnection = () =>
-    queryClient.getQueryData(
-      createKoreaderSyncConnectionQueryOptions({
-        httpClientApi: client,
-        profileId: undefined,
-      }).queryKey,
-    )
+  const connectionQueryKey = createKoreaderSyncConnectionQueryOptions({
+    httpClientApi: client,
+    profileId: undefined,
+  }).queryKey
 
-  return { sdkClient, openReader, getCachedConnection }
+  const getCachedConnection = () => queryClient.getQueryData(connectionQueryKey)
+
+  const setCachedConnection = (connection: KoreaderSyncConnectionDto) =>
+    queryClient.setQueryData(connectionQueryKey, { connection })
+
+  return { sdkClient, openReader, getCachedConnection, setCachedConnection }
 }
 
 const renderPushKoreaderPosition = (
@@ -152,6 +156,38 @@ describe("usePushKoreaderPosition", () => {
     expect(sdkClient.get).toHaveBeenCalledTimes(2)
   })
 
+  it("sends pushes one after another, in the order they were made", async () => {
+    vi.useFakeTimers()
+    const slowAnswerMs = 1000
+    const { sdkClient, openReader } = createPushHarness()
+    sdkClient.put.mockImplementationOnce(function answerSlowly() {
+      return new Promise(function resolveLater(resolve) {
+        setTimeout(function answered() {
+          resolve({ data: {} })
+        }, slowAnswerMs)
+      })
+    })
+    const earlierPosition = { ...POSITION, percentage: 0.4 }
+    const laterPosition = { ...POSITION, percentage: 0.5 }
+
+    const pushed = Promise.all([
+      openReader().push(earlierPosition),
+      openReader().push(laterPosition),
+    ])
+    await vi.advanceTimersByTimeAsync(slowAnswerMs - 1)
+
+    expect(sdkClient.put).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ body: earlierPosition }),
+    )
+
+    await vi.advanceTimersByTimeAsync(1)
+    await pushed
+
+    expect(sdkClient.put).toHaveBeenLastCalledWith(
+      expect.objectContaining({ body: laterPosition }),
+    )
+  })
+
   it("asks the API for the connection again after a push refused because it is gone", async () => {
     const { sdkClient, openReader, getCachedConnection } = createPushHarness()
     const { push } = openReader()
@@ -193,14 +229,19 @@ describe("usePushKoreaderPosition", () => {
     expect(getCachedConnection()).toEqual({ connection: CONNECTION })
   })
 
-  it("pushes again from the next reader after the server refused the key", async () => {
-    const { sdkClient, openReader } = createPushHarness()
+  it("pushes again once the account connects again after the server refused the key", async () => {
+    const { sdkClient, openReader, setCachedConnection } = createPushHarness()
+    const { push } = openReader()
     sdkClient.put.mockRejectedValueOnce(
       createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     )
 
-    await expect(openReader().push()).rejects.toThrow()
-    await openReader().push()
+    await expect(push()).rejects.toThrow()
+    setCachedConnection({
+      ...CONNECTION,
+      connectedAt: "2026-02-01T00:00:00.000Z",
+    })
+    await push()
 
     expect(sdkClient.put).toHaveBeenCalledTimes(2)
   })

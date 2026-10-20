@@ -1,7 +1,8 @@
 import { type BookDocType, ReadingStateState } from "@oboku/shared"
 import type { ReadingPosition } from "@prose-reader/core"
+import type { DeepReadonly } from "rxdb"
 
-export type BookPatch = (old: BookDocType) => BookDocType
+export type BookPatch = (old: BookDocType, savedAt: string) => BookDocType
 
 type SavedReadingPosition = Pick<
   ReadingPosition,
@@ -27,8 +28,8 @@ export const toSavedReadingPosition = ({
 export const hasPatches = (patches: BookPatch[]) => patches.length > 0
 
 export const composePatches = (patches: BookPatch[]): BookPatch =>
-  function applyPatchesInOrder(old) {
-    return patches.reduce((book, patch) => patch(book), old)
+  function applyPatchesInOrder(old, savedAt) {
+    return patches.reduce((book, patch) => patch(book, savedAt), old)
   }
 
 export const createReadingPositionPatch = ({
@@ -37,8 +38,7 @@ export const createReadingPositionPatch = ({
   koreaderProgress,
   koreaderDocument,
 }: SavedReadingPositionWithKoreaderForm): BookPatch =>
-  function applyReadingPosition(old) {
-    const savedAt = new Date().toISOString()
+  function applyReadingPosition(old, savedAt) {
     const nextReadingState =
       old.readingStateCurrentState === ReadingStateState.Finished
         ? ReadingStateState.Finished
@@ -66,6 +66,12 @@ export const createReadingPositionPatch = ({
     }
   }
 
+/** The reading position patch dates the bookmark with the save's time, and only when it moves it. */
+export const isBookmarkMovedAt = (
+  book: DeepReadonly<BookDocType>,
+  savedAt: string,
+) => book.readingStateCurrentBookmarkLocationUpdatedAt === savedAt
+
 export const createReachedProgressPatch = (
   reachedProgress: number,
 ): BookPatch =>
@@ -73,9 +79,9 @@ export const createReachedProgressPatch = (
     return { ...old, readingStateReachedProgressPercent: reachedProgress }
   }
 
-export const markBookAsOpened = (old: BookDocType): BookDocType => ({
+export const markBookAsOpened: BookPatch = (old, savedAt) => ({
   ...old,
-  readingStateUpdatedAt: new Date().toISOString(),
+  readingStateUpdatedAt: savedAt,
 })
 
 /**
@@ -83,12 +89,12 @@ export const markBookAsOpened = (old: BookDocType): BookDocType => ({
  * and its progress stay the reading position's, which is short of 1 on the
  * last page, so a finished book can store 0.9.
  */
-export const markBookAsFinished = (old: BookDocType): BookDocType => {
+export const markBookAsFinished: BookPatch = (old, savedAt) => {
   if (old.readingStateCurrentState === ReadingStateState.Finished) return old
 
   return {
     ...old,
     readingStateCurrentState: ReadingStateState.Finished,
-    readingStateUpdatedAt: new Date().toISOString(),
+    readingStateUpdatedAt: savedAt,
   }
 }
