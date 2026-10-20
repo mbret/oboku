@@ -1,5 +1,4 @@
 import {
-  type BookKoreaderSyncPosition,
   type KoreaderSyncConnectionDto,
   type KoreaderSyncPositionDto,
   ObokuErrorCode,
@@ -7,21 +6,10 @@ import {
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
-import { from } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-type FakeBookData = {
-  readingStateKoreaderSyncPosition: BookKoreaderSyncPosition | null
-}
-
 const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
-  return {
-    isDebugEnabled: vi.fn(() => true),
-    readSavedPosition: vi.fn((): BookKoreaderSyncPosition | null => null),
-    savePosition: vi.fn(async function saveOnFakeBook(
-      _position: BookKoreaderSyncPosition | null,
-    ) {}),
-  }
+  return { isDebugEnabled: vi.fn(() => true) }
 })
 
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
@@ -32,42 +20,11 @@ vi.mock("../../debug/isDebugEnabled.shared", function mockDebugMode() {
   return { isDebugEnabled: mocks.isDebugEnabled }
 })
 
-vi.mock(
-  "../../books/incrementalBookMutation",
-  function mockIncrementalBookMutation() {
-    return {
-      incrementalBookMutation: function applyToFakeBook(
-        _bookId: string,
-        applyIncremental: (book: unknown) => Promise<unknown>,
-      ) {
-        const readBook = (): FakeBookData => ({
-          readingStateKoreaderSyncPosition: mocks.readSavedPosition(),
-        })
-        const book = {
-          toJSON: readBook,
-          incrementalModify: async function modifyFakeBook(
-            modify: (old: FakeBookData) => FakeBookData,
-          ) {
-            await mocks.savePosition(
-              modify(readBook()).readingStateKoreaderSyncPosition,
-            )
-
-            return book
-          },
-        }
-
-        return from(applyIncremental(book))
-      },
-    }
-  },
-)
-
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
 import { useKoreaderPositionCheck } from "./useKoreaderPositionCheck"
 
-const BOOK_ID = "book-1"
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
 
@@ -77,17 +34,12 @@ const CONNECTION: KoreaderSyncConnectionDto = {
   connectedAt: "2026-01-01T00:00:00.000Z",
 }
 
-const SERVER_POSITION_DTO: KoreaderSyncPositionDto = {
+const SERVER_POSITION: KoreaderSyncPositionDto = {
   progress: "/body/DocFragment[9]/body/p[12]/text().4",
   percentage: 0.6,
   device: "Kobo",
   deviceId: "kobo-device",
   updatedAt: "2026-10-20T09:00:00.000Z",
-}
-
-const SERVER_POSITION: BookKoreaderSyncPosition = {
-  document: KOREADER_DOCUMENT,
-  ...SERVER_POSITION_DTO,
 }
 
 const createRefusal = ({ status, data }: { status: number; data: unknown }) =>
@@ -119,7 +71,7 @@ const createCheckHarness = ({
   const pullPosition = vi.fn(async function answerPosition(
     _document: string | undefined,
   ): Promise<{ data: { position: KoreaderSyncPositionDto | null } }> {
-    return { data: { position: SERVER_POSITION_DTO } }
+    return { data: { position: SERVER_POSITION } }
   })
   const sdkClient = {
     get: function answerGet(options: {
@@ -149,7 +101,6 @@ const createCheckHarness = ({
     renderHook(
       function renderKoreaderPositionCheck() {
         return useKoreaderPositionCheck({
-          bookId: BOOK_ID,
           koreaderDocument: KOREADER_DOCUMENT,
           enabled,
         })
@@ -158,16 +109,6 @@ const createCheckHarness = ({
     )
 
   return { openBook, fetchConnection, pullPosition }
-}
-
-const holdNextSave = () => {
-  const heldSave = Promise.withResolvers<void>()
-
-  mocks.savePosition.mockImplementationOnce(function saveLater() {
-    return heldSave.promise
-  })
-
-  return heldSave.resolve
 }
 
 const holdNextPull = (
@@ -182,7 +123,7 @@ const holdNextPull = (
   })
 
   return function answerPull() {
-    heldPull.resolve({ data: { position: SERVER_POSITION_DTO } })
+    heldPull.resolve({ data: { position: SERVER_POSITION } })
   }
 }
 
@@ -198,8 +139,6 @@ describe("useKoreaderPositionCheck", () => {
     vi.useFakeTimers()
     setOnLine(true)
     mocks.isDebugEnabled.mockReset().mockReturnValue(true)
-    mocks.readSavedPosition.mockReset().mockReturnValue(null)
-    mocks.savePosition.mockReset()
   })
 
   afterEach(() => {
@@ -208,50 +147,33 @@ describe("useKoreaderPositionCheck", () => {
     vi.useRealTimers()
   })
 
-  it("asks the server where the book's file was left and lets the book open there once saved on the book", async () => {
+  it("asks the server where the book's file was left, and lets the book open once it answers", async () => {
     const { openBook, pullPosition } = createCheckHarness()
-    const answerSave = holdNextSave()
+    const answerPull = holdNextPull(pullPosition)
     const { result } = openBook()
 
     await vi.advanceTimersByTimeAsync(0)
 
     expect(pullPosition).toHaveBeenCalledExactlyOnceWith(KOREADER_DOCUMENT)
-    expect(mocks.savePosition).toHaveBeenCalledExactlyOnceWith(SERVER_POSITION)
     expect(result.current.status).toBe("checking")
 
-    answerSave()
+    answerPull()
     await vi.advanceTimersByTimeAsync(0)
 
     expect(result.current).toEqual({
       status: "done",
-      pulledPosition: SERVER_POSITION,
+      serverPosition: SERVER_POSITION,
     })
   })
 
-  it("leaves the book as it is when it already holds the server's position", async () => {
-    mocks.readSavedPosition.mockReturnValue(SERVER_POSITION)
-    const { openBook } = createCheckHarness()
-    const { result } = openBook()
-
-    await vi.advanceTimersByTimeAsync(0)
-
-    expect(result.current).toEqual({
-      status: "done",
-      pulledPosition: SERVER_POSITION,
-    })
-    expect(mocks.savePosition).not.toHaveBeenCalled()
-  })
-
-  it("saves that the server keeps no position for the book's file", async () => {
-    mocks.readSavedPosition.mockReturnValue(SERVER_POSITION)
+  it("lets the book open without a position when the server keeps none", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     pullPosition.mockResolvedValueOnce({ data: { position: null } })
     const { result } = openBook()
 
     await vi.advanceTimersByTimeAsync(0)
 
-    expect(mocks.savePosition).toHaveBeenCalledExactlyOnceWith(null)
-    expect(result.current).toEqual({ status: "done", pulledPosition: null })
+    expect(result.current).toEqual({ status: "done" })
   })
 
   it("lets the book open without asking a server when the account has none", async () => {
@@ -261,7 +183,7 @@ describe("useKoreaderPositionCheck", () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(pullPosition).not.toHaveBeenCalled()
-    expect(result.current).toEqual({ status: "done", pulledPosition: null })
+    expect(result.current).toEqual({ status: "done" })
   })
 
   it("asks the API for the connection again when the server's position is gone with it", async () => {
@@ -280,7 +202,7 @@ describe("useKoreaderPositionCheck", () => {
 
     await vi.advanceTimersByTimeAsync(0)
 
-    expect(result.current).toEqual({ status: "done", pulledPosition: null })
+    expect(result.current).toEqual({ status: "done" })
     expect(fetchConnection).toHaveBeenCalledTimes(2)
   })
 
@@ -357,7 +279,7 @@ describe("useKoreaderPositionCheck", () => {
     expect(pullPosition).toHaveBeenCalledTimes(2)
     expect(result.current).toEqual({
       status: "done",
-      pulledPosition: SERVER_POSITION,
+      serverPosition: SERVER_POSITION,
     })
   })
 
@@ -376,7 +298,7 @@ describe("useKoreaderPositionCheck", () => {
     expect(result.current.status).toBe("failed")
   })
 
-  it("lets the book open once the user continues while asking, and saves the answer that comes later", async () => {
+  it("lets the book open once the user continues while asking, whatever the answer that comes later", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     const answerPull = holdNextPull(pullPosition)
     const { result } = openBook()
@@ -395,6 +317,5 @@ describe("useKoreaderPositionCheck", () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(result.current).toEqual({ status: "done" })
-    expect(mocks.savePosition).toHaveBeenCalledExactlyOnceWith(SERVER_POSITION)
   })
 })

@@ -5,17 +5,9 @@ export const koreaderSyncConnectionQueryKey = (profileId: string | undefined) =>
 
 export const koreaderSyncPositionQueryKey = ({
   profileId,
-  bookId,
   document,
 }: {
   profileId: string | undefined
-  bookId: string
   document: string | undefined
 }) =>
-  [
-    API_QUERY_KEY_PREFIX,
-    "koreader-sync-position",
-    profileId,
-    bookId,
-    document,
-  ] as const
+  [API_QUERY_KEY_PREFIX, "koreader-sync-position", profileId, document] as const

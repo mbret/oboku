@@ -16,7 +16,7 @@ import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
 import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
-import type { BookDocType, BookKoreaderSyncPosition } from "@oboku/shared"
+import type { BookDocType, KoreaderSyncPositionDto } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { createBookQueryOptions } from "../books/states"
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
@@ -39,17 +39,14 @@ type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
 
 const getOpeningTarget = ({
   book,
-  pulledKoreaderPosition,
-  koreaderDocument,
+  serverKoreaderPosition,
 }: {
   book: DeepReadonly<BookDocType>
-  pulledKoreaderPosition: BookKoreaderSyncPosition | null | undefined
-  koreaderDocument: string | undefined
+  serverKoreaderPosition: KoreaderSyncPositionDto | undefined
 }): OpeningTarget => {
   const koreaderProgress = getKoreaderProgressToOpenAt({
     book,
-    pulledPosition: pulledKoreaderPosition,
-    koreaderDocument,
+    serverPosition: serverKoreaderPosition,
   })
 
   if (koreaderProgress) {
@@ -73,7 +70,6 @@ export const useCreateReader = ({
   bookId,
   isPreview,
   manifest,
-  koreaderDocument,
   koreaderPositionCheck,
   containerRef,
 }: {
@@ -81,7 +77,6 @@ export const useCreateReader = ({
   bookId: string
   isPreview: boolean
   manifest?: Manifest
-  koreaderDocument?: string
   koreaderPositionCheck: KoreaderPositionCheck
   containerRef: RefObject<HTMLElement | null>
 }) => {
@@ -89,8 +84,8 @@ export const useCreateReader = ({
     createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
   const isKoreaderPositionChecked = koreaderPositionCheck.status === "done"
-  const pulledKoreaderPosition = isKoreaderPositionChecked
-    ? koreaderPositionCheck.pulledPosition
+  const serverKoreaderPosition = isKoreaderPositionChecked
+    ? koreaderPositionCheck.serverPosition
     : undefined
   const isRestoredLocationReady =
     isPreview || (!!bookOnce && isKoreaderPositionChecked)
@@ -110,11 +105,7 @@ export const useCreateReader = ({
     const target =
       isPreview || !bookOnce
         ? undefined
-        : getOpeningTarget({
-            book: bookOnce,
-            pulledKoreaderPosition,
-            koreaderDocument,
-          })
+        : getOpeningTarget({ book: bookOnce, serverKoreaderPosition })
 
     const instance = createAppReader({
       manifest,
@@ -172,8 +163,7 @@ export const useCreateReader = ({
     isRestoredLocationReady,
     bookId,
     bookOnce,
-    koreaderDocument,
-    pulledKoreaderPosition,
+    serverKoreaderPosition,
     containerRef,
   ])
 }

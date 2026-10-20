@@ -1,6 +1,4 @@
 import {
-  type BookKoreaderSyncPosition,
-  isShallowEqual,
   type KoreaderSyncPositionDto,
   koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
@@ -8,7 +6,6 @@ import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { firstValueFrom, from, timeout } from "rxjs"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
-import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -23,69 +20,26 @@ const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
 
 /**
  * Where the check of a book's KOReader position stands as the book opens.
- * Once `done`, the book can open: `pulledPosition` is the position the
- * account's server keeps for the book's file, `null` when it keeps none or
- * the account has no server, and missing when the book opens without
- * asking.
+ * Once `done`, the book can open: `serverPosition` is the position the
+ * account's server keeps for the book's file, missing when it keeps none,
+ * the account has no server, or the book opens without asking.
  */
 export type KoreaderPositionCheck =
   | { status: "checking"; continueAnyway: () => void }
   | { status: "failed"; tryAgain: () => void; continueAnyway: () => void }
   | { status: "refused"; continueAnyway: () => void }
-  | { status: "done"; pulledPosition?: BookKoreaderSyncPosition | null }
-
-const toBookKoreaderSyncPosition = (
-  document: string,
-  {
-    progress,
-    percentage,
-    device,
-    deviceId,
-    updatedAt,
-  }: KoreaderSyncPositionDto,
-): BookKoreaderSyncPosition => ({
-  document,
-  progress,
-  percentage,
-  device,
-  deviceId,
-  updatedAt,
-})
-
-const saveKoreaderSyncPosition = (
-  bookId: string,
-  position: BookKoreaderSyncPosition | null,
-) =>
-  firstValueFrom(
-    incrementalBookMutation(
-      bookId,
-      function writeKoreaderSyncPositionWhenChanged(book) {
-        const isPositionSaved = isShallowEqual(
-          book.toJSON().readingStateKoreaderSyncPosition ?? null,
-          position,
-        )
-
-        if (isPositionSaved) return Promise.resolve(book)
-
-        return book.incrementalModify(function applyKoreaderSyncPosition(old) {
-          return { ...old, readingStateKoreaderSyncPosition: position }
-        })
-      },
-    ),
-  )
+  | { status: "done"; serverPosition?: KoreaderSyncPositionDto }
 
 /**
  * Asks the account's KOReader sync server, as the book opens, where the
- * book's file was left, and saves the answer on the book before letting it
- * open. The book opens without asking offline, in preview, signed out, or
- * once the user continues without the answer.
+ * book's file was left, before letting it open. The book opens without
+ * asking offline, in preview, signed out, or once the user continues
+ * without the answer.
  */
 export const useKoreaderPositionCheck = ({
-  bookId,
   koreaderDocument,
   enabled,
 }: {
-  bookId: string
   /** The KOReader document of the book's file, `undefined` until the book is loaded. */
   koreaderDocument: string | undefined
   enabled: boolean
@@ -119,9 +73,7 @@ export const useKoreaderPositionCheck = ({
         path: { document },
       })
 
-      return (
-        data.position && toBookKoreaderSyncPosition(document, data.position)
-      )
+      return data.position
     } catch (error) {
       if (!isKoreaderSyncConnectionMissingError(error)) throw error
 
@@ -137,21 +89,16 @@ export const useKoreaderPositionCheck = ({
   const pull = useQuery({
     queryKey: koreaderSyncPositionQueryKey({
       profileId: activeProfileId,
-      bookId,
       document: koreaderDocument,
     }),
     queryFn:
       isPulling && koreaderDocument !== undefined
-        ? async function pullKoreaderPositionOfBook() {
-            const position = await firstValueFrom(
+        ? function pullKoreaderPositionOfBook() {
+            return firstValueFrom(
               from(fetchServerPosition(koreaderDocument)).pipe(
                 timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
               ),
             )
-
-            await saveKoreaderSyncPosition(bookId, position)
-
-            return position
           }
         : skipToken,
     staleTime: Number.POSITIVE_INFINITY,
@@ -167,7 +114,9 @@ export const useKoreaderPositionCheck = ({
 
   if (!isPulling) return { status: "done" }
 
-  if (pull.isSuccess) return { status: "done", pulledPosition: pull.data }
+  if (pull.isSuccess) {
+    return { status: "done", serverPosition: pull.data ?? undefined }
+  }
 
   const hasFailed = pull.isError && !pull.isFetching
 

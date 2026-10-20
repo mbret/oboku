@@ -1,7 +1,7 @@
 import {
   type BookDocType,
-  type BookKoreaderSyncPosition,
   createBookDefaults,
+  type KoreaderSyncPositionDto,
   ReadingStateState,
 } from "@oboku/shared"
 import type { Manifest } from "@prose-reader/shared"
@@ -100,8 +100,7 @@ const STORED_BOOK: BookDocType = {
   readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
 }
 
-const NEWER_SERVER_POSITION: BookKoreaderSyncPosition = {
-  document: KOREADER_DOCUMENT,
+const NEWER_SERVER_POSITION: KoreaderSyncPositionDto = {
   progress: SERVER_PROGRESS,
   percentage: 0.6,
   device: "Kobo",
@@ -130,7 +129,6 @@ const renderCreateReader = (initialCheck: KoreaderPositionCheck) => {
         isPreview: false,
         isUsingWebStreamer: false,
         manifest: MANIFEST,
-        koreaderDocument: KOREADER_DOCUMENT,
         koreaderPositionCheck,
         containerRef,
       })
@@ -172,7 +170,7 @@ describe("useCreateReader", () => {
   it("opens at the KOReader position another device left after the bookmark moved", async () => {
     renderCreateReader({
       status: "done",
-      pulledPosition: NEWER_SERVER_POSITION,
+      serverPosition: NEWER_SERVER_POSITION,
     })
     await settle()
 
@@ -186,7 +184,7 @@ describe("useCreateReader", () => {
   it("opens at the bookmark when the KOReader position is not newer", async () => {
     renderCreateReader({
       status: "done",
-      pulledPosition: {
+      serverPosition: {
         ...NEWER_SERVER_POSITION,
         updatedAt: "2026-10-20T07:00:00.000Z",
       },
