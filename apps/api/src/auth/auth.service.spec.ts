@@ -1,6 +1,6 @@
 import type { Mock } from "vitest"
 import { BadRequestException } from "@nestjs/common"
-import { JwtService } from "@nestjs/jwt"
+import { JwtService, TokenExpiredError } from "@nestjs/jwt"
 import { Test, TestingModule } from "@nestjs/testing"
 import { ObokuErrorCode } from "@oboku/shared"
 import bcrypt from "bcrypt"
@@ -244,6 +244,63 @@ describe("AuthService", () => {
     expect(emailService.getSignUpLink).toHaveBeenCalledWith({
       appPublicUrl: "https://app.example.com",
       token: "signup-token",
+    })
+  })
+
+  describe.each<{
+    method: "verifySignUpToken" | "verifyMagicLinkToken"
+    type: "signup" | "magic-link"
+    otherType: "signup" | "magic-link"
+    invalidErrorCode: ObokuErrorCode
+  }>([
+    {
+      method: "verifySignUpToken",
+      type: "signup",
+      otherType: "magic-link",
+      invalidErrorCode: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID,
+    },
+    {
+      method: "verifyMagicLinkToken",
+      type: "magic-link",
+      otherType: "signup",
+      invalidErrorCode: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID,
+    },
+  ])("$method", ({ method, type, otherType, invalidErrorCode }) => {
+    it("returns the email of a valid token", async () => {
+      jwtService.verifyAsync.mockResolvedValue({
+        sub: "reader@example.com",
+        type,
+      })
+
+      await expect(service[method]("email-link-token")).resolves.toBe(
+        "reader@example.com",
+      )
+
+      expect(jwtService.verifyAsync).toHaveBeenCalledWith("email-link-token", {
+        secret: "private-key",
+        algorithms: ["RS256"],
+      })
+    })
+
+    it("rejects a token of the other type", async () => {
+      jwtService.verifyAsync.mockResolvedValue({
+        sub: "reader@example.com",
+        type: otherType,
+      })
+
+      await expect(service[method]("email-link-token")).rejects.toEqual(
+        new BadRequestException({ errors: [{ code: invalidErrorCode }] }),
+      )
+    })
+
+    it("rejects an expired token", async () => {
+      jwtService.verifyAsync.mockRejectedValue(
+        new TokenExpiredError("jwt expired", new Date()),
+      )
+
+      await expect(service[method]("email-link-token")).rejects.toEqual(
+        new BadRequestException({ errors: [{ code: invalidErrorCode }] }),
+      )
     })
   })
 
