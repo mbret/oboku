@@ -1,10 +1,16 @@
-import { Group, Paper, Text } from "@mantine/core"
-import { useMigrateWebdavConnectors } from "../useMigrateWebdavConnectors"
-import { useMigrateWebdavResourceIds } from "../useMigrateWebdavResourceIds"
-import { useMigrateResourceIdToLinkData } from "../useMigrateResourceIdToLinkData"
-import { useMigrateCollectionCoverKeys } from "../useMigrateCollectionCoverKeys"
-import { useResetRefreshTokenCreatedAt } from "../useResetRefreshTokenCreatedAt"
-import { ConfirmButton } from "@/components/ConfirmButton"
+import { Stack } from "@mantine/core"
+import {
+  adminMigrateCollectionCoverKeys,
+  adminMigrateResourceIdToLinkData,
+  adminMigrateWebdavConnectors,
+  adminMigrateWebdavResourceIds,
+  adminResetRefreshTokenCreatedAt,
+  type CollectionCoverKeysMigrationResponseDto,
+  type RefreshTokenCreatedAtResetResponseDto,
+  type ResourceIdMigrationResponseDto,
+  type WebdavConnectorsMigrationResponseDto,
+} from "@oboku/shared"
+import { MigrationPanel } from "./MigrationPanel"
 
 const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
   "Don't run this unless you know exactly what you're doing.\n\nThis can permanently damage your database."
@@ -12,232 +18,60 @@ const DANGEROUS_ACTION_CONFIRMATION_MESSAGE =
 const RUN_ONCE_CONFIRMATION_MESSAGE =
   "Run this EXACTLY ONCE, right after deploying the new refresh-token rotation.\n\nIt resets created_at to now() on every refresh token. Running it again extends every token by another full TTL and defeats the expiry cap."
 
-export const AdminMigrationSection = () => {
-  const {
-    mutate: migrateWebdavConnectors,
-    data: webdavMigrationResult,
-    isPending: isWebdavMigrationPending,
-    error: webdavMigrationError,
-  } = useMigrateWebdavConnectors()
-  const {
-    mutate: migrateWebdavResourceIds,
-    data: webdavResourceIdMigrationResult,
-    isPending: isWebdavResourceIdMigrationPending,
-    error: webdavResourceIdMigrationError,
-  } = useMigrateWebdavResourceIds()
-  const {
-    mutate: migrateResourceIdToLinkData,
-    data: resourceIdToLinkDataResult,
-    isPending: isResourceIdToLinkDataPending,
-    error: resourceIdToLinkDataError,
-  } = useMigrateResourceIdToLinkData()
-  const {
-    mutate: migrateCollectionCoverKeys,
-    data: collectionCoverKeysResult,
-    isPending: isCollectionCoverKeysPending,
-    error: collectionCoverKeysError,
-  } = useMigrateCollectionCoverKeys()
-  const {
-    mutate: resetRefreshTokenCreatedAt,
-    data: resetRefreshTokenCreatedAtResult,
-    isPending: isResetRefreshTokenCreatedAtPending,
-    error: resetRefreshTokenCreatedAtError,
-  } = useResetRefreshTokenCreatedAt()
+const describeWebdavConnectorsMigration = (
+  result: WebdavConnectorsMigrationResponseDto,
+) =>
+  `${result.usersMigrated} user(s) migrated, ${result.connectorsCreated} connector(s) created`
 
-  return (
-    <>
-      <Group gap="sm">
-        <ConfirmButton
-          variant="light"
-          loading={isWebdavMigrationPending}
-          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
-          onConfirm={() => migrateWebdavConnectors()}
-        >
-          migrate webdav → connectors
-        </ConfirmButton>
-        <ConfirmButton
-          variant="light"
-          loading={isWebdavResourceIdMigrationPending}
-          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
-          onConfirm={() => migrateWebdavResourceIds()}
-        >
-          migrate webdav resource ids
-        </ConfirmButton>
-        <ConfirmButton
-          variant="light"
-          loading={isResourceIdToLinkDataPending}
-          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
-          onConfirm={() => migrateResourceIdToLinkData()}
-        >
-          migrate resourceId → link data
-        </ConfirmButton>
-        <ConfirmButton
-          variant="light"
-          loading={isCollectionCoverKeysPending}
-          confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
-          onConfirm={() => migrateCollectionCoverKeys()}
-        >
-          migrate collection cover keys
-        </ConfirmButton>
-        <ConfirmButton
-          variant="light"
-          color="red"
-          loading={isResetRefreshTokenCreatedAtPending}
-          confirmMessage={RUN_ONCE_CONFIRMATION_MESSAGE}
-          onConfirm={() => resetRefreshTokenCreatedAt()}
-        >
-          reset refresh-token created_at (run once)
-        </ConfirmButton>
-      </Group>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          Webdav migration
-        </Text>
-        {isWebdavMigrationPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {webdavMigrationError && (
-          <Text size="sm" c="red">
-            Error: {webdavMigrationError.message}
-          </Text>
-        )}
-        {webdavMigrationResult && !isWebdavMigrationPending && (
-          <Text size="sm" c="dimmed">
-            Last run: {webdavMigrationResult.usersMigrated} user(s) migrated,{" "}
-            {webdavMigrationResult.connectorsCreated} connector(s) created
-          </Text>
-        )}
-        {!webdavMigrationResult &&
-          !isWebdavMigrationPending &&
-          !webdavMigrationError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          Webdav resource ID migration
-        </Text>
-        {isWebdavResourceIdMigrationPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {webdavResourceIdMigrationError && (
-          <Text size="sm" c="red">
-            Error: {webdavResourceIdMigrationError.message}
-          </Text>
-        )}
-        {webdavResourceIdMigrationResult &&
-          !isWebdavResourceIdMigrationPending && (
-            <Text size="sm" c="dimmed">
-              Last run: {webdavResourceIdMigrationResult.usersMigrated} user(s)
-              migrated, {webdavResourceIdMigrationResult.linksUpdated} link(s)
-              updated, {webdavResourceIdMigrationResult.collectionsUpdated}{" "}
-              collection(s) updated
-            </Text>
-          )}
-        {!webdavResourceIdMigrationResult &&
-          !isWebdavResourceIdMigrationPending &&
-          !webdavResourceIdMigrationError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          ResourceId → link data migration
-        </Text>
-        {isResourceIdToLinkDataPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {resourceIdToLinkDataError && (
-          <Text size="sm" c="red">
-            Error: {resourceIdToLinkDataError.message}
-          </Text>
-        )}
-        {resourceIdToLinkDataResult && !isResourceIdToLinkDataPending && (
-          <Text size="sm" c="dimmed">
-            Last run: {resourceIdToLinkDataResult.usersMigrated} user(s)
-            migrated, {resourceIdToLinkDataResult.linksUpdated} link(s) updated,{" "}
-            {resourceIdToLinkDataResult.collectionsUpdated} collection(s)
-            updated
-          </Text>
-        )}
-        {!resourceIdToLinkDataResult &&
-          !isResourceIdToLinkDataPending &&
-          !resourceIdToLinkDataError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          Collection cover keys migration
-        </Text>
-        {isCollectionCoverKeysPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {collectionCoverKeysError && (
-          <Text size="sm" c="red">
-            Error: {collectionCoverKeysError.message}
-          </Text>
-        )}
-        {collectionCoverKeysResult && !isCollectionCoverKeysPending && (
-          <Text size="sm" c="dimmed">
-            Last run: storage={collectionCoverKeysResult.storageStrategy},{" "}
-            {collectionCoverKeysResult.ranOnUsers} user(s) scanned,{" "}
-            {collectionCoverKeysResult.renamed} renamed,{" "}
-            {collectionCoverKeysResult.skippedDestinationExists} already in
-            place, {collectionCoverKeysResult.skippedSourceMissing} not found
-          </Text>
-        )}
-        {!collectionCoverKeysResult &&
-          !isCollectionCoverKeysPending &&
-          !collectionCoverKeysError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-      <Paper withBorder p="md" mt="md">
-        <Text size="sm" fw={500} mb="xs">
-          Refresh-token created_at reset (run once)
-        </Text>
-        {isResetRefreshTokenCreatedAtPending && (
-          <Text size="sm" c="dimmed">
-            Running…
-          </Text>
-        )}
-        {resetRefreshTokenCreatedAtError && (
-          <Text size="sm" c="red">
-            Error: {resetRefreshTokenCreatedAtError.message}
-          </Text>
-        )}
-        {resetRefreshTokenCreatedAtResult &&
-          !isResetRefreshTokenCreatedAtPending && (
-            <Text size="sm" c="dimmed">
-              Last run: {resetRefreshTokenCreatedAtResult.updated} token(s)
-              updated
-            </Text>
-          )}
-        {!resetRefreshTokenCreatedAtResult &&
-          !isResetRefreshTokenCreatedAtPending &&
-          !resetRefreshTokenCreatedAtError && (
-            <Text size="sm" c="dimmed">
-              No migration run yet
-            </Text>
-          )}
-      </Paper>
-    </>
-  )
-}
+const describeResourceIdMigration = (result: ResourceIdMigrationResponseDto) =>
+  `${result.usersMigrated} user(s) migrated, ${result.linksUpdated} link(s) updated, ${result.collectionsUpdated} collection(s) updated`
+
+const describeCollectionCoverKeysMigration = (
+  result: CollectionCoverKeysMigrationResponseDto,
+) =>
+  `storage=${result.storageStrategy}, ${result.ranOnUsers} user(s) scanned, ${result.renamed} renamed, ${result.skippedDestinationExists} already in place, ${result.skippedSourceMissing} not found`
+
+const describeRefreshTokenCreatedAtReset = (
+  result: RefreshTokenCreatedAtResetResponseDto,
+) => `${result.updated} token(s) updated`
+
+export const AdminMigrationSection = () => (
+  <Stack gap="md">
+    <MigrationPanel
+      title="Webdav migration"
+      label="migrate webdav → connectors"
+      confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+      run={adminMigrateWebdavConnectors}
+      describeResult={describeWebdavConnectorsMigration}
+    />
+    <MigrationPanel
+      title="Webdav resource ID migration"
+      label="migrate webdav resource ids"
+      confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+      run={adminMigrateWebdavResourceIds}
+      describeResult={describeResourceIdMigration}
+    />
+    <MigrationPanel
+      title="ResourceId → link data migration"
+      label="migrate resourceId → link data"
+      confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+      run={adminMigrateResourceIdToLinkData}
+      describeResult={describeResourceIdMigration}
+    />
+    <MigrationPanel
+      title="Collection cover keys migration"
+      label="migrate collection cover keys"
+      confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+      run={adminMigrateCollectionCoverKeys}
+      describeResult={describeCollectionCoverKeysMigration}
+    />
+    <MigrationPanel
+      title="Refresh-token created_at reset (run once)"
+      label="reset refresh-token created_at (run once)"
+      confirmMessage={RUN_ONCE_CONFIRMATION_MESSAGE}
+      color="red"
+      run={adminResetRefreshTokenCreatedAt}
+      describeResult={describeRefreshTokenCreatedAtReset}
+    />
+  </Stack>
+)
