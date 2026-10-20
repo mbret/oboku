@@ -22,7 +22,11 @@ export function MigrationPanel<Result>({
   describeResult,
 }: MigrationPanelProps<Result>) {
   const migration = useMutation({
-    mutationFn: async () => (await run({ client: apiClient })).data,
+    mutationFn: async function runMigration() {
+      const { data } = await run({ client: apiClient })
+
+      return data
+    },
   })
 
   return (
@@ -58,7 +62,7 @@ export function MigrationPanel<Result>({
           color={color}
           loading={migration.isPending}
           confirmMessage={confirmMessage}
-          onConfirm={function runMigration() {
+          onConfirm={function startMigration() {
             migration.mutate()
           }}
         >
