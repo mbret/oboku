@@ -19,13 +19,15 @@ export type GoogleBookLookupInput = {
   googleVolumeId?: string
 }
 
+const TITLE_REFINE_LEVELS = [1, 2, 3, 4, 5] as const
+
 export const getGoogleBookMetadata = async (
   input: GoogleBookLookupInput,
   apiKey: string,
   config: AppConfigService,
 ): Promise<GoogleBookApiMetadata | undefined> => {
-  const { isbn, googleVolumeId, title } = input
-  let titleRefined = title ?? ""
+  const { isbn, googleVolumeId, title = "" } = input
+  let titleRefined = title
   /**
    * A volume id addresses one Google Books record, where an ISBN can match
    * several printings — so it wins here even though ISBN stays the priority
@@ -39,59 +41,19 @@ export const getGoogleBookMetadata = async (
 
   console.log("[google] [getGoogleBookMetadata]", { response })
 
-  if (!response.items?.length) {
-    titleRefined = refineTitle(title ?? "", 1)
+  for (const level of TITLE_REFINE_LEVELS) {
+    const isMatchFound = !!response.items?.length
+
+    if (isMatchFound) break
+
+    titleRefined = refineTitle(title, level)
 
     console.log(
       `[getGoogleBookMetadata]`,
-      `was unable to find result for isbn:${isbn} or title:${title} or volumeId:${googleVolumeId}. Trying to refine title with 1 deepness ${titleRefined}`,
+      `was unable to find result for isbn:${isbn} or title:${title} or volumeId:${googleVolumeId}. Trying to refine title with ${level} deepness ${titleRefined}`,
     )
 
     response = await findByTitle(titleRefined, apiKey, config)
-
-    if (!response.items?.length) {
-      titleRefined = refineTitle(title ?? "", 2)
-
-      console.log(
-        `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 2 deepness ${titleRefined}`,
-      )
-
-      response = await findByTitle(titleRefined, apiKey, config)
-    }
-
-    if (!response.items?.length) {
-      titleRefined = refineTitle(title ?? "", 3)
-
-      console.log(
-        `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 3 deepness ${titleRefined}`,
-      )
-
-      response = await findByTitle(titleRefined, apiKey, config)
-    }
-
-    if (!response.items?.length) {
-      titleRefined = refineTitle(title ?? "", 4)
-
-      console.log(
-        `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 4 deepness ${titleRefined}`,
-      )
-
-      response = await findByTitle(titleRefined, apiKey, config)
-    }
-
-    if (!response.items?.length) {
-      titleRefined = refineTitle(title ?? "", 5)
-
-      console.log(
-        `[getGoogleBookMetadata]`,
-        `was unable to find result for ${titleRefined}. Trying to refine title with 5 deepness ${titleRefined}`,
-      )
-
-      response = await findByTitle(titleRefined, apiKey, config)
-    }
   }
 
   console.log(
