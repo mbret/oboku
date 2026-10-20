@@ -1,4 +1,8 @@
-import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
+import type {
+  BookMetadata,
+  LEGACY_CATALOG_SOURCE_NAME,
+  ReorderableBookMetadataSource,
+} from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
 import type { DeprecatedBookDocType, InsertAbleBookDocType } from "./docTypes"
 import type { RxDbMeta } from "./rxdb"
@@ -131,9 +135,14 @@ export type BookDocType = CouchDBMeta &
      *
      * `user` is always highest and `link` always lowest, so only the
      * reorderable subset is persisted here. When omitted, the default order
-     * `["file", "googleBookApi"]` is used.
+     * `["file", "catalog"]` is used. Older versions of the app write the
+     * catalog as {@link LEGACY_CATALOG_SOURCE_NAME}: read it through
+     * {@link getOrderedBookMetadataSources}.
      */
-    metadataSourcePriority?: ReorderableBookMetadataSource[]
+    metadataSourcePriority?: (
+      | ReorderableBookMetadataSource
+      | typeof LEGACY_CATALOG_SOURCE_NAME
+    )[]
     /**
      * Opaque key identifying the cover image currently stored in the
      * bucket for this book. Built via {@link buildBookBucketCoverKey} on

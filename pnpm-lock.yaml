@@ -669,6 +669,12 @@ importers:
 
   packages/shared:
     dependencies:
+      '@prose-reader/archive-reader':
+        specifier: ^30.2.0
+        version: 30.2.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/metadata-fetcher':
+        specifier: ^30.2.0
+        version: 30.2.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -4344,6 +4350,10 @@ packages:
 
   '@prose-reader/koreader@30.2.0':
     resolution: {integrity: sha512-bRwt3C7Ancz2itZUuKjGRxvdDdTAc8T7d3s8eiQeU71EZKGn7SqdAKoassUj1tE6j6cYkUN1mx0i04XicbSowQ==}
+
+  '@prose-reader/metadata-fetcher@30.2.0':
+    resolution: {integrity: sha512-YmWcnhzH7ddsOgSZk+AFNl6dvs61sI7kQYG9Bw7PN5nnay4yFMnpk89CSyrggqCwgd3pv8UfwMBbZyReXfxeKQ==}
+    engines: {node: '>=22.12'}
 
   '@prose-reader/react-reader@30.2.0':
     resolution: {integrity: sha512-t9Bi9Z6r+NHkLF42ezGSsqh/iWxaojl4YdB+GFciiIJN6t/Xow9EjP6vLEF0aPR3G5ElAVp7mv+NDUxLr/+IFA==}
@@ -16829,6 +16839,19 @@ snapshots:
     dependencies:
       '@prose-reader/cfi': 30.2.0
       '@prose-reader/shared': 30.2.0
+
+  '@prose-reader/metadata-fetcher@30.2.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)':
+    dependencies:
+      '@prose-reader/archive-reader': 30.2.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/shared': 30.2.0
+      xmldoc: 3.0.0
+    transitivePeerDependencies:
+      - '@zip.js/zip.js'
+      - buffer
+      - jszip
+      - libarchive.js
+      - node-unrar-js
+      - unzipper
 
   '@prose-reader/react-reader@30.2.0(4ece7013d92588808cd653d20fd3dfda)':
     dependencies:

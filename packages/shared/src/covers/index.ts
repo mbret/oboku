@@ -1,4 +1,8 @@
-import { type BookMetadata, isBookMetadataSource } from "../metadata"
+import {
+  type BookMetadata,
+  isBookMetadataSource,
+  LEGACY_CATALOG_SOURCE_NAME,
+} from "../metadata"
 
 /**
  * Object key under which a user's book cover image is stored in the
@@ -51,6 +55,8 @@ export const getBookBucketCoverKeyType = (
   const idx = key.indexOf(":")
   if (idx <= 0) return undefined
   const prefix = key.slice(0, idx)
+
+  if (prefix === LEGACY_CATALOG_SOURCE_NAME) return prefix
 
   return isBookMetadataSource(prefix) ? prefix : undefined
 }

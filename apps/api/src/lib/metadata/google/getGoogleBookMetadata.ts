@@ -1,4 +1,4 @@
-import type { GoogleBookApiMetadata } from "@oboku/shared"
+import type { LegacyGoogleBookApiMetadata } from "@oboku/shared"
 import { parseGoogleMetadata } from "./parseGoogleMetadata.js"
 import { refineTitle } from "../refineTitle.js"
 import {
@@ -23,7 +23,7 @@ export const getGoogleBookMetadata = async (
   input: GoogleBookLookupInput,
   apiKey: string,
   config: AppConfigService,
-): Promise<GoogleBookApiMetadata | undefined> => {
+): Promise<LegacyGoogleBookApiMetadata | undefined> => {
   const { isbn, googleVolumeId, title } = input
   let titleRefined = title ?? ""
   /**

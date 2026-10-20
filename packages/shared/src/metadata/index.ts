@@ -1,15 +1,26 @@
+import type { ResolvedMetadata } from "@prose-reader/archive-reader"
+import type { MetadataMatch } from "@prose-reader/metadata-fetcher"
+import {
+  LEGACY_CATALOG_SOURCE_NAME,
+  type LegacyFileMetadata,
+  type LegacyGoogleBookApiMetadata,
+  toCurrentBookMetadataSourceName,
+} from "./legacy"
+
+export * from "./fields"
+export * from "./legacy"
+
 /**
- * Every property a book metadata entry can carry across all sources.
+ * Every property a book's metadata can show, whichever source it comes
+ * from: what {@link getBookMetadataFields} reads out of any entry, and the
+ * shape of the **merged** view consumers build from those by priority (e.g.
+ * `getMetadataFromBook`), where any field may be present regardless of the
+ * source that supplied it.
  *
- * This is the single source of truth for field shape. Each per-source
- * variant below picks the subset it can actually advertise. Fields not
- * supported by a given source are typed as `?: never` so reads still
- * compile (yielding `undefined`) but writes are caught at compile time.
- *
- * Also doubles as the shape of the **merged** view returned by consumers
- * (e.g. `getMetadataFromBook`): once values from each source are
- * collapsed by priority, the result is source-agnostic, so any field may
- * be present regardless of which variant supplied it.
+ * The flat variants ({@link LinkMetadata}, {@link UserMetadata}) store these
+ * fields directly, each picking the subset it can advertise. Fields a
+ * variant cannot advertise are typed as `?: never` so reads still compile
+ * (yielding `undefined`) but writes are caught at compile time.
  */
 export type BookMetadataFields = {
   title?: string | number
@@ -49,9 +60,9 @@ export type BookMetadataFields = {
   modifiedAt?: string
 }
 
-type BookMetadataField = keyof BookMetadataFields
+export type BookMetadataField = keyof BookMetadataFields
 
-type BookMetadataVariant<
+export type BookMetadataVariant<
   TType extends string,
   TKeys extends BookMetadataField,
 > = { type: TType } & Pick<BookMetadataFields, TKeys> & {
@@ -59,47 +70,25 @@ type BookMetadataVariant<
   }
 
 /**
- * Metadata extracted by querying the Google Books API. Cannot advertise
- * provider-specific identifiers (`isbn`, `googleVolumeId`), local-archive
- * fields (`contentType`, `size`), or `rights`.
+ * What the book's file says about it, as archive-reader's `resolveArchive`
+ * reads it from the container (EPUB OPF, ComicInfo, …). `contentType` is
+ * the file's own, which the container does not describe.
  */
-export type GoogleBookApiMetadata = BookMetadataVariant<
-  "googleBookApi",
-  | "title"
-  | "authors"
-  | "description"
-  | "formatType"
-  | "rating"
-  | "coverLink"
-  | "pageCount"
-  | "date"
-  | "publisher"
-  | "languages"
-  | "subjects"
->
+export type FileMetadata = {
+  type: "file"
+  contentType?: string
+  metadata: ResolvedMetadata
+}
 
 /**
- * Metadata extracted from the file's contents (EPUB OPF or RAR/ZIP scan).
- * No descriptions, ratings or format types. Identifiers are advertised when
- * the container embeds them: `isbn` from EPUB's `dc:identifier` or CBZ's
- * ComicInfo `<GTIN>`, and `googleVolumeId` from a `GoogleBooks` identifier
- * in the OPF.
+ * The online catalog record matched to the book: the best accepted match
+ * `@prose-reader/metadata-fetcher` returned, kept as it returns it minus the
+ * provider's raw record. `version` is the schema version of the fetch that
+ * produced it.
  */
-export type FileMetadata = BookMetadataVariant<
-  "file",
-  | "title"
-  | "authors"
-  | "publisher"
-  | "rights"
-  | "languages"
-  | "date"
-  | "subjects"
-  | "coverLink"
-  | "coverConfidence"
-  | "pageCount"
-  | "contentType"
-  | "isbn"
-  | "googleVolumeId"
+export type CatalogMetadata = { type: "catalog"; version: number } & Omit<
+  MetadataMatch,
+  "raw"
 >
 
 /**
@@ -125,10 +114,12 @@ export type LinkMetadata = BookMetadataVariant<
 export type UserMetadata = BookMetadataVariant<"user", "isbn">
 
 export type BookMetadata =
-  | GoogleBookApiMetadata
   | FileMetadata
+  | CatalogMetadata
   | LinkMetadata
   | UserMetadata
+  | LegacyFileMetadata
+  | LegacyGoogleBookApiMetadata
 
 /**
  * Canonical set of metadata sources whose relative priority can be
@@ -144,10 +135,7 @@ export type BookMetadata =
  * Adding a new reorderable source therefore requires editing exactly
  * this array — type, persistence shape, and runtime checks all follow.
  */
-export const REORDERABLE_BOOK_METADATA_SOURCES = [
-  "file",
-  "googleBookApi",
-] as const
+export const REORDERABLE_BOOK_METADATA_SOURCES = ["file", "catalog"] as const
 
 export type ReorderableBookMetadataSource =
   (typeof REORDERABLE_BOOK_METADATA_SOURCES)[number]
@@ -167,10 +155,19 @@ export const isReorderableBookMetadataSource = (
   (REORDERABLE_BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
 
 /**
- * Every metadata source whose entries can appear on a book document —
- * also the union of values surfaced in the user-facing priority pane.
+ * Every source a book's metadata can come from — also the rows of the
+ * user-facing priority pane. Each entry of `book.metadata` belongs to one:
+ * see {@link getBookMetadataSource}.
  */
-export type BookMetadataSource = BookMetadata["type"]
+export type BookMetadataSource = Exclude<
+  BookMetadata["type"],
+  typeof LEGACY_CATALOG_SOURCE_NAME
+>
+
+export const getBookMetadataSource = ({
+  type,
+}: Pick<BookMetadata, "type">): BookMetadataSource =>
+  type === LEGACY_CATALOG_SOURCE_NAME ? "catalog" : type
 
 /**
  * Builds the full, ordered list of metadata sources from the user-defined
@@ -194,7 +191,9 @@ export const getOrderedBookMetadataSources = (
   middle: ReadonlyArray<string> | undefined,
 ): BookMetadataSource[] => {
   const ordered = new Set<ReorderableBookMetadataSource>(
-    (middle ?? []).filter(isReorderableBookMetadataSource),
+    (middle ?? [])
+      .map(toCurrentBookMetadataSourceName)
+      .filter(isReorderableBookMetadataSource),
   )
   for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES) {
     ordered.add(source)
@@ -216,12 +215,11 @@ export const isBookMetadataSource = (
   (BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
 
 /**
- * Runtime mirror of each variant's writable field set, used by UIs that
- * render per-source field lists. Pinned to the type with `satisfies` so
- * the two cannot drift.
+ * The display fields each source can show, in the order the sources pane
+ * previews them.
  */
 export const BOOK_METADATA_FIELDS_BY_SOURCE = {
-  googleBookApi: [
+  catalog: [
     "title",
     "authors",
     "description",

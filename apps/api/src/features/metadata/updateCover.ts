@@ -3,6 +3,8 @@ import {
   type BookMetadata,
   buildBookBucketCoverKey,
   getBookCoverKey,
+  getBookMetadataFields,
+  getBookMetadataSource,
 } from "@oboku/shared"
 import type { Extractor } from "node-unrar-js"
 import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket.js"
@@ -47,12 +49,16 @@ export const updateCover = async ({
     book.metadataSourcePriority,
     { catalogIdentityIsConfirmed },
   )
-  const expectedBucketCoverKey = metadataForCover?.coverLink
-    ? buildBookBucketCoverKey({
-        type: metadataForCover.type,
-        value: metadataForCover.coverLink,
-      })
+  const coverLink = metadataForCover
+    ? getBookMetadataFields(metadataForCover).coverLink
     : undefined
+  const expectedBucketCoverKey =
+    metadataForCover && coverLink
+      ? buildBookBucketCoverKey({
+          type: metadataForCover.type,
+          value: coverLink,
+        })
+      : undefined
 
   if (
     !force &&
@@ -67,15 +73,11 @@ export const updateCover = async ({
     return {}
   }
 
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    archiveExtractor
-  ) {
+  if (metadataForCover?.type === "file" && coverLink && archiveExtractor) {
     const saved = await saveCoverFromRarArchiveToBucket(
       coverObjectKey,
       archiveExtractor,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 
@@ -84,15 +86,11 @@ export const updateCover = async ({
       : {}
   }
 
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    tmpFilePath
-  ) {
+  if (metadataForCover?.type === "file" && coverLink && tmpFilePath) {
     const saved = await saveCoverFromZipArchiveToBucket(
       coverObjectKey,
       tmpFilePath,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 
@@ -101,13 +99,14 @@ export const updateCover = async ({
       : {}
   }
 
-  if (
-    metadataForCover?.type === "googleBookApi" &&
-    metadataForCover.coverLink
-  ) {
+  const isCatalogCover =
+    metadataForCover !== undefined &&
+    getBookMetadataSource(metadataForCover) === "catalog"
+
+  if (isCatalogCover && coverLink) {
     const saved = await saveCoverFromExternalLinkToBucket(
       coverObjectKey,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 

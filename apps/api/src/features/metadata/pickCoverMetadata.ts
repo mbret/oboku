@@ -1,18 +1,39 @@
 import {
   type BookDocType,
   type BookMetadata,
+  type CatalogMetadata,
+  getBookMetadataFields,
+  getBookMetadataSource,
   getOrderedBookMetadataSources,
+  LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 
 type CoverCertainty = {
   /**
-   * Whether the catalog match describes *this* book rather than a plausible
-   * neighbour. Today the lookup either addressed one Google Books volume id
-   * or it searched; `@prose-reader/metadata-fetcher` states it as a 0–1
-   * score that an agreeing ISBN, GTIN or shared identifier pins to 1.
+   * Whether a legacy catalog entry describes *this* book rather than a
+   * plausible neighbour: whether its lookup addressed one Google Books
+   * volume id. A catalog match states it itself ({@link isIdentityConfirmed}).
    */
   catalogIdentityIsConfirmed?: boolean
 }
+
+const IDENTITY_MATCH_FIELDS: ReadonlyArray<
+  CatalogMetadata["signals"][number]["field"]
+> = ["isbn", "gtin", "identifiers"]
+
+/**
+ * Whether an identifier settled the match: metadata-fetcher pins the score
+ * of a match to 1 when an ISBN, a GTIN or a scheme-scoped identifier agrees.
+ */
+const isIdentityConfirmed = ({
+  score,
+  signals,
+}: Pick<CatalogMetadata, "score" | "signals">) =>
+  score === 1 &&
+  signals.some(
+    (signal) =>
+      IDENTITY_MATCH_FIELDS.includes(signal.field) && signal.score === 1,
+  )
 
 /**
  * Whether the source is certain this image is *this book's* cover. Two
@@ -20,7 +41,7 @@ type CoverCertainty = {
  * answer one of them for free:
  *
  *  - does the source describe this book? An archive *is* the book; a catalog
- *    is only as sure as its identity match ({@link CoverCertainty}).
+ *    is only as sure as its identity match.
  *  - does the source name this image as the cover? An archive answers with
  *    `coverConfidence`, `assumed` being the first page of a container that
  *    names none. A catalog's cover is always its own declaration.
@@ -32,19 +53,24 @@ const isCertainCover = (
   metadata: BookMetadata,
   { catalogIdentityIsConfirmed }: CoverCertainty,
 ): boolean => {
-  if (!metadata.coverLink) return false
+  const { coverLink, coverConfidence } = getBookMetadataFields(metadata)
+
+  if (!coverLink) return false
 
   switch (metadata.type) {
-    case "googleBookApi":
+    case "catalog":
+      return isIdentityConfirmed(metadata)
+    case LEGACY_CATALOG_SOURCE_NAME:
       return catalogIdentityIsConfirmed === true
     case "file":
-      return metadata.coverConfidence === "derived"
+      return coverConfidence === "derived"
     default:
       return false
   }
 }
 
-const hasCover = (metadata: BookMetadata): boolean => !!metadata.coverLink
+const hasCover = (metadata: BookMetadata): boolean =>
+  !!getBookMetadataFields(metadata).coverLink
 
 /**
  * Picks the metadata entry that should provide the cover.
@@ -73,7 +99,8 @@ export const pickCoverMetadata = (
   ) => {
     for (const source of orderedSources) {
       const match = metadataList.find(
-        (metadata) => metadata.type === source && isEligible(metadata),
+        (metadata) =>
+          getBookMetadataSource(metadata) === source && isEligible(metadata),
       )
 
       if (match) return match

@@ -1,6 +1,7 @@
-import type { FileMetadata } from "@oboku/shared"
+import type { FileMetadata, LegacyFileMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
+import { getBookMetadataEntryFields } from "../../metadata/fields"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import {
@@ -10,43 +11,47 @@ import {
 } from "./formatters"
 
 type Props = {
-  metadata: DeepReadonlyObject<FileMetadata> | undefined
+  entry: DeepReadonlyObject<FileMetadata | LegacyFileMetadata> | undefined
 }
 
-export const FileSourceContent = ({ metadata }: Props) => (
-  <PageSection title="Fields" dense>
-    <MetadataFieldRow label={L.title} value={metadata?.title?.toString()} />
-    <MetadataFieldRow label={L.authors} value={formatList(metadata?.authors)} />
-    <MetadataFieldRow label={L.publisher} value={metadata?.publisher} />
-    <MetadataFieldRow label={L.rights} value={metadata?.rights} />
-    <MetadataFieldRow
-      label={L.languages}
-      value={formatList(metadata?.languages)}
-    />
-    <MetadataFieldRow
-      label={L.date}
-      value={formatBookMetadataDate(metadata?.date)}
-    />
-    <MetadataFieldRow
-      label={L.subjects}
-      value={formatList(metadata?.subjects)}
-    />
-    <MetadataFieldRow label={L.coverLink} value={metadata?.coverLink} />
-    <MetadataFieldRow
-      label={L.coverConfidence}
-      value={formatCoverConfidence(metadata?.coverConfidence)}
-    />
-    <MetadataFieldRow
-      label={L.pageCount}
-      value={
-        metadata?.pageCount !== undefined ? `${metadata.pageCount}` : undefined
-      }
-    />
-    <MetadataFieldRow label={L.contentType} value={metadata?.contentType} />
-    <MetadataFieldRow label={L.isbn} value={metadata?.isbn} />
-    <MetadataFieldRow
-      label={L.googleVolumeId}
-      value={metadata?.googleVolumeId}
-    />
-  </PageSection>
-)
+export const FileSourceContent = ({ entry }: Props) => {
+  const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+
+  return (
+    <PageSection title="Fields" dense>
+      <MetadataFieldRow label={L.title} value={fields?.title?.toString()} />
+      <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />
+      <MetadataFieldRow label={L.publisher} value={fields?.publisher} />
+      <MetadataFieldRow label={L.rights} value={fields?.rights} />
+      <MetadataFieldRow
+        label={L.languages}
+        value={formatList(fields?.languages)}
+      />
+      <MetadataFieldRow
+        label={L.date}
+        value={formatBookMetadataDate(fields?.date)}
+      />
+      <MetadataFieldRow
+        label={L.subjects}
+        value={formatList(fields?.subjects)}
+      />
+      <MetadataFieldRow label={L.coverLink} value={fields?.coverLink} />
+      <MetadataFieldRow
+        label={L.coverConfidence}
+        value={formatCoverConfidence(fields?.coverConfidence)}
+      />
+      <MetadataFieldRow
+        label={L.pageCount}
+        value={
+          fields?.pageCount !== undefined ? `${fields.pageCount}` : undefined
+        }
+      />
+      <MetadataFieldRow label={L.contentType} value={fields?.contentType} />
+      <MetadataFieldRow label={L.isbn} value={fields?.isbn} />
+      <MetadataFieldRow
+        label={L.googleVolumeId}
+        value={fields?.googleVolumeId}
+      />
+    </PageSection>
+  )
+}

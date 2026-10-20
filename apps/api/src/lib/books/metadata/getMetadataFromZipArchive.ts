@@ -1,11 +1,11 @@
-import type { FileMetadata } from "@oboku/shared"
+import type { LegacyFileMetadata } from "@oboku/shared"
 import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
 import { createUnzipperArchiveSource } from "./unzipperArchive.js"
 
 export const getMetadataFromZipArchive = async (
   tmpFilePath: string,
   contentType: string,
-): Promise<FileMetadata> => {
+): Promise<LegacyFileMetadata> => {
   const archive = await createUnzipperArchiveSource(tmpFilePath)
 
   try {
