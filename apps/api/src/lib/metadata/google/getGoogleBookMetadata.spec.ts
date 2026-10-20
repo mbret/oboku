@@ -70,4 +70,16 @@ describe("getGoogleBookMetadata", () => {
       title: "Blame! Vol. 2",
     })
   })
+
+  it("returns no metadata when nothing matches", async () => {
+    vi.mocked(findByTitle).mockResolvedValue(noMatch)
+
+    const metadata = await getGoogleBookMetadata(
+      { title: "Blame v02 [Nihei] (Glenat)" },
+      "api-key",
+      config,
+    )
+
+    expect(metadata).toBeUndefined()
+  })
 })

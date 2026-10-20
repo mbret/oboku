@@ -61,8 +61,9 @@ export const getGoogleBookMetadata = async (
   )
 
   const parsedMetadata = parseGoogleMetadata(response)
+  const hasMetadata = Object.keys(parsedMetadata).length > 0
 
-  if (!Object.keys(parsedMetadata)) return undefined
+  if (!hasMetadata) return undefined
 
   return {
     ...parsedMetadata,
