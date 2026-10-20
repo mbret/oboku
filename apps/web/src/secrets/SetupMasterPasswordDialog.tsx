@@ -38,7 +38,9 @@ export const SetupMasterPasswordDialog = memo(
       },
     })
     const hasPassword = !!accountSettings?.masterEncryptionKey
-    const { mutate: updatePassword } = useUpdateMasterKey()
+    const { mutate: updatePassword } = useUpdateMasterKey({
+      meta: { suppressGlobalErrorToast: true },
+    })
 
     const onInnerClose = () => {
       onClose()
