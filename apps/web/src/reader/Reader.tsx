@@ -25,6 +25,10 @@ import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
+import {
+  type KoreaderPositionCheck,
+  useKoreaderPositionCheck,
+} from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 export const Reader = memo(function Reader({
   bookId,
@@ -41,6 +45,11 @@ export const Reader = memo(function Reader({
     error: manifestError,
   } = useManifest(bookId)
   const isBookError = !!manifestError
+  const koreaderPositionCheck = useKoreaderPositionCheck({
+    bookId,
+    koreaderDocument,
+    enabled: !isPreview,
+  })
   const localSettings = useLocalSettings([
     "readerFloatingProgress",
     "readerFloatingTime",
@@ -112,13 +121,19 @@ export const Reader = memo(function Reader({
         </ReactReader>
       </Box>
       {/* Need to be after reader container so it shows on top and hide loading */}
-      {!isReaderMounted && <BookLoading />}
+      {!isReaderMounted && (
+        <BookLoading
+          isBookLoaded={!!manifest}
+          koreaderPositionCheck={koreaderPositionCheck}
+        />
+      )}
       <Effects
         bookId={bookId}
         isPreview={isPreview}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
         koreaderDocument={koreaderDocument}
+        koreaderPositionCheck={koreaderPositionCheck}
         containerRef={readerContainerRef}
       />
     </>
@@ -131,6 +146,7 @@ const Effects = memo(function Effects({
   isUsingWebStreamer,
   manifest,
   koreaderDocument,
+  koreaderPositionCheck,
   containerRef,
 }: {
   bookId: string
@@ -138,6 +154,7 @@ const Effects = memo(function Effects({
   isUsingWebStreamer?: boolean
   manifest?: Manifest
   koreaderDocument?: string
+  koreaderPositionCheck: KoreaderPositionCheck
   containerRef: RefObject<HTMLElement | null>
 }) {
   useCreateReader({
@@ -145,6 +162,8 @@ const Effects = memo(function Effects({
     isPreview,
     isUsingWebStreamer,
     manifest,
+    koreaderDocument,
+    koreaderPositionCheck,
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })

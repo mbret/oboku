@@ -9,6 +9,22 @@ export enum ReadingStateState {
   Reading = "READING",
 }
 
+/** A reading position a KOReader sync server keeps for a book. */
+export type BookKoreaderSyncPosition = {
+  /** The `document` the server files it under: the digest of a file of the book. */
+  document: string
+  /** In KOReader's form: an xpointer, or a page number for a book with pages. */
+  progress: string
+  /** How far into the book it is, from 0 to 1. */
+  percentage: number
+  /** The name of the device that pushed it, `null` when the server does not say. */
+  device: string | null
+  /** The id of the device that pushed it, `null` when it sent none. */
+  deviceId: string | null
+  /** When the server received it, `null` when the server does not say. */
+  updatedAt: string | null
+}
+
 export type BookDocType = CouchDBMeta &
   RxDbMeta & {
     createdAt: number
@@ -67,6 +83,15 @@ export type BookDocType = CouchDBMeta &
      * it existed.
      */
     readingStateCurrentBookmarkKoreaderDocument?: string | null
+    /**
+     * The position the connected KOReader sync server kept for the book when
+     * oboku last fetched it, as the book opened: where another device left
+     * it. The book opens there rather than at its bookmark when it is for
+     * the same file and newer. `null` when the server kept none, or no
+     * server was connected. Missing on a book whose position oboku never
+     * fetched.
+     */
+    readingStateKoreaderSyncPosition?: BookKoreaderSyncPosition | null
     /**
      * How far into the book what the reader last saw reaches, from 0 to 1:
      * the pages on screen count as read, so page 9 of 10 is 0.9 and the last
@@ -185,6 +210,7 @@ export const createBookDefaults = (): Omit<
   readingStateCurrentState: ReadingStateState.NotStarted,
   ...emptyBookmark,
   readingStateCurrentBookmarkLocationUpdatedAt: null,
+  readingStateKoreaderSyncPosition: null,
   readingStateReachedProgressPercent: 0,
   readingStateUpdatedAt: null,
 })

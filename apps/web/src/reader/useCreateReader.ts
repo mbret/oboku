@@ -16,8 +16,12 @@ import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
 import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
+import type { BookDocType, BookKoreaderSyncPosition } from "@oboku/shared"
+import type { DeepReadonly } from "rxdb"
 import { createBookQueryOptions } from "../books/states"
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
+import { getKoreaderProgressToOpenAt } from "../koreader/getKoreaderProgressToOpenAt"
+import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 export const createAppReader = koreaderEnhancer(
   pdfEnhancer(
@@ -31,6 +35,32 @@ export const createAppReader = koreaderEnhancer(
   ),
 )
 
+type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
+
+const getOpeningTarget = ({
+  book,
+  pulledKoreaderPosition,
+  koreaderDocument,
+}: {
+  book: DeepReadonly<BookDocType>
+  pulledKoreaderPosition: BookKoreaderSyncPosition | null | undefined
+  koreaderDocument: string | undefined
+}): OpeningTarget => {
+  const koreaderProgress = getKoreaderProgressToOpenAt({
+    book,
+    pulledPosition: pulledKoreaderPosition,
+    koreaderDocument,
+  })
+
+  if (koreaderProgress) {
+    return { type: "koreaderProgress", value: koreaderProgress }
+  }
+
+  const cfi = book.readingStateCurrentBookmarkLocation
+
+  return cfi ? { type: "cfi", value: cfi } : undefined
+}
+
 /**
  * A reader lives for a single book: we create it once we have the manifest,
  * the restored reading location and the container, mount it right away and
@@ -43,18 +73,27 @@ export const useCreateReader = ({
   bookId,
   isPreview,
   manifest,
+  koreaderDocument,
+  koreaderPositionCheck,
   containerRef,
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
   isPreview: boolean
   manifest?: Manifest
+  koreaderDocument?: string
+  koreaderPositionCheck: KoreaderPositionCheck
   containerRef: RefObject<HTMLElement | null>
 }) => {
   const { data: bookOnce } = useEnsureQueryData$(
     createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
-  const isRestoredLocationReady = isPreview || !!bookOnce
+  const isKoreaderPositionChecked = koreaderPositionCheck.status === "done"
+  const pulledKoreaderPosition = isKoreaderPositionChecked
+    ? koreaderPositionCheck.pulledPosition
+    : undefined
+  const isRestoredLocationReady =
+    isPreview || (!!bookOnce && isKoreaderPositionChecked)
 
   useEffect(() => {
     const containerElement = containerRef.current
@@ -68,13 +107,18 @@ export const useCreateReader = ({
       return
     }
 
-    const cfi = isPreview
-      ? undefined
-      : bookOnce?.readingStateCurrentBookmarkLocation || undefined
+    const target =
+      isPreview || !bookOnce
+        ? undefined
+        : getOpeningTarget({
+            book: bookOnce,
+            pulledKoreaderPosition,
+            koreaderDocument,
+          })
 
     const instance = createAppReader({
       manifest,
-      target: cfi ? { type: "cfi", value: cfi } : undefined,
+      target,
       ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
         pageTurnAnimation: "none",
       }),
@@ -128,6 +172,8 @@ export const useCreateReader = ({
     isRestoredLocationReady,
     bookId,
     bookOnce,
+    koreaderDocument,
+    pulledKoreaderPosition,
     containerRef,
   ])
 }
