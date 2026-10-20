@@ -19,13 +19,7 @@ export const useBackgroundReplication = () => {
   const { online } = useNetworkState()
   const dbName = useActiveProfile().data?.dbName
   const isAuthenticated = useIsAuthenticated()
-  const replicateBook = useReplicateCollection()
-  const replicateTag = useReplicateCollection()
-  const replicateCollection = useReplicateCollection()
-  const replicateLink = useReplicateCollection()
-  const replicateSettings = useReplicateCollection()
-  const replicateDatasource = useReplicateCollection()
-  const replicateSecret = useReplicateCollection()
+  const replicate = useReplicateCollection()
   const [replicationStates, setReplicationStates] = useState<
     ReplicationState[]
   >([])
@@ -64,50 +58,19 @@ export const useBackgroundReplication = () => {
   useEffect(() => {
     if (!database || !dbName) return
 
-    const states = [
-      replicateBook({
-        collection: database.book,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI,
-      }),
-      replicateDatasource({
-        collection: database.datasource,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_2,
-      }),
-      replicateTag({
-        collection: database?.tag,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_2,
-      }),
-      replicateLink({
-        collection: database.link,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_3,
-      }),
-      replicateSettings({
-        collection: database.settings,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_3,
-      }),
-      replicateCollection({
-        collection: database.obokucollection,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_4,
-      }),
-      replicateSecret({
-        collection: database.secret,
-        dbName,
-        live: true,
-        host: config?.API_COUCH_URI_4,
-      }),
+    const collectionsToReplicate = [
+      { collection: database.book, host: config?.API_COUCH_URI },
+      { collection: database.datasource, host: config?.API_COUCH_URI_2 },
+      { collection: database.tag, host: config?.API_COUCH_URI_2 },
+      { collection: database.link, host: config?.API_COUCH_URI_3 },
+      { collection: database.settings, host: config?.API_COUCH_URI_3 },
+      { collection: database.obokucollection, host: config?.API_COUCH_URI_4 },
+      { collection: database.secret, host: config?.API_COUCH_URI_4 },
     ]
+
+    const states = collectionsToReplicate.map(({ collection, host }) =>
+      replicate({ collection, dbName, live: true, host }),
+    )
 
     setReplicationStates(states)
 
@@ -116,18 +79,7 @@ export const useBackgroundReplication = () => {
         state.remove()
       })
     }
-  }, [
-    database,
-    replicateBook,
-    replicateDatasource,
-    replicateTag,
-    replicateLink,
-    replicateSettings,
-    replicateCollection,
-    replicateSecret,
-    dbName,
-    config,
-  ])
+  }, [database, replicate, dbName, config])
 
   useEffect(() => {
     if (!online || !isAuthenticated) return
