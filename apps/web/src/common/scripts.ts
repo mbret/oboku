@@ -1,43 +1,9 @@
-import {
-  defer,
-  filter,
-  first,
-  merge,
-  mergeMap,
-  Observable,
-  of,
-  retry,
-  timer,
-} from "rxjs"
-import { Logger } from "../debug/logger.shared"
-import { navigatorOnLine$ } from "./network/onLine"
+import { defer, first, merge, Observable, of } from "rxjs"
+import { retryWhenOnLine } from "./network/onLine"
+import { reportErrors } from "./rxjs/operators"
 
 export const retryOnFailure = <O>(stream: Observable<O>) =>
-  stream.pipe(
-    /**
-     * In case of error we retry in 1mn by default.
-     * If network is offline, we wait for online and
-     * retry right away. If we were online, it's unexpected
-     * and will wait a couple of minutes before retrying
-     */
-    retry({
-      delay: (error, retryCount) => {
-        Logger.error(error)
-
-        return navigatorOnLine$.pipe(
-          first(),
-          mergeMap((onLine) => {
-            if (onLine) return timer(retryCount > 5 ? 1000 * 60 * 5 : 1)
-
-            return navigatorOnLine$.pipe(
-              filter((onLine) => onLine),
-              first(),
-            )
-          }),
-        )
-      },
-    }),
-  )
+  stream.pipe(reportErrors, retryWhenOnLine)
 
 export const loadScript = ({ id, src }: { id: string; src: string }) => {
   return defer(() => {

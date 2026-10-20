@@ -7,19 +7,12 @@ import {
 import { cleanup, renderHook } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-const mocks = await vi.hoisted(async function createSyncKoreaderMocks() {
-  const { BehaviorSubject } = await import("rxjs")
-
+const mocks = vi.hoisted(function createSyncKoreaderMocks() {
   return {
-    onLine$: new BehaviorSubject(true),
     pushKoreaderPosition: vi.fn(async function pushToFakeServer(
       _position: KoreaderSyncConnectionPushPositionData["body"],
     ) {}),
   }
-})
-
-vi.mock("../../common/network/onLine", function mockOnLine() {
-  return { navigatorOnLine$: mocks.onLine$ }
 })
 
 vi.mock("./usePushKoreaderPosition", function mockPushKoreaderPosition() {
@@ -104,9 +97,14 @@ const holdNextPush = () => {
   return answerHeldPush
 }
 
+const setOnLine = (onLine: boolean) => {
+  vi.spyOn(navigator, "onLine", "get").mockReturnValue(onLine)
+  window.dispatchEvent(new Event(onLine ? "online" : "offline"))
+}
+
 const toggleNetwork = () => {
-  mocks.onLine$.next(false)
-  mocks.onLine$.next(true)
+  setOnLine(false)
+  setOnLine(true)
 }
 
 const renderSyncKoreaderPositions = () =>
@@ -118,7 +116,7 @@ describe("useSyncKoreaderPositions", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     mocks.pushKoreaderPosition.mockReset()
-    mocks.onLine$.next(true)
+    setOnLine(true)
     setActiveProfileId(PROFILE_ID)
   })
 
@@ -202,7 +200,7 @@ describe("useSyncKoreaderPositions", () => {
   })
 
   it("waits for the network, then pushes only the latest position of each book", async () => {
-    mocks.onLine$.next(false)
+    setOnLine(false)
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
@@ -211,7 +209,7 @@ describe("useSyncKoreaderPositions", () => {
 
     expect(mocks.pushKoreaderPosition).not.toHaveBeenCalled()
 
-    mocks.onLine$.next(true)
+    setOnLine(true)
     await vi.advanceTimersByTimeAsync(0)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledExactlyOnceWith(
@@ -219,17 +217,15 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("keeps a position whose push failed, and pushes it when the network comes back", async () => {
+  it("pushes a position again after its push failed", async () => {
     mocks.pushKoreaderPosition.mockRejectedValueOnce(new Error("unreachable"))
-    vi.spyOn(console, "error").mockImplementation(function silence() {})
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
 
-    toggleNetwork()
-    await vi.advanceTimersByTimeAsync(0)
+    await vi.advanceTimersByTimeAsync(1)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
     expect(mocks.pushKoreaderPosition).toHaveBeenLastCalledWith(
