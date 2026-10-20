@@ -18,7 +18,7 @@ import { SelectableCollectionList } from "../../../../collections/lists/Selectab
 import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
 import { openAddCollectionDialog } from "../../../../library/shelves/AddCollectionDialog"
 import { EntitySelectionView } from "../../../../common/selection"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import type { ROUTES } from "../../../../navigation/routes"
 
 const getCollectionSearchableText = (
@@ -57,7 +57,6 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!bookId || book === null) return <NotFoundPage />

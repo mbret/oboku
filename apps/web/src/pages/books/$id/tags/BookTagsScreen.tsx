@@ -17,7 +17,7 @@ import { useTags } from "../../../../tags/helpers"
 import { SelectableTagList } from "../../../../tags/tagList/SelectableTagList"
 import { openAddTagDialog } from "../../../../tags/AddTagDialog"
 import { EntitySelectionView } from "../../../../common/selection"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import type { ROUTES } from "../../../../navigation/routes"
 
 const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
@@ -50,7 +50,6 @@ export const BookTagsScreen = memo(function BookTagsScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!bookId || book === null) return <NotFoundPage />

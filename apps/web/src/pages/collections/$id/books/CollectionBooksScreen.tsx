@@ -10,7 +10,7 @@ import {
 import { useCollection } from "../../../../collections/useCollection"
 import { useCollectionComputedMetadata } from "../../../../collections/useCollectionComputedMetadata"
 import { useIsCollectionProtected } from "../../../../collections/useIsCollectionProtected"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import { Page } from "../../../../common/Page"
 import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
@@ -56,7 +56,6 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!collectionId || collection === null) return <NotFoundPage />
