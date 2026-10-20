@@ -18,9 +18,6 @@ import { cbzEnhancer } from "@prose-reader/cbz"
 import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
 import { type BookDocType, getBookmark } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { createBookQueryOptions } from "../books/states"
-import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
-import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 export const createAppReader = koreaderEnhancer(
   pdfEnhancer(
@@ -70,7 +67,7 @@ export const useCreateReader = ({
   isPreview,
   manifest,
   koreaderDocument,
-  koreaderPositionCheck,
+  book,
   containerRef,
 }: {
   isUsingWebStreamer?: boolean
@@ -78,17 +75,11 @@ export const useCreateReader = ({
   isPreview: boolean
   manifest?: Manifest
   koreaderDocument?: string
-  koreaderPositionCheck: KoreaderPositionCheck
+  /** The book to open at its bookmark. The reader waits while it is `undefined`, except in preview. */
+  book: DeepReadonly<BookDocType> | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: bookOnce } = useEnsureQueryData$(
-    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
-  )
-  const isKoreaderPositionChecked = koreaderPositionCheck.status === "done"
-  const bookToOpen = isKoreaderPositionChecked
-    ? (koreaderPositionCheck.updatedBook ?? bookOnce)
-    : undefined
-  const isRestoredLocationReady = isPreview || !!bookToOpen
+  const isRestoredLocationReady = isPreview || !!book
 
   useEffect(() => {
     const containerElement = containerRef.current
@@ -103,9 +94,9 @@ export const useCreateReader = ({
     }
 
     const target =
-      isPreview || !bookToOpen
+      isPreview || !book
         ? undefined
-        : getOpeningTarget({ book: bookToOpen, koreaderDocument })
+        : getOpeningTarget({ book, koreaderDocument })
 
     const instance = createAppReader({
       manifest,
@@ -162,7 +153,7 @@ export const useCreateReader = ({
     isPreview,
     isRestoredLocationReady,
     bookId,
-    bookToOpen,
+    book,
     koreaderDocument,
     containerRef,
   ])

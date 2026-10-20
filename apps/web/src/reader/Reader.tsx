@@ -15,6 +15,7 @@ import { useSyncBookProgress } from "./progress/useSyncBookProgress"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
+import { useBookToOpen } from "./useBookToOpen"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import type { Manifest } from "@prose-reader/shared"
@@ -157,13 +158,15 @@ const Effects = memo(function Effects({
   koreaderPositionCheck: KoreaderPositionCheck
   containerRef: RefObject<HTMLElement | null>
 }) {
+  const bookToOpen = useBookToOpen({ bookId, isPreview, koreaderPositionCheck })
+
   useCreateReader({
     bookId,
     isPreview,
     isUsingWebStreamer,
     manifest,
     koreaderDocument,
-    koreaderPositionCheck,
+    book: bookToOpen,
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
