@@ -3,7 +3,7 @@ import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { Public } from "../auth/auth.guard.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import type { GetWebConfigResponse } from "@oboku/shared"
+import { PublicServerSourceDto, WebConfigResponseDto } from "./web.dto.js"
 
 @Controller("web")
 export class WebController {
@@ -14,7 +14,7 @@ export class WebController {
 
   @Public()
   @Get("config")
-  getConfig(): GetWebConfigResponse {
+  getConfig(): WebConfigResponseDto {
     const config = this.instanceConfigService.getConfig().value
 
     return {
@@ -32,7 +32,7 @@ export class WebController {
 
   @Public()
   @Get("server-sources")
-  listServerSources() {
+  listServerSources(): PublicServerSourceDto[] {
     return this.instanceConfigService.getEnabledServerSources()
   }
 }

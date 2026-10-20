@@ -1,10 +1,16 @@
-// @vitest-environment jsdom
-
 import { type BookDocType, ReadingStateState } from "@oboku/shared"
 import type { DocumentLoadStatus, ReadingPosition } from "@prose-reader/core"
-import { renderHook } from "@testing-library/react"
+import { cleanup, renderHook } from "@testing-library/react"
 import { Subject } from "rxjs"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  onTestFinished,
+  vi,
+} from "vitest"
 
 type FakePaginationResult = {
   isSettled: boolean
@@ -18,10 +24,20 @@ type FakeReader = {
   navigation: { readingPosition$: Subject<ReadingPosition> }
   pagination: { state$: Subject<FakePaginationResult> }
   spineItemsManager: { get: (spineItemIndex: number) => FakeSpineItem }
+  koreader: { cfiToProgress: (cfi: string) => string | undefined }
 }
 
 const mocks = vi.hoisted(function createSyncBookProgressMocks() {
-  const state: { reader?: FakeReader; book?: BookDocType } = {}
+  const state: {
+    reader?: FakeReader
+    book?: BookDocType
+  } = {}
+
+  const toStoredDocument = (storedBook: BookDocType) => ({
+    toJSON: function toStoredBook() {
+      return storedBook
+    },
+  })
 
   const incrementalBookModify = vi.fn(async function modifyStoredBook({
     mutationFn,
@@ -32,10 +48,10 @@ const mocks = vi.hoisted(function createSyncBookProgressMocks() {
 
     state.book = mutationFn(state.book)
 
-    return state.book
+    return toStoredDocument(state.book)
   })
 
-  return { state, incrementalBookModify }
+  return { state, incrementalBookModify, toStoredDocument }
 })
 
 vi.mock("../states", function mockReaderState() {
@@ -54,7 +70,10 @@ vi.mock("../../books", function mockBooks() {
   }
 })
 
+import { bookmarkMoved$ } from "../events"
 import { useSyncBookProgress } from "./useSyncBookProgress"
+
+const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 
 const LAST_PAGE: ReadingPosition = {
   cfi: "epubcfi(/6/8!/4/2/1:0)",
@@ -119,10 +138,15 @@ const book: BookDocType = {
   tags: [],
 }
 
+const toFakeKoreaderProgress = (cfi: string) =>
+  `/body/DocFragment[1]/body/p.${cfi}`
+
 function createFakeReader({
   failedSpineItemIndexes = [],
+  cfisWithoutKoreaderProgress = [],
 }: {
   failedSpineItemIndexes?: number[]
+  cfisWithoutKoreaderProgress?: string[]
 } = {}) {
   const reader: FakeReader = {
     navigation: { readingPosition$: new Subject() },
@@ -136,6 +160,13 @@ function createFakeReader({
         }
       },
     },
+    koreader: {
+      cfiToProgress: function toFakeKoreaderProgressUnlessUnconvertible(cfi) {
+        return cfisWithoutKoreaderProgress.includes(cfi)
+          ? undefined
+          : toFakeKoreaderProgress(cfi)
+      },
+    },
   }
 
   mocks.state.reader = reader
@@ -143,9 +174,13 @@ function createFakeReader({
   return reader
 }
 
-function renderSyncBookProgress() {
+function renderSyncBookProgress({
+  koreaderDocument = KOREADER_DOCUMENT,
+}: {
+  koreaderDocument?: string
+} = {}) {
   return renderHook(function renderUseSyncBookProgress() {
-    useSyncBookProgress(book._id)
+    useSyncBookProgress(book._id, { koreaderDocument })
   })
 }
 
@@ -157,6 +192,8 @@ describe("useSyncBookProgress", () => {
   })
 
   afterEach(() => {
+    cleanup()
+    vi.restoreAllMocks()
     vi.useRealTimers()
   })
 
@@ -184,22 +221,273 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("saves a reading position that is not final yet over the bookmark the book opened at", () => {
+  it("moves the book up in recent activity when it is opened, leaving its bookmark's date", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: 0.97,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt: lastReadAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_CHAPTER_START_STANDING_IN)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: 0.97,
+      end: { spineItemIndex: LAST_SPINE_ITEM_INDEX },
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateUpdatedAt).not.toBe(lastReadAt)
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateReachedProgressPercent: 0.97,
+    })
+  })
+
+  it("moves the book up in recent activity and dates its bookmark when the bookmark moves", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        PAGE_BEFORE_LAST.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt: lastReadAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    await vi.advanceTimersByTimeAsync(1000)
+    const openedAt = mocks.state.book?.readingStateUpdatedAt
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateUpdatedAt).not.toBe(openedAt)
+    expect(
+      mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
+    ).not.toBe(lastReadAt)
+  })
+
+  it("dates the bookmark when the book opens somewhere other than where it was saved", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_CHAPTER_START_STANDING_IN.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_CHAPTER_START_STANDING_IN)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+      LAST_PAGE.cfi,
+    )
+    expect(
+      mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
+    ).not.toBe(lastReadAt)
+  })
+
+  it("leaves the bookmark of a book opened for the first time undated", async () => {
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocationUpdatedAt: null,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(FIRST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: null,
+    })
+  })
+
+  it("keeps the bookmark's date when the progress of its place is recomputed", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+    const movedAt =
+      mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt
+
+    reader.navigation.readingPosition$.next({
+      ...LAST_PAGE,
+      percentageEstimateOfBook: 0.94,
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(movedAt).toEqual(expect.any(String))
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkProgressPercent: 0.94,
+      readingStateCurrentBookmarkLocationUpdatedAt: movedAt,
+    })
+  })
+
+  it("leaves recent activity alone when only the reached progress changes", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+    await vi.advanceTimersByTimeAsync(1000)
+    const openedAt = mocks.state.book?.readingStateUpdatedAt
+
+    reader.pagination.state$.next({
+      isSettled: true,
+      percentageEstimateOfBook: 0.5,
+      end: { spineItemIndex: LAST_SPINE_ITEM_INDEX },
+    })
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(openedAt).toEqual(expect.any(String))
+    expect(mocks.state.book).toMatchObject({
+      readingStateReachedProgressPercent: 0.5,
+      readingStateUpdatedAt: openedAt,
+    })
+  })
+
+  it("saves the KOReader progress, and the document of the file it was read in, with the bookmark", async () => {
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        LAST_PAGE.cfi,
+      ),
+      readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+    })
+  })
+
+  it("takes the document of the file being read for a bookmark saved in another file, leaving the bookmark's date", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        LAST_PAGE.cfi,
+      ),
+      readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt: lastReadAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+    })
+  })
+
+  it("adds the KOReader progress and document to a bookmark saved without them, leaving the bookmark's date", async () => {
+    const lastReadAt = "2026-01-01T00:00:00.000Z"
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateReachedProgressPercent: LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+      readingStateUpdatedAt: lastReadAt,
+    }
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        LAST_PAGE.cfi,
+      ),
+      readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+      readingStateCurrentBookmarkLocationUpdatedAt: lastReadAt,
+    })
+  })
+
+  it("drops the KOReader progress of the previous bookmark when the new one has none", async () => {
+    mocks.state.book = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        PAGE_BEFORE_LAST.cfi,
+      ),
+    }
+    const reader = createFakeReader({
+      cfisWithoutKoreaderProgress: [LAST_PAGE.cfi],
+    })
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkKoreaderProgress: null,
+    })
+  })
+
+  it("keeps the bookmark the book opened at when it closes before the reader finds it", () => {
     mocks.state.book = {
       ...book,
       readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
       readingStateCurrentBookmarkProgressPercent:
         LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        LAST_PAGE.cfi,
+      ),
+      readingStateReachedProgressPercent: 0.97,
       readingStateCurrentState: ReadingStateState.Reading,
     }
     const reader = createFakeReader()
     const { unmount } = renderSyncBookProgress()
 
     reader.navigation.readingPosition$.next(LAST_CHAPTER_START_STANDING_IN)
+    reader.navigation.readingPosition$.next({
+      ...LAST_PAGE,
+      status: "pending",
+    })
     unmount()
 
     expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        LAST_PAGE.percentageEstimateOfBook,
+      readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+        LAST_PAGE.cfi,
+      ),
+      readingStateReachedProgressPercent: 0.97,
     })
   })
 
@@ -207,11 +495,12 @@ describe("useSyncBookProgress", () => {
     const reader = createFakeReader()
     renderSyncBookProgress()
 
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next({
       ...LAST_PAGE,
       status: "pending",
     })
-    await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next(LAST_PAGE)
     await vi.advanceTimersByTimeAsync(1000)
 
@@ -307,7 +596,7 @@ describe("useSyncBookProgress", () => {
     })
     await vi.advanceTimersByTimeAsync(1000)
 
-    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
+    expect(mocks.state.book?.readingStateReachedProgressPercent).not.toBe(0.5)
   })
 
   it("marks the book finished as soon as its end is visible, keeping the reading position", async () => {
@@ -336,7 +625,9 @@ describe("useSyncBookProgress", () => {
     })
     await vi.advanceTimersByTimeAsync(1000)
 
-    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentState: ReadingStateState.NotStarted,
+    })
   })
 
   it("does not mark the book finished from the reading position's progress", async () => {
@@ -354,12 +645,14 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("keeps the reading position's progress and does not finish the book when its last page failed to load", async () => {
+  it("keeps the bookmark and does not finish the book when its last chapter fails to load", async () => {
     const reader = createFakeReader({
       failedSpineItemIndexes: [LAST_SPINE_ITEM_INDEX],
     })
     renderSyncBookProgress()
 
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    await vi.advanceTimersByTimeAsync(1000)
     reader.navigation.readingPosition$.next({
       ...LAST_CHAPTER_START_STANDING_IN,
       status: "error",
@@ -368,9 +661,9 @@ describe("useSyncBookProgress", () => {
     await vi.advanceTimersByTimeAsync(1000)
 
     expect(mocks.state.book).toMatchObject({
-      readingStateCurrentBookmarkLocation: LAST_CHAPTER_START_STANDING_IN.cfi,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
       readingStateReachedProgressPercent:
-        LAST_CHAPTER_START_STANDING_IN.percentageEstimateOfBook,
+        PAGE_BEFORE_LAST.percentageEstimateOfBook,
       readingStateCurrentState: ReadingStateState.Reading,
     })
   })
@@ -423,7 +716,7 @@ describe("useSyncBookProgress", () => {
     })
   })
 
-  it("writes nothing once unmounted", async () => {
+  it("saves nothing the reader reports once unmounted", async () => {
     const reader = createFakeReader()
     const { unmount } = renderSyncBookProgress()
 
@@ -432,7 +725,10 @@ describe("useSyncBookProgress", () => {
     reader.pagination.state$.next(END_OF_BOOK_VISIBLE)
     await vi.advanceTimersByTimeAsync(1000)
 
-    expect(mocks.incrementalBookModify).not.toHaveBeenCalled()
+    expect(mocks.state.book).toMatchObject({
+      readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentState: ReadingStateState.NotStarted,
+    })
   })
 
   it("saves the pending reading position when unmounted", () => {
@@ -452,6 +748,153 @@ describe("useSyncBookProgress", () => {
       readingStateCurrentBookmarkProgressPercent:
         LAST_PAGE.percentageEstimateOfBook,
       readingStateReachedProgressPercent: 0.97,
+    })
+  })
+
+  it("keeps saving the reading position after a write fails", async () => {
+    mocks.incrementalBookModify.mockRejectedValueOnce(new Error("write failed"))
+    const consoleError = vi
+      .spyOn(console, "error")
+      .mockImplementation(function silenceFailedWrite() {})
+    const reader = createFakeReader()
+    renderSyncBookProgress()
+
+    reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+    await vi.advanceTimersByTimeAsync(1000)
+    reader.navigation.readingPosition$.next(LAST_PAGE)
+    await vi.advanceTimersByTimeAsync(1000)
+
+    expect(consoleError).toHaveBeenCalledOnce()
+    expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+      LAST_PAGE.cfi,
+    )
+  })
+
+  describe("dispatching the bookmark's moves", () => {
+    const bookReadOnPageBeforeLast: BookDocType = {
+      ...book,
+      readingStateCurrentBookmarkLocation: PAGE_BEFORE_LAST.cfi,
+      readingStateCurrentBookmarkProgressPercent:
+        PAGE_BEFORE_LAST.percentageEstimateOfBook,
+      readingStateCurrentState: ReadingStateState.Reading,
+    }
+
+    const observeMovedBookmarks = () => {
+      const onBookmarkMoved = vi.fn()
+      const subscription = bookmarkMoved$.subscribe(onBookmarkMoved)
+
+      onTestFinished(function stopObservingMovedBookmarks() {
+        subscription.unsubscribe()
+      })
+
+      return onBookmarkMoved
+    }
+
+    beforeEach(() => {
+      mocks.state.book = bookReadOnPageBeforeLast
+    })
+
+    it("dispatches the book as saved after each move of its bookmark", async () => {
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      renderSyncBookProgress()
+      reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      reader.navigation.readingPosition$.next(FIRST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000)
+      reader.navigation.readingPosition$.next(LAST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(onBookmarkMoved).toHaveBeenCalledTimes(2)
+      expect(onBookmarkMoved).toHaveBeenNthCalledWith(
+        1,
+        expect.objectContaining({
+          readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
+        }),
+      )
+      expect(onBookmarkMoved).toHaveBeenLastCalledWith(mocks.state.book)
+    })
+
+    it("does not dispatch the place the book opens at", async () => {
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      renderSyncBookProgress()
+
+      reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(mocks.incrementalBookModify).toHaveBeenCalled()
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
+    })
+
+    it("dispatches the last move once the book closes, after it is saved", async () => {
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      const { unmount } = renderSyncBookProgress()
+      reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      reader.navigation.readingPosition$.next(LAST_PAGE)
+      unmount()
+      await vi.advanceTimersByTimeAsync(0)
+
+      expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+        LAST_PAGE.cfi,
+      )
+      expect(onBookmarkMoved).toHaveBeenCalledExactlyOnceWith(mocks.state.book)
+    })
+
+    it("does not dispatch a move whose save fails", async () => {
+      vi.spyOn(console, "error").mockImplementation(
+        function silenceFailedWrite() {},
+      )
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      renderSyncBookProgress()
+      reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+      await vi.advanceTimersByTimeAsync(1000)
+      mocks.incrementalBookModify.mockImplementationOnce(
+        async function failAfterPatching({ mutationFn }) {
+          mutationFn(bookReadOnPageBeforeLast)
+
+          throw new Error("write failed")
+        },
+      )
+
+      reader.navigation.readingPosition$.next(LAST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
+    })
+
+    it("does not dispatch a move made only by a run RxDB discarded on a conflict", async () => {
+      const bookMovedToLastPageElsewhere: BookDocType = {
+        ...bookReadOnPageBeforeLast,
+        readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+        readingStateCurrentBookmarkLocationUpdatedAt:
+          "2026-01-01T00:00:00.000Z",
+        readingStateCurrentBookmarkProgressPercent:
+          LAST_PAGE.percentageEstimateOfBook,
+      }
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      renderSyncBookProgress()
+      reader.navigation.readingPosition$.next(PAGE_BEFORE_LAST)
+      await vi.advanceTimersByTimeAsync(1000)
+      mocks.incrementalBookModify.mockImplementationOnce(
+        async function writeAfterConflict({ mutationFn }) {
+          mutationFn(bookReadOnPageBeforeLast)
+          mocks.state.book = mutationFn(bookMovedToLastPageElsewhere)
+
+          return mocks.toStoredDocument(mocks.state.book)
+        },
+      )
+
+      reader.navigation.readingPosition$.next(LAST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
     })
   })
 })

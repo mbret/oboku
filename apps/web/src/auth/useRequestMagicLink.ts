@@ -1,4 +1,7 @@
-import type { RequestMagicLinkRequest } from "@oboku/shared"
+import {
+  type AuthRequestMagicLinkData,
+  authRequestMagicLink,
+} from "@oboku/shared"
 import { from } from "rxjs"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
@@ -8,9 +11,9 @@ export const useRequestMagicLink = () => {
   const httpClientApi = useHttpClientApi()
 
   return useMutation$({
-    mutationFn: (data: RequestMagicLinkRequest) =>
-      from(httpClientApi.requestMagicLink(data)).pipe(
-        withLock("magic-link-request"),
-      ),
+    mutationFn: (data: AuthRequestMagicLinkData["body"]) =>
+      from(
+        authRequestMagicLink({ client: httpClientApi.sdkClient, body: data }),
+      ).pipe(withLock("magic-link-request")),
   })
 }

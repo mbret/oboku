@@ -24,7 +24,7 @@ import type { DataSourceDocType } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../../plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
-import { useNavigate, Link as RouterLink } from "react-router"
+import { generatePath, useNavigate, Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
@@ -85,7 +85,9 @@ export const DataSourcesListScreen = memo(() => {
                 <ListItemButton
                   key={syncSource._id}
                   component={RouterLink}
-                  to={ROUTES.DATASOURCE_DETAILS.replace(":id", syncSource._id)}
+                  to={generatePath(ROUTES.DATASOURCE_DETAILS, {
+                    id: syncSource._id,
+                  })}
                 >
                   {dataSource && (
                     <ListItemIcon>
@@ -159,7 +161,9 @@ export const DataSourcesListScreen = memo(() => {
 
           if (dataSource) {
             navigate(
-              ROUTES.SYNC_NEW_DATASOURCES.replace(":id", dataSource.type),
+              generatePath(ROUTES.SYNC_NEW_DATASOURCES, {
+                type: dataSource.type,
+              }),
             )
           }
         }}

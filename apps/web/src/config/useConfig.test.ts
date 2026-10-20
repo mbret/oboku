@@ -1,9 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { QueryClient } from "@tanstack/react-query"
-import type { GetWebConfigResponse } from "@oboku/shared"
+import { createApiClient, type WebGetConfigResponse } from "@oboku/shared"
 import type { HttpApiClientWeb } from "../http"
 import {
   buildConfig,
+  fetchConfig,
   seedWebConfigFromCache,
   webConfigQueryKey,
 } from "./useConfig"
@@ -14,14 +15,18 @@ vi.mock("./configCache", () => ({
   readWebConfigCache: vi.fn(),
 }))
 
-// fetchConfig only touches `fetchOrThrow`; the double cast lets a minimal stub
+// fetchConfig only touches `sdkClient`; the double cast lets a minimal stub
 // stand in for the full client without recreating every domain method.
-const createHttpClientApiStub = (
-  overrides: Partial<HttpApiClientWeb>,
-): HttpApiClientWeb =>
-  ({ fetch: vi.fn(), ...overrides }) as unknown as HttpApiClientWeb
+const createHttpClientApiStub = (sdkFetch: typeof fetch): HttpApiClientWeb =>
+  ({
+    sdkClient: createApiClient({
+      baseUrl: "https://api.example.com",
+      throwOnError: true,
+      fetch: sdkFetch,
+    }),
+  }) as unknown as HttpApiClientWeb
 
-const baseServerConfig: GetWebConfigResponse = {
+const baseServerConfig: WebGetConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",
   FEATURE_SERVER_SYNC_ENABLED: false,
   SHOW_DISABLED_PLUGINS: false,
@@ -91,38 +96,27 @@ describe("buildConfig", () => {
 })
 
 describe("fetchConfig", () => {
-  beforeEach(() => {
-    vi.resetModules()
-    vi.unstubAllGlobals()
-  })
-
   it("fetches, validates and consolidates the web config", async () => {
-    const fetchOrThrow = vi.fn().mockResolvedValue({
-      data: {
-        GOOGLE_CLIENT_ID: "12345-client",
-        MICROSOFT_APPLICATION_AUTHORITY:
-          "https://login.microsoftonline.com/common",
-        FEATURE_SERVER_SYNC_ENABLED: true,
-        SHOW_DISABLED_PLUGINS: false,
-      },
-    })
-    const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
-
-    vi.stubGlobal("window", {
-      location: {
-        protocol: "https:",
-        hostname: "reader.example.com",
-      },
-    })
-
-    const { fetchConfig } = await import("./useConfig")
-
-    const config = await fetchConfig(httpClientApi)
-
-    expect(fetchOrThrow).toHaveBeenCalledWith(
-      "https://reader.example.com:3000/web/config",
+    const sdkFetch = vi.fn<typeof fetch>().mockResolvedValue(
+      new Response(
+        JSON.stringify({
+          GOOGLE_CLIENT_ID: "12345-client",
+          MICROSOFT_APPLICATION_AUTHORITY:
+            "https://login.microsoftonline.com/common",
+          FEATURE_SERVER_SYNC_ENABLED: true,
+          SHOW_DISABLED_PLUGINS: false,
+        }),
+        { headers: { "Content-Type": "application/json" } },
+      ),
     )
-    expect(httpClientApi.fetch).not.toHaveBeenCalled()
+
+    const config = await fetchConfig(createHttpClientApiStub(sdkFetch))
+
+    const [request] = sdkFetch.mock.calls[0] ?? []
+
+    expect(request instanceof Request ? request.url : String(request)).toBe(
+      "https://api.example.com/web/config",
+    )
     expect(config.GOOGLE_CLIENT_ID).toBe("12345-client")
     expect(config.GOOGLE_APP_ID).toBe("12345")
     expect(config.FEATURE_GOOGLE_SIGN_ENABLED).toBe(true)
@@ -131,19 +125,11 @@ describe("fetchConfig", () => {
 
   it("rejects when the request fails", async () => {
     const error = new Error("boom")
-    const fetchOrThrow = vi.fn().mockRejectedValue(error)
-    const httpClientApi = createHttpClientApiStub({ fetchOrThrow })
+    const sdkFetch = vi.fn<typeof fetch>().mockRejectedValue(error)
 
-    vi.stubGlobal("window", {
-      location: {
-        protocol: "https:",
-        hostname: "reader.example.com",
-      },
-    })
-
-    const { fetchConfig } = await import("./useConfig")
-
-    await expect(fetchConfig(httpClientApi)).rejects.toBe(error)
+    await expect(fetchConfig(createHttpClientApiStub(sdkFetch))).rejects.toBe(
+      error,
+    )
   })
 })
 

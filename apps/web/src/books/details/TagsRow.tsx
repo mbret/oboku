@@ -1,5 +1,5 @@
 import { Button, Chip, Stack, styled } from "@mui/material"
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { useTags } from "../../tags/helpers"
 import { useBook } from "../states"
 import { EditOutlined } from "@mui/icons-material"
@@ -35,7 +35,7 @@ export const TagsRow = ({ bookId }: { bookId?: string }) => {
         variant="text"
         onClick={() => {
           if (book?._id) {
-            navigate(ROUTES.BOOK_TAGS.replace(":id", book._id))
+            navigate(generatePath(ROUTES.BOOK_TAGS, { id: book._id }))
           }
         }}
         startIcon={<EditOutlined />}

@@ -47,7 +47,7 @@ export const useLocalNotifications = (): LocalNotification[] => {
         body: "The browser may delete your library and uploaded books to reclaim space.",
         action: {
           label: "Manage storage",
-          to: `${ROUTES.PROFILE}/manage-storage`,
+          to: ROUTES.MANAGE_STORAGE,
           icon: StorageRounded,
         },
       })

@@ -7,10 +7,12 @@ import {
   Query,
   StreamableFile,
 } from "@nestjs/common"
+import { ApiOkResponse, ApiProduces } from "@nestjs/swagger"
 import { defer, map, type Observable } from "rxjs"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
-import { CoversService } from "./covers.service.js"
+import { COVER_DELIVERY_FORMATS, CoversService } from "./covers.service.js"
+import { CoverQueryDto } from "./covers.dto.js"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { emailToNameHex } from "../couch/couch.service.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
@@ -42,9 +44,11 @@ export class CoversController implements OnModuleInit {
    */
   @Get("books/:bookId")
   @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @ApiProduces(...COVER_DELIVERY_FORMATS)
+  @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findBookCover(
     @Param("bookId") bookId: string,
-    @Query() query: { format?: string },
+    @Query() query: CoverQueryDto,
     @WithAuthUser() user: AuthUser,
   ) {
     const userNameHex = emailToNameHex(user.email)
@@ -55,9 +59,11 @@ export class CoversController implements OnModuleInit {
 
   @Get("collections/:collectionId")
   @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @ApiProduces(...COVER_DELIVERY_FORMATS)
+  @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findCollectionCover(
     @Param("collectionId") collectionId: string,
-    @Query() query: { format?: string },
+    @Query() query: CoverQueryDto,
     @WithAuthUser() user: AuthUser,
   ) {
     const userNameHex = emailToNameHex(user.email)
@@ -73,10 +79,10 @@ export class CoversController implements OnModuleInit {
     const response$ = defer(() =>
       this.coversService.getCoverForDelivery(objectKey, format).pipe(
         map(
-          (cover) =>
-            new StreamableFile(cover, {
+          (delivered) =>
+            new StreamableFile(delivered.cover, {
               disposition: `inline`,
-              type: "image/webp",
+              type: delivered.format,
             }),
         ),
       ),

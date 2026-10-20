@@ -1,7 +1,7 @@
 import {
   type CollectionDocType,
   type LinkMetadata,
-  DataSourceDocType,
+  type DataSourceDocTypeFor,
   type DataSourceType,
   type DocType,
   type LinkDocType,
@@ -63,7 +63,7 @@ export type SyncContext<T extends DataSourceType = DataSourceType> = {
   /** Resolved at runtime (e.g. from secrets). Typed per provider (WebdavApiCredentials, DriveApiCredentials, etc.). */
   providerCredentials: ProviderApiCredentials<T>
   dataSourceType: T
-  dataSource: DataSourceDocType
+  dataSource: DataSourceDocTypeFor<T>
   syncReport: SyncReport
   db: createNano.DocumentScope<unknown>
 }

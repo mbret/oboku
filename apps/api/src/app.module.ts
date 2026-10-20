@@ -5,8 +5,7 @@ import { ConfigModule } from "@nestjs/config"
 import path from "node:path"
 import Joi from "joi"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { CollectionsController } from "./features/collections/collections.controller.js"
-import { CollectionMetadataService } from "./features/collections/CollectionMetadataService.js"
+import { CollectionsModule } from "./features/collections/collections.module.js"
 import { QueueModule } from "./queue/queue.module.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
 import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService.js"
@@ -26,7 +25,8 @@ import { WebDavModule } from "./webdav/webdav.module.js"
 import { NotificationsModule } from "./notifications/notifications.module.js"
 import { BooksModule } from "./books/books.module.js"
 import { PluginsModule } from "./plugins/plugins.module.js"
-import { KoreaderSyncServerModule } from "./koreader-sync-server/koreader-sync-server.module.js"
+import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
+import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 
 @Module({
   imports: [
@@ -114,10 +114,12 @@ import { KoreaderSyncServerModule } from "./koreader-sync-server/koreader-sync-s
     NotificationsModule,
     WebDavModule,
     BooksModule,
+    CollectionsModule,
     PluginsModule,
     KoreaderSyncServerModule,
+    KoreaderSyncConnectionModule,
   ],
-  providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
-  controllers: [AppController, CollectionsController, WebController],
+  providers: [AppService, SyncReportPostgresService],
+  controllers: [AppController, WebController],
 })
 export class AppModule {}

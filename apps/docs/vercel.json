@@ -111,8 +111,6 @@
     }
   ],
   "git": {
-    "deploymentEnabled": {
-      "master": false
-    }
+    "deploymentEnabled": false
   }
 }

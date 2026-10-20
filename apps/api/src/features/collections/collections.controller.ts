@@ -2,23 +2,11 @@ import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
 import { CollectionMetadataRefreshEvent, Events } from "../../events.js"
 import { CollectionMetadataService } from "./CollectionMetadataService.js"
-import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
 import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { WithAuthUser, type AuthUser } from "../../auth/auth.guard.js"
-import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
-
-class PostMetadataRefreshDto {
-  @IsString()
-  collectionId!: RefreshCollectionMetadataRequest["collectionId"]
-
-  @IsBoolean()
-  @IsOptional()
-  soft?: RefreshCollectionMetadataRequest["soft"]
-
-  @IsObject()
-  providerCredentials!: RefreshCollectionMetadataRequest["providerCredentials"]
-}
+import { EmptyResponseDto } from "../../lib/empty-response.dto.js"
+import { RefreshCollectionMetadataDto } from "./collections.dto.js"
 
 @Controller("collections")
 export class CollectionsController implements OnModuleInit {
@@ -42,10 +30,11 @@ export class CollectionsController implements OnModuleInit {
   }
 
   @Post("metadata/refresh")
-  async metadataRefresh(
-    @Body() { collectionId, providerCredentials, soft }: PostMetadataRefreshDto,
+  async refreshMetadata(
+    @Body()
+    { collectionId, providerCredentials, soft }: RefreshCollectionMetadataDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log(`metadataRefresh ${collectionId}`)
 
     this.taskQueueService.enqueue(

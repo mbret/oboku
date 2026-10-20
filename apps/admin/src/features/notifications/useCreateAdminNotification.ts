@@ -1,42 +1,23 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type {
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
+import {
+  type AdminCreateNotificationData,
+  adminCreateNotification,
 } from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
+import { apiClient } from "../apiClient"
 import { adminNotificationsQueryKey } from "./useAdminNotifications"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
 
 export const useCreateAdminNotification = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async (
-      input: CreateAdminNotificationRequest,
-    ): Promise<CreateAdminNotificationResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/notifications`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminCreateNotificationData["body"]) => {
+      const { data } = await adminCreateNotification({
+        client: apiClient,
+        body: input,
+      })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not send notification",
-          ),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({

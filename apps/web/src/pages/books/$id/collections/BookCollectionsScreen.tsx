@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { AddRounded } from "@mui/icons-material"
 import { IconButton } from "@mui/material"
@@ -18,7 +18,8 @@ import { SelectableCollectionList } from "../../../../collections/lists/Selectab
 import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
 import { openAddCollectionDialog } from "../../../../library/shelves/AddCollectionDialog"
 import { EntitySelectionView } from "../../../../common/selection"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
+import type { ROUTES } from "../../../../navigation/routes"
 
 const getCollectionSearchableText = (
   collection: DeepReadonlyObject<CollectionDocType>,
@@ -27,12 +28,8 @@ const getCollectionSearchableText = (
 const EMPTY_COLLECTIONS: DeepReadonlyObject<CollectionDocType>[] = []
 const listStyle = { flex: 1 }
 
-type ScreenParams = {
-  id: string
-}
-
 export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
-  const { id: bookId } = useParams<ScreenParams>()
+  const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_COLLECTIONS>>()
   const { data: collections = EMPTY_COLLECTIONS } = useCollections()
   const { data: book } = useBook({ id: bookId })
   const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
@@ -60,7 +57,6 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!bookId || book === null) return <NotFoundPage />

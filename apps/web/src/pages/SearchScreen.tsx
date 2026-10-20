@@ -25,6 +25,7 @@ import { useBooksForSearch } from "../search/useBooksForSearch"
 import { ListActionsToolbar } from "../search/list/ListActionsToolbar"
 import { searchStateSignal } from "../search/states"
 import { useConfig } from "../config/useConfig"
+import { ROUTES } from "../navigation/routes"
 
 const Accordion = styled(MuiAccordion)({
   ":before": {
@@ -46,7 +47,7 @@ const SeeMore = ({
       <ListItemButton
         style={{ justifyContent: "center" }}
         component={Link}
-        to={generatePath(`:search/:type`, {
+        to={generatePath(ROUTES.SEARCH_RESULTS, {
           // will use /%20/ (space) instead of nothing and crashing
           search: search === `` ? ` ` : search,
           type,

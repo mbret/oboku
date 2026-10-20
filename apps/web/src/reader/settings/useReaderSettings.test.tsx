@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { act, renderHook } from "@testing-library/react"
 import { SIGNAL_RESET } from "reactjrx"
 import { beforeEach, describe, expect, it, vi } from "vitest"

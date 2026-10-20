@@ -1,36 +1,14 @@
 import { useMutation } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import type {
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
-} from "@oboku/shared"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import { type AdminSendEmailData, adminSendEmail } from "@oboku/shared"
+import { apiClient } from "../apiClient"
 
 export const useSendAdminEmail = () => {
   return useMutation({
-    mutationFn: async (
-      input: SendAdminEmailRequest,
-    ): Promise<SendAdminEmailResponse> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/email`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(input),
-        },
-      )
+    mutationFn: async (input: AdminSendEmailData["body"]) => {
+      const { data } = await adminSendEmail({ client: apiClient, body: input })
 
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(response, "Could not send email"),
-        )
-      }
-
-      return response.json()
+      return data
     },
     onSuccess: (data) => {
       notifications.show({

@@ -4,7 +4,7 @@ import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
 import { usePutProfile } from "../profiles"
-import { getOrCreateAuthInstallationId } from "./installationId"
+import { getOrCreateInstallationId } from "../common/browser"
 import { createProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import { useQueryClient } from "@tanstack/react-query"
@@ -23,7 +23,7 @@ export const useCompleteMagicLink = () => {
             httpClientApi.authWithMagicLink(
               {
                 ...data,
-                installation_id: getOrCreateAuthInstallationId(),
+                installation_id: getOrCreateInstallationId(),
                 public_key: proofKey.publicJwk,
               },
               proofKey,

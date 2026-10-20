@@ -43,6 +43,7 @@ export default defineConfig({
       customCss: ["./src/styles/theme.css"],
       components: {
         PageTitle: "./src/components/PageTitle.astro",
+        SocialIcons: "./src/components/SocialIcons.astro",
       },
       routeMiddleware: "./src/routeData.ts",
       plugins: [starlightLinksValidator(), starlightLlmsTxt()],
@@ -117,6 +118,7 @@ export default defineConfig({
             "development/local-database",
             "development/covers-cache",
             "development/authentication",
+            "development/api-types",
             "development/preview-environment",
           ],
         },

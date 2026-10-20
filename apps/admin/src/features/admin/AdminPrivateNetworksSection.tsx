@@ -80,12 +80,13 @@ export const AdminPrivateNetworksSection = () => {
           </Text>
           <Text size="sm" c="dimmed">
             The server sends requests to the addresses users enter: their WebDAV
-            and Synology Drive servers, the links they add and the covers their
-            collections point to. By default it only connects to servers on the
-            public internet, so that nobody with an account can use those
-            requests to reach your network or the services running next to the
-            server. The server's own addresses count as private, public ones
-            included: a request to them never leaves the machine.
+            and Synology Drive servers, the KOReader sync server they connect
+            to, the links they add and the covers their collections point to. By
+            default it only connects to servers on the public internet, so that
+            nobody with an account can use those requests to reach your network
+            or the services running next to the server. The server's own
+            addresses count as private, public ones included: a request to them
+            never leaves the machine.
           </Text>
         </div>
 

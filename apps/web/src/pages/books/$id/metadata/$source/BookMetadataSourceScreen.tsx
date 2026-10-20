@@ -1,5 +1,5 @@
 import { memo, useMemo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { Stack, Typography, styled } from "@mui/material"
 import type { BookMetadata } from "@oboku/shared"
 import type { DeepReadonlyArray, DeepReadonlyObject } from "rxdb"
@@ -19,11 +19,7 @@ import {
   UserSourceContent,
 } from "../../../../../books/details/metadataSource"
 import { PageContainer } from "../../../../../common/PageContainer"
-
-type ScreenParams = {
-  id: string
-  source: string
-}
+import type { ROUTES } from "../../../../../navigation/routes"
 
 const MetadataSourcePageContainer = styled(PageContainer)({
   display: "flex",
@@ -64,7 +60,8 @@ const findSourceMetadata = <TSource extends BookMetadataSource>(
 
 export const BookMetadataSourceScreen = memo(
   function BookMetadataSourceScreen() {
-    const { id: bookId, source } = useParams<ScreenParams>()
+    const { id: bookId, source } =
+      useParams<PathParam<typeof ROUTES.BOOK_METADATA_SOURCE>>()
     const { data: book } = useBook({ id: bookId })
 
     const validSource = isBookMetadataSource(source) ? source : undefined

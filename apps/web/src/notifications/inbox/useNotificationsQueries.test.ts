@@ -1,6 +1,69 @@
-// @vitest-environment jsdom
-
 import { beforeEach, describe, expect, it, vi } from "vitest"
+
+const { sdkFetch, useQuery } = vi.hoisted(function createQueryMocks() {
+  return {
+    sdkFetch: vi.fn<typeof fetch>(),
+    useQuery: vi.fn((options) => options),
+  }
+})
+
+vi.mock(
+  "../../http/HttpClientApiContext",
+  async function mockHttpClientApi(importOriginal) {
+    const { createApiClient } = await import("@oboku/shared")
+    const sdkClient = createApiClient({
+      baseUrl: "https://api.example.com",
+      throwOnError: true,
+      fetch: sdkFetch,
+    })
+
+    return {
+      ...(await importOriginal<
+        typeof import("../../http/HttpClientApiContext")
+      >()),
+      useHttpClientApi: () => ({ sdkClient }),
+    }
+  },
+)
+vi.mock("@tanstack/react-query", async function mockUseQuery(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("@tanstack/react-query")>()),
+    useQuery,
+  }
+})
+vi.mock("./useLocalNotifications", function mockLocalNotifications() {
+  return { useLocalNotifications: () => [] }
+})
+vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
+  return { useIsAuthenticated: () => true }
+})
+vi.mock("reactjrx", async function mockSignalValue(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("reactjrx")>()),
+    useSignalValue: () => "reader",
+  }
+})
+
+import { useInboxNotifications } from "./useInboxNotifications"
+import { useUnreadNotificationsCount } from "./useUnreadNotificationsCount"
+
+type InboxNotifications = NonNullable<
+  ReturnType<typeof useInboxNotifications>["data"]
+>
+type UnreadNotificationsCount = NonNullable<
+  ReturnType<typeof useUnreadNotificationsCount>["data"]
+>
+
+const createJsonResponse = (body: unknown) =>
+  new Response(JSON.stringify(body), {
+    headers: { "Content-Type": "application/json" },
+  })
+
+const getRequestedUrl = () => {
+  const [input] = sdkFetch.mock.calls[0] ?? []
+
+  return input instanceof Request ? input.url : String(input)
+}
 
 const hasQueryFn = <Result>(
   value: unknown,
@@ -14,47 +77,11 @@ const hasQueryFn = <Result>(
 
 describe("notifications queries", () => {
   beforeEach(() => {
-    vi.resetModules()
+    vi.clearAllMocks()
   })
 
-  it("uses fetchOrThrow for inbox notifications", async () => {
-    const fetch = vi.fn()
-    const fetchOrThrow = vi.fn().mockResolvedValue({
-      data: [{ id: 1 }],
-    })
-    const useQuery = vi.fn((options) => options)
-
-    vi.doMock("../../http/HttpClientApiContext", () => ({
-      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
-    }))
-    vi.doMock("../../config/useConfig", () => ({
-      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
-    }))
-    vi.doMock("@tanstack/react-query", async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import("@tanstack/react-query")>()
-
-      return {
-        ...actual,
-        useQuery,
-      }
-    })
-    vi.doMock("../../auth/useIsAuthenticated", () => ({
-      useIsAuthenticated: () => true,
-    }))
-    vi.doMock("reactjrx", async (importOriginal) => {
-      const actual = await importOriginal<typeof import("reactjrx")>()
-
-      return {
-        ...actual,
-        useSignalValue: () => "reader",
-      }
-    })
-
-    const { useInboxNotifications } = await import("./useInboxNotifications")
-    type InboxNotifications = NonNullable<
-      ReturnType<typeof useInboxNotifications>["data"]
-    >
+  it("fetches the inbox notifications with the generated client", async () => {
+    sdkFetch.mockResolvedValue(createJsonResponse([{ id: 1 }]))
 
     useInboxNotifications()
 
@@ -65,55 +92,11 @@ describe("notifications queries", () => {
     }
 
     await expect(options.queryFn()).resolves.toEqual([{ id: 1 }])
-    expect(fetchOrThrow).toHaveBeenCalledWith(
-      "https://api.example.com/notifications",
-    )
-    expect(fetch).not.toHaveBeenCalled()
+    expect(getRequestedUrl()).toBe("https://api.example.com/notifications")
   })
 
-  it("uses fetchOrThrow for unread count", async () => {
-    const fetch = vi.fn()
-    const fetchOrThrow = vi.fn().mockResolvedValue({
-      data: { count: 3 },
-    })
-    const useQuery = vi.fn((options) => options)
-
-    vi.doMock("../../http/HttpClientApiContext", () => ({
-      useHttpClientApi: () => ({ fetch, fetchOrThrow }),
-    }))
-    vi.doMock("../../config/useConfig", () => ({
-      useConfig: () => ({ data: { API_URL: "https://api.example.com" } }),
-    }))
-    vi.doMock("@tanstack/react-query", async (importOriginal) => {
-      const actual =
-        await importOriginal<typeof import("@tanstack/react-query")>()
-
-      return {
-        ...actual,
-        useQuery,
-      }
-    })
-    vi.doMock("./useLocalNotifications", () => ({
-      useLocalNotifications: () => [],
-    }))
-    vi.doMock("../../auth/useIsAuthenticated", () => ({
-      useIsAuthenticated: () => true,
-    }))
-    vi.doMock("reactjrx", async (importOriginal) => {
-      const actual = await importOriginal<typeof import("reactjrx")>()
-
-      return {
-        ...actual,
-        useSignalValue: () => "reader",
-      }
-    })
-
-    const { useUnreadNotificationsCount } = await import(
-      "./useUnreadNotificationsCount"
-    )
-    type UnreadNotificationsCount = NonNullable<
-      ReturnType<typeof useUnreadNotificationsCount>["data"]
-    >
+  it("fetches the unread count with the generated client", async () => {
+    sdkFetch.mockResolvedValue(createJsonResponse({ count: 3 }))
 
     const query = useUnreadNotificationsCount()
 
@@ -124,10 +107,9 @@ describe("notifications queries", () => {
     }
 
     await expect(options.queryFn()).resolves.toEqual({ count: 3 })
-    expect(fetchOrThrow).toHaveBeenCalledWith(
+    expect(getRequestedUrl()).toBe(
       "https://api.example.com/notifications/unread-count",
     )
-    expect(fetch).not.toHaveBeenCalled()
     expect(query.unreadCount).toBe(0)
   })
 })

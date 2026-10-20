@@ -66,7 +66,9 @@ describe("CoversService", () => {
     })
     fsService.getCover.mockResolvedValue(storedCover)
 
-    const delivered = await firstValueFrom(service.getCoverForDelivery("key"))
+    const { cover: delivered } = await firstValueFrom(
+      service.getCoverForDelivery("key"),
+    )
 
     expect(delivered).toBe(storedCover)
   })
@@ -79,7 +81,9 @@ describe("CoversService", () => {
     })
     fsService.getCover.mockResolvedValue(storedCover)
 
-    const delivered = await firstValueFrom(service.getCoverForDelivery("key"))
+    const { cover: delivered } = await firstValueFrom(
+      service.getCoverForDelivery("key"),
+    )
     const metadata = await sharp(delivered).metadata()
 
     expect(metadata.width).toBeLessThanOrEqual(DELIVERY_SIZE.width)
@@ -94,7 +98,7 @@ describe("CoversService", () => {
     })
     fsService.getCover.mockResolvedValue(storedCover)
 
-    const delivered = await firstValueFrom(
+    const { cover: delivered } = await firstValueFrom(
       service.getCoverForDelivery("key", "image/jpeg"),
     )
 
@@ -104,8 +108,12 @@ describe("CoversService", () => {
   it("encodes the placeholder once for a given format", async () => {
     fsService.getCover.mockResolvedValue(null)
 
-    const first = await firstValueFrom(service.getCoverForDelivery("key"))
-    const second = await firstValueFrom(service.getCoverForDelivery("other"))
+    const { cover: first } = await firstValueFrom(
+      service.getCoverForDelivery("key"),
+    )
+    const { cover: second } = await firstValueFrom(
+      service.getCoverForDelivery("other"),
+    )
 
     expect((await sharp(first).metadata()).format).toBe("webp")
     expect(second).toBe(first)
@@ -114,8 +122,10 @@ describe("CoversService", () => {
   it("serves the webp placeholder for a format it cannot produce", async () => {
     fsService.getCover.mockResolvedValue(null)
 
-    const webp = await firstValueFrom(service.getCoverForDelivery("key"))
-    const unsupported = await firstValueFrom(
+    const { cover: webp } = await firstValueFrom(
+      service.getCoverForDelivery("key"),
+    )
+    const { cover: unsupported } = await firstValueFrom(
       service.getCoverForDelivery("key", "image/png"),
     )
 

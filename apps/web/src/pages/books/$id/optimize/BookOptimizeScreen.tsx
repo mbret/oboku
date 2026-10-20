@@ -1,6 +1,6 @@
 import { Alert, Stack, Tab, Tabs, Typography, styled } from "@mui/material"
 import { memo, type SyntheticEvent, useCallback } from "react"
-import { useParams, useSearchParams } from "react-router"
+import { type PathParam, useParams, useSearchParams } from "react-router"
 import { Page } from "../../../../common/Page"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
@@ -20,10 +20,7 @@ import {
   type BookOptimizeTab,
 } from "../../../../books/optimize/tabs"
 import { PageContainer } from "../../../../common/PageContainer"
-
-type ScreenParams = {
-  id: string
-}
+import type { ROUTES } from "../../../../navigation/routes"
 
 const TopBarActionsStack = styled(Stack)(({ theme }) => ({
   flexDirection: "row",
@@ -46,7 +43,7 @@ const OptimizePageContainer = styled(PageContainer)(
 )
 
 export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
-  const { id: bookId } = useParams<ScreenParams>()
+  const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_OPTIMIZE>>()
   const [searchParams, setSearchParams] = useSearchParams()
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })

@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { API_URL } from "../config/envs.shared"
 
 const { signRefreshProof, hasProofKey } = vi.hoisted(() => ({
   signRefreshProof: vi.fn(),
@@ -10,7 +11,8 @@ vi.mock("../auth/proofKey", () => ({
   hasProofKey,
 }))
 
-const API_URL = "https://api.example.com"
+import { httpClientApi } from "./httpClientApi.sw"
+
 const REFRESH_URL = `${API_URL}/auth/token?grant_type=refresh_token`
 const COVER_URL = `${API_URL}/covers/1`
 
@@ -23,19 +25,9 @@ const createRefreshResponse = () =>
     { status: 200, headers: { "Content-Type": "application/json" } },
   )
 
-const createClient = async () => {
-  vi.stubEnv("VITE_API_URL", API_URL)
-
-  const { httpClientApi } = await import("./httpClientApi.sw")
-
-  return httpClientApi
-}
-
 describe("httpClientApi service worker client", () => {
   beforeEach(() => {
-    vi.resetModules()
     vi.unstubAllGlobals()
-    vi.unstubAllEnvs()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
     hasProofKey.mockReset()
@@ -47,8 +39,6 @@ describe("httpClientApi service worker client", () => {
       .fn<typeof fetch>()
       .mockResolvedValueOnce(new Response("cover", { status: 200 }))
     vi.stubGlobal("fetch", fetchMock)
-
-    const httpClientApi = await createClient()
 
     const { status } = await httpClientApi.fetch(COVER_URL)
 
@@ -81,8 +71,6 @@ describe("httpClientApi service worker client", () => {
     })
 
     vi.stubGlobal("fetch", fetchMock)
-
-    const httpClientApi = await createClient()
 
     const { status } = await httpClientApi.fetch(COVER_URL)
 
@@ -120,8 +108,6 @@ describe("httpClientApi service worker client", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const httpClientApi = await createClient()
-
     const { status } = await httpClientApi.fetch(COVER_URL)
 
     expect(status).toBe(401)
@@ -152,8 +138,6 @@ describe("httpClientApi service worker client", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const httpClientApi = await createClient()
-
     await Promise.all([
       httpClientApi.fetch(COVER_URL),
       httpClientApi.fetch(COVER_URL),
@@ -178,8 +162,6 @@ describe("httpClientApi service worker client", () => {
     })
 
     vi.stubGlobal("fetch", fetchMock)
-
-    const httpClientApi = await createClient()
 
     const { status } = await httpClientApi.fetch(COVER_URL)
 
@@ -227,8 +209,6 @@ describe("httpClientApi service worker client", () => {
 
     vi.stubGlobal("fetch", fetchMock)
 
-    const httpClientApi = await createClient()
-
     const responsePromise = httpClientApi.fetch(COVER_URL)
 
     await vi.waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1))
@@ -270,8 +250,6 @@ describe("httpClientApi service worker client", () => {
     })
 
     vi.stubGlobal("fetch", fetchMock)
-
-    const httpClientApi = await createClient()
 
     const { status } = await httpClientApi.fetch(COVER_URL)
 

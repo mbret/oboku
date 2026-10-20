@@ -12,8 +12,6 @@
     { "source": "/(.*)", "destination": "/" }
   ],
   "git": {
-    "deploymentEnabled": {
-      "master": false
-    }
+    "deploymentEnabled": false
   }
 }

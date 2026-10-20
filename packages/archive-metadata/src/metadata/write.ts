@@ -1,6 +1,6 @@
 import {
   getArchiveHasComicInfo,
-  getArchiveOpfInfo,
+  getArchiveOpfRecord,
   type MetadataIdentifierScheme,
 } from "@prose-reader/archive-reader"
 import type { Archive } from "../archive/types"
@@ -123,9 +123,9 @@ export const patchArchiveMetadata = async (
   }
 
   if (targets.opf) {
-    const { data: opfEntry } = getArchiveOpfInfo(archive)
+    const opfEntry = await getArchiveOpfRecord(archive)
 
-    if (!opfEntry || opfEntry.dir) {
+    if (!opfEntry) {
       throw new Error(
         "Cannot write OPF metadata: archive does not carry an OPF package document.",
       )

@@ -1,45 +1,47 @@
+import {
+  ObokuErrorCode,
+  type ObokuErrorDto,
+  zHttpErrorResponseDto,
+  zObokuErrorResponseDto,
+} from "@oboku/shared"
+
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return undefined
+  }
+}
+
+const toObokuErrorMessage = (code: ObokuErrorDto["code"]) => {
+  switch (code) {
+    case ObokuErrorCode.ERROR_ACCOUNT_ALREADY_EXISTS:
+      return "An account already exists for this email."
+    default:
+      return `Request failed with error code ${code}`
+  }
+}
+
 export const readResponseErrorMessage = async (
   response: Response,
   fallbackMessage: string,
 ) => {
-  const contentType = response.headers.get("content-type") ?? ""
   const text = await response.text()
 
   if (!text) {
     return fallbackMessage
   }
 
-  if (contentType.includes("application/json")) {
-    try {
-      const data: unknown = JSON.parse(text)
+  const body = parseJson(text)
+  const apiError = zHttpErrorResponseDto.safeParse(body)
 
-      if (
-        typeof data === "object" &&
-        data !== null &&
-        "message" in data &&
-        typeof data.message === "string"
-      ) {
-        return data.message
-      }
+  if (apiError.success) {
+    const { message } = apiError.data
 
-      if (
-        typeof data === "object" &&
-        data !== null &&
-        "message" in data &&
-        Array.isArray(data.message)
-      ) {
-        const messages = data.message.filter(
-          (message): message is string => typeof message === "string",
-        )
-
-        if (messages.length > 0) {
-          return messages.join(", ")
-        }
-      }
-    } catch {
-      return text || fallbackMessage
-    }
+    return Array.isArray(message) ? message.join(", ") : message
   }
 
-  return text || fallbackMessage
+  const code = zObokuErrorResponseDto.safeParse(body).data?.errors[0]?.code
+
+  return code ? toObokuErrorMessage(code) : text
 }

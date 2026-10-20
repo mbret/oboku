@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { renderHook } from "@testing-library/react"
 import type { DataSourceDocType } from "@oboku/shared"
 import { beforeEach, describe, expect, it, vi } from "vitest"

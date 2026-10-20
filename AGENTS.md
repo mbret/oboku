@@ -27,6 +27,17 @@
 - **Name intermediate values** rather than commenting what a literal or expression means. A descriptive `const` is preferable to an inline value plus a comment.
 - **The goal:** a reader should understand *what* and *why* from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
 
+### Values flow through the code, they aren't written aside
+
+- **A value a later step needs reaches it as a value**: returned, mapped, or part of what the stream emits. Never assign an outer variable from one callback for another callback to read, like a `let` set inside an RxDB modifier and read in a `tap` once the write resolves. What it holds then depends on which callbacks ran, how many times and in what order (a retry, a resubscription, RxDB running a modifier again on a conflict), and none of that shows in the code.
+- **Derive state rather than writing it from several places.** In RxJS, rework these rather than extend them:
+    - a variable or holder set mid-stream and read downstream;
+    - a subject used as a state container and updated from `tap`s (`state.next(update(state.getValue()))`);
+    - a `tap` that writes state where a `map`, a `scan`, or an operator that keeps the latest value (`switchMap`, `debounceTime`, `groupBy`) could carry it.
+- **When an API hands a value only to its callback, change what flows instead of capturing it.** Decide the input up front and pass it in, or use what the call resolves with. `useSyncBookProgress` gives each save's time to its patches, then finds a bookmark move in the book the write resolves with.
+- **Tests too**: observe a stream or a callback with a `vi.fn()` and assert on its calls, and hold a promise open with `Promise.withResolvers()`.
+- Imperative code is sometimes clearer, and readability counts: a `scan` nobody can follow is no improvement. Derive where you can, and say why when you deliberately don't. The `rxjs-like-a-pro` skill in `.agents/skills/` goes deeper.
+
 ### Reuse before creating
 
 - Always look for existing components, hooks, utilities, routes, and data-access patterns before adding new ones.
@@ -68,6 +79,19 @@
 - No user-facing content strings (error messages, labels, placeholders, etc.) should live in the shared package.
 - Keep content strings colocated in the consuming app (e.g. web) so they can be localized and adjusted per product without touching shared code.
 - The shared package may define error codes, types, and structure; the app defines the human-readable messages.
+
+### API types are generated
+
+- The request and response types for API routes are generated from the API's controllers and DTO classes. After changing a route, run `pnpm generate:api-types` and commit `packages/shared/src/api-types/generated/`. Never edit those files by hand, and never hand-write a request or response type, or a zod schema for one, for a route the document covers.
+- Declare DTOs in `*.dto.ts` files and return a class from every route. The `@nestjs/swagger` plugin ignores classes declared in controller files and cannot read `type` aliases.
+- Call an API route through its generated function, with the app's client: `notificationsList({ client: httpClientApi.sdkClient })` in the web app, `adminListUsers({ client: apiClient })` in the admin app. A request that cannot use the functions, like the web app's token refresh, types its request and response with the route's generated types (`AuthRefreshTokenResponse`), so it follows the route when its DTOs change.
+- `apps/docs/src/content/docs/development/api-types.md` covers the workflow and the decorators a route needs when the plugin cannot infer its schema.
+
+### Web app routes
+
+- `ROUTES` in `apps/web/src/navigation/routes.ts` holds the pattern of every route the web app defines. A new route gets its entry there.
+- Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
+- Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
 
 ### Data migrations: RxDB is local, CouchDB is the data
 
@@ -137,6 +161,13 @@
 - The web app's global `MutationCache.onError` (see `QueryClientProvider.tsx`) shows an error toast for every mutation failure unless the mutation sets `meta.suppressGlobalErrorToast`.
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
+
+### Web app tests: a real browser, one page per file
+
+- Every web app test runs in headless Chromium through Vitest browser mode (`apps/web/vitest.config.ts`). Use the browser's own APIs (storage, `crypto`, `ProgressEvent`, workers, popups) instead of stubbing them.
+- **A module is evaluated once per test file.** `vi.resetModules()` does nothing in a browser, so module-level state (a singleton client, a run-once promise) is shared by every test in the file. Declare mocks with a hoisted `vi.mock`, set each test's behaviour on `vi.hoisted` spies, and give a test that needs a module in its initial state a file of its own (see `auth.unconfigured.test.ts`).
+- **A mock factory must export every name its importers use.** The browser refuses to load a module whose import the mock lacks. Spreading `await importOriginal()` covers that, but deadlocks when the real module's imports lead back to another mocked module: return the full export list instead.
+- **Storage can outlive a test file.** localStorage, IndexedDB and OPFS can persist across the test files of a run, so a test clears the stores it relies on.
 
 ### React `memo` components
 

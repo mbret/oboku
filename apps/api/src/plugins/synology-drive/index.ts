@@ -1,5 +1,5 @@
 import {
-  isCollectionOfType,
+  getDataFromDataSource,
   type LinkWithCredentials,
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
   type ProviderApiCredentials,
@@ -7,7 +7,7 @@ import {
 import { Logger } from "@nestjs/common"
 import type createNano from "nano"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
-import { find } from "../../lib/couch/dbHelpers.js"
+import { findConnectorCandidates } from "../helpers.js"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
   downloadSynologyDriveStream,
@@ -15,7 +15,6 @@ import {
   getSynologyDriveItemMetadata,
   getSynologyDriveSession,
 } from "./client.js"
-import { getDataSourceData } from "../helpers.js"
 
 const logger = new Logger("SynologyDrivePlugin")
 
@@ -52,95 +51,24 @@ const openSynologyDriveSessionForLink = async ({
 
 export const dataSource: DataSourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-  /**
-   * Finds persisted link candidates using the exact stored link identity.
-   *
-   * Why this is intentionally strict:
-   * - A datasource is only a sync scope, not an ownership boundary.
-   * - The same Synology Drive item may be reachable through multiple
-   *   datasources/connectors with different valid credentials.
-   * - We should not collapse or reuse those paths just because they target the
-   *   same normalized server.
-   *
-   * Matching rule:
-   * - same provider type
-   * - same data.fileId
-   * - same data.connectorId
-   *
-   * This keeps sync non-destructive. "Same normalized server" is broader than
-   * the persisted identity we want to preserve.
-   */
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const connectorId = item.linkData.connectorId
-    if (!connectorId) {
-      return { links: [] }
-    }
-
-    const links = await find(ctx.db, "link", {
-      selector: {
-        type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-        data: { connectorId, fileId: item.linkData.fileId },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findConnectorCandidates(ctx, "link", {
+      type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        fileId: item.linkData.fileId,
       },
-    })
-
-    const datasourceData = ctx.dataSource
-
-    const datasourceConnectorId =
-      datasourceData.type === "synology-drive"
-        ? datasourceData.data_v2?.connectorId
-        : null
-
-    return {
-      links: links.map((link) => {
-        const linkConnectorId =
-          link.type === "synology-drive" ? link.data?.connectorId : null
-
-        return {
-          ...link,
-          isUsingSameProviderCredentials:
-            linkConnectorId === datasourceConnectorId,
-        }
-      }),
-    }
-  },
-  /**
-   * Same identity rule as getLinkCandidatesForItem: collections are only
-   * considered the same persisted resource when both fileId and connectorId
-   * match exactly.
-   */
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const connectorId = item.linkData.connectorId
-    if (!connectorId) {
-      return { collections: [] }
-    }
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-        linkData: { connectorId, fileId: item.linkData.fileId },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findConnectorCandidates(ctx, "obokucollection", {
+      type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        fileId: item.linkData.fileId,
       },
-    })
-    const datasourceData = ctx.dataSource
-    const datasourceConnectorId =
-      datasourceData.type === "synology-drive"
-        ? datasourceData.data_v2?.connectorId
-        : undefined
-    return {
-      collections: collections.map((c) => {
-        const collectionConnectorId = isCollectionOfType(
-          c,
-          PLUGIN_SYNOLOGY_DRIVE_TYPE,
-        )
-          ? (c.linkData?.connectorId ?? null)
-          : null
-
-        return {
-          ...c,
-          isUsingSameProviderCredentials:
-            collectionConnectorId === datasourceConnectorId,
-        }
-      }),
-    }
-  },
+    }),
+  }),
   getFileMetadata: async ({ link, providerCredentials, db }) => {
     const { session, fileId } = await openSynologyDriveSessionForLink({
       link,
@@ -190,12 +118,9 @@ export const dataSource: DataSourcePlugin<"synology-drive"> = {
       session,
     })
   },
-  sync: async ({ dataSourceId, db, providerCredentials }) => {
+  sync: async ({ dataSource, dataSourceId, db, providerCredentials }) => {
     const { connectorId, items = [] } =
-      (await getDataSourceData<"synology-drive">({
-        dataSourceId,
-        db,
-      })) ?? {}
+      getDataFromDataSource<"synology-drive">(dataSource) ?? {}
 
     if (!connectorId || items.length === 0 || !providerCredentials) {
       throw new Error("datasource not found or invalid")

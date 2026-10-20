@@ -1,6 +1,6 @@
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import { Box, Stack, Tab, Tabs, styled } from "@mui/material"
-import { useNavigate, useParams } from "react-router"
+import { type PathParam, useNavigate, useParams } from "react-router"
 import { BookListWithControls } from "../../../books/lists"
 import { signal, useSignalValue } from "reactjrx"
 import type {
@@ -22,10 +22,7 @@ import EmptyLibraryAsset from "../../../assets/empty-library.svg"
 import { MetadataFetchPolicyPane } from "../../../metadata/MetadataFetchPolicyPane"
 import { useResolvedMetadataFetchEnabled } from "../../../metadata/useResolvedMetadataFetchEnabled"
 import { useCollectionIncrementalModify } from "../../../collections/useCollectionIncrementalModify"
-
-type ScreenParams = {
-  id: string
-}
+import type { ROUTES } from "../../../navigation/routes"
 
 type CollectionDetailsTab = "books" | "details"
 
@@ -76,7 +73,7 @@ export const collectionDetailsScreenListControlsStateSignal = signal<{
 
 export const CollectionDetailsScreen = () => {
   const navigate = useNavigate()
-  const { id } = useParams<ScreenParams>()
+  const { id } = useParams<PathParam<typeof ROUTES.COLLECTION_DETAILS>>()
   const { viewMode, sorting } = useSignalValue(
     collectionDetailsScreenListControlsStateSignal,
   )

@@ -34,15 +34,7 @@ export const useUpdateTag = () => {
       _id,
       ...rest
     }: Partial<TagsDocType> & Required<Pick<TagsDocType, "_id">>) =>
-      db?.tag
-        .findOne({ selector: { _id } })
-        .exec()
-        .then((doc) =>
-          doc?.incrementalModify((doc) => ({
-            ...doc,
-            ...rest,
-          })),
-        ),
+      db?.tag.findOne(_id).incrementalPatch(rest),
     [db],
   )
 }

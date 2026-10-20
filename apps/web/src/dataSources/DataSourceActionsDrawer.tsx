@@ -23,7 +23,7 @@ import {
 import { useRemoveDataSource } from "./useRemoveDataSource"
 import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
-import { Link } from "react-router"
+import { generatePath, Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
 
 export const DataSourceActionsDrawer = memo(
@@ -43,7 +43,7 @@ export const DataSourceActionsDrawer = memo(
           <List>
             <ListItemButton
               component={Link}
-              to={ROUTES.DATASOURCE_DETAILS.replace(":id", openWith)}
+              to={generatePath(ROUTES.DATASOURCE_DETAILS, { id: openWith })}
               onClick={() => {
                 onClose()
               }}

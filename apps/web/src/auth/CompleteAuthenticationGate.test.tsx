@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { cleanup, render, screen } from "@testing-library/react"
 import type { MutationStatus } from "@tanstack/react-query"
 import { MemoryRouter, Route, Routes } from "react-router"

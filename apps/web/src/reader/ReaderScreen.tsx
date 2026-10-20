@@ -1,5 +1,5 @@
 import { memo, useEffect } from "react"
-import { useParams, useSearchParams } from "react-router"
+import { type PathParam, useParams, useSearchParams } from "react-router"
 import { useWakeLock } from "../common/browser"
 import { useFullscreenAutoSwitch } from "./settings/fullScreen"
 import { Reader } from "./Reader"
@@ -8,12 +8,13 @@ import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
 import { isMenuShownStateSignal, readerSignal } from "./states"
 import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
 import { useLocalSettings } from "../settings/useLocalSettings"
+import type { ROUTES } from "../navigation/routes"
 
 export const READER_MODE_PARAM = "mode"
 export const READER_PREVIEW_MODE = "preview"
 
 export const ReaderScreen = memo(() => {
-  const { bookId } = useParams<{ bookId?: string }>()
+  const { id: bookId } = useParams<PathParam<typeof ROUTES.READER>>()
   const [searchParams] = useSearchParams()
   const isPreview = searchParams.get(READER_MODE_PARAM) === READER_PREVIEW_MODE
 

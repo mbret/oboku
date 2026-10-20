@@ -1,40 +1,23 @@
-import {
-  defer,
-  filter,
-  first,
-  merge,
-  mergeMap,
-  Observable,
-  of,
-  retry,
-  timer,
-} from "rxjs"
-import { Logger } from "../debug/logger.shared"
-import { navigatorOnLine$ } from "./network/onLine"
+import { retryBackoff } from "reactjrx"
+import { defer, first, merge, Observable, of } from "rxjs"
+import { whenOnLine$ } from "./network/onLine"
+import { reportErrors } from "./rxjs/operators"
 
+const RETRY_DELAY_MS = 1000
+const RETRY_MAX_DELAY_MS = 5 * 60 * 1000
+
+/**
+ * Reports each failure and retries once the device is online, waiting a
+ * second the first time and twice as long each time after, up to five minutes.
+ */
 export const retryOnFailure = <O>(stream: Observable<O>) =>
   stream.pipe(
-    /**
-     * In case of error we retry in 1mn by default.
-     * If network is offline, we wait for online and
-     * retry right away. If we were online, it's unexpected
-     * and will wait a couple of minutes before retrying
-     */
-    retry({
-      delay: (error, retryCount) => {
-        Logger.error(error)
-
-        return navigatorOnLine$.pipe(
-          first(),
-          mergeMap((onLine) => {
-            if (onLine) return timer(retryCount > 5 ? 1000 * 60 * 5 : 1)
-
-            return navigatorOnLine$.pipe(
-              filter((onLine) => onLine),
-              first(),
-            )
-          }),
-        )
+    reportErrors,
+    retryBackoff({
+      retryDelay: RETRY_DELAY_MS,
+      maxInterval: RETRY_MAX_DELAY_MS,
+      retryAfter: function waitForDeviceOnLine() {
+        return whenOnLine$
       },
     }),
   )

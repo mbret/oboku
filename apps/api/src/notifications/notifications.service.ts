@@ -1,12 +1,4 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common"
-import type {
-  AdminNotificationSummary,
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
-  GetAdminNotificationsResponse,
-  GetNotificationsResponse,
-  UserNotification,
-} from "@oboku/shared"
 import { syncFinishedNotificationDataSchema } from "@oboku/shared"
 import {
   type AdminNotificationRow,
@@ -17,6 +9,11 @@ import {
   normalizeAudienceEmails,
   UserPostgresService,
 } from "../features/postgres/user-postgres.service.js"
+import type {
+  AdminNotificationSummaryDto,
+  CreateAdminNotificationDto,
+  UserNotificationDto,
+} from "./notifications.dto.js"
 
 export const toIsoString = (value: Date | string | null) => {
   if (!value) {
@@ -40,7 +37,7 @@ const logger = new Logger("NotificationService")
 
 const mapUserNotification = (
   row: UserNotificationRow,
-): UserNotification | null => {
+): UserNotificationDto | null => {
   const base = {
     id: row.notification_id,
     createdAt:
@@ -75,7 +72,7 @@ const mapUserNotification = (
 
 const mapAdminNotificationSummary = (
   row: AdminNotificationRow,
-): AdminNotificationSummary => ({
+): AdminNotificationSummaryDto => ({
   id: row.notification_id,
   createdAt:
     toIsoString(row.notification_created_at) ?? new Date(0).toISOString(),
@@ -98,12 +95,12 @@ export class NotificationsService {
     userId,
   }: {
     userId: number
-  }): Promise<GetNotificationsResponse> {
+  }): Promise<UserNotificationDto[]> {
     const rows = await this.notificationPostgresService.getUserNotificationRows(
       { userId },
     )
 
-    return rows.reduce<UserNotification[]>((acc, row) => {
+    return rows.reduce<UserNotificationDto[]>((acc, row) => {
       const notification = mapUserNotification(row)
 
       if (notification) {
@@ -118,14 +115,14 @@ export class NotificationsService {
     return this.notificationPostgresService.getUnreadCount({ userId })
   }
 
-  async getAdminNotifications(): Promise<GetAdminNotificationsResponse> {
+  async getAdminNotifications(): Promise<AdminNotificationSummaryDto[]> {
     const rows = await this.notificationPostgresService.getAdminBroadcastRows()
 
     return rows.map(mapAdminNotificationSummary)
   }
 
   async resolveAudienceUserIds(
-    input: CreateAdminNotificationRequest,
+    input: CreateAdminNotificationDto,
   ): Promise<number[]> {
     if (input.audienceType === "all") {
       return this.userPostgresService.getAllUserIds()
@@ -148,8 +145,8 @@ export class NotificationsService {
   }
 
   async sendAdminBroadcast(
-    input: CreateAdminNotificationRequest,
-  ): Promise<CreateAdminNotificationResponse> {
+    input: CreateAdminNotificationDto,
+  ): Promise<AdminNotificationSummaryDto> {
     const title = normalizeOptionalText(input.title)
 
     if (!title) {

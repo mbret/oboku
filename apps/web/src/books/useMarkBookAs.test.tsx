@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { ReadingStateState } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, renderHook, waitFor } from "@testing-library/react"
@@ -78,6 +76,9 @@ describe("useMarkBooksAs", () => {
     expect(await markBook(useMarkBooksAsFinished)).toEqual({
       readingStateCurrentState: ReadingStateState.Finished,
       readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkLocationUpdatedAt: expect.any(String),
+      readingStateCurrentBookmarkKoreaderProgress: null,
+      readingStateCurrentBookmarkKoreaderDocument: null,
       readingStateCurrentBookmarkProgressPercent: 0,
       readingStateReachedProgressPercent: 1,
       readingStateUpdatedAt: expect.any(String),
@@ -88,6 +89,9 @@ describe("useMarkBooksAs", () => {
     expect(await markBook(useMarkBooksAsUnread)).toEqual({
       readingStateCurrentState: ReadingStateState.NotStarted,
       readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkLocationUpdatedAt: expect.any(String),
+      readingStateCurrentBookmarkKoreaderProgress: null,
+      readingStateCurrentBookmarkKoreaderDocument: null,
       readingStateCurrentBookmarkProgressPercent: 0,
       readingStateReachedProgressPercent: 0,
       readingStateUpdatedAt: expect.any(String),

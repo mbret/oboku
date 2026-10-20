@@ -7,6 +7,7 @@
   "type": "module",
   "scripts": {
     "build": "nest build",
+    "generate:api-types": "node dist/generate-openapi.js && openapi-ts",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
     "start:dev": "nest start --watch",
@@ -27,11 +28,11 @@
     "@nestjs/jwt": "^12.0.2",
     "@nestjs/platform-express": "^12.1.2",
     "@nestjs/schedule": "^12.0.2",
+    "@nestjs/swagger": "^12.0.2",
     "@nestjs/typeorm": "^12.0.2",
-    "@oboku/archive-metadata": "workspace:*",
     "@oboku/shared": "workspace:*",
     "@oboku/synology": "workspace:*",
-    "@prose-reader/archive-reader": "^25.1.0",
+    "@prose-reader/archive-reader": "^30.2.0",
     "@sentry/nestjs": "^11.6.0",
     "@sentry/profiling-node": "^11.6.0",
     "axios": "^1.20.0",
@@ -59,6 +60,7 @@
     "webdav": "^5.11.0"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "0.99.0",
     "@nestjs/cli": "^12.0.8",
     "@nestjs/schematics": "^12.0.6",
     "@nestjs/testing": "^12.1.2",

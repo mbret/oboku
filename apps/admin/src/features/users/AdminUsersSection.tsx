@@ -10,7 +10,7 @@ import {
   TextInput,
   Title,
 } from "@mantine/core"
-import type { AdminUserSummary } from "@oboku/shared"
+import type { AdminUserSummaryDto } from "@oboku/shared"
 import {
   ClientSideRowModelModule,
   type ColDef,
@@ -35,7 +35,7 @@ export const AdminUsersSection = () => {
   const usersQuery = useAdminUsers()
   const [quickFilter, setQuickFilter] = useState("")
 
-  const columnDefs = useMemo<ColDef<AdminUserSummary>[]>(
+  const columnDefs = useMemo<ColDef<AdminUserSummaryDto>[]>(
     () => [
       { field: "id", headerName: "ID", maxWidth: 100, sort: "asc" },
       { field: "username", headerName: "Username", flex: 1, minWidth: 160 },
@@ -126,7 +126,7 @@ export const AdminUsersSection = () => {
           )}
 
           <div style={{ height: 600, width: "100%" }}>
-            <AgGridReact<AdminUserSummary>
+            <AgGridReact<AdminUserSummaryDto>
               rowData={usersQuery.data ?? []}
               columnDefs={columnDefs}
               defaultColDef={defaultColDef}

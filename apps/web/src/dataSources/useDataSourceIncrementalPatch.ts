@@ -1,5 +1,5 @@
 import type { DataSourceDocType } from "@oboku/shared"
-import { switchMap, from, of } from "rxjs"
+import { switchMap, from } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { useMutation$ } from "reactjrx"
 
@@ -14,13 +14,8 @@ export const useDataSourceIncrementalPatch = () => {
     }) =>
       getLatestDatabase().pipe(
         switchMap((db) =>
-          from(db.datasource.findOne({ selector: { _id: id } }).exec()),
+          from(db.datasource.findOne(id).incrementalPatch(patch)),
         ),
-        switchMap((item) => {
-          if (!item) return of(null)
-
-          return from(item.incrementalPatch(patch))
-        }),
       ),
   })
 }

@@ -1,7 +1,5 @@
-// @vitest-environment jsdom
-
-import { cleanup, render, waitFor } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { cleanup, render, screen } from "@testing-library/react"
+import { afterAll, beforeAll, describe, expect, it, vi } from "vitest"
 import type { Profile } from "./types"
 
 const { profilesStore } = vi.hoisted(() => ({
@@ -34,58 +32,48 @@ vi.mock("./active/activeProfileId", () => ({
   setActiveProfileId: vi.fn(),
 }))
 
-const renderMigration = async () => {
-  const { LegacyAuthMigration } = await import("./LegacyAuthMigration")
-
-  render(
-    <LegacyAuthMigration>
-      <div>ready</div>
-    </LegacyAuthMigration>,
-  )
-}
+import { LegacyAuthMigration } from "./LegacyAuthMigration"
 
 describe("LegacyAuthMigration session id backfill", () => {
-  beforeEach(() => {
-    vi.resetModules()
-    profilesStore.clear()
+  beforeAll(async function migrateLegacyAndCurrentRows() {
     localStorage.clear()
-  })
-
-  afterEach(() => {
-    cleanup()
-  })
-
-  it("backfills a random session id onto a row persisted before the field existed", async () => {
     // Models a row written by an older build; the cast expresses real runtime
     // data that predates the current required `sessionId` type.
     const legacyRow = {
-      id: "reader",
-      email: "reader@example.com",
-      nameHex: "reader",
-      dbName: "reader-db",
+      id: "legacy-reader",
+      email: "legacy@example.com",
+      nameHex: "legacy-reader",
+      dbName: "legacy-db",
     } as Profile
-    profilesStore.set("reader", legacyRow)
-
-    await renderMigration()
-
-    await waitFor(() => {
-      expect(profilesStore.get("reader")?.sessionId).toEqual(expect.any(String))
-    })
-  })
-
-  it("leaves an existing session id untouched", async () => {
-    profilesStore.set("reader", {
-      id: "reader",
-      email: "reader@example.com",
-      nameHex: "reader",
-      dbName: "reader-db",
+    profilesStore.set(legacyRow.id, legacyRow)
+    profilesStore.set("current-reader", {
+      id: "current-reader",
+      email: "current@example.com",
+      nameHex: "current-reader",
+      dbName: "current-db",
       sessionId: "keep-me",
     })
 
-    await renderMigration()
+    render(
+      <LegacyAuthMigration>
+        <div>ready</div>
+      </LegacyAuthMigration>,
+    )
 
-    await waitFor(() => {
-      expect(profilesStore.get("reader")?.sessionId).toBe("keep-me")
-    })
+    await screen.findByText("ready")
+  })
+
+  afterAll(function unmountMigration() {
+    cleanup()
+  })
+
+  it("backfills a random session id onto a row persisted before the field existed", () => {
+    expect(profilesStore.get("legacy-reader")?.sessionId).toEqual(
+      expect.any(String),
+    )
+  })
+
+  it("leaves an existing session id untouched", () => {
+    expect(profilesStore.get("current-reader")?.sessionId).toBe("keep-me")
   })
 })

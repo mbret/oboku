@@ -13,12 +13,8 @@ export const useCollectionIncrementalModify = (
       _id,
       name,
       ...rest
-    }: Partial<CollectionDocType> & { _id: string; name?: string }) => {
-      const item = await db?.obokucollection
-        .findOne({ selector: { _id } })
-        .exec()
-
-      return item?.incrementalModify((old) => ({
+    }: Partial<CollectionDocType> & { _id: string; name?: string }) =>
+      db?.obokucollection.findOne(_id).incrementalModify((old) => ({
         ...old,
         ...rest,
         metadata: old.metadata?.map((entry) =>
@@ -26,7 +22,6 @@ export const useCollectionIncrementalModify = (
             ? { ...entry, title: name ?? entry.title }
             : entry,
         ),
-      }))
-    },
+      })),
   })
 }

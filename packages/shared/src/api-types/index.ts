@@ -1,7 +1,6 @@
-export * from "./auth"
-export * from "./admin"
-export * from "./email"
+export * from "./generated"
+export {
+  type Client as ApiClient,
+  createClient as createApiClient,
+} from "./generated/client"
 export * from "./notifications"
-export * from "./providers"
-export * from "./web"
-export * from "./koreaderSyncServer"

@@ -1,7 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  booksRefreshMetadata,
+  notificationsArchive,
+  notificationsUnreadCount,
+} from "@oboku/shared"
+import { API_URL } from "../config"
 import type { Profile } from "../profiles/types"
 import type { StoredProofKey } from "../auth/proofKey"
-import type { HttpClientResponse } from "./httpClient.shared"
+import { HttpClientError, type HttpClientResponse } from "./httpClient.shared"
 
 const { signRefreshProof, persistProofKey } = vi.hoisted(() => ({
   signRefreshProof: vi.fn(),
@@ -45,16 +51,17 @@ const createDeferred = <T>() => {
   }
 }
 
-const REFRESH_URL =
-  "https://api.example.com/auth/token?grant_type=refresh_token"
-const SIGNIN_URL = "https://api.example.com/auth/signin/email"
-const LOGOUT_URL = "https://api.example.com/auth/logout"
+import { HttpApiClientWeb } from "./HttpClientApi.web"
+
+const REFRESH_URL = `${API_URL}/auth/token?grant_type=refresh_token`
+const SIGNIN_URL = `${API_URL}/auth/signin/email`
+const LOGOUT_URL = `${API_URL}/auth/logout`
 
 const createSignInRequest = () => ({
   email: "b@example.com",
   password: "secret",
   installation_id: "installation",
-  public_key: { kty: "EC" },
+  public_key: { kty: "EC", crv: "P-256", x: "x", y: "y" },
 })
 
 /** Deterministic single-queue stand-in for `navigator.locks`. */
@@ -103,8 +110,6 @@ const createUnauthorized = (
  * and independent of that wiring.
  */
 const createClient = async (initialSession: Profile | null = null) => {
-  const { HttpApiClientWeb } = await import("./HttpClientApi.web")
-
   let session = initialSession
 
   const client = new HttpApiClientWeb()
@@ -127,16 +132,11 @@ const createClient = async (initialSession: Profile | null = null) => {
 
 describe("HttpApiClientWeb auth refresh", () => {
   beforeEach(() => {
-    vi.resetModules()
     vi.unstubAllGlobals()
     signRefreshProof.mockReset()
     signRefreshProof.mockResolvedValue("proof-jwt")
     persistProofKey.mockReset()
     persistProofKey.mockResolvedValue(undefined)
-    vi.doMock("../config", async (importOriginal) => ({
-      ...(await importOriginal<typeof import("../config")>()),
-      API_URL: "https://api.example.com",
-    }))
   })
 
   it("refreshes over the cookie with a DPoP proof and no token in the URL", async () => {
@@ -354,7 +354,9 @@ describe("HttpApiClientWeb auth refresh", () => {
     refreshDeferred.resolve(createRefreshResponse())
 
     await expect(refreshPromise).resolves.toBe(true)
-    await expect(signInPromise).resolves.toMatchObject({ status: 200 })
+    await expect(signInPromise).resolves.toMatchObject({
+      response: { status: 200 },
+    })
 
     expect(fetchMock.mock.calls.map(([input]) => String(input))).toEqual([
       REFRESH_URL,
@@ -583,5 +585,108 @@ describe("HttpApiClientWeb auth refresh", () => {
         session_id: "session-1",
       })
     })
+  })
+})
+
+describe("HttpApiClientWeb generated client", () => {
+  const BOOK_METADATA_REFRESH_URL = `${API_URL}/books/metadata/refresh`
+
+  const createJsonResponse = (body: unknown, status = 200) =>
+    new Response(JSON.stringify(body), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    })
+
+  beforeEach(() => {
+    vi.unstubAllGlobals()
+    signRefreshProof.mockReset()
+    signRefreshProof.mockResolvedValue("proof-jwt")
+  })
+
+  it("sends a request with the session cookies and returns the parsed body", async () => {
+    const fetchMock = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(createJsonResponse({ count: 2 }))
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+    const { data } = await notificationsUnreadCount({
+      client: client.sdkClient,
+    })
+
+    expect(data).toEqual({ count: 2 })
+
+    const [input, init] = fetchMock.mock.calls[0] ?? []
+
+    expect(String(input)).toBe(`${API_URL}/notifications/unread-count`)
+    expect(init?.method).toBe("GET")
+    expect(init?.credentials).toBe("include")
+  })
+
+  it("fails with an HttpClientError holding the parsed error body", async () => {
+    const errorBody = { errors: [{ code: "notification_not_found" }] }
+
+    vi.stubGlobal(
+      "fetch",
+      vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(createJsonResponse(errorBody, 404)),
+    )
+
+    const { client } = await createClient(createProfile())
+    const error = await notificationsArchive({
+      client: client.sdkClient,
+      path: { id: 1 },
+    }).catch((reason: unknown) => reason)
+
+    expect(error).toBeInstanceOf(HttpClientError)
+    expect(error).toMatchObject({ response: { status: 404, data: errorBody } })
+  })
+
+  it("refreshes the session on a 401 and replays the request with its body", async () => {
+    const body = { bookId: "book-1", providerCredentials: {} }
+    let bookMetadataRefreshCalls = 0
+
+    const fetchMock = vi.fn<typeof fetch>((input) => {
+      const url = String(input)
+
+      if (url === REFRESH_URL) {
+        return Promise.resolve(createRefreshResponse())
+      }
+
+      if (url === BOOK_METADATA_REFRESH_URL) {
+        bookMetadataRefreshCalls += 1
+
+        return Promise.resolve(
+          bookMetadataRefreshCalls === 1
+            ? new Response(null, { status: 401, statusText: "Unauthorized" })
+            : createJsonResponse({}, 201),
+        )
+      }
+
+      throw new Error(`Unexpected fetch call for ${url}`)
+    })
+
+    vi.stubGlobal("fetch", fetchMock)
+
+    const { client } = await createClient(createProfile())
+    const { data } = await booksRefreshMetadata({
+      client: client.sdkClient,
+      body,
+    })
+
+    expect(data).toEqual({})
+
+    const bookMetadataRefreshes = fetchMock.mock.calls.filter(
+      ([input]) => String(input) === BOOK_METADATA_REFRESH_URL,
+    )
+
+    expect(bookMetadataRefreshes).toHaveLength(2)
+
+    for (const [, init] of bookMetadataRefreshes) {
+      expect(JSON.parse(String(init?.body))).toEqual(body)
+      expect(init?.credentials).toBe("include")
+    }
   })
 })
