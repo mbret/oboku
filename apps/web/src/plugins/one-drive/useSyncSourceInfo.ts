@@ -1,8 +1,6 @@
 import type { UseSyncSourceInfo } from "../types"
+import { getLabelWithItemCount } from "../common/syncSourceLabel"
 import { ONE_DRIVE_PLUGIN_NAME } from "./constants"
-
-const getItemLabel = (count: number) =>
-  count === 1 ? "1 item" : `${count} items`
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"one-drive"> = ({
   dataSource,
@@ -17,9 +15,6 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"one-drive"> = ({
   const itemsCount = dataSource?.data_v2?.items?.length ?? 0
 
   return {
-    name:
-      itemsCount > 0
-        ? `${ONE_DRIVE_PLUGIN_NAME} (${getItemLabel(itemsCount)})`
-        : ONE_DRIVE_PLUGIN_NAME,
+    name: getLabelWithItemCount(ONE_DRIVE_PLUGIN_NAME, itemsCount),
   }
 }

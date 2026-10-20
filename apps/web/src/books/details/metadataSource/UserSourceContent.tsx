@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import type { DeepReadonlyObject } from "rxdb"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { PageSection } from "../../../common/PageSection"
-import { notify, notifyError } from "../../../notifications/toasts"
+import { notify } from "../../../notifications/toasts"
 import { useIncrementalBookModify } from "../../useIncrementalBookModify"
 
 type Props = {
@@ -86,7 +86,6 @@ export const UserSourceContent = ({ bookId, metadata }: Props) => {
           notify("actionSuccess")
           reset({ isbn: trimmed })
         },
-        onError: notifyError,
       },
     )
   })

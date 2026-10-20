@@ -30,7 +30,6 @@
     "@nestjs/schedule": "^12.0.2",
     "@nestjs/swagger": "^12.0.2",
     "@nestjs/typeorm": "^12.0.2",
-    "@oboku/archive-metadata": "workspace:*",
     "@oboku/shared": "workspace:*",
     "@oboku/synology": "workspace:*",
     "@prose-reader/archive-reader": "^30.2.0",

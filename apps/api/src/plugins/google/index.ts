@@ -4,45 +4,27 @@
  */
 import { authorize } from "./helpers.js"
 import { google } from "googleapis"
+import { getDataFromDataSource } from "@oboku/shared"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
-import { find } from "../../lib/couch/dbHelpers.js"
-import { getDataSourceData } from "../helpers.js"
+import { findCandidates } from "../helpers.js"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 const DRIVE_TYPE = "DRIVE"
 
 export const dataSource: DataSourcePlugin<"DRIVE"> = {
   type: DRIVE_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: { type: DRIVE_TYPE, data: { fileId: item.linkData.fileId } },
-    })
-    return {
-      links: links.map((link) => ({
-        ...link,
-        /**
-         * In principle, if the user is syncing a resource ID he will
-         * always have valid credentials for this ID.
-         */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: DRIVE_TYPE,
-        linkData: { fileId: item.linkData.fileId },
-      },
-    })
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        /** Same as links: when syncing this resource, credentials apply. */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: DRIVE_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: DRIVE_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
   getFolderMetadata: async ({ link, providerCredentials }) => {
     const auth = await authorize({ credentials: providerCredentials })
     const drive = google.drive({
@@ -114,11 +96,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     }
   },
   sync: async (ctx) => {
-    const { items = [] } =
-      (await getDataSourceData<"DRIVE">({
-        db: ctx.db,
-        dataSourceId: ctx.dataSourceId,
-      })) ?? {}
+    const { items = [] } = getDataFromDataSource<"DRIVE">(ctx.dataSource) ?? {}
 
     const auth = await authorize({
       credentials: ctx.providerCredentials,

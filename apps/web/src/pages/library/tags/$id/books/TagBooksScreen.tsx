@@ -8,7 +8,7 @@ import {
   useRemoveTagFromBook,
 } from "../../../../../books/helpers"
 import { useTag } from "../../../../../tags/helpers"
-import { notify, notifyError } from "../../../../../notifications/toasts"
+import { notify } from "../../../../../notifications/toasts"
 import { NotFoundPage } from "../../../../../common/NotFoundPage"
 import { Page } from "../../../../../common/Page"
 import { TopBarNavigation } from "../../../../../navigation/TopBarNavigation"
@@ -46,7 +46,6 @@ export const TagBooksScreen = memo(function TagBooksScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!tagId || tag === null) return <NotFoundPage />

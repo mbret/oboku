@@ -1,15 +1,14 @@
-import { PLUGIN_SERVER_TYPE } from "@oboku/shared"
+import { getDataFromDataSource, PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
 import { createClient, type WebDAVClient } from "webdav"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
-import { getDataSourceData } from "../helpers.js"
 import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
   downloadFromWebdav,
   walkDirectoryContents,
 } from "../webdav/operations.js"
-import { find } from "../../lib/couch/dbHelpers.js"
+import { findConnectorCandidates } from "../helpers.js"
 
 async function createServerWebdavClient(
   db: Parameters<typeof getConnectorById>[0],
@@ -58,54 +57,24 @@ async function resolveClientAndPath(
 
 export const dataSource: DataSourcePlugin<"server"> = {
   type: PLUGIN_SERVER_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const { connectorId, filePath } = item.linkData
-
-    if (!connectorId) return { links: [] }
-
-    const datasourceConnectorId =
-      ctx.dataSource.type === "server"
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
-
-    const links = await find(ctx.db, "link", {
-      selector: {
-        type: PLUGIN_SERVER_TYPE,
-        data: { connectorId, filePath },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findConnectorCandidates(ctx, "link", {
+      type: PLUGIN_SERVER_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        filePath: item.linkData.filePath,
       },
-    })
-
-    return {
-      links: links.map((link) => ({
-        ...link,
-        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const { connectorId, filePath } = item.linkData
-
-    if (!connectorId) return { collections: [] }
-
-    const datasourceConnectorId =
-      ctx.dataSource.type === PLUGIN_SERVER_TYPE
-        ? ctx.dataSource.data_v2?.connectorId
-        : undefined
-
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: PLUGIN_SERVER_TYPE,
-        linkData: { connectorId, filePath },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findConnectorCandidates(ctx, "obokucollection", {
+      type: PLUGIN_SERVER_TYPE,
+      data: {
+        connectorId: item.linkData.connectorId,
+        filePath: item.linkData.filePath,
       },
-    })
-
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        isUsingSameProviderCredentials: connectorId === datasourceConnectorId,
-      })),
-    }
-  },
+    }),
+  }),
   getFolderMetadata: async (params) => {
     const { client, filePath } = await resolveClientAndPath(params)
 
@@ -126,9 +95,8 @@ export const dataSource: DataSourcePlugin<"server"> = {
     return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
-    const { providerCredentials, dataSourceId, db } = options
-    const { connectorId } =
-      (await getDataSourceData<"server">({ db, dataSourceId })) ?? {}
+    const { providerCredentials, dataSource, db } = options
+    const { connectorId } = getDataFromDataSource<"server">(dataSource) ?? {}
 
     if (!connectorId || !providerCredentials?.password) {
       throw new Error("datasource not found or invalid")
