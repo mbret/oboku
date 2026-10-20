@@ -46,6 +46,7 @@ export const Reader = memo(function Reader({
   } = useManifest(bookId)
   const isBookError = !!manifestError
   const koreaderPositionCheck = useKoreaderPositionCheck({
+    bookId,
     koreaderDocument,
     enabled: !isPreview,
   })
@@ -161,6 +162,7 @@ const Effects = memo(function Effects({
     isPreview,
     isUsingWebStreamer,
     manifest,
+    koreaderDocument,
     koreaderPositionCheck,
     containerRef,
   })

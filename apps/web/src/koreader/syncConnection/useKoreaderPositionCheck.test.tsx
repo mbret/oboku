@@ -1,15 +1,49 @@
 import {
+  type BookDocType,
+  createBookDefaults,
   type KoreaderSyncConnectionDto,
   type KoreaderSyncPositionDto,
   ObokuErrorCode,
+  ReadingStateState,
 } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+type StoredBookDocument = {
+  toJSON: () => BookDocType
+  incrementalModify: (
+    modify: (old: BookDocType) => BookDocType,
+  ) => Promise<StoredBookDocument>
+}
+
 const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
-  return { isDebugEnabled: vi.fn(() => true) }
+  const state: { book?: BookDocType } = {}
+
+  const saveBook = vi.fn(async function saveStoredBook(book: BookDocType) {
+    state.book = book
+
+    return book
+  })
+
+  const toStoredDocument = (storedBook: BookDocType): StoredBookDocument => ({
+    toJSON: function toStoredBook() {
+      return storedBook
+    },
+    incrementalModify: async function modifyLatestStoredBook(modify) {
+      if (!state.book) throw new Error("No book stored")
+
+      return toStoredDocument(await saveBook(modify(state.book)))
+    },
+  })
+
+  return {
+    isDebugEnabled: vi.fn(() => true),
+    state,
+    saveBook,
+    toStoredDocument,
+  }
 })
 
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
@@ -20,11 +54,32 @@ vi.mock("../../debug/isDebugEnabled.shared", function mockDebugMode() {
   return { isDebugEnabled: mocks.isDebugEnabled }
 })
 
+vi.mock(
+  "../../books/incrementalBookMutation",
+  async function mockIncrementalBookMutation() {
+    const { defer } = await import("rxjs")
+
+    return {
+      incrementalBookMutation: function mutateStoredBook(
+        _bookId: string,
+        applyIncremental: (document: StoredBookDocument) => Promise<unknown>,
+      ) {
+        return defer(function applyToStoredBook() {
+          if (!mocks.state.book) throw new Error("No book stored")
+
+          return applyIncremental(mocks.toStoredDocument(mocks.state.book))
+        })
+      },
+    }
+  },
+)
+
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
 import { useKoreaderPositionCheck } from "./useKoreaderPositionCheck"
 
+const BOOK_ID = "book-1"
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
 
@@ -34,13 +89,39 @@ const CONNECTION: KoreaderSyncConnectionDto = {
   connectedAt: "2026-01-01T00:00:00.000Z",
 }
 
-const SERVER_POSITION: KoreaderSyncPositionDto = {
+const STORED_BOOK: BookDocType = {
+  ...createBookDefaults(),
+  _id: BOOK_ID,
+  _rev: "2-book",
+  rx_model: "book",
+  rxdbMeta: { lwt: 1 },
+  readingStateCurrentState: ReadingStateState.Reading,
+  readingStateCurrentBookmarkLocation: "epubcfi(/6/4!/4/2/1:0)",
+  readingStateCurrentBookmarkLocationUpdatedAt: "2026-10-20T08:00:00.000Z",
+  readingStateCurrentBookmarkProgressPercent: 0.2,
+  readingStateCurrentBookmarkKoreaderProgress:
+    "/body/DocFragment[3]/body/p[2]/text().0",
+  readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+}
+
+const NEWER_SERVER_POSITION: KoreaderSyncPositionDto = {
   progress: "/body/DocFragment[9]/body/p[12]/text().4",
   percentage: 0.6,
   device: "Kobo",
   deviceId: "kobo-device",
   updatedAt: "2026-10-20T09:00:00.000Z",
 }
+
+const BOOK_AT_NEWER_SERVER_POSITION: BookDocType = {
+  ...STORED_BOOK,
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkProgressPercent: NEWER_SERVER_POSITION.percentage,
+  readingStateCurrentBookmarkKoreaderProgress: NEWER_SERVER_POSITION.progress,
+  readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+  readingStateCurrentBookmarkLocationUpdatedAt: NEWER_SERVER_POSITION.updatedAt,
+}
+
+type PositionAnswer = { data: { position: KoreaderSyncPositionDto | null } }
 
 const createRefusal = ({ status, data }: { status: number; data: unknown }) =>
   new HttpClientError(
@@ -70,17 +151,19 @@ const createCheckHarness = ({
   })
   const pullPosition = vi.fn(async function answerPosition(
     _document: string | undefined,
-  ): Promise<{ data: { position: KoreaderSyncPositionDto | null } }> {
-    return { data: { position: SERVER_POSITION } }
+    _signal: AbortSignal | undefined,
+  ): Promise<PositionAnswer> {
+    return { data: { position: NEWER_SERVER_POSITION } }
   })
   const sdkClient = {
     get: function answerGet(options: {
       url: string
       path?: { document: string }
+      signal?: AbortSignal
     }) {
       return options.url === "/koreader-sync-connection"
         ? fetchConnection()
-        : pullPosition(options.path?.document)
+        : pullPosition(options.path?.document, options.signal)
     },
   }
   // test double: the check only calls the generated client's `get`
@@ -101,6 +184,7 @@ const createCheckHarness = ({
     renderHook(
       function renderKoreaderPositionCheck() {
         return useKoreaderPositionCheck({
+          bookId: BOOK_ID,
           koreaderDocument: KOREADER_DOCUMENT,
           enabled,
         })
@@ -114,16 +198,24 @@ const createCheckHarness = ({
 const holdNextPull = (
   pullPosition: ReturnType<typeof createCheckHarness>["pullPosition"],
 ) => {
-  const heldPull = Promise.withResolvers<{
-    data: { position: KoreaderSyncPositionDto | null }
-  }>()
+  const heldPull = Promise.withResolvers<PositionAnswer>()
 
-  pullPosition.mockImplementationOnce(function answerLater() {
-    return heldPull.promise
-  })
+  pullPosition.mockImplementationOnce(
+    function answerLaterUnlessAborted(_document, signal) {
+      signal?.addEventListener(
+        "abort",
+        function rejectAbortedPull() {
+          heldPull.reject(signal.reason)
+        },
+        { once: true },
+      )
+
+      return heldPull.promise
+    },
+  )
 
   return function answerPull() {
-    heldPull.resolve({ data: { position: SERVER_POSITION } })
+    heldPull.resolve({ data: { position: NEWER_SERVER_POSITION } })
   }
 }
 
@@ -139,6 +231,8 @@ describe("useKoreaderPositionCheck", () => {
     vi.useFakeTimers()
     setOnLine(true)
     mocks.isDebugEnabled.mockReset().mockReturnValue(true)
+    mocks.saveBook.mockClear()
+    mocks.state.book = STORED_BOOK
   })
 
   afterEach(() => {
@@ -147,32 +241,113 @@ describe("useKoreaderPositionCheck", () => {
     vi.useRealTimers()
   })
 
-  it("asks the server where the book's file was left, and lets the book open once it answers", async () => {
+  it("takes the position another device left after the bookmark moved as the bookmark, and lets the book open from it", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     const answerPull = holdNextPull(pullPosition)
     const { result } = openBook()
 
     await vi.advanceTimersByTimeAsync(0)
 
-    expect(pullPosition).toHaveBeenCalledExactlyOnceWith(KOREADER_DOCUMENT)
+    expect(pullPosition).toHaveBeenCalledExactlyOnceWith(
+      KOREADER_DOCUMENT,
+      expect.any(AbortSignal),
+    )
     expect(result.current.status).toBe("checking")
 
     answerPull()
     await vi.advanceTimersByTimeAsync(0)
 
+    expect(mocks.saveBook).toHaveBeenCalledExactlyOnceWith(
+      BOOK_AT_NEWER_SERVER_POSITION,
+    )
     expect(result.current).toEqual({
       status: "done",
-      serverPosition: SERVER_POSITION,
+      updatedBook: BOOK_AT_NEWER_SERVER_POSITION,
     })
   })
 
-  it("lets the book open without a position when the server keeps none", async () => {
+  it("asks the server again each time the book opens", async () => {
+    const { openBook, pullPosition } = createCheckHarness()
+    const { unmount } = openBook()
+    await vi.advanceTimersByTimeAsync(0)
+    unmount()
+    await vi.advanceTimersByTimeAsync(0)
+
+    const { result } = openBook()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(pullPosition).toHaveBeenCalledTimes(2)
+    expect(mocks.saveBook).toHaveBeenCalledOnce()
+    expect(result.current).toEqual({ status: "done" })
+  })
+
+  it("lets the book open only once its new bookmark is saved", async () => {
+    const heldSave = Promise.withResolvers<void>()
+    mocks.saveBook.mockImplementationOnce(async function saveLater(book) {
+      await heldSave.promise
+
+      return book
+    })
+    const { openBook } = createCheckHarness()
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).toHaveBeenCalledOnce()
+    expect(result.current.status).toBe("checking")
+
+    heldSave.resolve()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(result.current.status).toBe("done")
+  })
+
+  it("keeps the bookmark when it moved after the server received its position", async () => {
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: {
+        position: {
+          ...NEWER_SERVER_POSITION,
+          updatedAt: "2026-10-20T07:00:00.000Z",
+        },
+      },
+    })
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).not.toHaveBeenCalled()
+    expect(result.current).toEqual({ status: "done" })
+  })
+
+  it("dates the bookmark when it was taken, from a server that does not say when it received the position", async () => {
+    const takenAt = "2026-10-20T10:00:00.000Z"
+    vi.setSystemTime(new Date(takenAt))
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: { position: { ...NEWER_SERVER_POSITION, updatedAt: null } },
+    })
+    openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        readingStateCurrentBookmarkKoreaderProgress:
+          NEWER_SERVER_POSITION.progress,
+        readingStateCurrentBookmarkLocationUpdatedAt: takenAt,
+      }),
+    )
+  })
+
+  it("keeps the bookmark when the server keeps no position", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     pullPosition.mockResolvedValueOnce({ data: { position: null } })
     const { result } = openBook()
 
     await vi.advanceTimersByTimeAsync(0)
 
+    expect(mocks.saveBook).not.toHaveBeenCalled()
     expect(result.current).toEqual({ status: "done" })
   })
 
@@ -279,7 +454,7 @@ describe("useKoreaderPositionCheck", () => {
     expect(pullPosition).toHaveBeenCalledTimes(2)
     expect(result.current).toEqual({
       status: "done",
-      serverPosition: SERVER_POSITION,
+      updatedBook: BOOK_AT_NEWER_SERVER_POSITION,
     })
   })
 
@@ -298,7 +473,7 @@ describe("useKoreaderPositionCheck", () => {
     expect(result.current.status).toBe("failed")
   })
 
-  it("lets the book open once the user continues while asking, whatever the answer that comes later", async () => {
+  it("lets the book open once the user continues while asking, and keeps its bookmark whatever the answer", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     const answerPull = holdNextPull(pullPosition)
     const { result } = openBook()
@@ -316,6 +491,7 @@ describe("useKoreaderPositionCheck", () => {
     answerPull()
     await vi.advanceTimersByTimeAsync(0)
 
+    expect(mocks.saveBook).not.toHaveBeenCalled()
     expect(result.current).toEqual({ status: "done" })
   })
 })

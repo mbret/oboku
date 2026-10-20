@@ -1,15 +1,18 @@
 import {
   Button,
+  Fade,
   LinearProgress,
   Stack,
   styled,
   Typography,
 } from "@mui/material"
-import { memo } from "react"
+import { memo, useEffect, useState } from "react"
 import { useNavigate } from "react-router"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { ROUTES } from "../navigation/routes"
 import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
+
+const SLOW_CHECK_THRESHOLD_MS = 3000
 
 const LoadingStack = styled(Stack)(function styleLoadingStack({ theme }) {
   return {
@@ -21,6 +24,7 @@ const LoadingStack = styled(Stack)(function styleLoadingStack({ theme }) {
     justifyContent: "center",
     alignItems: "center",
     gap: theme.spacing(4),
+    padding: theme.spacing(2),
   }
 })
 
@@ -42,6 +46,17 @@ const KoreaderPositionCheckStep = memo(function KoreaderPositionCheckStep({
   check: Exclude<KoreaderPositionCheck, { status: "done" }>
 }) {
   const navigate = useNavigate()
+  const [isCheckSlow, setIsCheckSlow] = useState(false)
+
+  useEffect(function revealContinueAnywayWhenCheckIsTakingLong() {
+    const timeout = setTimeout(function markCheckAsSlow() {
+      setIsCheckSlow(true)
+    }, SLOW_CHECK_THRESHOLD_MS)
+
+    return function cancelContinueAnywayReveal() {
+      clearTimeout(timeout)
+    }
+  }, [])
 
   switch (check.status) {
     case "checking":
@@ -49,7 +64,9 @@ const KoreaderPositionCheckStep = memo(function KoreaderPositionCheckStep({
         <StepStack>
           <Typography>Checking your KOReader position...</Typography>
           <LoadingProgress />
-          <Button onClick={check.continueAnyway}>Continue anyway</Button>
+          <Fade in={isCheckSlow} unmountOnExit>
+            <Button onClick={check.continueAnyway}>Continue anyway</Button>
+          </Fade>
         </StepStack>
       )
     case "failed":
@@ -104,6 +121,7 @@ export const BookLoading = memo(function BookLoading({
         </StepStack>
       )}
       <Button
+        variant="text"
         onClick={function goBackFromLoadingBook() {
           goBack()
         }}

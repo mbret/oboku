@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from "@testing-library/react"
+import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { MemoryRouter, Route, Routes } from "react-router"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
@@ -6,6 +6,13 @@ import { ROUTES } from "../navigation/routes"
 import { BookLoading } from "./BookLoading"
 
 const READER_PATH = "/reader/book-1"
+const SLOW_CHECK_THRESHOLD_MS = 3000
+
+const advanceBy = async (ms: number) => {
+  await act(async function advanceFakeTime() {
+    await vi.advanceTimersByTimeAsync(ms)
+  })
+}
 
 const renderBookLoading = ({
   isBookLoaded = true,
@@ -37,6 +44,7 @@ const renderBookLoading = ({
 describe("BookLoading", () => {
   afterEach(() => {
     cleanup()
+    vi.useRealTimers()
   })
 
   it("shows the book loading until its file is loaded, whatever the KOReader check", () => {
@@ -49,7 +57,8 @@ describe("BookLoading", () => {
     expect(screen.queryByRole("button", { name: "Continue anyway" })).toBeNull()
   })
 
-  it("lets the user continue while the KOReader position is checked", () => {
+  it("lets the user continue once the KOReader position takes a while to check", async () => {
+    vi.useFakeTimers()
     const continueAnyway = vi.fn()
     renderBookLoading({
       koreaderPositionCheck: { status: "checking", continueAnyway },
@@ -57,6 +66,11 @@ describe("BookLoading", () => {
 
     expect(screen.getByText("Checking your KOReader position...")).toBeDefined()
 
+    await advanceBy(SLOW_CHECK_THRESHOLD_MS - 1)
+
+    expect(screen.queryByRole("button", { name: "Continue anyway" })).toBeNull()
+
+    await advanceBy(1)
     fireEvent.click(screen.getByRole("button", { name: "Continue anyway" }))
 
     expect(continueAnyway).toHaveBeenCalledOnce()

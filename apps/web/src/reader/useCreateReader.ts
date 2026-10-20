@@ -16,11 +16,10 @@ import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
 import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
-import type { BookDocType, KoreaderSyncPositionDto } from "@oboku/shared"
+import { type BookDocType, getBookmark } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { createBookQueryOptions } from "../books/states"
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
-import { getKoreaderProgressToOpenAt } from "../koreader/getKoreaderProgressToOpenAt"
 import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 export const createAppReader = koreaderEnhancer(
@@ -39,23 +38,23 @@ type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
 
 const getOpeningTarget = ({
   book,
-  serverKoreaderPosition,
+  koreaderDocument,
 }: {
   book: DeepReadonly<BookDocType>
-  serverKoreaderPosition: KoreaderSyncPositionDto | undefined
+  koreaderDocument: string | undefined
 }): OpeningTarget => {
-  const koreaderProgress = getKoreaderProgressToOpenAt({
-    book,
-    serverPosition: serverKoreaderPosition,
-  })
+  const bookmark = getBookmark(book)
 
-  if (koreaderProgress) {
-    return { type: "koreaderProgress", value: koreaderProgress }
+  if (bookmark?.cfi !== undefined) {
+    return { type: "cfi", value: bookmark.cfi }
   }
 
-  const cfi = book.readingStateCurrentBookmarkLocation
+  const isKoreaderBookmarkOfOpenedFile =
+    bookmark !== undefined && bookmark.koreader.document === koreaderDocument
 
-  return cfi ? { type: "cfi", value: cfi } : undefined
+  return isKoreaderBookmarkOfOpenedFile
+    ? { type: "koreaderProgress", value: bookmark.koreader.progress }
+    : undefined
 }
 
 /**
@@ -70,6 +69,7 @@ export const useCreateReader = ({
   bookId,
   isPreview,
   manifest,
+  koreaderDocument,
   koreaderPositionCheck,
   containerRef,
 }: {
@@ -77,6 +77,7 @@ export const useCreateReader = ({
   bookId: string
   isPreview: boolean
   manifest?: Manifest
+  koreaderDocument?: string
   koreaderPositionCheck: KoreaderPositionCheck
   containerRef: RefObject<HTMLElement | null>
 }) => {
@@ -84,11 +85,10 @@ export const useCreateReader = ({
     createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
   const isKoreaderPositionChecked = koreaderPositionCheck.status === "done"
-  const serverKoreaderPosition = isKoreaderPositionChecked
-    ? koreaderPositionCheck.serverPosition
+  const bookToOpen = isKoreaderPositionChecked
+    ? (koreaderPositionCheck.updatedBook ?? bookOnce)
     : undefined
-  const isRestoredLocationReady =
-    isPreview || (!!bookOnce && isKoreaderPositionChecked)
+  const isRestoredLocationReady = isPreview || !!bookToOpen
 
   useEffect(() => {
     const containerElement = containerRef.current
@@ -103,9 +103,9 @@ export const useCreateReader = ({
     }
 
     const target =
-      isPreview || !bookOnce
+      isPreview || !bookToOpen
         ? undefined
-        : getOpeningTarget({ book: bookOnce, serverKoreaderPosition })
+        : getOpeningTarget({ book: bookToOpen, koreaderDocument })
 
     const instance = createAppReader({
       manifest,
@@ -162,8 +162,8 @@ export const useCreateReader = ({
     isPreview,
     isRestoredLocationReady,
     bookId,
-    bookOnce,
-    serverKoreaderPosition,
+    bookToOpen,
+    koreaderDocument,
     containerRef,
   ])
 }

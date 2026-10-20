@@ -1,14 +1,18 @@
 import {
+  type BookDocType,
   type KoreaderSyncPositionDto,
   koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import type { DeepReadonly } from "rxdb"
 import { firstValueFrom, from, timeout } from "rxjs"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
+import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { isKoreaderPositionNewerThanBookmark } from "../isKoreaderPositionNewerThanBookmark"
 import {
   isKoreaderSyncConnectionMissingError,
   isKoreaderSyncKeyRefusedError,
@@ -20,26 +24,77 @@ const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
 
 /**
  * Where the check of a book's KOReader position stands as the book opens.
- * Once `done`, the book can open: `serverPosition` is the position the
- * account's server keeps for the book's file, missing when it keeps none,
- * the account has no server, or the book opens without asking.
+ * Once `done`, the book can open: `updatedBook` is the book once its
+ * bookmark took the server's newer position, missing when the book keeps
+ * its own.
  */
 export type KoreaderPositionCheck =
   | { status: "checking"; continueAnyway: () => void }
   | { status: "failed"; tryAgain: () => void; continueAnyway: () => void }
   | { status: "refused"; continueAnyway: () => void }
-  | { status: "done"; serverPosition?: KoreaderSyncPositionDto }
+  | { status: "done"; updatedBook?: DeepReadonly<BookDocType> }
+
+type KoreaderBookmarkUpdate = {
+  position: KoreaderSyncPositionDto
+  koreaderDocument: string
+  savedAt: string
+}
+
+const applyKoreaderBookmark = ({
+  position,
+  koreaderDocument,
+  savedAt,
+}: KoreaderBookmarkUpdate) =>
+  function takeKoreaderPositionAsBookmark(old: BookDocType): BookDocType {
+    return {
+      ...old,
+      readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkProgressPercent: position.percentage,
+      readingStateCurrentBookmarkKoreaderProgress: position.progress,
+      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
+      readingStateCurrentBookmarkLocationUpdatedAt:
+        position.updatedAt ?? savedAt,
+    }
+  }
+
+const takeKoreaderPositionWhenNewer = (
+  bookId: string,
+  update: KoreaderBookmarkUpdate,
+) =>
+  firstValueFrom(
+    incrementalBookMutation(
+      bookId,
+      async function writeKoreaderBookmarkWhenNewer(book) {
+        const isPositionNewer = isKoreaderPositionNewerThanBookmark({
+          book: book.toJSON(),
+          position: update.position,
+          koreaderDocument: update.koreaderDocument,
+        })
+
+        if (!isPositionNewer) return null
+
+        const updatedBook = await book.incrementalModify(
+          applyKoreaderBookmark(update),
+        )
+
+        return updatedBook.toJSON()
+      },
+    ),
+  )
 
 /**
  * Asks the account's KOReader sync server, as the book opens, where the
- * book's file was left, before letting it open. The book opens without
- * asking offline, in preview, signed out, or once the user continues
- * without the answer.
+ * book's file was left, and takes that position as the book's bookmark when
+ * another device left it there more recently, before letting the book open.
+ * The book opens without asking offline, in preview, signed out, or once the
+ * user continues without the answer.
  */
 export const useKoreaderPositionCheck = ({
+  bookId,
   koreaderDocument,
   enabled,
 }: {
+  bookId: string
   /** The KOReader document of the book's file, `undefined` until the book is loaded. */
   koreaderDocument: string | undefined
   enabled: boolean
@@ -60,7 +115,13 @@ export const useKoreaderPositionCheck = ({
     profileId: activeProfileId,
   })
 
-  const fetchServerPosition = async (document: string) => {
+  const positionQueryKey = koreaderSyncPositionQueryKey({
+    profileId: activeProfileId,
+    bookId,
+    document: koreaderDocument,
+  })
+
+  const fetchServerPosition = async (document: string, signal: AbortSignal) => {
     const { connection } = await queryClient.ensureQueryData(
       connectionQueryOptions,
     )
@@ -71,6 +132,7 @@ export const useKoreaderPositionCheck = ({
       const { data } = await koreaderSyncConnectionPullPosition({
         client: httpClientApi.sdkClient,
         path: { document },
+        signal,
       })
 
       return data.position
@@ -87,18 +149,24 @@ export const useKoreaderPositionCheck = ({
   }
 
   const pull = useQuery({
-    queryKey: koreaderSyncPositionQueryKey({
-      profileId: activeProfileId,
-      document: koreaderDocument,
-    }),
+    queryKey: positionQueryKey,
     queryFn:
       isPulling && koreaderDocument !== undefined
-        ? function pullKoreaderPositionOfBook() {
-            return firstValueFrom(
-              from(fetchServerPosition(koreaderDocument)).pipe(
+        ? async function syncKoreaderPositionOfBook({ signal }) {
+            const savedAt = new Date().toISOString()
+            const position = await firstValueFrom(
+              from(fetchServerPosition(koreaderDocument, signal)).pipe(
                 timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
               ),
             )
+
+            if (!position) return null
+
+            return takeKoreaderPositionWhenNewer(bookId, {
+              position,
+              koreaderDocument,
+              savedAt,
+            })
           }
         : skipToken,
     staleTime: Number.POSITIVE_INFINITY,
@@ -110,12 +178,13 @@ export const useKoreaderPositionCheck = ({
 
   const continueAnyway = function continueWithoutKoreaderPosition() {
     setHasContinuedAnyway(true)
+    void queryClient.cancelQueries({ queryKey: positionQueryKey })
   }
 
   if (!isPulling) return { status: "done" }
 
   if (pull.isSuccess) {
-    return { status: "done", serverPosition: pull.data ?? undefined }
+    return { status: "done", updatedBook: pull.data ?? undefined }
   }
 
   const hasFailed = pull.isError && !pull.isFetching

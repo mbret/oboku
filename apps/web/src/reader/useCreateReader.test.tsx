@@ -1,7 +1,6 @@
 import {
   type BookDocType,
   createBookDefaults,
-  type KoreaderSyncPositionDto,
   ReadingStateState,
 } from "@oboku/shared"
 import type { Manifest } from "@prose-reader/shared"
@@ -72,7 +71,7 @@ import { useCreateReader } from "./useCreateReader"
 const BOOK_ID = "book-1"
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 const BOOKMARK_CFI = "epubcfi(/6/4!/4/2/1:0)"
-const SERVER_PROGRESS = "/body/DocFragment[9]/body/p[12]/text().4"
+const KOREADER_PROGRESS = "/body/DocFragment[9]/body/p[12]/text().4"
 
 const MANIFEST: Manifest = {
   filename: "book.epub",
@@ -100,12 +99,10 @@ const STORED_BOOK: BookDocType = {
   readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
 }
 
-const NEWER_SERVER_POSITION: KoreaderSyncPositionDto = {
-  progress: SERVER_PROGRESS,
-  percentage: 0.6,
-  device: "Kobo",
-  deviceId: "kobo-device",
-  updatedAt: "2026-10-20T09:00:00.000Z",
+const BOOK_WITH_ONLY_KOREADER_BOOKMARK: BookDocType = {
+  ...STORED_BOOK,
+  readingStateCurrentBookmarkLocation: null,
+  readingStateCurrentBookmarkKoreaderProgress: KOREADER_PROGRESS,
 }
 
 const renderCreateReader = (initialCheck: KoreaderPositionCheck) => {
@@ -129,6 +126,7 @@ const renderCreateReader = (initialCheck: KoreaderPositionCheck) => {
         isPreview: false,
         isUsingWebStreamer: false,
         manifest: MANIFEST,
+        koreaderDocument: KOREADER_DOCUMENT,
         koreaderPositionCheck,
         containerRef,
       })
@@ -167,34 +165,41 @@ describe("useCreateReader", () => {
     expect(mocks.createAppReader).toHaveBeenCalledOnce()
   })
 
-  it("opens at the KOReader position another device left after the bookmark moved", async () => {
-    renderCreateReader({
-      status: "done",
-      serverPosition: NEWER_SERVER_POSITION,
-    })
-    await settle()
-
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({
-        target: { type: "koreaderProgress", value: SERVER_PROGRESS },
-      }),
-    )
-  })
-
-  it("opens at the bookmark when the KOReader position is not newer", async () => {
-    renderCreateReader({
-      status: "done",
-      serverPosition: {
-        ...NEWER_SERVER_POSITION,
-        updatedAt: "2026-10-20T07:00:00.000Z",
-      },
-    })
+  it("opens at the bookmark's cfi", async () => {
+    renderCreateReader({ status: "done" })
     await settle()
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         target: { type: "cfi", value: BOOKMARK_CFI },
       }),
+    )
+  })
+
+  it("opens at the bookmark the KOReader position check took from the server", async () => {
+    renderCreateReader({
+      status: "done",
+      updatedBook: BOOK_WITH_ONLY_KOREADER_BOOKMARK,
+    })
+    await settle()
+
+    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        target: { type: "koreaderProgress", value: KOREADER_PROGRESS },
+      }),
+    )
+  })
+
+  it("opens at the start when the bookmark is only in KOReader's form, for another file", async () => {
+    mocks.readStoredBook.mockReturnValue({
+      ...BOOK_WITH_ONLY_KOREADER_BOOKMARK,
+      readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
+    })
+    renderCreateReader({ status: "done" })
+    await settle()
+
+    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ target: undefined }),
     )
   })
 })
