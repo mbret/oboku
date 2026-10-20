@@ -1,5 +1,4 @@
 import type { SettingsConnectorDocType } from "@oboku/shared"
-import { createClient } from "webdav"
 import { memo } from "react"
 import {
   from,
@@ -18,6 +17,7 @@ import { CancelError } from "../../errors/errors.shared"
 import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../common/useDelayEffect"
+import { createWebdavClient } from "./auth/connect"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {
   connectorType: SettingsConnectorDocType["type"]
@@ -61,7 +61,8 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
             throw new Error("No WebDAV URL available")
           }
 
-          const client = createClient(url, {
+          const client = createWebdavClient({
+            url,
             username: data.username,
             password: data.password,
           })
