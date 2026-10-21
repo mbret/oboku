@@ -1,35 +1,73 @@
 import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
-import type { ObokuPlugin } from "../types"
+import type { UploadBookComponentProps } from "../types"
+import type { WebdavBackedType } from "./constants"
 import {
   ConnectorSelectionStep,
   type WebdavAuthResult,
 } from "./upload/ConnectorSelectionStep"
-import { FileBrowseStep } from "./upload/FileBrowseStep"
+import {
+  FileBrowseStep,
+  type WebdavUploadBookToAddPayload,
+} from "./upload/FileBrowseStep"
 
-export const UploadBook: ObokuPlugin<"webdav">["UploadBookComponent"] = memo(
-  ({ onClose, title }) => {
-    const [authResult, setAuthResult] = useState<WebdavAuthResult | undefined>(
-      undefined,
-    )
+type WebdavUploadBookProps<T extends WebdavBackedType> = {
+  connectorType: T
+  headerSubtitle?: string
+  maxConnectors?: number
+  onClose: (booksToAdd?: ReadonlyArray<WebdavUploadBookToAddPayload<T>>) => void
+  title: string
+  /** Connects to this URL instead of the connector's. */
+  webdavUrl?: string
+}
 
-    return (
-      <Dialog fullScreen onClose={() => onClose()} open>
-        <DialogTitle>{title}</DialogTitle>
-        {authResult ? (
-          <FileBrowseStep
-            authResult={authResult}
-            onClose={onClose}
-            onGoBack={() => setAuthResult(undefined)}
-          />
-        ) : (
-          <ConnectorSelectionStep
-            connectorType="webdav"
-            onAuthenticated={setAuthResult}
-            onClose={onClose}
-          />
-        )}
-      </Dialog>
-    )
-  },
-)
+export function WebdavUploadBook<T extends WebdavBackedType>({
+  connectorType,
+  headerSubtitle,
+  maxConnectors,
+  onClose,
+  title,
+  webdavUrl,
+}: WebdavUploadBookProps<T>) {
+  const [authResult, setAuthResult] = useState<WebdavAuthResult | undefined>(
+    undefined,
+  )
+
+  const closeWithoutBooks = () => {
+    onClose()
+  }
+
+  const goBackToConnectorSelection = () => {
+    setAuthResult(undefined)
+  }
+
+  return (
+    <Dialog fullScreen onClose={closeWithoutBooks} open>
+      <DialogTitle>{title}</DialogTitle>
+      {authResult ? (
+        <FileBrowseStep
+          authResult={authResult}
+          connectorType={connectorType}
+          headerSubtitle={headerSubtitle}
+          onCancel={closeWithoutBooks}
+          onClose={onClose}
+          onGoBack={goBackToConnectorSelection}
+        />
+      ) : (
+        <ConnectorSelectionStep
+          connectorType={connectorType}
+          maxConnectors={maxConnectors}
+          onAuthenticated={setAuthResult}
+          onClose={closeWithoutBooks}
+          webdavUrl={webdavUrl}
+        />
+      )}
+    </Dialog>
+  )
+}
+
+export const UploadBook = memo(function UploadBook(
+  props: UploadBookComponentProps<"webdav">,
+) {
+  return <WebdavUploadBook {...props} connectorType="webdav" />
+})
