@@ -61,7 +61,6 @@ export class AuthGuard implements CanActivate {
 
     try {
       const payload = await this.jwtService.verifyAsync<TokenPayload>(token, {
-        // @todo use public key.
         publicKey: await this.secretsService.getJwtPublicKey(),
         algorithms: ["RS256"],
       })

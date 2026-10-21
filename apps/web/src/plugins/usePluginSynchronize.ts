@@ -15,34 +15,44 @@ export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const { mutateAsync: synchronizeWebdav } =
     pluginsByType.webdav.useSynchronize({
-      requestPopup: createRequestPopupDialog({ name: "webdav" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.webdav.name,
+      }),
     })
   const { mutateAsync: synchronizeDropbox } =
     pluginsByType.dropbox.useSynchronize({
-      requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.dropbox.name,
+      }),
     })
   const { mutateAsync: synchronizeSynologyDrive } = pluginsByType[
     "synology-drive"
   ].useSynchronize({
-    requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+    requestPopup: createRequestPopupDialog({
+      name: pluginsByType["synology-drive"].name,
+    }),
   })
   const { mutateAsync: synchronizeDrive } = pluginsByType.DRIVE.useSynchronize({
-    requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+    requestPopup: createRequestPopupDialog({ name: pluginsByType.DRIVE.name }),
   })
   const { mutateAsync: synchronizeOneDrive } = pluginsByType[
     "one-drive"
   ].useSynchronize({
-    requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+    requestPopup: createRequestPopupDialog({
+      name: pluginsByType["one-drive"].name,
+    }),
   })
   const { mutateAsync: synchronizeFile } = pluginsByType.file.useSynchronize({
-    requestPopup: createRequestPopupDialog({ name: "file" }),
+    requestPopup: createRequestPopupDialog({ name: pluginsByType.file.name }),
   })
   const { mutateAsync: synchronizeUri } = pluginsByType.URI.useSynchronize({
-    requestPopup: createRequestPopupDialog({ name: "URI" }),
+    requestPopup: createRequestPopupDialog({ name: pluginsByType.URI.name }),
   })
   const { mutateAsync: synchronizeServer } =
     pluginsByType.server.useSynchronize({
-      requestPopup: createRequestPopupDialog({ name: "server" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.server.name,
+      }),
     })
 
   return useCallback(

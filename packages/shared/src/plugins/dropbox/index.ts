@@ -17,7 +17,7 @@ export const dropboxApiCredentialsSchema = z.object({
   accessTokenExpiresAt: z.string().min(1),
   clientId: z.string().min(1),
   codeVerifier: z.string().min(1),
-  refreshToken: z.string().min(1),
+  refreshToken: z.string().min(1).optional(),
 })
 
 export type DropboxApiCredentials = z.infer<typeof dropboxApiCredentialsSchema>
