@@ -18,8 +18,7 @@ import { InfoScreen } from "./InfoScreen"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
-import { SIGNAL_RESET } from "reactjrx"
-import { googleAccessTokenSignal } from "../../google/auth"
+import { clearGoogleAccessToken } from "../../google/auth"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -46,9 +45,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: function useGoogleDriveSignOut() {
-    return function forgetGoogleAccessToken() {
-      googleAccessTokenSignal.update(SIGNAL_RESET)
-    }
+    return clearGoogleAccessToken
   },
   Provider,
   InfoScreen,
