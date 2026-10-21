@@ -21,6 +21,8 @@ import {
 import { ProtectedContentGuard } from "../../../../library/ProtectedContentGuard"
 import type { ROUTES } from "../../../../navigation/routes"
 
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
 export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
   const { id: collectionId } =
     useParams<PathParam<typeof ROUTES.COLLECTION_BOOKS>>()
@@ -31,9 +33,12 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
-  const { mutateAsync: removeCollectionFromBook } =
-    useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: removeCollectionFromBook } = useRemoveCollectionFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({

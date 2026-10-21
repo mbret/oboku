@@ -27,14 +27,18 @@ const getCollectionSearchableText = (
 
 const EMPTY_COLLECTIONS: DeepReadonlyObject<CollectionDocType>[] = []
 const listStyle = { flex: 1 }
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
   const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_COLLECTIONS>>()
   const { data: collections = EMPTY_COLLECTIONS } = useCollections()
   const { data: book } = useBook({ id: bookId })
-  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
-  const { mutateAsync: removeCollectionFromBook } =
-    useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: removeCollectionFromBook } = useRemoveCollectionFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({

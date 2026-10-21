@@ -37,6 +37,7 @@ import { Page } from "../../common/Page"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { BookDetailsTabPane } from "./BookDetailsTabPane"
 import { BookMetadataTabPane } from "./BookMetadataTabPane"
+import { formatList } from "./metadataSource/formatters"
 
 const TAB_PARAM = "tab"
 const TABS = ["details", "metadata"] as const
@@ -135,7 +136,7 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
               {metadata?.title || "Unknown"}
             </Typography>
             <ItalicTypography variant="body2">
-              By {metadata?.authors?.join(", ") || "Unknown"}
+              By {formatList(metadata?.authors) || "Unknown"}
             </ItalicTypography>
           </HeaderTextStack>
         </HeaderStack>
