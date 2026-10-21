@@ -27,12 +27,7 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   InfoScreen,
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
-  DataSourceCreateForm: (props) => (
-    <DataSourceForm {...props} submitLabel="Confirm" />
-  ),
-  DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
-  ),
+  DataSourceForm,
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,

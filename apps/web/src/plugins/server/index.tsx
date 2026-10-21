@@ -26,11 +26,6 @@ export const plugin: ObokuPlugin<"server"> = {
   useSignOut: () => () => {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
-  DataSourceCreateForm: (props) => (
-    <DataSourceForm {...props} submitLabel="Confirm" />
-  ),
-  DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
-  ),
+  DataSourceForm,
   InfoScreen: () => <InfoScreen />,
 }
