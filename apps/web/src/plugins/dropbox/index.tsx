@@ -34,12 +34,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   canUpsertFile: true,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
-  DataSourceCreateForm: (props) => (
-    <DataSourceForm {...props} submitLabel="Confirm" />
-  ),
-  DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
-  ),
+  DataSourceForm,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
   useRemoveResource,

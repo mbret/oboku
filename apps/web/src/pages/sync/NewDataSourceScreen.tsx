@@ -16,7 +16,7 @@ export const NewDataSourceScreen = memo(() => {
   const plugin = plugins.find(
     (p) => p.type.toLowerCase() === type?.toLowerCase(),
   )
-  const PluginForm = plugin?.DataSourceCreateForm
+  const PluginForm = plugin?.DataSourceForm
   const { mutate: createDataSource } = useCreateDataSource()
 
   const handleSubmit = (payload: DataSourceSubmitPayload) => {
@@ -47,7 +47,9 @@ export const NewDataSourceScreen = memo(() => {
     <Page>
       <TopBarNavigation title={`New ${plugin.name} data source`} />
       <PageContainer disableGutters>
-        {PluginForm && <PluginForm onSubmit={handleSubmit} />}
+        {PluginForm && (
+          <PluginForm onSubmit={handleSubmit} submitLabel="Confirm" />
+        )}
       </PageContainer>
     </Page>
   )

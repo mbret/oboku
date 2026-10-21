@@ -31,12 +31,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   canSynchronize: true,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
-  DataSourceCreateForm: (props) => (
-    <DataSourceForm {...props} submitLabel="Confirm" />
-  ),
-  DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
-  ),
+  DataSourceForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
   useSyncSourceInfo,
