@@ -1,14 +1,7 @@
 import type { Request, Response } from "express"
-import { createHash, timingSafeEqual } from "node:crypto"
 import bcrypt from "bcrypt"
 import type { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-
-function timingSafeStringEqual(a: string, b: string): boolean {
-  const hashA = createHash("sha256").update(a).digest()
-  const hashB = createHash("sha256").update(b).digest()
-
-  return timingSafeEqual(hashA, hashB)
-}
+import { timingSafeStringEqual } from "../lib/crypto/timingSafeStringEqual.js"
 
 function sendUnauthorized(res: Response) {
   res.status(401).set("WWW-Authenticate", 'Basic realm="oboku-webdav"').end()
