@@ -23,7 +23,8 @@ const Probe = (options: ProbeOptions) => {
   return null
 }
 
-const renderProbe = (options: ProbeOptions, client = new QueryClient()) => {
+const renderProbe = (options: ProbeOptions) => {
+  const client = new QueryClient()
   const view = render(
     <QueryClientProvider client={client}>
       <Probe {...options} />
@@ -51,16 +52,16 @@ describe("useEnsureQueryData$", () => {
   it("ignores later values a live query writes to the same cache entry", async () => {
     const queryKey: QueryKey = ["frozen"]
     const source$ = new BehaviorSubject("initial")
-    const client = new QueryClient()
+    const onLiveQueryRender = vi.fn()
 
     function LiveQuery() {
-      useQuery$({ queryKey, queryFn: () => source$ })
+      onLiveQueryRender(useQuery$({ queryKey, queryFn: () => source$ }).data)
 
       return null
     }
 
     render(
-      <QueryClientProvider client={client}>
+      <QueryClientProvider client={new QueryClient()}>
         <LiveQuery />
         <Probe queryKey={queryKey} queryFn={() => source$} />
       </QueryClientProvider>,
@@ -72,7 +73,9 @@ describe("useEnsureQueryData$", () => {
       source$.next("updated")
     })
 
-    expect(client.getQueryData(queryKey)).toBe("updated")
+    await waitFor(() =>
+      expect(onLiveQueryRender).toHaveBeenLastCalledWith("updated"),
+    )
     expect(latestResult.data).toBe("initial")
   })
 
