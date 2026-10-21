@@ -5,7 +5,12 @@ import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
 import { map, type Observable, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { useQueries$, useQuery$, useSignalValue } from "reactjrx"
+import {
+  type UseLiveQuery$Options,
+  useLiveQueries$,
+  useLiveQuery$,
+  useSignalValue,
+} from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -17,14 +22,10 @@ import {
   libraryStateSignal,
   selectIsLibraryUnlocked,
 } from "../library/books/states"
-import {
-  type SkipToken,
-  skipToken,
-  type UseQueryOptions,
-} from "@tanstack/react-query"
+import { type SkipToken, skipToken } from "@tanstack/react-query"
 
 type UseBooksOptions<TData = DeepReadonlyObject<BookDocType>[]> =
-  UseQueryOptions<DeepReadonlyObject<BookDocType>[], unknown, TData>
+  UseLiveQuery$Options<DeepReadonlyObject<BookDocType>[], unknown, TData>
 
 export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   queryObj = {},
@@ -45,7 +46,7 @@ export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   )
   const includeProtected = _includeProtected || isLibraryUnlocked
 
-  return useQuery$<DeepReadonlyObject<BookDocType>[], unknown, TData>({
+  return useLiveQuery$<DeepReadonlyObject<BookDocType>[], unknown, TData>({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [
       RXDB_QUERY_KEY_PREFIX,
@@ -117,14 +118,14 @@ export const useBook = ({
 }: {
   id?: string
 } & Omit<
-  UseQueryOptions<
+  UseLiveQuery$Options<
     DeepReadonlyObject<BookDocType> | null,
     unknown,
     DeepReadonlyObject<BookDocType> | null
   >,
   "queryKey" | "queryFn"
 >) => {
-  return useQuery$({
+  return useLiveQuery$({
     ...createBookQueryOptions({ id }),
     ...rest,
   })
@@ -163,7 +164,7 @@ export const useHasBooksRemovableFromSource = ({
 }) => {
   const { data: books } = useBooks({ ids, includeProtected: true })
 
-  return useQueries$({
+  return useLiveQueries$({
     queries:
       books?.flatMap((book) =>
         book.links[0] ? [createLinkQueryOptions({ id: book.links[0] })] : [],
