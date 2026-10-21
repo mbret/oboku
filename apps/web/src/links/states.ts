@@ -1,5 +1,5 @@
 import { plugins } from "../plugins/configure"
-import { useQuery$ } from "reactjrx"
+import { useLiveQuery$ } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -10,7 +10,7 @@ import type { Database } from "../rxdb"
 import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
 
 export const useLinks = () => {
-  return useQuery$({
+  return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "many", "link/list"],
     queryFn: () => {
@@ -41,7 +41,7 @@ export const createLinkQueryOptions = ({ id }: { id?: string }) => ({
 })
 
 export const useLink = ({ id }: { id?: string }) => {
-  return useQuery$(createLinkQueryOptions({ id }))
+  return useLiveQuery$(createLinkQueryOptions({ id }))
 }
 
 export const getLinkStateAsync = async ({

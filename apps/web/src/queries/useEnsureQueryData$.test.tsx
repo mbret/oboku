@@ -6,7 +6,6 @@ import {
   skipToken,
 } from "@tanstack/react-query"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
-import { QueryClientProvider$ } from "reactjrx"
 import { BehaviorSubject, of } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { useEnsureQueryData$ } from "./useEnsureQueryData$"
@@ -26,9 +25,7 @@ const Probe = (options: ProbeOptions) => {
 const renderProbe = (options: ProbeOptions, client = new QueryClient()) => {
   const view = render(
     <QueryClientProvider client={client}>
-      <QueryClientProvider$>
-        <Probe {...options} />
-      </QueryClientProvider$>
+      <Probe {...options} />
     </QueryClientProvider>,
   )
 
@@ -36,9 +33,7 @@ const renderProbe = (options: ProbeOptions, client = new QueryClient()) => {
     rerenderProbe: (nextOptions: ProbeOptions) =>
       view.rerender(
         <QueryClientProvider client={client}>
-          <QueryClientProvider$>
-            <Probe {...nextOptions} />
-          </QueryClientProvider$>
+          <Probe {...nextOptions} />
         </QueryClientProvider>,
       ),
   }
@@ -105,10 +100,8 @@ describe("useEnsureQueryData$", () => {
 
     render(
       <QueryClientProvider client={new QueryClient()}>
-        <QueryClientProvider$>
-          <Probe queryKey={["shared-key"]} queryFn={queryFn} />
-          <Probe queryKey={["shared-key"]} queryFn={queryFn} />
-        </QueryClientProvider$>
+        <Probe queryKey={["shared-key"]} queryFn={queryFn} />
+        <Probe queryKey={["shared-key"]} queryFn={queryFn} />
       </QueryClientProvider>,
     )
 

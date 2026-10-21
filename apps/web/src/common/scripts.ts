@@ -14,7 +14,7 @@ export const retryOnFailure = <O>(stream: Observable<O>) =>
   stream.pipe(
     reportErrors,
     retryBackoff({
-      retryDelay: RETRY_DELAY_MS,
+      initialInterval: RETRY_DELAY_MS,
       maxInterval: RETRY_MAX_DELAY_MS,
       retryAfter: function waitForDeviceOnLine() {
         return whenOnLine$
