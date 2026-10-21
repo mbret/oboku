@@ -191,17 +191,7 @@ const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
     // when a link is added update the book with its id
     if (bookId) {
       try {
-        const book = await db.book
-          .findOne({
-            selector: {
-              _id: {
-                $eq: bookId,
-              },
-            },
-          })
-          .exec()
-
-        await book?.incrementalPatch({
+        await db.book.findOne(bookId).incrementalPatch({
           links: [data._id],
         })
       } catch (e) {

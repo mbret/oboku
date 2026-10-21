@@ -13,6 +13,7 @@ import { useUpdateMasterKey } from "./useUpdateMasterKey"
 import { ErrorAlert, errorToMessage } from "../errors/ErrorMessage"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { notify } from "../notifications/toasts"
+import { CancelButton } from "../common/forms/CancelButton"
 
 const FORM_ID = "SetupContentsPasswordDialogForm"
 
@@ -113,9 +114,7 @@ export const SetupMasterPasswordDialog = memo(
           </form>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onInnerClose} variant="outlined">
-            Cancel
-          </Button>
+          <CancelButton onClick={onInnerClose} variant="outlined" />
           <Button variant="contained" type="submit" form={FORM_ID}>
             {hasPassword ? `Change` : `Initialize`}
           </Button>
