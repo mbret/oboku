@@ -347,7 +347,7 @@ export class AuthService {
       const payload = await this.jwtService.verifyAsync<EmailLinkTokenPayload>(
         token,
         {
-          secret: await this.secretService.getJwtPrivateKey(),
+          publicKey: await this.secretService.getJwtPublicKey(),
           algorithms: ["RS256"],
         },
       )

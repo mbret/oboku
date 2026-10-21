@@ -32,7 +32,7 @@
     "@nestjs/typeorm": "^12.0.2",
     "@oboku/shared": "workspace:*",
     "@oboku/synology": "workspace:*",
-    "@prose-reader/archive-reader": "^31.0.0",
+    "@prose-reader/archive-reader": "^32.0.0",
     "@sentry/nestjs": "^11.6.0",
     "@sentry/profiling-node": "^11.6.0",
     "axios": "^1.20.0",

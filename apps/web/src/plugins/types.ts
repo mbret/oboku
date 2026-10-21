@@ -47,6 +47,17 @@ type SelectionError = {
   originalError?: any
 }
 
+export type UploadBookComponentProps<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
+  requestPopup: () => Promise<boolean>
+  TagsSelector: FC<{
+    onChange: (tags: string[]) => void
+  }>
+  title: string
+} & Pick<DOMAttributes<any>, "onDragLeave">
+
 export type DownloadBookResult = {
   data: File | Blob
   fileName: string
@@ -202,16 +213,7 @@ type ObokuPluginBase<
   type: T
   description?: string
   Icon?: ComponentType<SvgIconProps>
-  UploadBookComponent?: FunctionComponent<
-    {
-      onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
-      requestPopup: () => Promise<boolean>
-      TagsSelector: FC<{
-        onChange: (tags: string[]) => void
-      }>
-      title: string
-    } & Pick<DOMAttributes<any>, "onDragLeave">
-  >
+  UploadBookComponent?: FunctionComponent<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
     DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
   >

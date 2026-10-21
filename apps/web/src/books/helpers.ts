@@ -10,16 +10,21 @@ import { useMemo } from "react"
 import type { BookQueryResult } from "./states"
 import { getMetadataFromBook } from "./metadata"
 import { useRefreshBookMetadata } from "./useRefreshBookMetadata"
-import { useMutation } from "@tanstack/react-query"
+import { type UseMutationOptions, useMutation } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
-import { defaultIfEmpty, from, merge } from "rxjs"
+import { combineLatest, from } from "rxjs"
 import { useCollectionIncrementalUpdate } from "../collections/useCollectionIncrementalUpdate"
 import { useIncrementalBookUpdate } from "./useIncrementalBookUpdate"
 
-export const useRemoveTagFromBook = () => {
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
+export const useRemoveTagFromBook = (
+  options?: Pick<UseMutationOptions, "meta">,
+) => {
   const { db } = useDatabase()
 
   return useMutation({
+    ...options,
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book
         .findOne({ selector: { _id } })
@@ -27,10 +32,11 @@ export const useRemoveTagFromBook = () => {
   })
 }
 
-export const useAddTagToBook = () => {
+export const useAddTagToBook = (options?: Pick<UseMutationOptions, "meta">) => {
   const { db } = useDatabase()
 
   return useMutation({
+    ...options,
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
       db?.book
         .findOne({ selector: { _id } })
@@ -38,11 +44,18 @@ export const useAddTagToBook = () => {
   })
 }
 
-export const useAddCollectionToBook = () => {
-  const { mutateAsync: updateBook } = useIncrementalBookUpdate()
-  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate()
+export const useAddCollectionToBook = (
+  options?: Pick<UseMutationOptions, "meta">,
+) => {
+  const { mutateAsync: updateBook } = useIncrementalBookUpdate(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate(
+    withoutGlobalErrorToast,
+  )
 
   return useMutation$({
+    ...options,
     mutationFn: ({
       _id,
       collectionId,
@@ -68,16 +81,23 @@ export const useAddCollectionToBook = () => {
         }),
       )
 
-      return merge(updateBook$, updateCollection$).pipe(defaultIfEmpty(null))
+      return combineLatest([updateBook$, updateCollection$])
     },
   })
 }
 
-export const useRemoveCollectionFromBook = () => {
-  const { mutateAsync: updateBook } = useIncrementalBookUpdate()
-  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate()
+export const useRemoveCollectionFromBook = (
+  options?: Pick<UseMutationOptions, "meta">,
+) => {
+  const { mutateAsync: updateBook } = useIncrementalBookUpdate(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: updateCollection } = useCollectionIncrementalUpdate(
+    withoutGlobalErrorToast,
+  )
 
   return useMutation$({
+    ...options,
     mutationFn: ({
       _id,
       collectionId,
@@ -103,7 +123,7 @@ export const useRemoveCollectionFromBook = () => {
         }),
       )
 
-      return merge(updateBook$, updateCollection$).pipe(defaultIfEmpty(null))
+      return combineLatest([updateBook$, updateCollection$])
     },
   })
 }

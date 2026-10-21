@@ -1,5 +1,5 @@
 import { filter, map, switchMap } from "rxjs"
-import { isDefined, useQuery$, useSignalValue } from "reactjrx"
+import { isDefined, useLiveQuery$, useSignalValue } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -16,7 +16,7 @@ export const useDataSources = () => {
     selectIsLibraryUnlocked,
   )
 
-  return useQuery$({
+  return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "dataSources", { isLibraryUnlocked }],
     queryFn: () =>

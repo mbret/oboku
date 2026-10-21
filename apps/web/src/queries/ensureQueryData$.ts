@@ -16,7 +16,7 @@ export type EnsureQueryFn$<TQueryFnData> =
  * available value for the query and seeds the cache with it when the entry
  * was empty. It deliberately bypasses the tanstack fetch machinery so the
  * query's registered `queryFn` is never swapped out from under live
- * `useQuery$` observers of the same key — the trade-off being that retry
+ * `useLiveQuery$` observers of the same key — the trade-off being that retry
  * options do not apply and a concurrent cold call may subscribe the source
  * twice.
  */

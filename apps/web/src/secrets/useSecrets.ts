@@ -1,4 +1,4 @@
-import { useQuery$ } from "reactjrx"
+import { useLiveQuery$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import {
@@ -7,7 +7,7 @@ import {
 } from "../queries/queryClient"
 
 export const useSecrets = () => {
-  return useQuery$({
+  return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "secrets", "all"],
     queryFn: () =>

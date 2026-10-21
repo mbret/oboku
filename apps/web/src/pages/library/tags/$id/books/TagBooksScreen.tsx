@@ -19,6 +19,8 @@ import {
 import { ProtectedContentGuard } from "../../../../../library/ProtectedContentGuard"
 import type { ROUTES } from "../../../../../navigation/routes"
 
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
 export const TagBooksScreen = memo(function TagBooksScreen() {
   const { id: tagId } = useParams<PathParam<typeof ROUTES.TAG_BOOKS>>()
   const { data: tag } = useTag(tagId)
@@ -26,8 +28,10 @@ export const TagBooksScreen = memo(function TagBooksScreen() {
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutateAsync: addTagToBook } = useAddTagToBook()
-  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook()
+  const { mutateAsync: addTagToBook } = useAddTagToBook(withoutGlobalErrorToast)
+  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({

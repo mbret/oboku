@@ -1,6 +1,7 @@
-import type {
-  BookDocType,
-  KoreaderSyncConnectionPushPositionData,
+import {
+  type BookDocType,
+  getBookmark,
+  type KoreaderSyncConnectionPushPositionData,
 } from "@oboku/shared"
 import { useEffect } from "react"
 import { retryBackoff } from "reactjrx"
@@ -34,14 +35,17 @@ const toKoreaderDocument = ({
 }: DeepReadonly<BookDocType>) => readingStateCurrentBookmarkKoreaderDocument
 
 /** `undefined` when KOReader cannot open the bookmark's place. */
-const toKoreaderPosition = ({
-  readingStateCurrentBookmarkKoreaderDocument: document,
-  readingStateCurrentBookmarkKoreaderProgress: progress,
-  readingStateCurrentBookmarkProgressPercent: percentage,
-}: DeepReadonly<BookDocType>): KoreaderPosition | undefined => {
-  if (!document || !progress) return undefined
+const toKoreaderPosition = (
+  book: DeepReadonly<BookDocType>,
+): KoreaderPosition | undefined => {
+  const koreaderBookmark = getBookmark(book)?.koreader
 
-  return { document, progress, percentage }
+  if (!koreaderBookmark) return undefined
+
+  return {
+    ...koreaderBookmark,
+    percentage: book.readingStateCurrentBookmarkProgressPercent,
+  }
 }
 
 /**
@@ -70,7 +74,7 @@ export const useSyncKoreaderPositions = () => {
             })
           }),
           retryBackoff({
-            retryDelay: PUSH_RETRY_DELAY_MS,
+            initialInterval: PUSH_RETRY_DELAY_MS,
             maxInterval: PUSH_RETRY_MAX_DELAY_MS,
           }),
         )

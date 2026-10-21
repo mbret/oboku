@@ -1,9 +1,7 @@
 /// <reference types="@vitest/browser-playwright" />
 import type { Theme } from "@prose-reader/core"
 import type { Manifest } from "@prose-reader/shared"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react"
-import type { ReactNode } from "react"
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { cdp } from "vitest/browser"
@@ -103,36 +101,21 @@ function hasThemeSetAfterDestroy(
 }
 
 function renderReaderEffects() {
-  const queryClient = new QueryClient()
   const containerRef = { current: document.createElement("div") }
 
-  return renderHook(
-    function renderCreateAndSyncReader() {
-      const { bookId, manifest } = useSignalValue(openBookSignal)
+  return renderHook(function renderCreateAndSyncReader() {
+    const { bookId, manifest } = useSignalValue(openBookSignal)
 
-      useCreateReader({
-        bookId,
-        manifest,
-        containerRef,
-        isPreview: true,
-        isUsingWebStreamer: false,
-      })
-      useSyncReaderTheme()
-    },
-    {
-      wrapper: function QueryClientWrapper({
-        children,
-      }: {
-        children: ReactNode
-      }) {
-        return (
-          <QueryClientProvider client={queryClient}>
-            {children}
-          </QueryClientProvider>
-        )
-      },
-    },
-  )
+    useCreateReader({
+      bookId,
+      manifest,
+      containerRef,
+      koreaderDocument: "koreader-document",
+      book: null,
+      isUsingWebStreamer: false,
+    })
+    useSyncReaderTheme()
+  })
 }
 
 describe("the reader's theme", () => {
