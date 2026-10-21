@@ -24,7 +24,9 @@ export const saveCoverFromArchiveToBucket = async (
     )?.arrayBuffer()
 
     if (!cover) {
-      logger.warn(`archive has no file at ${coverLink}`)
+      logger.warn(
+        `archive has no file at ${coverLink} for cover ${coverObjectKey}`,
+      )
 
       return false
     }
