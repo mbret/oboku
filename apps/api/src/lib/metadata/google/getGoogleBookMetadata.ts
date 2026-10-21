@@ -27,7 +27,6 @@ export const getGoogleBookMetadata = async (
   config: AppConfigService,
 ): Promise<LegacyGoogleBookApiMetadata | undefined> => {
   const { isbn, googleVolumeId, title = "" } = input
-  let titleRefined = title
   /**
    * A volume id addresses one Google Books record, where an ISBN can match
    * several printings — so it wins here even though ISBN stays the priority
@@ -37,7 +36,9 @@ export const getGoogleBookMetadata = async (
     ? await findByVolumeId(googleVolumeId, apiKey, config)
     : isbn
       ? await findByISBN(isbn, apiKey, config)
-      : await findByTitle(titleRefined, apiKey, config)
+      : await findByTitle(title, apiKey, config)
+  const isFirstQueryByTitle = !googleVolumeId && !isbn
+  let lastTitleSent = isFirstQueryByTitle ? title : undefined
 
   console.log("[google] [getGoogleBookMetadata]", { response })
 
@@ -46,7 +47,10 @@ export const getGoogleBookMetadata = async (
 
     if (isMatchFound) break
 
-    titleRefined = refineTitle(title, level)
+    const titleRefined = refineTitle(title, level)
+    const isTitleAlreadySent = titleRefined === lastTitleSent
+
+    if (isTitleAlreadySent) continue
 
     console.log(
       `[getGoogleBookMetadata]`,
@@ -54,10 +58,11 @@ export const getGoogleBookMetadata = async (
     )
 
     response = await findByTitle(titleRefined, apiKey, config)
+    lastTitleSent = titleRefined
   }
 
   console.log(
-    `${response.items?.length ?? 0} items found from google book API for title "${title}" & isbn "${isbn}" thanks to refined title "${titleRefined}"`,
+    `${response.items?.length ?? 0} items found from google book API for title "${title}" & isbn "${isbn}" thanks to refined title "${lastTitleSent}"`,
   )
 
   const parsedMetadata = parseGoogleMetadata(response)

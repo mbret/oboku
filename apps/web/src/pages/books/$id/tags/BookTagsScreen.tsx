@@ -25,13 +25,16 @@ const getTagSearchableText = (tag: DeepReadonlyObject<TagsDocType>) =>
 
 const EMPTY_TAGS: DeepReadonlyObject<TagsDocType>[] = []
 const listStyle = { flex: 1 }
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const BookTagsScreen = memo(function BookTagsScreen() {
   const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_TAGS>>()
   const { data: tags = EMPTY_TAGS } = useTags()
   const { data: book } = useBook({ id: bookId })
-  const { mutateAsync: addTagToBook } = useAddTagToBook()
-  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook()
+  const { mutateAsync: addTagToBook } = useAddTagToBook(withoutGlobalErrorToast)
+  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({

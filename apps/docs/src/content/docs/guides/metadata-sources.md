@@ -8,7 +8,6 @@ title: "Metadata Sources"
 * mangaupdates
 * biblioreads
 * comicvine
-* googleBookApi
 
 ### Default order of priority
 
@@ -17,7 +16,6 @@ title: "Metadata Sources"
 * mangaupdates
 * biblioreads
 * link (from the linked provider)
-* googleBookApi
 * comicvine
 
 ## Books

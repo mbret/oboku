@@ -24,44 +24,56 @@ export const usePluginRefreshMetadata = (
 
   const { mutateAsync: refreshWebdavMetadata } =
     pluginsByType.webdav.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "webdav" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.webdav.name,
+      }),
       meta,
     })
   const { mutateAsync: refreshSynologyDriveMetadata } = pluginsByType[
     "synology-drive"
   ].useRefreshMetadata({
-    requestPopup: createRequestPopupDialog({ name: "synology-drive" }),
+    requestPopup: createRequestPopupDialog({
+      name: pluginsByType["synology-drive"].name,
+    }),
     meta,
   })
   const { mutateAsync: refreshDropboxMetadata } =
     pluginsByType.dropbox.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "dropbox" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.dropbox.name,
+      }),
       meta,
     })
   const { mutateAsync: refreshDriveMetadata } =
     pluginsByType.DRIVE.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "DRIVE" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.DRIVE.name,
+      }),
       meta,
     })
   const { mutateAsync: refreshOneDriveMetadata } = pluginsByType[
     "one-drive"
   ].useRefreshMetadata({
-    requestPopup: createRequestPopupDialog({ name: "one-drive" }),
+    requestPopup: createRequestPopupDialog({
+      name: pluginsByType["one-drive"].name,
+    }),
     meta,
   })
   const { mutateAsync: refreshFileMetadata } =
     pluginsByType.file.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "file" }),
+      requestPopup: createRequestPopupDialog({ name: pluginsByType.file.name }),
       meta,
     })
   const { mutateAsync: refreshUriMetadata } =
     pluginsByType.URI.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "URI" }),
+      requestPopup: createRequestPopupDialog({ name: pluginsByType.URI.name }),
       meta,
     })
   const { mutateAsync: refreshServerMetadata } =
     pluginsByType.server.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: "server" }),
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.server.name,
+      }),
       meta,
     })
 

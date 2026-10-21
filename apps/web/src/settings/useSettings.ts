@@ -1,4 +1,4 @@
-import { useQuery$ } from "reactjrx"
+import { useLiveQuery$ } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -7,21 +7,19 @@ import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 
 export const useSettings = (options: { enabled?: boolean } = {}) => {
-  const data = useQuery$({
+  const data = useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "settings"],
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) =>
-          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON())),
+          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON() ?? null)),
         ),
       ),
     /**
      * We always want instant feedback for these settings for the user.
-     * Since the query is a live stream the data are always fresh anyway.
      */
     gcTime: Infinity,
-    staleTime: Infinity,
     ...options,
   })
 

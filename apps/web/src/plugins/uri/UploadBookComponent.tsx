@@ -17,6 +17,7 @@ import {
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { string } from "zod"
+import { CancelButton } from "../../common/forms/CancelButton"
 
 const bookUrlSchema = string().url()
 
@@ -49,6 +50,8 @@ export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
       },
     ])
   }
+
+  const handleCancel = () => onClose()
 
   return (
     <Dialog open fullScreen={fullScreen}>
@@ -108,9 +111,7 @@ export const UploadBookComponent: ObokuPlugin<"URI">["UploadBookComponent"] = ({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()} color="primary">
-          Cancel
-        </Button>
+        <CancelButton onClick={handleCancel} variant="outlined" />
         <Button onClick={handleConfirm} color="primary" disabled={!isValid}>
           Confirm
         </Button>
