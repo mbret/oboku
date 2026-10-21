@@ -9,6 +9,11 @@ import {
   type BookMetadataSource,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
+import {
+  GOOGLE_BOOKS_PROVIDER_ID,
+  OPEN_LIBRARY_PROVIDER_ID,
+  PROJECT_GUTENBERG_PROVIDER_ID,
+} from "@prose-reader/metadata-fetcher"
 import type { ReactNode } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 
@@ -50,11 +55,11 @@ export const getBookMetadataSourceIcon = (
 
 const getCatalogProviderNameById = (providerId: string): string => {
   switch (providerId) {
-    case "googleBooks":
+    case GOOGLE_BOOKS_PROVIDER_ID:
       return "Google Books"
-    case "openLibrary":
+    case OPEN_LIBRARY_PROVIDER_ID:
       return "Open Library"
-    case "projectGutenberg":
+    case PROJECT_GUTENBERG_PROVIDER_ID:
       return "Project Gutenberg"
     default:
       return providerId
@@ -69,7 +74,7 @@ export const getCatalogProviderName = (
     case "catalog":
       return getCatalogProviderNameById(entry.providerId)
     case LEGACY_CATALOG_SOURCE_NAME:
-      return getCatalogProviderNameById("googleBooks")
+      return getCatalogProviderNameById(GOOGLE_BOOKS_PROVIDER_ID)
     default:
       return undefined
   }
