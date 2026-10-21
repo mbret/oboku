@@ -6,7 +6,7 @@ import {
   getDataFromDataSource,
   type WebDAVDataSourceDocType,
 } from "@oboku/shared"
-import { createClient } from "webdav"
+import { AuthType, createClient } from "webdav"
 import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
 import {
@@ -57,6 +57,7 @@ const createWebdavClient = (connector: {
   createClient(connector.url, {
     username: connector.username,
     password: connector.password,
+    authType: AuthType.Auto,
     ...getUserAddressRequestOptions({
       allowSelfSigned: connector.allowSelfSigned,
     }),

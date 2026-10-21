@@ -4,6 +4,14 @@ const getItemCountLabel = (itemsCount: number) =>
 export const getLabelWithItemCount = (label: string, itemsCount: number) =>
   itemsCount > 0 ? `${label} (${getItemCountLabel(itemsCount)})` : label
 
+const parseHostname = (urlValue: string) => {
+  try {
+    return new URL(urlValue).hostname || undefined
+  } catch {
+    return undefined
+  }
+}
+
 export const getHostname = (urlValue: string) => {
   const trimmedUrlValue = urlValue.trim()
 
@@ -11,15 +19,10 @@ export const getHostname = (urlValue: string) => {
     return undefined
   }
 
-  try {
-    return new URL(trimmedUrlValue).hostname
-  } catch {
-    try {
-      // ConnectorForm accepts host:port values without a scheme, so label
-      // rendering needs to retry with a default protocol instead of crashing.
-      return new URL(`https://${trimmedUrlValue}`).hostname
-    } catch {
-      return undefined
-    }
-  }
+  // ConnectorForm accepts URLs without a scheme. `new URL` reads the host of
+  // `nas.local:5005/dav` as its scheme and leaves the hostname empty.
+  return (
+    parseHostname(trimmedUrlValue) ??
+    parseHostname(`https://${trimmedUrlValue}`)
+  )
 }
