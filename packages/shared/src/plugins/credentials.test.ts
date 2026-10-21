@@ -39,4 +39,17 @@ describe("providerApiCredentialsSchemas", () => {
       created_at: 123,
     })
   })
+
+  it("accepts Dropbox credentials from an online sign-in, which has no refresh token", () => {
+    const onlineSignInCredentials = {
+      accessToken: "token",
+      accessTokenExpiresAt: "2026-10-21T14:00:00.000Z",
+      clientId: "client-id",
+      codeVerifier: "code-verifier",
+    }
+
+    expect(
+      parseProviderApiCredentials("dropbox", onlineSignInCredentials),
+    ).toEqual(onlineSignInCredentials)
+  })
 })
