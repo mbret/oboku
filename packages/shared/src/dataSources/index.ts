@@ -1,9 +1,4 @@
 import type { DataSourceDocType } from "../db/docTypes"
-import type { GoogleDriveDataSourceDocType } from "../plugins/google"
-
-export type GoogleDriveDataSourceData = NonNullable<
-  GoogleDriveDataSourceDocType["data_v2"]
->
 
 export const getDataFromDataSource = <T extends DataSourceDocType["type"]>(
   dataSource: Pick<Extract<DataSourceDocType, { type: T }>, "data_v2">,

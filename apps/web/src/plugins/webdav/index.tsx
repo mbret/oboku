@@ -1,5 +1,5 @@
 import type { ObokuPlugin } from "../types"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
@@ -18,12 +18,6 @@ const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveResource: ObokuPlugin<"webdav">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
-
 const plugin: ObokuPlugin<"webdav"> = {
   type: TYPE,
   name: "WebDAV",
@@ -31,18 +25,13 @@ const plugin: ObokuPlugin<"webdav"> = {
   canSynchronize: true,
   Icon: WebDAVIcon,
   description: "Manage contents from WebDAV",
-  DataSourceCreateForm: (props) => (
-    <DataSourceForm {...props} submitLabel="Confirm" />
-  ),
-  DataSourceEditForm: ({ dataSource, ...rest }) => (
-    <DataSourceForm {...rest} dataSource={dataSource} submitLabel="Save" />
-  ),
+  DataSourceForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
   useSyncSourceInfo,
   useLinkInfo,
   useRefreshMetadata,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   InfoScreen,
   DownloadBookComponent: DownloadBook,

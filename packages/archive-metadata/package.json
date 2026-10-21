@@ -7,11 +7,6 @@
       "source": "./src/web.ts",
       "types": "./dist/web.d.ts",
       "import": "./dist/web.js"
-    },
-    "./node": {
-      "source": "./src/node.ts",
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js"
     }
   },
   "license": "GPL-3.0",
@@ -26,8 +21,8 @@
   },
   "dependencies": {
     "@jsquash/avif": "2.1.1",
-    "@prose-reader/archive-reader": "^30.2.0",
-    "@prose-reader/shared": "^30.2.0",
+    "@prose-reader/archive-reader": "^32.0.0",
+    "@prose-reader/shared": "^32.0.0",
     "@zip.js/zip.js": "^2.23.0"
   },
   "devDependencies": {

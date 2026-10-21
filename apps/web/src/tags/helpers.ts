@@ -2,14 +2,14 @@ import type { TagsDocType } from "@oboku/shared"
 import { useCallback } from "react"
 import { useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
-import { useQuery$ } from "reactjrx"
+import { type UseLiveQuery$Options, useLiveQuery$ } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
 } from "../queries/queryClient"
 import { getLatestDatabase, latestDatabase$ } from "../rxdb/RxDbProvider"
 import type { DeepReadonlyObject, MangoQuery } from "rxdb"
-import { useMutation, type UseQueryOptions } from "@tanstack/react-query"
+import { useMutation } from "@tanstack/react-query"
 
 export const useCreateTag = () => {
   const { db } = useDatabase()
@@ -34,15 +34,7 @@ export const useUpdateTag = () => {
       _id,
       ...rest
     }: Partial<TagsDocType> & Required<Pick<TagsDocType, "_id">>) =>
-      db?.tag
-        .findOne({ selector: { _id } })
-        .exec()
-        .then((doc) =>
-          doc?.incrementalModify((doc) => ({
-            ...doc,
-            ...rest,
-          })),
-        ),
+      db?.tag.findOne(_id).incrementalPatch(rest),
     [db],
   )
 }
@@ -59,11 +51,15 @@ const protectedTags$ = tags$.pipe(
 export const useTag = <TData = DeepReadonlyObject<TagsDocType> | null>(
   id?: string,
   options: Omit<
-    UseQueryOptions<DeepReadonlyObject<TagsDocType> | null, unknown, TData>,
+    UseLiveQuery$Options<
+      DeepReadonlyObject<TagsDocType> | null,
+      unknown,
+      TData
+    >,
     "queryKey" | "queryFn"
   > = {},
 ) => {
-  return useQuery$<DeepReadonlyObject<TagsDocType> | null, unknown, TData>({
+  return useLiveQuery$<DeepReadonlyObject<TagsDocType> | null, unknown, TData>({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tag", id],
     enabled: !!id,
@@ -86,7 +82,7 @@ export const useTags = ({
   enabled?: boolean
   queryObj?: MangoQuery<TagsDocType> | undefined
 } = {}) =>
-  useQuery$({
+  useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tags", queryObj],
     queryFn: () =>
@@ -98,7 +94,7 @@ export const useTags = ({
   })
 
 export const useTagIds = () =>
-  useQuery$({
+  useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryFn: () => tags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "tagsIds"],
@@ -109,14 +105,14 @@ const blurredTags$ = tags$.pipe(
 )
 
 export const useBlurredTagIds = () =>
-  useQuery$({
+  useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryFn: () => blurredTags$.pipe(map((tags) => tags.map(({ _id }) => _id))),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "blurredTagIds"],
   })
 
 export const useProtectedTagIds = (options: { enabled?: boolean } = {}) =>
-  useQuery$({
+  useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [RXDB_QUERY_KEY_PREFIX, "protectedTagIds"],
     queryFn: () =>

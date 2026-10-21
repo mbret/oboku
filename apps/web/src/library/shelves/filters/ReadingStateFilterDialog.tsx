@@ -1,5 +1,4 @@
 import {
-  Button,
   Dialog,
   DialogActions,
   DialogContent,
@@ -12,6 +11,7 @@ import {
 import { memo } from "react"
 import { type SignalValue, useSignalValue } from "reactjrx"
 import { libraryShelvesFiltersSignal } from "./states"
+import { CancelButton } from "../../../common/forms/CancelButton"
 
 type State = SignalValue<typeof libraryShelvesFiltersSignal>
 type ReadingState = State["readingState"]
@@ -60,9 +60,7 @@ export const ReadingStateFilterDialog = memo(
           </FormControl>
         </DialogContent>
         <DialogActions>
-          <Button onClick={onClose} autoFocus>
-            cancel
-          </Button>
+          <CancelButton onClick={onClose} variant="outlined" autoFocus />
         </DialogActions>
       </Dialog>
     )

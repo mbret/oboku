@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   buildSynologyDriveListFolderParams,
   browseSynologyDriveItems,
+  isSynologyDriveDownloadErrorContentType,
   listAllSynologyDriveFolderItems,
   normalizeSynologyDriveBaseUrl,
   parseSynologyDriveListPagePayload,
@@ -15,6 +16,19 @@ describe("Synology package helpers", () => {
       ),
     ).toBe("https://nas.example.com:5001/drive")
   })
+
+  it.each([
+    { contentType: "application/json; charset=utf-8", isError: true },
+    { contentType: "Application/JSON", isError: true },
+    { contentType: "application/octet-stream", isError: false },
+    { contentType: null, isError: false },
+    { contentType: undefined, isError: false },
+  ])(
+    "tells a download error from a file by its content type: $contentType",
+    ({ contentType, isError }) => {
+      expect(isSynologyDriveDownloadErrorContentType(contentType)).toBe(isError)
+    },
+  )
 
   it("parses paged list payloads with items and total", () => {
     expect(

@@ -10,7 +10,7 @@ import {
 import { useCollection } from "../../../../collections/useCollection"
 import { useCollectionComputedMetadata } from "../../../../collections/useCollectionComputedMetadata"
 import { useIsCollectionProtected } from "../../../../collections/useIsCollectionProtected"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import { Page } from "../../../../common/Page"
 import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
@@ -20,6 +20,8 @@ import {
 } from "../../../../library/books/states"
 import { ProtectedContentGuard } from "../../../../library/ProtectedContentGuard"
 import type { ROUTES } from "../../../../navigation/routes"
+
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
   const { id: collectionId } =
@@ -31,9 +33,12 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
-  const { mutateAsync: removeCollectionFromBook } =
-    useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: removeCollectionFromBook } = useRemoveCollectionFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({
@@ -56,7 +61,6 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!collectionId || collection === null) return <NotFoundPage />

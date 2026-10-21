@@ -22,7 +22,8 @@ allowBuilds:
   sharp: true
 patchedDependencies:
   react-dom@19.3.0: patches/react-dom@19.3.0.patch
-# prose-reader shares oboku's maintainer, so its releases are installed as
-# soon as they are out.
+# prose-reader and reactjrx share oboku's maintainer, so their releases are
+# installed as soon as they are out.
 minimumReleaseAgeExclude:
   - '@prose-reader/*'
+  - reactjrx

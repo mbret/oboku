@@ -1,4 +1,5 @@
 import { isIP } from "node:net"
+import { parseUrl } from "./url.js"
 
 /** A host the address check lets through: on every port, or on `port` only. */
 export type AllowedHost = {
@@ -16,14 +17,6 @@ const DEFAULT_PORTS: Record<string, number> = {
 /** As a connection names its host: lowercase, an IPv6 address unbracketed. */
 export function toComparableHostname(hostname: string) {
   return hostname.replace(/^\[|\]$/g, "").toLowerCase()
-}
-
-function parseUrl(value: string) {
-  try {
-    return new URL(value)
-  } catch {
-    return undefined
-  }
 }
 
 /**

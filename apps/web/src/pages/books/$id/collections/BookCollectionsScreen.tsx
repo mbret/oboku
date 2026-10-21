@@ -18,7 +18,7 @@ import { SelectableCollectionList } from "../../../../collections/lists/Selectab
 import { getCollectionComputedMetadata } from "../../../../collections/getCollectionComputedMetadata"
 import { openAddCollectionDialog } from "../../../../library/shelves/AddCollectionDialog"
 import { EntitySelectionView } from "../../../../common/selection"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import type { ROUTES } from "../../../../navigation/routes"
 
 const getCollectionSearchableText = (
@@ -27,14 +27,18 @@ const getCollectionSearchableText = (
 
 const EMPTY_COLLECTIONS: DeepReadonlyObject<CollectionDocType>[] = []
 const listStyle = { flex: 1 }
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
   const { id: bookId } = useParams<PathParam<typeof ROUTES.BOOK_COLLECTIONS>>()
   const { data: collections = EMPTY_COLLECTIONS } = useCollections()
   const { data: book } = useBook({ id: bookId })
-  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
-  const { mutateAsync: removeCollectionFromBook } =
-    useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: removeCollectionFromBook } = useRemoveCollectionFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({
@@ -57,7 +61,6 @@ export const BookCollectionsScreen = memo(function BookCollectionsScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!bookId || book === null) return <NotFoundPage />

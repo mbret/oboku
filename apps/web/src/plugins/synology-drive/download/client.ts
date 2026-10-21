@@ -1,3 +1,7 @@
+import {
+  isSynologyDriveDownloadErrorContentType,
+  parseSynologyDriveDownloadErrorPayload,
+} from "@oboku/synology"
 import { isXMLHttpResponseError } from "../../../http/httpClient.web"
 import type { Download } from "../../../http/useDownload"
 import {
@@ -6,20 +10,20 @@ import {
   type SynologyDriveSession,
 } from "../client"
 
-const isJsonContentType = (contentType: string | null | undefined) =>
-  !!contentType && contentType.toLowerCase().includes("json")
-
-const extractDownloadError = async (blob: Blob) => {
-  const response = JSON.parse(await blob.text()) as {
-    error?: {
-      code?: number
-    }
-    success?: boolean
+const tryParseDownloadErrorPayload = (payload: unknown) => {
+  try {
+    return parseSynologyDriveDownloadErrorPayload(payload)
+  } catch {
+    return undefined
   }
+}
 
-  if (response.success === false) {
+const throwDownloadError = async (blob: Blob) => {
+  const payload = tryParseDownloadErrorPayload(JSON.parse(await blob.text()))
+
+  if (payload?.success === false) {
     throw new Error(
-      `Synology Drive download failed${response.error?.code ? ` (${response.error.code})` : ""}.`,
+      `Synology Drive download failed${payload.error?.code ? ` (${payload.error.code})` : ""}.`,
     )
   }
 
@@ -55,8 +59,8 @@ const downloadBlobFromUrl = async ({
 
   const contentType = response.headers["content-type"] ?? response.data.type
 
-  if (isJsonContentType(contentType)) {
-    await extractDownloadError(response.data)
+  if (isSynologyDriveDownloadErrorContentType(contentType)) {
+    await throwDownloadError(response.data)
   }
 
   return {

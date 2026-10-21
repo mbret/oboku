@@ -70,7 +70,7 @@ export const useSyncKoreaderPositions = () => {
             })
           }),
           retryBackoff({
-            retryDelay: PUSH_RETRY_DELAY_MS,
+            initialInterval: PUSH_RETRY_DELAY_MS,
             maxInterval: PUSH_RETRY_MAX_DELAY_MS,
           }),
         )

@@ -4,9 +4,10 @@ import { type UseMutationOptions, useMutation } from "@tanstack/react-query"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 import type { UseRefreshMetadataVariables } from "../types"
 
-export const createConnectorRefreshMetadata =
-  <T extends SettingsConnectorType>(type: T) =>
-  ({ meta }: Pick<UseMutationOptions, "meta">) => {
+export const createConnectorRefreshMetadata = <T extends SettingsConnectorType>(
+  type: T,
+) =>
+  function useRefreshMetadata({ meta }: Pick<UseMutationOptions, "meta">) {
     const { mutateAsync: extractConnectorData } = useExtractConnectorData(
       { type },
       { meta },
@@ -14,15 +15,10 @@ export const createConnectorRefreshMetadata =
 
     return useMutation({
       meta,
-      mutationFn: async ({ linkData }: UseRefreshMetadataVariables<T>) => {
-        // Every connector provider (server, webdav, synology-drive) carries an
-        // optional connectorId on its link data, but LinkDataForProvider<T>
-        // stays an unresolved conditional for the generic T, hiding the field.
-        const connectorLinkData = linkData as
-          | { connectorId?: string }
-          | null
-          | undefined
-        const connectorId = connectorLinkData?.connectorId
+      mutationFn: async function extractProviderCredentials({
+        linkData,
+      }: UseRefreshMetadataVariables<T>) {
+        const connectorId = linkData?.connectorId
 
         if (!connectorId) {
           throw new ObokuSharedError(

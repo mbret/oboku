@@ -5,6 +5,21 @@ import {
   type WebDAVClient,
 } from "webdav"
 
+export const createWebdavClient = ({
+  password,
+  url,
+  username,
+}: {
+  password: string
+  url: string
+  username: string
+}) =>
+  createClient(url, {
+    username,
+    password,
+    authType: AuthType.Auto,
+  })
+
 export const connectWebdav = async ({
   password,
   path = "/",
@@ -16,11 +31,7 @@ export const connectWebdav = async ({
   url: string
   username: string
 }): Promise<{ client: WebDAVClient; items: FileStat[] }> => {
-  const client = createClient(url, {
-    username,
-    password,
-    authType: AuthType.Auto,
-  })
+  const client = createWebdavClient({ url, username, password })
   const items = await client.getDirectoryContents(path)
   return { client, items }
 }

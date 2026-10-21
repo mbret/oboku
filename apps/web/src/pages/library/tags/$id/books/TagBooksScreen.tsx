@@ -8,7 +8,7 @@ import {
   useRemoveTagFromBook,
 } from "../../../../../books/helpers"
 import { useTag } from "../../../../../tags/helpers"
-import { notify, notifyError } from "../../../../../notifications/toasts"
+import { notify } from "../../../../../notifications/toasts"
 import { NotFoundPage } from "../../../../../common/NotFoundPage"
 import { Page } from "../../../../../common/Page"
 import { TopBarNavigation } from "../../../../../navigation/TopBarNavigation"
@@ -19,6 +19,8 @@ import {
 import { ProtectedContentGuard } from "../../../../../library/ProtectedContentGuard"
 import type { ROUTES } from "../../../../../navigation/routes"
 
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
+
 export const TagBooksScreen = memo(function TagBooksScreen() {
   const { id: tagId } = useParams<PathParam<typeof ROUTES.TAG_BOOKS>>()
   const { data: tag } = useTag(tagId)
@@ -26,8 +28,10 @@ export const TagBooksScreen = memo(function TagBooksScreen() {
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutateAsync: addTagToBook } = useAddTagToBook()
-  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook()
+  const { mutateAsync: addTagToBook } = useAddTagToBook(withoutGlobalErrorToast)
+  const { mutateAsync: removeTagFromBook } = useRemoveTagFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({
@@ -46,7 +50,6 @@ export const TagBooksScreen = memo(function TagBooksScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!tagId || tag === null) return <NotFoundPage />

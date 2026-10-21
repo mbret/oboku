@@ -10,8 +10,6 @@ import { createHelpers } from "../../plugins/helpers.js"
 import { atomicUpdate } from "../couch/dbHelpers.js"
 import { emailToNameHex } from "../../couch/couch.service.js"
 import { getPlugin } from "../../plugins/plugins.js"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../../config/types.js"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { BooksMetadataRefreshEvent, Events } from "../../events.js"
 import { NotificationsService } from "../../notifications/notifications.service.js"
@@ -30,7 +28,6 @@ export const sync = async ({
   user,
   providerCredentials,
   db,
-  config,
   eventEmitter,
   syncReportPostgresService,
   notificationService,
@@ -40,7 +37,6 @@ export const sync = async ({
   user: AuthUser
   providerCredentials: ProviderApiCredentials<DataSourceType>
   db: createNano.DocumentScope<unknown>
-  config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
   notificationService: NotificationsService
@@ -120,7 +116,7 @@ export const sync = async ({
       items: item.items?.map(applyTags),
     })
 
-    const synchronizeAbleDataSource = await plugin.sync(syncOptions, helpers)
+    const synchronizeAbleDataSource = await plugin.sync(syncOptions)
     const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
       ...synchronizeAbleDataSource,
       items: synchronizeAbleDataSource.items.map(applyTags),
@@ -135,7 +131,6 @@ export const sync = async ({
       synchronizeAbleDataSourceWithTags,
       ctx,
       helpers,
-      config,
       eventEmitter,
       coversService,
     )
