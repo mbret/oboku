@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { DataSourceDocType, DataSourceDocTypeFor } from "@oboku/shared"
 import {
   Alert,
   Button,
@@ -16,7 +16,7 @@ import { notify } from "../../notifications/toasts"
 import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceIncrementalModify"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type {
-  DataSourceEditFormProps,
+  DataSourceFormInternalProps,
   DataSourceSubmitPayload,
 } from "../../plugins/types"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
@@ -43,17 +43,15 @@ const SynchronizeButtonStack = styled(Stack)(
   },
 )
 
-function renderDataSourceEditForm<T extends DataSourceDocType["type"]>({
+function renderDataSourceForm<T extends DataSourceDocType["type"]>({
   dataSource,
-  onSubmit,
-}: DataSourceEditFormProps<T>) {
-  const DetailsComponent = getPluginByType<T>(
-    dataSource.type,
-  ).DataSourceEditForm
+  ...props
+}: DataSourceFormInternalProps<DataSourceDocTypeFor<T>> & {
+  dataSource: { readonly type: T }
+}) {
+  const PluginForm = getPluginByType<T>(dataSource.type).DataSourceForm
 
-  return DetailsComponent ? (
-    <DetailsComponent dataSource={dataSource} onSubmit={onSubmit} />
-  ) : null
+  return PluginForm ? <PluginForm {...props} dataSource={dataSource} /> : null
 }
 
 export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
@@ -108,9 +106,10 @@ export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
       </PageContainer>
       <PageContainer disableGutters>
         {dataSource &&
-          renderDataSourceEditForm({
+          renderDataSourceForm({
             dataSource,
             onSubmit: handleSubmit,
+            submitLabel: "Save",
           })}
         <SynchronizeButtonStack>
           <Button variant="outlined" onClick={() => id && syncDataSource(id)}>

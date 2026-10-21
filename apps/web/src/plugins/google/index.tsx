@@ -2,12 +2,12 @@
 /// <reference types="@types/gapi.client.drive-v3" />
 /// <reference types="@types/google.accounts" />
 /// <reference types="@types/google.picker" />
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { PLUGIN_NAME } from "./lib/constants"
 import GoogleDriveAsset from "../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
-import { DataSourceNew as DataSourceForm } from "./DataSourceNew"
+import { DataSourceForm } from "./lib/DataSourceForm"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
@@ -15,7 +15,6 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../types"
 import { InfoScreen } from "./InfoScreen"
-import { DataSourceDetails } from "./DataSourceDetails"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
@@ -25,12 +24,6 @@ const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
     <GoogleDriveAsset />
   </SvgIcon>
 )
-
-const useRemoveResource: ObokuPlugin<"DRIVE">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
 
 export const plugin: ObokuPlugin<"DRIVE"> = {
   type: `DRIVE`,
@@ -43,14 +36,13 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   canSynchronize: true,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
-  DataSourceCreateForm: DataSourceForm,
-  DataSourceEditForm: DataSourceDetails,
+  DataSourceForm,
   SelectItemComponent,
   useSyncSourceInfo,
   useLinkInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   Provider,
   InfoScreen,

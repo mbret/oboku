@@ -1,13 +1,5 @@
-import { useMutation } from "@tanstack/react-query"
 import type { ObokuPlugin } from "../types"
+import { createEmptyCredentialsRefreshMetadata } from "../common/createEmptyCredentialsRefreshMetadata"
 
-export const useRefreshMetadata: ObokuPlugin<"file">["useRefreshMetadata"] = ({
-  meta,
-}) => {
-  return useMutation({
-    meta,
-    mutationFn: async () => ({
-      providerCredentials: {},
-    }),
-  })
-}
+export const useRefreshMetadata: ObokuPlugin<"file">["useRefreshMetadata"] =
+  createEmptyCredentialsRefreshMetadata<"file">()

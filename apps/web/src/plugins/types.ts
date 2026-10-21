@@ -190,23 +190,6 @@ export type DataSourceSubmitPayload = {
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
-export type DataSourceCreateFormProps = {
-  onSubmit: (payload: DataSourceSubmitPayload) => void
-}
-
-type ReadonlyDataSourceEditValue<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = DeepReadonly<DataSourceDocTypeFor<T>> & {
-  readonly type: T
-}
-
-export type DataSourceEditFormProps<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = {
-  dataSource: ReadonlyDataSourceEditValue<T>
-  onSubmit: (payload: DataSourceSubmitPayload) => void
-}
-
 type ObokuPluginBase<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
@@ -229,8 +212,9 @@ type ObokuPluginBase<
       title: string
     } & Pick<DOMAttributes<any>, "onDragLeave">
   >
-  DataSourceCreateForm?: FunctionComponent<DataSourceCreateFormProps>
-  DataSourceEditForm?: ComponentType<DataSourceEditFormProps<T>>
+  DataSourceForm?: ComponentType<
+    DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
+  >
   SelectItemComponent?: FunctionComponent<{
     open: boolean
     requestPopup: () => Promise<boolean>
