@@ -162,7 +162,6 @@ const Effects = memo(function Effects({
 
   useCreateReader({
     bookId,
-    isPreview,
     isUsingWebStreamer,
     manifest,
     koreaderDocument,

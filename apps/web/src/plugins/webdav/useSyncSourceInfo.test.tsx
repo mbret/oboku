@@ -28,22 +28,40 @@ const dataSource: DataSourceDocTypeFor<"webdav"> = {
   data_v2: { connectorId: "connector", directory: "/books" },
 }
 
-const connectorWithoutScheme: WebdavConnectorDocType = {
+const connectorWithoutUrl: Omit<WebdavConnectorDocType, "url"> = {
   id: "connector",
   type: "webdav",
-  url: "192.168.1.10/dav",
   username: "reader",
   passwordAsSecretId: "secret",
 }
 
 describe("useSyncSourceInfo", () => {
-  it("labels a source whose connector URL has no scheme with its host", () => {
-    useConnector.mockReturnValue({ data: connectorWithoutScheme })
+  it.each([
+    {
+      form: "has a scheme",
+      url: "https://nas.local:5005/dav",
+      label: "webdav://reader@nas.local/books",
+    },
+    {
+      form: "has no scheme",
+      url: "192.168.1.10/dav",
+      label: "webdav://reader@192.168.1.10/books",
+    },
+    {
+      form: "is a host and port",
+      url: "nas.local:5005/dav",
+      label: "webdav://reader@nas.local/books",
+    },
+  ])(
+    "labels a source whose connector URL $form with its host",
+    ({ url, label }) => {
+      useConnector.mockReturnValue({ data: { ...connectorWithoutUrl, url } })
 
-    const { result } = renderHook(function renderWebdavSourceInfo() {
-      return useSyncSourceInfo({ dataSource, enabled: true })
-    })
+      const { result } = renderHook(function renderWebdavSourceInfo() {
+        return useSyncSourceInfo({ dataSource, enabled: true })
+      })
 
-    expect(result.current.name).toBe("webdav://reader@192.168.1.10/books")
-  })
+      expect(result.current.name).toBe(label)
+    },
+  )
 })

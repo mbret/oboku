@@ -134,7 +134,7 @@ describe("useBookToOpen", () => {
     expect(result.current).toEqual(BOOK_SAVED_BY_CHECK)
   })
 
-  it("is nothing in preview, without reading the book", async () => {
+  it("opens at the start in preview, without reading the book", async () => {
     const { result } = renderBookToOpen({
       isPreview: true,
       koreaderPositionCheck: { status: "done" },
@@ -142,7 +142,7 @@ describe("useBookToOpen", () => {
 
     await deliverQueryUpdates()
 
-    expect(result.current).toBeUndefined()
+    expect(result.current).toBeNull()
     expect(mocks.readStoredBook).not.toHaveBeenCalled()
   })
 })

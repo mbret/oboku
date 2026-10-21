@@ -5,10 +5,10 @@ import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoread
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 
 /**
- * The book the reader opens at its bookmark, `undefined` until the book may
- * open: the book as the KOReader position check saved it when it took the
+ * The book the reader opens at its bookmark: `undefined` until the book may
+ * open, and `null` in preview, which opens at the start. Once the KOReader
+ * position check is done, the book as the check saved it when it took the
  * server's position, otherwise the book as stored when the reader opened.
- * `undefined` in preview, which opens at the start.
  */
 export const useBookToOpen = ({
   bookId,
@@ -18,11 +18,13 @@ export const useBookToOpen = ({
   bookId: string
   isPreview: boolean
   koreaderPositionCheck: KoreaderPositionCheck
-}): DeepReadonly<BookDocType> | undefined => {
+}): DeepReadonly<BookDocType> | null | undefined => {
   const { data: storedBook } = useEnsureQueryData$(
     createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
   const isKoreaderPositionChecked = koreaderPositionCheck.status === "done"
+
+  if (isPreview) return null
 
   if (!isKoreaderPositionChecked) return undefined
 
