@@ -138,8 +138,18 @@ describe("ForgetPreviousAccountSessions", () => {
     })
   })
 
+  it("forgets the sessions of the account this tab signs out of", () => {
+    setActiveProfileId("reader")
+    synologyDriveSessionSignal.next(readerSession)
+    render(<ForgetPreviousAccountSessions />)
+
+    clearActiveProfileId()
+
+    expect(synologyDriveSessionSignal.getValue()).toBeUndefined()
+    expect(clearTemporaryMasterKey).toHaveBeenCalledTimes(1)
+  })
+
   it("forgets the sessions of an account signed out in another tab", async () => {
-    profilesStore.set("reader", createProfile())
     setActiveProfileId("reader")
     synologyDriveSessionSignal.next(readerSession)
     render(
@@ -150,7 +160,6 @@ describe("ForgetPreviousAccountSessions", () => {
     )
 
     localStorage.removeItem(STORAGE_PROFILE_KEY)
-    profilesStore.set("reader", createProfile({ status: "loggedOut" }))
     notifyProfilesChangedFromAnotherTab()
 
     await waitFor(() => {

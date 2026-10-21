@@ -7,19 +7,21 @@ const {
   resetSessionQueries,
   patchProfile,
   deleteProofKey,
+  clearActiveProfileId,
 } = vi.hoisted(() => ({
   reCreateDb: vi.fn(async () => {}),
   purgeAllDownloads: vi.fn(async () => {}),
   resetSessionQueries: vi.fn(async () => {}),
   patchProfile: vi.fn(async () => {}),
   deleteProofKey: vi.fn(async () => {}),
+  clearActiveProfileId: vi.fn(),
 }))
 
 vi.mock("../queries/resetSessionQueries", () => ({
   useResetSessionQueries: () => resetSessionQueries,
 }))
 vi.mock("../profiles", () => ({
-  clearActiveProfileId: vi.fn(),
+  clearActiveProfileId,
   getActiveProfileId: () => "reader",
   usePatchProfile: () => ({ mutateAsync: patchProfile }),
 }))
@@ -43,6 +45,14 @@ describe("useSignOut", () => {
 
     expect(reCreateDb).toHaveBeenCalledWith({ overwrite: true })
     expect(purgeAllDownloads).toHaveBeenCalledTimes(1)
+  })
+
+  it("clears the active profile, which forgets the account's sessions", async () => {
+    const { result } = renderHook(() => useSignOut())
+
+    await result.current()
+
+    expect(clearActiveProfileId).toHaveBeenCalledTimes(1)
   })
 
   it("still purges downloaded files when the database wipe fails", async () => {
