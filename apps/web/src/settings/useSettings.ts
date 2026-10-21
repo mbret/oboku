@@ -13,7 +13,7 @@ export const useSettings = (options: { enabled?: boolean } = {}) => {
     queryFn: () =>
       latestDatabase$.pipe(
         switchMap((db) =>
-          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON())),
+          db.settings.findOne().$.pipe(map((entry) => entry?.toJSON() ?? null)),
         ),
       ),
     /**
