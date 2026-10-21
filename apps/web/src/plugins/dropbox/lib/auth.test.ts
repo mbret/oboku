@@ -1,5 +1,6 @@
 import { DropboxAuth } from "dropbox"
-import { describe, expect, it } from "vitest"
+import { SIGNAL_RESET } from "reactjrx"
+import { describe, expect, it, onTestFinished } from "vitest"
 import { dropboxAuthSignal, requestDropboxProviderCredentials } from "./auth"
 
 describe("requestDropboxProviderCredentials", function testRequestDropboxProviderCredentials() {
@@ -11,6 +12,9 @@ describe("requestDropboxProviderCredentials", function testRequestDropboxProvide
     dropboxAuth.setCodeVerifier("code-verifier")
     dropboxAuth.setRefreshToken("refresh-token")
     dropboxAuthSignal.update(dropboxAuth)
+    onTestFinished(function signOutOfDropbox() {
+      dropboxAuthSignal.update(SIGNAL_RESET)
+    })
 
     await expect(
       requestDropboxProviderCredentials({
