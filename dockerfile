@@ -29,6 +29,18 @@ RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
+FROM nginx:alpine AS spa
+WORKDIR /usr/src/app
+ENV APP_PREFIX=VITE_
+ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
+ENV ASSET_DIR=/usr/share/nginx/html
+COPY scripts/docker/nginx.spa.conf /etc/nginx/conf.d/default.conf
+COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
+RUN dos2unix /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
+
 FROM node-pnpm AS admin-build
 WORKDIR /usr/src/app
 COPY --from=base /usr/src/app .
@@ -36,18 +48,8 @@ COPY apps/admin ./apps/admin
 RUN pnpm exec lerna run build --scope=@oboku/admin
 WORKDIR /usr/src/app/apps/admin
 
-FROM nginx:alpine AS admin
-WORKDIR /usr/src/app
-ENV APP_PREFIX=VITE_
-ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
-ENV ASSET_DIR=/usr/share/nginx/html
-COPY apps/admin/nginx.default.conf /etc/nginx/conf.d/default.conf
-COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
-RUN dos2unix /docker-entrypoint.d/env.sh
-RUN chmod +x /docker-entrypoint.d/env.sh
+FROM spa AS admin
 COPY --from=admin-build /usr/src/app/apps/admin/dist ${ASSET_TEMPLATE_DIR}
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
 
 FROM node-pnpm AS web-build
 ARG GITHUB_SHA
@@ -58,18 +60,8 @@ COPY apps/web ./apps/web
 RUN pnpm exec lerna run build --scope=@oboku/web
 WORKDIR /usr/src/app/apps/web
 
-FROM nginx:alpine AS web
-WORKDIR /usr/src/app
-ENV APP_PREFIX=VITE_
-ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
-ENV ASSET_DIR=/usr/share/nginx/html
-COPY apps/web/nginx.default.conf /etc/nginx/conf.d/default.conf
-COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
-RUN dos2unix /docker-entrypoint.d/env.sh
-RUN chmod +x /docker-entrypoint.d/env.sh
+FROM spa AS web
 COPY --from=web-build /usr/src/app/apps/web/dist ${ASSET_TEMPLATE_DIR}
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
 
 FROM couchdb:3.5.1 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
