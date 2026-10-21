@@ -26,6 +26,7 @@ import {
   formatBytes,
   type KoreaderSyncConnectionGetResponse,
   type KoreaderSyncServerGetResponse,
+  links,
 } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
@@ -261,16 +262,13 @@ export const ProfileScreen = () => {
           </ListItemButton>
         </PageSection>
         <PageSection title="Information">
-          <ListItemButton
-            target="__blank"
-            href={`https://docs.oboku.me/support`}
-          >
+          <ListItemButton target="_blank" href={links.documentationSupport}>
             <ListItemIcon>
               <LaunchRounded />
             </ListItemIcon>
             <ListItemText primary={`Support Page`} />
           </ListItemButton>
-          <ListItemButton target="__blank" href="https://docs.oboku.me">
+          <ListItemButton target="_blank" href={links.documentation}>
             <ListItemIcon>
               <LaunchRounded />
             </ListItemIcon>
