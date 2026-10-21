@@ -1,6 +1,7 @@
 import {
   type BookDocType,
   createBookDefaults,
+  emptyBookmark,
   ReadingStateState,
 } from "@oboku/shared"
 import type { Manifest } from "@prose-reader/shared"
@@ -77,18 +78,17 @@ const BOOK_WITH_ONLY_KOREADER_BOOKMARK: BookDocType = {
   readingStateCurrentBookmarkKoreaderProgress: KOREADER_PROGRESS,
 }
 
-const renderCreateReader = (initialBook: BookDocType | undefined) => {
+const renderCreateReader = (initialBook: BookDocType | null | undefined) => {
   const containerRef = { current: document.createElement("div") }
 
   return renderHook(
     function renderUseCreateReader({
       book,
     }: {
-      book: BookDocType | undefined
+      book: BookDocType | null | undefined
     }) {
       useCreateReader({
         bookId: BOOK_ID,
-        isPreview: false,
         isUsingWebStreamer: false,
         manifest: MANIFEST,
         koreaderDocument: KOREADER_DOCUMENT,
@@ -146,7 +146,23 @@ describe("useCreateReader", () => {
     })
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ target: undefined }),
+      expect.not.objectContaining({ target: expect.anything() }),
+    )
+  })
+
+  it("opens at the start a book that has no bookmark", () => {
+    renderCreateReader({ ...BOOK, ...emptyBookmark })
+
+    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+      expect.not.objectContaining({ target: expect.anything() }),
+    )
+  })
+
+  it("opens at the start without a book to restore", () => {
+    renderCreateReader(null)
+
+    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+      expect.not.objectContaining({ target: expect.anything() }),
     )
   })
 })

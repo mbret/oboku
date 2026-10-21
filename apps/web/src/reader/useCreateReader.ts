@@ -38,7 +38,7 @@ const getOpeningTarget = ({
   koreaderDocument,
 }: {
   book: DeepReadonly<BookDocType>
-  koreaderDocument: string | undefined
+  koreaderDocument: string
 }): OpeningTarget => {
   const bookmark = getBookmark(book)
 
@@ -47,7 +47,7 @@ const getOpeningTarget = ({
   }
 
   const isKoreaderBookmarkOfOpenedFile =
-    bookmark !== undefined && bookmark.koreader.document === koreaderDocument
+    bookmark?.koreader.document === koreaderDocument
 
   return isKoreaderBookmarkOfOpenedFile
     ? { type: "koreaderProgress", value: bookmark.koreader.progress }
@@ -64,7 +64,6 @@ const getOpeningTarget = ({
 export const useCreateReader = ({
   isUsingWebStreamer,
   bookId,
-  isPreview,
   manifest,
   koreaderDocument,
   book,
@@ -72,15 +71,15 @@ export const useCreateReader = ({
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
-  isPreview: boolean
   manifest?: Manifest
   koreaderDocument?: string
-  /** The book to open at its bookmark. The reader waits while it is `undefined`, except in preview. */
-  book: DeepReadonly<BookDocType> | undefined
+  /**
+   * The book to open at its bookmark, `null` to open at the start. The reader
+   * waits while it is `undefined`, and is created again whenever it changes.
+   */
+  book: DeepReadonly<BookDocType> | null | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const isRestoredLocationReady = isPreview || !!book
-
   useEffect(() => {
     const containerElement = containerRef.current
 
@@ -88,15 +87,15 @@ export const useCreateReader = ({
       !manifest ||
       !containerElement ||
       isUsingWebStreamer === undefined ||
-      !isRestoredLocationReady
+      koreaderDocument === undefined ||
+      book === undefined
     ) {
       return
     }
 
-    const target =
-      isPreview || !book
-        ? undefined
-        : getOpeningTarget({ book, koreaderDocument })
+    const target = book
+      ? getOpeningTarget({ book, koreaderDocument })
+      : undefined
 
     const instance = createAppReader({
       manifest,
@@ -150,8 +149,6 @@ export const useCreateReader = ({
   }, [
     manifest,
     isUsingWebStreamer,
-    isPreview,
-    isRestoredLocationReady,
     bookId,
     book,
     koreaderDocument,
