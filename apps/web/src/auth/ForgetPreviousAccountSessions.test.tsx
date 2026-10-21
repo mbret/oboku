@@ -149,6 +149,23 @@ describe("ForgetPreviousAccountSessions", () => {
     expect(clearTemporaryMasterKey).toHaveBeenCalledTimes(1)
   })
 
+  it("forgets a session stored after a sign-out once the next account signs in", async () => {
+    render(<ForgetPreviousAccountSessions />)
+    synologyDriveSessionSignal.next(readerSession)
+
+    await act(async () => {
+      await signIn({
+        dbName: "next-reader-db",
+        email: "next-reader@example.com",
+        nameHex: "next-reader",
+        sessionId: "session-next-reader",
+      })
+    })
+
+    expect(synologyDriveSessionSignal.getValue()).toBeUndefined()
+    expect(clearTemporaryMasterKey).toHaveBeenCalledTimes(1)
+  })
+
   it("forgets the sessions of an account signed out in another tab", async () => {
     setActiveProfileId("reader")
     synologyDriveSessionSignal.next(readerSession)
