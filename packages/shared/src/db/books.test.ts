@@ -89,7 +89,10 @@ describe(`getBookmark`, () => {
   it(`is undefined for a book without a bookmark`, () => {
     expect(getBookmark(emptyBookmark)).toBeUndefined()
     expect(
-      getBookmark({ readingStateCurrentBookmarkLocation: null }),
+      getBookmark({
+        readingStateCurrentBookmarkLocation: null,
+        readingStateCurrentBookmarkProgressPercent: 0,
+      }),
     ).toBeUndefined()
   })
 
@@ -97,6 +100,7 @@ describe(`getBookmark`, () => {
     expect(
       getBookmark({
         readingStateCurrentBookmarkLocation: cfi,
+        readingStateCurrentBookmarkProgressPercent: 0.4,
         readingStateCurrentBookmarkKoreaderProgress: koreader.progress,
         readingStateCurrentBookmarkKoreaderDocument: koreader.document,
       }),
@@ -107,16 +111,18 @@ describe(`getBookmark`, () => {
     expect(
       getBookmark({
         readingStateCurrentBookmarkLocation: cfi,
+        readingStateCurrentBookmarkProgressPercent: 0.4,
         readingStateCurrentBookmarkKoreaderProgress: null,
         readingStateCurrentBookmarkKoreaderDocument: koreader.document,
       }),
     ).toEqual({ cfi })
   })
 
-  it(`has only the KOReader form of a bookmark taken from a KOReader sync server`, () => {
+  it(`has only the KOReader form of a bookmark without a cfi`, () => {
     expect(
       getBookmark({
         readingStateCurrentBookmarkLocation: null,
+        readingStateCurrentBookmarkProgressPercent: 0.4,
         readingStateCurrentBookmarkKoreaderProgress: koreader.progress,
         readingStateCurrentBookmarkKoreaderDocument: koreader.document,
       }),
@@ -127,8 +133,31 @@ describe(`getBookmark`, () => {
     expect(
       getBookmark({
         readingStateCurrentBookmarkLocation: null,
+        readingStateCurrentBookmarkProgressPercent: 0.4,
         readingStateCurrentBookmarkKoreaderProgress: koreader.progress,
       }),
     ).toBeUndefined()
+  })
+
+  it(`is undefined for the KOReader form an older version of the app leaves when it clears the bookmark`, () => {
+    expect(
+      getBookmark({
+        readingStateCurrentBookmarkLocation: null,
+        readingStateCurrentBookmarkProgressPercent: 0,
+        readingStateCurrentBookmarkKoreaderProgress: koreader.progress,
+        readingStateCurrentBookmarkKoreaderDocument: koreader.document,
+      }),
+    ).toBeUndefined()
+  })
+
+  it(`keeps the KOReader form of a bookmark with a cfi at the start of the book`, () => {
+    expect(
+      getBookmark({
+        readingStateCurrentBookmarkLocation: cfi,
+        readingStateCurrentBookmarkProgressPercent: 0,
+        readingStateCurrentBookmarkKoreaderProgress: koreader.progress,
+        readingStateCurrentBookmarkKoreaderDocument: koreader.document,
+      }),
+    ).toEqual({ cfi, koreader })
   })
 })
