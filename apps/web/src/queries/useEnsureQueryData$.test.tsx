@@ -6,6 +6,7 @@ import {
   skipToken,
 } from "@tanstack/react-query"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
+import { useQuery$ } from "reactjrx"
 import { BehaviorSubject, of } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { useEnsureQueryData$ } from "./useEnsureQueryData$"
@@ -47,18 +48,28 @@ describe("useEnsureQueryData$", () => {
     expect(latestResult.error).toBeNull()
   })
 
-  it("ignores later updates to the same query cache entry", async () => {
+  it("ignores later values a live query writes to the same cache entry", async () => {
     const queryKey: QueryKey = ["frozen"]
     const source$ = new BehaviorSubject("initial")
     const client = new QueryClient()
 
-    renderProbe({ queryKey, queryFn: () => source$ }, client)
+    function LiveQuery() {
+      useQuery$({ queryKey, queryFn: () => source$ })
+
+      return null
+    }
+
+    render(
+      <QueryClientProvider client={client}>
+        <LiveQuery />
+        <Probe queryKey={queryKey} queryFn={() => source$} />
+      </QueryClientProvider>,
+    )
 
     await waitFor(() => expect(latestResult.data).toBe("initial"))
 
-    await act(async () => {
+    act(function emitUpdatedValue() {
       source$.next("updated")
-      client.setQueryData(queryKey, "updated")
     })
 
     expect(client.getQueryData(queryKey)).toBe("updated")
