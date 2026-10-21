@@ -39,7 +39,6 @@ const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
 
 export const ProblemsScreen = memo(() => {
   const fixCollections = useFixCollections()
-  // const fixDuplicatedBookTitles = useFixDuplicatedBookTitles()
   const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
@@ -214,31 +213,6 @@ export const ProblemsScreen = memo(() => {
                 }
               />
             ))}
-            {/* {duplicatedLinks.length > 0 && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixLinksDuplicate(duplicatedLinks)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Duplicated links"
-                secondary={
-                  <>
-                    {`We found ${duplicatedLinks.length} resource(s) that are shared by more than one link.`}
-                    {duplicatedLinks.map(([resourceId, { name, number }]) => (
-                      <Fragment key={resourceId}>
-                        <br />
-                        (x{number}) {resourceId}
-                      </Fragment>
-                    ))}
-                  </>
-                }
-              />
-            </ListItem>
-          )} */}
             {booksWithDanglingLinks?.map(({ doc, danglingItems }) => (
               <BookDanglingLinks
                 key={doc._id}
@@ -253,31 +227,6 @@ export const ProblemsScreen = memo(() => {
                 }
               />
             ))}
-            {/* {duplicatedBookTitles.length > 0 && (
-            <ListItem
-              alignItems="flex-start"
-              button
-              onClick={() => fixDuplicatedBookTitles(duplicatedBookTitles)}
-            >
-              <ListItemIcon>
-                <BuildRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Books with same titles"
-                secondary={
-                  <>
-                    {`We found ${duplicatedBookTitles.length} title(s) shared by more than one book.`}
-                    {duplicatedBookTitles.map(([title, docs]) => (
-                      <Fragment key={title}>
-                        <br />
-                        (x{docs.length}) {title}
-                      </Fragment>
-                    ))}
-                  </>
-                }
-              />
-            </ListItem>
-          )} */}
           </PageSection>
         </PageContainer>
       </Box>

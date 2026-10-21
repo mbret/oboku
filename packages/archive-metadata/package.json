@@ -7,11 +7,6 @@
       "source": "./src/web.ts",
       "types": "./dist/web.d.ts",
       "import": "./dist/web.js"
-    },
-    "./node": {
-      "source": "./src/node.ts",
-      "types": "./dist/node.d.ts",
-      "import": "./dist/node.js"
     }
   },
   "license": "GPL-3.0",

@@ -4,10 +4,7 @@ import type {
   ArchiveMetadataTargets,
 } from "../metadata/write"
 
-/**
- * Rewrites the archive's metadata containers. Available in every runtime — it
- * only rewrites XML.
- */
+/** Rewrites the archive's metadata containers. */
 export type PatchMetadataAction = {
   kind: "patch-metadata"
   patch: ArchiveMetadataPatch
@@ -16,7 +13,7 @@ export type PatchMetadataAction = {
 
 /**
  * Resizes the archive's images and optionally re-encodes them to WebP. Needs a
- * canvas-and-worker runtime, so only the web entrypoint accepts it.
+ * canvas-and-worker runtime.
  */
 export type CompressImagesAction = {
   kind: "compress-images"

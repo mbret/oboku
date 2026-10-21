@@ -4,8 +4,6 @@ import { BehaviorSubject } from "rxjs"
 import { useObserve } from "reactjrx"
 import type { MutateOptions } from "@tanstack/react-query"
 
-// const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000
-
 const unlockedMasterKeySubject = new BehaviorSubject<string | undefined>(
   undefined,
 )
@@ -23,18 +21,6 @@ export const useUnlockMasterKey = () => {
       unlockedMasterKeySubject.next(undefined)
     }
   }, [resetMasterKey])
-
-  //   useEffect(() => {
-  //     if (masterKey) {
-  //       const timeout = setTimeout(() => {
-  //         setMasterKey(undefined)
-  //       }, DEFAULT_TIMEOUT_MS)
-
-  //       return () => {
-  //         clearTimeout(timeout)
-  //       }
-  //     }
-  //   }, [masterKey])
 
   const unlockMasterKey = useCallback(
     (
