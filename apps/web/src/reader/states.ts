@@ -1,5 +1,5 @@
 import { signal, useSignalValue } from "reactjrx"
-import type { createAppReader } from "./useCreateReader"
+import type { createAppReader } from "./createAppReader"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
 
