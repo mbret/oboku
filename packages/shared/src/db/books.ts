@@ -18,26 +18,32 @@ export type BookDocType = CouchDBMeta &
     /**
      * Where the reader last was, as a cfi to reopen the book at. Only a place
      * the reader has found is saved: a book closed before the reader finds
-     * where a navigation leads keeps the place it had. `null` when there is
-     * no such place: a book never opened, or marked finished or unread by
-     * hand, which reopens at its start.
+     * where a navigation leads keeps the place it had. `null` when the
+     * bookmark has no cfi: there is no bookmark (a book never opened, or
+     * marked finished or unread by hand, which reopens at its start), or the
+     * bookmark is only in KOReader's form, taken from a KOReader sync server
+     * for a place oboku's reader has not opened since. Read the bookmark
+     * through {@link getBookmark}.
      */
     readingStateCurrentBookmarkLocation: string | null
     /**
-     * When readingStateCurrentBookmarkLocation last moved to another place,
-     * or the book was marked finished or unread by hand. Unlike
-     * readingStateUpdatedAt, opening the book at its bookmark leaves it, as
-     * does a progress recomputed for the same place: it tells how recent the
-     * position is. A book without a bookmark opens at its start without
-     * moving it. `null` on a book never read. Missing on a book last read
-     * before it existed.
+     * When the bookmark last moved to another place, or the book was marked
+     * finished or unread by hand. Unlike readingStateUpdatedAt, opening the
+     * book at its bookmark leaves it, as does a progress recomputed for the
+     * same place: it tells how recent the position is. A book without a
+     * bookmark opens at its start without moving it, and the reader giving a
+     * bookmark taken from a KOReader sync server its cfi leaves it too. A
+     * bookmark taken from a KOReader sync server is dated when the server
+     * received it, or when it was taken from a server that does not say.
+     * `null` on a book never read. Missing on a book last read before it
+     * existed.
      */
     readingStateCurrentBookmarkLocationUpdatedAt?: string | null
     /**
-     * How far into the book readingStateCurrentBookmarkLocation is, from 0 to
-     * 1, and `0` when it is `null`. They both represent the last user position:
-     * this is the place to reopen at for a reader that does not understand
-     * cfis. For showing progress, use readingStateReachedProgressPercent.
+     * How far into the book the bookmark is, from 0 to 1, and `0` when there
+     * is none: the place to reopen at for a reader that understands neither
+     * of its forms. For showing progress, use
+     * readingStateReachedProgressPercent.
      *
      * @important
      * This is independent from readingStateCurrentState. A book can be
@@ -47,14 +53,15 @@ export type BookDocType = CouchDBMeta &
      */
     readingStateCurrentBookmarkProgressPercent: number
     /**
-     * readingStateCurrentBookmarkLocation in KOReader's form: the `progress` a
-     * KOReader sync server keeps for a book, an xpointer for a reflowable book
-     * and a page number for one with pages. Whatever writes the bookmark
-     * writes this too, `null` when the bookmark has none: no bookmark, or a
-     * place prose's KOReader enhancer cannot express. Missing on a book last
-     * read before it existed. An older version of the app only writes the
-     * bookmark, so a book it updates keeps a stale value until a newer
-     * version writes it again.
+     * The bookmark in KOReader's form: the `progress` a KOReader sync server
+     * keeps for a book, an xpointer for a reflowable book and a page number
+     * for one with pages. Whatever writes the bookmark writes this too,
+     * `null` when the bookmark has none: no bookmark, or a place prose's
+     * KOReader enhancer cannot express. A bookmark taken from a KOReader sync
+     * server only has this form until oboku's reader opens the book there.
+     * Missing on a book last read before it existed. An older version of the
+     * app only writes the cfi, so a book it updates keeps a stale value until
+     * a newer version writes it again.
      */
     readingStateCurrentBookmarkKoreaderProgress?: string | null
     /**
@@ -163,6 +170,37 @@ export const emptyBookmark = {
   readingStateCurrentBookmarkKoreaderProgress: null,
   readingStateCurrentBookmarkKoreaderDocument: null,
 } satisfies Partial<BookDocType>
+
+/** A bookmark's place in KOReader's form, as a KOReader sync server keeps it. */
+export type KoreaderBookmark = {
+  /** An xpointer, or a page number for a book with pages. */
+  progress: string
+  /** The digest of the file `progress` is a place in. */
+  document: string
+}
+
+/** Where a book was left. A bookmark always has at least one of its forms. */
+export type Bookmark =
+  | { cfi: string; koreader?: KoreaderBookmark }
+  | { cfi?: undefined; koreader: KoreaderBookmark }
+
+/** The book's bookmark, `undefined` when it has none. */
+export const getBookmark = ({
+  readingStateCurrentBookmarkLocation: cfi,
+  readingStateCurrentBookmarkKoreaderProgress: progress,
+  readingStateCurrentBookmarkKoreaderDocument: document,
+}: Pick<
+  BookDocType,
+  | "readingStateCurrentBookmarkLocation"
+  | "readingStateCurrentBookmarkKoreaderProgress"
+  | "readingStateCurrentBookmarkKoreaderDocument"
+>): Bookmark | undefined => {
+  const koreader = progress && document ? { progress, document } : undefined
+
+  if (cfi) return koreader ? { cfi, koreader } : { cfi }
+
+  return koreader && { koreader }
+}
 
 /**
  * A book nothing has happened to yet: no metadata fetched, never opened, in
