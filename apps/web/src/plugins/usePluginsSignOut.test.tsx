@@ -4,7 +4,7 @@ import { synologyDriveSessionSignal } from "./synology-drive/auth/auth"
 import { usePluginsSignOut } from "./usePluginsSignOut"
 
 describe("usePluginsSignOut", () => {
-  it("forgets the Synology Drive session so no NAS login lingers on the device", () => {
+  it("forgets the Synology Drive session so the next account in this tab does not inherit it", () => {
     synologyDriveSessionSignal.setValue({
       auth: { baseUrl: "https://nas.example.com", username: "reader" },
       sid: "nas-session-id",
