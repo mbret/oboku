@@ -1,6 +1,6 @@
 import { HttpRounded } from "@mui/icons-material"
-import { useMutation } from "@tanstack/react-query"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { createUnsupportedSynchronize } from "../common/createUnsupportedSynchronize"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
@@ -8,20 +8,6 @@ import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
-
-const useSynchronize: ObokuPlugin<"URI">["useSynchronize"] = () => {
-  return useMutation({
-    mutationFn: async () => {
-      throw new UnsupportedMethodError("This data source cannot synchronize")
-    },
-  })
-}
-
-const useRemoveResource: ObokuPlugin<"URI">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
 
 const plugin: ObokuPlugin<"URI"> = {
   type: TYPE,
@@ -34,8 +20,8 @@ const plugin: ObokuPlugin<"URI"> = {
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
-  useSynchronize,
-  useRemoveResource,
+  useSynchronize: createUnsupportedSynchronize<"URI">(),
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   description: "Manage contents from URI / URL",
 }
