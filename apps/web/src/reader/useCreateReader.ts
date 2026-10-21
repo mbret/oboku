@@ -16,8 +16,8 @@ import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { cbzEnhancer } from "@prose-reader/cbz"
 import { koreaderEnhancer } from "@prose-reader/enhancer-koreader"
-import { createBookQueryOptions } from "../books/states"
-import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
+import { type BookDocType, getBookmark } from "@oboku/shared"
+import type { DeepReadonly } from "rxdb"
 
 export const createAppReader = koreaderEnhancer(
   pdfEnhancer(
@@ -31,6 +31,29 @@ export const createAppReader = koreaderEnhancer(
   ),
 )
 
+type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
+
+const getOpeningTarget = ({
+  book,
+  koreaderDocument,
+}: {
+  book: DeepReadonly<BookDocType>
+  koreaderDocument: string | undefined
+}): OpeningTarget => {
+  const bookmark = getBookmark(book)
+
+  if (bookmark?.cfi !== undefined) {
+    return { type: "cfi", value: bookmark.cfi }
+  }
+
+  const isKoreaderBookmarkOfOpenedFile =
+    bookmark !== undefined && bookmark.koreader.document === koreaderDocument
+
+  return isKoreaderBookmarkOfOpenedFile
+    ? { type: "koreaderProgress", value: bookmark.koreader.progress }
+    : undefined
+}
+
 /**
  * A reader lives for a single book: we create it once we have the manifest,
  * the restored reading location and the container, mount it right away and
@@ -43,18 +66,20 @@ export const useCreateReader = ({
   bookId,
   isPreview,
   manifest,
+  koreaderDocument,
+  book,
   containerRef,
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
   isPreview: boolean
   manifest?: Manifest
+  koreaderDocument?: string
+  /** The book to open at its bookmark. The reader waits while it is `undefined`, except in preview. */
+  book: DeepReadonly<BookDocType> | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: bookOnce } = useEnsureQueryData$(
-    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
-  )
-  const isRestoredLocationReady = isPreview || !!bookOnce
+  const isRestoredLocationReady = isPreview || !!book
 
   useEffect(() => {
     const containerElement = containerRef.current
@@ -68,13 +93,14 @@ export const useCreateReader = ({
       return
     }
 
-    const cfi = isPreview
-      ? undefined
-      : bookOnce?.readingStateCurrentBookmarkLocation || undefined
+    const target =
+      isPreview || !book
+        ? undefined
+        : getOpeningTarget({ book, koreaderDocument })
 
     const instance = createAppReader({
       manifest,
-      target: cfi ? { type: "cfi", value: cfi } : undefined,
+      target,
       ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
         pageTurnAnimation: "none",
       }),
@@ -127,7 +153,8 @@ export const useCreateReader = ({
     isPreview,
     isRestoredLocationReady,
     bookId,
-    bookOnce,
+    book,
+    koreaderDocument,
     containerRef,
   ])
 }

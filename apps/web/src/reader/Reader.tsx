@@ -25,6 +25,8 @@ import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
+import { createBookQueryOptions } from "../books/states"
+import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 
 export const Reader = memo(function Reader({
   bookId,
@@ -140,11 +142,17 @@ const Effects = memo(function Effects({
   koreaderDocument?: string
   containerRef: RefObject<HTMLElement | null>
 }) {
+  const { data: storedBook } = useEnsureQueryData$(
+    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
+  )
+
   useCreateReader({
     bookId,
     isPreview,
     isUsingWebStreamer,
     manifest,
+    koreaderDocument,
+    book: storedBook ?? undefined,
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
