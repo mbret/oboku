@@ -5,14 +5,8 @@ import { activeProfileId$ } from "../profiles/active/activeProfileId"
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 
 /**
- * Forgets the sessions this tab holds for an account once it leaves it, for
- * another account or for none: the temporary master key and the plugins'
- * sessions. A relogin to the same account keeps them, as it keeps the
- * database.
- *
- * It subscribes to the active profile id rather than reacting in a render
- * effect, so the sessions are gone before anything renders for the next
- * account.
+ * Starts forgetting the previous account's sessions when the active profile
+ * id leaves it, before anything renders for the next account.
  */
 export const ForgetPreviousAccountSessions = memo(
   function ForgetPreviousAccountSessions() {

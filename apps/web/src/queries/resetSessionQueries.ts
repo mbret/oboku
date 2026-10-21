@@ -4,7 +4,8 @@ import { persistBuster, persister } from "./persister"
 import { shouldPersistQueryState } from "./queryClient"
 
 /**
- * Resets the query-side session state, shared by sign-out and account switch.
+ * Resets the query-side session state when the active account ends or changes,
+ * in this tab or another one.
  *
  * Prefer `resetQueries` over `clear`: `clear` removes every query and cancels
  * in-flight work, but mounted observers may not run a new fetch right away,
@@ -32,9 +33,9 @@ import { shouldPersistQueryState } from "./queryClient"
  * cached data, and the provider's throttled auto-persist may not have flushed
  * by then. So we force an immediate save that atomically overwrites the snapshot
  * with only the survivor queries that opt into persistence, dropping the session
- * data, and return its promise so the sign-out / account-switch caller can await
- * the flush — a fire-and-forget save would still be racing the reload it is meant
- * to beat. The web config never opts into the snapshot — it owns its offline
+ * data, and return its promise so the tab that signs out or switches account can
+ * await the flush — a fire-and-forget save would still be racing the reload it
+ * is meant to beat. The web config never opts into the snapshot — it owns its offline
  * cache — so it stays available to `LoadConfiguration` regardless.
  */
 export const resetSessionQueries = (queryClient: QueryClient) => {

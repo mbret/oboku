@@ -80,9 +80,11 @@ Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep
 
 ### Leaving an account
 
-The active profile leaves an account on a sign-out, and also when another account signs in after an expired session: the relogin screen accepts any account. `ForgetPreviousAccountSessions` subscribes to the active profile id and, each time it leaves an account for another one or for none, drops the temporary master key and runs every plugin's sign-out: the Dropbox and Google Drive tokens, the OneDrive session with its MSAL cache in localStorage, the Synology Drive session. It runs before anything renders for the next account. A relogin to the same account keeps them, as it keeps the local database.
+When the active profile id leaves an account, for another one or for none, `ForgetPreviousAccountSessions` drops the temporary master key and runs every plugin's sign-out (`useSignOut`). It runs before anything renders for the next account.
 
-Other tabs follow. Setting or clearing the active profile broadcasts to them, and `SyncProfilesAcrossTabs` adopts the new id from localStorage, which runs the same sign-out there. It also resets that tab's session queries, so its auto-persist cannot write the previous account's data back to the offline snapshot all tabs share.
+The id leaves an account on a sign-out, and when another account signs in after an expired session: the relogin screen accepts any account. A relogin to the same account keeps the sessions, as it keeps the local database.
+
+Other tabs follow. Setting or clearing the active profile broadcasts to them, and `SyncProfilesAcrossTabs` adopts the new id from localStorage, which makes `ForgetPreviousAccountSessions` forget the same sessions there. It also resets that tab's session queries, so its auto-persist cannot write the previous account's data back to the offline snapshot all tabs share.
 
 An account switch recreates the local database but keeps the downloaded files: purging them would also destroy the device-local (`file` plugin) books, and only sign-out warns about that.
 
