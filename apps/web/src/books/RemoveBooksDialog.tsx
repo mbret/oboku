@@ -15,6 +15,7 @@ import {
 import { useState } from "react"
 import { useHasBooksRemovableFromSource } from "./states"
 import type { RemoveBookMode, RemoveBooksPayload } from "./useRemoveBooks"
+import { CancelButton } from "../common/forms/CancelButton"
 
 const RemoveBooksStack = styled(Stack)(({ theme }) => ({
   gap: theme.spacing(2),
@@ -107,9 +108,7 @@ export function RemoveBooksDialog({
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onCancel} color="primary">
-          Cancel
-        </Button>
+        <CancelButton onClick={onCancel} variant="outlined" />
         <Button
           onClick={() =>
             onConfirm({

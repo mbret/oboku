@@ -6,14 +6,11 @@ import {
   ListItemIcon,
   ListItemButton,
 } from "@mui/material"
-import {
-  ArrowForwardIosRounded,
-  CheckCircleRounded,
-  RadioButtonUncheckedOutlined,
-} from "@mui/icons-material"
+import { ArrowForwardIosRounded } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import { ReadingStateFilterDialog, getLabel } from "./ReadingStateFilterDialog"
 import { libraryShelvesFiltersSignal } from "./states"
+import { Checkbox } from "../../../common/Checkbox"
 
 export const FiltersDrawer: FC<{
   open: boolean
@@ -62,11 +59,7 @@ export const FiltersDrawer: FC<{
                 secondary="Does not hide collections which contains only not interested books"
               />
               <ListItemIcon>
-                {showNotInterestedCollections ? (
-                  <CheckCircleRounded />
-                ) : (
-                  <RadioButtonUncheckedOutlined />
-                )}
+                <Checkbox selected={!!showNotInterestedCollections} />
               </ListItemIcon>
             </ListItemButton>
           </List>

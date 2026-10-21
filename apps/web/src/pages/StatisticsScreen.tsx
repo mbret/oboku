@@ -1,23 +1,17 @@
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { Box, ListItem, ListItemText } from "@mui/material"
+import { ListItem, ListItemText } from "@mui/material"
 import { useCollections } from "../collections/useCollections"
 import { useBooks } from "../books/states"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
+import { Page } from "../common/Page"
 
 export const StatisticsScreen = () => {
   const { data: books } = useBooks()
   const { data: collectionsAsArray = [] } = useCollections()
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flex: 1,
-        overflow: "scroll",
-        flexDirection: "column",
-      }}
-    >
+    <Page sx={{ overflow: "scroll" }} bottomGutter={false}>
       <TopBarNavigation title={"Statistics"} />
       <PageContainer disableGutters>
         <PageSection title="Books">
@@ -34,6 +28,6 @@ export const StatisticsScreen = () => {
           </ListItem>
         </PageSection>
       </PageContainer>
-    </Box>
+    </Page>
   )
 }
