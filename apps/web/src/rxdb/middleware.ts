@@ -6,7 +6,6 @@ import type {
   LinkDocType,
   TagsDocType,
 } from "@oboku/shared"
-import { Logger } from "../debug/logger.shared"
 
 type Database = NonNullable<ReturnType<typeof useDatabase>["db"]>
 
@@ -179,24 +178,5 @@ export const applyHooks = (db: Database) => {
         } satisfies UpdateQuery<BookDocType>),
       ),
     )
-  }, false)
-
-  updateRelationBetweenLinksAndBooksHook(db)
-}
-
-const updateRelationBetweenLinksAndBooksHook = (db: Database) => {
-  db.link.postInsert(async (data) => {
-    const bookId = data.book
-
-    // when a link is added update the book with its id
-    if (bookId) {
-      try {
-        await db.book.findOne(bookId).incrementalPatch({
-          links: [data._id],
-        })
-      } catch (e) {
-        Logger.error(e)
-      }
-    }
   }, false)
 }
