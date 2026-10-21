@@ -123,7 +123,7 @@ export const processRefreshMetadata = async (
     | undefined
   const medatadataSources: CollectionMetadata["type"][] = metadataSourceOnly
     ? [metadataSourceOnly]
-    : ["googleBookApi", "biblioreads", "comicvine", "mangaupdates", "mangadex"]
+    : ["biblioreads", "comicvine", "mangaupdates", "mangadex"]
 
   /**
    * Privacy gate: skip third-party metadata providers when the collection holds
