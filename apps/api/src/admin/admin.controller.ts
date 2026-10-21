@@ -14,9 +14,9 @@ import {
   UseGuards,
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
-import { createHash, timingSafeEqual } from "node:crypto"
 import { AuthService } from "../auth/auth.service.js"
 import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
+import { timingSafeStringEqual } from "../lib/crypto/timingSafeStringEqual.js"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { InstanceConfigService } from "./instance-config/instance-config.service.js"
@@ -68,13 +68,6 @@ import {
   UpdateServerSyncResponseDto,
   WebDavCredentialsResponseDto,
 } from "./admin.dto.js"
-
-function timingSafeStringEqual(a: string, b: string): boolean {
-  const hashA = createHash("sha256").update(a).digest()
-  const hashB = createHash("sha256").update(b).digest()
-
-  return timingSafeEqual(hashA, hashB)
-}
 
 /** As `host` or `host:port`, without duplicates. */
 function normalizeAllowedHosts(entries: string[]) {

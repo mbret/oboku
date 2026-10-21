@@ -1,7 +1,7 @@
 import { getMetadataFromBook } from "../books/metadata"
 import { getBookMetadataEntryFields } from "../books/metadata/fields"
+import { sortBooksBy } from "../books/helpers"
 import { REGEXP_SPECIAL_CHAR } from "./useCollectionsForSearch"
-import { sortByTitleComparator } from "@oboku/shared"
 import { useMemo } from "react"
 import { useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./list/states"
@@ -22,28 +22,25 @@ export const useBooksForSearch = (search: string) => {
       "i",
     )
 
-    return (visibleBooks ?? [])
-      .filter((book) => {
+    const matchingBooks = (visibleBooks ?? []).filter(
+      function matchesSearch(book) {
         const titles = book.metadata?.length
           ? book.metadata.map(
               (entry) => getBookMetadataEntryFields(entry).title,
             )
           : [getMetadataFromBook(book).title]
 
-        return titles.some(function titleMatchesSearch(title) {
+        return titles.some(function hasMatchingTitle(title) {
           if (!title) return false
 
           const indexOfFirstMatch = title.toString().search(searchRegex) || 0
 
           return indexOfFirstMatch >= 0
         })
-      })
-      .map((book) => ({
-        book,
-        title: getMetadataFromBook(book).title?.toString() ?? "",
-      }))
-      .sort((a, b) => sortByTitleComparator(a.title, b.title))
-      .map(({ book }) => book._id)
+      },
+    )
+
+    return sortBooksBy(matchingBooks, "alpha").map((book) => book._id)
   }, [search, visibleBooks])
 
   return { data: filteredBooks }

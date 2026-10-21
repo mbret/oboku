@@ -167,6 +167,5 @@ export type DataSourcePlugin<
   getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TProvider>
   sync: (
     options: SyncContext<TProvider>,
-    helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource<TProvider>>
 }

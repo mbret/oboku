@@ -2,7 +2,6 @@ import { memo, useState } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   Alert,
-  Box,
   Button,
   Link,
   ListItemButton,
@@ -21,6 +20,7 @@ import { SecretActionDrawer } from "../../secrets/SecretActionDrawer"
 import { useUnlockMasterKey } from "../../secrets/useUnlockMasterKey"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { Page } from "../../common/Page"
 
 const SecretListItem = memo(
   ({
@@ -83,14 +83,7 @@ export const SecretsScreen = memo(() => {
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          flex: 1,
-          overflow: "auto",
-          flexDirection: "column",
-        }}
-      >
+      <Page bottomGutter={false}>
         <TopBarNavigation title={"Secrets"} />
         <PageContainer>
           <Stack
@@ -136,7 +129,7 @@ export const SecretsScreen = memo(() => {
             ))}
           </PageSection>
         </PageContainer>
-      </Box>
+      </Page>
       <SecretActionDrawer
         openWidth={drawerOpenWith}
         onClose={() => setDrawerOpenWith(undefined)}

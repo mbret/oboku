@@ -9,6 +9,7 @@ import {
 } from "@mui/material"
 import { signal, useSignalValue } from "reactjrx"
 import { useCreateCollection } from "../../collections/useCreateCollection"
+import { CancelButton } from "../../common/forms/CancelButton"
 
 const addCollectionDialogSignal = signal<{ open: boolean }>({
   key: "addCollectionDialogState",
@@ -48,9 +49,7 @@ export function AddCollectionDialog() {
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
+        <CancelButton onClick={onInnerClose} variant="outlined" />
         <Button
           onClick={() => {
             onInnerClose()

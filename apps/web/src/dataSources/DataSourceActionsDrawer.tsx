@@ -10,8 +10,6 @@ import { memo } from "react"
 import {
   SyncRounded,
   DeleteForeverRounded,
-  RadioButtonUncheckedOutlined,
-  CheckCircleRounded,
   InfoOutlineRounded,
 } from "@mui/icons-material"
 import { useDataSource } from "./useDataSource"
@@ -25,6 +23,7 @@ import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
 import { generatePath, Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
+import { Checkbox } from "../common/Checkbox"
 
 export const DataSourceActionsDrawer = memo(
   ({ openWith, onClose }: { openWith?: string; onClose: () => void }) => {
@@ -83,8 +82,7 @@ export const DataSourceActionsDrawer = memo(
               }}
             >
               <ListItemIcon>
-                {!dataSource?.isProtected && <RadioButtonUncheckedOutlined />}
-                {dataSource?.isProtected && <CheckCircleRounded />}
+                <Checkbox selected={!!dataSource?.isProtected} />
               </ListItemIcon>
               <ListItemText
                 primary="Mark as protected"

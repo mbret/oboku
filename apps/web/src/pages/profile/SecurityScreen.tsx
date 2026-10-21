@@ -1,11 +1,12 @@
 import { memo, useState } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Box, ListItemButton, ListItemText } from "@mui/material"
+import { ListItemButton, ListItemText } from "@mui/material"
 import { useSettings } from "../../settings/useSettings"
 import { SetupMasterPasswordDialog } from "../../secrets/SetupMasterPasswordDialog"
 import { useRemoveMasterKey } from "../../secrets/useRemoveMasterKey"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { Page } from "../../common/Page"
 
 export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
@@ -17,14 +18,7 @@ export const SecurityScreen = memo(() => {
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          flex: 1,
-          overflow: "auto",
-          flexDirection: "column",
-        }}
-      >
+      <Page bottomGutter={false}>
         <TopBarNavigation title={"Security"} />
         <PageContainer disableGutters>
           <PageSection>
@@ -60,7 +54,7 @@ export const SecurityScreen = memo(() => {
             )}
           </PageSection>
         </PageContainer>
-      </Box>
+      </Page>
       <SetupMasterPasswordDialog
         open={isEditContentPasswordDialogOpened}
         onClose={() => setIsEditContentPasswordDialogOpened(false)}

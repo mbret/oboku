@@ -4,19 +4,8 @@ const BRAND_COLOR = design.palette.orange
 const BRAND_COLOR_DARK = design.palette.orangeDark
 const TEXT_COLOR = "#27272a"
 const MUTED_COLOR = "#71717a"
-const BACKGROUND_COLOR = "#f4f4f5"
 const FOOTER_BACKGROUND_COLOR = "#f9f9f9"
 const BORDER_COLOR = "#e4e4e7"
-
-export const emailColors = {
-  brand: BRAND_COLOR,
-  brandDark: BRAND_COLOR_DARK,
-  text: TEXT_COLOR,
-  muted: MUTED_COLOR,
-  background: BACKGROUND_COLOR,
-  footerBackground: FOOTER_BACKGROUND_COLOR,
-  border: BORDER_COLOR,
-}
 
 export const escapeHtml = (value: string) =>
   value

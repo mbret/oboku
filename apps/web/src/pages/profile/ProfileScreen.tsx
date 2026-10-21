@@ -1,4 +1,4 @@
-import { type FC, useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   BarChartRounded,
   CloudSyncRounded,
@@ -15,18 +15,10 @@ import {
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
-  Button,
   Badge,
-  Dialog,
-  DialogActions,
-  Checkbox,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   ListItem,
   ListItemIcon,
   ListItemText,
-  FormControlLabel,
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
@@ -44,8 +36,6 @@ import {
 import { lockLibrary, unlockLibrary } from "../../library/libraryLock"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
-import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
-import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
 import { useActiveProfile } from "../../profiles"
@@ -111,8 +101,6 @@ function KoreaderProgressSyncListItem() {
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
-  const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
-    useState(false)
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
@@ -308,12 +296,6 @@ export const ProfileScreen = () => {
               }
             />
           </ListItemButton>
-          {/* <ListItem
-            button
-            onClick={() => setIsDeleteMyDataDialogOpened(true)}
-          >
-            <ListItemText primary="Delete my data" />
-          </ListItem> */}
         </PageSection>
         <PageSection title="Danger zone" tone="danger">
           <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
@@ -337,133 +319,10 @@ export const ProfileScreen = () => {
           </ListItemButton>
         </PageSection>
       </PageContainer>
-      <DeleteMyDataDialog
-        open={isDeleteMyDataDialogOpened}
-        onClose={() => setIsDeleteMyDataDialogOpened(false)}
-      />
       <DeleteAccountDialog
         open={isDeleteAccountDialogOpen}
         onClose={() => setIsDeleteAccountDialogOpen(false)}
       />
     </Page>
-  )
-}
-
-const DeleteMyDataDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ onClose, open }) => {
-  const [isTagChecked, setIsTagChecked] = useState(false)
-  const [isBookChecked, setIsBookChecked] = useState(false)
-  const [isCollectionChecked, setIsCollectionChecked] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const { db } = useDatabase()
-
-  const onSubmit = useCallback(async () => {
-    setIsDeleting(true)
-
-    if (db) {
-      const deleteTags$ = from(db.tag.find().exec()).pipe(
-        switchMap((res) => from(db.tag.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteBooks$ = from(db.book.find().exec()).pipe(
-        switchMap((res) => from(db.book.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteLinks$ = from(db.link.find().exec()).pipe(
-        switchMap((res) => from(db.link.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteCollections$ = from(db.obokucollection.find().exec()).pipe(
-        switchMap((res) =>
-          from(db.obokucollection.bulkRemove(res.map((r) => r._id))),
-        ),
-      )
-
-      forkJoin([
-        isTagChecked ? deleteTags$ : of(undefined),
-        isBookChecked ? deleteBooks$ : of(undefined),
-        isBookChecked ? deleteLinks$ : of(undefined),
-        isCollectionChecked ? deleteCollections$ : of(undefined),
-      ])
-        .pipe(
-          catchError((e) => {
-            Logger.error(e)
-
-            return of(undefined)
-          }),
-          tap(() => {
-            onClose()
-          }),
-        )
-        .subscribe()
-    }
-  }, [onClose, db, isTagChecked, isBookChecked, isCollectionChecked])
-
-  useEffect(() => {
-    void open
-    setIsDeleting(false)
-    setIsTagChecked(false)
-    setIsBookChecked(false)
-    setIsCollectionChecked(false)
-  }, [open])
-
-  return (
-    <Dialog onClose={onClose} open={open}>
-      <DialogTitle>Delete my data</DialogTitle>
-      <DialogContent>
-        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-          <DialogContentText>This action is permanent.</DialogContentText>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isTagChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsTagChecked((v) => !v)
-                }}
-                name="tags"
-              />
-            }
-            label="Delete all my tags"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isBookChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsBookChecked((v) => !v)
-                }}
-                name="books"
-              />
-            }
-            label="Delete all my books"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isCollectionChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsCollectionChecked((v) => !v)
-                }}
-                name="collections"
-              />
-            }
-            label="Delete all my collections"
-          />
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={onSubmit} color="primary" disabled={isDeleting}>
-          {isDeleting ? `Deleting...` : `Confirm`}
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }

@@ -1,7 +1,8 @@
 import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
 import {
-  type DataSourcePlugin,
+  type Helpers,
   type SynchronizeAbleDataSource,
+  type SynchronizeAbleItem,
 } from "../../../plugins/types.js"
 import { updateTagsForBook } from "./updateTagsForBook.js"
 import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections.js"
@@ -18,9 +19,6 @@ import { firstValueFrom } from "rxjs"
 import { deleteDanglingLinks } from "./deleteDanglingLinks.js"
 import { logger } from "./logger.js"
 import type { LinkCandidate } from "../../../plugins/types.js"
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 /**
  * Picks the best link for the current sync from candidates that have a valid

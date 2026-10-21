@@ -13,7 +13,6 @@ import { getOrderedBookMetadataSources } from "./sources"
 
 type Return = DeepReadonlyObject<BookMetadataFields> & {
   language?: string
-  displayableDate?: string
 }
 
 /**
@@ -99,14 +98,6 @@ export const getMetadataFromBook = (
       subjects,
       authors: [...(acc.authors ?? []), ...(item.authors ?? [])],
       language: (mergedValue.languages ?? [])[0],
-      displayableDate:
-        Object.keys(date ?? {}).length === 3
-          ? new Date(`${date?.year} ${date?.month} ${date?.day}`).toDateString()
-          : date?.year !== undefined && date.month !== undefined
-            ? `${date?.year} ${date?.month}`
-            : date?.year !== undefined
-              ? `${date?.year}`
-              : undefined,
     } satisfies Return
   }, {} as Return)
 
