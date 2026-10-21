@@ -2,10 +2,14 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, mergeMap, of } from "rxjs"
 import type { RxDocument, UpdateQuery } from "rxdb"
 import type { CollectionDocType } from "@oboku/shared"
+import type { UseMutationOptions } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
 
-export const useCollectionIncrementalUpdate = () =>
+export const useCollectionIncrementalUpdate = (
+  options?: Pick<UseMutationOptions, "meta">,
+) =>
   useMutation$({
+    ...options,
     mutationFn: ({
       doc,
       updateObj,
