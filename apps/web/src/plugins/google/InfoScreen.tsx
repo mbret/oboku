@@ -48,9 +48,7 @@ export const InfoScreen = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => {
-                  clearGoogleAccessToken()
-                }}
+                onClick={clearGoogleAccessToken}
               >
                 <DeleteRounded />
               </IconButton>
