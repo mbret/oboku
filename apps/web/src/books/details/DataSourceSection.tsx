@@ -35,7 +35,9 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const refreshMetadata = useRefreshBookMetadata()
   const { mutate: upsertBookLink } = useUpsertLink({
-    onSuccess: () => [refreshMetadata(bookId)],
+    onSuccess: function refreshMetadataFromPickedFile() {
+      refreshMetadata(bookId)
+    },
   })
 
   return (
