@@ -1,43 +1,33 @@
-import { afterEach, describe, expect, it } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { STORAGE_PROFILE_KEY } from "../../config"
-import { PROFILES_BROADCAST_CHANNEL } from "../profilesBroadcast"
 import { clearActiveProfileId, setActiveProfileId } from "./activeProfileId"
-
-const readStoredProfileIdOnNextBroadcast = () => {
-  const otherTab = new BroadcastChannel(PROFILES_BROADCAST_CHANNEL)
-  const { promise, resolve } = Promise.withResolvers<string | null>()
-
-  otherTab.addEventListener(
-    "message",
-    function readStoredProfileId() {
-      resolve(localStorage.getItem(STORAGE_PROFILE_KEY))
-      otherTab.close()
-    },
-    { once: true },
-  )
-
-  return promise
-}
 
 describe("activeProfileId", () => {
   afterEach(() => {
+    vi.restoreAllMocks()
     clearActiveProfileId()
   })
 
-  it("tells the other tabs to read the active profile it sets", async () => {
-    const storedProfileIdOnBroadcast = readStoredProfileIdOnNextBroadcast()
+  it("tells the other tabs once it has stored the active profile it sets", () => {
+    const storeItem = vi.spyOn(Storage.prototype, "setItem")
+    const postToOtherTabs = vi.spyOn(BroadcastChannel.prototype, "postMessage")
 
     setActiveProfileId("reader")
 
-    await expect(storedProfileIdOnBroadcast).resolves.toBe("reader")
+    expect(storeItem).toHaveBeenCalledWith(STORAGE_PROFILE_KEY, "reader")
+    expect(postToOtherTabs).toHaveBeenCalledWith("profiles-changed")
+    expect(storeItem).toHaveBeenCalledBefore(postToOtherTabs)
   })
 
-  it("tells the other tabs to read the active profile it clears", async () => {
-    localStorage.setItem(STORAGE_PROFILE_KEY, "reader")
-    const storedProfileIdOnBroadcast = readStoredProfileIdOnNextBroadcast()
+  it("tells the other tabs once it has removed the active profile it clears", () => {
+    setActiveProfileId("reader")
+    const removeItem = vi.spyOn(Storage.prototype, "removeItem")
+    const postToOtherTabs = vi.spyOn(BroadcastChannel.prototype, "postMessage")
 
     clearActiveProfileId()
 
-    await expect(storedProfileIdOnBroadcast).resolves.toBeNull()
+    expect(removeItem).toHaveBeenCalledWith(STORAGE_PROFILE_KEY)
+    expect(postToOtherTabs).toHaveBeenCalledWith("profiles-changed")
+    expect(removeItem).toHaveBeenCalledBefore(postToOtherTabs)
   })
 })

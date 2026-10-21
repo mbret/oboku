@@ -47,7 +47,7 @@ describe("useSignOut", () => {
     expect(purgeAllDownloads).toHaveBeenCalledTimes(1)
   })
 
-  it("clears the active profile, which forgets the account's sessions", async () => {
+  it("clears the active profile", async () => {
     const { result } = renderHook(() => useSignOut())
 
     await result.current()
