@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react"
-import { SIGNAL_RESET } from "reactjrx"
+import { SIGNAL_RESET, useLiveRef } from "reactjrx"
 import type { Manifest } from "@prose-reader/shared"
 import { createAppReader } from "./createAppReader"
 import { readerSignal } from "./states"
@@ -10,6 +10,7 @@ import { from, of } from "rxjs"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { createBookQueryOptions } from "../books/states"
 import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
+import { useReaderTheme } from "./theme/useReaderTheme"
 
 /**
  * A reader lives for a single book: we create it once we have the manifest,
@@ -35,6 +36,8 @@ export const useCreateReader = ({
     createBookQueryOptions({ id: isPreview ? undefined : bookId }),
   )
   const isRestoredLocationReady = isPreview || !!bookOnce
+  const readerTheme = useReaderTheme()
+  const readerThemeRef = useLiveRef(readerTheme)
 
   useEffect(
     function createReaderForBook() {
@@ -56,6 +59,7 @@ export const useCreateReader = ({
 
       const instance = createAppReader({
         manifest,
+        theme: readerThemeRef.current,
         target: cfi ? { type: "cfi", value: cfi } : undefined,
         ...(isEInkMode && {
           pageTurnAnimation: "none",
@@ -112,6 +116,7 @@ export const useCreateReader = ({
       bookId,
       bookOnce,
       containerRef,
+      readerThemeRef,
     ],
   )
 }
