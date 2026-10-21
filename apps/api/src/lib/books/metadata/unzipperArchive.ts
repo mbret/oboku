@@ -6,7 +6,6 @@ const basename = (uri: string): string =>
   uri.split(/[\\/]/).filter(Boolean).pop() ?? uri
 
 /**
- * Adapt a zip file on disk to a prose-reader {@link Archive}.
  * `unzipper.Open.file` gives random access through the central directory, so
  * an entry is decoded only when it is read.
  */

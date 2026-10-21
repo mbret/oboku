@@ -23,7 +23,11 @@ export const saveCoverFromArchiveToBucket = async (
       coverLink,
     )?.arrayBuffer()
 
-    if (!cover) return false
+    if (!cover) {
+      logger.warn(`archive has no file at ${coverLink}`)
+
+      return false
+    }
 
     await firstValueFrom(
       coversService.saveCover(Buffer.from(cover), coverObjectKey),

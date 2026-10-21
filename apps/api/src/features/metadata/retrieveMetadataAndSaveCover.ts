@@ -392,9 +392,9 @@ export const retrieveMetadataAndSaveCover = async (
 
     throw e
   } finally {
-    try {
-      await archive?.close()
+    await archive?.close().catch(console.error)
 
+    try {
       /**
        * Make sure to remove temporary file in case of crash
        */
