@@ -5,7 +5,6 @@ import {
 } from "@oboku/shared"
 import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import type { DeepReadonly } from "rxdb"
 import { firstValueFrom, from, timeout } from "rxjs"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
@@ -24,15 +23,14 @@ const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
 
 /**
  * Where the check of a book's KOReader position stands as the book opens.
- * Once `done`, the book can open: `updatedBook` is the book once its
- * bookmark took the server's newer position, missing when the book keeps
- * its own.
+ * Once `done`, the book can open at its bookmark, which holds the server's
+ * position when the check took it.
  */
 export type KoreaderPositionCheck =
   | { status: "checking"; continueAnyway: () => void }
   | { status: "failed"; tryAgain: () => void; continueAnyway: () => void }
   | { status: "refused"; continueAnyway: () => void }
-  | { status: "done"; updatedBook?: DeepReadonly<BookDocType> }
+  | { status: "done" }
 
 type KoreaderBookmarkUpdate = {
   position: KoreaderSyncPositionDto
@@ -71,13 +69,9 @@ const takeKoreaderPositionWhenNewer = (
           koreaderDocument: update.koreaderDocument,
         })
 
-        if (!isPositionNewer) return null
+        if (!isPositionNewer) return
 
-        const updatedBook = await book.incrementalModify(
-          applyKoreaderBookmark(update),
-        )
-
-        return updatedBook.toJSON()
+        await book.incrementalModify(applyKoreaderBookmark(update))
       },
     ),
   )
@@ -160,13 +154,15 @@ export const useKoreaderPositionCheck = ({
               ),
             )
 
-            if (!position) return null
+            if (position) {
+              await takeKoreaderPositionWhenNewer(bookId, {
+                position,
+                koreaderDocument,
+                savedAt,
+              })
+            }
 
-            return takeKoreaderPositionWhenNewer(bookId, {
-              position,
-              koreaderDocument,
-              savedAt,
-            })
+            return position
           }
         : skipToken,
     staleTime: Number.POSITIVE_INFINITY,
@@ -181,11 +177,9 @@ export const useKoreaderPositionCheck = ({
     void queryClient.cancelQueries({ queryKey: positionQueryKey })
   }
 
-  if (!isPulling) return { status: "done" }
+  const mayBookOpen = !isPulling || pull.isSuccess
 
-  if (pull.isSuccess) {
-    return { status: "done", updatedBook: pull.data ?? undefined }
-  }
+  if (mayBookOpen) return { status: "done" }
 
   const hasFailed = pull.isError && !pull.isFetching
 

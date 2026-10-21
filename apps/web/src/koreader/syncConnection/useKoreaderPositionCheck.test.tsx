@@ -241,7 +241,7 @@ describe("useKoreaderPositionCheck", () => {
     vi.useRealTimers()
   })
 
-  it("takes the position another device left after the bookmark moved as the bookmark, and lets the book open from it", async () => {
+  it("takes the position another device left after the bookmark moved as the bookmark, then lets the book open", async () => {
     const { openBook, pullPosition } = createCheckHarness()
     const answerPull = holdNextPull(pullPosition)
     const { result } = openBook()
@@ -260,10 +260,7 @@ describe("useKoreaderPositionCheck", () => {
     expect(mocks.saveBook).toHaveBeenCalledExactlyOnceWith(
       BOOK_AT_NEWER_SERVER_POSITION,
     )
-    expect(result.current).toEqual({
-      status: "done",
-      updatedBook: BOOK_AT_NEWER_SERVER_POSITION,
-    })
+    expect(result.current).toEqual({ status: "done" })
   })
 
   it("asks the server again each time the book opens", async () => {
@@ -452,10 +449,10 @@ describe("useKoreaderPositionCheck", () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(pullPosition).toHaveBeenCalledTimes(2)
-    expect(result.current).toEqual({
-      status: "done",
-      updatedBook: BOOK_AT_NEWER_SERVER_POSITION,
-    })
+    expect(mocks.saveBook).toHaveBeenCalledExactlyOnceWith(
+      BOOK_AT_NEWER_SERVER_POSITION,
+    )
+    expect(result.current).toEqual({ status: "done" })
   })
 
   it("gives up asking after fifteen seconds without an answer", async () => {

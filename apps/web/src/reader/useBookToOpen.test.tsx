@@ -102,36 +102,49 @@ describe("useBookToOpen", () => {
     cleanup()
   })
 
-  it("is the stored book, once the KOReader position is checked", async () => {
+  it("reads the book only once the KOReader position is checked", async () => {
     const { result, rerender } = renderBookToOpen({
       koreaderPositionCheck: { status: "checking", continueAnyway: vi.fn() },
     })
 
-    await waitFor(function expectStoredBookRead() {
+    await deliverQueryUpdates()
+
+    expect(mocks.readStoredBook).not.toHaveBeenCalled()
+    expect(result.current).toBeUndefined()
+
+    rerender({ check: { status: "done" } })
+
+    await waitFor(function expectStoredBook() {
+      expect(result.current).toEqual(STORED_BOOK)
+    })
+  })
+
+  it("opens at the bookmark the KOReader position check wrote", async () => {
+    const { result, rerender } = renderBookToOpen({
+      koreaderPositionCheck: { status: "checking", continueAnyway: vi.fn() },
+    })
+
+    await deliverQueryUpdates()
+    mocks.readStoredBook.mockReturnValue(BOOK_SAVED_BY_CHECK)
+    rerender({ check: { status: "done" } })
+
+    await waitFor(function expectBookSavedByCheck() {
+      expect(result.current).toEqual(BOOK_SAVED_BY_CHECK)
+    })
+  })
+
+  it("keeps a book missing from the database closed", async () => {
+    mocks.readStoredBook.mockReturnValue(null)
+    const { result } = renderBookToOpen({
+      koreaderPositionCheck: { status: "done" },
+    })
+
+    await waitFor(function expectBookRead() {
       expect(mocks.readStoredBook).toHaveBeenCalled()
     })
     await deliverQueryUpdates()
 
     expect(result.current).toBeUndefined()
-
-    rerender({ check: { status: "done" } })
-
-    expect(result.current).toEqual(STORED_BOOK)
-  })
-
-  it("is the book as the KOReader position check saved it", async () => {
-    const { result } = renderBookToOpen({
-      koreaderPositionCheck: {
-        status: "done",
-        updatedBook: BOOK_SAVED_BY_CHECK,
-      },
-    })
-
-    await waitFor(function expectStoredBookRead() {
-      expect(mocks.readStoredBook).toHaveBeenCalled()
-    })
-
-    expect(result.current).toEqual(BOOK_SAVED_BY_CHECK)
   })
 
   it("opens at the start in preview, without reading the book", async () => {
