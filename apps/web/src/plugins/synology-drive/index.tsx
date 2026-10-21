@@ -11,6 +11,7 @@ import { useSynchronize } from "./useSynchronize"
 import { useFileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import iconSynologyDrive from "../../assets/icon_synology_drive_01.png"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { clearSynologyDriveSession } from "./auth/auth"
 
 const SynologyDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -33,7 +34,9 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
+  useSignOut: function useSynologyDriveSignOut() {
+    return clearSynologyDriveSession
+  },
   description:
     "Browse a Synology Drive library and add books by stable file id",
 }
