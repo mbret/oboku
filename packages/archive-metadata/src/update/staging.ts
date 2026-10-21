@@ -1,12 +1,9 @@
 /**
  * Parks freshly produced entry bytes somewhere the pipeline can read them back
  * later, so an archive with hundreds of rewritten images does not have to keep
- * every version resident. Runtimes that can spill to disk return a file-backed
- * blob; the rest keep the bytes in memory.
+ * every version resident.
  */
 export type StageBytes = (bytes: ArrayBuffer) => Promise<Blob>
-
-export const stageBytesInMemory: StageBytes = async (bytes) => new Blob([bytes])
 
 /**
  * Destination the zip writer streams into. `finish` resolves once the archive is
@@ -39,9 +36,3 @@ export type StagingScope = {
 }
 
 export type OpenStagingScope = () => Promise<StagingScope>
-
-export const openInMemoryStagingScope: OpenStagingScope = async () => ({
-  stageBytes: stageBytesInMemory,
-  openZipTarget: openNoZipTarget,
-  release: () => Promise.resolve(),
-})

@@ -16,7 +16,7 @@ export type CustomDialogHandle<Result> = {
   promise: Promise<Result>
 }
 
-export type CreateCustomDialogOptions<Result> = {
+type CreateCustomDialogOptions<Result> = {
   render: (controls: CustomDialogControls<Result>) => ReactNode
 }
 

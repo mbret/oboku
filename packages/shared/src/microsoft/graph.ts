@@ -13,12 +13,6 @@ export class MicrosoftGraphError extends Error {
   }
 }
 
-export function isMicrosoftGraphError(
-  error: unknown,
-): error is MicrosoftGraphError {
-  return error instanceof MicrosoftGraphError
-}
-
 export function isGraphResource(resource: string) {
   try {
     return new URL(resource).origin === "https://graph.microsoft.com"
