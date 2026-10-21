@@ -828,6 +828,33 @@ describe("useSyncBookProgress", () => {
       expect(onBookmarkMoved).not.toHaveBeenCalled()
     })
 
+    it("does not dispatch the place a bookmark only in KOReader's form opens at, leaving its date", async () => {
+      const takenFromServerAt = "2026-01-01T00:00:00.000Z"
+      mocks.state.book = {
+        ...bookReadOnPageBeforeLast,
+        readingStateCurrentBookmarkLocation: null,
+        readingStateCurrentBookmarkLocationUpdatedAt: takenFromServerAt,
+        readingStateCurrentBookmarkProgressPercent:
+          LAST_PAGE.percentageEstimateOfBook,
+        readingStateCurrentBookmarkKoreaderProgress: toFakeKoreaderProgress(
+          LAST_PAGE.cfi,
+        ),
+        readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
+      }
+      const onBookmarkMoved = observeMovedBookmarks()
+      const reader = createFakeReader()
+      renderSyncBookProgress()
+
+      reader.navigation.readingPosition$.next(LAST_PAGE)
+      await vi.advanceTimersByTimeAsync(1000)
+
+      expect(mocks.state.book).toMatchObject({
+        readingStateCurrentBookmarkLocation: LAST_PAGE.cfi,
+        readingStateCurrentBookmarkLocationUpdatedAt: takenFromServerAt,
+      })
+      expect(onBookmarkMoved).not.toHaveBeenCalled()
+    })
+
     it("dispatches the last move once the book closes, after it is saved", async () => {
       const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
