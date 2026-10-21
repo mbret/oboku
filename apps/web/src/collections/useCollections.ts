@@ -4,7 +4,7 @@ import {
   difference,
 } from "@oboku/shared"
 import { useLocalSettings } from "../settings/useLocalSettings"
-import { useQuery$, useSignalValue } from "reactjrx"
+import { useLiveQuery$, useSignalValue } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,
   RXDB_QUERY_KEY_PREFIX,
@@ -74,7 +74,7 @@ export const useCollections = ({
   const { showCollectionWithProtectedContent } = useLocalSettings()
   const includeProtected = _includeProtected || isLibraryUnlocked
 
-  return useQuery$({
+  return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
     queryKey: [
       RXDB_QUERY_KEY_PREFIX,

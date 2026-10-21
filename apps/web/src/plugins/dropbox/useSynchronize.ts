@@ -1,4 +1,4 @@
-import { authUser } from "./lib/auth"
+import { requestDropboxProviderCredentials } from "./lib/auth"
 import type { UseSynchronizeHook } from "../types"
 import { useMutation } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
@@ -9,20 +9,12 @@ export const useSynchronize: UseSynchronizeHook<"dropbox"> = ({
   const { data: config } = useConfig()
 
   return useMutation({
-    mutationFn: async () => {
-      const auth = await authUser({
-        requestPopup,
-        clientId: config?.DROPBOX_CLIENT_ID,
-      })
-
+    mutationFn: async function requestProviderCredentials() {
       return {
-        providerCredentials: {
-          accessToken: auth.getAccessToken(),
-          accessTokenExpiresAt: auth.getAccessTokenExpiresAt().toISOString(),
-          clientId: auth.getClientId(),
-          codeVerifier: auth.getCodeVerifier(),
-          refreshToken: auth.getRefreshToken(),
-        },
+        providerCredentials: await requestDropboxProviderCredentials({
+          requestPopup,
+          clientId: config?.DROPBOX_CLIENT_ID,
+        }),
       }
     },
   })

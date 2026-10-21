@@ -2,7 +2,6 @@ import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
 import { Injectable } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { from, switchMap } from "rxjs"
-import { AppConfigService } from "../config/AppConfigService.js"
 import type { AuthUser } from "../auth/auth.guard.js"
 import { CouchService } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
@@ -13,7 +12,6 @@ import { sync } from "../lib/sync/sync.js"
 @Injectable()
 export class DataSourceService {
   constructor(
-    protected appConfig: AppConfigService,
     protected coversService: CoversService,
     protected syncReportPostgresService: SyncReportPostgresService,
     protected notificationService: NotificationsService,
@@ -42,7 +40,6 @@ export class DataSourceService {
             dataSourceId,
             db,
             providerCredentials,
-            config: this.appConfig.config,
             eventEmitter: this.eventEmitter,
             syncReportPostgresService: this.syncReportPostgresService,
             notificationService: this.notificationService,

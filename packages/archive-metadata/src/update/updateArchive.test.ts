@@ -6,13 +6,19 @@
 import { createArchiveFromZipJs } from "@prose-reader/archive-reader/archives/createArchiveFromZipJs"
 import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { describe, expect, it, vi } from "vitest"
-import { updateArchive } from "../node"
+import type { Archive } from "../archive/types"
+import type { PatchMetadataAction } from "./actions"
 import {
   type EditableArchive,
   readEntryText,
   toEditableArchive,
 } from "./editableArchive"
 import { openNoZipTarget } from "./staging"
+import {
+  type ArchiveUpdateOptions,
+  type ArchiveUpdateRuntime,
+  runArchiveUpdate,
+} from "./updateArchive"
 import { writeZip } from "./writeZip"
 
 const STORE = 0
@@ -79,6 +85,20 @@ const buildGenericZip = async (): Promise<Blob> => {
 
   return (await writeZip(entries, { openZipTarget: openNoZipTarget })).blob
 }
+
+const inMemoryRuntime: ArchiveUpdateRuntime = {
+  openStagingScope: async () => ({
+    stageBytes: async (bytes) => new Blob([bytes]),
+    openZipTarget: openNoZipTarget,
+    release: () => Promise.resolve(),
+  }),
+  compressImages: undefined,
+}
+
+const updateArchive = (
+  archive: Archive,
+  options: ArchiveUpdateOptions<PatchMetadataAction>,
+) => runArchiveUpdate(inMemoryRuntime, archive, options)
 
 describe("updateArchive", () => {
   it("writes the epub mimetype entry first and uncompressed", async () => {

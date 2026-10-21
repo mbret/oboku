@@ -1,28 +1,6 @@
 import type { UseSyncSourceInfo } from "../types"
 import { useConnector } from "../../connectors/useConnector"
-
-const getItemLabel = (count: number) =>
-  count === 1 ? "1 item" : `${count} items`
-
-const getHostname = (urlValue: string) => {
-  const trimmedUrlValue = urlValue.trim()
-
-  if (!trimmedUrlValue) {
-    return undefined
-  }
-
-  try {
-    return new URL(trimmedUrlValue).hostname
-  } catch {
-    try {
-      // ConnectorForm accepts host:port values without a scheme, so label
-      // rendering needs to retry with a default protocol instead of crashing.
-      return new URL(`https://${trimmedUrlValue}`).hostname
-    } catch {
-      return undefined
-    }
-  }
-}
+import { getHostname, getLabelWithItemCount } from "../common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
   dataSource,
@@ -44,10 +22,7 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
 
   if (!connector) {
     return {
-      name:
-        itemsCount > 0
-          ? `Synology Drive (${getItemLabel(itemsCount)})`
-          : "Synology Drive",
+      name: getLabelWithItemCount("Synology Drive", itemsCount),
     }
   }
 
@@ -55,17 +30,13 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
 
   if (!hostname) {
     return {
-      name:
-        itemsCount > 0
-          ? `Synology Drive (${getItemLabel(itemsCount)})`
-          : "Synology Drive",
+      name: getLabelWithItemCount("Synology Drive", itemsCount),
     }
   }
 
   const baseLabel = `synology://${connector.username}@${hostname}`
 
   return {
-    name:
-      itemsCount > 0 ? `${baseLabel} (${getItemLabel(itemsCount)})` : baseLabel,
+    name: getLabelWithItemCount(baseLabel, itemsCount),
   }
 }

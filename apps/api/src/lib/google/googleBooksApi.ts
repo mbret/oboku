@@ -37,75 +37,66 @@ const isRetryableGoogleBooksError = (error: unknown): boolean => {
   return status === 429 || status >= 500
 }
 
+const requestGoogleBooks = async <Data>({
+  finder,
+  path,
+  config,
+}: {
+  finder: string
+  path: string
+  config: AppConfigService
+}) => {
+  const url = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}${path}`
+
+  console.log(`[google] [${finder}]`, { url })
+
+  const response = await performWithBackoff({
+    asyncFunction: function getFromGoogleBooks() {
+      return axios.get<Data>(url)
+    },
+    retry: isRetryableGoogleBooksError,
+  })
+
+  if (response.status === 200) return response.data
+
+  throw new Error(`An error occurred during ${finder}`)
+}
+
 /**
  * Supports formats like: [9782413023470, 978-1-947804-36-4]
  */
-export const findByISBN = async (
+export const findByISBN = (
   isbn: string,
   apiKey: string,
   config: AppConfigService,
-) => {
-  const url = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=isbn:${encodeURIComponent(isbn)}&key=${apiKey}`
-
-  console.log("[google] [findByISBN]", { url })
-
-  const response = await performWithBackoff({
-    asyncFunction: () => axios.get<GoogleBooksApiVolumesResponseData>(url),
-    retry: isRetryableGoogleBooksError,
+) =>
+  requestGoogleBooks<GoogleBooksApiVolumesResponseData>({
+    finder: "findByISBN",
+    path: `/volumes?q=isbn:${encodeURIComponent(isbn)}&key=${apiKey}`,
+    config,
   })
 
-  if (response.status === 200) {
-    // Logger.info(`google findByISBN response`, response.data)
-
-    return response.data
-  }
-
-  throw new Error(`An error occurred during findByISBN`)
-}
-
-export const findByTitle = async (
-  name: string,
+export const findByTitle = (
+  title: string,
   apiKey: string,
   config: AppConfigService,
-) => {
-  const cleanedName = encodeURIComponent(name)
-  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes?q=intitle:${cleanedName}&key=${apiKey}`
-
-  console.log("[google] [findByTitle]", { uri })
-
-  const response = await performWithBackoff({
-    asyncFunction: () => axios.get<GoogleBooksApiVolumesResponseData>(uri),
-    retry: isRetryableGoogleBooksError,
+) =>
+  requestGoogleBooks<GoogleBooksApiVolumesResponseData>({
+    finder: "findByTitle",
+    path: `/volumes?q=intitle:${encodeURIComponent(title)}&key=${apiKey}`,
+    config,
   })
-
-  if (response.status === 200) {
-    // Logger.info(`google findByName response`, response.data)
-
-    return response.data
-  }
-
-  throw new Error(`An error occurred during findByISBN`)
-}
 
 export const findByVolumeId = async (
-  name: string,
+  volumeId: string,
   apiKey: string,
   config: AppConfigService,
 ) => {
-  const uri = `${config.config.getOrThrow("GOOGLE_BOOK_API_URL", { infer: true })}/volumes/${encodeURIComponent(name)}?key=${apiKey}`
-
-  console.log("[google] [findByVolumeId]", { uri })
-
-  const response = await performWithBackoff({
-    asyncFunction: () => axios.get<GoogleBooksApiVolumeResponseData>(uri),
-    retry: isRetryableGoogleBooksError,
+  const volume = await requestGoogleBooks<GoogleBooksApiVolumeResponseData>({
+    finder: "findByVolumeId",
+    path: `/volumes/${encodeURIComponent(volumeId)}?key=${apiKey}`,
+    config,
   })
 
-  if (response.status === 200) {
-    return {
-      items: [response.data],
-    }
-  }
-
-  throw new Error(`An error occurred during findByISBN`)
+  return { items: [volume] }
 }

@@ -1,13 +1,11 @@
 import { addTagsToBookIfNotExist } from "../../couch/dbHelpers.js"
 import { Logger } from "@nestjs/common"
-import type { DataSourcePlugin } from "../../../plugins/types.js"
+import type { Helpers } from "../../../plugins/types.js"
 import type nano from "nano"
 import type { SyncReport } from "../SyncReport.js"
 import type { BookDocType } from "@oboku/shared"
 
 const logger = new Logger("sync")
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 /**
  * We only add new tags for now, we never remove any old tags.

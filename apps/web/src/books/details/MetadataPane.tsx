@@ -4,6 +4,7 @@ import { DescriptionRow } from "./DescriptionRow"
 import { MetadataItemList } from "./MetadataItemList"
 import { useBook } from "../states"
 import { getMetadataFromBook } from "../metadata"
+import { formatBookMetadataDate } from "./metadataSource/formatters"
 
 export const MetadataPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
@@ -42,7 +43,7 @@ export const MetadataPane = ({ bookId }: { bookId?: string }) => {
           <ListItem disableGutters disablePadding>
             <ListItemText
               primary="Published date"
-              secondary={metadata.displayableDate ?? "unknown"}
+              secondary={formatBookMetadataDate(metadata.date) ?? "unknown"}
             />
           </ListItem>
           <ListItem disableGutters disablePadding>

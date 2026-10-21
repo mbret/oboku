@@ -19,6 +19,7 @@ import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchData
 import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes.js"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
+import type { StringValue } from "ms"
 import { JwtService } from "@nestjs/jwt"
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
@@ -54,14 +55,9 @@ const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyDto) =>
   JSON.stringify({ kty, crv, x, y })
 
-type SignUpTokenPayload = {
+type EmailLinkTokenPayload = {
   sub: string
-  type: "signup"
-}
-
-type MagicLinkTokenPayload = {
-  sub: string
-  type: "magic-link"
+  type: "signup" | "magic-link"
 }
 
 @Injectable()
@@ -304,88 +300,90 @@ export class AuthService {
     })
   }
 
-  async generateSignUpToken(email: string) {
+  private async signEmailLinkToken({
+    email,
+    type,
+    expiresIn,
+  }: {
+    email: string
+    type: EmailLinkTokenPayload["type"]
+    expiresIn: StringValue
+  }) {
     return this.jwtService.signAsync(
       {
         sub: email,
-        type: "signup",
-      } satisfies SignUpTokenPayload,
+        type,
+      } satisfies EmailLinkTokenPayload,
       {
         algorithm: "RS256",
-        expiresIn: "1h",
+        expiresIn,
         privateKey: await this.secretService.getJwtPrivateKey(),
       },
     )
+  }
+
+  async generateSignUpToken(email: string) {
+    return this.signEmailLinkToken({ email, type: "signup", expiresIn: "1h" })
   }
 
   async generateMagicLinkToken(email: string) {
-    return this.jwtService.signAsync(
-      {
-        sub: email,
-        type: "magic-link",
-      } satisfies MagicLinkTokenPayload,
-      {
-        algorithm: "RS256",
-        expiresIn: "15m",
-        privateKey: await this.secretService.getJwtPrivateKey(),
-      },
-    )
+    return this.signEmailLinkToken({
+      email,
+      type: "magic-link",
+      expiresIn: "15m",
+    })
+  }
+
+  private async verifyEmailLinkToken({
+    token,
+    type,
+    invalidErrorCode,
+  }: {
+    token: string
+    type: EmailLinkTokenPayload["type"]
+    invalidErrorCode: ObokuErrorCode
+  }) {
+    try {
+      const payload = await this.jwtService.verifyAsync<EmailLinkTokenPayload>(
+        token,
+        {
+          secret: await this.secretService.getJwtPrivateKey(),
+          algorithms: ["RS256"],
+        },
+      )
+
+      if (payload.type !== type || !payload.sub) {
+        throw new BadRequestException({
+          errors: [{ code: invalidErrorCode }],
+        })
+      }
+
+      return payload.sub
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new BadRequestException({
+        errors: [{ code: invalidErrorCode }],
+      })
+    }
   }
 
   async verifySignUpToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync<SignUpTokenPayload>(
-        token,
-        {
-          secret: await this.secretService.getJwtPrivateKey(),
-          algorithms: ["RS256"],
-        },
-      )
-
-      if (payload.type !== "signup" || !payload.sub) {
-        throw new BadRequestException({
-          errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
-        })
-      }
-
-      return payload.sub
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new BadRequestException({
-        errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
-      })
-    }
+    return this.verifyEmailLinkToken({
+      token,
+      type: "signup",
+      invalidErrorCode: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID,
+    })
   }
 
   async verifyMagicLinkToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync<MagicLinkTokenPayload>(
-        token,
-        {
-          secret: await this.secretService.getJwtPrivateKey(),
-          algorithms: ["RS256"],
-        },
-      )
-
-      if (payload.type !== "magic-link" || !payload.sub) {
-        throw new BadRequestException({
-          errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
-        })
-      }
-
-      return payload.sub
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new BadRequestException({
-        errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
-      })
-    }
+    return this.verifyEmailLinkToken({
+      token,
+      type: "magic-link",
+      invalidErrorCode: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID,
+    })
   }
 
   private async assertCanRequestSignUp(email: string) {
@@ -398,15 +396,19 @@ export class AuthService {
     }
   }
 
-  async requestSignUp({ email: rawEmail }: { email: string }) {
-    const email = normalizeEmail(rawEmail)
-
-    await this.assertCanRequestSignUp(email)
-
-    const token = await this.generateSignUpToken(email)
-
+  private async sendEmailLink({
+    email,
+    token,
+    send,
+    failureMessage,
+  }: {
+    email: string
+    token: string
+    send: "sendSignUpLink" | "sendMagicLink"
+    failureMessage: string
+  }) {
     try {
-      await this.emailService.sendSignUpLink({
+      await this.emailService[send]({
         email,
         token,
       })
@@ -417,8 +419,23 @@ export class AuthService {
         throw error
       }
 
-      throw new InternalServerErrorException("Unable to send sign up email")
+      throw new InternalServerErrorException(failureMessage)
     }
+  }
+
+  async requestSignUp({ email: rawEmail }: { email: string }) {
+    const email = normalizeEmail(rawEmail)
+
+    await this.assertCanRequestSignUp(email)
+
+    const token = await this.generateSignUpToken(email)
+
+    await this.sendEmailLink({
+      email,
+      token,
+      send: "sendSignUpLink",
+      failureMessage: "Unable to send sign up email",
+    })
   }
 
   /**
@@ -456,20 +473,12 @@ export class AuthService {
 
     const token = await this.generateMagicLinkToken(email)
 
-    try {
-      await this.emailService.sendMagicLink({
-        email,
-        token,
-      })
-    } catch (error) {
-      this.logger.error(error)
-
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new InternalServerErrorException("Unable to send magic link email")
-    }
+    await this.sendEmailLink({
+      email,
+      token,
+      send: "sendMagicLink",
+      failureMessage: "Unable to send magic link email",
+    })
   }
 
   async generateSignUpLink({

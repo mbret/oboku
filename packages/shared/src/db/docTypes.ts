@@ -277,53 +277,6 @@ export type SettingsDocType = {
   readerDesktopFontScale?: number | null
 }
 
-function hasRxModel(document: unknown): document is { rx_model: unknown } {
-  return (
-    typeof document === "object" && document !== null && "rx_model" in document
-  )
-}
-
-export function isTag(
-  document: TagsDocType | unknown,
-): document is TagsDocType {
-  return hasRxModel(document) && document.rx_model === "tag"
-}
-
-export function isBook(
-  document: BookDocType | unknown,
-): document is BookDocType {
-  return hasRxModel(document) && document.rx_model === "book"
-}
-
-export function isLink(
-  document: LinkDocType | unknown,
-): document is LinkDocType {
-  return hasRxModel(document) && document.rx_model === "link"
-}
-
-export function isDataSource(
-  document: DataSourceDocType | unknown,
-): document is DataSourceDocType {
-  return hasRxModel(document) && document.rx_model === "datasource"
-}
-
-export function isCollection(
-  document: CollectionDocType | unknown,
-): document is CollectionDocType {
-  return hasRxModel(document) && document.rx_model === "obokucollection"
-}
-
-/**
- * Type guard: narrows collection to CollectionDocType<T> when linkType matches.
- * Use to read provider-specific linkData (e.g. connectorId) with correct typing.
- */
-export function isCollectionOfType<T extends DataSourceType>(
-  c: { linkType?: string },
-  linkType: T,
-): c is CollectionDocType<T> {
-  return c.linkType === linkType
-}
-
 type MangoSelectorOperator<T> = {
   $nin?: any[]
   $in?: any[]

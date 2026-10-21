@@ -1,3 +1,4 @@
+import type { DropboxApiCredentials } from "@oboku/shared"
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
 import { signal } from "reactjrx"
@@ -13,6 +14,11 @@ const MINIMUM_DROPBOX_TOKEN_VALIDITY_MS = 1000 * 60 * 60
 
 export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
 
+type DropboxAuthRequest = {
+  requestPopup: () => Promise<boolean>
+  clientId?: string
+}
+
 const isAccessTokenStillSufficient = () => {
   const accessTokenExpiresAt: Date | undefined = dropboxAuthSignal
     .getValue()
@@ -27,13 +33,7 @@ const isAccessTokenStillSufficient = () => {
 /**
  * Token is valid for about 4 hours
  */
-export const authUser = ({
-  requestPopup,
-  clientId,
-}: {
-  requestPopup: () => Promise<boolean>
-  clientId?: string
-}) => {
+export const authUser = ({ requestPopup, clientId }: DropboxAuthRequest) => {
   return new Promise<DropboxAuth>((resolve, reject) => {
     ;(async () => {
       let timedOut = false
@@ -167,4 +167,18 @@ export const authUser = ({
       }
     })()
   })
+}
+
+export async function requestDropboxProviderCredentials(
+  options: DropboxAuthRequest,
+): Promise<DropboxApiCredentials> {
+  const auth = await authUser(options)
+
+  return {
+    accessToken: auth.getAccessToken(),
+    accessTokenExpiresAt: auth.getAccessTokenExpiresAt().toISOString(),
+    clientId: auth.getClientId(),
+    codeVerifier: auth.getCodeVerifier(),
+    refreshToken: auth.getRefreshToken(),
+  }
 }

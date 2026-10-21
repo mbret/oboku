@@ -14,17 +14,17 @@ import {
   ListItemButton,
 } from "@mui/material"
 import {
-  CheckCircleRounded,
   DeleteForeverRounded,
   EditRounded,
   LibraryAddRounded,
-  RadioButtonUncheckedOutlined,
 } from "@mui/icons-material"
 import { useUpdateTag } from "./helpers"
 import { useTag } from "./helpers"
 import { useRemoveTag } from "./useRemoveTag"
 import { useNavigate, generatePath } from "react-router"
 import { ROUTES } from "../navigation/routes"
+import { Checkbox } from "../common/Checkbox"
+import { CancelButton } from "../common/forms/CancelButton"
 
 export const TagActionsDrawer: FC<{
   openWith: string | undefined
@@ -61,8 +61,7 @@ export const TagActionsDrawer: FC<{
             }
           >
             <ListItemIcon>
-              {!tag?.isProtected && <RadioButtonUncheckedOutlined />}
-              {tag?.isProtected && <CheckCircleRounded />}
+              <Checkbox selected={!!tag?.isProtected} />
             </ListItemIcon>
             <ListItemText
               primary="Mark as protected"
@@ -76,8 +75,7 @@ export const TagActionsDrawer: FC<{
             }
           >
             <ListItemIcon>
-              {!tag?.isBlurEnabled && <RadioButtonUncheckedOutlined />}
-              {tag?.isBlurEnabled && <CheckCircleRounded />}
+              <Checkbox selected={!!tag?.isBlurEnabled} />
             </ListItemIcon>
             <ListItemText
               primary="Blur covers"
@@ -166,9 +164,7 @@ const EditTagDialog: FC<{
         />
       </DialogContent>
       <DialogActions>
-        <Button onClick={onInnerClose} color="primary">
-          Cancel
-        </Button>
+        <CancelButton onClick={onInnerClose} variant="outlined" />
         <Button
           onClick={() => {
             onInnerClose()
