@@ -10,11 +10,7 @@ import {
   Button,
   ListItemButton,
 } from "@mui/material"
-import {
-  ArrowForwardIosRounded,
-  CheckCircleRounded,
-  RadioButtonUncheckedOutlined,
-} from "@mui/icons-material"
+import { ArrowForwardIosRounded } from "@mui/icons-material"
 import { getDisplayableReadingState, useToggleTag } from "./helpers"
 import { useTagIds } from "../tags/helpers"
 import { ReadingStateState } from "@oboku/shared"
@@ -22,6 +18,7 @@ import { DownloadState } from "../download/states"
 import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./books/states"
+import { Checkbox } from "../common/Checkbox"
 
 export const LibraryFiltersDrawer: FC<{
   open: boolean
@@ -86,12 +83,9 @@ export const LibraryFiltersDrawer: FC<{
             >
               <ListItemText primary="Only show downloaded" />
               <ListItemIcon>
-                {library.downloadState !== DownloadState.Downloaded && (
-                  <RadioButtonUncheckedOutlined />
-                )}
-                {library.downloadState === DownloadState.Downloaded && (
-                  <CheckCircleRounded />
-                )}
+                <Checkbox
+                  selected={library.downloadState === DownloadState.Downloaded}
+                />
               </ListItemIcon>
             </ListItemButton>
             <ListItemButton
@@ -107,10 +101,7 @@ export const LibraryFiltersDrawer: FC<{
             >
               <ListItemText primary="Only show not interested books" />
               <ListItemIcon>
-                {library.isNotInterested !== "only" && (
-                  <RadioButtonUncheckedOutlined />
-                )}
-                {library.isNotInterested === "only" && <CheckCircleRounded />}
+                <Checkbox selected={library.isNotInterested === "only"} />
               </ListItemIcon>
             </ListItemButton>
           </List>
@@ -168,11 +159,7 @@ const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
           }}
         >
           <ListItemText primary={getDisplayableReadingState(readingState)} />
-          {library.readingStates.includes(readingState) ? (
-            <CheckCircleRounded />
-          ) : (
-            <RadioButtonUncheckedOutlined />
-          )}
+          <Checkbox selected={library.readingStates.includes(readingState)} />
         </ListItemButton>
       ))}
       <DialogActions>

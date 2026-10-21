@@ -22,10 +22,6 @@ export const dropboxApiCredentialsSchema = z.object({
 
 export type DropboxApiCredentials = z.infer<typeof dropboxApiCredentialsSchema>
 
-export type DropboxDataSourceData = NonNullable<
-  DropboxDataSourceDocType["data_v2"]
->
-
 export type DropboxLinkData = {
   fileId: string
 }

@@ -1,10 +1,9 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import OneDriveAsset from "../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
 import type { ObokuPlugin } from "../types"
 import { clearOneDriveSession } from "./auth/auth"
-import { DataSourceCreateForm } from "./DataSourceCreateForm"
-import { DataSourceEditForm } from "./DataSourceEditForm"
+import { DataSourceForm } from "./sync/DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
 import { InfoScreen } from "./InfoScreen"
@@ -22,19 +21,12 @@ const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveResource: ObokuPlugin<"one-drive">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
-
 export const plugin: ObokuPlugin<"one-drive"> = {
   canSynchronize: true,
   canUpsertFile: true,
   canRemoveResource: false,
   description: "Manage contents from Microsoft OneDrive",
-  DataSourceCreateForm,
-  DataSourceEditForm,
+  DataSourceForm,
   DownloadBookComponent: DownloadBook,
   Icon: OneDriveIcon,
   name: "OneDrive",
@@ -45,7 +37,7 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   InfoScreen,
   useLinkInfo,
   useRefreshMetadata,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {
     void clearOneDriveSession()
   },

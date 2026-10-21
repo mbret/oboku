@@ -34,11 +34,3 @@ export const serverLinkDataSchema = z.object({
 })
 
 export type ServerLinkData = z.infer<typeof serverLinkDataSchema>
-
-export function isServerLinkData(data: unknown): data is ServerLinkData {
-  return serverLinkDataSchema.safeParse(data).success
-}
-
-export const getServerLinkData = (data: Record<string, unknown>) => {
-  return serverLinkDataSchema.parse(data)
-}

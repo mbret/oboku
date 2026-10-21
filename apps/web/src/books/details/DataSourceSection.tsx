@@ -15,10 +15,10 @@ import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
 import { showDialog } from "../../common/dialogs/createDialog"
 import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
-import { useUpsertBookLink } from "../useUpdateBookLink"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
 import { useLinkInfo } from "../../plugins/useLinkInfo"
+import { useUpsertLink } from "../../links/useUpsertLink"
 
 const TrailingIconStack = styled(Stack)({
   width: 50,
@@ -34,8 +34,10 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const refreshMetadata = useRefreshBookMetadata()
-  const { mutate: upsertBookLink } = useUpsertBookLink({
-    onSuccess: () => [refreshMetadata(bookId)],
+  const { mutate: upsertBookLink } = useUpsertLink({
+    onSuccess: function refreshMetadataFromPickedFile() {
+      refreshMetadata(bookId)
+    },
   })
 
   return (
@@ -94,8 +96,8 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
               if (item) {
                 upsertBookLink({
                   bookId,
-                  linkData: item.data,
-                  linkType: dataSourcePlugin.type,
+                  data: item.data,
+                  type: dataSourcePlugin.type,
                 })
               }
             }

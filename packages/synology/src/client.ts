@@ -471,6 +471,10 @@ export const parseSynologyDriveGetItemPayload = (payload: unknown) => {
   return data.items?.[0] ?? data
 }
 
+export const isSynologyDriveDownloadErrorContentType = (
+  contentType: string | null | undefined,
+) => !!contentType && contentType.toLowerCase().includes("json")
+
 export const parseSynologyDriveDownloadErrorPayload = (payload: unknown) =>
   synologyDriveDownloadErrorSchema.parse(payload)
 

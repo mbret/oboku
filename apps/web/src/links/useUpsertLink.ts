@@ -1,23 +1,35 @@
 import { useMutation$ } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { first, from, of, switchMap } from "rxjs"
-import { Logger } from "../debug/logger.shared"
-import type { DataSourceDocType, LinkData } from "@oboku/shared"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
+import { from, of, switchMap } from "rxjs"
+import type { RxDocument } from "rxdb"
+import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
+import type { BookDocType, DataSourceDocType, LinkData } from "@oboku/shared"
 
-export const useUpsertLink = () => {
+type UpsertLinkVariables = {
+  bookId: string
+  data: LinkData
+  type: DataSourceDocType["type"]
+}
+
+export const useUpsertLink = (
+  options?: Pick<
+    UseMutationOptions<
+      RxDocument<BookDocType> | null,
+      DefaultError,
+      UpsertLinkVariables
+    >,
+    "onSuccess"
+  >,
+) => {
   return useMutation$({
-    mutationFn: ({
+    ...options,
+    mutationFn: function upsertBookLink({
       bookId,
       data,
       type,
-    }: {
-      bookId: string
-      data: LinkData
-      type: DataSourceDocType["type"]
-    }) => {
-      return latestDatabase$.pipe(
-        first(),
-        switchMap((db) => {
+    }: UpsertLinkVariables) {
+      return getLatestDatabase().pipe(
+        switchMap(function upsertBookLinkInDatabase(db) {
           return from(
             db.link
               .findOne({
@@ -29,12 +41,8 @@ export const useUpsertLink = () => {
               })
               .exec(),
           ).pipe(
-            switchMap((existingLink) => {
-              if (existingLink) {
-                Logger.info("Link already exist, skipping creation")
-
-                return of(null)
-              }
+            switchMap(function insertLinkUnlessFound(existingLink) {
+              if (existingLink) return of(existingLink)
 
               return from(
                 db.link.safeInsert({
@@ -44,6 +52,11 @@ export const useUpsertLink = () => {
                   createdAt: new Date().toISOString(),
                   modifiedAt: null,
                 }),
+              )
+            }),
+            switchMap(function setAsBookLink(link) {
+              return from(
+                db.book.findOne(bookId).incrementalPatch({ links: [link._id] }),
               )
             }),
           )

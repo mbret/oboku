@@ -71,6 +71,43 @@ describe("getGoogleBookMetadata", () => {
     })
   })
 
+  it.each([
+    ["by title", {}],
+    ["by ISBN", { isbn: "9782723428262" }],
+  ])(
+    "sends a single title query when no level changes the title and the first query goes %s",
+    async (_case, identifiers) => {
+      vi.mocked(findByISBN).mockResolvedValue(noMatch)
+      vi.mocked(findByTitle).mockResolvedValue(noMatch)
+
+      await getGoogleBookMetadata(
+        { title: "Blame", ...identifiers },
+        "api-key",
+        config,
+      )
+
+      expect(vi.mocked(findByTitle).mock.calls.map(([title]) => title)).toEqual(
+        ["Blame"],
+      )
+    },
+  )
+
+  it("keeps refining after a level that leaves the title unchanged", async () => {
+    vi.mocked(findByTitle).mockResolvedValue(noMatch)
+
+    await getGoogleBookMetadata(
+      { title: "Blame 02 (Glenat)" },
+      "api-key",
+      config,
+    )
+
+    expect(vi.mocked(findByTitle).mock.calls.map(([title]) => title)).toEqual([
+      "Blame 02 (Glenat)",
+      "Blame 02",
+      "Blame 2",
+    ])
+  })
+
   it("returns no metadata when nothing matches", async () => {
     vi.mocked(findByTitle).mockResolvedValue(noMatch)
 

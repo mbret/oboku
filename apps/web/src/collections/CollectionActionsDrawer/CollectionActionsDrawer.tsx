@@ -31,7 +31,6 @@ import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { useConfig } from "../../config/useConfig"
-// import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
 import { differenceInMinutes } from "../../common/date/differenceInMinutes"
@@ -47,7 +46,6 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   ] = useState<string | undefined>(undefined)
   const { mutate: removeCollection } = useRemoveCollection()
   const navigate = useNavigate()
-  // const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
@@ -209,19 +207,6 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             </ListItemIcon>
             <ListItemText primary="Mark all books as interested" />
           </ListItemButton>
-          {/* <ListItemButton
-            onClick={() => {
-              closeModalWithNavigation()
-              collection?.books.forEach((id) => {
-                refreshBookMetadata(id)
-              })
-            }}
-          >
-            <ListItemIcon>
-              <SyncRounded />
-            </ListItemIcon>
-            <ListItemText primary="Refresh all books metadata" />
-          </ListItemButton> */}
         </List>
         <Divider />
         <List>

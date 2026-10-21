@@ -23,7 +23,7 @@
     "ag-grid-react": "^36.2.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "reactjrx": "^2.1.1",
+    "reactjrx": "^2.2.0",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {

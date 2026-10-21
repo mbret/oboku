@@ -20,7 +20,7 @@ import {
   LockRounded,
   MoreVertOutlined,
 } from "@mui/icons-material"
-import type { DataSourceDocType } from "@oboku/shared"
+import { type DataSourceDocType, links } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../../plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
@@ -61,7 +61,7 @@ export const DataSourcesListScreen = memo(() => {
             <Alert severity="info">
               Automatically synchronize books from an external source (eg:
               Google Drive shared folder).{" "}
-              <Link href="https://docs.oboku.me" target="__blank">
+              <Link href={links.documentation} target="_blank">
                 Learn more
               </Link>
             </Alert>

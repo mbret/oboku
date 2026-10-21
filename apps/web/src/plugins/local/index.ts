@@ -6,26 +6,12 @@ import {
   ObokuSharedError,
   PLUGIN_FILE_TYPE,
 } from "@oboku/shared"
-import { useMutation } from "@tanstack/react-query"
 import { memo, useEffect } from "react"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
-
-const useSynchronize: ObokuPlugin<"file">["useSynchronize"] = () => {
-  return useMutation({
-    mutationFn: async () => {
-      throw new UnsupportedMethodError("This data source cannot synchronize")
-    },
-  })
-}
-
-const useRemoveResource: ObokuPlugin<"file">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
 
 export const plugin: ObokuPlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
@@ -39,7 +25,7 @@ export const plugin: ObokuPlugin<"file"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   DownloadBookComponent: memo(({ onError }) => {
     useEffect(() => {

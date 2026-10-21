@@ -8,7 +8,6 @@ import { useActiveProfile } from "../../profiles"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
-import { useWatchAndFixConflicts } from "./conflicts/useWatchAndFixConflicts"
 import { useConfig } from "../../config/useConfig"
 
 type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
@@ -23,8 +22,6 @@ export const useBackgroundReplication = () => {
   const [replicationStates, setReplicationStates] = useState<
     ReplicationState[]
   >([])
-
-  useWatchAndFixConflicts()
 
   const triggerReplication = useCallback(
     () =>

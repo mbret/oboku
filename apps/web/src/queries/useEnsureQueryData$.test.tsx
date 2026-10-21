@@ -6,7 +6,7 @@ import {
   skipToken,
 } from "@tanstack/react-query"
 import { act, cleanup, render, waitFor } from "@testing-library/react"
-import { useQuery$ } from "reactjrx"
+import { useLiveQuery$ } from "reactjrx"
 import { BehaviorSubject, of } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { useEnsureQueryData$ } from "./useEnsureQueryData$"
@@ -55,7 +55,9 @@ describe("useEnsureQueryData$", () => {
     const onLiveQueryRender = vi.fn()
 
     function LiveQuery() {
-      onLiveQueryRender(useQuery$({ queryKey, queryFn: () => source$ }).data)
+      onLiveQueryRender(
+        useLiveQuery$({ queryKey, queryFn: () => source$ }).data,
+      )
 
       return null
     }
