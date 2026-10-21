@@ -45,20 +45,13 @@ const SynchronizeButtonStack = styled(Stack)(
 
 function renderDataSourceForm<T extends DataSourceDocType["type"]>({
   dataSource,
-  onSubmit,
-  submitLabel,
+  ...props
 }: DataSourceFormInternalProps<DataSourceDocTypeFor<T>> & {
   dataSource: { readonly type: T }
 }) {
   const PluginForm = getPluginByType<T>(dataSource.type).DataSourceForm
 
-  return PluginForm ? (
-    <PluginForm
-      dataSource={dataSource}
-      onSubmit={onSubmit}
-      submitLabel={submitLabel}
-    />
-  ) : null
+  return PluginForm ? <PluginForm {...props} dataSource={dataSource} /> : null
 }
 
 export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
