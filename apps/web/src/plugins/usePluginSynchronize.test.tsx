@@ -2,20 +2,9 @@ import { renderHook } from "@testing-library/react"
 import type { DataSourceDocType } from "@oboku/shared"
 import { describe, expect, it, vi } from "vitest"
 
-const PLUGIN_TYPES = [
-  "webdav",
-  "dropbox",
-  "synology-drive",
-  "DRIVE",
-  "one-drive",
-  "file",
-  "URI",
-  "server",
-] as const satisfies ReadonlyArray<DataSourceDocType["type"]>
-
-const { pluginsByType, createRequestPopupDialog } = vi.hoisted(
+const { PLUGIN_TYPES, pluginsByType, createRequestPopupDialog } = vi.hoisted(
   function createPluginMocks() {
-    const types = [
+    const PLUGIN_TYPES = [
       "webdav",
       "dropbox",
       "synology-drive",
@@ -24,11 +13,12 @@ const { pluginsByType, createRequestPopupDialog } = vi.hoisted(
       "file",
       "URI",
       "server",
-    ]
+    ] as const satisfies ReadonlyArray<DataSourceDocType["type"]>
 
     return {
+      PLUGIN_TYPES,
       pluginsByType: Object.fromEntries(
-        types.map(function createPluginMock(type) {
+        PLUGIN_TYPES.map(function createPluginMock(type) {
           return [
             type,
             {
@@ -40,11 +30,13 @@ const { pluginsByType, createRequestPopupDialog } = vi.hoisted(
           ]
         }),
       ),
-      createRequestPopupDialog: vi.fn(function createMockRequestPopupDialog() {
-        return async function requestPopup() {
-          return true
-        }
-      }),
+      createRequestPopupDialog: vi.fn(
+        function createMockRequestPopupDialog(_options: { name: string }) {
+          return async function requestPopup() {
+            return true
+          }
+        },
+      ),
     }
   },
 )
@@ -67,8 +59,15 @@ describe("usePluginSynchronize", function testUsePluginSynchronize() {
     renderHook(usePluginSynchronize)
 
     for (const type of PLUGIN_TYPES) {
-      expect(createRequestPopupDialog).toHaveBeenCalledWith({
-        name: pluginsByType[type]?.name,
+      const plugin = pluginsByType[type]
+      const popupCallIndex = createRequestPopupDialog.mock.calls.findIndex(
+        ([options]) => options.name === plugin?.name,
+      )
+      const popupNamedAfterPlugin =
+        createRequestPopupDialog.mock.results[popupCallIndex]?.value
+
+      expect(plugin?.useSynchronize).toHaveBeenCalledWith({
+        requestPopup: popupNamedAfterPlugin,
       })
     }
   })
