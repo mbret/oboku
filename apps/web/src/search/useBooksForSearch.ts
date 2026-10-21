@@ -21,21 +21,23 @@ export const useBooksForSearch = (search: string) => {
       "i",
     )
 
-    const matchingBooks = (visibleBooks ?? []).filter((book) => {
-      const metadata = book.metadata?.length
-        ? book.metadata
-        : [getMetadataFromBook(book)]
+    const matchingBooks = (visibleBooks ?? []).filter(
+      function matchesSearch(book) {
+        const metadata = book.metadata?.length
+          ? book.metadata
+          : [getMetadataFromBook(book)]
 
-      return metadata?.some((item) => {
-        const { title } = item
+        return metadata?.some(function hasMatchingTitle(item) {
+          const { title } = item
 
-        if (!title) return false
+          if (!title) return false
 
-        const indexOfFirstMatch = title?.toString()?.search(searchRegex) || 0
+          const indexOfFirstMatch = title?.toString()?.search(searchRegex) || 0
 
-        return indexOfFirstMatch >= 0
-      })
-    })
+          return indexOfFirstMatch >= 0
+        })
+      },
+    )
 
     return sortBooksBy(matchingBooks, "alpha").map((book) => book._id)
   }, [search, visibleBooks])

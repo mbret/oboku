@@ -9,7 +9,9 @@ export const useRecentlyAddedBooks = () => {
   const booksSortedByDate = useBooksSortedBy(booksAsArray, "date")
 
   return useMemo(
-    () => booksSortedByDate.slice(0, 15).map((book) => book._id),
+    function computeRecentlyAddedBookIds() {
+      return booksSortedByDate.slice(0, 15).map((book) => book._id)
+    },
     [booksSortedByDate],
   )
 }
