@@ -7,9 +7,9 @@ import {
   PLUGIN_FILE_TYPE,
 } from "@oboku/shared"
 import { memo, useEffect } from "react"
-import { createUnsupportedSynchronize } from "../common/createUnsupportedSynchronize"
 import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
@@ -24,7 +24,7 @@ export const plugin: ObokuPlugin<"file"> = {
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
-  useSynchronize: createUnsupportedSynchronize<"file">(),
+  useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   DownloadBookComponent: memo(({ onError }) => {

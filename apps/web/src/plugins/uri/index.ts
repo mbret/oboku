@@ -1,11 +1,11 @@
 import { HttpRounded } from "@mui/icons-material"
-import { createUnsupportedSynchronize } from "../common/createUnsupportedSynchronize"
 import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
 import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
+import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
@@ -20,7 +20,7 @@ const plugin: ObokuPlugin<"URI"> = {
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
-  useSynchronize: createUnsupportedSynchronize<"URI">(),
+  useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   description: "Manage contents from URI / URL",
