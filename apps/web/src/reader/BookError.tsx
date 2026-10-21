@@ -1,4 +1,5 @@
 import { Box, Typography, Button, Link } from "@mui/material"
+import { links } from "@oboku/shared"
 import { getMetadataFromBook } from "../books/metadata"
 import { useBook } from "../books/states"
 import { useNavigate } from "react-router"
@@ -41,7 +42,7 @@ export const BookError = ({
             Oups! it looks like the book <b>{metadata?.title}</b> is not
             supported yet. If you would like to be able to open it please visit
             the{" "}
-            <Link href="https://docs.oboku.me" target="__blank">
+            <Link href={links.documentation} target="_blank">
               documentation
             </Link>{" "}
             and try to reach out.
@@ -83,7 +84,7 @@ export const BookError = ({
         <Typography align="center">
           Sorry it looks like we are unable to load the book. If the problem
           persist try to restart the app. If it still does not work,{" "}
-          <Link href="https://docs.oboku.me/support" target="__blank">
+          <Link href={links.documentationSupport} target="_blank">
             contact us
           </Link>
         </Typography>

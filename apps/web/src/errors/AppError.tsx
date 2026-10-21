@@ -7,6 +7,7 @@ import {
   Typography,
   styled,
 } from "@mui/material"
+import { links } from "@oboku/shared"
 import { memo } from "react"
 import { useNetworkState } from "react-use"
 import { theme } from "../theme/theme"
@@ -35,8 +36,6 @@ const DetailTypography = styled(Typography)(({ theme }) => ({
   wordBreak: "break-word",
 }))
 
-const SUPPORT_URL = "https://docs.oboku.me/support"
-
 const reloadPage = () => {
   window.location.reload()
 }
@@ -63,7 +62,11 @@ export const AppError = memo(function AppError({ error }: { error?: unknown }) {
                 <Typography>
                   Something went wrong while loading oboku. Please reload the
                   page. If the problem persists,{" "}
-                  <Link href={SUPPORT_URL} target="_blank" rel="noopener">
+                  <Link
+                    href={links.documentationSupport}
+                    target="_blank"
+                    rel="noopener"
+                  >
                     contact us
                   </Link>
                   .
