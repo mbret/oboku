@@ -13,33 +13,41 @@ const PLUGIN_TYPES = [
   "server",
 ] as const satisfies ReadonlyArray<DataSourceDocType["type"]>
 
-const { pluginsByType } = vi.hoisted(function createPluginMocks() {
-  const types = [
-    "webdav",
-    "synology-drive",
-    "dropbox",
-    "DRIVE",
-    "one-drive",
-    "file",
-    "URI",
-    "server",
-  ]
+const { pluginsByType, createRequestPopupDialog } = vi.hoisted(
+  function createPluginMocks() {
+    const types = [
+      "webdav",
+      "synology-drive",
+      "dropbox",
+      "DRIVE",
+      "one-drive",
+      "file",
+      "URI",
+      "server",
+    ]
 
-  return {
-    pluginsByType: Object.fromEntries(
-      types.map(function createPluginMock(type) {
-        return [
-          type,
-          {
-            useRefreshMetadata: vi.fn(function useMockRefreshMetadata() {
-              return { mutateAsync: vi.fn() }
-            }),
-          },
-        ]
+    return {
+      pluginsByType: Object.fromEntries(
+        types.map(function createPluginMock(type) {
+          return [
+            type,
+            {
+              name: `${type} display name`,
+              useRefreshMetadata: vi.fn(function useMockRefreshMetadata() {
+                return { mutateAsync: vi.fn() }
+              }),
+            },
+          ]
+        }),
+      ),
+      createRequestPopupDialog: vi.fn(function createMockRequestPopupDialog() {
+        return async function requestPopup() {
+          return true
+        }
       }),
-    ),
-  }
-})
+    }
+  },
+)
 
 vi.mock("./configure", function mockPlugins() {
   return { pluginsByType }
@@ -47,11 +55,7 @@ vi.mock("./configure", function mockPlugins() {
 vi.mock("./useCreateRequestPopupDialog", function mockRequestPopupDialog() {
   return {
     useCreateRequestPopupDialog: function useMockCreateRequestPopupDialog() {
-      return function createRequestPopup() {
-        return async function requestPopup() {
-          return true
-        }
-      }
+      return createRequestPopupDialog
     },
   }
 })
@@ -86,6 +90,18 @@ describe("usePluginRefreshMetadata", function testUsePluginRefreshMetadata() {
       expect(pluginsByType[type]?.useRefreshMetadata).toHaveBeenCalledWith(
         expect.objectContaining({ meta: undefined }),
       )
+    }
+  })
+
+  it("names each provider's popup after its plugin's display name", function namePopupsAfterPlugins() {
+    renderHook(function renderWithoutOptions() {
+      return usePluginRefreshMetadata()
+    })
+
+    for (const type of PLUGIN_TYPES) {
+      expect(createRequestPopupDialog).toHaveBeenCalledWith({
+        name: pluginsByType[type]?.name,
+      })
     }
   })
 })
