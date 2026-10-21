@@ -8,8 +8,6 @@ const { setActiveProfileId, ensureActiveProfile } = vi.hoisted(() => ({
   ensureActiveProfile: vi.fn(),
 }))
 
-vi.mock("@sentry/react", () => ({ setUser: vi.fn() }))
-
 vi.mock("../profiles", () => ({
   getActiveProfileId: () => undefined,
   ensureActiveProfile,

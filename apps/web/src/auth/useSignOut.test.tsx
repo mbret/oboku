@@ -15,14 +15,6 @@ const {
   deleteProofKey: vi.fn(async () => {}),
 }))
 
-vi.mock("@sentry/react", () => ({ setUser: vi.fn() }))
-vi.mock("./AuthorizeActionDialog", () => ({ clearTemporaryMasterKey: vi.fn() }))
-vi.mock("../google/auth", () => ({
-  googleAccessTokenSignal: { update: vi.fn() },
-}))
-vi.mock("../plugins/usePluginsSignOut", () => ({
-  usePluginsSignOut: () => vi.fn(),
-}))
 vi.mock("../queries/resetSessionQueries", () => ({
   useResetSessionQueries: () => resetSessionQueries,
 }))

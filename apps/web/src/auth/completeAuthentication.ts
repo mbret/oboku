@@ -1,5 +1,4 @@
 import { from, of, switchMap } from "rxjs"
-import { setUser } from "@sentry/react"
 import type { AuthSessionResponseDto } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
@@ -50,7 +49,6 @@ export const completeAuthentication = ({
           })
 
           setActiveProfileId(auth.nameHex)
-          setUser({ email: auth.email, id: auth.nameHex })
 
           if (switchedAccount) {
             /**

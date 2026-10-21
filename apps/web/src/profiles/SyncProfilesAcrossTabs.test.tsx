@@ -16,12 +16,22 @@ vi.mock("../rxdb/dexie", () => ({
   },
 }))
 
+vi.mock("../queries/persister", () => ({
+  persistBuster: "test",
+  persister: {
+    persistClient: vi.fn(async () => {}),
+    restoreClient: vi.fn(async () => undefined),
+    removeClient: vi.fn(async () => {}),
+  },
+}))
+
 import { useIsAuthenticated } from "../auth/useIsAuthenticated"
 import {
   clearActiveProfileId,
   setActiveProfileId,
 } from "./active/activeProfileId"
 import { STORAGE_PROFILE_KEY } from "../config"
+import { inboxNotificationsQueryKey } from "../notifications/inbox/queryKeys"
 import { useActiveProfile } from "./active/useActiveProfile"
 import { PROFILES_BROADCAST_CHANNEL } from "./profilesBroadcast"
 import { SyncProfilesAcrossTabs } from "./SyncProfilesAcrossTabs"
@@ -42,7 +52,7 @@ const notifyProfilesChangedFromAnotherTab = () => {
   otherTab.postMessage("profiles-changed")
 }
 
-const renderSession = () =>
+const renderSession = (queryClient = new QueryClient()) =>
   renderHook(
     () => ({
       active: useActiveProfile(),
@@ -50,8 +60,6 @@ const renderSession = () =>
     }),
     {
       wrapper: function Wrapper({ children }: { children: ReactNode }) {
-        const queryClient = new QueryClient()
-
         return (
           <QueryClientProvider client={queryClient}>
             <SyncProfilesAcrossTabs />
@@ -107,6 +115,53 @@ describe("SyncProfilesAcrossTabs", () => {
     await waitFor(() => {
       expect(result.current.active.data).toBeNull()
     })
+  })
+
+  it("drops the session data this tab cached for an account another tab signed out", async () => {
+    profilesStore.set("reader", createProfile())
+    setActiveProfileId("reader")
+    const queryClient = new QueryClient()
+    const notificationsQueryKey = inboxNotificationsQueryKey("reader")
+    queryClient.setQueryData(notificationsQueryKey, [])
+
+    const { result } = renderSession(queryClient)
+
+    await waitFor(() => {
+      expect(result.current.active.data).toEqual(createProfile())
+    })
+
+    localStorage.removeItem(STORAGE_PROFILE_KEY)
+    profilesStore.set("reader", createProfile({ status: "loggedOut" }))
+
+    notifyProfilesChangedFromAnotherTab()
+
+    await waitFor(() => {
+      expect(result.current.active.data).toBeNull()
+    })
+    expect(queryClient.getQueryData(notificationsQueryKey)).toBeUndefined()
+  })
+
+  it("keeps the session data when another tab only updates the active profile", async () => {
+    profilesStore.set("reader", createProfile())
+    setActiveProfileId("reader")
+    const queryClient = new QueryClient()
+    const notificationsQueryKey = inboxNotificationsQueryKey("reader")
+    queryClient.setQueryData(notificationsQueryKey, [])
+
+    const { result } = renderSession(queryClient)
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(true)
+    })
+
+    profilesStore.set("reader", createProfile({ needsRelogin: true }))
+
+    notifyProfilesChangedFromAnotherTab()
+
+    await waitFor(() => {
+      expect(result.current.isAuthenticated).toBe(false)
+    })
+    expect(queryClient.getQueryData(notificationsQueryKey)).toEqual([])
   })
 
   it("reflects a session expiry (needsRelogin) flagged in another tab", async () => {
