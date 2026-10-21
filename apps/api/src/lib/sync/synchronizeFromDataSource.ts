@@ -4,22 +4,17 @@ import { syncCollection } from "./collections/syncCollection.js"
 import { createOrUpdateBook } from "./books/createOrUpdateBook.js"
 import type { Context } from "./types.js"
 import type {
-  DataSourcePlugin,
+  Helpers,
   SynchronizeAbleDataSource,
+  SynchronizeAbleItem,
 } from "../../plugins/types.js"
 import { createTagFromName } from "../couch/dbHelpers.js"
 import { Logger } from "@nestjs/common"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "../../config/types.js"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { CoversService } from "../../covers/covers.service.js"
 import { CollectionMetadataRefreshEvent, Events } from "../../events.js"
 
 const logger = new Logger("sync")
-
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
-
-type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
 
 /**
  * Tracks collection ids whose metadata refresh should be emitted at the very
@@ -57,7 +52,6 @@ export const synchronizeFromDataSource = async (
   synchronizeAble: SynchronizeAbleDataSource,
   ctx: Context,
   helpers: ReturnType<typeof createHelpers>,
-  config: ConfigService<EnvironmentVariables>,
   eventEmitter: EventEmitter2,
   coversService: CoversService,
 ) => {
@@ -68,10 +62,7 @@ export const synchronizeFromDataSource = async (
   for (const item of synchronizeAble.items) {
     await syncTags({
       ctx,
-      helpers,
       item,
-      hasCollectionAsParent: false,
-      parents: [],
     })
   }
 
@@ -94,8 +85,6 @@ export const synchronizeFromDataSource = async (
       item,
       hasCollectionAsParent: false,
       parents: [],
-      config,
-      eventEmitter,
       coversService,
       collectionRefreshQueue,
     })
@@ -114,11 +103,11 @@ export const synchronizeFromDataSource = async (
   }
 }
 
-const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
+const getItemTags = (item: SynchronizeAbleItem): string[] => {
   const metadataForFolder = directives.extractDirectivesFromName(item.name)
 
   const subTagsAsMap = (item.items || []).map((subItem) => {
-    return getItemTags(subItem, helpers)
+    return getItemTags(subItem)
   })
 
   const subTags = subTagsAsMap.reduce((acc, tags) => [...acc, ...tags], [])
@@ -131,19 +120,15 @@ const getItemTags = (item: SynchronizeAbleItem, helpers: Helpers): string[] => {
  * easily retrieve tags ids.
  */
 const syncTags = async ({
-  helpers,
   item,
   ctx,
 }: {
   ctx: Context
-  helpers: Helpers
-  hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
-  parents: SynchronizeAbleItem[]
 }) => {
   console.log(`syncTags for item ${item.name}`)
 
-  const tagNames = Array.from(new Set(getItemTags(item, helpers)))
+  const tagNames = Array.from(new Set(getItemTags(item)))
 
   console.log(`found ${tagNames.length} tags`)
 
@@ -166,8 +151,6 @@ const syncItem = async ({
   hasCollectionAsParent,
   item,
   parents,
-  config,
-  eventEmitter,
   coversService,
   collectionRefreshQueue,
 }: {
@@ -176,8 +159,6 @@ const syncItem = async ({
   hasCollectionAsParent: boolean
   item: SynchronizeAbleItem
   parents: SynchronizeAbleItem[]
-  config: ConfigService<EnvironmentVariables>
-  eventEmitter: EventEmitter2
   coversService: CoversService
   collectionRefreshQueue: CollectionRefreshQueue
 }) => {
@@ -226,8 +207,6 @@ const syncItem = async ({
             hasCollectionAsParent: isCollection || hasCollectionAsParent,
             item: subItem,
             parents: [...parents, item],
-            config,
-            eventEmitter,
             coversService,
             collectionRefreshQueue,
           })
