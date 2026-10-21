@@ -1,7 +1,7 @@
 /// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { DataSourceForm } from "./DataSourceForm"
 import DropboxIconAsset from "../../assets/dropbox.svg?react"
 import { PLUGIN_NAME } from "./constants"
@@ -21,12 +21,6 @@ const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const useRemoveResource: ObokuPlugin<"dropbox">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-}
-
 export const plugin: ObokuPlugin<"dropbox"> = {
   type: `dropbox`,
   name: PLUGIN_NAME,
@@ -42,7 +36,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   ),
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,

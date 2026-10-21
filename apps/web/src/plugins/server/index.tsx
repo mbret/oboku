@@ -1,5 +1,5 @@
 import { DnsRounded } from "@mui/icons-material"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import type { ObokuPlugin } from "../types"
 import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
@@ -10,12 +10,6 @@ import { useFilePathLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { useSynchronize } from "./useSynchronize"
-
-const useRemoveResource: ObokuPlugin<"server">["useRemoveResource"] = () => {
-  return async () => {
-    throw new UnsupportedMethodError("Not yet implemented")
-  }
-}
 
 export const plugin: ObokuPlugin<"server"> = {
   type: TYPE,
@@ -28,7 +22,7 @@ export const plugin: ObokuPlugin<"server"> = {
   useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
