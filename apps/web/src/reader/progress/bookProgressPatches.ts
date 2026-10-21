@@ -48,9 +48,9 @@ export const createReadingPositionPatch = ({
       old.readingStateCurrentBookmarkProgressPercent !==
         percentageEstimateOfBook ||
       old.readingStateCurrentState !== nextReadingState
-    const hadBookmark = old.readingStateCurrentBookmarkLocation !== null
+    const hadCfi = old.readingStateCurrentBookmarkLocation !== null
     const didBookmarkMove =
-      hadBookmark && old.readingStateCurrentBookmarkLocation !== cfi
+      hadCfi && old.readingStateCurrentBookmarkLocation !== cfi
 
     return {
       ...old,
