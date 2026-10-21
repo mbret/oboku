@@ -6,7 +6,7 @@ import { UpdateAvailableDialog } from "./workers/UpdateAvailableDialog"
 import { PreloadQueries } from "./queries/PreloadQueries"
 import { BlurFilterReference } from "./books/BlurFilterReference"
 import { ErrorBoundary } from "@sentry/react"
-import { usePersistSignals, QueryClientProvider$ } from "reactjrx"
+import { usePersistSignals } from "reactjrx"
 import { signalEntriesToPersist, useProfileStorage } from "./profiles"
 import { ThemeProvider } from "./theme/ThemeProvider"
 import { AuthorizeActionDialog } from "./auth/AuthorizeActionDialog"
@@ -150,19 +150,17 @@ export const AppWithConfig = memo(function AppWithConfig() {
         <ThemeProvider>
           <HttpClientApiProvider>
             <QueryClientProvider>
-              <QueryClientProvider$>
-                <HttpSessionStoreProvider>
-                  <LegacyAuthMigration>
-                    <RevokeLoggedOutProfiles />
-                    <SyncProfilesAcrossTabs />
-                    <LoadConfiguration>
-                      <App onReadyChange={setIsAppReady} />
-                    </LoadConfiguration>
-                    <SplashScreen show={!isAppReady} />
-                  </LegacyAuthMigration>
-                  {import.meta.env.DEV && <DebugMenu />}
-                </HttpSessionStoreProvider>
-              </QueryClientProvider$>
+              <HttpSessionStoreProvider>
+                <LegacyAuthMigration>
+                  <RevokeLoggedOutProfiles />
+                  <SyncProfilesAcrossTabs />
+                  <LoadConfiguration>
+                    <App onReadyChange={setIsAppReady} />
+                  </LoadConfiguration>
+                  <SplashScreen show={!isAppReady} />
+                </LegacyAuthMigration>
+                {import.meta.env.DEV && <DebugMenu />}
+              </HttpSessionStoreProvider>
             </QueryClientProvider>
           </HttpClientApiProvider>
         </ThemeProvider>
