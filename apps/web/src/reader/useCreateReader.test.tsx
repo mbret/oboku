@@ -21,12 +21,8 @@ const mocks = vi.hoisted(function createReaderMocks() {
   }
 })
 
-vi.mock("@prose-reader/enhancer-koreader", function mockKoreaderEnhancer() {
-  return {
-    koreaderEnhancer: function enhanceIntoFakeReader() {
-      return mocks.createAppReader
-    },
-  }
+vi.mock("./createAppReader", function mockCreateAppReader() {
+  return { createAppReader: mocks.createAppReader }
 })
 
 vi.mock("./streamer/webStreamer", function mockWebStreamer() {
