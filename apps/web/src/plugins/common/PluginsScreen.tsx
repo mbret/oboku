@@ -5,7 +5,6 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Stack,
 } from "@mui/material"
 import { plugins } from "../configure"
 import { ExtensionRounded } from "@mui/icons-material"
@@ -17,18 +16,14 @@ import {
 } from "../useIsPluginEnabled"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { Page } from "../../common/Page"
 
 export const PluginsScreen = memo(function PluginsScreen() {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
 
   return (
-    <Stack
-      sx={{
-        flex: 1,
-        overflow: "auto",
-      }}
-    >
+    <Page bottomGutter={false}>
       <TopBarNavigation title={"Plugins"} showBack={false} />
       <PageContainer disableGutters>
         <PageSection>
@@ -50,6 +45,6 @@ export const PluginsScreen = memo(function PluginsScreen() {
           ))}
         </PageSection>
       </PageContainer>
-    </Stack>
+    </Page>
   )
 })

@@ -30,6 +30,7 @@ import type { DeepReadonly } from "rxdb"
 import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { Page } from "../../common/Page"
 
 export const DataSourcesListScreen = memo(() => {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
@@ -42,14 +43,7 @@ export const DataSourcesListScreen = memo(() => {
 
   return (
     <>
-      <div
-        style={{
-          display: "flex",
-          flex: 1,
-          overflow: "auto",
-          flexFlow: "column",
-        }}
-      >
+      <Page bottomGutter={false}>
         <PageContainer>
           <Stack
             sx={{
@@ -150,7 +144,7 @@ export const DataSourcesListScreen = memo(() => {
             })}
           </PageSection>
         </PageContainer>
-      </div>
+      </Page>
       <DataSourcesAddDrawer
         open={isDrawerOpened}
         onClose={(type) => {

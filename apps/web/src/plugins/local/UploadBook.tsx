@@ -17,6 +17,7 @@ import {
 } from "@oboku/shared"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { type DragEventHandler, useRef } from "react"
+import { CancelButton } from "../../common/forms/CancelButton"
 
 export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
   openFrom?: string
@@ -42,13 +43,15 @@ export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
     onClose(payloads)
   }
 
+  const handleCancel = () => onClose()
+
   const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
     onDragLeave?.(e)
   }
 
   return (
     <Dialog
-      onClose={() => onClose()}
+      onClose={handleCancel}
       slotProps={{
         root: {
           ref: dialogRef,
@@ -86,9 +89,7 @@ export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={() => onClose()} color="primary">
-          Cancel
-        </Button>
+        <CancelButton onClick={handleCancel} variant="outlined" />
         <Button
           onClick={handleConfirm}
           color="primary"
