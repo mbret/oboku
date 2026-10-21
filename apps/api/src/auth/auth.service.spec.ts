@@ -180,6 +180,7 @@ describe("AuthService", () => {
           provide: SecretsService,
           useValue: {
             getJwtPrivateKey: vi.fn().mockResolvedValue("private-key"),
+            getJwtPublicKey: vi.fn().mockResolvedValue("public-key"),
           },
         },
         {
@@ -277,7 +278,7 @@ describe("AuthService", () => {
       )
 
       expect(jwtService.verifyAsync).toHaveBeenCalledWith("email-link-token", {
-        secret: "private-key",
+        publicKey: "public-key",
         algorithms: ["RS256"],
       })
     })
