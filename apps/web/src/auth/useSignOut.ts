@@ -1,12 +1,10 @@
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
-import { SIGNAL_RESET } from "reactjrx"
 import {
   clearActiveProfileId,
   getActiveProfileId,
   usePatchProfile,
 } from "../profiles"
 import { setUser } from "@sentry/react"
-import { googleAccessTokenSignal } from "../google/auth"
 import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
@@ -37,7 +35,6 @@ export const useSignOut = () => {
     }
 
     clearTemporaryMasterKey()
-    googleAccessTokenSignal.update(SIGNAL_RESET)
 
     setUser(null)
 
