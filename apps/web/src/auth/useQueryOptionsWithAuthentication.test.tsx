@@ -1,6 +1,7 @@
 import {
   QueryClient,
   QueryClientProvider,
+  type QueryKey,
   useQuery,
 } from "@tanstack/react-query"
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react"
@@ -47,19 +48,33 @@ const createProfile = (id: string): Profile => ({
   sessionId: `session-${id}`,
 })
 
-const renderNotificationsOfActiveProfile = (
-  queryClient: QueryClient,
-  fetchNotifications: (profileId: string | undefined) => Promise<string>,
-) =>
+const notificationsQueryKey = (profileId: string | undefined) => [
+  "api",
+  "notifications",
+  profileId,
+  "list",
+]
+
+const syncReportsQueryKey = () => ["api/datasourceReport"]
+
+const renderQueryOfActiveProfile = ({
+  queryClient,
+  queryKeyOf,
+  fetchForProfile,
+}: {
+  queryClient: QueryClient
+  queryKeyOf: (profileId: string | undefined) => QueryKey
+  fetchForProfile: (profileId: string | undefined) => Promise<string>
+}) =>
   renderHook(
-    function useNotificationsOfActiveProfile() {
+    function useQueryOfActiveProfile() {
       const activeProfileId = useActiveProfileId()
 
       return useQuery(
         useQueryOptionsWithAuthentication({
-          queryKey: ["api", "notifications", activeProfileId, "list"],
-          queryFn: function fetchNotificationsOfRenderedProfile() {
-            return fetchNotifications(activeProfileId)
+          queryKey: queryKeyOf(activeProfileId),
+          queryFn: function fetchForRenderedProfile() {
+            return fetchForProfile(activeProfileId)
           },
         }),
       )
@@ -87,7 +102,11 @@ describe("useQueryOptionsWithAuthentication", () => {
     setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const fetchNotifications = vi.fn(async () => "notifications")
-    renderNotificationsOfActiveProfile(queryClient, fetchNotifications)
+    renderQueryOfActiveProfile({
+      queryClient,
+      queryKeyOf: notificationsQueryKey,
+      fetchForProfile: fetchNotifications,
+    })
 
     await waitFor(() => {
       expect(fetchNotifications).toHaveBeenCalledTimes(1)
@@ -103,7 +122,11 @@ describe("useQueryOptionsWithAuthentication", () => {
     setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const fetchNotifications = vi.fn(async () => "notifications")
-    renderNotificationsOfActiveProfile(queryClient, fetchNotifications)
+    renderQueryOfActiveProfile({
+      queryClient,
+      queryKeyOf: notificationsQueryKey,
+      fetchForProfile: fetchNotifications,
+    })
 
     await waitFor(() => {
       expect(fetchNotifications).toHaveBeenCalledWith("reader")
@@ -116,5 +139,33 @@ describe("useQueryOptionsWithAuthentication", () => {
     })
 
     expect(fetchNotifications).toHaveBeenCalledTimes(1)
+  })
+
+  it("fetches for the next account once it re-renders, under a key that does not name the account", async () => {
+    profilesStore.set("reader", createProfile("reader"))
+    profilesStore.set("next-reader", createProfile("next-reader"))
+    setActiveProfileId("reader")
+    const queryClient = new QueryClient()
+    const fetchSyncReports = vi.fn(async () => "reports")
+    renderQueryOfActiveProfile({
+      queryClient,
+      queryKeyOf: syncReportsQueryKey,
+      fetchForProfile: fetchSyncReports,
+    })
+
+    await waitFor(() => {
+      expect(fetchSyncReports).toHaveBeenCalledWith("reader")
+    })
+
+    await act(async () => {
+      localStorage.setItem(STORAGE_PROFILE_KEY, "next-reader")
+      syncActiveProfileIdFromStorage()
+      await resetSessionQueries(queryClient)
+    })
+
+    await waitFor(() => {
+      expect(fetchSyncReports).toHaveBeenCalledTimes(2)
+    })
+    expect(fetchSyncReports).toHaveBeenLastCalledWith("next-reader")
   })
 })

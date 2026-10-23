@@ -18,9 +18,9 @@ import { shouldPersistQueryState } from "./queryClient"
  * sign-out that would fire authenticated endpoints without credentials.
  * Queries that require a session must wrap their options in
  * `useQueryOptionsWithAuthentication`, whose `enabled` resolves against the
- * live session at refetch time. Account switch commits the new session
- * *before* resetting
- * (see `completeAuthentication`), so those queries refetch with the new token.
+ * live session at refetch time. On an account switch, an observer rendered for
+ * the previous account skips the refetch, and fetches for the new account once
+ * it re-renders.
  *
  * Queries tagged `meta.survivesSessionReset` are not session data and must
  * stay available across the reset (e.g. the web config powering the Google
