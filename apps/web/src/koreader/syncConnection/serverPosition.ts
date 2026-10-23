@@ -2,105 +2,46 @@ import {
   type BookDocType,
   getBookmark,
   type KoreaderSyncPositionDto,
-  koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
-import type { QueryClient } from "@tanstack/react-query"
 import type { DeepReadonly } from "rxdb"
 import { getOrCreateInstallationId } from "../../common/browser"
-import type { HttpApiClientWeb } from "../../http"
-import { isKoreaderSyncConnectionMissingError } from "./errors"
-import type { KoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 /**
- * The position the account's KOReader sync server keeps for `document`.
- * `null` when it keeps none, or when the account no longer has a server, in
- * which case the cached connection is refreshed.
+ * Where the position a KOReader sync server keeps for `koreaderDocument`
+ * stands against the book's bookmark: at its place, newer (another device left
+ * it there after the bookmark last moved), or older. A server that does not
+ * date its positions is compared by percentage, as KOReader does. A position
+ * this installation pushed is never newer.
  */
-export const pullServerPosition = async ({
-  queryClient,
-  httpClientApi,
-  connectionQueryOptions,
-  document,
-  signal,
-}: {
-  queryClient: QueryClient
-  httpClientApi: HttpApiClientWeb
-  connectionQueryOptions: KoreaderSyncConnectionQueryOptions
-  document: string
-  signal: AbortSignal
-}) => {
-  try {
-    const { data } = await koreaderSyncConnectionPullPosition({
-      client: httpClientApi.sdkClient,
-      path: { document },
-      signal,
-    })
-
-    return data.position
-  } catch (error) {
-    if (!isKoreaderSyncConnectionMissingError(error)) throw error
-
-    void queryClient.invalidateQueries({
-      queryKey: connectionQueryOptions.queryKey,
-      refetchType: "all",
-    })
-
-    return null
-  }
-}
-
-export const isKoreaderPositionAtBookmark = ({
+export const compareKoreaderPositionWithBookmark = ({
   book,
-  position,
+  position: { deviceId, progress, percentage, updatedAt },
   koreaderDocument,
 }: {
   book: DeepReadonly<BookDocType>
   position: KoreaderSyncPositionDto
   koreaderDocument: string
-}) => {
+}): "atBookmark" | "newer" | "older" => {
   const koreaderBookmark = getBookmark(book)?.koreader
-
-  return (
+  const isAtBookmark =
     koreaderBookmark?.document === koreaderDocument &&
-    koreaderBookmark.progress === position.progress
-  )
-}
+    koreaderBookmark.progress === progress
 
-/**
- * Whether the position a KOReader sync server keeps for `koreaderDocument` is
- * where the book was left last: another device left it there after the
- * bookmark last moved. A server that does not date its positions is compared
- * by percentage, as KOReader does.
- */
-export const isKoreaderPositionNewerThanBookmark = ({
-  book,
-  position,
-  koreaderDocument,
-}: {
-  book: DeepReadonly<BookDocType>
-  position: KoreaderSyncPositionDto
-  koreaderDocument: string
-}) => {
-  const { deviceId, percentage, updatedAt } = position
+  if (isAtBookmark) return "atBookmark"
+
   const isPushedByThisInstallation = deviceId === getOrCreateInstallationId()
-  const isAtBookmark = isKoreaderPositionAtBookmark({
-    book,
-    position,
-    koreaderDocument,
-  })
 
-  if (isPushedByThisInstallation || isAtBookmark) return false
+  if (isPushedByThisInstallation) return "older"
 
   const bookmarkMovedAt = book.readingStateCurrentBookmarkLocationUpdatedAt
   const isBookmarkDated = !!bookmarkMovedAt
 
-  if (!isBookmarkDated) return true
+  if (!isBookmarkDated) return "newer"
 
   const isPositionDated = updatedAt !== null
+  const isNewer = isPositionDated
+    ? new Date(updatedAt).getTime() > new Date(bookmarkMovedAt).getTime()
+    : percentage > book.readingStateCurrentBookmarkProgressPercent
 
-  if (!isPositionDated) {
-    return percentage > book.readingStateCurrentBookmarkProgressPercent
-  }
-
-  return new Date(updatedAt).getTime() > new Date(bookmarkMovedAt).getTime()
+  return isNewer ? "newer" : "older"
 }

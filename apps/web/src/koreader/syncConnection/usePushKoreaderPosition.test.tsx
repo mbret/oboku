@@ -11,6 +11,7 @@ import { cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { getOrCreateInstallationId } from "../../common/browser"
+import { CancelError } from "../../errors/errors.shared"
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
@@ -325,7 +326,7 @@ describe("usePushKoreaderPosition", () => {
     expect(pushPosition).not.toHaveBeenCalled()
   })
 
-  it("does not push once its push is abandoned while the server is asked for its position", async () => {
+  it("gives up as cancelled, without pushing, once abandoned while the server is asked for its position", async () => {
     const { push, pullPosition, pushPosition } = renderPushKoreaderPosition()
     pullPosition.mockImplementationOnce(
       function answerOnlyUntilAborted(_document, signal) {
@@ -348,7 +349,7 @@ describe("usePushKoreaderPosition", () => {
     })
     abandonPush.abort()
 
-    await expect(pushed).rejects.toThrow()
+    await expect(pushed).rejects.toBeInstanceOf(CancelError)
     expect(pushPosition).not.toHaveBeenCalled()
   })
 
@@ -409,6 +410,32 @@ describe("usePushKoreaderPosition", () => {
     )
   })
 
+  it("does not push, and asks the API for the connection again, once the server says the connection is gone", async () => {
+    const {
+      fetchConnection,
+      pullPosition,
+      pushPosition,
+      openReader,
+      getCachedConnection,
+    } = createPushHarness()
+    const { push } = openReader()
+    fetchConnection
+      .mockResolvedValueOnce({ data: { connection: CONNECTION } })
+      .mockResolvedValue({ data: { connection: null } })
+    pullPosition.mockRejectedValueOnce(createConnectionMissingError())
+
+    await expect(push()).rejects.toThrow()
+
+    expect(pushPosition).not.toHaveBeenCalled()
+    expect(getCachedConnection()).toEqual({ connection: null })
+
+    await push()
+
+    expect(fetchConnection).toHaveBeenCalledTimes(2)
+    expect(pullPosition).toHaveBeenCalledOnce()
+    expect(pushPosition).not.toHaveBeenCalled()
+  })
+
   it("asks the API for the connection again after a push refused because it is gone", async () => {
     const { fetchConnection, pushPosition, openReader, getCachedConnection } =
       createPushHarness()
@@ -432,7 +459,7 @@ describe("usePushKoreaderPosition", () => {
     const { pullPosition, pushPosition, openReader, getCachedConnection } =
       createPushHarness()
     const { push } = openReader()
-    pushPosition.mockRejectedValueOnce(
+    pullPosition.mockRejectedValueOnce(
       createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     )
 
@@ -440,15 +467,15 @@ describe("usePushKoreaderPosition", () => {
     await push()
 
     expect(pullPosition).toHaveBeenCalledOnce()
-    expect(pushPosition).toHaveBeenCalledOnce()
+    expect(pushPosition).not.toHaveBeenCalled()
     expect(getCachedConnection()).toEqual({ connection: CONNECTION })
   })
 
   it("pushes again once the account connects again after the server refused the key", async () => {
-    const { pushPosition, openReader, setCachedConnection } =
+    const { pullPosition, pushPosition, openReader, setCachedConnection } =
       createPushHarness()
     const { push } = openReader()
-    pushPosition.mockRejectedValueOnce(
+    pullPosition.mockRejectedValueOnce(
       createApiError(ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED),
     )
 
@@ -459,7 +486,7 @@ describe("usePushKoreaderPosition", () => {
     })
     await push()
 
-    expect(pushPosition).toHaveBeenCalledTimes(2)
+    expect(pushPosition).toHaveBeenCalledOnce()
   })
 
   it("keeps pushing after a push fails for another reason", async () => {

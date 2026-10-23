@@ -8,22 +8,20 @@ import {
   type BookDocType,
   getBookmark,
   type KoreaderSyncConnectionPushPositionData,
+  koreaderSyncConnectionPullPosition,
   koreaderSyncConnectionPushPosition,
 } from "@oboku/shared"
 import { useRef } from "react"
 import type { DeepReadonly } from "rxdb"
 import { getOrCreateInstallationId } from "../../common/browser"
+import { CancelError } from "../../errors/errors.shared"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import {
   isKoreaderSyncConnectionMissingError,
   isKoreaderSyncKeyRefusedError,
 } from "./errors"
-import {
-  isKoreaderPositionAtBookmark,
-  isKoreaderPositionNewerThanBookmark,
-  pullServerPosition,
-} from "./serverPosition"
+import { compareKoreaderPositionWithBookmark } from "./serverPosition"
 import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 type KoreaderPositionPush = {
@@ -52,12 +50,13 @@ const toKoreaderPosition = (
 
 /**
  * Pushes the KOReader position of a book's bookmark to the account's KOReader
- * sync server, unless the server already holds it or a position newer than the
+ * sync server, unless the server keeps it already or a position newer than the
  * bookmark. Does nothing when KOReader cannot open the bookmark's place, or
- * when the account has no server. A push refused because the connection is
- * gone refreshes the cached connection. Once the server refuses the key,
- * pushes stop until the account connects again, since each would be refused
- * the same way.
+ * when the account has no server. A push abandoned through its signal fails
+ * with a `CancelError`. A request refused because the connection is gone
+ * refreshes the cached connection. Once the server refuses the key, pushes
+ * stop until the account connects again, since each would be refused the same
+ * way.
  */
 export const usePushKoreaderPosition = (
   options?: Pick<
@@ -101,32 +100,34 @@ export const usePushKoreaderPosition = (
 
       if (isKeyRefused) return
 
-      const serverPosition = await pullServerPosition({
-        queryClient,
-        httpClientApi,
-        connectionQueryOptions,
-        document: position.document,
-        signal,
-      })
+      try {
+        const { data } = await koreaderSyncConnectionPullPosition({
+          client: httpClientApi.sdkClient,
+          path: { document: position.document },
+          signal,
+        })
+        const isServerBehindBookmark =
+          !data.position ||
+          compareKoreaderPositionWithBookmark({
+            book,
+            position: data.position,
+            koreaderDocument: position.document,
+          }) === "older"
 
-      if (serverPosition) {
-        const comparison = {
-          book,
-          position: serverPosition,
-          koreaderDocument: position.document,
-        }
-        const isServerUpToDate =
-          isKoreaderPositionAtBookmark(comparison) ||
-          isKoreaderPositionNewerThanBookmark(comparison)
+        if (!isServerBehindBookmark) return
 
-        if (isServerUpToDate) return
+        await koreaderSyncConnectionPushPosition({
+          client: httpClientApi.sdkClient,
+          body: { ...position, deviceId: getOrCreateInstallationId() },
+          signal,
+        })
+      } catch (error) {
+        const isPushAbandoned = signal.aborted
+
+        if (isPushAbandoned) throw new CancelError()
+
+        throw error
       }
-
-      await koreaderSyncConnectionPushPosition({
-        client: httpClientApi.sdkClient,
-        body: { ...position, deviceId: getOrCreateInstallationId() },
-        signal,
-      })
     },
     onError: function noteUnusableKoreaderSyncConnection(error) {
       if (isKoreaderSyncKeyRefusedError(error)) {

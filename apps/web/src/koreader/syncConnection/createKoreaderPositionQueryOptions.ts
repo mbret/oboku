@@ -1,4 +1,8 @@
-import type { BookDocType, KoreaderSyncPositionDto } from "@oboku/shared"
+import {
+  type BookDocType,
+  type KoreaderSyncPositionDto,
+  koreaderSyncConnectionPullPosition,
+} from "@oboku/shared"
 import {
   type QueryClient,
   queryOptions,
@@ -8,10 +12,8 @@ import { catchError, firstValueFrom, from, map, of, timeout } from "rxjs"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import type { HttpApiClientWeb } from "../../http"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
-import {
-  isKoreaderPositionNewerThanBookmark,
-  pullServerPosition,
-} from "./serverPosition"
+import { isKoreaderSyncConnectionMissingError } from "./errors"
+import { compareKoreaderPositionWithBookmark } from "./serverPosition"
 import {
   createKoreaderSyncConnectionQueryOptions,
   type KoreaderSyncConnectionQueryOptions,
@@ -78,11 +80,12 @@ const takeKoreaderPositionWhenNewer = ({
     incrementalBookMutation(
       bookId,
       async function writeKoreaderBookmarkWhenNewer(book) {
-        const isPositionNewer = isKoreaderPositionNewerThanBookmark({
-          book: book.toJSON(),
-          position,
-          koreaderDocument,
-        })
+        const isPositionNewer =
+          compareKoreaderPositionWithBookmark({
+            book: book.toJSON(),
+            position,
+            koreaderDocument,
+          }) === "newer"
 
         if (!isPositionNewer) return
 
@@ -150,14 +153,27 @@ export const createKoreaderPositionQueryOptions = ({
             const savedAt = new Date().toISOString()
             const position = await firstValueFrom(
               from(
-                pullServerPosition({
-                  queryClient,
-                  httpClientApi,
-                  connectionQueryOptions,
-                  document: koreaderDocument,
+                koreaderSyncConnectionPullPosition({
+                  client: httpClientApi.sdkClient,
+                  path: { document: koreaderDocument },
                   signal,
                 }),
-              ).pipe(timeout(KOREADER_POSITION_CHECK_DEADLINE_MS)),
+              ).pipe(
+                map(function toServerPosition({ data }) {
+                  return data.position
+                }),
+                timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
+                catchError(function openAsWithoutServerOnceGone(error) {
+                  if (!isKoreaderSyncConnectionMissingError(error)) throw error
+
+                  void queryClient.invalidateQueries({
+                    queryKey: connectionQueryOptions.queryKey,
+                    refetchType: "all",
+                  })
+
+                  return of(null)
+                }),
+              ),
             )
 
             if (position) {
