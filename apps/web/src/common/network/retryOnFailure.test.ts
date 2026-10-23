@@ -1,7 +1,7 @@
 import { defer, throwError } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { Logger } from "../../debug/logger.shared"
-import { retryOnFailure } from "./operators"
+import { retryOnFailure } from "./retryOnFailure"
 
 const RETRY_DELAY_MS = 1000
 const RETRY_MAX_DELAY_MS = 5 * 60 * 1000

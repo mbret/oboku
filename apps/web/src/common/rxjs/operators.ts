@@ -1,10 +1,5 @@
-import { retryBackoff } from "reactjrx"
 import { ignoreElements, map, type Observable, retry, tap } from "rxjs"
 import { Logger } from "../../debug/logger.shared"
-import { whenOnLine$ } from "../network/onLine"
-
-const RETRY_DELAY_MS = 1000
-const RETRY_MAX_DELAY_MS = 5 * 60 * 1000
 
 /** Reports each error the stream throws, and lets it through. */
 export const reportErrors = <S>(stream: Observable<S>) =>
@@ -12,22 +7,6 @@ export const reportErrors = <S>(stream: Observable<S>) =>
     tap({
       error: function reportError(error) {
         Logger.error(error)
-      },
-    }),
-  )
-
-/**
- * Reports each failure and retries once the device is online, waiting a
- * second the first time and twice as long each time after, up to five minutes.
- */
-export const retryOnFailure = <O>(stream: Observable<O>) =>
-  stream.pipe(
-    reportErrors,
-    retryBackoff({
-      initialInterval: RETRY_DELAY_MS,
-      maxInterval: RETRY_MAX_DELAY_MS,
-      retryAfter: function waitForDeviceOnLine() {
-        return whenOnLine$
       },
     }),
   )

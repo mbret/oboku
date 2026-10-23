@@ -6,7 +6,7 @@ import {
 } from "reactjrx"
 import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
-import { retryOnFailure } from "../../../common/rxjs/operators"
+import { retryOnFailure } from "../../../common/network/retryOnFailure"
 import { loadScript } from "../../../common/scripts"
 import { useConfig } from "../../../config/useConfig"
 
