@@ -88,6 +88,7 @@ export default defineConfig({
             "guides/directives",
             "guides/secrets",
             "guides/koreader-sync-server",
+            "guides/koreader-progress-sync",
             "guides/connectors",
             "guides/collections",
             "guides/tags",

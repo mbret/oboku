@@ -1,7 +1,6 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
-import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { createKoreaderPositionQueryOptions } from "./createKoreaderPositionQueryOptions"
@@ -39,10 +38,8 @@ export const useKoreaderPositionCheck = ({
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
   const isAuthenticated = useIsAuthenticated()
-  // TODO: check for everyone once the KOReader progress sync screen leaves
-  // debug mode.
   const [isCheckedOnOpening] = useState(
-    () => enabled && isDebugEnabled() && isAuthenticated && navigator.onLine,
+    () => enabled && isAuthenticated && navigator.onLine,
   )
   const [hasContinuedAnyway, setHasContinuedAnyway] = useState(false)
   const isPulling = isCheckedOnOpening && !hasContinuedAnyway

@@ -40,7 +40,6 @@ const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
   })
 
   return {
-    isDebugEnabled: vi.fn(() => true),
     state,
     saveBook,
     toStoredDocument,
@@ -49,10 +48,6 @@ const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
 
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
   return { useIsAuthenticated: () => true }
-})
-
-vi.mock("../../debug/isDebugEnabled.shared", function mockDebugMode() {
-  return { isDebugEnabled: mocks.isDebugEnabled }
 })
 
 vi.mock(
@@ -232,7 +227,6 @@ describe("useKoreaderPositionCheck", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setOnLine(true)
-    mocks.isDebugEnabled.mockReset().mockReturnValue(true)
     mocks.saveBook.mockClear()
     mocks.state.book = STORED_BOOK
   })
@@ -481,11 +475,8 @@ describe("useKoreaderPositionCheck", () => {
     expect(fetchConnection).toHaveBeenCalledTimes(2)
   })
 
-  it.each([
-    ["offline", () => setOnLine(false)],
-    ["outside debug mode", () => mocks.isDebugEnabled.mockReturnValue(false)],
-  ])("lets the book open right away without asking %s", async (_, setUp) => {
-    setUp()
+  it("lets the book open right away without asking offline", async () => {
+    setOnLine(false)
     const { openBook, fetchConnection } = createCheckHarness()
     const { result } = openBook()
 
