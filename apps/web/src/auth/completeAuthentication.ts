@@ -59,7 +59,7 @@ export const completeAuthentication = ({
           if (switchedAccount) {
             /**
              * The active profile id must name the new account before the reset:
-             * `useQueryOptionsWithAuthentication` compares it with the account
+             * `withQueryOptionsAuthentication` compares it with the account
              * each observer rendered for, so the reset's refetch skips the
              * previous account's observers.
              */

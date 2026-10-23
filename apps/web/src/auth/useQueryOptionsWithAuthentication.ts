@@ -22,10 +22,9 @@ const resolveCallerEnabled = <TQueryFnData, TError, TQueryKey extends QueryKey>(
 ) => (typeof enabled === "function" ? enabled(query) : (enabled ?? true))
 
 /**
- * Wraps the options of a query that requires an authenticated session, so it
- * fetches only while `authenticatedProfileId` is the active profile. Pass the
- * account the observer rendered for, or `undefined` when it rendered without
- * an authenticated session.
+ * Wraps the options of a query that requires an authenticated session.
+ * Pass the account the observer rendered for as `authenticatedProfileId`,
+ * or `undefined` when it rendered without an authenticated session.
  *
  * A render-derived `enabled: isAuthenticated` is not enough on its own:
  * sign-out clears the session and runs `resetSessionQueries` in the same
@@ -58,7 +57,7 @@ export const withQueryOptionsAuthentication = <
 
   return {
     ...options,
-    enabled: function enabledWhileSessionIsActive(query) {
+    enabled: function enabledWhileAuthenticatedProfileIsActive(query) {
       const isAuthenticatedProfileActive =
         !!authenticatedProfileId &&
         authenticatedProfileId === getActiveProfileId()

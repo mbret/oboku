@@ -121,6 +121,7 @@ describe("useQueryOptionsWithAuthentication", () => {
   })
 
   it("does not fetch while signed out", async () => {
+    clearActiveProfileId()
     const queryClient = new QueryClient()
     const fetchNotifications = vi.fn(async () => "notifications")
     renderQueryOfActiveProfile({
