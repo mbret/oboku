@@ -20,8 +20,17 @@ export const clearActiveProfileId = () => {
   activeProfileIdSignal.update(SIGNAL_RESET)
 }
 
+/** @returns whether this tab's active profile changed */
 export const syncActiveProfileIdFromStorage = () => {
-  activeProfileIdSignal.update(getActiveProfileId() ?? SIGNAL_RESET)
+  const storedProfileId = getActiveProfileId()
+  const isStoredProfileActive =
+    storedProfileId === activeProfileIdSignal.getValue()
+
+  if (isStoredProfileActive) return false
+
+  activeProfileIdSignal.update(storedProfileId ?? SIGNAL_RESET)
+
+  return true
 }
 
 syncActiveProfileIdFromStorage()
