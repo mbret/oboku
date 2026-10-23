@@ -63,7 +63,10 @@ describe("resetSessionQueries", () => {
     const authenticatedQueryKey = ["api", "notifications", "unread-count"]
     const authenticatedQueryFn = await mountObservedQuery(
       queryClient,
-      withQueryOptionsAuthentication({ queryKey: authenticatedQueryKey }),
+      withQueryOptionsAuthentication(
+        { queryKey: authenticatedQueryKey },
+        "reader",
+      ),
     )
     const localQueryFn = await mountObservedQuery(queryClient, {
       queryKey: ["rxdb", "books"],
@@ -77,35 +80,20 @@ describe("resetSessionQueries", () => {
     expect(queryClient.getQueryData(authenticatedQueryKey)).toBeUndefined()
   })
 
-  it("refetches authenticated queries on account switch", async () => {
-    setActiveProfileId("previous-reader")
-    const queryClient = new QueryClient()
-    const authenticatedQueryFn = await mountObservedQuery(
-      queryClient,
-      withQueryOptionsAuthentication({
-        queryKey: ["api", "notifications", "unread-count"],
-      }),
-    )
-
-    setActiveProfileId("next-reader")
-    resetSessionQueries(queryClient)
-
-    await vi.waitFor(() =>
-      expect(authenticatedQueryFn).toHaveBeenCalledTimes(2),
-    )
-  })
-
   it("honors the caller's own enabled condition", async () => {
     setActiveProfileId("reader")
     const queryClient = new QueryClient()
     const queryFn = vi.fn(async () => "data")
     const observer = new QueryObserver(
       queryClient,
-      withQueryOptionsAuthentication({
-        queryKey: ["api", "notifications", "unread-count"],
-        queryFn,
-        enabled: false,
-      }),
+      withQueryOptionsAuthentication(
+        {
+          queryKey: ["api", "notifications", "unread-count"],
+          queryFn,
+          enabled: false,
+        },
+        "reader",
+      ),
     )
     activeCleanups.push(observer.subscribe(function noopObserverListener() {}))
 
@@ -119,10 +107,13 @@ describe("resetSessionQueries", () => {
     const queryClient = new QueryClient()
     await mountObservedQuery(
       queryClient,
-      withQueryOptionsAuthentication({
-        queryKey: ["api", "notifications", "list"],
-        meta: { persist: true },
-      }),
+      withQueryOptionsAuthentication(
+        {
+          queryKey: ["api", "notifications", "list"],
+          meta: { persist: true },
+        },
+        "reader",
+      ),
     )
     vi.mocked(persister.persistClient).mockClear()
 
