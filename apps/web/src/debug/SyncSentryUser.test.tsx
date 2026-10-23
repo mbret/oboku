@@ -27,7 +27,6 @@ import {
   clearActiveProfileId,
   setActiveProfileId,
 } from "../profiles/active/activeProfileId"
-import { profilesQueryKey } from "../profiles/useProfiles"
 import { SyncSentryUser } from "./SyncSentryUser"
 
 const createProfile = (id: string): Profile => ({
@@ -44,9 +43,9 @@ const sentryUserOf = (profile: Profile) => ({
   username: profile.dbName,
 })
 
-const renderSyncSentryUser = (queryClient: QueryClient) =>
+const renderSyncSentryUser = () =>
   render(
-    <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={new QueryClient()}>
       <SyncSentryUser />
     </QueryClientProvider>,
   )
@@ -64,20 +63,20 @@ describe("SyncSentryUser", () => {
     profilesStore.set(reader.id, reader)
     setActiveProfileId(reader.id)
 
-    renderSyncSentryUser(new QueryClient())
+    renderSyncSentryUser()
 
     await waitFor(() => {
       expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
     })
   })
 
-  it("identifies the next user once this tab adopts a switch to another account", async () => {
+  it("identifies the next user after a switch to another account", async () => {
     const reader = createProfile("reader")
     const nextReader = createProfile("next-reader")
     profilesStore.set(reader.id, reader)
+    profilesStore.set(nextReader.id, nextReader)
     setActiveProfileId(reader.id)
-    const queryClient = new QueryClient()
-    renderSyncSentryUser(queryClient)
+    renderSyncSentryUser()
 
     await waitFor(() => {
       expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
@@ -86,10 +85,6 @@ describe("SyncSentryUser", () => {
     act(() => {
       setActiveProfileId(nextReader.id)
     })
-    profilesStore.set(nextReader.id, nextReader)
-    await act(() =>
-      queryClient.invalidateQueries({ queryKey: profilesQueryKey }),
-    )
 
     await waitFor(() => {
       expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(nextReader))
@@ -100,7 +95,7 @@ describe("SyncSentryUser", () => {
     const reader = createProfile("reader")
     profilesStore.set(reader.id, reader)
     setActiveProfileId(reader.id)
-    renderSyncSentryUser(new QueryClient())
+    renderSyncSentryUser()
 
     await waitFor(() => {
       expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
