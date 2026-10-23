@@ -1,6 +1,7 @@
 import { Alert, Typography } from "@mui/material"
 import { useBook } from "../states"
 import { getMetadataFromBook } from "../metadata"
+import { getDescriptionText } from "../metadata/description"
 
 export const DescriptionRow = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
@@ -11,5 +12,9 @@ export const DescriptionRow = ({ bookId }: { bookId?: string }) => {
     return <Alert severity="info">No synopsis! Try to refresh metadata.</Alert>
   }
 
-  return <Typography>{metadata.description}</Typography>
+  return (
+    <Typography sx={{ whiteSpace: "pre-line" }}>
+      {getDescriptionText(metadata.description)}
+    </Typography>
+  )
 }

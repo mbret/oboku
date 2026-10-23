@@ -5,6 +5,7 @@ import type {
 } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
+import { getDescriptionText } from "../../metadata/description"
 import { getBookMetadataEntryFields } from "../../metadata/fields"
 import { getCatalogProviderName } from "../../metadata/sources"
 import { MetadataFieldRow } from "./MetadataFieldRow"
@@ -29,7 +30,10 @@ export const CatalogSourceContent = ({ entry }: Props) => {
       />
       <MetadataFieldRow label={L.title} value={fields?.title?.toString()} />
       <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />
-      <MetadataFieldRow label={L.description} value={fields?.description} />
+      <MetadataFieldRow
+        label={L.description}
+        value={fields?.description && getDescriptionText(fields.description)}
+      />
       <MetadataFieldRow
         label={L.formatType}
         value={formatList(fields?.formatType)}

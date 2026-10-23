@@ -66,23 +66,6 @@ const getResolvedMetadataFields = (
   googleVolumeId: identifierValue(metadata.identifiers, "GoogleBooks"),
 })
 
-/**
- * A catalog states a series volume's number as its position in the series
- * and often leaves it out of the title (Google Books does), which would show
- * every volume of a series under one title.
- */
-const getCatalogTitle = (metadata: DeepReadonly<ResolvedMetadata>) => {
-  const title = mainTitle(metadata)
-  const position = metadata.belongsTo?.series?.[0]?.position
-  const isPositionInTitle = (title ?? "")
-    .match(/\d+(?:\.\d+)?/g)
-    ?.some((numberInTitle) => Number(numberInTitle) === position)
-
-  return title !== undefined && position !== undefined && !isPositionInTitle
-    ? `${title} Vol ${position}`
-    : title
-}
-
 const withoutType = <TEntry extends { type: string }>({
   type: _,
   ...fields
@@ -105,10 +88,7 @@ export const getBookMetadataFields = (
             contentType: entry.contentType,
           }
     case "catalog":
-      return {
-        ...getResolvedMetadataFields(entry.metadata),
-        title: getCatalogTitle(entry.metadata),
-      }
+      return getResolvedMetadataFields(entry.metadata)
     default:
       return withoutType(entry)
   }

@@ -76,37 +76,6 @@ describe("getBookMetadataFields, for a catalog match", () => {
   })
 })
 
-describe("getBookMetadataFields, for a catalog match of a series volume", () => {
-  const catalogTitle = (title: string, position: number | undefined) =>
-    getBookMetadataFields({
-      type: "catalog",
-      version: 1,
-      providerId: "googleBooks",
-      score: 1,
-      accepted: true,
-      signals: [],
-      metadata: {
-        titles: [{ value: title }],
-        ...(position !== undefined && {
-          belongsTo: { series: [{ position }] },
-        }),
-      },
-    }).title
-
-  it("adds the volume number the title leaves out", () => {
-    expect(catalogTitle("BLAME!", 3)).toBe("BLAME! Vol 3")
-  })
-
-  it("keeps a title that already states the volume number", () => {
-    expect(catalogTitle("BLAME! Vol. 3", 3)).toBe("BLAME! Vol. 3")
-    expect(catalogTitle("Naruto 03", 3)).toBe("Naruto 03")
-  })
-
-  it("keeps the title of a book outside a series", () => {
-    expect(catalogTitle("Dune", undefined)).toBe("Dune")
-  })
-})
-
 describe("getBookMetadataFields, for flat entries", () => {
   it("reads a legacy catalog entry as it is stored", () => {
     expect(
