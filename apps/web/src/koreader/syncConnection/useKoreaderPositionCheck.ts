@@ -3,20 +3,26 @@ import {
   type KoreaderSyncPositionDto,
   koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
-import { skipToken, useQuery, useQueryClient } from "@tanstack/react-query"
+import {
+  type QueryClient,
+  queryOptions,
+  skipToken,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query"
 import { useState } from "react"
 import { firstValueFrom, from, timeout } from "rxjs"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { useHttpClientApi } from "../../http"
+import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
 import { isKoreaderPositionNewerThanBookmark } from "../isKoreaderPositionNewerThanBookmark"
 import {
   isKoreaderSyncConnectionMissingError,
   isKoreaderSyncKeyRefusedError,
 } from "./errors"
-import { koreaderSyncPositionQueryKey } from "./queryKeys"
 import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
@@ -76,6 +82,106 @@ const takeKoreaderPositionWhenNewer = (
     ),
   )
 
+const fetchServerPosition = async ({
+  queryClient,
+  httpClientApi,
+  profileId,
+  document,
+  signal,
+}: {
+  queryClient: QueryClient
+  httpClientApi: HttpApiClientWeb
+  profileId: string | undefined
+  document: string
+  signal: AbortSignal
+}) => {
+  const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
+    httpClientApi,
+    profileId,
+  })
+  const { connection } = await queryClient.ensureQueryData(
+    connectionQueryOptions,
+  )
+
+  if (!connection) return null
+
+  try {
+    const { data } = await koreaderSyncConnectionPullPosition({
+      client: httpClientApi.sdkClient,
+      path: { document },
+      signal,
+    })
+
+    return data.position
+  } catch (error) {
+    if (!isKoreaderSyncConnectionMissingError(error)) throw error
+
+    void queryClient.invalidateQueries({
+      queryKey: connectionQueryOptions.queryKey,
+      refetchType: "all",
+    })
+
+    return null
+  }
+}
+
+const createKoreaderPositionQueryOptions = ({
+  queryClient,
+  httpClientApi,
+  profileId,
+  bookId,
+  koreaderDocument,
+  isPulling,
+}: {
+  queryClient: QueryClient
+  httpClientApi: HttpApiClientWeb
+  profileId: string | undefined
+  bookId: string
+  koreaderDocument: string | undefined
+  isPulling: boolean
+}) =>
+  queryOptions({
+    queryKey: [
+      API_QUERY_KEY_PREFIX,
+      "koreader-sync-position",
+      profileId,
+      bookId,
+      koreaderDocument,
+    ],
+    queryFn:
+      isPulling && koreaderDocument !== undefined
+        ? async function syncKoreaderPositionOfBook({ signal }) {
+            const savedAt = new Date().toISOString()
+            const position = await firstValueFrom(
+              from(
+                fetchServerPosition({
+                  queryClient,
+                  httpClientApi,
+                  profileId,
+                  document: koreaderDocument,
+                  signal,
+                }),
+              ).pipe(timeout(KOREADER_POSITION_CHECK_DEADLINE_MS)),
+            )
+
+            if (position) {
+              await takeKoreaderPositionWhenNewer(bookId, {
+                position,
+                koreaderDocument,
+                savedAt,
+              })
+            }
+
+            return position
+          }
+        : skipToken,
+    staleTime: Number.POSITIVE_INFINITY,
+    retry: false,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+    networkMode: "always",
+  })
+
 /**
  * Asks the account's KOReader sync server, as the book opens, where the
  * book's file was left, and takes that position as the book's bookmark when
@@ -104,77 +210,19 @@ export const useKoreaderPositionCheck = ({
   )
   const [hasContinuedAnyway, setHasContinuedAnyway] = useState(false)
   const isPulling = isCheckedOnOpening && !hasContinuedAnyway
-  const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
+  const positionQueryOptions = createKoreaderPositionQueryOptions({
+    queryClient,
     httpClientApi,
     profileId: activeProfileId,
-  })
-
-  const positionQueryKey = koreaderSyncPositionQueryKey({
-    profileId: activeProfileId,
     bookId,
-    document: koreaderDocument,
+    koreaderDocument,
+    isPulling,
   })
-
-  const fetchServerPosition = async (document: string, signal: AbortSignal) => {
-    const { connection } = await queryClient.ensureQueryData(
-      connectionQueryOptions,
-    )
-
-    if (!connection) return null
-
-    try {
-      const { data } = await koreaderSyncConnectionPullPosition({
-        client: httpClientApi.sdkClient,
-        path: { document },
-        signal,
-      })
-
-      return data.position
-    } catch (error) {
-      if (!isKoreaderSyncConnectionMissingError(error)) throw error
-
-      void queryClient.invalidateQueries({
-        queryKey: connectionQueryOptions.queryKey,
-        refetchType: "all",
-      })
-
-      return null
-    }
-  }
-
-  const pull = useQuery({
-    queryKey: positionQueryKey,
-    queryFn:
-      isPulling && koreaderDocument !== undefined
-        ? async function syncKoreaderPositionOfBook({ signal }) {
-            const savedAt = new Date().toISOString()
-            const position = await firstValueFrom(
-              from(fetchServerPosition(koreaderDocument, signal)).pipe(
-                timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
-              ),
-            )
-
-            if (position) {
-              await takeKoreaderPositionWhenNewer(bookId, {
-                position,
-                koreaderDocument,
-                savedAt,
-              })
-            }
-
-            return position
-          }
-        : skipToken,
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    networkMode: "always",
-  })
+  const pull = useQuery(positionQueryOptions)
 
   const continueAnyway = function continueWithoutKoreaderPosition() {
     setHasContinuedAnyway(true)
-    void queryClient.cancelQueries({ queryKey: positionQueryKey })
+    void queryClient.cancelQueries({ queryKey: positionQueryOptions.queryKey })
   }
 
   const mayBookOpen = !isPulling || pull.isSuccess
