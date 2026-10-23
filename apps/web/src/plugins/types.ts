@@ -233,12 +233,7 @@ type ObokuPluginBase<
   useRemoveResource: UseRemoveResource<T>
   useLinkInfo: UseLinkInfo
   useSyncSourceInfo: UseSyncSourceInfo<T>
-  /**
-   * Forgets the session this plugin holds, or `null` when it holds none. Runs
-   * in every tab on each account change, before anything renders for the next
-   * account.
-   */
-  signOut: (() => void) | null
+  useSignOut: () => () => void
 }
 
 export type ObokuPlugin<

@@ -23,8 +23,6 @@ vi.mock("../profiles", () => ({
 
 vi.mock("../queries/resetSessionQueries", () => ({ resetSessionQueries }))
 
-vi.mock("./forgetAccountSessions", () => ({ forgetAccountSessions }))
-
 import { completeAuthentication } from "./completeAuthentication"
 
 const signInAsReader = (
@@ -34,6 +32,7 @@ const signInAsReader = (
     completeAuthentication({
       reCreateDb: vi.fn(async () => {}),
       putProfile,
+      forgetAccountSessions,
       auth: {
         dbName: "reader-db",
         email: "reader@example.com",

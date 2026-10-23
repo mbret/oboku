@@ -8,16 +8,17 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
-import { forgetAccountSessions } from "./forgetAccountSessions"
 
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
+  forgetAccountSessions,
   auth,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
+  forgetAccountSessions: () => void
   auth: AuthSessionResponseDto
   queryClient: QueryClient
 }) => {

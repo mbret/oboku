@@ -32,7 +32,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   useLinkInfo,
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,
-  signOut: null,
+  useSignOut: () => () => {},
   InfoScreen,
   DownloadBookComponent: DownloadBook,
 }

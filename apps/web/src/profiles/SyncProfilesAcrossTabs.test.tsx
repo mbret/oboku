@@ -17,7 +17,9 @@ vi.mock("../rxdb/dexie", () => ({
   },
 }))
 
-vi.mock("../auth/forgetAccountSessions", () => ({ forgetAccountSessions }))
+vi.mock("../auth/useForgetAccountSessions", () => ({
+  useForgetAccountSessions: () => forgetAccountSessions,
+}))
 
 vi.mock("../queries/persister", () => ({
   persistBuster: "test",

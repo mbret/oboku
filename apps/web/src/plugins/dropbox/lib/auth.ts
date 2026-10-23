@@ -1,7 +1,7 @@
 import type { DropboxApiCredentials } from "@oboku/shared"
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../errors/errors.shared"
-import { SIGNAL_RESET, signal } from "reactjrx"
+import { signal } from "reactjrx"
 import { dropboxAuthCallbackPath } from "../../common/authCallbackEntrypoints.shared"
 import { hasMinimumValidityLeft } from "../../common/tokenValidity"
 
@@ -13,10 +13,6 @@ const defaultWindowOptions = {
 const MINIMUM_DROPBOX_TOKEN_VALIDITY_MS = 1000 * 60 * 60
 
 export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
-
-export const clearDropboxSession = () => {
-  dropboxAuthSignal.update(SIGNAL_RESET)
-}
 
 type DropboxAuthRequest = {
   requestPopup: () => Promise<boolean>

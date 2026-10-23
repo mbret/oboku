@@ -80,10 +80,10 @@ Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep
 
 ## Leaving an account
 
-`forgetAccountSessions` drops the temporary master key and runs every plugin's `signOut`. Each change of account calls it before anything renders for the next account. A plugin whose `signOut` throws is logged, and the others still sign out. OneDrive's sign-out finishes asynchronously.
+`useForgetAccountSessions` returns a function that drops the temporary master key and runs every plugin's sign-out. Each change of account calls it before anything renders for the next account. A plugin whose sign-out throws is logged, and the others still sign out. OneDrive's sign-out finishes asynchronously.
 
 * **Sign-out:** `useSignOut` calls it before clearing the active profile id.
-* **Sign-in:** `completeAuthentication` calls it unless the account is already the active one. A relogin to the same account keeps the sessions, as it keeps the local database. The relogin screen accepts any account, so a relogin can still switch accounts. A sign-in after a sign-out forgets the sessions again: a plugin login still running at sign-out may have stored one in between.
+* **Sign-in:** `completeAuthentication`, which receives it from `useSignIn` or `useCompleteMagicLink`, calls it unless the account is already the active one. A relogin to the same account keeps the sessions, as it keeps the local database. The relogin screen accepts any account, so a relogin can still switch accounts. A sign-in after a sign-out forgets the sessions again: a plugin login still running at sign-out may have stored one in between.
 * **Another tab:** on each profiles broadcast, `SyncProfilesAcrossTabs` calls it when the active profile id it adopts from localStorage differs from this tab's.
 
 An account switch recreates the local database but keeps the downloaded files: purging them would also destroy the device-local (`file` plugin) books, and only sign-out warns about that.

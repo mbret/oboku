@@ -6,7 +6,7 @@ import {
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
 import { deleteProofKey } from "./proofKey"
-import { forgetAccountSessions } from "./forgetAccountSessions"
+import { useForgetAccountSessions } from "./useForgetAccountSessions"
 import { useReCreateDb } from "../rxdb"
 import { purgeAllDownloads } from "../download/purgeAllDownloads"
 
@@ -14,6 +14,7 @@ export const useSignOut = () => {
   const resetSessionQueries = useResetSessionQueries()
   const { mutateAsync: patchProfile } = usePatchProfile()
   const { mutateAsync: reCreateDb } = useReCreateDb()
+  const forgetAccountSessions = useForgetAccountSessions()
 
   return async () => {
     const activeProfileId = getActiveProfileId()

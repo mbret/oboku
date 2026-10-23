@@ -26,7 +26,7 @@ export const plugin: ObokuPlugin<"file"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  signOut: null,
+  useSignOut: () => () => {},
   DownloadBookComponent: memo(({ onError }) => {
     useEffect(() => {
       onError(

@@ -28,7 +28,9 @@ vi.mock("../profiles", () => ({
   usePatchProfile: () => ({ mutateAsync: patchProfile }),
 }))
 vi.mock("./proofKey", () => ({ deleteProofKey }))
-vi.mock("./forgetAccountSessions", () => ({ forgetAccountSessions }))
+vi.mock("./useForgetAccountSessions", () => ({
+  useForgetAccountSessions: () => forgetAccountSessions,
+}))
 vi.mock("../rxdb", () => ({
   useReCreateDb: () => ({ mutateAsync: reCreateDb }),
 }))
