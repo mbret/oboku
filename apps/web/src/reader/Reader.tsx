@@ -10,7 +10,7 @@ import {
   useRef,
 } from "react"
 import { readerSignal } from "./states"
-import { BookLoading } from "./BookLoading"
+import { type BookOpening, BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
@@ -19,6 +19,8 @@ import { useBookToOpen } from "./useBookToOpen"
 import { BookError } from "./BookError"
 import { Box } from "@mui/material"
 import type { Manifest } from "@prose-reader/shared"
+import type { BookDocType } from "@oboku/shared"
+import type { DeepReadonly } from "rxdb"
 import { ReactReader } from "@prose-reader/react-reader"
 import "@prose-reader/react-reader/index.css"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
@@ -26,10 +28,7 @@ import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
-import {
-  type KoreaderPositionCheck,
-  useKoreaderPositionCheck,
-} from "../koreader/syncConnection/useKoreaderPositionCheck"
+import { useKoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 export const Reader = memo(function Reader({
   bookId,
@@ -50,6 +49,14 @@ export const Reader = memo(function Reader({
     bookId,
     koreaderDocument,
     enabled: !isPreview,
+  })
+  const opening: BookOpening = manifest
+    ? koreaderPositionCheck
+    : { status: "loadingFile" }
+  const bookToOpen = useBookToOpen({
+    bookId,
+    isPreview,
+    mayOpen: opening.status === "done",
   })
   const localSettings = useLocalSettings([
     "readerFloatingProgress",
@@ -122,19 +129,14 @@ export const Reader = memo(function Reader({
         </ReactReader>
       </Box>
       {/* Need to be after reader container so it shows on top and hide loading */}
-      {!isReaderMounted && (
-        <BookLoading
-          isBookLoaded={!!manifest}
-          koreaderPositionCheck={koreaderPositionCheck}
-        />
-      )}
+      {!isReaderMounted && <BookLoading opening={opening} />}
       <Effects
         bookId={bookId}
         isPreview={isPreview}
         isUsingWebStreamer={isUsingWebStreamer}
         manifest={manifest}
         koreaderDocument={koreaderDocument}
-        koreaderPositionCheck={koreaderPositionCheck}
+        book={bookToOpen}
         containerRef={readerContainerRef}
       />
     </>
@@ -147,7 +149,7 @@ const Effects = memo(function Effects({
   isUsingWebStreamer,
   manifest,
   koreaderDocument,
-  koreaderPositionCheck,
+  book,
   containerRef,
 }: {
   bookId: string
@@ -155,17 +157,15 @@ const Effects = memo(function Effects({
   isUsingWebStreamer?: boolean
   manifest?: Manifest
   koreaderDocument?: string
-  koreaderPositionCheck: KoreaderPositionCheck
+  book: DeepReadonly<BookDocType> | null | undefined
   containerRef: RefObject<HTMLElement | null>
 }) {
-  const bookToOpen = useBookToOpen({ bookId, isPreview, koreaderPositionCheck })
-
   useCreateReader({
     bookId,
     isUsingWebStreamer,
     manifest,
     koreaderDocument,
-    book: bookToOpen,
+    book,
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })

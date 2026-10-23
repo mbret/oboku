@@ -14,6 +14,12 @@ import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoread
 
 const SLOW_CHECK_THRESHOLD_MS = 3000
 
+/**
+ * Where opening a book stands: its file loads, then its KOReader position is
+ * checked. The book may open once it is `done`.
+ */
+export type BookOpening = { status: "loadingFile" } | KoreaderPositionCheck
+
 const LoadingStack = styled(Stack)(function styleLoadingStack({ theme }) {
   return {
     position: "absolute",
@@ -100,20 +106,18 @@ const KoreaderPositionCheckStep = memo(function KoreaderPositionCheckStep({
 })
 
 export const BookLoading = memo(function BookLoading({
-  isBookLoaded,
-  koreaderPositionCheck,
+  opening,
 }: {
-  isBookLoaded: boolean
-  koreaderPositionCheck: KoreaderPositionCheck
+  opening: BookOpening
 }) {
   const { goBack } = useSafeGoBack()
   const isCheckingKoreaderPosition =
-    isBookLoaded && koreaderPositionCheck.status !== "done"
+    opening.status !== "loadingFile" && opening.status !== "done"
 
   return (
     <LoadingStack>
       {isCheckingKoreaderPosition ? (
-        <KoreaderPositionCheckStep check={koreaderPositionCheck} />
+        <KoreaderPositionCheckStep check={opening} />
       ) : (
         <StepStack>
           <Typography>Your book is loading...</Typography>

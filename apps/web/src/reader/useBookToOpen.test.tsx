@@ -7,7 +7,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { act, cleanup, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
-import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
 
 const mocks = vi.hoisted(function createBookToOpenMocks() {
   return { readStoredBook: vi.fn((): BookDocType | null => null) }
@@ -68,10 +67,10 @@ const deliverQueryUpdates = () =>
 
 const renderBookToOpen = ({
   isPreview = false,
-  koreaderPositionCheck,
+  mayOpen,
 }: {
   isPreview?: boolean
-  koreaderPositionCheck: KoreaderPositionCheck
+  mayOpen: boolean
 }) => {
   const queryClient = new QueryClient({
     defaultOptions: { queries: { gcTime: 0 } },
@@ -82,14 +81,10 @@ const renderBookToOpen = ({
   )
 
   return renderHook(
-    function renderUseBookToOpen({ check }: { check: KoreaderPositionCheck }) {
-      return useBookToOpen({
-        bookId: BOOK_ID,
-        isPreview,
-        koreaderPositionCheck: check,
-      })
+    function renderUseBookToOpen(props: { mayOpen: boolean }) {
+      return useBookToOpen({ bookId: BOOK_ID, isPreview, ...props })
     },
-    { wrapper, initialProps: { check: koreaderPositionCheck } },
+    { wrapper, initialProps: { mayOpen } },
   )
 }
 
@@ -102,17 +97,15 @@ describe("useBookToOpen", () => {
     cleanup()
   })
 
-  it("reads the book only once the KOReader position is checked", async () => {
-    const { result, rerender } = renderBookToOpen({
-      koreaderPositionCheck: { status: "checking", continueAnyway: vi.fn() },
-    })
+  it("reads the book only once it may open", async () => {
+    const { result, rerender } = renderBookToOpen({ mayOpen: false })
 
     await deliverQueryUpdates()
 
     expect(mocks.readStoredBook).not.toHaveBeenCalled()
     expect(result.current).toBeUndefined()
 
-    rerender({ check: { status: "done" } })
+    rerender({ mayOpen: true })
 
     await waitFor(function expectStoredBook() {
       expect(result.current).toEqual(STORED_BOOK)
@@ -120,13 +113,11 @@ describe("useBookToOpen", () => {
   })
 
   it("opens at the bookmark the KOReader position check wrote", async () => {
-    const { result, rerender } = renderBookToOpen({
-      koreaderPositionCheck: { status: "checking", continueAnyway: vi.fn() },
-    })
+    const { result, rerender } = renderBookToOpen({ mayOpen: false })
 
     await deliverQueryUpdates()
     mocks.readStoredBook.mockReturnValue(BOOK_SAVED_BY_CHECK)
-    rerender({ check: { status: "done" } })
+    rerender({ mayOpen: true })
 
     await waitFor(function expectBookSavedByCheck() {
       expect(result.current).toEqual(BOOK_SAVED_BY_CHECK)
@@ -135,9 +126,7 @@ describe("useBookToOpen", () => {
 
   it("keeps a book missing from the database closed", async () => {
     mocks.readStoredBook.mockReturnValue(null)
-    const { result } = renderBookToOpen({
-      koreaderPositionCheck: { status: "done" },
-    })
+    const { result } = renderBookToOpen({ mayOpen: true })
 
     await waitFor(function expectBookRead() {
       expect(mocks.readStoredBook).toHaveBeenCalled()
@@ -148,10 +137,7 @@ describe("useBookToOpen", () => {
   })
 
   it("opens at the start in preview, without reading the book", async () => {
-    const { result } = renderBookToOpen({
-      isPreview: true,
-      koreaderPositionCheck: { status: "done" },
-    })
+    const { result } = renderBookToOpen({ isPreview: true, mayOpen: true })
 
     await deliverQueryUpdates()
 
