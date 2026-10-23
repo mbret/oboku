@@ -113,3 +113,78 @@ describe("pickCoverMetadata, when the archive never stated its cover", () => {
     )
   })
 })
+
+describe("pickCoverMetadata, with entries in prose-reader's shapes", () => {
+  const catalogMatch = (
+    score: number,
+    signals: Extract<BookMetadata, { type: "catalog" }>["signals"],
+  ): BookMetadata => ({
+    type: "catalog",
+    version: 1,
+    providerId: "googleBooks",
+    score,
+    accepted: true,
+    signals,
+    metadata: {
+      cover: {
+        uri: "https://books.google.com/books/content?id=Ebb6DQAAQBAJ",
+        confidence: "derived",
+      },
+    },
+  })
+  const confirmedMatch = catalogMatch(1, [
+    {
+      field: "isbn",
+      score: 1,
+      weight: 1,
+      query: "9780765311788",
+      candidate: "9780765311788",
+    },
+  ])
+  const titleOnlyMatch = catalogMatch(0.9, [
+    {
+      field: "title",
+      score: 0.9,
+      weight: 0.8,
+      query: "Mistborn",
+      candidate: "Mistborn: The Final Empire",
+    },
+  ])
+  const resolvedFirstPage: BookMetadata = {
+    type: "file",
+    contentType: "application/x-cbz",
+    metadata: { cover: { uri: "page-001.avif", confidence: "assumed" } },
+  }
+  const resolvedDeclaredCover: BookMetadata = {
+    type: "file",
+    contentType: "application/epub+zip",
+    metadata: { cover: { uri: "OEBPS/cover.jpg", confidence: "derived" } },
+  }
+
+  it("prefers a match an identifier confirmed over the archive's first page", () => {
+    expect(
+      pickCoverMetadata([confirmedMatch, resolvedFirstPage], undefined),
+    ).toBe(confirmedMatch)
+  })
+
+  it("does not treat a title match as confirmed", () => {
+    expect(
+      pickCoverMetadata([titleOnlyMatch, resolvedFirstPage], undefined),
+    ).toBe(resolvedFirstPage)
+  })
+
+  it("reads the archive's declared cover as certain", () => {
+    expect(
+      pickCoverMetadata(
+        [titleOnlyMatch, resolvedDeclaredCover],
+        ["catalog", "file"],
+      ),
+    ).toBe(resolvedDeclaredCover)
+  })
+
+  it("ranks a legacy catalog entry where the priority puts the catalog", () => {
+    expect(
+      pickCoverMetadata([googleCover, firstPage], ["catalog", "file"]),
+    ).toBe(googleCover)
+  })
+})

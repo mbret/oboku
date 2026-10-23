@@ -29,6 +29,7 @@
     "@prose-reader/enhancer-refit": "^32.0.0",
     "@prose-reader/enhancer-search": "^32.0.0",
     "@prose-reader/koreader": "^32.0.0",
+    "@prose-reader/metadata-fetcher": "^32.0.0",
     "@prose-reader/react-reader": "^32.0.0",
     "@prose-reader/shared": "^32.0.0",
     "@prose-reader/streamer": "^32.0.0",

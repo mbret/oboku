@@ -3,12 +3,13 @@ import {
   type BookMetadata,
   buildBookBucketCoverKey,
   getBookCoverKey,
+  getBookMetadataFields,
+  getBookMetadataSource,
 } from "@oboku/shared"
-import type { Extractor } from "node-unrar-js"
-import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket.js"
+import type { Archive } from "@prose-reader/archive-reader"
+import { saveCoverFromArchiveToBucket } from "../../lib/books/covers/saveCoverFromArchiveToBucket.js"
 import type { Context } from "./types.js"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket.js"
-import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket.js"
 import { CoversService } from "../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
@@ -19,10 +20,9 @@ export type UpdateCoverResult = {
 
 export const updateCover = async ({
   metadataList,
-  archiveExtractor,
+  archive,
   book,
   ctx,
-  tmpFilePath,
   coversService,
   force = false,
   catalogIdentityIsConfirmed,
@@ -30,8 +30,7 @@ export const updateCover = async ({
   ctx: Context
   book: BookDocType
   metadataList: BookMetadata[]
-  archiveExtractor?: Extractor<Uint8Array> | undefined
-  tmpFilePath?: string
+  archive?: Archive
   coversService: CoversService
   /**
    * Hard refresh: regenerate the cover even when the bucket key
@@ -47,12 +46,16 @@ export const updateCover = async ({
     book.metadataSourcePriority,
     { catalogIdentityIsConfirmed },
   )
-  const expectedBucketCoverKey = metadataForCover?.coverLink
-    ? buildBookBucketCoverKey({
-        type: metadataForCover.type,
-        value: metadataForCover.coverLink,
-      })
+  const coverLink = metadataForCover
+    ? getBookMetadataFields(metadataForCover).coverLink
     : undefined
+  const expectedBucketCoverKey =
+    metadataForCover && coverLink
+      ? buildBookBucketCoverKey({
+          type: metadataForCover.type,
+          value: coverLink,
+        })
+      : undefined
 
   if (
     !force &&
@@ -67,15 +70,11 @@ export const updateCover = async ({
     return {}
   }
 
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    archiveExtractor
-  ) {
-    const saved = await saveCoverFromRarArchiveToBucket(
+  if (metadataForCover?.type === "file" && coverLink && archive) {
+    const saved = await saveCoverFromArchiveToBucket(
       coverObjectKey,
-      archiveExtractor,
-      metadataForCover.coverLink,
+      archive,
+      coverLink,
       coversService,
     )
 
@@ -84,30 +83,14 @@ export const updateCover = async ({
       : {}
   }
 
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    tmpFilePath
-  ) {
-    const saved = await saveCoverFromZipArchiveToBucket(
-      coverObjectKey,
-      tmpFilePath,
-      metadataForCover.coverLink,
-      coversService,
-    )
+  const isCatalogCover =
+    metadataForCover !== undefined &&
+    getBookMetadataSource(metadataForCover) === "catalog"
 
-    return saved && expectedBucketCoverKey
-      ? { bucketCoverKey: expectedBucketCoverKey }
-      : {}
-  }
-
-  if (
-    metadataForCover?.type === "googleBookApi" &&
-    metadataForCover.coverLink
-  ) {
+  if (isCatalogCover && coverLink) {
     const saved = await saveCoverFromExternalLinkToBucket(
       coverObjectKey,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 

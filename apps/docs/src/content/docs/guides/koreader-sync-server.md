@@ -5,7 +5,7 @@ title: "KOReader Sync Server"
 oboku can be the sync server of KOReader and of the other apps that speak its sync protocol, such as Readest and CrossPoint. Point every device at oboku and they sync their reading position with each other through it.
 
 :::note
-This does not sync your reading in oboku itself: oboku's reader neither sends its position to the server nor follows the positions your devices send.
+This alone does not sync your reading in oboku. To read in oboku where your devices left off, and the other way round, also turn on [KOReader progress sync](/guides/koreader-progress-sync) with this server.
 :::
 
 This only syncs reading positions, as the KOReader sync server does. It does not sync files, highlights or the library.

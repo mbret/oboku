@@ -1,4 +1,4 @@
-import type { GoogleBookApiMetadata } from "@oboku/shared"
+import type { LegacyGoogleBookApiMetadata } from "@oboku/shared"
 import { extractDateComponents } from "../extractDateComponents.js"
 import type { GoogleBooksApiVolumesResponseData } from "../../google/googleBooksApi.js"
 
@@ -22,7 +22,7 @@ const upgradeGoogleCoverUrl = (url: string | undefined) => {
 
 export const parseGoogleMetadata = (
   response: Pick<GoogleBooksApiVolumesResponseData, "items">,
-): Omit<GoogleBookApiMetadata, "type"> => {
+): Omit<LegacyGoogleBookApiMetadata, "type"> => {
   let coverLink: string | undefined
 
   if (Array.isArray(response.items) && response.items.length > 0) {

@@ -71,12 +71,22 @@ Rotation semantics are unchanged: every refresh mints a successor (which inherit
 Fail-closed and offline-capable, in three steps (`useSignOut`):
 
 1. **Delete the proof keys** from IndexedDB. From this instant nothing can refresh the session — even offline, it dies when the ≤5-minute access cookie expires.
-2. **Clear local state** (query cache, active profile, plugin state). The UI is signed out immediately; the profile row stays as a `loggedOut` tombstone.
+2. **Clear local state** (query cache, active profile, plugin state). The UI is signed out immediately; the profile row stays as a `loggedOut` tombstone. Other tabs reset their session queries when they see the active profile change, so their auto-persist cannot write the account's data back to the offline snapshot all tabs share.
 3. **Best-effort server revocation**: the tombstone sweep (`RevokeLoggedOutProfiles`, on boot / `online` / post-sign-out) calls `POST /auth/logout` with the tombstone's `sessionId` in the body — a non-secret identity, not the refresh cookie. The server revokes that whole Postgres chain by id and leaves the cookies untouched (there is no cookie-clearing path): they may already belong to a newer session, and the revoked rows make any lingering cookie inert. Only after the call succeeds does the sweep delete the local tombstone row. Offline sign-outs are retried until they succeed.
 
 Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep names the exact session to kill regardless of which refresh cookie is currently stored, so signing into another account — or the same one — before the sweep completes cannot misfire. A re-login mints a fresh `sessionId` on a new chain (after wiping the old one), so an old tombstone can never name the new session; it simply finds nothing to revoke.
 
 `/auth/logout` is therefore `@Public()` and authenticates nothing — an accepted, deliberate tradeoff. Every possession proof is already gone by the time the sweep runs: the proof key was deleted in step 1, the refresh cookie may name a *newer* session, and the access cookie may be expired or the client offline. The revoke must be an unauthenticated, cookie-independent revoke-by-identity or it cannot meet its fail-closed/offline goals. The consequence is that anyone who obtains a session's `sessionId` can force **that one session** to re-authenticate. This is bounded to availability, not access: `revokeBySessionId` deletes a single chain (one installation, not the account); `sessionId` is a 122-bit UUID, so it is not guessable and must be leaked per-victim (sign-in body captured in logs/analytics, shared-device Dexie, or XSS — which already owns the origin and is strictly stronger); and the outcome is a forced re-login with all local data intact. The residual leak vectors are minimised by keeping `sessionId` out of server logs and, if abuse is ever observed, rate-limiting the endpoint.
+
+## Leaving an account
+
+`useForgetAccountSessions` returns a function that drops the temporary master key and runs every plugin's sign-out. Each change of account calls it before anything renders for the next account. A plugin whose sign-out throws is logged, and the others still sign out. OneDrive's sign-out finishes asynchronously.
+
+* **Sign-out:** `useSignOut` calls it before clearing the active profile id.
+* **Sign-in:** `completeAuthentication`, which receives it from `useSignIn` or `useCompleteMagicLink`, calls it unless the account is already the active one. A relogin to the same account keeps the sessions, as it keeps the local database. The relogin screen accepts any account, so a relogin can still switch accounts. A sign-in after a sign-out forgets the sessions again: a plugin login still running at sign-out may have stored one in between.
+* **Another tab:** on each profiles broadcast, `SyncProfilesAcrossTabs` calls it when the active profile id it adopts from localStorage differs from this tab's.
+
+An account switch recreates the local database but keeps the downloaded files: purging them would also destroy the device-local (`file` plugin) books, and only sign-out warns about that.
 
 ## Refresh-session storage
 

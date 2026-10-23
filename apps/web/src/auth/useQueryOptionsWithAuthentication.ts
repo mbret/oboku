@@ -4,7 +4,10 @@ import type {
   QueryKey,
   UseQueryOptions,
 } from "@tanstack/react-query"
-import { getActiveProfileId } from "../profiles/active/activeProfileId"
+import {
+  getActiveProfileId,
+  useActiveProfileId,
+} from "../profiles/active/activeProfileId"
 import { useIsAuthenticated } from "./useIsAuthenticated"
 
 type CallerEnabled<
@@ -31,7 +34,8 @@ const resolveCallerEnabled = <TQueryFnData, TError, TQueryKey extends QueryKey>(
  *
  * The live check is not reactive (nothing re-renders when it flips),
  * so query hooks should use `useQueryOptionsWithAuthentication`, which adds
- * the reactive `isAuthenticated` watch.
+ * the reactive `isAuthenticated` watch and keeps the observer to the account
+ * it rendered for.
  */
 export const withQueryOptionsAuthentication = <
   TQueryFnData = unknown,
@@ -57,6 +61,12 @@ export const withQueryOptionsAuthentication = <
  * `withQueryOptionsAuthentication` plus the reactive counterpart: subscribes
  * to the auth state so the observer re-renders (and starts/stops fetching)
  * when the session appears, drops, or needs relogin.
+ *
+ * Once another account is active, an observer rendered for this one stops
+ * fetching, even before it re-renders: the request would carry the other
+ * account's cookies and cache its data under this account's key. TanStack
+ * Query does not read `enabled` for a manual `refetch()`, or for an interval
+ * tick scheduled before the change.
  */
 export const useQueryOptionsWithAuthentication = <
   TQueryFnData = unknown,
@@ -67,12 +77,20 @@ export const useQueryOptionsWithAuthentication = <
   options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
 ): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> => {
   const isAuthenticated = useIsAuthenticated()
+  const renderedProfileId = useActiveProfileId()
   const { enabled: callerEnabled } = options
 
   return withQueryOptionsAuthentication({
     ...options,
     enabled: function enabledWhileAuthenticated(query) {
-      return isAuthenticated && resolveCallerEnabled(callerEnabled, query)
+      const isRenderedProfileStillActive =
+        renderedProfileId === getActiveProfileId()
+
+      return (
+        isAuthenticated &&
+        isRenderedProfileStillActive &&
+        resolveCallerEnabled(callerEnabled, query)
+      )
     },
   })
 }
