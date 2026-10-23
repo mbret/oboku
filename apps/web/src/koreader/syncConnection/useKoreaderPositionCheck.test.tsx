@@ -1,6 +1,7 @@
 import {
   type BookDocType,
   createBookDefaults,
+  emptyBookmark,
   type KoreaderSyncConnectionDto,
   type KoreaderSyncPositionDto,
   ObokuErrorCode,
@@ -74,6 +75,7 @@ vi.mock(
   },
 )
 
+import { getOrCreateInstallationId } from "../../common/browser"
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
@@ -82,6 +84,7 @@ import { useKoreaderPositionCheck } from "./useKoreaderPositionCheck"
 const BOOK_ID = "book-1"
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
+const BOOKMARK_KOREADER_PROGRESS = "/body/DocFragment[3]/body/p[2]/text().0"
 
 const CONNECTION: KoreaderSyncConnectionDto = {
   serverUrl: "https://sync.example.com",
@@ -99,8 +102,7 @@ const STORED_BOOK: BookDocType = {
   readingStateCurrentBookmarkLocation: "epubcfi(/6/4!/4/2/1:0)",
   readingStateCurrentBookmarkLocationUpdatedAt: "2026-10-20T08:00:00.000Z",
   readingStateCurrentBookmarkProgressPercent: 0.2,
-  readingStateCurrentBookmarkKoreaderProgress:
-    "/body/DocFragment[3]/body/p[2]/text().0",
+  readingStateCurrentBookmarkKoreaderProgress: BOOKMARK_KOREADER_PROGRESS,
   readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
 }
 
@@ -335,6 +337,107 @@ describe("useKoreaderPositionCheck", () => {
         readingStateCurrentBookmarkLocationUpdatedAt: takenAt,
       }),
     )
+  })
+
+  it("keeps the bookmark when a server that does not date its positions has one short of it", async () => {
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: {
+        position: {
+          ...NEWER_SERVER_POSITION,
+          updatedAt: null,
+          percentage: 0.1,
+        },
+      },
+    })
+    openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).not.toHaveBeenCalled()
+  })
+
+  it("keeps the bookmark when this installation pushed the server's position", async () => {
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: {
+        position: {
+          ...NEWER_SERVER_POSITION,
+          deviceId: getOrCreateInstallationId(),
+        },
+      },
+    })
+    openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).not.toHaveBeenCalled()
+  })
+
+  it("keeps the bookmark when the server's position is its own place in the opened file", async () => {
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: {
+        position: {
+          ...NEWER_SERVER_POSITION,
+          progress: BOOKMARK_KOREADER_PROGRESS,
+        },
+      },
+    })
+    openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).not.toHaveBeenCalled()
+  })
+
+  it("takes a newer position at the bookmark's place when that place is in another file", async () => {
+    mocks.state.book = {
+      ...STORED_BOOK,
+      readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
+    }
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValueOnce({
+      data: {
+        position: {
+          ...NEWER_SERVER_POSITION,
+          progress: BOOKMARK_KOREADER_PROGRESS,
+        },
+      },
+    })
+    openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).toHaveBeenCalledOnce()
+  })
+
+  it("takes the server's position over a bookmark that was never dated, and for a book without a bookmark", async () => {
+    const olderServerPosition = {
+      ...NEWER_SERVER_POSITION,
+      updatedAt: "2026-10-20T07:00:00.000Z",
+    }
+    const { openBook, pullPosition } = createCheckHarness()
+    pullPosition.mockResolvedValue({ data: { position: olderServerPosition } })
+
+    mocks.state.book = {
+      ...STORED_BOOK,
+      readingStateCurrentBookmarkLocationUpdatedAt: null,
+    }
+    const { unmount } = openBook()
+    await vi.advanceTimersByTimeAsync(0)
+    unmount()
+    await vi.advanceTimersByTimeAsync(0)
+
+    mocks.state.book = {
+      ...STORED_BOOK,
+      ...emptyBookmark,
+      readingStateCurrentBookmarkLocationUpdatedAt: null,
+    }
+    openBook()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).toHaveBeenCalledTimes(2)
   })
 
   it("keeps the bookmark when the server keeps no position", async () => {
