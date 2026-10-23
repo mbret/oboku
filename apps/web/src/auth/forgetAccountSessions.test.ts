@@ -87,7 +87,7 @@ describe("forgetAccountSessions", () => {
     expect(dropboxAuthSignal.getValue()).toBeUndefined()
   })
 
-  it("forgets the OneDrive account so the next account in this tab does not inherit it", () => {
+  it("forgets the OneDrive account when no MSAL client is open", () => {
     msalAccountSignal.next({
       homeAccountId: "home-account-id",
       environment: "login.microsoftonline.com",

@@ -49,10 +49,13 @@ export const completeAuthentication = ({
             sessionId: auth.sessionId,
           })
 
+          if (switchedAccount) {
+            forgetAccountSessions()
+          }
+
           setActiveProfileId(auth.nameHex)
 
           if (switchedAccount) {
-            forgetAccountSessions()
             /**
              * Commit the new session (profile row + active id) *before* resetting
              * so the refetches `resetQueries` triggers read the new account's
