@@ -6,7 +6,8 @@ import {
 } from "reactjrx"
 import { catchError, combineLatest, defer, from, map, mergeMap } from "rxjs"
 import { GapiNotAvailableError } from "./errors"
-import { loadScript, retryOnFailure } from "../../../common/scripts"
+import { retryOnFailure } from "../../../common/rxjs/operators"
+import { loadScript } from "../../../common/scripts"
 import { useConfig } from "../../../config/useConfig"
 
 const ID = "oboku-google-api-script"
