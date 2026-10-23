@@ -52,7 +52,7 @@ my book [oboku~metadata-ignore-file].epub
 
 Tells oboku to not use any information from the file itself to build the metadata. It can be useful if for exemple you don't want the cover to be the first image from the file or if the epub file is not good enough for you and contain invalid information.
 
-Remember that the `file` source metadata takes priority over other sources such as google API but not the `user` source.
+Remember that the `file` source metadata takes priority over other sources such as the catalog but not the `user` source.
 
 ## `google-volume-id~{id}` { #google-volume-id-id }
 
@@ -64,7 +64,7 @@ Files only
 my book [oboku~google-volume-id~xDoiuklsd23].epub
 ```
 
-Tells oboku fetch google metadata from the volume id rather than trying to guess based on the other infos. This help having more accurate metadata with google.
+Tells oboku to look the book up in Google Books by this volume id rather than guessing from the other information, which gives more accurate metadata. Google Books is only asked when the server has a [Google API key](/self-hosting/configuration/enable-features#enable-google-book-metadata).
 
 ## `metadata-ignore-sources`
 
