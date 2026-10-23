@@ -57,6 +57,7 @@ import { createDatabase } from "../../rxdb/databases.shared"
 import { useSyncKoreaderPositions } from "./useSyncKoreaderPositions"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
+const KOREADER_DOCUMENT = "document-a"
 const FIRST_MOVE_AT = "2026-10-20T08:00:00.000Z"
 const SECOND_MOVE_AT = "2026-10-20T09:00:00.000Z"
 
@@ -66,7 +67,7 @@ const toBookmarkAt = (progress: string, movedAt: string) => ({
   readingStateCurrentBookmarkLocationUpdatedAt: movedAt,
   readingStateCurrentBookmarkProgressPercent: 0.1,
   readingStateCurrentBookmarkKoreaderProgress: progress,
-  readingStateCurrentBookmarkKoreaderDocument: "document-a",
+  readingStateCurrentBookmarkKoreaderDocument: KOREADER_DOCUMENT,
 })
 
 const openDatabase = async (name: string) => {
@@ -85,9 +86,8 @@ const waitForWaitingMoveOf = (
   firstValueFrom(
     database.koreaderpush.find().$.pipe(
       map(function toMovedAtOfBook(waitingMoves) {
-        return waitingMoves.find(
-          (waitingMove) => waitingMove.primary === bookId,
-        )?.movedAt
+        return waitingMoves.find((waitingMove) => waitingMove.bookId === bookId)
+          ?.movedAt
       }),
       filter(isAwaitedMovedAt),
     ),
@@ -143,7 +143,11 @@ describe("useSyncKoreaderPositions, with the account's database", () => {
     })
     setOnLine(false)
     const runBeforeClosing = renderSyncKoreaderPositions()
-    dispatchBookmarkMoved({ bookId: book._id, movedAt: FIRST_MOVE_AT })
+    dispatchBookmarkMoved({
+      bookId: book._id,
+      koreaderDocument: KOREADER_DOCUMENT,
+      movedAt: FIRST_MOVE_AT,
+    })
     await waitForWaitingMoveOf(
       database,
       book._id,
@@ -189,7 +193,11 @@ describe("useSyncKoreaderPositions, with the account's database", () => {
     })
     renderSyncKoreaderPositions()
     const firstPush = nextPush()
-    dispatchBookmarkMoved({ bookId: book._id, movedAt: FIRST_MOVE_AT })
+    dispatchBookmarkMoved({
+      bookId: book._id,
+      koreaderDocument: KOREADER_DOCUMENT,
+      movedAt: FIRST_MOVE_AT,
+    })
     await waitForWaitingMoveOf(
       database,
       book._id,
@@ -207,7 +215,11 @@ describe("useSyncKoreaderPositions, with the account's database", () => {
       toBookmarkAt("/body/DocFragment[2]/body/p[9]/text().0", SECOND_MOVE_AT),
     )
     const secondPush = nextPush()
-    dispatchBookmarkMoved({ bookId: book._id, movedAt: SECOND_MOVE_AT })
+    dispatchBookmarkMoved({
+      bookId: book._id,
+      koreaderDocument: KOREADER_DOCUMENT,
+      movedAt: SECOND_MOVE_AT,
+    })
     await waitForWaitingMoveOf(
       database,
       book._id,

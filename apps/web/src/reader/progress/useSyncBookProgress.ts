@@ -67,7 +67,11 @@ export const useSyncBookProgress = (
                 return isBookmarkMovedAt(book, savedAt)
               }),
               tap(function dispatchBookmarkMovedBySave() {
-                dispatchBookmarkMoved({ bookId, movedAt: savedAt })
+                dispatchBookmarkMoved({
+                  bookId,
+                  koreaderDocument,
+                  movedAt: savedAt,
+                })
               }),
               catchError(logSyncError),
             )

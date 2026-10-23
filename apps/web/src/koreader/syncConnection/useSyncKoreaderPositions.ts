@@ -8,7 +8,6 @@ import {
   EMPTY,
   filter,
   groupBy,
-  map,
   mergeMap,
   of,
   switchMap,
@@ -22,19 +21,26 @@ import { reportErrors } from "../../common/rxjs/operators"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { bookmarkMoved$ } from "../../reader/events"
 import { isBookmarkMovedAt } from "../../reader/progress/bookProgressPatches"
+import type { KoreaderPushDocType } from "../../rxdb/collections/koreaderPush"
 import { useDatabase } from "../../rxdb/RxDbProvider"
 import { usePushKoreaderPosition } from "./usePushKoreaderPosition"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
 
+type BookmarkMove = Pick<KoreaderPushDocType, "bookId" | "movedAt">
+
+const isSameMove = (move: BookmarkMove, otherMove: BookmarkMove) =>
+  move.bookId === otherMove.bookId && move.movedAt === otherMove.movedAt
+
 /**
  * Pushes the KOReader position of each bookmark moved by reading on this
  * device, once it has stayed put for a few seconds, the device is online and
  * the account is signed in. Moves are recorded on this device, so a move oboku
- * closed before pushing is pushed at the next start. A move is pushed only
- * under the profile that made it, and not once the bookmark has moved on from
- * it. A failed push is retried once the device is online, waiting twice as
- * long each time, up to five minutes.
+ * closed before pushing is pushed at the next start. Books with the same file
+ * share one KOReader position, so only the latest move among them is pushed.
+ * A move is pushed only under the profile that made it, and not once the
+ * bookmark has moved on from it. A failed push is retried once the device is
+ * online, waiting twice as long each time, up to five minutes.
  */
 export const useSyncKoreaderPositions = () => {
   const { db: database } = useDatabase()
@@ -50,10 +56,11 @@ export const useSyncKoreaderPositions = () => {
 
       const subscription = bookmarkMoved$
         .pipe(
-          concatMap(function recordMove({ bookId, movedAt }) {
+          concatMap(function recordMove({ bookId, koreaderDocument, movedAt }) {
             return defer(function writeWaitingMove() {
               return database.koreaderpush.incrementalUpsert({
-                _id: bookId,
+                _id: koreaderDocument,
+                bookId,
                 profileId: activeProfileId,
                 movedAt,
               })
@@ -78,13 +85,14 @@ export const useSyncKoreaderPositions = () => {
     function pushRecordedMoves() {
       if (!database || !isAuthenticated) return
 
-      const pushMove = (bookId: string, movedAt: string) =>
+      const pushMove = (koreaderDocument: string, move: BookmarkMove) =>
         whenOnLine$.pipe(
           concatMap(function readBook() {
-            return getBookById({ database, id: bookId })
+            return getBookById({ database, id: move.bookId })
           }),
           concatMap(function pushWhileBookmarkIsAtMove(book) {
-            const isBookmarkAtMove = !!book && isBookmarkMovedAt(book, movedAt)
+            const isBookmarkAtMove =
+              !!book && isBookmarkMovedAt(book, move.movedAt)
 
             return isBookmarkAtMove
               ? fromAbortable(function pushBookmark(signal) {
@@ -95,11 +103,9 @@ export const useSyncKoreaderPositions = () => {
           retryOnFailure,
           concatMap(function forgetHandledMove() {
             return database.koreaderpush
-              .findOne(bookId)
+              .findOne(koreaderDocument)
               .incrementalModify(function forgetUnlessMovedAgain(waitingMove) {
-                const isStillThisMove = waitingMove.movedAt === movedAt
-
-                return isStillThisMove
+                return isSameMove(waitingMove, move)
                   ? { ...waitingMove, _deleted: true }
                   : waitingMove
               })
@@ -119,18 +125,15 @@ export const useSyncKoreaderPositions = () => {
           filter(function isMadeUnderActiveProfile(waitingMove) {
             return waitingMove.profileId === activeProfileId
           }),
-          groupBy(function byBook(waitingMove) {
+          groupBy(function byKoreaderDocument(waitingMove) {
             return waitingMove.primary
           }),
-          mergeMap(function pushLatestMoveOfBook(waitingMovesOfBook$) {
-            return waitingMovesOfBook$.pipe(
-              map(function toMovedAt(waitingMove) {
-                return waitingMove.movedAt
-              }),
-              distinctUntilChanged(),
+          mergeMap(function pushLatestMoveOfDocument(waitingMovesOfDocument$) {
+            return waitingMovesOfDocument$.pipe(
+              distinctUntilChanged(isSameMove),
               debounceTime(KOREADER_SYNC_DEBOUNCE_MS),
-              switchMap(function pushSettledMove(movedAt) {
-                return pushMove(waitingMovesOfBook$.key, movedAt)
+              switchMap(function pushSettledMove(waitingMove) {
+                return pushMove(waitingMovesOfDocument$.key, waitingMove)
               }),
             )
           }),

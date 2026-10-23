@@ -65,12 +65,14 @@ const PUSH_RETRY_DELAY_MS = 1000
 const PUSH_RETRY_MAX_DELAY_MS = 5 * 60 * 1000
 
 type KoreaderPlace = {
+  bookId: string
   document: string
   progress: string | null
   percentage: number
 }
 
 const BOOK_A_PLACE: KoreaderPlace = {
+  bookId: "book-a",
   document: "document-a",
   progress: "/body/DocFragment[2]/body/p[1]/text().0",
   percentage: 0.1,
@@ -80,13 +82,18 @@ const BOOK_A_LATER_PLACE: KoreaderPlace = {
   progress: "/body/DocFragment[2]/body/p[9]/text().0",
   percentage: 0.2,
 }
+const BOOK_A_COPY_PLACE: KoreaderPlace = {
+  ...BOOK_A_PLACE,
+  bookId: "copy-of-book-a",
+  progress: "/body/DocFragment[2]/body/p[5]/text().0",
+  percentage: 0.15,
+}
 const BOOK_B_PLACE: KoreaderPlace = {
+  bookId: "book-b",
   document: "document-b",
   progress: "12",
   percentage: 0.5,
 }
-
-const toBookId = ({ document }: KoreaderPlace) => `book-of-${document}`
 
 const toFakeDocument = <Data extends { _id: string }>(data: Data) => ({
   ...data,
@@ -108,10 +115,10 @@ const createFakeDatabase = () => {
     )
   }
 
-  const deleteWaitingMove = (bookId: string) => {
+  const deleteWaitingMove = (koreaderDocument: string) => {
     const waitingMoves = new Map(waitingMoves$.getValue())
 
-    waitingMoves.delete(bookId)
+    waitingMoves.delete(koreaderDocument)
     waitingMoves$.next(waitingMoves)
   }
 
@@ -148,14 +155,14 @@ const createFakeDatabase = () => {
           ),
         }
       },
-      findOne: function findFakeWaitingMove(bookId: string) {
+      findOne: function findFakeWaitingMove(koreaderDocument: string) {
         return {
           incrementalModify: async function modifyFakeWaitingMove(
             modify: (
               waitingMove: KoreaderPushDocType & { _deleted: boolean },
             ) => KoreaderPushDocType & { _deleted?: boolean },
           ) {
-            const waitingMove = waitingMoves$.getValue().get(bookId)
+            const waitingMove = waitingMoves$.getValue().get(koreaderDocument)
 
             if (!waitingMove) return
 
@@ -165,7 +172,7 @@ const createFakeDatabase = () => {
             })
 
             if (_deleted) {
-              deleteWaitingMove(bookId)
+              deleteWaitingMove(koreaderDocument)
             } else {
               writeWaitingMove(modified)
             }
@@ -178,7 +185,8 @@ const createFakeDatabase = () => {
   return {
     database,
     books,
-    getWaitingMove: (bookId: string) => waitingMoves$.getValue().get(bookId),
+    getWaitingMove: (koreaderDocument: string) =>
+      waitingMoves$.getValue().get(koreaderDocument),
     writeWaitingMove,
   }
 }
@@ -195,7 +203,7 @@ const nextMoveTime = () => {
 
 const toBookAt = (place: KoreaderPlace, movedAt: string): BookDocType => ({
   ...createBookDefaults(),
-  _id: toBookId(place),
+  _id: place.bookId,
   _rev: "2-book",
   rx_model: "book",
   rxdbMeta: { lwt: 1 },
@@ -223,7 +231,11 @@ const moveBookmarkTo = (fakeDatabase: FakeDatabase, place: KoreaderPlace) => {
   const movedAt = nextMoveTime()
   const book = storeBookAt(fakeDatabase, place, movedAt)
 
-  dispatchBookmarkMoved({ bookId: book._id, movedAt })
+  dispatchBookmarkMoved({
+    bookId: book._id,
+    koreaderDocument: place.document,
+    movedAt,
+  })
 
   return book
 }
@@ -347,7 +359,7 @@ describe("useSyncKoreaderPositions", () => {
     answerFirstPush()
     await vi.advanceTimersByTimeAsync(0)
 
-    expect(fakeDatabase.getWaitingMove(latestBook._id)?.movedAt).toBe(
+    expect(fakeDatabase.getWaitingMove(BOOK_A_PLACE.document)?.movedAt).toBe(
       latestBook.readingStateCurrentBookmarkLocationUpdatedAt,
     )
 
@@ -386,6 +398,21 @@ describe("useSyncKoreaderPositions", () => {
       ...BOOK_A_LATER_PLACE,
       progress: null,
     })
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+
+    setOnLine(true)
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledExactlyOnceWith(
+      toPushedBook(latestBook),
+    )
+  })
+
+  it("pushes only the latest move among books with the same file", async () => {
+    setOnLine(false)
+    renderSyncKoreaderPositions()
+    moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
+    const latestBook = moveBookmarkTo(fakeDatabase, BOOK_A_COPY_PLACE)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
 
     setOnLine(true)
@@ -445,7 +472,8 @@ describe("useSyncKoreaderPositions", () => {
     const movedAt = nextMoveTime()
     const book = storeBookAt(fakeDatabase, BOOK_A_PLACE, movedAt)
     fakeDatabase.writeWaitingMove({
-      _id: book._id,
+      _id: BOOK_A_PLACE.document,
+      bookId: book._id,
       profileId: PROFILE_ID,
       movedAt,
     })
@@ -460,11 +488,11 @@ describe("useSyncKoreaderPositions", () => {
 
   it("forgets a pushed move, so the next start does not push it again", async () => {
     const { unmount } = renderSyncKoreaderPositions()
-    const book = moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
+    moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
     unmount()
 
-    expect(fakeDatabase.getWaitingMove(book._id)).toBeUndefined()
+    expect(fakeDatabase.getWaitingMove(BOOK_A_PLACE.document)).toBeUndefined()
 
     renderSyncKoreaderPositions()
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
@@ -475,7 +503,7 @@ describe("useSyncKoreaderPositions", () => {
   it("forgets without pushing a move the bookmark has moved on from", async () => {
     setOnLine(false)
     renderSyncKoreaderPositions()
-    const movedBook = moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
+    moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
     storeBookAt(fakeDatabase, BOOK_A_LATER_PLACE)
 
@@ -483,14 +511,15 @@ describe("useSyncKoreaderPositions", () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(mocks.pushKoreaderPosition).not.toHaveBeenCalled()
-    expect(fakeDatabase.getWaitingMove(movedBook._id)).toBeUndefined()
+    expect(fakeDatabase.getWaitingMove(BOOK_A_PLACE.document)).toBeUndefined()
   })
 
   it("does not push a move made under another profile", async () => {
     const movedAt = nextMoveTime()
     const book = storeBookAt(fakeDatabase, BOOK_A_PLACE, movedAt)
     fakeDatabase.writeWaitingMove({
-      _id: book._id,
+      _id: BOOK_A_PLACE.document,
+      bookId: book._id,
       profileId: OTHER_PROFILE_ID,
       movedAt,
     })

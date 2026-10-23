@@ -811,10 +811,12 @@ describe("useSyncBookProgress", () => {
       expect(onBookmarkMoved).toHaveBeenCalledTimes(2)
       expect(onBookmarkMoved).toHaveBeenNthCalledWith(1, {
         bookId: book._id,
+        koreaderDocument: KOREADER_DOCUMENT,
         movedAt: movedToFirstPageAt,
       })
       expect(onBookmarkMoved).toHaveBeenLastCalledWith({
         bookId: book._id,
+        koreaderDocument: KOREADER_DOCUMENT,
         movedAt: mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
       })
       expect(movedToFirstPageAt).not.toBe(
@@ -877,6 +879,7 @@ describe("useSyncBookProgress", () => {
       )
       expect(onBookmarkMoved).toHaveBeenCalledExactlyOnceWith({
         bookId: book._id,
+        koreaderDocument: KOREADER_DOCUMENT,
         movedAt: mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
       })
     })
