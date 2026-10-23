@@ -234,7 +234,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: AutoAwesomeRounded,
         title: "Automatic metadata",
         description:
-          "Read from the file itself, then completed from Google Books, MangaDex, MangaUpdates, ComicVine and more.",
+          "Read from the file itself, then completed from Google Books, Open Library, MangaDex, MangaUpdates, ComicVine and more.",
       },
       {
         Icon: CollectionsBookmarkRounded,
