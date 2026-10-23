@@ -31,6 +31,7 @@ vi.mock("../queries/persister", () => ({
 }))
 
 import { STORAGE_PROFILE_KEY } from "../config"
+import { inboxNotificationsQueryKey } from "../notifications/inbox/queryKeys"
 import {
   clearActiveProfileId,
   setActiveProfileId,
@@ -47,13 +48,6 @@ const createProfile = (id: string): Profile => ({
   dbName: `${id}-db`,
   sessionId: `session-${id}`,
 })
-
-const notificationsQueryKey = (profileId: string | undefined) => [
-  "api",
-  "notifications",
-  profileId,
-  "list",
-]
 
 const syncReportsQueryKey = () => ["api/datasourceReport"]
 
@@ -90,6 +84,15 @@ const renderQueryOfActiveProfile = ({
     },
   )
 
+const switchAccountFromAnotherTab = async (
+  queryClient: QueryClient,
+  profileId: string,
+) => {
+  localStorage.setItem(STORAGE_PROFILE_KEY, profileId)
+  syncActiveProfileIdFromStorage()
+  await resetSessionQueries(queryClient)
+}
+
 describe("useQueryOptionsWithAuthentication", () => {
   afterEach(() => {
     cleanup()
@@ -104,7 +107,7 @@ describe("useQueryOptionsWithAuthentication", () => {
     const fetchNotifications = vi.fn(async () => "notifications")
     renderQueryOfActiveProfile({
       queryClient,
-      queryKeyOf: notificationsQueryKey,
+      queryKeyOf: inboxNotificationsQueryKey,
       fetchForProfile: fetchNotifications,
     })
 
@@ -117,55 +120,87 @@ describe("useQueryOptionsWithAuthentication", () => {
     expect(fetchNotifications).toHaveBeenCalledTimes(2)
   })
 
-  it("does not fetch for an account once another tab made another one active", async () => {
-    profilesStore.set("reader", createProfile("reader"))
-    setActiveProfileId("reader")
-    const queryClient = new QueryClient()
-    const fetchNotifications = vi.fn(async () => "notifications")
-    renderQueryOfActiveProfile({
-      queryClient,
-      queryKeyOf: notificationsQueryKey,
-      fetchForProfile: fetchNotifications,
+  describe("after another tab switches accounts", () => {
+    it("fetches for the next account only, under a key that names the account", async () => {
+      profilesStore.set("reader", createProfile("reader"))
+      profilesStore.set("next-reader", createProfile("next-reader"))
+      setActiveProfileId("reader")
+      const queryClient = new QueryClient()
+      const fetchNotifications = vi.fn(async () => "notifications")
+      renderQueryOfActiveProfile({
+        queryClient,
+        queryKeyOf: inboxNotificationsQueryKey,
+        fetchForProfile: fetchNotifications,
+      })
+
+      await waitFor(() => {
+        expect(fetchNotifications).toHaveBeenCalledWith("reader")
+      })
+
+      await act(() => switchAccountFromAnotherTab(queryClient, "next-reader"))
+
+      await waitFor(() => {
+        expect(fetchNotifications).toHaveBeenLastCalledWith("next-reader")
+      })
+      expect(fetchNotifications.mock.calls).toEqual([
+        ["reader"],
+        ["next-reader"],
+      ])
     })
 
-    await waitFor(() => {
-      expect(fetchNotifications).toHaveBeenCalledWith("reader")
+    it("fetches for the next account only, under a key that does not name the account", async () => {
+      profilesStore.set("reader", createProfile("reader"))
+      profilesStore.set("next-reader", createProfile("next-reader"))
+      setActiveProfileId("reader")
+      const queryClient = new QueryClient()
+      const fetchSyncReports = vi.fn(async () => "reports")
+      renderQueryOfActiveProfile({
+        queryClient,
+        queryKeyOf: syncReportsQueryKey,
+        fetchForProfile: fetchSyncReports,
+      })
+
+      await waitFor(() => {
+        expect(fetchSyncReports).toHaveBeenCalledWith("reader")
+      })
+
+      await act(() => switchAccountFromAnotherTab(queryClient, "next-reader"))
+
+      await waitFor(() => {
+        expect(fetchSyncReports).toHaveBeenLastCalledWith("next-reader")
+      })
+      expect(fetchSyncReports.mock.calls).toEqual([["reader"], ["next-reader"]])
     })
 
-    await act(async () => {
+    it("does not fetch before this tab adopts the switch", async () => {
+      profilesStore.set("reader", createProfile("reader"))
+      profilesStore.set("next-reader", createProfile("next-reader"))
+      setActiveProfileId("reader")
+      const queryClient = new QueryClient()
+      const fetchNotifications = vi.fn(async () => "notifications")
+      renderQueryOfActiveProfile({
+        queryClient,
+        queryKeyOf: inboxNotificationsQueryKey,
+        fetchForProfile: fetchNotifications,
+      })
+
+      await waitFor(() => {
+        expect(fetchNotifications).toHaveBeenCalledWith("reader")
+      })
+
       localStorage.setItem(STORAGE_PROFILE_KEY, "next-reader")
-      syncActiveProfileIdFromStorage()
-      await resetSessionQueries(queryClient)
-    })
+      await act(() => queryClient.refetchQueries())
+      act(() => {
+        syncActiveProfileIdFromStorage()
+      })
 
-    expect(fetchNotifications).toHaveBeenCalledTimes(1)
-  })
-
-  it("fetches for the next account once it re-renders, under a key that does not name the account", async () => {
-    profilesStore.set("reader", createProfile("reader"))
-    profilesStore.set("next-reader", createProfile("next-reader"))
-    setActiveProfileId("reader")
-    const queryClient = new QueryClient()
-    const fetchSyncReports = vi.fn(async () => "reports")
-    renderQueryOfActiveProfile({
-      queryClient,
-      queryKeyOf: syncReportsQueryKey,
-      fetchForProfile: fetchSyncReports,
+      await waitFor(() => {
+        expect(fetchNotifications).toHaveBeenLastCalledWith("next-reader")
+      })
+      expect(fetchNotifications.mock.calls).toEqual([
+        ["reader"],
+        ["next-reader"],
+      ])
     })
-
-    await waitFor(() => {
-      expect(fetchSyncReports).toHaveBeenCalledWith("reader")
-    })
-
-    await act(async () => {
-      localStorage.setItem(STORAGE_PROFILE_KEY, "next-reader")
-      syncActiveProfileIdFromStorage()
-      await resetSessionQueries(queryClient)
-    })
-
-    await waitFor(() => {
-      expect(fetchSyncReports).toHaveBeenCalledTimes(2)
-    })
-    expect(fetchSyncReports).toHaveBeenLastCalledWith("next-reader")
   })
 })
