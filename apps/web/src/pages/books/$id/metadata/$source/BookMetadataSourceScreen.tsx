@@ -1,8 +1,12 @@
 import { memo, useMemo } from "react"
 import { type PathParam, useParams } from "react-router"
 import { Stack, Typography, styled } from "@mui/material"
-import type { BookMetadata } from "@oboku/shared"
-import type { DeepReadonlyArray, DeepReadonlyObject } from "rxdb"
+import {
+  type BookMetadata,
+  getBookMetadataSource,
+  LEGACY_CATALOG_SOURCE_NAME,
+} from "@oboku/shared"
+import type { DeepReadonlyArray } from "rxdb"
 import { NotFoundPage } from "../../../../../common/NotFoundPage"
 import { Page } from "../../../../../common/Page"
 import { TopBarNavigation } from "../../../../../navigation/TopBarNavigation"
@@ -13,8 +17,8 @@ import {
   isBookMetadataSource,
 } from "../../../../../books/metadata/sources"
 import {
+  CatalogSourceContent,
   FileSourceContent,
-  GoogleBookApiSourceContent,
   LinkSourceContent,
   UserSourceContent,
 } from "../../../../../books/details/metadataSource"
@@ -39,24 +43,18 @@ const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
 const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
   link: "Information exposed on the storage provider link.",
   file: "Information embedded inside the file itself.",
-  googleBookApi: "Information fetched from the Google Books API.",
+  catalog: "Information an online catalog holds about the book.",
   user: "Information you entered manually.",
 }
 
 /**
- * Narrows a single entry of `book.metadata` to the requested variant.
- * Returns `undefined` when the book has no entry of that type yet.
+ * The entry of `book.metadata` the requested source holds, or `undefined`
+ * when the book has none yet.
  */
-const findSourceMetadata = <TSource extends BookMetadataSource>(
+const findSourceEntry = (
   metadata: DeepReadonlyArray<BookMetadata> | undefined,
-  source: TSource,
-): DeepReadonlyObject<Extract<BookMetadata, { type: TSource }>> | undefined =>
-  metadata?.find(
-    (
-      item,
-    ): item is DeepReadonlyObject<Extract<BookMetadata, { type: TSource }>> =>
-      item.type === source,
-  )
+  source: BookMetadataSource,
+) => metadata?.find((entry) => getBookMetadataSource(entry) === source)
 
 export const BookMetadataSourceScreen = memo(
   function BookMetadataSourceScreen() {
@@ -65,11 +63,9 @@ export const BookMetadataSourceScreen = memo(
     const { data: book } = useBook({ id: bookId })
 
     const validSource = isBookMetadataSource(source) ? source : undefined
-    const metadata = useMemo(
+    const entry = useMemo(
       () =>
-        validSource
-          ? findSourceMetadata(book?.metadata, validSource)
-          : undefined,
+        validSource ? findSourceEntry(book?.metadata, validSource) : undefined,
       [book?.metadata, validSource],
     )
 
@@ -94,25 +90,28 @@ export const BookMetadataSourceScreen = memo(
           </SourceIntroStack>
           {validSource === "link" && (
             <LinkSourceContent
-              metadata={metadata?.type === "link" ? metadata : undefined}
+              metadata={entry?.type === "link" ? entry : undefined}
             />
           )}
           {validSource === "file" && (
             <FileSourceContent
-              metadata={metadata?.type === "file" ? metadata : undefined}
+              entry={entry?.type === "file" ? entry : undefined}
             />
           )}
-          {validSource === "googleBookApi" && (
-            <GoogleBookApiSourceContent
-              metadata={
-                metadata?.type === "googleBookApi" ? metadata : undefined
+          {validSource === "catalog" && (
+            <CatalogSourceContent
+              entry={
+                entry?.type === "catalog" ||
+                entry?.type === LEGACY_CATALOG_SOURCE_NAME
+                  ? entry
+                  : undefined
               }
             />
           )}
           {validSource === "user" && (
             <UserSourceContent
               bookId={bookId}
-              metadata={metadata?.type === "user" ? metadata : undefined}
+              metadata={entry?.type === "user" ? entry : undefined}
             />
           )}
         </MetadataSourcePageContainer>

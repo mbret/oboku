@@ -1,4 +1,4 @@
-import type { FileMetadata } from "@oboku/shared"
+import type { LegacyFileMetadata } from "@oboku/shared"
 import {
   type Archive,
   identifierValue,
@@ -30,7 +30,7 @@ const toMutableList = (
 export const getMetadataFromArchive = async (
   archive: Archive,
   contentType: string,
-): Promise<FileMetadata> => {
+): Promise<LegacyFileMetadata> => {
   const { metadata, unreadableSources } = await resolveArchive(archive, {
     include: ["metadata"],
   })

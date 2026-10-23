@@ -1,4 +1,4 @@
 export { FileSourceContent } from "./FileSourceContent"
-export { GoogleBookApiSourceContent } from "./GoogleBookApiSourceContent"
+export { CatalogSourceContent } from "./CatalogSourceContent"
 export { LinkSourceContent } from "./LinkSourceContent"
 export { UserSourceContent } from "./UserSourceContent"

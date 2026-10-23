@@ -3,6 +3,8 @@ import {
   type BookMetadata,
   buildBookBucketCoverKey,
   getBookCoverKey,
+  getBookMetadataFields,
+  getBookMetadataSource,
 } from "@oboku/shared"
 import type { Archive } from "@prose-reader/archive-reader"
 import { saveCoverFromArchiveToBucket } from "../../lib/books/covers/saveCoverFromArchiveToBucket.js"
@@ -44,12 +46,16 @@ export const updateCover = async ({
     book.metadataSourcePriority,
     { catalogIdentityIsConfirmed },
   )
-  const expectedBucketCoverKey = metadataForCover?.coverLink
-    ? buildBookBucketCoverKey({
-        type: metadataForCover.type,
-        value: metadataForCover.coverLink,
-      })
+  const coverLink = metadataForCover
+    ? getBookMetadataFields(metadataForCover).coverLink
     : undefined
+  const expectedBucketCoverKey =
+    metadataForCover && coverLink
+      ? buildBookBucketCoverKey({
+          type: metadataForCover.type,
+          value: coverLink,
+        })
+      : undefined
 
   if (
     !force &&
@@ -64,15 +70,11 @@ export const updateCover = async ({
     return {}
   }
 
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    archive
-  ) {
+  if (metadataForCover?.type === "file" && coverLink && archive) {
     const saved = await saveCoverFromArchiveToBucket(
       coverObjectKey,
       archive,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 
@@ -81,13 +83,14 @@ export const updateCover = async ({
       : {}
   }
 
-  if (
-    metadataForCover?.type === "googleBookApi" &&
-    metadataForCover.coverLink
-  ) {
+  const isCatalogCover =
+    metadataForCover !== undefined &&
+    getBookMetadataSource(metadataForCover) === "catalog"
+
+  if (isCatalogCover && coverLink) {
     const saved = await saveCoverFromExternalLinkToBucket(
       coverObjectKey,
-      metadataForCover.coverLink,
+      coverLink,
       coversService,
     )
 

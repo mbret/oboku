@@ -2,12 +2,13 @@ import fs from "node:fs"
 import path from "node:path"
 import {
   type BookMetadata,
-  type FileMetadata,
   type LinkMetadata,
   type UserMetadata,
   buildBookBucketCoverKey,
   directives,
   getBookCoverKey,
+  getBookMetadataFields,
+  isLegacyFileMetadata,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
@@ -159,9 +160,7 @@ export const retrieveMetadataAndSaveCover = async (
     const previousLinkMetadata = ctx.book.metadata?.find(
       (entry): entry is LinkMetadata => entry.type === "link",
     )
-    const previousFileMetadata = ctx.book.metadata?.find(
-      (entry): entry is FileMetadata => entry.type === "file",
-    )
+    const previousFileMetadata = ctx.book.metadata?.find(isLegacyFileMetadata)
     const previousUserMetadata = ctx.book.metadata?.find(
       (entry): entry is UserMetadata => entry.type === "user",
     )
@@ -181,15 +180,19 @@ export const retrieveMetadataAndSaveCover = async (
       ],
       ctx.book.metadataSourcePriority,
     )
-    const predictedBucketCoverKey = predictedCoverMetadata?.coverLink
-      ? buildBookBucketCoverKey({
-          type: predictedCoverMetadata.type,
-          value: predictedCoverMetadata.coverLink,
-        })
+    const predictedCoverLink = predictedCoverMetadata
+      ? getBookMetadataFields(predictedCoverMetadata).coverLink
       : undefined
+    const predictedBucketCoverKey =
+      predictedCoverMetadata && predictedCoverLink
+        ? buildBookBucketCoverKey({
+            type: predictedCoverMetadata.type,
+            value: predictedCoverLink,
+          })
+        : undefined
     const fileCoverNeedsRefresh =
       predictedCoverMetadata?.type === "file" &&
-      !!predictedCoverMetadata.coverLink &&
+      !!predictedCoverLink &&
       (predictedBucketCoverKey !== ctx.book.bucketCoverKey ||
         !(await firstValueFrom(coversService.isCoverExist(coverObjectKey))))
 

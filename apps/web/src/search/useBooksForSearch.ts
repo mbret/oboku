@@ -1,4 +1,5 @@
 import { getMetadataFromBook } from "../books/metadata"
+import { getBookMetadataEntryFields } from "../books/metadata/fields"
 import { sortBooksBy } from "../books/helpers"
 import { REGEXP_SPECIAL_CHAR } from "./useCollectionsForSearch"
 import { useMemo } from "react"
@@ -23,16 +24,16 @@ export const useBooksForSearch = (search: string) => {
 
     const matchingBooks = (visibleBooks ?? []).filter(
       function matchesSearch(book) {
-        const metadata = book.metadata?.length
-          ? book.metadata
-          : [getMetadataFromBook(book)]
+        const titles = book.metadata?.length
+          ? book.metadata.map(
+              (entry) => getBookMetadataEntryFields(entry).title,
+            )
+          : [getMetadataFromBook(book).title]
 
-        return metadata?.some(function hasMatchingTitle(item) {
-          const { title } = item
-
+        return titles.some(function hasMatchingTitle(title) {
           if (!title) return false
 
-          const indexOfFirstMatch = title?.toString()?.search(searchRegex) || 0
+          const indexOfFirstMatch = title.toString().search(searchRegex) || 0
 
           return indexOfFirstMatch >= 0
         })
