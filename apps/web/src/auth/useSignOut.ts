@@ -1,11 +1,8 @@
-import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 import {
   clearActiveProfileId,
   getActiveProfileId,
   usePatchProfile,
 } from "../profiles"
-import { setUser } from "@sentry/react"
-import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
 import { deleteProofKey } from "./proofKey"
@@ -13,7 +10,6 @@ import { useReCreateDb } from "../rxdb"
 import { purgeAllDownloads } from "../download/purgeAllDownloads"
 
 export const useSignOut = () => {
-  const signOutPlugins = usePluginsSignOut()
   const resetSessionQueries = useResetSessionQueries()
   const { mutateAsync: patchProfile } = usePatchProfile()
   const { mutateAsync: reCreateDb } = useReCreateDb()
@@ -34,10 +30,8 @@ export const useSignOut = () => {
       Logger.error("Failed to delete the refresh proof key on sign out", error)
     }
 
-    clearTemporaryMasterKey()
-
-    setUser(null)
-
+    // Leaving the account also forgets its plugin sessions and temporary
+    // master key, in every tab (see `ForgetPreviousAccountSessions`).
     clearActiveProfileId()
 
     /**
@@ -80,7 +74,5 @@ export const useSignOut = () => {
         Logger.error("Failed to flag profile as logged out on sign out", error)
       }
     }
-
-    signOutPlugins()
   }
 }

@@ -78,6 +78,16 @@ Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep
 
 `/auth/logout` is therefore `@Public()` and authenticates nothing — an accepted, deliberate tradeoff. Every possession proof is already gone by the time the sweep runs: the proof key was deleted in step 1, the refresh cookie may name a *newer* session, and the access cookie may be expired or the client offline. The revoke must be an unauthenticated, cookie-independent revoke-by-identity or it cannot meet its fail-closed/offline goals. The consequence is that anyone who obtains a session's `sessionId` can force **that one session** to re-authenticate. This is bounded to availability, not access: `revokeBySessionId` deletes a single chain (one installation, not the account); `sessionId` is a 122-bit UUID, so it is not guessable and must be leaked per-victim (sign-in body captured in logs/analytics, shared-device Dexie, or XSS — which already owns the origin and is strictly stronger); and the outcome is a forced re-login with all local data intact. The residual leak vectors are minimised by keeping `sessionId` out of server logs and, if abuse is ever observed, rate-limiting the endpoint.
 
+## Leaving an account
+
+Each time the active profile id changes, `ForgetPreviousAccountSessions` drops the temporary master key and runs every plugin's sign-out (`useSignOut`). It runs before anything renders for the next account. OneDrive's sign-out finishes asynchronously.
+
+The id changes on a sign-out, on a sign-in, and when another account signs in after an expired session: the relogin screen accepts any account. A sign-in forgets the sessions too, in case a plugin login still running at sign-out stored one in between. A relogin to the same account keeps them, as it keeps the local database.
+
+Other tabs follow: on each profiles broadcast, `SyncProfilesAcrossTabs` adopts the active profile id from localStorage, which makes `ForgetPreviousAccountSessions` forget the same sessions there.
+
+An account switch recreates the local database but keeps the downloaded files: purging them would also destroy the device-local (`file` plugin) books, and only sign-out warns about that.
+
 ## Refresh-session storage
 
 Sessions live in Postgres (`refresh_tokens`): one row per issued token, hashed (SHA-256), chained per `(user_id, installation_id)`. Relevant columns:
