@@ -1,31 +1,11 @@
-import {
-  type BookDocType,
-  type KoreaderSyncPositionDto,
-  koreaderSyncConnectionPullPosition,
-} from "@oboku/shared"
-import {
-  type QueryClient,
-  queryOptions,
-  skipToken,
-  useQuery,
-  useQueryClient,
-} from "@tanstack/react-query"
+import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
-import { firstValueFrom, from, timeout } from "rxjs"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
-import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
-import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
+import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
-import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
-import { isKoreaderPositionNewerThanBookmark } from "../isKoreaderPositionNewerThanBookmark"
-import {
-  isKoreaderSyncConnectionMissingError,
-  isKoreaderSyncKeyRefusedError,
-} from "./errors"
-import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
-
-const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
+import { createKoreaderPositionQueryOptions } from "./createKoreaderPositionQueryOptions"
+import { isKoreaderSyncKeyRefusedError } from "./errors"
 
 /**
  * Where the check of a book's KOReader position stands as the book opens.
@@ -37,150 +17,6 @@ export type KoreaderPositionCheck =
   | { status: "failed"; tryAgain: () => void; continueAnyway: () => void }
   | { status: "refused"; continueAnyway: () => void }
   | { status: "done" }
-
-type KoreaderBookmarkUpdate = {
-  position: KoreaderSyncPositionDto
-  koreaderDocument: string
-  savedAt: string
-}
-
-const applyKoreaderBookmark = ({
-  position,
-  koreaderDocument,
-  savedAt,
-}: KoreaderBookmarkUpdate) =>
-  function takeKoreaderPositionAsBookmark(old: BookDocType): BookDocType {
-    return {
-      ...old,
-      readingStateCurrentBookmarkLocation: null,
-      readingStateCurrentBookmarkProgressPercent: position.percentage,
-      readingStateCurrentBookmarkKoreaderProgress: position.progress,
-      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
-      readingStateCurrentBookmarkLocationUpdatedAt:
-        position.updatedAt ?? savedAt,
-    }
-  }
-
-const takeKoreaderPositionWhenNewer = (
-  bookId: string,
-  update: KoreaderBookmarkUpdate,
-) =>
-  firstValueFrom(
-    incrementalBookMutation(
-      bookId,
-      async function writeKoreaderBookmarkWhenNewer(book) {
-        const isPositionNewer = isKoreaderPositionNewerThanBookmark({
-          book: book.toJSON(),
-          position: update.position,
-          koreaderDocument: update.koreaderDocument,
-        })
-
-        if (!isPositionNewer) return
-
-        await book.incrementalModify(applyKoreaderBookmark(update))
-      },
-    ),
-  )
-
-const fetchServerPosition = async ({
-  queryClient,
-  httpClientApi,
-  profileId,
-  document,
-  signal,
-}: {
-  queryClient: QueryClient
-  httpClientApi: HttpApiClientWeb
-  profileId: string | undefined
-  document: string
-  signal: AbortSignal
-}) => {
-  const connectionQueryOptions = createKoreaderSyncConnectionQueryOptions({
-    httpClientApi,
-    profileId,
-  })
-  const { connection } = await queryClient.ensureQueryData(
-    connectionQueryOptions,
-  )
-
-  if (!connection) return null
-
-  try {
-    const { data } = await koreaderSyncConnectionPullPosition({
-      client: httpClientApi.sdkClient,
-      path: { document },
-      signal,
-    })
-
-    return data.position
-  } catch (error) {
-    if (!isKoreaderSyncConnectionMissingError(error)) throw error
-
-    void queryClient.invalidateQueries({
-      queryKey: connectionQueryOptions.queryKey,
-      refetchType: "all",
-    })
-
-    return null
-  }
-}
-
-const createKoreaderPositionQueryOptions = ({
-  queryClient,
-  httpClientApi,
-  profileId,
-  bookId,
-  koreaderDocument,
-  isPulling,
-}: {
-  queryClient: QueryClient
-  httpClientApi: HttpApiClientWeb
-  profileId: string | undefined
-  bookId: string
-  koreaderDocument: string | undefined
-  isPulling: boolean
-}) =>
-  queryOptions({
-    queryKey: [
-      API_QUERY_KEY_PREFIX,
-      "koreader-sync-position",
-      profileId,
-      bookId,
-      koreaderDocument,
-    ],
-    queryFn:
-      isPulling && koreaderDocument !== undefined
-        ? async function syncKoreaderPositionOfBook({ signal }) {
-            const savedAt = new Date().toISOString()
-            const position = await firstValueFrom(
-              from(
-                fetchServerPosition({
-                  queryClient,
-                  httpClientApi,
-                  profileId,
-                  document: koreaderDocument,
-                  signal,
-                }),
-              ).pipe(timeout(KOREADER_POSITION_CHECK_DEADLINE_MS)),
-            )
-
-            if (position) {
-              await takeKoreaderPositionWhenNewer(bookId, {
-                position,
-                koreaderDocument,
-                savedAt,
-              })
-            }
-
-            return position
-          }
-        : skipToken,
-    staleTime: Number.POSITIVE_INFINITY,
-    retry: false,
-    refetchOnWindowFocus: false,
-    refetchOnReconnect: false,
-    networkMode: "always",
-  })
 
 /**
  * Asks the account's KOReader sync server, as the book opens, where the
