@@ -4,7 +4,10 @@ import type {
   QueryKey,
   UseQueryOptions,
 } from "@tanstack/react-query"
-import { getActiveProfileId } from "../profiles/active/activeProfileId"
+import {
+  getActiveProfileId,
+  useActiveProfileId,
+} from "../profiles/active/activeProfileId"
 import { useIsAuthenticated } from "./useIsAuthenticated"
 
 type CallerEnabled<
@@ -57,6 +60,10 @@ export const withQueryOptionsAuthentication = <
  * `withQueryOptionsAuthentication` plus the reactive counterpart: subscribes
  * to the auth state so the observer re-renders (and starts/stops fetching)
  * when the session appears, drops, or needs relogin.
+ *
+ * An observer rendered for one account never fetches once another account is
+ * active, even before it re-renders: the request would carry the other
+ * account's cookies and cache its data under this account's key.
  */
 export const useQueryOptionsWithAuthentication = <
   TQueryFnData = unknown,
@@ -67,12 +74,20 @@ export const useQueryOptionsWithAuthentication = <
   options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
 ): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> => {
   const isAuthenticated = useIsAuthenticated()
+  const renderedProfileId = useActiveProfileId()
   const { enabled: callerEnabled } = options
 
   return withQueryOptionsAuthentication({
     ...options,
     enabled: function enabledWhileAuthenticated(query) {
-      return isAuthenticated && resolveCallerEnabled(callerEnabled, query)
+      const isRenderedProfileStillActive =
+        renderedProfileId === getActiveProfileId()
+
+      return (
+        isAuthenticated &&
+        isRenderedProfileStillActive &&
+        resolveCallerEnabled(callerEnabled, query)
+      )
     },
   })
 }
