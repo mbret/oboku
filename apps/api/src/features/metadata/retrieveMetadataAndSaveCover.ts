@@ -1,25 +1,37 @@
 import fs from "node:fs"
-import path from "node:path"
 import {
   type BookMetadata,
+  type CatalogMetadata,
+  type FileMetadata,
+  type LegacyFileMetadata,
+  type LegacyGoogleBookApiMetadata,
   type LinkMetadata,
   type UserMetadata,
   buildBookBucketCoverKey,
   directives,
   getBookCoverKey,
   getBookMetadataFields,
+  getBookMetadataSource,
   isLegacyFileMetadata,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
 import type nano from "nano"
-import type { Archive } from "@prose-reader/archive-reader"
+import { type Archive, identifierValue } from "@prose-reader/archive-reader"
+import {
+  type FailedMetadataProvider,
+  fetchMetadata,
+  hasSearchTerms,
+} from "@prose-reader/metadata-fetcher"
 import { Logger } from "@nestjs/common"
 import type { Context } from "./types.js"
 import { isBookProtected } from "../../lib/couch/isBookProtected.js"
 import { reduceMetadata } from "../../lib/metadata/reduceMetadata.js"
-import { getBookSourcesMetadata } from "../../lib/metadata/getBookSourcesMetadata.js"
+import { createCatalogProviders } from "../../lib/metadata/catalogProviders.js"
+import { fileMetadataFromLegacy } from "../../lib/metadata/legacy/fileMetadataFromLegacy.js"
 import { getMetadataFromArchive } from "../../lib/books/metadata/getMetadataFromArchive.js"
+import { catalogLookupInput } from "./catalogLookupInput.js"
+import { nextCatalogEntry } from "./nextCatalogEntry.js"
 import { detectMimeTypeFromContent } from "../../lib/utils.js"
 import { updateCover } from "./updateCover.js"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
@@ -32,6 +44,9 @@ import { MODIFIED_AT_UNSUPPORTED } from "../../plugins/types.js"
 import { PluginsService } from "../../plugins/plugins.service.js"
 
 const logger = new Logger("retrieveMetadataAndSaveCover")
+
+const describeFailedProvider = ({ id, status }: FailedMetadataProvider) =>
+  status === undefined ? id : `${id} (${status})`
 
 /**
  * Decides whether the file's bytes still match what we extracted on a
@@ -160,7 +175,14 @@ export const retrieveMetadataAndSaveCover = async (
     const previousLinkMetadata = ctx.book.metadata?.find(
       (entry): entry is LinkMetadata => entry.type === "link",
     )
-    const previousFileMetadata = ctx.book.metadata?.find(isLegacyFileMetadata)
+    const previousFileMetadata = ctx.book.metadata?.find(
+      (entry): entry is FileMetadata | LegacyFileMetadata =>
+        entry.type === "file",
+    )
+    const previousCatalogMetadata = ctx.book.metadata?.find(
+      (entry): entry is CatalogMetadata | LegacyGoogleBookApiMetadata =>
+        getBookMetadataSource(entry) === "catalog",
+    )
     const previousUserMetadata = ctx.book.metadata?.find(
       (entry): entry is UserMetadata => entry.type === "user",
     )
@@ -175,6 +197,7 @@ export const retrieveMetadataAndSaveCover = async (
     const predictedCoverMetadata = pickCoverMetadata(
       [
         linkMetadata,
+        ...(previousCatalogMetadata ? [previousCatalogMetadata] : []),
         ...(previousFileMetadata ? [previousFileMetadata] : []),
         ...(previousUserMetadata ? [previousUserMetadata] : []),
       ],
@@ -304,44 +327,51 @@ export const retrieveMetadataAndSaveCover = async (
      * silently disappear under `metadataFileDownloadEnabled=false`,
      * unsupported content types, or download failures.
      */
-    const reusedFileMetadata =
+    const isPreviousFileMetadataReusable =
       !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
-        ? previousFileMetadata
+    const reusedFileMetadata =
+      isPreviousFileMetadataReusable && previousFileMetadata
+        ? isLegacyFileMetadata(previousFileMetadata)
+          ? fileMetadataFromLegacy(previousFileMetadata)
+          : previousFileMetadata
         : undefined
+    const fileMetadata = freshFileMetadata ?? reusedFileMetadata
 
     /**
-     * Single Google Books lookup — runs after extraction so it sees the
-     * most authoritative ISBN we have. Priority mirrors the global
-     * `user > directive > file > …` chain.
+     * Runs after extraction so it sees the most authoritative identifiers
+     * we have.
      */
-    const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
-    const lookupIsbn =
-      previousUserMetadata?.isbn ??
-      isbn ??
-      freshFileMetadata?.isbn ??
-      reusedFileMetadata?.isbn
-    const lookupGoogleVolumeId =
-      directiveGoogleVolumeId ??
-      freshFileMetadata?.googleVolumeId ??
-      reusedFileMetadata?.googleVolumeId
-
-    const sourcesMetadata =
-      ignoreMetadataSources || !externalFetchEnabled
-        ? []
-        : await getBookSourcesMetadata(
-            {
-              // Some plugins return the filename (with extension) instead
-              // of a clean title; strip the extension for the lookup.
-              title: lookupTitle,
-              isbn: lookupIsbn,
-              googleVolumeId: lookupGoogleVolumeId,
-            },
-            {
+    const lookupInput = catalogLookupInput({
+      fileMetadata,
+      linkName: linkMetadata.title,
+      isbn: previousUserMetadata?.isbn ?? isbn,
+      googleVolumeId: directiveGoogleVolumeId,
+    })
+    const isCatalogLookupAllowed =
+      !ignoreMetadataSources && externalFetchEnabled
+    const fetchedCatalogMetadata =
+      isCatalogLookupAllowed && hasSearchTerms(lookupInput)
+        ? await fetchMetadata(lookupInput, {
+            providers: createCatalogProviders({
               googleApiKey: ctx.googleApiKey,
-              withExternalSources: externalFetchEnabled,
-            },
-            config,
-          )
+              googleBooksBaseUrl: config.config.getOrThrow(
+                "GOOGLE_BOOK_API_URL",
+                { infer: true },
+              ),
+            }),
+          })
+        : undefined
+
+    if (fetchedCatalogMetadata?.failedProviders.length) {
+      logger.warn(
+        `Catalogs failed for ${ctx.book._id}: ${fetchedCatalogMetadata.failedProviders.map(describeFailedProvider).join(", ")}`,
+      )
+    }
+
+    const catalogMetadata = nextCatalogEntry(
+      fetchedCatalogMetadata,
+      previousCatalogMetadata,
+    )
 
     if (freshFileMetadata) {
       logger.log(`Pushing file metadata for book ${ctx.book._id}`)
@@ -349,14 +379,14 @@ export const retrieveMetadataAndSaveCover = async (
 
     const metadataList: BookMetadata[] = [
       linkMetadata,
-      ...sourcesMetadata,
-      ...(freshFileMetadata
-        ? [freshFileMetadata]
-        : reusedFileMetadata
-          ? [reusedFileMetadata]
-          : []),
+      ...(catalogMetadata ? [catalogMetadata] : []),
+      ...(fileMetadata ? [fileMetadata] : []),
       ...(previousUserMetadata ? [previousUserMetadata] : []),
     ]
+
+    const googleVolumeId =
+      directiveGoogleVolumeId ??
+      identifierValue(fileMetadata?.metadata.identifiers, "GoogleBooks")
 
     const { bucketCoverKey: nextBucketCoverKey } = await updateCover({
       book: ctx.book,
@@ -365,7 +395,7 @@ export const retrieveMetadataAndSaveCover = async (
       archive,
       coversService,
       force: ctx.force,
-      catalogIdentityIsConfirmed: lookupGoogleVolumeId !== undefined,
+      catalogIdentityIsConfirmed: googleVolumeId !== undefined,
     })
 
     console.log(

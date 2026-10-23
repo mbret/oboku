@@ -25,7 +25,7 @@ const IDENTITY_MATCH_FIELDS: ReadonlyArray<
  * Whether an identifier settled the match: metadata-fetcher pins the score
  * of a match to 1 when an ISBN, a GTIN or a scheme-scoped identifier agrees.
  */
-const isIdentityConfirmed = ({
+export const isIdentityConfirmed = ({
   score,
   signals,
 }: Pick<CatalogMetadata, "score" | "signals">) =>
