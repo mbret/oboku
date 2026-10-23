@@ -12,6 +12,7 @@ import {
 import { readerSignal } from "./states"
 import { BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
+import { useSyncReaderTheme } from "./theme/useReaderTheme"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
@@ -155,6 +156,7 @@ const Effects = memo(function Effects({
     containerRef,
   })
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
+  useSyncReaderTheme()
 
   return null
 })
