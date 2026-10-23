@@ -3,12 +3,17 @@ import { firstValueFrom } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "../profiles/types"
 
-const { setActiveProfileId, ensureActiveProfile, forgetAccountSessions } =
-  vi.hoisted(() => ({
-    setActiveProfileId: vi.fn(),
-    ensureActiveProfile: vi.fn(),
-    forgetAccountSessions: vi.fn(),
-  }))
+const {
+  setActiveProfileId,
+  ensureActiveProfile,
+  forgetAccountSessions,
+  resetSessionQueries,
+} = vi.hoisted(() => ({
+  setActiveProfileId: vi.fn(),
+  ensureActiveProfile: vi.fn(),
+  forgetAccountSessions: vi.fn(),
+  resetSessionQueries: vi.fn(async () => {}),
+}))
 
 vi.mock("../profiles", () => ({
   getActiveProfileId: () => undefined,
@@ -16,9 +21,7 @@ vi.mock("../profiles", () => ({
   setActiveProfileId,
 }))
 
-vi.mock("../queries/resetSessionQueries", () => ({
-  resetSessionQueries: vi.fn(async () => {}),
-}))
+vi.mock("../queries/resetSessionQueries", () => ({ resetSessionQueries }))
 
 vi.mock("./forgetAccountSessions", () => ({ forgetAccountSessions }))
 
@@ -62,12 +65,12 @@ describe("completeAuthentication", () => {
     )
   })
 
-  it("forgets the previous account's sessions before switching to another account", async () => {
+  it("forgets the previous account's sessions when switching to another account", async () => {
     ensureActiveProfile.mockResolvedValue({ email: "previous@example.com" })
 
     await signInAsReader()
 
-    expect(forgetAccountSessions).toHaveBeenCalledBefore(setActiveProfileId)
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(resetSessionQueries)
   })
 
   it("forgets the sessions on a sign-in after a sign-out", async () => {
@@ -75,7 +78,7 @@ describe("completeAuthentication", () => {
 
     await signInAsReader()
 
-    expect(forgetAccountSessions).toHaveBeenCalledBefore(setActiveProfileId)
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(resetSessionQueries)
   })
 
   it("keeps the sessions on a relogin to the same account", async () => {

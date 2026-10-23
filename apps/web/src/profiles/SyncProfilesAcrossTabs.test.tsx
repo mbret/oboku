@@ -32,6 +32,7 @@ import { useIsAuthenticated } from "../auth/useIsAuthenticated"
 import {
   clearActiveProfileId,
   setActiveProfileId,
+  useActiveProfileId,
 } from "./active/activeProfileId"
 import { STORAGE_PROFILE_KEY } from "../config"
 import { inboxNotificationsQueryKey } from "../notifications/inbox/queryKeys"
@@ -55,12 +56,22 @@ const notifyProfilesChangedFromAnotherTab = () => {
   otherTab.postMessage("profiles-changed")
 }
 
+const recordRender =
+  vi.fn<(renderedProfileId: string | undefined, forgetCount: number) => void>()
+
 const renderSession = (queryClient = new QueryClient()) =>
   renderHook(
-    () => ({
-      active: useActiveProfile(),
-      isAuthenticated: useIsAuthenticated(),
-    }),
+    function useRenderedSession() {
+      recordRender(
+        useActiveProfileId(),
+        forgetAccountSessions.mock.calls.length,
+      )
+
+      return {
+        active: useActiveProfile(),
+        isAuthenticated: useIsAuthenticated(),
+      }
+    },
     {
       wrapper: function Wrapper({ children }: { children: ReactNode }) {
         return (
@@ -81,6 +92,7 @@ describe("SyncProfilesAcrossTabs", () => {
     profilesStore.clear()
     clearActiveProfileId()
     forgetAccountSessions.mockClear()
+    recordRender.mockClear()
   })
 
   it("reflects a sign-in performed in another tab", async () => {
@@ -144,6 +156,7 @@ describe("SyncProfilesAcrossTabs", () => {
     })
     expect(queryClient.getQueryData(notificationsQueryKey)).toBeUndefined()
     expect(forgetAccountSessions).toHaveBeenCalledTimes(1)
+    expect(recordRender).not.toHaveBeenCalledWith(undefined, 0)
   })
 
   it("keeps the sessions and the session data when another tab only updates the active profile", async () => {

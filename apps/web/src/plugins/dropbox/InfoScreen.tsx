@@ -1,7 +1,7 @@
 import { Alert, IconButton, ListItem, ListItemText, Stack } from "@mui/material"
-import { SIGNAL_RESET, useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { DeleteRounded } from "@mui/icons-material"
-import { dropboxAuthSignal } from "./lib/auth"
+import { clearDropboxSession, dropboxAuthSignal } from "./lib/auth"
 import { useEffect, useState } from "react"
 import { PageSection } from "../../common/PageSection"
 
@@ -41,9 +41,7 @@ export const InfoScreen = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => {
-                  dropboxAuthSignal.update(SIGNAL_RESET)
-                }}
+                onClick={clearDropboxSession}
               >
                 <DeleteRounded />
               </IconButton>

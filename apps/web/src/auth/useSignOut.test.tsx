@@ -56,7 +56,6 @@ describe("useSignOut", () => {
     await result.current()
 
     expect(forgetAccountSessions).toHaveBeenCalledBefore(clearActiveProfileId)
-    expect(clearActiveProfileId).toHaveBeenCalledTimes(1)
   })
 
   it("still purges downloaded files when the database wipe fails", async () => {

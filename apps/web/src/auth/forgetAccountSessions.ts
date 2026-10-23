@@ -1,12 +1,20 @@
-import { signOutPlugins } from "../plugins/signOutPlugins"
+import { Logger } from "../debug/logger.shared"
+import { plugins } from "../plugins/configure"
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 
 /**
- * Forgets the temporary master key and every plugin session. Call it before
- * the active profile id moves to another account or to none, so nothing reads
- * the next account with the previous one's sessions.
+ * Call it when the active profile id moves to another account or to none,
+ * before anything renders for the next account. It never throws: a plugin
+ * whose `signOut` throws is logged, and the other plugins still sign out.
  */
 export const forgetAccountSessions = () => {
   clearTemporaryMasterKey()
-  signOutPlugins()
+
+  plugins.forEach(function signOutPlugin(plugin) {
+    try {
+      plugin.signOut?.()
+    } catch (error) {
+      Logger.error(`Failed to sign out of ${plugin.name}`, error)
+    }
+  })
 }

@@ -23,6 +23,7 @@ export const plugin: ObokuPlugin<"server"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
+  signOut: null,
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,
