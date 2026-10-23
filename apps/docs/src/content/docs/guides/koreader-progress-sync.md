@@ -25,7 +25,8 @@ oboku does not send a position:
 
 * that the book has since moved on from: you read on in it on another device, marked it as read or unread, or it opened where another device left it;
 * when the server already keeps it, or keeps a position it received after you got there. A server dates a position when it receives it, so when two devices read offline, the first one back online can win even if the other read later;
-* that you reached while the server refused your password;
+* earlier in the book than the one the server keeps, when the server does not date its positions;
+* that oboku tried to send while the server refused your password;
 * that was still waiting when you signed out or switched accounts.
 
 The positions of EPUB books, PDFs and comic archives (CBZ, CBR and CBT) sync. Other books keep their position in oboku only.

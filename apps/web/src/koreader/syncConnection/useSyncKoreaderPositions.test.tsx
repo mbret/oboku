@@ -4,25 +4,26 @@ import {
   ReadingStateState,
 } from "@oboku/shared"
 import { cleanup, renderHook } from "@testing-library/react"
-import type { DeepReadonly } from "rxdb"
 import { BehaviorSubject, map } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { KoreaderPushDocType } from "../../rxdb/collections/koreaderPush"
+import type { usePushKoreaderPosition } from "./usePushKoreaderPosition"
 
-type KoreaderPositionPush = {
-  book: DeepReadonly<BookDocType>
-  signal: AbortSignal
-}
+type KoreaderPositionPush = Parameters<
+  ReturnType<typeof usePushKoreaderPosition>["mutateAsync"]
+>[0]
 
 const mocks = vi.hoisted(function createSyncKoreaderMocks() {
+  const session: { database: unknown; isAuthenticated: boolean } = {
+    database: undefined,
+    isAuthenticated: true,
+  }
+
   return {
     pushKoreaderPosition: vi.fn(async function pushToFakeServer(
       _push: KoreaderPositionPush,
     ) {}),
-    session: {
-      database: undefined as unknown,
-      isAuthenticated: true,
-    },
+    session,
   }
 })
 
@@ -50,9 +51,15 @@ vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
   }
 })
 
+import {
+  clearActiveProfileId,
+  setActiveProfileId,
+} from "../../profiles/active/activeProfileId"
 import { dispatchBookmarkMoved } from "../../reader/events"
 import { useSyncKoreaderPositions } from "./useSyncKoreaderPositions"
 
+const PROFILE_ID = "profile-1"
+const OTHER_PROFILE_ID = "profile-2"
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
 const PUSH_RETRY_DELAY_MS = 1000
 const PUSH_RETRY_MAX_DELAY_MS = 5 * 60 * 1000
@@ -82,60 +89,86 @@ const BOOK_B_PLACE: KoreaderPlace = {
 const toBookId = ({ document }: KoreaderPlace) => `book-of-${document}`
 
 const toFakeDocument = <Data extends { _id: string }>(data: Data) => ({
+  ...data,
   primary: data._id,
   toJSON: function readFakeDocument() {
     return data
   },
 })
 
-/** The account's database, with the two collections the push reads and writes. */
 const createFakeDatabase = () => {
   const books = new Map<string, BookDocType>()
-  const koreaderPushes$ = new BehaviorSubject<
+  const waitingMoves$ = new BehaviorSubject<
     ReadonlyMap<string, KoreaderPushDocType>
   >(new Map())
 
-  const writeKoreaderPush = (koreaderPush: KoreaderPushDocType) => {
-    koreaderPushes$.next(
-      new Map(koreaderPushes$.getValue()).set(koreaderPush._id, koreaderPush),
+  const writeWaitingMove = (waitingMove: KoreaderPushDocType) => {
+    waitingMoves$.next(
+      new Map(waitingMoves$.getValue()).set(waitingMove._id, waitingMove),
     )
   }
 
-  const database = {
-    book: {
-      findOne: function findFakeBook(bookId: string) {
-        return {
-          exec: async function execFindFakeBook() {
-            const book = books.get(bookId)
+  const deleteWaitingMove = (bookId: string) => {
+    const waitingMoves = new Map(waitingMoves$.getValue())
 
-            return book ? toFakeDocument(book) : null
-          },
-        }
+    waitingMoves.delete(bookId)
+    waitingMoves$.next(waitingMoves)
+  }
+
+  const database = {
+    collections: {
+      book: {
+        findOne: function findFakeBook({
+          selector,
+        }: {
+          selector: { _id: string }
+        }) {
+          return {
+            exec: async function execFindFakeBook() {
+              const book = books.get(selector._id)
+
+              return book ? toFakeDocument(book) : null
+            },
+          }
+        },
       },
     },
     koreaderpush: {
-      incrementalUpsert: vi.fn(async function upsertFakeKoreaderPush(
-        koreaderPush: KoreaderPushDocType,
+      incrementalUpsert: vi.fn(async function upsertFakeWaitingMove(
+        waitingMove: KoreaderPushDocType,
       ) {
-        writeKoreaderPush(koreaderPush)
+        writeWaitingMove(waitingMove)
       }),
-      find: function findFakeKoreaderPushes() {
+      find: function findFakeWaitingMoves() {
         return {
-          $: koreaderPushes$.pipe(
-            map(function toFakeDocuments(koreaderPushes) {
-              return [...koreaderPushes.values()].map(toFakeDocument)
+          $: waitingMoves$.pipe(
+            map(function toFakeDocuments(waitingMoves) {
+              return [...waitingMoves.values()].map(toFakeDocument)
             }),
           ),
         }
       },
-      findOne: function findFakeKoreaderPush(bookId: string) {
+      findOne: function findFakeWaitingMove(bookId: string) {
         return {
-          incrementalPatch: async function patchFakeKoreaderPush(
-            patch: Partial<KoreaderPushDocType>,
+          incrementalModify: async function modifyFakeWaitingMove(
+            modify: (
+              waitingMove: KoreaderPushDocType & { _deleted: boolean },
+            ) => KoreaderPushDocType & { _deleted?: boolean },
           ) {
-            const koreaderPush = koreaderPushes$.getValue().get(bookId)
+            const waitingMove = waitingMoves$.getValue().get(bookId)
 
-            if (koreaderPush) writeKoreaderPush({ ...koreaderPush, ...patch })
+            if (!waitingMove) return
+
+            const { _deleted, ...modified } = modify({
+              ...waitingMove,
+              _deleted: false,
+            })
+
+            if (_deleted) {
+              deleteWaitingMove(bookId)
+            } else {
+              writeWaitingMove(modified)
+            }
           },
         }
       },
@@ -145,8 +178,8 @@ const createFakeDatabase = () => {
   return {
     database,
     books,
-    getKoreaderPush: (bookId: string) => koreaderPushes$.getValue().get(bookId),
-    writeKoreaderPush,
+    getWaitingMove: (bookId: string) => waitingMoves$.getValue().get(bookId),
+    writeWaitingMove,
   }
 }
 
@@ -174,8 +207,7 @@ const toBookAt = (place: KoreaderPlace, movedAt: string): BookDocType => ({
   readingStateCurrentBookmarkKoreaderDocument: place.document,
 })
 
-/** The bookmark moves without reading on this device: replication, mark-as. */
-const moveBookmarkElsewhere = (
+const storeBookAt = (
   { books }: FakeDatabase,
   place: KoreaderPlace,
   movedAt = nextMoveTime(),
@@ -187,10 +219,9 @@ const moveBookmarkElsewhere = (
   return book
 }
 
-/** Reading on this device moves the bookmark, as the reader saves it. */
 const moveBookmarkTo = (fakeDatabase: FakeDatabase, place: KoreaderPlace) => {
   const movedAt = nextMoveTime()
-  const book = moveBookmarkElsewhere(fakeDatabase, place, movedAt)
+  const book = storeBookAt(fakeDatabase, place, movedAt)
 
   dispatchBookmarkMoved({ bookId: book._id, movedAt })
 
@@ -213,6 +244,9 @@ const holdNextPush = () => {
     heldPush.resolve()
   }
 }
+
+const getLastPushSignal = () =>
+  mocks.pushKoreaderPosition.mock.lastCall?.[0].signal
 
 const setOnLine = (onLine: boolean) => {
   vi.spyOn(navigator, "onLine", "get").mockReturnValue(onLine)
@@ -242,11 +276,13 @@ describe("useSyncKoreaderPositions", () => {
     mocks.session.isAuthenticated = true
     fakeDatabase = createFakeDatabase()
     openDatabase(fakeDatabase)
+    setActiveProfileId(PROFILE_ID)
     setOnLine(true)
   })
 
   afterEach(() => {
     cleanup()
+    clearActiveProfileId()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })
@@ -301,7 +337,7 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("pushes a position moved to while an older one of the same book was being pushed", async () => {
+  it("keeps, then pushes, a position moved to while an older one of the same book was being pushed", async () => {
     const answerFirstPush = holdNextPush()
     renderSyncKoreaderPositions()
     moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
@@ -309,6 +345,12 @@ describe("useSyncKoreaderPositions", () => {
 
     const latestBook = moveBookmarkTo(fakeDatabase, BOOK_A_LATER_PLACE)
     answerFirstPush()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(fakeDatabase.getWaitingMove(latestBook._id)?.movedAt).toBe(
+      latestBook.readingStateCurrentBookmarkLocationUpdatedAt,
+    )
+
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledTimes(2)
@@ -355,6 +397,7 @@ describe("useSyncKoreaderPositions", () => {
   })
 
   it("pushes a position again a second after its push failed, then twice as long after each failure", async () => {
+    vi.spyOn(console, "error").mockImplementation(function ignoreError() {})
     mocks.pushKoreaderPosition
       .mockRejectedValueOnce(new Error("unreachable"))
       .mockRejectedValueOnce(new Error("unreachable"))
@@ -382,6 +425,7 @@ describe("useSyncKoreaderPositions", () => {
   })
 
   it("waits for the device to be back online to push a failed position again", async () => {
+    vi.spyOn(console, "error").mockImplementation(function ignoreError() {})
     mocks.pushKoreaderPosition.mockRejectedValueOnce(new Error("unreachable"))
     renderSyncKoreaderPositions()
     moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
@@ -399,8 +443,12 @@ describe("useSyncKoreaderPositions", () => {
 
   it("pushes at start a move oboku closed before pushing", async () => {
     const movedAt = nextMoveTime()
-    const book = moveBookmarkElsewhere(fakeDatabase, BOOK_A_PLACE, movedAt)
-    fakeDatabase.writeKoreaderPush({ _id: book._id, movedAt })
+    const book = storeBookAt(fakeDatabase, BOOK_A_PLACE, movedAt)
+    fakeDatabase.writeWaitingMove({
+      _id: book._id,
+      profileId: PROFILE_ID,
+      movedAt,
+    })
 
     renderSyncKoreaderPositions()
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
@@ -410,11 +458,13 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("does not push a move again at the next start once it was pushed", async () => {
+  it("forgets a pushed move, so the next start does not push it again", async () => {
     const { unmount } = renderSyncKoreaderPositions()
-    moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
+    const book = moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
     unmount()
+
+    expect(fakeDatabase.getWaitingMove(book._id)).toBeUndefined()
 
     renderSyncKoreaderPositions()
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
@@ -422,22 +472,47 @@ describe("useSyncKoreaderPositions", () => {
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
   })
 
-  it("does not push a move the bookmark has moved on from, and lets it go", async () => {
+  it("forgets without pushing a move the bookmark has moved on from", async () => {
     setOnLine(false)
     renderSyncKoreaderPositions()
     const movedBook = moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
-    moveBookmarkElsewhere(fakeDatabase, BOOK_A_LATER_PLACE)
+    storeBookAt(fakeDatabase, BOOK_A_LATER_PLACE)
 
     setOnLine(true)
     await vi.advanceTimersByTimeAsync(0)
 
     expect(mocks.pushKoreaderPosition).not.toHaveBeenCalled()
-    expect(fakeDatabase.getKoreaderPush(movedBook._id)).toEqual({
-      _id: movedBook._id,
-      movedAt: movedBook.readingStateCurrentBookmarkLocationUpdatedAt,
-      handledMovedAt: movedBook.readingStateCurrentBookmarkLocationUpdatedAt,
+    expect(fakeDatabase.getWaitingMove(movedBook._id)).toBeUndefined()
+  })
+
+  it("does not push a move made under another profile", async () => {
+    const movedAt = nextMoveTime()
+    const book = storeBookAt(fakeDatabase, BOOK_A_PLACE, movedAt)
+    fakeDatabase.writeWaitingMove({
+      _id: book._id,
+      profileId: OTHER_PROFILE_ID,
+      movedAt,
     })
+
+    renderSyncKoreaderPositions()
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+
+    expect(mocks.pushKoreaderPosition).not.toHaveBeenCalled()
+  })
+
+  it("abandons a push in flight, and pushes nothing more, once the active profile changes", async () => {
+    holdNextPush()
+    renderSyncKoreaderPositions()
+    moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+    moveBookmarkTo(fakeDatabase, BOOK_B_PLACE)
+
+    setActiveProfileId(OTHER_PROFILE_ID)
+    await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
+
+    expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
+    expect(getLastPushSignal()?.aborted).toBe(true)
   })
 
   it("waits for the account to be signed in again to push", async () => {
@@ -457,7 +532,7 @@ describe("useSyncKoreaderPositions", () => {
     )
   })
 
-  it("abandons a push in flight and pushes nothing more once the account's database goes", async () => {
+  it("abandons a push in flight, and pushes nothing more, once the account's database goes", async () => {
     holdNextPush()
     const { rerender } = renderSyncKoreaderPositions()
     moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
@@ -471,15 +546,15 @@ describe("useSyncKoreaderPositions", () => {
     await vi.advanceTimersByTimeAsync(KOREADER_SYNC_DEBOUNCE_MS)
 
     expect(mocks.pushKoreaderPosition).toHaveBeenCalledOnce()
-    expect(mocks.pushKoreaderPosition.mock.lastCall?.[0].signal.aborted).toBe(
-      true,
-    )
+    expect(getLastPushSignal()?.aborted).toBe(true)
   })
 
   it("keeps recording moves after one fails to record", async () => {
     vi.spyOn(console, "error").mockImplementation(function ignoreError() {})
-    fakeDatabase.database.koreaderpush.incrementalUpsert.mockRejectedValueOnce(
-      new Error("quota exceeded"),
+    fakeDatabase.database.koreaderpush.incrementalUpsert.mockImplementationOnce(
+      function failToWrite() {
+        throw new Error("collection closed")
+      },
     )
     renderSyncKoreaderPositions()
     moveBookmarkTo(fakeDatabase, BOOK_A_PLACE)
