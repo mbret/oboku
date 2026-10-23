@@ -54,10 +54,10 @@ export const completeAuthentication = ({
 
           if (switchedAccount) {
             /**
-             * Commit the new session (profile row + active id) *before* resetting
-             * so the refetches `resetQueries` triggers read the new account's
-             * token rather than the previous one still cached under the old
-             * profile.
+             * The active profile id must name the new account before the reset:
+             * `useQueryOptionsWithAuthentication` compares it with the account
+             * each observer rendered for, so the reset's refetch skips the
+             * previous account's observers.
              */
             await resetSessionQueries(queryClient)
           }
