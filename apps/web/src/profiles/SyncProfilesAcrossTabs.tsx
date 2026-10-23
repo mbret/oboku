@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
-import { memo, useEffect } from "react"
+import { memo, useEffect, useEffectEvent } from "react"
+import { useForgetAccountSessions } from "../auth/useForgetAccountSessions"
 import { Logger } from "../debug/logger.shared"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
 import { syncActiveProfileIdFromStorage } from "./active/activeProfileId"
@@ -8,25 +9,28 @@ import { profilesQueryKey } from "./useProfiles"
 
 export const SyncProfilesAcrossTabs = memo(function SyncProfilesAcrossTabs() {
   const queryClient = useQueryClient()
+  const forgetAccountSessions = useForgetAccountSessions()
 
-  useEffect(
-    function mirrorProfileChangesFromOtherTabs() {
-      return profilesBroadcast.subscribe(
-        function refreshProfilesFromOtherTab() {
-          const hasActiveProfileChanged = syncActiveProfileIdFromStorage()
+  const refreshProfilesFromOtherTab = useEffectEvent(
+    function refreshProfilesFromOtherTab() {
+      const hasActiveProfileChanged = syncActiveProfileIdFromStorage()
 
-          // Reset before the profiles refetch can start a revocation sweep
-          // (see `useSignOut`).
-          if (hasActiveProfileChanged) {
-            resetSessionQueries(queryClient).catch(Logger.error)
-          }
+      if (hasActiveProfileChanged) {
+        forgetAccountSessions()
+        // Reset before the profiles refetch can start a revocation sweep
+        // (see `useSignOut`).
+        resetSessionQueries(queryClient).catch(Logger.error)
+      }
 
-          void queryClient.invalidateQueries({ queryKey: profilesQueryKey })
-        },
-      )
+      void queryClient.invalidateQueries({ queryKey: profilesQueryKey })
     },
-    [queryClient],
   )
+
+  useEffect(function mirrorProfileChangesFromOtherTabs() {
+    return profilesBroadcast.subscribe(function onProfilesChangedInOtherTab() {
+      refreshProfilesFromOtherTab()
+    })
+  }, [])
 
   return null
 })

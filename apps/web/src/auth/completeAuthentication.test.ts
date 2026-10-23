@@ -3,14 +3,17 @@ import { firstValueFrom } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "../profiles/types"
 
-const { setActiveProfileId, ensureActiveProfile, resetSessionQueries } =
-  vi.hoisted(() => ({
-    setActiveProfileId: vi.fn(),
-    ensureActiveProfile: vi.fn(),
-    resetSessionQueries: vi.fn(async () => {}),
-  }))
-
-vi.mock("@sentry/react", () => ({ setUser: vi.fn() }))
+const {
+  setActiveProfileId,
+  ensureActiveProfile,
+  resetSessionQueries,
+  forgetAccountSessions,
+} = vi.hoisted(() => ({
+  setActiveProfileId: vi.fn(),
+  ensureActiveProfile: vi.fn(),
+  resetSessionQueries: vi.fn(async () => {}),
+  forgetAccountSessions: vi.fn(),
+}))
 
 vi.mock("../profiles", () => ({
   getActiveProfileId: () => undefined,
@@ -29,6 +32,7 @@ const signInAsReader = (
     completeAuthentication({
       reCreateDb: vi.fn(async () => {}),
       putProfile,
+      forgetAccountSessions,
       auth: {
         dbName: "reader-db",
         email: "reader@example.com",
@@ -66,5 +70,30 @@ describe("completeAuthentication", () => {
     await signInAsReader()
 
     expect(setActiveProfileId).toHaveBeenCalledBefore(resetSessionQueries)
+  })
+
+  it("forgets the previous account's sessions before switching to another account", async () => {
+    ensureActiveProfile.mockResolvedValue({ email: "previous@example.com" })
+
+    await signInAsReader()
+
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(setActiveProfileId)
+  })
+
+  it("forgets the sessions on a sign-in after a sign-out", async () => {
+    ensureActiveProfile.mockResolvedValue(null)
+
+    await signInAsReader()
+
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(setActiveProfileId)
+  })
+
+  it("keeps the sessions on a relogin to the same account", async () => {
+    ensureActiveProfile.mockResolvedValue({ email: "reader@example.com" })
+
+    await signInAsReader()
+
+    expect(setActiveProfileId).toHaveBeenCalledWith("abc")
+    expect(forgetAccountSessions).not.toHaveBeenCalled()
   })
 })

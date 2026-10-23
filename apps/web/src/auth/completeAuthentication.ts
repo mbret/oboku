@@ -1,5 +1,4 @@
 import { from, of, switchMap } from "rxjs"
-import { setUser } from "@sentry/react"
 import type { AuthSessionResponseDto } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
@@ -13,11 +12,13 @@ import { resetSessionQueries } from "../queries/resetSessionQueries"
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
+  forgetAccountSessions,
   auth,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
+  forgetAccountSessions: () => void
   auth: AuthSessionResponseDto
   queryClient: QueryClient
 }) => {
@@ -49,8 +50,11 @@ export const completeAuthentication = ({
             sessionId: auth.sessionId,
           })
 
+          if (switchedAccount) {
+            forgetAccountSessions()
+          }
+
           setActiveProfileId(auth.nameHex)
-          setUser({ email: auth.email, id: auth.nameHex })
 
           if (switchedAccount) {
             /**
