@@ -1,7 +1,10 @@
 import {
   type BookDocType,
   type BookMetadata,
+  buildBookBucketCoverKey,
+  type CatalogMetadata,
   createBookDefaults,
+  type LegacyFileMetadata,
   type LinkDocType,
 } from "@oboku/shared"
 import {
@@ -13,6 +16,7 @@ import { of } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import type { AppConfigService } from "../../config/AppConfigService.js"
 import type { CoversService } from "../../covers/covers.service.js"
+import { toFileMetadata } from "../../lib/metadata/legacy/toFileMetadata.js"
 import type { PluginsService } from "../../plugins/plugins.service.js"
 import { retrieveMetadataAndSaveCover } from "./retrieveMetadataAndSaveCover.js"
 
@@ -85,18 +89,14 @@ const acceptedMatch: MetadataMatch = {
   id: "zyTCAlFPjgYC",
 }
 
-/**
- * Stands in for the services and the database a refresh talks to; it only
- * calls the members given here, so the fakes are cast to the full types.
- */
-const refresh = async (book: BookDocType) => {
+const refresh = async (book: BookDocType, linkName = "Dune.epub") => {
   const insert = vi.fn(async function storeBook(_doc: BookDocType) {
     return { ok: true }
   })
   const db = { get: async () => book, insert }
   const pluginsService = {
     getFileMetadata: async () => ({
-      name: "Dune.epub",
+      name: linkName,
       contentType: "application/epub+zip",
       modifiedAt: LINK_MODIFIED_AT,
       canDownload: true,
@@ -106,6 +106,8 @@ const refresh = async (book: BookDocType) => {
     }),
   }
 
+  // The refresh only calls the members these fakes define, so they are cast
+  // to the full types.
   await retrieveMetadataAndSaveCover(
     {
       userName: "reader@example.com",
@@ -113,13 +115,12 @@ const refresh = async (book: BookDocType) => {
       providerCredentials: {},
       book,
       link,
-      googleApiKey: "api-key",
+      catalogProviders: [],
       db: db as unknown as nano.DocumentScope<unknown>,
       fileDownloadMaxSizeBytes: 100_000_000,
     },
     {
       METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: ["application/epub+zip"],
-      config: { getOrThrow: () => "https://www.googleapis.com/books/v1" },
     } as unknown as AppConfigService,
     { isCoverExist: () => of(true) } as unknown as CoversService,
     pluginsService as unknown as PluginsService,
@@ -144,7 +145,7 @@ describe("retrieveMetadataAndSaveCover", () => {
   })
 
   describe("for an unchanged file it may not download", () => {
-    const legacyFileEntry: BookMetadata = {
+    const legacyFileEntry: LegacyFileMetadata = {
       type: "file",
       contentType: "application/epub+zip",
       title: "Dune",
@@ -161,15 +162,9 @@ describe("retrieveMetadataAndSaveCover", () => {
       const { storedBook, downloadLinkToTmp } = await refresh(book)
 
       expect(downloadLinkToTmp).not.toHaveBeenCalled()
-      expect(storedBook.metadata).toContainEqual({
-        type: "file",
-        contentType: "application/epub+zip",
-        metadata: {
-          titles: [{ value: "Dune" }],
-          contributors: [{ name: "Frank Herbert", roles: ["author"] }],
-          cover: { uri: "OEBPS/cover.jpg", confidence: "derived" },
-        },
-      })
+      expect(storedBook.metadata).toContainEqual(
+        toFileMetadata(legacyFileEntry),
+      )
     })
 
     it("keeps that entry on the next refresh", async () => {
@@ -179,6 +174,35 @@ describe("retrieveMetadataAndSaveCover", () => {
 
       expect(afterSecondRefresh.metadata).toEqual(afterFirstRefresh.metadata)
     })
+  })
+
+  it("does not download an unchanged file whose cover a confirmed catalog match provides", async () => {
+    const coverUri = "https://books.google.com/books/content?id=zyTCAlFPjgYC"
+    const confirmedCatalogEntry: CatalogMetadata = {
+      type: "catalog",
+      version: FETCHED_METADATA_VERSION,
+      ...acceptedMatch,
+      metadata: {
+        titles: [{ value: "Dune" }],
+        cover: { uri: coverUri, confidence: "derived" },
+      },
+    }
+    const fileWithFirstPageCover = toFileMetadata({
+      type: "file",
+      coverLink: "page-001.jpg",
+      coverConfidence: "assumed",
+    })
+
+    const { downloadLinkToTmp } = await refresh(
+      bookWith([linkEntry, confirmedCatalogEntry, fileWithFirstPageCover], {
+        bucketCoverKey: buildBookBucketCoverKey({
+          type: "catalog",
+          value: coverUri,
+        }),
+      }),
+    )
+
+    expect(downloadLinkToTmp).not.toHaveBeenCalled()
   })
 
   describe("its catalog lookup", () => {
@@ -194,7 +218,7 @@ describe("retrieveMetadataAndSaveCover", () => {
 
       expect(fetchMetadata).toHaveBeenCalledWith(
         { title: "Dune" },
-        expect.objectContaining({ providers: expect.any(Array) }),
+        expect.objectContaining({ providers: [] }),
       )
       expect(storedBook.metadata).toEqual([
         linkEntry,
@@ -230,6 +254,16 @@ describe("retrieveMetadataAndSaveCover", () => {
 
       expect(fetchMetadata).not.toHaveBeenCalled()
       expect(storedBook.metadata).toEqual([linkEntry])
+    })
+
+    it("asks nothing when the book gives nothing to search on", async () => {
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry]),
+        "[oboku~tags~unread]",
+      )
+
+      expect(fetchMetadata).not.toHaveBeenCalled()
+      expect(storedBook.metadata).not.toContainEqual(legacyCatalogEntry)
     })
   })
 })

@@ -5,7 +5,6 @@ import {
   type MetadataProvider,
 } from "@prose-reader/metadata-fetcher"
 
-/** Open Library asks API clients to name themselves and how to reach them. */
 const CATALOG_USER_AGENT = "oboku (+https://github.com/mbret/oboku)"
 
 const CATALOG_REQUEST_TIMEOUT_MS = 15_000
@@ -18,19 +17,10 @@ const CATALOG_REQUEST_TIMEOUT_MS = 15_000
 const fetchWithTimeout: typeof fetch = (input, init) =>
   fetch(input, {
     ...init,
-    signal: init?.signal
-      ? AbortSignal.any([
-          init.signal,
-          AbortSignal.timeout(CATALOG_REQUEST_TIMEOUT_MS),
-        ])
-      : AbortSignal.timeout(CATALOG_REQUEST_TIMEOUT_MS),
+    signal: AbortSignal.timeout(CATALOG_REQUEST_TIMEOUT_MS),
   })
 
-/**
- * The catalogs a book refresh asks, in the order that breaks ties between
- * equally scored matches. Google Books needs an API key and is left out
- * without one.
- */
+/** Their order breaks ties between equally scored matches. */
 export const createCatalogProviders = ({
   googleApiKey,
   googleBooksBaseUrl,

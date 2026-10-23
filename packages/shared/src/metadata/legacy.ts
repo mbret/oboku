@@ -1,8 +1,8 @@
 /**
  * Book metadata as stored before entries followed prose-reader's shapes:
  * flat `file` entries, `googleBookApi` entries, and `googleBookApi` in
- * `metadataSourcePriority`. Stored books still hold them, and a refresh keeps
- * a `googleBookApi` entry while the catalogs fail, so readers of
+ * `metadataSourcePriority`. Stored books still hold them, and a refresh can
+ * keep a `googleBookApi` entry while a catalog fails, so readers of
  * `book.metadata` go through {@link getBookMetadataFields} and
  * {@link getBookMetadataSource}, which read both shapes.
  *

@@ -1,6 +1,10 @@
-import { getBookMetadataFields, type LegacyFileMetadata } from "@oboku/shared"
+import {
+  type FileMetadata,
+  getBookMetadataFields,
+  type LegacyFileMetadata,
+} from "@oboku/shared"
 import { describe, expect, it } from "vitest"
-import { fileMetadataFromLegacy } from "./fileMetadataFromLegacy.js"
+import { toFileMetadata } from "./toFileMetadata.js"
 
 const fullLegacyEntry: LegacyFileMetadata = {
   type: "file",
@@ -19,15 +23,15 @@ const fullLegacyEntry: LegacyFileMetadata = {
   googleVolumeId: "zyTCAlFPjgYC",
 }
 
-describe("fileMetadataFromLegacy", () => {
+describe("toFileMetadata, for a flat entry", () => {
   it("keeps every field the flat entry showed", () => {
-    expect(
-      getBookMetadataFields(fileMetadataFromLegacy(fullLegacyEntry)),
-    ).toEqual(getBookMetadataFields(fullLegacyEntry))
+    expect(getBookMetadataFields(toFileMetadata(fullLegacyEntry))).toEqual(
+      getBookMetadataFields(fullLegacyEntry),
+    )
   })
 
   it("stores the fields in archive-reader's vocabulary", () => {
-    expect(fileMetadataFromLegacy(fullLegacyEntry)).toEqual({
+    expect(toFileMetadata(fullLegacyEntry)).toEqual({
       type: "file",
       contentType: "application/epub+zip",
       metadata: {
@@ -53,7 +57,7 @@ describe("fileMetadataFromLegacy", () => {
   })
 
   it("assumes the cover of an entry stored before cover confidence existed", () => {
-    const converted = fileMetadataFromLegacy({
+    const converted = toFileMetadata({
       type: "file",
       coverLink: "page-001.jpg",
     })
@@ -66,7 +70,18 @@ describe("fileMetadataFromLegacy", () => {
 
   it("leaves out what the flat entry did not state", () => {
     expect(
-      fileMetadataFromLegacy({ type: "file", authors: [], languages: [] }),
+      toFileMetadata({ type: "file", authors: [], languages: [] }),
     ).toEqual({ type: "file", metadata: {} })
+  })
+})
+
+describe("toFileMetadata, for an entry in archive-reader's vocabulary", () => {
+  it("returns it as it is", () => {
+    const entry: FileMetadata = {
+      type: "file",
+      metadata: { titles: [{ value: "Dune" }] },
+    }
+
+    expect(toFileMetadata(entry)).toBe(entry)
   })
 })

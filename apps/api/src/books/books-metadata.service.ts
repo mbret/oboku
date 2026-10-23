@@ -8,10 +8,13 @@ import { ProviderApiCredentials } from "@oboku/shared"
 import { DataSourceType } from "@oboku/shared"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
+import type { MetadataProvider } from "@prose-reader/metadata-fetcher"
+import { createCatalogProviders } from "../lib/metadata/catalogProviders.js"
 
 @Injectable()
 export class BooksMetadataService {
   private readonly logger = new Logger(BooksMetadataService.name)
+  private readonly catalogProviders: ReadonlyArray<MetadataProvider>
 
   constructor(
     private readonly appConfigService: AppConfigService,
@@ -19,7 +22,12 @@ export class BooksMetadataService {
     private readonly coversService: CoversService,
     private readonly pluginsService: PluginsService,
     private readonly instanceConfigService: InstanceConfigService,
-  ) {}
+  ) {
+    this.catalogProviders = createCatalogProviders({
+      googleApiKey: appConfigService.GOOGLE_API_KEY,
+      googleBooksBaseUrl: appConfigService.GOOGLE_BOOK_API_URL,
+    })
+  }
 
   public refreshMetadata = async (
     body: { bookId: string; force?: boolean },
@@ -66,7 +74,7 @@ export class BooksMetadataService {
           providerCredentials,
           book,
           link,
-          googleApiKey: this.appConfigService.GOOGLE_API_KEY,
+          catalogProviders: this.catalogProviders,
           db,
           force,
           fileDownloadMaxSizeBytes,

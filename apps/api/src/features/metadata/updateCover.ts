@@ -25,7 +25,6 @@ export const updateCover = async ({
   ctx,
   coversService,
   force = false,
-  catalogIdentityIsConfirmed,
 }: {
   ctx: Context
   book: BookDocType
@@ -37,14 +36,11 @@ export const updateCover = async ({
    * already matches the picked source and the blob exists.
    */
   force?: boolean
-  /** Whether the catalog match is known to describe this exact book. */
-  catalogIdentityIsConfirmed?: boolean
 }): Promise<UpdateCoverResult> => {
   const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
   const metadataForCover = pickCoverMetadata(
     metadataList,
     book.metadataSourcePriority,
-    { catalogIdentityIsConfirmed },
   )
   const coverLink = metadataForCover
     ? getBookMetadataFields(metadataForCover).coverLink

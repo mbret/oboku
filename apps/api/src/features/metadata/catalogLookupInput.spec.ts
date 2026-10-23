@@ -18,8 +18,9 @@ describe("catalogLookupInput", () => {
           publication: { edition: { publisher: "Ace", date: { year: 1990 } } },
         }),
         linkName: "dune.epub",
-        isbn: undefined,
-        googleVolumeId: undefined,
+        userIsbn: undefined,
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: undefined,
       }),
     ).toEqual({
       title: "Dune",
@@ -35,13 +36,14 @@ describe("catalogLookupInput", () => {
       catalogLookupInput({
         fileMetadata: undefined,
         linkName: "Dune [oboku~tags~scifi].epub",
-        isbn: undefined,
-        googleVolumeId: undefined,
+        userIsbn: undefined,
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: undefined,
       }),
     ).toEqual({ title: "Dune" })
   })
 
-  it("prefers an ISBN given by the user or a directive to the file's identifiers", () => {
+  it("prefers the user's ISBN to the file's identifiers", () => {
     expect(
       catalogLookupInput({
         fileMetadata: fileStating({
@@ -56,8 +58,9 @@ describe("catalogLookupInput", () => {
           ],
         }),
         linkName: "dune.epub",
-        isbn: "9780593099322",
-        googleVolumeId: undefined,
+        userIsbn: "9780593099322",
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: undefined,
       }).identifiers,
     ).toEqual([
       { value: "9780593099322", scheme: "ISBN" },
@@ -78,12 +81,25 @@ describe("catalogLookupInput", () => {
           ],
         }),
         linkName: undefined,
-        isbn: undefined,
-        googleVolumeId: "B1hSG45JCX4C",
+        userIsbn: undefined,
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: "B1hSG45JCX4C",
       }).identifiers,
     ).toEqual([
       { value: "B1hSG45JCX4C", scheme: "GoogleBooks" },
       { value: "9780441013593", scheme: "ISBN" },
     ])
+  })
+
+  it("prefers the user's ISBN to the directive's", () => {
+    expect(
+      catalogLookupInput({
+        fileMetadata: undefined,
+        linkName: "Dune.epub",
+        userIsbn: "9780593099322",
+        directiveIsbn: "9780441013593",
+        directiveGoogleVolumeId: undefined,
+      }).identifiers,
+    ).toEqual([{ value: "9780593099322", scheme: "ISBN" }])
   })
 })

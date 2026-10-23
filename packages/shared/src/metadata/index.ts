@@ -169,6 +169,10 @@ export const getBookMetadataSource = ({
 }: Pick<BookMetadata, "type">): BookMetadataSource =>
   type === LEGACY_CATALOG_SOURCE_NAME ? "catalog" : type
 
+/** A catalog entry, in either stored shape. */
+export const isCatalogEntry = (entry: BookMetadata) =>
+  entry.type === "catalog" || entry.type === LEGACY_CATALOG_SOURCE_NAME
+
 /**
  * Builds the full, ordered list of metadata sources from the user-defined
  * middle. Returned highest → lowest priority — i.e. both the order

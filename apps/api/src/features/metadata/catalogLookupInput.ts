@@ -13,30 +13,29 @@ import {
 const isGoogleBooksIdentifier = (identifier: MetadataIdentifier) =>
   identifierValue([identifier], "GoogleBooks") !== undefined
 
-/** Some plugins name a link after its file, extension and directives included. */
 const titleFromLinkName = (linkName: string) =>
   path.parse(directives.removeDirectiveFromString(linkName)).name.trim()
 
 /**
- * What the catalogs are asked about a book: what its file states, the link's
- * name when the file has no title, and identifiers by `user > directive >
- * file`. An ISBN given by the user or a directive also replaces the file's
- * Google Books ids: Google looks a volume id up before an ISBN, and an ISBN
- * contradicting that volume would score its match 0.
+ * Identifiers rank `user > directive > file`. An ISBN given by the user or a
+ * directive also replaces the file's Google Books ids: Google looks a volume
+ * id up before an ISBN, and an ISBN contradicting that volume would score its
+ * match 0.
  */
 export const catalogLookupInput = ({
   fileMetadata,
   linkName,
-  isbn,
-  googleVolumeId,
+  userIsbn,
+  directiveIsbn,
+  directiveGoogleVolumeId,
 }: {
   fileMetadata: FileMetadata | undefined
   linkName: string | undefined
-  /** From the user's metadata, else from a directive. */
-  isbn: string | undefined
-  /** From a directive. */
-  googleVolumeId: string | undefined
+  userIsbn: string | undefined
+  directiveIsbn: string | undefined
+  directiveGoogleVolumeId: string | undefined
 }): FetchMetadataInput => {
+  const isbn = userIsbn ?? directiveIsbn
   const fromFile: FetchMetadataInput = fileMetadata
     ? metadataInputFromResolvedArchive(fileMetadata)
     : {}
@@ -54,15 +53,16 @@ export const catalogLookupInput = ({
         (isIsbnBearingScheme(identifier.scheme) ||
           isGoogleBooksIdentifier(identifier))
       const isOverriddenByGoogleVolumeId =
-        googleVolumeId !== undefined && isGoogleBooksIdentifier(identifier)
+        directiveGoogleVolumeId !== undefined &&
+        isGoogleBooksIdentifier(identifier)
 
       return !isOverriddenByIsbn && !isOverriddenByGoogleVolumeId
     },
   )
   const identifiers: MetadataIdentifier[] = [
     ...(isbn !== undefined ? [{ value: isbn, scheme: "ISBN" }] : []),
-    ...(googleVolumeId !== undefined
-      ? [{ value: googleVolumeId, scheme: "GoogleBooks" }]
+    ...(directiveGoogleVolumeId !== undefined
+      ? [{ value: directiveGoogleVolumeId, scheme: "GoogleBooks" }]
       : []),
     ...keptFileIdentifiers,
   ]

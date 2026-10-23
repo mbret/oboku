@@ -94,10 +94,6 @@ describe("nextCatalogEntry", () => {
     ).toBeUndefined()
   })
 
-  it("stores no entry when there was nothing to search on", () => {
-    expect(nextCatalogEntry(undefined, previousLegacyEntry)).toBeUndefined()
-  })
-
   it("keeps the previous entry when a catalog failed and none matched", () => {
     expect(
       nextCatalogEntry(
