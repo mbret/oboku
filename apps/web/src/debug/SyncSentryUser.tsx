@@ -1,8 +1,8 @@
-import { useEffect } from "react"
+import { memo, useEffect } from "react"
 import { setUser } from "@sentry/react"
 import { useActiveProfile } from "../profiles"
 
-export const useSyncSentryUser = () => {
+export const SyncSentryUser = memo(function SyncSentryUser() {
   const { data: auth } = useActiveProfile()
 
   useEffect(
@@ -15,4 +15,6 @@ export const useSyncSentryUser = () => {
     },
     [auth],
   )
-}
+
+  return null
+})

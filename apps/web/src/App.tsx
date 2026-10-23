@@ -43,7 +43,7 @@ import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
-import { useSyncSentryUser } from "./debug/useSyncSentryUser"
+import { SyncSentryUser } from "./debug/SyncSentryUser"
 import { SyncKoreaderPositions } from "./koreader/syncConnection/SyncKoreaderPositions"
 
 // @todo move to sw
@@ -154,6 +154,7 @@ export const AppWithConfig = memo(function AppWithConfig() {
                 <LegacyAuthMigration>
                   <RevokeLoggedOutProfiles />
                   <SyncProfilesAcrossTabs />
+                  <SyncSentryUser />
                   <LoadConfiguration>
                     <App onReadyChange={setIsAppReady} />
                   </LoadConfiguration>
@@ -175,7 +176,6 @@ const OtherEffects = memo(() => {
 
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
-  useSyncSentryUser()
 
   useEffect(() => {
     loadGsi()
