@@ -1,4 +1,4 @@
-import { signal, useSignalValue } from "reactjrx"
+import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 import { from, switchMap } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
 import { CancelError } from "../errors/errors.shared"
@@ -15,6 +15,10 @@ const CANCEL_SKIP_REASONS: readonly string[] = [
 ]
 
 export const googleAccessTokenSignal = signal<GoogleAccessToken | undefined>({})
+
+export const clearGoogleAccessToken = () => {
+  googleAccessTokenSignal.update(SIGNAL_RESET)
+}
 
 export const consentShownSignal = signal({
   default: false,
