@@ -1,5 +1,4 @@
 import { from, of, switchMap } from "rxjs"
-import { setUser } from "@sentry/react"
 import type { AuthSessionResponseDto } from "@oboku/shared"
 import type { QueryClient } from "@tanstack/react-query"
 import {
@@ -13,11 +12,13 @@ import { resetSessionQueries } from "../queries/resetSessionQueries"
 export const completeAuthentication = ({
   reCreateDb,
   putProfile,
+  forgetAccountSessions,
   auth,
   queryClient,
 }: {
   reCreateDb: (params: { overwrite: boolean }) => Promise<unknown>
   putProfile: (profile: Profile) => Promise<unknown>
+  forgetAccountSessions: () => void
   auth: AuthSessionResponseDto
   queryClient: QueryClient
 }) => {
@@ -49,15 +50,18 @@ export const completeAuthentication = ({
             sessionId: auth.sessionId,
           })
 
+          if (switchedAccount) {
+            forgetAccountSessions()
+          }
+
           setActiveProfileId(auth.nameHex)
-          setUser({ email: auth.email, id: auth.nameHex })
 
           if (switchedAccount) {
             /**
-             * Commit the new session (profile row + active id) *before* resetting
-             * so the refetches `resetQueries` triggers read the new account's
-             * token rather than the previous one still cached under the old
-             * profile.
+             * The active profile id must name the new account before the reset:
+             * `useQueryOptionsWithAuthentication` compares it with the account
+             * each observer rendered for, so the reset's refetch skips the
+             * previous account's observers.
              */
             await resetSessionQueries(queryClient)
           }
