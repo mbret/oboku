@@ -14,9 +14,10 @@ export const createKoreaderSyncConnectionQueryOptions = ({
 }) =>
   queryOptions({
     queryKey: koreaderSyncConnectionQueryKey(profileId),
-    queryFn: async function fetchKoreaderSyncConnection() {
+    queryFn: async function fetchKoreaderSyncConnection({ signal }) {
       const { data } = await koreaderSyncConnectionGet({
         client: httpClientApi.sdkClient,
+        signal,
       })
 
       return data

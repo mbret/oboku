@@ -215,9 +215,9 @@ const createCheckHarness = ({
   return { openBook, fetchConnection, pullPosition, getRenderedStatuses }
 }
 
-const holdNextPull = (
-  pullPosition: ReturnType<typeof createCheckHarness>["pullPosition"],
-) => {
+type Harness = ReturnType<typeof createCheckHarness>
+
+const holdNextPull = (pullPosition: Harness["pullPosition"]) => {
   const heldPull = Promise.withResolvers<PositionAnswer>()
 
   pullPosition.mockImplementationOnce(
@@ -537,23 +537,41 @@ describe("useKoreaderPositionCheck", () => {
     expect(pullPosition).not.toHaveBeenCalled()
   })
 
-  it("does not wait on the connection lookup again once it failed", async () => {
-    const { openBook, fetchConnection, pullPosition } = createCheckHarness()
-    fetchConnection.mockRejectedValue(new Error("API unreachable"))
-    const firstOpening = openBook()
-    await vi.advanceTimersByTimeAsync(KOREADER_POSITION_CHECK_DEADLINE_MS)
-    firstOpening.unmount()
-    await vi.advanceTimersByTimeAsync(0)
-    fetchConnection.mockReturnValue(
-      Promise.withResolvers<ConnectionAnswer>().promise,
-    )
+  it.each([
+    [
+      "failed",
+      function failLookup(fetchConnection: Harness["fetchConnection"]) {
+        fetchConnection.mockRejectedValue(new Error("API unreachable"))
+      },
+    ],
+    [
+      "took more than fifteen seconds",
+      function holdLookup(fetchConnection: Harness["fetchConnection"]) {
+        fetchConnection.mockReturnValue(
+          Promise.withResolvers<ConnectionAnswer>().promise,
+        )
+      },
+    ],
+  ])(
+    "does not wait on the connection lookup again once it %s",
+    async (_, breakLookup) => {
+      const { openBook, fetchConnection, pullPosition } = createCheckHarness()
+      breakLookup(fetchConnection)
+      const firstOpening = openBook()
+      await vi.advanceTimersByTimeAsync(KOREADER_POSITION_CHECK_DEADLINE_MS)
+      firstOpening.unmount()
+      await vi.advanceTimersByTimeAsync(0)
+      fetchConnection.mockReturnValue(
+        Promise.withResolvers<ConnectionAnswer>().promise,
+      )
 
-    const { result } = openBook()
-    await vi.advanceTimersByTimeAsync(0)
+      const { result } = openBook()
+      await vi.advanceTimersByTimeAsync(0)
 
-    expect(result.current).toEqual({ status: "done" })
-    expect(pullPosition).not.toHaveBeenCalled()
-  })
+      expect(result.current).toEqual({ status: "done" })
+      expect(pullPosition).not.toHaveBeenCalled()
+    },
+  )
 
   it("looks the account's connection up once rather than at each opening", async () => {
     const { openBook, fetchConnection } = createCheckHarness()

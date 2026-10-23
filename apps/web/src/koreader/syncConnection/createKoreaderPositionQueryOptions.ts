@@ -26,8 +26,9 @@ type KoreaderSyncConnectionQueryOptions = ReturnType<
 
 /**
  * Whether the account syncs through a KOReader sync server, as the app knows
- * it. A lookup still out is waited for, up to the deadline. `false` when that
- * lookup fails or failed before: the book then opens as without a server.
+ * it. A lookup still out is waited for, up to the deadline, after which it is
+ * cancelled as failed. `false` when the lookup fails or failed before: the
+ * book then opens as without a server.
  */
 const isSyncingWithKoreaderServer = async ({
   queryClient,
@@ -49,7 +50,17 @@ const isSyncingWithKoreaderServer = async ({
       map(function hasConnection({ connection }) {
         return !!connection
       }),
-      timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
+      timeout({
+        first: KOREADER_POSITION_CHECK_DEADLINE_MS,
+        with: function giveUpOnLookup() {
+          void queryClient.cancelQueries(
+            { queryKey: connectionQueryOptions.queryKey },
+            { revert: false },
+          )
+
+          return of(false)
+        },
+      }),
       catchError(function openAsWithoutServer() {
         return of(false)
       }),

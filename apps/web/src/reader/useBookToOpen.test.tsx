@@ -80,12 +80,14 @@ const renderBookToOpen = ({
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   )
 
-  return renderHook(
+  const rendered = renderHook(
     function renderUseBookToOpen(props: { mayOpen: boolean }) {
       return useBookToOpen({ bookId: BOOK_ID, isPreview, ...props })
     },
     { wrapper, initialProps: { mayOpen } },
   )
+
+  return { ...rendered, queryClient }
 }
 
 describe("useBookToOpen", () => {
@@ -112,10 +114,13 @@ describe("useBookToOpen", () => {
     })
   })
 
-  it("opens at the bookmark the KOReader position check wrote", async () => {
-    const { result, rerender } = renderBookToOpen({ mayOpen: false })
+  it("opens at the bookmark the KOReader position check wrote, before the live book query has it", async () => {
+    const { result, rerender, queryClient } = renderBookToOpen({
+      mayOpen: false,
+    })
 
     await deliverQueryUpdates()
+    queryClient.setQueryData(["stored-book", BOOK_ID], STORED_BOOK)
     mocks.readStoredBook.mockReturnValue(BOOK_SAVED_BY_CHECK)
     rerender({ mayOpen: true })
 
