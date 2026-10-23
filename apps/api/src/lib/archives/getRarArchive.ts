@@ -1,4 +1,5 @@
 import fs from "node:fs"
+import { createArchiveFromNodeUnrarJs } from "@prose-reader/archive-reader/archives/createArchiveFromNodeUnrarJs"
 import { createExtractorFromData } from "node-unrar-js"
 
 const wasmBinary = fs.readFileSync(
@@ -12,5 +13,5 @@ export const getRarArchive = async (filePath: string) => {
     wasmBinary,
   })
 
-  return extractor
+  return createArchiveFromNodeUnrarJs(extractor)
 }

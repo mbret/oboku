@@ -1,10 +1,13 @@
-import { isFileSupported, ObokuErrorCode } from "@oboku/shared"
-import type { FileStat, WebDAVClient } from "webdav"
-import { memo, useMemo } from "react"
+import {
+  isFileSupported,
+  ObokuErrorCode,
+  type WebdavLinkData,
+} from "@oboku/shared"
+import type { FileStat } from "webdav"
+import { useCallback, useMemo } from "react"
 import type { TreeNode } from "../../../common/FileTreeView"
-import { useConnector } from "../../../connectors/useConnector"
 import { notifyError } from "../../../notifications/toasts"
-import { TYPE } from "../constants"
+import type { WebdavBackedType } from "../constants"
 import type { WebdavAuthResult } from "./ConnectorSelectionStep"
 import type { UploadBookToAddPayload } from "../../types"
 import { AddBookFileBrowseStep } from "../../../upload/AddBookFileBrowseStep"
@@ -34,79 +37,52 @@ export function toTreeNodeList(items: FileStat[]): TreeNode[] {
     }))
 }
 
-/**
- * Shared file-browse step for plugins backed by a WebDAV client.
- * Owns tree data loading (toTreeNodeList, onLoadChildren); the caller
- * supplies plugin-specific payload building via onAddBooks.
- */
-export const WebdavAddBookFileBrowseStep = memo(
-  function WebdavAddBookFileBrowseStep({
-    client,
-    initialFileStats,
-    headerSubtitle,
-    onAddBooks,
-    onCancel,
-    onGoBack,
-  }: {
-    client: WebDAVClient
-    initialFileStats: FileStat[]
-    headerSubtitle: string
-    onAddBooks: (selectedFiles: TreeNode[]) => void
-    onCancel: () => void
-    onGoBack: () => void
-  }) {
-    const initialItems = useMemo(
-      () => toTreeNodeList(initialFileStats),
-      [initialFileStats],
-    )
+export type WebdavUploadBookToAddPayload<T extends WebdavBackedType> = {
+  book: UploadBookToAddPayload["book"]
+  link: { type: T; data: WebdavLinkData }
+}
 
-    const onLoadChildren = useMemo(() => {
-      return async (nodeId: string): Promise<TreeNode[]> => {
-        try {
-          const items = await client.getDirectoryContents(nodeId)
-          return toTreeNodeList(items)
-        } catch (_e) {
-          notifyError(ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN)
-          return []
-        }
+export function FileBrowseStep<T extends WebdavBackedType>({
+  authResult,
+  connectorType,
+  headerSubtitle,
+  onCancel,
+  onClose,
+  onGoBack,
+}: {
+  authResult: WebdavAuthResult
+  connectorType: T
+  headerSubtitle?: string
+  onCancel: () => void
+  onClose: (booksToAdd: ReadonlyArray<WebdavUploadBookToAddPayload<T>>) => void
+  onGoBack: () => void
+}) {
+  const { client, connectorId } = authResult
+
+  const initialItems = useMemo(
+    function buildInitialItems() {
+      return toTreeNodeList(authResult.items)
+    },
+    [authResult.items],
+  )
+
+  const onLoadChildren = useCallback(
+    async function loadDirectoryChildren(nodeId: string) {
+      try {
+        const items = await client.getDirectoryContents(nodeId)
+        return toTreeNodeList(items)
+      } catch (_e) {
+        notifyError(ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN)
+        return []
       }
-    }, [client])
+    },
+    [client],
+  )
 
-    return (
-      <AddBookFileBrowseStep
-        initialItems={initialItems}
-        onLoadChildren={onLoadChildren}
-        headerSubtitle={headerSubtitle}
-        onCancel={onCancel}
-        onBack={onGoBack}
-        onAddBooks={onAddBooks}
-      />
-    )
-  },
-)
-
-export const FileBrowseStep = memo(
-  ({
-    authResult,
-    onClose,
-    onGoBack,
-  }: {
-    authResult: WebdavAuthResult
-    onClose: (
-      booksToAdd?: ReadonlyArray<UploadBookToAddPayload<"webdav">>,
-    ) => void
-    onGoBack: () => void
-  }) => {
-    const { connectorId } = authResult
-    const { data: connector } = useConnector({
-      id: connectorId,
-      type: "webdav",
-    })
-    const connectorUrl = connector?.url ?? ""
-
-    const handleAddBooks = (selectedFiles: TreeNode[]) => {
-      const booksToAdd: UploadBookToAddPayload<"webdav">[] = selectedFiles.map(
-        (file) => ({
+  const handleAddBooks = (selectedFiles: TreeNode[]) => {
+    const booksToAdd: WebdavUploadBookToAddPayload<T>[] = selectedFiles.map(
+      function toBookToAdd(file) {
+        return {
           book: {
             metadata: [{ title: file.label, type: "link" }],
           },
@@ -116,23 +92,25 @@ export const FileBrowseStep = memo(
               filePath: file.id,
               etag: file.etag,
             },
-            type: TYPE,
+            type: connectorType,
           },
-        }),
-      )
-
-      onClose(booksToAdd)
-    }
-
-    return (
-      <WebdavAddBookFileBrowseStep
-        client={authResult.client}
-        initialFileStats={authResult.items}
-        headerSubtitle={`Connected with connector ${connectorUrl}`}
-        onAddBooks={handleAddBooks}
-        onCancel={() => onClose()}
-        onGoBack={onGoBack}
-      />
+        }
+      },
     )
-  },
-)
+
+    onClose(booksToAdd)
+  }
+
+  return (
+    <AddBookFileBrowseStep
+      initialItems={initialItems}
+      onLoadChildren={onLoadChildren}
+      headerSubtitle={
+        headerSubtitle ?? `Connected with connector ${authResult.url}`
+      }
+      onCancel={onCancel}
+      onBack={onGoBack}
+      onAddBooks={handleAddBooks}
+    />
+  )
+}
