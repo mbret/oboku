@@ -235,6 +235,7 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
   file: [
     "title",
     "authors",
+    "description",
     "publisher",
     "rights",
     "languages",
