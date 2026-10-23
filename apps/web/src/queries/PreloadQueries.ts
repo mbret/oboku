@@ -3,6 +3,7 @@ import { useSettings } from "../settings/useSettings"
 import { useLiveRef } from "reactjrx"
 import { useLibraryBooks } from "../library/books/useLibraryBooks"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
+import { useKoreaderSyncConnection } from "../koreader/syncConnection/useKoreaderSyncConnection"
 
 const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)
@@ -42,6 +43,7 @@ export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
 
   useLibraryShelves()
   useLibraryBooks()
+  useKoreaderSyncConnection()
 
   const isReady = isAccountSettingsPreloaded
 

@@ -1,6 +1,7 @@
 import { Box, Fade, LinearProgress, styled } from "@mui/material"
-import { memo, useEffect, useState } from "react"
+import { memo } from "react"
 import { Logo } from "./Logo"
+import { useHasElapsed } from "./useHasElapsed"
 
 const SLOW_BOOT_THRESHOLD_MS = 4000
 const FADE_TIMEOUT_MS = 500
@@ -51,19 +52,7 @@ export const SplashScreen = memo(function SplashScreen({
 }: {
   show: boolean
 }) {
-  const [isBootSlow, setIsBootSlow] = useState(function isBootAlreadySlow() {
-    return getRemainingDelayBeforeSlowBoot() === 0
-  })
-
-  useEffect(function revealSlowBootIndicatorWhenBootIsTakingLong() {
-    const timeout = setTimeout(function markBootAsSlow() {
-      setIsBootSlow(true)
-    }, getRemainingDelayBeforeSlowBoot())
-
-    return function cancelSlowBootIndicator() {
-      clearTimeout(timeout)
-    }
-  }, [])
+  const isBootSlow = useHasElapsed(getRemainingDelayBeforeSlowBoot())
 
   return (
     <Fade in={show} appear={false} unmountOnExit timeout={FADE_TIMEOUT_MS}>
