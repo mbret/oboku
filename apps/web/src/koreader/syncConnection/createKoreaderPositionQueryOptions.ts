@@ -15,6 +15,7 @@ import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import { getOrCreateInstallationId } from "../../common/browser"
 import type { HttpApiClientWeb } from "../../http"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
+import type { BookPatch } from "../../reader/progress/bookProgressPatches"
 import { isKoreaderSyncConnectionMissingError } from "./errors"
 import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
@@ -138,6 +139,33 @@ const isKoreaderPositionNewerThanBookmark = ({
   return new Date(updatedAt).getTime() > new Date(bookmarkMovedAt).getTime()
 }
 
+const createKoreaderPositionPatch = ({
+  position,
+  koreaderDocument,
+}: {
+  position: KoreaderSyncPositionDto
+  koreaderDocument: string
+}): BookPatch =>
+  function applyKoreaderPositionWhenNewer(old, savedAt) {
+    const isPositionNewer = isKoreaderPositionNewerThanBookmark({
+      book: old,
+      position,
+      koreaderDocument,
+    })
+
+    if (!isPositionNewer) return old
+
+    return {
+      ...old,
+      readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkProgressPercent: position.percentage,
+      readingStateCurrentBookmarkKoreaderProgress: position.progress,
+      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
+      readingStateCurrentBookmarkLocationUpdatedAt:
+        position.updatedAt ?? savedAt,
+    }
+  }
+
 const takeKoreaderPositionWhenNewer = ({
   bookId,
   position,
@@ -154,7 +182,7 @@ const takeKoreaderPositionWhenNewer = ({
       bookId,
       async function writeKoreaderBookmarkWhenNewer(book) {
         // RxDB writes whatever the modifier returns, even the book unchanged,
-        // so a position that is not newer must not reach the modifier.
+        // so skip incrementalModify when the position is not newer.
         const isPositionNewer = isKoreaderPositionNewerThanBookmark({
           book: book.toJSON(),
           position,
@@ -163,28 +191,15 @@ const takeKoreaderPositionWhenNewer = ({
 
         if (!isPositionNewer) return
 
-        await book.incrementalModify(function takeKoreaderPositionAsBookmark(
+        const patch = createKoreaderPositionPatch({
+          position,
+          koreaderDocument,
+        })
+
+        await book.incrementalModify(function applyPatchAsOfSave(
           old: BookDocType,
-        ): BookDocType {
-          // The modifier gets the stored book, which can have moved since the
-          // check above, through replication or a conflicting write.
-          const isPositionStillNewer = isKoreaderPositionNewerThanBookmark({
-            book: old,
-            position,
-            koreaderDocument,
-          })
-
-          if (!isPositionStillNewer) return old
-
-          return {
-            ...old,
-            readingStateCurrentBookmarkLocation: null,
-            readingStateCurrentBookmarkProgressPercent: position.percentage,
-            readingStateCurrentBookmarkKoreaderProgress: position.progress,
-            readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
-            readingStateCurrentBookmarkLocationUpdatedAt:
-              position.updatedAt ?? savedAt,
-          }
+        ) {
+          return patch(old, savedAt)
         })
       },
     ),
