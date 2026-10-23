@@ -1,17 +1,21 @@
 import { useQuery, useQueryClient } from "@tanstack/react-query"
 import { useState } from "react"
+import { useQueryOptionsWithAuthentication } from "../../auth"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { createKoreaderPositionQueryOptions } from "./createKoreaderPositionQueryOptions"
 import { isKoreaderSyncKeyRefusedError } from "./errors"
+import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 /**
  * Where the check of a book's KOReader position stands as the book opens.
- * Once `done`, the book can open at its bookmark, which holds the server's
- * position when the check took it.
+ * It is `starting` until the app knows the account syncs through a KOReader
+ * sync server. Once `done`, the book can open at its bookmark, which holds
+ * the server's position when the check took it.
  */
 export type KoreaderPositionCheck =
+  | { status: "starting" }
   | { status: "checking"; continueAnyway: () => void }
   | { status: "failed"; tryAgain: () => void; continueAnyway: () => void }
   | { status: "refused"; continueAnyway: () => void }
@@ -21,8 +25,9 @@ export type KoreaderPositionCheck =
  * Asks the account's KOReader sync server, as the book opens, where the
  * book's file was left, and takes that position as the book's bookmark when
  * another device left it there more recently, before letting the book open.
- * The book opens without asking offline, in preview, signed out, or once the
- * user continues without the answer.
+ * The book opens without asking offline, in preview, signed out, when the app
+ * knows of no server for the account, or once the user continues without the
+ * answer.
  */
 export const useKoreaderPositionCheck = ({
   bookId,
@@ -40,6 +45,17 @@ export const useKoreaderPositionCheck = ({
   const isAuthenticated = useIsAuthenticated()
   const [isCheckedOnOpening] = useState(
     () => enabled && isAuthenticated && navigator.onLine,
+  )
+  const { data: connectionResponse } = useQuery(
+    useQueryOptionsWithAuthentication({
+      ...createKoreaderSyncConnectionQueryOptions({
+        httpClientApi,
+        profileId: activeProfileId,
+      }),
+      enabled: isCheckedOnOpening,
+      refetchOnMount: false,
+      retryOnMount: false,
+    }),
   )
   const [hasContinuedAnyway, setHasContinuedAnyway] = useState(false)
   const isPulling = isCheckedOnOpening && !hasContinuedAnyway
@@ -64,7 +80,13 @@ export const useKoreaderPositionCheck = ({
 
   const hasFailed = pull.isError && !pull.isFetching
 
-  if (!hasFailed) return { status: "checking", continueAnyway }
+  if (!hasFailed) {
+    const hasKnownServer = !!connectionResponse?.connection
+
+    return hasKnownServer
+      ? { status: "checking", continueAnyway }
+      : { status: "starting" }
+  }
 
   const isPasswordRefused = isKoreaderSyncKeyRefusedError(pull.error)
 

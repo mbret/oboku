@@ -74,7 +74,14 @@ import { getOrCreateInstallationId } from "../../common/browser"
 import { HttpClientApiContext } from "../../http"
 import type { HttpApiClientWeb } from "../../http/HttpClientApi.web"
 import { HttpClientError } from "../../http/httpClient.shared"
-import { useKoreaderPositionCheck } from "./useKoreaderPositionCheck"
+import {
+  clearActiveProfileId,
+  setActiveProfileId,
+} from "../../profiles/active/activeProfileId"
+import {
+  type KoreaderPositionCheck,
+  useKoreaderPositionCheck,
+} from "./useKoreaderPositionCheck"
 
 const BOOK_ID = "book-1"
 const KOREADER_DOCUMENT = "8f3a9c1e0b7d4f2a6c5e1d0b9a8f7e6d"
@@ -120,6 +127,10 @@ const BOOK_AT_NEWER_SERVER_POSITION: BookDocType = {
 
 type PositionAnswer = { data: { position: KoreaderSyncPositionDto | null } }
 
+type ConnectionAnswer = {
+  data: { connection: KoreaderSyncConnectionDto | null }
+}
+
 const createRefusal = ({ status, data }: { status: number; data: unknown }) =>
   new HttpClientError(
     {
@@ -143,9 +154,11 @@ const createCheckHarness = ({
 }: {
   connection?: KoreaderSyncConnectionDto | null
 } = {}) => {
-  const fetchConnection = vi.fn(async function answerConnection() {
-    return { data: { connection } }
-  })
+  const fetchConnection = vi.fn(
+    async function answerConnection(): Promise<ConnectionAnswer> {
+      return { data: { connection } }
+    },
+  )
   const pullPosition = vi.fn(async function answerPosition(
     _document: string | undefined,
     _signal: AbortSignal | undefined,
@@ -177,19 +190,29 @@ const createCheckHarness = ({
     </QueryClientProvider>
   )
 
+  const renderStatus =
+    vi.fn<(status: KoreaderPositionCheck["status"]) => void>()
+
   const openBook = ({ enabled = true }: { enabled?: boolean } = {}) =>
     renderHook(
       function renderKoreaderPositionCheck() {
-        return useKoreaderPositionCheck({
+        const check = useKoreaderPositionCheck({
           bookId: BOOK_ID,
           koreaderDocument: KOREADER_DOCUMENT,
           enabled,
         })
+
+        renderStatus(check.status)
+
+        return check
       },
       { wrapper },
     )
 
-  return { openBook, fetchConnection, pullPosition }
+  const getRenderedStatuses = () =>
+    new Set(renderStatus.mock.calls.map(([status]) => status))
+
+  return { openBook, fetchConnection, pullPosition, getRenderedStatuses }
 }
 
 const holdNextPull = (
@@ -227,12 +250,14 @@ describe("useKoreaderPositionCheck", () => {
   beforeEach(() => {
     vi.useFakeTimers()
     setOnLine(true)
+    setActiveProfileId("profile")
     mocks.saveBook.mockClear()
     mocks.state.book = STORED_BOOK
   })
 
   afterEach(() => {
     cleanup()
+    clearActiveProfileId()
     vi.restoreAllMocks()
     vi.useRealTimers()
   })
@@ -445,14 +470,102 @@ describe("useKoreaderPositionCheck", () => {
     expect(result.current).toEqual({ status: "done" })
   })
 
-  it("lets the book open without asking a server when the account has none", async () => {
-    const { openBook, pullPosition } = createCheckHarness({ connection: null })
+  it("lets the book open without asking a server or mentioning KOReader when the account has none", async () => {
+    const { openBook, pullPosition, getRenderedStatuses } = createCheckHarness({
+      connection: null,
+    })
     const { result } = openBook()
 
     await vi.advanceTimersByTimeAsync(0)
 
     expect(pullPosition).not.toHaveBeenCalled()
     expect(result.current).toEqual({ status: "done" })
+    expect(getRenderedStatuses()).toEqual(new Set(["starting", "done"]))
+  })
+
+  it("waits for the connection lookup still out without mentioning KOReader, then asks the server", async () => {
+    const { openBook, fetchConnection, pullPosition } = createCheckHarness()
+    const heldConnection = Promise.withResolvers<ConnectionAnswer>()
+    fetchConnection.mockReturnValueOnce(heldConnection.promise)
+    const answerPull = holdNextPull(pullPosition)
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(result.current).toEqual({ status: "starting" })
+    expect(pullPosition).not.toHaveBeenCalled()
+
+    heldConnection.resolve({ data: { connection: CONNECTION } })
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(result.current.status).toBe("checking")
+
+    answerPull()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(result.current).toEqual({ status: "done" })
+  })
+
+  it("lets the book open without mentioning KOReader when the connection lookup fails", async () => {
+    const { openBook, fetchConnection, pullPosition, getRenderedStatuses } =
+      createCheckHarness()
+    fetchConnection.mockRejectedValue(new Error("API unreachable"))
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(KOREADER_POSITION_CHECK_DEADLINE_MS)
+
+    expect(result.current).toEqual({ status: "done" })
+    expect(pullPosition).not.toHaveBeenCalled()
+    expect(getRenderedStatuses()).toEqual(new Set(["starting", "done"]))
+  })
+
+  it("lets the book open without mentioning KOReader when the connection lookup takes more than fifteen seconds", async () => {
+    const { openBook, fetchConnection, pullPosition } = createCheckHarness()
+    fetchConnection.mockReturnValueOnce(
+      Promise.withResolvers<ConnectionAnswer>().promise,
+    )
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(KOREADER_POSITION_CHECK_DEADLINE_MS - 1)
+
+    expect(result.current).toEqual({ status: "starting" })
+
+    await vi.advanceTimersByTimeAsync(1)
+    await deliverQueryUpdateScheduledDuringTick()
+
+    expect(result.current).toEqual({ status: "done" })
+    expect(pullPosition).not.toHaveBeenCalled()
+  })
+
+  it("does not wait on the connection lookup again once it failed", async () => {
+    const { openBook, fetchConnection, pullPosition } = createCheckHarness()
+    fetchConnection.mockRejectedValue(new Error("API unreachable"))
+    const firstOpening = openBook()
+    await vi.advanceTimersByTimeAsync(KOREADER_POSITION_CHECK_DEADLINE_MS)
+    firstOpening.unmount()
+    await vi.advanceTimersByTimeAsync(0)
+    fetchConnection.mockReturnValue(
+      Promise.withResolvers<ConnectionAnswer>().promise,
+    )
+
+    const { result } = openBook()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(result.current).toEqual({ status: "done" })
+    expect(pullPosition).not.toHaveBeenCalled()
+  })
+
+  it("looks the account's connection up once rather than at each opening", async () => {
+    const { openBook, fetchConnection } = createCheckHarness()
+    const firstOpening = openBook()
+    await vi.advanceTimersByTimeAsync(0)
+    firstOpening.unmount()
+    await vi.advanceTimersByTimeAsync(0)
+
+    openBook()
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(fetchConnection).toHaveBeenCalledOnce()
   })
 
   it("asks the API for the connection again when the server's position is gone with it", async () => {

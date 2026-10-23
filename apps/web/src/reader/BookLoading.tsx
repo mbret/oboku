@@ -50,7 +50,7 @@ const LoadingProgress = styled(LinearProgress)({
 const KoreaderPositionCheckStep = memo(function KoreaderPositionCheckStep({
   check,
 }: {
-  check: Exclude<KoreaderPositionCheck, { status: "done" }>
+  check: Exclude<KoreaderPositionCheck, { status: "starting" | "done" }>
 }) {
   const navigate = useNavigate()
   const isCheckSlow = useHasElapsed(SLOW_CHECK_THRESHOLD_MS)
@@ -103,7 +103,9 @@ export const BookLoading = memo(function BookLoading({
 }) {
   const { goBack } = useSafeGoBack()
   const isCheckingKoreaderPosition =
-    opening.status !== "loadingFile" && opening.status !== "done"
+    opening.status === "checking" ||
+    opening.status === "failed" ||
+    opening.status === "refused"
 
   return (
     <LoadingStack>

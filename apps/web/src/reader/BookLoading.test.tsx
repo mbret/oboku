@@ -32,18 +32,22 @@ describe("BookLoading", () => {
     vi.useRealTimers()
   })
 
-  it("shows the book loading while its file loads", () => {
-    renderBookLoading({ status: "loadingFile" })
+  it.each<BookOpening>([
+    { status: "loadingFile" },
+    { status: "starting" },
+    { status: "done" },
+  ])(
+    "shows the book loading, without a KOReader step, when the opening is $status",
+    (opening) => {
+      renderBookLoading(opening)
 
-    expect(screen.getByText("Your book is loading...")).toBeDefined()
-    expect(screen.queryByRole("button", { name: "Continue anyway" })).toBeNull()
-  })
-
-  it("shows the book loading once its KOReader position is checked", () => {
-    renderBookLoading({ status: "done" })
-
-    expect(screen.getByText("Your book is loading...")).toBeDefined()
-  })
+      expect(screen.getByText("Your book is loading...")).toBeDefined()
+      expect(screen.queryByText(/KOReader/)).toBeNull()
+      expect(
+        screen.queryByRole("button", { name: "Continue anyway" }),
+      ).toBeNull()
+    },
+  )
 
   it("lets the user continue once the KOReader position takes a while to check", async () => {
     vi.useFakeTimers()
