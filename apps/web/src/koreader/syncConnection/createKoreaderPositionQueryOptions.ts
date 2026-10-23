@@ -1,6 +1,5 @@
 import {
   type BookDocType,
-  getBookmark,
   type KoreaderSyncPositionDto,
   koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
@@ -9,20 +8,18 @@ import {
   queryOptions,
   skipToken,
 } from "@tanstack/react-query"
-import type { DeepReadonly } from "rxdb"
 import { catchError, firstValueFrom, from, map, of, timeout } from "rxjs"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
-import { getOrCreateInstallationId } from "../../common/browser"
 import type { HttpApiClientWeb } from "../../http"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
 import { isKoreaderSyncConnectionMissingError } from "./errors"
-import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
+import { compareKoreaderPositionWithBookmark } from "./serverPosition"
+import {
+  createKoreaderSyncConnectionQueryOptions,
+  type KoreaderSyncConnectionQueryOptions,
+} from "./useKoreaderSyncConnection"
 
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
-
-type KoreaderSyncConnectionQueryOptions = ReturnType<
-  typeof createKoreaderSyncConnectionQueryOptions
->
 
 /**
  * Whether the account syncs through a KOReader sync server, as the app knows
@@ -68,76 +65,6 @@ const isSyncingWithKoreaderServer = async ({
   )
 }
 
-const pullServerPosition = async ({
-  queryClient,
-  httpClientApi,
-  connectionQueryOptions,
-  document,
-  signal,
-}: {
-  queryClient: QueryClient
-  httpClientApi: HttpApiClientWeb
-  connectionQueryOptions: KoreaderSyncConnectionQueryOptions
-  document: string
-  signal: AbortSignal
-}) => {
-  try {
-    const { data } = await koreaderSyncConnectionPullPosition({
-      client: httpClientApi.sdkClient,
-      path: { document },
-      signal,
-    })
-
-    return data.position
-  } catch (error) {
-    if (!isKoreaderSyncConnectionMissingError(error)) throw error
-
-    void queryClient.invalidateQueries({
-      queryKey: connectionQueryOptions.queryKey,
-      refetchType: "all",
-    })
-
-    return null
-  }
-}
-
-/**
- * Whether the position a KOReader sync server keeps for the opened file is
- * where the book was left last: another device left it there after the
- * bookmark last moved. A server that does not date its positions is
- * compared by percentage, as KOReader does.
- */
-const isKoreaderPositionNewerThanBookmark = ({
-  book,
-  position: { deviceId, progress, percentage, updatedAt },
-  koreaderDocument,
-}: {
-  book: DeepReadonly<BookDocType>
-  position: KoreaderSyncPositionDto
-  koreaderDocument: string
-}) => {
-  const koreaderBookmark = getBookmark(book)?.koreader
-  const isPushedByThisInstallation = deviceId === getOrCreateInstallationId()
-  const isAtBookmark =
-    koreaderBookmark?.document === koreaderDocument &&
-    koreaderBookmark.progress === progress
-
-  if (isPushedByThisInstallation || isAtBookmark) return false
-
-  const bookmarkMovedAt = book.readingStateCurrentBookmarkLocationUpdatedAt
-  const isBookmarkDated = !!bookmarkMovedAt
-
-  if (!isBookmarkDated) return true
-
-  const isPositionDated = updatedAt !== null
-
-  if (!isPositionDated) {
-    return percentage > book.readingStateCurrentBookmarkProgressPercent
-  }
-
-  return new Date(updatedAt).getTime() > new Date(bookmarkMovedAt).getTime()
-}
-
 const takeKoreaderPositionWhenNewer = ({
   bookId,
   position,
@@ -153,11 +80,12 @@ const takeKoreaderPositionWhenNewer = ({
     incrementalBookMutation(
       bookId,
       async function writeKoreaderBookmarkWhenNewer(book) {
-        const isPositionNewer = isKoreaderPositionNewerThanBookmark({
-          book: book.toJSON(),
-          position,
-          koreaderDocument,
-        })
+        const isPositionNewer =
+          compareKoreaderPositionWithBookmark({
+            book: book.toJSON(),
+            position,
+            koreaderDocument,
+          }) === "newer"
 
         if (!isPositionNewer) return
 
@@ -225,14 +153,27 @@ export const createKoreaderPositionQueryOptions = ({
             const savedAt = new Date().toISOString()
             const position = await firstValueFrom(
               from(
-                pullServerPosition({
-                  queryClient,
-                  httpClientApi,
-                  connectionQueryOptions,
-                  document: koreaderDocument,
+                koreaderSyncConnectionPullPosition({
+                  client: httpClientApi.sdkClient,
+                  path: { document: koreaderDocument },
                   signal,
                 }),
-              ).pipe(timeout(KOREADER_POSITION_CHECK_DEADLINE_MS)),
+              ).pipe(
+                map(function toServerPosition({ data }) {
+                  return data.position
+                }),
+                timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
+                catchError(function openAsWithoutServerOnceGone(error) {
+                  if (!isKoreaderSyncConnectionMissingError(error)) throw error
+
+                  void queryClient.invalidateQueries({
+                    queryKey: connectionQueryOptions.queryKey,
+                    refetchType: "all",
+                  })
+
+                  return of(null)
+                }),
+              ),
             )
 
             if (position) {
