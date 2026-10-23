@@ -6,8 +6,9 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import { memo, useEffect, useState } from "react"
+import { memo } from "react"
 import { useNavigate } from "react-router"
+import { useHasElapsed } from "../common/useHasElapsed"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { ROUTES } from "../navigation/routes"
 import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
@@ -52,17 +53,7 @@ const KoreaderPositionCheckStep = memo(function KoreaderPositionCheckStep({
   check: Exclude<KoreaderPositionCheck, { status: "done" }>
 }) {
   const navigate = useNavigate()
-  const [isCheckSlow, setIsCheckSlow] = useState(false)
-
-  useEffect(function revealContinueAnywayWhenCheckIsTakingLong() {
-    const timeout = setTimeout(function markCheckAsSlow() {
-      setIsCheckSlow(true)
-    }, SLOW_CHECK_THRESHOLD_MS)
-
-    return function cancelContinueAnywayReveal() {
-      clearTimeout(timeout)
-    }
-  }, [])
+  const isCheckSlow = useHasElapsed(SLOW_CHECK_THRESHOLD_MS)
 
   switch (check.status) {
     case "checking":
