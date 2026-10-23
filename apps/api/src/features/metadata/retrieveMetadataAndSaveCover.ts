@@ -19,11 +19,10 @@ import { isBookProtected } from "../../lib/couch/isBookProtected.js"
 import { reduceMetadata } from "../../lib/metadata/reduceMetadata.js"
 import { getBookSourcesMetadata } from "../../lib/metadata/getBookSourcesMetadata.js"
 import { getMetadataFromArchive } from "../../lib/books/metadata/getMetadataFromArchive.js"
-import { createUnzipperArchiveSource } from "../../lib/books/metadata/unzipperArchive.js"
 import { detectMimeTypeFromContent } from "../../lib/utils.js"
 import { updateCover } from "./updateCover.js"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
-import { getRarArchive } from "../../lib/archives/getRarArchive.js"
+import { openArchive } from "../../lib/archives/openArchive.js"
 import { atomicUpdate } from "../../lib/couch/dbHelpers.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { CoversService } from "../../covers/covers.service.js"
@@ -270,8 +269,6 @@ export const retrieveMetadataAndSaveCover = async (
       },
     )
 
-    const isRarArchive = contentType === "application/x-rar"
-
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
       if (!contentType) {
@@ -280,13 +277,11 @@ export const retrieveMetadataAndSaveCover = async (
       }
 
       if (!ignoreMetadataFile) {
-        if (isRarArchive) {
-          archive = await getRarArchive(tmpFilePath)
-        } else if (
+        if (
           contentType &&
           config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
         ) {
-          archive = await createUnzipperArchiveSource(tmpFilePath)
+          archive = await openArchive(tmpFilePath)
         } else {
           logger.log(
             `${contentType} cannot be extracted to retrieve information (cover, etc)`,
