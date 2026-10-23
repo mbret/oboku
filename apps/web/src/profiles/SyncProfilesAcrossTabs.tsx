@@ -1,5 +1,6 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { memo, useEffect } from "react"
+import { forgetAccountSessions } from "../auth/forgetAccountSessions"
 import { Logger } from "../debug/logger.shared"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
 import { syncActiveProfileIdFromStorage } from "./active/activeProfileId"
@@ -15,9 +16,10 @@ export const SyncProfilesAcrossTabs = memo(function SyncProfilesAcrossTabs() {
         function refreshProfilesFromOtherTab() {
           const hasActiveProfileChanged = syncActiveProfileIdFromStorage()
 
-          // Reset before the profiles refetch can start a revocation sweep
-          // (see `useSignOut`).
           if (hasActiveProfileChanged) {
+            forgetAccountSessions()
+            // Reset before the profiles refetch can start a revocation sweep
+            // (see `useSignOut`).
             resetSessionQueries(queryClient).catch(Logger.error)
           }
 

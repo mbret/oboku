@@ -6,6 +6,7 @@ import {
 import { useResetSessionQueries } from "../queries/resetSessionQueries"
 import { Logger } from "../debug/logger.shared"
 import { deleteProofKey } from "./proofKey"
+import { forgetAccountSessions } from "./forgetAccountSessions"
 import { useReCreateDb } from "../rxdb"
 import { purgeAllDownloads } from "../download/purgeAllDownloads"
 
@@ -30,8 +31,7 @@ export const useSignOut = () => {
       Logger.error("Failed to delete the refresh proof key on sign out", error)
     }
 
-    // Leaving the account also forgets its plugin sessions and temporary
-    // master key, in every tab (see `ForgetPreviousAccountSessions`).
+    forgetAccountSessions()
     clearActiveProfileId()
 
     /**

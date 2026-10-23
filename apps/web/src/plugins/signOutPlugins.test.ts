@@ -1,19 +1,18 @@
-import { renderHook } from "@testing-library/react"
+import { DropboxAuth } from "dropbox"
 import { describe, expect, it } from "vitest"
 import { googleAccessTokenSignal } from "../google/auth"
+import { dropboxAuthSignal } from "./dropbox/lib/auth"
+import { signOutPlugins } from "./signOutPlugins"
 import { synologyDriveSessionSignal } from "./synology-drive/auth/auth"
-import { usePluginsSignOut } from "./usePluginsSignOut"
 
-describe("usePluginsSignOut", () => {
+describe("signOutPlugins", () => {
   it("forgets the Synology Drive session so the next account in this tab does not inherit it", () => {
     synologyDriveSessionSignal.setValue({
       auth: { baseUrl: "https://nas.example.com", username: "reader" },
       sid: "nas-session-id",
     })
 
-    const { result } = renderHook(usePluginsSignOut)
-
-    result.current()
+    signOutPlugins()
 
     expect(synologyDriveSessionSignal.getValue()).toBeUndefined()
   })
@@ -33,10 +32,18 @@ describe("usePluginsSignOut", () => {
       created_at: Date.now(),
     })
 
-    const { result } = renderHook(usePluginsSignOut)
-
-    result.current()
+    signOutPlugins()
 
     expect(googleAccessTokenSignal.getValue()).toBeUndefined()
+  })
+
+  it("forgets the Dropbox session so the next account in this tab does not inherit it", () => {
+    dropboxAuthSignal.update(
+      new DropboxAuth({ accessToken: "dropbox-access-token" }),
+    )
+
+    signOutPlugins()
+
+    expect(dropboxAuthSignal.getValue()).toBeUndefined()
   })
 })

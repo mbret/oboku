@@ -40,7 +40,6 @@ import { WithAuthentication } from "./auth/WithAuthentication"
 import { HttpSessionStoreProvider } from "./auth/HttpSessionStoreProvider"
 import { RevokeLoggedOutProfiles } from "./auth/RevokeLoggedOutProfiles"
 import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
-import { ForgetPreviousAccountSessions } from "./auth/ForgetPreviousAccountSessions"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
@@ -155,7 +154,6 @@ export const AppWithConfig = memo(function AppWithConfig() {
                 <LegacyAuthMigration>
                   <RevokeLoggedOutProfiles />
                   <SyncProfilesAcrossTabs />
-                  <ForgetPreviousAccountSessions />
                   <LoadConfiguration>
                     <App onReadyChange={setIsAppReady} />
                   </LoadConfiguration>

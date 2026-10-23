@@ -233,7 +233,7 @@ type ObokuPluginBase<
   useRemoveResource: UseRemoveResource<T>
   useLinkInfo: UseLinkInfo
   useSyncSourceInfo: UseSyncSourceInfo<T>
-  useSignOut: () => () => void
+  signOut?: () => void
 }
 
 export type ObokuPlugin<

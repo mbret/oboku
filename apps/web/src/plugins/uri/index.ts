@@ -22,7 +22,6 @@ const plugin: ObokuPlugin<"URI"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
   description: "Manage contents from URI / URL",
 }
 

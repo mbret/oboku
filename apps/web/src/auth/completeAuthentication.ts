@@ -8,6 +8,7 @@ import {
 } from "../profiles"
 import type { Profile } from "../profiles/types"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
+import { forgetAccountSessions } from "./forgetAccountSessions"
 
 export const completeAuthentication = ({
   reCreateDb,
@@ -47,6 +48,10 @@ export const completeAuthentication = ({
             dbName: auth.dbName,
             sessionId: auth.sessionId,
           })
+
+          if (switchedAccount) {
+            forgetAccountSessions()
+          }
 
           setActiveProfileId(auth.nameHex)
 

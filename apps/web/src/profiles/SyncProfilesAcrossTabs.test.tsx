@@ -4,8 +4,9 @@ import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "./types"
 
-const { profilesStore } = vi.hoisted(() => ({
+const { profilesStore, forgetAccountSessions } = vi.hoisted(() => ({
   profilesStore: new Map<string, Profile>(),
+  forgetAccountSessions: vi.fn(),
 }))
 
 vi.mock("../rxdb/dexie", () => ({
@@ -15,6 +16,8 @@ vi.mock("../rxdb/dexie", () => ({
     },
   },
 }))
+
+vi.mock("../auth/forgetAccountSessions", () => ({ forgetAccountSessions }))
 
 vi.mock("../queries/persister", () => ({
   persistBuster: "test",
@@ -77,6 +80,7 @@ describe("SyncProfilesAcrossTabs", () => {
     otherTab = undefined
     profilesStore.clear()
     clearActiveProfileId()
+    forgetAccountSessions.mockClear()
   })
 
   it("reflects a sign-in performed in another tab", async () => {
@@ -117,7 +121,7 @@ describe("SyncProfilesAcrossTabs", () => {
     })
   })
 
-  it("drops the session data this tab cached for an account another tab signed out", async () => {
+  it("forgets the sessions and drops the session data this tab held for an account another tab signed out", async () => {
     profilesStore.set("reader", createProfile())
     setActiveProfileId("reader")
     const queryClient = new QueryClient()
@@ -139,9 +143,10 @@ describe("SyncProfilesAcrossTabs", () => {
       expect(result.current.active.data).toBeNull()
     })
     expect(queryClient.getQueryData(notificationsQueryKey)).toBeUndefined()
+    expect(forgetAccountSessions).toHaveBeenCalledTimes(1)
   })
 
-  it("keeps the session data when another tab only updates the active profile", async () => {
+  it("keeps the sessions and the session data when another tab only updates the active profile", async () => {
     profilesStore.set("reader", createProfile())
     setActiveProfileId("reader")
     const queryClient = new QueryClient()
@@ -162,6 +167,7 @@ describe("SyncProfilesAcrossTabs", () => {
       expect(result.current.isAuthenticated).toBe(false)
     })
     expect(queryClient.getQueryData(notificationsQueryKey)).toEqual([])
+    expect(forgetAccountSessions).not.toHaveBeenCalled()
   })
 
   it("reflects a session expiry (needsRelogin) flagged in another tab", async () => {

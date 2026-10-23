@@ -8,6 +8,7 @@ const {
   patchProfile,
   deleteProofKey,
   clearActiveProfileId,
+  forgetAccountSessions,
 } = vi.hoisted(() => ({
   reCreateDb: vi.fn(async () => {}),
   purgeAllDownloads: vi.fn(async () => {}),
@@ -15,6 +16,7 @@ const {
   patchProfile: vi.fn(async () => {}),
   deleteProofKey: vi.fn(async () => {}),
   clearActiveProfileId: vi.fn(),
+  forgetAccountSessions: vi.fn(),
 }))
 
 vi.mock("../queries/resetSessionQueries", () => ({
@@ -26,6 +28,7 @@ vi.mock("../profiles", () => ({
   usePatchProfile: () => ({ mutateAsync: patchProfile }),
 }))
 vi.mock("./proofKey", () => ({ deleteProofKey }))
+vi.mock("./forgetAccountSessions", () => ({ forgetAccountSessions }))
 vi.mock("../rxdb", () => ({
   useReCreateDb: () => ({ mutateAsync: reCreateDb }),
 }))
@@ -47,11 +50,12 @@ describe("useSignOut", () => {
     expect(purgeAllDownloads).toHaveBeenCalledTimes(1)
   })
 
-  it("clears the active profile", async () => {
+  it("forgets the account's sessions, then clears the active profile", async () => {
     const { result } = renderHook(() => useSignOut())
 
     await result.current()
 
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(clearActiveProfileId)
     expect(clearActiveProfileId).toHaveBeenCalledTimes(1)
   })
 

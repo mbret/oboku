@@ -44,9 +44,7 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: function useGoogleDriveSignOut() {
-    return clearGoogleAccessToken
-  },
+  signOut: clearGoogleAccessToken,
   Provider,
   InfoScreen,
   description: "Manage contents from Google Drive",

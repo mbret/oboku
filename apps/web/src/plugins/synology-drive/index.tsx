@@ -34,9 +34,7 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: function useSynologyDriveSignOut() {
-    return clearSynologyDriveSession
-  },
+  signOut: clearSynologyDriveSession,
   description:
     "Browse a Synology Drive library and add books by stable file id",
 }

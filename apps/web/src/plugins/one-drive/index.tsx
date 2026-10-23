@@ -38,7 +38,7 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   useLinkInfo,
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {
+  signOut: function signOutOneDrive() {
     void clearOneDriveSession()
   },
   useSynchronize,

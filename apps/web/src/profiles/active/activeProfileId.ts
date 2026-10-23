@@ -6,8 +6,6 @@ const activeProfileIdSignal = signal<string | undefined>({
   default: undefined,
 })
 
-export const activeProfileId$ = activeProfileIdSignal.asObservable()
-
 export const getActiveProfileId = () =>
   localStorage.getItem(STORAGE_PROFILE_KEY) || undefined
 
