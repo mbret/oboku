@@ -12,14 +12,14 @@ import {
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
 import type nano from "nano"
-import type { Extractor } from "node-unrar-js"
+import type { Archive } from "@prose-reader/archive-reader"
 import { Logger } from "@nestjs/common"
 import type { Context } from "./types.js"
 import { isBookProtected } from "../../lib/couch/isBookProtected.js"
 import { reduceMetadata } from "../../lib/metadata/reduceMetadata.js"
 import { getBookSourcesMetadata } from "../../lib/metadata/getBookSourcesMetadata.js"
-import { getMetadataFromRarArchive } from "../../lib/books/metadata/getMetadataFromRarArchive.js"
-import { getMetadataFromZipArchive } from "../../lib/books/metadata/getMetadataFromZipArchive.js"
+import { getMetadataFromArchive } from "../../lib/books/metadata/getMetadataFromArchive.js"
+import { createUnzipperArchiveSource } from "../../lib/books/metadata/unzipperArchive.js"
 import { detectMimeTypeFromContent } from "../../lib/utils.js"
 import { updateCover } from "./updateCover.js"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
@@ -92,6 +92,7 @@ export const retrieveMetadataAndSaveCover = async (
   let bookNameForDebug = ""
 
   let fileToUnlink: string | undefined
+  let archive: Archive | undefined
 
   try {
     bookNameForDebug = reduceMetadata(ctx.book.metadata).title?.toString() || ""
@@ -270,8 +271,6 @@ export const retrieveMetadataAndSaveCover = async (
     )
 
     const isRarArchive = contentType === "application/x-rar"
-    let archiveExtractor: Extractor<Uint8Array> | undefined
-    let freshFileMetadata: FileMetadata | undefined
 
     if (typeof tmpFilePath === "string" && tmpFilePath) {
       // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
@@ -282,19 +281,12 @@ export const retrieveMetadataAndSaveCover = async (
 
       if (!ignoreMetadataFile) {
         if (isRarArchive) {
-          archiveExtractor = await getRarArchive(tmpFilePath)
-          freshFileMetadata = await getMetadataFromRarArchive(
-            archiveExtractor,
-            contentType ?? ``,
-          )
+          archive = await getRarArchive(tmpFilePath)
         } else if (
           contentType &&
           config.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(contentType)
         ) {
-          freshFileMetadata = await getMetadataFromZipArchive(
-            tmpFilePath,
-            contentType,
-          )
+          archive = await createUnzipperArchiveSource(tmpFilePath)
         } else {
           logger.log(
             `${contentType} cannot be extracted to retrieve information (cover, etc)`,
@@ -302,6 +294,10 @@ export const retrieveMetadataAndSaveCover = async (
         }
       }
     }
+
+    const freshFileMetadata = archive
+      ? await getMetadataFromArchive(archive, contentType ?? ``)
+      : undefined
 
     /**
      * Carry the previously-extracted `type:"file"` entry forward when
@@ -368,8 +364,7 @@ export const retrieveMetadataAndSaveCover = async (
       book: ctx.book,
       ctx,
       metadataList,
-      archiveExtractor,
-      tmpFilePath,
+      archive,
       coversService,
       force: ctx.force,
       catalogIdentityIsConfirmed: lookupGoogleVolumeId !== undefined,
@@ -397,6 +392,8 @@ export const retrieveMetadataAndSaveCover = async (
 
     throw e
   } finally {
+    await archive?.close().catch(console.error)
+
     try {
       /**
        * Make sure to remove temporary file in case of crash

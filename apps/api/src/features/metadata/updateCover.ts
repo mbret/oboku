@@ -4,11 +4,10 @@ import {
   buildBookBucketCoverKey,
   getBookCoverKey,
 } from "@oboku/shared"
-import type { Extractor } from "node-unrar-js"
-import { saveCoverFromRarArchiveToBucket } from "../../lib/books/covers/saveCoverFromRarArchiveToBucket.js"
+import type { Archive } from "@prose-reader/archive-reader"
+import { saveCoverFromArchiveToBucket } from "../../lib/books/covers/saveCoverFromArchiveToBucket.js"
 import type { Context } from "./types.js"
 import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket.js"
-import { saveCoverFromZipArchiveToBucket } from "../../lib/books/covers/saveCoverFromZipArchiveToBucket.js"
 import { CoversService } from "../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
@@ -19,10 +18,9 @@ export type UpdateCoverResult = {
 
 export const updateCover = async ({
   metadataList,
-  archiveExtractor,
+  archive,
   book,
   ctx,
-  tmpFilePath,
   coversService,
   force = false,
   catalogIdentityIsConfirmed,
@@ -30,8 +28,7 @@ export const updateCover = async ({
   ctx: Context
   book: BookDocType
   metadataList: BookMetadata[]
-  archiveExtractor?: Extractor<Uint8Array> | undefined
-  tmpFilePath?: string
+  archive?: Archive
   coversService: CoversService
   /**
    * Hard refresh: regenerate the cover even when the bucket key
@@ -70,28 +67,11 @@ export const updateCover = async ({
   if (
     metadataForCover?.type === "file" &&
     metadataForCover.coverLink &&
-    archiveExtractor
+    archive
   ) {
-    const saved = await saveCoverFromRarArchiveToBucket(
+    const saved = await saveCoverFromArchiveToBucket(
       coverObjectKey,
-      archiveExtractor,
-      metadataForCover.coverLink,
-      coversService,
-    )
-
-    return saved && expectedBucketCoverKey
-      ? { bucketCoverKey: expectedBucketCoverKey }
-      : {}
-  }
-
-  if (
-    metadataForCover?.type === "file" &&
-    metadataForCover.coverLink &&
-    tmpFilePath
-  ) {
-    const saved = await saveCoverFromZipArchiveToBucket(
-      coverObjectKey,
-      tmpFilePath,
+      archive,
       metadataForCover.coverLink,
       coversService,
     )
