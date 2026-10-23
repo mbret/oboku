@@ -1,14 +1,14 @@
-import type { BookDocType } from "@oboku/shared"
-import type { DeepReadonly } from "rxdb"
 import { Subject } from "rxjs"
 
-const bookmarkMovedSubject = new Subject<DeepReadonly<BookDocType>>()
+type BookmarkMove = { bookId: string; movedAt: string }
 
-export const dispatchBookmarkMoved = (book: DeepReadonly<BookDocType>) =>
-  bookmarkMovedSubject.next(book)
+const bookmarkMovedSubject = new Subject<BookmarkMove>()
+
+export const dispatchBookmarkMoved = (move: BookmarkMove) =>
+  bookmarkMovedSubject.next(move)
 
 /**
- * Each book whose bookmark moved while read on this device, as the move saved
- * it. The last move is saved after the reader closes.
+ * Each move of a book's bookmark made by reading on this device, dated as its
+ * save dated the bookmark. The last move is saved after the reader closes.
  */
 export const bookmarkMoved$ = bookmarkMovedSubject.asObservable()

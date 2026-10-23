@@ -25,6 +25,10 @@ export const createKoreaderSyncConnectionQueryOptions = ({
     gcTime: 5 * 60 * 1000,
   })
 
+export type KoreaderSyncConnectionQueryOptions = ReturnType<
+  typeof createKoreaderSyncConnectionQueryOptions
+>
+
 export const useKoreaderSyncConnection = () => {
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()

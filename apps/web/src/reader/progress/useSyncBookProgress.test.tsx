@@ -794,7 +794,7 @@ describe("useSyncBookProgress", () => {
       mocks.state.book = bookReadOnPageBeforeLast
     })
 
-    it("dispatches the book as saved after each move of its bookmark", async () => {
+    it("dispatches each move of the bookmark, dated as its save dated the bookmark", async () => {
       const onBookmarkMoved = observeMovedBookmarks()
       const reader = createFakeReader()
       renderSyncBookProgress()
@@ -803,17 +803,23 @@ describe("useSyncBookProgress", () => {
 
       reader.navigation.readingPosition$.next(FIRST_PAGE)
       await vi.advanceTimersByTimeAsync(1000)
+      const movedToFirstPageAt =
+        mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt
       reader.navigation.readingPosition$.next(LAST_PAGE)
       await vi.advanceTimersByTimeAsync(1000)
 
       expect(onBookmarkMoved).toHaveBeenCalledTimes(2)
-      expect(onBookmarkMoved).toHaveBeenNthCalledWith(
-        1,
-        expect.objectContaining({
-          readingStateCurrentBookmarkLocation: FIRST_PAGE.cfi,
-        }),
+      expect(onBookmarkMoved).toHaveBeenNthCalledWith(1, {
+        bookId: book._id,
+        movedAt: movedToFirstPageAt,
+      })
+      expect(onBookmarkMoved).toHaveBeenLastCalledWith({
+        bookId: book._id,
+        movedAt: mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
+      })
+      expect(movedToFirstPageAt).not.toBe(
+        mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
       )
-      expect(onBookmarkMoved).toHaveBeenLastCalledWith(mocks.state.book)
     })
 
     it("does not dispatch the place the book opens at", async () => {
@@ -869,7 +875,10 @@ describe("useSyncBookProgress", () => {
       expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
         LAST_PAGE.cfi,
       )
-      expect(onBookmarkMoved).toHaveBeenCalledExactlyOnceWith(mocks.state.book)
+      expect(onBookmarkMoved).toHaveBeenCalledExactlyOnceWith({
+        bookId: book._id,
+        movedAt: mocks.state.book?.readingStateCurrentBookmarkLocationUpdatedAt,
+      })
     })
 
     it("does not dispatch a move whose save fails", async () => {
