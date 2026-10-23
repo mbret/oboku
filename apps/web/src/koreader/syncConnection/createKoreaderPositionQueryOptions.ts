@@ -181,8 +181,8 @@ const takeKoreaderPositionWhenNewer = ({
     incrementalBookMutation(
       bookId,
       async function writeKoreaderBookmarkWhenNewer(book) {
-        // RxDB writes whatever the modifier returns, even the book unchanged,
-        // so skip incrementalModify when the position is not newer.
+        // RxDB writes a new revision even when the modifier returns the book
+        // unchanged.
         const isPositionNewer = isKoreaderPositionNewerThanBookmark({
           book: book.toJSON(),
           position,
