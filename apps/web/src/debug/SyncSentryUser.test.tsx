@@ -3,10 +3,12 @@ import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "../profiles/types"
 
-const { profilesStore, setUser } = vi.hoisted(() => ({
-  profilesStore: new Map<string, Profile>(),
-  setUser: vi.fn(),
-}))
+const { profilesStore, setUser } = vi.hoisted(function createSentryUserMocks() {
+  return {
+    profilesStore: new Map<string, Profile>(),
+    setUser: vi.fn(),
+  }
+})
 
 vi.mock("@sentry/react", async function mockSetUser(importOriginal) {
   return {
@@ -15,13 +17,15 @@ vi.mock("@sentry/react", async function mockSetUser(importOriginal) {
   }
 })
 
-vi.mock("../rxdb/dexie", () => ({
-  dexieDb: {
-    profiles: {
-      toArray: async () => [...profilesStore.values()],
+vi.mock("../rxdb/dexie", function mockProfilesTable() {
+  return {
+    dexieDb: {
+      profiles: {
+        toArray: async () => [...profilesStore.values()],
+      },
     },
-  },
-}))
+  }
+})
 
 import {
   clearActiveProfileId,
@@ -50,8 +54,13 @@ const renderSyncSentryUser = () =>
     </QueryClientProvider>,
   )
 
+const waitForSentryUser = (user: ReturnType<typeof sentryUserOf> | null) =>
+  waitFor(function expectLatestSentryUser() {
+    expect(setUser).toHaveBeenLastCalledWith(user)
+  })
+
 describe("SyncSentryUser", () => {
-  afterEach(() => {
+  afterEach(function resetProfilesAndSentryUser() {
     cleanup()
     profilesStore.clear()
     clearActiveProfileId()
@@ -65,9 +74,7 @@ describe("SyncSentryUser", () => {
 
     renderSyncSentryUser()
 
-    await waitFor(() => {
-      expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
-    })
+    await waitForSentryUser(sentryUserOf(reader))
   })
 
   it("identifies the next user after a switch to another account", async () => {
@@ -78,17 +85,13 @@ describe("SyncSentryUser", () => {
     setActiveProfileId(reader.id)
     renderSyncSentryUser()
 
-    await waitFor(() => {
-      expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
-    })
+    await waitForSentryUser(sentryUserOf(reader))
 
-    act(() => {
+    act(function switchToNextReader() {
       setActiveProfileId(nextReader.id)
     })
 
-    await waitFor(() => {
-      expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(nextReader))
-    })
+    await waitForSentryUser(sentryUserOf(nextReader))
   })
 
   it("clears the user once no account is active", async () => {
@@ -97,16 +100,12 @@ describe("SyncSentryUser", () => {
     setActiveProfileId(reader.id)
     renderSyncSentryUser()
 
-    await waitFor(() => {
-      expect(setUser).toHaveBeenLastCalledWith(sentryUserOf(reader))
-    })
+    await waitForSentryUser(sentryUserOf(reader))
 
-    act(() => {
+    act(function clearActiveAccount() {
       clearActiveProfileId()
     })
 
-    await waitFor(() => {
-      expect(setUser).toHaveBeenLastCalledWith(null)
-    })
+    await waitForSentryUser(null)
   })
 })
