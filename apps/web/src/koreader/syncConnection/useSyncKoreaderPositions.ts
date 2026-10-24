@@ -4,7 +4,6 @@ import {
   type KoreaderSyncConnectionPushPositionData,
 } from "@oboku/shared"
 import { useEffect } from "react"
-import { retryBackoff } from "reactjrx"
 import type { DeepReadonly } from "rxdb"
 import {
   concatMap,
@@ -17,13 +16,12 @@ import {
 } from "rxjs"
 import { getOrCreateInstallationId } from "../../common/browser"
 import { whenOnLine$ } from "../../common/network/onLine"
+import { retryOnFailure } from "../../common/network/retryOnFailure"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { bookmarkMoved$ } from "../../reader/events"
 import { usePushKoreaderPosition } from "./usePushKoreaderPosition"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
-const PUSH_RETRY_DELAY_MS = 1000
-const PUSH_RETRY_MAX_DELAY_MS = 5 * 60 * 1000
 
 type KoreaderPosition = Omit<
   KoreaderSyncConnectionPushPositionData["body"],
@@ -73,10 +71,7 @@ export const useSyncKoreaderPositions = () => {
               deviceId: getOrCreateInstallationId(),
             })
           }),
-          retryBackoff({
-            initialInterval: PUSH_RETRY_DELAY_MS,
-            maxInterval: PUSH_RETRY_MAX_DELAY_MS,
-          }),
+          retryOnFailure,
         )
 
       const subscription = bookmarkMoved$
