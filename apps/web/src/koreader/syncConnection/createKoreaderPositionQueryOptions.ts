@@ -15,12 +15,13 @@ import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
 import type { BookPatch } from "../../reader/progress/bookProgressPatches"
 import { isKoreaderSyncConnectionMissingError } from "./errors"
 import { compareKoreaderPositionWithBookmark } from "./serverPosition"
-import {
-  createKoreaderSyncConnectionQueryOptions,
-  type KoreaderSyncConnectionQueryOptions,
-} from "./useKoreaderSyncConnection"
+import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
+
+type KoreaderSyncConnectionQueryOptions = ReturnType<
+  typeof createKoreaderSyncConnectionQueryOptions
+>
 
 /**
  * Whether the account syncs through a KOReader sync server, as the app knows
@@ -64,6 +65,39 @@ const isSyncingWithKoreaderServer = async ({
       }),
     ),
   )
+}
+
+const pullServerPosition = async ({
+  queryClient,
+  httpClientApi,
+  connectionQueryOptions,
+  document,
+  signal,
+}: {
+  queryClient: QueryClient
+  httpClientApi: HttpApiClientWeb
+  connectionQueryOptions: KoreaderSyncConnectionQueryOptions
+  document: string
+  signal: AbortSignal
+}) => {
+  try {
+    const { data } = await koreaderSyncConnectionPullPosition({
+      client: httpClientApi.sdkClient,
+      path: { document },
+      signal,
+    })
+
+    return data.position
+  } catch (error) {
+    if (!isKoreaderSyncConnectionMissingError(error)) throw error
+
+    void queryClient.invalidateQueries({
+      queryKey: connectionQueryOptions.queryKey,
+      refetchType: "all",
+    })
+
+    return null
+  }
 }
 
 const createKoreaderPositionPatch = ({
@@ -181,27 +215,14 @@ export const createKoreaderPositionQueryOptions = ({
             const savedAt = new Date().toISOString()
             const position = await firstValueFrom(
               from(
-                koreaderSyncConnectionPullPosition({
-                  client: httpClientApi.sdkClient,
-                  path: { document: koreaderDocument },
+                pullServerPosition({
+                  queryClient,
+                  httpClientApi,
+                  connectionQueryOptions,
+                  document: koreaderDocument,
                   signal,
                 }),
-              ).pipe(
-                map(function toServerPosition({ data }) {
-                  return data.position
-                }),
-                timeout(KOREADER_POSITION_CHECK_DEADLINE_MS),
-                catchError(function openAsWithoutServerOnceGone(error) {
-                  if (!isKoreaderSyncConnectionMissingError(error)) throw error
-
-                  void queryClient.invalidateQueries({
-                    queryKey: connectionQueryOptions.queryKey,
-                    refetchType: "all",
-                  })
-
-                  return of(null)
-                }),
-              ),
+              ).pipe(timeout(KOREADER_POSITION_CHECK_DEADLINE_MS)),
             )
 
             if (position) {
