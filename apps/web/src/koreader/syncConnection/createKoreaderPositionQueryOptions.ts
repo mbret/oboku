@@ -12,6 +12,7 @@ import { catchError, firstValueFrom, from, map, of, timeout } from "rxjs"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
 import type { HttpApiClientWeb } from "../../http"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
+import type { BookPatch } from "../../reader/progress/bookProgressPatches"
 import { isKoreaderSyncConnectionMissingError } from "./errors"
 import { compareKoreaderPositionWithBookmark } from "./serverPosition"
 import {
@@ -65,6 +66,34 @@ const isSyncingWithKoreaderServer = async ({
   )
 }
 
+const createKoreaderPositionPatch = ({
+  position,
+  koreaderDocument,
+}: {
+  position: KoreaderSyncPositionDto
+  koreaderDocument: string
+}): BookPatch =>
+  function applyKoreaderPositionWhenNewer(old, savedAt) {
+    const isPositionNewer =
+      compareKoreaderPositionWithBookmark({
+        book: old,
+        position,
+        koreaderDocument,
+      }) === "newer"
+
+    if (!isPositionNewer) return old
+
+    return {
+      ...old,
+      readingStateCurrentBookmarkLocation: null,
+      readingStateCurrentBookmarkProgressPercent: position.percentage,
+      readingStateCurrentBookmarkKoreaderProgress: position.progress,
+      readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
+      readingStateCurrentBookmarkLocationUpdatedAt:
+        position.updatedAt ?? savedAt,
+    }
+  }
+
 const takeKoreaderPositionWhenNewer = ({
   bookId,
   position,
@@ -80,6 +109,8 @@ const takeKoreaderPositionWhenNewer = ({
     incrementalBookMutation(
       bookId,
       async function writeKoreaderBookmarkWhenNewer(book) {
+        // RxDB writes a new revision even when the modifier returns the book
+        // unchanged.
         const isPositionNewer =
           compareKoreaderPositionWithBookmark({
             book: book.toJSON(),
@@ -89,18 +120,15 @@ const takeKoreaderPositionWhenNewer = ({
 
         if (!isPositionNewer) return
 
-        await book.incrementalModify(function takeKoreaderPositionAsBookmark(
+        const patch = createKoreaderPositionPatch({
+          position,
+          koreaderDocument,
+        })
+
+        await book.incrementalModify(function applyPatchAsOfSave(
           old: BookDocType,
-        ): BookDocType {
-          return {
-            ...old,
-            readingStateCurrentBookmarkLocation: null,
-            readingStateCurrentBookmarkProgressPercent: position.percentage,
-            readingStateCurrentBookmarkKoreaderProgress: position.progress,
-            readingStateCurrentBookmarkKoreaderDocument: koreaderDocument,
-            readingStateCurrentBookmarkLocationUpdatedAt:
-              position.updatedAt ?? savedAt,
-          }
+        ) {
+          return patch(old, savedAt)
         })
       },
     ),

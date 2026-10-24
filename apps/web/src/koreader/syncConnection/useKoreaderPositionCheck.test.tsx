@@ -28,11 +28,15 @@ const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
     return book
   })
 
+  const replicateBeforeWrite = vi.fn(function replicateNothing() {})
+
   const toStoredDocument = (storedBook: BookDocType): StoredBookDocument => ({
     toJSON: function toStoredBook() {
       return storedBook
     },
     incrementalModify: async function modifyLatestStoredBook(modify) {
+      replicateBeforeWrite()
+
       if (!state.book) throw new Error("No book stored")
 
       return toStoredDocument(await saveBook(modify(state.book)))
@@ -42,6 +46,7 @@ const mocks = vi.hoisted(function createKoreaderPositionCheckMocks() {
   return {
     state,
     saveBook,
+    replicateBeforeWrite,
     toStoredDocument,
   }
 })
@@ -252,6 +257,7 @@ describe("useKoreaderPositionCheck", () => {
     setOnLine(true)
     setActiveProfileId("profile")
     mocks.saveBook.mockClear()
+    mocks.replicateBeforeWrite.mockReset()
     mocks.state.book = STORED_BOOK
   })
 
@@ -335,6 +341,28 @@ describe("useKoreaderPositionCheck", () => {
     await vi.advanceTimersByTimeAsync(0)
 
     expect(mocks.saveBook).not.toHaveBeenCalled()
+    expect(result.current).toEqual({ status: "done" })
+  })
+
+  it("keeps a bookmark that moved between the check and the write", async () => {
+    const bookMovedMeanwhile: BookDocType = {
+      ...STORED_BOOK,
+      _rev: "3-book",
+      readingStateCurrentBookmarkLocation: "epubcfi(/6/8!/4/2/1:0)",
+      readingStateCurrentBookmarkLocationUpdatedAt: "2026-10-20T09:30:00.000Z",
+      readingStateCurrentBookmarkProgressPercent: 0.7,
+    }
+    mocks.replicateBeforeWrite.mockImplementationOnce(
+      function replicateNewerBookmark() {
+        mocks.state.book = bookMovedMeanwhile
+      },
+    )
+    const { openBook } = createCheckHarness()
+    const { result } = openBook()
+
+    await vi.advanceTimersByTimeAsync(0)
+
+    expect(mocks.saveBook).toHaveBeenCalledExactlyOnceWith(bookMovedMeanwhile)
     expect(result.current).toEqual({ status: "done" })
   })
 

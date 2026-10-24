@@ -63,7 +63,7 @@ WORKDIR /usr/src/app/apps/web
 FROM spa AS web
 COPY --from=web-build /usr/src/app/apps/web/dist ${ASSET_TEMPLATE_DIR}
 
-FROM couchdb:3.5.1 AS couchdb
+FROM couchdb:3.5.3 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
 
