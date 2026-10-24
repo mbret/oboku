@@ -220,6 +220,7 @@ describe("useSyncKoreaderPositions", () => {
   })
 
   it("pushes a position again a second after its push failed, then twice as long after each failure", async () => {
+    vi.spyOn(console, "error").mockImplementation(function ignoreError() {})
     mocks.pushKoreaderPosition
       .mockRejectedValueOnce(new Error("unreachable"))
       .mockRejectedValueOnce(new Error("unreachable"))
@@ -247,6 +248,7 @@ describe("useSyncKoreaderPositions", () => {
   })
 
   it("waits for the device to be back online to push a failed position again", async () => {
+    vi.spyOn(console, "error").mockImplementation(function ignoreError() {})
     mocks.pushKoreaderPosition.mockRejectedValueOnce(new Error("unreachable"))
     renderSyncKoreaderPositions()
     moveBookmarkTo(BOOK_A_POSITION)
