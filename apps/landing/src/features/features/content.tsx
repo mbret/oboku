@@ -330,9 +330,9 @@ export const featureGroups: FeatureGroup[] = [
     Icon: CloudSyncRounded,
     navLabel: "KOReader",
     overline: "KOReader sync",
-    title: "A KOReader sync server, built in",
+    title: "Sync with KOReader, both ways",
     description:
-      "Point KOReader at oboku and every device running it keeps the same reading position, whichever one you pick up. No server to install and no extra account: it comes with oboku, in the cloud or self-hosted.",
+      "Point KOReader at oboku and every device running it keeps the same reading position, whichever one you pick up. No server to install and no extra account: it comes with oboku, in the cloud or self-hosted. Turn on progress sync and oboku's own reader joins in.",
     chips: [
       { label: "KOReader" },
       { label: "Readest" },
@@ -356,6 +356,18 @@ export const featureGroups: FeatureGroup[] = [
         title: "A password for your devices",
         description:
           "Devices sign in with a password generated for them, not your account password. Replace it or turn the server off at any time.",
+      },
+      {
+        Icon: AutoStoriesRounded,
+        title: "oboku's reader syncs too",
+        description:
+          "Turn on KOReader progress sync in your profile: EPUBs, PDFs and comics open where your e-reader left them, and the other way round.",
+      },
+      {
+        Icon: DnsRounded,
+        title: "Any KOReader sync server",
+        description:
+          "oboku's reader syncs through oboku's own server, KOReader's public one, or one you host, as long as oboku can reach it.",
       },
     ],
   },
