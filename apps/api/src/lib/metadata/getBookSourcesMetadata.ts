@@ -1,4 +1,4 @@
-import type { GoogleBookApiMetadata } from "@oboku/shared"
+import type { LegacyGoogleBookApiMetadata } from "@oboku/shared"
 import {
   type GoogleBookLookupInput,
   getGoogleBookMetadata,
@@ -32,8 +32,8 @@ export const getBookSourcesMetadata = async (
     withExternalSources,
   }: { googleApiKey?: string; withExternalSources: boolean },
   config: AppConfigService,
-): Promise<GoogleBookApiMetadata[]> => {
-  const list: GoogleBookApiMetadata[] = []
+): Promise<LegacyGoogleBookApiMetadata[]> => {
+  const list: LegacyGoogleBookApiMetadata[] = []
 
   if (!withExternalSources) return list
 

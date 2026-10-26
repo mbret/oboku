@@ -233,8 +233,7 @@ export const ProfileScreen = () => {
               secondary={describeKoreaderSyncServer(koreaderSyncServer)}
             />
           </ListItemButton>
-          {/* TODO: show it to everyone once oboku's reader syncs books through it. */}
-          {isDebugEnabled() && <KoreaderProgressSyncListItem />}
+          <KoreaderProgressSyncListItem />
         </PageSection>
         <PageSection title="Device">
           <ListItemButton

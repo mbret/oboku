@@ -25,5 +25,7 @@ title: "Metadata Sources"
 * User information
 * Directives
 * File
-* Google Book API
+* Catalog (Google Books)
 * Provider link
+
+You can swap File and Catalog on a book's metadata sources screen.

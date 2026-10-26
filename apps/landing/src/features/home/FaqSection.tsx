@@ -50,7 +50,8 @@ const questions: { question: string; answer: ReactNode }[] = [
         <Link href={links.documentationKoreaderSyncServer} target="_blank">
           setup guide
         </Link>
-        . These apps sync with each other, not with the oboku reader itself.
+        . Turn on KOReader progress sync in your profile too, and oboku&apos;s
+        own reader syncs with them.
       </>
     ),
   },

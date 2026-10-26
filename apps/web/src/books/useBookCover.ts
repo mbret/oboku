@@ -4,6 +4,7 @@ import placeholder from "../assets/cover-placeholder.jpg"
 import { useBook } from "./states"
 import { useConfig } from "../config/useConfig"
 import { useIsAuthenticated } from "../auth/useIsAuthenticated"
+import { getBookMetadataEntryFields } from "./metadata/fields"
 
 export const useBookCoverUrl = ({ bookId }: { bookId?: string }) => {
   const { data: config } = useConfig()
@@ -26,8 +27,8 @@ export const useBookCoverUrl = ({ bookId }: { bookId?: string }) => {
     ? `${config?.API_URL}/covers/books/${bookId}?${urlParams.toString()}`
     : undefined
 
-  const hasCoverMetadata = !!book?.metadata?.find(
-    (metadata) => metadata.coverLink,
+  const hasCoverMetadata = !!book?.metadata?.some(
+    (entry) => getBookMetadataEntryFields(entry).coverLink,
   )
 
   return {

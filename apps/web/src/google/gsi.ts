@@ -1,6 +1,7 @@
 import { signal, useSwitchMutation$ } from "reactjrx"
 import { map } from "rxjs"
-import { loadScript, retryOnFailure } from "../common/scripts"
+import { retryOnFailure } from "../common/network/retryOnFailure"
+import { loadScript } from "../common/scripts"
 
 const GSI_ID = "oboku-google-gsi-script"
 

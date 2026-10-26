@@ -6,10 +6,11 @@ import {
   ListItemText,
   Stack,
 } from "@mui/material"
-import { SIGNAL_RESET, useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { gapiSignal, useLoadGapi } from "./lib/gapi"
 import { gsiSignal } from "../../google/gsi"
 import {
+  clearGoogleAccessToken,
   googleAccessTokenSignal,
   getTokenExpirationDate,
 } from "../../google/auth"
@@ -47,9 +48,7 @@ export const InfoScreen = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => {
-                  googleAccessTokenSignal.update(SIGNAL_RESET)
-                }}
+                onClick={clearGoogleAccessToken}
               >
                 <DeleteRounded />
               </IconButton>

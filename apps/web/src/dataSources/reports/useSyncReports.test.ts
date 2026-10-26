@@ -34,6 +34,12 @@ vi.mock("@tanstack/react-query", async function mockUseQuery(importOriginal) {
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
   return { useIsAuthenticated: () => true }
 })
+vi.mock("reactjrx", async function mockSignalValue(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("reactjrx")>()),
+    useSignalValue: () => undefined,
+  }
+})
 
 import { useSyncReports } from "./useSyncReports"
 

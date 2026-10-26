@@ -496,6 +496,9 @@ importers:
       '@prose-reader/koreader':
         specifier: ^32.0.0
         version: 32.0.0
+      '@prose-reader/metadata-fetcher':
+        specifier: ^32.0.0
+        version: 32.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/react-reader':
         specifier: ^32.0.0
         version: 32.0.0(aa78406d5d0a4085e706b96325802952)
@@ -666,6 +669,12 @@ importers:
 
   packages/shared:
     dependencies:
+      '@prose-reader/archive-reader':
+        specifier: ^32.0.0
+        version: 32.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/metadata-fetcher':
+        specifier: ^32.0.0
+        version: 32.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       zod:
         specifier: ^4.6.5
         version: 4.6.5
@@ -4341,6 +4350,10 @@ packages:
 
   '@prose-reader/koreader@32.0.0':
     resolution: {integrity: sha512-ipOFYi7cc3vKlM15e3bwi6waP/d245fAESubQEmx952onVRapxL2n+QxgA5P1BacyaVbF4s16ip0SeB5EtYdfA==}
+
+  '@prose-reader/metadata-fetcher@32.0.0':
+    resolution: {integrity: sha512-p6MgD1Syvomf65ClQldV5xkzQZBy0UTFArqH5nCb78KRiVP/z6Z/igC6qA/NWIe4smCn+n7DPyYi7643q16TrQ==}
+    engines: {node: '>=22.12'}
 
   '@prose-reader/react-reader@32.0.0':
     resolution: {integrity: sha512-dug/LYAK0k8gm6DxkHk1QfDKvCQp4i1WrOhrMXYdflt3inipLRZaEK+YnDsIqwQbJJGyg6EXM5VZrQcNECtGvg==}
@@ -16826,6 +16839,19 @@ snapshots:
     dependencies:
       '@prose-reader/cfi': 32.0.0
       '@prose-reader/shared': 32.0.0
+
+  '@prose-reader/metadata-fetcher@32.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)':
+    dependencies:
+      '@prose-reader/archive-reader': 32.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
+      '@prose-reader/shared': 32.0.0
+      xmldoc: 3.0.0
+    transitivePeerDependencies:
+      - '@zip.js/zip.js'
+      - buffer
+      - jszip
+      - libarchive.js
+      - node-unrar-js
+      - unzipper
 
   '@prose-reader/react-reader@32.0.0(aa78406d5d0a4085e706b96325802952)':
     dependencies:
