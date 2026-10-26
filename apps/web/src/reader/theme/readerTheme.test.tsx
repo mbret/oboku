@@ -34,7 +34,7 @@ vi.mock("../streamer/webStreamer", function mockWebStreamer() {
 })
 
 import { useCreateReader } from "../useCreateReader"
-import { useSyncReaderTheme } from "./useReaderTheme"
+import { useSyncReaderTheme } from "./readerTheme"
 
 type DeviceColorScheme = "light" | "dark"
 

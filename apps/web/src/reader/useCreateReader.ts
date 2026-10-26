@@ -1,5 +1,5 @@
 import { type RefObject, useEffect } from "react"
-import { SIGNAL_RESET, useLiveRef } from "reactjrx"
+import { SIGNAL_RESET } from "reactjrx"
 import type { Manifest } from "@prose-reader/shared"
 import { createAppReader } from "./createAppReader"
 import { readerSignal } from "./states"
@@ -10,7 +10,7 @@ import { from, of } from "rxjs"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { type BookDocType, getBookmark } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { useReaderTheme } from "./theme/useReaderTheme"
+import { getReaderTheme } from "./theme/readerTheme"
 
 type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
 
@@ -61,9 +61,6 @@ export const useCreateReader = ({
   book: DeepReadonly<BookDocType> | null | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const readerTheme = useReaderTheme()
-  const readerThemeRef = useLiveRef(readerTheme)
-
   useEffect(
     function createReaderForBook() {
       const containerElement = containerRef.current
@@ -85,7 +82,7 @@ export const useCreateReader = ({
 
       const instance = createAppReader({
         manifest,
-        theme: readerThemeRef.current,
+        theme: getReaderTheme(),
         target,
         ...(isEInkMode && {
           pageTurnAnimation: "none",
@@ -141,7 +138,6 @@ export const useCreateReader = ({
       book,
       koreaderDocument,
       containerRef,
-      readerThemeRef,
     ],
   )
 }
