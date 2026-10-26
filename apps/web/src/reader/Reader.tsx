@@ -12,7 +12,7 @@ import {
 import { readerSignal } from "./states"
 import { type BookOpening, BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { useSyncReaderTheme } from "./theme/readerTheme"
+import { useSyncReaderTheme } from "./theme/useReaderTheme"
 import { useObserve, useSignalValue } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
