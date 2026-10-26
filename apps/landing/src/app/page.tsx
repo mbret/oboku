@@ -48,6 +48,7 @@ export default function Home() {
           "WebDAV sync",
           "E-ink support",
           "KOReader sync server",
+          "KOReader progress sync",
           "Self-hosting",
         ],
       },
