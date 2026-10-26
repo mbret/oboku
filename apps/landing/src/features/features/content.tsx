@@ -361,7 +361,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: AutoStoriesRounded,
         title: "oboku's reader syncs too",
         description:
-          "Turn on KOReader progress sync in your profile: EPUBs, PDFs and comics open where your e-reader left them, and the other way round.",
+          "Turn on KOReader progress sync in your profile: EPUBs, PDFs and comics open where your e-reader left them, and the other way round, even after reading offline.",
       },
       {
         Icon: DnsRounded,
