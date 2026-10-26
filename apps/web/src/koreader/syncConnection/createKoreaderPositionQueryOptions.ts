@@ -1,6 +1,5 @@
 import {
   type BookDocType,
-  getBookmark,
   type KoreaderSyncPositionDto,
   koreaderSyncConnectionPullPosition,
 } from "@oboku/shared"
@@ -9,14 +8,13 @@ import {
   queryOptions,
   skipToken,
 } from "@tanstack/react-query"
-import type { DeepReadonly } from "rxdb"
 import { catchError, firstValueFrom, from, map, of, timeout } from "rxjs"
 import { incrementalBookMutation } from "../../books/incrementalBookMutation"
-import { getOrCreateInstallationId } from "../../common/browser"
 import type { HttpApiClientWeb } from "../../http"
 import { API_QUERY_KEY_PREFIX } from "../../queries/queryClient"
 import type { BookPatch } from "../../reader/progress/bookProgressPatches"
 import { isKoreaderSyncConnectionMissingError } from "./errors"
+import { compareKoreaderPositionWithBookmark } from "./serverPosition"
 import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 const KOREADER_POSITION_CHECK_DEADLINE_MS = 15_000
@@ -102,43 +100,6 @@ const pullServerPosition = async ({
   }
 }
 
-/**
- * Whether the position a KOReader sync server keeps for the opened file is
- * where the book was left last: another device left it there after the
- * bookmark last moved. A server that does not date its positions is
- * compared by percentage, as KOReader does.
- */
-const isKoreaderPositionNewerThanBookmark = ({
-  book,
-  position: { deviceId, progress, percentage, updatedAt },
-  koreaderDocument,
-}: {
-  book: DeepReadonly<BookDocType>
-  position: KoreaderSyncPositionDto
-  koreaderDocument: string
-}) => {
-  const koreaderBookmark = getBookmark(book)?.koreader
-  const isPushedByThisInstallation = deviceId === getOrCreateInstallationId()
-  const isAtBookmark =
-    koreaderBookmark?.document === koreaderDocument &&
-    koreaderBookmark.progress === progress
-
-  if (isPushedByThisInstallation || isAtBookmark) return false
-
-  const bookmarkMovedAt = book.readingStateCurrentBookmarkLocationUpdatedAt
-  const isBookmarkDated = !!bookmarkMovedAt
-
-  if (!isBookmarkDated) return true
-
-  const isPositionDated = updatedAt !== null
-
-  if (!isPositionDated) {
-    return percentage > book.readingStateCurrentBookmarkProgressPercent
-  }
-
-  return new Date(updatedAt).getTime() > new Date(bookmarkMovedAt).getTime()
-}
-
 const createKoreaderPositionPatch = ({
   position,
   koreaderDocument,
@@ -147,11 +108,12 @@ const createKoreaderPositionPatch = ({
   koreaderDocument: string
 }): BookPatch =>
   function applyKoreaderPositionWhenNewer(old, savedAt) {
-    const isPositionNewer = isKoreaderPositionNewerThanBookmark({
-      book: old,
-      position,
-      koreaderDocument,
-    })
+    const isPositionNewer =
+      compareKoreaderPositionWithBookmark({
+        book: old,
+        position,
+        koreaderDocument,
+      }) === "newer"
 
     if (!isPositionNewer) return old
 
@@ -183,11 +145,12 @@ const takeKoreaderPositionWhenNewer = ({
       async function writeKoreaderBookmarkWhenNewer(book) {
         // RxDB writes a new revision even when the modifier returns the book
         // unchanged.
-        const isPositionNewer = isKoreaderPositionNewerThanBookmark({
-          book: book.toJSON(),
-          position,
-          koreaderDocument,
-        })
+        const isPositionNewer =
+          compareKoreaderPositionWithBookmark({
+            book: book.toJSON(),
+            position,
+            koreaderDocument,
+          }) === "newer"
 
         if (!isPositionNewer) return
 
