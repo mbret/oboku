@@ -31,7 +31,6 @@ const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
   return {
     gap: theme.spacing(2),
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(1),
   }
 })
 

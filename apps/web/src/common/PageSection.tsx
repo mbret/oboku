@@ -34,7 +34,7 @@ const DangerSectionListSubheader = styled(SectionListSubheader)(
 const SectionCardBox = styled(Box)(function styleSectionCardBox({ theme }) {
   return {
     [theme.breakpoints.up("md")]: {
-      margin: theme.spacing(1, 2, 3),
+      margin: theme.spacing(2, 2, 3),
       // Unlike `hidden`, `clip` does not let the card shrink below its
       // content when it sits in a flex column.
       overflow: "clip",
@@ -76,6 +76,9 @@ const SectionStack = styled(Stack)(function styleSectionStack({ theme }) {
  * switches to its desktop layout, the group is an outlined card in the page
  * column. Sits in a `PageContainer` with `disableGutters`.
  *
+ * The card keeps 16px clear above it, as on its sides, and 8px under its
+ * title. Content above a section needs no bottom margin.
+ *
  * The `list` variant holds list rows, which bring their own padding. The
  * `stack` variant holds other blocks, such as form fields, and pads them to
  * the rows' edge.
@@ -106,7 +109,7 @@ export function PageSection({
           {title}
         </Subheader>
       )}
-      <Card>
+      <Card sx={hasTitle ? { mt: { md: 1 } } : undefined}>
         {variant === "stack" ? (
           <SectionStack>{children}</SectionStack>
         ) : (

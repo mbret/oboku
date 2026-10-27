@@ -49,7 +49,6 @@ export const DataSourcesListScreen = memo(() => {
             sx={{
               gap: 1,
               mt: 2,
-              mb: 1,
             }}
           >
             <Alert severity="info">
