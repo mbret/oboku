@@ -1,13 +1,13 @@
 import type { DataSourceDocType } from "@oboku/shared"
 import type { ObokuPlugin } from "./types"
-import { plugin as dropbox } from "./dropbox"
-import { plugin as google } from "./google"
+import { plugin as dropbox } from "../integrations/dropbox/dropboxPlugin"
+import { plugin as google } from "../integrations/google/googleDrivePlugin"
 import { plugin as file } from "./local"
-import { plugin as oneDrive } from "./one-drive"
-import { plugin as server } from "./server"
-import { plugin as synologyDrive } from "./synology-drive"
+import { plugin as oneDrive } from "../integrations/one-drive/oneDrivePlugin"
+import { plugin as server } from "../integrations/server/serverPlugin"
+import { plugin as synologyDrive } from "../integrations/synology-drive/synologyDrivePlugin"
 import uri from "./uri"
-import webdav from "./webdav"
+import webdav from "../integrations/webdav/webdavPlugin"
 
 type PluginsByType = {
   [K in DataSourceDocType["type"]]: ObokuPlugin<K>

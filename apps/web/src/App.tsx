@@ -27,7 +27,7 @@ import { LoadConfiguration } from "./config/LoadConfiguration"
 import { SplashScreen } from "./common/SplashScreen"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
-import { useLoadGsi } from "./google/gsi"
+import { useLoadGsi } from "./integrations/google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
@@ -44,7 +44,7 @@ import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
 import { SyncSentryUser } from "./debug/SyncSentryUser"
-import { SyncKoreaderPositions } from "./koreader/syncConnection/SyncKoreaderPositions"
+import { SyncKoreaderPositions } from "./integrations/koreader/client/SyncKoreaderPositions"
 
 // @todo move to sw
 LibArchive.init({

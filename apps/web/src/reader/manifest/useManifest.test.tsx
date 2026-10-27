@@ -37,7 +37,7 @@ vi.mock("../../rxdb", function mockDatabase() {
 })
 
 vi.mock(
-  "../../koreader/getBookKoreaderDocument",
+  "../../integrations/koreader/client/getBookKoreaderDocument",
   function mockKoreaderDocument() {
     return { getBookKoreaderDocument: mocks.getBookKoreaderDocument }
   },

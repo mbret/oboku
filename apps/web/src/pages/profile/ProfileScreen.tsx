@@ -53,8 +53,8 @@ import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnread
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
-import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
-import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
+import { useKoreaderSyncServer } from "../../integrations/koreader/server/useKoreaderSyncServer"
+import { useKoreaderSyncConnection } from "../../integrations/koreader/client/useKoreaderSyncConnection"
 
 const KOREADER_SYNC_SERVER_PURPOSE =
   "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
