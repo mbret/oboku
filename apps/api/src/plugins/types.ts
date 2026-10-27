@@ -15,7 +15,7 @@ import {
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "../lib/sync/SyncReport.js"
+import { SyncReport } from "../datasource/sync/SyncReport.js"
 
 /** Re-export from shared so sync item/data source types are single source of truth. */
 export type {
@@ -53,7 +53,9 @@ export type Helpers = {
     model: M,
     data: Omit<D, "rx_model" | "_id" | "_rev">,
   ) => Promise<createNano.DocumentInsertResponse>
-  getOrCreateTagFromName: (name: string) => void
+  getOrCreateTagFromName: (
+    name: string,
+  ) => Promise<{ id: string; created: boolean }>
 }
 
 /** Sync context; generic so `providerCredentials` is the typed API credentials for the provider. */

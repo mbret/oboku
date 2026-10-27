@@ -7,7 +7,7 @@ import { CouchService } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
 import { NotificationsService } from "../notifications/notifications.service.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
-import { sync } from "../lib/sync/sync.js"
+import { sync } from "./sync/sync.js"
 
 @Injectable()
 export class DataSourceService {

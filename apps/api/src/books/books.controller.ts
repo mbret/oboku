@@ -6,7 +6,7 @@ import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.
 import { AppConfigService } from "../config/AppConfigService.js"
 import { from } from "rxjs"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
-import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
 import { RefreshBookMetadataDto } from "./books.dto.js"
 
 @Controller("books")

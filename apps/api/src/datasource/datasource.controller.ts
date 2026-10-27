@@ -11,8 +11,8 @@ import { AppConfigService } from "../config/AppConfigService.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { DataSourceService } from "./datasource.service.js"
-import { EmptyResponseDto } from "../lib/empty-response.dto.js"
-import { SyncReportDto } from "../lib/sync/sync-report.dto.js"
+import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
+import { SyncReportDto } from "./sync/sync-report.dto.js"
 import { SyncDataSourceDto } from "./datasource.dto.js"
 
 @Controller("datasources")

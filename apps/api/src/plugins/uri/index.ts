@@ -1,7 +1,7 @@
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import axios from "axios"
-import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
+import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 
 const URI_TYPE = "URI"
 

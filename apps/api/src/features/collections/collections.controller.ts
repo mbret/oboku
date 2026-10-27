@@ -5,7 +5,7 @@ import { CollectionMetadataService } from "./CollectionMetadataService.js"
 import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { WithAuthUser, type AuthUser } from "../../auth/auth.guard.js"
-import { EmptyResponseDto } from "../../lib/empty-response.dto.js"
+import { EmptyResponseDto } from "../../openapi/empty-response.dto.js"
 import { RefreshCollectionMetadataDto } from "./collections.dto.js"
 
 @Controller("collections")

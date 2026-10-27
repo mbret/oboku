@@ -1,6 +1,6 @@
 import { Controller, Delete, Get, Post } from "@nestjs/common"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
-import { OkResponseDto } from "../../lib/ok-response.dto.js"
+import { OkResponseDto } from "../../openapi/ok-response.dto.js"
 import {
   KoreaderSyncServerPasswordResponseDto,
   KoreaderSyncServerResponseDto,

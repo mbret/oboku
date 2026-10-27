@@ -12,7 +12,7 @@ import {
   MinLength,
   ValidateIf,
 } from "class-validator"
-import { AudienceDto } from "../lib/audience.dto.js"
+import { AudienceDto } from "./audience.dto.js"
 
 export class AdminSignInDto {
   @IsString()

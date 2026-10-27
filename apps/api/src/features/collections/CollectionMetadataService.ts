@@ -1,12 +1,12 @@
 import { Injectable, Logger } from "@nestjs/common"
-import { findOne } from "../../lib/couch/findOne.js"
+import { findOne } from "../../couch/findOne.js"
 import { from, tap } from "rxjs"
 import { mergeMap, of, switchMap } from "rxjs"
 import {
   markCollectionAsError,
   markCollectionAsIdle,
 } from "./metadata/collections.js"
-import { onBeforeError, switchMapCombineOuter } from "../../lib/utils.js"
+import { onBeforeError, switchMapCombineOuter } from "./observableOperators.js"
 import { processRefreshMetadata } from "./metadata/processRefreshMetadata.js"
 import { CouchService, emailToNameHex } from "../../couch/couch.service.js"
 import { AppConfigService } from "../../config/AppConfigService.js"

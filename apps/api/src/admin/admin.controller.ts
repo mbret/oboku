@@ -15,15 +15,12 @@ import {
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
 import { AuthService } from "../auth/auth.service.js"
-import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
-import { timingSafeStringEqual } from "../lib/crypto/timingSafeStringEqual.js"
+import { ApiObokuErrors } from "../openapi/api-oboku-errors.decorator.js"
+import { timingSafeStringEqual } from "../crypto/timingSafeStringEqual.js"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { InstanceConfigService } from "./instance-config/instance-config.service.js"
-import {
-  formatAllowedHost,
-  parseAllowedHost,
-} from "../lib/http/allowedHosts.js"
+import { formatAllowedHost, parseAllowedHost } from "../http/allowedHosts.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { MigrationService } from "../migrations/migration.service.js"
 import {
@@ -41,8 +38,8 @@ import {
 import { AdminEmailService } from "./admin-email.service.js"
 import { AdminSecurityService } from "./admin-security.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
-import { EmptyResponseDto } from "../lib/empty-response.dto.js"
-import { OkResponseDto } from "../lib/ok-response.dto.js"
+import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
+import { OkResponseDto } from "../openapi/ok-response.dto.js"
 import {
   AdminRefreshTokenDto,
   AdminSignInDto,

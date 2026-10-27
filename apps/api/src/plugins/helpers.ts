@@ -4,7 +4,7 @@ import {
   findOne,
   find,
   getOrCreateTagFromName,
-} from "../lib/couch/dbHelpers.js"
+} from "../couch/dbHelpers.js"
 import type createNano from "nano"
 import {
   type SafeMangoQuery,
@@ -42,7 +42,6 @@ export const createHelpers = (
       model: M,
       data: Omit<D, "rx_model" | "_id" | "_rev">,
     ) => insert(db, model, data),
-    // addTagsFromNameToBook: (bookId: string, tagNames: string[]) => addTagsFromNameToBook(db, bookId, tagNames),
     getOrCreateTagFromName: (name: string) => getOrCreateTagFromName(db, name),
   }
 

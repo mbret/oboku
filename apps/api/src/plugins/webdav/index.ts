@@ -7,8 +7,8 @@ import {
   type WebDAVDataSourceDocType,
 } from "@oboku/shared"
 import { AuthType, createClient } from "webdav"
-import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
-import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
+import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
+import { getConnectorById } from "../connectorHelpers.js"
 import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
