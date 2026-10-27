@@ -1,3 +1,4 @@
+import { Logger } from "../debug/logger.shared"
 import { pluginsByType } from "./configure"
 
 export const usePluginsSignOut = () => {
@@ -23,9 +24,16 @@ export const usePluginsSignOut = () => {
     server: serverSignOut,
   }
 
-  return () => {
-    Object.values(signOutByPlugin).forEach((signOut) => {
-      signOut()
+  return function signOutPlugins() {
+    Object.entries(signOutByPlugin).forEach(function signOutPlugin([
+      type,
+      signOut,
+    ]) {
+      try {
+        signOut()
+      } catch (error) {
+        Logger.error(`Failed to sign out of the ${type} plugin`, error)
+      }
     })
   }
 }

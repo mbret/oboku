@@ -1,13 +1,17 @@
-import type { BookMetadata } from "@oboku/shared"
+import {
+  type BookMetadata,
+  getBookMetadataFields,
+  type ReadonlyBookMetadataFields,
+} from "@oboku/shared"
 
 export const reduceMetadata = (
   metadata?: BookMetadata[],
-): Omit<BookMetadata, "type"> => {
+): ReadonlyBookMetadataFields => {
   return (
-    metadata?.reduce((acc, item) => {
+    metadata?.reduce<ReadonlyBookMetadataFields>((acc, item) => {
       return {
         ...acc,
-        ...item,
+        ...getBookMetadataFields(item),
       }
     }, {}) ?? {}
   )

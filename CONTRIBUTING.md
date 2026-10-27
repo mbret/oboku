@@ -112,6 +112,7 @@ CI runs these commands ([`.github/workflows/check.yml`](.github/workflows/check.
 | `pnpm lint` | Lint and formatting, with Biome. `pnpm format` fixes the formatting. |
 | `pnpm build` | Builds every package. Each build runs the TypeScript compiler, so this is also the typecheck. |
 | `pnpm test` | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. The web app's tests, and files named `*.browser.test.ts` in the packages, run in headless Chromium through [Vitest browser mode](https://vitest.dev/guide/browser/). |
+| `pnpm check:service-worker` | Registers the web app's built service worker in headless Chromium, after `pnpm build`. Fails when the worker throws while it loads or does not install. |
 | `pnpm generate:api-types` | Regenerates the [API types](apps/docs/src/content/docs/development/api-types.md) from the API's controllers. CI fails when the output differs from the committed files. |
 
 A pre-commit hook runs Biome on the staged files and applies its fixes.

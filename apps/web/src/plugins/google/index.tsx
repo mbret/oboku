@@ -18,6 +18,7 @@ import { InfoScreen } from "./InfoScreen"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
+import { clearGoogleAccessToken } from "../../google/auth"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -43,7 +44,9 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
+  useSignOut: function useGoogleDriveSignOut() {
+    return clearGoogleAccessToken
+  },
   Provider,
   InfoScreen,
   description: "Manage contents from Google Drive",

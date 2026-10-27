@@ -6,12 +6,8 @@ const basename = (uri: string): string =>
   uri.split(/[\\/]/).filter(Boolean).pop() ?? uri
 
 /**
- * Adapt a zip file on disk to the {@link Archive} interface that
- * prose-reader's `resolveArchive` consumes, via `createArchiveFromUnzipper`.
- * `unzipper.Open.file` gives random-access through the central directory,
- * so entries stay lazily decoded. `resolveArchive` only reads the handful it
- * needs (OPF, ComicInfo.xml, Apple/Kobo display options) and the rest remain
- * on disk.
+ * `unzipper.Open.file` gives random access through the central directory, so
+ * an entry is decoded only when it is read.
  */
 export const createUnzipperArchiveSource = async (
   filePath: string,

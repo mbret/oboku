@@ -1,4 +1,8 @@
-import type { BookMetadata, ReorderableBookMetadataSource } from "../metadata"
+import type {
+  BookMetadata,
+  LEGACY_CATALOG_SOURCE_NAME,
+  ReorderableBookMetadataSource,
+} from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
 import type { DeprecatedBookDocType, InsertAbleBookDocType } from "./docTypes"
 import type { RxDbMeta } from "./rxdb"
@@ -30,8 +34,10 @@ export type BookDocType = CouchDBMeta &
      * book at its bookmark leaves it, as does a progress recomputed for the
      * same place or the cfi the reader gives a bookmark only in KOReader's
      * form: it tells how recent the position is. A book without a bookmark
-     * opens at its start without moving it. `null` on a book never read.
-     * Missing on a book last read before it existed.
+     * opens at its start without moving it. A bookmark taken from a KOReader
+     * sync server is dated when the server received it, or when oboku took it
+     * if the server does not say. `null` on a book never read. Missing on a
+     * book last read before it existed.
      */
     readingStateCurrentBookmarkLocationUpdatedAt?: string | null
     /**
@@ -52,9 +58,11 @@ export type BookDocType = CouchDBMeta &
      * keeps for a book, an xpointer for a reflowable book and a page number
      * for one with pages. Whatever writes the bookmark writes this too,
      * `null` when the bookmark has none: no bookmark, or a place prose's
-     * KOReader enhancer cannot express. Missing on a book last read before it
-     * existed. An older version of the app only writes the cfi, so a book it
-     * updates keeps a stale value until a newer version writes it again.
+     * KOReader enhancer cannot express. A bookmark taken from a KOReader sync
+     * server only has this form until oboku's reader opens the book there.
+     * Missing on a book last read before it existed. An older version of the
+     * app only writes the cfi, so a book it updates keeps a stale value until
+     * a newer version writes it again.
      */
     readingStateCurrentBookmarkKoreaderProgress?: string | null
     /**
@@ -131,9 +139,14 @@ export type BookDocType = CouchDBMeta &
      *
      * `user` is always highest and `link` always lowest, so only the
      * reorderable subset is persisted here. When omitted, the default order
-     * `["file", "googleBookApi"]` is used.
+     * `["file", "catalog"]` is used. Older versions of the app write the
+     * catalog as {@link LEGACY_CATALOG_SOURCE_NAME}: read it through
+     * {@link getOrderedBookMetadataSources}.
      */
-    metadataSourcePriority?: ReorderableBookMetadataSource[]
+    metadataSourcePriority?: (
+      | ReorderableBookMetadataSource
+      | typeof LEGACY_CATALOG_SOURCE_NAME
+    )[]
     /**
      * Opaque key identifying the cover image currently stored in the
      * bucket for this book. Built via {@link buildBookBucketCoverKey} on

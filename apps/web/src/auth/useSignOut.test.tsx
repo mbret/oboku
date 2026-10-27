@@ -7,31 +7,30 @@ const {
   resetSessionQueries,
   patchProfile,
   deleteProofKey,
+  clearActiveProfileId,
+  forgetAccountSessions,
 } = vi.hoisted(() => ({
   reCreateDb: vi.fn(async () => {}),
   purgeAllDownloads: vi.fn(async () => {}),
   resetSessionQueries: vi.fn(async () => {}),
   patchProfile: vi.fn(async () => {}),
   deleteProofKey: vi.fn(async () => {}),
+  clearActiveProfileId: vi.fn(),
+  forgetAccountSessions: vi.fn(),
 }))
 
-vi.mock("@sentry/react", () => ({ setUser: vi.fn() }))
-vi.mock("./AuthorizeActionDialog", () => ({ clearTemporaryMasterKey: vi.fn() }))
-vi.mock("../google/auth", () => ({
-  googleAccessTokenSignal: { update: vi.fn() },
-}))
-vi.mock("../plugins/usePluginsSignOut", () => ({
-  usePluginsSignOut: () => vi.fn(),
-}))
 vi.mock("../queries/resetSessionQueries", () => ({
   useResetSessionQueries: () => resetSessionQueries,
 }))
 vi.mock("../profiles", () => ({
-  clearActiveProfileId: vi.fn(),
+  clearActiveProfileId,
   getActiveProfileId: () => "reader",
   usePatchProfile: () => ({ mutateAsync: patchProfile }),
 }))
 vi.mock("./proofKey", () => ({ deleteProofKey }))
+vi.mock("./useForgetAccountSessions", () => ({
+  useForgetAccountSessions: () => forgetAccountSessions,
+}))
 vi.mock("../rxdb", () => ({
   useReCreateDb: () => ({ mutateAsync: reCreateDb }),
 }))
@@ -51,6 +50,14 @@ describe("useSignOut", () => {
 
     expect(reCreateDb).toHaveBeenCalledWith({ overwrite: true })
     expect(purgeAllDownloads).toHaveBeenCalledTimes(1)
+  })
+
+  it("forgets the account's sessions, then clears the active profile", async () => {
+    const { result } = renderHook(() => useSignOut())
+
+    await result.current()
+
+    expect(forgetAccountSessions).toHaveBeenCalledBefore(clearActiveProfileId)
   })
 
   it("still purges downloaded files when the database wipe fails", async () => {

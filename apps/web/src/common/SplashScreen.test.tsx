@@ -47,6 +47,14 @@ describe("SplashScreen", () => {
     expect(screen.getByRole("progressbar")).toBeTruthy()
   })
 
+  it("shows the loading indicator from its first render once the boot is already slow", async () => {
+    await advanceBy(SLOW_BOOT_THRESHOLD_MS)
+
+    render(<SplashScreen show />)
+
+    expect(screen.getByRole("progressbar")).toBeTruthy()
+  })
+
   it("unmounts once the exit transition has run", async () => {
     const { rerender } = render(<SplashScreen show />)
 
