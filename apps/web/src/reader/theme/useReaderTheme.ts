@@ -24,6 +24,9 @@ export const useReaderTheme = () => {
 /**
  * Reads the open reader when the theme changes, rather than subscribing to
  * it, so a reader closed in the same commit is never touched.
+ *
+ * TODO: give the theme to `<ReactReader theme>` instead, once prose-reader
+ * releases https://github.com/mbret/prose-reader/pull/643.
  */
 export const useSyncReaderTheme = () => {
   const { theme } = useReaderTheme()
