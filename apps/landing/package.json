@@ -27,7 +27,7 @@
     "@mui/material": "^9.5.0",
     "@mui/material-nextjs": "^9.5.0",
     "@oboku/shared": "workspace:*",
-    "next": "16.4.0",
+    "next": "16.4.3",
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-markdown": "^10.1.0",
