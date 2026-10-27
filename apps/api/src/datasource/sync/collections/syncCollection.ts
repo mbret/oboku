@@ -61,7 +61,7 @@ export const syncCollection = async ({
    * Only queue a metadata refresh when the collection uses the same
    * connector/credentials as the current datasource; otherwise record it in the
    * report like we do for books. The actual emission happens at the end of the
-   * sync (see `synchronizeFromDataSource`) so that protection-aware logic can
+   * sync (see `DataSourceService.sync`) so that protection-aware logic can
    * read the up-to-date books and tags.
    */
   const usesSameCredentials =
