@@ -57,9 +57,8 @@ export const createOrUpdateBook = async ({
   const { dataSourceType, syncReport, db } = ctx
 
   try {
-    console.log(
-      `[sync.books] [createOrUpdateBook] "${item.name}":`,
-      JSON.stringify(item.linkData),
+    logger.log(
+      `createOrUpdateBook "${item.name}": ${JSON.stringify(item.linkData)}`,
     )
 
     const parentTagNames = parents.reduce(
@@ -266,8 +265,7 @@ export const createOrUpdateBook = async ({
           .refreshBookMetadata({ bookId: existingBook._id })
           .catch(logMetadataRefreshFailure)
 
-        console.log(
-          `[sync.books] [createOrUpdateBook]`,
+        logger.log(
           `book ${
             linkMatchingItem.book
           } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
@@ -319,7 +317,7 @@ export const createOrUpdateBook = async ({
       })
     }
 
-    console.log(`[createOrUpdateBook]`, `"${item.name}": DONE!`)
+    logger.log(`createOrUpdateBook "${item.name}": done`)
   } catch (e) {
     logger.error(
       `createOrUpdateBook something went wrong for book ${item.name} (${JSON.stringify(item.linkData)})`,
