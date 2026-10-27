@@ -2,7 +2,7 @@ import { Controller, Get, Param, ParseIntPipe, Post } from "@nestjs/common"
 import { ApiExtraModels, ApiOkResponse, getSchemaPath } from "@nestjs/swagger"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
-import { OkResponseDto } from "../lib/ok-response.dto.js"
+import { OkResponseDto } from "../openapi/ok-response.dto.js"
 import {
   AdminBroadcastNotificationDto,
   SyncFinishedNotificationDto,

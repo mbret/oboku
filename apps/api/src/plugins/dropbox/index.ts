@@ -12,7 +12,7 @@ import {
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
 } from "../types.js"
-import { createThrottler } from "../../lib/utils.js"
+import { createThrottler } from "../createThrottler.js"
 import { createError, findCandidates } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"

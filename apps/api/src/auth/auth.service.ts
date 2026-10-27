@@ -14,9 +14,9 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service.js"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers.js"
-import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady.js"
-import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes.js"
+import { getOrCreateUserFromEmail } from "../couch/dbHelpers.js"
+import { waitForUserCouchDatabaseReady } from "../couch/waitForUserCouchDatabaseReady.js"
+import { ensureUserDbIndexes } from "../couch/userDbIndexes.js"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
 import type { StringValue } from "ms"

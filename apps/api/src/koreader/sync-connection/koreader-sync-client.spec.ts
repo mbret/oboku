@@ -1,6 +1,6 @@
 import { inspect } from "node:util"
 import { KOREADER_SYNC_AUTHORIZE_ROUTE, toSyncKey } from "../protocol.js"
-import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
+import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { requestKoreaderSyncServer } from "./koreader-sync-client.js"
 
 describe("requestKoreaderSyncServer", () => {

@@ -1,6 +1,6 @@
 import type { Mock } from "vitest"
 import { Test, type TestingModule } from "@nestjs/testing"
-import { USER_DB_INDEXES } from "../lib/couch/userDbIndexes.js"
+import { USER_DB_INDEXES } from "./userDbIndexes.js"
 import { CouchService } from "./couch.service.js"
 import { UserDbIndexesService } from "./user-db-indexes.service.js"
 

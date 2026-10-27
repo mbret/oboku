@@ -6,7 +6,7 @@ import {
   emailToNameHex,
   emailToUserDbName,
 } from "../couch/couch.service.js"
-import { deleteCouchUser, find } from "../lib/couch/dbHelpers.js"
+import { deleteCouchUser, find } from "../couch/dbHelpers.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 import { CoversService } from "../covers/covers.service.js"
 import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"

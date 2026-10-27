@@ -15,7 +15,7 @@ import {
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "../lib/sync/SyncReport.js"
+import { SyncReport } from "../datasource/sync/SyncReport.js"
 
 /** Re-export from shared so sync item/data source types are single source of truth. */
 export type {

@@ -11,7 +11,7 @@ import {
 } from "@nestjs/common"
 import type { Request, Response } from "express"
 import { AuthService } from "./auth.service.js"
-import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
+import { ApiObokuErrors } from "../openapi/api-oboku-errors.decorator.js"
 import { type AuthUser, Public, WithAuthUser } from "./auth.guard.js"
 import {
   type AuthTokens,
@@ -30,7 +30,7 @@ import {
   SignInWithEmailDto,
   SignInWithGoogleDto,
 } from "./auth.dto.js"
-import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
 
 @Controller("auth")
 export class AuthController {

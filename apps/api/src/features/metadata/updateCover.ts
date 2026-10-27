@@ -7,9 +7,9 @@ import {
   getBookMetadataSource,
 } from "@oboku/shared"
 import type { Archive } from "@prose-reader/archive-reader"
-import { saveCoverFromArchiveToBucket } from "../../lib/books/covers/saveCoverFromArchiveToBucket.js"
+import { saveCoverFromArchiveToBucket } from "../../covers/saveCoverFromArchiveToBucket.js"
 import type { Context } from "./types.js"
-import { saveCoverFromExternalLinkToBucket } from "../../lib/books/covers/saveCoverFromExternalLinkToBucket.js"
+import { saveCoverFromExternalLinkToBucket } from "../../covers/saveCoverFromExternalLinkToBucket.js"
 import { CoversService } from "../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"

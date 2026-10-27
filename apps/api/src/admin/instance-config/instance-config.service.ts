@@ -5,7 +5,7 @@ import bcrypt from "bcrypt"
 import Joi from "joi"
 import { BehaviorSubject } from "rxjs"
 import { AppConfigService } from "../../config/AppConfigService.js"
-import { parseAllowedHost } from "../../lib/http/allowedHosts.js"
+import { parseAllowedHost } from "../../http/allowedHosts.js"
 import {
   PublicServerSource,
   ServerSourcesService,

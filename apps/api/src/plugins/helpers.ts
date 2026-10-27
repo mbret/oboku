@@ -4,7 +4,7 @@ import {
   findOne,
   find,
   getOrCreateTagFromName,
-} from "../lib/couch/dbHelpers.js"
+} from "../couch/dbHelpers.js"
 import type createNano from "nano"
 import {
   type SafeMangoQuery,

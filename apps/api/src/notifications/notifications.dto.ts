@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import type { NotificationSeverity } from "@oboku/shared"
 import { IsIn, IsOptional, IsString, MinLength } from "class-validator"
-import { AudienceDto } from "../lib/audience.dto.js"
+import { AudienceDto } from "../admin/audience.dto.js"
 
 export class SyncFinishedNotificationDataDto {
   datasourceId!: string
