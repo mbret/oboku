@@ -30,7 +30,6 @@ const FORM_ID = "connector-form"
 const TopAlertStack = styled(Stack)(function styleTopAlertStack({ theme }) {
   return {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
   }
 })
 
