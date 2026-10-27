@@ -7,9 +7,7 @@ import {
   getBookMetadataSource,
 } from "@oboku/shared"
 import type { Archive } from "@prose-reader/archive-reader"
-import { saveCoverFromArchiveToBucket } from "../../covers/saveCoverFromArchiveToBucket.js"
 import type { Context } from "./types.js"
-import { saveCoverFromExternalLinkToBucket } from "../../covers/saveCoverFromExternalLinkToBucket.js"
 import { CoversService } from "../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 import { pickCoverMetadata } from "./pickCoverMetadata.js"
@@ -71,11 +69,10 @@ export const updateCover = async ({
   }
 
   if (metadataForCover?.type === "file" && coverLink && archive) {
-    const saved = await saveCoverFromArchiveToBucket(
+    const saved = await coversService.saveCoverFromArchive(
       coverObjectKey,
       archive,
       coverLink,
-      coversService,
     )
 
     return saved && expectedBucketCoverKey
@@ -88,10 +85,9 @@ export const updateCover = async ({
     getBookMetadataSource(metadataForCover) === "catalog"
 
   if (isCatalogCover && coverLink) {
-    const saved = await saveCoverFromExternalLinkToBucket(
+    const saved = await coversService.saveCoverFromUrl(
       coverObjectKey,
       coverLink,
-      coversService,
     )
 
     return saved && expectedBucketCoverKey

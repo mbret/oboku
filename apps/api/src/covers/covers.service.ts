@@ -1,4 +1,9 @@
 import { Injectable, Logger } from "@nestjs/common"
+import {
+  type Archive,
+  getArchiveFileRecordByUri,
+} from "@prose-reader/archive-reader"
+import axios from "axios"
 import { firstValueFrom, from, map, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "../config/AppConfigService.js"
@@ -6,8 +11,7 @@ import fs from "node:fs"
 import path from "node:path"
 import { CoversFsService } from "./covers-fs.service.js"
 import { CoversS3Service } from "./covers-s3.service.js"
-
-const logger = new Logger("CoversService")
+import { getUserAddressRequestOptions } from "../http/userAddressAgents.js"
 
 const WEBP_MIME_TYPE = "image/webp"
 const JPEG_MIME_TYPE = "image/jpeg"
@@ -22,6 +26,12 @@ const isDeliveryFormat = (format: string): format is DeliveryFormat =>
 const resolveDeliveryFormat = (format?: string): DeliveryFormat =>
   format && isDeliveryFormat(format) ? format : WEBP_MIME_TYPE
 
+const isUnsupportedImageFormatError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "message" in error &&
+  error.message === "Input buffer contains unsupported image format"
+
 export type StoredCover = {
   key: string
   sizeInBytes: number
@@ -30,6 +40,7 @@ export type StoredCover = {
 
 @Injectable()
 export class CoversService {
+  private readonly logger = new Logger(CoversService.name)
   private deliverablePlaceholders = new Map<DeliveryFormat, Promise<Buffer>>()
 
   constructor(
@@ -144,13 +155,78 @@ export class CoversService {
           tap(() => {
             const coverSize = Buffer.byteLength(resized)
 
-            logger.debug(
+            this.logger.debug(
               `Saved cover ${objectKey} with a size of ${(coverSize / 1024).toFixed(2)} KB`,
             )
           }),
         ),
       ),
     )
+  }
+
+  async saveCoverFromUrl(objectKey: string, url: string): Promise<boolean> {
+    this.logger.log(`prepare to save cover ${objectKey}`)
+
+    try {
+      const response = await axios.get<ArrayBuffer>(url, {
+        responseType: "arraybuffer",
+        ...getUserAddressRequestOptions(),
+      })
+
+      await firstValueFrom(
+        this.saveCover(Buffer.from(response.data), objectKey),
+      )
+
+      this.logger.log(`cover ${objectKey} has been saved/updated`)
+
+      return true
+    } catch (error) {
+      this.logger.error(error)
+
+      return false
+    }
+  }
+
+  async saveCoverFromArchive(
+    objectKey: string,
+    archive: Archive,
+    coverLink: string,
+  ): Promise<boolean> {
+    this.logger.log(`prepare to save cover ${objectKey}`)
+
+    try {
+      const cover = await getArchiveFileRecordByUri(
+        archive,
+        coverLink,
+      )?.arrayBuffer()
+
+      if (!cover) {
+        this.logger.warn(
+          `archive has no file at ${coverLink} for cover ${objectKey}`,
+        )
+
+        return false
+      }
+
+      await firstValueFrom(this.saveCover(Buffer.from(cover), objectKey))
+
+      this.logger.log(`cover ${objectKey} has been saved/updated`)
+
+      return true
+    } catch (error) {
+      if (isUnsupportedImageFormatError(error)) {
+        this.logger.error(
+          `It seems input is not a valid image. This can happens when for example the file is encrypted or something else went wrong during archive extraction`,
+          error,
+        )
+
+        return false
+      }
+
+      this.logger.error(error)
+
+      return false
+    }
   }
 
   isCoverExist(objectKey: string) {
