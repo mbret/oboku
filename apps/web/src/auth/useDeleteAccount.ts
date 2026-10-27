@@ -1,3 +1,4 @@
+import { authDeleteAccount } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
 import { useHttpClientApi } from "../http"
 import { useSignOut } from "./useSignOut"
@@ -7,7 +8,7 @@ export const useDeleteAccount = () => {
   const signOut = useSignOut()
 
   return useMutation({
-    mutationFn: () => httpClientApi.deleteAccount(),
+    mutationFn: () => authDeleteAccount({ client: httpClientApi.sdkClient }),
     onSuccess: () => signOut(),
   })
 }

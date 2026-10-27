@@ -1,18 +1,23 @@
 import { Module } from "@nestjs/common"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { NotificationPostgresService } from "./notification-postgres.service"
-import { SyncReportPostgresService } from "./SyncReportPostgresService"
-import { AppConfigService } from "../../config/AppConfigService"
+import { NotificationPostgresService } from "./notification-postgres.service.js"
+import { SyncReportPostgresService } from "./SyncReportPostgresService.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
 import {
+  KoreaderSyncConnectionPostgresEntity,
+  KoreaderSyncCredentialPostgresEntity,
+  KoreaderSyncProgressPostgresEntity,
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
-} from "./entities"
-import { RefreshTokensService } from "./refreshTokens.service"
-import { UserPostgresService } from "./user-postgres.service"
+} from "./entities.js"
+import { RefreshTokensService } from "./refreshTokens.service.js"
+import { UserPostgresService } from "./user-postgres.service.js"
 import { JwtService } from "@nestjs/jwt"
+import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js"
+import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connection-postgres.service.js"
 
 @Module({
   imports: [
@@ -22,6 +27,9 @@ import { JwtService } from "@nestjs/jwt"
       NotificationDeliveryPostgresEntity,
       UserPostgresEntity,
       RefreshTokenPostgresEntity,
+      KoreaderSyncCredentialPostgresEntity,
+      KoreaderSyncProgressPostgresEntity,
+      KoreaderSyncConnectionPostgresEntity,
     ]),
   ],
   providers: [
@@ -30,6 +38,8 @@ import { JwtService } from "@nestjs/jwt"
     NotificationPostgresService,
     RefreshTokensService,
     UserPostgresService,
+    KoreaderSyncPostgresService,
+    KoreaderSyncConnectionPostgresService,
     JwtService,
   ],
   exports: [
@@ -38,6 +48,8 @@ import { JwtService } from "@nestjs/jwt"
     SyncReportPostgresService,
     NotificationPostgresService,
     UserPostgresService,
+    KoreaderSyncPostgresService,
+    KoreaderSyncConnectionPostgresService,
   ],
 })
 export class PostgresModule {}

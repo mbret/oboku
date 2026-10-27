@@ -4,7 +4,10 @@ import type {
   QueryKey,
   UseQueryOptions,
 } from "@tanstack/react-query"
-import { getActiveProfileId } from "../profiles/active/activeProfileId"
+import {
+  getActiveProfileId,
+  useActiveProfileId,
+} from "../profiles/active/activeProfileId"
 import { useIsAuthenticated } from "./useIsAuthenticated"
 
 type CallerEnabled<
@@ -20,6 +23,8 @@ const resolveCallerEnabled = <TQueryFnData, TError, TQueryKey extends QueryKey>(
 
 /**
  * Wraps the options of a query that requires an authenticated session.
+ * Pass the account the observer rendered for as `authenticatedProfileId`,
+ * or `undefined` when it rendered without an authenticated session.
  *
  * A render-derived `enabled: isAuthenticated` is not enough on its own:
  * sign-out clears the session and runs `resetSessionQueries` in the same
@@ -29,9 +34,15 @@ const resolveCallerEnabled = <TQueryFnData, TError, TQueryKey extends QueryKey>(
  * live session at fetch-decision time instead, on top of whatever
  * `enabled` the caller provides.
  *
+ * Once another account is active, an observer rendered for
+ * `authenticatedProfileId` stops fetching, even before it re-renders: the
+ * request would carry the other account's cookies and cache its data under
+ * this account's key. TanStack Query does not read `enabled` for a manual
+ * `refetch()`, or for an interval tick scheduled before the change.
+ *
  * The live check is not reactive (nothing re-renders when it flips),
- * so query hooks should use `useQueryOptionsWithAuthentication`, which adds
- * the reactive `isAuthenticated` watch.
+ * so query hooks should use `useQueryOptionsWithAuthentication`, which
+ * supplies the account from the auth state.
  */
 export const withQueryOptionsAuthentication = <
   TQueryFnData = unknown,
@@ -40,14 +51,20 @@ export const withQueryOptionsAuthentication = <
   TQueryKey extends QueryKey = QueryKey,
 >(
   options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
+  authenticatedProfileId: string | undefined,
 ): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> => {
   const { enabled: callerEnabled } = options
 
   return {
     ...options,
-    enabled: function enabledWhileSessionIsActive(query) {
+    enabled: function enabledWhileAuthenticatedProfileIsActive(query) {
+      const isAuthenticatedProfileActive =
+        !!authenticatedProfileId &&
+        authenticatedProfileId === getActiveProfileId()
+
       return (
-        !!getActiveProfileId() && resolveCallerEnabled(callerEnabled, query)
+        isAuthenticatedProfileActive &&
+        resolveCallerEnabled(callerEnabled, query)
       )
     },
   }
@@ -67,12 +84,10 @@ export const useQueryOptionsWithAuthentication = <
   options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>,
 ): UseQueryOptions<TQueryFnData, TError, TData, TQueryKey> => {
   const isAuthenticated = useIsAuthenticated()
-  const { enabled: callerEnabled } = options
+  const renderedProfileId = useActiveProfileId()
 
-  return withQueryOptionsAuthentication({
-    ...options,
-    enabled: function enabledWhileAuthenticated(query) {
-      return isAuthenticated && resolveCallerEnabled(callerEnabled, query)
-    },
-  })
+  return withQueryOptionsAuthentication(
+    options,
+    isAuthenticated ? renderedProfileId : undefined,
+  )
 }

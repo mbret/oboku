@@ -1,14 +1,14 @@
 import { BadRequestException, Injectable, Logger } from "@nestjs/common"
-import type {
-  GetTokenStatsResponse,
-  RevokeTokensRequest,
-  RevokeTokensResponse,
-} from "@oboku/shared"
-import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import {
   normalizeAudienceEmails,
   UserPostgresService,
-} from "src/features/postgres/user-postgres.service"
+} from "../features/postgres/user-postgres.service.js"
+import type {
+  RevokeTokensDto,
+  RevokeTokensResponseDto,
+  TokenStatsResponseDto,
+} from "./admin.dto.js"
 
 const logger = new Logger("AdminSecurityService")
 
@@ -19,13 +19,11 @@ export class AdminSecurityService {
     private readonly userPostgresService: UserPostgresService,
   ) {}
 
-  async getTokenStats(): Promise<GetTokenStatsResponse> {
+  async getTokenStats(): Promise<TokenStatsResponseDto> {
     return this.refreshTokensService.getStats()
   }
 
-  async revokeTokens(
-    input: RevokeTokensRequest,
-  ): Promise<RevokeTokensResponse> {
+  async revokeTokens(input: RevokeTokensDto): Promise<RevokeTokensResponseDto> {
     if (input.audienceType === "all") {
       const revokedTokens = await this.refreshTokensService.deleteAll()
 

@@ -17,7 +17,6 @@ if (import.meta.env.SENTRY_DSN) {
       extraErrorDataIntegration(),
       httpClientIntegration(),
     ],
-    sendDefaultPii: true,
     release: __APP_VERSION__,
     // We recommend adjusting this value in production, or using tracesSampler
     // for finer control

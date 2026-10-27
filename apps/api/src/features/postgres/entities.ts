@@ -3,6 +3,10 @@ import type {
   NotificationSeverity,
   SyncFinishedNotificationData,
 } from "@oboku/shared"
+import type {
+  SyncReportDto,
+  SyncReportEntryDto,
+} from "../../lib/sync/sync-report.dto.js"
 import {
   Column,
   CreateDateColumn,
@@ -23,7 +27,7 @@ export class SyncReportPostgresEntity {
   ended_at!: Date
 
   @Column({ type: "json" })
-  report!: object
+  report!: SyncReportEntryDto[]
 
   @Column({ type: "uuid" })
   datasource_id!: string
@@ -32,7 +36,7 @@ export class SyncReportPostgresEntity {
   user_name!: string
 
   @Column({ type: "text" })
-  state!: string
+  state!: SyncReportDto["state"]
 
   @Column({ type: "boolean", nullable: true })
   has_different_provider_credentials!: boolean | null
@@ -105,6 +109,17 @@ export class UserPostgresEntity {
 
   @Column({ type: "text", nullable: true })
   password?: string
+
+  /**
+   * The CouchDB `_users` name this account signs in as. Recorded at sign-in,
+   * the only place the Couch user is resolved or created, and read when
+   * issuing access tokens. Accounts created before emails were normalized
+   * keep their original casing here while `email` is lowercase; couch_peruser
+   * authorizes the per-user database by this exact name. Null until the
+   * account's first sign-in since the column was added.
+   */
+  @Column({ type: "text", nullable: true })
+  couchName?: string
 
   /**
    * This flag represents whether Oboku trusts the local email/password side of
@@ -245,4 +260,87 @@ export class RefreshTokenPostgresEntity {
    */
   @Column({ type: "text", nullable: true })
   successor_token!: string | null
+}
+
+/**
+ * A user's login to oboku's KOReader sync server. Devices send the MD5 of
+ * the password as `x-auth-key` on every request; only a SHA-256 of that key
+ * is kept.
+ */
+@Entity({ name: "koreader_sync_credentials" })
+@Index(["user_id"], { unique: true })
+export class KoreaderSyncCredentialPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  key_hash!: string
+
+  /** When the current password was generated. */
+  @Column({ type: "timestamp with time zone" })
+  created_at!: Date
+}
+
+/**
+ * The last position a KOReader sync client pushed for a document, one row per
+ * user and document, as koreader-sync-server keeps it. `progress` is opaque:
+ * an xpointer for a reflowable book, a page number for a fixed layout one.
+ */
+@Entity({ name: "koreader_sync_progress" })
+@Index(["user_id", "document"], { unique: true })
+export class KoreaderSyncProgressPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  document!: string
+
+  @Column({ type: "text" })
+  progress!: string
+
+  @Column({ type: "double precision" })
+  percentage!: number
+
+  @Column({ type: "text" })
+  device!: string
+
+  @Column({ type: "text", nullable: true })
+  device_id!: string | null
+
+  @Column({ type: "timestamp with time zone" })
+  updated_at!: Date
+}
+
+/**
+ * The KOReader sync server a user connected oboku's reader to, one per user.
+ * `encrypted_key` is the `x-auth-key` sent to that server, encrypted at rest;
+ * the password it was derived from is never kept.
+ */
+@Entity({ name: "koreader_sync_connections" })
+@Index(["user_id"], { unique: true })
+export class KoreaderSyncConnectionPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  @Column({ type: "text" })
+  server_url!: string
+
+  @Column({ type: "text" })
+  username!: string
+
+  @Column({ type: "text" })
+  encrypted_key!: string
+
+  /** When the user signed in to the server from oboku. */
+  @Column({ type: "timestamp with time zone" })
+  connected_at!: Date
 }

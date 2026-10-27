@@ -1,8 +1,12 @@
+import {
+  type ObokuErrorResponseDto,
+  zObokuErrorResponseDto,
+} from "@oboku/shared"
 import { HttpClientError } from "../http/httpClient.shared"
 
 type HttpApiError = {
   response: {
-    data: { errors: { code?: string }[] }
+    data: ObokuErrorResponseDto
   }
 }
 
@@ -55,13 +59,6 @@ export const ERROR_LINK_INVALID_MESSAGE =
 export const ERROR_NO_LINK_MESSAGE =
   "Your book does not have a valid link to download the file. Please add one before proceeding."
 
-export const isApiError = (error: unknown): error is HttpApiError => {
-  return (
-    error instanceof HttpClientError &&
-    !!error.response &&
-    typeof error.response.data === "object" &&
-    error.response.data !== null &&
-    "errors" in error.response.data &&
-    Array.isArray(error.response.data.errors)
-  )
-}
+export const isApiError = (error: unknown): error is HttpApiError =>
+  error instanceof HttpClientError &&
+  zObokuErrorResponseDto.safeParse(error.response?.data).success

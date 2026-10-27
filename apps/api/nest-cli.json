@@ -2,8 +2,17 @@
   "$schema": "https://json.schemastore.org/nest-cli",
   "collection": "@nestjs/schematics",
   "sourceRoot": "src",
+  "exec": "node --import ./dist/instrument.js",
   "compilerOptions": {
     "deleteOutDir": true,
-    "assets": ["assets/**/*"]
+    "assets": ["assets/**/*"],
+    "plugins": [
+      {
+        "name": "@nestjs/swagger",
+        "options": {
+          "introspectComments": true
+        }
+      }
+    ]
   }
 }

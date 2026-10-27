@@ -16,8 +16,15 @@ export default defineConfig({
     environment: "jsdom",
   },
   resolve: {
+    /**
+     * Resolves @oboku/shared to its TypeScript sources through its "source"
+     * export condition, like the web app, so the tests and the dev server do
+     * not need it built first. The trailing conditions re-add Vite's defaults,
+     * which are otherwise replaced when this option is set.
+     */
+    conditions: ["source", "module", "browser", "development|production"],
     alias: {
-      "@": resolve(__dirname, "./src"),
+      "@": resolve(import.meta.dirname, "./src"),
     },
   },
 })

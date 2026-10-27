@@ -1,23 +1,12 @@
 import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { CollectionMetadataRefreshEvent, Events } from "../../events"
-import { CollectionMetadataService } from "./CollectionMetadataService"
-import { IsBoolean, IsString, IsOptional, IsObject } from "class-validator"
-import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service"
-import { WithAuthUser, AuthUser } from "src/auth/auth.guard"
-import type { RefreshCollectionMetadataRequest } from "@oboku/shared"
-
-class PostMetadataRefreshDto {
-  @IsString()
-  collectionId!: RefreshCollectionMetadataRequest["collectionId"]
-
-  @IsBoolean()
-  @IsOptional()
-  soft?: RefreshCollectionMetadataRequest["soft"]
-
-  @IsObject()
-  providerCredentials!: RefreshCollectionMetadataRequest["providerCredentials"]
-}
+import { CollectionMetadataRefreshEvent, Events } from "../../events.js"
+import { CollectionMetadataService } from "./CollectionMetadataService.js"
+import { InMemoryTaskQueueService } from "../../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { WithAuthUser, type AuthUser } from "../../auth/auth.guard.js"
+import { EmptyResponseDto } from "../../lib/empty-response.dto.js"
+import { RefreshCollectionMetadataDto } from "./collections.dto.js"
 
 @Controller("collections")
 export class CollectionsController implements OnModuleInit {
@@ -27,22 +16,25 @@ export class CollectionsController implements OnModuleInit {
   constructor(
     private collectionMetadataService: CollectionMetadataService,
     private readonly taskQueueService: InMemoryTaskQueueService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 3,
+      maxConcurrent:
+        this.appConfig.QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })
   }
 
   @Post("metadata/refresh")
-  async metadataRefresh(
-    @Body() { collectionId, providerCredentials, soft }: PostMetadataRefreshDto,
+  async refreshMetadata(
+    @Body()
+    { collectionId, providerCredentials, soft }: RefreshCollectionMetadataDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log(`metadataRefresh ${collectionId}`)
 
     this.taskQueueService.enqueue(

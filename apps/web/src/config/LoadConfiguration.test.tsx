@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { cleanup, render, screen, waitFor } from "@testing-library/react"
 import { Component, type ReactNode } from "react"
@@ -10,11 +8,6 @@ import { seedWebConfigFromCache, useConfig } from "./useConfig"
 vi.mock("./useConfig", () => ({
   useConfig: vi.fn(),
   seedWebConfigFromCache: vi.fn(),
-}))
-
-vi.mock("../common/SplashScreen", () => ({
-  SplashScreen: ({ show }: { show: boolean }) =>
-    show ? <div data-testid="splash" /> : null,
 }))
 
 class CaughtErrorProbe extends Component<
@@ -106,7 +99,7 @@ describe("LoadConfiguration", () => {
     expect(boundary.textContent).toBe("CriticalError")
   })
 
-  it("shows the splash while the cache seed is still in flight rather than escalating", async () => {
+  it("renders nothing while the cache seed is still in flight rather than escalating", async () => {
     vi.mocked(seedWebConfigFromCache).mockReturnValue(new Promise(() => {}))
     stubConfigQuery({
       data: undefined,
@@ -114,9 +107,13 @@ describe("LoadConfiguration", () => {
       error: new Error("config endpoint down"),
     })
 
-    renderBoot()
+    const { container } = renderBoot()
 
-    expect(await screen.findByTestId("splash")).toBeTruthy()
+    await waitFor(() => {
+      expect(vi.mocked(seedWebConfigFromCache)).toHaveBeenCalled()
+    })
+
+    expect(container.innerHTML).toBe("")
     expect(screen.queryByTestId("boundary")).toBeNull()
     expect(screen.queryByTestId("app")).toBeNull()
   })

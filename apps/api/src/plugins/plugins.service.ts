@@ -8,18 +8,12 @@ import {
   type DataSourceType,
   type LinkDocType,
   type LinkDocTypeForProvider,
-  type LinkWithCredentials,
   type ProviderApiCredentials,
   parseProviderApiCredentials,
 } from "@oboku/shared"
-import { AppConfigService } from "src/config/AppConfigService"
-import { getPlugin } from "./plugins"
-
-type MetadataParams<T extends DataSourceType = DataSourceType> = {
-  link: LinkWithCredentials<T>
-  providerCredentials: ProviderApiCredentials<T>
-  db?: createNano.DocumentScope<unknown>
-}
+import { AppConfigService } from "../config/AppConfigService.js"
+import { getPlugin } from "./plugins.js"
+import type { PluginMetadataParams } from "./types.js"
 
 type DownloadParams<T extends DataSourceType = DataSourceType> = {
   link: LinkDocTypeForProvider<T>
@@ -69,7 +63,7 @@ export class PluginsService {
     private readonly appConfigService: Pick<AppConfigService, "TMP_DIR_BOOKS">,
   ) {}
 
-  getFolderMetadata<T extends DataSourceType>(params: MetadataParams<T>) {
+  getFolderMetadata<T extends DataSourceType>(params: PluginMetadataParams<T>) {
     return getRequiredPlugin(params.link.type).getFolderMetadata({
       ...params,
       providerCredentials: parseProviderApiCredentials(
@@ -79,7 +73,7 @@ export class PluginsService {
     })
   }
 
-  getFileMetadata<T extends DataSourceType>(params: MetadataParams<T>) {
+  getFileMetadata<T extends DataSourceType>(params: PluginMetadataParams<T>) {
     return getRequiredPlugin(params.link.type).getFileMetadata({
       ...params,
       providerCredentials: parseProviderApiCredentials(

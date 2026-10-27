@@ -1,17 +1,17 @@
 import {
-  type BookMetadata,
+  type BookMetadataFields,
   type BOOK_METADATA_FIELDS_BY_SOURCE,
+  type ReadonlyBookMetadataFields,
   assertNever,
   formatBytes,
 } from "@oboku/shared"
-import type { DeepReadonlyObject } from "rxdb"
 
 export const formatList = (
   values: readonly string[] | undefined,
 ): string | undefined => (values?.length ? values.join(", ") : undefined)
 
 export const formatBookMetadataDate = (
-  date: BookMetadata["date"],
+  date: ReadonlyBookMetadataFields["date"],
 ): string | undefined => {
   if (!date) return undefined
   const { year, month, day } = date
@@ -41,36 +41,50 @@ const formatScalar = (
   value === undefined || value === "" ? undefined : String(value)
 
 /**
+ * Names where a cover came from, since the two cases carry very different
+ * weight: one is the container's own declaration, the other the first page
+ * of an archive that declares none.
+ */
+export const formatCoverConfidence = (
+  coverConfidence: BookMetadataFields["coverConfidence"],
+): string | undefined => {
+  switch (coverConfidence) {
+    case "derived":
+      return "Declared by the file"
+    case "assumed":
+      return "First page"
+    default:
+      return undefined
+  }
+}
+
+/**
  * Project a single metadata field into a short human-readable string for
  * caption-style previews. Returns `undefined` when the field is absent or
  * empty so callers can compose preference-ordered fallback lists.
  *
- * Off-variant reads are safe: `BookMetadataVariant` types unsupported
- * fields as `?: never`, so e.g. asking a `googleBookApi` entry for `isbn`
- * yields `undefined` at runtime. Each branch reads `metadata[field]`
- * AFTER `field` has been narrowed to a literal, which is what lets
- * TypeScript infer the per-field value type without any casts — the
- * `?: never` parts of the discriminated union collapse to `undefined`,
- * leaving exactly the supported variant's type.
+ * Each branch reads `fields[field]` AFTER `field` has been narrowed to a
+ * literal, which is what lets TypeScript infer the per-field value type
+ * without any casts.
  */
 export const formatBookMetadataField = (
-  metadata: DeepReadonlyObject<BookMetadata> | undefined,
+  fields: ReadonlyBookMetadataFields | undefined,
   field: BookMetadataFieldKey,
 ): string | undefined => {
-  if (!metadata) return undefined
+  if (!fields) return undefined
 
   switch (field) {
     case "authors":
     case "languages":
     case "subjects":
     case "formatType":
-      return formatList(metadata[field])
+      return formatList(fields[field])
     case "date":
-      return formatBookMetadataDate(metadata[field])
+      return formatBookMetadataDate(fields[field])
     case "size":
       // `LinkMetadata.size` is stored as a string; formatBytes also
       // tolerates numbers in case a future provider widens that.
-      return formatBytes(metadata[field])
+      return formatBytes(fields[field])
     case "title":
     case "description":
     case "rating":
@@ -81,7 +95,7 @@ export const formatBookMetadataField = (
     case "publisher":
     case "rights":
     case "modifiedAt":
-      return formatScalar(metadata[field])
+      return formatScalar(fields[field])
     default:
       // Adding a field to BOOK_METADATA_FIELDS_BY_SOURCE without a branch
       // here will fail compilation rather than silently render blanks.

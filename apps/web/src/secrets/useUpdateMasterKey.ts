@@ -1,3 +1,6 @@
+import type { SettingsDocType } from "@oboku/shared"
+import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
+import type { RxDocument } from "rxdb"
 import { useMutation$ } from "reactjrx"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
@@ -6,16 +9,21 @@ import { throwIfNotDefined } from "../common/rxjs/operators"
 import { encryptMasterKey } from "./masterKeyUtils"
 import { decryptMasterKey, generateMasterKey } from "./masterKeyUtils"
 
-export const useUpdateMasterKey = () => {
+type UpdateMasterKeyVariables = { newPassword: string; oldPassword: string }
+
+export const useUpdateMasterKey = (
+  options?: Pick<
+    UseMutationOptions<
+      RxDocument<SettingsDocType>,
+      DefaultError,
+      UpdateMasterKeyVariables
+    >,
+    "meta"
+  >,
+) => {
   return useMutation$({
-    meta: { suppressGlobalErrorToast: true },
-    mutationFn: ({
-      newPassword,
-      oldPassword,
-    }: {
-      newPassword: string
-      oldPassword: string
-    }) => {
+    ...options,
+    mutationFn: ({ newPassword, oldPassword }: UpdateMasterKeyVariables) => {
       return latestDatabase$.pipe(
         switchMap((db) =>
           getSettingsDocument(db).pipe(

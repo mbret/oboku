@@ -1,11 +1,11 @@
-import type { GoogleBookApiMetadata } from "@oboku/shared"
+import type { LegacyGoogleBookApiMetadata } from "@oboku/shared"
 import {
   type GoogleBookLookupInput,
   getGoogleBookMetadata,
-} from "./google/getGoogleBookMetadata"
+} from "./google/getGoogleBookMetadata.js"
 import { Logger } from "@nestjs/common"
 import { isAxiosError } from "axios"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService.js"
 
 const swallowGoogleError = async <T>(promise: Promise<T>) => {
   try {
@@ -32,8 +32,8 @@ export const getBookSourcesMetadata = async (
     withExternalSources,
   }: { googleApiKey?: string; withExternalSources: boolean },
   config: AppConfigService,
-): Promise<GoogleBookApiMetadata[]> => {
-  const list: GoogleBookApiMetadata[] = []
+): Promise<LegacyGoogleBookApiMetadata[]> => {
+  const list: LegacyGoogleBookApiMetadata[] = []
 
   if (!withExternalSources) return list
 

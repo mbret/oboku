@@ -1,17 +1,12 @@
 import { memo, useState } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import {
-  alpha,
-  Box,
-  List,
-  ListItemButton,
-  ListItemText,
-  ListSubheader,
-} from "@mui/material"
-import { theme } from "../../theme/theme"
+import { ListItemButton, ListItemText } from "@mui/material"
 import { useSettings } from "../../settings/useSettings"
 import { SetupMasterPasswordDialog } from "../../secrets/SetupMasterPasswordDialog"
 import { useRemoveMasterKey } from "../../secrets/useRemoveMasterKey"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
+import { Page } from "../../common/Page"
 
 export const SecurityScreen = memo(() => {
   const { data: accountSettings } = useSettings()
@@ -23,58 +18,43 @@ export const SecurityScreen = memo(() => {
 
   return (
     <>
-      <Box
-        sx={{
-          display: "flex",
-          flex: 1,
-          overflow: "auto",
-          flexDirection: "column",
-        }}
-      >
+      <Page bottomGutter={false}>
         <TopBarNavigation title={"Security"} />
-        <List>
-          <ListItemButton
-            onClick={() => {
-              setIsEditContentPasswordDialogOpened(true)
-            }}
-          >
-            <ListItemText
-              primary={
-                accountSettings?.masterEncryptionKey
-                  ? "Change Master Password"
-                  : "Initialize my Master Password"
-              }
-              secondary={
-                "This password is used to authorize sensitive actions, register secrets, etc."
-              }
-            />
-          </ListItemButton>
-        </List>
-        <List
-          subheader={
-            <ListSubheader
-              disableSticky
-              style={{ color: theme.palette.error.dark }}
-            >
-              Danger zone
-            </ListSubheader>
-          }
-          style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
-        >
-          {!!accountSettings?.masterEncryptionKey && (
+        <PageContainer disableGutters>
+          <PageSection>
             <ListItemButton
               onClick={() => {
-                removeMasterKey()
+                setIsEditContentPasswordDialogOpened(true)
               }}
             >
               <ListItemText
-                primary="Remove Master Password"
-                secondary="Last resort if you really lost your password"
+                primary={
+                  accountSettings?.masterEncryptionKey
+                    ? "Change Master Password"
+                    : "Initialize my Master Password"
+                }
+                secondary={
+                  "This password is used to authorize sensitive actions, register secrets, etc."
+                }
               />
             </ListItemButton>
-          )}
-        </List>
-      </Box>
+          </PageSection>
+          <PageSection title="Danger zone" tone="danger">
+            {!!accountSettings?.masterEncryptionKey && (
+              <ListItemButton
+                onClick={() => {
+                  removeMasterKey()
+                }}
+              >
+                <ListItemText
+                  primary="Remove Master Password"
+                  secondary="Last resort if you really lost your password"
+                />
+              </ListItemButton>
+            )}
+          </PageSection>
+        </PageContainer>
+      </Page>
       <SetupMasterPasswordDialog
         open={isEditContentPasswordDialogOpened}
         onClose={() => setIsEditContentPasswordDialogOpened(false)}

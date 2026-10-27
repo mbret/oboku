@@ -263,8 +263,8 @@ export class InMemoryTaskQueueService {
           error: (error) => {
             this.logger.error(
               `Task ${nextTask.id || "unknown"} error: ${error.message}`,
+              error.stack,
             )
-            this.logger.error(error)
             nextTask.subject.error(error)
 
             // Remove from active queue

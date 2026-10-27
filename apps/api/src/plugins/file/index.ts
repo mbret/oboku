@@ -1,40 +1,21 @@
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { findCandidates } from "../helpers.js"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 
 export const plugin: DataSourcePlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: {
-        type: PLUGIN_FILE_TYPE,
-        data: { filename: item.linkData.filename },
-      },
-    })
-    return {
-      links: links.map((link) => ({
-        ...link,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: PLUGIN_FILE_TYPE,
-        linkData: { filename: item.linkData.filename },
-      },
-    })
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: PLUGIN_FILE_TYPE,
+      data: { filename: item.linkData.filename },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: PLUGIN_FILE_TYPE,
+      data: { filename: item.linkData.filename },
+    }),
+  }),
   getFolderMetadata: async ({ link }) => {
     const { filename = "" } = getFileLinkData(link.data ?? {}) ?? {}
 

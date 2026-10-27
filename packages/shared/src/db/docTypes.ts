@@ -162,7 +162,8 @@ export type DataSourceDataForProvider<T extends DataSourceType> = Extract<
 export type InsertAbleBookDocType = Omit<BookDocType, "_id" | "_rev">
 
 /**
- * @deprecated
+ * @deprecated Book properties the app no longer writes, still declared in the
+ * legacy group of the RxDB book schema, which says what each is waiting on.
  */
 export type DeprecatedBookDocType = {
   creator: string | null
@@ -172,6 +173,12 @@ export type DeprecatedBookDocType = {
   rights: string | null
   subject: string[] | null
   title: string | null
+  /**
+   * Superseded by `readingStateUpdatedAt` and no longer written, but still on
+   * legacy books and written by older versions of the app. Only
+   * `getReadingStateUpdatedTime` reads it.
+   */
+  readingStateCurrentBookmarkProgressUpdatedAt?: string | null
 }
 
 export type TagsDocType = CommonBase & {
@@ -270,53 +277,6 @@ export type SettingsDocType = {
   readerDesktopFontScale?: number | null
 }
 
-function hasRxModel(document: unknown): document is { rx_model: unknown } {
-  return (
-    typeof document === "object" && document !== null && "rx_model" in document
-  )
-}
-
-export function isTag(
-  document: TagsDocType | unknown,
-): document is TagsDocType {
-  return hasRxModel(document) && document.rx_model === "tag"
-}
-
-export function isBook(
-  document: BookDocType | unknown,
-): document is BookDocType {
-  return hasRxModel(document) && document.rx_model === "book"
-}
-
-export function isLink(
-  document: LinkDocType | unknown,
-): document is LinkDocType {
-  return hasRxModel(document) && document.rx_model === "link"
-}
-
-export function isDataSource(
-  document: DataSourceDocType | unknown,
-): document is DataSourceDocType {
-  return hasRxModel(document) && document.rx_model === "datasource"
-}
-
-export function isCollection(
-  document: CollectionDocType | unknown,
-): document is CollectionDocType {
-  return hasRxModel(document) && document.rx_model === "obokucollection"
-}
-
-/**
- * Type guard: narrows collection to CollectionDocType<T> when linkType matches.
- * Use to read provider-specific linkData (e.g. connectorId) with correct typing.
- */
-export function isCollectionOfType<T extends DataSourceType>(
-  c: { linkType?: string },
-  linkType: T,
-): c is CollectionDocType<T> {
-  return c.linkType === linkType
-}
-
 type MangoSelectorOperator<T> = {
   $nin?: any[]
   $in?: any[]
@@ -352,9 +312,6 @@ interface MangoQuery<RxDocType> {
     | {
         $or: SafeMangoSelector<RxDocType>[]
       }
-
-  // Maximum number of results returned. Default is 25.
-  limit?: number
 
   // http://docs.couchdb.org/en/latest/api/database/find.html#filtering-fields
   fields?: (keyof RxDocType)[]

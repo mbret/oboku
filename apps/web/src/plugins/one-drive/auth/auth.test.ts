@@ -1,5 +1,41 @@
+import { InteractionRequiredAuthError } from "@azure/msal-browser"
+import { isMicrosoftConsumerAccount } from "@oboku/shared"
 import { beforeEach, describe, expect, it, vi } from "vitest"
+import { CancelError } from "../../../errors/errors.shared"
 import { ONE_DRIVE_GRAPH_SCOPES } from "../constants"
+
+const { publicClientApplication } = vi.hoisted(function createMsalMocks() {
+  return { publicClientApplication: vi.fn() }
+})
+
+vi.mock("@azure/msal-browser", function mockMsalBrowser() {
+  return {
+    BrowserAuthErrorCodes: {
+      interactionInProgress: "interaction_in_progress",
+      interactionInProgressCancelled: "interaction_in_progress_cancelled",
+      popupWindowError: "popup_window_error",
+      userCancelled: "user_cancelled",
+    },
+    BrowserCacheLocation: {
+      LocalStorage: "localStorage",
+    },
+    EventType: {
+      ACQUIRE_TOKEN_SUCCESS: "msal:acquireTokenSuccess",
+      ACTIVE_ACCOUNT_CHANGED: "msal:activeAccountChanged",
+      LOGIN_SUCCESS: "msal:loginSuccess",
+      LOGOUT_SUCCESS: "msal:logoutSuccess",
+    },
+    InteractionRequiredAuthError: class InteractionRequiredAuthError extends Error {},
+    PublicClientApplication: publicClientApplication,
+  }
+})
+
+import {
+  clearOneDriveSession,
+  initializeOneDriveSession,
+  requestMicrosoftAccessToken,
+  requestOneDriveProviderCredentials,
+} from "./auth"
 
 const CLIENT_ID = "reader-client-id"
 const AUTHORITY = "https://login.microsoftonline.com/common"
@@ -38,58 +74,29 @@ function createOneDriveAuthTestContext({
     }),
   }
 
-  const publicClientApplication = vi.fn(function PublicClientApplication() {
-    return client
-  })
-
-  vi.doMock("@azure/msal-browser", () => ({
-    BrowserAuthErrorCodes: {
-      interactionInProgress: "interaction_in_progress",
-      interactionInProgressCancelled: "interaction_in_progress_cancelled",
-      popupWindowError: "popup_window_error",
-      userCancelled: "user_cancelled",
+  publicClientApplication.mockImplementation(
+    function PublicClientApplication() {
+      return client
     },
-    BrowserCacheLocation: {
-      LocalStorage: "localStorage",
-    },
-    EventType: {
-      ACQUIRE_TOKEN_SUCCESS: "msal:acquireTokenSuccess",
-      ACTIVE_ACCOUNT_CHANGED: "msal:activeAccountChanged",
-      LOGIN_SUCCESS: "msal:loginSuccess",
-      LOGOUT_SUCCESS: "msal:logoutSuccess",
-    },
-    InteractionRequiredAuthError: class InteractionRequiredAuthError extends Error {},
-    PublicClientApplication: publicClientApplication,
-  }))
-
-  vi.stubGlobal("window", {
-    location: {
-      origin: "https://reader.example",
-    },
-  })
+  )
 
   return {
     account,
     client,
-    publicClientApplication,
   }
 }
 
-async function importAuthWithSession() {
-  const auth = await import("./auth")
-
-  await auth.initializeOneDriveSession({
+function initializeConfiguredSession() {
+  return initializeOneDriveSession({
     clientId: CLIENT_ID,
     authority: AUTHORITY,
   })
-
-  return auth
 }
 
 describe("OneDrive auth", () => {
-  beforeEach(() => {
-    vi.resetModules()
-    vi.unstubAllGlobals()
+  beforeEach(async function startWithoutOneDriveSession() {
+    await clearOneDriveSession()
+    publicClientApplication.mockReset()
   })
 
   it("forwards the authority override to token requests", async () => {
@@ -108,7 +115,7 @@ describe("OneDrive auth", () => {
       expiresOn: new Date("2026-04-10T10:15:00.000Z"),
     })
 
-    const { requestMicrosoftAccessToken } = await importAuthWithSession()
+    await initializeConfiguredSession()
 
     await requestMicrosoftAccessToken({
       authority: "https://login.microsoftonline.com/consumers",
@@ -139,7 +146,7 @@ describe("OneDrive auth", () => {
       expiresOn: new Date("2026-04-10T10:15:00.000Z"),
     })
 
-    const { requestMicrosoftAccessToken } = await importAuthWithSession()
+    await initializeConfiguredSession()
 
     await expect(
       requestMicrosoftAccessToken({
@@ -181,7 +188,7 @@ describe("OneDrive auth", () => {
       expiresOn,
     })
 
-    const { requestOneDriveProviderCredentials } = await importAuthWithSession()
+    await initializeConfiguredSession()
 
     await expect(requestOneDriveProviderCredentials()).resolves.toEqual({
       accessToken: "graph-token",
@@ -217,7 +224,7 @@ describe("OneDrive auth", () => {
         expiresOn: new Date(Date.now() + 10 * 60 * 1000),
       })
 
-    const { requestMicrosoftAccessToken } = await importAuthWithSession()
+    await initializeConfiguredSession()
 
     await expect(
       requestMicrosoftAccessToken({
@@ -255,7 +262,7 @@ describe("OneDrive auth", () => {
       errorCode: "popup_window_error",
     })
 
-    const { requestMicrosoftAccessToken } = await importAuthWithSession()
+    await initializeConfiguredSession()
 
     await expect(
       requestMicrosoftAccessToken({
@@ -278,11 +285,7 @@ describe("OneDrive auth", () => {
       errorCode: "user_cancelled",
     })
 
-    const [{ requestMicrosoftAccessToken }, { CancelError }] =
-      await Promise.all([
-        importAuthWithSession(),
-        import("../../../errors/errors.shared"),
-      ])
+    await initializeConfiguredSession()
 
     await expect(
       requestMicrosoftAccessToken({
@@ -297,8 +300,6 @@ describe("OneDrive auth", () => {
       initialAccount: null,
     })
 
-    const { InteractionRequiredAuthError } = await import("@azure/msal-browser")
-
     client.acquireTokenSilent.mockRejectedValueOnce(
       new InteractionRequiredAuthError(
         "interaction_required",
@@ -306,11 +307,7 @@ describe("OneDrive auth", () => {
       ),
     )
 
-    const [{ requestMicrosoftAccessToken }, { CancelError }] =
-      await Promise.all([
-        importAuthWithSession(),
-        import("../../../errors/errors.shared"),
-      ])
+    await initializeConfiguredSession()
 
     await expect(
       requestMicrosoftAccessToken({
@@ -324,8 +321,6 @@ describe("OneDrive auth", () => {
   })
 
   it("detects Microsoft consumer accounts from tenant metadata", async () => {
-    const { isMicrosoftConsumerAccount } = await import("@oboku/shared")
-
     expect(
       isMicrosoftConsumerAccount({
         homeAccountId: "reader.9188040d-6c67-4c5b-b112-36a304b66dad",
@@ -342,11 +337,9 @@ describe("OneDrive auth", () => {
   })
 
   it("does not initialize a session when OneDrive is not configured", async () => {
-    const { publicClientApplication } = createOneDriveAuthTestContext({
+    createOneDriveAuthTestContext({
       initialAccount: null,
     })
-
-    const { initializeOneDriveSession } = await import("./auth")
 
     await expect(
       initializeOneDriveSession({ clientId: "", authority: AUTHORITY }),
@@ -360,13 +353,7 @@ describe("OneDrive auth", () => {
       initialAccount: null,
     })
 
-    const { initializeOneDriveSession, requestMicrosoftAccessToken } =
-      await import("./auth")
-
-    await initializeOneDriveSession({
-      clientId: CLIENT_ID,
-      authority: AUTHORITY,
-    })
+    await initializeConfiguredSession()
 
     ctx.client.getAllAccounts.mockReturnValue([
       {
@@ -395,32 +382,17 @@ describe("OneDrive auth", () => {
     expect(ctx.client.loginPopup).not.toHaveBeenCalled()
   })
 
-  it("initializes the client only once the session is configured", async () => {
-    const { account, client, publicClientApplication } =
-      createOneDriveAuthTestContext({
-        initialAccount: {
-          homeAccountId: "reader.contoso-tenant-id",
-          name: "Reader",
-          tenantId: "contoso-tenant-id",
-          username: "reader@example.com",
-        },
-      })
-
-    const { initializeOneDriveSession, requestMicrosoftAccessToken } =
-      await import("./auth")
-
-    await expect(
-      requestMicrosoftAccessToken({
-        scopes: ["Files.Read"],
-      }),
-    ).rejects.toThrow(
-      "OneDrive is not configured. Register the application client ID in admin first.",
-    )
-
-    await initializeOneDriveSession({
-      clientId: CLIENT_ID,
-      authority: AUTHORITY,
+  it("reuses the client it creates when the session is configured", async () => {
+    const { account, client } = createOneDriveAuthTestContext({
+      initialAccount: {
+        homeAccountId: "reader.contoso-tenant-id",
+        name: "Reader",
+        tenantId: "contoso-tenant-id",
+        username: "reader@example.com",
+      },
     })
+
+    await initializeConfiguredSession()
 
     client.acquireTokenSilent.mockResolvedValueOnce({
       accessToken: "graph-token",

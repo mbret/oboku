@@ -1,4 +1,4 @@
-import { Observable } from "rxjs"
+import { fromAbortable } from "../common/rxjs/fromAbortable"
 import { HttpClient } from "./httpClient.shared"
 import { CancelError } from "../errors/errors.shared"
 
@@ -157,20 +157,13 @@ export class HttpClientWeb extends HttpClient {
   upload = ({ method = "POST", ...rest }: UploadParams) =>
     sendXhr<string>({ ...rest, method }, (xhr) => xhr.responseText)
 
-  upload$ = (params: Omit<UploadParams, "signal">) =>
-    new Observable<UploadResponse>((subscriber) => {
-      const controller = new AbortController()
+  upload$ = (params: Omit<UploadParams, "signal">) => {
+    const { upload } = this
 
-      this.upload({ ...params, signal: controller.signal }).then(
-        (response) => {
-          subscriber.next(response)
-          subscriber.complete()
-        },
-        (error) => subscriber.error(error),
-      )
-
-      return () => controller.abort()
+    return fromAbortable(function uploadUntilUnsubscribed(signal) {
+      return upload({ ...params, signal })
     })
+  }
 }
 
 export const httpClientWeb = new HttpClientWeb()

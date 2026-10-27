@@ -17,16 +17,22 @@ import {
   LocalOfferOutlined,
 } from "@mui/icons-material"
 import { Fragment, type ReactNode, useMemo } from "react"
-import { Link } from "react-router"
-import { BOOK_METADATA_FIELDS_BY_SOURCE, directives } from "@oboku/shared"
+import { generatePath, Link } from "react-router"
+import {
+  BOOK_METADATA_FIELDS_BY_SOURCE,
+  directives,
+  getBookMetadataSource,
+} from "@oboku/shared"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
 import { pluginsByType } from "../../plugins/configure"
 import { ROUTES } from "../../navigation/routes"
+import { getBookMetadataEntryFields } from "../metadata/fields"
 import {
   type BookMetadataSource,
   getBookMetadataSourceIcon,
   getBookMetadataSourceLabel,
+  getCatalogProviderName,
   getOrderedBookMetadataSources,
 } from "../metadata/sources"
 import {
@@ -39,7 +45,7 @@ import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
 // Cast preserves Typography's polymorphic `component` prop, which MUI's
 // `styled` otherwise erases.
-const PluginNameTypography = styled(Typography)(({ theme }) => ({
+const SourceOriginTypography = styled(Typography)(({ theme }) => ({
   marginLeft: theme.spacing(1),
 })) as typeof Typography
 
@@ -214,7 +220,7 @@ function SourceRow({
 }
 
 const buildSourceRoute = (bookId: string, source: string) =>
-  ROUTES.BOOK_METADATA_SOURCE.replace(":id", bookId).replace(":source", source)
+  generatePath(ROUTES.BOOK_METADATA_SOURCE, { id: bookId, source })
 
 /**
  * Synthetic row in the metadata sources list. Directives are not a real
@@ -359,16 +365,17 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
       disablePadding
     >
       <ListItem>
-        <ListItemText secondary="Ordered by display priority. Use the arrows to swap File and Google Book API." />
+        <ListItemText secondary="Ordered by display priority. Use the arrows to swap File and Catalog." />
       </ListItem>
       {orderedSources.map((source) => {
-        const metadata = book?.metadata?.find((item) => item.type === source)
+        const entry = book?.metadata?.find(
+          (item) => getBookMetadataSource(item) === source,
+        )
+        const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+        const providerName = entry ? getCatalogProviderName(entry) : undefined
 
-        // `type` is the variant discriminator, not a real property.
-        const numberOfProperties = metadata
-          ? Object.entries(metadata).filter(
-              ([key, value]) => key !== "type" && value !== undefined,
-            ).length
+        const numberOfProperties = fields
+          ? Object.values(fields).filter((value) => value !== undefined).length
           : 0
 
         // Drive the preview from the source's declared field list so the
@@ -376,7 +383,7 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
         // (which would happen if every populated field sat outside a
         // hard-coded preview list).
         const sampleValues = BOOK_METADATA_FIELDS_BY_SOURCE[source].map(
-          (field) => formatBookMetadataField(metadata, field),
+          (field) => formatBookMetadataField(fields, field),
         )
 
         const reorderable = isReorderableBookMetadataSource(source)
@@ -390,9 +397,14 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
                 <Typography>
                   {getBookMetadataSourceLabel(source)}
                   {source === "link" && (
-                    <PluginNameTypography component="span" variant="body2">
+                    <SourceOriginTypography component="span" variant="body2">
                       ({plugin?.name})
-                    </PluginNameTypography>
+                    </SourceOriginTypography>
+                  )}
+                  {providerName && (
+                    <SourceOriginTypography component="span" variant="body2">
+                      ({providerName})
+                    </SourceOriginTypography>
                   )}
                 </Typography>
               }

@@ -1,8 +1,9 @@
+import { Logger } from "@nestjs/common"
 import createNano, { type RequestError } from "nano"
 import {
   type SafeMangoQuery,
   type InsertAbleBookDocType,
-  ReadingStateState,
+  createBookDefaults,
   type DocType,
   type ModelOf,
   type SettingsDocType,
@@ -11,13 +12,16 @@ import {
 import {
   emailToCouchUserDocId,
   emailToUserDbName,
-} from "src/couch/couch.service"
-import { User } from "../couchDbEntities"
-import { waitForRandomTime } from "../utils"
-import { generatePassword } from "../authentication/generatePassword"
-import { findOne } from "./findOne"
+} from "../../couch/couch.service.js"
+import { normalizeEmail } from "../../features/postgres/user-postgres.service.js"
+import { User } from "../couchDbEntities.js"
+import { waitForRandomTime } from "../utils.js"
+import { generatePassword } from "../authentication/generatePassword.js"
+import { findOne } from "./findOne.js"
 
 export { findOne }
+
+const logger = new Logger("dbHelpers")
 
 export const createUser = async (
   db: createNano.ServerScope,
@@ -51,6 +55,35 @@ export function isCouchNotFound(error: unknown): boolean {
   return isCouchRequestError(error) && error.statusCode === 404
 }
 
+export function isCouchMissingDatabase(error: unknown): boolean {
+  return (
+    isCouchRequestError(error) &&
+    error.statusCode === 404 &&
+    error.reason === "Database does not exist."
+  )
+}
+
+export function isCouchConflict(error: unknown): boolean {
+  return isCouchRequestError(error) && error.statusCode === 409
+}
+
+export async function doesCouchDatabaseExist(
+  server: createNano.ServerScope,
+  dbName: string,
+) {
+  try {
+    await server.db.get(dbName)
+    return true
+  } catch (error) {
+    if (isCouchNotFound(error)) return false
+    throw error
+  }
+}
+
+/**
+ * Destroys the database before the `_users` doc so the database can never
+ * outlive its user: a later sign-up with the same email must start empty.
+ */
 export const deleteCouchUser = async (
   db: createNano.ServerScope,
   email: string,
@@ -74,26 +107,91 @@ export const deleteCouchUser = async (
   }
 }
 
-export const getOrCreateUserFromEmail = async (
-  db: createNano.ServerScope,
+/**
+ * Users created before emails were normalized keep their original casing in
+ * `name` and `_id`, so they cannot be fetched by the normalized doc id.
+ */
+async function findLegacyCouchUserByNormalizedName(
+  usersDb: createNano.DocumentScope<User>,
   email: string,
-): Promise<{ user: User; created: boolean }> => {
+): Promise<User | undefined> {
+  for await (const users of findPages(usersDb, {
+    selector: { type: "user" },
+  })) {
+    const legacyUser = users.find((doc) => normalizeEmail(doc.name) === email)
+
+    if (legacyUser) return legacyUser
+  }
+
+  return undefined
+}
+
+async function findCouchUserFromEmail(
+  db: createNano.ServerScope,
+  rawEmail: string,
+): Promise<User | undefined> {
+  const email = normalizeEmail(rawEmail)
   const usersDb = db.use<User>("_users")
 
-  const {
-    docs: [user],
-  } = await usersDb.find({
-    selector: {
-      email,
-    },
-  })
+  try {
+    return await usersDb.get(emailToCouchUserDocId(email))
+  } catch (error) {
+    if (!isCouchNotFound(error)) throw error
+  }
 
-  if (user) return { user, created: false }
+  return findLegacyCouchUserByNormalizedName(usersDb, email)
+}
 
-  const generatedPassword = generatePassword()
-  const createdUser = await createUser(db, email, generatedPassword)
+/**
+ * couch_peruser re-runs its create-database-and-set-security step on every
+ * change to a `_users` doc, so re-saving the doc unchanged makes it recreate a
+ * database that vanished under a live user. A conflict means a concurrent
+ * sign-in already did so.
+ */
+async function touchCouchUser(db: createNano.ServerScope, user: User) {
+  const usersDb = db.use<User>("_users")
 
-  return { user: createdUser, created: true }
+  try {
+    await usersDb.insert(user, user._id)
+  } catch (error) {
+    if (!isCouchConflict(error)) throw error
+  }
+}
+
+/**
+ * Resolves the CouchDB user for an email, creating it on first sign-in.
+ * `userDbPending` is true while couch_peruser is creating the user's database,
+ * for a new user or to replace one that vanished under an existing user, so
+ * callers must wait for it before handing the database out.
+ */
+export const getOrCreateUserFromEmail = async (
+  db: createNano.ServerScope,
+  rawEmail: string,
+): Promise<{ user: User; userDbPending: boolean }> => {
+  const user = await findCouchUserFromEmail(db, rawEmail)
+
+  if (!user) {
+    const createdUser = await createUser(
+      db,
+      normalizeEmail(rawEmail),
+      generatePassword(),
+    )
+
+    return { user: createdUser, userDbPending: true }
+  }
+
+  const dbName = emailToUserDbName(user.name)
+
+  if (await doesCouchDatabaseExist(db, dbName)) {
+    return { user, userDbPending: false }
+  }
+
+  logger.warn(
+    `User database ${dbName} is missing for ${user.email}, asking couch_peruser to recreate it`,
+  )
+  await touchCouchUser(db, user)
+
+  return { user, userDbPending: true }
 }
 
 export async function atomicUpdate<
@@ -154,23 +252,65 @@ export const getSettings = async (
   }
 }
 
+export const FIND_PAGE_SIZE = 1000
+
+type MangoQueryWithoutPaging = Omit<
+  createNano.MangoQuery,
+  "limit" | "skip" | "bookmark"
+>
+
+/**
+ * Yields every document matching `query`, one page at a time. A single
+ * `_find` stops at its `limit` (25 when omitted), so each page resumes from
+ * the previous page's bookmark until CouchDB returns a short page.
+ */
+export async function* findPages<D>(
+  db: createNano.DocumentScope<D>,
+  query: MangoQueryWithoutPaging,
+) {
+  let bookmark: string | undefined
+  let isLastPage = false
+
+  while (!isLastPage) {
+    const page = await retryFn(() =>
+      db.find({ ...query, limit: FIND_PAGE_SIZE, bookmark }),
+    )
+
+    yield page.docs
+
+    isLastPage = page.docs.length < FIND_PAGE_SIZE
+    bookmark = page.bookmark
+  }
+}
+
+export async function findAll<D>(
+  db: createNano.DocumentScope<D>,
+  query: MangoQueryWithoutPaging,
+) {
+  const docs: createNano.MangoResponse<D>["docs"] = []
+
+  for await (const page of findPages(db, query)) {
+    docs.push(...page)
+  }
+
+  return docs
+}
+
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,
   query: SafeMangoQuery<D>,
 ) => {
   const { fields, ...restQuery } = query
-  const response = await retryFn(() =>
-    db.find({
-      ...restQuery,
-      // nano's find() expects fields?: string[]; SafeMangoQuery uses (keyof D)[], which is string keys for our doc types
-      fields: fields === undefined ? undefined : ([...fields] as string[]),
-      selector: { rx_model: rxModel, ...query?.selector },
-    }),
-  )
+  const docs = await findAll(db, {
+    ...restQuery,
+    // nano's find() expects fields?: string[]; SafeMangoQuery uses (keyof D)[], which is string keys for our doc types
+    fields: fields === undefined ? undefined : ([...fields] as string[]),
+    selector: { rx_model: rxModel, ...query?.selector },
+  })
 
-  return response.docs as (createNano.MangoResponse<unknown>["docs"][number] &
-    D)[]
+  // db is untyped; the rx_model selector is what makes these D documents.
+  return docs as (createNano.MangoResponse<unknown>["docs"][number] & D)[]
 }
 
 export const createBook = async (
@@ -178,20 +318,8 @@ export const createBook = async (
   data: Partial<InsertAbleBookDocType> = {},
 ) => {
   const insertData: InsertAbleBookDocType = {
-    collections: [],
-    createdAt: Date.now(),
-    lastMetadataUpdatedAt: null,
-    lastMetadataUpdateError: null,
-    metadataUpdateStatus: null,
-    links: [],
-    readingStateCurrentBookmarkLocation: null,
-    readingStateCurrentBookmarkProgressPercent: 0,
-    readingStateCurrentBookmarkProgressUpdatedAt: null,
-    readingStateCurrentState: ReadingStateState.NotStarted,
+    ...createBookDefaults(),
     rx_model: "book",
-    tags: [],
-    modifiedAt: null,
-    isAttachedToDataSource: false,
     rxdbMeta: { lwt: Date.now() },
     ...data,
   }
@@ -343,7 +471,7 @@ export const retryFn = async <T>(fn: () => Promise<T>, retry = 100) => {
       const isConnectionError =
         e instanceof Error && e.message === "error happened in your connection"
       const isRetryableStatus =
-        isCouchRequestError(e) && (e.statusCode >= 500 || e.statusCode === 409)
+        isCouchConflict(e) || (isCouchRequestError(e) && e.statusCode >= 500)
 
       if ((isConnectionError || isRetryableStatus) && currentRetry > 0) {
         await waitForRandomTime(1, 200)

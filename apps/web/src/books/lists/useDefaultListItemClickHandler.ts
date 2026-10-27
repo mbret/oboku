@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { getBookDownloadsState } from "../../download/states"
 import { useDatabase } from "../../rxdb"
@@ -30,7 +30,7 @@ export const useDefaultListItemClickHandler = () => {
       if (downloadState?.downloadState === "none") {
         book?._id && downloadFile(book)
       } else if (downloadState?.downloadState === "downloaded") {
-        navigate(ROUTES.READER.replace(":id", book?._id))
+        navigate(generatePath(ROUTES.READER, { id: book._id }))
       }
     },
     [db, downloadFile, navigate, cancelDownload],

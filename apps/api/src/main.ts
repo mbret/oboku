@@ -1,17 +1,22 @@
-import "./instrument"
-
 import { NestFactory } from "@nestjs/core"
-import { AppModule } from "./app.module"
+import { AppModule } from "./app.module.js"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./config/types"
+import { EnvironmentVariables } from "./config/types.js"
 import { Logger, ValidationPipe } from "@nestjs/common"
 import cookieParser from "cookie-parser"
 import { json, urlencoded } from "express"
 import path from "node:path"
-import { WebDavService } from "./webdav/webdav.service"
-import { CouchProxyService } from "./couch/couch-proxy.service"
-import { TrustedOriginsService } from "./config/trusted-origin.service"
-import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware"
+import { distinctUntilChanged, map } from "rxjs"
+import { WebDavService } from "./webdav/webdav.service.js"
+import { CouchProxyService } from "./couch/couch-proxy.service.js"
+import { TrustedOriginsService } from "./config/trusted-origin.service.js"
+import { createCsrfOriginMiddleware } from "./auth/csrf-origin.middleware.js"
+import { createCorsOptionsDelegate } from "./config/cors-options.js"
+import { InstanceConfigService } from "./admin/instance-config/instance-config.service.js"
+import {
+  setPrivateNetworkAllowedHosts,
+  setPrivateNetworkRequestsAllowed,
+} from "./lib/http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies
@@ -29,6 +34,42 @@ async function bootstrap() {
   )
 
   const trustedOriginsService = app.get(TrustedOriginsService)
+
+  logger.log(
+    `Browser origins — ${trustedOriginsService.originPolicyDescription}`,
+  )
+
+  const instanceConfig$ = app.get(InstanceConfigService).getConfig()
+
+  instanceConfig$
+    .pipe(
+      map(function readAllowPrivateNetworkRequests(config) {
+        return config.allowPrivateNetworkRequests
+      }),
+      distinctUntilChanged(),
+    )
+    .subscribe(function applyPrivateNetworkRequestsSetting(allowed) {
+      setPrivateNetworkRequestsAllowed(allowed)
+      logger.log(
+        `Requests to private networks — ${allowed ? "allowed" : "refused"}`,
+      )
+    })
+
+  instanceConfig$
+    .pipe(
+      map(function readPrivateNetworkAllowedHosts(config) {
+        return config.privateNetworkAllowedHosts
+      }),
+      distinctUntilChanged(function isSameHostList(previous, current) {
+        return previous.join(" ") === current.join(" ")
+      }),
+    )
+    .subscribe(function applyPrivateNetworkAllowedHostsSetting(hosts) {
+      setPrivateNetworkAllowedHosts(hosts)
+      logger.log(
+        `Hosts allowed on private networks — ${hosts.join(", ") || "none"}`,
+      )
+    })
 
   // Cookie parsing must precede the proxy mounts so both the raw proxy
   // middlewares and the Nest guard see `req.cookies` (it never reads the
@@ -54,16 +95,10 @@ async function bootstrap() {
   // which terminate their own requests and own their CORS, so it never
   // double-handles them.
   //
-  // Reflect only trusted origins: with `credentials: true` the browser lets
-  // scripts on the allowed origin make cookie-carrying requests, so a
-  // wildcard/reflect-any policy would hand any website credentialed access.
-  app.enableCors({
-    origin: (
-      origin: string | undefined,
-      callback: (error: Error | null, allow?: boolean) => void,
-    ) => callback(null, trustedOriginsService.isTrusted(origin)),
-    credentials: true,
-  })
+  // The delegate form resolves the policy per request, which the static options
+  // cannot: it only sees the origin, and `/admin` needs a different answer than
+  // the cookie routes for the very same origin.
+  app.enableCors(createCorsOptionsDelegate(trustedOriginsService))
 
   // Re-add the body parsers (disabled above) for the rest of the API.
   app.use(json())

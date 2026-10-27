@@ -1,7 +1,5 @@
 import type { UseSyncSourceInfo } from "../types"
-
-const getItemLabel = (count: number) =>
-  count === 1 ? "1 item" : `${count} items`
+import { getLabelWithItemCount } from "../common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"DRIVE"> = ({
   dataSource,
@@ -16,9 +14,6 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"DRIVE"> = ({
   const itemsCount = dataSource.data_v2?.items?.length ?? 0
 
   return {
-    name:
-      itemsCount > 0
-        ? `Google Drive (${getItemLabel(itemsCount)})`
-        : "Google Drive",
+    name: getLabelWithItemCount("Google Drive", itemsCount),
   }
 }

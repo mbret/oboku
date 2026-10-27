@@ -5,42 +5,46 @@ import {
   Logger,
   UnauthorizedException,
 } from "@nestjs/common"
-import { UsersService } from "../users/users.service"
+import { UsersService } from "../users/users.service.js"
 import { OAuth2Client } from "google-auth-library"
-import { AppConfigService } from "../config/AppConfigService"
+import { AppConfigService } from "../config/AppConfigService.js"
 import { ObokuErrorCode } from "@oboku/shared"
 import {
   CouchService,
   emailToNameHex,
   emailToUserDbName,
-} from "../couch/couch.service"
-import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers"
-import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady"
+} from "../couch/couch.service.js"
+import { getOrCreateUserFromEmail } from "../lib/couch/dbHelpers.js"
+import { waitForUserCouchDatabaseReady } from "../lib/couch/waitForUserCouchDatabaseReady.js"
+import { ensureUserDbIndexes } from "../lib/couch/userDbIndexes.js"
 import bcrypt from "bcrypt"
+import type createNano from "nano"
+import type { StringValue } from "ms"
 import { JwtService } from "@nestjs/jwt"
-import { RefreshTokensService } from "src/features/postgres/refreshTokens.service"
-import { SecretsService } from "src/config/SecretsService"
-import { EmailService } from "../email/EmailService"
-import { normalizeEmail } from "src/features/postgres/user-postgres.service"
+import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
+import type { UserPostgresEntity } from "../features/postgres/entities.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { EmailService } from "../email/EmailService.js"
+import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
 import type {
-  AuthProofPublicKeyJwk,
-  AuthSessionResponse,
-  CompleteMagicLinkRequest,
-  CompleteSignUpResponse,
-  SignInWithEmailRequest,
-  SignInWithGoogleRequest,
-} from "@oboku/shared"
-import { RefreshProofService } from "./refresh-proof.service"
-import type { AuthTokens } from "./auth-cookies"
+  AuthProofPublicKeyDto,
+  AuthSessionResponseDto,
+  CompleteMagicLinkDto,
+  CompleteSignUpResponseDto,
+  SignInWithEmailDto,
+  SignInWithGoogleDto,
+} from "./auth.dto.js"
+import { RefreshProofService } from "./refresh-proof.service.js"
+import type { AuthTokens } from "./auth-cookies.js"
 
 /**
  * A completed authentication: the session metadata the client renders plus the
  * {@link AuthTokens} the controller writes to httpOnly cookies. Only the
  * metadata half is serialized to the response body.
  */
-type AuthenticatedSession = AuthTokens & AuthSessionResponse
+type AuthenticatedSession = AuthTokens & AuthSessionResponseDto
 
-/** Max time to wait for couch_peruser to create `userdb-…` after a new `_users` row. */
+/** Max time to wait for couch_peruser to create `userdb-…` after a `_users` row is written. */
 const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
 
 /**
@@ -48,17 +52,12 @@ const COUCH_PERUSER_DB_READY_WAIT_MS = 15_000
  * at refresh needs nothing else, and dropping the rest bounds the stored
  * text no matter what extra properties a client sends.
  */
-const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyJwk) =>
+const serializePublicKey = ({ kty, crv, x, y }: AuthProofPublicKeyDto) =>
   JSON.stringify({ kty, crv, x, y })
 
-type SignUpTokenPayload = {
+type EmailLinkTokenPayload = {
   sub: string
-  type: "signup"
-}
-
-type MagicLinkTokenPayload = {
-  sub: string
-  type: "magic-link"
+  type: "signup" | "magic-link"
 }
 
 @Injectable()
@@ -108,7 +107,7 @@ export class AuthService {
     const payload = ticket.getPayload()
 
     if (!payload) {
-      throw new BadRequestException({})
+      throw new BadRequestException()
     }
 
     const { email: rawEmail, email_verified } = payload
@@ -202,36 +201,44 @@ export class AuthService {
   }
 
   private async completeSignIn({
-    email,
-    userId,
+    user,
     installationId,
     publicKey,
   }: {
-    email: string
-    userId: number
+    user: UserPostgresEntity
     installationId: string
     publicKey: string
   }): Promise<AuthenticatedSession> {
     const adminNano = await this.couchService.createAdminNanoInstance()
 
-    const { user: couchUser, created: couchUserCreated } =
-      await getOrCreateUserFromEmail(adminNano, email)
+    const { user: couchUser, userDbPending } = await getOrCreateUserFromEmail(
+      adminNano,
+      user.email,
+    )
 
     if (!couchUser) {
       throw new Error("Unable to retrieve user")
     }
 
+    const isCouchNameRecorded = user.couchName === couchUser.name
+
+    if (!isCouchNameRecorded) {
+      user.couchName = couchUser.name
+      await this.usersService.saveUser(user)
+    }
+
     const dbName = emailToUserDbName(couchUser.name)
 
-    if (couchUserCreated) {
+    if (userDbPending) {
       await waitForUserCouchDatabaseReady(adminNano, dbName, {
         deadline: Date.now() + COUCH_PERUSER_DB_READY_WAIT_MS,
       })
+      void this.ensureUserDbIndexesInBackground(adminNano, dbName)
     }
 
     const { accessToken, refreshToken, sessionId } = await this.generateTokens({
       email: couchUser.email,
-      userId,
+      userId: user.id,
       installationId,
       publicKey,
     })
@@ -248,17 +255,32 @@ export class AuthService {
     }
   }
 
+  /**
+   * Never awaited: indexes only make queries faster, so neither their retries
+   * nor a failure may delay the sign-up. The startup pass in
+   * `UserDbIndexesService` retries on the next deploy.
+   */
+  private async ensureUserDbIndexesInBackground(
+    adminNano: createNano.ServerScope,
+    dbName: string,
+  ) {
+    try {
+      await ensureUserDbIndexes(adminNano.use(dbName))
+    } catch (error) {
+      this.logger.error(`Unable to ensure indexes on ${dbName}`, error)
+    }
+  }
+
   async signInWithEmail({
     email,
     password,
     installation_id,
     public_key,
-  }: SignInWithEmailRequest): Promise<AuthenticatedSession> {
+  }: SignInWithEmailDto): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithEmail(email, password)
 
     return this.completeSignIn({
-      email: retrievedUser.email,
-      userId: retrievedUser.id,
+      user: retrievedUser,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
@@ -268,99 +290,100 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: SignInWithGoogleRequest): Promise<AuthenticatedSession> {
+  }: SignInWithGoogleDto): Promise<AuthenticatedSession> {
     const retrievedUser = await this.authenticateWithGoogle(token)
 
     return this.completeSignIn({
-      email: retrievedUser.email,
-      userId: retrievedUser.id,
+      user: retrievedUser,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
   }
 
-  async generateSignUpToken(email: string) {
+  private async signEmailLinkToken({
+    email,
+    type,
+    expiresIn,
+  }: {
+    email: string
+    type: EmailLinkTokenPayload["type"]
+    expiresIn: StringValue
+  }) {
     return this.jwtService.signAsync(
       {
         sub: email,
-        type: "signup",
-      } satisfies SignUpTokenPayload,
+        type,
+      } satisfies EmailLinkTokenPayload,
       {
         algorithm: "RS256",
-        expiresIn: "1h",
+        expiresIn,
         privateKey: await this.secretService.getJwtPrivateKey(),
       },
     )
+  }
+
+  async generateSignUpToken(email: string) {
+    return this.signEmailLinkToken({ email, type: "signup", expiresIn: "1h" })
   }
 
   async generateMagicLinkToken(email: string) {
-    return this.jwtService.signAsync(
-      {
-        sub: email,
-        type: "magic-link",
-      } satisfies MagicLinkTokenPayload,
-      {
-        algorithm: "RS256",
-        expiresIn: "15m",
-        privateKey: await this.secretService.getJwtPrivateKey(),
-      },
-    )
+    return this.signEmailLinkToken({
+      email,
+      type: "magic-link",
+      expiresIn: "15m",
+    })
+  }
+
+  private async verifyEmailLinkToken({
+    token,
+    type,
+    invalidErrorCode,
+  }: {
+    token: string
+    type: EmailLinkTokenPayload["type"]
+    invalidErrorCode: ObokuErrorCode
+  }) {
+    try {
+      const payload = await this.jwtService.verifyAsync<EmailLinkTokenPayload>(
+        token,
+        {
+          publicKey: await this.secretService.getJwtPublicKey(),
+          algorithms: ["RS256"],
+        },
+      )
+
+      if (payload.type !== type || !payload.sub) {
+        throw new BadRequestException({
+          errors: [{ code: invalidErrorCode }],
+        })
+      }
+
+      return payload.sub
+    } catch (error) {
+      if (error instanceof BadRequestException) {
+        throw error
+      }
+
+      throw new BadRequestException({
+        errors: [{ code: invalidErrorCode }],
+      })
+    }
   }
 
   async verifySignUpToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync<SignUpTokenPayload>(
-        token,
-        {
-          secret: await this.secretService.getJwtPrivateKey(),
-          algorithms: ["RS256"],
-        },
-      )
-
-      if (payload.type !== "signup" || !payload.sub) {
-        throw new BadRequestException({
-          errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
-        })
-      }
-
-      return payload.sub
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new BadRequestException({
-        errors: [{ code: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID }],
-      })
-    }
+    return this.verifyEmailLinkToken({
+      token,
+      type: "signup",
+      invalidErrorCode: ObokuErrorCode.ERROR_SIGNUP_LINK_INVALID,
+    })
   }
 
   async verifyMagicLinkToken(token: string) {
-    try {
-      const payload = await this.jwtService.verifyAsync<MagicLinkTokenPayload>(
-        token,
-        {
-          secret: await this.secretService.getJwtPrivateKey(),
-          algorithms: ["RS256"],
-        },
-      )
-
-      if (payload.type !== "magic-link" || !payload.sub) {
-        throw new BadRequestException({
-          errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
-        })
-      }
-
-      return payload.sub
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new BadRequestException({
-        errors: [{ code: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID }],
-      })
-    }
+    return this.verifyEmailLinkToken({
+      token,
+      type: "magic-link",
+      invalidErrorCode: ObokuErrorCode.ERROR_MAGIC_LINK_INVALID,
+    })
   }
 
   private async assertCanRequestSignUp(email: string) {
@@ -373,15 +396,19 @@ export class AuthService {
     }
   }
 
-  async requestSignUp({ email: rawEmail }: { email: string }) {
-    const email = normalizeEmail(rawEmail)
-
-    await this.assertCanRequestSignUp(email)
-
-    const token = await this.generateSignUpToken(email)
-
+  private async sendEmailLink({
+    email,
+    token,
+    send,
+    failureMessage,
+  }: {
+    email: string
+    token: string
+    send: "sendSignUpLink" | "sendMagicLink"
+    failureMessage: string
+  }) {
     try {
-      await this.emailService.sendSignUpLink({
+      await this.emailService[send]({
         email,
         token,
       })
@@ -392,8 +419,23 @@ export class AuthService {
         throw error
       }
 
-      throw new InternalServerErrorException("Unable to send sign up email")
+      throw new InternalServerErrorException(failureMessage)
     }
+  }
+
+  async requestSignUp({ email: rawEmail }: { email: string }) {
+    const email = normalizeEmail(rawEmail)
+
+    await this.assertCanRequestSignUp(email)
+
+    const token = await this.generateSignUpToken(email)
+
+    await this.sendEmailLink({
+      email,
+      token,
+      send: "sendSignUpLink",
+      failureMessage: "Unable to send sign up email",
+    })
   }
 
   /**
@@ -431,20 +473,12 @@ export class AuthService {
 
     const token = await this.generateMagicLinkToken(email)
 
-    try {
-      await this.emailService.sendMagicLink({
-        email,
-        token,
-      })
-    } catch (error) {
-      this.logger.error(error)
-
-      if (error instanceof BadRequestException) {
-        throw error
-      }
-
-      throw new InternalServerErrorException("Unable to send magic link email")
-    }
+    await this.sendEmailLink({
+      email,
+      token,
+      send: "sendMagicLink",
+      failureMessage: "Unable to send magic link email",
+    })
   }
 
   async generateSignUpLink({
@@ -472,7 +506,7 @@ export class AuthService {
   }: {
     token: string
     password: string
-  }): Promise<CompleteSignUpResponse> {
+  }): Promise<CompleteSignUpResponseDto> {
     const email = await this.verifySignUpToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -505,7 +539,7 @@ export class AuthService {
     token,
     installation_id,
     public_key,
-  }: CompleteMagicLinkRequest): Promise<AuthenticatedSession> {
+  }: CompleteMagicLinkDto): Promise<AuthenticatedSession> {
     const email = await this.verifyMagicLinkToken(token)
     const user = await this.usersService.findUserByEmail(email)
 
@@ -523,8 +557,7 @@ export class AuthService {
     await this.usersService.saveUser(user)
 
     return this.completeSignIn({
-      email: user.email,
-      userId: user.id,
+      user,
       installationId: installation_id,
       publicKey: serializePublicKey(public_key),
     })
@@ -539,6 +572,10 @@ export class AuthService {
    * A session also must carry an identity (`session_id`) so it can be revoked
    * by id at logout. Sessions issued before session-scoped logout have none;
    * they are rejected here and re-authenticate into one that does.
+   *
+   * The access token names the account's Couch user (`couchName`), recorded at
+   * sign-in. Accounts that have not signed in since that column was added have
+   * none; their sessions are rejected here and re-authenticate to record it.
    */
   async refreshToken({
     refreshToken,
@@ -587,8 +624,14 @@ export class AuthService {
       throw new UnauthorizedException()
     }
 
+    // TODO(legacy, ~2027-04): drop this guard once refresh tokens issued before
+    // couchName was recorded (TTL 6 months) have expired; see the column doc.
+    if (typeof user.couchName !== "string") {
+      throw new UnauthorizedException()
+    }
+
     const accessToken = await this.couchService.generateUserJWT({
-      email: user.email,
+      email: user.couchName,
       userId: user.id,
     })
 

@@ -22,10 +22,21 @@
 ### Self-explanatory code over comments
 
 - **Make naming carry the intent a comment would have carried.** Before writing a comment, try to encode the same information in a name. Prefer renaming over annotating.
-- **Name boolean conditions and predicates.** Extract non-trivial conditions into named variables or small predicates (`isWakeLockSupported()`, `isDocumentVisible()`, `wasUnmountedWhileRequesting`) instead of leaving bare expressions with an explanatory comment.
-- **Name every function expression, including callbacks.** Pass named functions to `useEffect`, its cleanup return, event handlers, timers, and promise callbacks (e.g. `useEffect(function keepScreenAwakeWhileMounted() { ... }, [])`, `return function releaseWakeLockOnUnmount() { ... }`, `onWakeLockReleasedByOs`). Named functions document purpose at the call site and show up by name in stack traces and DevTools.
+- **Name boolean conditions and predicates.** Extract a condition into a named variable or small predicate (`isWakeLockSupported()`, `isDocumentVisible()`, `wasUnmountedWhileRequesting`) whenever its purpose is not obvious from the expression, however short that expression is. The trigger is the reader asking "why are we comparing these?", not the size of the comparison: `if (user.couchName !== couchUser.name)` says what is compared, `const isCouchNameRecorded = user.couchName === couchUser.name` says what the comparison decides. Name the state the condition establishes, in the positive form, negate at the branch (`if (!isCouchNameRecorded)`), and declare it right above the branch that uses it.
+- **Name every function expression, including callbacks.** Pass named functions to `useEffect`, its cleanup return, event handlers, timers, and promise callbacks (e.g. `useEffect(function keepScreenAwakeWhileMounted() { ... }, [])`, `return function releaseWakeLockOnUnmount() { ... }`, `onWakeLockReleasedByOs`). Named functions document purpose at the call site and show up by name in stack traces and DevTools. Anonymous arrows are fine for `describe`/`it` bodies in tests (the string argument already names them) and for trivial one-line array callbacks like `.map((tag) => tag._id)`.
 - **Name intermediate values** rather than commenting what a literal or expression means. A descriptive `const` is preferable to an inline value plus a comment.
 - **The goal:** a reader should understand *what* and *why* from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
+
+### Values flow through the code, they aren't written aside
+
+- **A value a later step needs reaches it as a value**: returned, mapped, or part of what the stream emits. Never assign an outer variable from one callback for another callback to read, like a `let` set inside an RxDB modifier and read in a `tap` once the write resolves. What it holds then depends on which callbacks ran, how many times and in what order (a retry, a resubscription, RxDB running a modifier again on a conflict), and none of that shows in the code.
+- **Derive state rather than writing it from several places.** In RxJS, rework these rather than extend them:
+    - a variable or holder set mid-stream and read downstream;
+    - a subject used as a state container and updated from `tap`s (`state.next(update(state.getValue()))`);
+    - a `tap` that writes state where a `map`, a `scan`, or an operator that keeps the latest value (`switchMap`, `debounceTime`, `groupBy`) could carry it.
+- **When an API hands a value only to its callback, change what flows instead of capturing it.** Decide the input up front and pass it in, or use what the call resolves with. `useSyncBookProgress` gives each save's time to its patches, then finds a bookmark move in the book the write resolves with.
+- **Tests too**: observe a stream or a callback with a `vi.fn()` and assert on its calls, and hold a promise open with `Promise.withResolvers()`.
+- Imperative code is sometimes clearer, and readability counts: a `scan` nobody can follow is no improvement. Derive where you can, and say why when you deliberately don't. The `rxjs-like-a-pro` skill in `.agents/skills/` goes deeper.
 
 ### Reuse before creating
 
@@ -69,6 +80,26 @@
 - Keep content strings colocated in the consuming app (e.g. web) so they can be localized and adjusted per product without touching shared code.
 - The shared package may define error codes, types, and structure; the app defines the human-readable messages.
 
+### API types are generated
+
+- The request and response types for API routes are generated from the API's controllers and DTO classes. After changing a route, run `pnpm generate:api-types` and commit `packages/shared/src/api-types/generated/`. Never edit those files by hand, and never hand-write a request or response type, or a zod schema for one, for a route the document covers.
+- Declare DTOs in `*.dto.ts` files and return a class from every route. The `@nestjs/swagger` plugin ignores classes declared in controller files and cannot read `type` aliases.
+- Call an API route through its generated function, with the app's client: `notificationsList({ client: httpClientApi.sdkClient })` in the web app, `adminListUsers({ client: apiClient })` in the admin app. A request that cannot use the functions, like the web app's token refresh, types its request and response with the route's generated types (`AuthRefreshTokenResponse`), so it follows the route when its DTOs change.
+- `apps/docs/src/content/docs/development/api-types.md` covers the workflow and the decorators a route needs when the plugin cannot infer its schema.
+
+### Web app routes
+
+- `ROUTES` in `apps/web/src/navigation/routes.ts` holds the pattern of every route the web app defines. A new route gets its entry there.
+- Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
+- Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
+
+### Data migrations: RxDB is local, CouchDB is the data
+
+- **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).
+- Use RxDB migrations only as pass-throughs when a field is added (bump the schema version, return the document unchanged), or for data that never leaves the device.
+- **To change stored data, migrate CouchDB.** Add a method to the API's `MigrationService` and an admin endpoint in `admin.controller.ts`, following the existing ones: idempotent, one bulk write per user database. Devices receive the result through replication.
+- Older versions of the app keep running against the same data. When a field replaces another, keep reading the old one until they are gone, and say in a TODO when it can be removed.
+
 ### Package manager
 
 - Use `pnpm` as the package manager for this repository (pinned via the `packageManager` field in the root `package.json`).
@@ -78,21 +109,27 @@
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 
-### prose-reader: read its docs before writing code against it
+### prose-reader: read its docs, then confirm in its source
 
 - **prose-reader and oboku have the same maintainer.** prose-reader is not a
   third-party black box: its repository is available, its behaviour is
   changeable, and a gap there is fixable rather than something to work around
   locally.
-- `@prose-reader/*` is a documented library. Its guides live in the prose-reader
-  repo under `gitbook/<package>/` (e.g. `gitbook/archive-reader/`) and are the
-  source of truth for what each package owns, what its vocabulary means, and why
-  a field is shaped the way it is. Read them before writing code against it.
-- **The guides can be stale, wrong, or silent** — they are hand-written
-  alongside the code. When one does not answer the question, or contradicts what
-  you observe, read prose-reader's `src/`: it is typed, commented, and states
-  intent. Trust the source over the guide when they disagree, say so, and offer
-  to correct the guide upstream.
+- **Docs for the overview, source for the facts.** Its guides live in the
+  prose-reader repo under `apps/docs/src/content/docs/<package>/` (e.g.
+  `apps/docs/src/content/docs/archive-reader/`), published at
+  [doc.prose-reader.com](https://doc.prose-reader.com).
+  Read them first for the broad picture: what each package owns, what its
+  vocabulary means, how it is meant to be used. Then confirm every behaviour you
+  rely on in prose-reader's `src/` and its tests, whether writing code against
+  it or explaining it: the source is typed, commented, and states intent. The
+  guides are hand-written alongside the code and can be stale, wrong, or silent.
+- **oboku is prose-reader's first consumer and its debugging ground.** A guide
+  that disagrees with the source, or prose-reader behaviour that looks wrong
+  from oboku, is a finding, not something to route around. Say so, go with the
+  source, and fix it upstream with a prose-reader issue or PR, for the guide or
+  the code. When oboku cannot wait for the fix, link the upstream issue from the
+  workaround.
 - **Never reverse-engineer behaviour from `dist/`.** The published bundles are
   minified: they tell you what the code does and nothing about what it intends.
   Read `src/` in the repository instead — reaching for the built artifact when
@@ -135,6 +172,13 @@
 - A compiled hook starts with a `_c()` cache call, so it can only run inside a render. Test hooks through `renderHook` from `@testing-library/react`; calling a hook as a plain function no longer works even when all of its own hooks are mocked.
 - `packages/*` hold no React today and declare no `react` dependency, so nothing there is compiled. Web consumes them through the `source` condition, which puts `packages/*/src` in its own graph and does compile them; `apps/admin`, `apps/landing` and `apps/api` consume the built `dist`, and the shared library build in `config/vite.lib.ts` has no compiler. So React code added to a package would be compiled for web and uncompiled everywhere else — wire the compiler into `config/vite.lib.ts` at that point.
 
+### Web app tests: a real browser, one page per file
+
+- Every web app test runs in headless Chromium through Vitest browser mode (`apps/web/vitest.config.ts`). Use the browser's own APIs (storage, `crypto`, `ProgressEvent`, workers, popups) instead of stubbing them.
+- **A module is evaluated once per test file.** `vi.resetModules()` does nothing in a browser, so module-level state (a singleton client, a run-once promise) is shared by every test in the file. Declare mocks with a hoisted `vi.mock`, set each test's behaviour on `vi.hoisted` spies, and give a test that needs a module in its initial state a file of its own (see `auth.unconfigured.test.ts`).
+- **A mock factory must export every name its importers use.** The browser refuses to load a module whose import the mock lacks. Spreading `await importOriginal()` covers that, but deadlocks when the real module's imports lead back to another mocked module: return the full export list instead.
+- **Storage can outlive a test file.** localStorage, IndexedDB and OPFS can persist across the test files of a run, so a test clears the stores it relies on.
+
 ### React `memo` components
 
 - Always pass a named function to `memo()` instead of an anonymous arrow function (e.g. `memo(function MyComponent() { ... })` not `memo(() => { ... })`).
@@ -147,6 +191,20 @@
 - Place styled declarations near the top of the file (after imports) so they're easy to scan.
 - When `styled(Component)` strips a polymorphic prop (most commonly `Typography`'s `component`), cast the result back to `typeof Component` and add a one-line comment explaining the cast — see the `as` rule above.
 - Rationale: named styled components show up as themselves in React DevTools, eliminate repeated inline blocks, and let readers understand the rendered DOM without crawling through `sx` props.
+
+### Landing: `styled` and server components
+
+- `apps/landing` renders static content as server components. `styled()` only runs in client modules there: MUI's `styled` is `"use client"`, and emotion reads the theme from React context.
+- Keep a content component on the server and put its styled declarations in a sibling `X.styled.tsx` that starts with `"use client"`. Mark the component itself `"use client"` only when it needs interactivity, or when it only renders its props (`SectionHeading`).
+- From a server component, `sx` takes plain values only (no `theme => …` callbacks), and MUI's `component` prop takes `NextLink` from `features/common/NextLink` instead of `next/link`.
+
+### Docs: `apps/docs`
+
+- The user, self-hosting and development docs are the Markdown in `apps/docs/src/content/docs/`, built with Starlight and published to docs.oboku.me. Update them in the same change as the behaviour they document.
+- A page's title is its `title` frontmatter, and the body starts at `##`. A new page needs an entry in the `sidebar` of `apps/docs/astro.config.ts`.
+- Link another page by its path on the site (`/guides/directives`), not by its file. The build fails on a broken internal link or anchor.
+- A heading that ends in `{ #id }` keeps the anchor the GitBook site gave it, which published links point to. Keep the `{ #id }` when you reword the heading.
+- A published URL stays valid: when a page moves or is renamed, add a permanent redirect from its old path to `redirects` in `apps/docs/vercel.json`.
 
 ### React components: do not use `FC`
 

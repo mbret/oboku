@@ -1,4 +1,4 @@
-import { authUser } from "./lib/auth"
+import { requestDropboxProviderCredentials } from "./lib/auth"
 import type { ObokuPlugin } from "../types"
 import { useMutation } from "@tanstack/react-query"
 import { useConfig } from "../../config/useConfig"
@@ -9,20 +9,12 @@ export const useRefreshMetadata: ObokuPlugin<"dropbox">[`useRefreshMetadata`] =
 
     return useMutation({
       meta,
-      mutationFn: async () => {
-        const auth = await authUser({
-          requestPopup,
-          clientId: config?.DROPBOX_CLIENT_ID,
-        })
-
+      mutationFn: async function requestProviderCredentials() {
         return {
-          providerCredentials: {
-            accessToken: auth.getAccessToken(),
-            accessTokenExpiresAt: auth.getAccessTokenExpiresAt().toISOString(),
-            clientId: auth.getClientId(),
-            refreshToken: auth.getRefreshToken(),
-            codeVerifier: auth.getCodeVerifier(),
-          },
+          providerCredentials: await requestDropboxProviderCredentials({
+            requestPopup,
+            clientId: config?.DROPBOX_CLIENT_ID,
+          }),
         }
       },
     })

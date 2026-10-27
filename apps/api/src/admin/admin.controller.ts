@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -13,191 +14,76 @@ import {
   UseGuards,
 } from "@nestjs/common"
 import { JwtService } from "@nestjs/jwt"
-import type {
-  CreateAdminNotificationRequest,
-  CreateAdminNotificationResponse,
-  GetAdminNotificationsResponse,
-  GetAdminUsersResponse,
-  GetInstanceSettingsResponse,
-  GetServerSyncResponse,
-  GetTokenStatsResponse,
-  RevokeTokensRequest,
-  RevokeTokensResponse,
-  SendAdminEmailRequest,
-  SendAdminEmailResponse,
-  SetWebDavCredentialsResponse,
-  UpdateInstanceSettingsResponse,
-  UpdateServerSyncResponse,
-} from "@oboku/shared"
-import { createHash, timingSafeEqual } from "node:crypto"
-import { AuthService } from "src/auth/auth.service"
-import { AdminAuthGuard, AdminPublic } from "./admin.guard"
-import { AppConfigService } from "src/config/AppConfigService"
-import { InstanceConfigService } from "./instance-config/instance-config.service"
-import { SecretsService } from "src/config/SecretsService"
-import { MigrationService } from "src/migrations/migration.service"
-import { AdminCoversService } from "./admin-covers.service"
+import { AuthService } from "../auth/auth.service.js"
+import { ApiObokuErrors } from "../lib/api-oboku-errors.decorator.js"
+import { timingSafeStringEqual } from "../lib/crypto/timingSafeStringEqual.js"
+import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { InstanceConfigService } from "./instance-config/instance-config.service.js"
 import {
-  ArrayMaxSize,
-  IsArray,
-  IsBoolean,
-  IsEmail,
-  IsIn,
-  IsInt,
-  IsOptional,
-  IsString,
-  IsUrl,
-  Min,
-  MinLength,
-  ValidateIf,
-} from "class-validator"
-import { NotificationsService } from "src/notifications/notifications.service"
-import { AdminEmailService } from "./admin-email.service"
-import { AdminSecurityService } from "./admin-security.service"
-import { UserPostgresService } from "src/features/postgres/user-postgres.service"
+  formatAllowedHost,
+  parseAllowedHost,
+} from "../lib/http/allowedHosts.js"
+import { SecretsService } from "../config/SecretsService.js"
+import { MigrationService } from "../migrations/migration.service.js"
+import {
+  CollectionCoverKeysMigrationResponseDto,
+  RefreshTokenCreatedAtResetResponseDto,
+  ResourceIdMigrationResponseDto,
+  WebdavConnectorsMigrationResponseDto,
+} from "../migrations/migration.dto.js"
+import { AdminCoversService } from "./admin-covers.service.js"
+import { NotificationsService } from "../notifications/notifications.service.js"
+import {
+  AdminNotificationSummaryDto,
+  CreateAdminNotificationDto,
+} from "../notifications/notifications.dto.js"
+import { AdminEmailService } from "./admin-email.service.js"
+import { AdminSecurityService } from "./admin-security.service.js"
+import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { OkResponseDto } from "../lib/ok-response.dto.js"
+import {
+  AdminRefreshTokenDto,
+  AdminSignInDto,
+  AdminTokensResponseDto,
+  AdminUserSummaryDto,
+  CoverCleanupStatsResponseDto,
+  CreateServerSourceDto,
+  DeleteAllCoversResponseDto,
+  GenerateSignUpLinkDto,
+  InstanceSettingsResponseDto,
+  RevokeTokensDto,
+  RevokeTokensResponseDto,
+  SendAdminEmailDto,
+  SendAdminEmailResponseDto,
+  ServerSourceDto,
+  ServerSyncResponseDto,
+  SetWebDavCredentialsDto,
+  SignUpLinkResponseDto,
+  TokenStatsResponseDto,
+  UpdateInstanceSettingsDto,
+  UpdateServerSourceDto,
+  UpdateServerSyncDto,
+  UpdateServerSyncResponseDto,
+  WebDavCredentialsResponseDto,
+} from "./admin.dto.js"
 
-function timingSafeStringEqual(a: string, b: string): boolean {
-  const hashA = createHash("sha256").update(a).digest()
-  const hashB = createHash("sha256").update(b).digest()
+/** As `host` or `host:port`, without duplicates. */
+function normalizeAllowedHosts(entries: string[]) {
+  const allowedHosts = entries.map(function toAllowedHost(entry) {
+    const allowedHost = parseAllowedHost(entry)
 
-  return timingSafeEqual(hashA, hashB)
-}
+    if (!allowedHost) {
+      throw new BadRequestException(
+        `"${entry}" is not a host, a host:port or an http(s) URL`,
+      )
+    }
 
-class GenerateSignUpLinkDto {
-  @IsEmail()
-  email!: string
-
-  @IsOptional()
-  @IsUrl({
-    require_tld: false,
-    require_protocol: true,
+    return formatAllowedHost(allowedHost)
   })
-  appPublicUrl?: string
-}
 
-class CreateServerSourceDto {
-  @IsString()
-  @MinLength(1)
-  name!: string
-
-  @IsString()
-  @MinLength(1)
-  path!: string
-
-  @IsBoolean()
-  @IsOptional()
-  enabled?: boolean
-}
-
-class UpdateServerSourceDto {
-  @IsString()
-  @MinLength(1)
-  @IsOptional()
-  name?: string
-
-  @IsString()
-  @MinLength(1)
-  @IsOptional()
-  path?: string
-
-  @IsBoolean()
-  @IsOptional()
-  enabled?: boolean
-}
-
-class UpdateServerSyncDto {
-  @IsBoolean()
-  enabled!: boolean
-}
-
-class SetWebDavCredentialsDto {
-  @IsString()
-  @MinLength(1)
-  username!: string
-
-  @IsString()
-  @MinLength(8)
-  password!: string
-}
-
-class UpdateInstanceSettingsDto {
-  @IsBoolean()
-  @IsOptional()
-  showDisabledPlugins?: boolean
-
-  @IsInt()
-  @Min(1)
-  @IsOptional()
-  fileDownloadMaxSizeBytes?: number
-
-  @IsOptional()
-  @ValidateIf((_object, value) => value !== "")
-  @IsString()
-  @MinLength(1)
-  microsoftApplicationClientId?: string
-
-  @IsOptional()
-  @ValidateIf((_object, value) => value !== "")
-  @IsUrl({
-    require_tld: false,
-    require_protocol: true,
-  })
-  microsoftApplicationAuthority?: string
-}
-
-class AudienceDto {
-  @IsString()
-  @IsIn(["all", "emails"])
-  audienceType!: "all" | "emails"
-
-  @IsArray()
-  @ArrayMaxSize(1000)
-  @IsEmail({}, { each: true })
-  @IsOptional()
-  emails?: string[]
-}
-
-class CreateAdminNotificationDto
-  extends AudienceDto
-  implements CreateAdminNotificationRequest
-{
-  @IsString()
-  @MinLength(1)
-  title!: string
-
-  @IsString()
-  @IsOptional()
-  body?: string
-
-  @IsString()
-  @IsIn(["info", "success", "warning", "error"])
-  @IsOptional()
-  severity?: CreateAdminNotificationRequest["severity"]
-}
-
-class SendAdminEmailDto extends AudienceDto implements SendAdminEmailRequest {
-  @IsString()
-  @MinLength(1)
-  subject!: string
-
-  @IsString()
-  @MinLength(1)
-  body!: string
-}
-
-class RevokeTokensDto extends AudienceDto implements RevokeTokensRequest {}
-
-class SigninDto {
-  @IsString()
-  login!: string
-
-  @IsString()
-  password!: string
-}
-
-class RefreshDto {
-  @IsString()
-  refresh_token!: string
+  return [...new Set(allowedHosts)]
 }
 
 /**
@@ -243,7 +129,7 @@ export class AdminController {
 
   @AdminPublic()
   @Post("signin")
-  async signin(@Body() body: SigninDto) {
+  async signIn(@Body() body: AdminSignInDto): Promise<AdminTokensResponseDto> {
     const expectedLogin = this.appConfig.ADMIN_LOGIN
     const expectedPassword = this.appConfig.ADMIN_PASSWORD
 
@@ -265,7 +151,9 @@ export class AdminController {
 
   @AdminPublic()
   @Post("refresh")
-  async refresh(@Body() body: RefreshDto) {
+  async refreshToken(
+    @Body() body: AdminRefreshTokenDto,
+  ): Promise<AdminTokensResponseDto> {
     try {
       const payload = await this.jwtService.verifyAsync(body.refresh_token, {
         publicKey: await this.secretsService.getJwtPublicKey(),
@@ -283,61 +171,64 @@ export class AdminController {
   }
 
   @Post("migrate-webdav-connectors")
-  async migrateWebdavConnectors() {
+  async migrateWebdavConnectors(): Promise<WebdavConnectorsMigrationResponseDto> {
     return this.migrationService.migrateWebdavConnectorsToConnectors()
   }
 
   @Post("migrate-webdav-resource-ids")
-  async migrateWebdavResourceIds() {
+  async migrateWebdavResourceIds(): Promise<ResourceIdMigrationResponseDto> {
     return this.migrationService.migrateWebdavResourceIds()
   }
 
   @Post("migrate-resource-id-to-link-data")
-  async migrateResourceIdToLinkData() {
+  async migrateResourceIdToLinkData(): Promise<ResourceIdMigrationResponseDto> {
     return this.migrationService.migrateResourceIdToLinkData()
   }
 
   @Post("migrate-collection-cover-keys")
-  async migrateCollectionCoverKeys() {
+  async migrateCollectionCoverKeys(): Promise<CollectionCoverKeysMigrationResponseDto> {
     return this.migrationService.migrateLegacyCollectionCoverKeys()
   }
 
   @Post("reset-refresh-token-created-at")
-  async resetRefreshTokenCreatedAt() {
+  async resetRefreshTokenCreatedAt(): Promise<RefreshTokenCreatedAtResetResponseDto> {
     return this.migrationService.resetRefreshTokenCreatedAt()
   }
 
   @Get("covers")
-  async getCoversCleanupStats() {
+  async getCoversCleanupStats(): Promise<CoverCleanupStatsResponseDto> {
     return this.adminCoversService.getCleanupStats()
   }
 
   @Post("covers/delete-all")
-  async deleteAllCovers() {
+  async deleteAllCovers(): Promise<DeleteAllCoversResponseDto> {
     return this.adminCoversService.deleteAllCovers()
   }
 
+  @ApiObokuErrors()
   @Post("signup-links")
-  async generateSignUpLink(@Body() body: GenerateSignUpLinkDto) {
+  async generateSignUpLink(
+    @Body() body: GenerateSignUpLinkDto,
+  ): Promise<SignUpLinkResponseDto> {
     return {
       signUpLink: await this.authService.generateSignUpLink(body),
     }
   }
 
   @Get("notifications")
-  async getNotifications(): Promise<GetAdminNotificationsResponse> {
+  async listNotifications(): Promise<AdminNotificationSummaryDto[]> {
     return this.notificationService.getAdminNotifications()
   }
 
   @Post("notifications")
   async createNotification(
     @Body() body: CreateAdminNotificationDto,
-  ): Promise<CreateAdminNotificationResponse> {
+  ): Promise<AdminNotificationSummaryDto> {
     return this.notificationService.sendAdminBroadcast(body)
   }
 
   @Get("users")
-  async getUsers(): Promise<GetAdminUsersResponse> {
+  async listUsers(): Promise<AdminUserSummaryDto[]> {
     const users = await this.userPostgresService.getAllUsers()
 
     return users.map((user) => ({
@@ -354,12 +245,12 @@ export class AdminController {
   @HttpCode(202)
   async sendEmail(
     @Body() body: SendAdminEmailDto,
-  ): Promise<SendAdminEmailResponse> {
+  ): Promise<SendAdminEmailResponseDto> {
     return this.adminEmailService.sendBroadcast(body)
   }
 
   @Get("tokens/stats")
-  async getTokenStats(): Promise<GetTokenStatsResponse> {
+  async getTokenStats(): Promise<TokenStatsResponseDto> {
     return this.adminSecurityService.getTokenStats()
   }
 
@@ -367,17 +258,19 @@ export class AdminController {
   @HttpCode(200)
   async revokeTokens(
     @Body() body: RevokeTokensDto,
-  ): Promise<RevokeTokensResponse> {
+  ): Promise<RevokeTokensResponseDto> {
     return this.adminSecurityService.revokeTokens(body)
   }
 
   @Get("settings")
-  getSettings(): GetInstanceSettingsResponse {
+  getSettings(): InstanceSettingsResponseDto {
     const config = this.instanceConfigService.getConfig().value
 
     return {
       showDisabledPlugins: config.showDisabledPlugins,
       fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
+      allowPrivateNetworkRequests: config.allowPrivateNetworkRequests,
+      privateNetworkAllowedHosts: config.privateNetworkAllowedHosts,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
     }
@@ -386,17 +279,26 @@ export class AdminController {
   @Patch("settings")
   async updateSettings(
     @Body() body: UpdateInstanceSettingsDto,
-  ): Promise<UpdateInstanceSettingsResponse> {
-    await this.instanceConfigService.updateConfig((prev) => ({
-      ...prev,
-      ...body,
-    }))
+  ): Promise<EmptyResponseDto> {
+    const privateNetworkAllowedHosts =
+      body.privateNetworkAllowedHosts &&
+      normalizeAllowedHosts(body.privateNetworkAllowedHosts)
+
+    await this.instanceConfigService.updateConfig(
+      function withUpdatedSettings(config) {
+        return {
+          ...config,
+          ...body,
+          ...(privateNetworkAllowedHosts && { privateNetworkAllowedHosts }),
+        }
+      },
+    )
 
     return {}
   }
 
   @Get("server-sync")
-  getServerSync(): GetServerSyncResponse {
+  getServerSync(): ServerSyncResponseDto {
     const config = this.instanceConfigService.getConfig().value
     const { credentials } = config.serverSync
 
@@ -412,7 +314,7 @@ export class AdminController {
   @Patch("server-sync")
   async updateServerSync(
     @Body() body: UpdateServerSyncDto,
-  ): Promise<UpdateServerSyncResponse> {
+  ): Promise<UpdateServerSyncResponseDto> {
     await this.instanceConfigService.updateConfig((config) => ({
       ...config,
       serverSync: { ...config.serverSync, enabled: body.enabled },
@@ -424,7 +326,7 @@ export class AdminController {
   @Put("server-sync/credentials")
   async setWebDavCredentials(
     @Body() body: SetWebDavCredentialsDto,
-  ): Promise<SetWebDavCredentialsResponse> {
+  ): Promise<WebDavCredentialsResponseDto> {
     await this.instanceConfigService.setWebDavCredentials({
       username: body.username,
       password: body.password,
@@ -434,12 +336,14 @@ export class AdminController {
   }
 
   @Get("server-sync/sources")
-  async listServerSources() {
+  async listServerSources(): Promise<ServerSourceDto[]> {
     return this.instanceConfigService.getServerSources()
   }
 
   @Post("server-sync/sources")
-  async createServerSource(@Body() body: CreateServerSourceDto) {
+  async createServerSource(
+    @Body() body: CreateServerSourceDto,
+  ): Promise<ServerSourceDto> {
     return this.instanceConfigService.createServerSource(body)
   }
 
@@ -447,19 +351,19 @@ export class AdminController {
   async updateServerSource(
     @Param("id") id: string,
     @Body() body: UpdateServerSourceDto,
-  ) {
+  ): Promise<ServerSourceDto> {
     return this.instanceConfigService.updateServerSource(id, body)
   }
 
   @Delete("server-sync/sources/:id")
-  async deleteServerSource(@Param("id") id: string) {
+  async deleteServerSource(@Param("id") id: string): Promise<OkResponseDto> {
     await this.instanceConfigService.deleteServerSource(id)
 
     return { ok: true }
   }
 
   @Get("session")
-  async getSession() {
+  async getSession(): Promise<OkResponseDto> {
     return {
       ok: true,
     }

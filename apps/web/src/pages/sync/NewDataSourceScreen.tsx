@@ -1,7 +1,6 @@
-import { Container, Stack } from "@mui/material"
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
-import { Navigate, useParams } from "react-router"
+import { Navigate, type PathParam, useParams } from "react-router"
 import { plugins } from "../../dataSources"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
@@ -9,12 +8,15 @@ import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { notify } from "../../notifications/toasts"
 import type { DataSourceSubmitPayload } from "../../plugins/types"
 import { Page } from "../../common/Page"
+import { PageContainer } from "../../common/PageContainer"
 
 export const NewDataSourceScreen = memo(() => {
-  const { id } = useParams<{ id: string }>()
+  const { type } = useParams<PathParam<typeof ROUTES.SYNC_NEW_DATASOURCES>>()
   const { goBack } = useSafeGoBack()
-  const plugin = plugins.find((p) => p.type.toLowerCase() === id?.toLowerCase())
-  const PluginForm = plugin?.DataSourceCreateForm
+  const plugin = plugins.find(
+    (p) => p.type.toLowerCase() === type?.toLowerCase(),
+  )
+  const PluginForm = plugin?.DataSourceForm
   const { mutate: createDataSource } = useCreateDataSource()
 
   const handleSubmit = (payload: DataSourceSubmitPayload) => {
@@ -44,16 +46,11 @@ export const NewDataSourceScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={`New ${plugin.name} data source`} />
-      <Container maxWidth="md">
-        <Stack
-          sx={{
-            py: 2,
-            gap: 2,
-          }}
-        >
-          {PluginForm && <PluginForm onSubmit={handleSubmit} />}
-        </Stack>
-      </Container>
+      <PageContainer disableGutters>
+        {PluginForm && (
+          <PluginForm onSubmit={handleSubmit} submitLabel="Confirm" />
+        )}
+      </PageContainer>
     </Page>
   )
 })

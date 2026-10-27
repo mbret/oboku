@@ -3,6 +3,7 @@ import type {
   ArchiveMetadataPatch,
   WebArchiveUpdateAction,
 } from "@oboku/archive-metadata/web"
+import { groupBy } from "@oboku/shared"
 import type { FileInspection } from "../useFileInspection"
 import type {
   MetadataFixerFormValues,
@@ -11,6 +12,7 @@ import type {
 import { canonicalIdentifier } from "../metadata/identifiers/canonicalIdentifier"
 import { resolveMetadataTargets } from "../metadata/identifiers/containers"
 import {
+  identifierRowKey,
   identifierRowScheme,
   resolveMetadataFixerFormValues,
   toIdentifierRow,
@@ -51,15 +53,54 @@ const toPatchIdentifier = ({
 })
 
 /**
+ * The identifiers the edit no longer stands for, keyed as rows.
+ *
+ * Each scheme's seeded rows are matched against the edited ones as a multiset:
+ * the values still present pair up first, whatever is left of each side pairs
+ * up in order, and a seeded row the edited list has none left to stand for is
+ * dropped. Pairing an edited row with a seeded row of its scheme rather than
+ * its value is what makes editing a value an edit: the row still stands for
+ * the identifier it was seeded from, so its element keeps its `id` and the
+ * refinements pointing at it instead of being deleted and rebuilt.
+ */
+const droppedIdentifierRowKeys = (
+  seeded: ReadonlyArray<MetadataIdentifierFormValue>,
+  edited: ReadonlyArray<MetadataIdentifierFormValue>,
+): Set<string> => {
+  const editedBySchemeGroup = groupBy(edited, identifierRowScheme)
+  const dropped = new Set<string>()
+
+  for (const [scheme, seededGroup] of Object.entries(
+    groupBy(seeded, identifierRowScheme),
+  )) {
+    const unpairedEdited = [...(editedBySchemeGroup[scheme] ?? [])]
+    const unpairedSeeded: MetadataIdentifierFormValue[] = []
+
+    for (const identifier of seededGroup) {
+      const paired = unpairedEdited.findIndex(function hasSameValue({ value }) {
+        return value === identifier.value
+      })
+
+      if (paired === -1) unpairedSeeded.push(identifier)
+      else unpairedEdited.splice(paired, 1)
+    }
+
+    for (const surplus of unpairedSeeded.slice(unpairedEdited.length)) {
+      dropped.add(identifierRowKey(surplus))
+    }
+  }
+
+  return dropped
+}
+
+/**
  * What the archive should carry after the edit, and what the edit dropped.
  *
- * The archive's own identifiers are the baseline, and one is dropped when the
- * edited list has no row on its scheme any more. Matching on the scheme rather
- * than the value is what makes editing a value an edit: the row still stands
- * for the identifier it was seeded from, so its element keeps its `id` and the
- * refinements pointing at it instead of being deleted and rebuilt. It also
- * keeps the one row an ISBN and the `GTIN` of the same value collapse into from
- * dropping either of them.
+ * The rows the form was seeded with are the baseline, and one is dropped when
+ * {@link droppedIdentifierRowKeys} finds the edited list has no row left to
+ * stand for it. Dropping a row names every identifier the reader reported for
+ * it, so the one row an ISBN and the `GTIN` of the same value collapse into
+ * takes both containers' copies with it.
  *
  * Nothing else is named, so an identifier the reader never reported — which no
  * row could stand for and no one here knows about — is left alone.
@@ -70,18 +111,19 @@ const toPatchIdentifier = ({
  */
 const identifierPatch = (
   inspection: FileInspection,
-  rows: ReadonlyArray<MetadataIdentifierFormValue>,
+  seeded: ReadonlyArray<MetadataIdentifierFormValue>,
+  edited: ReadonlyArray<MetadataIdentifierFormValue>,
 ): Pick<ArchiveMetadataPatch, "identifiers" | "removedIdentifiers"> => {
-  const kept = new Set(rows.map(identifierRowScheme))
+  const dropped = droppedIdentifierRowKeys(seeded, edited)
   const removedIdentifiers = (
     inspection.resolvedArchive.metadata.identifiers ?? []
   ).flatMap(function whenNoRowStandsForIt(resolved) {
-    return kept.has(identifierRowScheme(toIdentifierRow(resolved)))
-      ? []
-      : [{ scheme: resolved.scheme, value: resolved.value }]
+    return dropped.has(identifierRowKey(toIdentifierRow(resolved)))
+      ? [{ scheme: resolved.scheme, value: resolved.value }]
+      : []
   })
 
-  return { identifiers: rows.map(toPatchIdentifier), removedIdentifiers }
+  return { identifiers: edited.map(toPatchIdentifier), removedIdentifiers }
 }
 
 const resolveMetadataPatchAction = (
@@ -100,7 +142,7 @@ const resolveMetadataPatchAction = (
 
   return {
     kind: "patch-metadata",
-    patch: identifierPatch(inspection, identifiers),
+    patch: identifierPatch(inspection, resolved.identifiers, identifiers),
     targets,
   }
 }

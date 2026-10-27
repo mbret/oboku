@@ -6,10 +6,11 @@ import {
 } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
-import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { formatDuration } from "src/lib/utils"
-import { CoversService } from "./covers.service"
+import { CouchService } from "../couch/couch.service.js"
+import { findAll } from "../lib/couch/dbHelpers.js"
+import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
+import { formatDuration } from "../lib/utils.js"
+import { CoversService } from "./covers.service.js"
 
 @Injectable()
 export class CoversCleanupService {
@@ -39,27 +40,25 @@ export class CoversCleanupService {
           Pick<CollectionDocType, "metadata">
       >(userDb.dbName)
 
-      const books = await userDbInstance.find({
+      const books = await findAll(userDbInstance, {
         selector: {
           rx_model: "book",
         },
         fields: ["_id"],
-        limit: 99999,
       })
 
-      for (const book of books.docs) {
+      for (const book of books) {
         keepableCoverKeys.add(getBookCoverKey(userDb.userNameHex, book._id))
       }
 
-      const collections = await userDbInstance.find({
+      const collections = await findAll(userDbInstance, {
         selector: {
           rx_model: "obokucollection",
         },
         fields: ["_id", "metadata"],
-        limit: 99999,
       })
 
-      for (const collection of collections.docs) {
+      for (const collection of collections) {
         const hasDedicatedCover = !!collection.metadata?.some(
           (metadata) => metadata.cover?.uri,
         )

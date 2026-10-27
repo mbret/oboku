@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { getCollectionComputedMetadata } from "../../collections/getCollectionComputedMetadata"
 import { useCollections } from "../../collections/useCollections"
 import { useBook } from "../states"
@@ -17,12 +17,12 @@ export const CollectionsPane = ({ bookId }: { bookId?: string }) => {
       label="Member of collections"
       values={collections?.map((item) => ({
         label: getCollectionComputedMetadata(item).title,
-        to: ROUTES.COLLECTION_DETAILS.replace(":id", item._id),
+        to: generatePath(ROUTES.COLLECTION_DETAILS, { id: item._id }),
       }))}
       emptyLabel="None yet"
       onEditClick={() => {
         if (book?._id) {
-          navigate(ROUTES.BOOK_COLLECTIONS.replace(":id", book._id))
+          navigate(generatePath(ROUTES.BOOK_COLLECTIONS, { id: book._id }))
         }
       }}
     />

@@ -1,0 +1,31 @@
+name: deploy-docker
+
+on:
+  workflow_call:
+    inputs:
+      sha:
+        description: 'Commit to build the images from'
+        required: true
+        type: string
+      tags:
+        description: 'Tags to push every image under, one per line (e.g. latest)'
+        required: true
+        type: string
+    secrets:
+      DOCKERHUB_TOKEN:
+        required: true
+
+jobs:
+  deploy:
+    name: 'Deploy ${{ matrix.target }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        target: [api, couchdb, web, admin]
+    uses: ./.github/workflows/_deploy-docker-image.yml
+    with:
+      sha: ${{ inputs.sha }}
+      tags: ${{ inputs.tags }}
+      target: ${{ matrix.target }}
+    secrets:
+      DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}

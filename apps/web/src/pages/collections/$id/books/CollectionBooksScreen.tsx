@@ -1,5 +1,5 @@
 import { memo } from "react"
-import { useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useMutation } from "@tanstack/react-query"
 import { useSignalValue } from "reactjrx"
 import { BookSelectionView } from "../../../../books/BookSelectionView"
@@ -10,7 +10,7 @@ import {
 import { useCollection } from "../../../../collections/useCollection"
 import { useCollectionComputedMetadata } from "../../../../collections/useCollectionComputedMetadata"
 import { useIsCollectionProtected } from "../../../../collections/useIsCollectionProtected"
-import { notify, notifyError } from "../../../../notifications/toasts"
+import { notify } from "../../../../notifications/toasts"
 import { NotFoundPage } from "../../../../common/NotFoundPage"
 import { Page } from "../../../../common/Page"
 import { TopBarNavigation } from "../../../../navigation/TopBarNavigation"
@@ -19,13 +19,13 @@ import {
   selectIsLibraryUnlocked,
 } from "../../../../library/books/states"
 import { ProtectedContentGuard } from "../../../../library/ProtectedContentGuard"
+import type { ROUTES } from "../../../../navigation/routes"
 
-type ScreenParams = {
-  id: string
-}
+const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
-  const { id: collectionId } = useParams<ScreenParams>()
+  const { id: collectionId } =
+    useParams<PathParam<typeof ROUTES.COLLECTION_BOOKS>>()
   const { data: collection } = useCollection({ id: collectionId })
   const metadata = useCollectionComputedMetadata(collection)
   const { data: isCollectionProtected } = useIsCollectionProtected(collection)
@@ -33,9 +33,12 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook()
-  const { mutateAsync: removeCollectionFromBook } =
-    useRemoveCollectionFromBook()
+  const { mutateAsync: addCollectionToBook } = useAddCollectionToBook(
+    withoutGlobalErrorToast,
+  )
+  const { mutateAsync: removeCollectionFromBook } = useRemoveCollectionFromBook(
+    withoutGlobalErrorToast,
+  )
 
   const { mutate: save, isPending: isSaving } = useMutation({
     mutationFn: async ({
@@ -58,7 +61,6 @@ export const CollectionBooksScreen = memo(function CollectionBooksScreen() {
     onSuccess: () => {
       notify("actionSuccess")
     },
-    onError: notifyError,
   })
 
   if (!collectionId || collection === null) return <NotFoundPage />

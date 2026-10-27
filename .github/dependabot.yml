@@ -6,3 +6,21 @@ updates:
       interval: weekly
       time: '01:00'
     open-pull-requests-limit: 5
+    ignore:
+      # Stays on v9 until @semantic-release/release-notes-generator renders
+      # with conventional-changelog-writer 9: see release.config.mjs.
+      - dependency-name: conventional-changelog-conventionalcommits
+        update-types: ['version-update:semver-major']
+      # Follows the major of the Node runtime pinned in .nvmrc, the CI and the
+      # dockerfile, not the latest Node release.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major']
+      # Has to equal the Dexie that rxdb pins, which
+      # scripts/check-dexie-version.mjs enforces on install, so it only moves
+      # together with rxdb.
+      - dependency-name: dexie
+  - package-ecosystem: github-actions
+    directory: '/'
+    schedule:
+      interval: weekly
+      time: '01:00'

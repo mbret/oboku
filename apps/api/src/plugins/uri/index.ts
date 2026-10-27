@@ -1,10 +1,7 @@
-import {
-  type DataSourcePlugin,
-  MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { findCandidates } from "../helpers.js"
 import axios from "axios"
-import { getHttpsAgent } from "src/lib/http/httpsAgent"
+import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
 
 const URI_TYPE = "URI"
 
@@ -24,31 +21,18 @@ function resolveUrl(link: { data: { url: string } }): string {
 
 export const dataSource: DataSourcePlugin<"URI"> = {
   type: URI_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: { type: URI_TYPE, data: { url: item.linkData.url } },
-    })
-    return {
-      links: links.map((link) => ({
-        ...link,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: URI_TYPE,
-        linkData: { url: item.linkData.url },
-      },
-    })
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: URI_TYPE,
+      data: { url: item.linkData.url },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: URI_TYPE,
+      data: { url: item.linkData.url },
+    }),
+  }),
   getFolderMetadata: async ({ link }) => {
     const url = resolveUrl(link)
 
@@ -69,7 +53,7 @@ export const dataSource: DataSourcePlugin<"URI"> = {
 
     const response = await axios.get(url, {
       responseType: "stream",
-      httpsAgent: getHttpsAgent(allowSelfSigned),
+      ...getUserAddressRequestOptions({ allowSelfSigned }),
     })
 
     return {

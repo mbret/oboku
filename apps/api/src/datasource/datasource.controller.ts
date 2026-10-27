@@ -6,11 +6,14 @@ import {
   OnModuleInit,
   Post,
 } from "@nestjs/common"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
-import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService"
-import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { DataSourceService } from "./datasource.service"
-import type { SyncDataSourceRequest } from "@oboku/shared"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { DataSourceService } from "./datasource.service.js"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { SyncReportDto } from "../lib/sync/sync-report.dto.js"
+import { SyncDataSourceDto } from "./datasource.dto.js"
 
 @Controller("datasources")
 export class DataSourcesController implements OnModuleInit {
@@ -21,29 +24,32 @@ export class DataSourcesController implements OnModuleInit {
     private readonly taskQueueService: InMemoryTaskQueueService,
     private readonly syncReportPostgresService: SyncReportPostgresService,
     private readonly datasourceService: DataSourceService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.SYNC_QUEUE_NAME,
-      maxConcurrent: 3,
+      maxConcurrent: this.appConfig.QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })
   }
 
   @Get("sync-reports")
-  async signin(@WithAuthUser() user: AuthUser) {
+  async listSyncReports(
+    @WithAuthUser() user: AuthUser,
+  ): Promise<SyncReportDto[]> {
     return await this.syncReportPostgresService.getAllSyncReportsByUser({
       userName: user.email,
     })
   }
 
   @Post("sync")
-  async syncDataSource(
-    @Body() { dataSourceId, providerCredentials }: SyncDataSourceRequest,
+  async sync(
+    @Body() { dataSourceId, providerCredentials }: SyncDataSourceDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log(`syncDataSource ${dataSourceId}`)
 
     this.taskQueueService.enqueue(

@@ -1,315 +1,76 @@
-"use client"
-
-import {
-  Box,
-  Button,
-  Chip,
-  Container,
-  Link,
-  Paper,
-  Stack,
-  styled,
-  Typography,
-  useTheme,
-} from "@mui/material"
-import image2 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
-import image1 from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
-import { links } from "@oboku/shared"
-import { AppHighlightSection } from "./AppHighlightSection"
-import { landingSubtitle } from "./content"
+import { Box, Container, Typography } from "@mui/material"
+import comicReaderScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
+import libraryScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
+import { GetStartedActions } from "../common/GetStartedActions"
+import { GetStartedBanner } from "../common/GetStartedBanner"
+import { GlowHeroSection } from "../common/GlowHeroSection"
+import { PhoneScreenshots } from "../common/PhoneScreenshots"
+import { landingDescription, landingTagline } from "./content"
+import { FaqSection } from "./FaqSection"
+import { FeatureOverviewSection } from "./FeatureOverviewSection"
+import { HeroLayoutBox, HeroTextStack } from "./HomeContent.styled"
+import { HowItWorksSection } from "./HowItWorksSection"
 import { LastWords } from "./LastWords"
-import Image from "next/image"
 
-const HighlightImage = styled(Image)(({ theme }) => ({
-  width: "100%",
-  maxWidth: "100%",
-  height: "auto",
-  [theme.breakpoints.down("sm")]: {
-    width: "auto",
-    maxHeight: "50vh",
-    margin: "0 auto",
-  },
-}))
-
-export const HomeContent = () => {
-  const theme = useTheme()
-
+export function HomeContent() {
   return (
-    <Box
-      style={{
-        display: "flex",
-        flex: 1,
-        flexFlow: "column",
-        alignItems: "center",
-      }}
-      sx={{
-        pt: [12, 16],
-      }}
-    >
-      <Container
-        className="App"
-        style={{
-          display: "flex",
-          flex: 1,
-          flexFlow: "column",
-          alignItems: "center",
-        }}
-      >
-        <Box
-          component="header"
-          sx={{
-            mb: 2,
-          }}
-        >
-          <Typography variant="h2" component="h1">
-            oboku
-          </Typography>
-        </Box>
-        <div
-          style={{
-            textAlign: "center",
-            display: "flex",
-            alignItems: "center",
-            flexFlow: "column",
-            maxWidth: 600,
-          }}
-        >
-          <Typography
-            variant="subtitle1"
-            style={{ fontWeight: "normal", paddingBottom: theme.spacing(1) }}
-          >
-            {landingSubtitle}
-          </Typography>
-          <div style={{ paddingBottom: theme.spacing(3) }} />
-          <Box
-            sx={{
-              width: "100%",
-              maxWidth: 320,
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-            }}
-          >
-            <Box
-              sx={{
-                width: "100%",
-                maxWidth: 300,
-              }}
-            >
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 2,
-                  flexDirection: "column",
-                  width: "100%",
-                }}
-              >
-                <Button
-                  variant="contained"
-                  size="large"
-                  href={links.app}
-                  target="_blank"
-                >
-                  Start using oboku
-                </Button>
-                <Button
-                  // variant="outlined"
-                  size="large"
-                  href="https://docs.oboku.me/self-hosting/installation"
-                  target="_blank"
-                >
-                  or Self host
-                </Button>
-              </Box>
-            </Box>
-          </Box>
-        </div>
-      </Container>
-      <Stack
-        sx={{
-          mt: [4, 6],
-          gap: 2,
-          width: "100%",
-          maxWidth: 632,
-          px: 2,
-          alignItems: ["center", "stretch"],
-          flexDirection: ["column", "row"],
-        }}
-      >
-        <Paper
-          elevation={4}
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            width: {
-              xs: "fit-content",
-              sm: "auto",
-            },
-            maxWidth: "100%",
-            flex: {
-              xs: "0 0 auto",
-              sm: 1,
-            },
-            minWidth: 0,
-            overflow: "hidden",
-            borderRadius: 2,
-          }}
-        >
-          <HighlightImage
-            alt="oboku library view showing a collection of books on mobile"
-            src={image1}
-          />
-        </Paper>
-        <Paper
-          elevation={4}
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-            width: {
-              xs: "fit-content",
-              sm: "auto",
-            },
-            maxWidth: "100%",
-            flex: {
-              xs: "0 0 auto",
-              sm: 1,
-            },
-            minWidth: 0,
-            overflow: "hidden",
-            borderRadius: 2,
-          }}
-        >
-          <HighlightImage
-            alt="oboku book reader interface on mobile"
-            src={image2}
-          />
-        </Paper>
-      </Stack>
-      <Box
-        sx={{
-          mt: [6, 7],
-          width: "100%",
-        }}
-      >
+    <Box component="main">
+      <GlowHeroSection>
         <Container>
-          <Stack
-            sx={{
-              gap: 2,
-            }}
-          >
-            <Typography variant="h4" component="h2">
-              What is oboku?
-            </Typography>
-            <Typography>
-              Oboku is a cloud or self-hostable book reader built to keep your
-              library under your control. What differentiates it from other
-              solutions is the range of supported contents and the possibility
-              to synchronize from external locations.
-            </Typography>
-            <Stack
-              sx={{
-                gap: 1,
-              }}
-            >
-              <Typography variant="h5" component="h3">
-                Synchronize from anywhere
-              </Typography>
+          <HeroLayoutBox>
+            <HeroTextStack>
               <Typography
-                sx={{
-                  color: "text.secondary",
-                }}
-              >
-                Access and synchronize your library from your own server, your
-                device, or external providers.
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
+                component="h1"
+                sx={{ display: "flex", flexDirection: "column", gap: 1 }}
               >
                 <Typography
-                  variant="body2"
-                  sx={{
-                    color: "text.secondary",
-                  }}
+                  variant="h5"
+                  component="span"
+                  sx={{ color: "primary.main", fontWeight: 700 }}
                 >
-                  Examples:
-                </Typography>
-                <Chip label="Google Drive" size="small" variant="outlined" />
-                <Chip label="Dropbox" size="small" variant="outlined" />
-                <Chip label="Synology" size="small" variant="outlined" />
-                <Chip label="WebDAV" size="small" variant="outlined" />
-              </Box>
-            </Stack>
-            <Stack
-              sx={{
-                gap: 1,
-              }}
-            >
-              <Typography variant="h5" component="h3">
-                Supported formats
-              </Typography>
-              <Typography
-                sx={{
-                  color: "text.secondary",
-                }}
-              >
-                Read ebooks, audiobooks, comics and various types of documents
-                in one place.
-              </Typography>
-              <Box
-                sx={{
-                  display: "flex",
-                  gap: 1,
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
+                  oboku
+                </Typography>{" "}
                 <Typography
-                  variant="body2"
+                  variant="h3"
+                  component="span"
                   sx={{
-                    color: "text.secondary",
+                    fontWeight: 700,
+                    fontSize: { xs: "2.25rem", sm: "3rem" },
                   }}
                 >
-                  Examples:
+                  {landingTagline}
                 </Typography>
-                <Chip label=".epub" size="small" variant="outlined" />
-                <Chip label=".cbz" size="small" variant="outlined" />
-                <Chip label=".cbr" size="small" variant="outlined" />
-                <Chip label=".pdf" size="small" variant="outlined" />
-              </Box>
-              <Typography
-                variant="body2"
-                sx={{
-                  color: "text.secondary",
-                }}
-              >
-                Oboku uses{" "}
-                <Link
-                  href="https://prose-reader.com/"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  Prose
-                </Link>{" "}
-                under the hood for its reader.
               </Typography>
-            </Stack>
-          </Stack>
+              <Typography
+                variant="h6"
+                component="p"
+                sx={{ fontWeight: 400, color: "text.secondary", maxWidth: 560 }}
+              >
+                {landingDescription}
+              </Typography>
+              <GetStartedActions />
+            </HeroTextStack>
+            <PhoneScreenshots
+              primary={{
+                src: libraryScreenshot,
+                alt: "oboku library view showing a collection of books on mobile",
+              }}
+              secondary={{
+                src: comicReaderScreenshot,
+                alt: "oboku book reader interface on mobile",
+              }}
+              preload
+            />
+          </HeroLayoutBox>
         </Container>
-      </Box>
-      <Box
-        sx={{
-          mt: [4, 5],
-          mb: [8, 8],
-        }}
-      >
-        <AppHighlightSection />
-      </Box>
+      </GlowHeroSection>
+      <HowItWorksSection />
+      <FeatureOverviewSection />
+      <FaqSection />
       <LastWords />
+      <Container sx={{ pt: { xs: 8, md: 12 } }}>
+        <GetStartedBanner />
+      </Container>
     </Box>
   )
 }

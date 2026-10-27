@@ -1,13 +1,12 @@
 import type { NextFunction, Request, Response } from "express"
-import { AppConfigService } from "../config/AppConfigService"
-import { TrustedOriginsService } from "../config/trusted-origin.service"
-import { createCsrfOriginMiddleware } from "./csrf-origin.middleware"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { TrustedOriginsService } from "../config/trusted-origin.service.js"
+import { createCsrfOriginMiddleware } from "./csrf-origin.middleware.js"
 
 const trustedOrigins = new TrustedOriginsService(
   // Config test double limited to what TrustedOriginsService reads.
   {
     APP_PUBLIC_URL: "https://oboku.example.com",
-    API_CORS_TRUSTED_ORIGINS: [],
   } as unknown as AppConfigService,
 )
 
@@ -21,9 +20,9 @@ const runMiddleware = ({
   cookies?: Record<string, string>
 }) => {
   const middleware = createCsrfOriginMiddleware(trustedOrigins)
-  const statusJson = jest.fn()
-  const status = jest.fn().mockReturnValue({ json: statusJson })
-  const next = jest.fn()
+  const statusJson = vi.fn()
+  const status = vi.fn().mockReturnValue({ json: statusJson })
+  const next = vi.fn()
 
   middleware(
     // Request/response test doubles limited to what the middleware reads.

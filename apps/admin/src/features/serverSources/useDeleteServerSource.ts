@@ -1,30 +1,18 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { notifications } from "@mantine/notifications"
-import { config } from "@/config"
-import { authenticatedFetch } from "../authenticatedFetch"
-import { readResponseErrorMessage } from "../readResponseErrorMessage"
+import {
+  type AdminDeleteServerSourceData,
+  adminDeleteServerSource,
+} from "@oboku/shared"
+import { apiClient } from "../apiClient"
 import { serverSourcesQueryKey } from "./useServerSources"
 
 export const useDeleteServerSource = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: async ({ id }: { id: string }): Promise<void> => {
-      const response = await authenticatedFetch(
-        `${config.apiUrl}/admin/server-sync/sources/${id}`,
-        {
-          method: "DELETE",
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error(
-          await readResponseErrorMessage(
-            response,
-            "Could not delete server source",
-          ),
-        )
-      }
+    mutationFn: async (path: AdminDeleteServerSourceData["path"]) => {
+      await adminDeleteServerSource({ client: apiClient, path })
     },
     onSuccess: async () => {
       await queryClient.invalidateQueries({

@@ -4,13 +4,13 @@ import path from "node:path"
 import { ConflictException } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
 import { filter, firstValueFrom } from "rxjs"
-import { AppConfigService } from "src/config/AppConfigService"
+import { AppConfigService } from "../../config/AppConfigService.js"
 import {
   DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
   InstanceConfigService,
-} from "./instance-config.service"
-import { EnvironmentVariables } from "src/config/types"
-import { ServerSourcesService } from "./server-sources.service"
+} from "./instance-config.service.js"
+import { EnvironmentVariables } from "../../config/types.js"
+import { ServerSourcesService } from "./server-sources.service.js"
 
 describe("InstanceConfigService server sources", () => {
   const createdDirectories: string[] = []
@@ -50,6 +50,7 @@ describe("InstanceConfigService server sources", () => {
       PORT: 3000,
       COUCH_DB_URL: "http://localhost:5984",
       GOOGLE_BOOK_API_URL: "https://www.googleapis.com/books/v1",
+      POSTGRES_HOST: "postgres",
       POSTGRES_USER: "postgres",
       POSTGRES_PASSWORD: "postgres",
       JWT_PRIVATE_KEY_FILE: "/tmp/private.pem",
@@ -104,6 +105,8 @@ describe("InstanceConfigService server sources", () => {
       },
       showDisabledPlugins: true,
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
+      allowPrivateNetworkRequests: false,
+      privateNetworkAllowedHosts: [],
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -212,6 +215,47 @@ describe("InstanceConfigService server sources", () => {
     expect(rebootedService.getConfig().value).toMatchObject({
       microsoftApplicationAuthority: "",
     })
+  })
+
+  it("refuses private networks in a config file that predates the setting", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({
+        version: 1,
+        serverSync: { enabled: false, credentials: null, sources: [] },
+        showDisabledPlugins: true,
+      }),
+      "utf8",
+    )
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    expect(rebootedService.getConfig().value).toMatchObject({
+      allowPrivateNetworkRequests: false,
+      privateNetworkAllowedHosts: [],
+    })
+  })
+
+  it("refuses a config file with an allowed host it cannot read", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({
+        version: 1,
+        serverSync: { enabled: false, credentials: null, sources: [] },
+        privateNetworkAllowedHosts: ["nas.local/books"],
+      }),
+      "utf8",
+    )
+
+    expect(
+      () => new InstanceConfigService(appConfig, serverSourcesService),
+    ).toThrow(/privateNetworkAllowedHosts/)
   })
 
   it("notifies config subscribers on update", async () => {

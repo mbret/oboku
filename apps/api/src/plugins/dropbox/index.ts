@@ -3,50 +3,34 @@
  */
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
-import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
+import {
+  getDataFromDataSource,
+  READER_ACCEPTED_EXTENSIONS,
+} from "@oboku/shared"
 import {
   type DataSourcePlugin,
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
-} from "src/plugins/types"
-import { find } from "src/lib/couch/dbHelpers"
-import { createThrottler } from "src/lib/utils"
-import { createError, getDataSourceData } from "../helpers"
+} from "../types.js"
+import { createThrottler } from "../../lib/utils.js"
+import { createError, findCandidates } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 
 export const dataSource: DataSourcePlugin<"dropbox"> = {
   type: DROPBOX_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: { type: DROPBOX_TYPE, data: { fileId: item.linkData.fileId } },
-    })
-    return {
-      links: links.map((link) => ({
-        ...link,
-        /**
-         * In principle, if the user is syncing a resource ID he will
-         * always have valid credentials for this ID.
-         */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: DROPBOX_TYPE,
-        linkData: { fileId: item.linkData.fileId },
-      },
-    })
-    return {
-      collections: collections.map((c) => ({
-        ...c,
-        /** Same as links: when syncing this resource, credentials apply. */
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: DROPBOX_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: DROPBOX_TYPE,
+      data: { fileId: item.linkData.fileId },
+    }),
+  }),
   getFolderMetadata: async ({ link, providerCredentials }) => {
     const token = providerCredentials.accessToken
     const dbx = new Dropbox({
@@ -130,7 +114,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       stream,
     }
   },
-  sync: async ({ providerCredentials, dataSourceId, db }) => {
+  sync: async ({ providerCredentials, dataSource }) => {
     const throttle = createThrottler(50)
 
     const token = providerCredentials.accessToken
@@ -138,11 +122,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       accessToken: token ?? undefined,
     })
 
-    const { folderId } =
-      (await getDataSourceData<"dropbox">({
-        db,
-        dataSourceId: dataSourceId,
-      })) ?? {}
+    const { folderId } = getDataFromDataSource<"dropbox">(dataSource) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

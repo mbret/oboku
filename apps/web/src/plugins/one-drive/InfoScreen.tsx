@@ -1,7 +1,8 @@
 import { DeleteRounded } from "@mui/icons-material"
-import { IconButton, List, ListItem, ListItemText, Stack } from "@mui/material"
+import { IconButton, ListItem, ListItemText, Stack } from "@mui/material"
 import { useSignalValue } from "reactjrx"
 import { clearOneDriveSession, msalAccountSignal } from "./auth/auth"
+import { PageSection } from "../../common/PageSection"
 
 function getAccountLabel(account: { username?: string; name?: string }) {
   return account.username || account.name || "Connected OneDrive account"
@@ -12,7 +13,7 @@ export function InfoScreen() {
 
   return (
     <Stack>
-      <List>
+      <PageSection>
         <ListItem
           secondaryAction={
             account ? (
@@ -35,7 +36,7 @@ export function InfoScreen() {
             }
           />
         </ListItem>
-      </List>
+      </PageSection>
     </Stack>
   )
 }

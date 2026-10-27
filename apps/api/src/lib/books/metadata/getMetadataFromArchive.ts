@@ -1,6 +1,6 @@
-import type { Archive } from "@oboku/archive-metadata/node"
-import type { FileMetadata } from "@oboku/shared"
+import type { LegacyFileMetadata } from "@oboku/shared"
 import {
+  type Archive,
   identifierValue,
   mainTitle,
   type ResolvedMetadata,
@@ -30,7 +30,7 @@ const toMutableList = (
 export const getMetadataFromArchive = async (
   archive: Archive,
   contentType: string,
-): Promise<FileMetadata> => {
+): Promise<LegacyFileMetadata> => {
   const { metadata, unreadableSources } = await resolveArchive(archive, {
     include: ["metadata"],
   })
@@ -60,6 +60,7 @@ export const getMetadataFromArchive = async (
     date: metadata.publication?.edition?.date,
     subjects: toMutableList(metadata.subjects),
     coverLink: metadata.cover?.uri,
+    coverConfidence: metadata.cover?.confidence,
     pageCount: metadata.numberOfPages,
     isbn,
     googleVolumeId,

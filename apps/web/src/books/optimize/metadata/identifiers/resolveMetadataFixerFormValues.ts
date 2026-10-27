@@ -11,13 +11,6 @@ import type {
 import { canonicalIdentifier, catalogIdentifier } from "./canonicalIdentifier"
 
 /**
- * The reader reports each container's identifiers as it finds them, so one
- * identifier written to both comes back twice under whichever scheme each
- * container has a slot for: an ISBN as `ISBN` from the OPF and `GTIN` from
- * ComicInfo. Collapsing those keeps a saved book from growing a duplicate row
- * every time it is inspected again.
- */
-/**
  * The scheme a row is keyed under, collapsing the ones that mean the same: an
  * ISBN and a `GTIN` of the same value are the one identifier each container
  * spells its own way.
@@ -27,8 +20,18 @@ export const identifierRowScheme = ({
 }: MetadataIdentifierFormValue): string =>
   isIsbnBearingScheme(scheme) ? "isbn-bearing" : scheme
 
-const dedupeKey = (identifier: MetadataIdentifierFormValue): string =>
-  `${identifierRowScheme(identifier)}:${identifier.value}`
+/**
+ * The identifier a row stands for, whichever container spelled it.
+ *
+ * The reader reports each container's identifiers as it finds them, so one
+ * identifier written to both comes back twice under whichever scheme each
+ * container has a slot for: an ISBN as `ISBN` from the OPF and `GTIN` from
+ * ComicInfo. Collapsing those keeps a saved book from growing a duplicate row
+ * every time it is inspected again.
+ */
+export const identifierRowKey = (
+  identifier: MetadataIdentifierFormValue,
+): string => `${identifierRowScheme(identifier)}:${identifier.value}`
 
 /**
  * The row an identifier the reader reported belongs to, so a caller can ask
@@ -57,7 +60,7 @@ export const resolveMetadataFixerFormValues = (
   for (const resolved of inspection.resolvedArchive.metadata.identifiers ??
     []) {
     const identifier = toIdentifierRow(resolved)
-    const key = dedupeKey(identifier)
+    const key = identifierRowKey(identifier)
 
     if (seen.has(key)) continue
 

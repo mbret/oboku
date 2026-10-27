@@ -1,7 +1,7 @@
 import {
   type CollectionDocType,
   type LinkMetadata,
-  DataSourceDocType,
+  type DataSourceDocTypeFor,
   type DataSourceType,
   type DocType,
   type LinkDocType,
@@ -15,7 +15,7 @@ import {
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "src/lib/sync/SyncReport"
+import { SyncReport } from "../lib/sync/SyncReport.js"
 
 /** Re-export from shared so sync item/data source types are single source of truth. */
 export type {
@@ -63,7 +63,7 @@ export type SyncContext<T extends DataSourceType = DataSourceType> = {
   /** Resolved at runtime (e.g. from secrets). Typed per provider (WebdavApiCredentials, DriveApiCredentials, etc.). */
   providerCredentials: ProviderApiCredentials<T>
   dataSourceType: T
-  dataSource: DataSourceDocType
+  dataSource: DataSourceDocTypeFor<T>
   syncReport: SyncReport
   db: createNano.DocumentScope<unknown>
 }
@@ -104,18 +104,6 @@ export type GetCollectionCandidatesForItem<
   item: SynchronizeAbleItem<TProvider>,
   ctx: SyncContext<TProvider>,
 ) => Promise<{ collections: CollectionCandidate[] }>
-
-/**
- * Params shape for the service's public API only. Callers pass this to
- * PluginsService.getFolderMetadata / getFileMetadata. The service narrows by
- * link.type and calls the plugin with strongly-typed per-provider params.
- * Plugins never see this type; they receive only their provider's types.
- */
-export type PluginFacadeParams = {
-  link: Pick<LinkDocType, "type" | "data">
-  providerCredentials?: ProviderApiCredentials<DataSourceType>
-  db?: createNano.DocumentScope<unknown>
-}
 
 /** Per-provider params for getFolderMetadata / getFileMetadata. */
 export type PluginMetadataParams<T extends DataSourceType = DataSourceType> = {
@@ -179,6 +167,5 @@ export type DataSourcePlugin<
   getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TProvider>
   sync: (
     options: SyncContext<TProvider>,
-    helper: Helpers,
   ) => Promise<SynchronizeAbleDataSource<TProvider>>
 }

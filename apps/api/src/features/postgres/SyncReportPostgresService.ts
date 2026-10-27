@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { ReportEntry } from "@oboku/shared"
-import { AppConfigService } from "../../config/AppConfigService"
-import { SyncReportPostgresEntity } from "./entities"
+import type { SyncReportEntryDto } from "../../lib/sync/sync-report.dto.js"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { SyncReportPostgresEntity } from "./entities.js"
 
 @Injectable()
 export class SyncReportPostgresService {
@@ -17,7 +17,7 @@ export class SyncReportPostgresService {
     created_at: string
     ended_at: string
     state: "success" | "error"
-    report: ReportEntry[]
+    report: SyncReportEntryDto[]
     datasource_id: string
     user_name: string
     has_different_provider_credentials?: boolean

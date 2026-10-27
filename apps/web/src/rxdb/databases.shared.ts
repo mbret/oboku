@@ -39,6 +39,10 @@ import { RxDBLeaderElectionPlugin } from "rxdb/plugins/leader-election"
 import { catchError, from, map, switchMap } from "rxjs"
 import { rethrow } from "../common/rxjs/operators"
 import { secretCollection, type SecretCollection } from "./collections/secrets"
+import {
+  koreaderPushCollection,
+  type KoreaderPushCollection,
+} from "./collections/koreaderPush"
 import { RXDB_DATABASE_NAME } from "./constants.shared"
 
 // theses plugins does not get automatically added when building for production
@@ -62,6 +66,7 @@ type MyDatabaseCollections = {
   obokucollection: CollectionCollection
   datasource: DataSourceCollection
   secret: SecretCollection
+  koreaderpush: KoreaderPushCollection
 }
 
 export type Database = RxDatabase<MyDatabaseCollections, any, any, unknown>
@@ -158,6 +163,7 @@ export const createDatabase = (
             migrationStrategies: dataSourceMigrationStrategies,
           },
           secret: secretCollection,
+          koreaderpush: koreaderPushCollection,
         }),
       )
 

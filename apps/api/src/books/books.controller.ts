@@ -1,11 +1,13 @@
 import { Body, Controller, Logger, OnModuleInit, Post } from "@nestjs/common"
 import { OnEvent } from "@nestjs/event-emitter"
-import { BooksMetadataRefreshEvent, Events } from "../events"
-import { BooksMetadataService } from "./books-metadata.service"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
+import { BooksMetadataRefreshEvent, Events } from "../events.js"
+import { BooksMetadataService } from "./books-metadata.service.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
 import { from } from "rxjs"
-import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import type { RefreshBookMetadataRequest } from "@oboku/shared"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { EmptyResponseDto } from "../lib/empty-response.dto.js"
+import { RefreshBookMetadataDto } from "./books.dto.js"
 
 @Controller("books")
 export class BooksController implements OnModuleInit {
@@ -15,22 +17,23 @@ export class BooksController implements OnModuleInit {
   constructor(
     private booksMetadataService: BooksMetadataService,
     private readonly taskQueueService: InMemoryTaskQueueService,
+    private readonly appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.BOOKS_METADATA_REFRESH_QUEUE,
-      maxConcurrent: 3,
+      maxConcurrent: this.appConfig.QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
       sequentialTasksWithSameId: true,
     })
   }
 
   @Post("metadata/refresh")
-  async metadataRefresh(
-    @Body() { bookId, providerCredentials, force }: RefreshBookMetadataRequest,
+  async refreshMetadata(
+    @Body() { bookId, providerCredentials, force }: RefreshBookMetadataDto,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<EmptyResponseDto> {
     this.logger.log("metadataRefresh", bookId, { force })
 
     this.taskQueueService.enqueue(

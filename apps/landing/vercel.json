@@ -2,8 +2,6 @@
   "installCommand": "npm i -g pnpm@11 && cd ../.. && $(npm prefix -g)/bin/pnpm install --frozen-lockfile",
   "buildCommand": "cd ../.. && pnpm build:landing",
   "git": {
-    "deploymentEnabled": {
-      "master": false
-    }
+    "deploymentEnabled": false
   }
 }

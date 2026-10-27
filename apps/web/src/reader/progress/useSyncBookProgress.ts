@@ -1,162 +1,93 @@
-import { useReader } from "../states"
-import { ReadingStateState } from "@oboku/shared"
 import {
-  bufferTime,
   catchError,
   concatMap,
-  distinctUntilChanged,
   EMPTY,
   filter,
   from,
   map,
-  merge,
-  share,
-  skip,
-  startWith,
   Subject,
-  switchMap,
-  takeUntil,
+  tap,
 } from "rxjs"
-import { isShallowEqual, mapKeysTo } from "@prose-reader/core"
 import { useEffect } from "react"
+import { isDefined } from "reactjrx"
 import { useIncrementalBookModify } from "../../books"
+import { dispatchBookmarkMoved } from "../events"
+import { useReader } from "../states"
+import { isBookmarkMovedAt } from "./bookProgressPatches"
+import { observeBookProgressPatches } from "./observeBookProgressPatches"
 
-const SYNC_BOOK_PROGRESS_INTERVAL_MS = 1000
+const logSyncError = (error: unknown) => {
+  console.error(error)
 
-const normalizeProgress = (progress: number | undefined) => {
-  if (typeof progress !== "number") {
-    return undefined
-  }
-
-  return Number(progress.toFixed(4))
+  return EMPTY
 }
 
 export const useSyncBookProgress = (
   bookId: string,
-  { enabled = true }: { enabled?: boolean } = {},
+  {
+    enabled = true,
+    koreaderDocument,
+  }: {
+    enabled?: boolean
+    /** The KOReader document of the book's file, `undefined` until the book is loaded. */
+    koreaderDocument: string | undefined
+  },
 ) => {
   const reader = useReader()
   const { mutateAsync: incrementalBookModify } = useIncrementalBookModify()
 
-  useEffect(() => {
-    if (!enabled) return
-    if (!reader) return
+  useEffect(
+    function syncBookProgressWhileReading() {
+      if (!enabled) return
+      if (!reader) return
+      if (koreaderDocument === undefined) return
 
-    // Signals that the hook is unmounting. When it emits, takeUntil()
-    // completes the pagination stream downstream, which lets bufferTime
-    // flush any buffered value and run one last write before teardown.
-    const unmount$ = new Subject<void>()
+      // Signals that the hook is unmounting. When it emits, the patches
+      // complete, which flushes the patches still batched as one last write.
+      const unmount$ = new Subject<void>()
 
-    const bookProgress$ = reader.pagination.state$.pipe(
-      // skip initial state
-      skip(1),
-      mapKeysTo(["beginCfi", "percentageEstimateOfBook"]),
-      map((value) => ({
-        ...value,
-        percentageEstimateOfBook: normalizeProgress(
-          value.percentageEstimateOfBook,
-        ),
-      })),
-      distinctUntilChanged(isShallowEqual),
-      takeUntil(unmount$),
-      share(),
-    )
+      observeBookProgressPatches({ reader, koreaderDocument, stop$: unmount$ })
+        .pipe(
+          concatMap(function saveBookProgress(patch) {
+            const savedAt = new Date().toISOString()
 
-    const finished$ = bookProgress$.pipe(
-      filter((data) => data.percentageEstimateOfBook === 1),
-    )
+            return from(
+              incrementalBookModify({
+                doc: bookId,
+                mutationFn: function applyPatchAsOfSave(old) {
+                  return patch(old, savedAt)
+                },
+              }),
+            ).pipe(
+              filter(isDefined),
+              map(function toSavedBook(document) {
+                return document.toJSON()
+              }),
+              filter(function isBookmarkMovedBySave(book) {
+                return isBookmarkMovedAt(book, savedAt)
+              }),
+              tap(function dispatchBookmarkMovedBySave() {
+                dispatchBookmarkMoved({
+                  bookId,
+                  koreaderDocument,
+                  movedAt: savedAt,
+                })
+              }),
+              catchError(logSyncError),
+            )
+          }),
+          catchError(logSyncError),
+        )
+        .subscribe()
 
-    // Reset the throttling window whenever a finished event fires so the
-    // value buffered before reaching the last page is discarded instead
-    // of emitting ~1s later and regressing the stored progress. After
-    // the reset, future non-finished updates (e.g. the user navigates
-    // back) continue to be throttled normally.
-    //
-    // bufferTime is preferred over auditTime because it flushes its
-    // pending buffer on source completion, guaranteeing the latest
-    // progress is written when the hook unmounts.
-    const throttledProgress$ = finished$.pipe(
-      startWith(null),
-      switchMap(() =>
-        bookProgress$.pipe(
-          filter((data) => data.percentageEstimateOfBook !== 1),
-          bufferTime(SYNC_BOOK_PROGRESS_INTERVAL_MS),
-          map((values) => values[values.length - 1]),
-          filter((value) => value !== undefined),
-        ),
-      ),
-    )
-
-    const sub = merge(throttledProgress$, finished$)
-      .pipe(
-        concatMap((params) => {
-          const promise = incrementalBookModify({
-            doc: bookId,
-            mutationFn: (old) => {
-              const hasBookmarkLocation = Boolean(params.beginCfi)
-              const hasProgress =
-                typeof params.percentageEstimateOfBook === "number"
-              const nextReadingState =
-                old.readingStateCurrentState === ReadingStateState.Finished
-                  ? ReadingStateState.Finished
-                  : params.percentageEstimateOfBook === 1
-                    ? ReadingStateState.Finished
-                    : ReadingStateState.Reading
-
-              const didBookmarkLocationChange =
-                hasBookmarkLocation &&
-                old.readingStateCurrentBookmarkLocation !== params.beginCfi
-              const didProgressChange =
-                hasProgress &&
-                old.readingStateCurrentBookmarkProgressPercent !==
-                  params.percentageEstimateOfBook
-              const didReadingStateChange =
-                old.readingStateCurrentState !== nextReadingState
-
-              if (
-                !didBookmarkLocationChange &&
-                !didProgressChange &&
-                !didReadingStateChange
-              ) {
-                return old
-              }
-
-              return {
-                ...old,
-                // cfi will be undefined at the beginning until pagination stabilize
-                ...(didBookmarkLocationChange && {
-                  readingStateCurrentBookmarkLocation: params.beginCfi || null,
-                }),
-                readingStateCurrentBookmarkProgressUpdatedAt:
-                  new Date().toISOString(),
-                ...(didReadingStateChange && {
-                  readingStateCurrentState: nextReadingState,
-                }),
-                ...(didProgressChange && {
-                  readingStateCurrentBookmarkProgressPercent:
-                    params.percentageEstimateOfBook,
-                }),
-              }
-            },
-          })
-
-          return from(promise)
-        }),
-        catchError((error) => {
-          console.error(error)
-
-          return EMPTY
-        }),
-      )
-      .subscribe()
-
-    return () => {
-      // Complete the source synchronously so bufferTime can flush its
-      // pending value and the final mutation is dispatched before we
-      // tear down the subscription.
-      unmount$.next()
-      unmount$.complete()
-      sub.unsubscribe()
-    }
-  }, [reader, bookId, incrementalBookModify, enabled])
+      return function flushBookProgressOnUnmount() {
+        // Completing the sources rather than unsubscribing lets concatMap
+        // run every write still queued, such as the last flush waiting on a
+        // finished write in flight. The subscription then ends on its own.
+        unmount$.next()
+        unmount$.complete()
+      }
+    },
+    [reader, bookId, incrementalBookModify, enabled, koreaderDocument],
+  )
 }

@@ -27,7 +27,19 @@ COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
-CMD ["node", "dist/main"]
+CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
+
+FROM nginx:alpine AS spa
+WORKDIR /usr/src/app
+ENV APP_PREFIX=VITE_
+ENV ASSET_TEMPLATE_DIR=/usr/share/nginx/html-template
+ENV ASSET_DIR=/usr/share/nginx/html
+COPY scripts/docker/nginx.spa.conf /etc/nginx/conf.d/default.conf
+COPY scripts/docker/env.sh /docker-entrypoint.d/env.sh
+RUN dos2unix /docker-entrypoint.d/env.sh
+RUN chmod +x /docker-entrypoint.d/env.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
+CMD ["nginx", "-g", "daemon off;"]
 
 FROM node-pnpm AS admin-build
 WORKDIR /usr/src/app
@@ -36,16 +48,8 @@ COPY apps/admin ./apps/admin
 RUN pnpm exec lerna run build --scope=@oboku/admin
 WORKDIR /usr/src/app/apps/admin
 
-FROM nginx:alpine AS admin
-WORKDIR /usr/src/app
-COPY apps/admin/nginx.default.conf /etc/nginx/conf.d/default.conf
-# Copy the runtime injection script into the container
-COPY apps/admin/env.sh /docker-entrypoint.d/env.sh
-RUN dos2unix /docker-entrypoint.d/env.sh
-RUN chmod +x /docker-entrypoint.d/env.sh
-COPY --from=admin-build /usr/src/app/apps/admin/dist /usr/share/nginx/html
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["nginx", "-g", "daemon off;"]
+FROM spa AS admin
+COPY --from=admin-build /usr/src/app/apps/admin/dist ${ASSET_TEMPLATE_DIR}
 
 FROM node-pnpm AS web-build
 ARG GITHUB_SHA
@@ -56,20 +60,30 @@ COPY apps/web ./apps/web
 RUN pnpm exec lerna run build --scope=@oboku/web
 WORKDIR /usr/src/app/apps/web
 
-FROM nginx:alpine AS web
-WORKDIR /usr/src/app
-COPY apps/web/nginx.default.conf /etc/nginx/conf.d/default.conf
-COPY --from=web-build /usr/src/app/apps/web/dist /usr/share/nginx/html
-CMD ["nginx", "-g", "daemon off;"]
+FROM spa AS web
+COPY --from=web-build /usr/src/app/apps/web/dist ${ASSET_TEMPLATE_DIR}
 
-FROM couchdb:3.5.1 AS couchdb
+FROM couchdb:3.5.3 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
+
+# Erlang sizes its port table from the open-files limit, which some Docker hosts
+# leave effectively unlimited. CouchDB then dies at boot trying to allocate 2 GiB
+# ("Cannot allocate ... port_tab"). +Q pins the table to Erlang's usual size.
+# https://docs.couchdb.org/en/stable/install/troubleshooting.html
+ENV ERL_FLAGS="+Q 65536"
 
 # The docker-compose healthcheck curls /_up; if a base-image bump ever drops
 # curl, fail the build here rather than let the API silently block forever on
 # an unhealthy couchdb (its depends_on waits for service_healthy).
 RUN command -v curl >/dev/null || { echo "curl missing from couchdb base image; docker-compose healthcheck requires it" >&2; exit 1; }
+
+# update-secrets.sh generates the JWT pair on first start. openssl is only a
+# transitive dependency of the base image, so install it rather than rely on it.
+RUN set -eux; \
+    apt-get update; \
+    apt-get install -y --no-install-recommends openssl; \
+    rm -rf /var/lib/apt/lists/*
 
 # Create a custom entrypoint wrapper script
 RUN echo '#!/bin/sh\n\

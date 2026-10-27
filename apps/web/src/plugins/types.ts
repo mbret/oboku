@@ -47,6 +47,17 @@ type SelectionError = {
   originalError?: any
 }
 
+export type UploadBookComponentProps<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
+  requestPopup: () => Promise<boolean>
+  TagsSelector: FC<{
+    onChange: (tags: string[]) => void
+  }>
+  title: string
+} & Pick<DOMAttributes<any>, "onDragLeave">
+
 export type DownloadBookResult = {
   data: File | Blob
   fileName: string
@@ -190,23 +201,6 @@ export type DataSourceSubmitPayload = {
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
-export type DataSourceCreateFormProps = {
-  onSubmit: (payload: DataSourceSubmitPayload) => void
-}
-
-type ReadonlyDataSourceEditValue<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = DeepReadonly<DataSourceDocTypeFor<T>> & {
-  readonly type: T
-}
-
-export type DataSourceEditFormProps<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = {
-  dataSource: ReadonlyDataSourceEditValue<T>
-  onSubmit: (payload: DataSourceSubmitPayload) => void
-}
-
 type ObokuPluginBase<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
@@ -219,18 +213,10 @@ type ObokuPluginBase<
   type: T
   description?: string
   Icon?: ComponentType<SvgIconProps>
-  UploadBookComponent?: FunctionComponent<
-    {
-      onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
-      requestPopup: () => Promise<boolean>
-      TagsSelector: FC<{
-        onChange: (tags: string[]) => void
-      }>
-      title: string
-    } & Pick<DOMAttributes<any>, "onDragLeave">
+  UploadBookComponent?: FunctionComponent<UploadBookComponentProps<T>>
+  DataSourceForm?: ComponentType<
+    DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
   >
-  DataSourceCreateForm?: FunctionComponent<DataSourceCreateFormProps>
-  DataSourceEditForm?: ComponentType<DataSourceEditFormProps<T>>
   SelectItemComponent?: FunctionComponent<{
     open: boolean
     requestPopup: () => Promise<boolean>

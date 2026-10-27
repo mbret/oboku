@@ -21,6 +21,7 @@ const createManifest = ({
   readingDirection?: Manifest["readingDirection"]
 } = {}): Manifest => ({
   filename,
+  mediaType: "application/vnd.comicbook+zip",
   title: "Book",
   renditionLayout: undefined,
   renditionSpread: undefined,
@@ -29,6 +30,7 @@ const createManifest = ({
     {
       id: "page-1",
       href: "page-1.jpg",
+      containerUri: "page-1.jpg",
       index: 0,
       renditionLayout: "pre-paginated",
     },

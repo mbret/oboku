@@ -5,12 +5,21 @@ import {
   type FieldPath,
   type FieldValues,
 } from "react-hook-form"
-import { Button, Stack } from "@mui/material"
+import { Button, Stack, styled } from "@mui/material"
 import type { MetadataFileDownloadOverride } from "@oboku/shared"
 import { ControlledTextField } from "../../common/forms/ControlledTextField"
 import { ControlledSelect } from "../../common/forms/ControlledSelect"
+import { PageSection } from "../../common/PageSection"
 import { useTags } from "../../tags/helpers"
 import { DataSourceMetadataPolicyPane } from "../../dataSources/metadata/DataSourceMetadataPolicyPane"
+
+const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
+  theme,
+}) {
+  return {
+    padding: theme.spacing(0, 2),
+  }
+})
 
 type DataSourceFormBase = {
   name: string
@@ -23,7 +32,8 @@ type DataSourceFormBase = {
  *
  * Renders the `<form>` element, the common name + tags + metadata policy
  * fields, plugin-specific children, and the submit button. Each plugin only
- * provides its own fields as children.
+ * provides its own fields as children. Sits in a `PageContainer` with
+ * `disableGutters`, like the `PageSection`s it is made of.
  *
  * The `as FieldPath<T>` casts below are required because TypeScript cannot
  * resolve concrete paths from a generic type parameter, even though the
@@ -49,35 +59,31 @@ export function DataSourceFormLayout<
   const { data: tags } = useTags()
 
   return (
-    <Stack
-      component="form"
-      onSubmit={onSubmit}
-      sx={{
-        gap: 2,
-      }}
-    >
-      <ControlledTextField
-        name={"name" as FieldPath<T>}
-        label="Name"
-        control={control}
-        rules={{ required: false }}
-        fullWidth
-      />
-      <ControlledSelect
-        name={"tags" as FieldPath<T>}
-        label="Tags"
-        control={control}
-        fullWidth
-        multiple
-        options={
-          tags?.map((tag) => ({
-            label: tag.name ?? "",
-            value: tag._id ?? "",
-            id: tag._id ?? "",
-          })) ?? []
-        }
-        helperText="Applied to all items during synchronization"
-      />
+    <form onSubmit={onSubmit}>
+      <PageSection variant="stack">
+        <ControlledTextField
+          name={"name" as FieldPath<T>}
+          label="Name"
+          control={control}
+          rules={{ required: false }}
+          fullWidth
+        />
+        <ControlledSelect
+          name={"tags" as FieldPath<T>}
+          label="Tags"
+          control={control}
+          fullWidth
+          multiple
+          options={
+            tags?.map((tag) => ({
+              label: tag.name ?? "",
+              value: tag._id ?? "",
+              id: tag._id ?? "",
+            })) ?? []
+          }
+          helperText="Applied to all items during synchronization"
+        />
+      </PageSection>
       <Controller
         control={control}
         name={"metadataFileDownloadEnabled" as FieldPath<T>}
@@ -91,10 +97,12 @@ export function DataSourceFormLayout<
           />
         )}
       />
-      {children}
-      <Button variant="contained" type="submit">
-        {submitLabel}
-      </Button>
-    </Stack>
+      {!!children && <PageSection variant="stack">{children}</PageSection>}
+      <SubmitButtonStack>
+        <Button variant="contained" type="submit">
+          {submitLabel}
+        </Button>
+      </SubmitButtonStack>
+    </form>
   )
 }

@@ -2,19 +2,20 @@ import {
   Button,
   capitalize,
   IconButton,
-  List,
   ListItem,
   ListItemText,
   Stack,
 } from "@mui/material"
-import { SIGNAL_RESET, useSignalValue } from "reactjrx"
+import { useSignalValue } from "reactjrx"
 import { gapiSignal, useLoadGapi } from "./lib/gapi"
 import { gsiSignal } from "../../google/gsi"
 import {
+  clearGoogleAccessToken,
   googleAccessTokenSignal,
   getTokenExpirationDate,
 } from "../../google/auth"
 import { DeleteRounded } from "@mui/icons-material"
+import { PageSection } from "../../common/PageSection"
 
 export const InfoScreen = () => {
   const gapi = useSignalValue(gapiSignal)
@@ -28,7 +29,7 @@ export const InfoScreen = () => {
 
   return (
     <Stack>
-      <List>
+      <PageSection>
         <ListItem>
           <ListItemText
             primary="Google API"
@@ -47,9 +48,7 @@ export const InfoScreen = () => {
               <IconButton
                 edge="end"
                 aria-label="delete"
-                onClick={() => {
-                  googleAccessTokenSignal.update(SIGNAL_RESET)
-                }}
+                onClick={clearGoogleAccessToken}
               >
                 <DeleteRounded />
               </IconButton>
@@ -65,7 +64,7 @@ export const InfoScreen = () => {
             }
           />
         </ListItem>
-      </List>
+      </PageSection>
       <Stack
         sx={{
           px: 2,

@@ -1,32 +1,38 @@
 import { type RefObject, useEffect } from "react"
 import { SIGNAL_RESET } from "reactjrx"
-import { gesturesEnhancer } from "@prose-reader/enhancer-gestures"
-import { createReader } from "@prose-reader/core"
-import { galleryEnhancer } from "@prose-reader/enhancer-gallery"
-import { searchEnhancer } from "@prose-reader/enhancer-search"
 import type { Manifest } from "@prose-reader/shared"
+import { createAppReader } from "./createAppReader"
 import { readerSignal } from "./states"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
 import { from, of } from "rxjs"
-import { refitEnhancer } from "@prose-reader/enhancer-refit"
-import { audioEnhancer } from "@prose-reader/enhancer-audio"
-import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
-import { cbzEnhancer } from "@prose-reader/cbz"
-import { createBookQueryOptions } from "../books/states"
-import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
+import { type BookDocType, getBookmark } from "@oboku/shared"
+import type { DeepReadonly } from "rxdb"
 
-export const createAppReader = pdfEnhancer(
-  audioEnhancer(
-    refitEnhancer(
-      galleryEnhancer(
-        gesturesEnhancer(searchEnhancer(cbzEnhancer(createReader))),
-      ),
-    ),
-  ),
-)
+type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
+
+const getOpeningTarget = ({
+  book,
+  koreaderDocument,
+}: {
+  book: DeepReadonly<BookDocType>
+  koreaderDocument: string
+}): OpeningTarget => {
+  const bookmark = getBookmark(book)
+
+  if (bookmark?.cfi !== undefined) {
+    return { type: "cfi", value: bookmark.cfi }
+  }
+
+  const isKoreaderBookmarkOfOpenedFile =
+    bookmark?.koreader.document === koreaderDocument
+
+  return isKoreaderBookmarkOfOpenedFile
+    ? { type: "koreaderProgress", value: bookmark.koreader.progress }
+    : undefined
+}
 
 /**
  * A reader lives for a single book: we create it once we have the manifest,
@@ -38,93 +44,98 @@ export const createAppReader = pdfEnhancer(
 export const useCreateReader = ({
   isUsingWebStreamer,
   bookId,
-  isPreview,
   manifest,
+  koreaderDocument,
+  book,
   containerRef,
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
-  isPreview: boolean
   manifest?: Manifest
+  koreaderDocument?: string
+  /**
+   * The book to open at its bookmark, `null` to open at the start. The reader
+   * waits while it is `undefined`, and is created again whenever it changes.
+   */
+  book: DeepReadonly<BookDocType> | null | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
-  const { data: bookOnce } = useEnsureQueryData$(
-    createBookQueryOptions({ id: isPreview ? undefined : bookId }),
-  )
-  const isRestoredLocationReady = isPreview || !!bookOnce
+  useEffect(
+    function createReaderForBook() {
+      const containerElement = containerRef.current
 
-  useEffect(() => {
-    const containerElement = containerRef.current
+      if (
+        !manifest ||
+        !containerElement ||
+        isUsingWebStreamer === undefined ||
+        koreaderDocument === undefined ||
+        book === undefined
+      ) {
+        return
+      }
 
-    if (
-      !manifest ||
-      !containerElement ||
-      isUsingWebStreamer === undefined ||
-      !isRestoredLocationReady
-    ) {
-      return
-    }
+      const target = book
+        ? getOpeningTarget({ book, koreaderDocument })
+        : undefined
+      const isEInkMode = localSettingsSignal.getValue().themeMode === "e-ink"
 
-    const cfi = isPreview
-      ? undefined
-      : bookOnce?.readingStateCurrentBookmarkLocation || undefined
-
-    const instance = createAppReader({
-      manifest,
-      ...(cfi ? { cfi } : {}),
-      ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
-        pageTurnAnimation: "none",
-      }),
-      gestures: {
-        ...(localSettingsSignal.getValue().themeMode === "e-ink" && {
-          panNavigation: "swipe",
+      const instance = createAppReader({
+        manifest,
+        target,
+        ...(isEInkMode && {
+          pageTurnAnimation: "none",
         }),
-      },
-      pdf: {
-        pdfjsViewerInlineCss,
-        getArchiveForItem: (item) => {
-          if (!item.href.endsWith(`pdf`)) {
-            return of(undefined)
-          }
-
-          return webStreamer.accessArchiveWithoutLock(bookId)
+        gestures: {
+          ...(isEInkMode && {
+            panNavigation: "swipe",
+          }),
         },
-      },
-      ...(isUsingWebStreamer && {
-        getResource: (item) => {
-          const resourcePath = getResourcePathFromUrl(item.href)
+        pdf: {
+          pdfjsViewerInlineCss,
+          getArchiveForItem: function getPdfArchiveForItem(item) {
+            if (!item.href.endsWith(`pdf`)) {
+              return of(undefined)
+            }
 
-          return from(
-            webStreamer.fetchResource({
-              key: bookId,
-              resourcePath,
-            }),
-          )
+            return webStreamer.accessArchiveWithoutLock(bookId)
+          },
         },
-      }),
-    })
+        ...(isUsingWebStreamer && {
+          getResource: function fetchResourceFromWebStreamer(item) {
+            const resourcePath = getResourcePathFromUrl(item.href)
 
-    instance.mount(containerElement)
+            return from(
+              webStreamer.fetchResource({
+                key: bookId,
+                resourcePath,
+              }),
+            )
+          },
+        }),
+      })
 
-    // @ts-expect-error
-    window.reader = instance
+      instance.mount(containerElement)
 
-    readerSignal.update(instance)
+      // @ts-expect-error
+      window.reader = instance
 
-    return () => {
-      instance.destroy()
+      readerSignal.update(instance)
 
-      readerSignal.update(SIGNAL_RESET)
+      return function destroyReader() {
+        instance.destroy()
 
-      webStreamer.prune()
-    }
-  }, [
-    manifest,
-    isUsingWebStreamer,
-    isPreview,
-    isRestoredLocationReady,
-    bookId,
-    bookOnce,
-    containerRef,
-  ])
+        readerSignal.update(SIGNAL_RESET)
+
+        webStreamer.prune()
+      }
+    },
+    [
+      manifest,
+      isUsingWebStreamer,
+      bookId,
+      book,
+      koreaderDocument,
+      containerRef,
+    ],
+  )
 }

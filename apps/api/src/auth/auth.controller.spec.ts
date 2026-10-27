@@ -1,15 +1,16 @@
+import type { Mock } from "vitest"
 import { BadRequestException, UnauthorizedException } from "@nestjs/common"
 import { ValidationPipe } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import type { Request, Response } from "express"
+import { AuthController } from "./auth.controller.js"
 import {
-  AuthController,
   RefreshTokenQueryDto,
   SignInWithEmailDto,
   SignInWithGoogleDto,
-} from "./auth.controller"
-import { AuthService } from "./auth.service"
-import { AuthCookiesService } from "./auth-cookies"
+} from "./auth.dto.js"
+import { AuthService } from "./auth.service.js"
+import { AuthCookiesService } from "./auth-cookies.js"
 
 // Test doubles carrying only the members the controller touches; the express
 // interfaces are far larger, hence the assertions.
@@ -29,30 +30,30 @@ describe("AuthController", () => {
   let controller: AuthController
   let validationPipe: ValidationPipe
   let authService: {
-    requestSignUp: jest.Mock<Promise<void>, [{ email: string }]>
-    completeSignUp: jest.Mock
-    signInWithEmail: jest.Mock
-    signInWithGoogle: jest.Mock
-    refreshToken: jest.Mock
-    logout: jest.Mock
-    deleteAccount: jest.Mock
+    requestSignUp: Mock<(input: { email: string }) => Promise<void>>
+    completeSignUp: Mock
+    signInWithEmail: Mock
+    signInWithGoogle: Mock
+    refreshToken: Mock
+    logout: Mock
+    deleteAccount: Mock
   }
   let authCookiesService: {
-    set: jest.Mock
+    set: Mock
   }
 
   beforeEach(async () => {
     authService = {
-      requestSignUp: jest.fn().mockResolvedValue(undefined),
-      completeSignUp: jest.fn(),
-      signInWithEmail: jest.fn(),
-      signInWithGoogle: jest.fn(),
-      refreshToken: jest.fn(),
-      logout: jest.fn().mockResolvedValue(undefined),
-      deleteAccount: jest.fn().mockResolvedValue(undefined),
+      requestSignUp: vi.fn().mockResolvedValue(undefined),
+      completeSignUp: vi.fn(),
+      signInWithEmail: vi.fn(),
+      signInWithGoogle: vi.fn(),
+      refreshToken: vi.fn(),
+      logout: vi.fn().mockResolvedValue(undefined),
+      deleteAccount: vi.fn().mockResolvedValue(undefined),
     }
     authCookiesService = {
-      set: jest.fn(),
+      set: vi.fn(),
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -78,7 +79,7 @@ describe("AuthController", () => {
   })
 
   it("does not forward a request-derived app public url for public signup", async () => {
-    await controller.signup({
+    await controller.requestSignUp({
       email: "reader@example.com",
     })
 
@@ -115,7 +116,7 @@ describe("AuthController", () => {
     const response = createResponse()
 
     await expect(
-      controller.signinWithEmail(body, request, response),
+      controller.signInWithEmail(body, request, response),
     ).resolves.toEqual({
       sessionId: "session-1",
       dbName: "db-name",
@@ -215,7 +216,7 @@ describe("AuthController", () => {
       },
     )
 
-    await controller.signinWithGoogle(body, createRequest(), createResponse())
+    await controller.signInWithGoogle(body, createRequest(), createResponse())
 
     expect(authService.signInWithGoogle).toHaveBeenCalledWith({
       token: "google-token",
@@ -271,7 +272,7 @@ describe("AuthController", () => {
     const response = createResponse()
 
     await expect(
-      controller.refreshTokens(
+      controller.refreshToken(
         { grant_type: "refresh_token" },
         "proof-jwt",
         request,
@@ -291,7 +292,7 @@ describe("AuthController", () => {
 
   it("rejects refresh without the cookie", async () => {
     await expect(
-      controller.refreshTokens(
+      controller.refreshToken(
         { grant_type: "refresh_token" },
         undefined,
         createRequest(),

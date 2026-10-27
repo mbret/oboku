@@ -1,26 +1,15 @@
 import { BadRequestException, Injectable } from "@nestjs/common"
-import { CoversService } from "src/covers/covers.service"
-
-type CoverCleanupStats = {
-  storageStrategy: "fs" | "s3"
-  storageLocation: string
-  storedCovers: number | null
-  storedSizeInBytes: number | null
-  canDeleteAllCovers: boolean
-}
-
-type CoverCleanupDeletionResult = {
-  deletedCovers: number
-  deletedSizeInBytes: number
-  failedCovers: number
-  failedKeys: Array<{ key: string; message: string }>
-}
+import { CoversService } from "../covers/covers.service.js"
+import type {
+  CoverCleanupStatsResponseDto,
+  DeleteAllCoversResponseDto,
+} from "./admin.dto.js"
 
 @Injectable()
 export class AdminCoversService {
   constructor(private readonly coversService: CoversService) {}
 
-  async getCleanupStats(): Promise<CoverCleanupStats> {
+  async getCleanupStats(): Promise<CoverCleanupStatsResponseDto> {
     if (this.coversService.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
       return {
         storageStrategy: "s3",
@@ -45,7 +34,7 @@ export class AdminCoversService {
     }
   }
 
-  async deleteAllCovers(): Promise<CoverCleanupDeletionResult> {
+  async deleteAllCovers(): Promise<DeleteAllCoversResponseDto> {
     if (this.coversService.appConfig.COVERS_STORAGE_STRATEGY !== "fs") {
       throw new BadRequestException(
         "Deleting all covers is only supported for fs storage",

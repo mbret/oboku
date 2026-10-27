@@ -1,35 +1,33 @@
 import type createNano from "nano"
-import { SyncReport } from "./SyncReport"
-import { synchronizeFromDataSource } from "./synchronizeFromDataSource"
+import { SyncReport } from "./SyncReport.js"
+import { synchronizeFromDataSource } from "./synchronizeFromDataSource.js"
 import {
   ObokuErrorCode,
   ObokuSharedError,
   parseProviderApiCredentials,
 } from "@oboku/shared"
-import { createHelpers } from "src/plugins/helpers"
-import { atomicUpdate } from "../couch/dbHelpers"
-import { emailToNameHex } from "src/couch/couch.service"
-import { getPlugin } from "src/plugins/plugins"
-import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "src/config/types"
+import { createHelpers } from "../../plugins/helpers.js"
+import { atomicUpdate } from "../couch/dbHelpers.js"
+import { emailToNameHex } from "../../couch/couch.service.js"
+import { getPlugin } from "../../plugins/plugins.js"
 import { EventEmitter2 } from "@nestjs/event-emitter"
-import { BooksMetadataRefreshEvent, Events } from "src/events"
-import { NotificationsService } from "src/notifications/notifications.service"
-import { SyncReportPostgresService } from "src/features/postgres/SyncReportPostgresService"
-import { CoversService } from "src/covers/covers.service"
+import { BooksMetadataRefreshEvent, Events } from "../../events.js"
+import { NotificationsService } from "../../notifications/notifications.service.js"
+import { SyncReportPostgresService } from "../../features/postgres/SyncReportPostgresService.js"
+import { CoversService } from "../../covers/covers.service.js"
 import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
-import type { AuthUser } from "src/auth/auth.guard"
+import type { AuthUser } from "../../auth/auth.guard.js"
+import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
-} from "src/plugins/types"
+} from "../../plugins/types.js"
 
 export const sync = async ({
   dataSourceId,
   user,
   providerCredentials,
   db,
-  config,
   eventEmitter,
   syncReportPostgresService,
   notificationService,
@@ -39,7 +37,6 @@ export const sync = async ({
   user: AuthUser
   providerCredentials: ProviderApiCredentials<DataSourceType>
   db: createNano.DocumentScope<unknown>
-  config: ConfigService<EnvironmentVariables>
   eventEmitter: EventEmitter2
   syncReportPostgresService: SyncReportPostgresService
   notificationService: NotificationsService
@@ -119,7 +116,7 @@ export const sync = async ({
       items: item.items?.map(applyTags),
     })
 
-    const synchronizeAbleDataSource = await plugin.sync(syncOptions, helpers)
+    const synchronizeAbleDataSource = await plugin.sync(syncOptions)
     const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
       ...synchronizeAbleDataSource,
       items: synchronizeAbleDataSource.items.map(applyTags),
@@ -134,7 +131,6 @@ export const sync = async ({
       synchronizeAbleDataSourceWithTags,
       ctx,
       helpers,
-      config,
       eventEmitter,
       coversService,
     )
@@ -153,7 +149,9 @@ export const sync = async ({
     syncReport.fail()
 
     let lastSyncErrorCode = ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
-    if (e instanceof ObokuSharedError) {
+    if (isNonPublicAddressError(e)) {
+      lastSyncErrorCode = ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED
+    } else if (e instanceof ObokuSharedError) {
       lastSyncErrorCode = e.code
     }
 

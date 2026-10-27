@@ -5,10 +5,6 @@
       "outputs": ["{projectRoot}/dist"],
       "cache": true
     },
-    "landing:build": {
-      "dependsOn": ["^build"],
-      "outputs": ["{projectRoot}/dist"]
-    },
     "lint": {
       "cache": true
     },
@@ -17,6 +13,9 @@
     },
     "tsc": {
       "cache": true
+    },
+    "start:dev": {
+      "continuous": true
     }
   },
   "$schema": "./node_modules/nx/schemas/nx-schema.json",

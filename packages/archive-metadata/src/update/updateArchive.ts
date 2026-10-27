@@ -45,11 +45,7 @@ export type ArchiveUpdateOptions<Action> = {
   onProgress?: (progress: ArchiveUpdateProgress) => void
 }
 
-/**
- * Runtime-specific capabilities the pipeline needs. Each entrypoint supplies
- * its own, which is what keeps the action union honest: a runtime without
- * `compressImages` cannot accept a `compress-images` action.
- */
+/** Runtime-specific capabilities the pipeline needs. */
 export type ArchiveUpdateRuntime = {
   openStagingScope: OpenStagingScope
   compressImages:

@@ -16,7 +16,8 @@
 # HOW:
 # 1. Checks for public key in environment variables:
 #    - JWT_PUBLIC_KEY (base64 encoded content)
-#    - OR JWT_PUBLIC_KEY_FILE (path to file)
+#    - OR JWT_PUBLIC_KEY_FILE (path to file), generating the pair on first
+#      start when that path does not exist yet
 # 2. Ensures the CouchDB local configuration file exists.
 # 3. Reads the public key and escapes newlines for INI compatibility.
 # 4. Appends the [jwt_keys] section with the formatted public key to
@@ -33,8 +34,11 @@ echo "DEBUG: JWT_PUBLIC_KEY_FILE = ${JWT_PUBLIC_KEY_FILE}"
 if [ -n "$JWT_PUBLIC_KEY" ]; then echo "DEBUG: JWT_PUBLIC_KEY is set"; else echo "DEBUG: JWT_PUBLIC_KEY is not set"; fi
 if [ -n "$JWT_PRIVATE_KEY" ]; then echo "DEBUG: JWT_PRIVATE_KEY is set"; else echo "DEBUG: JWT_PRIVATE_KEY is not set"; fi
 
-# Define paths
-CONFIG_FILE="/opt/couchdb/etc/local.d/docker.ini"
+# Define paths. The JWT configuration lives in a file this script fully owns:
+# docker.ini is shared with CouchDB's own entrypoint, which appends the admin
+# credentials to it.
+CONFIG_FILE="/opt/couchdb/etc/local.d/oboku-jwt.ini"
+COUCHDB_CONFIG_FILE="/opt/couchdb/etc/local.d/docker.ini"
 
 # Determine source of the public key
 if [ -n "$JWT_PUBLIC_KEY" ]; then
@@ -46,6 +50,29 @@ if [ -n "$JWT_PUBLIC_KEY" ]; then
 elif [ -n "$JWT_PUBLIC_KEY_FILE" ]; then
   echo "Using JWT_PUBLIC_KEY_FILE from path: $JWT_PUBLIC_KEY_FILE"
   PUBLIC_KEY_FILE="$JWT_PUBLIC_KEY_FILE"
+
+  # CouchDB boots before the API, so this is the first thing in the stack to
+  # need the pair and the only place that can create it in time. Keys are only
+  # ever created when absent, so restarts keep signing with the same ones.
+  if [ ! -f "$PUBLIC_KEY_FILE" ]; then
+    if [ -z "$JWT_PRIVATE_KEY_FILE" ]; then
+      echo "ERROR: $PUBLIC_KEY_FILE does not exist and JWT_PRIVATE_KEY_FILE is not set,"
+      echo "so there is nowhere to write a generated key pair."
+      exit 1
+    fi
+
+    mkdir -p "$(dirname "$JWT_PRIVATE_KEY_FILE")" "$(dirname "$PUBLIC_KEY_FILE")"
+
+    if [ ! -f "$JWT_PRIVATE_KEY_FILE" ]; then
+      echo "No JWT private key yet, generating one at $JWT_PRIVATE_KEY_FILE..."
+      openssl genrsa -out "$JWT_PRIVATE_KEY_FILE" 4096
+      chmod 600 "$JWT_PRIVATE_KEY_FILE"
+    fi
+
+    echo "Deriving the JWT public key at $PUBLIC_KEY_FILE..."
+    openssl rsa -in "$JWT_PRIVATE_KEY_FILE" -pubout -outform PEM -out "$PUBLIC_KEY_FILE"
+    chmod 644 "$PUBLIC_KEY_FILE"
+  fi
 else
   echo "ERROR: Neither JWT_PUBLIC_KEY (base64) nor JWT_PUBLIC_KEY_FILE (path) environment variables are set."
   echo "Please define one of them to configure CouchDB JWT authentication."
@@ -58,36 +85,33 @@ if [ ! -f "$PUBLIC_KEY_FILE" ]; then
   exit 1
 fi
 
-# Create config file if it doesn't exist
-if [ ! -f "$CONFIG_FILE" ]; then
-  echo "Creating new CouchDB secrets config file..."
-  touch "$CONFIG_FILE"
-  
-  # Set appropriate permissions
-  chown couchdb:couchdb "$CONFIG_FILE"
-  chmod 600 "$CONFIG_FILE"
+# Read the public key and convert newlines to \n
+PUBLIC_KEY=$(sed ':a;N;$!ba;s/\n/\\n/g' "$PUBLIC_KEY_FILE")
+
+if ! grep -q "BEGIN RSA PUBLIC KEY" "$PUBLIC_KEY_FILE" && ! grep -q "BEGIN PUBLIC KEY" "$PUBLIC_KEY_FILE"; then
+  echo "ERROR: $PUBLIC_KEY_FILE is not an RSA public key. CouchDB would start with"
+  echo "no usable JWT key and reject every authenticated request."
+  exit 1
 fi
 
-# Read the public key and convert newlines to \n
-PUBLIC_KEY=$(cat "$PUBLIC_KEY_FILE" | sed ':a;N;$!ba;s/\n/\\n/g')
+# Rewritten on every start rather than written once: a regenerated or rotated
+# key has to replace the one CouchDB validates against, or CouchDB keeps
+# trusting the public key from the first boot while the API signs with the new
+# private one.
+printf '[jwt_keys]\nrsa:_default = %s\n' "$PUBLIC_KEY" > "$CONFIG_FILE"
+chown couchdb:couchdb "$CONFIG_FILE"
+chmod 600 "$CONFIG_FILE"
+echo "Wrote the RSA public key to $CONFIG_FILE."
 
-# Add JWT keys section if it doesn't exist
-if ! grep -q "\[jwt_keys\]" "$CONFIG_FILE"; then
-  echo "" >> "$CONFIG_FILE"
-  echo "[jwt_keys]" >> "$CONFIG_FILE"
-  echo "# Configure JWT keys for authentication" >> "$CONFIG_FILE"
-  echo "# Using _default as the key identifier" >> "$CONFIG_FILE"
-  
-  # Determine key type (assuming RSA, but you can extend for EC if needed)
-  if grep -q "BEGIN RSA PUBLIC KEY" "$PUBLIC_KEY_FILE" || grep -q "BEGIN PUBLIC KEY" "$PUBLIC_KEY_FILE"; then
-    echo "rsa:_default = $PUBLIC_KEY" >> "$CONFIG_FILE"
-    echo "Added RSA public key to CouchDB JWT configuration."
-  else
-    echo "# Unknown key type detected. Please verify the key format." >> "$CONFIG_FILE"
-    echo "WARNING: Could not determine key type. Please check the configuration."
-  fi
-else
-  echo "JWT keys section already exists in config file. Skipping."
+# Earlier versions appended the section to docker.ini, where it would now shadow
+# the key above. Drop just that section and leave the credentials CouchDB's
+# entrypoint keeps in the same file untouched.
+if [ -f "$COUCHDB_CONFIG_FILE" ] && grep -q '^\[jwt_keys\]' "$COUCHDB_CONFIG_FILE"; then
+  echo "Removing the superseded [jwt_keys] section from $COUCHDB_CONFIG_FILE..."
+  awk '/^\[jwt_keys\]/ { inSection = 1; next } /^\[/ { inSection = 0 } !inSection' \
+    "$COUCHDB_CONFIG_FILE" > "$COUCHDB_CONFIG_FILE.tmp"
+  cat "$COUCHDB_CONFIG_FILE.tmp" > "$COUCHDB_CONFIG_FILE"
+  rm -f "$COUCHDB_CONFIG_FILE.tmp"
 fi
 
 # Make sure permissions are correct

@@ -1,14 +1,8 @@
-import {
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  ListSubheader,
-  Switch,
-} from "@mui/material"
+import { ListItem, ListItemIcon, ListItemText, Switch } from "@mui/material"
 import { FileDownloadOutlined } from "@mui/icons-material"
 import { memo } from "react"
 import type { MetadataFileDownloadOverride } from "@oboku/shared"
+import { PageSection } from "../../common/PageSection"
 
 type Props = {
   fileDownloadOverride: MetadataFileDownloadOverride
@@ -31,11 +25,7 @@ export const DataSourceMetadataPolicyPane = memo(
     const fileDownloadEnabled = fileDownloadOverride !== false
 
     return (
-      <List
-        dense
-        subheader={<ListSubheader>Metadata fetching</ListSubheader>}
-        disablePadding
-      >
+      <PageSection title="Metadata fetching" dense>
         <ListItem
           secondaryAction={
             <Switch
@@ -55,7 +45,7 @@ export const DataSourceMetadataPolicyPane = memo(
             secondary={fileDownloadEnabled ? "Default — Allow" : "Disabled"}
           />
         </ListItem>
-      </List>
+      </PageSection>
     )
   },
 )

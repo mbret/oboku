@@ -2,17 +2,19 @@ import {
   Controller,
   Get,
   Header,
-  NotFoundException,
   OnModuleInit,
   Param,
   Query,
   StreamableFile,
 } from "@nestjs/common"
-import { defer, map, mergeMap, type Observable } from "rxjs"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service"
-import { CoversService } from "./covers.service"
-import { type AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { emailToNameHex } from "src/couch/couch.service"
+import { ApiOkResponse, ApiProduces } from "@nestjs/swagger"
+import { defer, map, type Observable } from "rxjs"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
+import { AppConfigService } from "../config/AppConfigService.js"
+import { COVER_DELIVERY_FORMATS, CoversService } from "./covers.service.js"
+import { CoverQueryDto } from "./covers.dto.js"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { emailToNameHex } from "../couch/couch.service.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 
 @Controller("covers")
@@ -22,12 +24,13 @@ export class CoversController implements OnModuleInit {
   constructor(
     private taskQueueService: InMemoryTaskQueueService,
     private coversService: CoversService,
+    private appConfig: AppConfigService,
   ) {}
 
   onModuleInit() {
     this.taskQueueService.createQueue({
       name: this.QUEUE_NAME,
-      maxConcurrent: 1,
+      maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
       deduplicate: true,
     })
   }
@@ -41,9 +44,11 @@ export class CoversController implements OnModuleInit {
    */
   @Get("books/:bookId")
   @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @ApiProduces(...COVER_DELIVERY_FORMATS)
+  @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findBookCover(
     @Param("bookId") bookId: string,
-    @Query() query: { format?: string },
+    @Query() query: CoverQueryDto,
     @WithAuthUser() user: AuthUser,
   ) {
     const userNameHex = emailToNameHex(user.email)
@@ -54,9 +59,11 @@ export class CoversController implements OnModuleInit {
 
   @Get("collections/:collectionId")
   @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @ApiProduces(...COVER_DELIVERY_FORMATS)
+  @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findCollectionCover(
     @Param("collectionId") collectionId: string,
-    @Query() query: { format?: string },
+    @Query() query: CoverQueryDto,
     @WithAuthUser() user: AuthUser,
   ) {
     const userNameHex = emailToNameHex(user.email)
@@ -69,31 +76,15 @@ export class CoversController implements OnModuleInit {
     objectKey: string,
     format?: string,
   ): Observable<StreamableFile> {
-    const resolvedFormat = format || "image/webp"
-
     const response$ = defer(() =>
-      this.coversService.getCover(objectKey).pipe(
-        mergeMap((cover) => {
-          if (!cover) {
-            throw new NotFoundException()
-          }
-
-          const resizedCover$ = this.coversService.resizeCover(cover, {
-            width: 600,
-            height: 600,
-            format: resolvedFormat,
-          })
-
-          return resizedCover$.pipe(
-            map(
-              (buffer) =>
-                new StreamableFile(buffer, {
-                  disposition: `inline`,
-                  type: "image/webp",
-                }),
-            ),
-          )
-        }),
+      this.coversService.getCoverForDelivery(objectKey, format).pipe(
+        map(
+          (delivered) =>
+            new StreamableFile(delivered.cover, {
+              disposition: `inline`,
+              type: delivered.format,
+            }),
+        ),
       ),
     )
 

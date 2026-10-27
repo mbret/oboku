@@ -1,4 +1,8 @@
-import { defineConfig, type UserConfigFnObject } from "vite"
+import {
+  defineConfig,
+  type LibraryFormats,
+  type UserConfigFnObject,
+} from "vite"
 import dts from "unplugin-dts/vite"
 import externals from "rollup-plugin-node-externals"
 
@@ -7,12 +11,15 @@ import externals from "rollup-plugin-node-externals"
  *
  * Libraries publish their entries as ESM + CJS and emit bundled `.d.ts` types.
  * Most expose a single `./src/index.ts`; pass `entries` to publish one bundle
- * per runtime instead, keyed by the name each is imported under.
+ * per runtime instead, keyed by the name each is imported under. Browser-only
+ * libraries pass `formats: ["es"]`, since a CJS bundle of code that relies on
+ * `import.meta.url` (workers, asset URLs) cannot work.
  * Adding a new internal package should be a one-line `vite.config.ts`.
  */
 export const definePackageLibConfig = (
   name: string,
   entries: Record<string, string> = { index: "./src/index.ts" },
+  formats: LibraryFormats[] = ["es", "cjs"],
 ): UserConfigFnObject =>
   defineConfig(({ mode }) => ({
     build: {
@@ -21,7 +28,7 @@ export const definePackageLibConfig = (
         name,
         fileName: (format, entryName) =>
           `${entryName}.${format === "es" ? "js" : "cjs"}`,
-        formats: ["es", "cjs"],
+        formats,
       },
       emptyOutDir: mode !== "development",
       sourcemap: true,

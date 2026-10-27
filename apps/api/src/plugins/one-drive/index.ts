@@ -1,48 +1,29 @@
-import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { find } from "src/lib/couch/dbHelpers"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types"
-import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph"
-import { getDataSourceData } from "../helpers"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync"
+import { getDataFromDataSource, PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
+import { findCandidates } from "../helpers.js"
+import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph.js"
+import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
 export const dataSource: DataSourcePlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => {
-    const links = await find(ctx.db, "link", {
-      selector: {
-        type: PLUGIN_ONE_DRIVE_TYPE,
-        data: {
-          driveId: item.linkData.driveId,
-          fileId: item.linkData.fileId,
-        },
+  getLinkCandidatesForItem: async (item, ctx) => ({
+    links: await findCandidates(ctx, "link", {
+      type: PLUGIN_ONE_DRIVE_TYPE,
+      data: {
+        driveId: item.linkData.driveId,
+        fileId: item.linkData.fileId,
       },
-    })
-
-    return {
-      links: links.map((link) => ({
-        ...link,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
-  getCollectionCandidatesForItem: async (item, ctx) => {
-    const collections = await find(ctx.db, "obokucollection", {
-      selector: {
-        linkType: PLUGIN_ONE_DRIVE_TYPE,
-        linkData: {
-          driveId: item.linkData.driveId,
-          fileId: item.linkData.fileId,
-        },
+    }),
+  }),
+  getCollectionCandidatesForItem: async (item, ctx) => ({
+    collections: await findCandidates(ctx, "obokucollection", {
+      type: PLUGIN_ONE_DRIVE_TYPE,
+      data: {
+        driveId: item.linkData.driveId,
+        fileId: item.linkData.fileId,
       },
-    })
-
-    return {
-      collections: collections.map((collection) => ({
-        ...collection,
-        isUsingSameProviderCredentials: true,
-      })),
-    }
-  },
+    }),
+  }),
   getFolderMetadata: async ({ link, providerCredentials }) => {
     const item = await getOneDriveDriveItem({
       accessToken: providerCredentials.accessToken,
@@ -84,12 +65,8 @@ export const dataSource: DataSourcePlugin<"one-drive"> = {
       stream,
     }
   },
-  sync: async ({ dataSourceId, db, providerCredentials }) => {
-    const { items = [] } =
-      (await getDataSourceData<"one-drive">({
-        db,
-        dataSourceId,
-      })) ?? {}
+  sync: async ({ dataSource, providerCredentials }) => {
+    const { items = [] } = getDataFromDataSource<"one-drive">(dataSource) ?? {}
 
     return getSynchronizeAbleDataSourceFromItems({
       accessToken: providerCredentials.accessToken,

@@ -1,7 +1,7 @@
 import { Logger } from "@nestjs/common"
 import { difference } from "@oboku/shared"
-import type { Context } from "../types"
-import { atomicUpdate, find, findOne } from "src/lib/couch/dbHelpers"
+import type { Context } from "../types.js"
+import { atomicUpdate, find, findOne } from "../../couch/dbHelpers.js"
 
 const logger = new Logger("sync/repairCollectionBooks")
 
@@ -50,19 +50,9 @@ export const repairCollectionBooks = async ({
               },
             },
           },
-          /**
-           * @todo If a collection have more than 999 books we have a problem.
-           * We need to find a safer way to detect anomaly.
-           */
-          limit: 999,
         }),
         find(ctx.db, `book`, {
           selector: { _id: { $in: collection?.books || [] } },
-          /**
-           * @todo If a collection have more than 999 books we have a problem.
-           * We need to find a safer way to detect anomaly.
-           */
-          limit: 999,
         }),
       ])
 

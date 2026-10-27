@@ -1,23 +1,17 @@
-import {
-  type ComponentProps,
-  type DOMAttributes,
-  memo,
-  useCallback,
-} from "react"
+import { type DOMAttributes, memo, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
 import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
-import type { ObokuPlugin, UploadBookToAddPayload } from "../plugins/types"
+import type {
+  UploadBookComponentProps,
+  UploadBookToAddPayload,
+} from "../plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
 import { Logger } from "../debug/logger.shared"
 import { isCancelError } from "../errors/errors.shared"
-
-type UploadBookComponentProps = ComponentProps<
-  NonNullable<ObokuPlugin[`UploadBookComponent`]>
->
 
 export const uploadBookDialogOpenedSignal = signal<string | undefined>({})
 

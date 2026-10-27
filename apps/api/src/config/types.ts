@@ -5,8 +5,10 @@ export interface EnvironmentVariables {
   PORT: number
   COUCH_DB_URL: string
   GOOGLE_BOOK_API_URL: string
+  POSTGRES_HOST: string
   POSTGRES_USER: string
   POSTGRES_PASSWORD: string
+  POSTGRES_DB?: string
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
   DROPBOX_CLIENT_ID?: string
@@ -23,7 +25,7 @@ export interface EnvironmentVariables {
   ADMIN_LOGIN?: string
   ADMIN_PASSWORD?: string
   APP_PUBLIC_URL: string
-  API_CORS_TRUSTED_ORIGINS?: string
+  ADMIN_PUBLIC_URL?: string
   EMAIL_SMTP_HOST?: string
   EMAIL_SMTP_PORT?: number
   EMAIL_SMTP_USER?: string

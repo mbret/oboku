@@ -1,5 +1,3 @@
-"use client"
-
 import {
   Box,
   Container,
@@ -8,7 +6,7 @@ import {
   Typography,
 } from "@mui/material"
 import { links } from "@oboku/shared"
-import Link from "next/link"
+import { NextLink } from "../common/NextLink"
 
 export const Footer = () => {
   return (
@@ -47,16 +45,19 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
+              <MuiLink href={links.app} variant="body2" underline="hover">
+                App
+              </MuiLink>
               <MuiLink
-                href={links.app}
-                target="_blank"
+                component={NextLink}
+                href="/features"
                 variant="body2"
                 underline="hover"
               >
-                App
+                Features
               </MuiLink>
               <MuiLink
                 href={links.documentation}
@@ -77,6 +78,14 @@ export const Footer = () => {
               >
                 Github
               </MuiLink>
+              <MuiLink
+                href={links.sponsor}
+                target="_blank"
+                variant="body2"
+                underline="hover"
+              >
+                Sponsor
+              </MuiLink>
             </Stack>
           </Stack>
           <Stack
@@ -94,7 +103,7 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
@@ -130,11 +139,11 @@ export const Footer = () => {
             </Typography>
             <Stack
               sx={{
-                gap: 0,
+                gap: 1,
               }}
             >
               <MuiLink
-                component={Link}
+                component={NextLink}
                 href="/privacy-policy"
                 variant="body2"
                 underline="hover"

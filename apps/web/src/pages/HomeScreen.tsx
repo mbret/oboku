@@ -8,6 +8,7 @@ import { ContinueReadingSection } from "../home/ContinueReadingSection"
 import { RecentlyAddedSection } from "../home/RecentlyAddedSection"
 import { ROUTES } from "../navigation/routes"
 import { ContinueCollectionsSection } from "../home/ContinueCollectionsSection"
+import { Page } from "../common/Page"
 
 export const HomeScreen = memo(() => {
   const theme = useTheme()
@@ -15,14 +16,7 @@ export const HomeScreen = memo(() => {
   const { data: continueReadingBooks, isPending } = useContinueReadingBooks()
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flex: 1,
-        flexDirection: "column",
-        overflow: "auto",
-      }}
-    >
+    <Page bottomGutter={false}>
       <TopBarNavigation
         title={"Home"}
         showBack={false}
@@ -77,6 +71,6 @@ export const HomeScreen = memo(() => {
         <RecentlyAddedSection />
         <ContinueCollectionsSection />
       </Box>
-    </Box>
+    </Page>
   )
 })

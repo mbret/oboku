@@ -12,7 +12,6 @@ import {
 } from "@mui/material"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useObserve } from "reactjrx"
-import { EMPTY } from "rxjs"
 import { useBookOptimize } from "../BookOptimizeProvider"
 import { buildUpdateActions } from "../apply/buildUpdateActions"
 import {
@@ -115,8 +114,8 @@ export function BookOptimizeActionBar() {
     isApplyingCurrentValues || isApplyingLocally
 
   const { data: applyLocallyProgress = DEFAULT_APPLY_LOCALLY_PROGRESS } =
-    useObserve(applyLocallyProgress$ ?? EMPTY)
-  const { data: uploadProgress = 0 } = useObserve(uploadProgress$ ?? EMPTY)
+    useObserve(applyLocallyProgress$)
+  const { data: uploadProgress = 0 } = useObserve(uploadProgress$)
 
   const canUpload = canUploadCurrentFile && !isApplyLocallyWorkflowPending
   const canApplyLocally =

@@ -31,7 +31,6 @@ import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { useConfig } from "../../config/useConfig"
-// import { useRefreshBookMetadata } from "../../books/useRefreshBookMetadata"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
 import { differenceInMinutes } from "../../common/date/differenceInMinutes"
@@ -47,7 +46,6 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   ] = useState<string | undefined>(undefined)
   const { mutate: removeCollection } = useRemoveCollection()
   const navigate = useNavigate()
-  // const refreshBookMetadata = useRefreshBookMetadata()
   const { mutate: refreshCollectionMetadata } = useRefreshCollectionMetadata()
   const subActionOpened = !!isEditCollectionDialogOpenedWithId
   const { mutate: updateCollectionBooks } = useUpdateCollectionBooks()
@@ -90,6 +88,9 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
     differenceInMinutes(Date.now(), collection.lastMetadataStartedAt) <
       COLLECTION_METADATA_LOCK_MN
   )
+
+  const isCollectionFromDataSource = !!collection?.linkType
+  const canRemoveCollection = !!collection && !isCollectionFromDataSource
 
   return (
     <>
@@ -206,29 +207,24 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             </ListItemIcon>
             <ListItemText primary="Mark all books as interested" />
           </ListItemButton>
-          {/* <ListItemButton
-            onClick={() => {
-              closeModalWithNavigation()
-              collection?.books.forEach((id) => {
-                refreshBookMetadata(id)
-              })
-            }}
-          >
-            <ListItemIcon>
-              <SyncRounded />
-            </ListItemIcon>
-            <ListItemText primary="Refresh all books metadata" />
-          </ListItemButton> */}
         </List>
         <Divider />
         <List>
           <ListItemButton
             onClick={() => onRemoveCollection(collectionId ?? ``)}
+            disabled={!canRemoveCollection}
           >
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>
-            <ListItemText primary="Remove" />
+            <ListItemText
+              primary="Remove"
+              secondary={
+                isCollectionFromDataSource
+                  ? "Managed by its data source"
+                  : undefined
+              }
+            />
           </ListItemButton>
         </List>
       </Drawer>

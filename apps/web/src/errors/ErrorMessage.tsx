@@ -19,6 +19,13 @@ export const ErrorAlert = ({ error }: { error: unknown }) => {
   )
 }
 
+const obokuErrorCodes: ReadonlySet<string> = new Set(
+  Object.values(ObokuErrorCode),
+)
+
+const isObokuErrorCode = (value: unknown): value is ObokuErrorCode =>
+  typeof value === "string" && obokuErrorCodes.has(value)
+
 const ERROR_RESOURCE_NOT_REACHABLE_MESSAGE =
   "Resource is not reachable. Make sure it is accessible and allows external access (CORS)."
 
@@ -40,10 +47,22 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "This magic link is invalid, expired, or no longer applicable to this account."
     case ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN:
       return "This magic link is missing a token. Please request a new one."
+    case ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED:
+      return "We could not connect to the storage provider. If the problem persists, try to reload the app."
+    case ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED:
+      return "Your data source seems to have exceeded its allowed access limit."
+    case ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE:
+      return "Our server seems unreachable, make sure you are online to start the synchronization."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
       return "No connector is configured for this link. Please set one up first."
+    case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED:
+      return "The sync server did not accept this username and password."
+    case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE:
+      return "The sync server could not be reached, or did not answer like a KOReader sync server. Check the address."
+    case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
+      return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:
       return `Something went wrong. Error code: ${error}`
   }
@@ -78,11 +97,16 @@ export const errorToMessage = (error: unknown) => {
     return "Your local account needs email verification before password sign-in. Use the magic link below to verify this account once."
   }
 
-  if (
-    typeof error === "string" &&
-    Object.values(ObokuErrorCode).includes(error as ObokuErrorCode)
-  ) {
-    return fromObokuErrorCode(error as ObokuErrorCode)
+  const apiErrorCode = isApiError(error)
+    ? error.response.data.errors[0]?.code
+    : undefined
+
+  if (isObokuErrorCode(apiErrorCode)) {
+    return fromObokuErrorCode(apiErrorCode)
+  }
+
+  if (isObokuErrorCode(error)) {
+    return fromObokuErrorCode(error)
   }
 
   if (error instanceof ObokuSharedError) {

@@ -3,9 +3,11 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query"
-import type {
-  GetNotificationsResponse,
-  GetUnreadNotificationsCountResponse,
+import {
+  type NotificationsListResponse,
+  type NotificationsMarkAsSeenData,
+  type NotificationsUnreadCountResponse,
+  notificationsMarkAsSeen,
 } from "@oboku/shared"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -25,11 +27,18 @@ export const markSeenMutationOptions = (
     queryClient,
     profileId,
     mutationKey: markSeenMutationKey,
-    mutationFn: httpClientApi.markNotificationAsSeen,
+    mutationFn: function markNotificationAsSeen({
+      id,
+    }: NotificationsMarkAsSeenData["path"]) {
+      return notificationsMarkAsSeen({
+        client: httpClientApi.sdkClient,
+        path: { id },
+      })
+    },
     applyOptimisticUpdate: ({ id }: { id: number }, snapshot) => {
       const target = snapshot.previousNotifications?.find((n) => n.id === id)
 
-      queryClient.setQueryData<GetNotificationsResponse>(
+      queryClient.setQueryData<NotificationsListResponse>(
         inboxNotificationsQueryKey(profileId),
         (old) =>
           old?.map((n) =>
@@ -38,7 +47,7 @@ export const markSeenMutationOptions = (
       )
 
       if (target && !target.seenAt) {
-        queryClient.setQueryData<GetUnreadNotificationsCountResponse>(
+        queryClient.setQueryData<NotificationsUnreadCountResponse>(
           unreadCountQueryKey(profileId),
           (old) => (old ? { count: Math.max(0, old.count - 1) } : old),
         )

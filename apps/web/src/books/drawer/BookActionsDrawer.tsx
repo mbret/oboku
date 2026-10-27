@@ -10,7 +10,7 @@ import {
   ThumbUpOutlined,
   ThumbDownOutlined,
 } from "@mui/icons-material"
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { useRemoveDownloadFile } from "../../download/useRemoveDownloadFile"
 import {
   Drawer,
@@ -171,7 +171,9 @@ export const BookActionsDrawer = memo(() => {
               <ListItemButton
                 onClick={() => {
                   handleClose(() => {
-                    navigate(ROUTES.BOOK_DETAILS.replace(":id", book._id))
+                    navigate(
+                      generatePath(ROUTES.BOOK_DETAILS, { id: book._id }),
+                    )
                   })
                 }}
               >
@@ -241,7 +243,9 @@ export const BookActionsDrawer = memo(() => {
                 onClick={() => {
                   handleClose(() => {
                     if (bookId) {
-                      navigate(ROUTES.BOOK_COLLECTIONS.replace(":id", bookId))
+                      navigate(
+                        generatePath(ROUTES.BOOK_COLLECTIONS, { id: bookId }),
+                      )
                     }
                   })
                 }}
@@ -257,7 +261,7 @@ export const BookActionsDrawer = memo(() => {
                 onClick={() => {
                   handleClose(() => {
                     if (bookId) {
-                      navigate(ROUTES.BOOK_TAGS.replace(":id", bookId))
+                      navigate(generatePath(ROUTES.BOOK_TAGS, { id: bookId }))
                     }
                   })
                 }}

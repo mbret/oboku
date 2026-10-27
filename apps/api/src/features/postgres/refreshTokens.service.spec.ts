@@ -1,10 +1,11 @@
+import type { Mock } from "vitest"
 import { Logger } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
 import { createHash } from "node:crypto"
-import { AppConfigService } from "../../config/AppConfigService"
-import { RefreshTokenPostgresEntity } from "./entities"
-import { RefreshTokensService } from "./refreshTokens.service"
+import { AppConfigService } from "../../config/AppConfigService.js"
+import { RefreshTokenPostgresEntity } from "./entities.js"
+import { RefreshTokensService } from "./refreshTokens.service.js"
 
 const SIX_MONTHS_MS = 6 * 30 * 24 * 60 * 60 * 1000
 const FIVE_MINUTES_MS = 5 * 60 * 1000
@@ -29,7 +30,7 @@ const makeRefreshTokenRow = (
 })
 
 const createQueryBuilderMock = (executeResult: unknown) => {
-  const qb: Record<string, jest.Mock> = {}
+  const qb: Record<string, Mock> = {}
 
   for (const method of [
     "update",
@@ -44,10 +45,10 @@ const createQueryBuilderMock = (executeResult: unknown) => {
     "delete",
     "from",
   ]) {
-    qb[method] = jest.fn().mockReturnValue(qb)
+    qb[method] = vi.fn().mockReturnValue(qb)
   }
 
-  qb.execute = jest.fn().mockResolvedValue(executeResult)
+  qb.execute = vi.fn().mockResolvedValue(executeResult)
 
   return qb
 }
@@ -55,31 +56,31 @@ const createQueryBuilderMock = (executeResult: unknown) => {
 describe("RefreshTokensService", () => {
   let service: RefreshTokensService
   let repository: {
-    findOne: jest.Mock
-    insert: jest.Mock
-    delete: jest.Mock
-    createQueryBuilder: jest.Mock
+    findOne: Mock
+    insert: Mock
+    delete: Mock
+    createQueryBuilder: Mock
     manager: {
-      transaction: jest.Mock
-      createQueryBuilder: jest.Mock
-      findOne: jest.Mock
-      find: jest.Mock
-      delete: jest.Mock
+      transaction: Mock
+      createQueryBuilder: Mock
+      findOne: Mock
+      find: Mock
+      delete: Mock
     }
   }
 
   beforeEach(async () => {
     repository = {
-      findOne: jest.fn().mockResolvedValue(null),
-      insert: jest.fn().mockResolvedValue(undefined),
-      delete: jest.fn().mockResolvedValue(undefined),
-      createQueryBuilder: jest.fn(),
+      findOne: vi.fn().mockResolvedValue(null),
+      insert: vi.fn().mockResolvedValue(undefined),
+      delete: vi.fn().mockResolvedValue(undefined),
+      createQueryBuilder: vi.fn(),
       manager: {
-        transaction: jest.fn(),
-        createQueryBuilder: jest.fn(),
-        findOne: jest.fn().mockResolvedValue(null),
-        find: jest.fn().mockResolvedValue([]),
-        delete: jest.fn().mockResolvedValue(undefined),
+        transaction: vi.fn(),
+        createQueryBuilder: vi.fn(),
+        findOne: vi.fn().mockResolvedValue(null),
+        find: vi.fn().mockResolvedValue([]),
+        delete: vi.fn().mockResolvedValue(undefined),
       },
     }
     repository.manager.transaction.mockImplementation(
@@ -106,12 +107,12 @@ describe("RefreshTokensService", () => {
 
     service = module.get<RefreshTokensService>(RefreshTokensService)
 
-    jest.useFakeTimers()
-    jest.setSystemTime(FIXED_NOW)
+    vi.useFakeTimers()
+    vi.setSystemTime(FIXED_NOW)
   })
 
   afterEach(() => {
-    jest.useRealTimers()
+    vi.useRealTimers()
   })
 
   it("issues a fresh token, dropping any prior chain for the installation", async () => {
@@ -504,7 +505,7 @@ describe("RefreshTokensService", () => {
   })
 
   it("flags reuse for a superseded token presented past the grace window but leaves the rest of the chain intact", async () => {
-    const warnSpy = jest
+    const warnSpy = vi
       .spyOn(Logger.prototype, "warn")
       .mockImplementation(() => undefined)
 

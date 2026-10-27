@@ -1,7 +1,8 @@
 import axios from "axios"
 import { Logger } from "@nestjs/common"
-import { CoversService } from "src/covers/covers.service"
+import { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
+import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 
 const logger = new Logger("books/covers/saveCoverFromExternalLinkToBucket")
 
@@ -15,6 +16,7 @@ export const saveCoverFromExternalLinkToBucket = async (
   try {
     const response = await axios.get<ArrayBuffer>(coverUrl, {
       responseType: "arraybuffer",
+      ...getUserAddressRequestOptions(),
     })
     const entryAsBuffer = Buffer.from(response.data)
 

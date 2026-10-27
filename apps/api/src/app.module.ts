@@ -1,48 +1,57 @@
 import { Module } from "@nestjs/common"
-import { AppController } from "./app.controller"
-import { AppService } from "./app.service"
+import { AppController } from "./app.controller.js"
+import { AppService } from "./app.service.js"
 import { ConfigModule } from "@nestjs/config"
 import path from "node:path"
 import Joi from "joi"
 import { EventEmitterModule } from "@nestjs/event-emitter"
-import { CollectionsController } from "./features/collections/collections.controller"
-import { CollectionMetadataService } from "./features/collections/CollectionMetadataService"
-import { QueueModule } from "./queue/queue.module"
+import { CollectionsModule } from "./features/collections/collections.module.js"
+import { QueueModule } from "./queue/queue.module.js"
 import { TypeOrmModule } from "@nestjs/typeorm"
-import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService"
-import { PostgresModule } from "./features/postgres/postgres.module"
-import { AppConfigModule } from "./config/config.module"
-import { WebController } from "./web/web.controller"
-import { UsersModule } from "./users/users.module"
-import { AuthModule } from "./auth/auth.module"
-import { CouchModule } from "./couch/couch.module"
-import { CoversModule } from "./covers/covers.module"
+import { SyncReportPostgresService } from "./features/postgres/SyncReportPostgresService.js"
+import { PostgresModule } from "./features/postgres/postgres.module.js"
+import { AppConfigModule } from "./config/config.module.js"
+import { AppConfigService } from "./config/AppConfigService.js"
+import { WebController } from "./web/web.controller.js"
+import { UsersModule } from "./users/users.module.js"
+import { AuthModule } from "./auth/auth.module.js"
+import { CouchModule } from "./couch/couch.module.js"
+import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
-import { AdminModule } from "./admin/admin.module"
-import { DataSourceModule } from "./datasource/datasource.module"
-import { StorageModule } from "./storage/storage.module"
-import { WebDavModule } from "./webdav/webdav.module"
-import { NotificationsModule } from "./notifications/notifications.module"
-import { BooksModule } from "./books/books.module"
-import { PluginsModule } from "./plugins/plugins.module"
+import { AdminModule } from "./admin/admin.module.js"
+import { DataSourceModule } from "./datasource/datasource.module.js"
+import { StorageModule } from "./storage/storage.module.js"
+import { WebDavModule } from "./webdav/webdav.module.js"
+import { NotificationsModule } from "./notifications/notifications.module.js"
+import { BooksModule } from "./books/books.module.js"
+import { PluginsModule } from "./plugins/plugins.module.js"
+import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
+import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 
 @Module({
   imports: [
-    TypeOrmModule.forRoot({
-      type: "postgres",
-      host: process.env.POSTGRES_HOST ?? "postgres",
-      port: 5432,
-      username: process.env.POSTGRES_USER ?? "postgres",
-      password: process.env.POSTGRES_PASSWORD,
-      database: process.env.POSTGRES_DB,
-      autoLoadEntities: true,
-      synchronize: true,
+    TypeOrmModule.forRootAsync({
+      inject: [AppConfigService],
+      useFactory: function getPostgresConnectionOptions(
+        config: AppConfigService,
+      ) {
+        return {
+          type: "postgres",
+          host: config.POSTGRES_HOST,
+          port: 5432,
+          username: config.POSTGRES_USER,
+          password: config.POSTGRES_PASSWORD,
+          database: config.POSTGRES_DB,
+          autoLoadEntities: true,
+          synchronize: true,
+        }
+      },
     }),
     ConfigModule.forRoot({
       isGlobal: true,
       // this is mostly used during dev, for production it will be passed
       // as env variables directly to the docker container
-      envFilePath: path.join(__dirname, "../.env"),
+      envFilePath: path.join(import.meta.dirname, "../.env"),
       cache: true,
       validationSchema: Joi.object({
         NODE_ENV: Joi.string().valid("development", "production"),
@@ -59,7 +68,7 @@ import { PluginsModule } from "./plugins/plugins.module"
         GOOGLE_API_KEY: Joi.string().optional(),
         DROPBOX_CLIENT_ID: Joi.string().optional(),
         POSTGRES_DB: Joi.string().optional(),
-        POSTGRES_USER: Joi.string().optional(),
+        POSTGRES_USER: Joi.string().default("postgres"),
         POSTGRES_PASSWORD: Joi.string().required(),
         // use default docker service name
         POSTGRES_HOST: Joi.string().default("postgres"),
@@ -78,7 +87,7 @@ import { PluginsModule } from "./plugins/plugins.module"
         ADMIN_LOGIN: Joi.string().optional(),
         ADMIN_PASSWORD: Joi.string().optional(),
         APP_PUBLIC_URL: Joi.string().uri().required(),
-        API_CORS_TRUSTED_ORIGINS: Joi.string().optional(),
+        ADMIN_PUBLIC_URL: Joi.string().optional(),
         EMAIL_SMTP_HOST: Joi.string().optional(),
         EMAIL_SMTP_PORT: Joi.number().port().optional(),
         EMAIL_SMTP_USER: Joi.string().optional(),
@@ -105,9 +114,12 @@ import { PluginsModule } from "./plugins/plugins.module"
     NotificationsModule,
     WebDavModule,
     BooksModule,
+    CollectionsModule,
     PluginsModule,
+    KoreaderSyncServerModule,
+    KoreaderSyncConnectionModule,
   ],
-  providers: [AppService, SyncReportPostgresService, CollectionMetadataService],
-  controllers: [AppController, CollectionsController, WebController],
+  providers: [AppService, SyncReportPostgresService],
+  controllers: [AppController, WebController],
 })
 export class AppModule {}

@@ -1,6 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
-import { EnvironmentVariables } from "./types"
+import { EnvironmentVariables } from "./types.js"
 import path from "node:path"
 
 @Injectable()
@@ -13,6 +13,22 @@ export class AppConfigService {
 
   get COUCH_DB_URL(): string {
     return this.config.getOrThrow("COUCH_DB_URL", { infer: true })
+  }
+
+  get POSTGRES_HOST() {
+    return this.config.getOrThrow("POSTGRES_HOST", { infer: true })
+  }
+
+  get POSTGRES_USER() {
+    return this.config.getOrThrow("POSTGRES_USER", { infer: true })
+  }
+
+  get POSTGRES_PASSWORD() {
+    return this.config.getOrThrow("POSTGRES_PASSWORD", { infer: true })
+  }
+
+  get POSTGRES_DB() {
+    return this.config.get("POSTGRES_DB", { infer: true })
   }
 
   get GOOGLE_CLIENT_ID(): string | undefined {
@@ -91,7 +107,7 @@ export class AppConfigService {
   }
 
   get ASSETS_DIR() {
-    return path.join(__dirname, "..", "assets")
+    return path.join(import.meta.dirname, "..", "assets")
   }
 
   /**
@@ -110,6 +126,10 @@ export class AppConfigService {
 
   get COVERS_MAXIMUM_SIZE_FOR_STORAGE() {
     return { width: 400, height: 600 }
+  }
+
+  get COVERS_MAXIMUM_SIZE_FOR_DELIVERY() {
+    return { width: 600, height: 600 }
   }
 
   get COVERS_CLEANUP_GRACE_PERIOD_MS() {
@@ -138,19 +158,12 @@ export class AppConfigService {
   }
 
   /**
-   * Extra origins allowed to make credentialed CORS requests, beyond any port
-   * on `APP_PUBLIC_URL`'s hostname (e.g. a separately-hosted admin app).
-   * Comma-separated list of full origins.
+   * Public URL of the admin panel. Only needed when it is served from a
+   * different hostname than the web app, which the stock layout (another port
+   * on `APP_PUBLIC_URL`'s hostname) is not.
    */
-  get API_CORS_TRUSTED_ORIGINS(): string[] {
-    const raw = this.config.get("API_CORS_TRUSTED_ORIGINS", { infer: true })
-
-    return (
-      raw
-        ?.split(",")
-        .map((origin) => origin.trim())
-        .filter(Boolean) ?? []
-    )
+  get ADMIN_PUBLIC_URL() {
+    return this.config.get("ADMIN_PUBLIC_URL", { infer: true })
   }
 
   get EMAIL_SMTP_HOST() {
@@ -179,6 +192,28 @@ export class AppConfigService {
 
   get EMAIL_SMTP_MAX_SEND_RATE() {
     return this.config.get("EMAIL_SMTP_MAX_SEND_RATE", { infer: true })
+  }
+
+  /**
+   * ------------------------------------------------------------
+   * QUEUES
+   * ------------------------------------------------------------
+   */
+
+  get QUEUE_COVERS_DELIVERY_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT() {
+    return 3
+  }
+
+  get QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT() {
+    return 3
   }
 
   /**

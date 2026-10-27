@@ -1,9 +1,7 @@
-// @vitest-environment jsdom
-
 import { act, cleanup, render, waitFor } from "@testing-library/react"
 import { StrictMode, useState } from "react"
 import { MemoryRouter, useLocation, useNavigate } from "react-router"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 import { ModalHistoryProvider } from "./ModalHistory"
 import { useDismissibleOverlay } from "./useDismissibleOverlay"
 
@@ -18,19 +16,8 @@ import { useDismissibleOverlay } from "./useDismissibleOverlay"
  * Every test drives a real `MemoryRouter` and asserts on those two things.
  */
 
-// Distinct, unique tokens per open. jsdom's crypto.randomUUID varies by
-// version, so we always provide our own (and Math.random is unavailable here).
-beforeEach(() => {
-  let n = 0
-  vi.stubGlobal("crypto", {
-    ...globalThis.crypto,
-    randomUUID: () => `modal-token-${n++}`,
-  })
-})
-
 afterEach(() => {
   cleanup()
-  vi.unstubAllGlobals()
 })
 
 // Captured fresh on every render so the test can read the live values.

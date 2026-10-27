@@ -15,7 +15,13 @@ import {
   Tab,
   Tabs,
 } from "@mui/material"
-import { useNavigate, useParams, useSearchParams } from "react-router"
+import {
+  generatePath,
+  type PathParam,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
@@ -31,10 +37,7 @@ import { Page } from "../../common/Page"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { BookDetailsTabPane } from "./BookDetailsTabPane"
 import { BookMetadataTabPane } from "./BookMetadataTabPane"
-
-type ScreenParams = {
-  id: string
-}
+import { formatList } from "./metadataSource/formatters"
 
 const TAB_PARAM = "tab"
 const TABS = ["details", "metadata"] as const
@@ -104,7 +107,7 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
   const { mutate: downloadFile } = useDownloadBook()
   const cancelDownload = useCancelBookDownload()
   const { goBack } = useSafeGoBack()
-  const { id = `-1` } = useParams<ScreenParams>()
+  const { id = `-1` } = useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()
   const { data: book } = useBook({ id })
   const downloadState = useBookDownloadState(book?._id)
   const { data: link } = useLink({ id: book?.links[0] })
@@ -137,7 +140,7 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
               {metadata?.title || "Unknown"}
             </Typography>
             <ItalicTypography variant="body2">
-              By {metadata?.authors?.join(", ") || "Unknown"}
+              By {formatList(metadata?.authors) || "Unknown"}
             </ItalicTypography>
           </HeaderTextStack>
         </HeaderStack>
@@ -168,7 +171,8 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
               color="primary"
               startIcon={<MenuBookOutlined />}
               onClick={() =>
-                book?._id && navigate(ROUTES.READER.replace(":id", book._id))
+                book?._id &&
+                navigate(generatePath(ROUTES.READER, { id: book._id }))
               }
             >
               Read

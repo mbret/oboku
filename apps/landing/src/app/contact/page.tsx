@@ -1,7 +1,7 @@
 import { Button, Container, Link, Stack, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
-import { DiscordMarkBlueIcon } from "../../features/home/DiscordMarkBlueIcon"
-import { GitHub, Reddit } from "@mui/icons-material"
+import { GitHub } from "@mui/icons-material"
+import { CommunityButtons } from "../../features/common/CommunityButtons"
 
 export default async function Page() {
   return (
@@ -17,29 +17,7 @@ export default async function Page() {
           Contact
         </Typography>
         <Typography>You can contact us on the following platforms:</Typography>
-        <Stack
-          sx={{
-            flexDirection: "row",
-            gap: 2,
-          }}
-        >
-          <Button
-            component={Link}
-            href={links.discord}
-            startIcon={<DiscordMarkBlueIcon />}
-            variant="outlined"
-          >
-            Discord
-          </Button>
-          <Button
-            component={Link}
-            href={links.reddit}
-            startIcon={<Reddit />}
-            variant="outlined"
-          >
-            Reddit
-          </Button>
-        </Stack>
+        <CommunityButtons />
         <Typography
           variant="h6"
           component="h2"

@@ -1,4 +1,4 @@
-import type { SignInWithGoogleRequest } from "@oboku/shared"
+import type { AuthSignInWithGoogleData } from "@oboku/shared"
 import { from, switchMap } from "rxjs"
 import { useReCreateDb } from "../rxdb"
 import { useHttpClientApi } from "../http"
@@ -6,8 +6,9 @@ import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../google/auth"
 import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
+import { useForgetAccountSessions } from "./useForgetAccountSessions"
 import { usePutProfile } from "../profiles"
-import { getOrCreateAuthInstallationId } from "./installationId"
+import { getOrCreateInstallationId } from "../common/browser"
 import { createProofKey } from "./proofKey"
 import { withLock } from "../common/locks/utils"
 import {
@@ -28,13 +29,14 @@ export const useSignIn = (
   const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const { mutateAsync: putProfile } = usePutProfile()
+  const forgetAccountSessions = useForgetAccountSessions()
   const queryClient = useQueryClient()
   const { data: config } = useConfig()
 
   return useMutation$<SignInData, DefaultError, SignInVariables>({
     ...options,
     mutationFn: (data) => {
-      const installationId = getOrCreateAuthInstallationId()
+      const installationId = getOrCreateInstallationId()
 
       return from(createProofKey()).pipe(
         switchMap((proofKey) =>
@@ -57,7 +59,7 @@ export const useSignIn = (
                         token: authResponse.credential,
                         installation_id: installationId,
                         public_key: proofKey.publicJwk,
-                      } satisfies SignInWithGoogleRequest,
+                      } satisfies AuthSignInWithGoogleData["body"],
                       proofKey,
                     ),
                   ),
@@ -68,6 +70,7 @@ export const useSignIn = (
               completeAuthentication({
                 reCreateDb,
                 putProfile,
+                forgetAccountSessions,
                 auth,
                 queryClient,
               }),

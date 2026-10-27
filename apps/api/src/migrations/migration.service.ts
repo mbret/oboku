@@ -2,11 +2,12 @@ import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import { RefreshTokenPostgresEntity } from "src/features/postgres/entities"
-import { CouchService } from "src/couch/couch.service"
-import { listUserDatabases } from "src/lib/couch/listUserDatabases"
-import { tolerateMissingUserDb } from "./tolerateMissingUserDb"
-import { CoversService } from "src/covers/covers.service"
+import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
+import { CouchService } from "../couch/couch.service.js"
+import { findAll } from "../lib/couch/dbHelpers.js"
+import { listUserDatabases } from "../lib/couch/listUserDatabases.js"
+import { tolerateMissingUserDb } from "../lib/couch/tolerateMissingUserDb.js"
+import { CoversService } from "../covers/covers.service.js"
 import {
   CopyObjectCommand,
   DeleteObjectCommand,
@@ -16,6 +17,12 @@ import {
 } from "@aws-sdk/client-s3"
 import fs from "node:fs"
 import path from "node:path"
+import type {
+  CollectionCoverKeysMigrationResponseDto,
+  RefreshTokenCreatedAtResetResponseDto,
+  ResourceIdMigrationResponseDto,
+  WebdavConnectorsMigrationResponseDto,
+} from "./migration.dto.js"
 
 const logger = new Logger("MigrationService")
 
@@ -58,14 +65,6 @@ type CollectionDoc = {
   linkData?: Record<string, unknown> | string | null
   modifiedAt?: string | null
   [key: string]: unknown
-}
-
-type LegacyCollectionCoverMigrationResult = {
-  storageStrategy: "fs" | "s3"
-  ranOnUsers: number
-  renamed: number
-  skippedDestinationExists: number
-  skippedSourceMissing: number
 }
 
 /**
@@ -242,7 +241,7 @@ export class MigrationService {
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
 
-  async resetRefreshTokenCreatedAt(): Promise<{ updated: number }> {
+  async resetRefreshTokenCreatedAt(): Promise<RefreshTokenCreatedAtResetResponseDto> {
     /**
      * Migration: reset `created_at` to now for every refresh token row.
      *
@@ -277,10 +276,7 @@ export class MigrationService {
     return { updated }
   }
 
-  async migrateWebdavConnectorsToConnectors(): Promise<{
-    usersMigrated: number
-    connectorsCreated: number
-  }> {
+  async migrateWebdavConnectorsToConnectors(): Promise<WebdavConnectorsMigrationResponseDto> {
     /**
      * Migration: `settings.webdavConnectors` -> `settings.connectors`
      *
@@ -423,11 +419,7 @@ export class MigrationService {
     return { usersMigrated, connectorsCreated }
   }
 
-  async migrateWebdavResourceIds(): Promise<{
-    usersMigrated: number
-    linksUpdated: number
-    collectionsUpdated: number
-  }> {
+  async migrateWebdavResourceIds(): Promise<ResourceIdMigrationResponseDto> {
     /**
      * Migration: legacy WebDAV `resourceId` / `linkResourceId` -> canonical WebDAV ID format
      *
@@ -492,16 +484,15 @@ export class MigrationService {
         let userLinksUpdated = 0
         let userCollectionsUpdated = 0
 
-        const links = await userDbInstance.find({
+        const links = await findAll(userDbInstance, {
           selector: {
             rx_model: "link",
             type: "webdav",
             resourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const link of links.docs) {
+        for (const link of links) {
           if (typeof link.resourceId !== "string") {
             continue
           }
@@ -521,16 +512,15 @@ export class MigrationService {
           userLinksUpdated += 1
         }
 
-        const collections = await userDbInstance.find({
+        const collections = await findAll(userDbInstance, {
           selector: {
             rx_model: "obokucollection",
             linkType: "webdav",
             linkResourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           if (typeof collection.linkResourceId !== "string") {
             continue
           }
@@ -577,11 +567,7 @@ export class MigrationService {
     return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 
-  async migrateResourceIdToLinkData(): Promise<{
-    usersMigrated: number
-    linksUpdated: number
-    collectionsUpdated: number
-  }> {
+  async migrateResourceIdToLinkData(): Promise<ResourceIdMigrationResponseDto> {
     /**
      * Migration: `resourceId` -> `data` identity fields on links,
      *            `linkResourceId` -> `linkData` identity fields on collections.
@@ -627,12 +613,11 @@ export class MigrationService {
         let userLinksUpdated = 0
         let userCollectionsUpdated = 0
 
-        const links = await userDb.find({
+        const links = await findAll(userDb, {
           selector: { rx_model: "link", resourceId: { $exists: true } },
-          limit: 99999,
         })
 
-        for (const link of links.docs) {
+        for (const link of links) {
           if (typeof link.resourceId !== "string") {
             continue
           }
@@ -654,15 +639,14 @@ export class MigrationService {
           userLinksUpdated += 1
         }
 
-        const collections = await userDb.find({
+        const collections = await findAll(userDb, {
           selector: {
             rx_model: "obokucollection",
             linkResourceId: { $exists: true },
           },
-          limit: 99999,
         })
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           if (typeof collection.linkResourceId !== "string") {
             continue
           }
@@ -708,7 +692,7 @@ export class MigrationService {
     return { usersMigrated, linksUpdated, collectionsUpdated }
   }
 
-  async migrateLegacyCollectionCoverKeys(): Promise<LegacyCollectionCoverMigrationResult> {
+  async migrateLegacyCollectionCoverKeys(): Promise<CollectionCoverKeysMigrationResponseDto> {
     /**
      * Migration: legacy collection cover keys -> per-user-scoped collection
      * cover keys.
@@ -773,13 +757,12 @@ export class MigrationService {
           userDb.dbName,
         )
 
-        const collections = await userDbInstance.find({
+        const collections = await findAll(userDbInstance, {
           selector: { rx_model: "obokucollection" },
           fields: ["_id"],
-          limit: 99999,
         })
 
-        if (collections.docs.length === 0) {
+        if (collections.length === 0) {
           logger.log(`${progress} ${userDb.email}: skipped (no collections)`)
           return
         }
@@ -788,7 +771,7 @@ export class MigrationService {
         let userSkippedDestinationExists = 0
         let userSkippedSourceMissing = 0
 
-        for (const collection of collections.docs) {
+        for (const collection of collections) {
           const oldKey = `collection-${collection._id}`
           const newKey = getCollectionCoverKey(
             userDb.userNameHex,
@@ -811,7 +794,7 @@ export class MigrationService {
         skippedSourceMissing += userSkippedSourceMissing
 
         logger.log(
-          `${progress} ${userDb.email}: ${collections.docs.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
+          `${progress} ${userDb.email}: ${collections.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
         )
       })
     }

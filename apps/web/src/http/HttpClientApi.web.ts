@@ -1,30 +1,25 @@
 import type {
-  AuthSessionResponse,
-  CompleteMagicLinkRequest,
-  CompleteMagicLinkResponse,
-  CompleteSignUpRequest,
-  CompleteSignUpResponse,
-  DeleteAccountResponse,
-  LogoutRequest,
-  LogoutResponse,
-  RefreshBookMetadataRequest,
-  RefreshBookMetadataResponse,
-  RefreshCollectionMetadataRequest,
-  RefreshCollectionMetadataResponse,
-  RequestMagicLinkRequest,
-  RequestMagicLinkResponse,
-  RequestSignUpRequest,
-  RequestSignUpResponse,
-  SignInWithEmailRequest,
-  SignInWithGoogleRequest,
-  SyncDataSourceRequest,
-  SyncDataSourceResponse,
+  ApiClient,
+  AuthCompleteMagicLinkData,
+  AuthSignInWithEmailData,
+  AuthSignInWithGoogleData,
+} from "@oboku/shared"
+import {
+  authCompleteMagicLink,
+  authLogout,
+  authSignInWithEmail,
+  authSignInWithGoogle,
+  createApiClient,
 } from "@oboku/shared"
 import type { Profile } from "../profiles/types"
 import { API_URL } from "../config"
 import { withAuthCookiesLock } from "./authCookiesLock"
 import { persistProofKey, type StoredProofKey } from "../auth/proofKey"
-import { HttpClientError, RefreshingHttpClient } from "./httpClient.shared"
+import {
+  type FetchConfig,
+  HttpClientError,
+  RefreshingHttpClient,
+} from "./httpClient.shared"
 import { refreshTokenRequest } from "./refreshTokenRequest"
 
 export type SessionStore = {
@@ -45,6 +40,55 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
   constructor() {
     super({ credentials: "include" })
   }
+
+  /**
+   * Sends a request of the generated API functions through this client, so it
+   * carries the session cookies, is replayed once after a refresh on a 401
+   * unless `useInterceptors` is `false`, and fails with an `HttpClientError`
+   * holding the parsed body, like every other call. The body is read into a
+   * string so the replay can send it again.
+   */
+  private sendGeneratedRequest = async (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+    { useInterceptors }: Pick<FetchConfig, "useInterceptors"> = {},
+  ): Promise<Response> => {
+    const request = new Request(input, init)
+    const { response, status, config } = await this.fetch(request.url, {
+      method: request.method,
+      headers: request.headers,
+      body: request.body ? await request.text() : undefined,
+      signal: request.signal,
+      unwrap: false,
+      useInterceptors,
+    })
+
+    if (status >= 400) {
+      throw new HttpClientError(
+        await this.createResponse(response, { ...config, unwrap: true }),
+        undefined,
+      )
+    }
+
+    return response
+  }
+
+  /**
+   * The `fetch` to pass to the generated API functions of the routes that
+   * start or end a session, so their 401 reaches the caller instead of
+   * refreshing the session and replaying them.
+   */
+  private sendGeneratedRequestWithoutRefresh = (
+    input: RequestInfo | URL,
+    init?: RequestInit,
+  ) => this.sendGeneratedRequest(input, init, { useInterceptors: false })
+
+  /** The `client` to pass to the generated API functions. */
+  sdkClient: ApiClient = createApiClient({
+    baseUrl: API_URL,
+    throwOnError: true,
+    fetch: this.sendGeneratedRequest,
+  })
 
   configureSessionStore = (store: SessionStore) => {
     this.sessionStore = store
@@ -77,100 +121,40 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
     })
 
   authWithMagicLink = (
-    data: CompleteMagicLinkRequest,
+    data: AuthCompleteMagicLinkData["body"],
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<CompleteMagicLinkResponse, CompleteMagicLinkRequest>(
-        `${API_URL}/auth/magic-link/complete`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
+      authCompleteMagicLink({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
+        body: data,
+      }),
     )
 
-  refreshBookMetadata = (params: RefreshBookMetadataRequest) =>
-    this.postOrThrow<RefreshBookMetadataResponse, RefreshBookMetadataRequest>(
-      `${API_URL}/books/metadata/refresh`,
-      {
-        body: params,
-      },
-    )
-
-  refreshCollectionMetadata = (params: RefreshCollectionMetadataRequest) =>
-    this.postOrThrow<
-      RefreshCollectionMetadataResponse,
-      RefreshCollectionMetadataRequest
-    >(`${API_URL}/collections/metadata/refresh`, {
-      body: { ...params, soft: params.soft ?? false },
-    })
-
-  syncDataSource = (params: SyncDataSourceRequest) =>
-    this.postOrThrow<SyncDataSourceResponse, SyncDataSourceRequest>(
-      `${API_URL}/datasources/sync`,
-      {
-        body: params,
-      },
-    )
-
-  signInWithEmail = (data: SignInWithEmailRequest, proofKey: StoredProofKey) =>
+  signInWithEmail = (
+    data: AuthSignInWithEmailData["body"],
+    proofKey: StoredProofKey,
+  ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<AuthSessionResponse, SignInWithEmailRequest>(
-        `${API_URL}/auth/signin/email`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
+      authSignInWithEmail({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
+        body: data,
+      }),
     )
 
   signInWithGoogle = (
-    data: SignInWithGoogleRequest,
+    data: AuthSignInWithGoogleData["body"],
     proofKey: StoredProofKey,
   ) =>
     this.establishSession(proofKey, () =>
-      this.postOrThrow<AuthSessionResponse, SignInWithGoogleRequest>(
-        `${API_URL}/auth/signin/google`,
-        {
-          body: data,
-          useInterceptors: false,
-        },
-      ),
-    )
-
-  signUp = (data: RequestSignUpRequest) =>
-    this.postOrThrow<RequestSignUpResponse, RequestSignUpRequest>(
-      `${API_URL}/auth/signup`,
-      {
+      authSignInWithGoogle({
+        client: this.sdkClient,
+        fetch: this.sendGeneratedRequestWithoutRefresh,
         body: data,
-      },
+      }),
     )
-
-  completeSignUp = (data: CompleteSignUpRequest) =>
-    this.postOrThrow<CompleteSignUpResponse, CompleteSignUpRequest>(
-      `${API_URL}/auth/signup/complete`,
-      {
-        body: data,
-      },
-    )
-
-  requestMagicLink = (data: RequestMagicLinkRequest) =>
-    this.postOrThrow<RequestMagicLinkResponse, RequestMagicLinkRequest>(
-      `${API_URL}/auth/magic-link`,
-      {
-        body: data,
-      },
-    )
-
-  markNotificationAsSeen = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/seen`)
-
-  markAllNotificationsAsSeen = () =>
-    this.postOrThrow(`${API_URL}/notifications/seen`)
-
-  archiveNotification = ({ id }: { id: number }) =>
-    this.postOrThrow(`${API_URL}/notifications/${id}/archive`)
 
   refreshToken = () => refreshTokenRequest(this, API_URL)
 
@@ -182,14 +166,10 @@ export class HttpApiClientWeb extends RefreshingHttpClient {
    * session being killed.
    */
   logout = (sessionId: string) =>
-    this.postOrThrow<LogoutResponse, LogoutRequest>(`${API_URL}/auth/logout`, {
+    authLogout({
+      client: this.sdkClient,
+      fetch: this.sendGeneratedRequestWithoutRefresh,
       body: { session_id: sessionId },
-      useInterceptors: false,
-    })
-
-  deleteAccount = () =>
-    this.fetchOrThrow<DeleteAccountResponse>(`${API_URL}/auth/account`, {
-      method: "DELETE",
     })
 
   private flagSessionForRelogin = async (sessionId: string) => {

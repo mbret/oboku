@@ -2,9 +2,9 @@ import { memo, type ReactNode } from "react"
 import {
   Button,
   Checkbox,
-  Container,
   FormControlLabel,
   Stack,
+  styled,
   Typography,
 } from "@mui/material"
 import { Controller, useForm } from "react-hook-form"
@@ -22,8 +22,25 @@ import { useAddConnector } from "./useAddConnector"
 import { useConnector } from "./useConnector"
 import { useUpdateConnector } from "./useUpdateConnector"
 import { ErrorAlert } from "../errors/ErrorMessage"
+import { PageContainer } from "../common/PageContainer"
+import { PageSection } from "../common/PageSection"
 
 const FORM_ID = "connector-form"
+
+const TopAlertStack = styled(Stack)(function styleTopAlertStack({ theme }) {
+  return {
+    marginTop: theme.spacing(2),
+  }
+})
+
+const FormActionsStack = styled(Stack)(function styleFormActionsStack({
+  theme,
+}) {
+  return {
+    gap: theme.spacing(1),
+    padding: theme.spacing(0, 2, 2),
+  }
+})
 
 function getConnectorUrl(
   connector: SettingsConnectorDocType | undefined,
@@ -47,6 +64,7 @@ export type ConnectorFormConfig = {
   connectorType: SettingsConnectorType
   connectorId?: string
   onSubmitSuccess: () => void
+  /** Rendered below the form's actions, in a `PageContainer` with `disableGutters`. */
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
@@ -128,89 +146,82 @@ export const ConnectorForm = memo(
 
     return (
       <>
-        {topAlert}
-        <Container maxWidth="md">
-          <Stack
-            component="form"
+        <PageContainer>
+          <TopAlertStack>{topAlert}</TopAlertStack>
+        </PageContainer>
+        <PageContainer disableGutters>
+          <form
             id={FORM_ID}
             onSubmit={handleSubmit((values) => submit(values))}
-            sx={{
-              alignSelf: "stretch",
-              gap: 2,
-              mt: 2,
-            }}
           >
-            {showUrl && (
+            <PageSection variant="stack">
+              {showUrl && (
+                <ControlledTextField
+                  control={control}
+                  fullWidth
+                  label="URL"
+                  name="urlValue"
+                  rules={{ required: true, pattern: URL_PATTERN }}
+                />
+              )}
               <ControlledTextField
                 control={control}
                 fullWidth
-                label="URL"
-                name="urlValue"
-                rules={{ required: true, pattern: URL_PATTERN }}
+                label="Username"
+                name="username"
+                rules={{ required: true }}
               />
-            )}
-            <ControlledTextField
-              control={control}
-              fullWidth
-              label="Username"
-              name="username"
-              rules={{ required: true }}
-            />
-            <ControlledSecretSelect
-              control={control}
-              fullWidth
-              label={passwordFieldLabel}
-              name="passwordAsSecretId"
-              rules={{ required: true }}
-            />
-            {showUrl && (
-              <Controller
+              <ControlledSecretSelect
                 control={control}
-                name="allowSelfSigned"
-                render={({ field }) => (
-                  <Stack
-                    sx={{
-                      gap: 0.5,
-                    }}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={!!field.value}
-                          onChange={(_, checked) => field.onChange(checked)}
-                        />
-                      }
-                      label="Allow self-signed certificate"
-                    />
-                    <Typography
-                      variant="caption"
+                fullWidth
+                label={passwordFieldLabel}
+                name="passwordAsSecretId"
+                rules={{ required: true }}
+              />
+              {showUrl && (
+                <Controller
+                  control={control}
+                  name="allowSelfSigned"
+                  render={({ field }) => (
+                    <Stack
                       sx={{
-                        color: "text.secondary",
+                        gap: 0.5,
                       }}
                     >
-                      Used by API sync, metadata, and download requests. Browser
-                      connection tests may still require trusting the
-                      certificate in your browser.
-                    </Typography>
-                  </Stack>
-                )}
-              />
-            )}
-            {!!errors.root && <ErrorAlert error={errors.root.message} />}
-            {testConnection && (
-              <TestConnection
-                connectionData={{ ...data, url: data.urlValue }}
-                connectorType={connectorType}
-                testConnection={testConnection}
-              />
-            )}
-          </Stack>
-          <Stack
-            sx={{
-              gap: 1,
-              mt: 4,
-            }}
-          >
+                      <FormControlLabel
+                        control={
+                          <Checkbox
+                            checked={!!field.value}
+                            onChange={(_, checked) => field.onChange(checked)}
+                          />
+                        }
+                        label="Allow self-signed certificate"
+                      />
+                      <Typography
+                        variant="caption"
+                        sx={{
+                          color: "text.secondary",
+                        }}
+                      >
+                        Used by API sync, metadata, and download requests.
+                        Browser connection tests may still require trusting the
+                        certificate in your browser.
+                      </Typography>
+                    </Stack>
+                  )}
+                />
+              )}
+              {!!errors.root && <ErrorAlert error={errors.root.message} />}
+              {testConnection && (
+                <TestConnection
+                  connectionData={{ ...data, url: data.urlValue }}
+                  connectorType={connectorType}
+                  testConnection={testConnection}
+                />
+              )}
+            </PageSection>
+          </form>
+          <FormActionsStack>
             {renderExtraActions?.()}
             <Button
               disabled={disabled || !isValid}
@@ -220,9 +231,9 @@ export const ConnectorForm = memo(
             >
               Confirm
             </Button>
-            {children}
-          </Stack>
-        </Container>
+          </FormActionsStack>
+          {children}
+        </PageContainer>
       </>
     )
   },

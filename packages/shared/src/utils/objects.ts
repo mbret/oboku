@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 // MIT © 2017 azu
 const hasOwn = Object.prototype.hasOwnProperty
 

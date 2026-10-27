@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router"
+import { generatePath, useNavigate } from "react-router"
 import { map } from "rxjs"
 import { useMutation$ } from "reactjrx"
 import { ROUTES } from "../navigation/routes"
@@ -15,7 +15,7 @@ export const useCreateBackToBookDialog = () => {
         cancellable: true,
       }).pipe(
         map(() => {
-          navigate(ROUTES.READER.replace(":id", bookId))
+          navigate(generatePath(ROUTES.READER, { id: bookId }))
         }),
       ),
   })

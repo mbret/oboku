@@ -4,7 +4,6 @@ import {
   Box,
   Button,
   Link as MuiLink,
-  List,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -12,12 +11,13 @@ import {
   Typography,
 } from "@mui/material"
 import { memo } from "react"
-import { Link as RouterLink, useNavigate } from "react-router"
+import { generatePath, Link as RouterLink, useNavigate } from "react-router"
 import type { SettingsConnectorType } from "@oboku/shared"
-import { CONNECTOR_DETAILS } from "./connectorDetails"
 import { useConnector } from "./useConnector"
 import { useConnectors } from "./useConnectors"
 import { links } from "@oboku/shared"
+import { PageSection } from "../common/PageSection"
+import { ROUTES } from "../navigation/routes"
 
 const ConnectorListItem = memo(
   ({
@@ -57,7 +57,6 @@ export const ConnectorInfoSection = memo(
   }) => {
     const { data: connectors } = useConnectors({ type: connectorType })
     const navigate = useNavigate()
-    const details = CONNECTOR_DETAILS[connectorType]
     const canAdd =
       maxConnectors === undefined || (connectors?.length ?? 0) < maxConnectors
 
@@ -108,25 +107,32 @@ export const ConnectorInfoSection = memo(
           >
             <Button
               component={RouterLink}
-              to={details.newRoute}
+              to={generatePath(ROUTES.PLUGINS_CONNECTORS_NEW, {
+                type: connectorType,
+              })}
               variant="contained"
             >
               Add a connector
             </Button>
           </Box>
         )}
-        <List>
+        <PageSection>
           {connectors?.map((connector) => (
             <ConnectorListItem
               id={connector.id}
               key={connector.id}
               connectorType={connectorType}
               onClick={() => {
-                navigate(details.editRoute.replace(":id", connector.id))
+                navigate(
+                  generatePath(ROUTES.PLUGINS_CONNECTORS_EDIT, {
+                    type: connectorType,
+                    id: connector.id,
+                  }),
+                )
               }}
             />
           ))}
-        </List>
+        </PageSection>
       </Box>
     )
   },

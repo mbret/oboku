@@ -1,5 +1,5 @@
 import { memo, useEffect } from "react"
-import { useLocation } from "react-router"
+import { useMatch } from "react-router"
 import {
   hasOpenedReaderAlreadyStateSignal,
   bookBeingReadStateSignal,
@@ -14,12 +14,9 @@ import { CancelError } from "../errors/errors.shared"
 import { catchCancelError } from "../errors/catchCancelError"
 import { ROUTES } from "../navigation/routes"
 
-const BASE_READER_ROUTE = ROUTES.READER.replace(`/:id`, ``)
-
 export const BackToReadingDialog = memo(
   ({ isProfileHydrated }: { isProfileHydrated: boolean }) => {
-    const location = useLocation()
-    const isWithinReaderRoute = location.pathname.startsWith(BASE_READER_ROUTE)
+    const isWithinReaderRoute = !!useMatch(ROUTES.READER)
     const { mutateAsync: createBackToBookDialog } = useCreateBackToBookDialog()
 
     const { mutate: checkBackToReading } = useSwitchMutation$({

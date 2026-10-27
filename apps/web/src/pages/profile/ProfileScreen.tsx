@@ -1,6 +1,7 @@
-import { type FC, useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import {
   BarChartRounded,
+  CloudSyncRounded,
   GavelRounded,
   KeyRounded,
   LaunchRounded,
@@ -10,29 +11,23 @@ import {
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
+  SyncRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
-  Button,
   Badge,
-  Dialog,
-  DialogActions,
-  Checkbox,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  alpha,
-  List,
   ListItem,
   ListItemIcon,
   ListItemText,
-  ListSubheader,
-  useTheme,
-  FormControlLabel,
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import { formatBytes } from "@oboku/shared"
+import {
+  formatBytes,
+  type KoreaderSyncConnectionGetResponse,
+  type KoreaderSyncServerGetResponse,
+  links,
+} from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -42,8 +37,6 @@ import {
 import { lockLibrary, unlockLibrary } from "../../library/libraryLock"
 import { toggleDebug } from "../../debug"
 import { useDatabase } from "../../rxdb"
-import { catchError, forkJoin, from, of, switchMap, tap } from "rxjs"
-import { Logger } from "../../debug/logger.shared"
 import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
 import { useActiveProfile } from "../../profiles"
@@ -58,21 +51,67 @@ import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnreadNotificationsCount"
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
+import { PageContainer } from "../../common/PageContainer"
+import { PageSection } from "../../common/PageSection"
+import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
+import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
+
+const KOREADER_SYNC_SERVER_PURPOSE =
+  "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
+
+const describeKoreaderSyncServer = (
+  koreaderSyncServer?: KoreaderSyncServerGetResponse,
+) => {
+  if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
+
+  return koreaderSyncServer.passwordCreatedAt
+    ? "On"
+    : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
+}
+
+const KOREADER_PROGRESS_SYNC_PURPOSE =
+  "Sync oboku's reading position through a KOReader sync server"
+
+const describeKoreaderSyncConnection = (
+  response?: KoreaderSyncConnectionGetResponse,
+) =>
+  response?.connection
+    ? `Syncing with ${response.connection.serverUrl}`
+    : KOREADER_PROGRESS_SYNC_PURPOSE
+
+function KoreaderProgressSyncListItem() {
+  const navigate = useNavigate()
+  const { data: koreaderSyncConnection } = useKoreaderSyncConnection()
+
+  return (
+    <ListItemButton
+      onClick={function openKoreaderProgressSync() {
+        navigate(ROUTES.KOREADER_PROGRESS_SYNC)
+      }}
+    >
+      <ListItemIcon>
+        <CloudSyncRounded />
+      </ListItemIcon>
+      <ListItemText
+        primary="KOReader progress sync"
+        secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
+      />
+    </ListItemButton>
+  )
+}
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
-  const [isDeleteMyDataDialogOpened, setIsDeleteMyDataDialogOpened] =
-    useState(false)
   const [isDeleteAccountDialogOpen, setIsDeleteAccountDialogOpen] =
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
+  const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
   const signOut = useSignOut()
-  const theme = useTheme()
   const { mutate: removeAllContents } = useRemoveAllContents()
   const { unreadCount } = useUnreadNotificationsCount()
   const { db } = useDatabase()
@@ -107,306 +146,180 @@ export const ProfileScreen = () => {
   return (
     <Page bottomGutter={false}>
       <TopBarNavigation title={"Profile"} showBack={false} />
-      <List>
-        <ListSubheader disableSticky>Account</ListSubheader>
-        <ListItemButton onClick={confirmThenSignOut}>
-          <ListItemText primary="Sign out" secondary={auth?.email} />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            if (isLibraryUnlocked) {
-              lockLibrary()
-            } else {
-              unlockLibrary()
-            }
-          }}
-        >
-          <ListItemText
-            primary={
-              isLibraryUnlocked
-                ? "Protected contents are visible"
-                : "Protected contents are hidden"
-            }
-            secondary={isLibraryUnlocked ? "Click to lock" : "Click to unlock"}
-          />
-          {isLibraryUnlocked && <LockOpenRounded color="action" />}
-          {!isLibraryUnlocked && <LockRounded color="action" />}
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.NOTIFICATIONS)
-          }}
-        >
-          <ListItemIcon>
-            <Badge badgeContent={unreadCount} color="error">
-              <NotificationsRounded />
-            </Badge>
-          </ListItemIcon>
-          <ListItemText
-            primary="Notifications"
-            secondary={unreadCount > 0 ? `${unreadCount} unread` : "Inbox"}
-          />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SECURITY)
-          }}
-        >
-          <ListItemIcon>
-            <SecurityRounded />
-          </ListItemIcon>
-          <ListItemText primary="Security" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SECRETS)
-          }}
-        >
-          <ListItemIcon>
-            <KeyRounded />
-          </ListItemIcon>
-          <ListItemText primary="Secrets" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.STATISTICS)
-          }}
-        >
-          <ListItemIcon>
-            <BarChartRounded />
-          </ListItemIcon>
-          <ListItemText primary="Statistics" />
-        </ListItemButton>
-      </List>
-      <List subheader={<ListSubheader disableSticky>Device</ListSubheader>}>
-        <ListItemButton
-          onClick={() => {
-            navigate(ROUTES.SETTINGS)
-          }}
-        >
-          <ListItemIcon>
-            <SettingsRounded />
-          </ListItemIcon>
-          <ListItemText primary="Device settings" />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            navigate(`${ROUTES.PROFILE}/manage-storage`)
-          }}
-        >
-          <ListItemIcon>
-            <StorageRounded />
-          </ListItemIcon>
-          <ListItemText
-            primary="Storage"
-            secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
-          />
-        </ListItemButton>
-      </List>
-      <List
-        subheader={<ListSubheader disableSticky>Information</ListSubheader>}
-      >
-        <ListItemButton target="__blank" href={`https://docs.oboku.me/support`}>
-          <ListItemIcon>
-            <LaunchRounded />
-          </ListItemIcon>
-          <ListItemText primary={`Support Page`} />
-        </ListItemButton>
-        <ListItemButton target="__blank" href="https://docs.oboku.me">
-          <ListItemIcon>
-            <LaunchRounded />
-          </ListItemIcon>
-          <ListItemText primary={`Documentation Page`} />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => showDialog(createNotImplementedDialogOptions())}
-        >
-          <ListItemIcon>
-            <GavelRounded />
-          </ListItemIcon>
-          <ListItemText primary="Terms of Service" />
-        </ListItemButton>
-        <ListItem>
-          <ListItemText primary="App Version" secondary={__APP_VERSION__} />
-        </ListItem>
-      </List>
-      <List
-        subheader={
-          <ListSubheader disableSticky>Developer options</ListSubheader>
-        }
-      >
-        <ListItemButton onClick={toggleDebug}>
-          <ListItemText
-            primary={
-              isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
-            }
-          />
-        </ListItemButton>
-        {/* <ListItem
-            button
-            onClick={() => setIsDeleteMyDataDialogOpened(true)}
+      <PageContainer disableGutters>
+        <PageSection title="Account">
+          <ListItemButton onClick={confirmThenSignOut}>
+            <ListItemText primary="Sign out" secondary={auth?.email} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              if (isLibraryUnlocked) {
+                lockLibrary()
+              } else {
+                unlockLibrary()
+              }
+            }}
           >
-            <ListItemText primary="Delete my data" />
-          </ListItem> */}
-      </List>
-      <List
-        subheader={
-          <ListSubheader
-            disableSticky
-            style={{ color: theme.palette.error.dark }}
+            <ListItemText
+              primary={
+                isLibraryUnlocked
+                  ? "Protected contents are visible"
+                  : "Protected contents are hidden"
+              }
+              secondary={
+                isLibraryUnlocked ? "Click to lock" : "Click to unlock"
+              }
+            />
+            {isLibraryUnlocked && <LockOpenRounded color="action" />}
+            {!isLibraryUnlocked && <LockRounded color="action" />}
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.NOTIFICATIONS)
+            }}
           >
-            Danger zone
-          </ListSubheader>
-        }
-        style={{ backgroundColor: alpha(theme.palette.error.light, 0.2) }}
-      >
-        <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
-          <ListItemText
-            primary="Repair my account / anomalies"
-            secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
-          />
-        </ListItemButton>
-        <ListItemButton
-          onClick={() => {
-            removeAllContents()
-          }}
-        >
-          <ListItemText
-            primary="Reset account"
-            secondary="Remove all contents from your account"
-          />
-        </ListItemButton>
-        <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
-          <ListItemText primary="Delete my account" />
-        </ListItemButton>
-      </List>
-      <DeleteMyDataDialog
-        open={isDeleteMyDataDialogOpened}
-        onClose={() => setIsDeleteMyDataDialogOpened(false)}
-      />
+            <ListItemIcon>
+              <Badge badgeContent={unreadCount} color="error">
+                <NotificationsRounded />
+              </Badge>
+            </ListItemIcon>
+            <ListItemText
+              primary="Notifications"
+              secondary={unreadCount > 0 ? `${unreadCount} unread` : "Inbox"}
+            />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SECURITY)
+            }}
+          >
+            <ListItemIcon>
+              <SecurityRounded />
+            </ListItemIcon>
+            <ListItemText primary="Security" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SECRETS)
+            }}
+          >
+            <ListItemIcon>
+              <KeyRounded />
+            </ListItemIcon>
+            <ListItemText primary="Secrets" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.STATISTICS)
+            }}
+          >
+            <ListItemIcon>
+              <BarChartRounded />
+            </ListItemIcon>
+            <ListItemText primary="Statistics" />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Other apps">
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.KOREADER_SYNC_SERVER)
+            }}
+          >
+            <ListItemIcon>
+              <SyncRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="KOReader sync server"
+              secondary={describeKoreaderSyncServer(koreaderSyncServer)}
+            />
+          </ListItemButton>
+          <KoreaderProgressSyncListItem />
+        </PageSection>
+        <PageSection title="Device">
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.SETTINGS)
+            }}
+          >
+            <ListItemIcon>
+              <SettingsRounded />
+            </ListItemIcon>
+            <ListItemText primary="Device settings" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.MANAGE_STORAGE)
+            }}
+          >
+            <ListItemIcon>
+              <StorageRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Storage"
+              secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
+            />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Information">
+          <ListItemButton target="_blank" href={links.documentationSupport}>
+            <ListItemIcon>
+              <LaunchRounded />
+            </ListItemIcon>
+            <ListItemText primary={`Support Page`} />
+          </ListItemButton>
+          <ListItemButton target="_blank" href={links.documentation}>
+            <ListItemIcon>
+              <LaunchRounded />
+            </ListItemIcon>
+            <ListItemText primary={`Documentation Page`} />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => showDialog(createNotImplementedDialogOptions())}
+          >
+            <ListItemIcon>
+              <GavelRounded />
+            </ListItemIcon>
+            <ListItemText primary="Terms of Service" />
+          </ListItemButton>
+          <ListItem>
+            <ListItemText primary="App Version" secondary={__APP_VERSION__} />
+          </ListItem>
+        </PageSection>
+        <PageSection title="Developer options">
+          <ListItemButton onClick={toggleDebug}>
+            <ListItemText
+              primary={
+                isDebugEnabled() ? "Disable debug mode" : "Enable debug mode"
+              }
+            />
+          </ListItemButton>
+        </PageSection>
+        <PageSection title="Danger zone" tone="danger">
+          <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
+            <ListItemText
+              primary="Repair my account / anomalies"
+              secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
+            />
+          </ListItemButton>
+          <ListItemButton
+            onClick={() => {
+              removeAllContents()
+            }}
+          >
+            <ListItemText
+              primary="Reset account"
+              secondary="Remove all contents from your account"
+            />
+          </ListItemButton>
+          <ListItemButton onClick={() => setIsDeleteAccountDialogOpen(true)}>
+            <ListItemText primary="Delete my account" />
+          </ListItemButton>
+        </PageSection>
+      </PageContainer>
       <DeleteAccountDialog
         open={isDeleteAccountDialogOpen}
         onClose={() => setIsDeleteAccountDialogOpen(false)}
       />
     </Page>
-  )
-}
-
-const DeleteMyDataDialog: FC<{
-  open: boolean
-  onClose: () => void
-}> = ({ onClose, open }) => {
-  const [isTagChecked, setIsTagChecked] = useState(false)
-  const [isBookChecked, setIsBookChecked] = useState(false)
-  const [isCollectionChecked, setIsCollectionChecked] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const { db } = useDatabase()
-
-  const onSubmit = useCallback(async () => {
-    setIsDeleting(true)
-
-    if (db) {
-      const deleteTags$ = from(db.tag.find().exec()).pipe(
-        switchMap((res) => from(db.tag.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteBooks$ = from(db.book.find().exec()).pipe(
-        switchMap((res) => from(db.book.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteLinks$ = from(db.link.find().exec()).pipe(
-        switchMap((res) => from(db.link.bulkRemove(res.map((r) => r._id)))),
-      )
-
-      const deleteCollections$ = from(db.obokucollection.find().exec()).pipe(
-        switchMap((res) =>
-          from(db.obokucollection.bulkRemove(res.map((r) => r._id))),
-        ),
-      )
-
-      forkJoin([
-        isTagChecked ? deleteTags$ : of(undefined),
-        isBookChecked ? deleteBooks$ : of(undefined),
-        isBookChecked ? deleteLinks$ : of(undefined),
-        isCollectionChecked ? deleteCollections$ : of(undefined),
-      ])
-        .pipe(
-          catchError((e) => {
-            Logger.error(e)
-
-            return of(undefined)
-          }),
-          tap(() => {
-            onClose()
-          }),
-        )
-        .subscribe()
-    }
-  }, [onClose, db, isTagChecked, isBookChecked, isCollectionChecked])
-
-  useEffect(() => {
-    void open
-    setIsDeleting(false)
-    setIsTagChecked(false)
-    setIsBookChecked(false)
-    setIsCollectionChecked(false)
-  }, [open])
-
-  return (
-    <Dialog onClose={onClose} open={open}>
-      <DialogTitle>Delete my data</DialogTitle>
-      <DialogContent>
-        <form autoComplete="off" onSubmit={(e) => e.preventDefault()}>
-          <DialogContentText>This action is permanent.</DialogContentText>
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isTagChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsTagChecked((v) => !v)
-                }}
-                name="tags"
-              />
-            }
-            label="Delete all my tags"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isBookChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsBookChecked((v) => !v)
-                }}
-                name="books"
-              />
-            }
-            label="Delete all my books"
-          />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={isCollectionChecked}
-                disabled={isDeleting}
-                onChange={() => {
-                  setIsCollectionChecked((v) => !v)
-                }}
-                name="collections"
-              />
-            }
-            label="Delete all my collections"
-          />
-        </form>
-      </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose} color="primary">
-          Cancel
-        </Button>
-        <Button onClick={onSubmit} color="primary" disabled={isDeleting}>
-          {isDeleting ? `Deleting...` : `Confirm`}
-        </Button>
-      </DialogActions>
-    </Dialog>
   )
 }

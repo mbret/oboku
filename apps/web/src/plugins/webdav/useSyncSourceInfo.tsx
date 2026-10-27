@@ -1,5 +1,6 @@
 import type { UseSyncSourceInfo } from "../types"
 import { useConnector } from "../../connectors/useConnector"
+import { getHostname } from "../common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
   dataSource,
@@ -25,10 +26,15 @@ export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
     }
   }
 
-  const url = new URL(connector?.url ?? "")
-  const cleanUrl = url.hostname
+  const hostname = getHostname(connector.url)
+
+  if (!hostname) {
+    return {
+      name: `webdav://?`,
+    }
+  }
 
   return {
-    name: `webdav://${connector?.username}@${cleanUrl}${directory}`,
+    name: `webdav://${connector.username}@${hostname}${directory}`,
   }
 }

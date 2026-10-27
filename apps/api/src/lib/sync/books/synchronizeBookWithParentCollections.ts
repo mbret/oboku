@@ -1,16 +1,13 @@
 import { Logger } from "@nestjs/common"
 import {
   type CollectionCandidate,
-  type DataSourcePlugin,
-  type SynchronizeAbleDataSource,
-} from "src/plugins/types"
+  type Helpers,
+  type SynchronizeAbleItem,
+} from "../../../plugins/types.js"
 import type { BookDocType } from "@oboku/shared"
-import type { Context } from "../types"
+import type { Context } from "../types.js"
 
 const logger = new Logger("synchronizeBookWithParentCollections")
-
-type SynchronizeAbleItem = SynchronizeAbleDataSource["items"][number]
-type Helpers = Parameters<NonNullable<DataSourcePlugin["sync"]>>[1]
 
 /**
  * For every parent of the book we look up collections that match each parent (same resource / link data)

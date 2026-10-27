@@ -1,11 +1,15 @@
 import { Controller, Get, Param, ParseIntPipe, Post } from "@nestjs/common"
-import type {
-  GetNotificationsResponse,
-  GetUnreadNotificationsCountResponse,
-} from "@oboku/shared"
-import { AuthUser, WithAuthUser } from "src/auth/auth.guard"
-import { NotificationPostgresService } from "../features/postgres/notification-postgres.service"
-import { NotificationsService } from "./notifications.service"
+import { ApiExtraModels, ApiOkResponse, getSchemaPath } from "@nestjs/swagger"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { NotificationPostgresService } from "../features/postgres/notification-postgres.service.js"
+import { OkResponseDto } from "../lib/ok-response.dto.js"
+import {
+  AdminBroadcastNotificationDto,
+  SyncFinishedNotificationDto,
+  UnreadNotificationsCountResponseDto,
+  type UserNotificationDto,
+} from "./notifications.dto.js"
+import { NotificationsService } from "./notifications.service.js"
 
 @Controller("notifications")
 export class NotificationsController {
@@ -15,7 +19,26 @@ export class NotificationsController {
   ) {}
 
   @Get("/")
-  async all(@WithAuthUser() user: AuthUser): Promise<GetNotificationsResponse> {
+  @ApiExtraModels(AdminBroadcastNotificationDto, SyncFinishedNotificationDto)
+  @ApiOkResponse({
+    schema: {
+      type: "array",
+      items: {
+        oneOf: [
+          { $ref: getSchemaPath(AdminBroadcastNotificationDto) },
+          { $ref: getSchemaPath(SyncFinishedNotificationDto) },
+        ],
+        discriminator: {
+          propertyName: "kind",
+          mapping: {
+            admin_broadcast: getSchemaPath(AdminBroadcastNotificationDto),
+            sync_finished: getSchemaPath(SyncFinishedNotificationDto),
+          },
+        },
+      },
+    },
+  })
+  async list(@WithAuthUser() user: AuthUser): Promise<UserNotificationDto[]> {
     return this.notificationService.getNotificationsForUser({
       userId: user.userId,
     })
@@ -24,7 +47,7 @@ export class NotificationsController {
   @Get("unread-count")
   async unreadCount(
     @WithAuthUser() user: AuthUser,
-  ): Promise<GetUnreadNotificationsCountResponse> {
+  ): Promise<UnreadNotificationsCountResponseDto> {
     const count = await this.notificationService.getUnreadCountForUser({
       userId: user.userId,
     })
@@ -33,7 +56,7 @@ export class NotificationsController {
   }
 
   @Post("seen")
-  async markAllAsSeen(@WithAuthUser() user: AuthUser) {
+  async markAllAsSeen(@WithAuthUser() user: AuthUser): Promise<OkResponseDto> {
     await this.notificationPostgresService.markAllNotificationsAsSeen({
       userId: user.userId,
     })
@@ -45,7 +68,7 @@ export class NotificationsController {
   async markAsSeen(
     @Param("id", ParseIntPipe) id: number,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<OkResponseDto> {
     await this.notificationPostgresService.markNotificationAsSeen({
       notificationId: id,
       userId: user.userId,
@@ -58,7 +81,7 @@ export class NotificationsController {
   async archive(
     @Param("id", ParseIntPipe) id: number,
     @WithAuthUser() user: AuthUser,
-  ) {
+  ): Promise<OkResponseDto> {
     await this.notificationPostgresService.archiveNotification({
       notificationId: id,
       userId: user.userId,

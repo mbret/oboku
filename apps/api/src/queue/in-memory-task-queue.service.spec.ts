@@ -1,9 +1,11 @@
+import { Logger } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
+import { inspect } from "node:util"
 import {
   InMemoryTaskQueueService,
   TaskRejectionError,
-} from "./in-memory-task-queue.service"
-import { defer, firstValueFrom, lastValueFrom, timer } from "rxjs"
+} from "./in-memory-task-queue.service.js"
+import { defer, firstValueFrom, lastValueFrom, throwError, timer } from "rxjs"
 import { finalize, map } from "rxjs/operators"
 
 let service: InMemoryTaskQueueService
@@ -354,6 +356,39 @@ describe("sequential tasks with same ID", () => {
         "task4-start",
         "task4-end",
       ]),
+    )
+  })
+})
+
+describe("failed tasks", () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("logs the error's message and stack but not its other properties", async () => {
+    const loggedErrors = vi
+      .spyOn(Logger.prototype, "error")
+      .mockImplementation(() => undefined)
+    const requestUrl =
+      "https://nas.example/webapi/auth.cgi?passwd=dsm-password-1234"
+    const failure = Object.assign(new Error("request failed"), {
+      config: { url: requestUrl },
+    })
+    const failingTask = () => throwError(() => failure)
+    const queueName = "test-failure-logs"
+
+    service.createQueue({ name: queueName, maxConcurrent: 1 })
+
+    await expect(
+      firstValueFrom(service.enqueue(queueName, failingTask)),
+    ).rejects.toBe(failure)
+
+    expect(
+      inspect(loggedErrors.mock.calls, { depth: Number.POSITIVE_INFINITY }),
+    ).not.toContain(requestUrl)
+    expect(loggedErrors).toHaveBeenCalledWith(
+      `Task unknown error: ${failure.message}`,
+      failure.stack,
     )
   })
 })

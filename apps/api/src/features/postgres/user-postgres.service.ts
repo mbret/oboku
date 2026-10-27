@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
-import { UserPostgresEntity } from "./entities"
+import { UserPostgresEntity } from "./entities.js"
 
 export const normalizeEmail = (email: string) => email.trim().toLowerCase()
 
@@ -79,7 +79,7 @@ export class UserPostgresService {
   }
 
   async getAllUserIds(): Promise<number[]> {
-    const users = await this.userRepository.find({ select: ["id"] })
+    const users = await this.userRepository.find({ select: { id: true } })
 
     return users.map(({ id }) => id)
   }
@@ -91,20 +91,20 @@ export class UserPostgresService {
     >[]
   > {
     return this.userRepository.find({
-      select: [
-        "id",
-        "email",
-        "username",
-        "emailVerified",
-        "createdAt",
-        "password",
-      ],
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        emailVerified: true,
+        createdAt: true,
+        password: true,
+      },
       order: { id: "ASC" },
     })
   }
 
   async getAllUserEmails(): Promise<string[]> {
-    const users = await this.userRepository.find({ select: ["email"] })
+    const users = await this.userRepository.find({ select: { email: true } })
 
     return [
       ...new Set(
