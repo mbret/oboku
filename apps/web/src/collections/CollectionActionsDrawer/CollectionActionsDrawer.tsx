@@ -37,6 +37,10 @@ import { differenceInMinutes } from "../../common/date/differenceInMinutes"
 import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 
 export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
+  // Reads the clock during render, which React Compiler would cache until the collection changes.
+  // TODO: move the Date.now() read out of render, then drop this opt-out.
+  "use no memo"
+
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState,
   )

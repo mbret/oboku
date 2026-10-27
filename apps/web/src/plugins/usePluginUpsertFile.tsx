@@ -33,6 +33,10 @@ export const usePluginUpsertFile = (
     "meta"
   >,
 ) => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const [pending, setPending] = useState<Pending | null>(null)
   const pendingRef = useLiveRef(pending)
 
