@@ -2,7 +2,7 @@ import { repairCollectionBooks } from "./repairCollectionBooks.js"
 import type { Context } from "../types.js"
 import { addNewCollection } from "./addNewCollection.js"
 import { updateCollection } from "./updateCollection.js"
-import type { Helpers, SynchronizeAbleItem } from "../../../plugins/types.js"
+import type { SynchronizeAbleItem } from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
 import type { CollectionRefreshQueue } from "../synchronizeFromDataSource.js"
 
@@ -10,13 +10,11 @@ const logger = new Logger("sync/registerOrUpdateCollection")
 
 export const syncCollection = async ({
   item,
-  helpers,
   ctx,
   collectionRefreshQueue,
 }: {
   ctx: Context
   item: SynchronizeAbleItem
-  helpers: Helpers
   collectionRefreshQueue: CollectionRefreshQueue
 }) => {
   /**
@@ -39,7 +37,6 @@ export const syncCollection = async ({
     await updateCollection({
       collection: bestCandidate,
       ctx,
-      helpers,
       item,
     })
   }
@@ -64,7 +61,7 @@ export const syncCollection = async ({
    * Only queue a metadata refresh when the collection uses the same
    * connector/credentials as the current datasource; otherwise record it in the
    * report like we do for books. The actual emission happens at the end of the
-   * sync (see `synchronizeFromDataSource`) so that protection-aware logic can
+   * sync (see `DataSourceService.sync`) so that protection-aware logic can
    * read the up-to-date books and tags.
    */
   const usesSameCredentials =

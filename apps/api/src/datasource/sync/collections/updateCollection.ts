@@ -1,20 +1,19 @@
 import { type CollectionDocType, directives } from "@oboku/shared"
 import type { Context } from "../types.js"
-import type { Helpers, SynchronizeAbleItem } from "../../../plugins/types.js"
+import type { SynchronizeAbleItem } from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
+import { atomicUpdate } from "../../../couch/dbHelpers.js"
 
 const logger = new Logger("sync/updateCollection")
 
 export const updateCollection = async ({
   collection,
-  helpers,
   item,
   ctx,
 }: {
   ctx: Context
   collection: CollectionDocType
   item: SynchronizeAbleItem
-  helpers: Helpers
 }) => {
   const { name, modifiedAt } = item
   const directiveValues = directives.extractDirectivesFromName(name)
@@ -32,7 +31,7 @@ export const updateCollection = async ({
       `${name} modified date ${itemModifiedAt.toISOString()} is older than last synced date or not synced yet`,
     )
 
-    await helpers.atomicUpdate("obokucollection", collection._id, (old) => {
+    await atomicUpdate(ctx.db, "obokucollection", collection._id, (old) => {
       const listWithoutLink =
         old.metadata?.filter((entry) => entry.type !== "link") ?? []
 
