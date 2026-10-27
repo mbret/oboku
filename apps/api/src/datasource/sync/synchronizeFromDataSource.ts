@@ -8,7 +8,7 @@ import type {
   SynchronizeAbleDataSource,
   SynchronizeAbleItem,
 } from "../../plugins/types.js"
-import { createTagFromName } from "../../couch/dbHelpers.js"
+import { getOrCreateTagFromName } from "../../couch/dbHelpers.js"
 import { Logger } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
 import { CoversService } from "../../covers/covers.service.js"
@@ -134,7 +134,7 @@ const syncTags = async ({
 
   await Promise.all(
     tagNames.map(async (tag) => {
-      const { created, id } = await createTagFromName(ctx.db, tag, true)
+      const { created, id } = await getOrCreateTagFromName(ctx.db, tag)
 
       if (created) {
         logger.log(`syncTags ${tag} created with id ${id}`)
