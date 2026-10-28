@@ -5,11 +5,7 @@ import {
   ListItemText,
   type SvgIconProps,
 } from "@mui/material"
-import {
-  ExtensionRounded,
-  MenuBookRounded,
-  RssFeedRounded,
-} from "@mui/icons-material"
+import { MenuBookRounded, RssFeedRounded } from "@mui/icons-material"
 import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
@@ -32,13 +28,13 @@ function IntegrationListItem({
   to,
   name,
   description,
-  Icon = ExtensionRounded,
+  Icon,
   plugin,
 }: {
   to: string
   name: string
   description: string
-  Icon?: ComponentType<SvgIconProps>
+  Icon: ComponentType<SvgIconProps>
   plugin?: Plugin
 }) {
   const isPluginVisible = useGetIsPluginVisible()
