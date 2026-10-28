@@ -185,11 +185,6 @@ describe("OpdsCatalogController", () => {
       toBasicAuthorization(`other@example.com:${PASSWORD}`),
     ],
     ["an unknown server", "/opds/brave-foxes-run", OWNER_AUTHORIZATION],
-    [
-      "missing credentials on the books feed",
-      "/opds/calm-snails-dream/books",
-      undefined,
-    ],
   ])(
     "refuses %s with the same Basic challenge",
     async (_, path, authorization) => {

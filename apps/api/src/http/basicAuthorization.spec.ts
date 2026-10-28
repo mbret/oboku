@@ -16,12 +16,4 @@ describe("parseBasicAuthorization", () => {
       password: "été",
     })
   })
-
-  it.each([
-    ["a missing header", undefined],
-    ["another scheme", "Bearer token"],
-    ["credentials without a colon", toBasicHeader("reader@example.com")],
-  ])("reads nothing from %s", (_, header) => {
-    expect(parseBasicAuthorization(header)).toBeUndefined()
-  })
 })

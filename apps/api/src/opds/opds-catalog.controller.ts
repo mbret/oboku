@@ -7,6 +7,8 @@ import {
   buildBooksFeed,
   buildRootFeed,
   OPDS_ACQUISITION_FEED_TYPE,
+  OPDS_BOOKS_ROUTE,
+  OPDS_CATALOG_ROUTE,
   OPDS_NAVIGATION_FEED_TYPE,
 } from "./opds-feeds.js"
 
@@ -17,7 +19,7 @@ import {
 @Public()
 @ApiExcludeController()
 @UseGuards(OpdsBasicAuthGuard)
-@Controller("opds/:slug")
+@Controller(`${OPDS_CATALOG_ROUTE}/:slug`)
 export class OpdsCatalogController {
   @Get()
   @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
@@ -25,7 +27,7 @@ export class OpdsCatalogController {
     return buildRootFeed({ server, updated: new Date() })
   }
 
-  @Get("books")
+  @Get(OPDS_BOOKS_ROUTE)
   @Header("Content-Type", OPDS_ACQUISITION_FEED_TYPE)
   getBooks(@WithOpdsServer() server: OpdsServerPostgresEntity) {
     return buildBooksFeed({ server, updated: new Date() })

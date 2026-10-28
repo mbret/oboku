@@ -1,6 +1,9 @@
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { escapeXml } from "../http/escapeXml.js"
 
+export const OPDS_CATALOG_ROUTE = "opds"
+export const OPDS_BOOKS_ROUTE = "books"
+
 // OPDS 1.2 §2.2 and §2.3: the type every link to a navigation or an
 // acquisition feed must carry.
 export const OPDS_NAVIGATION_FEED_TYPE =
@@ -60,13 +63,16 @@ const buildFeed = ({
 }
 
 const toCatalog = (slug: string) => {
-  const rootPath = `/opds/${encodeURIComponent(slug)}`
+  const rootPath = `/${OPDS_CATALOG_ROUTE}/${encodeURIComponent(slug)}`
   const rootId = `urn:oboku:opds:${slug}`
 
   return {
     rootLink: { href: rootPath, type: OPDS_NAVIGATION_FEED_TYPE },
     rootId,
-    booksLink: { href: `${rootPath}/books`, type: OPDS_ACQUISITION_FEED_TYPE },
+    booksLink: {
+      href: `${rootPath}/${OPDS_BOOKS_ROUTE}`,
+      type: OPDS_ACQUISITION_FEED_TYPE,
+    },
     booksId: `${rootId}:books`,
   }
 }
