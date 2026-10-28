@@ -3,6 +3,7 @@ import type { Context } from "../types.js"
 import type { SynchronizeAbleItem } from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
 import { atomicUpdate } from "../../../couch/dbHelpers.js"
+import { updateCollectionLinkData } from "../linkData.js"
 
 const logger = new Logger("sync/updateCollection")
 
@@ -48,4 +49,6 @@ export const updateCollection = async ({
 
     ctx.syncReport.updateCollection(collection._id)
   }
+
+  await updateCollectionLinkData(ctx, collection, item.linkData)
 }
