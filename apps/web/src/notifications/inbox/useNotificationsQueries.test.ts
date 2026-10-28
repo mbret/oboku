@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { cleanup, renderHook } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const { sdkFetch, useQuery } = vi.hoisted(function createQueryMocks() {
   return {
@@ -80,10 +81,16 @@ describe("notifications queries", () => {
     vi.clearAllMocks()
   })
 
+  afterEach(() => {
+    cleanup()
+  })
+
   it("fetches the inbox notifications with the generated client", async () => {
     sdkFetch.mockResolvedValue(createJsonResponse([{ id: 1 }]))
 
-    useInboxNotifications()
+    renderHook(function renderUseInboxNotifications() {
+      return useInboxNotifications()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -98,7 +105,9 @@ describe("notifications queries", () => {
   it("fetches the unread count with the generated client", async () => {
     sdkFetch.mockResolvedValue(createJsonResponse({ count: 3 }))
 
-    const query = useUnreadNotificationsCount()
+    const { result } = renderHook(function renderUseUnreadNotificationsCount() {
+      return useUnreadNotificationsCount()
+    })
 
     const options = useQuery.mock.calls[0]?.[0]
 
@@ -110,6 +119,6 @@ describe("notifications queries", () => {
     expect(getRequestedUrl()).toBe(
       "https://api.example.com/notifications/unread-count",
     )
-    expect(query.unreadCount).toBe(0)
+    expect(result.current.unreadCount).toBe(0)
   })
 })
