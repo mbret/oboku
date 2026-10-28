@@ -1,7 +1,7 @@
 import { Alert } from "@mui/material"
 import { CopyableField } from "./CopyableField"
 
-export function OneTimePasswordField({ password }: { password: string }) {
+export function GeneratedPasswordField({ password }: { password: string }) {
   return (
     <>
       <CopyableField label="Password" value={password} />

@@ -16,7 +16,7 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { IntroStack } from "../../common/IntroStack"
 import { CopyableField } from "../../common/CopyableField"
-import { OneTimePasswordField } from "../../common/OneTimePasswordField"
+import { GeneratedPasswordField } from "../../common/GeneratedPasswordField"
 import { EmptyAlert } from "../../common/alerts/EmptyAlert"
 import { FetchErrorAlert } from "../../common/alerts/FetchErrorAlert"
 import { LoadingAlert } from "../../common/alerts/LoadingAlert"
@@ -101,7 +101,7 @@ function OpdsServerSection({
         />
         <CopyableField label="Username" value={server.username} />
         {newPassword ? (
-          <OneTimePasswordField password={newPassword} />
+          <GeneratedPasswordField password={newPassword} />
         ) : (
           <Typography variant="body2" color="textSecondary">
             Its password cannot be shown again, generate a new one if you lost

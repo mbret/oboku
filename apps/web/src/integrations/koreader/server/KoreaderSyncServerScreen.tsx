@@ -18,7 +18,7 @@ import { useConfig } from "../../../config/useConfig"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { CopyableField } from "../../../common/CopyableField"
 import { IntroStack } from "../../../common/IntroStack"
-import { OneTimePasswordField } from "../../../common/OneTimePasswordField"
+import { GeneratedPasswordField } from "../../../common/GeneratedPasswordField"
 import { useKoreaderSyncServer } from "./useKoreaderSyncServer"
 import { useCreateKoreaderSyncServerPassword } from "./useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "./useTurnOffKoreaderSyncServer"
@@ -103,7 +103,7 @@ export const KoreaderSyncServerScreen = memo(
               value={koreaderSyncServer?.username ?? ""}
             />
             {createdPassword ? (
-              <OneTimePasswordField password={createdPassword.password} />
+              <GeneratedPasswordField password={createdPassword.password} />
             ) : (
               <Typography variant="body2" color="textSecondary">
                 {passwordCreatedAt
