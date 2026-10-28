@@ -10,7 +10,7 @@ Catalogs are empty for now: oboku cannot serve your books through them yet. You 
 
 ## Create a server
 
-In oboku, open **Profile**, then **OPDS servers** under **Other apps**, and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the three values a reading app needs:
+In oboku, open **Integrations > OPDS** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the three values a reading app needs:
 
 * **Catalog URL**: your oboku API address followed by `/opds/` and the server's words, such as `/opds/calm-snails-dream`. Copy it from the screen rather than typing it from memory.
 * **Username**: the email of your oboku account.
@@ -19,6 +19,8 @@ In oboku, open **Profile**, then **OPDS servers** under **Other apps**, and tap 
 :::note
 The password is not your oboku password and opens nothing but the server's catalog.
 :::
+
+An account can have up to 10 servers. A self-hosted instance can change that limit from its [admin panel](/self-hosting/admin#opds-servers).
 
 ## Set up a reading app
 
@@ -31,7 +33,7 @@ Other reading apps that support OPDS catalogs ask for the same three values.
 
 ## Manage your servers
 
-Each server on the **OPDS servers** screen has three actions:
+Each server on the **Integrations > OPDS** screen has three actions:
 
 * **Rename** changes the server's name. The catalog URL stays the same.
 * **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.
