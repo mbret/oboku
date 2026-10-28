@@ -283,7 +283,7 @@ describe("BooksMetadataService.refreshMetadata", () => {
     it("asks nothing when the book gives nothing to search on", async () => {
       const { storedBook } = await refresh(
         bookWith([linkEntry, legacyCatalogEntry]),
-        "[oboku~tags~unread]",
+        "[oboku~tags~unread].epub",
       )
 
       expect(fetchMetadata).not.toHaveBeenCalled()

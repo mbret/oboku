@@ -14,7 +14,7 @@ const isGoogleBooksIdentifier = (identifier: MetadataIdentifier) =>
   identifierValue([identifier], "GoogleBooks") !== undefined
 
 const titleFromLinkName = (linkName: string) =>
-  path.parse(directives.removeDirectiveFromString(linkName)).name.trim()
+  directives.removeDirectiveFromString(path.parse(linkName).name).trim()
 
 /**
  * Identifiers rank `user > directive > file`, and only the highest-ranked

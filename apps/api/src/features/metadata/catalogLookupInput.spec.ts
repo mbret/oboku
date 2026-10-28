@@ -43,6 +43,18 @@ describe("catalogLookupInput", () => {
     ).toEqual({ title: "Dune" })
   })
 
+  it("asks no title when the link's name is only directives", () => {
+    expect(
+      catalogLookupInput({
+        fileMetadata: undefined,
+        linkName: "[oboku~tags~unread].epub",
+        userIsbn: undefined,
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: undefined,
+      }),
+    ).toEqual({})
+  })
+
   it("prefers the user's ISBN to the file's identifiers", () => {
     expect(
       catalogLookupInput({
