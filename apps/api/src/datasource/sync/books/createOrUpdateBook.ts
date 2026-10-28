@@ -58,9 +58,7 @@ export const createOrUpdateBook = async ({
   const { dataSourceType, syncReport, db } = ctx
 
   try {
-    logger.log(
-      `createOrUpdateBook "${item.name}": ${JSON.stringify(item.linkData)}`,
-    )
+    logger.log(`createOrUpdateBook "${item.name}"`)
 
     const parentTagNames = parents.reduce(
       (tags: string[], parent) => [
@@ -86,9 +84,7 @@ export const createOrUpdateBook = async ({
     const linkMatchingItem = getBestLinkCandidate(remainingLinks)
 
     if (!linkMatchingItem) {
-      logger.log(
-        `No link found for ${item.name} with linkData ${JSON.stringify(item.linkData)}`,
-      )
+      logger.log(`No link found for ${item.name}`)
     }
 
     if (
@@ -106,7 +102,7 @@ export const createOrUpdateBook = async ({
 
     if (linkMatchingItem && !linkMatchingItem.book) {
       logger.log(
-        `Link found for ${item.name} with linkData ${JSON.stringify(item.linkData)} but no book attached`,
+        `Link ${linkMatchingItem._id} found for ${item.name} but no book attached`,
       )
     }
 
@@ -332,7 +328,7 @@ export const createOrUpdateBook = async ({
     logger.log(`createOrUpdateBook "${item.name}": done`)
   } catch (e) {
     logger.error(
-      `createOrUpdateBook something went wrong for book ${item.name} (${JSON.stringify(item.linkData)})`,
+      `createOrUpdateBook something went wrong for book ${item.name}`,
     )
     logger.error(e)
 
