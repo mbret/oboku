@@ -16,9 +16,17 @@ describe("getDescriptionText", () => {
     )
   })
 
-  it("leaves plain text as it is", () => {
-    expect(getDescriptionText("Ash falls from the sky. Mists & more")).toBe(
-      "Ash falls from the sky. Mists & more",
-    )
+  it("joins the lines HTML wraps inside a paragraph", () => {
+    expect(
+      getDescriptionText(
+        "<p>Set on the desert planet\n  Arrakis.</p>\n<p><b>Bold</b>\n<i>Italic</i></p>",
+      ),
+    ).toBe("Set on the desert planet Arrakis.\n\nBold Italic")
+  })
+
+  it("leaves plain text as it is, line breaks included", () => {
+    expect(
+      getDescriptionText("Ash falls from the sky.\nMists &amp; more"),
+    ).toBe("Ash falls from the sky.\nMists & more")
   })
 })

@@ -1,7 +1,7 @@
 import { Alert, Typography } from "@mui/material"
 import { useBook } from "../states"
 import { getMetadataFromBook } from "../metadata"
-import { getDescriptionText } from "../metadata/description"
+import { DescriptionText } from "../metadata/DescriptionText"
 
 export const DescriptionRow = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })
@@ -13,8 +13,8 @@ export const DescriptionRow = ({ bookId }: { bookId?: string }) => {
   }
 
   return (
-    <Typography sx={{ whiteSpace: "pre-line" }}>
-      {getDescriptionText(metadata.description)}
+    <Typography>
+      <DescriptionText description={metadata.description} />
     </Typography>
   )
 }
