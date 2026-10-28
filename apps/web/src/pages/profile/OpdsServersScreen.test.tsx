@@ -2,7 +2,11 @@ import type {
   OpdsServerDto,
   OpdsServerPasswordResponseDto,
 } from "@oboku/shared"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import {
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
 import {
   cleanup,
   fireEvent,
@@ -118,6 +122,7 @@ describe("OpdsServersScreen", () => {
     cleanup()
     dialogSignal.setValue([])
     clearActiveProfileId()
+    onlineManager.setOnline(true)
   })
 
   it("lists the newest server first, with the catalog URL and username a reading app signs in with", async () => {
@@ -155,6 +160,19 @@ describe("OpdsServersScreen", () => {
     expect(
       screen.queryByText("You do not have any OPDS servers right now."),
     ).toBeNull()
+    expect(
+      screen.getByRole<HTMLButtonElement>("button", { name: "Create a server" })
+        .disabled,
+    ).toBe(true)
+  })
+
+  it("says when the list cannot load while the browser is offline", async () => {
+    onlineManager.setOnline(false)
+    renderScreen(listing([COMICS]))
+
+    expect(
+      await screen.findByText("Your OPDS servers can't be loaded right now."),
+    ).not.toBeNull()
     expect(
       screen.getByRole<HTMLButtonElement>("button", { name: "Create a server" })
         .disabled,

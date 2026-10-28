@@ -23,6 +23,7 @@ import { LoadingAlert } from "../../common/alerts/LoadingAlert"
 import { UnavailableAlert } from "../../common/alerts/UnavailableAlert"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { useConfig } from "../../config/useConfig"
+import { isQueryUnavailable } from "../../queries/isQueryUnavailable"
 import { useOpdsServers } from "../../opds/servers/useOpdsServers"
 import { useCreateOpdsServer } from "../../opds/servers/useCreateOpdsServer"
 import { useRegenerateOpdsServerPassword } from "../../opds/servers/useRegenerateOpdsServerPassword"
@@ -143,20 +144,15 @@ function OpdsServerSection({
 }
 
 export function OpdsServersScreen() {
-  const {
-    data: servers,
-    isLoading,
-    isError,
-    isPending,
-    fetchStatus,
-  } = useOpdsServers()
+  const serversQuery = useOpdsServers()
+  const { data: servers, isLoading, isError } = serversQuery
   const {
     mutate: createServer,
     data: creationResult,
     isPending: isCreatingServer,
   } = useCreateOpdsServer()
   const serversNewestFirst = servers?.toSorted((a, b) => b.id - a.id)
-  const isUnavailable = fetchStatus === "idle" && isPending
+  const isUnavailable = isQueryUnavailable(serversQuery)
   const hasNoServer = servers?.length === 0
 
   return (
