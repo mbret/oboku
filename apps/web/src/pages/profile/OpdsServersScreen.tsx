@@ -1,7 +1,8 @@
-import { memo, useState } from "react"
+import { useState } from "react"
 import {
   Alert,
   Button,
+  FormControl,
   ListItem,
   ListItemText,
   Stack,
@@ -15,6 +16,11 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { IntroStack } from "../../common/IntroStack"
 import { CopyableField } from "../../common/CopyableField"
+import { OneTimePasswordField } from "../../common/OneTimePasswordField"
+import { EmptyAlert } from "../../common/alerts/EmptyAlert"
+import { FetchErrorAlert } from "../../common/alerts/FetchErrorAlert"
+import { LoadingAlert } from "../../common/alerts/LoadingAlert"
+import { UnavailableAlert } from "../../common/alerts/UnavailableAlert"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { useConfig } from "../../config/useConfig"
 import { useOpdsServers } from "../../opds/servers/useOpdsServers"
@@ -39,36 +45,25 @@ const SETUP_STEPS = [
   "Other reading apps that support OPDS catalogs ask for the same three values.",
 ]
 
-export const OpdsServersScreen = memo(function OpdsServersScreen() {
+function OpdsServerSection({
+  server,
+  createdPassword,
+}: {
+  server: OpdsServerDto
+  createdPassword: string | undefined
+}) {
   const { data: config } = useConfig()
-  const { data: servers } = useOpdsServers()
-  const serversNewestFirst = servers?.toSorted((a, b) => b.id - a.id)
-  const {
-    mutate: createServer,
-    data: createdServer,
-    reset: forgetCreatedPassword,
-    isPending: isCreatingServer,
-  } = useCreateOpdsServer()
   const {
     mutate: regeneratePassword,
-    data: regeneratedPassword,
-    reset: forgetRegeneratedPassword,
+    data: regenerationResult,
     isPending: isRegeneratingPassword,
-    variables: serverIdGettingPassword,
   } = useRegenerateOpdsServerPassword()
-  const {
-    mutate: deleteServer,
-    isPending: isDeletingServer,
-    variables: serverIdBeingDeleted,
-  } = useDeleteOpdsServer()
-  const [serverToRename, setServerToRename] = useState<OpdsServerDto>()
-  const revealedPassword = createdServer ?? regeneratedPassword
+  const { mutate: deleteServer, isPending: isDeletingServer } =
+    useDeleteOpdsServer()
+  const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
+  const newPassword = regenerationResult?.password ?? createdPassword
 
-  const createServerAndRevealPassword = () => {
-    createServer(undefined, { onSuccess: forgetRegeneratedPassword })
-  }
-
-  const confirmThenRegeneratePassword = async (server: OpdsServerDto) => {
+  const confirmThenRegeneratePassword = async () => {
     const confirmed = await showConfirmDialog({
       title: "Generate a new password?",
       message: `Reading apps signed in to ${server.name} with the current password cannot open its catalog until you sign them in again with the new one.`,
@@ -77,10 +72,10 @@ export const OpdsServersScreen = memo(function OpdsServersScreen() {
 
     if (!confirmed) return
 
-    regeneratePassword(server.id, { onSuccess: forgetCreatedPassword })
+    regeneratePassword(server.id)
   }
 
-  const confirmThenDelete = async (server: OpdsServerDto) => {
+  const confirmThenDelete = async () => {
     const confirmed = await showConfirmDialog({
       title: `Delete ${server.name}?`,
       message: "Reading apps signed in to it can no longer open its catalog.",
@@ -91,6 +86,74 @@ export const OpdsServersScreen = memo(function OpdsServersScreen() {
 
     deleteServer(server.id)
   }
+
+  return (
+    <FormControl component="fieldset" fullWidth aria-label={server.name}>
+      <PageSection title={server.name} variant="stack">
+        <CopyableField
+          label="Catalog URL"
+          value={config ? `${config.API_OPDS_URL}/${server.slug}` : ""}
+        />
+        <CopyableField label="Username" value={server.username} />
+        {newPassword ? (
+          <OneTimePasswordField password={newPassword} />
+        ) : (
+          <Typography variant="body2" color="textSecondary">
+            Its password cannot be shown again, generate a new one if you lost
+            it.
+          </Typography>
+        )}
+        <ServerActionsStack>
+          <Button
+            onClick={function openRenameDialog() {
+              setIsRenameDialogOpen(true)
+            }}
+          >
+            Rename
+          </Button>
+          <Button
+            loading={isRegeneratingPassword}
+            onClick={confirmThenRegeneratePassword}
+          >
+            Generate a new password
+          </Button>
+          <Button
+            color="error"
+            loading={isDeletingServer}
+            onClick={confirmThenDelete}
+          >
+            Delete
+          </Button>
+        </ServerActionsStack>
+      </PageSection>
+      {isRenameDialogOpen && (
+        <RenameOpdsServerDialog
+          server={server}
+          onClose={function closeRenameDialog() {
+            setIsRenameDialogOpen(false)
+          }}
+        />
+      )}
+    </FormControl>
+  )
+}
+
+export function OpdsServersScreen() {
+  const {
+    data: servers,
+    isLoading,
+    isError,
+    isPending,
+    fetchStatus,
+  } = useOpdsServers()
+  const {
+    mutate: createServer,
+    data: creationResult,
+    isPending: isCreatingServer,
+  } = useCreateOpdsServer()
+  const serversNewestFirst = servers?.toSorted((a, b) => b.id - a.id)
+  const isUnavailable = fetchStatus === "idle" && isPending
+  const hasNoServer = servers?.length === 0
 
   return (
     <Page>
@@ -109,73 +172,31 @@ export const OpdsServersScreen = memo(function OpdsServersScreen() {
           <Button
             variant="contained"
             loading={isCreatingServer}
-            onClick={createServerAndRevealPassword}
+            disabled={!servers}
+            onClick={function createNewServer() {
+              createServer()
+            }}
           >
             Create a server
           </Button>
+          {isLoading && <LoadingAlert subject="OPDS servers" />}
+          {isError && <FetchErrorAlert subject="OPDS servers" />}
+          {isUnavailable && <UnavailableAlert subject="OPDS servers" />}
+          {hasNoServer && <EmptyAlert subject="OPDS servers" />}
         </IntroStack>
       </PageContainer>
       <PageContainer disableGutters>
-        {serversNewestFirst?.map((server) => {
-          const isPasswordRevealed = revealedPassword?.server.id === server.id
-
-          return (
-            <PageSection key={server.id} title={server.name} variant="stack">
-              <CopyableField
-                label="Catalog URL"
-                value={config ? `${config.API_OPDS_URL}/${server.slug}` : ""}
-              />
-              <CopyableField label="Username" value={server.username} />
-              {isPasswordRevealed ? (
-                <>
-                  <CopyableField
-                    label="Password"
-                    value={revealedPassword.password}
-                  />
-                  <Alert severity="warning">
-                    Copy this password now: it is not shown again.
-                  </Alert>
-                </>
-              ) : (
-                <Typography variant="body2" color="textSecondary">
-                  Its password cannot be shown again, generate a new one if you
-                  lost it.
-                </Typography>
-              )}
-              <ServerActionsStack>
-                <Button
-                  onClick={function openRenameDialog() {
-                    setServerToRename(server)
-                  }}
-                >
-                  Rename
-                </Button>
-                <Button
-                  loading={
-                    isRegeneratingPassword &&
-                    serverIdGettingPassword === server.id
-                  }
-                  onClick={function regeneratePasswordOfServer() {
-                    void confirmThenRegeneratePassword(server)
-                  }}
-                >
-                  Generate a new password
-                </Button>
-                <Button
-                  color="error"
-                  loading={
-                    isDeletingServer && serverIdBeingDeleted === server.id
-                  }
-                  onClick={function deleteThisServer() {
-                    void confirmThenDelete(server)
-                  }}
-                >
-                  Delete
-                </Button>
-              </ServerActionsStack>
-            </PageSection>
-          )
-        })}
+        {serversNewestFirst?.map((server) => (
+          <OpdsServerSection
+            key={server.id}
+            server={server}
+            createdPassword={
+              creationResult?.server.id === server.id
+                ? creationResult.password
+                : undefined
+            }
+          />
+        ))}
         <PageSection title="Set up a reading app">
           {SETUP_STEPS.map((step, index) => (
             <ListItem key={step}>
@@ -184,14 +205,6 @@ export const OpdsServersScreen = memo(function OpdsServersScreen() {
           ))}
         </PageSection>
       </PageContainer>
-      {serverToRename && (
-        <RenameOpdsServerDialog
-          server={serverToRename}
-          onClose={function closeRenameDialog() {
-            setServerToRename(undefined)
-          }}
-        />
-      )}
     </Page>
   )
-})
+}

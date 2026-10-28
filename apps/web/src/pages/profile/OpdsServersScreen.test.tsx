@@ -12,7 +12,7 @@ import {
   within,
 } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, type Mock, vi } from "vitest"
 import { DialogProvider } from "../../common/dialogs/DialogProvider"
 import { dialogSignal } from "../../common/dialogs/state"
 import { HttpClientApiContext } from "../../http"
@@ -58,13 +58,18 @@ const withPassword = (
   data: { server, password },
 })
 
-const renderScreen = (serverLists: OpdsServerDto[][]) => {
+/** Answers each list request with the next list, then keeps the last one. */
+const listing = (...serverLists: OpdsServerDto[][]) => {
   const listServers = vi.fn().mockResolvedValue({ data: serverLists.at(-1) })
 
   for (const servers of serverLists.slice(0, -1)) {
     listServers.mockResolvedValueOnce({ data: servers })
   }
 
+  return listServers
+}
+
+const renderScreen = (listServers: Mock) => {
   const api = {
     get: listServers,
     post: vi.fn(),
@@ -93,21 +98,20 @@ const renderScreen = (serverLists: OpdsServerDto[][]) => {
   return api
 }
 
-const findServerSection = async (name: string) => {
-  const title = await screen.findByText(name)
-  const section = title.nextElementSibling
-
-  if (!(section instanceof HTMLElement)) {
-    throw new Error(`No section follows the title ${name}`)
-  }
-
-  return within(section)
-}
+const findServerSection = async (name: string) =>
+  within(await screen.findByRole("group", { name }))
 
 const fieldValues = (name: string) =>
   screen
     .getAllByRole<HTMLInputElement>("textbox", { name })
     .map((field) => field.value)
+
+const confirmDialog = async (action: string) => {
+  fireEvent.click(await screen.findByRole("button", { name: action }))
+  await waitFor(() => {
+    expect(screen.queryByRole("dialog")).toBeNull()
+  })
+}
 
 describe("OpdsServersScreen", () => {
   afterEach(() => {
@@ -117,9 +121,9 @@ describe("OpdsServersScreen", () => {
   })
 
   it("lists the newest server first, with the catalog URL and username a reading app signs in with", async () => {
-    renderScreen([[COMICS, NOVELS]])
+    renderScreen(listing([COMICS, NOVELS]))
 
-    await screen.findByText("Novels")
+    await screen.findByRole("group", { name: "Novels" })
 
     expect(fieldValues("Catalog URL")).toEqual([
       "https://api.oboku.test/opds/brave-foxes-run",
@@ -132,46 +136,93 @@ describe("OpdsServersScreen", () => {
     expect(screen.queryByRole("textbox", { name: "Password" })).toBeNull()
   })
 
+  it("says when the user has no server yet", async () => {
+    renderScreen(listing([]))
+
+    expect(
+      await screen.findByText("You do not have any OPDS servers right now."),
+    ).not.toBeNull()
+  })
+
+  it("tells a list that failed to load apart from an empty one, and creates nothing", async () => {
+    renderScreen(vi.fn().mockRejectedValue(new Error("Network down")))
+
+    expect(
+      await screen.findByText(
+        "Something went wrong while loading your OPDS servers. Please try again later.",
+      ),
+    ).not.toBeNull()
+    expect(
+      screen.queryByText("You do not have any OPDS servers right now."),
+    ).toBeNull()
+    expect(
+      screen.getByRole<HTMLButtonElement>("button", { name: "Create a server" })
+        .disabled,
+    ).toBe(true)
+  })
+
   it("shows the password of the server it creates", async () => {
-    const api = renderScreen([[COMICS], [COMICS, NOVELS]])
+    const api = renderScreen(listing([COMICS], [COMICS, NOVELS]))
     api.post.mockResolvedValue(withPassword(NOVELS, "k7mq-x2fp-9dwa-hc4n"))
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Create a server" }),
-    )
+    await findServerSection("Comics")
+    fireEvent.click(screen.getByRole("button", { name: "Create a server" }))
 
     const novels = await findServerSection("Novels")
 
     expect(
-      novels.getByRole<HTMLInputElement>("textbox", { name: "Password" }).value,
+      (
+        await novels.findByRole<HTMLInputElement>("textbox", {
+          name: "Password",
+        })
+      ).value,
     ).toBe("k7mq-x2fp-9dwa-hc4n")
     expect(api.post).toHaveBeenCalledWith(
       expect.objectContaining({ url: "/opds-servers" }),
     )
   })
 
-  it("shows only the latest password it generated", async () => {
-    const api = renderScreen([[COMICS], [COMICS, NOVELS]])
+  it("shows each new password with its server, even when the requests overlap", async () => {
+    const api = renderScreen(listing([COMICS, NOVELS]))
+    const comicsPassword =
+      Promise.withResolvers<ReturnType<typeof withPassword>>()
     api.post
-      .mockResolvedValueOnce(withPassword(NOVELS, "k7mq-x2fp-9dwa-hc4n"))
-      .mockResolvedValueOnce(withPassword(COMICS, "p3rt-h8vb-2kca-wq6e"))
+      .mockReturnValueOnce(comicsPassword.promise)
+      .mockResolvedValueOnce(withPassword(NOVELS, "p3rt-h8vb-2kca-wq6e"))
 
-    fireEvent.click(
-      await screen.findByRole("button", { name: "Create a server" }),
-    )
-    await (await findServerSection("Novels")).findByRole("textbox", {
-      name: "Password",
-    })
     const comics = await findServerSection("Comics")
     fireEvent.click(
       comics.getByRole("button", { name: "Generate a new password" }),
     )
-    fireEvent.click(await screen.findByRole("button", { name: "Generate" }))
+    await confirmDialog("Generate")
+    const novels = await findServerSection("Novels")
+    fireEvent.click(
+      novels.getByRole("button", { name: "Generate a new password" }),
+    )
+    await confirmDialog("Generate")
 
-    await waitFor(() => {
-      expect(fieldValues("Password")).toEqual(["p3rt-h8vb-2kca-wq6e"])
-    })
-    expect(api.post).toHaveBeenLastCalledWith(
+    expect(
+      (
+        await novels.findByRole<HTMLInputElement>("textbox", {
+          name: "Password",
+        })
+      ).value,
+    ).toBe("p3rt-h8vb-2kca-wq6e")
+
+    comicsPassword.resolve(withPassword(COMICS, "k7mq-x2fp-9dwa-hc4n"))
+
+    expect(
+      (
+        await comics.findByRole<HTMLInputElement>("textbox", {
+          name: "Password",
+        })
+      ).value,
+    ).toBe("k7mq-x2fp-9dwa-hc4n")
+    expect(fieldValues("Password")).toEqual([
+      "p3rt-h8vb-2kca-wq6e",
+      "k7mq-x2fp-9dwa-hc4n",
+    ])
+    expect(api.post).toHaveBeenCalledWith(
       expect.objectContaining({
         url: "/opds-servers/{id}/password",
         path: { id: COMICS.id },
@@ -179,8 +230,10 @@ describe("OpdsServersScreen", () => {
     )
   })
 
-  it("renames a server to a name that is not blank", async () => {
-    const api = renderScreen([[COMICS], [{ ...COMICS, name: "Bedtime" }]])
+  it("renames a server to the trimmed name, once it is not blank", async () => {
+    const api = renderScreen(
+      listing([COMICS], [{ ...COMICS, name: "Bedtime" }]),
+    )
     api.patch.mockResolvedValue({ data: { ...COMICS, name: "Bedtime" } })
 
     const comics = await findServerSection("Comics")
@@ -193,10 +246,10 @@ describe("OpdsServersScreen", () => {
       dialog.getByRole<HTMLButtonElement>("button", { name: "Save" }).disabled,
     ).toBe(true)
 
-    fireEvent.change(nameField, { target: { value: "Bedtime" } })
+    fireEvent.change(nameField, { target: { value: " Bedtime " } })
     fireEvent.click(dialog.getByRole("button", { name: "Save" }))
 
-    expect(await screen.findByText("Bedtime")).not.toBeNull()
+    expect(await screen.findByRole("group", { name: "Bedtime" })).not.toBeNull()
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull()
     })
@@ -210,14 +263,11 @@ describe("OpdsServersScreen", () => {
   })
 
   it("deletes a server only once its deletion is confirmed", async () => {
-    const api = renderScreen([[COMICS], []])
+    const api = renderScreen(listing([COMICS], []))
 
     const comics = await findServerSection("Comics")
     fireEvent.click(comics.getByRole("button", { name: "Delete" }))
-    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }))
-    await waitFor(() => {
-      expect(screen.queryByRole("dialog")).toBeNull()
-    })
+    await confirmDialog("Cancel")
 
     expect(api.delete).not.toHaveBeenCalled()
 
@@ -226,7 +276,7 @@ describe("OpdsServersScreen", () => {
     fireEvent.click(dialog.getByRole("button", { name: "Delete" }))
 
     await waitFor(() => {
-      expect(screen.queryByText("Comics")).toBeNull()
+      expect(screen.queryByRole("group", { name: "Comics" })).toBeNull()
     })
     expect(api.delete).toHaveBeenCalledWith(
       expect.objectContaining({
