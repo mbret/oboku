@@ -45,6 +45,7 @@
     "google-auth-library": "^11.2.0",
     "googleapis": "^185.0.0",
     "http-proxy-3": "^2.0.1",
+    "human-id": "^4.2.2",
     "joi": "^18.2.9",
     "jose": "^6.2.12",
     "mime-types": "^3.0.2",

@@ -1,4 +1,4 @@
-import { createHash, randomInt, timingSafeEqual } from "node:crypto"
+import { randomInt } from "node:crypto"
 
 // Lowercase without look-alikes (i, l, o, 0, 1): the password is typed on an
 // e-reader's keyboard.
@@ -13,14 +13,5 @@ const generatePasswordGroup = () =>
   ).join("")
 
 /** Such as `k7mq-x2fp-9dwa-hc4n`: 16 characters from 31, about 79 bits. */
-export const generateSyncPassword = () =>
+export const generateEReaderPassword = () =>
   Array.from({ length: PASSWORD_GROUP_COUNT }, generatePasswordGroup).join("-")
-
-export const hashSyncKey = (key: string) =>
-  createHash("sha256").update(key).digest("hex")
-
-export const isSyncKeyMatchingHash = (key: string, keyHash: string) =>
-  timingSafeEqual(
-    Buffer.from(hashSyncKey(key), "hex"),
-    Buffer.from(keyHash, "hex"),
-  )

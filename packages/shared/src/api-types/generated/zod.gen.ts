@@ -463,6 +463,23 @@ export const zKoreaderSyncPositionResponseDto = z.object({
     position: zKoreaderSyncPositionDto.nullable()
 });
 
+export const zOpdsServerDto = z.object({
+    id: z.number(),
+    slug: z.string(),
+    name: z.string(),
+    username: z.string(),
+    createdAt: z.string()
+});
+
+export const zOpdsServerPasswordResponseDto = z.object({
+    server: zOpdsServerDto,
+    password: z.string()
+});
+
+export const zRenameOpdsServerDto = z.object({
+    name: z.string().min(1).max(100).regex(/\S/)
+});
+
 export const zAppGetHelloResponse = z.string();
 
 export const zWebGetConfigResponse = zWebConfigResponseDto;
@@ -662,3 +679,27 @@ export const zKoreaderSyncConnectionPullPositionPath = z.object({
 });
 
 export const zKoreaderSyncConnectionPullPositionResponse = zKoreaderSyncPositionResponseDto;
+
+export const zOpdsServersListResponse = z.array(zOpdsServerDto);
+
+export const zOpdsServersCreateResponse = zOpdsServerPasswordResponseDto;
+
+export const zOpdsServersDeletePath = z.object({
+    id: z.number()
+});
+
+export const zOpdsServersDeleteResponse = zOkResponseDto;
+
+export const zOpdsServersRenameBody = zRenameOpdsServerDto;
+
+export const zOpdsServersRenamePath = z.object({
+    id: z.number()
+});
+
+export const zOpdsServersRenameResponse = zOpdsServerDto;
+
+export const zOpdsServersRegeneratePasswordPath = z.object({
+    id: z.number()
+});
+
+export const zOpdsServersRegeneratePasswordResponse = zOpdsServerPasswordResponseDto;
