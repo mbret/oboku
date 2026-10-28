@@ -359,7 +359,6 @@ export class OpdsServerPostgresEntity {
   @Column({ type: "integer" })
   user_id!: number
 
-  /** The server's part of its catalog URL, such as `calm-snails-dream`. */
   @Column({ type: "text" })
   slug!: string
 

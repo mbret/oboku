@@ -128,7 +128,7 @@ describe("UsersService", () => {
     expect(userPostgresService.save).toHaveBeenCalledWith(user)
   })
 
-  it("deletes the account's data from every Postgres table", async () => {
+  it("deletes the Postgres rows keyed by the account", async () => {
     await service.deleteAccount({ userId: 1, email: "reader@example.com" })
 
     expect(refreshTokensService.deleteByUserId).toHaveBeenCalledWith(1)

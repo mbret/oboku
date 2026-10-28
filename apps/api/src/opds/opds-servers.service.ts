@@ -57,7 +57,6 @@ export class OpdsServersService {
     return server
   }
 
-  /** Readers signed in with the previous password must sign in again. */
   async regeneratePassword({ userId, id }: { userId: number; id: number }) {
     const password = generateEReaderPassword()
     const server = await this.opdsServerPostgresService.update({

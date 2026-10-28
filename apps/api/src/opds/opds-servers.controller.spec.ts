@@ -43,7 +43,6 @@ const TOKEN_PAYLOADS = new Map([
 const SLUG_PATTERN = /^[a-z]+-[a-z]+-[a-z]+$/
 const PASSWORD_PATTERN = /^[a-hjkmnp-z2-9]{4}(-[a-hjkmnp-z2-9]{4}){3}$/
 
-/** Keeps slugs unique as the table's index does: a taken slug inserts nothing. */
 const createServerStore = () => {
   const servers = new Map<number, OpdsServerPostgresEntity>()
 

@@ -52,9 +52,8 @@ export class UsersService {
    * Permanently deletes the user account and all associated data.
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
-   * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
-   * notifications, sync reports, KOReader sync server data, OPDS servers,
-   * user row). Cover object deletion is fire-and-forget afterward.
+   * effort) → `deleteCouchUser` → Postgres deletes, user row last. Cover
+   * object deletion is fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
    * Postgres are both cleared for that account, so re-registration with the

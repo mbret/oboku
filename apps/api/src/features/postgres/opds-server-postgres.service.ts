@@ -48,9 +48,8 @@ export class OpdsServerPostgresService {
       .returning("*")
       .execute()
 
-    // TypeORM types InsertResult.raw as `any` since its shape depends on the
-    // driver; `.returning("*")` makes Postgres return the inserted row, and no
-    // row when the slug conflict skipped the insert.
+    // `InsertResult.raw` is `any`. With `.returning("*")`, Postgres returns the
+    // inserted row, or none when the insert was skipped.
     return (inserted.raw[0] as OpdsServerPostgresEntity | undefined) ?? null
   }
 
