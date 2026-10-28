@@ -10,6 +10,7 @@ import {
 } from "@nestjs/common"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
+import { ApiObokuErrors } from "../openapi/api-oboku-errors.decorator.js"
 import { OkResponseDto } from "../openapi/ok-response.dto.js"
 import {
   OpdsServerDto,
@@ -44,6 +45,7 @@ export class OpdsServersController {
     return servers.map((server) => toOpdsServerDto({ server, user }))
   }
 
+  @ApiObokuErrors()
   @Post()
   async create(
     @WithAuthUser() user: AuthUser,

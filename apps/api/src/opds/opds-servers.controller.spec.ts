@@ -2,9 +2,15 @@ import { type INestApplication, ValidationPipe } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
+import { ObokuErrorCode } from "@oboku/shared"
 import { humanId } from "human-id"
+import { BehaviorSubject } from "rxjs"
 import request from "supertest"
 import type { App } from "supertest/types.js"
+import {
+  type InstanceConfig,
+  InstanceConfigService,
+} from "../admin/instance-config/instance-config.service.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { isSecretMatchingHash } from "../crypto/secretHash.js"
@@ -40,6 +46,22 @@ const TOKEN_PAYLOADS = new Map([
   [OTHER_READER.session, toTokenPayload(OTHER_READER)],
 ])
 
+const SERVER_LIMIT = 3
+
+const INSTANCE_CONFIG: InstanceConfig = {
+  version: 1,
+  serverSync: { enabled: false, credentials: null, sources: [] },
+  showDisabledPlugins: true,
+  fileDownloadMaxSizeBytes: 1,
+  allowPrivateNetworkRequests: false,
+  privateNetworkAllowedHosts: [],
+  opdsServersMaxPerUser: SERVER_LIMIT,
+}
+
+const instanceConfigService: Pick<InstanceConfigService, "getConfig"> = {
+  getConfig: () => new BehaviorSubject(INSTANCE_CONFIG),
+}
+
 const SLUG_PATTERN = /^[a-z]+-[a-z]+-[a-z]+$/
 const PASSWORD_PATTERN = /^[a-hjkmnp-z2-9]{4}(-[a-hjkmnp-z2-9]{4}){3}$/
 
@@ -67,16 +89,20 @@ const createServerStore = () => {
     return updatedServer
   }
 
+  const findUserServers = (userId: number) =>
+    [...servers.values()].filter((server) => server.user_id === userId)
+
   const store: Pick<
     OpdsServerPostgresService,
     | "findByUserId"
+    | "countByUserId"
     | "insertUnlessSlugTaken"
     | "rename"
     | "replacePasswordHash"
     | "delete"
   > = {
-    findByUserId: async (userId) =>
-      [...servers.values()].filter((server) => server.user_id === userId),
+    findByUserId: async (userId) => findUserServers(userId),
+    countByUserId: async (userId) => findUserServers(userId).length,
     insertUnlessSlugTaken: async ({ userId, slug, name, passwordHash }) => {
       const isSlugTaken = [...servers.values()].some(
         (server) => server.slug === slug,
@@ -165,6 +191,7 @@ describe("OpdsServersController", () => {
           provide: SecretsService,
           useValue: { getJwtPublicKey: async () => "public key" },
         },
+        { provide: InstanceConfigService, useValue: instanceConfigService },
       ],
     }).compile()
 
@@ -305,5 +332,19 @@ describe("OpdsServersController", () => {
     expect(response.status).toBe(500)
     expect(humanId).toHaveBeenCalledTimes(6)
     expect((await reader().list()).body).toEqual([])
+  })
+
+  it("refuses a server past the instance's limit per user", async () => {
+    for (let created = 0; created < SERVER_LIMIT; created++) {
+      await reader().create()
+    }
+
+    const response = await reader().create()
+
+    expect(response.status).toBe(400)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED }],
+    })
+    expect((await reader().list()).body).toHaveLength(SERVER_LIMIT)
   })
 })

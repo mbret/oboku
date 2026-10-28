@@ -19,6 +19,10 @@ export class OpdsServerPostgresService {
     })
   }
 
+  countByUserId(userId: number) {
+    return this.serverRepository.count({ where: { user_id: userId } })
+  }
+
   /**
    * @returns `null` when another server already has `slug`. The insert skips
    * any conflict, and the slug index is the only one it can hit.

@@ -1,5 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common"
+import { ObokuErrorCode } from "@oboku/shared"
 import { humanId } from "human-id"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { generateEReaderPassword } from "../crypto/eReaderPassword.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
@@ -21,6 +27,7 @@ const createServerNotFoundError = () =>
 export class OpdsServersService {
   constructor(
     private readonly opdsServerPostgresService: OpdsServerPostgresService,
+    private readonly instanceConfigService: InstanceConfigService,
   ) {}
 
   list(userId: number) {
@@ -28,6 +35,18 @@ export class OpdsServersService {
   }
 
   async create(userId: number) {
+    const { opdsServersMaxPerUser } =
+      this.instanceConfigService.getConfig().value
+    const serverCount =
+      await this.opdsServerPostgresService.countByUserId(userId)
+    const isUnderServerLimit = serverCount < opdsServersMaxPerUser
+
+    if (!isUnderServerLimit) {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED }],
+      })
+    }
+
     const password = generateEReaderPassword()
     const server = await this.insertWithFreeSlug({
       userId,

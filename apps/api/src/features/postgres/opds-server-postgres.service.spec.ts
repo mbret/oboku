@@ -34,6 +34,7 @@ describe("OpdsServerPostgresService", () => {
   let service: OpdsServerPostgresService
   let repository: {
     find: Mock
+    count: Mock
     findOneBy: Mock
     update: Mock
     delete: Mock
@@ -43,6 +44,7 @@ describe("OpdsServerPostgresService", () => {
   beforeEach(async () => {
     repository = {
       find: vi.fn().mockResolvedValue([SERVER]),
+      count: vi.fn().mockResolvedValue(1),
       findOneBy: vi.fn().mockResolvedValue(SERVER),
       update: vi.fn().mockResolvedValue({ affected: 1 }),
       delete: vi.fn().mockResolvedValue({ affected: 1 }),
@@ -69,6 +71,11 @@ describe("OpdsServerPostgresService", () => {
       where: { user_id: 1 },
       order: { id: "ASC" },
     })
+  })
+
+  it("counts only the user's servers", async () => {
+    expect(await service.countByUserId(1)).toBe(1)
+    expect(repository.count).toHaveBeenCalledWith({ where: { user_id: 1 } })
   })
 
   it("returns the inserted server", async () => {
