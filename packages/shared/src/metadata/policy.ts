@@ -10,9 +10,9 @@ export type MetadataFetchOverride = boolean | null | undefined
 /**
  * Single source of truth for "should we hit external metadata providers for
  * this item?" — used both client and server side. Only gates third-party
- * provider calls (Google Books, ComicVine, BiblioReads, MangaUpdates, MangaDex,
- * etc.). Local extraction (file cover, archive metadata) and user data sources
- * are not affected.
+ * provider calls (Google Books, Open Library, Project Gutenberg, ComicVine,
+ * BiblioReads, MangaUpdates, MangaDex, etc.). Local extraction (file cover,
+ * archive metadata) and user data sources are not affected.
  */
 export const resolveMetadataFetchEnabled = (
   override: MetadataFetchOverride,

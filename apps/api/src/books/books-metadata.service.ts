@@ -1,5 +1,4 @@
 import fs from "node:fs"
-import path from "node:path"
 import { Injectable, Logger } from "@nestjs/common"
 import {
   type BookDocType,
@@ -14,12 +13,13 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
-  isLegacyFileMetadata,
+  isCatalogEntry,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
 import type nano from "nano"
 import type { Archive } from "@prose-reader/archive-reader"
+import type { MetadataProvider } from "@prose-reader/metadata-fetcher"
 import { firstValueFrom } from "rxjs"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
@@ -30,9 +30,12 @@ import { CoversService } from "../covers/covers.service.js"
 import { detectMimeTypeFromContent } from "../features/metadata/archives/detectMimeTypeFromContent.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
-import { getBookSourcesMetadata } from "../features/metadata/getBookSourcesMetadata.js"
+import { catalogLookupInput } from "../features/metadata/catalogLookupInput.js"
+import { createCatalogProviders } from "../features/metadata/catalogProviders.js"
+import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { pickCoverMetadata } from "../features/metadata/pickCoverMetadata.js"
 import { reduceMetadata } from "../features/metadata/reduceMetadata.js"
+import { refreshCatalogEntry } from "../features/metadata/refreshCatalogEntry.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types.js"
 
@@ -45,7 +48,6 @@ type Context = {
 }
 
 type RefreshContext = Context & {
-  googleApiKey?: string
   db: nano.DocumentScope<unknown>
   /**
    * Hard refresh: bypass every reuse cache (cached file metadata,
@@ -99,6 +101,7 @@ const isCachedFileMetadataReusable = (
 @Injectable()
 export class BooksMetadataService {
   private readonly logger = new Logger(BooksMetadataService.name)
+  private readonly catalogProviders: ReadonlyArray<MetadataProvider>
 
   constructor(
     private readonly appConfigService: AppConfigService,
@@ -106,7 +109,12 @@ export class BooksMetadataService {
     private readonly coversService: CoversService,
     private readonly pluginsService: PluginsService,
     private readonly instanceConfigService: InstanceConfigService,
-  ) {}
+  ) {
+    this.catalogProviders = createCatalogProviders({
+      googleApiKey: appConfigService.GOOGLE_API_KEY,
+      googleBooksBaseUrl: appConfigService.GOOGLE_BOOK_API_URL,
+    })
+  }
 
   public refreshMetadata = async (
     body: { bookId: string; force?: boolean },
@@ -152,7 +160,6 @@ export class BooksMetadataService {
         providerCredentials,
         book,
         link,
-        googleApiKey: this.appConfigService.GOOGLE_API_KEY,
         db,
         force,
         fileDownloadMaxSizeBytes,
@@ -251,7 +258,14 @@ export class BooksMetadataService {
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
       )
-      const previousFileMetadata = ctx.book.metadata?.find(isLegacyFileMetadata)
+      const storedFileMetadata = ctx.book.metadata?.find(
+        (entry) => entry.type === "file",
+      )
+      const previousFileMetadata =
+        storedFileMetadata && toFileMetadata(storedFileMetadata)
+      const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
+      const isCatalogLookupAllowed =
+        !ignoreMetadataSources && externalFetchEnabled
       const previousUserMetadata = ctx.book.metadata?.find(
         (entry): entry is UserMetadata => entry.type === "user",
       )
@@ -266,6 +280,9 @@ export class BooksMetadataService {
       const predictedCoverMetadata = pickCoverMetadata(
         [
           linkMetadata,
+          ...(isCatalogLookupAllowed && previousCatalogMetadata
+            ? [previousCatalogMetadata]
+            : []),
           ...(previousFileMetadata ? [previousFileMetadata] : []),
           ...(previousUserMetadata ? [previousUserMetadata] : []),
         ],
@@ -395,44 +412,26 @@ export class BooksMetadataService {
        * silently disappear under `metadataFileDownloadEnabled=false`,
        * unsupported content types, or download failures.
        */
-      const reusedFileMetadata =
+      const isPreviousFileMetadataReusable =
         !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
-          ? previousFileMetadata
-          : undefined
-
-      /**
-       * Single Google Books lookup — runs after extraction so it sees the
-       * most authoritative ISBN we have. Priority mirrors the global
-       * `user > directive > file > …` chain.
-       */
-      const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
-      const lookupIsbn =
-        previousUserMetadata?.isbn ??
-        isbn ??
-        freshFileMetadata?.isbn ??
-        reusedFileMetadata?.isbn
-      const lookupGoogleVolumeId =
-        directiveGoogleVolumeId ??
-        freshFileMetadata?.googleVolumeId ??
-        reusedFileMetadata?.googleVolumeId
-
-      const sourcesMetadata =
-        ignoreMetadataSources || !externalFetchEnabled
-          ? []
-          : await getBookSourcesMetadata(
-              {
-                // Some plugins return the filename (with extension) instead
-                // of a clean title; strip the extension for the lookup.
-                title: lookupTitle,
-                isbn: lookupIsbn,
-                googleVolumeId: lookupGoogleVolumeId,
-              },
-              {
-                googleApiKey: ctx.googleApiKey,
-                withExternalSources: externalFetchEnabled,
-              },
-              this.appConfigService,
-            )
+      const reusedFileMetadata = isPreviousFileMetadataReusable
+        ? previousFileMetadata
+        : undefined
+      const fileMetadata = freshFileMetadata ?? reusedFileMetadata
+      const catalogMetadata = isCatalogLookupAllowed
+        ? await refreshCatalogEntry({
+            bookId: ctx.book._id,
+            lookupInput: catalogLookupInput({
+              fileMetadata,
+              linkName: linkMetadata.title,
+              userIsbn: previousUserMetadata?.isbn,
+              directiveIsbn: isbn,
+              directiveGoogleVolumeId,
+            }),
+            previous: previousCatalogMetadata,
+            providers: this.catalogProviders,
+          })
+        : undefined
 
       if (freshFileMetadata) {
         this.logger.log(`Pushing file metadata for book ${ctx.book._id}`)
@@ -440,12 +439,8 @@ export class BooksMetadataService {
 
       const metadataList: BookMetadata[] = [
         linkMetadata,
-        ...sourcesMetadata,
-        ...(freshFileMetadata
-          ? [freshFileMetadata]
-          : reusedFileMetadata
-            ? [reusedFileMetadata]
-            : []),
+        ...(catalogMetadata ? [catalogMetadata] : []),
+        ...(fileMetadata ? [fileMetadata] : []),
         ...(previousUserMetadata ? [previousUserMetadata] : []),
       ]
 
@@ -455,7 +450,6 @@ export class BooksMetadataService {
         metadataList,
         archive,
         force: ctx.force,
-        catalogIdentityIsConfirmed: lookupGoogleVolumeId !== undefined,
       })
 
       this.logger.log(`prepare to update ${ctx.book._id} with new metadata`)
@@ -498,7 +492,6 @@ export class BooksMetadataService {
     book,
     ctx,
     force = false,
-    catalogIdentityIsConfirmed,
   }: {
     ctx: Context
     book: BookDocType
@@ -509,14 +502,11 @@ export class BooksMetadataService {
      * already matches the picked source and the blob exists.
      */
     force?: boolean
-    /** Whether the catalog match is known to describe this exact book. */
-    catalogIdentityIsConfirmed?: boolean
   }): Promise<UpdateCoverResult> {
     const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
     const metadataForCover = pickCoverMetadata(
       metadataList,
       book.metadataSourcePriority,
-      { catalogIdentityIsConfirmed },
     )
     const coverLink = metadataForCover
       ? getBookMetadataFields(metadataForCover).coverLink

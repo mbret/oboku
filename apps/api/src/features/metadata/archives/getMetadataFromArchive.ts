@@ -1,46 +1,29 @@
-import type { LegacyFileMetadata } from "@oboku/shared"
+import type { FileMetadata } from "@oboku/shared"
 import {
   type Archive,
   identifierValue,
   mainTitle,
-  type ResolvedMetadata,
   resolveArchive,
 } from "@prose-reader/archive-reader"
 import { Logger } from "@nestjs/common"
 
 const logger = new Logger("getMetadataFromArchive")
 
-const authorNames = (metadata: ResolvedMetadata): string[] | undefined => {
-  const names: string[] = []
-
-  for (const contributor of metadata.contributors ?? []) {
-    if (contributor.roles.includes("author")) {
-      names.push(contributor.name)
-    }
-  }
-
-  return names.length > 0 ? names : undefined
-}
-
-const toMutableList = (
-  values: ReadonlyArray<string> | undefined,
-): string[] | undefined =>
-  values && values.length > 0 ? [...values] : undefined
-
 export const getMetadataFromArchive = async (
   archive: Archive,
   contentType: string,
-): Promise<LegacyFileMetadata> => {
+): Promise<FileMetadata> => {
   const { metadata, unreadableSources } = await resolveArchive(archive, {
     include: ["metadata"],
   })
 
-  const title = mainTitle(metadata)
-  const isbn = identifierValue(metadata.identifiers, "ISBN")
-  const googleVolumeId = identifierValue(metadata.identifiers, "GoogleBooks")
+  const hasTitle = mainTitle(metadata) !== undefined
+  const hasIsbn = identifierValue(metadata.identifiers, "ISBN") !== undefined
+  const hasGoogleVolumeId =
+    identifierValue(metadata.identifiers, "GoogleBooks") !== undefined
 
   logger.log(
-    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, googleVolumeId=${googleVolumeId !== undefined}, cover=${metadata.cover !== undefined})`,
+    `Extracted archive metadata (title=${hasTitle}, isbn=${hasIsbn}, googleVolumeId=${hasGoogleVolumeId}, cover=${metadata.cover !== undefined})`,
   )
 
   if (unreadableSources.length > 0) {
@@ -49,20 +32,5 @@ export const getMetadataFromArchive = async (
     )
   }
 
-  return {
-    type: "file",
-    contentType,
-    title,
-    authors: authorNames(metadata),
-    publisher: metadata.publication?.edition?.publisher,
-    rights: metadata.rights,
-    languages: toMutableList(metadata.languages),
-    date: metadata.publication?.edition?.date,
-    subjects: toMutableList(metadata.subjects),
-    coverLink: metadata.cover?.uri,
-    coverConfidence: metadata.cover?.confidence,
-    pageCount: metadata.numberOfPages,
-    isbn,
-    googleVolumeId,
-  }
+  return { type: "file", contentType, metadata }
 }

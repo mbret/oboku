@@ -1,6 +1,7 @@
 import type { FileMetadata, LegacyFileMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
+import { DescriptionText } from "../../metadata/DescriptionText"
 import { getBookMetadataEntryFields } from "../../metadata/fields"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
@@ -21,6 +22,14 @@ export const FileSourceContent = ({ entry }: Props) => {
     <PageSection title="Fields" dense>
       <MetadataFieldRow label={L.title} value={fields?.title?.toString()} />
       <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />
+      <MetadataFieldRow
+        label={L.description}
+        value={
+          fields?.description && (
+            <DescriptionText description={fields.description} />
+          )
+        }
+      />
       <MetadataFieldRow label={L.publisher} value={fields?.publisher} />
       <MetadataFieldRow label={L.rights} value={fields?.rights} />
       <MetadataFieldRow

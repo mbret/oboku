@@ -1,39 +1,25 @@
 import {
   type BookDocType,
   type BookMetadata,
-  type CatalogMetadata,
+  directives,
   getBookMetadataFields,
   getBookMetadataSource,
   getOrderedBookMetadataSources,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
+import { identifierValue } from "@prose-reader/archive-reader"
+import { isIdentityConfirmed } from "./isIdentityConfirmed.js"
 
-type CoverCertainty = {
-  /**
-   * Whether a legacy catalog entry describes *this* book rather than a
-   * plausible neighbour: whether its lookup addressed one Google Books
-   * volume id. A catalog match states it itself ({@link isIdentityConfirmed}).
-   */
-  catalogIdentityIsConfirmed?: boolean
-}
+/** The Google Books volume the link's directive or the file names. */
+const getNamedGoogleVolumeId = (metadataList: ReadonlyArray<BookMetadata>) => {
+  const linkTitle = metadataList.find((entry) => entry.type === "link")?.title
+  const fileEntry = metadataList.find((entry) => entry.type === "file")
 
-const IDENTITY_MATCH_FIELDS: ReadonlyArray<
-  CatalogMetadata["signals"][number]["field"]
-> = ["isbn", "gtin", "identifiers"]
-
-/**
- * Whether an identifier settled the match: metadata-fetcher pins the score
- * of a match to 1 when an ISBN, a GTIN or a scheme-scoped identifier agrees.
- */
-const isIdentityConfirmed = ({
-  score,
-  signals,
-}: Pick<CatalogMetadata, "score" | "signals">) =>
-  score === 1 &&
-  signals.some(
-    (signal) =>
-      IDENTITY_MATCH_FIELDS.includes(signal.field) && signal.score === 1,
+  return (
+    directives.extractDirectivesFromName(linkTitle ?? "").googleVolumeId ??
+    (fileEntry ? getBookMetadataFields(fileEntry).googleVolumeId : undefined)
   )
+}
 
 /**
  * Whether the source is certain this image is *this book's* cover. Two
@@ -51,7 +37,7 @@ const isIdentityConfirmed = ({
  */
 const isCertainCover = (
   metadata: BookMetadata,
-  { catalogIdentityIsConfirmed }: CoverCertainty,
+  namedGoogleVolumeId: string | undefined,
 ): boolean => {
   const { coverLink, coverConfidence } = getBookMetadataFields(metadata)
 
@@ -60,8 +46,16 @@ const isCertainCover = (
   switch (metadata.type) {
     case "catalog":
       return isIdentityConfirmed(metadata)
+    // A legacy entry kept no volume id, but its Google cover link carries
+    // the volume it shows.
     case LEGACY_CATALOG_SOURCE_NAME:
-      return catalogIdentityIsConfirmed === true
+      return (
+        namedGoogleVolumeId !== undefined &&
+        identifierValue(
+          [{ value: coverLink, scheme: "URL" }],
+          "GoogleBooks",
+        ) === namedGoogleVolumeId
+      )
     case "file":
       return coverConfidence === "derived"
     default:
@@ -88,9 +82,10 @@ const hasCover = (metadata: BookMetadata): boolean =>
 export const pickCoverMetadata = (
   metadataList: ReadonlyArray<BookMetadata> | undefined,
   priority: BookDocType["metadataSourcePriority"],
-  certainty: CoverCertainty = {},
 ): BookMetadata | undefined => {
   if (!metadataList?.length) return undefined
+
+  const namedGoogleVolumeId = getNamedGoogleVolumeId(metadataList)
 
   const orderedSources = getOrderedBookMetadataSources(priority)
 
@@ -111,7 +106,7 @@ export const pickCoverMetadata = (
 
   return (
     highestPriorityCover(function isCertain(metadata) {
-      return isCertainCover(metadata, certainty)
+      return isCertainCover(metadata, namedGoogleVolumeId)
     }) ?? highestPriorityCover(hasCover)
   )
 }
