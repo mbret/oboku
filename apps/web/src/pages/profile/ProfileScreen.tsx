@@ -1,18 +1,15 @@
 import { useCallback, useState } from "react"
 import {
   BarChartRounded,
-  CloudSyncRounded,
   GavelRounded,
   KeyRounded,
   LaunchRounded,
   LockOpenRounded,
   LockRounded,
   NotificationsRounded,
-  RssFeedRounded,
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
-  SyncRounded,
 } from "@mui/icons-material"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
@@ -23,12 +20,7 @@ import {
   ListItemButton,
 } from "@mui/material"
 import { useNavigate } from "react-router"
-import {
-  formatBytes,
-  type KoreaderSyncConnectionGetResponse,
-  type KoreaderSyncServerGetResponse,
-  links,
-} from "@oboku/shared"
+import { formatBytes, links } from "@oboku/shared"
 import { useStorageUse } from "../../settings/useStorageUse"
 import { useSignOut } from "../../auth/useSignOut"
 import {
@@ -54,52 +46,6 @@ import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnread
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
-import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
-import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
-
-const KOREADER_SYNC_SERVER_PURPOSE =
-  "Let KOReader, Readest, CrossPoint… sync their reading position through oboku"
-
-const describeKoreaderSyncServer = (
-  koreaderSyncServer?: KoreaderSyncServerGetResponse,
-) => {
-  if (!koreaderSyncServer) return KOREADER_SYNC_SERVER_PURPOSE
-
-  return koreaderSyncServer.passwordCreatedAt
-    ? "On"
-    : `Off · ${KOREADER_SYNC_SERVER_PURPOSE}`
-}
-
-const KOREADER_PROGRESS_SYNC_PURPOSE =
-  "Sync oboku's reading position through a KOReader sync server"
-
-const describeKoreaderSyncConnection = (
-  response?: KoreaderSyncConnectionGetResponse,
-) =>
-  response?.connection
-    ? `Syncing with ${response.connection.serverUrl}`
-    : KOREADER_PROGRESS_SYNC_PURPOSE
-
-function KoreaderProgressSyncListItem() {
-  const navigate = useNavigate()
-  const { data: koreaderSyncConnection } = useKoreaderSyncConnection()
-
-  return (
-    <ListItemButton
-      onClick={function openKoreaderProgressSync() {
-        navigate(ROUTES.KOREADER_PROGRESS_SYNC)
-      }}
-    >
-      <ListItemIcon>
-        <CloudSyncRounded />
-      </ListItemIcon>
-      <ListItemText
-        primary="KOReader progress sync"
-        secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
-      />
-    </ListItemButton>
-  )
-}
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -107,7 +53,6 @@ export const ProfileScreen = () => {
     useState(false)
   const { quotaUsed, quota, usage } = useStorageUse({ intervalMs: 5000 })
   const { data: auth } = useActiveProfile()
-  const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -218,35 +163,6 @@ export const ProfileScreen = () => {
               <BarChartRounded />
             </ListItemIcon>
             <ListItemText primary="Statistics" />
-          </ListItemButton>
-        </PageSection>
-        <PageSection title="Other apps">
-          <ListItemButton
-            onClick={() => {
-              navigate(ROUTES.KOREADER_SYNC_SERVER)
-            }}
-          >
-            <ListItemIcon>
-              <SyncRounded />
-            </ListItemIcon>
-            <ListItemText
-              primary="KOReader sync server"
-              secondary={describeKoreaderSyncServer(koreaderSyncServer)}
-            />
-          </ListItemButton>
-          <KoreaderProgressSyncListItem />
-          <ListItemButton
-            onClick={function openOpdsServers() {
-              navigate(ROUTES.OPDS_SERVERS)
-            }}
-          >
-            <ListItemIcon>
-              <RssFeedRounded />
-            </ListItemIcon>
-            <ListItemText
-              primary="OPDS servers"
-              secondary="Let KOReader and other reading apps browse your library"
-            />
           </ListItemButton>
         </PageSection>
         <PageSection title="Device">

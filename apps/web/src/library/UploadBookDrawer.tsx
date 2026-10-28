@@ -11,7 +11,7 @@ import { memo } from "react"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
-} from "../plugins/useIsPluginEnabled"
+} from "../integrations/plugins/useIsPluginEnabled"
 
 export const UploadBookDrawer = memo(
   ({

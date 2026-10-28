@@ -1,5 +1,12 @@
-import { Injectable, NotFoundException } from "@nestjs/common"
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+} from "@nestjs/common"
+import { ObokuErrorCode } from "@oboku/shared"
 import { humanId } from "human-id"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { generateEReaderPassword } from "../crypto/eReaderPassword.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
@@ -21,6 +28,7 @@ const createServerNotFoundError = () =>
 export class OpdsServersService {
   constructor(
     private readonly opdsServerPostgresService: OpdsServerPostgresService,
+    private readonly instanceConfigService: InstanceConfigService,
   ) {}
 
   list(userId: number) {
@@ -28,13 +36,31 @@ export class OpdsServersService {
   }
 
   async create(userId: number) {
+    const { opdsServersMaxPerUser } =
+      this.instanceConfigService.getConfig().value
     const password = generateEReaderPassword()
-    const server = await this.insertWithFreeSlug({
+    const result = await this.opdsServerPostgresService.insertUnderLimit({
       userId,
+      maxServers: opdsServersMaxPerUser,
       passwordHash: hashSecret(password),
+      candidates: Array.from({ length: SLUG_ATTEMPTS }, generateSlugAndName),
     })
 
-    return { server, password }
+    if (result.status === "user-missing") throw new UnauthorizedException()
+
+    if (result.status === "limit-reached") {
+      throw new BadRequestException({
+        errors: [{ code: ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED }],
+      })
+    }
+
+    if (result.status === "slugs-taken") {
+      throw new Error(
+        `No free OPDS server slug after ${SLUG_ATTEMPTS} attempts`,
+      )
+    }
+
+    return { server: result.server, password }
   }
 
   async rename({
@@ -77,27 +103,5 @@ export class OpdsServersService {
     })
 
     if (!isDeleted) throw createServerNotFoundError()
-  }
-
-  private async insertWithFreeSlug({
-    userId,
-    passwordHash,
-  }: {
-    userId: number
-    passwordHash: string
-  }) {
-    for (let attempt = 1; attempt <= SLUG_ATTEMPTS; attempt++) {
-      const server = await this.opdsServerPostgresService.insertUnlessSlugTaken(
-        {
-          userId,
-          passwordHash,
-          ...generateSlugAndName(),
-        },
-      )
-
-      if (server) return server
-    }
-
-    throw new Error(`No free OPDS server slug after ${SLUG_ATTEMPTS} attempts`)
   }
 }

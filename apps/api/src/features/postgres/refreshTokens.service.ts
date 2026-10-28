@@ -1,10 +1,11 @@
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { InjectRepository } from "@nestjs/typeorm"
-import { createHash, randomBytes, randomUUID } from "node:crypto"
+import { randomBytes, randomUUID } from "node:crypto"
 import { EntityManager, Repository } from "typeorm"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { decryptAes256Gcm, encryptAes256Gcm } from "../../crypto/aes256Gcm.js"
+import { hashSecret } from "../../crypto/secretHash.js"
 import { RefreshTokenPostgresEntity } from "./entities.js"
 
 export type RotationResult =
@@ -95,7 +96,7 @@ export class RefreshTokensService {
 
   async findByToken(presentedToken: string) {
     return this.refreshTokenRepository.findOne({
-      where: { token_hash: this.hashToken(presentedToken) },
+      where: { token_hash: hashSecret(presentedToken) },
     })
   }
 
@@ -280,7 +281,7 @@ export class RefreshTokensService {
         installation_id,
         public_key,
         session_id,
-        token_hash: this.hashToken(issuedToken),
+        token_hash: hashSecret(issuedToken),
         superseded_at: null,
       })
       .returning("*")
@@ -427,9 +428,5 @@ export class RefreshTokensService {
 
   private generateToken() {
     return randomBytes(48).toString("base64url")
-  }
-
-  private hashToken(token: string) {
-    return createHash("sha256").update(token).digest("hex")
   }
 }

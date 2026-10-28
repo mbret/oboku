@@ -27,7 +27,7 @@ import {
 import { useLink } from "../links/states"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
-import { pluginsByType } from "../plugins/configure"
+import { pluginsByType } from "../integrations/plugins/configure"
 
 const CoverIconBadgeRoot = styled(Box)(({ theme }) => ({
   display: "flex",

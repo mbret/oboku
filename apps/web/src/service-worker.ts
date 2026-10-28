@@ -27,7 +27,7 @@ import { swStreamer } from "./reader/streamer/swStreamer.sw"
 import { serviceWorkerCommunication } from "./workers/communication/communication.sw"
 import { SwTask } from "./workers/communication/types.shared"
 import { runOldRxdbDatabasesCleanup } from "./rxdb/cleanupOldRxdbDatabases.sw"
-import { authCallbackEntrypoints } from "./plugins/common/authCallbackEntrypoints.shared"
+import { authCallbackEntrypoints } from "./integrations/plugins/common/authCallbackEntrypoints.shared"
 import { assertNever } from "@oboku/shared"
 
 declare const self: ServiceWorkerGlobalScope

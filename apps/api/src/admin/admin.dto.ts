@@ -113,6 +113,7 @@ export class InstanceSettingsResponseDto {
   privateNetworkAllowedHosts!: string[]
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
+  opdsServersMaxPerUser!: number
 }
 
 export class UpdateInstanceSettingsDto {
@@ -157,6 +158,12 @@ export class UpdateInstanceSettingsDto {
     require_protocol: true,
   })
   microsoftApplicationAuthority?: string
+
+  @ApiProperty({ type: "integer" })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  opdsServersMaxPerUser?: number
 }
 
 export class ServerSyncCredentialsDto {

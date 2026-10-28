@@ -57,11 +57,11 @@ vi.mock(
   },
 )
 vi.mock(
-  "../../../plugins/usePluginUpsertFile",
+  "../../../integrations/plugins/usePluginUpsertFile",
   async function mockPluginUpsertFile(importOriginal) {
     return {
       ...(await importOriginal<
-        typeof import("../../../plugins/usePluginUpsertFile")
+        typeof import("../../../integrations/plugins/usePluginUpsertFile")
       >()),
       usePluginUpsertFile,
     }
