@@ -1,1 +1,1 @@
-export { plugins } from "../plugins/configure"
+export { plugins } from "../integrations/plugins/configure"

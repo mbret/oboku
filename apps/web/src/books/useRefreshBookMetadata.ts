@@ -1,7 +1,7 @@
 import { booksRefreshMetadata } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useHttpClientApi } from "../http"
-import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { showDialog } from "../common/dialogs/createDialog"

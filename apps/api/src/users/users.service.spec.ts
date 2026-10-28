@@ -6,9 +6,18 @@ import { NotificationPostgresService } from "../features/postgres/notification-p
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
+import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { UsersService } from "./users.service.js"
+
+vi.mock("../couch/dbHelpers.js", async function mockDbHelpers(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("../couch/dbHelpers.js")>()),
+    find: vi.fn(async () => []),
+    deleteCouchUser: vi.fn(async () => {}),
+  }
+})
 
 describe("UsersService", () => {
   let service: UsersService
@@ -21,6 +30,11 @@ describe("UsersService", () => {
   let refreshTokensService: {
     deleteByUserId: Mock
   }
+  let notificationPostgresService: { deleteDeliveriesByUserId: Mock }
+  let syncReportPostgresService: { deleteByUserName: Mock }
+  let koreaderSyncPostgresService: { deleteByUserId: Mock }
+  let koreaderSyncConnectionPostgresService: { deleteByUserId: Mock }
+  let opdsServerPostgresService: { deleteByUserId: Mock }
 
   beforeEach(async () => {
     userPostgresService = {
@@ -32,18 +46,42 @@ describe("UsersService", () => {
     refreshTokensService = {
       deleteByUserId: vi.fn(),
     }
+    notificationPostgresService = { deleteDeliveriesByUserId: vi.fn() }
+    syncReportPostgresService = { deleteByUserName: vi.fn() }
+    koreaderSyncPostgresService = { deleteByUserId: vi.fn() }
+    koreaderSyncConnectionPostgresService = { deleteByUserId: vi.fn() }
+    opdsServerPostgresService = { deleteByUserId: vi.fn() }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         UsersService,
         { provide: UserPostgresService, useValue: userPostgresService },
-        { provide: CouchService, useValue: {} },
+        {
+          provide: CouchService,
+          useValue: { createAdminNanoInstance: async () => ({ use: vi.fn() }) },
+        },
         { provide: CoversService, useValue: {} },
-        { provide: NotificationPostgresService, useValue: {} },
-        { provide: SyncReportPostgresService, useValue: {} },
+        {
+          provide: NotificationPostgresService,
+          useValue: notificationPostgresService,
+        },
+        {
+          provide: SyncReportPostgresService,
+          useValue: syncReportPostgresService,
+        },
         { provide: RefreshTokensService, useValue: refreshTokensService },
-        { provide: KoreaderSyncPostgresService, useValue: {} },
-        { provide: KoreaderSyncConnectionPostgresService, useValue: {} },
+        {
+          provide: KoreaderSyncPostgresService,
+          useValue: koreaderSyncPostgresService,
+        },
+        {
+          provide: KoreaderSyncConnectionPostgresService,
+          useValue: koreaderSyncConnectionPostgresService,
+        },
+        {
+          provide: OpdsServerPostgresService,
+          useValue: opdsServerPostgresService,
+        },
       ],
     }).compile()
 
@@ -90,5 +128,23 @@ describe("UsersService", () => {
     await service.saveUser(user)
 
     expect(userPostgresService.save).toHaveBeenCalledWith(user)
+  })
+
+  it("deletes the Postgres rows keyed by the account", async () => {
+    await service.deleteAccount({ userId: 1, email: "reader@example.com" })
+
+    expect(refreshTokensService.deleteByUserId).toHaveBeenCalledWith(1)
+    expect(
+      notificationPostgresService.deleteDeliveriesByUserId,
+    ).toHaveBeenCalledWith(1)
+    expect(syncReportPostgresService.deleteByUserName).toHaveBeenCalledWith(
+      "reader@example.com",
+    )
+    expect(koreaderSyncPostgresService.deleteByUserId).toHaveBeenCalledWith(1)
+    expect(
+      koreaderSyncConnectionPostgresService.deleteByUserId,
+    ).toHaveBeenCalledWith(1)
+    expect(opdsServerPostgresService.deleteByUserId).toHaveBeenCalledWith(1)
+    expect(userPostgresService.deleteById).toHaveBeenCalledWith(1)
   })
 })

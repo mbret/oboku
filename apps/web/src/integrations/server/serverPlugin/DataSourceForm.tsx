@@ -1,0 +1,58 @@
+import { memo } from "react"
+import { useForm } from "react-hook-form"
+import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
+import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import {
+  buildDataSourceSubmitPayload,
+  getDataSourceFormBaseDefaults,
+} from "../../plugins/common/dataSourceFormHelpers"
+import type { ServerDataSourceDocType } from "@oboku/shared"
+import type {
+  DataSourceFormData,
+  DataSourceFormInternalProps,
+} from "../../plugins/types"
+
+type ServerFormData = DataSourceFormData<{
+  connectorId: string
+}>
+
+export const DataSourceForm = memo(
+  ({
+    dataSource,
+    onSubmit,
+    submitLabel,
+  }: DataSourceFormInternalProps<ServerDataSourceDocType>) => {
+    // react-hook-form is on React Compiler's incompatible-library list.
+    // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+    "use no memo"
+
+    const { control, handleSubmit } = useForm<ServerFormData>({
+      mode: "onChange",
+      defaultValues: {
+        ...getDataSourceFormBaseDefaults(dataSource),
+        connectorId: dataSource?.data_v2?.connectorId ?? "",
+      },
+    })
+
+    return (
+      <DataSourceFormLayout
+        control={control}
+        onSubmit={handleSubmit((data) =>
+          onSubmit(
+            buildDataSourceSubmitPayload(data, {
+              connectorId: data.connectorId,
+            }),
+          ),
+        )}
+        submitLabel={submitLabel}
+      >
+        <ControlledConnectorSelector
+          control={control}
+          name="connectorId"
+          rules={{ required: true }}
+          connectorType="server"
+        />
+      </DataSourceFormLayout>
+    )
+  },
+)

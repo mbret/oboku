@@ -1,0 +1,103 @@
+import {
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  List,
+  ListItem,
+  ListItemText,
+  Typography,
+} from "@mui/material"
+import { useDropzone } from "react-dropzone"
+import {
+  type FileLinkData,
+  PLUGIN_FILE_TYPE,
+  READER_ACCEPTED_FILE_TYPES,
+} from "@oboku/shared"
+import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
+import { type DragEventHandler, useRef } from "react"
+import { CancelButton } from "../../../common/forms/CancelButton"
+
+export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
+  openFrom?: string
+} = ({ onClose, onDragLeave }) => {
+  const { acceptedFiles, getRootProps, getInputProps } = useDropzone({
+    accept: READER_ACCEPTED_FILE_TYPES,
+  })
+  const dialogRef = useRef<HTMLDivElement>(null)
+
+  const handleConfirm = () => {
+    const payloads: UploadBookToAddPayload<"file">[] = acceptedFiles.map(
+      (file) => ({
+        book: {
+          metadata: [{ type: "link", title: file.name }],
+        },
+        link: {
+          data: { filename: file.name } satisfies FileLinkData,
+          type: PLUGIN_FILE_TYPE,
+        },
+        file,
+      }),
+    )
+    onClose(payloads)
+  }
+
+  const handleCancel = () => onClose()
+
+  const _onDragLeave: DragEventHandler<HTMLDivElement> = (e) => {
+    onDragLeave?.(e)
+  }
+
+  return (
+    <Dialog
+      onClose={handleCancel}
+      slotProps={{
+        root: {
+          ref: dialogRef,
+          onDragLeave: _onDragLeave,
+        },
+      }}
+      open
+      fullScreen
+    >
+      <DialogTitle>Add a book from device</DialogTitle>
+      <DialogContent style={{ display: "flex" }}>
+        <div
+          {...getRootProps({ className: "dropzone" })}
+          style={{
+            justifyContent: "center",
+            alignItems: "center",
+            flex: 1,
+            display: "flex",
+          }}
+        >
+          <input {...getInputProps()} />
+          {acceptedFiles.length > 0 ? (
+            <List>
+              {acceptedFiles.map((file, i) => (
+                <ListItem disableGutters key={i}>
+                  <ListItemText primary={file.name} />
+                </ListItem>
+              ))}
+            </List>
+          ) : (
+            <Typography>
+              Drag 'n' drop some files here, or click to select files
+            </Typography>
+          )}
+        </div>
+      </DialogContent>
+      <DialogActions>
+        <CancelButton onClick={handleCancel} variant="outlined" />
+        <Button
+          onClick={handleConfirm}
+          color="primary"
+          disabled={acceptedFiles.length === 0}
+        >
+          Confirm
+        </Button>
+      </DialogActions>
+    </Dialog>
+  )
+}

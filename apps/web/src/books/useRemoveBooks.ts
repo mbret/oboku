@@ -5,8 +5,8 @@ import { OfflineError } from "../errors/errors.shared"
 import type {
   RemoveResourceGroup,
   RemoveResourceGroupHandler,
-} from "../plugins/usePluginRemoveResource"
-import { usePluginRemoveResource } from "../plugins/usePluginRemoveResource"
+} from "../integrations/plugins/usePluginRemoveResource"
+import { usePluginRemoveResource } from "../integrations/plugins/usePluginRemoveResource"
 import type { Database } from "../rxdb"
 import { useDatabase } from "../rxdb"
 

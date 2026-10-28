@@ -14,6 +14,7 @@ import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgr
 import { RefreshTokensService } from "../features/postgres/refreshTokens.service.js"
 import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
+import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 
 @Injectable()
 export class UsersService {
@@ -28,6 +29,7 @@ export class UsersService {
     private refreshTokensService: RefreshTokensService,
     private koreaderSyncPostgresService: KoreaderSyncPostgresService,
     private koreaderSyncConnectionPostgresService: KoreaderSyncConnectionPostgresService,
+    private opdsServerPostgresService: OpdsServerPostgresService,
   ) {}
 
   async findUserByEmail(email: string) {
@@ -50,8 +52,7 @@ export class UsersService {
    * Permanently deletes the user account and all associated data.
    *
    * **Order (no cross-store transaction):** read Couch for cover keys (best
-   * effort) → `deleteCouchUser` → Postgres deletes (refresh sessions,
-   * notifications, sync reports, KOReader sync server data, user row). Cover
+   * effort) → `deleteCouchUser` → Postgres deletes, user row last. Cover
    * object deletion is fire-and-forget afterward.
    *
    * **Happy path:** When this method completes without throwing, Couch and
@@ -98,6 +99,7 @@ export class UsersService {
     await this.syncReportPostgresService.deleteByUserName(email)
     await this.koreaderSyncPostgresService.deleteByUserId(userId)
     await this.koreaderSyncConnectionPostgresService.deleteByUserId(userId)
+    await this.opdsServerPostgresService.deleteByUserId(userId)
     await this.userPostgresService.deleteById(userId)
 
     if (coverKeys.length > 0) {
