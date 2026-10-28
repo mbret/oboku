@@ -159,7 +159,6 @@ export class UpdateInstanceSettingsDto {
   })
   microsoftApplicationAuthority?: string
 
-  // The swagger plugin does not document `@IsInt` as an integer.
   @ApiProperty({ type: "integer" })
   @IsInt()
   @Min(1)

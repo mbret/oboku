@@ -39,8 +39,8 @@ export const AdminOpdsSection = () => {
             OPDS servers
           </Text>
           <Text size="sm" c="dimmed">
-            How many OPDS servers each user can create. Lowering it keeps the
-            servers users already have.
+            Maximum number of OPDS servers each user can have. Lowering it
+            deletes none of their servers.
           </Text>
         </div>
 
