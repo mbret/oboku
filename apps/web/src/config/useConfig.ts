@@ -20,6 +20,7 @@ import {
 
 const API_WEBDAV_URL = `${API_URL}/webdav`
 const API_KOREADER_SYNC_SERVER_URL = `${API_URL}/kosync`
+const API_OPDS_URL = `${API_URL}/opds`
 
 const MINIMUM_TOKEN_VALIDITY_MS = 1000 * 60 * 5
 
@@ -30,6 +31,7 @@ const staticConfig = {
   API_URL_4,
   API_WEBDAV_URL,
   API_KOREADER_SYNC_SERVER_URL,
+  API_OPDS_URL,
   API_COUCH_URI,
   API_COUCH_URI_2,
   API_COUCH_URI_3,

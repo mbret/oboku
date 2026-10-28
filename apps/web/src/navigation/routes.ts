@@ -14,6 +14,7 @@ export const ROUTES = {
   SECRETS: "/profile/secrets",
   KOREADER_SYNC_SERVER: "/profile/koreader-sync-server",
   KOREADER_PROGRESS_SYNC: "/profile/koreader-progress-sync",
+  OPDS_SERVERS: "/profile/opds-servers",
   SETTINGS: "/profile/settings",
   STATISTICS: "/profile/statistics",
   MANAGE_STORAGE: "/profile/manage-storage",

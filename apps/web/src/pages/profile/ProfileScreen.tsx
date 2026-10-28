@@ -8,6 +8,7 @@ import {
   LockOpenRounded,
   LockRounded,
   NotificationsRounded,
+  RssFeedRounded,
   SecurityRounded,
   SettingsRounded,
   StorageRounded,
@@ -234,6 +235,19 @@ export const ProfileScreen = () => {
             />
           </ListItemButton>
           <KoreaderProgressSyncListItem />
+          <ListItemButton
+            onClick={() => {
+              navigate(ROUTES.OPDS_SERVERS)
+            }}
+          >
+            <ListItemIcon>
+              <RssFeedRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="OPDS servers"
+              secondary="Let KOReader and other reading apps browse your library"
+            />
+          </ListItemButton>
         </PageSection>
         <PageSection title="Device">
           <ListItemButton
