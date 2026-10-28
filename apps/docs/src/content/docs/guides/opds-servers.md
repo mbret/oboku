@@ -33,7 +33,7 @@ Other reading apps that support OPDS catalogs ask for the same three values.
 
 Each server on the **OPDS servers** screen has three actions:
 
-* **Rename** changes the name oboku shows. The catalog URL stays the same.
+* **Rename** changes the server's name. The catalog URL stays the same.
 * **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.
 * **Delete** removes the server. Apps signed in to it can no longer open its catalog.
 

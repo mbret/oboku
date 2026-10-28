@@ -236,7 +236,7 @@ export const ProfileScreen = () => {
           </ListItemButton>
           <KoreaderProgressSyncListItem />
           <ListItemButton
-            onClick={() => {
+            onClick={function openOpdsServers() {
               navigate(ROUTES.OPDS_SERVERS)
             }}
           >
