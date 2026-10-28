@@ -1,5 +1,5 @@
 import { useRequestToken } from "./lib/useRequestToken"
-import type { UseSynchronizeHook } from "../../../plugins/types"
+import type { UseSynchronizeHook } from "../../plugins/types"
 import { firstValueFrom } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
 import { GOOGLE_DRIVE_FILE_SCOPES } from "./lib/constants"

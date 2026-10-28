@@ -1,7 +1,7 @@
 import { DeleteRounded } from "@mui/icons-material"
 import { IconButton, Stack, Typography } from "@mui/material"
 import { memo, type ReactNode } from "react"
-import { useConfirmation } from "../../common/useConfirmation"
+import { useConfirmation } from "../../../common/useConfirmation"
 
 export const TreeActionsSection = memo(function TreeActionsSection({
   children,

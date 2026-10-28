@@ -7,7 +7,7 @@ import {
 import { useLiveRef } from "reactjrx"
 import { BehaviorSubject, type Observable } from "rxjs"
 import type { LinkDocType } from "@oboku/shared"
-import { CancelError } from "../errors/errors.shared"
+import { CancelError } from "../../errors/errors.shared"
 import { PluginUpsertFile } from "./PluginUpsertFile"
 
 type UpsertFileVariables = {

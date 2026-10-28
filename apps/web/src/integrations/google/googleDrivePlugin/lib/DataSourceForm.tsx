@@ -3,7 +3,7 @@ import { useDrivePicker } from "./useDrivePicker"
 import { catchError, of, switchMap, takeUntil, tap } from "rxjs"
 import { isDefined, useMutation$ } from "reactjrx"
 import { type TreeItem, TreeView } from "../../../../common/FileTreeView"
-import { useRequestPopupDialog } from "../../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
 import { useQueries } from "@tanstack/react-query"
 import { useCreateDriveFileQuery } from "./useDriveFile"
@@ -15,18 +15,18 @@ import { isFolder } from "./utils"
 import { useMemo, useState } from "react"
 import { buildTree } from "../../../../common/FileTreeView"
 import { useUnmountSubject } from "../../../../common/rxjs/useUnmountSubject"
-import { DataSourceFormLayout } from "../../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../../plugins/common/dataSourceFormHelpers"
-import { PickItemsSection } from "../../../../plugins/common/PickItemsSection"
-import { TreeActionsSection } from "../../../../plugins/common/TreeActionsSection"
+} from "../../../plugins/common/dataSourceFormHelpers"
+import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
+import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../../plugins/types"
+} from "../../../plugins/types"
 
 type GoogleDriveFormData = DataSourceFormData<{
   items: string[]

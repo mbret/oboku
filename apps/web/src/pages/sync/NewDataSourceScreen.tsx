@@ -6,7 +6,7 @@ import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
 import { notify } from "../../notifications/toasts"
-import type { DataSourceSubmitPayload } from "../../plugins/types"
+import type { DataSourceSubmitPayload } from "../../integrations/plugins/types"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 

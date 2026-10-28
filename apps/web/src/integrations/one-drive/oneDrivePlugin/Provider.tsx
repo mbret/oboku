@@ -1,6 +1,6 @@
 import { memo, useEffect } from "react"
 import { useConfig } from "../../../config/useConfig"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { initializeOneDriveSession } from "./auth/auth"
 
 export const Provider: ObokuPlugin["Provider"] = memo(function Provider({

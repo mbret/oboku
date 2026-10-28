@@ -1,16 +1,16 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { useController, useForm } from "react-hook-form"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+} from "../../plugins/common/dataSourceFormHelpers"
 import type { DropboxDataSourceDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../plugins/types"
+} from "../../plugins/types"
 
 type DropboxFormData = DataSourceFormData<{
   folderId: string

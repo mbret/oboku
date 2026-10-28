@@ -1,16 +1,16 @@
 import { memo } from "react"
 import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+} from "../../plugins/common/dataSourceFormHelpers"
 import type { ServerDataSourceDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../plugins/types"
+} from "../../plugins/types"
 
 type ServerFormData = DataSourceFormData<{
   connectorId: string

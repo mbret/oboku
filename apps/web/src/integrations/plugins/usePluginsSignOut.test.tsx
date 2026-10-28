@@ -1,12 +1,12 @@
 import { renderHook } from "@testing-library/react"
 import { DropboxAuth } from "dropbox"
 import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest"
-import { Logger } from "../debug/logger.shared"
-import { googleAccessTokenSignal } from "../integrations/google/auth"
+import { Logger } from "../../debug/logger.shared"
+import { googleAccessTokenSignal } from "../google/auth"
 import { pluginsByType } from "./configure"
-import { dropboxAuthSignal } from "../integrations/dropbox/dropboxPlugin/lib/auth"
-import { msalAccountSignal } from "../integrations/one-drive/oneDrivePlugin/auth/auth"
-import { synologyDriveSessionSignal } from "../integrations/synology-drive/synologyDrivePlugin/auth/auth"
+import { dropboxAuthSignal } from "../dropbox/dropboxPlugin/lib/auth"
+import { msalAccountSignal } from "../one-drive/oneDrivePlugin/auth/auth"
+import { synologyDriveSessionSignal } from "../synology-drive/synologyDrivePlugin/auth/auth"
 import { usePluginsSignOut } from "./usePluginsSignOut"
 
 const synologyDriveSession = {

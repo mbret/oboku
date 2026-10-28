@@ -1,4 +1,4 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
+import type { UseSyncSourceInfo } from "../../plugins/types"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"dropbox"> = ({
   dataSource,

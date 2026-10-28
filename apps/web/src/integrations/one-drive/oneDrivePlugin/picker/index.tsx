@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query"
 import { memo } from "react"
 import { useDelayEffect } from "../../../../common/useDelayEffect"
-import { useRequestPopupDialog } from "../../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
 import { ONE_DRIVE_PLUGIN_NAME } from "../constants"
 import { type OneDrivePickerSelection, PickerFrame } from "./PickerFrame"
 import { requestOneDrivePickerLaunchData } from "./picker"

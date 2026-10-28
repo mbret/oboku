@@ -9,7 +9,7 @@ import {
   type Observable,
 } from "rxjs"
 import { useLiveRef, useMutation$ } from "reactjrx"
-import type { DownloadBookComponentProps } from "../../../plugins/types"
+import type { DownloadBookComponentProps } from "../../plugins/types"
 import { ObokuErrorCode } from "@oboku/shared"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { CancelError } from "../../../errors/errors.shared"

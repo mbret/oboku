@@ -2,20 +2,20 @@ import { READER_ACCEPTED_EXTENSIONS, getOneDriveItemKey } from "@oboku/shared"
 import { Stack } from "@mui/material"
 import { memo, useCallback, useState } from "react"
 import { useController, useForm } from "react-hook-form"
-import { DataSourceFormLayout } from "../../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../../plugins/common/dataSourceFormHelpers"
-import { PickItemsSection } from "../../../../plugins/common/PickItemsSection"
+} from "../../../plugins/common/dataSourceFormHelpers"
+import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
 import type { OneDriveDataSourceDocType, OneDriveLinkData } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../../plugins/types"
+} from "../../../plugins/types"
 import { ONE_DRIVE_PLUGIN_NAME } from "../constants"
 import { Picker, type OneDrivePickerSelection } from "../picker"
-import { useRequestPopupDialog } from "../../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
 import { OneDriveTreeView } from "./OneDriveTreeView"
 import { useDataSourceItems } from "./useDataSourceItems"
 import { useRequestItemsAccess } from "./useRequestItemsAccess"

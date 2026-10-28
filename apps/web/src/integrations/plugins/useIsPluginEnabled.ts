@@ -1,8 +1,8 @@
-import { useConfig } from "../config/useConfig"
-import { plugin as googlePlugin } from "../integrations/google/googleDrivePlugin"
-import { plugin as dropboxPlugin } from "../integrations/dropbox/dropboxPlugin"
-import { plugin as oneDrivePlugin } from "../integrations/one-drive/oneDrivePlugin"
-import { plugin as serverPlugin } from "../integrations/server/serverPlugin"
+import { useConfig } from "../../config/useConfig"
+import { plugin as googlePlugin } from "../google/googleDrivePlugin"
+import { plugin as dropboxPlugin } from "../dropbox/dropboxPlugin"
+import { plugin as oneDrivePlugin } from "../one-drive/oneDrivePlugin"
+import { plugin as serverPlugin } from "../server/serverPlugin"
 import type { Plugin } from "./configure"
 
 export const useGetIsPluginEnabled = () => {

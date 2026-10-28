@@ -1,6 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { requestOneDriveProviderCredentials } from "./auth/auth"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { useConfig } from "../../../config/useConfig"
 
 export const useSynchronize: ObokuPlugin<"one-drive">["useSynchronize"] = ({

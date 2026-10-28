@@ -1,5 +1,5 @@
 import { memo } from "react"
-import type { UploadBookComponentProps } from "../../../plugins/types"
+import type { UploadBookComponentProps } from "../../plugins/types"
 import { WebdavUploadBook } from "../../webdav/webdavPlugin/UploadBook"
 import { useConfig } from "../../../config/useConfig"
 

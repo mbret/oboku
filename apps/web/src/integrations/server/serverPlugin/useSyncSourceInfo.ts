@@ -1,4 +1,4 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
+import type { UseSyncSourceInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"server"> = ({

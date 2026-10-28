@@ -8,12 +8,12 @@ import {
   type Observable,
 } from "rxjs"
 import { useMutation$ } from "reactjrx"
-import type { UpsertFileComponent } from "../../../plugins/types"
+import type { UpsertFileComponent } from "../../plugins/types"
 import { CancelError } from "../../../errors/errors.shared"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../plugins/useRequestPopupDialog"
 import { requestMicrosoftAccessToken } from "./auth/auth"
 import {
   ONE_DRIVE_GRAPH_WRITE_SCOPES,

@@ -1,6 +1,6 @@
 import { assertNever } from "@oboku/shared"
-import { useBook } from "../books/states"
-import { useLink } from "../links/states"
+import { useBook } from "../../books/states"
+import { useLink } from "../../links/states"
 import { pluginsByType } from "./configure"
 
 export const useLinkInfo = (bookId?: string) => {

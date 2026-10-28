@@ -1,5 +1,5 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
-import { getLabelWithItemCount } from "../../../plugins/common/syncSourceLabel"
+import type { UseSyncSourceInfo } from "../../plugins/types"
+import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
 import { ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"one-drive"> = ({

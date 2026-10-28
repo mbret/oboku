@@ -22,15 +22,15 @@ import {
   type SynologyTreeNode,
 } from "./browsing/tree"
 import { useSelectionTreeData } from "./browsing/useSelectionTreeData"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+} from "../../plugins/common/dataSourceFormHelpers"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../plugins/types"
+} from "../../plugins/types"
 
 type SynologyDriveFormData = DataSourceFormData<{
   connectorId: string

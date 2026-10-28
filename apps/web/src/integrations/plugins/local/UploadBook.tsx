@@ -17,7 +17,7 @@ import {
 } from "@oboku/shared"
 import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
 import { type DragEventHandler, useRef } from "react"
-import { CancelButton } from "../../common/forms/CancelButton"
+import { CancelButton } from "../../../common/forms/CancelButton"
 
 export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
   openFrom?: string

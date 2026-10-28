@@ -1,5 +1,5 @@
 import { useRequestToken } from "./lib/useRequestToken"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { combineLatest, firstValueFrom, map, switchMap } from "rxjs"
 import { useMutation } from "@tanstack/react-query"
 import { useRequestFilesAccess } from "./lib/useRequestFilesAccess"

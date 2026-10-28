@@ -8,15 +8,15 @@ import type { WebDAVDataSourceDocType } from "@oboku/shared"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+} from "../../plugins/common/dataSourceFormHelpers"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
-} from "../../../plugins/types"
+} from "../../plugins/types"
 
 type WebDAVFormData = DataSourceFormData<{
   connectorId: string

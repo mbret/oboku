@@ -1,5 +1,5 @@
 import { requestDropboxProviderCredentials } from "./lib/auth"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { useMutation } from "@tanstack/react-query"
 import { useConfig } from "../../../config/useConfig"
 

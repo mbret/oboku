@@ -1,5 +1,5 @@
 import { useCallback } from "react"
-import { showConfirmDialog } from "../common/dialogs/presets"
+import { showConfirmDialog } from "../../common/dialogs/presets"
 
 export const useCreateRequestPopupDialog = () => {
   return useCallback(

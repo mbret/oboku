@@ -1,4 +1,4 @@
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { UnsupportedMethodError } from "../../../errors/errors.shared"
 
 export const useUnsupportedRemoveResource = () => {
   return async function rejectRemoveResource() {

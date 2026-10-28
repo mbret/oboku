@@ -1,6 +1,6 @@
 import type { DataSourceType } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
+import { UnsupportedMethodError } from "../../../errors/errors.shared"
 import type { UseSynchronizeHook } from "../types"
 
 export const createUnsupportedSynchronize = <

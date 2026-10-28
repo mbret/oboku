@@ -1,6 +1,6 @@
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import { memo } from "react"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { Picker } from "./picker"
 
 export const UploadBook: ObokuPlugin<"one-drive">["UploadBookComponent"] = memo(

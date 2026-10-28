@@ -1,5 +1,5 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
-import { getLabelWithItemCount } from "../../../plugins/common/syncSourceLabel"
+import type { UseSyncSourceInfo } from "../../plugins/types"
+import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"DRIVE"> = ({
   dataSource,

@@ -17,7 +17,7 @@ import {
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { string } from "zod"
-import { CancelButton } from "../../common/forms/CancelButton"
+import { CancelButton } from "../../../common/forms/CancelButton"
 
 const bookUrlSchema = string().url()
 

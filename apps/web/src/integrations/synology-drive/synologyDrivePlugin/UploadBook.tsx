@@ -1,6 +1,6 @@
 import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
 import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
 

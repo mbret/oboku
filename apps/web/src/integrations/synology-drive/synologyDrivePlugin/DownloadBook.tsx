@@ -13,7 +13,7 @@ import { CancelError } from "../../../errors/errors.shared"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import type { DownloadBookComponentProps } from "../../../plugins/types"
+import type { DownloadBookComponentProps } from "../../plugins/types"
 import { useLiveRef, useMutation$ } from "reactjrx"
 import {
   clearSynologyDriveSession,

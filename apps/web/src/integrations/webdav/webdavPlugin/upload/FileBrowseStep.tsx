@@ -9,7 +9,7 @@ import type { TreeNode } from "../../../../common/FileTreeView"
 import { notifyError } from "../../../../notifications/toasts"
 import type { WebdavBackedType } from "../constants"
 import type { WebdavAuthResult } from "./ConnectorSelectionStep"
-import type { UploadBookToAddPayload } from "../../../../plugins/types"
+import type { UploadBookToAddPayload } from "../../../plugins/types"
 import { AddBookFileBrowseStep } from "../../../../upload/AddBookFileBrowseStep"
 
 export const sortItems = (items: FileStat[]) =>

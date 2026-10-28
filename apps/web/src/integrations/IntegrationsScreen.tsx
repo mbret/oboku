@@ -9,11 +9,11 @@ import { ExtensionRounded, MenuBookRounded } from "@mui/icons-material"
 import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
-import type { Plugin } from "../plugins/configure"
+import type { Plugin } from "./plugins/configure"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
-} from "../plugins/useIsPluginEnabled"
+} from "./plugins/useIsPluginEnabled"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"

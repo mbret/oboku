@@ -1,6 +1,6 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
+import type { UseSyncSourceInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
-import { getHostname } from "../../../plugins/common/syncSourceLabel"
+import { getHostname } from "../../plugins/common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
   dataSource,

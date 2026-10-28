@@ -19,8 +19,8 @@ import {
 import { CancelError } from "../../../../errors/errors.shared"
 import { acquireOneDriveTokenInteractive } from "./acquireOneDriveTokenInteractive"
 import { Logger } from "../../../../debug/logger.shared"
-import { microsoftAuthCallbackPath } from "../../../../plugins/common/authCallbackEntrypoints.shared"
-import { hasMinimumValidityLeft } from "../../../../plugins/common/tokenValidity"
+import { microsoftAuthCallbackPath } from "../../../plugins/common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
 
 export const msalAccountSignal = signal<AccountInfo | undefined>({})
 

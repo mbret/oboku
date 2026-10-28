@@ -11,11 +11,11 @@ import {
 import { useMutation$ } from "reactjrx"
 import { resolveDownloadFileName } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../types"
-import { CancelError } from "../../errors/errors.shared"
-import { useDownload } from "../../http/useDownload"
-import { fromAbortSignal } from "../../common/rxjs/fromAbortSignal"
-import { useEffectWithUnmount$ } from "../../common/rxjs/useEffectWithUnmount$"
-import { scheduleDelayedEffect } from "../../common/useDelayEffect"
+import { CancelError } from "../../../errors/errors.shared"
+import { useDownload } from "../../../http/useDownload"
+import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
+import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
+import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
 
 export const DownloadBook = memo(
   ({

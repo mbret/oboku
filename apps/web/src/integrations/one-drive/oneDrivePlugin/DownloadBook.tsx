@@ -14,11 +14,11 @@ import { CancelError } from "../../../errors/errors.shared"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import type { DownloadBookComponentProps } from "../../../plugins/types"
+import type { DownloadBookComponentProps } from "../../plugins/types"
 import { useMutation$ } from "reactjrx"
 import { requestMicrosoftAccessToken } from "./auth/auth"
 import { getOneDriveDownloadInfo$ } from "./graph"
-import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../plugins/useRequestPopupDialog"
 import { ONE_DRIVE_GRAPH_SCOPES, ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
 export const DownloadBook = memo(function DownloadBook({

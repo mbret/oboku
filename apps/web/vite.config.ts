@@ -6,7 +6,7 @@ import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
 import { readFileSync } from "node:fs"
-import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared.ts"
+import { getAuthCallbackRollupInput } from "./src/integrations/plugins/common/authCallbackEntrypoints.shared.ts"
 
 const productVersion = JSON.parse(
   readFileSync(path.resolve(import.meta.dirname, "../../package.json"), "utf8"),

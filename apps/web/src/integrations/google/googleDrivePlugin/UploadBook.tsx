@@ -1,9 +1,6 @@
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { map, switchMap, timer } from "rxjs"
-import type {
-  ObokuPlugin,
-  UploadBookToAddPayload,
-} from "../../../plugins/types"
+import type { ObokuPlugin, UploadBookToAddPayload } from "../../plugins/types"
 import { memo, useEffect } from "react"
 import { SwitchMutationCancelError, useSwitchMutation$ } from "reactjrx"
 import { Logger } from "../../../debug/logger.shared"

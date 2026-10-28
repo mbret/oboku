@@ -1,9 +1,9 @@
-import type { UseSyncSourceInfo } from "../../../plugins/types"
+import type { UseSyncSourceInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 import {
   getHostname,
   getLabelWithItemCount,
-} from "../../../plugins/common/syncSourceLabel"
+} from "../../plugins/common/syncSourceLabel"
 
 export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
   dataSource,

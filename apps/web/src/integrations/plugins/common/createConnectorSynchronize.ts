@@ -1,7 +1,7 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import type { DataSourceDocTypeFor, SettingsConnectorType } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
-import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
+import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 
 export const createConnectorSynchronize = <T extends SettingsConnectorType>(
   type: T,

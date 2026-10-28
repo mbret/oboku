@@ -2,8 +2,8 @@ import type { DropboxApiCredentials } from "@oboku/shared"
 import { DropboxAuth } from "dropbox"
 import { CancelError } from "../../../../errors/errors.shared"
 import { signal } from "reactjrx"
-import { dropboxAuthCallbackPath } from "../../../../plugins/common/authCallbackEntrypoints.shared"
-import { hasMinimumValidityLeft } from "../../../../plugins/common/tokenValidity"
+import { dropboxAuthCallbackPath } from "../../../plugins/common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
 
 const defaultWindowOptions = {
   toolbar: "no",

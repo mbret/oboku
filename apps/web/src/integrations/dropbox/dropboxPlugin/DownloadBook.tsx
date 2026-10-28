@@ -10,13 +10,13 @@ import {
   throwIfEmpty,
   type Observable,
 } from "rxjs"
-import type { DownloadBookComponentProps } from "../../../plugins/types"
+import type { DownloadBookComponentProps } from "../../plugins/types"
 import { authUser } from "./lib/auth"
 import { CancelError } from "../../../errors/errors.shared"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
+import { useRequestPopupDialog } from "../../plugins/useRequestPopupDialog"
 import { PLUGIN_NAME } from "./constants"
 import { useMutation$ } from "reactjrx"
 import { useConfig } from "../../../config/useConfig"

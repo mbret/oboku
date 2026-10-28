@@ -1,7 +1,7 @@
 import { useDrivePicker } from "./lib/useDrivePicker"
 import { catchError, of, tap } from "rxjs"
 import { useEffect } from "react"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 
 export const SelectItem: ObokuPlugin[`SelectItemComponent`] = ({
   onClose,

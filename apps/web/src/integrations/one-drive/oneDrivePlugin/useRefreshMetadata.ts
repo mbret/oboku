@@ -1,5 +1,5 @@
 import { useMutation } from "@tanstack/react-query"
-import type { ObokuPlugin } from "../../../plugins/types"
+import type { ObokuPlugin } from "../../plugins/types"
 import { requestOneDriveProviderCredentials } from "./auth/auth"
 import { useConfig } from "../../../config/useConfig"
 

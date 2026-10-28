@@ -3,11 +3,11 @@ import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
-import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
+import { useCreateRequestPopupDialog } from "../integrations/plugins/useCreateRequestPopupDialog"
 import type {
   UploadBookComponentProps,
   UploadBookToAddPayload,
-} from "../plugins/types"
+} from "../integrations/plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
 import { Logger } from "../debug/logger.shared"

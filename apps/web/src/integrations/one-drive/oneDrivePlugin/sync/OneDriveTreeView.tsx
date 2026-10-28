@@ -6,7 +6,7 @@ import {
   type TreeItem,
   type TreeNode,
 } from "../../../../common/FileTreeView"
-import { TreeActionsSection } from "../../../../plugins/common/TreeActionsSection"
+import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { OneDriveDriveItemSummary } from "../graph"
 import type { ResolvedOneDriveDataSourceItem } from "./useDataSourceItem"
 

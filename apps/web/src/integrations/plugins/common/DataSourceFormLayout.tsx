@@ -7,11 +7,11 @@ import {
 } from "react-hook-form"
 import { Button, Stack, styled } from "@mui/material"
 import type { MetadataFileDownloadOverride } from "@oboku/shared"
-import { ControlledTextField } from "../../common/forms/ControlledTextField"
-import { ControlledSelect } from "../../common/forms/ControlledSelect"
-import { PageSection } from "../../common/PageSection"
-import { useTags } from "../../tags/helpers"
-import { DataSourceMetadataPolicyPane } from "../../dataSources/metadata/DataSourceMetadataPolicyPane"
+import { ControlledTextField } from "../../../common/forms/ControlledTextField"
+import { ControlledSelect } from "../../../common/forms/ControlledSelect"
+import { PageSection } from "../../../common/PageSection"
+import { useTags } from "../../../tags/helpers"
+import { DataSourceMetadataPolicyPane } from "../../../dataSources/metadata/DataSourceMetadataPolicyPane"
 
 const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
   theme,

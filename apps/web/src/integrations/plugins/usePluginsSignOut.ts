@@ -1,4 +1,4 @@
-import { Logger } from "../debug/logger.shared"
+import { Logger } from "../../debug/logger.shared"
 import { pluginsByType } from "./configure"
 
 export const usePluginsSignOut = () => {
