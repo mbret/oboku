@@ -344,3 +344,31 @@ export class KoreaderSyncConnectionPostgresEntity {
   @Column({ type: "timestamp with time zone" })
   connected_at!: Date
 }
+
+/**
+ * An OPDS catalog of a user's library that readers sign in to. Readers send
+ * the password with every request; only a SHA-256 of it is kept.
+ */
+@Entity({ name: "opds_servers" })
+@Index(["slug"], { unique: true })
+@Index(["user_id"])
+export class OpdsServerPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  /** The server's part of its catalog URL, such as `calm-snails-dream`. */
+  @Column({ type: "text" })
+  slug!: string
+
+  @Column({ type: "text" })
+  name!: string
+
+  @Column({ type: "text" })
+  password_hash!: string
+
+  @Column({ type: "timestamp with time zone" })
+  created_at!: Date
+}

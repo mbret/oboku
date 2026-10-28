@@ -27,6 +27,7 @@ import { BooksModule } from "./books/books.module.js"
 import { PluginsModule } from "./plugins/plugins.module.js"
 import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
 import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
+import { OpdsModule } from "./opds/opds.module.js"
 
 @Module({
   imports: [
@@ -118,6 +119,7 @@ import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreade
     PluginsModule,
     KoreaderSyncServerModule,
     KoreaderSyncConnectionModule,
+    OpdsModule,
   ],
   providers: [AppService, SyncReportPostgresService],
   controllers: [AppController, WebController],

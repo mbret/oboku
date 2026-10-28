@@ -247,6 +247,9 @@ importers:
       http-proxy-3:
         specifier: ^2.0.1
         version: 2.0.1(supports-color@8.1.1)
+      human-id:
+        specifier: ^4.2.2
+        version: 4.2.2
       joi:
         specifier: ^18.2.9
         version: 18.2.9
@@ -8750,6 +8753,10 @@ packages:
   https-proxy-agent@9.1.0:
     resolution: {integrity: sha512-ag87y7cJJ9/3+GxFr8Oy4O5faDsGRGnBGsJj/YjOSsSx/5eadKLYTMPlzuR6obgoCDDm0abAAZitXXQkMOPSpA==}
     engines: {node: '>= 20'}
+
+  human-id@4.2.2:
+    resolution: {integrity: sha512-Z+8unD6em/MJwyrkWQ2M3wygRGI1+MztbutiNwk1DCuEPXOZRWGjtcMPZYP1exY9iNZMhd7ZOSMQSo9WYtiQRw==}
+    hasBin: true
 
   human-signals@1.1.1:
     resolution: {integrity: sha512-SEQu7vl8KjNL2eoGBLF3+wAjpsNfA9XMlXAYj/3EdaNfAlxKthD1xjEQfGOUhllCGGJVNY34bRr6lPINhNjyZw==}
@@ -22376,6 +22383,8 @@ snapshots:
     transitivePeerDependencies:
       - kerberos
       - supports-color
+
+  human-id@4.2.2: {}
 
   human-signals@1.1.1: {}
 
