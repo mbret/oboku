@@ -1,11 +1,16 @@
-const BASIC_SCHEME_PREFIX = "Basic "
+const BASIC_SCHEME_PREFIX = "basic "
 
 /**
  * The credentials an `Authorization: Basic` header carries, undefined for no
- * header, another scheme or credentials without a colon.
+ * header, another scheme or credentials without a colon. The scheme matches
+ * in any case, as RFC 7235 §2.1 requires.
  */
 export const parseBasicAuthorization = (header: string | undefined) => {
-  if (!header?.startsWith(BASIC_SCHEME_PREFIX)) return undefined
+  const isBasicScheme =
+    header?.slice(0, BASIC_SCHEME_PREFIX.length).toLowerCase() ===
+    BASIC_SCHEME_PREFIX
+
+  if (!header || !isBasicScheme) return undefined
 
   const decoded = Buffer.from(
     header.slice(BASIC_SCHEME_PREFIX.length),
