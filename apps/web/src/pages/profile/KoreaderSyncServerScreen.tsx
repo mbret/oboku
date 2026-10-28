@@ -4,6 +4,7 @@ import {
   Button,
   IconButton,
   InputAdornment,
+  Link,
   ListItem,
   ListItemButton,
   ListItemText,
@@ -13,6 +14,8 @@ import {
   Typography,
 } from "@mui/material"
 import { ContentCopyRounded } from "@mui/icons-material"
+import { Link as RouterLink } from "react-router"
+import { ROUTES } from "../../navigation/routes"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
@@ -28,7 +31,6 @@ const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
   return {
     gap: theme.spacing(2),
     paddingTop: theme.spacing(2),
-    paddingBottom: theme.spacing(1),
   }
 })
 
@@ -135,8 +137,11 @@ export const KoreaderSyncServerScreen = memo(
               they sync their reading position with each other through it.
             </Typography>
             <Alert severity="info">
-              This does not sync your reading in oboku itself: only the apps you
-              point at this server sync with each other.
+              To sync your reading in oboku with them too, turn on{" "}
+              <Link component={RouterLink} to={ROUTES.KOREADER_PROGRESS_SYNC}>
+                KOReader progress sync
+              </Link>{" "}
+              with this server.
             </Alert>
           </IntroStack>
         </PageContainer>

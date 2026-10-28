@@ -1,5 +1,5 @@
 import axios from "axios"
-import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
+import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 import {
   KOREADER_SYNC_KEY_HEADER,
   KOREADER_SYNC_MEDIA_TYPE,

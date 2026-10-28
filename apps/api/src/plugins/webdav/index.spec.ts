@@ -7,9 +7,9 @@ import type {
   WebdavConnectorDocType,
 } from "@oboku/shared"
 import type createNano from "nano"
-import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
-import { setPrivateNetworkAllowedHosts } from "../../lib/http/userAddressAgents.js"
-import { SyncReport } from "../../lib/sync/SyncReport.js"
+import { isNonPublicAddressError } from "../../http/publicAddress.js"
+import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
+import { SyncReport } from "../../datasource/sync/SyncReport.js"
 import { buildMultiStatusXml } from "../../webdav/webdav.xml.js"
 import { dataSource as webdavDataSource } from "./index.js"
 

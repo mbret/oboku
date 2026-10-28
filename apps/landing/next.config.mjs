@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  reactCompiler: true,
   turbopack: {
     resolveAlias: {
       // The sources, as apps/web reads them through the "source" export

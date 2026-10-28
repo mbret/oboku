@@ -16,7 +16,7 @@ import { InstanceConfigService } from "./admin/instance-config/instance-config.s
 import {
   setPrivateNetworkAllowedHosts,
   setPrivateNetworkRequestsAllowed,
-} from "./lib/http/userAddressAgents.js"
+} from "./http/userAddressAgents.js"
 
 async function bootstrap() {
   // Disable the global body parser so we can mount the raw-stream proxies

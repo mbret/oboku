@@ -4,10 +4,7 @@ import { InjectRepository } from "@nestjs/typeorm"
 import { createHash, randomBytes, randomUUID } from "node:crypto"
 import { EntityManager, Repository } from "typeorm"
 import { AppConfigService } from "../../config/AppConfigService.js"
-import {
-  decryptAes256Gcm,
-  encryptAes256Gcm,
-} from "../../lib/crypto/aes256Gcm.js"
+import { decryptAes256Gcm, encryptAes256Gcm } from "../../crypto/aes256Gcm.js"
 import { RefreshTokenPostgresEntity } from "./entities.js"
 
 export type RotationResult =

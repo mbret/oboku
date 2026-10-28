@@ -89,7 +89,6 @@ export const SecretsScreen = memo(() => {
           <Stack
             sx={{
               gap: 1,
-              mb: 1,
               mt: 2,
             }}
           >

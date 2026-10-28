@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { cleanup, renderHook } from "@testing-library/react"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const { sdkFetch, useQuery } = vi.hoisted(function createQueryMocks() {
   return {
@@ -34,6 +35,12 @@ vi.mock("@tanstack/react-query", async function mockUseQuery(importOriginal) {
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
   return { useIsAuthenticated: () => true }
 })
+vi.mock("reactjrx", async function mockSignalValue(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("reactjrx")>()),
+    useSignalValue: () => undefined,
+  }
+})
 
 import { useSyncReports } from "./useSyncReports"
 
@@ -55,7 +62,9 @@ const createJsonResponse = (body: unknown) =>
   })
 
 const getQueryFn = () => {
-  useSyncReports()
+  renderHook(function renderUseSyncReports() {
+    return useSyncReports()
+  })
 
   const options = useQuery.mock.calls[0]?.[0]
 
@@ -69,6 +78,10 @@ const getQueryFn = () => {
 describe("useSyncReports", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+  })
+
+  afterEach(() => {
+    cleanup()
   })
 
   it("counts the entries of the fetched sync reports", async () => {

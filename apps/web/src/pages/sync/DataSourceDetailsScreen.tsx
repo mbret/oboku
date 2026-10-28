@@ -31,7 +31,6 @@ import { PageSection } from "../../common/PageSection"
 const SyncStatusAlert = styled(Alert)(function styleSyncStatusAlert({ theme }) {
   return {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
   }
 })
 

@@ -11,6 +11,10 @@ import {
 import { identifierSchemeLabel } from "./identifiers/schemes"
 
 export const MetadataWarnings = memo(function MetadataWarnings() {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { control, inspection } = useBookOptimize()
   const { unreadableSources } = inspection.resolvedArchive
   const identifiers = useWatch({ control, name: "identifiers" })

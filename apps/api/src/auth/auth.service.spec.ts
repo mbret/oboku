@@ -14,7 +14,7 @@ import { UsersService } from "../users/users.service.js"
 import { AuthService } from "./auth.service.js"
 import { RefreshProofService } from "./refresh-proof.service.js"
 
-vi.mock("../lib/couch/userDbIndexes.js", function mockUserDbIndexes() {
+vi.mock("../couch/userDbIndexes.js", function mockUserDbIndexes() {
   return {
     ensureUserDbIndexes: vi
       .fn()

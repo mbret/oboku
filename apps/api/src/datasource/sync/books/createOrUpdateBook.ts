@@ -1,0 +1,329 @@
+import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
+import type {
+  SynchronizeAbleDataSource,
+  SynchronizeAbleItem,
+} from "../../../plugins/types.js"
+import { updateTagsForBook } from "./updateTagsForBook.js"
+import { synchronizeBookWithParentCollections } from "./synchronizeBookWithParentCollections.js"
+import {
+  addLinkToBookIfNotExist,
+  addTagsToBookIfNotExist,
+  atomicUpdate,
+  createBook,
+  findOne,
+  insert,
+} from "../../../couch/dbHelpers.js"
+import type { Context } from "../types.js"
+import type { CoversService } from "../../../covers/covers.service.js"
+import { firstValueFrom } from "rxjs"
+import { deleteDanglingLinks } from "./deleteDanglingLinks.js"
+import { logger } from "./logger.js"
+import type { LinkCandidate } from "../../../plugins/types.js"
+
+/**
+ * Picks the best link for the current sync from candidates that have a valid
+ * book. Prefers the one using the same connector/credentials as the datasource
+ * so metadata refresh can run.
+ */
+function getBestLinkCandidate(links: LinkCandidate[]): LinkCandidate | null {
+  if (links.length === 0) return null
+  return links.find((l) => l.isUsingSameProviderCredentials) ?? links[0] ?? null
+}
+
+function isFolder(
+  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+): item is SynchronizeAbleItem {
+  return (item as SynchronizeAbleItem).type === "folder"
+}
+
+/**
+ * A metadata refresh is best-effort: its failure must never fail the sync.
+ */
+function logMetadataRefreshFailure(error: unknown) {
+  logger.error(error)
+}
+
+export const createOrUpdateBook = async ({
+  ctx,
+  parents,
+  item,
+  coversService,
+}: {
+  ctx: Context
+  parents: SynchronizeAbleItem[]
+  item: SynchronizeAbleItem
+  coversService: CoversService
+}) => {
+  const { dataSourceType, syncReport, db } = ctx
+
+  try {
+    logger.log(
+      `createOrUpdateBook "${item.name}": ${JSON.stringify(item.linkData)}`,
+    )
+
+    const parentTagNames = parents.reduce(
+      (tags: string[], parent) => [
+        ...tags,
+        ...directives.extractDirectivesFromName(parent.name).tags,
+      ],
+      [],
+    )
+    const metadata = directives.extractDirectivesFromName(item.name)
+    const parentFolders = parents.filter((parent) =>
+      isFolder(parent),
+    ) as SynchronizeAbleItem[]
+
+    const { links: linkCandidates } = await ctx.plugin.getLinkCandidatesForItem(
+      item,
+      ctx,
+    )
+
+    const remainingLinks =
+      linkCandidates.length > 0
+        ? await deleteDanglingLinks(ctx, linkCandidates)
+        : []
+    const linkMatchingItem = getBestLinkCandidate(remainingLinks)
+
+    if (!linkMatchingItem) {
+      logger.log(
+        `No link found for ${item.name} with linkData ${JSON.stringify(item.linkData)}`,
+      )
+    }
+
+    let existingBook: BookDocType | null = null
+
+    if (linkMatchingItem && !linkMatchingItem.book) {
+      logger.log(
+        `Link found for ${item.name} with linkData ${JSON.stringify(item.linkData)} but no book attached`,
+      )
+    }
+
+    if (linkMatchingItem?.book) {
+      existingBook = await findOne(
+        "book",
+        { selector: { _id: linkMatchingItem.book } },
+        { db },
+      )
+
+      if (!existingBook) {
+        logger.log(`Phantom book found for link ${linkMatchingItem._id}`)
+      } else {
+        if (!existingBook.isAttachedToDataSource) {
+          logger.log(
+            `createOrUpdateBook "${item.name}": isAttachedToDataSource is false and therefore will be migrated as true`,
+            existingBook._id,
+          )
+
+          await atomicUpdate(db, "book", existingBook._id, (data) => ({
+            ...data,
+            isAttachedToDataSource: true,
+          }))
+
+          syncReport.updateBook(existingBook._id)
+        }
+      }
+    }
+
+    syncReport.upsertReference(existingBook?._id, item.name)
+
+    if (!linkMatchingItem || !existingBook) {
+      let bookId = existingBook?._id
+
+      if (!bookId) {
+        logger.log(
+          `createOrUpdateBook "${item.name}": new file detected, creating book`,
+        )
+
+        /**
+         * Datasource-level default for `metadataFileDownloadEnabled`. We only
+         * apply it to brand-new books, and only when the user explicitly
+         * opted out at the datasource level (`false`). Any other value
+         * (`undefined`, `null`, `true`) is treated as "no override" so the
+         * book keeps the system default.
+         */
+        const dataSourceFileDownloadOverride =
+          ctx.dataSource.metadataFileDownloadEnabled === false
+            ? { metadataFileDownloadEnabled: false as const }
+            : {}
+
+        const insertedBook = await createBook(db, {
+          isAttachedToDataSource: true,
+          metadata: [
+            {
+              title: item.name,
+              type: "link",
+            },
+          ],
+          ...dataSourceFileDownloadOverride,
+        })
+        bookId = insertedBook.id
+
+        syncReport.addBook(bookId, item.name)
+      }
+
+      if (!bookId) throw new Error("Book not found or not created")
+
+      if (linkMatchingItem) {
+        logger.log(
+          `Update link book reference for ${item.name} to a valid book id`,
+        )
+
+        await atomicUpdate(ctx.db, "link", linkMatchingItem._id, (old) => ({
+          ...old,
+          book: bookId,
+        }))
+
+        syncReport.updateLink(linkMatchingItem._id)
+      } else {
+        const newlyCreatedLink = await insert(db, "link", {
+          type: dataSourceType,
+          book: bookId,
+          data: item.linkData,
+          createdAt: new Date().toISOString(),
+          modifiedAt: null,
+          rxdbMeta: {
+            lwt: Date.now(),
+          },
+        })
+
+        syncReport.addLink(newlyCreatedLink.id)
+      }
+
+      const bookLink = await findOne(
+        "link",
+        {
+          selector: { book: bookId },
+        },
+        {
+          db: ctx.db,
+          throwOnNotFound: true,
+        },
+      )
+
+      const addedLinkResponse = await addLinkToBookIfNotExist(
+        db,
+        bookId,
+        bookLink._id,
+      )
+
+      if (addedLinkResponse) {
+        syncReport.updateBook(bookId)
+      }
+
+      await updateTagsForBook(
+        { _id: bookId },
+        [...metadata.tags, ...parentTagNames],
+        { db, syncReport },
+      )
+
+      await synchronizeBookWithParentCollections(
+        { _id: bookId },
+        parentFolders,
+        ctx,
+      )
+
+      /**
+       * Because it's a new book, we start a metadata refresh. When we matched an
+       * existing link, only refresh if it uses the same connector/credentials as
+       * the current datasource; when we created a new link we can always refresh.
+       */
+      const canRefreshMetadata = linkMatchingItem
+        ? linkMatchingItem.isUsingSameProviderCredentials
+        : true
+      if (canRefreshMetadata) {
+        await ctx
+          .refreshBookMetadata({ bookId })
+          .catch(logMetadataRefreshFailure)
+      } else {
+        syncReport.bookHasDifferentLink(bookId)
+      }
+    } else {
+      /**
+       * We already have a link that exist for this datasource with this book.
+       * We will try to retrieve the book and update it if needed.
+       */
+      // We check the last updated date of the book
+      const lastMetadataUpdatedAt = new Date(
+        existingBook?.lastMetadataUpdatedAt || 0,
+      )
+
+      const metadataAreOlderThanModifiedDate =
+        lastMetadataUpdatedAt < new Date(item.modifiedAt || 0)
+
+      const coverObjectKey = getBookCoverKey(ctx.userNameHex, existingBook._id)
+      const coverExists = await firstValueFrom(
+        coversService.isCoverExist(coverObjectKey),
+      )
+      const metadataRefreshNeeded =
+        metadataAreOlderThanModifiedDate || !coverExists
+
+      const shouldRefreshMetadata =
+        linkMatchingItem.isUsingSameProviderCredentials && metadataRefreshNeeded
+
+      if (shouldRefreshMetadata) {
+        await ctx
+          .refreshBookMetadata({ bookId: existingBook._id })
+          .catch(logMetadataRefreshFailure)
+
+        logger.log(
+          `book ${
+            linkMatchingItem.book
+          } has changed in metadata, refresh triggered ${lastMetadataUpdatedAt} ${new Date(
+            item.modifiedAt || 0,
+          )}`,
+        )
+      } else if (
+        metadataRefreshNeeded &&
+        !linkMatchingItem.isUsingSameProviderCredentials
+      ) {
+        syncReport.bookHasDifferentLink(existingBook._id)
+      }
+
+      await synchronizeBookWithParentCollections(
+        existingBook,
+        parentFolders,
+        ctx,
+      )
+
+      await updateTagsForBook(
+        existingBook,
+        [...metadata.tags, ...parentTagNames],
+        { db, syncReport },
+      )
+
+      // Finally we update the tags to the book if needed
+      const applyTags = item.tags ?? []
+
+      const [bookUpdated, tagsUpdated] = await addTagsToBookIfNotExist(
+        db,
+        existingBook._id,
+        applyTags || [],
+      )
+
+      if (bookUpdated) {
+        syncReport.addOrUpdateTagsToBook({
+          tags: applyTags?.map((_id) => ({ _id })) ?? [],
+          book: existingBook,
+        })
+      }
+
+      tagsUpdated?.forEach((tagUpdated) => {
+        if (tagUpdated) {
+          syncReport.addOrUpdateBookToTag({
+            tag: { _id: tagUpdated.id },
+            book: existingBook,
+          })
+        }
+      })
+    }
+
+    logger.log(`createOrUpdateBook "${item.name}": done`)
+  } catch (e) {
+    logger.error(
+      `createOrUpdateBook something went wrong for book ${item.name} (${JSON.stringify(item.linkData)})`,
+    )
+    logger.error(e)
+
+    throw e
+  }
+}

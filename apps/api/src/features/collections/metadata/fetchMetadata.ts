@@ -1,8 +1,8 @@
 import type { CollectionMetadata } from "@oboku/shared"
-import { getSeriesMetadata } from "../../../lib/metadata/biblioreads/getSeriesMetadata.js"
-import { getSeriesMetadata as getMangadexSeriesMetadata } from "../../../lib/metadata/mangadex/getSeriesMetadata.js"
-import { getSeriesMetadata as getComicVineSeriesMetadata } from "../../../lib/metadata/comicvine/getSeriesMetadata.js"
-import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "../../../lib/metadata/mangaupdates/getSeriesMetadata.js"
+import { getSeriesMetadata } from "../../metadata/biblioreads/getSeriesMetadata.js"
+import { getSeriesMetadata as getMangadexSeriesMetadata } from "../../metadata/mangadex/getSeriesMetadata.js"
+import { getSeriesMetadata as getComicVineSeriesMetadata } from "../../metadata/comicvine/getSeriesMetadata.js"
+import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "../../metadata/mangaupdates/getSeriesMetadata.js"
 
 export const fetchMetadata = async (
   metadata: { title: string; year?: string },

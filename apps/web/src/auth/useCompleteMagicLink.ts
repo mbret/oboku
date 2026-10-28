@@ -3,6 +3,7 @@ import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { useReCreateDb } from "../rxdb"
 import { completeAuthentication } from "./completeAuthentication"
+import { useForgetAccountSessions } from "./useForgetAccountSessions"
 import { usePutProfile } from "../profiles"
 import { getOrCreateInstallationId } from "../common/browser"
 import { createProofKey } from "./proofKey"
@@ -13,6 +14,7 @@ export const useCompleteMagicLink = () => {
   const httpClientApi = useHttpClientApi()
   const { mutateAsync: reCreateDb } = useReCreateDb()
   const { mutateAsync: putProfile } = usePutProfile()
+  const forgetAccountSessions = useForgetAccountSessions()
   const queryClient = useQueryClient()
 
   return useMutation$({
@@ -33,6 +35,7 @@ export const useCompleteMagicLink = () => {
               completeAuthentication({
                 reCreateDb,
                 putProfile,
+                forgetAccountSessions,
                 auth,
                 queryClient,
               }),

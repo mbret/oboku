@@ -1,7 +1,7 @@
 import type { Request, Response } from "express"
 import bcrypt from "bcrypt"
 import type { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import { timingSafeStringEqual } from "../lib/crypto/timingSafeStringEqual.js"
+import { timingSafeStringEqual } from "../crypto/timingSafeStringEqual.js"
 
 function sendUnauthorized(res: Response) {
   res.status(401).set("WWW-Authenticate", 'Basic realm="oboku-webdav"').end()
