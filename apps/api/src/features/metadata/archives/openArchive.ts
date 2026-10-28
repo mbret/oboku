@@ -9,7 +9,7 @@ import { getRarArchive } from "./getRarArchive.js"
  */
 const RAR_SIGNATURE = Buffer.from("Rar!\x1a\x07", "latin1")
 
-const startsWithRarSignature = async (filePath: string) => {
+export const startsWithRarSignature = async (filePath: string) => {
   const file = await fs.promises.open(filePath)
 
   try {
