@@ -20,6 +20,18 @@ describe("isFileSupported", () => {
     ).toBe(true)
   })
 
+  it.each([
+    "application/vnd.comicbook-rar",
+    "application/comicbook+rar",
+    "application/vnd.rar",
+    "application/x-rar-compressed",
+  ])(
+    "should accept a CBR reported as %s when the name is not recognized",
+    (mimeType) => {
+      expect(isFileSupported({ name: "no-extension", mimeType })).toBe(true)
+    },
+  )
+
   it("should reject unsupported files", () => {
     expect(isFileSupported({ name: "movie.mkv" })).toBe(false)
     expect(isFileSupported({ name: "movie.MKV" })).toBe(false)

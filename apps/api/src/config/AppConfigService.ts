@@ -1,5 +1,6 @@
 import { Injectable } from "@nestjs/common"
 import { ConfigService } from "@nestjs/config"
+import { CBR_MIME_TYPES } from "@oboku/shared"
 import { EnvironmentVariables } from "./types.js"
 import path from "node:path"
 
@@ -70,11 +71,10 @@ export class AppConfigService {
   get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {
     return [
       "application/x-cbz",
-      "application/x-cbr",
       "application/epub+zip",
       "application/zip",
       "application/x-zip-compressed",
-      "application/x-rar",
+      ...CBR_MIME_TYPES,
     ]
   }
 

@@ -2,14 +2,30 @@ export const getUrlExtension = (url: string) => {
   return url.split(/[#?]/)[0]?.split(`.`).pop()?.trim() || ``
 }
 
+/**
+ * Types sources give CBR files, including Nextcloud's
+ * `application/comicbook+rar` and the generic RAR types.
+ */
+export const CBR_MIME_TYPES = [
+  "application/vnd.comicbook-rar",
+  "application/x-cbr",
+  "application/comicbook+rar",
+  "application/vnd.rar",
+  "application/x-rar-compressed",
+  "application/x-rar",
+]
+
+const CBR_FILE_TYPES = Object.fromEntries(
+  CBR_MIME_TYPES.map((mimeType): [string, string[]] => [mimeType, [".cbr"]]),
+)
+
 export const READER_ACCEPTED_FILE_TYPES = {
   "text/plain": [".txt"],
   "application/x-cbz": [".cbz"],
   "application/zip": [".epub", ".zip"],
   "application/x-zip-compressed": [".epub", ".zip"],
   "application/epub+zip": [".epub", ".zip"],
-  "application/x-cbr": [".cbr"],
-  "application/x-rar": [".cbr"],
+  ...CBR_FILE_TYPES,
   "application/pdf": [".pdf"],
 }
 
