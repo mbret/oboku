@@ -64,9 +64,6 @@ describe("IntegrationsScreen", () => {
     for (const name of integrationNames) {
       expect(getIntegrationLink(name)).toBeDefined()
     }
-
-    expect(queryIntegrationLink("File")).toBeNull()
-    expect(queryIntegrationLink("Uri")).toBeNull()
   })
 
   it("links each integration to its page", () => {

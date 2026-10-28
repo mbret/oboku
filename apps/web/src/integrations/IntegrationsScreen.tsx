@@ -27,24 +27,32 @@ export function IntegrationsScreen() {
       <TopBarNavigation title="Integrations" showBack={false} />
       <PageContainer disableGutters>
         <PageSection>
-          {integrations.filter(isIntegrationVisible).map((integration) => (
-            <ListItemButton
-              key={integration.id}
-              component={Link}
-              disabled={!isIntegrationEnabled(integration)}
-              to={generatePath(ROUTES.INTEGRATION_DETAILS, {
-                id: integration.id,
-              })}
-            >
-              <ListItemIcon>
-                {integration.Icon ? <integration.Icon /> : <ExtensionRounded />}
-              </ListItemIcon>
-              <ListItemText
-                primary={integration.name}
-                secondary={integration.description}
-              />
-            </ListItemButton>
-          ))}
+          {integrations
+            .filter(isIntegrationVisible)
+            .map(function renderIntegrationLink(integration) {
+              return (
+                <ListItemButton
+                  key={integration.id}
+                  component={Link}
+                  disabled={!isIntegrationEnabled(integration)}
+                  to={generatePath(ROUTES.INTEGRATION_DETAILS, {
+                    id: integration.id,
+                  })}
+                >
+                  <ListItemIcon>
+                    {integration.Icon ? (
+                      <integration.Icon />
+                    ) : (
+                      <ExtensionRounded />
+                    )}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={integration.name}
+                    secondary={integration.description}
+                  />
+                </ListItemButton>
+              )
+            })}
         </PageSection>
       </PageContainer>
     </Page>

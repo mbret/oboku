@@ -1,6 +1,5 @@
-import { memo } from "react"
 import { ConnectorInfoSection } from "../../connectors/ConnectorInfoSection"
 
-export const InfoScreen = memo(() => (
+export const InfoScreen = () => (
   <ConnectorInfoSection connectorType="server" maxConnectors={1} />
-))
+)
