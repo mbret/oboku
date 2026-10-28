@@ -18,6 +18,7 @@ import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { IntroStack } from "../../common/IntroStack"
 import { ControlledTextField } from "../../common/forms/ControlledTextField"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { ErrorAlert } from "../../errors/ErrorMessage"
@@ -26,13 +27,6 @@ import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSync
 import { useKoreaderSyncConnection } from "../../koreader/syncConnection/useKoreaderSyncConnection"
 import { useConnectKoreaderSyncServer } from "../../koreader/syncConnection/useConnectKoreaderSyncServer"
 import { useDisconnectKoreaderSyncServer } from "../../koreader/syncConnection/useDisconnectKoreaderSyncServer"
-
-const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
-  return {
-    gap: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-  }
-})
 
 const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
   theme,

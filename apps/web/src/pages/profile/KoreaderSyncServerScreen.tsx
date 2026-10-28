@@ -2,18 +2,12 @@ import { memo } from "react"
 import {
   Alert,
   Button,
-  IconButton,
-  InputAdornment,
   Link,
   ListItem,
   ListItemButton,
   ListItemText,
-  Stack,
-  styled,
-  TextField,
   Typography,
 } from "@mui/material"
-import { ContentCopyRounded } from "@mui/icons-material"
 import { Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
@@ -22,17 +16,11 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { useConfig } from "../../config/useConfig"
 import { showConfirmDialog } from "../../common/dialogs/presets"
-import { notify } from "../../notifications/toasts"
+import { CopyableField } from "../../common/CopyableField"
+import { IntroStack } from "../../common/IntroStack"
 import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
 import { useCreateKoreaderSyncServerPassword } from "../../koreader/syncServer/useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "../../koreader/syncServer/useTurnOffKoreaderSyncServer"
-
-const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
-  return {
-    gap: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-  }
-})
 
 const SETUP_STEPS = [
   "In KOReader, open Tools > Progress sync > Custom sync server and enter the server above.",
@@ -41,48 +29,6 @@ const SETUP_STEPS = [
   "Readest, CrossPoint and the other apps that support KOReader sync take the same three values in their KOReader sync settings.",
   "Devices recognize a book only when they identify it the same way: keep the same document matching method (binary by default) on all of them.",
 ]
-
-const CopyableField = memo(function CopyableField({
-  label,
-  value,
-}: {
-  label: string
-  value: string
-}) {
-  const copyValueToClipboard = async () => {
-    await navigator.clipboard.writeText(value)
-
-    notify({
-      title: "Copied",
-      description: `${label} copied to the clipboard`,
-      severity: "success",
-    })
-  }
-
-  return (
-    <TextField
-      label={label}
-      value={value}
-      fullWidth
-      slotProps={{
-        input: {
-          readOnly: true,
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                edge="end"
-                onClick={copyValueToClipboard}
-                aria-label={`Copy ${label.toLowerCase()}`}
-              >
-                <ContentCopyRounded fontSize="small" />
-              </IconButton>
-            </InputAdornment>
-          ),
-        },
-      }}
-    />
-  )
-})
 
 export const KoreaderSyncServerScreen = memo(
   function KoreaderSyncServerScreen() {
