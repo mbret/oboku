@@ -2,9 +2,15 @@ import { type INestApplication, ValidationPipe } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
+import { ObokuErrorCode } from "@oboku/shared"
 import { humanId } from "human-id"
+import { BehaviorSubject } from "rxjs"
 import request from "supertest"
 import type { App } from "supertest/types.js"
+import {
+  type InstanceConfig,
+  InstanceConfigService,
+} from "../admin/instance-config/instance-config.service.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { isSecretMatchingHash } from "../crypto/secretHash.js"
@@ -21,6 +27,8 @@ vi.mock("human-id", async function mockHumanId(importOriginal) {
 
 const READER = { id: 1, email: "reader@example.com", session: "reader" }
 const OTHER_READER = { id: 2, email: "other@example.com", session: "other" }
+const DELETED_READER = { id: 3, email: "gone@example.com", session: "gone" }
+const ACCOUNT_IDS = new Set([READER.id, OTHER_READER.id])
 
 const toTokenPayload = ({
   id,
@@ -38,7 +46,24 @@ const toTokenPayload = ({
 const TOKEN_PAYLOADS = new Map([
   [READER.session, toTokenPayload(READER)],
   [OTHER_READER.session, toTokenPayload(OTHER_READER)],
+  [DELETED_READER.session, toTokenPayload(DELETED_READER)],
 ])
+
+const SERVER_LIMIT = 3
+
+const INSTANCE_CONFIG: InstanceConfig = {
+  version: 1,
+  serverSync: { enabled: false, credentials: null, sources: [] },
+  showDisabledPlugins: true,
+  fileDownloadMaxSizeBytes: 1,
+  allowPrivateNetworkRequests: false,
+  privateNetworkAllowedHosts: [],
+  opdsServersMaxPerUser: SERVER_LIMIT,
+}
+
+const instanceConfigService: Pick<InstanceConfigService, "getConfig"> = {
+  getConfig: () => new BehaviorSubject(INSTANCE_CONFIG),
+}
 
 const SLUG_PATTERN = /^[a-z]+-[a-z]+-[a-z]+$/
 const PASSWORD_PATTERN = /^[a-hjkmnp-z2-9]{4}(-[a-hjkmnp-z2-9]{4}){3}$/
@@ -67,35 +92,51 @@ const createServerStore = () => {
     return updatedServer
   }
 
+  const findUserServers = (userId: number) =>
+    [...servers.values()].filter((server) => server.user_id === userId)
+
+  const isSlugTaken = (slug: string) =>
+    [...servers.values()].some((server) => server.slug === slug)
+
   const store: Pick<
     OpdsServerPostgresService,
     | "findByUserId"
-    | "insertUnlessSlugTaken"
+    | "insertUnderLimit"
     | "rename"
     | "replacePasswordHash"
     | "delete"
   > = {
-    findByUserId: async (userId) =>
-      [...servers.values()].filter((server) => server.user_id === userId),
-    insertUnlessSlugTaken: async ({ userId, slug, name, passwordHash }) => {
-      const isSlugTaken = [...servers.values()].some(
-        (server) => server.slug === slug,
+    findByUserId: async (userId) => findUserServers(userId),
+    insertUnderLimit: async ({
+      userId,
+      maxServers,
+      passwordHash,
+      candidates,
+    }) => {
+      if (!ACCOUNT_IDS.has(userId)) return { status: "user-missing" }
+
+      const isUnderLimit = findUserServers(userId).length < maxServers
+
+      if (!isUnderLimit) return { status: "limit-reached" }
+
+      const freeCandidate = candidates.find(
+        (candidate) => !isSlugTaken(candidate.slug),
       )
 
-      if (isSlugTaken) return null
+      if (!freeCandidate) return { status: "slugs-taken" }
 
       const server: OpdsServerPostgresEntity = {
         id: Math.max(0, ...servers.keys()) + 1,
         user_id: userId,
-        slug,
-        name,
+        slug: freeCandidate.slug,
+        name: freeCandidate.name,
         password_hash: passwordHash,
         created_at: new Date(),
       }
 
       servers.set(server.id, server)
 
-      return server
+      return { status: "created", server }
     },
     rename: async ({ userId, id, name }) =>
       updateUserServer({ userId, id }, { name }),
@@ -165,6 +206,7 @@ describe("OpdsServersController", () => {
           provide: SecretsService,
           useValue: { getJwtPublicKey: async () => "public key" },
         },
+        { provide: InstanceConfigService, useValue: instanceConfigService },
       ],
     }).compile()
 
@@ -281,11 +323,11 @@ describe("OpdsServersController", () => {
   })
 
   it("tries new words when the slug is taken", async () => {
+    vi.mocked(humanId).mockReturnValueOnce("calm-snails-dream")
+    await otherReader().create()
     vi.mocked(humanId)
       .mockReturnValueOnce("calm-snails-dream")
-      .mockReturnValueOnce("calm-snails-dream")
       .mockReturnValueOnce("brave-foxes-run")
-    await otherReader().create()
 
     const response = await reader().create()
 
@@ -296,14 +338,35 @@ describe("OpdsServersController", () => {
     })
   })
 
-  it("fails when every slug it tries is taken", async () => {
+  it("fails after 5 slugs that are all taken", async () => {
     vi.mocked(humanId).mockReturnValue("calm-snails-dream")
     await otherReader().create()
+    vi.mocked(humanId).mockClear()
 
     const response = await reader().create()
 
     expect(response.status).toBe(500)
-    expect(humanId).toHaveBeenCalledTimes(6)
+    expect(humanId).toHaveBeenCalledTimes(5)
     expect((await reader().list()).body).toEqual([])
+  })
+
+  it("refuses a server to an account deleted since its session started", async () => {
+    const response = await asReader(DELETED_READER.session).create()
+
+    expect(response.status).toBe(401)
+  })
+
+  it("refuses a server past the instance's limit per user", async () => {
+    for (let created = 0; created < SERVER_LIMIT; created++) {
+      await reader().create()
+    }
+
+    const response = await reader().create()
+
+    expect(response.status).toBe(400)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED }],
+    })
+    expect((await reader().list()).body).toHaveLength(SERVER_LIMIT)
   })
 })

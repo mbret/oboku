@@ -32,7 +32,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000';
 };
 
 export type ObokuErrorResponseDto = {
@@ -234,11 +234,13 @@ export type InstanceSettingsResponseDto = {
     privateNetworkAllowedHosts: Array<string>;
     microsoftApplicationClientId?: string;
     microsoftApplicationAuthority?: string;
+    opdsServersMaxPerUser: number;
 };
 
 export type UpdateInstanceSettingsDto = {
     fileDownloadMaxSizeBytes?: number;
     microsoftApplicationAuthority?: string | '';
+    opdsServersMaxPerUser?: number;
     showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
@@ -1837,6 +1839,7 @@ export type OpdsServersCreateData = {
 };
 
 export type OpdsServersCreateErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
     /**
      * The request failed
      */
