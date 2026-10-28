@@ -107,6 +107,7 @@ describe("InstanceConfigService server sources", () => {
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
       allowPrivateNetworkRequests: false,
       privateNetworkAllowedHosts: [],
+      opdsServersMaxPerUser: 10,
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
