@@ -1,5 +1,6 @@
 import { MenuBookRounded } from "@mui/icons-material"
 import type { SvgIconProps } from "@mui/material"
+import type { SettingsConnectorType } from "@oboku/shared"
 import type { ComponentType } from "react"
 import type { Plugin } from "../plugins/configure"
 import { InfoScreen as DropboxInfoScreen } from "./dropbox/InfoScreen"
@@ -16,21 +17,30 @@ import { plugin as synologyDrivePlugin } from "./synology-drive/synologyDrivePlu
 import { InfoScreen as WebdavInfoScreen } from "./webdav/InfoScreen"
 import webdavPlugin from "./webdav/webdavPlugin"
 
-export type Integration = {
-  id: string
+/** Connector types are integration ids too: the connector screens link back to their integration by connector type. */
+type IntegrationId =
+  | SettingsConnectorType
+  | "dropbox"
+  | "google"
+  | "koreader"
+  | "one-drive"
+
+export type Integration<Id extends IntegrationId = IntegrationId> = {
+  id: Id
   name: string
   description: string
   Icon?: ComponentType<SvgIconProps>
   InfoScreen: ComponentType
-  /**
-   * The instance configuration enables the integration through this plugin.
-   * An integration without one is always available.
-   */
+  /** The integration is available only while this plugin is enabled, and always when it has none. */
   plugin?: Plugin
 }
 
-export const integrations: ReadonlyArray<Integration> = [
-  {
+type IntegrationsById = {
+  [Id in IntegrationId]: Integration<Id>
+}
+
+const integrationsById: IntegrationsById = {
+  dropbox: {
     id: "dropbox",
     name: "Dropbox",
     description: "Manage contents from Dropbox",
@@ -38,7 +48,7 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: DropboxInfoScreen,
     plugin: dropboxPlugin,
   },
-  {
+  google: {
     id: "google",
     name: "Google",
     description: "Manage contents from Google Drive",
@@ -46,14 +56,14 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: GoogleInfoScreen,
     plugin: googleDrivePlugin,
   },
-  {
+  koreader: {
     id: "koreader",
     name: "KOReader",
     description: "Sync reading positions with KOReader, Readest, CrossPoint…",
     Icon: MenuBookRounded,
     InfoScreen: KoreaderInfoScreen,
   },
-  {
+  "one-drive": {
     id: "one-drive",
     name: "OneDrive",
     description: "Manage contents from Microsoft OneDrive",
@@ -61,7 +71,7 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: OneDriveInfoScreen,
     plugin: oneDrivePlugin,
   },
-  {
+  server: {
     id: "server",
     name: "Server",
     description: "Manage contents from your oboku server",
@@ -69,7 +79,7 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: ServerInfoScreen,
     plugin: serverPlugin,
   },
-  {
+  "synology-drive": {
     id: "synology-drive",
     name: "Synology Drive",
     description:
@@ -78,7 +88,7 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: SynologyDriveInfoScreen,
     plugin: synologyDrivePlugin,
   },
-  {
+  webdav: {
     id: "webdav",
     name: "WebDAV",
     description: "Manage contents from WebDAV",
@@ -86,4 +96,13 @@ export const integrations: ReadonlyArray<Integration> = [
     InfoScreen: WebdavInfoScreen,
     plugin: webdavPlugin,
   },
-]
+}
+
+export const integrations = Object.values(integrationsById)
+
+export const isIntegrationId = (id: string | undefined): id is IntegrationId =>
+  id !== undefined && Object.hasOwn(integrationsById, id)
+
+export function getIntegrationById(id: IntegrationId) {
+  return integrationsById[id]
+}
