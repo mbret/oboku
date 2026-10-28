@@ -33,7 +33,7 @@ describe("useReaderSettings", () => {
 
     const { result } = renderHook(useReaderSettings)
 
-    expect(result.current.readerFontScale).toBe(1.4)
+    expect(result.current.readerSettings.fontScale).toBe(1.4)
   })
 
   it("saves a change on the device, which then wins over the account's", () => {
@@ -41,34 +41,40 @@ describe("useReaderSettings", () => {
     const { result } = renderHook(useReaderSettings)
 
     act(function changeFontScaleOnDevice() {
-      result.current.updateReaderSettings({ readerFontScale: 1.2 })
+      result.current.updateReaderSettings({ fontScale: 1.2 })
     })
 
-    expect(result.current.readerFontScale).toBe(1.2)
+    expect(result.current.readerSettings.fontScale).toBe(1.2)
     expect(localSettingsSignal.getValue().readerFontScale).toBe(1.2)
   })
 
   it("leaves the font scale to the reader when neither the device nor the account has one", () => {
     const { result } = renderHook(useReaderSettings)
 
-    expect(result.current.readerFontScale).toBeUndefined()
+    expect(result.current.readerSettings.fontScale).toBeUndefined()
   })
 
-  it("saves the spread mode on the device, keeping the other device settings", () => {
-    localSettingsSignal.update(function withDarkTheme(settings): LocalSettings {
-      return { ...settings, themeMode: "dark" }
-    })
+  it("saves the spread mode on the device, keeping its font scale and other settings", () => {
+    localSettingsSignal.update(
+      function withDarkThemeAndFontScale(settings): LocalSettings {
+        return { ...settings, themeMode: "dark", readerFontScale: 1.3 }
+      },
+    )
     const { result } = renderHook(useReaderSettings)
 
-    expect(result.current.readerSpreadMode).toBe("auto")
+    expect(result.current.readerSettings.spreadMode).toBe("auto")
 
     act(function changeSpreadModeOnDevice() {
-      result.current.updateReaderSettings({ readerSpreadMode: "always" })
+      result.current.updateReaderSettings({ spreadMode: "always" })
     })
 
-    expect(result.current.readerSpreadMode).toBe("always")
+    expect(result.current.readerSettings).toEqual({
+      fontScale: 1.3,
+      spreadMode: "always",
+    })
     expect(localSettingsSignal.getValue()).toMatchObject({
       readerSpreadMode: "always",
+      readerFontScale: 1.3,
       themeMode: "dark",
     })
   })
