@@ -1,4 +1,4 @@
-import { plugins } from "../plugins/configure"
+import { plugins } from "../integrations/plugins/configure"
 import { useLiveQuery$ } from "reactjrx"
 import {
   createRxdbQueryDefaultOptions,

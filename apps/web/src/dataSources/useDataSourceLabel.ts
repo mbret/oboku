@@ -1,6 +1,6 @@
 import type { DataSourceDocType } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { usePluginDataSourceLabel } from "../plugins/usePluginDataSourceLabel"
+import { usePluginDataSourceLabel } from "../integrations/plugins/usePluginDataSourceLabel"
 import { useDataSource } from "./useDataSource"
 
 /**

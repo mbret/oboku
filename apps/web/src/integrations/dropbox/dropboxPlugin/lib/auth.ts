@@ -1,0 +1,184 @@
+import type { DropboxApiCredentials } from "@oboku/shared"
+import { DropboxAuth } from "dropbox"
+import { CancelError } from "../../../../errors/errors.shared"
+import { signal } from "reactjrx"
+import { dropboxAuthCallbackPath } from "../../../plugins/common/authCallbackEntrypoints.shared"
+import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
+
+const defaultWindowOptions = {
+  toolbar: "no",
+  menubar: "no",
+}
+
+const MINIMUM_DROPBOX_TOKEN_VALIDITY_MS = 1000 * 60 * 60
+
+export const dropboxAuthSignal = signal<DropboxAuth | undefined>({})
+
+type DropboxAuthRequest = {
+  requestPopup: () => Promise<boolean>
+  clientId?: string
+}
+
+const isAccessTokenStillSufficient = () => {
+  const accessTokenExpiresAt: Date | undefined = dropboxAuthSignal
+    .getValue()
+    ?.getAccessTokenExpiresAt()
+
+  return hasMinimumValidityLeft({
+    expiresAt: accessTokenExpiresAt,
+    minimumValidityMs: MINIMUM_DROPBOX_TOKEN_VALIDITY_MS,
+  })
+}
+
+/**
+ * Token is valid for about 4 hours
+ */
+export const authUser = ({ requestPopup, clientId }: DropboxAuthRequest) => {
+  return new Promise<DropboxAuth>((resolve, reject) => {
+    ;(async () => {
+      let timedOut = false
+      let listenToPopupCloseInterval: ReturnType<typeof setInterval>
+      let listenToPopupTimeoutTimeout: ReturnType<typeof setTimeout>
+
+      const dropboxAuth =
+        dropboxAuthSignal.getValue() ??
+        new DropboxAuth({
+          clientId,
+        })
+
+      if (clientId) dropboxAuth.setClientId(clientId)
+
+      dropboxAuthSignal.update(dropboxAuth)
+
+      // when there is at least an hour left of authentication, the server should be able
+      // to handle it without for even long sync. Otherwise we should ask user credentials again
+      if (isAccessTokenStillSufficient()) return resolve(dropboxAuth)
+
+      const redirectUri = new URL(
+        dropboxAuthCallbackPath,
+        window.location.origin,
+      ).toString()
+      const usePKCE = true
+      const authType = "code"
+      const tokenAccessType = "online"
+      const state = Math.random().toString(36).substring(7)
+      try {
+        const authUrl = await dropboxAuth.getAuthenticationUrl(
+          redirectUri,
+          state,
+          authType,
+          tokenAccessType,
+          undefined,
+          "user",
+          usePKCE,
+        )
+
+        const confirmed = await requestPopup()
+
+        if (!confirmed) throw new CancelError()
+
+        const _oauthWindow = window.open(
+          authUrl.toString(),
+          "DropboxOAuth",
+          (
+            Object.keys(
+              defaultWindowOptions,
+            ) as (keyof typeof defaultWindowOptions)[]
+          )
+            .map((key) => `${key}=${defaultWindowOptions[key]}`)
+            .join(","),
+        )
+
+        _oauthWindow?.focus()
+
+        /**
+         * The function in charge of handling the redirect once the popup has completed.
+         */
+        const handleRedirect = async (event: MessageEvent) => {
+          if (timedOut) return
+
+          if (
+            event.isTrusted &&
+            event.origin === window.location.origin &&
+            event.data?.source === "oauth-redirect"
+          ) {
+            cleanup()
+            const urlParams = new URLSearchParams(event.data?.params || "")
+            const code = urlParams.get("code")
+
+            try {
+              const response = await dropboxAuth.getAccessTokenFromCode(
+                redirectUri,
+                code || "",
+              )
+
+              if (timedOut) return
+
+              // The Dropbox SDK types `result` as `object`; the OAuth token
+              // exchange returns these fields. `refresh_token` is only
+              // present when `tokenAccessType === "offline"` — we currently
+              // request `online`, so it's optional in practice.
+              const result = response.result as {
+                access_token: string
+                refresh_token?: string
+                expires_in: number
+              }
+
+              dropboxAuth.setAccessToken(result.access_token)
+              if (result.refresh_token) {
+                dropboxAuth.setRefreshToken(result.refresh_token)
+              }
+              dropboxAuth.setAccessTokenExpiresAt(
+                new Date(Date.now() + result.expires_in * 1000),
+              )
+
+              resolve(dropboxAuth)
+            } catch (e) {
+              reject(e)
+            }
+          }
+        }
+
+        const cleanup = () => {
+          clearInterval(listenToPopupCloseInterval)
+          clearTimeout(listenToPopupTimeoutTimeout)
+          window.removeEventListener("message", handleRedirect)
+        }
+
+        window.addEventListener("message", handleRedirect, false)
+
+        listenToPopupTimeoutTimeout = setTimeout(() => {
+          timedOut = true
+
+          cleanup()
+
+          reject(new Error("Request timed out"))
+        }, 1000 * 60)
+
+        listenToPopupCloseInterval = setInterval(() => {
+          if (_oauthWindow?.closed) {
+            cleanup()
+
+            reject(new CancelError())
+          }
+        }, 1000)
+      } catch (e) {
+        reject(e)
+      }
+    })()
+  })
+}
+
+export async function requestDropboxProviderCredentials(
+  options: DropboxAuthRequest,
+): Promise<DropboxApiCredentials> {
+  const auth = await authUser(options)
+
+  return {
+    accessToken: auth.getAccessToken(),
+    accessTokenExpiresAt: auth.getAccessTokenExpiresAt().toISOString(),
+    clientId: auth.getClientId(),
+    codeVerifier: auth.getCodeVerifier(),
+    refreshToken: auth.getRefreshToken(),
+  }
+}

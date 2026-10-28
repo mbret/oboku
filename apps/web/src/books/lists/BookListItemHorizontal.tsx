@@ -32,7 +32,7 @@ import {
 import { memo, useCallback } from "react"
 import { useBookDownloadState } from "../../download/states"
 import { useLink } from "../../links/states"
-import { pluginsByType } from "../../plugins/configure"
+import { pluginsByType } from "../../integrations/plugins/configure"
 import { useSelectableItemInteractions } from "../../common/selection"
 import { BookCoverCard } from "../BookCoverCard"
 import { bookActionDrawerSignal } from "../drawer/BookActionsDrawer"

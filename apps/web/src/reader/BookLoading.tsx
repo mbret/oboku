@@ -11,7 +11,7 @@ import { useNavigate } from "react-router"
 import { useHasElapsed } from "../common/useHasElapsed"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { ROUTES } from "../navigation/routes"
-import type { KoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
+import type { KoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 
 const SLOW_CHECK_THRESHOLD_MS = 3000
 

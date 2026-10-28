@@ -107,7 +107,7 @@ export const ConnectorInfoSection = memo(
           >
             <Button
               component={RouterLink}
-              to={generatePath(ROUTES.PLUGINS_CONNECTORS_NEW, {
+              to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
                 type: connectorType,
               })}
               variant="contained"
@@ -124,7 +124,7 @@ export const ConnectorInfoSection = memo(
               connectorType={connectorType}
               onClick={() => {
                 navigate(
-                  generatePath(ROUTES.PLUGINS_CONNECTORS_EDIT, {
+                  generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
                     type: connectorType,
                     id: connector.id,
                   }),

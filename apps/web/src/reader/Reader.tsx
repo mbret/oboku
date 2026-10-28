@@ -22,7 +22,7 @@ import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
-import { useKoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
+import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 
 export const Reader = memo(function Reader({
   bookId,
