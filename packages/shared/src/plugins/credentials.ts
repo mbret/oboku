@@ -3,6 +3,7 @@ import { z } from "zod"
 import { dropboxApiCredentialsSchema } from "./dropbox"
 import { driveApiCredentialsSchema } from "./google"
 import { oneDriveApiCredentialsSchema } from "./oneDrive"
+import { opdsApiCredentialsSchema } from "./opds"
 import { serverApiCredentialsSchema } from "./server"
 import { synologyDriveApiCredentialsSchema } from "./synologyDrive"
 import { webdavApiCredentialsSchema } from "./webdav"
@@ -25,6 +26,7 @@ export const providerApiCredentialsSchemas = {
   "one-drive": oneDriveApiCredentialsSchema,
   dropbox: dropboxApiCredentialsSchema,
   server: serverApiCredentialsSchema,
+  opds: opdsApiCredentialsSchema,
   file: noProviderApiCredentialsSchema,
   URI: noProviderApiCredentialsSchema,
 } satisfies {
@@ -65,6 +67,8 @@ const providerApiCredentialsParsers: {
     dropboxApiCredentialsSchema.parse(providerCredentials),
   server: (providerCredentials) =>
     serverApiCredentialsSchema.parse(providerCredentials),
+  opds: (providerCredentials) =>
+    opdsApiCredentialsSchema.parse(providerCredentials),
   file: (providerCredentials) =>
     noProviderApiCredentialsSchema.parse(providerCredentials),
   URI: (providerCredentials) =>

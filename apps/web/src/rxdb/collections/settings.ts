@@ -33,7 +33,7 @@ export const settingsSchema: RxJsonSchema<
     contentPassword?: string | null
   }
 > = {
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -57,7 +57,7 @@ export const settingsSchema: RxJsonSchema<
           id: { type: "string" },
           type: {
             type: "string",
-            enum: ["webdav", "synology-drive", "server"],
+            enum: ["webdav", "synology-drive", "server", "opds"],
           },
           url: { type: "string" },
           username: { type: "string" },
@@ -95,7 +95,9 @@ export const isConnectorOfType = <T extends SettingsConnectorType>(
 ): connector is Extract<SettingsConnectorDocType, { type: T }> =>
   connector.type === type
 
-export const settingsSchemaMigrationStrategies: MigrationStrategies = {}
+export const settingsSchemaMigrationStrategies: MigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => oldDoc,
+}
 
 export const settingsCollectionMethods: SettingsCollectionMethods = {
   postConnector: async function (this: SettingsCollection, json) {

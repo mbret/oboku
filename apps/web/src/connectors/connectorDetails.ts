@@ -15,6 +15,9 @@ export const CONNECTOR_DETAILS: Record<
   server: {
     label: "Server",
   },
+  opds: {
+    label: "OPDS",
+  },
 }
 
 export const isSettingsConnectorType = (

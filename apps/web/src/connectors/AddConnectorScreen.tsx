@@ -8,6 +8,7 @@ import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { ConnectorForm as WebdavConnectorForm } from "../plugins/webdav/connectors/ConnectorForm"
 import { ConnectorForm as SynologyDriveConnectorForm } from "../plugins/synology-drive/connectors/ConnectorForm"
 import { ConnectorForm as ServerConnectorForm } from "../plugins/server/connectors/ConnectorForm"
+import { ConnectorForm as OpdsConnectorForm } from "../plugins/opds/connectors/ConnectorForm"
 import { Page } from "../common/Page"
 
 export function getConnectorForm(type: SettingsConnectorType) {
@@ -18,6 +19,8 @@ export function getConnectorForm(type: SettingsConnectorType) {
       return SynologyDriveConnectorForm
     case "server":
       return ServerConnectorForm
+    case "opds":
+      return OpdsConnectorForm
     default:
       return null
   }

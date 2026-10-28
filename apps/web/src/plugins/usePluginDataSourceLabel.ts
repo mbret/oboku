@@ -46,6 +46,9 @@ export const usePluginDataSourceLabel = (
   const server = pluginsByType.server.useSyncSourceInfo(
     syncSourceArgs(dataSource, "server"),
   )
+  const opds = pluginsByType.opds.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "opds"),
+  )
 
   const dataSourceType = dataSource?.type
 
@@ -66,6 +69,8 @@ export const usePluginDataSourceLabel = (
       return webdav?.name
     case "server":
       return server?.name
+    case "opds":
+      return opds?.name
     case undefined:
       return undefined
     default:
