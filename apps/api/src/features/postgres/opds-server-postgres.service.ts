@@ -9,6 +9,7 @@ type SlugCandidate = { slug: string; name: string }
 
 export type OpdsServerInsertResult =
   | { status: "created"; server: OpdsServerPostgresEntity }
+  | { status: "user-missing" }
   | { status: "limit-reached" }
   | { status: "slugs-taken" }
 
@@ -63,7 +64,8 @@ export class OpdsServerPostgresService {
    * Inserts a server unless the user already has `maxServers`, under the
    * first slug of `candidates` no other server has. A lock on the user's row
    * makes concurrent inserts for one user wait for each other, so each counts
-   * the servers the others added.
+   * the servers the others added. A user id with no row, such as a deleted
+   * account whose access token is still valid, gets no server.
    */
   insertUnderLimit({
     userId,
@@ -80,10 +82,12 @@ export class OpdsServerPostgresService {
       async function insertWhileUserIsLocked(
         manager,
       ): Promise<OpdsServerInsertResult> {
-        await manager.findOne(UserPostgresEntity, {
+        const user = await manager.findOne(UserPostgresEntity, {
           where: { id: userId },
           lock: { mode: "pessimistic_write" },
         })
+
+        if (!user) return { status: "user-missing" }
 
         const serverCount = await manager.count(OpdsServerPostgresEntity, {
           where: { user_id: userId },

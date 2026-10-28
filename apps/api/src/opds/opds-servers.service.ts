@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Injectable,
   NotFoundException,
+  UnauthorizedException,
 } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
 import { humanId } from "human-id"
@@ -44,6 +45,8 @@ export class OpdsServersService {
       passwordHash: hashSecret(password),
       candidates: Array.from({ length: SLUG_ATTEMPTS }, generateSlugAndName),
     })
+
+    if (result.status === "user-missing") throw new UnauthorizedException()
 
     if (result.status === "limit-reached") {
       throw new BadRequestException({

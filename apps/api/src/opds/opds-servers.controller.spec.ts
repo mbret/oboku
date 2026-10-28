@@ -27,6 +27,8 @@ vi.mock("human-id", async function mockHumanId(importOriginal) {
 
 const READER = { id: 1, email: "reader@example.com", session: "reader" }
 const OTHER_READER = { id: 2, email: "other@example.com", session: "other" }
+const DELETED_READER = { id: 3, email: "gone@example.com", session: "gone" }
+const ACCOUNT_IDS = new Set([READER.id, OTHER_READER.id])
 
 const toTokenPayload = ({
   id,
@@ -44,6 +46,7 @@ const toTokenPayload = ({
 const TOKEN_PAYLOADS = new Map([
   [READER.session, toTokenPayload(READER)],
   [OTHER_READER.session, toTokenPayload(OTHER_READER)],
+  [DELETED_READER.session, toTokenPayload(DELETED_READER)],
 ])
 
 const SERVER_LIMIT = 3
@@ -110,6 +113,8 @@ const createServerStore = () => {
       passwordHash,
       candidates,
     }) => {
+      if (!ACCOUNT_IDS.has(userId)) return { status: "user-missing" }
+
       const isUnderLimit = findUserServers(userId).length < maxServers
 
       if (!isUnderLimit) return { status: "limit-reached" }
@@ -343,6 +348,12 @@ describe("OpdsServersController", () => {
     expect(response.status).toBe(500)
     expect(humanId).toHaveBeenCalledTimes(5)
     expect((await reader().list()).body).toEqual([])
+  })
+
+  it("refuses a server to an account deleted since its session started", async () => {
+    const response = await asReader(DELETED_READER.session).create()
+
+    expect(response.status).toBe(401)
   })
 
   it("refuses a server past the instance's limit per user", async () => {

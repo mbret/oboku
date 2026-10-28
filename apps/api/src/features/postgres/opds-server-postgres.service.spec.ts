@@ -67,7 +67,7 @@ describe("OpdsServerPostgresService", () => {
 
   beforeEach(async () => {
     transactionManager = {
-      findOne: vi.fn().mockResolvedValue(null),
+      findOne: vi.fn().mockResolvedValue({ id: 1 }),
       count: vi.fn().mockResolvedValue(0),
       createQueryBuilder: vi.fn(),
     }
@@ -123,6 +123,26 @@ describe("OpdsServerPostgresService", () => {
     expect(transactionManager.findOne.mock.invocationCallOrder[0]).toBeLessThan(
       transactionManager.count.mock.invocationCallOrder[0] ?? 0,
     )
+  })
+
+  it("inserts nothing for a user id with no account row", async () => {
+    transactionManager.findOne.mockResolvedValue(null)
+
+    expect(await insertUnderLimit(3)).toEqual({ status: "user-missing" })
+    expect(transactionManager.count).not.toHaveBeenCalled()
+    expect(transactionManager.createQueryBuilder).not.toHaveBeenCalled()
+  })
+
+  it("inserts while the user has one server fewer than allowed", async () => {
+    transactionManager.count.mockResolvedValue(2)
+    transactionManager.createQueryBuilder.mockReturnValue(
+      createInsertQueryBuilder([undefined, SERVER]),
+    )
+
+    expect(await insertUnderLimit(3)).toEqual({
+      status: "created",
+      server: SERVER,
+    })
   })
 
   it("inserts nothing once the user has as many servers as allowed", async () => {
