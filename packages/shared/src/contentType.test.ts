@@ -1,5 +1,13 @@
 import { describe, expect, it } from "vitest"
-import { isFileSupported } from "./contentType"
+import { getMimeTypeEssence, isFileSupported } from "./contentType"
+
+describe("getMimeTypeEssence", () => {
+  it("drops the parameters and lowercases the type", () => {
+    expect(getMimeTypeEssence("Application/X-RAR-Compressed; version=4")).toBe(
+      "application/x-rar-compressed",
+    )
+  })
+})
 
 describe("isFileSupported", () => {
   it("should accept supported extensions regardless of case", () => {
@@ -32,6 +40,15 @@ describe("isFileSupported", () => {
       expect(isFileSupported({ name: "no-extension", mimeType })).toBe(true)
     },
   )
+
+  it("should accept a supported mime type whatever its parameters", () => {
+    expect(
+      isFileSupported({
+        name: "no-extension",
+        mimeType: "application/x-rar-compressed; version=4",
+      }),
+    ).toBe(true)
+  })
 
   it("should reject unsupported files", () => {
     expect(isFileSupported({ name: "movie.mkv" })).toBe(false)

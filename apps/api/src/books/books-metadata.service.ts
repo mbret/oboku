@@ -14,6 +14,7 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
+  getMimeTypeEssence,
   isLegacyFileMetadata,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -236,7 +237,8 @@ export class BooksMetadataService {
         modifiedAt: persistedModifiedAt,
       }
 
-      let contentType = linkMetadata.contentType
+      let contentType =
+        linkMetadata.contentType && getMimeTypeEssence(linkMetadata.contentType)
       /**
        * Not all plugins return the valid content type so
        * we can only make some assumptions based on what we have

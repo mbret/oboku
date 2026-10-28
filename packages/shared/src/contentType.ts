@@ -3,6 +3,13 @@ export const getUrlExtension = (url: string) => {
 }
 
 /**
+ * The type and subtype of `mimeType`, lowercased, without its parameters
+ * (https://mimesniff.spec.whatwg.org/#mime-type-essence).
+ */
+export const getMimeTypeEssence = (mimeType: string) =>
+  mimeType.split(";")[0]?.trim().toLowerCase() ?? ""
+
+/**
  * Types sources give CBR files, including Nextcloud's
  * `application/comicbook+rar` and the generic RAR types.
  */
@@ -71,6 +78,6 @@ export const isFileSupported = ({
 
   return (
     READER_ACCEPTED_EXTENSIONS.includes(extension) ||
-    READER_ACCEPTED_MIME_TYPES.includes(mimeType ?? "")
+    READER_ACCEPTED_MIME_TYPES.includes(getMimeTypeEssence(mimeType ?? ""))
   )
 }
