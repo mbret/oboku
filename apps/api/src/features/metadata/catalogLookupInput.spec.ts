@@ -68,7 +68,7 @@ describe("catalogLookupInput", () => {
     ])
   })
 
-  it("prefers a directive's Google Books volume id to the file's", () => {
+  it("prefers a directive's Google Books volume id to the file's ISBN and volume id", () => {
     expect(
       catalogLookupInput({
         fileMetadata: fileStating({
@@ -85,10 +85,7 @@ describe("catalogLookupInput", () => {
         directiveIsbn: undefined,
         directiveGoogleVolumeId: "B1hSG45JCX4C",
       }).identifiers,
-    ).toEqual([
-      { value: "B1hSG45JCX4C", scheme: "GoogleBooks" },
-      { value: "9780441013593", scheme: "ISBN" },
-    ])
+    ).toEqual([{ value: "B1hSG45JCX4C", scheme: "GoogleBooks" }])
   })
 
   it("prefers the user's ISBN to the directive's", () => {
@@ -101,5 +98,29 @@ describe("catalogLookupInput", () => {
         directiveGoogleVolumeId: undefined,
       }).identifiers,
     ).toEqual([{ value: "9780593099322", scheme: "ISBN" }])
+  })
+
+  it("prefers the user's ISBN to a directive's volume id", () => {
+    expect(
+      catalogLookupInput({
+        fileMetadata: undefined,
+        linkName: "Dune.epub",
+        userIsbn: "9780593099322",
+        directiveIsbn: undefined,
+        directiveGoogleVolumeId: "B1hSG45JCX4C",
+      }).identifiers,
+    ).toEqual([{ value: "9780593099322", scheme: "ISBN" }])
+  })
+
+  it("prefers a directive's volume id to a directive's ISBN", () => {
+    expect(
+      catalogLookupInput({
+        fileMetadata: undefined,
+        linkName: "Dune.epub",
+        userIsbn: undefined,
+        directiveIsbn: "9780441013593",
+        directiveGoogleVolumeId: "B1hSG45JCX4C",
+      }).identifiers,
+    ).toEqual([{ value: "B1hSG45JCX4C", scheme: "GoogleBooks" }])
   })
 })
