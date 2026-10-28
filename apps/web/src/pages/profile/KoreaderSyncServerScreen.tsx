@@ -17,6 +17,7 @@ import { PageSection } from "../../common/PageSection"
 import { useConfig } from "../../config/useConfig"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { CopyableField } from "../../common/CopyableField"
+import { OneTimePasswordField } from "../../common/OneTimePasswordField"
 import { IntroStack } from "../../common/IntroStack"
 import { useKoreaderSyncServer } from "../../koreader/syncServer/useKoreaderSyncServer"
 import { useCreateKoreaderSyncServerPassword } from "../../koreader/syncServer/useCreateKoreaderSyncServerPassword"
@@ -102,15 +103,7 @@ export const KoreaderSyncServerScreen = memo(
               value={koreaderSyncServer?.username ?? ""}
             />
             {createdPassword ? (
-              <>
-                <CopyableField
-                  label="Password"
-                  value={createdPassword.password}
-                />
-                <Alert severity="warning">
-                  Copy this password now: it is not shown again.
-                </Alert>
-              </>
+              <OneTimePasswordField password={createdPassword.password} />
             ) : (
               <Typography variant="body2" color="textSecondary">
                 {passwordCreatedAt

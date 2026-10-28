@@ -1,9 +1,8 @@
-import { memo } from "react"
 import { IconButton, InputAdornment, TextField } from "@mui/material"
 import { ContentCopyRounded } from "@mui/icons-material"
 import { notify } from "../notifications/toasts"
 
-export const CopyableField = memo(function CopyableField({
+export function CopyableField({
   label,
   value,
 }: {
@@ -33,7 +32,7 @@ export const CopyableField = memo(function CopyableField({
               <IconButton
                 edge="end"
                 onClick={copyValueToClipboard}
-                aria-label={`Copy ${label.toLowerCase()}`}
+                aria-label={`Copy ${label}`}
               >
                 <ContentCopyRounded fontSize="small" />
               </IconButton>
@@ -43,4 +42,4 @@ export const CopyableField = memo(function CopyableField({
       }}
     />
   )
-})
+}
