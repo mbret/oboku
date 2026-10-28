@@ -2,8 +2,8 @@ import type { UseQueryOptions } from "@tanstack/react-query"
 import { type DriveFileGetResponse, useDriveFilesGet } from "./useDriveFilesGet"
 import { firstValueFrom } from "rxjs"
 import { useCallback } from "react"
-import { useGapi } from "./googleDrivePlugin/lib/gapi"
-import { useAccessToken } from "./auth"
+import { useGapi } from "./gapi"
+import { useAccessToken } from "../../auth"
 
 export const getUseDriveFileQueryKey = (params: {
   id: string

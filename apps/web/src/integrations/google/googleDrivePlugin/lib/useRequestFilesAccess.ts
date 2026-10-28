@@ -5,7 +5,7 @@ import { useDrivePicker } from "./useDrivePicker"
 import { CancelError } from "../../../../errors/errors.shared"
 import { useHasFilesAccess } from "./useHasFilesAccess"
 import { useQueryClient } from "@tanstack/react-query"
-import { getUseDriveFileQueryKey } from "../../useDriveFile"
+import { getUseDriveFileQueryKey } from "./useDriveFile"
 import { isDefined } from "reactjrx"
 import { GOOGLE_DRIVE_FILE_SCOPES } from "./constants"
 
