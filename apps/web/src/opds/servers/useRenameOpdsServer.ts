@@ -1,4 +1,4 @@
-import { opdsServersRename } from "@oboku/shared"
+import { type OpdsServersRenameData, opdsServersRename } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
@@ -13,10 +13,7 @@ export const useRenameOpdsServer = () => {
     mutationFn: async function renameOpdsServer({
       id,
       name,
-    }: {
-      id: number
-      name: string
-    }) {
+    }: OpdsServersRenameData["path"] & OpdsServersRenameData["body"]) {
       const { data } = await opdsServersRename({
         client: httpClientApi.sdkClient,
         path: { id },
