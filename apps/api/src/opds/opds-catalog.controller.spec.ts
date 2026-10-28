@@ -106,7 +106,7 @@ describe("OpdsCatalogController", () => {
     await app.close()
   })
 
-  it("serves the catalog's start to the owner's email and the server's password", async () => {
+  it("serves the catalog root to the owner's email and the server's password", async () => {
     const response = await getCatalog(
       "/opds/calm-snails-dream",
       OWNER_AUTHORIZATION,
@@ -130,9 +130,12 @@ describe("OpdsCatalogController", () => {
     expect(response.text).toContain(
       `<link rel="subsection" href="/opds/calm-snails-dream/books" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>`,
     )
+    expect(response.text).toContain(
+      `<content type="text">Every book in this catalog</content>`,
+    )
   })
 
-  it("lists no book yet", async () => {
+  it("lists no books yet", async () => {
     const response = await getCatalog(
       "/opds/calm-snails-dream/books",
       OWNER_AUTHORIZATION,
@@ -164,7 +167,7 @@ describe("OpdsCatalogController", () => {
   })
 
   it.each([
-    ["no credentials", "/opds/calm-snails-dream", undefined],
+    ["missing credentials", "/opds/calm-snails-dream", undefined],
     ["an app session", "/opds/calm-snails-dream", `Bearer ${OWNER_SESSION}`],
     [
       "credentials without a password",
@@ -182,6 +185,11 @@ describe("OpdsCatalogController", () => {
       toBasicAuthorization(`other@example.com:${PASSWORD}`),
     ],
     ["an unknown server", "/opds/brave-foxes-run", OWNER_AUTHORIZATION],
+    [
+      "missing credentials on the books feed",
+      "/opds/calm-snails-dream/books",
+      undefined,
+    ],
   ])(
     "refuses %s with the same Basic challenge",
     async (_, path, authorization) => {

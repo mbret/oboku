@@ -1,8 +1,8 @@
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { escapeXml } from "../http/escapeXml.js"
 
-// OPDS 1.2 §2.2 and §2.3: the types of links to navigation and acquisition
-// feeds, which their responses carry too.
+// OPDS 1.2 §2.2 and §2.3: the type every link to a navigation or an
+// acquisition feed must carry.
 export const OPDS_NAVIGATION_FEED_TYPE =
   "application/atom+xml;profile=opds-catalog;kind=navigation"
 export const OPDS_ACQUISITION_FEED_TYPE =
@@ -10,14 +10,19 @@ export const OPDS_ACQUISITION_FEED_TYPE =
 
 type AtomLink = { rel: string; href: string; type: string }
 
-type AtomEntry = { id: string; title: string; links: AtomLink[] }
+type AtomEntry = {
+  id: string
+  title: string
+  content: string
+  links: AtomLink[]
+}
 
 type CatalogServer = Pick<OpdsServerPostgresEntity, "slug" | "name">
 
 const toLinkXml = ({ rel, href, type }: AtomLink) =>
   `<link rel="${rel}" href="${escapeXml(href)}" type="${type}"/>`
 
-/** With the elements Atom requires of a feed and its entries (RFC 4287 §4.1). */
+/** With the elements Atom requires of a feed and its entries (RFC 4287 §4.1.1, §4.1.2). */
 const buildFeed = ({
   id,
   title,
@@ -46,6 +51,7 @@ const buildFeed = ({
       `    <id>${escapeXml(entry.id)}</id>`,
       `    <title>${escapeXml(entry.title)}</title>`,
       `    ${updatedXml}`,
+      `    <content type="text">${escapeXml(entry.content)}</content>`,
       ...entry.links.map((link) => `    ${toLinkXml(link)}`),
       `  </entry>`,
     ]),
@@ -67,7 +73,7 @@ const toCatalog = (slug: string) => {
 
 const ALL_BOOKS_TITLE = "All books"
 
-/** The catalog's start: an entry for each way to browse it. */
+/** The catalog root: an entry for each way to browse the catalog. */
 export const buildRootFeed = ({
   server,
   updated,
@@ -89,13 +95,14 @@ export const buildRootFeed = ({
       {
         id: catalog.booksId,
         title: ALL_BOOKS_TITLE,
+        content: "Every book in this catalog",
         links: [{ rel: "subsection", ...catalog.booksLink }],
       },
     ],
   })
 }
 
-/** Lists no book: no provider serves its books to OPDS readers yet. */
+/** Lists no books: no provider serves its books to OPDS readers yet. */
 export const buildBooksFeed = ({
   server,
   updated,

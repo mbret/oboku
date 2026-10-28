@@ -18,7 +18,7 @@ describe("parseBasicAuthorization", () => {
   })
 
   it.each([
-    ["no header", undefined],
+    ["a missing header", undefined],
     ["another scheme", "Bearer token"],
     ["credentials without a colon", toBasicHeader("reader@example.com")],
   ])("reads nothing from %s", (_, header) => {

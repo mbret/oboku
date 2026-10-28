@@ -1,6 +1,9 @@
 const BASIC_SCHEME_PREFIX = "Basic "
 
-/** The credentials an `Authorization: Basic` header carries, undefined for any other header. */
+/**
+ * The credentials an `Authorization: Basic` header carries, undefined for no
+ * header, another scheme or credentials without a colon.
+ */
 export const parseBasicAuthorization = (header: string | undefined) => {
   if (!header?.startsWith(BASIC_SCHEME_PREFIX)) return undefined
 

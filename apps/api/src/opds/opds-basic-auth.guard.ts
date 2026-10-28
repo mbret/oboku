@@ -17,9 +17,9 @@ type OpdsCatalogRequest = Request<{ slug?: string }> & {
 }
 
 /**
- * Signs a reader in to the server of the URL's slug with HTTP Basic Auth. A
- * missing header, an unknown slug and wrong credentials all answer the same
- * 401 and challenge, so a reader cannot tell which servers or emails exist.
+ * Signs a reader in to the server of the URL's slug with HTTP Basic Auth.
+ * Every refusal answers the same 401 and challenge, so a reader cannot tell
+ * which servers or emails exist.
  */
 @Injectable()
 export class OpdsBasicAuthGuard implements CanActivate {

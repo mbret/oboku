@@ -12,8 +12,7 @@ import {
 
 /**
  * The OPDS 1.2 catalog of an OPDS server. Readers sign in with HTTP Basic
- * Auth, the account email and the server's password, never with a session:
- * the app's own auth does not apply here.
+ * Auth, the account email and the server's password, not an app session.
  */
 @Public()
 @ApiExcludeController()
