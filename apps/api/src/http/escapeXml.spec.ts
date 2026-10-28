@@ -8,10 +8,14 @@ describe("escapeXml", () => {
   })
 
   it("replaces the characters XML forbids", () => {
-    expect(escapeXml("Kids\u000bbooks\u0000\uD800")).toBe("Kids�books��")
+    expect(escapeXml("Kids\u000bbooks\u0000\uD800")).toBe(
+      "Kids\uFFFDbooks\uFFFD\uFFFD",
+    )
   })
 
   it("keeps tabs, line breaks and characters past the basic plane", () => {
-    expect(escapeXml("Kids\tbooks\r\n📚")).toBe("Kids\tbooks\r\n📚")
+    expect(escapeXml("Kids\tbooks\r\n\u{1F4DA}")).toBe(
+      "Kids\tbooks\r\n\u{1F4DA}",
+    )
   })
 })
