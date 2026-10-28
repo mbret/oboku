@@ -17,6 +17,7 @@ import type { Context } from "../types.js"
 import type { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
 import { deleteDanglingLinks } from "./deleteDanglingLinks.js"
+import { isLinkDataOutdated, withSyncedLinkData } from "../linkData.js"
 import { logger } from "./logger.js"
 import type { LinkCandidate } from "../../../plugins/types.js"
 
@@ -88,6 +89,17 @@ export const createOrUpdateBook = async ({
       logger.log(
         `No link found for ${item.name} with linkData ${JSON.stringify(item.linkData)}`,
       )
+    }
+
+    if (
+      linkMatchingItem &&
+      isLinkDataOutdated(linkMatchingItem.data, item.linkData)
+    ) {
+      await atomicUpdate(db, "link", linkMatchingItem._id, (old) =>
+        withSyncedLinkData(old, item.linkData),
+      )
+
+      syncReport.updateLink(linkMatchingItem._id)
     }
 
     let existingBook: BookDocType | null = null
