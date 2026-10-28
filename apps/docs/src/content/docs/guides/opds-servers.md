@@ -20,7 +20,7 @@ In oboku, open **Integrations > OPDS** and tap **Create a server**. oboku names 
 The password is not your oboku password and opens nothing but the server's catalog.
 :::
 
-An account can have up to 10 servers. A self-hosted instance can change that limit from its [admin panel](/self-hosting/admin#opds-servers).
+Each instance caps how many servers an account can have, 10 by default. Its administrator sets the cap from the [admin panel](/self-hosting/admin#opds-servers).
 
 ## Set up a reading app
 
