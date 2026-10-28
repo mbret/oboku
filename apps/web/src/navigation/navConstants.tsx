@@ -23,9 +23,9 @@ export const navItems = [
   },
   {
     icon: ExtensionRounded,
-    label: "Plugins",
-    route: ROUTES.PLUGINS,
-    matchPattern: "/plugins/*",
+    label: "Integrations",
+    route: ROUTES.INTEGRATIONS,
+    matchPattern: "/integrations/*",
   },
   {
     icon: AccountCircleRounded,

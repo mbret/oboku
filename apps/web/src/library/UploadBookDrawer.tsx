@@ -11,7 +11,7 @@ import { memo } from "react"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
-} from "../plugins/useIsPluginEnabled"
+} from "../integrations/plugins/useIsPluginEnabled"
 
 export const UploadBookDrawer = memo(
   ({
@@ -40,7 +40,7 @@ export const UploadBookDrawer = memo(
                   disabled={!isPluginEnabled(dataSource)}
                 >
                   <ListItemIcon>
-                    {dataSource.Icon && <dataSource.Icon />}
+                    <dataSource.Icon />
                   </ListItemIcon>
                   <ListItemText
                     primary={`From ${capitalize(dataSource.name)}`}

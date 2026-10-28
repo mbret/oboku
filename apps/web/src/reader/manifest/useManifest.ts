@@ -5,7 +5,7 @@ import { skipToken, useQuery } from "@tanstack/react-query"
 import { type Database, useDatabase } from "../../rxdb"
 import { getMetadataFromBook } from "../../books/metadata"
 import { httpClient } from "../../http/httpClient.shared"
-import { getBookKoreaderDocument } from "../../koreader/getBookKoreaderDocument"
+import { getBookKoreaderDocument } from "../../integrations/koreader/client/getBookKoreaderDocument"
 
 const getManifestBaseUrl = (origin: string, epubFileName: string) => {
   return `${origin}/${STREAMER_URL_PREFIX}/${epubFileName}/`

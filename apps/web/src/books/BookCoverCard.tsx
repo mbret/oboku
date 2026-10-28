@@ -27,7 +27,7 @@ import {
 import { useLink } from "../links/states"
 import { DownloadState, useBookDownloadState } from "../download/states"
 import { ButtonAsIcon } from "../common/ButtonAsIcon"
-import { pluginsByType } from "../plugins/configure"
+import { pluginsByType } from "../integrations/plugins/configure"
 
 const CoverIconBadgeRoot = styled(Box)(({ theme }) => ({
   display: "flex",
@@ -73,7 +73,7 @@ export const BookCoverCard: FC<
     const theme = useTheme()
     const hasBottomBar =
       showBottomBar &&
-      (!!linkPlugin?.Icon ||
+      (!!linkPlugin ||
         item?.readingStateCurrentState === ReadingStateState.Finished ||
         item?.readingStateCurrentState === ReadingStateState.Reading)
 
@@ -231,7 +231,7 @@ export const BookCoverCard: FC<
                 alignItems: "center",
               }}
             >
-              {linkPlugin?.Icon && (
+              {linkPlugin && (
                 <linkPlugin.Icon fontSize="medium" sx={{ display: "block" }} />
               )}
             </Box>

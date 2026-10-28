@@ -3,7 +3,7 @@ import { useSettings } from "../settings/useSettings"
 import { useLiveRef } from "reactjrx"
 import { useLibraryBooks } from "../library/books/useLibraryBooks"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
-import { useKoreaderSyncConnection } from "../koreader/syncConnection/useKoreaderSyncConnection"
+import { useKoreaderSyncConnection } from "../integrations/koreader/client/useKoreaderSyncConnection"
 
 const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)

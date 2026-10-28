@@ -4,12 +4,9 @@ import {
   type KoreaderSyncProgress,
   KoreaderSyncPostgresService,
 } from "../../features/postgres/koreader-sync-postgres.service.js"
+import { generateEReaderPassword } from "../../crypto/eReaderPassword.js"
+import { hashSecret, isSecretMatchingHash } from "../../crypto/secretHash.js"
 import { toSyncKey } from "../protocol.js"
-import {
-  generateSyncPassword,
-  hashSyncKey,
-  isSyncKeyMatchingHash,
-} from "./credentials.js"
 
 @Injectable()
 export class KoreaderSyncServerService {
@@ -36,7 +33,7 @@ export class KoreaderSyncServerService {
     const credential =
       await this.koreaderSyncPostgresService.findCredentialByUserId(user.id)
 
-    return credential && isSyncKeyMatchingHash(key, credential.key_hash)
+    return credential && isSecretMatchingHash(key, credential.key_hash)
       ? user.id
       : undefined
   }
@@ -47,11 +44,11 @@ export class KoreaderSyncServerService {
 
   /** Replaces any previous password, which signs devices out. */
   async createPassword(userId: number) {
-    const password = generateSyncPassword()
+    const password = generateEReaderPassword()
 
     await this.koreaderSyncPostgresService.saveCredential({
       userId,
-      keyHash: hashSyncKey(toSyncKey(password)),
+      keyHash: hashSecret(toSyncKey(password)),
     })
 
     return password
@@ -76,7 +73,7 @@ export class KoreaderSyncServerService {
   }) {
     return this.koreaderSyncPostgresService.saveProgress({
       progress,
-      keyHash: hashSyncKey(key),
+      keyHash: hashSecret(key),
     })
   }
 }

@@ -21,7 +21,7 @@ import {
   MoreVertOutlined,
 } from "@mui/icons-material"
 import { type DataSourceDocType, links } from "@oboku/shared"
-import { plugins as dataSourcePlugins } from "../../plugins/configure"
+import { plugins as dataSourcePlugins } from "../../integrations/plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
 import { generatePath, useNavigate, Link as RouterLink } from "react-router"
@@ -85,7 +85,7 @@ export const DataSourcesListScreen = memo(() => {
                   {dataSource && (
                     <ListItemIcon>
                       <SvgIcon>
-                        {dataSource.Icon && <dataSource.Icon />}
+                        <dataSource.Icon />
                       </SvgIcon>
                     </ListItemIcon>
                   )}

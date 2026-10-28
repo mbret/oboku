@@ -38,9 +38,11 @@ export type InstanceConfig = {
   fileDownloadMaxSizeBytes: number
   allowPrivateNetworkRequests: boolean
   privateNetworkAllowedHosts: string[]
+  opdsServersMaxPerUser: number
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
+const DEFAULT_OPDS_SERVERS_MAX_PER_USER = 10
 
 const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
@@ -51,6 +53,7 @@ const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
   fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
   allowPrivateNetworkRequests: false,
   privateNetworkAllowedHosts: [],
+  opdsServersMaxPerUser: DEFAULT_OPDS_SERVERS_MAX_PER_USER,
 }
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
@@ -93,6 +96,10 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
       }),
     )
     .default([]),
+  opdsServersMaxPerUser: Joi.number()
+    .integer()
+    .min(1)
+    .default(DEFAULT_OPDS_SERVERS_MAX_PER_USER),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {
