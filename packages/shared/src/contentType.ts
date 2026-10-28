@@ -15,8 +15,11 @@ export const CBR_MIME_TYPES = [
   "application/x-rar",
 ]
 
-const CBR_FILE_TYPES = Object.fromEntries(
-  CBR_MIME_TYPES.map((mimeType): [string, string[]] => [mimeType, [".cbr"]]),
+const RAR_FILE_TYPES = Object.fromEntries(
+  CBR_MIME_TYPES.map((mimeType): [string, string[]] => [
+    mimeType,
+    [".cbr", ".rar"],
+  ]),
 )
 
 export const READER_ACCEPTED_FILE_TYPES = {
@@ -25,7 +28,7 @@ export const READER_ACCEPTED_FILE_TYPES = {
   "application/zip": [".epub", ".zip"],
   "application/x-zip-compressed": [".epub", ".zip"],
   "application/epub+zip": [".epub", ".zip"],
-  ...CBR_FILE_TYPES,
+  ...RAR_FILE_TYPES,
   "application/pdf": [".pdf"],
 }
 

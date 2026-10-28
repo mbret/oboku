@@ -12,6 +12,7 @@ describe("isFileSupported", () => {
     expect(isFileSupported({ name: "MyBook.epub" })).toBe(true)
     expect(isFileSupported({ name: "comic.cbz" })).toBe(true)
     expect(isFileSupported({ name: "archive.zip" })).toBe(true)
+    expect(isFileSupported({ name: "archive.rar" })).toBe(true)
   })
 
   it("should accept supported mime types when the name is not recognized", () => {
