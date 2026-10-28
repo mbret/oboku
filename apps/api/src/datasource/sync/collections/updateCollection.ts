@@ -3,7 +3,7 @@ import type { Context } from "../types.js"
 import type { SynchronizeAbleItem } from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
 import { atomicUpdate } from "../../../couch/dbHelpers.js"
-import { isLinkDataOutdated } from "../linkData.js"
+import { updateCollectionLinkData } from "../linkData.js"
 
 const logger = new Logger("sync/updateCollection")
 
@@ -50,12 +50,5 @@ export const updateCollection = async ({
     ctx.syncReport.updateCollection(collection._id)
   }
 
-  if (isLinkDataOutdated(collection.linkData, item.linkData)) {
-    await atomicUpdate(ctx.db, "obokucollection", collection._id, (old) => ({
-      ...old,
-      linkData: { ...old.linkData, ...item.linkData },
-    }))
-
-    ctx.syncReport.updateCollection(collection._id)
-  }
+  await updateCollectionLinkData(ctx, collection, item.linkData)
 }
