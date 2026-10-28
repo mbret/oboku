@@ -54,19 +54,20 @@ export class OpdsServerPostgresService {
   }
 
   /** @returns `null` when the user has no such server. */
-  async update({
+  rename({ userId, id, name }: UserOpdsServer & { name: string }) {
+    return this.updateUserServer({ userId, id }, { name })
+  }
+
+  /** @returns `null` when the user has no such server. */
+  replacePasswordHash({
     userId,
     id,
-    changes,
-  }: UserOpdsServer & {
-    changes: Partial<Pick<OpdsServerPostgresEntity, "name" | "password_hash">>
-  }) {
-    const { affected } = await this.serverRepository.update(
-      { id, user_id: userId },
-      changes,
+    passwordHash,
+  }: UserOpdsServer & { passwordHash: string }) {
+    return this.updateUserServer(
+      { userId, id },
+      { password_hash: passwordHash },
     )
-
-    return affected ? this.serverRepository.findOneBy({ id }) : null
   }
 
   /** @returns `false` when the user has no such server. */
@@ -81,5 +82,17 @@ export class OpdsServerPostgresService {
 
   async deleteByUserId(userId: number) {
     await this.serverRepository.delete({ user_id: userId })
+  }
+
+  private async updateUserServer(
+    { userId, id }: UserOpdsServer,
+    changes: Partial<Pick<OpdsServerPostgresEntity, "name" | "password_hash">>,
+  ) {
+    const { affected } = await this.serverRepository.update(
+      { id, user_id: userId },
+      changes,
+    )
+
+    return affected ? this.serverRepository.findOneBy({ id }) : null
   }
 }

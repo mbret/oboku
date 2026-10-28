@@ -477,7 +477,7 @@ export const zOpdsServerPasswordResponseDto = z.object({
 });
 
 export const zRenameOpdsServerDto = z.object({
-    name: z.string().min(1).max(100)
+    name: z.string().min(1).max(100).regex(/\S/)
 });
 
 export const zAppGetHelloResponse = z.string();

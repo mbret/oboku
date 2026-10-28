@@ -46,10 +46,10 @@ export class OpdsServersService {
     id: number
     name: string
   }) {
-    const server = await this.opdsServerPostgresService.update({
+    const server = await this.opdsServerPostgresService.rename({
       userId,
       id,
-      changes: { name },
+      name,
     })
 
     if (!server) throw createServerNotFoundError()
@@ -59,10 +59,10 @@ export class OpdsServersService {
 
   async regeneratePassword({ userId, id }: { userId: number; id: number }) {
     const password = generateEReaderPassword()
-    const server = await this.opdsServerPostgresService.update({
+    const server = await this.opdsServerPostgresService.replacePasswordHash({
       userId,
       id,
-      changes: { password_hash: hashSecret(password) },
+      passwordHash: hashSecret(password),
     })
 
     if (!server) throw createServerNotFoundError()

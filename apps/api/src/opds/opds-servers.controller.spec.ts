@@ -13,7 +13,7 @@ import { OpdsServerPostgresService } from "../features/postgres/opds-server-post
 import { OpdsServersController } from "./opds-servers.controller.js"
 import { OpdsServersService } from "./opds-servers.service.js"
 
-vi.mock("human-id", async (importOriginal) => {
+vi.mock("human-id", async function mockHumanId(importOriginal) {
   const humanIdModule = await importOriginal<typeof import("human-id")>()
 
   return { ...humanIdModule, humanId: vi.fn(humanIdModule.humanId) }
@@ -52,9 +52,28 @@ const createServerStore = () => {
     return server?.user_id === userId ? server : undefined
   }
 
+  const updateUserServer = (
+    { userId, id }: { userId: number; id: number },
+    changes: Partial<OpdsServerPostgresEntity>,
+  ) => {
+    const server = findUserServer({ userId, id })
+
+    if (!server) return null
+
+    const updatedServer = { ...server, ...changes }
+
+    servers.set(id, updatedServer)
+
+    return updatedServer
+  }
+
   const store: Pick<
     OpdsServerPostgresService,
-    "findByUserId" | "insertUnlessSlugTaken" | "update" | "delete"
+    | "findByUserId"
+    | "insertUnlessSlugTaken"
+    | "rename"
+    | "replacePasswordHash"
+    | "delete"
   > = {
     findByUserId: async (userId) =>
       [...servers.values()].filter((server) => server.user_id === userId),
@@ -78,17 +97,10 @@ const createServerStore = () => {
 
       return server
     },
-    update: async ({ userId, id, changes }) => {
-      const server = findUserServer({ userId, id })
-
-      if (!server) return null
-
-      const updatedServer = { ...server, ...changes }
-
-      servers.set(id, updatedServer)
-
-      return updatedServer
-    },
+    rename: async ({ userId, id, name }) =>
+      updateUserServer({ userId, id }, { name }),
+    replacePasswordHash: async ({ userId, id, passwordHash }) =>
+      updateUserServer({ userId, id }, { password_hash: passwordHash }),
     delete: async ({ userId, id }) =>
       findUserServer({ userId, id }) ? servers.delete(id) : false,
   }
@@ -172,7 +184,7 @@ describe("OpdsServersController", () => {
     expect(response.status).toBe(401)
   })
 
-  it("creates a server named after its readable slug, with a password shown once", async () => {
+  it("creates a server with a readable slug and a password shown once", async () => {
     const response = await reader().create()
 
     expect(response.status).toBe(201)
@@ -186,8 +198,6 @@ describe("OpdsServersController", () => {
       username: READER.email,
       createdAt: expect.any(String),
     })
-    expect(server.name.toLowerCase()).toBe(server.slug.replaceAll("-", " "))
-    expect(server.name.charAt(0)).toBe(server.name.charAt(0).toUpperCase())
     expect(password).toMatch(PASSWORD_PATTERN)
 
     const storedHash = servers.get(server.id)?.password_hash ?? ""
@@ -221,6 +231,7 @@ describe("OpdsServersController", () => {
 
   it.each([
     ["an empty name", ""],
+    ["a blank name", "   "],
     ["a name over 100 characters", "a".repeat(101)],
     ["a name that is not a string", 42],
   ])("refuses %s", async (_, name) => {

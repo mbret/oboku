@@ -11,11 +11,13 @@ import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgr
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { UsersService } from "./users.service.js"
 
-vi.mock("../couch/dbHelpers.js", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("../couch/dbHelpers.js")>()),
-  find: vi.fn(async () => []),
-  deleteCouchUser: vi.fn(async () => {}),
-}))
+vi.mock("../couch/dbHelpers.js", async function mockDbHelpers(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("../couch/dbHelpers.js")>()),
+    find: vi.fn(async () => []),
+    deleteCouchUser: vi.fn(async () => {}),
+  }
+})
 
 describe("UsersService", () => {
   let service: UsersService

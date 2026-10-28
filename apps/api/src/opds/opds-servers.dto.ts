@@ -1,4 +1,4 @@
-import { IsString, MaxLength, MinLength } from "class-validator"
+import { IsString, Matches, MaxLength, MinLength } from "class-validator"
 
 export class OpdsServerDto {
   id!: number
@@ -20,5 +20,6 @@ export class RenameOpdsServerDto {
   @IsString()
   @MinLength(1)
   @MaxLength(100)
+  @Matches(/\S/)
   name!: string
 }
