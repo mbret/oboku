@@ -30,7 +30,7 @@
     "@prose-reader/enhancer-search": "^35.0.0",
     "@prose-reader/koreader": "^35.0.0",
     "@prose-reader/metadata-fetcher": "^35.0.0",
-    "@prose-reader/react-reader": "^35.0.0",
+    "@prose-reader/react-reader": "^35.0.1",
     "@prose-reader/shared": "^35.0.0",
     "@prose-reader/streamer": "^35.0.0",
     "@sentry/react": "^11.6.0",

@@ -515,8 +515,8 @@ importers:
         specifier: ^35.0.0
         version: 35.0.0(@zip.js/zip.js@2.23.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/react-reader':
-        specifier: ^35.0.0
-        version: 35.0.0(f18c3dc9ad5615e49fc67100e832b561)
+        specifier: ^35.0.1
+        version: 35.0.1(f18c3dc9ad5615e49fc67100e832b561)
       '@prose-reader/shared':
         specifier: ^35.0.0
         version: 35.0.0
@@ -4386,8 +4386,8 @@ packages:
     resolution: {integrity: sha512-X6uvYkIHOagBHC7yHLdUq97iA34SXLp8IuK7RYi/N1IBbbD9B4zYGqgqcacnsXYJC9uvSOO97syXvAWNo1noUA==}
     engines: {node: '>=22.12'}
 
-  '@prose-reader/react-reader@35.0.0':
-    resolution: {integrity: sha512-HKD3aVHF+gO+jG26dFAMZHmxpdjswsaoCFbYn4WBhGG2o8Kbsb+GudJsc8tTkKZGLr7iIiE1gz4ZcoGBmIeGow==}
+  '@prose-reader/react-reader@35.0.1':
+    resolution: {integrity: sha512-ixFXjCea6Avh7iRwKYURX3yEnv0abQnGxy3UQescesl5sU6BjrF8RT/RjVxG85SZZxH7Jr4Xj6AigN+Q2FEGKw==}
     peerDependencies:
       '@chakra-ui/react': 3.x
       '@emotion/react': 11.x
@@ -16908,7 +16908,7 @@ snapshots:
       - node-unrar-js
       - unzipper
 
-  '@prose-reader/react-reader@35.0.0(f18c3dc9ad5615e49fc67100e832b561)':
+  '@prose-reader/react-reader@35.0.1(f18c3dc9ad5615e49fc67100e832b561)':
     dependencies:
       '@chakra-ui/react': 3.37.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2))(react-dom@19.3.0(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.0))(react@19.3.0)
       '@emotion/react': 11.14.0(@types/react@19.3.0)(react@19.3.0)(supports-color@10.2.2)
