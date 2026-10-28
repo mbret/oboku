@@ -282,7 +282,7 @@ describe("OPDS data source", () => {
         modifiedAt: "2026-02-01T00:00:00.000Z",
         linkData: {
           connectorId: "connector",
-          entryId: "urn:series:a",
+          feedUrl: `${catalog.origin}/opds/series/a`,
           title: "Series A",
         },
         items: [
@@ -338,7 +338,146 @@ describe("OPDS data source", () => {
     expect(catalog.onRequest).toHaveBeenCalledTimes(2)
   })
 
-  it("does not follow facets, searches or links back up the catalog", async () => {
+  it("tells folders apart by their feed, as entry ids can repeat across feeds", async () => {
+    const catalog = await startServer({
+      "/opds/libraries": {
+        body: feed(
+          navigationEntry({
+            id: "1",
+            title: "Library",
+            href: "/opds/libraries/1",
+          }),
+        ),
+      },
+      "/opds/libraries/1": {
+        body: feed(
+          navigationEntry({ id: "1", title: "Series", href: "/opds/series/1" }),
+        ),
+      },
+      "/opds/series/1": {
+        body: feed(bookEntry({ id: "1", title: "Book", href: "/1.epub" })),
+      },
+    })
+    allowServers(catalog)
+
+    const { items } = await syncFeed({
+      feedUrl: `${catalog.origin}/opds/libraries`,
+      connectorUrl: catalog.origin,
+    })
+
+    expect(items).toMatchObject([
+      {
+        linkData: { feedUrl: `${catalog.origin}/opds/libraries/1` },
+        items: [
+          {
+            linkData: { feedUrl: `${catalog.origin}/opds/series/1` },
+            items: [{ linkData: { entryId: "1" } }],
+          },
+        ],
+      },
+    ])
+  })
+
+  it("describes a book listed in several feeds the way it was first listed", async () => {
+    const catalog = await startServer({
+      "/opds": {
+        body: feed(
+          navigationEntry({
+            id: "urn:series",
+            title: "Series",
+            href: "/opds/series",
+          }),
+          navigationEntry({
+            id: "urn:latest",
+            title: "Latest",
+            href: "/opds/latest",
+          }),
+        ),
+      },
+      "/opds/series": {
+        body: feed(
+          bookEntry({
+            id: "urn:book:1",
+            title: "Book 1",
+            href: "/books/1/file",
+          }),
+        ),
+      },
+      "/opds/latest": {
+        body: feed(
+          bookEntry({
+            id: "urn:book:1",
+            title: "Series 1: Book 1",
+            href: "/books/1/file?latest",
+          }),
+        ),
+      },
+    })
+    allowServers(catalog)
+
+    const { items } = await syncFeed({
+      feedUrl: `${catalog.origin}/opds`,
+      connectorUrl: catalog.origin,
+    })
+    const [seriesListing, latestListing] = items.flatMap(
+      (folder) => folder.items ?? [],
+    )
+
+    expect(seriesListing).toMatchObject({
+      name: "Book 1",
+      linkData: { acquisition: { href: `${catalog.origin}/books/1/file` } },
+    })
+    expect(latestListing).toEqual(seriesListing)
+  })
+
+  it("lists a book once in each top-level folder", async () => {
+    const catalog = await startServer({
+      "/opds/authors": {
+        body: feed(
+          navigationEntry({ id: "urn:letter:a", title: "A", href: "/opds/a" }),
+        ),
+      },
+      "/opds/a": {
+        body: feed(
+          navigationEntry({ id: "urn:ada", title: "Ada", href: "/opds/ada" }),
+          navigationEntry({
+            id: "urn:alan",
+            title: "Alan",
+            href: "/opds/alan",
+          }),
+        ),
+      },
+      "/opds/ada": {
+        body: feed(
+          bookEntry({ id: "urn:book:1", title: "Co-written", href: "/1.epub" }),
+        ),
+      },
+      "/opds/alan": {
+        body: feed(
+          bookEntry({ id: "urn:book:1", title: "Co-written", href: "/1.epub" }),
+          bookEntry({ id: "urn:book:2", title: "Alone", href: "/2.epub" }),
+        ),
+      },
+    })
+    allowServers(catalog)
+
+    const { items } = await syncFeed({
+      feedUrl: `${catalog.origin}/opds/authors`,
+      connectorUrl: catalog.origin,
+    })
+
+    expect(items).toMatchObject([
+      {
+        name: "A",
+        items: [
+          { name: "Ada", items: [{ name: "Co-written" }] },
+          { name: "Alan", items: [{ name: "Alone" }] },
+        ],
+      },
+    ])
+  })
+
+  it("does not follow facets, searches, related feeds or links back up the catalog", async () => {
     const catalog = await startServer({
       "/opds": {
         body: feed(
@@ -370,6 +509,12 @@ describe("OPDS data source", () => {
             title: "Sorted",
             href: "/opds/sorted",
             rel: "http://opds-spec.org/facet",
+          }),
+          navigationEntry({
+            id: "urn:related",
+            title: "Related",
+            href: "/opds/related",
+            rel: "related",
           }),
           navigationEntry({
             id: "urn:series:a",
@@ -664,6 +809,20 @@ describe("OPDS data source", () => {
     await expect(sync).rejects.toMatchObject({
       code: ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
     })
+  })
+
+  it("refuses an answer larger than a feed page", async () => {
+    const catalog = await startServer({
+      "/opds": { body: "x".repeat(21 * 1024 * 1024) },
+    })
+    allowServers(catalog)
+
+    await expect(
+      syncFeed({
+        feedUrl: `${catalog.origin}/opds`,
+        connectorUrl: catalog.origin,
+      }),
+    ).rejects.toThrow("answered with more than a feed page")
   })
 
   it("refuses a catalog on a private network the instance does not allow", async () => {

@@ -31,33 +31,39 @@ async function resolveConnector({
 
 export const dataSource: DataSourcePlugin<"opds"> = {
   type: PLUGIN_OPDS_TYPE,
-  getLinkCandidatesForItem: async (item, ctx) => ({
-    links: await findConnectorCandidates(ctx, "link", {
-      type: PLUGIN_OPDS_TYPE,
-      data: {
-        connectorId: item.linkData.connectorId,
-        entryId: item.linkData.entryId,
-      },
-    }),
+  getLinkCandidatesForItem: async ({ linkData }, ctx) => ({
+    links:
+      "entryId" in linkData
+        ? await findConnectorCandidates(ctx, "link", {
+            type: PLUGIN_OPDS_TYPE,
+            data: {
+              connectorId: linkData.connectorId,
+              entryId: linkData.entryId,
+            },
+          })
+        : [],
   }),
-  getCollectionCandidatesForItem: async (item, ctx) => ({
-    collections: await findConnectorCandidates(ctx, "obokucollection", {
-      type: PLUGIN_OPDS_TYPE,
-      data: {
-        connectorId: item.linkData.connectorId,
-        entryId: item.linkData.entryId,
-      },
-    }),
+  getCollectionCandidatesForItem: async ({ linkData }, ctx) => ({
+    collections:
+      "feedUrl" in linkData
+        ? await findConnectorCandidates(ctx, "obokucollection", {
+            type: PLUGIN_OPDS_TYPE,
+            data: {
+              connectorId: linkData.connectorId,
+              feedUrl: linkData.feedUrl,
+            },
+          })
+        : [],
   }),
   /**
    * `<updated>` describes the catalog's record rather than the file's bytes,
    * so it cannot tell the metadata cache whether the file changed.
    */
-  getFileMetadata: async ({ link }) => {
-    const { title, acquisition } = link.data
+  getFileMetadata: async ({ link: { data } }) => {
+    const acquisition = "acquisition" in data ? data.acquisition : undefined
 
     return {
-      name: title,
+      name: data.title,
       canDownload: acquisition !== undefined,
       contentType: acquisition?.type,
       modifiedAt: MODIFIED_AT_UNSUPPORTED,
@@ -68,21 +74,19 @@ export const dataSource: DataSourcePlugin<"opds"> = {
     }
   },
   getFolderMetadata: async ({ link }) => ({ name: link.data.title }),
-  download: async (link, providerCredentials, db) => {
-    const { acquisition } = link.data
-
-    if (!acquisition) {
+  download: async ({ data }, providerCredentials, db) => {
+    if (!("acquisition" in data)) {
       throw new Error("OPDS link has no acquisition URL")
     }
 
     const connector = await resolveConnector({
-      connectorId: link.data.connectorId,
+      connectorId: data.connectorId,
       password: providerCredentials?.password,
       db,
     })
     const { stream } = await getFromCatalog(
       connector,
-      new URL(acquisition.href),
+      new URL(data.acquisition.href),
     )
 
     return { stream }

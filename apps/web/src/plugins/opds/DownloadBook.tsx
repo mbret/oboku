@@ -9,7 +9,7 @@ import {
   type Observable,
 } from "rxjs"
 import { useLiveRef, useMutation$ } from "reactjrx"
-import { ObokuErrorCode, type OpdsLinkData } from "@oboku/shared"
+import { ObokuErrorCode, type OpdsBookLinkData } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../types"
 import { useExtractConnectorData } from "../../connectors/useExtractConnectorData"
 import { CancelError } from "../../errors/errors.shared"
@@ -39,16 +39,17 @@ export const DownloadBook = memo(function DownloadBook({
     meta: { suppressGlobalErrorToast: true },
   })
   const onErrorRef = useLiveRef(onError)
-  const { connectorId, entryId, title = entryId, acquisition } = link.data
+  const { connectorId } = link.data
+  const bookLinkData = "acquisition" in link.data ? link.data : undefined
 
   const { mutate: download } = useMutation$({
     mutationFn: function downloadWithConnector({
       connectorId: connectorIdParam,
-      acquisition: acquisitionParam,
+      bookLinkData: { acquisition, entryId, title = entryId },
       onUnmount$,
     }: {
       connectorId: string
-      acquisition: NonNullable<OpdsLinkData["acquisition"]>
+      bookLinkData: OpdsBookLinkData
       onUnmount$: Observable<void>
     }) {
       const abortController = new AbortController()
@@ -62,7 +63,7 @@ export const DownloadBook = memo(function DownloadBook({
       return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
         mergeMap(function downloadFromCatalog({ data: connector }) {
           return downloadOpdsBook({
-            acquisition: acquisitionParam,
+            acquisition,
             title,
             connector,
             download: downloadBlob,
@@ -92,16 +93,16 @@ export const DownloadBook = memo(function DownloadBook({
   useEffectWithUnmount$(
     function downloadOnceMounted(onUnmount$) {
       return scheduleDelayedEffect(function startDownload() {
-        if (!connectorId || !acquisition) {
+        if (!connectorId || !bookLinkData) {
           onErrorRef.current(ObokuErrorCode.ERROR_LINK_INVALID)
 
           return
         }
 
-        download({ connectorId, acquisition, onUnmount$ })
+        download({ connectorId, bookLinkData, onUnmount$ })
       }, 1)
     },
-    [acquisition, connectorId, download, onErrorRef],
+    [bookLinkData, connectorId, download, onErrorRef],
   )
 
   return null

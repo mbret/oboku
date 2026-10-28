@@ -33,7 +33,7 @@ const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
   webdav: ["connectorId", "filePath"],
   "synology-drive": ["connectorId", "fileId"],
   server: ["connectorId", "filePath"],
-  opds: ["connectorId", "entryId"],
+  opds: ["connectorId", "feedUrl"],
   URI: ["url"],
   file: ["filename"],
 }

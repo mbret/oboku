@@ -1,7 +1,7 @@
 import {
   getFileNameFromContentDisposition,
   getOpdsCredentialHeaders,
-  type OpdsLinkData,
+  type OpdsBookLinkData,
   READER_ACCEPTED_FILE_TYPES,
   type SettingsResolvedConnectorData,
 } from "@oboku/shared"
@@ -33,7 +33,7 @@ export const downloadOpdsBook = async ({
   onDownloadProgress,
   signal,
 }: {
-  acquisition: NonNullable<OpdsLinkData["acquisition"]>
+  acquisition: OpdsBookLinkData["acquisition"]
   title: string
   connector: SettingsResolvedConnectorData<"opds">
   download: Download

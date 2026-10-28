@@ -19,23 +19,36 @@ export type OpdsConnectorDocType = {
 }
 
 /**
- * `connectorId` and `entryId` identify the entry. The rest is what the last
+ * A book: `connectorId` and `entryId` identify it. The rest is what the last
  * sync saw: OPDS has no request for a single entry, so metadata refreshes and
- * downloads read it from here. Folders (navigation entries) have no
- * `acquisition`.
+ * downloads read it from here.
  */
-export const opdsLinkDataSchema = z.object({
+const opdsBookLinkDataSchema = z.object({
   connectorId: z.string().optional(),
   entryId: z.string(),
   title: z.string().optional(),
-  acquisition: z
-    .object({
-      href: z.string(),
-      type: z.string(),
-      length: z.number().optional(),
-    })
-    .optional(),
+  acquisition: z.object({
+    href: z.string(),
+    type: z.string(),
+    length: z.number().optional(),
+  }),
 })
+
+/**
+ * A folder: `connectorId` and the feed its navigation entry leads to identify
+ * it. Entry ids cannot: Kavita numbers its libraries, series and collections
+ * from 1 each.
+ */
+const opdsFolderLinkDataSchema = z.object({
+  connectorId: z.string().optional(),
+  feedUrl: z.string(),
+  title: z.string().optional(),
+})
+
+export const opdsLinkDataSchema = z.union([
+  opdsBookLinkDataSchema,
+  opdsFolderLinkDataSchema,
+])
 
 /**
  * API credentials for OPDS: only the secret (password). URL and username
@@ -46,6 +59,8 @@ export const opdsApiCredentialsSchema = z.object({
 })
 
 export type OpdsApiCredentials = z.infer<typeof opdsApiCredentialsSchema>
+export type OpdsBookLinkData = z.infer<typeof opdsBookLinkDataSchema>
+export type OpdsFolderLinkData = z.infer<typeof opdsFolderLinkDataSchema>
 export type OpdsLinkData = z.infer<typeof opdsLinkDataSchema>
 
 const HTTP_PROTOCOLS = ["http:", "https:"]
