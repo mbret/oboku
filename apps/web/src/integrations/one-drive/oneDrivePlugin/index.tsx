@@ -6,7 +6,6 @@ import { clearOneDriveSession } from "./auth/auth"
 import { DataSourceForm } from "./sync/DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
-import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 import { UpsertFile } from "./UpsertFile"
 import { useFileIdLinkInfo as useLinkInfo } from "../../../plugins/common/linkInfo"
@@ -25,7 +24,6 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   canSynchronize: true,
   canUpsertFile: true,
   canRemoveResource: false,
-  description: "Manage contents from Microsoft OneDrive",
   DataSourceForm,
   DownloadBookComponent: DownloadBook,
   Icon: OneDriveIcon,
@@ -34,7 +32,6 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
   UploadBookComponent: UploadBook,
   UpsertFileComponent: UpsertFile,
-  InfoScreen,
   useLinkInfo,
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,

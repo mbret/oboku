@@ -1,8 +1,11 @@
 import { DeleteRounded } from "@mui/icons-material"
 import { IconButton, ListItem, ListItemText, Stack } from "@mui/material"
 import { useSignalValue } from "reactjrx"
-import { clearOneDriveSession, msalAccountSignal } from "./auth/auth"
-import { PageSection } from "../../../common/PageSection"
+import {
+  clearOneDriveSession,
+  msalAccountSignal,
+} from "./oneDrivePlugin/auth/auth"
+import { PageSection } from "../../common/PageSection"
 
 function getAccountLabel(account: { username?: string; name?: string }) {
   return account.username || account.name || "Connected OneDrive account"

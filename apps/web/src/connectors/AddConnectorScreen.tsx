@@ -24,7 +24,8 @@ export function getConnectorForm(type: SettingsConnectorType) {
 }
 
 export const AddConnectorScreen = memo(() => {
-  const { type } = useParams<PathParam<typeof ROUTES.PLUGINS_CONNECTORS_NEW>>()
+  const { type } =
+    useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_NEW>>()
   const { goBack } = useSafeGoBack()
 
   if (!isSettingsConnectorType(type)) return null
@@ -39,7 +40,7 @@ export const AddConnectorScreen = memo(() => {
       <TopBarNavigation title={`${details.label}: New connector`} />
       <Form
         onSubmitSuccess={() =>
-          goBack(generatePath(ROUTES.PLUGINS_TYPE, { type }))
+          goBack(generatePath(ROUTES.INTEGRATION_DETAILS, { id: type }))
         }
       />
     </Page>

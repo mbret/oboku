@@ -14,7 +14,6 @@ import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../../../plugins/types"
-import { InfoScreen } from "./InfoScreen"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../../plugins/common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
@@ -48,6 +47,4 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
     return clearGoogleAccessToken
   },
   Provider,
-  InfoScreen,
-  description: "Manage contents from Google Drive",
 }

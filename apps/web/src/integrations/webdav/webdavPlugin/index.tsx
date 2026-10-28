@@ -4,7 +4,6 @@ import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
-import { InfoScreen } from "./InfoScreen"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
@@ -24,7 +23,6 @@ const plugin: ObokuPlugin<"webdav"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: WebDAVIcon,
-  description: "Manage contents from WebDAV",
   DataSourceForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
@@ -33,7 +31,6 @@ const plugin: ObokuPlugin<"webdav"> = {
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
-  InfoScreen,
   DownloadBookComponent: DownloadBook,
 }
 

@@ -7,15 +7,15 @@ import {
   Stack,
 } from "@mui/material"
 import { useSignalValue } from "reactjrx"
-import { gapiSignal, useLoadGapi } from "./lib/gapi"
-import { gsiSignal } from "../gsi"
+import { gapiSignal, useLoadGapi } from "./googleDrivePlugin/lib/gapi"
+import { gsiSignal } from "./gsi"
 import {
   clearGoogleAccessToken,
   googleAccessTokenSignal,
   getTokenExpirationDate,
-} from "../auth"
+} from "./auth"
 import { DeleteRounded } from "@mui/icons-material"
-import { PageSection } from "../../../common/PageSection"
+import { PageSection } from "../../common/PageSection"
 
 export const InfoScreen = () => {
   const gapi = useSignalValue(gapiSignal)

@@ -1,9 +1,9 @@
 import { Alert, IconButton, ListItem, ListItemText, Stack } from "@mui/material"
 import { SIGNAL_RESET, useSignalValue } from "reactjrx"
 import { DeleteRounded } from "@mui/icons-material"
-import { dropboxAuthSignal } from "./lib/auth"
+import { dropboxAuthSignal } from "./dropboxPlugin/lib/auth"
 import { useEffect, useState } from "react"
-import { PageSection } from "../../../common/PageSection"
+import { PageSection } from "../../common/PageSection"
 
 export const InfoScreen = () => {
   const dropboxAuth = useSignalValue(dropboxAuthSignal)

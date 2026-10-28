@@ -8,14 +8,14 @@ import {
   Typography,
 } from "@mui/material"
 import { useSignalValue } from "reactjrx"
-import { ConnectorInfoSection } from "../../../connectors/ConnectorInfoSection"
-import { useConnector } from "../../../connectors/useConnector"
+import { ConnectorInfoSection } from "../../connectors/ConnectorInfoSection"
+import { useConnector } from "../../connectors/useConnector"
 import {
   SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS,
   clearSynologyDriveSession,
   synologyDriveSessionSignal,
-} from "./auth/auth"
-import { PageSection } from "../../../common/PageSection"
+} from "./synologyDrivePlugin/auth/auth"
+import { PageSection } from "../../common/PageSection"
 
 const SESSION_MAX_AGE_MINUTES = SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS / (60 * 1000)
 

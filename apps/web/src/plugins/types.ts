@@ -13,7 +13,6 @@ import type {
   DOMAttributes,
   FC,
   FunctionComponent,
-  ReactElement,
   ReactNode,
 } from "react"
 import type { SvgIconProps } from "@mui/material"
@@ -211,7 +210,6 @@ type ObokuPluginBase<
    * Unique ID for the plugin
    */
   type: T
-  description?: string
   Icon?: ComponentType<SvgIconProps>
   UploadBookComponent?: FunctionComponent<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
@@ -227,7 +225,6 @@ type ObokuPluginBase<
   }>
   DownloadBookComponent: FunctionComponent<DownloadBookComponentProps<T>>
   Provider?: FunctionComponent<{ children: ReactNode }>
-  InfoScreen?: () => ReactElement
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
   useRemoveResource: UseRemoveResource<T>

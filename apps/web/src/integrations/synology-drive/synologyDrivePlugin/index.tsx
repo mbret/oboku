@@ -2,7 +2,6 @@ import { SvgIcon } from "@mui/material"
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { useUnsupportedRemoveResource } from "../../../plugins/common/useUnsupportedRemoveResource"
 import type { ObokuPlugin } from "../../../plugins/types"
-import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
@@ -25,7 +24,6 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: SynologyDriveIcon,
-  InfoScreen,
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,
@@ -37,6 +35,4 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   useSignOut: function useSynologyDriveSignOut() {
     return clearSynologyDriveSession
   },
-  description:
-    "Browse a Synology Drive library and add books by stable file id",
 }

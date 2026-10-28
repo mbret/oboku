@@ -14,7 +14,7 @@ import { PageSection } from "../common/PageSection"
 
 export const EditConnectorScreen = memo(() => {
   const { type, id = "-1" } =
-    useParams<PathParam<typeof ROUTES.PLUGINS_CONNECTORS_EDIT>>()
+    useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_EDIT>>()
   const { goBack } = useSafeGoBack()
   const { mutate: deleteConnector } = useDeleteConnector()
   const confirmation = useConfirmation()
@@ -23,7 +23,7 @@ export const EditConnectorScreen = memo(() => {
 
   const details = CONNECTOR_DETAILS[type]
   const Form = getConnectorForm(type)
-  const manageRoute = generatePath(ROUTES.PLUGINS_TYPE, { type })
+  const manageRoute = generatePath(ROUTES.INTEGRATION_DETAILS, { id: type })
 
   if (!Form) return null
 

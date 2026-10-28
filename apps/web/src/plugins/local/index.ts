@@ -20,7 +20,6 @@ export const plugin: ObokuPlugin<"file"> = {
   canSynchronize: false,
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
-  description: "Manage contents from your device (local)",
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,

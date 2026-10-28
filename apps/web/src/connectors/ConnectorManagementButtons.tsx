@@ -21,13 +21,15 @@ export const ConnectorManagementButtons = memo(
 
     const handleManage = () => {
       onNavigate?.()
-      navigate(generatePath(ROUTES.PLUGINS_TYPE, { type: connectorType }))
+      navigate(generatePath(ROUTES.INTEGRATION_DETAILS, { id: connectorType }))
     }
 
     const handleNew = () => {
       onNavigate?.()
       navigate(
-        generatePath(ROUTES.PLUGINS_CONNECTORS_NEW, { type: connectorType }),
+        generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
+          type: connectorType,
+        }),
       )
     }
 

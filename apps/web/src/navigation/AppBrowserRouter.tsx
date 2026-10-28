@@ -32,8 +32,8 @@ import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesRepo
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
 import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
-import { PluginsScreen } from "../plugins/common/PluginsScreen"
-import { PluginScreen } from "../plugins/common/PluginScreen"
+import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
+import { IntegrationScreen } from "../integrations/IntegrationScreen"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
@@ -180,15 +180,15 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<StatisticsScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_TYPE.slice(1)}
-                element={<PluginScreen />}
+                path={ROUTES.INTEGRATION_DETAILS.slice(1)}
+                element={<IntegrationScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_NEW.slice(1)}
+                path={ROUTES.INTEGRATION_CONNECTORS_NEW.slice(1)}
                 element={<AddConnectorScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_EDIT.slice(1)}
+                path={ROUTES.INTEGRATION_CONNECTORS_EDIT.slice(1)}
                 element={<EditConnectorScreen />}
               />
               <Route
@@ -202,7 +202,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route path="*" element={<MobileTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
-                <Route path="plugins" element={<PluginsScreen />} />
+                <Route path="integrations" element={<IntegrationsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
                   <Route index element={<Navigate to="books" replace />} />
                   <Route path="books" element={<LibraryBooksScreen />} />

@@ -4,7 +4,6 @@ import type { ObokuPlugin } from "../../../plugins/types"
 import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
-import { InfoScreen } from "./InfoScreen"
 import { UploadBook } from "./UploadBook"
 import { useFilePathLinkInfo as useLinkInfo } from "../../../plugins/common/linkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
@@ -17,7 +16,6 @@ export const plugin: ObokuPlugin<"server"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: DnsRounded,
-  description: "Manage contents from your oboku server",
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
@@ -27,5 +25,4 @@ export const plugin: ObokuPlugin<"server"> = {
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,
-  InfoScreen: () => <InfoScreen />,
 }
