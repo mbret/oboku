@@ -85,7 +85,7 @@ export const DataSourcesListScreen = memo(() => {
                   {dataSource && (
                     <ListItemIcon>
                       <SvgIcon>
-                        {dataSource.Icon && <dataSource.Icon />}
+                        <dataSource.Icon />
                       </SvgIcon>
                     </ListItemIcon>
                   )}
