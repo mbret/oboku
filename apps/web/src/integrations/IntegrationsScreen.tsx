@@ -35,7 +35,6 @@ function IntegrationListItem({
   name: string
   description: string
   Icon?: ComponentType<SvgIconProps>
-  /** The row follows this plugin's instance configuration: hidden or disabled with it. */
   plugin?: Plugin
 }) {
   const isPluginVisible = useGetIsPluginVisible()

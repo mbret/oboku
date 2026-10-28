@@ -23,6 +23,16 @@ const EVERY_PROVIDER_CONFIGURED = {
   SHOW_DISABLED_PLUGINS: false,
 }
 
+const INTEGRATION_HREF_BY_NAME = {
+  Dropbox: "/integrations/dropbox",
+  Google: "/integrations/google",
+  KOReader: "/integrations/koreader",
+  OneDrive: "/integrations/one-drive",
+  Server: "/integrations/server",
+  "Synology Drive": "/integrations/synology-drive",
+  WebDAV: "/integrations/webdav",
+}
+
 function renderIntegrationsScreen(config: Record<string, boolean>) {
   mocks.useConfig.mockReturnValue({ data: config })
 
@@ -46,35 +56,16 @@ describe("IntegrationsScreen", () => {
     cleanup()
   })
 
-  it("lists the integrations, not the plugins that belong to none", () => {
+  it("links each integration to its page, without the plugins that belong to none", () => {
     renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
 
-    const integrationNames = [
-      "Dropbox",
-      "Google",
-      "KOReader",
-      "OneDrive",
-      "Server",
-      "Synology Drive",
-      "WebDAV",
-    ]
+    const integrationPages = Object.entries(INTEGRATION_HREF_BY_NAME)
 
-    expect(screen.getAllByRole("link")).toHaveLength(integrationNames.length)
+    expect(screen.getAllByRole("link")).toHaveLength(integrationPages.length)
 
-    for (const name of integrationNames) {
-      expect(getIntegrationLink(name)).toBeDefined()
+    for (const [name, href] of integrationPages) {
+      expect(getIntegrationLink(name).getAttribute("href")).toBe(href)
     }
-  })
-
-  it("links each integration to its page", () => {
-    renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
-
-    expect(getIntegrationLink("KOReader").getAttribute("href")).toBe(
-      "/integrations/koreader",
-    )
-    expect(getIntegrationLink("Google").getAttribute("href")).toBe(
-      "/integrations/google",
-    )
   })
 
   it("hides an integration whose provider the instance did not configure", () => {
