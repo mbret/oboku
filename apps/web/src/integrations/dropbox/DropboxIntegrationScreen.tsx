@@ -26,7 +26,9 @@ export function DropboxIntegrationScreen() {
 
       updateToken()
 
-      return () => clearInterval(tl)
+      return function stopCheckingAccessToken() {
+        clearInterval(tl)
+      }
     },
     [dropboxAuth],
   )
@@ -47,7 +49,7 @@ export function DropboxIntegrationScreen() {
                   <IconButton
                     edge="end"
                     aria-label="delete"
-                    onClick={() => {
+                    onClick={function clearDropboxAuth() {
                       dropboxAuthSignal.update(SIGNAL_RESET)
                     }}
                   >
