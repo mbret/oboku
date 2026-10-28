@@ -37,23 +37,27 @@ export class OpdsServersService {
   async create(userId: number) {
     const { opdsServersMaxPerUser } =
       this.instanceConfigService.getConfig().value
-    const serverCount =
-      await this.opdsServerPostgresService.countByUserId(userId)
-    const isUnderServerLimit = serverCount < opdsServersMaxPerUser
+    const password = generateEReaderPassword()
+    const result = await this.opdsServerPostgresService.insertUnderLimit({
+      userId,
+      maxServers: opdsServersMaxPerUser,
+      passwordHash: hashSecret(password),
+      candidates: Array.from({ length: SLUG_ATTEMPTS }, generateSlugAndName),
+    })
 
-    if (!isUnderServerLimit) {
+    if (result.status === "limit-reached") {
       throw new BadRequestException({
         errors: [{ code: ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED }],
       })
     }
 
-    const password = generateEReaderPassword()
-    const server = await this.insertWithFreeSlug({
-      userId,
-      passwordHash: hashSecret(password),
-    })
+    if (result.status === "slugs-taken") {
+      throw new Error(
+        `No free OPDS server slug after ${SLUG_ATTEMPTS} attempts`,
+      )
+    }
 
-    return { server, password }
+    return { server: result.server, password }
   }
 
   async rename({
@@ -96,27 +100,5 @@ export class OpdsServersService {
     })
 
     if (!isDeleted) throw createServerNotFoundError()
-  }
-
-  private async insertWithFreeSlug({
-    userId,
-    passwordHash,
-  }: {
-    userId: number
-    passwordHash: string
-  }) {
-    for (let attempt = 1; attempt <= SLUG_ATTEMPTS; attempt++) {
-      const server = await this.opdsServerPostgresService.insertUnlessSlugTaken(
-        {
-          userId,
-          passwordHash,
-          ...generateSlugAndName(),
-        },
-      )
-
-      if (server) return server
-    }
-
-    throw new Error(`No free OPDS server slug after ${SLUG_ATTEMPTS} attempts`)
   }
 }

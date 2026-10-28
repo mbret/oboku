@@ -92,36 +92,46 @@ const createServerStore = () => {
   const findUserServers = (userId: number) =>
     [...servers.values()].filter((server) => server.user_id === userId)
 
+  const isSlugTaken = (slug: string) =>
+    [...servers.values()].some((server) => server.slug === slug)
+
   const store: Pick<
     OpdsServerPostgresService,
     | "findByUserId"
-    | "countByUserId"
-    | "insertUnlessSlugTaken"
+    | "insertUnderLimit"
     | "rename"
     | "replacePasswordHash"
     | "delete"
   > = {
     findByUserId: async (userId) => findUserServers(userId),
-    countByUserId: async (userId) => findUserServers(userId).length,
-    insertUnlessSlugTaken: async ({ userId, slug, name, passwordHash }) => {
-      const isSlugTaken = [...servers.values()].some(
-        (server) => server.slug === slug,
+    insertUnderLimit: async ({
+      userId,
+      maxServers,
+      passwordHash,
+      candidates,
+    }) => {
+      const isUnderLimit = findUserServers(userId).length < maxServers
+
+      if (!isUnderLimit) return { status: "limit-reached" }
+
+      const freeCandidate = candidates.find(
+        (candidate) => !isSlugTaken(candidate.slug),
       )
 
-      if (isSlugTaken) return null
+      if (!freeCandidate) return { status: "slugs-taken" }
 
       const server: OpdsServerPostgresEntity = {
         id: Math.max(0, ...servers.keys()) + 1,
         user_id: userId,
-        slug,
-        name,
+        slug: freeCandidate.slug,
+        name: freeCandidate.name,
         password_hash: passwordHash,
         created_at: new Date(),
       }
 
       servers.set(server.id, server)
 
-      return server
+      return { status: "created", server }
     },
     rename: async ({ userId, id, name }) =>
       updateUserServer({ userId, id }, { name }),
@@ -308,11 +318,11 @@ describe("OpdsServersController", () => {
   })
 
   it("tries new words when the slug is taken", async () => {
+    vi.mocked(humanId).mockReturnValueOnce("calm-snails-dream")
+    await otherReader().create()
     vi.mocked(humanId)
       .mockReturnValueOnce("calm-snails-dream")
-      .mockReturnValueOnce("calm-snails-dream")
       .mockReturnValueOnce("brave-foxes-run")
-    await otherReader().create()
 
     const response = await reader().create()
 
@@ -323,14 +333,15 @@ describe("OpdsServersController", () => {
     })
   })
 
-  it("fails when every slug it tries is taken", async () => {
+  it("fails after 5 slugs that are all taken", async () => {
     vi.mocked(humanId).mockReturnValue("calm-snails-dream")
     await otherReader().create()
+    vi.mocked(humanId).mockClear()
 
     const response = await reader().create()
 
     expect(response.status).toBe(500)
-    expect(humanId).toHaveBeenCalledTimes(6)
+    expect(humanId).toHaveBeenCalledTimes(5)
     expect((await reader().list()).body).toEqual([])
   })
 
