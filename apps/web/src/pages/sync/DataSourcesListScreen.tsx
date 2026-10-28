@@ -3,7 +3,6 @@ import {
   Link,
   Button,
   ListItemText,
-  SvgIcon,
   ListItemIcon,
   Typography,
   useTheme,
@@ -84,9 +83,7 @@ export const DataSourcesListScreen = memo(() => {
                 >
                   {dataSource && (
                     <ListItemIcon>
-                      <SvgIcon>
-                        <dataSource.Icon />
-                      </SvgIcon>
+                      <dataSource.Icon />
                     </ListItemIcon>
                   )}
                   <ListItemText
