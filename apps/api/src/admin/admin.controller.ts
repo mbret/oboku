@@ -270,6 +270,7 @@ export class AdminController {
       privateNetworkAllowedHosts: config.privateNetworkAllowedHosts,
       microsoftApplicationClientId: config.microsoftApplicationClientId,
       microsoftApplicationAuthority: config.microsoftApplicationAuthority,
+      opdsServersMaxPerUser: config.opdsServersMaxPerUser,
     }
   }
 

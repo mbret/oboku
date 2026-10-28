@@ -48,7 +48,8 @@ export const zObokuErrorDto = z.object({
         '7000',
         '8000',
         '8001',
-        '9000'
+        '9000',
+        '10000'
     ])
 });
 
@@ -250,7 +251,8 @@ export const zInstanceSettingsResponseDto = z.object({
     allowPrivateNetworkRequests: z.boolean(),
     privateNetworkAllowedHosts: z.array(z.string()),
     microsoftApplicationClientId: z.string().optional(),
-    microsoftApplicationAuthority: z.string().optional()
+    microsoftApplicationAuthority: z.string().optional(),
+    opdsServersMaxPerUser: z.number()
 });
 
 export const zUpdateInstanceSettingsDto = z.object({
@@ -259,6 +261,7 @@ export const zUpdateInstanceSettingsDto = z.object({
         z.url(),
         z.enum([''])
     ]).optional(),
+    opdsServersMaxPerUser: z.int().gte(1).optional(),
     showDisabledPlugins: z.boolean().optional(),
     allowPrivateNetworkRequests: z.boolean().optional(),
     privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
