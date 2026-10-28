@@ -150,6 +150,14 @@ describe("RefreshTokensService", () => {
     })
   })
 
+  it("looks a presented token up by the hash it is stored under", async () => {
+    await service.findByToken("presented-token")
+
+    expect(repository.findOne).toHaveBeenCalledWith({
+      where: { token_hash: hash("presented-token") },
+    })
+  })
+
   it("mints a fresh session id on each sign-in for the same installation", async () => {
     const insertBuilder = createQueryBuilderMock({
       raw: [{ id: 1, user_id: 1, installation_id: "installation-1" }],
