@@ -32,12 +32,12 @@ import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesRepo
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
 import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
-import { OpdsServersScreen } from "../pages/profile/OpdsServersScreen"
 import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
 import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegrationScreen"
 import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
 import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
 import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
+import { OpdsIntegrationScreen } from "../integrations/opds/OpdsIntegrationScreen"
 import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
 import { SynologyDriveIntegrationScreen } from "../integrations/synology-drive/SynologyDriveIntegrationScreen"
 import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegrationScreen"
@@ -179,10 +179,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<KoreaderProgressSyncScreen />}
               />
               <Route
-                path={ROUTES.OPDS_SERVERS.slice(1)}
-                element={<OpdsServersScreen />}
-              />
-              <Route
                 path={ROUTES.SETTINGS.slice(1)}
                 element={<SettingsScreen />}
               />
@@ -205,6 +201,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.INTEGRATION_ONE_DRIVE.slice(1)}
                 element={<OneDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_OPDS.slice(1)}
+                element={<OpdsIntegrationScreen />}
               />
               <Route
                 path={ROUTES.INTEGRATION_SERVER.slice(1)}

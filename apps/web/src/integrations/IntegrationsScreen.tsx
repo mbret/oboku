@@ -5,7 +5,11 @@ import {
   ListItemText,
   type SvgIconProps,
 } from "@mui/material"
-import { ExtensionRounded, MenuBookRounded } from "@mui/icons-material"
+import {
+  ExtensionRounded,
+  MenuBookRounded,
+  RssFeedRounded,
+} from "@mui/icons-material"
 import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
@@ -86,6 +90,12 @@ export function IntegrationsScreen() {
             description="Manage contents from Microsoft OneDrive"
             Icon={oneDrivePlugin.Icon}
             plugin={oneDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_OPDS}
+            name="OPDS"
+            description="Let KOReader and other reading apps browse your library"
+            Icon={RssFeedRounded}
           />
           <IntegrationListItem
             to={ROUTES.INTEGRATION_SERVER}

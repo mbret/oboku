@@ -24,11 +24,11 @@ import { UnavailableAlert } from "../../common/alerts/UnavailableAlert"
 import { showConfirmDialog } from "../../common/dialogs/presets"
 import { useConfig } from "../../config/useConfig"
 import { isQueryUnavailable } from "../../queries/isQueryUnavailable"
-import { useOpdsServers } from "../../opds/servers/useOpdsServers"
-import { useCreateOpdsServer } from "../../opds/servers/useCreateOpdsServer"
-import { useRegenerateOpdsServerPassword } from "../../opds/servers/useRegenerateOpdsServerPassword"
-import { useDeleteOpdsServer } from "../../opds/servers/useDeleteOpdsServer"
-import { RenameOpdsServerDialog } from "../../opds/servers/RenameOpdsServerDialog"
+import { useOpdsServers } from "./useOpdsServers"
+import { useCreateOpdsServer } from "./useCreateOpdsServer"
+import { useRegenerateOpdsServerPassword } from "./useRegenerateOpdsServerPassword"
+import { useDeleteOpdsServer } from "./useDeleteOpdsServer"
+import { RenameOpdsServerDialog } from "./RenameOpdsServerDialog"
 
 const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
   theme,
@@ -143,7 +143,7 @@ function OpdsServerSection({
   )
 }
 
-export function OpdsServersScreen() {
+export function OpdsIntegrationScreen() {
   const serversQuery = useOpdsServers()
   const { data: servers, isLoading, isError } = serversQuery
   const {
@@ -157,7 +157,7 @@ export function OpdsServersScreen() {
 
   return (
     <Page>
-      <TopBarNavigation title="OPDS servers" />
+      <TopBarNavigation title="OPDS" showBack />
       <PageContainer>
         <IntroStack>
           <Typography>

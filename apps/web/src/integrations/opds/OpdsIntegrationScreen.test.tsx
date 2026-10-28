@@ -25,7 +25,7 @@ import {
   clearActiveProfileId,
   setActiveProfileId,
 } from "../../profiles/active/activeProfileId"
-import { OpdsServersScreen } from "./OpdsServersScreen"
+import { OpdsIntegrationScreen } from "./OpdsIntegrationScreen"
 
 vi.mock("../../auth/useIsAuthenticated", function mockIsAuthenticated() {
   return { useIsAuthenticated: () => true }
@@ -92,7 +92,7 @@ const renderScreen = (listServers: Mock) => {
       <HttpClientApiContext.Provider value={client}>
         <MemoryRouter>
           <DialogProvider>
-            <OpdsServersScreen />
+            <OpdsIntegrationScreen />
           </DialogProvider>
         </MemoryRouter>
       </HttpClientApiContext.Provider>
@@ -117,7 +117,7 @@ const confirmDialog = async (action: string) => {
   })
 }
 
-describe("OpdsServersScreen", () => {
+describe("OpdsIntegrationScreen", () => {
   afterEach(() => {
     cleanup()
     dialogSignal.setValue([])
