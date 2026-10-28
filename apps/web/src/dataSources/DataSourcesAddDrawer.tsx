@@ -33,7 +33,7 @@ export const DataSourcesAddDrawer: FC<{
               disabled={!isPluginEnabled(dataSource)}
             >
               <ListItemIcon>
-                {dataSource.Icon && <dataSource.Icon />}
+                <dataSource.Icon />
               </ListItemIcon>
               <ListItemText primary={`${dataSource.name}`} />
             </ListItemButton>

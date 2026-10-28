@@ -108,7 +108,7 @@ function BookMetadataStatus({
           gap: 1,
         }}
       >
-        {linkPlugin?.Icon && (
+        {linkPlugin && (
           <linkPlugin.Icon fontSize="small" sx={{ display: "block" }} />
         )}
         {withDownloadIcons &&

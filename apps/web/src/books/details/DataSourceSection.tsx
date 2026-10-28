@@ -59,7 +59,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             }}
           >
             <ListItemIcon>
-              {dataSourcePlugin.Icon && <dataSourcePlugin.Icon />}
+              <dataSourcePlugin.Icon />
             </ListItemIcon>
             <ListItemText
               primary={`${dataSourcePlugin?.name}`}

@@ -210,7 +210,7 @@ type ObokuPluginBase<
    * Unique ID for the plugin
    */
   type: T
-  Icon?: ComponentType<SvgIconProps>
+  Icon: ComponentType<SvgIconProps>
   UploadBookComponent?: FunctionComponent<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
     DataSourceFormInternalProps<DataSourceDocTypeFor<T>>

@@ -73,7 +73,7 @@ export const BookCoverCard: FC<
     const theme = useTheme()
     const hasBottomBar =
       showBottomBar &&
-      (!!linkPlugin?.Icon ||
+      (!!linkPlugin ||
         item?.readingStateCurrentState === ReadingStateState.Finished ||
         item?.readingStateCurrentState === ReadingStateState.Reading)
 
@@ -231,7 +231,7 @@ export const BookCoverCard: FC<
                 alignItems: "center",
               }}
             >
-              {linkPlugin?.Icon && (
+              {linkPlugin && (
                 <linkPlugin.Icon fontSize="medium" sx={{ display: "block" }} />
               )}
             </Box>
