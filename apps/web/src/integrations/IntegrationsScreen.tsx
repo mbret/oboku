@@ -1,4 +1,3 @@
-import { memo } from "react"
 import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import { ExtensionRounded } from "@mui/icons-material"
 import { generatePath, Link } from "react-router"
@@ -13,7 +12,7 @@ import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"
 import { type Integration, integrations } from "./configure"
 
-export const IntegrationsScreen = memo(function IntegrationsScreen() {
+export function IntegrationsScreen() {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
 
@@ -50,4 +49,4 @@ export const IntegrationsScreen = memo(function IntegrationsScreen() {
       </PageContainer>
     </Page>
   )
-})
+}
