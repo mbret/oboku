@@ -230,6 +230,50 @@ describe("OpdsServersScreen", () => {
     )
   })
 
+  it("stops showing a created password once its server is asked for a new one", async () => {
+    const api = renderScreen(listing([COMICS], [COMICS, NOVELS]))
+    const secondNewPassword =
+      Promise.withResolvers<ReturnType<typeof withPassword>>()
+    api.post
+      .mockResolvedValueOnce(withPassword(NOVELS, "k7mq-x2fp-9dwa-hc4n"))
+      .mockResolvedValueOnce(withPassword(NOVELS, "p3rt-h8vb-2kca-wq6e"))
+      .mockReturnValueOnce(secondNewPassword.promise)
+
+    await findServerSection("Comics")
+    fireEvent.click(screen.getByRole("button", { name: "Create a server" }))
+    const novels = await findServerSection("Novels")
+    await novels.findByDisplayValue("k7mq-x2fp-9dwa-hc4n")
+    fireEvent.click(
+      novels.getByRole("button", { name: "Generate a new password" }),
+    )
+    await confirmDialog("Generate")
+    await novels.findByDisplayValue("p3rt-h8vb-2kca-wq6e")
+    fireEvent.click(
+      novels.getByRole("button", { name: "Generate a new password" }),
+    )
+    await confirmDialog("Generate")
+    await waitFor(() => {
+      expect(
+        novels.getByRole<HTMLButtonElement>("button", {
+          name: "Generate a new password",
+        }).disabled,
+      ).toBe(true)
+    })
+
+    expect(novels.queryByRole("textbox", { name: "Password" })).toBeNull()
+
+    secondNewPassword.reject(new Error("Network down"))
+
+    await waitFor(() => {
+      expect(
+        novels.getByRole<HTMLButtonElement>("button", {
+          name: "Generate a new password",
+        }).disabled,
+      ).toBe(false)
+    })
+    expect(novels.queryByRole("textbox", { name: "Password" })).toBeNull()
+  })
+
   it("renames a server to the trimmed name, once it is not blank", async () => {
     const api = renderScreen(
       listing([COMICS], [{ ...COMICS, name: "Bedtime" }]),

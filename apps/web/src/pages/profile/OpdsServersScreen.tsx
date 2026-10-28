@@ -56,12 +56,16 @@ function OpdsServerSection({
   const {
     mutate: regeneratePassword,
     data: regenerationResult,
+    isIdle: isRegenerationIdle,
     isPending: isRegeneratingPassword,
   } = useRegenerateOpdsServerPassword()
   const { mutate: deleteServer, isPending: isDeletingServer } =
     useDeleteOpdsServer()
   const [isRenameDialogOpen, setIsRenameDialogOpen] = useState(false)
-  const newPassword = regenerationResult?.password ?? createdPassword
+  const hasRequestedNewPassword = !isRegenerationIdle
+  const newPassword = hasRequestedNewPassword
+    ? regenerationResult?.password
+    : createdPassword
 
   const confirmThenRegeneratePassword = async () => {
     const confirmed = await showConfirmDialog({
