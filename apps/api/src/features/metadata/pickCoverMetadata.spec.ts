@@ -59,6 +59,22 @@ describe("pickCoverMetadata, when one source is certain", () => {
     ).toBe(googleCover)
   })
 
+  it("does not confirm a catalog match showing another volume than the one named", () => {
+    expect(
+      pickCoverMetadata(
+        [
+          {
+            type: "link",
+            title: "BLAME! [oboku~google-volume-id~zyTCAlFPjgYC].cbz",
+          },
+          googleCover,
+          firstPage,
+        ],
+        undefined,
+      ),
+    ).toBe(firstPage)
+  })
+
   it("confirms a catalog match by the volume id the file states", () => {
     expect(
       pickCoverMetadata(

@@ -168,6 +168,8 @@ export const retrieveMetadataAndSaveCover = async (
     const previousFileMetadata =
       storedFileMetadata && toFileMetadata(storedFileMetadata)
     const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
+    const isCatalogLookupAllowed =
+      !ignoreMetadataSources && externalFetchEnabled
     const previousUserMetadata = ctx.book.metadata?.find(
       (entry): entry is UserMetadata => entry.type === "user",
     )
@@ -182,7 +184,9 @@ export const retrieveMetadataAndSaveCover = async (
     const predictedCoverMetadata = pickCoverMetadata(
       [
         linkMetadata,
-        ...(previousCatalogMetadata ? [previousCatalogMetadata] : []),
+        ...(isCatalogLookupAllowed && previousCatalogMetadata
+          ? [previousCatalogMetadata]
+          : []),
         ...(previousFileMetadata ? [previousFileMetadata] : []),
         ...(previousUserMetadata ? [previousUserMetadata] : []),
       ],
@@ -318,8 +322,6 @@ export const retrieveMetadataAndSaveCover = async (
       ? previousFileMetadata
       : undefined
     const fileMetadata = freshFileMetadata ?? reusedFileMetadata
-    const isCatalogLookupAllowed =
-      !ignoreMetadataSources && externalFetchEnabled
     const catalogMetadata = isCatalogLookupAllowed
       ? await refreshCatalogEntry({
           bookId: ctx.book._id,

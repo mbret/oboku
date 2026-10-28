@@ -176,7 +176,7 @@ describe("retrieveMetadataAndSaveCover", () => {
     })
   })
 
-  it("does not download an unchanged file whose cover a confirmed catalog match provides", async () => {
+  describe("for an unchanged file whose cover a confirmed catalog match provides", () => {
     const coverUri = "https://books.google.com/books/content?id=zyTCAlFPjgYC"
     const confirmedCatalogEntry: CatalogMetadata = {
       type: "catalog",
@@ -192,17 +192,28 @@ describe("retrieveMetadataAndSaveCover", () => {
       coverLink: "page-001.jpg",
       coverConfidence: "assumed",
     })
-
-    const { downloadLinkToTmp } = await refresh(
+    const bookWithCatalogCover = (overrides: Partial<BookDocType> = {}) =>
       bookWith([linkEntry, confirmedCatalogEntry, fileWithFirstPageCover], {
         bucketCoverKey: buildBookBucketCoverKey({
           type: "catalog",
           value: coverUri,
         }),
-      }),
-    )
+        ...overrides,
+      })
 
-    expect(downloadLinkToTmp).not.toHaveBeenCalled()
+    it("does not download the file", async () => {
+      const { downloadLinkToTmp } = await refresh(bookWithCatalogCover())
+
+      expect(downloadLinkToTmp).not.toHaveBeenCalled()
+    })
+
+    it("downloads the file for its cover when the catalog is no longer asked", async () => {
+      const { downloadLinkToTmp } = await refresh(
+        bookWithCatalogCover({ metadataFetchEnabled: false }),
+      )
+
+      expect(downloadLinkToTmp).toHaveBeenCalled()
+    })
   })
 
   describe("its catalog lookup", () => {

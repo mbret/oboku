@@ -7,24 +7,18 @@ import {
   getOrderedBookMetadataSources,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
+import { identifierValue } from "@prose-reader/archive-reader"
 import { isIdentityConfirmed } from "./isIdentityConfirmed.js"
 
-/**
- * Whether a legacy catalog entry describes *this* book rather than a
- * plausible neighbour: whether its lookup addressed one Google Books volume
- * id, which the link's directive or the file gives. A catalog match states
- * it itself ({@link isIdentityConfirmed}).
- */
-const isLegacyCatalogIdentityConfirmed = (
-  metadataList: ReadonlyArray<BookMetadata>,
-) => {
+/** The Google Books volume the link's directive or the file names. */
+const getNamedGoogleVolumeId = (metadataList: ReadonlyArray<BookMetadata>) => {
   const linkTitle = metadataList.find((entry) => entry.type === "link")?.title
   const fileEntry = metadataList.find((entry) => entry.type === "file")
-  const googleVolumeId =
+
+  return (
     directives.extractDirectivesFromName(linkTitle ?? "").googleVolumeId ??
     (fileEntry ? getBookMetadataFields(fileEntry).googleVolumeId : undefined)
-
-  return googleVolumeId !== undefined
+  )
 }
 
 /**
@@ -43,7 +37,7 @@ const isLegacyCatalogIdentityConfirmed = (
  */
 const isCertainCover = (
   metadata: BookMetadata,
-  isLegacyCatalogConfirmed: boolean,
+  namedGoogleVolumeId: string | undefined,
 ): boolean => {
   const { coverLink, coverConfidence } = getBookMetadataFields(metadata)
 
@@ -52,8 +46,16 @@ const isCertainCover = (
   switch (metadata.type) {
     case "catalog":
       return isIdentityConfirmed(metadata)
+    // A legacy entry kept no volume id, but its Google cover link carries
+    // the volume it shows.
     case LEGACY_CATALOG_SOURCE_NAME:
-      return isLegacyCatalogConfirmed
+      return (
+        namedGoogleVolumeId !== undefined &&
+        identifierValue(
+          [{ value: coverLink, scheme: "URL" }],
+          "GoogleBooks",
+        ) === namedGoogleVolumeId
+      )
     case "file":
       return coverConfidence === "derived"
     default:
@@ -83,8 +85,7 @@ export const pickCoverMetadata = (
 ): BookMetadata | undefined => {
   if (!metadataList?.length) return undefined
 
-  const isLegacyCatalogConfirmed =
-    isLegacyCatalogIdentityConfirmed(metadataList)
+  const namedGoogleVolumeId = getNamedGoogleVolumeId(metadataList)
 
   const orderedSources = getOrderedBookMetadataSources(priority)
 
@@ -105,7 +106,7 @@ export const pickCoverMetadata = (
 
   return (
     highestPriorityCover(function isCertain(metadata) {
-      return isCertainCover(metadata, isLegacyCatalogConfirmed)
+      return isCertainCover(metadata, namedGoogleVolumeId)
     }) ?? highestPriorityCover(hasCover)
   )
 }
