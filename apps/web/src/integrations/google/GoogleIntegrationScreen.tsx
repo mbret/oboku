@@ -77,7 +77,12 @@ export function GoogleIntegrationScreen() {
               alignItems: "flex-start",
             }}
           >
-            <Button onClick={() => mutate()} disabled={!!gapi.gapi}>
+            <Button
+              onClick={function forceReloadGoogleApiScript() {
+                mutate()
+              }}
+              disabled={!!gapi.gapi}
+            >
               Force reload Google API script
             </Button>
           </Stack>
