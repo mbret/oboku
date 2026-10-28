@@ -33,7 +33,13 @@ import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
 import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
 import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
-import { IntegrationScreen } from "../integrations/IntegrationScreen"
+import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegrationScreen"
+import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
+import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
+import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
+import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
+import { SynologyDriveIntegrationScreen } from "../integrations/synology-drive/SynologyDriveIntegrationScreen"
+import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegrationScreen"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
@@ -180,8 +186,32 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<StatisticsScreen />}
               />
               <Route
-                path={ROUTES.INTEGRATION_DETAILS.slice(1)}
-                element={<IntegrationScreen />}
+                path={ROUTES.INTEGRATION_DROPBOX.slice(1)}
+                element={<DropboxIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_GOOGLE.slice(1)}
+                element={<GoogleIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_KOREADER.slice(1)}
+                element={<KoreaderIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_ONE_DRIVE.slice(1)}
+                element={<OneDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_SERVER.slice(1)}
+                element={<ServerIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_SYNOLOGY_DRIVE.slice(1)}
+                element={<SynologyDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_WEBDAV.slice(1)}
+                element={<WebdavIntegrationScreen />}
               />
               <Route
                 path={ROUTES.INTEGRATION_CONNECTORS_NEW.slice(1)}

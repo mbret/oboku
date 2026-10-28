@@ -1,8 +1,15 @@
-import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
-import { ExtensionRounded } from "@mui/icons-material"
-import { generatePath, Link } from "react-router"
+import type { ComponentType } from "react"
+import {
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  type SvgIconProps,
+} from "@mui/material"
+import { ExtensionRounded, MenuBookRounded } from "@mui/icons-material"
+import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
+import type { Plugin } from "../plugins/configure"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
@@ -10,49 +17,98 @@ import {
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"
-import { type Integration, integrations } from "./configure"
+import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
+import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
+import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
+import { plugin as serverPlugin } from "./server/serverPlugin"
+import { plugin as synologyDrivePlugin } from "./synology-drive/synologyDrivePlugin"
+import webdavPlugin from "./webdav/webdavPlugin"
 
-export function IntegrationsScreen() {
+function IntegrationListItem({
+  to,
+  name,
+  description,
+  Icon = ExtensionRounded,
+  plugin,
+}: {
+  to: string
+  name: string
+  description: string
+  Icon?: ComponentType<SvgIconProps>
+  /** The row follows this plugin's instance configuration: hidden or disabled with it. */
+  plugin?: Plugin
+}) {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
+  const isVisible = !plugin || isPluginVisible(plugin)
+  const isEnabled = !plugin || isPluginEnabled(plugin)
 
-  const isIntegrationVisible = (integration: Integration) =>
-    !integration.plugin || isPluginVisible(integration.plugin)
+  if (!isVisible) return null
 
-  const isIntegrationEnabled = (integration: Integration) =>
-    !integration.plugin || isPluginEnabled(integration.plugin)
+  return (
+    <ListItemButton component={Link} to={to} disabled={!isEnabled}>
+      <ListItemIcon>
+        <Icon />
+      </ListItemIcon>
+      <ListItemText primary={name} secondary={description} />
+    </ListItemButton>
+  )
+}
 
+export function IntegrationsScreen() {
   return (
     <Page bottomGutter={false}>
       <TopBarNavigation title="Integrations" showBack={false} />
       <PageContainer disableGutters>
         <PageSection>
-          {integrations
-            .filter(isIntegrationVisible)
-            .map(function renderIntegrationLink(integration) {
-              return (
-                <ListItemButton
-                  key={integration.id}
-                  component={Link}
-                  disabled={!isIntegrationEnabled(integration)}
-                  to={generatePath(ROUTES.INTEGRATION_DETAILS, {
-                    id: integration.id,
-                  })}
-                >
-                  <ListItemIcon>
-                    {integration.Icon ? (
-                      <integration.Icon />
-                    ) : (
-                      <ExtensionRounded />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={integration.name}
-                    secondary={integration.description}
-                  />
-                </ListItemButton>
-              )
-            })}
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_DROPBOX}
+            name="Dropbox"
+            description="Manage contents from Dropbox"
+            Icon={dropboxPlugin.Icon}
+            plugin={dropboxPlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_GOOGLE}
+            name="Google"
+            description="Manage contents from Google Drive"
+            Icon={googleDrivePlugin.Icon}
+            plugin={googleDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_KOREADER}
+            name="KOReader"
+            description="Sync reading positions with KOReader, Readest, CrossPoint…"
+            Icon={MenuBookRounded}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_ONE_DRIVE}
+            name="OneDrive"
+            description="Manage contents from Microsoft OneDrive"
+            Icon={oneDrivePlugin.Icon}
+            plugin={oneDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_SERVER}
+            name="Server"
+            description="Manage contents from your oboku server"
+            Icon={serverPlugin.Icon}
+            plugin={serverPlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_SYNOLOGY_DRIVE}
+            name="Synology Drive"
+            description="Browse a Synology Drive library and add books by stable file id"
+            Icon={synologyDrivePlugin.Icon}
+            plugin={synologyDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_WEBDAV}
+            name="WebDAV"
+            description="Manage contents from WebDAV"
+            Icon={webdavPlugin.Icon}
+            plugin={webdavPlugin}
+          />
         </PageSection>
       </PageContainer>
     </Page>

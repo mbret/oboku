@@ -4,6 +4,7 @@ import { Button, Stack, type ButtonProps } from "@mui/material"
 import { memo } from "react"
 import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../navigation/routes"
+import { CONNECTOR_DETAILS } from "./connectorDetails"
 
 export const ConnectorManagementButtons = memo(
   ({
@@ -21,7 +22,7 @@ export const ConnectorManagementButtons = memo(
 
     const handleManage = () => {
       onNavigate?.()
-      navigate(generatePath(ROUTES.INTEGRATION_DETAILS, { id: connectorType }))
+      navigate(CONNECTOR_DETAILS[connectorType].integrationRoute)
     }
 
     const handleNew = () => {

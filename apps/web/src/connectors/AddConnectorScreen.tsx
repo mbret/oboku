@@ -1,8 +1,8 @@
 import { memo } from "react"
-import { generatePath, type PathParam, useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { ROUTES } from "../navigation/routes"
+import type { ROUTES } from "../navigation/routes"
 import type { SettingsConnectorType } from "@oboku/shared"
 import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { ConnectorForm as WebdavConnectorForm } from "../integrations/webdav/webdavPlugin/connectors/ConnectorForm"
@@ -38,11 +38,7 @@ export const AddConnectorScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={`${details.label}: New connector`} />
-      <Form
-        onSubmitSuccess={() =>
-          goBack(generatePath(ROUTES.INTEGRATION_DETAILS, { id: type }))
-        }
-      />
+      <Form onSubmitSuccess={() => goBack(details.integrationRoute)} />
     </Page>
   )
 })

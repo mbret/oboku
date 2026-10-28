@@ -5,8 +5,11 @@ import type {
   KoreaderSyncServerGetResponse,
 } from "@oboku/shared"
 import { Link } from "react-router"
+import { Page } from "../../common/Page"
+import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { ROUTES } from "../../navigation/routes"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { useKoreaderSyncConnection } from "./client/useKoreaderSyncConnection"
 import { useKoreaderSyncServer } from "./server/useKoreaderSyncServer"
 
@@ -33,30 +36,35 @@ const describeKoreaderSyncConnection = (
     ? `Syncing with ${response.connection.serverUrl}`
     : KOREADER_PROGRESS_SYNC_PURPOSE
 
-export function InfoScreen() {
+export function KoreaderIntegrationScreen() {
   const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const { data: koreaderSyncConnection } = useKoreaderSyncConnection()
 
   return (
-    <PageSection>
-      <ListItemButton component={Link} to={ROUTES.KOREADER_SYNC_SERVER}>
-        <ListItemIcon>
-          <SyncRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary="KOReader sync server"
-          secondary={describeKoreaderSyncServer(koreaderSyncServer)}
-        />
-      </ListItemButton>
-      <ListItemButton component={Link} to={ROUTES.KOREADER_PROGRESS_SYNC}>
-        <ListItemIcon>
-          <CloudSyncRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary="KOReader progress sync"
-          secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
-        />
-      </ListItemButton>
-    </PageSection>
+    <Page bottomGutter={false}>
+      <TopBarNavigation title="KOReader" showBack />
+      <PageContainer disableGutters>
+        <PageSection>
+          <ListItemButton component={Link} to={ROUTES.KOREADER_SYNC_SERVER}>
+            <ListItemIcon>
+              <SyncRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="KOReader sync server"
+              secondary={describeKoreaderSyncServer(koreaderSyncServer)}
+            />
+          </ListItemButton>
+          <ListItemButton component={Link} to={ROUTES.KOREADER_PROGRESS_SYNC}>
+            <ListItemIcon>
+              <CloudSyncRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="KOReader progress sync"
+              secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
+            />
+          </ListItemButton>
+        </PageSection>
+      </PageContainer>
+    </Page>
   )
 }

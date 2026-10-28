@@ -15,7 +15,10 @@ import {
   clearSynologyDriveSession,
   synologyDriveSessionSignal,
 } from "./synologyDrivePlugin/auth/auth"
+import { Page } from "../../common/Page"
+import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 
 const SESSION_MAX_AGE_MINUTES = SYNOLOGY_DRIVE_SESSION_MAX_AGE_MS / (60 * 1000)
 
@@ -86,27 +89,34 @@ const CurrentSessionSection = () => {
   )
 }
 
-export const InfoScreen = () => (
-  <Box
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      flex: 1,
-    }}
-  >
-    <Typography
-      variant="subtitle2"
-      sx={{
-        color: "text.secondary",
-        px: 2,
-        pt: 2,
-      }}
-    >
-      Current session
-    </Typography>
-    <PageSection>
-      <CurrentSessionSection />
-    </PageSection>
-    <ConnectorInfoSection connectorType="synology-drive" />
-  </Box>
-)
+export function SynologyDriveIntegrationScreen() {
+  return (
+    <Page bottomGutter={false}>
+      <TopBarNavigation title="Synology Drive" showBack />
+      <PageContainer disableGutters>
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: "column",
+            flex: 1,
+          }}
+        >
+          <Typography
+            variant="subtitle2"
+            sx={{
+              color: "text.secondary",
+              px: 2,
+              pt: 2,
+            }}
+          >
+            Current session
+          </Typography>
+          <PageSection>
+            <CurrentSessionSection />
+          </PageSection>
+          <ConnectorInfoSection connectorType="synology-drive" />
+        </Box>
+      </PageContainer>
+    </Page>
+  )
+}

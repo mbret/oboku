@@ -1,10 +1,10 @@
 import { ListItemButton, ListItemText } from "@mui/material"
 import { memo } from "react"
-import { generatePath, type PathParam, useParams } from "react-router"
+import { type PathParam, useParams } from "react-router"
 import { useConfirmation } from "../common/useConfirmation"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
-import { ROUTES } from "../navigation/routes"
+import type { ROUTES } from "../navigation/routes"
 import { notify } from "../notifications/toasts"
 import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
@@ -23,7 +23,6 @@ export const EditConnectorScreen = memo(() => {
 
   const details = CONNECTOR_DETAILS[type]
   const Form = getConnectorForm(type)
-  const manageRoute = generatePath(ROUTES.INTEGRATION_DETAILS, { id: type })
 
   if (!Form) return null
 
@@ -36,7 +35,7 @@ export const EditConnectorScreen = memo(() => {
         {
           onSuccess: () => {
             notify("actionSuccess")
-            goBack(manageRoute)
+            goBack(details.integrationRoute)
           },
         },
       )
@@ -46,7 +45,10 @@ export const EditConnectorScreen = memo(() => {
   return (
     <Page>
       <TopBarNavigation title={`${details.label}: Edit connector`} />
-      <Form connectorId={id} onSubmitSuccess={() => goBack(manageRoute)}>
+      <Form
+        connectorId={id}
+        onSubmitSuccess={() => goBack(details.integrationRoute)}
+      >
         <PageSection title="Danger zone" tone="danger">
           <ListItemButton onClick={confirmThenDeleteConnector}>
             <ListItemText primary="Delete this connector" />
