@@ -25,6 +25,7 @@ import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
+import { toRequestFailure } from "../../http/requestFailure.js"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean
@@ -35,17 +36,6 @@ const SYNOLOGY_DRIVE_SYNC_CONCURRENCY = 2
 
 const isAxiosNetworkError = (error: unknown): error is AxiosError =>
   axios.isAxiosError(error) && !error.response
-
-/**
- * Keeps only the message and code of a failed request. The query of the
- * request URL carries the DSM password, the OTP code or the session id, and
- * the AxiosError holds that URL in its config and request. So can its causes:
- * Node keeps it as `base` when a redirect leads to an invalid URL.
- */
-const toRequestFailure = (description: string, error: AxiosError) =>
-  Object.assign(new Error(`${description}: ${error.message}`), {
-    code: error.code,
-  })
 
 const mapWithConcurrency = async <TInput, TOutput>(
   items: readonly TInput[],

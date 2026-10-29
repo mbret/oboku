@@ -37,6 +37,7 @@ import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegra
 import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
 import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
 import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
+import { OpdsIntegrationScreen } from "../integrations/opds/OpdsIntegrationScreen"
 import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
 import { SynologyDriveIntegrationScreen } from "../integrations/synology-drive/SynologyDriveIntegrationScreen"
 import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegrationScreen"
@@ -200,6 +201,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.INTEGRATION_ONE_DRIVE.slice(1)}
                 element={<OneDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_OPDS.slice(1)}
+                element={<OpdsIntegrationScreen />}
               />
               <Route
                 path={ROUTES.INTEGRATION_SERVER.slice(1)}

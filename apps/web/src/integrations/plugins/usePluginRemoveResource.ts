@@ -28,6 +28,7 @@ export const usePluginRemoveResource = () => {
   const removeResourceFromFile = pluginsByType.file.useRemoveResource()
   const removeResourceFromUri = pluginsByType.URI.useRemoveResource()
   const removeResourceFromServer = pluginsByType.server.useRemoveResource()
+  const removeResourceFromOpds = pluginsByType.opds.useRemoveResource()
 
   return useMutation({
     mutationFn: async (group: RemoveResourceGroup) => {
@@ -61,6 +62,10 @@ export const usePluginRemoveResource = () => {
         case "server":
           return removeResourceFromServer(
             group.links.filter(isLinkOfType("server")),
+          )
+        case "opds":
+          return removeResourceFromOpds(
+            group.links.filter(isLinkOfType("opds")),
           )
         default:
           return assertNever(group.type)

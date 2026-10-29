@@ -70,8 +70,8 @@ type UpdateCoverResult = {
  *
  * The primary fingerprint is the provider-reported `modifiedAt` on the
  * `link` source — both sides MUST report it, otherwise we refuse to
- * reuse. (Providers that don't expose `modifiedAt` — currently `file`
- * and `uri` — therefore never participate in this cache, by design.)
+ * reuse. (Providers that don't expose `modifiedAt` — currently `file`,
+ * `uri` and `opds` — therefore never participate in this cache, by design.)
  *
  * `size` is then used as an opportunistic secondary check against
  * providers that fail to bump `modifiedAt` on a content change. It is

@@ -243,6 +243,10 @@ export const DownloadFlowRequestItem = memo(
         const { DownloadBookComponent } = pluginsByType.webdav
         return <DownloadBookComponent {...downloadProps} link={link} />
       }
+      case "opds": {
+        const { DownloadBookComponent } = pluginsByType.opds
+        return <DownloadBookComponent {...downloadProps} link={link} />
+      }
       default: {
         const _exhaustive: never = link
         onError(

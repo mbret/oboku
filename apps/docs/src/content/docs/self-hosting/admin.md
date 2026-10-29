@@ -22,7 +22,7 @@ Visit the [User Accounts](/self-hosting/user-accounts) section
 
 ## Private networks
 
-The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers, the KOReader sync server they connect to, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API. The machine's own addresses count as private too, public ones included: a request to them never leaves the machine, so it would reach whatever listens there.
+The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers and OPDS catalogs, the KOReader sync server they connect to, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API. The machine's own addresses count as private too, public ones included: a request to them never leaves the machine, so it would reach whatever listens there.
 
 If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
 

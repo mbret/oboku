@@ -4,6 +4,7 @@ import { plugin as dropbox } from "../dropbox/dropboxPlugin"
 import { plugin as google } from "../google/googleDrivePlugin"
 import { plugin as file } from "./local"
 import { plugin as oneDrive } from "../one-drive/oneDrivePlugin"
+import { plugin as opds } from "../opds/opdsPlugin"
 import { plugin as server } from "../server/serverPlugin"
 import { plugin as synologyDrive } from "../synology-drive/synologyDrivePlugin"
 import uri from "./uri"
@@ -19,6 +20,7 @@ export const pluginsByType: PluginsByType = {
   dropbox,
   file,
   "one-drive": oneDrive,
+  opds,
   server,
   "synology-drive": synologyDrive,
   webdav,
