@@ -29,11 +29,11 @@ const toMutableList = (
 
 export const getMetadataFromArchive = async (
   archive: Archive,
-  contentType: string,
 ): Promise<LegacyFileMetadata> => {
-  const { metadata, unreadableSources } = await resolveArchive(archive, {
-    include: ["metadata"],
-  })
+  const { metadata, mediaType, unreadableSources } = await resolveArchive(
+    archive,
+    { include: ["metadata"] },
+  )
 
   const title = mainTitle(metadata)
   const isbn = identifierValue(metadata.identifiers, "ISBN")
@@ -51,7 +51,7 @@ export const getMetadataFromArchive = async (
 
   return {
     type: "file",
-    contentType,
+    contentType: mediaType,
     title,
     authors: authorNames(metadata),
     publisher: metadata.publication?.edition?.publisher,

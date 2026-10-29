@@ -9,7 +9,7 @@ import { getRarArchive } from "./getRarArchive.js"
  */
 const RAR_SIGNATURE = Buffer.from("Rar!\x1a\x07", "latin1")
 
-export const startsWithRarSignature = async (filePath: string) => {
+const startsWithRarSignature = async (filePath: string) => {
   const file = await fs.promises.open(filePath)
 
   try {
@@ -24,7 +24,10 @@ export const startsWithRarSignature = async (filePath: string) => {
   }
 }
 
-export const openArchive = async (filePath: string): Promise<Archive> =>
+export const openArchive = async (
+  filePath: string,
+  options: { name?: string; encodingFormat?: string } = {},
+): Promise<Archive> =>
   (await startsWithRarSignature(filePath))
-    ? getRarArchive(filePath)
-    : createUnzipperArchiveSource(filePath)
+    ? getRarArchive(filePath, options)
+    : createUnzipperArchiveSource(filePath, options)

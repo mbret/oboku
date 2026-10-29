@@ -28,7 +28,6 @@ import { CouchService, emailToNameHex } from "../couch/couch.service.js"
 import { atomicUpdate, findOne } from "../couch/dbHelpers.js"
 import { isBookProtected } from "../couch/isBookProtected.js"
 import { CoversService } from "../covers/covers.service.js"
-import { detectMimeTypeFromContent } from "../features/metadata/archives/detectMimeTypeFromContent.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
 import { getBookSourcesMetadata } from "../features/metadata/getBookSourcesMetadata.js"
@@ -175,6 +174,14 @@ export class BooksMetadataService {
     this.logger.error(error)
   }
 
+  private readonly logUntypedFileIsNotAnArchive = (
+    error: unknown,
+  ): undefined => {
+    this.logger.log(`An untyped file is not an archive to extract: ${error}`)
+
+    return undefined
+  }
+
   private async retrieveMetadataAndSaveCover(ctx: RefreshContext) {
     this.logger.log(
       `syncMetadata run for user ${ctx.userName} with book ${ctx.book._id}`,
@@ -237,7 +244,7 @@ export class BooksMetadataService {
         modifiedAt: persistedModifiedAt,
       }
 
-      let contentType =
+      const contentType =
         linkMetadata.contentType && getMimeTypeEssence(linkMetadata.contentType)
       /**
        * Not all plugins return the valid content type so
@@ -363,31 +370,26 @@ export class BooksMetadataService {
         tmpFilePath,
       })
 
-      if (typeof tmpFilePath === "string" && tmpFilePath) {
-        // before starting the extraction and if we still don't have a content type, we will try to get it from the file itself.
-        if (!contentType) {
-          contentType =
-            (await detectMimeTypeFromContent(tmpFilePath)) || contentType
+      if (
+        typeof tmpFilePath === "string" &&
+        tmpFilePath &&
+        !ignoreMetadataFile
+      ) {
+        const archiveOptions = {
+          name: linkResourceMetadata.name,
+          encodingFormat: contentType,
         }
+        const isUntypedFile = !contentType
 
-        if (!ignoreMetadataFile) {
-          if (
-            contentType &&
-            this.appConfigService.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(
-              contentType,
+        archive = isUntypedFile
+          ? await openArchive(tmpFilePath, archiveOptions).catch(
+              this.logUntypedFileIsNotAnArchive,
             )
-          ) {
-            archive = await openArchive(tmpFilePath)
-          } else {
-            this.logger.log(
-              `${contentType} cannot be extracted to retrieve information (cover, etc)`,
-            )
-          }
-        }
+          : await openArchive(tmpFilePath, archiveOptions)
       }
 
       const freshFileMetadata = archive
-        ? await getMetadataFromArchive(archive, contentType ?? ``)
+        ? await getMetadataFromArchive(archive)
         : undefined
 
       /**
