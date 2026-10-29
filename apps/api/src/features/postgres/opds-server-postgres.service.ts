@@ -142,6 +142,10 @@ export class OpdsServerPostgresService {
     await this.serverRepository.delete({ user_id: userId })
   }
 
+  findBySlug(slug: string) {
+    return this.serverRepository.findOneBy({ slug })
+  }
+
   private async updateUserServer(
     { userId, id }: UserOpdsServer,
     changes: Partial<Pick<OpdsServerPostgresEntity, "name" | "password_hash">>,
