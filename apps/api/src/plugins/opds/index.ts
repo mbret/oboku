@@ -1,9 +1,34 @@
-import { getDataFromDataSource, PLUGIN_OPDS_TYPE } from "@oboku/shared"
+import {
+  getDataFromDataSource,
+  isOpdsBookLinkData,
+  isOpdsFolderLinkData,
+  type OpdsBookLinkData,
+  type OpdsFolderLinkData,
+  type OpdsLinkData,
+  PLUGIN_OPDS_TYPE,
+} from "@oboku/shared"
 import type createNano from "nano"
 import { getConnectorById } from "../connectorHelpers.js"
 import { findConnectorCandidates } from "../helpers.js"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
-import { crawlOpdsFeed, getFromCatalog, type OpdsConnector } from "./feed.js"
+import { getFromCatalog, type OpdsConnector } from "./client.js"
+import { crawlOpdsFeed } from "./feed.js"
+
+const toBookLinkData = (linkData: OpdsLinkData): OpdsBookLinkData => {
+  if (!isOpdsBookLinkData(linkData)) {
+    throw new Error("Not the link data of an OPDS book")
+  }
+
+  return linkData
+}
+
+const toFolderLinkData = (linkData: OpdsLinkData): OpdsFolderLinkData => {
+  if (!isOpdsFolderLinkData(linkData)) {
+    throw new Error("Not the link data of an OPDS folder")
+  }
+
+  return linkData
+}
 
 async function resolveConnector({
   connectorId,
@@ -31,62 +56,53 @@ async function resolveConnector({
 
 export const dataSource: DataSourcePlugin<"opds"> = {
   type: PLUGIN_OPDS_TYPE,
-  getLinkCandidatesForItem: async ({ linkData }, ctx) => ({
-    links:
-      "entryId" in linkData
-        ? await findConnectorCandidates(ctx, "link", {
-            type: PLUGIN_OPDS_TYPE,
-            data: {
-              connectorId: linkData.connectorId,
-              entryId: linkData.entryId,
-            },
-          })
-        : [],
-  }),
-  getCollectionCandidatesForItem: async ({ linkData }, ctx) => ({
-    collections:
-      "feedUrl" in linkData
-        ? await findConnectorCandidates(ctx, "obokucollection", {
-            type: PLUGIN_OPDS_TYPE,
-            data: {
-              connectorId: linkData.connectorId,
-              feedUrl: linkData.feedUrl,
-            },
-          })
-        : [],
-  }),
-  /**
-   * `<updated>` describes the catalog's record rather than the file's bytes,
-   * so it cannot tell the metadata cache whether the file changed.
-   */
-  getFileMetadata: async ({ link: { data } }) => {
-    const acquisition = "acquisition" in data ? data.acquisition : undefined
+  getLinkCandidatesForItem: async ({ linkData }, ctx) => {
+    const { connectorId, entryId } = toBookLinkData(linkData)
 
     return {
-      name: data.title,
-      canDownload: acquisition !== undefined,
-      contentType: acquisition?.type,
+      links: await findConnectorCandidates(ctx, "link", {
+        type: PLUGIN_OPDS_TYPE,
+        data: { connectorId, entryId },
+      }),
+    }
+  },
+  getCollectionCandidatesForItem: async ({ linkData }, ctx) => {
+    const { connectorId, feedUrl } = toFolderLinkData(linkData)
+
+    return {
+      collections: await findConnectorCandidates(ctx, "obokucollection", {
+        type: PLUGIN_OPDS_TYPE,
+        data: { connectorId, feedUrl },
+      }),
+    }
+  },
+  getFileMetadata: async ({ link }) => {
+    const { title, acquisition } = toBookLinkData(link.data)
+
+    return {
+      name: title,
+      canDownload: true,
+      contentType: acquisition.type,
+      // `<updated>` describes the catalog's record rather than the file's
+      // bytes, so it cannot tell the metadata cache whether the file changed.
       modifiedAt: MODIFIED_AT_UNSUPPORTED,
       bookMetadata:
-        acquisition?.length === undefined
+        acquisition.length === undefined
           ? undefined
           : { size: acquisition.length.toString() },
     }
   },
   getFolderMetadata: async ({ link }) => ({ name: link.data.title }),
-  download: async ({ data }, providerCredentials, db) => {
-    if (!("acquisition" in data)) {
-      throw new Error("OPDS link has no acquisition URL")
-    }
-
+  download: async (link, providerCredentials, db) => {
+    const { connectorId, acquisition } = toBookLinkData(link.data)
     const connector = await resolveConnector({
-      connectorId: data.connectorId,
+      connectorId,
       password: providerCredentials?.password,
       db,
     })
     const { stream } = await getFromCatalog(
       connector,
-      new URL(data.acquisition.href),
+      new URL(acquisition.href),
     )
 
     return { stream }

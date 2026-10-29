@@ -1,22 +1,16 @@
 import type { Readable } from "node:stream"
 import { Logger } from "@nestjs/common"
-import {
-  getOpdsCredentialHeaders,
-  isFileSupported,
-  ObokuErrorCode,
-  ObokuSharedError,
-  type OpdsBookLinkData,
-  type SettingsResolvedConnectorData,
-} from "@oboku/shared"
-import axios from "axios"
+import { isFileSupported, type OpdsBookLinkData } from "@oboku/shared"
 import { XMLParser } from "fast-xml-parser"
-import { toRequestFailure } from "../../http/requestFailure.js"
-import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 import type { SynchronizeAbleItem } from "../types.js"
+import {
+  getFromCatalog,
+  type OpdsConnector,
+  toCatalogRequestFailure,
+} from "./client.js"
+import { listEachBookOncePerTopFolder } from "./listings.js"
 
 const logger = new Logger("OpdsFeed")
-
-export type OpdsConnector = SettingsResolvedConnectorData<"opds">
 
 type Acquisition = OpdsBookLinkData["acquisition"]
 
@@ -36,6 +30,7 @@ type FeedEntry =
       feedUrl: URL
     }
 
+type FileEntry = Extract<FeedEntry, { type: "file" }>
 type FolderEntry = Extract<FeedEntry, { type: "folder" }>
 
 type MediaType = {
@@ -52,23 +47,18 @@ type FeedLink = {
 
 type XmlNode = Record<string, unknown>
 
-const HTTP_PROTOCOLS = ["http:", "https:"]
-const REDIRECT_STATUSES = [301, 302, 303, 307, 308]
-const MAX_REDIRECTS = 5
 const FEED_ACCEPT = "application/atom+xml, application/xml;q=0.9, */*;q=0.8"
 /**
- * A catalog that stops answering would otherwise hold a sync's queue slot
- * forever. axios's timeout only covers the wait for the response's headers, so
- * feed pages also get a deadline that covers their body.
+ * axios's timeout only covers the wait for the response's headers, so feed
+ * pages also get a deadline that covers their body.
  */
-const RESPONSE_TIMEOUT_MS = 60_000
 const FEED_PAGE_DEADLINE_MS = 120_000
-/** Feed pages list metadata only. A larger answer is not a feed. */
-const MAX_FEED_PAGE_BYTES = 20 * 1024 * 1024
+const MAX_FEED_PAGE_BYTES = 5 * 1024 * 1024
 
-/** A catalog linking to new feeds forever would otherwise never end a crawl. */
 const MAX_FEED_DEPTH = 10
-const MAX_FEED_URLS = 5000
+const MAX_FEED_PAGES = 5000
+const MAX_FEED_ENTRIES = 200_000
+const MAX_CRAWL_MINUTES = 30
 
 const ACQUISITION_REL = "http://opds-spec.org/acquisition"
 /** Buy, borrow, sample and subscribe acquisitions do not give the whole book for free. */
@@ -91,7 +81,12 @@ const NOT_FOLLOWED_RELS = [
 /** RFC 4287, section 4.2.7.2. */
 const DEFAULT_LINK_REL = "alternate"
 
-/** Atom requires `<updated>`. An entry without a usable one counts as never modified. */
+/**
+ * RFC 4287 dates carry a time zone (section 3.3). Kavita stamps every entry
+ * with the time of the request and no zone, which would read as a change on
+ * every sync.
+ */
+const ZONED_DATE_TIME = /(?:z|[+-]\d{2}:?\d{2})$/i
 const UNKNOWN_MODIFIED_AT = new Date(0).toISOString()
 
 const ARRAY_TAGS = ["entry", "link"]
@@ -111,74 +106,6 @@ const feedParser = new XMLParser({
     return !isAttribute && ARRAY_TAGS.includes(tagName)
   },
 })
-
-const acceptEveryStatus = () => true
-
-const toCatalogRequestFailure = (url: URL, error: unknown) =>
-  axios.isAxiosError(error)
-    ? toRequestFailure(`OPDS request to ${url.origin} failed`, error)
-    : error
-
-/**
- * GETs `url` from the connector's catalog. Redirects are followed here rather
- * than by axios, so that each request carries the connector's credentials only
- * when it goes to the connector's origin.
- */
-export async function getFromCatalog(
-  connector: OpdsConnector,
-  url: URL,
-  {
-    headers = {},
-    signal,
-  }: { headers?: Record<string, string>; signal?: AbortSignal } = {},
-  redirectsLeft = MAX_REDIRECTS,
-): Promise<{ stream: Readable; url: URL }> {
-  if (!HTTP_PROTOCOLS.includes(url.protocol)) {
-    throw new Error(`OPDS URLs must be http(s), not ${url.protocol}`)
-  }
-
-  const response = await axios
-    .get<Readable>(url.href, {
-      headers: { ...headers, ...getOpdsCredentialHeaders(url.href, connector) },
-      maxRedirects: 0,
-      responseType: "stream",
-      signal,
-      timeout: RESPONSE_TIMEOUT_MS,
-      validateStatus: acceptEveryStatus,
-      ...getUserAddressRequestOptions({
-        allowSelfSigned: connector.allowSelfSigned,
-      }),
-    })
-    .catch(function throwCatalogRequestFailure(error: unknown) {
-      throw toCatalogRequestFailure(url, error)
-    })
-  const isSuccess = response.status >= 200 && response.status < 300
-
-  if (isSuccess) return { stream: response.data, url }
-
-  response.data.destroy()
-
-  const { location } = response.headers
-  const isRedirect =
-    REDIRECT_STATUSES.includes(response.status) && typeof location === "string"
-
-  if (isRedirect && redirectsLeft > 0) {
-    return getFromCatalog(
-      connector,
-      new URL(location, url),
-      { headers, signal },
-      redirectsLeft - 1,
-    )
-  }
-
-  if (response.status === 401) {
-    throw new ObokuSharedError(ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED)
-  }
-
-  throw new Error(
-    `OPDS request to ${url.origin} failed with status ${response.status}`,
-  )
-}
 
 const isXmlNode = (value: unknown): value is XmlNode =>
   typeof value === "object" && value !== null && !Array.isArray(value)
@@ -258,10 +185,6 @@ const toAcquisition = ({ url, mediaType, length }: FeedLink): Acquisition => ({
   ...(length !== undefined && { length }),
 })
 
-/**
- * An entry with acquisition links is a publication, a book when one of them
- * is free and readable. One with only links to other feeds is navigation.
- */
 const toFeedEntries = (entry: XmlNode, servedUrl: URL): FeedEntry[] => {
   const id = readText(entry.id)
 
@@ -347,72 +270,76 @@ const fetchFeedPage = async (connector: OpdsConnector, url: URL) => {
 
 type Crawl = {
   connector: OpdsConnector
-  /** The feed URLs fetched, or claimed by a navigation entry to be. */
-  visitedFeedUrls: Set<string>
-  /**
-   * The book each entry id was first listed as. A catalog can list a book in
-   * several feeds, under other titles, and the listings have to agree, or each
-   * sync would rewrite the book's link once per listing.
-   */
-  firstBookListings: Map<string, SynchronizeAbleItem<"opds">>
+  deadline: number
+  /** Each feed's entries, read once however many folders lead to it. */
+  feedEntries: Map<string, FeedEntry[]>
+  pageCount: number
+  entryCount: number
 }
 
 const withoutFragment = (url: URL) => url.href.replace(/#.*$/, "")
 
-const isVisited = (crawl: Crawl, url: URL) =>
-  crawl.visitedFeedUrls.has(withoutFragment(url))
-
-const visit = (crawl: Crawl, url: URL) =>
-  crawl.visitedFeedUrls.add(withoutFragment(url))
-
-const isCrawlExhausted = (crawl: Crawl) =>
-  crawl.visitedFeedUrls.size >= MAX_FEED_URLS
-
-/** The entries of every page of a feed, following its `next` links. */
-async function readFeedEntries(crawl: Crawl, url: URL): Promise<FeedEntry[]> {
-  const { servedUrl, entries, nextUrl } = await fetchFeedPage(
-    crawl.connector,
-    url,
-  )
-
-  visit(crawl, servedUrl)
-
-  if (!nextUrl || isVisited(crawl, nextUrl)) return entries
-
-  if (isCrawlExhausted(crawl)) {
-    logger.warn(`Not reading more pages from ${url.origin}: too many feeds`)
-
-    return entries
-  }
-
-  visit(crawl, nextUrl)
-
-  return [...entries, ...(await readFeedEntries(crawl, nextUrl))]
-}
+const isOverBudget = (crawl: Crawl) =>
+  crawl.pageCount >= MAX_FEED_PAGES ||
+  crawl.entryCount >= MAX_FEED_ENTRIES ||
+  Date.now() >= crawl.deadline
 
 /** Pages can shift while they are read, and list an entry twice. */
 const withoutRepeatedEntries = (entries: FeedEntry[]) =>
   Array.from(new Map(entries.map((entry) => [entry.id, entry])).values())
 
+async function readFeedPages(crawl: Crawl, url: URL) {
+  const pages: FeedEntry[][] = []
+  const pageUrls = new Set<string>()
+  let pageUrl: URL | undefined = url
+
+  while (
+    pageUrl &&
+    !pageUrls.has(withoutFragment(pageUrl)) &&
+    !isOverBudget(crawl)
+  ) {
+    pageUrls.add(withoutFragment(pageUrl))
+    crawl.pageCount++
+
+    const page = await fetchFeedPage(crawl.connector, pageUrl)
+
+    pageUrls.add(withoutFragment(page.servedUrl))
+    pages.push(page.entries)
+    pageUrl = page.nextUrl
+  }
+
+  return withoutRepeatedEntries(pages.flat())
+}
+
+async function readFeed(crawl: Crawl, url: URL) {
+  if (isOverBudget(crawl)) return []
+
+  const feedUrl = withoutFragment(url)
+  const entries =
+    crawl.feedEntries.get(feedUrl) ?? (await readFeedPages(crawl, url))
+
+  crawl.feedEntries.set(feedUrl, entries)
+  crawl.entryCount += entries.length
+
+  return entries
+}
+
 /**
  * Claims the feeds of every navigation entry before following any, so that a
- * feed the catalog links to from several places becomes the folder of the
- * entry closest to the top. A feed already visited, the one linking back up
- * for instance, is not followed again.
+ * feed several of them lead to is followed once, from the first.
  */
-function claimFeedsToFollow(crawl: Crawl, entries: FolderEntry[]) {
+function claimFeedsToFollow(
+  entries: FolderEntry[],
+  followedFeeds: Set<string>,
+) {
   const claimedEntries = new Set<FolderEntry>()
 
   for (const entry of entries) {
-    if (isVisited(crawl, entry.feedUrl)) continue
+    const feedUrl = withoutFragment(entry.feedUrl)
 
-    if (isCrawlExhausted(crawl)) {
-      logger.warn(`Not following ${entry.feedUrl.origin}: too many feeds`)
+    if (followedFeeds.has(feedUrl)) continue
 
-      break
-    }
-
-    visit(crawl, entry.feedUrl)
+    followedFeeds.add(feedUrl)
     claimedEntries.add(entry)
   }
 
@@ -420,23 +347,57 @@ function claimFeedsToFollow(crawl: Crawl, entries: FolderEntry[]) {
 }
 
 const toModifiedAt = (updated: string | undefined) => {
-  const time = updated === undefined ? Number.NaN : Date.parse(updated)
+  const time =
+    updated !== undefined && ZONED_DATE_TIME.test(updated)
+      ? Date.parse(updated)
+      : Number.NaN
 
   return Number.isNaN(time) ? UNKNOWN_MODIFIED_AT : new Date(time).toISOString()
 }
 
+const toBookItem = (
+  connectorId: string,
+  entry: FileEntry,
+): SynchronizeAbleItem<"opds"> => ({
+  type: "file",
+  name: entry.title,
+  modifiedAt: toModifiedAt(entry.updated),
+  linkData: {
+    connectorId,
+    entryId: entry.id,
+    title: entry.title,
+    acquisition: entry.acquisition,
+  },
+})
+
+const toFolderItem = (
+  connectorId: string,
+  entry: FolderEntry,
+  items: SynchronizeAbleItem<"opds">[],
+): SynchronizeAbleItem<"opds"> => ({
+  type: "folder",
+  name: entry.title,
+  modifiedAt: toModifiedAt(entry.updated),
+  linkData: {
+    connectorId,
+    feedUrl: withoutFragment(entry.feedUrl),
+    title: entry.title,
+  },
+  items,
+})
+
 /**
- * @param booksListedInTopFolder The entry ids listed in the top-level folder
- * being crawled. The sync handles that folder's items concurrently, so a
- * second listing there would create the book twice.
+ * @param followedFeeds The feeds followed at the top level, or under the
+ * top-level folder being crawled. Each top-level folder becomes a collection,
+ * so a feed two of them lead to is followed under each.
  */
 async function crawlFeed(
   crawl: Crawl,
   url: URL,
   depth: number,
-  booksListedInTopFolder?: Set<string>,
+  followedFeeds: Set<string>,
 ): Promise<SynchronizeAbleItem<"opds">[]> {
-  const entries = withoutRepeatedEntries(await readFeedEntries(crawl, url))
+  const entries = await readFeed(crawl, url)
   const folderEntries = entries.filter(
     (entry): entry is FolderEntry => entry.type === "folder",
   )
@@ -450,55 +411,23 @@ async function crawlFeed(
 
   const followedEntries = isDeepestFeed
     ? new Set<FolderEntry>()
-    : claimFeedsToFollow(crawl, folderEntries)
+    : claimFeedsToFollow(folderEntries, followedFeeds)
+  const isTopLevel = depth === 0
   const { id: connectorId } = crawl.connector
   const items: SynchronizeAbleItem<"opds">[] = []
 
   for (const entry of entries) {
-    const modifiedAt = toModifiedAt(entry.updated)
-
     if (entry.type === "file") {
-      const isListedInTopFolder = booksListedInTopFolder?.has(entry.id) ?? false
-
-      if (isListedInTopFolder) continue
-
-      booksListedInTopFolder?.add(entry.id)
-
-      const firstListing = crawl.firstBookListings.get(entry.id) ?? {
-        type: "file",
-        name: entry.title,
-        modifiedAt,
-        linkData: {
-          connectorId,
-          entryId: entry.id,
-          title: entry.title,
-          acquisition: entry.acquisition,
-        },
-      }
-
-      crawl.firstBookListings.set(entry.id, firstListing)
-      items.push(firstListing)
+      items.push(toBookItem(connectorId, entry))
     } else if (followedEntries.has(entry)) {
       const folderItems = await crawlFeed(
         crawl,
         entry.feedUrl,
         depth + 1,
-        booksListedInTopFolder ?? new Set(),
+        isTopLevel ? new Set(followedFeeds) : followedFeeds,
       )
 
-      if (folderItems.length > 0) {
-        items.push({
-          type: "folder",
-          name: entry.title,
-          modifiedAt,
-          linkData: {
-            connectorId,
-            feedUrl: withoutFragment(entry.feedUrl),
-            title: entry.title,
-          },
-          items: folderItems,
-        })
-      }
+      items.push(toFolderItem(connectorId, entry, folderItems))
     }
   }
 
@@ -509,13 +438,26 @@ async function crawlFeed(
  * The books and folders a feed leads to: navigation entries become folders of
  * what their feed holds, free and readable publications become files.
  */
-export const crawlOpdsFeed = (connector: OpdsConnector, feedUrl: URL) =>
-  crawlFeed(
-    {
-      connector,
-      visitedFeedUrls: new Set([withoutFragment(feedUrl)]),
-      firstBookListings: new Map(),
-    },
+export async function crawlOpdsFeed(connector: OpdsConnector, feedUrl: URL) {
+  const crawl: Crawl = {
+    connector,
+    deadline: Date.now() + MAX_CRAWL_MINUTES * 60_000,
+    feedEntries: new Map(),
+    pageCount: 0,
+    entryCount: 0,
+  }
+  const items = await crawlFeed(
+    crawl,
     feedUrl,
     0,
+    new Set([withoutFragment(feedUrl)]),
   )
+
+  if (isOverBudget(crawl)) {
+    logger.warn(
+      `Stopped crawling ${feedUrl.origin} early: a crawl reads up to ${MAX_FEED_PAGES} pages and ${MAX_FEED_ENTRIES} entries, for ${MAX_CRAWL_MINUTES} minutes`,
+    )
+  }
+
+  return listEachBookOncePerTopFolder(items)
+}
