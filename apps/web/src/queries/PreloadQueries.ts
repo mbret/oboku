@@ -37,7 +37,11 @@ const usePrefetchAccountSettings = () => {
  * Do not keep expensive queries hot / live if not necessary as it would just keep
  * RAM usage high.
  */
-export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
+export const PreloadQueries = memo(function PreloadQueries({
+  onReady,
+}: {
+  onReady: () => void
+}) {
   const isAccountSettingsPreloaded = usePrefetchAccountSettings()
   const onReadyRef = useLiveRef(onReady)
 

@@ -3,7 +3,7 @@ import { Typography, Box } from "@mui/material"
 import { HomeBookList } from "./HomeBookList"
 import { useRecentlyAddedBooks } from "./useRecentlyAddedBooks"
 
-export const RecentlyAddedSection = memo(() => {
+export const RecentlyAddedSection = memo(function RecentlyAddedSection() {
   const recentlyAddedBooks = useRecentlyAddedBooks()
 
   return (

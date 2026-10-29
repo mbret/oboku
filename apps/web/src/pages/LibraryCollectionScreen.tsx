@@ -7,7 +7,7 @@ import { Toolbar } from "../library/shelves/Toolbar"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
 import { openAddCollectionDialog } from "../library/shelves/AddCollectionDialog"
 
-export const LibraryCollectionScreen = memo(() => {
+export const LibraryCollectionScreen = memo(function LibraryCollectionScreen() {
   const { viewMode } = useSignalValue(
     libraryShelvesFiltersSignal,
     ({ viewMode }) => ({ viewMode }),

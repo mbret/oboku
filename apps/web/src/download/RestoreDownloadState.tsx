@@ -29,16 +29,18 @@ const useRestoreDownloadState = ({ onSuccess }: { onSuccess: () => void }) => {
   })
 }
 
-export const RestoreDownloadState = memo(
-  ({ onReady }: { onReady: () => void }) => {
-    const { mutate: restoreDownloadState } = useRestoreDownloadState({
-      onSuccess: onReady,
-    })
+export const RestoreDownloadState = memo(function RestoreDownloadState({
+  onReady,
+}: {
+  onReady: () => void
+}) {
+  const { mutate: restoreDownloadState } = useRestoreDownloadState({
+    onSuccess: onReady,
+  })
 
-    useEffect(() => {
-      restoreDownloadState()
-    }, [restoreDownloadState])
+  useEffect(() => {
+    restoreDownloadState()
+  }, [restoreDownloadState])
 
-    return null
-  },
-)
+  return null
+})

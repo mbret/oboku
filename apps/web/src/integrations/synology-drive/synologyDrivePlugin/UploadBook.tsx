@@ -5,7 +5,7 @@ import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
 import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
 
 export const UploadBook: ObokuPlugin<"synology-drive">["UploadBookComponent"] =
-  memo(({ onClose, title }) => {
+  memo(function UploadBook({ onClose, title }) {
     const [authResult, setAuthResult] = useState<
       import("./upload/ConnectorSelectionStep").SynologyAuthResult | undefined
     >(undefined)

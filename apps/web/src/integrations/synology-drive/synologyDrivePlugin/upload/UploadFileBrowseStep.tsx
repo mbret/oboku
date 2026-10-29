@@ -14,89 +14,87 @@ import {
 } from "../browsing/tree"
 import type { TreeNode } from "../../../../common/FileTreeView"
 
-export const UploadFileBrowseStep = memo(
-  ({
-    authResult,
-    onAccountChange,
-    onClose,
-  }: {
-    authResult: SynologyAuthResult
-    onAccountChange: () => void
-    onClose: (
-      booksToAdd?: ReadonlyArray<UploadBookToAddPayload<"synology-drive">>,
-    ) => void
-  }) => {
-    const { session, connectorId } = authResult
-    const { data: connector } = useConnector({
-      id: connectorId,
-      type: "synology-drive",
-    })
-    const url = session.auth.baseUrl ?? connector?.url ?? ""
-    const initialItems = useMemo(
-      () =>
-        toTreeNodeList(authResult.items, {
-          filterItem: isUploadBrowsableItem,
-        }),
-      [authResult.items],
-    )
-    const onLoadChildren = useLoadChildren({
-      mapItems: (items) =>
-        toTreeNodeList(items, {
-          filterItem: isUploadBrowsableItem,
-        }),
-      onError: (error) => {
-        notifyError(
-          error instanceof Error
-            ? error
-            : new Error(
-                "Synology Drive session may have expired. Try again or sign in again.",
-              ),
-        )
-      },
-      session,
-    })
+export const UploadFileBrowseStep = memo(function UploadFileBrowseStep({
+  authResult,
+  onAccountChange,
+  onClose,
+}: {
+  authResult: SynologyAuthResult
+  onAccountChange: () => void
+  onClose: (
+    booksToAdd?: ReadonlyArray<UploadBookToAddPayload<"synology-drive">>,
+  ) => void
+}) {
+  const { session, connectorId } = authResult
+  const { data: connector } = useConnector({
+    id: connectorId,
+    type: "synology-drive",
+  })
+  const url = session.auth.baseUrl ?? connector?.url ?? ""
+  const initialItems = useMemo(
+    () =>
+      toTreeNodeList(authResult.items, {
+        filterItem: isUploadBrowsableItem,
+      }),
+    [authResult.items],
+  )
+  const onLoadChildren = useLoadChildren({
+    mapItems: (items) =>
+      toTreeNodeList(items, {
+        filterItem: isUploadBrowsableItem,
+      }),
+    onError: (error) => {
+      notifyError(
+        error instanceof Error
+          ? error
+          : new Error(
+              "Synology Drive session may have expired. Try again or sign in again.",
+            ),
+      )
+    },
+    session,
+  })
 
-    const handleAddBooks = (selectedFiles: TreeNode[]) => {
-      if (!url) {
-        notifyError(new Error("Synology Drive URL is not available anymore."))
+  const handleAddBooks = (selectedFiles: TreeNode[]) => {
+    if (!url) {
+      notifyError(new Error("Synology Drive URL is not available anymore."))
+      return
+    }
+    const booksToAdd: UploadBookToAddPayload<"synology-drive">[] = []
+    for (const file of selectedFiles as SynologyTreeNode[]) {
+      if (!file.fileId) {
+        notifyError(new Error("Missing Synology Drive file id"))
         return
       }
-      const booksToAdd: UploadBookToAddPayload<"synology-drive">[] = []
-      for (const file of selectedFiles as SynologyTreeNode[]) {
-        if (!file.fileId) {
-          notifyError(new Error("Missing Synology Drive file id"))
-          return
-        }
-        booksToAdd.push({
-          book: {
-            metadata: [{ type: "link", title: file.label }],
+      booksToAdd.push({
+        book: {
+          metadata: [{ type: "link", title: file.label }],
+        },
+        link: {
+          data: {
+            connectorId,
+            fileId: file.fileId,
           },
-          link: {
-            data: {
-              connectorId,
-              fileId: file.fileId,
-            },
-            type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
-          },
-        })
-      }
-      onClose(booksToAdd)
+          type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
+        },
+      })
     }
+    onClose(booksToAdd)
+  }
 
-    const handleChangeAccount = () => {
-      clearSynologyDriveSession()
-      onAccountChange()
-    }
+  const handleChangeAccount = () => {
+    clearSynologyDriveSession()
+    onAccountChange()
+  }
 
-    return (
-      <AddBookFileBrowseStep
-        headerSubtitle={url}
-        initialItems={initialItems}
-        onAddBooks={handleAddBooks}
-        onBack={handleChangeAccount}
-        onCancel={() => onClose()}
-        onLoadChildren={onLoadChildren}
-      />
-    )
-  },
-)
+  return (
+    <AddBookFileBrowseStep
+      headerSubtitle={url}
+      initialItems={initialItems}
+      onAddBooks={handleAddBooks}
+      onBack={handleChangeAccount}
+      onCancel={() => onClose()}
+      onLoadChildren={onLoadChildren}
+    />
+  )
+})

@@ -6,7 +6,7 @@ import { searchListActionsToolbarSignal } from "./states"
 export const FiltersDrawer: FC<{
   open: boolean
   onClose: () => void
-}> = memo(({ open, onClose }) => {
+}> = memo(function FiltersDrawer({ open, onClose }) {
   const { notInterestedContents } = useSignalValue(
     searchListActionsToolbarSignal,
   )

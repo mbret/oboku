@@ -12,7 +12,7 @@ import { getConnectorForm } from "./AddConnectorScreen"
 import { Page } from "../common/Page"
 import { PageSection } from "../common/PageSection"
 
-export const EditConnectorScreen = memo(() => {
+export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const { type, id = "-1" } =
     useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_EDIT>>()
   const { goBack } = useSafeGoBack()

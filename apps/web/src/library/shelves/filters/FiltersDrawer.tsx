@@ -15,7 +15,7 @@ import { Checkbox } from "../../../common/Checkbox"
 export const FiltersDrawer: FC<{
   open: boolean
   onClose: () => void
-}> = memo(({ open, onClose }) => {
+}> = memo(function FiltersDrawer({ open, onClose }) {
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
   const { readingState: collectionReadingState, showNotInterestedCollections } =

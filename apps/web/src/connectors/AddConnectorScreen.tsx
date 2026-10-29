@@ -23,7 +23,7 @@ export function getConnectorForm(type: SettingsConnectorType) {
   }
 }
 
-export const AddConnectorScreen = memo(() => {
+export const AddConnectorScreen = memo(function AddConnectorScreen() {
   const { type } =
     useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_NEW>>()
   const { goBack } = useSafeGoBack()

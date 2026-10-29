@@ -171,7 +171,7 @@ export const AppWithConfig = memo(function AppWithConfig() {
   )
 })
 
-const OtherEffects = memo(() => {
+const OtherEffects = memo(function OtherEffects() {
   const { mutate: loadGsi } = useLoadGsi()
 
   useCleanupDanglingLinks()

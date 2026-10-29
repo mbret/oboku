@@ -26,7 +26,7 @@ export const plugin: ObokuPlugin<"file"> = {
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
-  DownloadBookComponent: memo(({ onError }) => {
+  DownloadBookComponent: memo(function plugin({ onError }) {
     useEffect(() => {
       onError(
         new ObokuSharedError(

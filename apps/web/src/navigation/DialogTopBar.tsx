@@ -9,7 +9,7 @@ export const DialogTopBar: FC<{
   title?: string
   onClose: () => void
   hasBackNavigation?: boolean
-}> = memo(({ title, onClose, hasBackNavigation = false }) => {
+}> = memo(function DialogTopBar({ title, onClose, hasBackNavigation = false }) {
   return (
     <AppBar position="static" elevation={0} color="transparent">
       <Toolbar>

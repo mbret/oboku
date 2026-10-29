@@ -8,7 +8,7 @@ export const SelectableTagListItem: FC<{
   id: string
   onItemClick?: () => void
   selected: boolean
-}> = memo(({ id, onItemClick, selected }) => {
+}> = memo(function SelectableTagListItem({ id, onItemClick, selected }) {
   const { data: tag } = useTag(id)
 
   return (

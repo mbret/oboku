@@ -31,7 +31,7 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-export const DataSourcesListScreen = memo(() => {
+export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined

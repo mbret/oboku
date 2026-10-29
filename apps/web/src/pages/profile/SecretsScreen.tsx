@@ -22,39 +22,37 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-const SecretListItem = memo(
-  ({
+const SecretListItem = memo(function SecretListItem({
+  id,
+  masterKey,
+  onClick,
+}: {
+  id: string
+  masterKey?: string
+  onClick: () => void
+}) {
+  const { data: secret } = useSecret(id)
+  const { data: decryptedSecret, isPending } = useDecryptedSecret({
     id,
     masterKey,
-    onClick,
-  }: {
-    id: string
-    masterKey?: string
-    onClick: () => void
-  }) => {
-    const { data: secret } = useSecret(id)
-    const { data: decryptedSecret, isPending } = useDecryptedSecret({
-      id,
-      masterKey,
-    })
-    const secretValue = !masterKey
-      ? "***********"
-      : isPending
-        ? "Decrypting..."
-        : (decryptedSecret ?? "Unable to decrypt")
+  })
+  const secretValue = !masterKey
+    ? "***********"
+    : isPending
+      ? "Decrypting..."
+      : (decryptedSecret ?? "Unable to decrypt")
 
-    return (
-      <ListItemButton onClick={onClick}>
-        <ListItemIcon>
-          <KeyRounded />
-        </ListItemIcon>
-        <ListItemText primary={secret?.name} secondary={secretValue} />
-      </ListItemButton>
-    )
-  },
-)
+  return (
+    <ListItemButton onClick={onClick}>
+      <ListItemIcon>
+        <KeyRounded />
+      </ListItemIcon>
+      <ListItemText primary={secret?.name} secondary={secretValue} />
+    </ListItemButton>
+  )
+})
 
-export const SecretsScreen = memo(() => {
+export const SecretsScreen = memo(function SecretsScreen() {
   const { data: accountSettings } = useSettings()
   const { data: secrets } = useSecrets()
   const { masterKey, unlockMasterKey } = useUnlockMasterKey()

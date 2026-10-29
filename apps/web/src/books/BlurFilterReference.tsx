@@ -2,7 +2,7 @@
 import { GlobalStyles } from "@mui/material"
 import { memo, useId } from "react"
 
-export const BlurFilterReference = memo(() => {
+export const BlurFilterReference = memo(function BlurFilterReference() {
   const blurFilterReferenceId = useId()
 
   return (

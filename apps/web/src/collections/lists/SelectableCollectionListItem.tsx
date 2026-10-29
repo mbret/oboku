@@ -8,7 +8,7 @@ export const SelectableCollectionListItem: FC<{
   id: string
   onItemClick?: (tag: string) => void
   selected: boolean
-}> = memo(({ id, onItemClick, selected }) => {
+}> = memo(function SelectableCollectionListItem({ id, onItemClick, selected }) {
   const { data } = useCollection({ id })
   const metadata = useCollectionComputedMetadata(data)
 
