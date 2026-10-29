@@ -1,5 +1,5 @@
 import type React from "react"
-import { type FC, memo, type ReactNode } from "react"
+import { memo, type ReactNode } from "react"
 import {
   Box,
   type BoxProps,
@@ -44,17 +44,7 @@ export const CoverIconBadge = memo(function CoverIconBadge({
   return <CoverIconBadgeRoot {...rest}>{children}</CoverIconBadgeRoot>
 })
 
-export const BookCoverCard: FC<
-  {
-    bookId: string
-    className?: string
-    style?: React.CSSProperties
-    withDownloadStatus?: boolean
-    withBadges: boolean
-    showBottomBar?: boolean
-    size?: "small" | "large" | "medium"
-  } & CardProps
-> = memo(function BookCoverCard({
+export const BookCoverCard = memo(function BookCoverCard({
   bookId,
   className,
   style,
@@ -63,7 +53,15 @@ export const BookCoverCard: FC<
   showBottomBar = false,
   size = "small",
   ...rest
-}) {
+}: {
+  bookId: string
+  className?: string
+  style?: React.CSSProperties
+  withDownloadStatus?: boolean
+  withBadges: boolean
+  showBottomBar?: boolean
+  size?: "small" | "large" | "medium"
+} & CardProps) {
   const { data: item } = useBook({ id: bookId })
   const { data: link } = useLink({ id: item?.links?.[0] })
   const linkPlugin = link?.type ? pluginsByType[link?.type] : undefined

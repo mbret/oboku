@@ -1,31 +1,37 @@
-import { type FC, memo } from "react"
+import { memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { Checkbox } from "../../common/Checkbox"
 import { useCollection } from "../useCollection"
 import { useCollectionComputedMetadata } from "../useCollectionComputedMetadata"
 
-export const SelectableCollectionListItem: FC<{
-  id: string
-  onItemClick?: (tag: string) => void
-  selected: boolean
-}> = memo(function SelectableCollectionListItem({ id, onItemClick, selected }) {
-  const { data } = useCollection({ id })
-  const metadata = useCollectionComputedMetadata(data)
+export const SelectableCollectionListItem = memo(
+  function SelectableCollectionListItem({
+    id,
+    onItemClick,
+    selected,
+  }: {
+    id: string
+    onItemClick?: (tag: string) => void
+    selected: boolean
+  }) {
+    const { data } = useCollection({ id })
+    const metadata = useCollectionComputedMetadata(data)
 
-  return (
-    <ListItemButton
-      sx={{
-        height: `100%`,
-      }}
-      onClick={() => data && onItemClick?.(data?._id)}
-    >
-      <ListItemText primary={metadata.displayTitle} />
-      <Box
+    return (
+      <ListItemButton
         sx={{
-          mr: 1,
+          height: `100%`,
         }}
-      />
-      <Checkbox selected={selected} />
-    </ListItemButton>
-  )
-})
+        onClick={() => data && onItemClick?.(data?._id)}
+      >
+        <ListItemText primary={metadata.displayTitle} />
+        <Box
+          sx={{
+            mr: 1,
+          }}
+        />
+        <Checkbox selected={selected} />
+      </ListItemButton>
+    )
+  },
+)

@@ -1,4 +1,4 @@
-import { type FC, memo, useState } from "react"
+import { memo, useState } from "react"
 import {
   Drawer,
   List,
@@ -12,10 +12,13 @@ import { ReadingStateFilterDialog, getLabel } from "./ReadingStateFilterDialog"
 import { libraryShelvesFiltersSignal } from "./states"
 import { Checkbox } from "../../../common/Checkbox"
 
-export const FiltersDrawer: FC<{
+export const FiltersDrawer = memo(function FiltersDrawer({
+  open,
+  onClose,
+}: {
   open: boolean
   onClose: () => void
-}> = memo(function FiltersDrawer({ open, onClose }) {
+}) {
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
   const { readingState: collectionReadingState, showNotInterestedCollections } =

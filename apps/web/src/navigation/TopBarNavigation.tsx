@@ -1,5 +1,5 @@
 import type React from "react"
-import { type FC, type ComponentProps, memo } from "react"
+import { type ComponentProps, memo } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Typography, { type TypographyProps } from "@mui/material/Typography"
@@ -35,19 +35,7 @@ const TitleTypography = styled(Typography)({
   overflow: "hidden",
 })
 
-export const TopBarNavigation: FC<
-  {
-    title?: string
-    showBack?: boolean
-    rightComponent?: React.ReactNode
-    middleComponent?: React.ReactNode
-    hasSearch?: boolean
-    hasLockLibrary?: boolean
-    goBackDefaultTo?: string
-    onMoreClick?: () => void
-    TitleProps?: TypographyProps
-  } & ComponentProps<typeof AppBar>
-> = memo(function TopBarNavigation({
+export const TopBarNavigation = memo(function TopBarNavigation({
   title,
   showBack = true,
   position = "static",
@@ -60,7 +48,17 @@ export const TopBarNavigation: FC<
   color,
   TitleProps,
   ...rest
-}) {
+}: {
+  title?: string
+  showBack?: boolean
+  rightComponent?: React.ReactNode
+  middleComponent?: React.ReactNode
+  hasSearch?: boolean
+  hasLockLibrary?: boolean
+  goBackDefaultTo?: string
+  onMoreClick?: () => void
+  TitleProps?: TypographyProps
+} & ComponentProps<typeof AppBar>) {
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
