@@ -18,13 +18,13 @@ An OPDS data source needs a connector, which holds:
 
 - **URL**: the address of your catalog server, starting with `http://` or `https://`.
 - **Username** and **password**: your login on the catalog, the password kept in a [secret](/guides/secrets). oboku sends them with HTTP Basic authentication, and only with requests to the connector's address: its scheme, host and port. A catalog that serves its files from another host, a CDN for instance, never receives them. If your server redirects `http://` to `https://`, enter its `https://` address.
-- **Allow self-signed certificate**: for a server using a self-signed certificate. Since books download from your browser, open your server's address once in it to trust the certificate as well.
+- **Allow self-signed certificate**: for a server using a self-signed certificate. oboku accepts it from the connector's address only. Since books download from your browser, open your server's address once in it to trust the certificate as well.
 
 Kavita does not ask OPDS readers to log in: the OPDS URL it gives you carries your key. Enter your username and any password.
 
 ## Which feed to sync
 
-A data source syncs the feed whose URL you enter, which has to be on the connector's server. oboku follows it down: each entry leading to another feed becomes a folder of what that feed holds, so the sections of the feed you enter become collections. In a feed listing series, each series becomes a collection. oboku does not follow the links that lead back up the catalog, to searches, to related feeds, or to sorted and filtered views of the same books.
+A data source syncs the feed whose URL you enter, which has to be on the connector's server. oboku follows it down: each entry leading to another feed becomes a folder of what that feed holds, so the sections of the feed you enter become collections. In a feed listing series, each series becomes a collection. A feed listed in several sections, like a series in two collections, shows up in each. oboku does not follow the links that lead back up the catalog, to searches, to related feeds, or to sorted and filtered views of the same books.
 
 Enter a list such as the catalog's series rather than its root, or entries like "Recently added" become collections. Lists that change on their own, like Komga's "Keep reading", make poor collections too: a book stays in a collection after its feed stops listing it. For instance:
 
@@ -34,7 +34,7 @@ Enter a list such as the catalog's series rather than its root, or entries like 
 
 To find a feed, open the catalog in an OPDS reader, or its root in your browser, which shows the XML, and follow the entries to the list you want.
 
-oboku reads every page of a feed. To keep a sync from running forever, it stops ten feeds down from the one you enter, and after 5,000 feeds.
+oboku reads every page of a feed. To keep a sync from running forever, it stops ten feeds down from the one you enter, and after reading 5,000 pages or 200,000 entries, or after 30 minutes. A sync that stops early keeps what it read.
 
 ## CORS
 
@@ -61,6 +61,7 @@ oboku's server connects to your catalog to read its feeds during syncs and to do
 - oboku recognizes a book by the id the catalog gives its entry. A server that changes these ids, when it rebuilds or re-imports its library for instance, makes every book come back as a new one, without its reading progress.
 - oboku recognizes a collection by the address of its feed. When that address changes, because your server moves or you get a new Kavita key for instance, the next sync creates new collections and leaves the old ones in place.
 - Each sync refreshes the metadata of the books whose entry has a new update date. A server that dates every entry with the current time makes every sync refresh every book.
+- Kavita dates its entries with the time of the request and no time zone, which oboku ignores: a sync refreshes a Kavita book's metadata only when the book is new or has no cover.
 - Komga gives CBR files a type that oboku does not take yet, `application/x-rar-compressed`, so a sync skips them.
 - A catalog without a login cannot be synced yet.
 - The catalog's own authors, ISBN, cover and summary are not used yet.
