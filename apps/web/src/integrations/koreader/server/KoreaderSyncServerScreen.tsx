@@ -16,9 +16,9 @@ import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
 import { useConfig } from "../../../config/useConfig"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
-import { CopyableField } from "../../../common/CopyableField"
 import { IntroStack } from "../../../common/IntroStack"
-import { GeneratedPasswordField } from "../../../common/GeneratedPasswordField"
+import { TextField } from "../../../common/forms/TextField"
+import { GeneratedPasswordField } from "../../../common/forms/GeneratedPasswordField"
 import { useKoreaderSyncServer } from "./useKoreaderSyncServer"
 import { useCreateKoreaderSyncServerPassword } from "./useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "./useTurnOffKoreaderSyncServer"
@@ -94,13 +94,19 @@ export const KoreaderSyncServerScreen = memo(
         </PageContainer>
         <PageContainer disableGutters>
           <PageSection variant="stack">
-            <CopyableField
+            <TextField
               label="Server"
               value={config?.API_KOREADER_SYNC_SERVER_URL ?? ""}
+              copyable
+              fullWidth
+              slotProps={{ input: { readOnly: true } }}
             />
-            <CopyableField
+            <TextField
               label="Username"
               value={koreaderSyncServer?.username ?? ""}
+              copyable
+              fullWidth
+              slotProps={{ input: { readOnly: true } }}
             />
             {createdPassword ? (
               <GeneratedPasswordField password={createdPassword.password} />

@@ -15,8 +15,8 @@ import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { IntroStack } from "../../common/IntroStack"
-import { CopyableField } from "../../common/CopyableField"
-import { GeneratedPasswordField } from "../../common/GeneratedPasswordField"
+import { TextField } from "../../common/forms/TextField"
+import { GeneratedPasswordField } from "../../common/forms/GeneratedPasswordField"
 import { EmptyAlert } from "../../common/alerts/EmptyAlert"
 import { FetchErrorAlert } from "../../common/alerts/FetchErrorAlert"
 import { LoadingAlert } from "../../common/alerts/LoadingAlert"
@@ -95,11 +95,20 @@ function OpdsServerSection({
   return (
     <FormControl component="fieldset" fullWidth aria-label={server.name}>
       <PageSection title={server.name} variant="stack">
-        <CopyableField
+        <TextField
           label="Catalog URL"
           value={config ? `${config.API_OPDS_URL}/${server.slug}` : ""}
+          copyable
+          fullWidth
+          slotProps={{ input: { readOnly: true } }}
         />
-        <CopyableField label="Username" value={server.username} />
+        <TextField
+          label="Username"
+          value={server.username}
+          copyable
+          fullWidth
+          slotProps={{ input: { readOnly: true } }}
+        />
         {newPassword ? (
           <GeneratedPasswordField password={newPassword} />
         ) : (

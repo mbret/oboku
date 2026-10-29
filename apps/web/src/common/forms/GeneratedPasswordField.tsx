@@ -1,10 +1,16 @@
 import { Alert } from "@mui/material"
-import { CopyableField } from "./CopyableField"
+import { TextField } from "./TextField"
 
 export function GeneratedPasswordField({ password }: { password: string }) {
   return (
     <>
-      <CopyableField label="Password" value={password} />
+      <TextField
+        label="Password"
+        value={password}
+        copyable
+        fullWidth
+        slotProps={{ input: { readOnly: true } }}
+      />
       <Alert severity="warning">
         Copy this password now: it is not shown again.
       </Alert>
