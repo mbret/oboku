@@ -7,13 +7,11 @@ import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { Logger } from "../../debug/logger.shared"
 import type { getBookFile } from "../../download/getBookFile.shared"
 import { StreamerFileNotSupportedError } from "../../errors/errors.shared"
-import { isPotentialZipFile } from "@oboku/shared"
-
-const RAR_MIME_TYPES = [
-  "application/x-rar-compressed",
-  "application/vnd.rar",
-  "application/x-rar",
-]
+import {
+  RAR_MIME_TYPES,
+  getMimeTypeEssence,
+  isPotentialZipFile,
+} from "@oboku/shared"
 
 export const isRarFile = (
   file: NonNullable<Awaited<ReturnType<typeof getBookFile>>>,
@@ -21,7 +19,7 @@ export const isRarFile = (
   const normalizedName = file.data.name.toLowerCase()
 
   return (
-    RAR_MIME_TYPES.includes(file.data.type) ||
+    RAR_MIME_TYPES.includes(getMimeTypeEssence(file.data.type)) ||
     normalizedName.endsWith(".rar") ||
     normalizedName.endsWith(".cbr")
   )

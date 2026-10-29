@@ -67,17 +67,6 @@ export class AppConfigService {
     return this.config.get("JWT_PUBLIC_KEY", { infer: true })
   }
 
-  get METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS() {
-    return [
-      "application/x-cbz",
-      "application/x-cbr",
-      "application/epub+zip",
-      "application/zip",
-      "application/x-zip-compressed",
-      "application/x-rar",
-    ]
-  }
-
   get TMP_DIR() {
     return "/tmp/oboku"
   }

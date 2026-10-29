@@ -11,8 +11,12 @@ const basename = (uri: string): string =>
  */
 export const createUnzipperArchiveSource = async (
   filePath: string,
+  {
+    name = basename(filePath),
+    encodingFormat,
+  }: { name?: string; encodingFormat?: string } = {},
 ): Promise<Archive> => {
   const directory = await unzipper.Open.file(filePath)
 
-  return createArchiveFromUnzipper(directory, { name: basename(filePath) })
+  return createArchiveFromUnzipper(directory, { name, encodingFormat })
 }
