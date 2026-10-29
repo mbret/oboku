@@ -6,6 +6,7 @@ import {
   ListItem,
   ListItemButton,
   ListItemText,
+  Stack,
   Typography,
 } from "@mui/material"
 import { Link as RouterLink } from "react-router"
@@ -16,7 +17,6 @@ import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
 import { useConfig } from "../../../config/useConfig"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
-import { IntroStack } from "../../../common/IntroStack"
 import { TextField } from "../../../common/forms/TextField"
 import { GeneratedPasswordField } from "../../../common/forms/GeneratedPasswordField"
 import { useKoreaderSyncServer } from "./useKoreaderSyncServer"
@@ -77,7 +77,7 @@ export const KoreaderSyncServerScreen = memo(
       <Page>
         <TopBarNavigation title="KOReader sync server" />
         <PageContainer>
-          <IntroStack>
+          <Stack spacing={2} sx={{ pt: 2 }}>
             <Typography>
               oboku can be the sync server of KOReader, Readest, CrossPoint and
               the other apps that support KOReader sync: point them at oboku and
@@ -90,7 +90,7 @@ export const KoreaderSyncServerScreen = memo(
               </Link>{" "}
               with this server.
             </Alert>
-          </IntroStack>
+          </Stack>
         </PageContainer>
         <PageContainer disableGutters>
           <PageSection variant="stack">

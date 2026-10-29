@@ -14,7 +14,6 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
-import { IntroStack } from "../../common/IntroStack"
 import { TextField } from "../../common/forms/TextField"
 import { GeneratedPasswordField } from "../../common/forms/GeneratedPasswordField"
 import { EmptyAlert } from "../../common/alerts/EmptyAlert"
@@ -168,7 +167,7 @@ export function OpdsIntegrationScreen() {
     <Page>
       <TopBarNavigation title="OPDS" showBack />
       <PageContainer>
-        <IntroStack>
+        <Stack spacing={2} sx={{ pt: 2 }}>
           <Typography>
             An OPDS server turns your library into a catalog that KOReader and
             the other reading apps that support OPDS can browse. Each server has
@@ -192,7 +191,7 @@ export function OpdsIntegrationScreen() {
           {isError && <FetchErrorAlert subject="OPDS servers" />}
           {isUnavailable && <UnavailableAlert subject="OPDS servers" />}
           {hasNoServer && <EmptyAlert subject="OPDS servers" />}
-        </IntroStack>
+        </Stack>
       </PageContainer>
       <PageContainer disableGutters>
         {serversNewestFirst?.map((server) => (

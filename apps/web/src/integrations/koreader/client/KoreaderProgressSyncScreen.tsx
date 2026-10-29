@@ -18,7 +18,6 @@ import { ROUTES } from "../../../navigation/routes"
 import { Page } from "../../../common/Page"
 import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
-import { IntroStack } from "../../../common/IntroStack"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { ErrorAlert } from "../../../errors/ErrorMessage"
@@ -117,7 +116,7 @@ const ConnectionForm = memo(function ConnectionForm() {
   return (
     <>
       <PageContainer>
-        <IntroStack>
+        <Stack spacing={2} sx={{ pt: 2 }}>
           <Typography>
             oboku's reader can sync its reading position through a KOReader sync
             server, like KOReader, Readest or CrossPoint do. Use the server and
@@ -129,7 +128,7 @@ const ConnectionForm = memo(function ConnectionForm() {
               setValue("username", username, { shouldValidate: true })
             }}
           />
-        </IntroStack>
+        </Stack>
       </PageContainer>
       <PageContainer disableGutters>
         <form
