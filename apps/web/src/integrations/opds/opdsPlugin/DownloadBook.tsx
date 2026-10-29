@@ -9,7 +9,11 @@ import {
   type Observable,
 } from "rxjs"
 import { useLiveRef, useMutation$ } from "reactjrx"
-import { ObokuErrorCode, type OpdsBookLinkData } from "@oboku/shared"
+import {
+  isOpdsBookLinkData,
+  ObokuErrorCode,
+  type OpdsBookLinkData,
+} from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../../plugins/types"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { CancelError } from "../../../errors/errors.shared"
@@ -40,12 +44,12 @@ export const DownloadBook = memo(function DownloadBook({
   })
   const onErrorRef = useLiveRef(onError)
   const { connectorId } = link.data
-  const bookLinkData = "acquisition" in link.data ? link.data : undefined
+  const bookLinkData = isOpdsBookLinkData(link.data) ? link.data : undefined
 
   const { mutate: download } = useMutation$({
     mutationFn: function downloadWithConnector({
       connectorId: connectorIdParam,
-      bookLinkData: { acquisition, entryId, title = entryId },
+      bookLinkData: { acquisition, title },
       onUnmount$,
     }: {
       connectorId: string

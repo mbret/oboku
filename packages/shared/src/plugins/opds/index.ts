@@ -20,13 +20,13 @@ export type OpdsConnectorDocType = {
 
 /**
  * A book: `connectorId` and `entryId` identify it. The rest is what the last
- * sync saw: OPDS has no request for a single entry, so metadata refreshes and
+ * sync saw: OPDS cannot look an entry up by its id, so metadata refreshes and
  * downloads read it from here.
  */
 const opdsBookLinkDataSchema = z.object({
   connectorId: z.string().optional(),
   entryId: z.string(),
-  title: z.string().optional(),
+  title: z.string(),
   acquisition: z.object({
     href: z.string(),
     type: z.string(),
@@ -42,7 +42,7 @@ const opdsBookLinkDataSchema = z.object({
 const opdsFolderLinkDataSchema = z.object({
   connectorId: z.string().optional(),
   feedUrl: z.string(),
-  title: z.string().optional(),
+  title: z.string(),
 })
 
 export const opdsLinkDataSchema = z.union([
@@ -63,6 +63,14 @@ export type OpdsBookLinkData = z.infer<typeof opdsBookLinkDataSchema>
 export type OpdsFolderLinkData = z.infer<typeof opdsFolderLinkDataSchema>
 export type OpdsLinkData = z.infer<typeof opdsLinkDataSchema>
 
+export const isOpdsBookLinkData = (
+  data: OpdsLinkData,
+): data is OpdsBookLinkData => "acquisition" in data
+
+export const isOpdsFolderLinkData = (
+  data: OpdsLinkData,
+): data is OpdsFolderLinkData => "feedUrl" in data
+
 const HTTP_PROTOCOLS = ["http:", "https:"]
 
 /** The origin of an absolute http(s) URL, undefined for anything else. */
@@ -76,8 +84,7 @@ export const getOpdsUrlOrigin = (url: string) => {
 
 /**
  * Whether a request to `url` may carry the credentials of the connector at
- * `connectorUrl`: only a request to the connector's origin does. Catalogs
- * often serve their files from another host, such as a CDN.
+ * `connectorUrl`: only a request to the connector's origin does.
  */
 export const isOpdsConnectorOrigin = (url: string, connectorUrl: string) => {
   const origin = getOpdsUrlOrigin(url)
@@ -85,7 +92,7 @@ export const isOpdsConnectorOrigin = (url: string, connectorUrl: string) => {
   return origin !== undefined && origin === getOpdsUrlOrigin(connectorUrl)
 }
 
-/** Basic credentials are UTF-8 (RFC 7617, section 2.1). */
+/** UTF-8, the only charset RFC 7617 defines (section 2.1). */
 const toBasicCredentials = (username: string, password: string) =>
   btoa(
     String.fromCharCode(...new TextEncoder().encode(`${username}:${password}`)),
