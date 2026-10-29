@@ -10,6 +10,7 @@ import { from, of } from "rxjs"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { type BookDocType, getBookmark } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
+import { useReaderTheme } from "./theme/useReaderTheme"
 
 type OpeningTarget = Parameters<typeof createAppReader>[0]["target"]
 
@@ -60,6 +61,8 @@ export const useCreateReader = ({
   book: DeepReadonly<BookDocType> | null | undefined
   containerRef: RefObject<HTMLElement | null>
 }) => {
+  const { getTheme } = useReaderTheme()
+
   useEffect(
     function createReaderForBook() {
       const containerElement = containerRef.current
@@ -81,6 +84,7 @@ export const useCreateReader = ({
 
       const instance = createAppReader({
         manifest,
+        theme: getTheme(),
         target,
         ...(isEInkMode && {
           pageTurnAnimation: "none",
@@ -136,6 +140,7 @@ export const useCreateReader = ({
       book,
       koreaderDocument,
       containerRef,
+      getTheme,
     ],
   )
 }
