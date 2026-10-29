@@ -305,6 +305,7 @@ async function readFeedPages(crawl: Crawl, url: URL) {
 
     pageUrls.add(withoutFragment(page.servedUrl))
     pages.push(page.entries)
+    crawl.entryCount += page.entries.length
     pageUrl = page.nextUrl
   }
 
@@ -315,11 +316,17 @@ async function readFeed(crawl: Crawl, url: URL) {
   if (isOverBudget(crawl)) return []
 
   const feedUrl = withoutFragment(url)
-  const entries =
-    crawl.feedEntries.get(feedUrl) ?? (await readFeedPages(crawl, url))
+  const cachedEntries = crawl.feedEntries.get(feedUrl)
+
+  if (cachedEntries) {
+    crawl.entryCount += cachedEntries.length
+
+    return cachedEntries
+  }
+
+  const entries = await readFeedPages(crawl, url)
 
   crawl.feedEntries.set(feedUrl, entries)
-  crawl.entryCount += entries.length
 
   return entries
 }

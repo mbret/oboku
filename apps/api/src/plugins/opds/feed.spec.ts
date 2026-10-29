@@ -795,6 +795,44 @@ describe("OPDS crawl", () => {
     expect(catalog.onRequest).toHaveBeenCalledTimes(5000)
   }, 60_000)
 
+  it("stops reading feeds after 200,000 entries", async () => {
+    const pageNumbers = Array.from({ length: 11 }, (_, number) => number)
+    const catalog = await startServer(
+      Object.fromEntries(
+        pageNumbers.map(function toPageOfBooks(page) {
+          const bookNumbers = Array.from(
+            { length: 20_000 },
+            (_, book) => page * 20_000 + book,
+          )
+
+          return [
+            `/opds?page=${page}`,
+            {
+              body: feed(
+                nextPageLink(`/opds?page=${page + 1}`),
+                ...bookNumbers.map(function toBookEntry(number) {
+                  return bookEntry({
+                    id: `urn:book:${number}`,
+                    title: `Book ${number}`,
+                    href: `/${number}`,
+                  })
+                }),
+              ),
+            },
+          ]
+        }),
+      ),
+    )
+    allowServers(catalog)
+
+    await syncFeed({
+      feedUrl: `${catalog.origin}/opds?page=0`,
+      connectorUrl: catalog.origin,
+    })
+
+    expect(catalog.onRequest).toHaveBeenCalledTimes(10)
+  }, 60_000)
+
   it("stops reading feeds after half an hour", async () => {
     vi.useFakeTimers({ toFake: ["Date"] })
     onTestFinished(function restoreClock() {

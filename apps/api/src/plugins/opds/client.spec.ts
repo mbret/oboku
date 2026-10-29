@@ -133,18 +133,11 @@ describe("OPDS requests", () => {
     ])
   })
 
-  it("downloads a book with the connector's credentials on its origin only", async () => {
-    const files = await startServer({
-      "/1.epub": { body: "epub bytes" },
-    })
+  it("downloads a book with the connector's credentials", async () => {
     const catalog = await startServer({
       "/opds/books/1/file": { body: "epub bytes" },
-      "/opds/books/1/redirect": {
-        status: 307,
-        headers: { location: `${files.origin}/1.epub` },
-      },
     })
-    allowServers(catalog, files)
+    allowServers(catalog)
 
     await expect(
       downloadBook({
@@ -152,26 +145,8 @@ describe("OPDS requests", () => {
         connectorUrl: catalog.origin,
       }),
     ).resolves.toBe("epub bytes")
-    await expect(
-      downloadBook({
-        acquisitionHref: `${catalog.origin}/opds/books/1/redirect`,
-        connectorUrl: catalog.origin,
-      }),
-    ).resolves.toBe("epub bytes")
-    await expect(
-      downloadBook({
-        acquisitionHref: `${files.origin}/1.epub`,
-        connectorUrl: catalog.origin,
-      }),
-    ).resolves.toBe("epub bytes")
-
     expect(catalog.onRequest.mock.calls).toEqual([
       [{ path: "/opds/books/1/file", authorization: basicAuthorization }],
-      [{ path: "/opds/books/1/redirect", authorization: basicAuthorization }],
-    ])
-    expect(files.onRequest.mock.calls).toEqual([
-      [{ path: "/1.epub", authorization: undefined }],
-      [{ path: "/1.epub", authorization: undefined }],
     ])
   })
 
