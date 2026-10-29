@@ -14,7 +14,6 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
-  getMimeTypeEssence,
   isLegacyFileMetadata,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -29,6 +28,7 @@ import { atomicUpdate, findOne } from "../couch/dbHelpers.js"
 import { isBookProtected } from "../couch/isBookProtected.js"
 import { CoversService } from "../covers/covers.service.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
+import { isMaybeExtractableContentType } from "../features/metadata/archives/isMaybeExtractableContentType.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
 import { getBookSourcesMetadata } from "../features/metadata/getBookSourcesMetadata.js"
 import { pickCoverMetadata } from "../features/metadata/pickCoverMetadata.js"
@@ -244,18 +244,12 @@ export class BooksMetadataService {
         modifiedAt: persistedModifiedAt,
       }
 
-      const contentType =
-        linkMetadata.contentType && getMimeTypeEssence(linkMetadata.contentType)
+      const contentType = linkMetadata.contentType
       /**
        * Not all plugins return the valid content type so
        * we can only make some assumptions based on what we have
        */
-      const isMaybeExtractAble =
-        contentType === undefined ||
-        (contentType &&
-          this.appConfigService.METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS.includes(
-            contentType,
-          ))
+      const isMaybeExtractAble = isMaybeExtractableContentType(contentType)
 
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
