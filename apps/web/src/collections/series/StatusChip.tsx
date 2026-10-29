@@ -9,69 +9,67 @@ import {
 import type { CollectionMetadata } from "@oboku/shared"
 import { memo } from "react"
 
-export const StatusChip = memo(
-  ({
-    rating,
-    status,
-    ...rest
-  }: Pick<CollectionMetadata, "status" | "rating"> & ChipProps) => {
-    return (
-      <Chip
-        variant="filled"
-        color="primary"
-        label={
-          <Stack
-            direction="row"
+export const StatusChip = memo(function StatusChip({
+  rating,
+  status,
+  ...rest
+}: Pick<CollectionMetadata, "status" | "rating"> & ChipProps) {
+  return (
+    <Chip
+      variant="filled"
+      color="primary"
+      label={
+        <Stack
+          direction="row"
+          sx={{
+            alignItems: "center",
+            gap: 1,
+          }}
+        >
+          <Typography
+            variant="caption"
             sx={{
-              alignItems: "center",
-              gap: 1,
+              lineHeight: "inherit",
+              color: "inherit",
             }}
           >
-            <Typography
-              variant="caption"
+            {capitalize(status ?? "unknown")}
+          </Typography>
+          {typeof rating === "number" && (
+            <Stack
+              direction="row"
               sx={{
-                lineHeight: "inherit",
-                color: "inherit",
+                alignItems: "center",
               }}
             >
-              {capitalize(status ?? "unknown")}
-            </Typography>
-            {typeof rating === "number" && (
-              <Stack
-                direction="row"
+              <StarRounded fontSize="small" sx={{ color: "inherit" }} />
+              <Typography
+                variant="caption"
                 sx={{
-                  alignItems: "center",
+                  lineHeight: "inherit",
+                  fontWeight: "bold",
+                  color: "inherit",
                 }}
               >
-                <StarRounded fontSize="small" sx={{ color: "inherit" }} />
-                <Typography
-                  variant="caption"
-                  sx={{
-                    lineHeight: "inherit",
-                    fontWeight: "bold",
-                    color: "inherit",
-                  }}
-                >
-                  {rating.toFixed(1)}
-                </Typography>
-              </Stack>
-            )}
-          </Stack>
-        }
-        icon={
-          <CircleRounded
-            color={
-              status === "ongoing"
-                ? "success"
-                : status === "completed"
-                  ? "info"
-                  : "disabled"
-            }
-          />
-        }
-        size="small"
-        {...rest}
-      />
-    )
-  },
-)
+                {rating.toFixed(1)}
+              </Typography>
+            </Stack>
+          )}
+        </Stack>
+      }
+      icon={
+        <CircleRounded
+          color={
+            status === "ongoing"
+              ? "success"
+              : status === "completed"
+                ? "info"
+                : "disabled"
+          }
+        />
+      }
+      size="small"
+      {...rest}
+    />
+  )
+})

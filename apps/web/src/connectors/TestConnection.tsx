@@ -30,40 +30,38 @@ const MESSAGE_ERROR = "Unable to connect"
  * Shared connection test Alert. Wording is the same for all plugins.
  * Parent provides the async test method.
  */
-const ConnectionStatus = memo(
-  ({
-    status,
-    isFetching,
-    success,
-    renderUnlockAction,
-  }: ConnectionStatusProps) => {
-    const severity =
-      status === "pending" || isFetching
-        ? "info"
-        : success === false
-          ? "error"
-          : "success"
+const ConnectionStatus = memo(function ConnectionStatus({
+  status,
+  isFetching,
+  success,
+  renderUnlockAction,
+}: ConnectionStatusProps) {
+  const severity =
+    status === "pending" || isFetching
+      ? "info"
+      : success === false
+        ? "error"
+        : "success"
 
-    const message = isFetching
-      ? MESSAGE_TESTING
-      : status === "pending"
-        ? MESSAGE_WAITING
-        : success === false
-          ? MESSAGE_ERROR
-          : MESSAGE_SUCCESS
+  const message = isFetching
+    ? MESSAGE_TESTING
+    : status === "pending"
+      ? MESSAGE_WAITING
+      : success === false
+        ? MESSAGE_ERROR
+        : MESSAGE_SUCCESS
 
-    return (
-      <Alert
-        severity={severity}
-        sx={{ alignSelf: "stretch" }}
-        action={renderUnlockAction?.()}
-      >
-        <AlertTitle>Test connection</AlertTitle>
-        {message}
-      </Alert>
-    )
-  },
-)
+  return (
+    <Alert
+      severity={severity}
+      sx={{ alignSelf: "stretch" }}
+      action={renderUnlockAction?.()}
+    >
+      <AlertTitle>Test connection</AlertTitle>
+      {message}
+    </Alert>
+  )
+})
 
 /** Resolved params passed to testConnection (url, username, password). */
 export type ConnectionParams = {

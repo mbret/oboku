@@ -21,54 +21,52 @@ export type SynologyAuthResult = {
   session: SynologyDriveSession
 }
 
-export const ConnectorSelectionStep = memo(
-  (
-    props: Omit<
-      UploadConnectorSelectionStepProps<SynologyAuthResult>,
-      "authenticate" | "initialConnectorId"
-    >,
-  ) => {
-    const requestSynologyDriveSession = useRequestSynologyDriveSession()
-    const authenticate = async (connectorId: string) => {
-      const session = await requestSynologyDriveSession({ connectorId })
+export const ConnectorSelectionStep = memo(function ConnectorSelectionStep(
+  props: Omit<
+    UploadConnectorSelectionStepProps<SynologyAuthResult>,
+    "authenticate" | "initialConnectorId"
+  >,
+) {
+  const requestSynologyDriveSession = useRequestSynologyDriveSession()
+  const authenticate = async (connectorId: string) => {
+    const session = await requestSynologyDriveSession({ connectorId })
 
-      try {
-        const response = await browseSynologyDrive({ session })
+    try {
+      const response = await browseSynologyDrive({ session })
 
-        return {
-          connectorId,
-          items: response.items,
-          session,
-        }
-      } catch (error) {
-        if (!isSynologyDriveAuthenticationError(error)) {
-          throw error
-        }
+      return {
+        connectorId,
+        items: response.items,
+        session,
+      }
+    } catch (error) {
+      if (!isSynologyDriveAuthenticationError(error)) {
+        throw error
+      }
 
-        clearSynologyDriveSession()
+      clearSynologyDriveSession()
 
-        const refreshedSession = await requestSynologyDriveSession({
-          connectorId,
-          forceRefresh: true,
-        })
-        const response = await browseSynologyDrive({
-          session: refreshedSession,
-        })
+      const refreshedSession = await requestSynologyDriveSession({
+        connectorId,
+        forceRefresh: true,
+      })
+      const response = await browseSynologyDrive({
+        session: refreshedSession,
+      })
 
-        return {
-          connectorId,
-          items: response.items,
-          session: refreshedSession,
-        }
+      return {
+        connectorId,
+        items: response.items,
+        session: refreshedSession,
       }
     }
+  }
 
-    return (
-      <UploadConnectorSelectionStep<SynologyAuthResult>
-        {...props}
-        authenticate={authenticate}
-        initialConnectorId={synologyDriveSessionSignal.getValue()?.connectorId}
-      />
-    )
-  },
-)
+  return (
+    <UploadConnectorSelectionStep<SynologyAuthResult>
+      {...props}
+      authenticate={authenticate}
+      initialConnectorId={synologyDriveSessionSignal.getValue()?.connectorId}
+    />
+  )
+})

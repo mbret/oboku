@@ -14,67 +14,69 @@ import { CancelError } from "../errors/errors.shared"
 import { catchCancelError } from "../errors/catchCancelError"
 import { ROUTES } from "../navigation/routes"
 
-export const BackToReadingDialog = memo(
-  ({ isProfileHydrated }: { isProfileHydrated: boolean }) => {
-    const isWithinReaderRoute = !!useMatch(ROUTES.READER)
-    const { mutateAsync: createBackToBookDialog } = useCreateBackToBookDialog()
+export const BackToReadingDialog = memo(function BackToReadingDialog({
+  isProfileHydrated,
+}: {
+  isProfileHydrated: boolean
+}) {
+  const isWithinReaderRoute = !!useMatch(ROUTES.READER)
+  const { mutateAsync: createBackToBookDialog } = useCreateBackToBookDialog()
 
-    const { mutate: checkBackToReading } = useSwitchMutation$({
-      mutationFn: () => {
-        const bookBeingReadId = bookBeingReadStateSignal.getValue()
+  const { mutate: checkBackToReading } = useSwitchMutation$({
+    mutationFn: () => {
+      const bookBeingReadId = bookBeingReadStateSignal.getValue()
 
-        if (
-          !bookBeingReadId ||
-          hasOpenedReaderAlreadyStateSignal.getValue() ||
-          isWithinReaderRoute
-        )
-          throw new CancelError()
+      if (
+        !bookBeingReadId ||
+        hasOpenedReaderAlreadyStateSignal.getValue() ||
+        isWithinReaderRoute
+      )
+        throw new CancelError()
 
-        return latestDatabase$.pipe(
-          switchMap((db) => {
-            const book$ = from(db.book.findOne(bookBeingReadId).exec())
+      return latestDatabase$.pipe(
+        switchMap((db) => {
+          const book$ = from(db.book.findOne(bookBeingReadId).exec())
 
-            return book$.pipe(
-              switchMap((book) => {
-                if (
-                  !book ||
-                  book.readingStateCurrentState === ReadingStateState.Finished
-                )
-                  throw new CancelError()
+          return book$.pipe(
+            switchMap((book) => {
+              if (
+                !book ||
+                book.readingStateCurrentState === ReadingStateState.Finished
+              )
+                throw new CancelError()
 
-                const { title } = getMetadataFromBook(book.toJSON())
+              const { title } = getMetadataFromBook(book.toJSON())
 
-                return from(
-                  createBackToBookDialog({
-                    bookId: bookBeingReadId,
-                    title: title?.toString() ?? "",
-                  }),
-                )
-              }),
-            )
-          }),
-          catchCancelError((err) => {
-            // It's important to only reset the book id when the user cancel the current dialog
-            // otherwise we can conflict with the signal being set somewhere else in the app.
-            // If the user press OK, we don't want to reset since he is going to the reader.
-            // The reset might happens after the signal is set from the reader (creating a conflict).
-            bookBeingReadStateSignal.setValue(SIGNAL_RESET)
+              return from(
+                createBackToBookDialog({
+                  bookId: bookBeingReadId,
+                  title: title?.toString() ?? "",
+                }),
+              )
+            }),
+          )
+        }),
+        catchCancelError((err) => {
+          // It's important to only reset the book id when the user cancel the current dialog
+          // otherwise we can conflict with the signal being set somewhere else in the app.
+          // If the user press OK, we don't want to reset since he is going to the reader.
+          // The reset might happens after the signal is set from the reader (creating a conflict).
+          bookBeingReadStateSignal.setValue(SIGNAL_RESET)
 
-            throw err
-          }),
-        )
-      },
-    })
+          throw err
+        }),
+      )
+    },
+  })
 
-    /**
-     * We make sure to only trigger the check once and on mount
-     */
-    useEffect(() => {
-      if (isProfileHydrated) {
-        checkBackToReading()
-      }
-    }, [isProfileHydrated, checkBackToReading])
+  /**
+   * We make sure to only trigger the check once and on mount
+   */
+  useEffect(() => {
+    if (isProfileHydrated) {
+      checkBackToReading()
+    }
+  }, [isProfileHydrated, checkBackToReading])
 
-    return null
-  },
-)
+  return null
+})

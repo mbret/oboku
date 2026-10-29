@@ -26,7 +26,11 @@ const TrailingIconStack = styled(Stack)({
   flexShrink: 0,
 })
 
-export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
+export const DataSourceSection = memo(function DataSourceSection({
+  bookId,
+}: {
+  bookId: string
+}) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const { data: linkInfo } = useLinkInfo(bookId)

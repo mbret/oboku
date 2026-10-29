@@ -10,7 +10,7 @@ import type { DataSourceSubmitPayload } from "../../integrations/plugins/types"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 
-export const NewDataSourceScreen = memo(() => {
+export const NewDataSourceScreen = memo(function NewDataSourceScreen() {
   const { type } = useParams<PathParam<typeof ROUTES.SYNC_NEW_DATASOURCES>>()
   const { goBack } = useSafeGoBack()
   const plugin = plugins.find(

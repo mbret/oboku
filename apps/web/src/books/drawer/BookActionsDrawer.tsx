@@ -68,7 +68,7 @@ export const useBookActionDrawer = ({
   )
 }
 
-export const BookActionsDrawer = memo(() => {
+export const BookActionsDrawer = memo(function BookActionsDrawer() {
   // React Compiler cannot lower this function yet, so it bails out here.
   // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
   "use no memo"

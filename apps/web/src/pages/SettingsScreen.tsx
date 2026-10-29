@@ -31,7 +31,7 @@ const showCollectionWithProtectedContentChoices = (
   label: showCollectionWithProtectedContentLabels[value],
 }))
 
-export const SettingsScreen = memo(() => {
+export const SettingsScreen = memo(function SettingsScreen() {
   const localSettings = useLocalSettings()
 
   return (

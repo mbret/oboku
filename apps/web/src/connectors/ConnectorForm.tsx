@@ -75,166 +75,161 @@ export type ConnectorFormConfig = {
   renderExtraActions?: () => ReactNode
 }
 
-export const ConnectorForm = memo(
-  ({
-    connectorType,
-    connectorId,
-    onSubmitSuccess,
-    children,
-    showUrl = true,
-    topAlert,
-    passwordFieldLabel = "Password secret",
-    testConnection,
-    renderExtraActions,
-  }: ConnectorFormConfig) => {
-    // react-hook-form is on React Compiler's incompatible-library list.
-    // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
-    "use no memo"
+export const ConnectorForm = memo(function ConnectorForm({
+  connectorType,
+  connectorId,
+  onSubmitSuccess,
+  children,
+  showUrl = true,
+  topAlert,
+  passwordFieldLabel = "Password secret",
+  testConnection,
+  renderExtraActions,
+}: ConnectorFormConfig) {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
 
-    const { data: connector } = useConnector({
-      id: connectorId,
-      type: connectorType,
-    })
-    const isEditing = !!connectorId
-    const {
-      control,
-      formState: { isValid, disabled, errors },
-      watch,
-      handleSubmit,
-    } = useForm<FormData>({
-      mode: "onChange",
-      defaultValues: {
-        urlValue: "",
-        username: "",
-        passwordAsSecretId: "",
-        allowSelfSigned: false,
-      },
-      values: {
-        urlValue: getConnectorUrl(connector),
-        username: connector?.username ?? "",
-        passwordAsSecretId: connector?.passwordAsSecretId ?? "",
-        allowSelfSigned: connector?.allowSelfSigned ?? false,
-      },
-    })
-    const data = watch()
-    const { mutateAsync: addConnector } = useAddConnector({
-      type: connectorType,
-    })
-    const { mutateAsync: updateConnector } = useUpdateConnector({
-      type: connectorType,
-    })
-    const { mutate: submit } = useMutation$({
-      mutationFn: (_formData: FormData) => {
-        const payload = {
-          username: data.username,
-          passwordAsSecretId: data.passwordAsSecretId,
-          ...(showUrl && {
-            url: data.urlValue,
-            allowSelfSigned: data.allowSelfSigned,
-          }),
-        }
-        if (isEditing && connectorId) {
-          return from(updateConnector({ id: connectorId, ...payload }))
-        }
-        return from(addConnector(payload))
-      },
-      onSuccess: () => {
-        notify("actionSuccess")
-        onSubmitSuccess()
-      },
-    })
+  const { data: connector } = useConnector({
+    id: connectorId,
+    type: connectorType,
+  })
+  const isEditing = !!connectorId
+  const {
+    control,
+    formState: { isValid, disabled, errors },
+    watch,
+    handleSubmit,
+  } = useForm<FormData>({
+    mode: "onChange",
+    defaultValues: {
+      urlValue: "",
+      username: "",
+      passwordAsSecretId: "",
+      allowSelfSigned: false,
+    },
+    values: {
+      urlValue: getConnectorUrl(connector),
+      username: connector?.username ?? "",
+      passwordAsSecretId: connector?.passwordAsSecretId ?? "",
+      allowSelfSigned: connector?.allowSelfSigned ?? false,
+    },
+  })
+  const data = watch()
+  const { mutateAsync: addConnector } = useAddConnector({
+    type: connectorType,
+  })
+  const { mutateAsync: updateConnector } = useUpdateConnector({
+    type: connectorType,
+  })
+  const { mutate: submit } = useMutation$({
+    mutationFn: (_formData: FormData) => {
+      const payload = {
+        username: data.username,
+        passwordAsSecretId: data.passwordAsSecretId,
+        ...(showUrl && {
+          url: data.urlValue,
+          allowSelfSigned: data.allowSelfSigned,
+        }),
+      }
+      if (isEditing && connectorId) {
+        return from(updateConnector({ id: connectorId, ...payload }))
+      }
+      return from(addConnector(payload))
+    },
+    onSuccess: () => {
+      notify("actionSuccess")
+      onSubmitSuccess()
+    },
+  })
 
-    return (
-      <>
-        <PageContainer>
-          <TopAlertStack>{topAlert}</TopAlertStack>
-        </PageContainer>
-        <PageContainer disableGutters>
-          <form
-            id={FORM_ID}
-            onSubmit={handleSubmit((values) => submit(values))}
-          >
-            <PageSection variant="stack">
-              {showUrl && (
-                <ControlledTextField
-                  control={control}
-                  fullWidth
-                  label="URL"
-                  name="urlValue"
-                  rules={{ required: true, pattern: URL_PATTERN }}
-                />
-              )}
+  return (
+    <>
+      <PageContainer>
+        <TopAlertStack>{topAlert}</TopAlertStack>
+      </PageContainer>
+      <PageContainer disableGutters>
+        <form id={FORM_ID} onSubmit={handleSubmit((values) => submit(values))}>
+          <PageSection variant="stack">
+            {showUrl && (
               <ControlledTextField
                 control={control}
                 fullWidth
-                label="Username"
-                name="username"
-                rules={{ required: true }}
+                label="URL"
+                name="urlValue"
+                rules={{ required: true, pattern: URL_PATTERN }}
               />
-              <ControlledSecretSelect
+            )}
+            <ControlledTextField
+              control={control}
+              fullWidth
+              label="Username"
+              name="username"
+              rules={{ required: true }}
+            />
+            <ControlledSecretSelect
+              control={control}
+              fullWidth
+              label={passwordFieldLabel}
+              name="passwordAsSecretId"
+              rules={{ required: true }}
+            />
+            {showUrl && (
+              <Controller
                 control={control}
-                fullWidth
-                label={passwordFieldLabel}
-                name="passwordAsSecretId"
-                rules={{ required: true }}
-              />
-              {showUrl && (
-                <Controller
-                  control={control}
-                  name="allowSelfSigned"
-                  render={({ field }) => (
-                    <Stack
+                name="allowSelfSigned"
+                render={({ field }) => (
+                  <Stack
+                    sx={{
+                      gap: 0.5,
+                    }}
+                  >
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          checked={!!field.value}
+                          onChange={(_, checked) => field.onChange(checked)}
+                        />
+                      }
+                      label="Allow self-signed certificate"
+                    />
+                    <Typography
+                      variant="caption"
                       sx={{
-                        gap: 0.5,
+                        color: "text.secondary",
                       }}
                     >
-                      <FormControlLabel
-                        control={
-                          <Checkbox
-                            checked={!!field.value}
-                            onChange={(_, checked) => field.onChange(checked)}
-                          />
-                        }
-                        label="Allow self-signed certificate"
-                      />
-                      <Typography
-                        variant="caption"
-                        sx={{
-                          color: "text.secondary",
-                        }}
-                      >
-                        Used by API sync, metadata, and download requests.
-                        Browser connection tests may still require trusting the
-                        certificate in your browser.
-                      </Typography>
-                    </Stack>
-                  )}
-                />
-              )}
-              {!!errors.root && <ErrorAlert error={errors.root.message} />}
-              {testConnection && (
-                <TestConnection
-                  connectionData={{ ...data, url: data.urlValue }}
-                  connectorType={connectorType}
-                  testConnection={testConnection}
-                />
-              )}
-            </PageSection>
-          </form>
-          <FormActionsStack>
-            {renderExtraActions?.()}
-            <Button
-              disabled={disabled || !isValid}
-              form={FORM_ID}
-              type="submit"
-              variant="contained"
-            >
-              Confirm
-            </Button>
-          </FormActionsStack>
-          {children}
-        </PageContainer>
-      </>
-    )
-  },
-)
+                      Used by API sync, metadata, and download requests. Browser
+                      connection tests may still require trusting the
+                      certificate in your browser.
+                    </Typography>
+                  </Stack>
+                )}
+              />
+            )}
+            {!!errors.root && <ErrorAlert error={errors.root.message} />}
+            {testConnection && (
+              <TestConnection
+                connectionData={{ ...data, url: data.urlValue }}
+                connectorType={connectorType}
+                testConnection={testConnection}
+              />
+            )}
+          </PageSection>
+        </form>
+        <FormActionsStack>
+          {renderExtraActions?.()}
+          <Button
+            disabled={disabled || !isValid}
+            form={FORM_ID}
+            type="submit"
+            variant="contained"
+          >
+            Confirm
+          </Button>
+        </FormActionsStack>
+        {children}
+      </PageContainer>
+    </>
+  )
+})

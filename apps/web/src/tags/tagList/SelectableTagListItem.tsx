@@ -1,14 +1,18 @@
-import { type FC, memo } from "react"
+import { memo } from "react"
 import { Box, ListItemButton, ListItemText } from "@mui/material"
 import { BlurOnRounded, LockRounded } from "@mui/icons-material"
 import { useTag } from "../helpers"
 import { Checkbox } from "../../common/Checkbox"
 
-export const SelectableTagListItem: FC<{
+export const SelectableTagListItem = memo(function SelectableTagListItem({
+  id,
+  onItemClick,
+  selected,
+}: {
   id: string
   onItemClick?: () => void
   selected: boolean
-}> = memo(({ id, onItemClick, selected }) => {
+}) {
   const { data: tag } = useTag(id)
 
   return (

@@ -16,43 +16,41 @@ type ServerFormData = DataSourceFormData<{
   connectorId: string
 }>
 
-export const DataSourceForm = memo(
-  ({
-    dataSource,
-    onSubmit,
-    submitLabel,
-  }: DataSourceFormInternalProps<ServerDataSourceDocType>) => {
-    // react-hook-form is on React Compiler's incompatible-library list.
-    // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
-    "use no memo"
+export const DataSourceForm = memo(function DataSourceForm({
+  dataSource,
+  onSubmit,
+  submitLabel,
+}: DataSourceFormInternalProps<ServerDataSourceDocType>) {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
 
-    const { control, handleSubmit } = useForm<ServerFormData>({
-      mode: "onChange",
-      defaultValues: {
-        ...getDataSourceFormBaseDefaults(dataSource),
-        connectorId: dataSource?.data_v2?.connectorId ?? "",
-      },
-    })
+  const { control, handleSubmit } = useForm<ServerFormData>({
+    mode: "onChange",
+    defaultValues: {
+      ...getDataSourceFormBaseDefaults(dataSource),
+      connectorId: dataSource?.data_v2?.connectorId ?? "",
+    },
+  })
 
-    return (
-      <DataSourceFormLayout
+  return (
+    <DataSourceFormLayout
+      control={control}
+      onSubmit={handleSubmit((data) =>
+        onSubmit(
+          buildDataSourceSubmitPayload(data, {
+            connectorId: data.connectorId,
+          }),
+        ),
+      )}
+      submitLabel={submitLabel}
+    >
+      <ControlledConnectorSelector
         control={control}
-        onSubmit={handleSubmit((data) =>
-          onSubmit(
-            buildDataSourceSubmitPayload(data, {
-              connectorId: data.connectorId,
-            }),
-          ),
-        )}
-        submitLabel={submitLabel}
-      >
-        <ControlledConnectorSelector
-          control={control}
-          name="connectorId"
-          rules={{ required: true }}
-          connectorType="server"
-        />
-      </DataSourceFormLayout>
-    )
-  },
-)
+        name="connectorId"
+        rules={{ required: true }}
+        connectorType="server"
+      />
+    </DataSourceFormLayout>
+  )
+})
