@@ -9,4 +9,16 @@ describe("isRarFile", () => {
 
     expect(isRarFile({ data: file })).toBe(true)
   })
+
+  it("recognizes a CBR by Nextcloud's type", () => {
+    const file = new File([], "book", { type: "application/comicbook+rar" })
+
+    expect(isRarFile({ data: file })).toBe(true)
+  })
+
+  it("does not take a CBZ that Apache labels application/x-cbr for a RAR archive", () => {
+    const file = new File([], "comic.cbz", { type: "application/x-cbr" })
+
+    expect(isRarFile({ data: file })).toBe(false)
+  })
 })

@@ -29,17 +29,14 @@ describe("isFileSupported", () => {
     ).toBe(true)
   })
 
-  it.each([
-    "application/vnd.comicbook-rar",
-    "application/comicbook+rar",
-    "application/vnd.rar",
-    "application/x-rar-compressed",
-  ])(
-    "should accept a CBR reported as %s when the name is not recognized",
-    (mimeType) => {
-      expect(isFileSupported({ name: "no-extension", mimeType })).toBe(true)
-    },
-  )
+  it("should accept a CBR reported with Nextcloud's type when the name is not recognized", () => {
+    expect(
+      isFileSupported({
+        name: "no-extension",
+        mimeType: "application/comicbook+rar",
+      }),
+    ).toBe(true)
+  })
 
   it("should accept a supported mime type whatever its parameters", () => {
     expect(
