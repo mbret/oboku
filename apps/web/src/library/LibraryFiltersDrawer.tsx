@@ -1,4 +1,4 @@
-import { useState, type FC } from "react"
+import { useState } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
@@ -20,10 +20,13 @@ import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./books/states"
 import { Checkbox } from "../common/Checkbox"
 
-export const LibraryFiltersDrawer: FC<{
+export const LibraryFiltersDrawer = ({
+  open,
+  onClose,
+}: {
   open: boolean
   onClose: () => void
-}> = ({ open, onClose }) => {
+}) => {
   const [isTagsDialogOpened, setIsTagsDialogOpened] = useState(false)
   const [isReadingStateDialogOpened, setIsReadingStateDialogOpened] =
     useState(false)
@@ -125,9 +128,12 @@ export const LibraryFiltersDrawer: FC<{
   )
 }
 
-const ReadingStateDialog: FC<{ open: boolean; onClose: () => void }> = ({
+const ReadingStateDialog = ({
   open,
   onClose,
+}: {
+  open: boolean
+  onClose: () => void
 }) => {
   const library = useSignalValue(libraryStateSignal)
   const readingStates = [

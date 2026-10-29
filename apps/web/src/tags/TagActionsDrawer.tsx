@@ -1,4 +1,4 @@
-import { useState, type FC, useEffect } from "react"
+import { useState, useEffect } from "react"
 import Dialog from "@mui/material/Dialog"
 import {
   DialogTitle,
@@ -26,10 +26,13 @@ import { ROUTES } from "../navigation/routes"
 import { Checkbox } from "../common/Checkbox"
 import { CancelButton } from "../common/forms/CancelButton"
 
-export const TagActionsDrawer: FC<{
+export const TagActionsDrawer = ({
+  openWith,
+  onClose,
+}: {
   openWith: string | undefined
   onClose: () => void
-}> = ({ openWith, onClose }) => {
+}) => {
   const { data: tag } = useTag(openWith)
   const editTag = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
@@ -123,11 +126,15 @@ export const TagActionsDrawer: FC<{
   )
 }
 
-const EditTagDialog: FC<{
+const EditTagDialog = ({
+  onClose,
+  open,
+  id,
+}: {
   open: boolean
   id: string | undefined
   onClose: () => void
-}> = ({ onClose, open, id }) => {
+}) => {
   const [name, setName] = useState("")
   const { data: tag } = useTag(id)
   const { name: tagName } = tag ?? {}

@@ -6,16 +6,19 @@ import {
   DialogActions,
   Button,
 } from "@mui/material"
-import { useEffect, useState, type FC } from "react"
+import { useEffect, useState } from "react"
 import { getCollectionComputedMetadata } from "../getCollectionComputedMetadata"
 import { useCollectionIncrementalModify } from "../useCollectionIncrementalModify"
 import { useCollection } from "../useCollection"
 import { CancelButton } from "../../common/forms/CancelButton"
 
-export const RenameCollectionDialog: FC<{
+export const RenameCollectionDialog = ({
+  onClose,
+  openWith,
+}: {
   openWith: string | undefined
   onClose: () => void
-}> = ({ onClose, openWith }) => {
+}) => {
   const [name, setName] = useState("")
   const { data: collection } = useCollection({
     id: openWith,

@@ -1,4 +1,4 @@
-import { type FC, useEffect, useId, useState } from "react"
+import { useEffect, useId, useState } from "react"
 import { type SelectProps, useTheme } from "@mui/material"
 import Input from "@mui/material/Input"
 import InputLabel from "@mui/material/InputLabel"
@@ -8,8 +8,10 @@ import Select from "@mui/material/Select"
 import { useTag, useTagIds } from "./helpers"
 import { TagChip } from "./TagChip"
 
-export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
+export const TagsSelector = ({
   onChange: onUpChange,
+}: {
+  onChange: (tags: string[]) => void
 }) => {
   const { data: tags = [] } = useTagIds()
   const [selectedTags, setSelectedTags] = useState<string[]>([])
@@ -70,7 +72,7 @@ export const TagsSelector: FC<{ onChange: (tags: string[]) => void }> = ({
   )
 }
 
-const TagName: FC<{ id: string }> = ({ id }) => {
+const TagName = ({ id }: { id: string }) => {
   const { data } = useTag(id)
 
   return <>{data?.name}</>
