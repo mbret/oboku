@@ -6,6 +6,8 @@ export const headlessChromium = {
   enabled: true,
   headless: true,
   screenshotFailures: false,
-  provider: playwright(),
+  provider: playwright({
+    contextOptions: { permissions: ["clipboard-write"] },
+  }),
   instances: [{ browser: "chromium" }],
 } satisfies BrowserConfigOptions

@@ -13,20 +13,20 @@ import { useMarkAllNotificationsAsSeen } from "./useMarkAllNotificationsAsSeen"
 import { useUnreadNotificationsCount } from "./useUnreadNotificationsCount"
 import { NotificationCard } from "./NotificationCard"
 import { PageContainer } from "../../common/PageContainer"
+import { isQueryUnavailable } from "../../queries/isQueryUnavailable"
 
 export const NotificationsScreen = memo(function NotificationsScreen() {
+  const notificationsQuery = useInboxNotifications()
   const {
     data: notifications,
     isLoading: isInitialLoading,
     isError: hasError,
-    isPending,
-    fetchStatus,
-  } = useInboxNotifications()
+  } = notificationsQuery
   const { serverUnreadCount } = useUnreadNotificationsCount()
   const markAllNotificationsAsSeen = useMarkAllNotificationsAsSeen()
   const localNotifications = useLocalNotifications()
   const hasLocalNotifications = localNotifications.length > 0
-  const isUnavailable = fetchStatus === "idle" && isPending
+  const isUnavailable = isQueryUnavailable(notificationsQuery)
   const canMarkAllRead =
     serverUnreadCount > 0 && !isUnavailable && !hasError && !isInitialLoading
   const isEmpty =
