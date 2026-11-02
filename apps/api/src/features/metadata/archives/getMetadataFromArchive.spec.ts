@@ -3,6 +3,7 @@ import {
   arrayBufferFileAccessors,
   createArchive,
 } from "@prose-reader/archive-reader"
+import { getBookMetadataFields } from "@oboku/shared"
 import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
 
 const toArrayBuffer = (body: string): ArrayBuffer => {
@@ -54,6 +55,9 @@ const archiveWith = (opf: string) =>
     "OEBPS/content.opf": opf,
   })
 
+const extractFields = async (archive: ReturnType<typeof archiveOf>) =>
+  getBookMetadataFields(await getMetadataFromArchive(archive))
+
 describe("getMetadataFromArchive", () => {
   it("advertises a GoogleBooks identifier as the google volume id", async () => {
     const archive = archiveWith(
@@ -62,7 +66,7 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBe("zyTCAlFPjgYC")
     expect(metadata.title).toBe("Sample")
@@ -73,7 +77,7 @@ describe("getMetadataFromArchive", () => {
       opfWith('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
     )
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBeUndefined()
     expect(metadata.isbn).toBe("9783161484100")
@@ -87,7 +91,7 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBe("zyTCAlFPjgYC")
     expect(metadata.isbn).toBe("9783161484100")
@@ -100,7 +104,7 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBeUndefined()
   })
@@ -130,7 +134,7 @@ describe("getMetadataFromArchive, the cover it reports", () => {
       "OEBPS/cover.jpg": "binary",
     })
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.coverLink).toBe("OEBPS/cover.jpg")
     expect(metadata.coverConfidence).toBe("derived")
@@ -142,14 +146,14 @@ describe("getMetadataFromArchive, the cover it reports", () => {
       "page-002.jpg": "binary",
     })
 
-    const metadata = await getMetadataFromArchive(archive)
+    const metadata = await extractFields(archive)
 
     expect(metadata.coverLink).toBe("page-001.jpg")
     expect(metadata.coverConfidence).toBe("assumed")
   })
 
   it("answers nothing when no cover is derivable", async () => {
-    const metadata = await getMetadataFromArchive(archiveWith(opfWith("")))
+    const metadata = await extractFields(archiveWith(opfWith("")))
 
     expect(metadata.coverLink).toBeUndefined()
     expect(metadata.coverConfidence).toBeUndefined()
