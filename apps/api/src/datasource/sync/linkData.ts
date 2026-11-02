@@ -21,16 +21,15 @@ export const updateLinkData = async (
 ) => {
   if (!isLinkDataOutdated(link.data, syncedLinkData)) return
 
-  await atomicUpdate(
-    db,
-    "link",
-    link._id,
-    (old) =>
-      // The sync matched the item to the link through its provider's
-      // identity, so both hold that provider's link data. TypeScript sees the
-      // link's provider and the item's as two unrelated unions.
-      ({ ...old, data: { ...old.data, ...syncedLinkData } }) as LinkDocType,
-  )
+  await atomicUpdate(db, "link", link._id, function withSyncedLinkData(old) {
+    // The sync matched the item to the link through its provider's
+    // identity, so both hold that provider's link data. TypeScript sees the
+    // link's provider and the item's as two unrelated unions.
+    return {
+      ...old,
+      data: { ...old.data, ...syncedLinkData },
+    } as LinkDocType
+  })
 
   syncReport.updateLink(link._id)
 }
@@ -42,10 +41,14 @@ export const updateCollectionLinkData = async (
 ) => {
   if (!isLinkDataOutdated(collection.linkData, syncedLinkData)) return
 
-  await atomicUpdate(db, "obokucollection", collection._id, (old) => ({
-    ...old,
-    linkData: { ...old.linkData, ...syncedLinkData },
-  }))
+  await atomicUpdate(
+    db,
+    "obokucollection",
+    collection._id,
+    function withSyncedCollectionLinkData(old) {
+      return { ...old, linkData: { ...old.linkData, ...syncedLinkData } }
+    },
+  )
 
   syncReport.updateCollection(collection._id)
 }
