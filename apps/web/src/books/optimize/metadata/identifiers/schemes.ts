@@ -1,6 +1,6 @@
 import {
   catalogUrlFromIdentifier,
-  identifierValue,
+  inferIdentifierScheme,
   normalizeIdentifierScheme,
   type KnownMetadataIdentifierScheme,
   normalizeGtin,
@@ -103,7 +103,7 @@ const IDENTIFIER_SCHEME_TEMPLATES: Record<
     label: "UUID",
     placeholder: "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
     validate: function validateUuid(value) {
-      return identifierValue([{ scheme: "UUID", value }], "UUID") !== undefined
+      return inferIdentifierScheme(value) === "UUID"
         ? true
         : "Not a UUID, e.g. urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
     },
