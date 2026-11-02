@@ -34,11 +34,7 @@ import { isDebugEnabled } from "../../debug/isDebugEnabled.shared"
 import { useSignalValue } from "reactjrx"
 import { useActiveProfile } from "../../profiles"
 import { useRemoveAllContents } from "../../settings/useRemoveAllContents"
-import { showDialog } from "../../common/dialogs/createDialog"
-import {
-  createNotImplementedDialogOptions,
-  showConfirmDialog,
-} from "../../common/dialogs/presets"
+import { showConfirmDialog } from "../../common/dialogs/presets"
 import { countLocalOnlyDownloadedBooks } from "../../download/countLocalOnlyDownloadedBooks"
 import { ROUTES } from "../../navigation/routes"
 import { Page } from "../../common/Page"
@@ -203,13 +199,11 @@ export const ProfileScreen = () => {
             </ListItemIcon>
             <ListItemText primary={`Documentation Page`} />
           </ListItemButton>
-          <ListItemButton
-            onClick={() => showDialog(createNotImplementedDialogOptions())}
-          >
+          <ListItemButton target="_blank" href={links.privacyPolicy}>
             <ListItemIcon>
               <GavelRounded />
             </ListItemIcon>
-            <ListItemText primary="Terms of Service" />
+            <ListItemText primary="Privacy Policy" />
           </ListItemButton>
           <ListItem>
             <ListItemText primary="App Version" secondary={__APP_VERSION__} />
