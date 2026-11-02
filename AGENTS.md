@@ -213,6 +213,10 @@
 - Prefer explicit props types on the function instead, e.g. `function MyComponent(props: MyProps) { ... }` or `function MyComponent({ a, b }: MyProps) { ... }`, and rely on inferred return types (or annotate the return only when it genuinely helps).
 - Rationale: `FC` is discouraged by current React and TypeScript practice (including implicit `children`, weaker inference, and unnecessary indirection).
 
+### Pull requests
+
+- Open a pull request for every branch you push, without waiting to be asked.
+
 ### Decision rule
 
 - Default choice: the solution that best matches current repository patterns and reduces long-term fragmentation.
