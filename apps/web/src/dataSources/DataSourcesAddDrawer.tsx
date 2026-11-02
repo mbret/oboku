@@ -5,17 +5,19 @@ import {
   ListItemText,
   ListItemButton,
 } from "@mui/material"
-import type { FC } from "react"
 import { plugins } from "../integrations/plugins/configure"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
 } from "../integrations/plugins/useIsPluginEnabled"
 
-export const DataSourcesAddDrawer: FC<{
+export const DataSourcesAddDrawer = ({
+  open,
+  onClose,
+}: {
   open: boolean
   onClose: (key?: string) => void
-}> = ({ open, onClose }) => {
+}) => {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
   const dataSourcesPlugins = plugins.filter(

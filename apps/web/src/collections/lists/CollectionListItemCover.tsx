@@ -30,89 +30,91 @@ const DefaultBackground = () => {
   )
 }
 
-export const CollectionListItemCover = memo(
-  ({ id, showType = true }: { id: string; showType?: boolean }) => {
-    const { data: config } = useConfig()
-    const { data: item } = useCollection({
-      id,
-    })
-    const metadata = getCollectionComputedMetadata(item)
-    const readingProgress = useCollectionReadingProgress({ id })
-    const { uri: coverUri } = useCollectionCoverUri(item)
-    const [bgLoaded, setBgLoaded] = useState<string | null>(null)
+export const CollectionListItemCover = memo(function CollectionListItemCover({
+  id,
+  showType = true,
+}: {
+  id: string
+  showType?: boolean
+}) {
+  const { data: config } = useConfig()
+  const { data: item } = useCollection({
+    id,
+  })
+  const metadata = getCollectionComputedMetadata(item)
+  const readingProgress = useCollectionReadingProgress({ id })
+  const { uri: coverUri } = useCollectionCoverUri(item)
+  const [bgLoaded, setBgLoaded] = useState<string | null>(null)
 
-    return (
-      <Stack
-        sx={{
-          width: "100%",
-          justifyContent: "center",
-          bgcolor: "grey.200",
-          flex: 1,
-          borderRadius: 2,
-          overflow: "hidden",
-          position: "relative",
-          alignItems: "center",
+  return (
+    <Stack
+      sx={{
+        width: "100%",
+        justifyContent: "center",
+        bgcolor: "grey.200",
+        flex: 1,
+        borderRadius: 2,
+        overflow: "hidden",
+        position: "relative",
+        alignItems: "center",
 
-          ...(id === config?.COLLECTION_EMPTY_ID && {
-            opacity: 0.5,
-          }),
-        }}
-      >
-        {bgLoaded && bgLoaded === coverUri ? null : <DefaultBackground />}
-        {!!coverUri && (
-          <Box
-            component="img"
-            src={coverUri}
-            onLoad={() => setBgLoaded(coverUri)}
-            sx={{
-              position: "absolute",
-              left: 0,
-              top: 0,
-              width: "100%",
-              height: "100%",
-              opacity: 0.3,
-              objectFit: "cover",
-              objectPosition: "center center",
-            }}
-          />
-        )}
-        <CollectionListItemBookCovers id={id} />
-        {id !== config?.COLLECTION_EMPTY_ID && (
-          <>
-            <CollectionListItemProgress
-              progress={(readingProgress ?? 0) * 100}
+        ...(id === config?.COLLECTION_EMPTY_ID && {
+          opacity: 0.5,
+        }),
+      }}
+    >
+      {bgLoaded && bgLoaded === coverUri ? null : <DefaultBackground />}
+      {!!coverUri && (
+        <Box
+          component="img"
+          src={coverUri}
+          onLoad={() => setBgLoaded(coverUri)}
+          sx={{
+            position: "absolute",
+            left: 0,
+            top: 0,
+            width: "100%",
+            height: "100%",
+            opacity: 0.3,
+            objectFit: "cover",
+            objectPosition: "center center",
+          }}
+        />
+      )}
+      <CollectionListItemBookCovers id={id} />
+      {id !== config?.COLLECTION_EMPTY_ID && (
+        <>
+          <CollectionListItemProgress progress={(readingProgress ?? 0) * 100} />
+          {showType && (
+            <Chip
+              label={item?.type === "series" ? "Series" : "Collection"}
+              color="primary"
+              size="small"
+              icon={
+                item?.type === "series" ? <StyleRounded /> : <FolderRounded />
+              }
+              sx={{
+                position: "absolute",
+                left: 0,
+                bottom: 0,
+                m: 1,
+              }}
             />
-            {showType && (
-              <Chip
-                label={item?.type === "series" ? "Series" : "Collection"}
-                color="primary"
-                size="small"
-                icon={
-                  item?.type === "series" ? <StyleRounded /> : <FolderRounded />
-                }
-                sx={{
-                  position: "absolute",
-                  left: 0,
-                  bottom: 0,
-                  m: 1,
-                }}
-              />
-            )}
-            {item?.type === "series" && (
-              <StatusChip
-                rating={metadata.rating}
-                status={metadata.status}
-                sx={{
-                  position: "absolute",
-                  right: 0,
-                  bottom: 0,
-                  m: 1,
-                }}
-              />
-            )}
-          </>
-        )}
-      </Stack>
-    )
-  },
-)
+          )}
+          {item?.type === "series" && (
+            <StatusChip
+              rating={metadata.rating}
+              status={metadata.status}
+              sx={{
+                position: "absolute",
+                right: 0,
+                bottom: 0,
+                m: 1,
+              }}
+            />
+          )}
+        </>
+      )}
+    </Stack>
+  )
+})

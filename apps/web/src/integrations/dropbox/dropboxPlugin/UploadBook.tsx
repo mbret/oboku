@@ -9,7 +9,7 @@ import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../../common/useMountOnce"
 
 export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
-  ({ onClose }) => {
+  function UploadBook({ onClose }) {
     const { choose } = useDropboxChoose({
       onCancel: () => onClose(),
       onSuccess: (files) => {

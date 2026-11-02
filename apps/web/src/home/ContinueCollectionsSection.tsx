@@ -3,28 +3,30 @@ import { Typography, Box } from "@mui/material"
 import { useContinueCollections } from "./useContinueCollections"
 import { CollectionList } from "./CollectionList"
 
-export const ContinueCollectionsSection = memo(() => {
-  const { data: collections } = useContinueCollections()
-  const collectionIds = useMemo(
-    () => collections?.map(({ _id }) => _id),
-    [collections],
-  )
+export const ContinueCollectionsSection = memo(
+  function ContinueCollectionsSection() {
+    const { data: collections } = useContinueCollections()
+    const collectionIds = useMemo(
+      () => collections?.map(({ _id }) => _id),
+      [collections],
+    )
 
-  if ((collections?.length ?? 0) <= 0) return null
+    if ((collections?.length ?? 0) <= 0) return null
 
-  return (
-    <Box>
-      <Typography
-        variant="h6"
-        component="h1"
-        sx={{
-          padding: 1,
-          paddingTop: 2,
-        }}
-      >
-        Continue your collections
-      </Typography>
-      <CollectionList data={collectionIds} />
-    </Box>
-  )
-})
+    return (
+      <Box>
+        <Typography
+          variant="h6"
+          component="h1"
+          sx={{
+            padding: 1,
+            paddingTop: 2,
+          }}
+        >
+          Continue your collections
+        </Typography>
+        <CollectionList data={collectionIds} />
+      </Box>
+    )
+  },
+)

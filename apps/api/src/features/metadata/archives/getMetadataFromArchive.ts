@@ -11,11 +11,11 @@ const logger = new Logger("getMetadataFromArchive")
 
 export const getMetadataFromArchive = async (
   archive: Archive,
-  contentType: string,
 ): Promise<FileMetadata> => {
-  const { metadata, unreadableSources } = await resolveArchive(archive, {
-    include: ["metadata"],
-  })
+  const { metadata, mediaType, unreadableSources } = await resolveArchive(
+    archive,
+    { include: ["metadata"] },
+  )
 
   const hasTitle = mainTitle(metadata) !== undefined
   const hasIsbn = identifierValue(metadata.identifiers, "ISBN") !== undefined
@@ -32,5 +32,5 @@ export const getMetadataFromArchive = async (
     )
   }
 
-  return { type: "file", contentType, metadata }
+  return { type: "file", contentType: mediaType, metadata }
 }

@@ -37,7 +37,7 @@ const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
   file: ["filename"],
 }
 
-export const ProblemsScreen = memo(() => {
+export const ProblemsScreen = memo(function ProblemsScreen() {
   const fixCollections = useFixCollections()
   const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()

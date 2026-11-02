@@ -10,7 +10,7 @@ import { ROUTES } from "../navigation/routes"
 import { ContinueCollectionsSection } from "../home/ContinueCollectionsSection"
 import { Page } from "../common/Page"
 
-export const HomeScreen = memo(() => {
+export const HomeScreen = memo(function HomeScreen() {
   const theme = useTheme()
   const navigate = useNavigate()
   const { data: continueReadingBooks, isPending } = useContinueReadingBooks()

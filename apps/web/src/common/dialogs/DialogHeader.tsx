@@ -9,15 +9,19 @@ const StyledDialogTitle = styled(DialogTitle)(({ theme }) => ({
   gap: theme.spacing(1),
 }))
 
-export const DialogHeader = memo(
-  ({ title, onClose }: { title: ReactNode; onClose: () => void }) => {
-    return (
-      <StyledDialogTitle>
-        {title}
-        <IconButton onClick={onClose} aria-label="close" edge="end">
-          <CloseRounded />
-        </IconButton>
-      </StyledDialogTitle>
-    )
-  },
-)
+export const DialogHeader = memo(function DialogHeader({
+  title,
+  onClose,
+}: {
+  title: ReactNode
+  onClose: () => void
+}) {
+  return (
+    <StyledDialogTitle>
+      {title}
+      <IconButton onClick={onClose} aria-label="close" edge="end">
+        <CloseRounded />
+      </IconButton>
+    </StyledDialogTitle>
+  )
+})

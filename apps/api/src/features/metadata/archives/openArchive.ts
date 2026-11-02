@@ -24,7 +24,10 @@ const startsWithRarSignature = async (filePath: string) => {
   }
 }
 
-export const openArchive = async (filePath: string): Promise<Archive> =>
+export const openArchive = async (
+  filePath: string,
+  options: { name?: string; encodingFormat?: string } = {},
+): Promise<Archive> =>
   (await startsWithRarSignature(filePath))
-    ? getRarArchive(filePath)
-    : createUnzipperArchiveSource(filePath)
+    ? getRarArchive(filePath, options)
+    : createUnzipperArchiveSource(filePath, options)

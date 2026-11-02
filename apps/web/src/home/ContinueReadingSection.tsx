@@ -3,7 +3,7 @@ import { Typography, Box } from "@mui/material"
 import { useContinueReadingBooks } from "./useContinueReadingBooks"
 import { HomeBookList } from "./HomeBookList"
 
-export const ContinueReadingSection = memo(() => {
+export const ContinueReadingSection = memo(function ContinueReadingSection() {
   const { data: continueReadingBooks } = useContinueReadingBooks()
 
   return (

@@ -55,12 +55,8 @@ const archiveWith = (opf: string) =>
     "OEBPS/content.opf": opf,
   })
 
-const EPUB_CONTENT_TYPE = "application/epub+zip"
-
-const extractFields = async (
-  archive: ReturnType<typeof archiveOf>,
-  contentType: string,
-) => getBookMetadataFields(await getMetadataFromArchive(archive, contentType))
+const extractFields = async (archive: ReturnType<typeof archiveOf>) =>
+  getBookMetadataFields(await getMetadataFromArchive(archive))
 
 describe("getMetadataFromArchive", () => {
   it("advertises a GoogleBooks identifier as the google volume id", async () => {
@@ -70,7 +66,7 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await extractFields(archive, EPUB_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBe("zyTCAlFPjgYC")
     expect(metadata.title).toBe("Sample")
@@ -81,7 +77,7 @@ describe("getMetadataFromArchive", () => {
       opfWith('<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>'),
     )
 
-    const metadata = await extractFields(archive, EPUB_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBeUndefined()
     expect(metadata.isbn).toBe("9783161484100")
@@ -95,7 +91,7 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await extractFields(archive, EPUB_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBe("zyTCAlFPjgYC")
     expect(metadata.isbn).toBe("9783161484100")
@@ -108,15 +104,21 @@ describe("getMetadataFromArchive", () => {
       ),
     )
 
-    const metadata = await extractFields(archive, EPUB_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.googleVolumeId).toBeUndefined()
+  })
+
+  it("reports the media type of the file the archive came from", async () => {
+    const metadata = await getMetadataFromArchive(
+      archiveOf("book.cbz", { "page-001.jpg": "binary" }),
+    )
+
+    expect(metadata.contentType).toBe("application/vnd.comicbook+zip")
   })
 })
 
 describe("getMetadataFromArchive, the cover it reports", () => {
-  const COMIC_CONTENT_TYPE = "application/x-cbz"
-
   it("declares a cover the package names", async () => {
     const archive = archiveOf("book.epub", {
       "META-INF/container.xml": CONTAINER_XML,
@@ -132,7 +134,7 @@ describe("getMetadataFromArchive, the cover it reports", () => {
       "OEBPS/cover.jpg": "binary",
     })
 
-    const metadata = await extractFields(archive, EPUB_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.coverLink).toBe("OEBPS/cover.jpg")
     expect(metadata.coverConfidence).toBe("derived")
@@ -144,17 +146,14 @@ describe("getMetadataFromArchive, the cover it reports", () => {
       "page-002.jpg": "binary",
     })
 
-    const metadata = await extractFields(archive, COMIC_CONTENT_TYPE)
+    const metadata = await extractFields(archive)
 
     expect(metadata.coverLink).toBe("page-001.jpg")
     expect(metadata.coverConfidence).toBe("assumed")
   })
 
   it("answers nothing when no cover is derivable", async () => {
-    const metadata = await extractFields(
-      archiveWith(opfWith("")),
-      EPUB_CONTENT_TYPE,
-    )
+    const metadata = await extractFields(archiveWith(opfWith("")))
 
     expect(metadata.coverLink).toBeUndefined()
     expect(metadata.coverConfidence).toBeUndefined()

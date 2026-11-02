@@ -1,15 +1,19 @@
-import { type FC, memo } from "react"
+import { memo } from "react"
 import AppBar from "@mui/material/AppBar"
 import Toolbar from "@mui/material/Toolbar"
 import Typography from "@mui/material/Typography"
 import IconButton from "@mui/material/IconButton"
 import { ArrowBackIosRounded, CloseRounded } from "@mui/icons-material"
 
-export const DialogTopBar: FC<{
+export const DialogTopBar = memo(function DialogTopBar({
+  title,
+  onClose,
+  hasBackNavigation = false,
+}: {
   title?: string
   onClose: () => void
   hasBackNavigation?: boolean
-}> = memo(({ title, onClose, hasBackNavigation = false }) => {
+}) {
   return (
     <AppBar position="static" elevation={0} color="transparent">
       <Toolbar>

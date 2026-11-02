@@ -4,25 +4,19 @@ import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
 const itemStyle = { height: 60 }
 
-export const TagList = memo(
-  (
-    props: {
-      onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
-    } & ComponentProps<typeof VirtuosoList>,
-  ) => {
-    const { onItemClick, ...rest } = props
+export const TagList = memo(function TagList(
+  props: {
+    onItemClick?: (tag: { _id: string; isProtected: boolean }) => void
+  } & ComponentProps<typeof VirtuosoList>,
+) {
+  const { onItemClick, ...rest } = props
 
-    const rowRenderer = useCallback(
-      (_: number, item: string) => (
-        <TagListItemList
-          id={item}
-          onItemClick={onItemClick}
-          style={itemStyle}
-        />
-      ),
-      [onItemClick],
-    )
+  const rowRenderer = useCallback(
+    (_: number, item: string) => (
+      <TagListItemList id={item} onItemClick={onItemClick} style={itemStyle} />
+    ),
+    [onItemClick],
+  )
 
-    return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
-  },
-)
+  return <VirtuosoList rowRenderer={rowRenderer} itemsPerRow={1} {...rest} />
+})

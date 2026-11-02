@@ -16,7 +16,7 @@ export const useOpenMoreDialog = () => {
   return useCallback(() => update(true), [update])
 }
 
-export const MoreDialog = memo(() => {
+export const MoreDialog = memo(function MoreDialog() {
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down("sm"))
   const isOpen = useSignalValue(isContentsDialogOpenedStateSignal)

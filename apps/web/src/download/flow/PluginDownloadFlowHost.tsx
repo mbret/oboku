@@ -16,7 +16,7 @@ export const cancelPluginDownloadFlow = (bookId: string) => {
   matchingRequest?.abortController.abort()
 }
 
-export const PluginDownloadFlowHost = memo(() => {
+export const PluginDownloadFlowHost = memo(function PluginDownloadFlowHost() {
   const requests = useSignalValue(downloadFlowRequestsSignal)
 
   return (

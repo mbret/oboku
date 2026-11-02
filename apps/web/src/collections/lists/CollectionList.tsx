@@ -5,82 +5,80 @@ import { useWindowSize } from "react-use"
 import type { ListActionViewMode } from "../../common/lists/ListActionsToolbar"
 import { VirtuosoList } from "../../common/lists/VirtuosoList"
 
-export const CollectionList = memo(
-  ({
-    viewMode,
-    data,
-    static: isStatic,
-    slotProps,
-    ...rest
-  }: {
-    viewMode?: ListActionViewMode
-    static?: boolean
-    slotProps?: {
-      listItem?: Omit<
-        ComponentProps<typeof CollectionListItem>,
-        "id" | "onItemClick"
-      >
-    }
-  } & ComponentProps<typeof VirtuosoList>) => {
-    const { listItem: listItemProps } = slotProps ?? {}
-    const windowSize = useWindowSize()
-    const theme = useTheme()
-    const coverRatio = theme.custom.coverAverageRatio
-    const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
-    const itemsPerRow =
-      viewMode === "grid"
-        ? dynamicNumberOfItems > 0
-          ? dynamicNumberOfItems
-          : dynamicNumberOfItems
-        : 1
-    const itemHeight = 250
+export const CollectionList = memo(function CollectionList({
+  viewMode,
+  data,
+  static: isStatic,
+  slotProps,
+  ...rest
+}: {
+  viewMode?: ListActionViewMode
+  static?: boolean
+  slotProps?: {
+    listItem?: Omit<
+      ComponentProps<typeof CollectionListItem>,
+      "id" | "onItemClick"
+    >
+  }
+} & ComponentProps<typeof VirtuosoList>) {
+  const { listItem: listItemProps } = slotProps ?? {}
+  const windowSize = useWindowSize()
+  const theme = useTheme()
+  const coverRatio = theme.custom.coverAverageRatio
+  const dynamicNumberOfItems = Math.max(Math.floor(windowSize.width / 350), 1)
+  const itemsPerRow =
+    viewMode === "grid"
+      ? dynamicNumberOfItems > 0
+        ? dynamicNumberOfItems
+        : dynamicNumberOfItems
+      : 1
+  const itemHeight = 250
 
-    const rowRenderer = useCallback(
-      (_: number, item: string) => (
-        <CollectionListItem
-          id={item}
-          style={{
-            ...(viewMode === "horizontal"
-              ? {
-                  height: "100%",
-                  aspectRatio: coverRatio,
-                  overflow: "hidden",
-                }
-              : {
-                  height: itemHeight,
-                }),
-          }}
-          {...listItemProps}
-        />
-      ),
-      [viewMode, coverRatio, listItemProps],
-    )
-
-    if (isStatic) {
-      return (
-        <List disablePadding>
-          {data?.map((item, index) => (
-            <Stack
-              key={item}
-              sx={{
+  const rowRenderer = useCallback(
+    (_: number, item: string) => (
+      <CollectionListItem
+        id={item}
+        style={{
+          ...(viewMode === "horizontal"
+            ? {
+                height: "100%",
+                aspectRatio: coverRatio,
+                overflow: "hidden",
+              }
+            : {
                 height: itemHeight,
-              }}
-            >
-              {rowRenderer(index, item)}
-            </Stack>
-          ))}
-        </List>
-      )
-    }
-
-    return (
-      <VirtuosoList
-        data={data}
-        itemsPerRow={itemsPerRow}
-        rowRenderer={rowRenderer}
-        horizontalDirection={viewMode === "horizontal"}
-        {...rest}
+              }),
+        }}
+        {...listItemProps}
       />
+    ),
+    [viewMode, coverRatio, listItemProps],
+  )
+
+  if (isStatic) {
+    return (
+      <List disablePadding>
+        {data?.map((item, index) => (
+          <Stack
+            key={item}
+            sx={{
+              height: itemHeight,
+            }}
+          >
+            {rowRenderer(index, item)}
+          </Stack>
+        ))}
+      </List>
     )
-  },
-)
+  }
+
+  return (
+    <VirtuosoList
+      data={data}
+      itemsPerRow={itemsPerRow}
+      rowRenderer={rowRenderer}
+      horizontalDirection={viewMode === "horizontal"}
+      {...rest}
+    />
+  )
+})
