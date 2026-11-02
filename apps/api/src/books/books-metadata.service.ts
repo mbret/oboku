@@ -30,7 +30,6 @@ import { getMetadataFromArchive } from "../features/metadata/archives/getMetadat
 import { isMaybeExtractableContentType } from "../features/metadata/archives/isMaybeExtractableContentType.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
 import { getBookSourcesMetadata } from "../features/metadata/getBookSourcesMetadata.js"
-import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { pickCoverMetadata } from "../features/metadata/pickCoverMetadata.js"
 import { reduceMetadata } from "../features/metadata/reduceMetadata.js"
 import { PluginsService } from "../plugins/plugins.service.js"
@@ -254,11 +253,9 @@ export class BooksMetadataService {
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
       )
-      const storedFileMetadata = ctx.book.metadata?.find(
+      const previousFileMetadata = ctx.book.metadata?.find(
         (entry) => entry.type === "file",
       )
-      const previousFileMetadata =
-        storedFileMetadata && toFileMetadata(storedFileMetadata)
       const previousUserMetadata = ctx.book.metadata?.find(
         (entry): entry is UserMetadata => entry.type === "user",
       )
@@ -397,11 +394,11 @@ export class BooksMetadataService {
        * silently disappear under `metadataFileDownloadEnabled=false`,
        * unsupported content types, or download failures.
        */
-      const reusedFileMetadata =
-        !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
-          ? previousFileMetadata
-          : undefined
-      const fileMetadata = freshFileMetadata ?? reusedFileMetadata
+      const isPreviousFileMetadataReusable =
+        !ctx.force && fileUnchanged && !ignoreMetadataFile
+      const fileMetadata =
+        freshFileMetadata ??
+        (isPreviousFileMetadataReusable ? previousFileMetadata : undefined)
       const fileFields = fileMetadata && getBookMetadataFields(fileMetadata)
 
       /**

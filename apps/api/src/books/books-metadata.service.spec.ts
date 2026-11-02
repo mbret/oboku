@@ -2,6 +2,7 @@ import { Test } from "@nestjs/testing"
 import {
   type BookDocType,
   type BookMetadata,
+  buildBookBucketCoverKey,
   createBookDefaults,
   type LegacyFileMetadata,
   type LinkDocType,
@@ -12,7 +13,6 @@ import { InstanceConfigService } from "../admin/instance-config/instance-config.
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
-import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { BooksMetadataService } from "./books-metadata.service.js"
 
@@ -107,35 +107,33 @@ const refresh = async (book: BookDocType) => {
 }
 
 describe("BooksMetadataService.refreshMetadata", () => {
-  describe("for an unchanged file it may not download", () => {
-    const legacyFileEntry: LegacyFileMetadata = {
+  describe("for an unchanged file whose cover is already stored", () => {
+    const coverLink = "OEBPS/cover.jpg"
+    const flatFileEntry: LegacyFileMetadata = {
       type: "file",
       contentType: "application/epub+zip",
       title: "Dune",
       authors: ["Frank Herbert"],
-      coverLink: "OEBPS/cover.jpg",
-      coverConfidence: "derived",
+      coverLink,
     }
-    const book = bookWith([linkEntry, legacyFileEntry], {
-      metadataFileDownloadEnabled: false,
+    const book = bookWith([linkEntry, flatFileEntry], {
       metadataFetchEnabled: false,
+      bucketCoverKey: buildBookBucketCoverKey({
+        type: "file",
+        value: coverLink,
+      }),
     })
 
-    it("stores the cached file entry in archive-reader's vocabulary", async () => {
-      const { storedBook, downloadLinkToTmp } = await refresh(book)
+    it("does not download the file", async () => {
+      const { downloadLinkToTmp } = await refresh(book)
 
       expect(downloadLinkToTmp).not.toHaveBeenCalled()
-      expect(storedBook.metadata).toContainEqual(
-        toFileMetadata(legacyFileEntry),
-      )
     })
 
-    it("keeps that entry on the next refresh", async () => {
-      const { storedBook: afterFirstRefresh } = await refresh(book)
-      const { storedBook: afterSecondRefresh } =
-        await refresh(afterFirstRefresh)
+    it("keeps the stored file entry as it was", async () => {
+      const { storedBook } = await refresh(book)
 
-      expect(afterSecondRefresh.metadata).toEqual(afterFirstRefresh.metadata)
+      expect(storedBook.metadata).toContainEqual(flatFileEntry)
     })
   })
 })
