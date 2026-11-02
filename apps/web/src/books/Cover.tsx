@@ -56,82 +56,78 @@ const CoverRootBox = styled(Box)({
   overflow: "hidden",
 })
 
-export const Cover = memo(
-  ({
+export const Cover = memo(function Cover({
+  bookId,
+  style,
+  fullWidth = true,
+  withShadow = false,
+  rounded = true,
+  blurIfNeeded = true,
+  className,
+  sx,
+  ...rest
+}: {
+  bookId: string
+  className?: string
+  style?: React.CSSProperties
+  fullWidth?: boolean
+  withShadow?: boolean
+  rounded?: boolean
+  blurIfNeeded?: boolean
+} & Pick<BoxProps, "sx">) {
+  const book = useBookCoverState({
     bookId,
-    style,
-    fullWidth = true,
-    withShadow = false,
-    rounded = true,
-    blurIfNeeded = true,
-    className,
-    sx,
-    ...rest
-  }: {
-    bookId: string
-    className?: string
-    style?: React.CSSProperties
-    fullWidth?: boolean
-    withShadow?: boolean
-    rounded?: boolean
-    blurIfNeeded?: boolean
-  } & Pick<BoxProps, "sx">) => {
-    const book = useBookCoverState({
-      bookId,
-    })
-    const [isLoading, setIsLoading] = useState(true)
-    const localSettings = useLocalSettings()
-    const shouldBlurCover =
-      book?.isBlurred &&
-      blurIfNeeded &&
-      !localSettings.unBlurWhenProtectedVisible
+  })
+  const [isLoading, setIsLoading] = useState(true)
+  const localSettings = useLocalSettings()
+  const shouldBlurCover =
+    book?.isBlurred && blurIfNeeded && !localSettings.unBlurWhenProtectedVisible
 
-    const { coverSrc, coverSrcJpg, onError } = useBookCover({ bookId })
+  const { coverSrc, coverSrcJpg, onError } = useBookCover({ bookId })
 
-    return (
-      <CoverRootBox className={className} style={style} sx={sx}>
-        {isLoading && (
-          <CoverImg
-            alt="img"
-            src={placeholder}
-            fullWidth={fullWidth}
-            rounded={rounded}
-            withShadow={withShadow}
-            {...(shouldBlurCover && {
-              className: `blurFilter`,
-            })}
-            {...rest}
-          />
-        )}
-        <picture
-          style={{
-            display: "block",
-            height: "100%",
-            width: "100%",
-            ...(isLoading && {
-              display: "none",
-            }),
+  return (
+    <CoverRootBox className={className} style={style} sx={sx}>
+      {isLoading && (
+        <CoverImg
+          alt="img"
+          src={placeholder}
+          fullWidth={fullWidth}
+          rounded={rounded}
+          withShadow={withShadow}
+          {...(shouldBlurCover && {
+            className: `blurFilter`,
+          })}
+          {...rest}
+        />
+      )}
+      <picture
+        style={{
+          display: "block",
+          height: "100%",
+          width: "100%",
+          ...(isLoading && {
+            display: "none",
+          }),
+        }}
+      >
+        <source srcSet={coverSrc} type="image/webp" />
+        <source srcSet={coverSrcJpg} type="image/jpeg" />
+        <CoverImg
+          alt="img"
+          src={coverSrc}
+          fullWidth={fullWidth}
+          rounded={rounded}
+          withShadow={withShadow}
+          {...(shouldBlurCover && {
+            className: `blurFilter`,
+          })}
+          onLoad={() => {
+            setIsLoading(false)
           }}
-        >
-          <source srcSet={coverSrc} type="image/webp" />
-          <source srcSet={coverSrcJpg} type="image/jpeg" />
-          <CoverImg
-            alt="img"
-            src={coverSrc}
-            fullWidth={fullWidth}
-            rounded={rounded}
-            withShadow={withShadow}
-            {...(shouldBlurCover && {
-              className: `blurFilter`,
-            })}
-            onLoad={() => {
-              setIsLoading(false)
-            }}
-            onError={onError}
-            {...rest}
-          />
-        </picture>
-      </CoverRootBox>
-    )
-  },
-)
+          onError={onError}
+          {...rest}
+        />
+      </picture>
+    </CoverRootBox>
+  )
+})

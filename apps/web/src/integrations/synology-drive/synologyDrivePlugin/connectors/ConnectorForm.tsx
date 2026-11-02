@@ -17,16 +17,16 @@ export const testConnection: TestConnectionFn = async (params) => {
   }
 }
 
-export const ConnectorForm = memo(
-  ({
-    onSubmitSuccess,
-    children,
-    connectorId,
-  }: {
-    onSubmitSuccess: () => void
-    children?: React.ReactNode
-    connectorId?: string
-  }) => (
+export const ConnectorForm = memo(function ConnectorForm({
+  onSubmitSuccess,
+  children,
+  connectorId,
+}: {
+  onSubmitSuccess: () => void
+  children?: React.ReactNode
+  connectorId?: string
+}) {
+  return (
     <GenericConnectorForm
       connectorId={connectorId}
       connectorType="synology-drive"
@@ -41,5 +41,5 @@ export const ConnectorForm = memo(
     >
       {children}
     </GenericConnectorForm>
-  ),
-)
+  )
+})

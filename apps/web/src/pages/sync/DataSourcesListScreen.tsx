@@ -3,7 +3,6 @@ import {
   Link,
   Button,
   ListItemText,
-  SvgIcon,
   ListItemIcon,
   Typography,
   useTheme,
@@ -32,7 +31,7 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-export const DataSourcesListScreen = memo(() => {
+export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
@@ -84,9 +83,7 @@ export const DataSourcesListScreen = memo(() => {
                 >
                   {dataSource && (
                     <ListItemIcon>
-                      <SvgIcon>
-                        {dataSource.Icon && <dataSource.Icon />}
-                      </SvgIcon>
+                      <dataSource.Icon />
                     </ListItemIcon>
                   )}
                   <ListItemText

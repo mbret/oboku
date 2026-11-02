@@ -22,95 +22,93 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2),
 }))
 
-export const CollectionListItem = memo(
-  ({
+export const CollectionListItem = memo(function CollectionListItem({
+  id,
+  showType,
+  ...rest
+}: {
+  id: string
+  showType?: boolean
+} & ListItemProps) {
+  const { data: config } = useConfig()
+  const { data: item } = useCollection({
     id,
-    showType,
-    ...rest
-  }: {
-    id: string
-    showType?: boolean
-  } & ListItemProps) => {
-    const { data: config } = useConfig()
-    const { data: item } = useCollection({
-      id,
-    })
-    const navigate = useNavigate()
-    const metadata = getCollectionComputedMetadata(item)
-    const { open: openActionDrawer } = useCollectionActionsDrawer(id)
-    const title = useCollectionDisplayTitle(metadata.title)
+  })
+  const navigate = useNavigate()
+  const metadata = getCollectionComputedMetadata(item)
+  const { open: openActionDrawer } = useCollectionActionsDrawer(id)
+  const title = useCollectionDisplayTitle(metadata.title)
 
-    return (
-      <ListItem
-        onClick={() => {
-          if (item) {
-            navigate(generatePath(ROUTES.COLLECTION_DETAILS, { id: item._id }))
-          }
+  return (
+    <ListItem
+      onClick={() => {
+        if (item) {
+          navigate(generatePath(ROUTES.COLLECTION_DETAILS, { id: item._id }))
+        }
+      }}
+      component="div"
+      disablePadding
+      dense
+      {...rest}
+    >
+      <ListItemButton
+        disableGutters
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignSelf: "stretch",
         }}
-        component="div"
-        disablePadding
-        dense
-        {...rest}
       >
-        <ListItemButton
-          disableGutters
+        <CollectionListItemCover id={id} showType={showType} />
+        <Stack
+          direction="row"
+          onClick={(e) => {
+            if (id !== config?.COLLECTION_EMPTY_ID) {
+              e.stopPropagation()
+              openActionDrawer()
+            }
+          }}
           sx={{
-            display: "flex",
-            flexDirection: "column",
-            alignSelf: "stretch",
+            width: "100%",
+            alignItems: "center",
           }}
         >
-          <CollectionListItemCover id={id} showType={showType} />
-          <Stack
-            direction="row"
-            onClick={(e) => {
-              if (id !== config?.COLLECTION_EMPTY_ID) {
-                e.stopPropagation()
-                openActionDrawer()
-              }
-            }}
-            sx={{
-              width: "100%",
-              alignItems: "center",
-            }}
-          >
-            <ListItemText
-              primary={title ?? `\u00a0`}
-              secondary={`${item?.books?.length || 0} book(s)`}
-              slotProps={{
-                primary: {
-                  sx: {
-                    overflow: "hidden",
-                    whiteSpace: "nowrap",
-                    textOverflow: "ellipsis",
-                  },
+          <ListItemText
+            primary={title ?? `\u00a0`}
+            secondary={`${item?.books?.length || 0} book(s)`}
+            slotProps={{
+              primary: {
+                sx: {
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
                 },
-              }}
-            />
+              },
+            }}
+          />
 
-            {id !== config?.COLLECTION_EMPTY_ID && (
-              <IconButton
-                disableFocusRipple
-                disableRipple
-                disableTouchRipple
-                size="large"
-              >
-                <MoreVert />
-              </IconButton>
-            )}
-            {id === config?.COLLECTION_EMPTY_ID && (
-              <IconButton
-                disableFocusRipple
-                disableRipple
-                disableTouchRipple
-                size="large"
-              >
-                <LockRounded />
-              </IconButton>
-            )}
-          </Stack>
-        </ListItemButton>
-      </ListItem>
-    )
-  },
-)
+          {id !== config?.COLLECTION_EMPTY_ID && (
+            <IconButton
+              disableFocusRipple
+              disableRipple
+              disableTouchRipple
+              size="large"
+            >
+              <MoreVert />
+            </IconButton>
+          )}
+          {id === config?.COLLECTION_EMPTY_ID && (
+            <IconButton
+              disableFocusRipple
+              disableRipple
+              disableTouchRipple
+              size="large"
+            >
+              <LockRounded />
+            </IconButton>
+          )}
+        </Stack>
+      </ListItemButton>
+    </ListItem>
+  )
+})

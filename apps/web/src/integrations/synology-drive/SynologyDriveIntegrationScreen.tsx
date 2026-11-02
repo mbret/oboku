@@ -51,9 +51,7 @@ const CurrentSessionSection = () => {
         <IconButton
           edge="end"
           aria-label="Clear session"
-          onClick={() => {
-            clearSynologyDriveSession()
-          }}
+          onClick={clearSynologyDriveSession}
         >
           <DeleteRounded />
         </IconButton>
@@ -98,7 +96,6 @@ export function SynologyDriveIntegrationScreen() {
           sx={{
             display: "flex",
             flexDirection: "column",
-            flex: 1,
           }}
         >
           <Typography

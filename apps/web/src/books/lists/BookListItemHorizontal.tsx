@@ -108,7 +108,7 @@ function BookMetadataStatus({
           gap: 1,
         }}
       >
-        {linkPlugin?.Icon && (
+        {linkPlugin && (
           <linkPlugin.Icon fontSize="small" sx={{ display: "block" }} />
         )}
         {withDownloadIcons &&
@@ -171,7 +171,7 @@ function BookMetadataStatus({
   )
 }
 
-export const BookListItemHorizontal = memo(function BookListItem({
+export const BookListItemHorizontal = memo(function BookListItemHorizontal({
   bookId,
   variant = "default",
   onItemClick,

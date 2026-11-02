@@ -59,7 +59,7 @@ export const useDatabase = () => {
   return { db }
 }
 
-export const RxDbProvider = memo(() => {
+export const RxDbProvider = memo(function RxDbProvider() {
   const { mutate: createDb } = useReCreateDb()
 
   useEffect(() => {

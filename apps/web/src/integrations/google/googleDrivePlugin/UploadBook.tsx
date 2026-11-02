@@ -7,7 +7,7 @@ import { Logger } from "../../../debug/logger.shared"
 import { CancelError } from "../../../errors/errors.shared"
 
 export const UploadBook: ObokuPlugin<"DRIVE">["UploadBookComponent"] = memo(
-  ({ onClose, requestPopup }) => {
+  function UploadBook({ onClose, requestPopup }) {
     const { pick } = useDrivePicker({ requestPopup })
 
     const { mutate } = useSwitchMutation$({

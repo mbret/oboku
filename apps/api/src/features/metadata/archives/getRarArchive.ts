@@ -21,11 +21,14 @@ const wasmBinary = readFileAsArrayBuffer(
   new URL(import.meta.resolve("node-unrar-js/esm/js/unrar.wasm")),
 )
 
-export const getRarArchive = async (filePath: string) => {
+export const getRarArchive = async (
+  filePath: string,
+  options: { name?: string; encodingFormat?: string } = {},
+) => {
   const extractor = await createExtractorFromData({
     data: readFileAsArrayBuffer(filePath),
     wasmBinary,
   })
 
-  return createArchiveFromNodeUnrarJs(extractor)
+  return createArchiveFromNodeUnrarJs(extractor, options)
 }

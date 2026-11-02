@@ -221,6 +221,11 @@ describe("OpdsServerPostgresService", () => {
     expect(await service.delete({ userId: 2, id: 7 })).toBe(false)
   })
 
+  it("finds a server by its slug", async () => {
+    expect(await service.findBySlug(SERVER.slug)).toBe(SERVER)
+    expect(repository.findOneBy).toHaveBeenCalledWith({ slug: SERVER.slug })
+  })
+
   it("deletes every server of an account", async () => {
     await service.deleteByUserId(1)
 

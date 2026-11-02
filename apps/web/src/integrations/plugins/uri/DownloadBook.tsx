@@ -17,65 +17,63 @@ import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
 
-export const DownloadBook = memo(
-  ({
-    link,
-    onDownloadProgress,
+export const DownloadBook = memo(function DownloadBook({
+  link,
+  onDownloadProgress,
+  onError,
+  onResolve,
+  signal,
+}: DownloadBookComponentProps<"URI">) {
+  const { mutateAsync: downloadBlob } = useDownload({
+    meta: { suppressGlobalErrorToast: true },
+  })
+  const { mutate: download } = useMutation$({
+    mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
+      const abortController = new AbortController()
+
+      const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
+        tap(() => abortController.abort()),
+      )
+
+      const downloadLink = link.data.url
+
+      return from(
+        downloadBlob({
+          responseType: "blob",
+          signal: abortController.signal,
+          url: downloadLink,
+          onDownloadProgress: (event) => {
+            onDownloadProgress(event.loaded / (event.total ?? 1))
+          },
+        }),
+      ).pipe(
+        map((mediaResponse) => {
+          return {
+            data: mediaResponse.data,
+            fileName:
+              resolveDownloadFileName({
+                contentDisposition:
+                  mediaResponse.headers["content-disposition"],
+                url: downloadLink,
+              }) || bookIdFromUrl(downloadLink),
+          }
+        }),
+        takeUntil(cancel$),
+        throwIfEmpty(() => new CancelError()),
+      )
+    },
+    onSuccess: onResolve,
     onError,
-    onResolve,
-    signal,
-  }: DownloadBookComponentProps<"URI">) => {
-    const { mutateAsync: downloadBlob } = useDownload({
-      meta: { suppressGlobalErrorToast: true },
-    })
-    const { mutate: download } = useMutation$({
-      mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
-        const abortController = new AbortController()
+    meta: { suppressGlobalErrorToast: true },
+  })
 
-        const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
-          tap(() => abortController.abort()),
-        )
+  useEffectWithUnmount$(
+    (onUnmount$) => scheduleDelayedEffect(() => download({ onUnmount$ }), 1),
+    [download],
+  )
 
-        const downloadLink = link.data.url
-
-        return from(
-          downloadBlob({
-            responseType: "blob",
-            signal: abortController.signal,
-            url: downloadLink,
-            onDownloadProgress: (event) => {
-              onDownloadProgress(event.loaded / (event.total ?? 1))
-            },
-          }),
-        ).pipe(
-          map((mediaResponse) => {
-            return {
-              data: mediaResponse.data,
-              fileName:
-                resolveDownloadFileName({
-                  contentDisposition:
-                    mediaResponse.headers["content-disposition"],
-                  url: downloadLink,
-                }) || bookIdFromUrl(downloadLink),
-            }
-          }),
-          takeUntil(cancel$),
-          throwIfEmpty(() => new CancelError()),
-        )
-      },
-      onSuccess: onResolve,
-      onError,
-      meta: { suppressGlobalErrorToast: true },
-    })
-
-    useEffectWithUnmount$(
-      (onUnmount$) => scheduleDelayedEffect(() => download({ onUnmount$ }), 1),
-      [download],
-    )
-
-    return null
-  },
-)
+  return null
+})
 
 const bookIdFromUrl = (url: string) => {
   try {

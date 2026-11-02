@@ -7,15 +7,16 @@ import {
   DialogTitle,
   Link,
 } from "@mui/material"
-import type { FC } from "react"
 import { links } from "@oboku/shared"
 import { lock } from "../common/locks/utils"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
 
-export const UpdateAvailableDialog: FC<{
+export const UpdateAvailableDialog = ({
+  serviceWorker,
+}: {
   serviceWorker?: ServiceWorker
-}> = ({ serviceWorker }) => {
+}) => {
   const hasUpdate = !!serviceWorker
 
   if (import.meta.env.MODE === "development") return null

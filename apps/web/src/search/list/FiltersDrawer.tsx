@@ -1,12 +1,15 @@
-import { type FC, memo } from "react"
+import { memo } from "react"
 import { Drawer, List, ListItemText, ListItemButton } from "@mui/material"
 import { type SignalValue, useSignalValue } from "reactjrx"
 import { searchListActionsToolbarSignal } from "./states"
 
-export const FiltersDrawer: FC<{
+export const FiltersDrawer = memo(function FiltersDrawer({
+  open,
+  onClose,
+}: {
   open: boolean
   onClose: () => void
-}> = memo(({ open, onClose }) => {
+}) {
   const { notInterestedContents } = useSignalValue(
     searchListActionsToolbarSignal,
   )
