@@ -4,17 +4,32 @@ import {
   type BookMetadata,
   buildBookBucketCoverKey,
   createBookDefaults,
+  type FileMetadata,
   type LegacyFileMetadata,
   type LinkDocType,
 } from "@oboku/shared"
 import { of } from "rxjs"
-import { describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, vi } from "vitest"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { BooksMetadataService } from "./books-metadata.service.js"
+
+const { getBookSourcesMetadata } = vi.hoisted(function createLookupSpy() {
+  return {
+    getBookSourcesMetadata: vi.fn(async function findNoCatalogRecord(
+      ..._args: unknown[]
+    ) {
+      return []
+    }),
+  }
+})
+
+vi.mock("../features/metadata/getBookSourcesMetadata.js", () => ({
+  getBookSourcesMetadata,
+}))
 
 const LINK_MODIFIED_AT = "2026-10-01T10:00:00.000Z"
 
@@ -106,34 +121,98 @@ const refresh = async (book: BookDocType) => {
   return { storedBook, downloadLinkToTmp: pluginsService.downloadLinkToTmp }
 }
 
+const COVER_LINK = "OEBPS/cover.jpg"
+const FILE_ISBN = "9780441013593"
+const FILE_GOOGLE_VOLUME_ID = "zyTCAlFPjgYC"
+
+const flatFileEntry: LegacyFileMetadata = {
+  type: "file",
+  contentType: "application/epub+zip",
+  title: "Dune",
+  authors: ["Frank Herbert"],
+  coverLink: COVER_LINK,
+  isbn: FILE_ISBN,
+  googleVolumeId: FILE_GOOGLE_VOLUME_ID,
+}
+
+const resolvedFileEntry: FileMetadata = {
+  type: "file",
+  contentType: "application/epub+zip",
+  metadata: {
+    titles: [{ value: "Dune" }],
+    contributors: [{ name: "Frank Herbert", roles: ["author"] }],
+    cover: { uri: COVER_LINK, confidence: "derived" },
+    identifiers: [
+      { value: FILE_ISBN, scheme: "ISBN" },
+      { value: FILE_GOOGLE_VOLUME_ID, scheme: "GoogleBooks" },
+    ],
+  },
+}
+
 describe("BooksMetadataService.refreshMetadata", () => {
-  describe("for an unchanged file whose cover is already stored", () => {
-    const coverLink = "OEBPS/cover.jpg"
-    const flatFileEntry: LegacyFileMetadata = {
-      type: "file",
-      contentType: "application/epub+zip",
-      title: "Dune",
-      authors: ["Frank Herbert"],
-      coverLink,
-    }
-    const book = bookWith([linkEntry, flatFileEntry], {
-      metadataFetchEnabled: false,
-      bucketCoverKey: buildBookBucketCoverKey({
-        type: "file",
-        value: coverLink,
-      }),
-    })
-
-    it("does not download the file", async () => {
-      const { downloadLinkToTmp } = await refresh(book)
-
-      expect(downloadLinkToTmp).not.toHaveBeenCalled()
-    })
-
-    it("keeps the stored file entry as it was", async () => {
-      const { storedBook } = await refresh(book)
-
-      expect(storedBook.metadata).toContainEqual(flatFileEntry)
-    })
+  beforeEach(() => {
+    getBookSourcesMetadata.mockClear()
   })
+
+  describe.each<[string, BookMetadata]>([
+    ["flat", flatFileEntry],
+    ["archive-reader's", resolvedFileEntry],
+  ])(
+    "for an unchanged file whose entry is stored in %s shape",
+    (_shape, fileEntry) => {
+      const bookWithStoredCover = (
+        metadata: BookMetadata[],
+        overrides: Partial<BookDocType> = {},
+      ) =>
+        bookWith(metadata, {
+          bucketCoverKey: buildBookBucketCoverKey({
+            type: "file",
+            value: COVER_LINK,
+          }),
+          ...overrides,
+        })
+
+      it("does not download the file", async () => {
+        const { downloadLinkToTmp } = await refresh(
+          bookWithStoredCover([linkEntry, fileEntry]),
+        )
+
+        expect(downloadLinkToTmp).not.toHaveBeenCalled()
+      })
+
+      it("keeps the stored file entry as it was", async () => {
+        const { storedBook } = await refresh(
+          bookWithStoredCover([linkEntry, fileEntry]),
+        )
+
+        expect(storedBook.metadata).toContainEqual(fileEntry)
+      })
+
+      it("looks the file's ISBN and Google Books volume id up", async () => {
+        await refresh(bookWithStoredCover([linkEntry, fileEntry]))
+
+        expect(getBookSourcesMetadata).toHaveBeenCalledWith(
+          {
+            title: "Dune",
+            isbn: FILE_ISBN,
+            googleVolumeId: FILE_GOOGLE_VOLUME_ID,
+          },
+          expect.anything(),
+          expect.anything(),
+        )
+      })
+
+      it("looks the user's ISBN up over the file's", async () => {
+        const userEntry: BookMetadata = { type: "user", isbn: "9780593099322" }
+
+        await refresh(bookWithStoredCover([linkEntry, fileEntry, userEntry]))
+
+        expect(getBookSourcesMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({ isbn: "9780593099322" }),
+          expect.anything(),
+          expect.anything(),
+        )
+      })
+    },
+  )
 })
