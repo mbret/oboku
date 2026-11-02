@@ -1,10 +1,5 @@
-import type { FileMetadata } from "@oboku/shared"
-import {
-  type Archive,
-  identifierValue,
-  mainTitle,
-  resolveArchive,
-} from "@prose-reader/archive-reader"
+import { type FileMetadata, getBookMetadataFields } from "@oboku/shared"
+import { type Archive, resolveArchive } from "@prose-reader/archive-reader"
 import { Logger } from "@nestjs/common"
 
 const logger = new Logger("getMetadataFromArchive")
@@ -16,14 +11,16 @@ export const getMetadataFromArchive = async (
     archive,
     { include: ["metadata"] },
   )
-
-  const hasTitle = mainTitle(metadata) !== undefined
-  const hasIsbn = identifierValue(metadata.identifiers, "ISBN") !== undefined
-  const hasGoogleVolumeId =
-    identifierValue(metadata.identifiers, "GoogleBooks") !== undefined
+  const fileMetadata: FileMetadata = {
+    type: "file",
+    contentType: mediaType,
+    metadata,
+  }
+  const { title, isbn, googleVolumeId, coverLink } =
+    getBookMetadataFields(fileMetadata)
 
   logger.log(
-    `Extracted archive metadata (title=${hasTitle}, isbn=${hasIsbn}, googleVolumeId=${hasGoogleVolumeId}, cover=${metadata.cover !== undefined})`,
+    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, googleVolumeId=${googleVolumeId !== undefined}, cover=${coverLink !== undefined})`,
   )
 
   if (unreadableSources.length > 0) {
@@ -32,5 +29,5 @@ export const getMetadataFromArchive = async (
     )
   }
 
-  return { type: "file", contentType: mediaType, metadata }
+  return fileMetadata
 }
