@@ -491,7 +491,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     expect(readOpfIdentifiers(repatched)).toEqual(readOpfIdentifiers(xml))
     expect(readOpfIdentifiers(xml)).toEqual([
-      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: UUID_IDENTIFIER, scheme: "UUID", unique: true },
       { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
     ])
   })
@@ -711,7 +711,7 @@ describe("OPF editing an identifier that states no scheme", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER },
+        { scheme: "UUID", value: UUID_IDENTIFIER },
         { scheme: "ISBN", value: "9783161484100" },
       ],
     })
@@ -822,7 +822,7 @@ describe("OPF editing around an element its reader passed over", () => {
 
     expect(xml).toContain("<span>9783161484100</span>")
     expect(readOpfIdentifiers(xml)).toEqual([
-      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: UUID_IDENTIFIER, scheme: "UUID", unique: true },
       { value: "9780306406157", scheme: "ISBN" },
     ])
   })
