@@ -19,12 +19,12 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
 }
 
 /**
- * The reader settings the user changes in react-reader, the font scale and the
- * spread mode, from its menus or with a pinch, kept on the device and resolved
- * to what the reader should use. A device that has not changed its font scale
- * yet uses the account-wide `readerGlobalFontScale`, which older versions of
- * the app save. `updateReaderSettings` saves only the settings it is given, as
- * react-reader reports them.
+ * The reader settings the user changes in react-reader's menus, the font scale
+ * and the spread mode, kept on the device and resolved to what the reader
+ * should use. A device that has not changed its font scale yet uses the
+ * account-wide `readerGlobalFontScale`, which older versions of the app save.
+ * `updateReaderSettings` saves only the settings it is given, as react-reader
+ * reports them.
  *
  * TODO(ask the maintainer, added 2026-09): after a few months, once older
  * versions of the app are gone, raise dropping the fallback to

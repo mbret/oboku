@@ -210,4 +210,55 @@ describe("MetadataForm", function testMetadataForm() {
       screen.queryByText("Not a recognizable ISBN-10 or ISBN-13"),
     ).toBeNull()
   })
+
+  it("shows an identifier the reader reads as a UUID under its scheme", function seedUuidScheme() {
+    render(
+      <MetadataFormHarness
+        identifiers={[
+          {
+            scheme: "UUID",
+            value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
+            unique: true,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByText("UUID")).not.toBeNull()
+    expect(screen.queryByLabelText("Custom scheme")).toBeNull()
+  })
+
+  it("rejects a value that is not a UUID", async function rejectInvalidUuid() {
+    render(
+      <MetadataFormHarness
+        identifiers={[{ scheme: "UUID", value: "", unique: false }]}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText("Value"), {
+      target: { value: "urn:uuid:not-a-uuid" },
+    })
+
+    expect(
+      await screen.findByText(
+        "Not a UUID, e.g. urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+      ),
+    ).not.toBeNull()
+  })
+
+  it("rejects a value that is not a URN", async function rejectInvalidUrn() {
+    render(
+      <MetadataFormHarness
+        identifiers={[{ scheme: "URN", value: "", unique: false }]}
+      />,
+    )
+
+    fireEvent.change(screen.getByLabelText("Value"), {
+      target: { value: "nbn:de:101:1-2011" },
+    })
+
+    expect(
+      await screen.findByText("Not a URN, e.g. urn:nbn:de:101:1-2011"),
+    ).not.toBeNull()
+  })
 })

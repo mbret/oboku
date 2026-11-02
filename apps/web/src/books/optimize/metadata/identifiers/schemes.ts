@@ -1,9 +1,11 @@
 import {
   catalogUrlFromIdentifier,
+  identifierValue,
   normalizeIdentifierScheme,
   type KnownMetadataIdentifierScheme,
   normalizeGtin,
   normalizeIsbn,
+  parseUrn,
 } from "@prose-reader/archive-reader"
 
 export const CUSTOM_SCHEME_OPTION = "custom"
@@ -95,6 +97,24 @@ const IDENTIFIER_SCHEME_TEMPLATES: Record<
       return isCatalogAddressable("DOI", value)
         ? true
         : "Not a DOI, e.g. 10.1000/182"
+    },
+  },
+  UUID: {
+    label: "UUID",
+    placeholder: "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+    validate: function validateUuid(value) {
+      return identifierValue([{ scheme: "UUID", value }], "UUID") !== undefined
+        ? true
+        : "Not a UUID, e.g. urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+    },
+  },
+  URN: {
+    label: "URN",
+    placeholder: "urn:nbn:de:101:1-2011",
+    validate: function validateUrn(value) {
+      return parseUrn(value) !== undefined
+        ? true
+        : "Not a URN, e.g. urn:nbn:de:101:1-2011"
     },
   },
   URL: {

@@ -254,7 +254,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
         { scheme: "ISBN", value: "9783161484100" },
       ],
     })
@@ -479,7 +479,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       opf(`<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>`),
     )
     const identifiers = [
-      { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+      { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
       { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
     ]
 
@@ -491,7 +491,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
 
     expect(readOpfIdentifiers(repatched)).toEqual(readOpfIdentifiers(xml))
     expect(readOpfIdentifiers(xml)).toEqual([
-      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: UUID_IDENTIFIER, scheme: "UUID", unique: true },
       { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
     ])
   })
@@ -675,7 +675,7 @@ describe("OPF editing an identifier that states no scheme", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
         { scheme: "ISBN", value: "9780306406157" },
       ],
     })
@@ -711,7 +711,7 @@ describe("OPF editing an identifier that states no scheme", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER },
+        { scheme: "UUID", value: UUID_IDENTIFIER },
         { scheme: "ISBN", value: "9783161484100" },
       ],
     })
@@ -755,7 +755,7 @@ describe("OPF editing leaves unnamed identifiers alone", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
         { scheme: "ISBN", value: "9783161484100" },
       ],
     })
@@ -773,7 +773,7 @@ describe("OPF editing leaves unnamed identifiers alone", () => {
 
     const xml = await buildPatchedOpfXml(entry, {
       identifiers: [],
-      removedIdentifiers: [{ scheme: "Unknown", value: UUID_IDENTIFIER }],
+      removedIdentifiers: [{ scheme: "UUID", value: UUID_IDENTIFIER }],
     })
 
     expect(xml).toContain(UUID_IDENTIFIER)
@@ -815,23 +815,21 @@ describe("OPF editing around an element its reader passed over", () => {
   it("does not write the edit into it", async () => {
     const xml = await buildPatchedOpfXml(hiddenBeforeIsbn(), {
       identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
+        { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
         { scheme: "ISBN", value: "9780306406157" },
       ],
     })
 
     expect(xml).toContain("<span>9783161484100</span>")
     expect(readOpfIdentifiers(xml)).toEqual([
-      { value: UUID_IDENTIFIER, scheme: "Unknown", unique: true },
+      { value: UUID_IDENTIFIER, scheme: "UUID", unique: true },
       { value: "9780306406157", scheme: "ISBN" },
     ])
   })
 
   it("does not remove it when a removal names what it appears to hold", async () => {
     const xml = await buildPatchedOpfXml(hiddenBeforeIsbn(), {
-      identifiers: [
-        { scheme: "Unknown", value: UUID_IDENTIFIER, unique: true },
-      ],
+      identifiers: [{ scheme: "UUID", value: UUID_IDENTIFIER, unique: true }],
       removedIdentifiers: [{ scheme: "ISBN", value: "9783161484100" }],
     })
 
