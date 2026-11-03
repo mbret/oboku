@@ -31,34 +31,25 @@ const koreaderIntegration: IntegrationEntry = {
   Icon: MenuBookRounded,
 }
 
-function getIntegrationEntries() {
-  const pluginIntegrations = plugins.flatMap(
-    function toIntegrationEntry(plugin): IntegrationEntry[] {
-      return plugin.integration
-        ? [{ ...plugin.integration, Icon: plugin.Icon, plugin }]
-        : []
-    },
-  )
+const pluginIntegrations = plugins.flatMap(
+  function toIntegrationEntry(plugin): IntegrationEntry[] {
+    return plugin.integration
+      ? [{ ...plugin.integration, Icon: plugin.Icon, plugin }]
+      : []
+  },
+)
 
-  return [koreaderIntegration, ...pluginIntegrations].toSorted(
-    function byName(a, b) {
-      return a.name.localeCompare(b.name)
-    },
-  )
-}
+const integrationEntries = [
+  koreaderIntegration,
+  ...pluginIntegrations,
+].toSorted(function byName(a, b) {
+  return a.name.localeCompare(b.name)
+})
 
 function IntegrationListItem({
-  to,
-  name,
-  description,
-  Icon,
-  plugin,
+  integration: { name, description, route, Icon, plugin },
 }: {
-  to: string
-  name: string
-  description: string
-  Icon: ComponentType<SvgIconProps>
-  plugin?: Plugin
+  integration: IntegrationEntry
 }) {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
@@ -68,7 +59,7 @@ function IntegrationListItem({
   if (!isVisible) return null
 
   return (
-    <ListItemButton component={Link} to={to} disabled={!isEnabled}>
+    <ListItemButton component={Link} to={route} disabled={!isEnabled}>
       <ListItemIcon>
         <Icon />
       </ListItemIcon>
@@ -83,14 +74,10 @@ export function IntegrationsScreen() {
       <TopBarNavigation title="Integrations" showBack={false} />
       <PageContainer disableGutters>
         <PageSection>
-          {getIntegrationEntries().map((integration) => (
+          {integrationEntries.map((integration) => (
             <IntegrationListItem
               key={integration.route}
-              to={integration.route}
-              name={integration.name}
-              description={integration.description}
-              Icon={integration.Icon}
-              plugin={integration.plugin}
+              integration={integration}
             />
           ))}
         </PageSection>

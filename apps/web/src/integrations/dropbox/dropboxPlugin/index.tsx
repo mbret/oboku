@@ -30,7 +30,7 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   collectionIdentityFields: ["fileId"],
   featureFlag: "FEATURE_DROPBOX_ENABLED",
   integration: {
-    name: "Dropbox",
+    name: PLUGIN_NAME,
     description: "Manage contents from Dropbox",
     route: ROUTES.INTEGRATION_DROPBOX,
   },

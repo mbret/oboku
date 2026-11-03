@@ -1,8 +1,10 @@
 import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
-import type { UploadBookComponentProps } from "../../plugins/types"
+import type {
+  ConnectorDetails,
+  UploadBookComponentProps,
+} from "../../plugins/types"
 import { CONNECTOR, type WebdavBackedType } from "./constants"
-import type { ConnectorDetails } from "../../plugins/types"
 import {
   ConnectorSelectionStep,
   type WebdavAuthResult,

@@ -56,26 +56,18 @@ describe("IntegrationsScreen", () => {
     cleanup()
   })
 
-  it("links each integration to its page, without the plugins that belong to none", () => {
+  it("links each integration to its page, in the order of their names, without the plugins that belong to none", () => {
     renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
 
-    const integrationPages = Object.entries(INTEGRATION_HREF_BY_NAME)
-
-    expect(screen.getAllByRole("link")).toHaveLength(integrationPages.length)
-
-    for (const [name, href] of integrationPages) {
-      expect(getIntegrationLink(name).getAttribute("href")).toBe(href)
-    }
-  })
-
-  it("lists the integrations in the order of their names", () => {
-    renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
-
-    const hrefs = screen
+    const linkedPages = screen
       .getAllByRole("link")
       .map((link) => link.getAttribute("href"))
 
-    expect(hrefs).toEqual(Object.values(INTEGRATION_HREF_BY_NAME))
+    expect(linkedPages).toEqual(Object.values(INTEGRATION_HREF_BY_NAME))
+
+    for (const [name, href] of Object.entries(INTEGRATION_HREF_BY_NAME)) {
+      expect(getIntegrationLink(name).getAttribute("href")).toBe(href)
+    }
   })
 
   it.each([
