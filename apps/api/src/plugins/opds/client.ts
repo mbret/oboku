@@ -1,4 +1,4 @@
-import type { Readable } from "node:stream"
+import { PassThrough, type Readable } from "node:stream"
 import {
   getOpdsCredentialHeaders,
   getOpdsUrlOrigin,
@@ -26,10 +26,27 @@ const RESPONSE_TIMEOUT_MS = 60_000
 
 const acceptEveryStatus = () => true
 
-const toCatalogRequestFailure = (url: URL, error: unknown) =>
+const toCatalogRequestFailure = <Failure>(url: URL, error: Failure) =>
   axios.isAxiosError(error)
     ? toRequestFailure(`OPDS request to ${url.origin} failed`, error)
     : error
+
+/**
+ * axios reports an abort that comes after the headers on the answer stream,
+ * with an error that holds the request's headers.
+ */
+function withCatalogRequestFailures(url: URL, answer: Readable) {
+  const stream = new PassThrough()
+
+  answer.on("error", function failWithCatalogRequestFailure(error) {
+    stream.destroy(toCatalogRequestFailure(url, error))
+  })
+  stream.on("close", function stopReadingAnswer() {
+    answer.destroy()
+  })
+
+  return answer.pipe(stream)
+}
 
 const requestFromCatalog = (
   connector: OpdsConnector,
@@ -75,7 +92,9 @@ export async function getFromCatalog(
     const response = await requestFromCatalog(connector, url, options)
     const isSuccess = response.status >= 200 && response.status < 300
 
-    if (isSuccess) return { stream: response.data, url }
+    if (isSuccess) {
+      return { stream: withCatalogRequestFailures(url, response.data), url }
+    }
 
     response.data.destroy()
 
