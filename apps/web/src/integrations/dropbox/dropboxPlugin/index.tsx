@@ -1,17 +1,17 @@
 /// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
-import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import { DataSourceForm } from "./DataSourceForm"
 import DropboxIconAsset from "../../../assets/dropbox.svg?react"
 import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../../plugins/types"
-import { useSignOut } from "./useSignOut"
+import { signOut } from "./signOut"
 import { DownloadBook } from "./DownloadBook"
-import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 import { UpsertFile } from "./UpsertFile"
 import { ROUTES } from "../../../navigation/routes"
 
@@ -38,11 +38,11 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   DataSourceForm,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useLinkInfo,
-  useSyncSourceInfo,
+  removeResource: rejectRemoveResource,
+  getLinkLabel: getFileIdLinkLabel,
+  getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,
-  useSignOut,
+  signOut,
 }

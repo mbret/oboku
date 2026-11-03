@@ -1,5 +1,5 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import OneDriveAsset from "../../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
 import type { ObokuPlugin } from "../../plugins/types"
 import { clearOneDriveSession } from "./auth/auth"
@@ -8,10 +8,10 @@ import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
 import { UploadBook } from "./UploadBook"
 import { UpsertFile } from "./UpsertFile"
-import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
+import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 import { SvgIcon } from "@mui/material"
 import { ROUTES } from "../../../navigation/routes"
 
@@ -40,12 +40,12 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
   UploadBookComponent: UploadBook,
   UpsertFileComponent: UpsertFile,
-  useLinkInfo,
+  getLinkLabel: getFileIdLinkLabel,
   useRefreshMetadata,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {
+  removeResource: rejectRemoveResource,
+  signOut: function signOutOfOneDrive() {
     void clearOneDriveSession()
   },
   useSynchronize,
-  useSyncSourceInfo,
+  getDataSourceLabel,
 }

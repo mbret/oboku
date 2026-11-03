@@ -1,15 +1,15 @@
 import { SvgIcon } from "@mui/material"
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
-import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import type { ObokuPlugin } from "../../plugins/types"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
-import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
+import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
 import iconSynologyDrive from "../../../assets/icon_synology_drive_01.png"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 import { clearSynologyDriveSession } from "./auth/auth"
 import { ConnectorForm } from "./connectors/ConnectorForm"
 import { CONNECTOR } from "./constants"
@@ -40,12 +40,10 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,
-  useLinkInfo,
-  useSyncSourceInfo,
+  getLinkLabel: getFileIdLinkLabel,
+  getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: function useSynologyDriveSignOut() {
-    return clearSynologyDriveSession
-  },
+  removeResource: rejectRemoveResource,
+  signOut: clearSynologyDriveSession,
 }

@@ -1,13 +1,13 @@
 import { DnsRounded } from "@mui/icons-material"
-import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import type { ObokuPlugin } from "../../plugins/types"
 import { CONNECTOR, TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
-import { useFilePathLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
+import { getFilePathLinkLabel } from "../../plugins/common/linkLabel"
 import { useRefreshMetadata } from "./useRefreshMetadata"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 import { useSynchronize } from "./useSynchronize"
 import { ConnectorForm } from "./connectors/ConnectorForm"
 
@@ -28,12 +28,12 @@ export const plugin: ObokuPlugin<"server"> = {
     description: "Manage contents from your oboku server",
     route: CONNECTOR.integrationRoute,
   },
-  useLinkInfo,
-  useSyncSourceInfo,
+  getLinkLabel: getFilePathLinkLabel,
+  getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
+  removeResource: rejectRemoveResource,
+  signOut: function signOutOfServer() {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,

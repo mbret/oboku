@@ -1,13 +1,13 @@
 import { HttpRounded } from "@mui/icons-material"
-import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../common/rejectRemoveResource"
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
 import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { useLinkInfo } from "./useLinkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getLinkLabel } from "./getLinkLabel"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 
 const plugin: ObokuPlugin<"URI"> = {
   type: TYPE,
@@ -18,12 +18,12 @@ const plugin: ObokuPlugin<"URI"> = {
   collectionIdentityFields: ["url"],
   UploadBookComponent,
   DownloadBookComponent: DownloadBook,
-  useLinkInfo,
-  useSyncSourceInfo,
+  getLinkLabel,
+  getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
+  removeResource: rejectRemoveResource,
+  signOut: function signOutOfUrls() {},
 }
 
 export default plugin

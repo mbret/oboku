@@ -1,19 +1,9 @@
-import { renderHook } from "@testing-library/react"
 import type {
   DataSourceDocTypeFor,
   WebdavConnectorDocType,
 } from "@oboku/shared"
-import { describe, expect, it, vi } from "vitest"
-
-const { useConnector } = vi.hoisted(function createConnectorMocks() {
-  return { useConnector: vi.fn() }
-})
-
-vi.mock("../../../connectors/useConnector", function mockConnector() {
-  return { useConnector }
-})
-
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { describe, expect, it } from "vitest"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 
 const dataSource: DataSourceDocTypeFor<"webdav"> = {
   _id: "data-source",
@@ -35,7 +25,7 @@ const connectorWithoutUrl: Omit<WebdavConnectorDocType, "url"> = {
   passwordAsSecretId: "secret",
 }
 
-describe("useSyncSourceInfo", () => {
+describe("getDataSourceLabel", () => {
   it.each([
     {
       form: "has a scheme",
@@ -55,13 +45,9 @@ describe("useSyncSourceInfo", () => {
   ])(
     "labels a source whose connector URL $form with its host",
     ({ url, label }) => {
-      useConnector.mockReturnValue({ data: { ...connectorWithoutUrl, url } })
-
-      const { result } = renderHook(function renderWebdavSourceInfo() {
-        return useSyncSourceInfo({ dataSource, enabled: true })
-      })
-
-      expect(result.current.name).toBe(label)
+      expect(
+        getDataSourceLabel(dataSource, { ...connectorWithoutUrl, url }),
+      ).toBe(label)
     },
   )
 })

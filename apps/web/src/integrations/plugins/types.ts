@@ -4,9 +4,11 @@ import type {
   DataSourceDocTypeFor,
   LinkData,
   LinkDataForProvider,
+  LinkDocType,
   LinkDocTypeForProvider,
   MetadataFileDownloadOverride,
   ProviderApiCredentials,
+  SettingsConnectorDocType,
   SettingsConnectorType,
 } from "@oboku/shared"
 import type { ComponentType, DOMAttributes, ReactNode } from "react"
@@ -117,10 +119,10 @@ export type RemoveResourceResult<
       reason: `unknown`
     }
 
-type UseRemoveResource<
+type RemoveResource<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = () => (
-  links: readonly LinkDocTypeForProvider<T>[],
+> = (
+  links: readonly Extract<LinkDocType, { type: T }>[],
 ) => Promise<RemoveResourceResult<T>>
 
 export type UpsertFileComponentProps<
@@ -155,25 +157,16 @@ type UpsertFileCapability<
       UpsertFileComponent?: undefined
     }
 
-export type UseSyncSourceInfo<
+export type GetDataSourceLabel<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (data: {
-  enabled: boolean
-  dataSource?: DeepReadonly<DataSourceDocTypeFor<T>> | undefined
-}) => {
-  name?: string
-}
+> = (
+  dataSource: DeepReadonly<DataSourceDocTypeFor<T>>,
+  connector: Extract<SettingsConnectorDocType, { type: T }> | undefined,
+) => string | undefined
 
-export type UseLinkInfo = (data: {
-  linkData?: LinkData | null
-  enabled: boolean
-}) => {
-  data:
-    | {
-        label?: string
-      }
-    | undefined
-}
+export type GetLinkLabel<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = (linkData: LinkDataForProvider<T>) => string | undefined
 
 export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
   name: string
@@ -269,10 +262,11 @@ type ObokuPluginBase<
   Provider?: ComponentType<{ children: ReactNode }>
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
-  useRemoveResource: UseRemoveResource<T>
-  useLinkInfo: UseLinkInfo
-  useSyncSourceInfo: UseSyncSourceInfo<T>
-  useSignOut: () => () => void
+  removeResource: RemoveResource<T>
+  getLinkLabel: GetLinkLabel<T>
+  getDataSourceLabel: GetDataSourceLabel<T>
+  /** Forgets the provider session, so the next account does not inherit it. */
+  signOut: () => void
 }
 
 export type ObokuPlugin<

@@ -1,13 +1,13 @@
 import type { ObokuPlugin } from "../../plugins/types"
-import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
+import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import { CONNECTOR, TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { getDataSourceLabel } from "./getDataSourceLabel"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
-import { useFilePathLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
+import { getFilePathLinkLabel } from "../../plugins/common/linkLabel"
 import { SvgIcon } from "@mui/material"
 import WebDAVIconAsset from "../../../assets/webdav-icon.svg?react"
 import { ConnectorForm } from "./connectors/ConnectorForm"
@@ -37,11 +37,11 @@ const plugin: ObokuPlugin<"webdav"> = {
   DataSourceForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
-  useSyncSourceInfo,
-  useLinkInfo,
+  getDataSourceLabel,
+  getLinkLabel: getFilePathLinkLabel,
   useRefreshMetadata,
-  useRemoveResource: useUnsupportedRemoveResource,
-  useSignOut: () => () => {},
+  removeResource: rejectRemoveResource,
+  signOut: function signOutOfWebdav() {},
   DownloadBookComponent: DownloadBook,
 }
 
