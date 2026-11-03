@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest"
 import { resolveMetadataFixerFormValues } from "./resolveMetadataFixerFormValues"
 import { CONTAINER_XML, comicInfo, inspect, opf } from "./inspection.fixture"
+import { IDENTIFIER_SCHEME_OPTIONS, validateIdentifierValue } from "./schemes"
 
 describe("resolveMetadataFixerFormValues", function testSeeding() {
   it("seeds a row per identifier the containers carry", async function seedRows() {
@@ -142,5 +143,33 @@ describe("resolveMetadataFixerFormValues", function testSeeding() {
     expect(resolveMetadataFixerFormValues(inspection).identifiers).toEqual([
       { scheme: "GTIN", value: "9783161484100", unique: false },
     ])
+  })
+
+  it("seeds a valid identifier of every scheme as a row its scheme accepts", async function seedEverySchemeValid() {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>' +
+          '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
+          '<dc:identifier opf:scheme="GoogleBooks">zyTCAlFPjgYC</dc:identifier>' +
+          '<dc:identifier opf:scheme="GTIN">4006381333931</dc:identifier>' +
+          '<dc:identifier opf:scheme="OpenLibrary">OL7353617M</dc:identifier>' +
+          '<dc:identifier opf:scheme="ProjectGutenberg">2701</dc:identifier>' +
+          '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>' +
+          "<dc:identifier>urn:nbn:de:101:1-2011</dc:identifier>" +
+          "<dc:identifier>https://example.com/book</dc:identifier>" +
+          "<dc:identifier>acme-0042</dc:identifier>",
+      ),
+    })
+    const rows = resolveMetadataFixerFormValues(inspection).identifiers
+
+    expect(new Set(rows.map((row) => row.scheme))).toEqual(
+      new Set(IDENTIFIER_SCHEME_OPTIONS.map((option) => option.scheme)),
+    )
+    expect(
+      rows.filter(
+        (row) => validateIdentifierValue(row.scheme, row.value) !== true,
+      ),
+    ).toEqual([])
   })
 })

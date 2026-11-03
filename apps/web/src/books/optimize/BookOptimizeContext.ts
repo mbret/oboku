@@ -1,5 +1,10 @@
 import { createContext, useContext } from "react"
-import type { Control, UseFormGetValues, UseFormReset } from "react-hook-form"
+import type {
+  Control,
+  UseFormGetValues,
+  UseFormReset,
+  UseFormTrigger,
+} from "react-hook-form"
 import type { Observable } from "rxjs"
 import type { BookOptimizeFormValues } from "./form"
 import type { FileInspection } from "./useFileInspection"
@@ -13,6 +18,7 @@ export type BookOptimizeContextValue = {
   isUploading: boolean
   isValid: boolean
   reset: UseFormReset<BookOptimizeFormValues>
+  trigger: UseFormTrigger<BookOptimizeFormValues>
   canUpload: boolean
   uploadToDataSource: () => Promise<void>
   revertLocalChanges: () => Promise<void>
