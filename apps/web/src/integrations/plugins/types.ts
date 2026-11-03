@@ -96,19 +96,17 @@ export type UseRefreshMetadataHook<
     requestPopup: () => Promise<boolean>
   } & Pick<UseMutationOptions, "meta">,
 ) => UseMutationResult<
-  {
-    providerCredentials: ProviderApiCredentials<T>
-  },
+  ProviderCredentialsResult<T>,
   Error | null,
   UseRefreshMetadataVariables<T>
 >
 
 export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
-  {
-    providerCredentials: ProviderApiCredentials<T>
-  },
+> = (options: {
+  requestPopup: () => Promise<boolean>
+}) => UseMutationResult<
+  ProviderCredentialsResult<T>,
   Error | null,
   Extract<DataSourceDocType, { type: T }>
 >
@@ -116,9 +114,7 @@ export type UseSynchronizeHook<
 export type RemoveResourceResult<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > =
-  | {
-      providerCredentials: ProviderApiCredentials<T>
-    }
+  | ProviderCredentialsResult<T>
   | {
       isError: true
       error?: Error

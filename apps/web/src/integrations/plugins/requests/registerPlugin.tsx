@@ -7,29 +7,53 @@ import type {
   ProviderCredentialsResult,
   UseRefreshMetadataVariables,
 } from "../types"
-import { useCreateRequestPopupDialog } from "../useCreateRequestPopupDialog"
+import { useRequestPopupDialog } from "../useRequestPopupDialog"
 
-type RequestSettlers<T extends DataSourceType> = {
+type RequestCallbacks<T extends DataSourceType> = {
   onResolve: (result: ProviderCredentialsResult<T>) => void
   onReject: (error: unknown) => void
 }
 
 export type SynchronizeRequestProps<T extends DataSourceType> =
-  RequestSettlers<T> & {
+  RequestCallbacks<T> & {
     dataSource: Extract<DataSourceDocType, { type: T }>
   }
 
 export type RefreshMetadataRequestProps<T extends DataSourceType> =
-  RequestSettlers<T> & {
+  RequestCallbacks<T> & {
     variables: UseRefreshMetadataVariables<T>
     meta: MutationMeta | undefined
   }
 
-export type RegisteredPlugin<T extends DataSourceType = DataSourceType> =
-  ObokuPlugin<T> & {
-    SynchronizeRequest: ComponentType<SynchronizeRequestProps<T>>
-    RefreshMetadataRequest: ComponentType<RefreshMetadataRequestProps<T>>
-  }
+export type RegisteredPlugin<T extends DataSourceType> = ObokuPlugin<T> & {
+  SynchronizeRequest: ComponentType<SynchronizeRequestProps<T>>
+  RefreshMetadataRequest: ComponentType<RefreshMetadataRequestProps<T>>
+}
+
+/**
+ * Starts `request` once the component is mounted and hands its outcome to the
+ * callbacks. The start waits a tick, so StrictMode's first mount, which is
+ * unmounted at once, never starts it.
+ */
+function useStartOnceMounted<Variables, Result>(
+  request: (variables: Variables) => Promise<Result>,
+  variables: Variables,
+  {
+    onResolve,
+    onReject,
+  }: RequestCallbacks<DataSourceType> & {
+    onResolve: (result: Result) => void
+  },
+) {
+  useEffect(
+    function startOnceMounted() {
+      return scheduleDelayedEffect(function startRequest() {
+        request(variables).then(onResolve, onReject)
+      }, 1)
+    },
+    [request, variables, onResolve, onReject],
+  )
+}
 
 /**
  * Adds the components that run the plugin's sync and metadata refresh hooks
@@ -40,22 +64,14 @@ export function registerPlugin<T extends DataSourceType>(
 ): RegisteredPlugin<T> {
   function SynchronizeRequest({
     dataSource,
-    onResolve,
-    onReject,
+    ...callbacks
   }: SynchronizeRequestProps<T>) {
-    const createRequestPopupDialog = useCreateRequestPopupDialog()
+    const requestPopup = useRequestPopupDialog(plugin.name)
     const { mutateAsync: synchronize } = plugin.useSynchronize({
-      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+      requestPopup,
     })
 
-    useEffect(
-      function synchronizeOnceMounted() {
-        return scheduleDelayedEffect(function startSynchronize() {
-          synchronize(dataSource).then(onResolve, onReject)
-        }, 1)
-      },
-      [dataSource, onReject, onResolve, synchronize],
-    )
+    useStartOnceMounted(synchronize, dataSource, callbacks)
 
     return null
   }
@@ -63,23 +79,15 @@ export function registerPlugin<T extends DataSourceType>(
   function RefreshMetadataRequest({
     variables,
     meta,
-    onResolve,
-    onReject,
+    ...callbacks
   }: RefreshMetadataRequestProps<T>) {
-    const createRequestPopupDialog = useCreateRequestPopupDialog()
+    const requestPopup = useRequestPopupDialog(plugin.name)
     const { mutateAsync: refreshMetadata } = plugin.useRefreshMetadata({
-      requestPopup: createRequestPopupDialog({ name: plugin.name }),
+      requestPopup,
       meta,
     })
 
-    useEffect(
-      function refreshMetadataOnceMounted() {
-        return scheduleDelayedEffect(function startRefreshMetadata() {
-          refreshMetadata(variables).then(onResolve, onReject)
-        }, 1)
-      },
-      [variables, onReject, onResolve, refreshMetadata],
-    )
+    useStartOnceMounted(refreshMetadata, variables, callbacks)
 
     return null
   }

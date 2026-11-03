@@ -4,30 +4,55 @@ import {
   QueryClientProvider,
   useMutation,
 } from "@tanstack/react-query"
-import type { DataSourceDocTypeFor } from "@oboku/shared"
+import type { DataSourceDocTypeFor, DataSourceType } from "@oboku/shared"
 import { StrictMode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import type {
+  ProviderCredentialsResult,
+  UseRefreshMetadataVariables,
+} from "../types"
 
-const { synchronize, refreshMetadata, createRequestPopupDialog } = vi.hoisted(
-  function createPluginMocks() {
+const mocks = vi.hoisted(function createPluginMocks() {
+  function createPluginMock<T extends DataSourceType>() {
     return {
-      synchronize: vi.fn(),
-      refreshMetadata: vi.fn(),
-      createRequestPopupDialog: vi.fn(
-        function createMockRequestPopupDialog(_options: { name: string }) {
-          return async function requestPopup() {
-            return true
-          }
-        },
-      ),
+      synchronize:
+        vi.fn<
+          (
+            dataSource: DataSourceDocTypeFor<T>,
+          ) => Promise<ProviderCredentialsResult<T>>
+        >(),
+      refreshMetadata:
+        vi.fn<
+          (
+            variables: UseRefreshMetadataVariables<T>,
+          ) => Promise<ProviderCredentialsResult<T>>
+        >(),
+      synchronizeOptions: vi.fn(),
+      refreshMetadataOptions: vi.fn(),
     }
-  },
-)
+  }
+  const popupByName = new Map<string, () => Promise<boolean>>()
 
-vi.mock("../useCreateRequestPopupDialog", function mockRequestPopupDialog() {
   return {
-    useCreateRequestPopupDialog: function useMockCreateRequestPopupDialog() {
-      return createRequestPopupDialog
+    webdav: createPluginMock<"webdav">(),
+    server: createPluginMock<"server">(),
+    getPopup(name: string) {
+      const popup =
+        popupByName.get(name) ??
+        async function requestPopup() {
+          return true
+        }
+      popupByName.set(name, popup)
+
+      return popup
+    },
+  }
+})
+
+vi.mock("../useRequestPopupDialog", function mockRequestPopupDialog() {
+  return {
+    useRequestPopupDialog: function useMockRequestPopupDialog(name: string) {
+      return mocks.getPopup(name)
     },
   }
 })
@@ -35,25 +60,63 @@ vi.mock("../useCreateRequestPopupDialog", function mockRequestPopupDialog() {
 vi.mock("../configure", async function mockRegistry() {
   const { registerPlugin } = await import("./registerPlugin")
   const { default: webdav } = await import("../../webdav/webdavPlugin")
-  const registeredWebdav = registerPlugin({
-    ...webdav,
-    useSynchronize: function useMockSynchronize() {
-      return useMutation({ mutationFn: synchronize })
-    },
-    useRefreshMetadata: function useMockRefreshMetadata({ meta }) {
-      return useMutation({ meta, mutationFn: refreshMetadata })
-    },
-  })
-  const pluginsByType = { webdav: registeredWebdav }
+  const { plugin: server } = await import("../../server/serverPlugin")
+
+  const pluginsByType = {
+    webdav: registerPlugin(
+      Object.assign({}, webdav, {
+        useSynchronize: function useMockWebdavSynchronize(
+          options: Parameters<typeof webdav.useSynchronize>[0],
+        ) {
+          mocks.webdav.synchronizeOptions(options)
+
+          return useMutation({ mutationFn: mocks.webdav.synchronize })
+        },
+        useRefreshMetadata: function useMockWebdavRefreshMetadata(
+          options: Parameters<typeof webdav.useRefreshMetadata>[0],
+        ) {
+          mocks.webdav.refreshMetadataOptions(options)
+
+          return useMutation({
+            meta: options.meta,
+            mutationFn: mocks.webdav.refreshMetadata,
+          })
+        },
+      }),
+    ),
+    server: registerPlugin(
+      Object.assign({}, server, {
+        useSynchronize: function useMockServerSynchronize(
+          options: Parameters<typeof server.useSynchronize>[0],
+        ) {
+          mocks.server.synchronizeOptions(options)
+
+          return useMutation({ mutationFn: mocks.server.synchronize })
+        },
+        useRefreshMetadata: function useMockServerRefreshMetadata(
+          options: Parameters<typeof server.useRefreshMetadata>[0],
+        ) {
+          mocks.server.refreshMetadataOptions(options)
+
+          return useMutation({
+            meta: options.meta,
+            mutationFn: mocks.server.refreshMetadata,
+          })
+        },
+      }),
+    ),
+  }
 
   return {
     pluginsByType,
-    plugins: [registeredWebdav],
-    getPluginByType: function getMockPluginByType() {
-      return registeredWebdav
+    plugins: Object.values(pluginsByType),
+    getPluginByType: function getMockPluginByType(
+      type: keyof typeof pluginsByType,
+    ) {
+      return pluginsByType[type]
     },
     isPluginType: function isMockPluginType(type: string | undefined) {
-      return type === "webdav"
+      return type !== undefined && Object.hasOwn(pluginsByType, type)
     },
   }
 })
@@ -65,20 +128,31 @@ import {
 } from "./pluginRequests"
 import { PluginRequestsHost } from "./PluginRequestsHost"
 
-const webdavDataSource: DataSourceDocTypeFor<"webdav"> = {
+const dataSourceBase = {
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },
   rx_model: "datasource",
-  type: "webdav",
   createdAt: "2026-01-01T00:00:00.000Z",
   modifiedAt: null,
   lastSyncedAt: null,
   syncStatus: null,
-  data_v2: { connectorId: "connector", directory: "/books" },
+} as const
+
+const webdavDataSource: DataSourceDocTypeFor<"webdav"> = {
+  ...dataSourceBase,
+  type: "webdav",
+  data_v2: { connectorId: "webdav-connector", directory: "/books" },
 }
 
-const credentials = { providerCredentials: { password: "secret" } }
+const serverDataSource: DataSourceDocTypeFor<"server"> = {
+  ...dataSourceBase,
+  type: "server",
+  data_v2: { connectorId: "server-connector" },
+}
+
+const webdavCredentials = { providerCredentials: { password: "webdav" } }
+const serverCredentials = { providerCredentials: { password: "server" } }
 
 function renderHost() {
   const queryClient = new QueryClient()
@@ -100,22 +174,37 @@ describe("PluginRequestsHost", () => {
     vi.clearAllMocks()
   })
 
-  it("gets the credentials from the plugin of the data source's type once, with a popup named after the plugin", async () => {
-    synchronize.mockResolvedValue(credentials)
+  it("syncs each data source once through the plugin of its type, with a popup named after it", async () => {
+    mocks.webdav.synchronize.mockResolvedValue(webdavCredentials)
+    mocks.server.synchronize.mockResolvedValue(serverCredentials)
     renderHost()
 
-    await expect(synchronizeWithPlugin(webdavDataSource)).resolves.toEqual(
-      credentials,
+    await expect(
+      Promise.all([
+        synchronizeWithPlugin(webdavDataSource),
+        synchronizeWithPlugin(serverDataSource),
+      ]),
+    ).resolves.toEqual([webdavCredentials, serverCredentials])
+    expect(mocks.webdav.synchronize).toHaveBeenCalledTimes(1)
+    expect(mocks.webdav.synchronize.mock.calls[0]?.[0]).toEqual(
+      webdavDataSource,
     )
-    expect(synchronize).toHaveBeenCalledTimes(1)
-    expect(synchronize.mock.calls[0]?.[0]).toEqual(webdavDataSource)
-    expect(createRequestPopupDialog).toHaveBeenCalledWith({ name: "WebDAV" })
+    expect(mocks.server.synchronize).toHaveBeenCalledTimes(1)
+    expect(mocks.server.synchronize.mock.calls[0]?.[0]).toEqual(
+      serverDataSource,
+    )
+    expect(mocks.webdav.synchronizeOptions).toHaveBeenCalledWith({
+      requestPopup: mocks.getPopup("WebDAV"),
+    })
+    expect(mocks.server.synchronizeOptions).toHaveBeenCalledWith({
+      requestPopup: mocks.getPopup("Server"),
+    })
     expect(pluginRequestsSignal.getValue()).toEqual([])
   })
 
   it("rejects with the plugin's error and drops the request", async () => {
     const connectorError = new Error("connector not configured")
-    synchronize.mockRejectedValue(connectorError)
+    mocks.webdav.synchronize.mockRejectedValue(connectorError)
     renderHost()
 
     await expect(synchronizeWithPlugin(webdavDataSource)).rejects.toBe(
@@ -124,21 +213,38 @@ describe("PluginRequestsHost", () => {
     expect(pluginRequestsSignal.getValue()).toEqual([])
   })
 
-  it("refreshes metadata with a mutation that carries the caller's meta", async () => {
+  it("refreshes metadata through the plugin of the link's type, with the caller's meta", async () => {
     const meta = { suppressGlobalErrorToast: true }
     const variables = {
-      linkType: "webdav" as const,
-      linkData: { connectorId: "connector", filePath: "/books/a.epub" },
-    }
-    refreshMetadata.mockResolvedValue(credentials)
+      linkType: "server",
+      linkData: { connectorId: "server-connector", filePath: "/a.epub" },
+    } as const
+    mocks.server.refreshMetadata.mockResolvedValue(serverCredentials)
     const queryClient = renderHost()
 
     await expect(
       refreshMetadataWithPlugin(variables, { meta }),
-    ).resolves.toEqual(credentials)
-    expect(refreshMetadata).toHaveBeenCalledTimes(1)
-    expect(refreshMetadata.mock.calls[0]?.[0]).toEqual(variables)
+    ).resolves.toEqual(serverCredentials)
+    expect(mocks.server.refreshMetadata).toHaveBeenCalledTimes(1)
+    expect(mocks.server.refreshMetadata.mock.calls[0]?.[0]).toEqual(variables)
+    expect(mocks.webdav.refreshMetadata).not.toHaveBeenCalled()
+    expect(mocks.server.refreshMetadataOptions).toHaveBeenCalledWith({
+      requestPopup: mocks.getPopup("Server"),
+      meta,
+    })
     expect(queryClient.getMutationCache().getAll()[0]?.meta).toBe(meta)
+  })
+
+  it("refreshes metadata without meta when the caller sets none", async () => {
+    mocks.webdav.refreshMetadata.mockResolvedValue(webdavCredentials)
+    renderHost()
+
+    await refreshMetadataWithPlugin({ linkType: "webdav", linkData: {} })
+
+    expect(mocks.webdav.refreshMetadataOptions).toHaveBeenCalledWith({
+      requestPopup: mocks.getPopup("WebDAV"),
+      meta: undefined,
+    })
   })
 
   it("rejects a data source whose type no plugin has, without a request", async () => {
@@ -146,11 +252,22 @@ describe("PluginRequestsHost", () => {
 
     await expect(
       synchronizeWithPlugin({
-        ...webdavDataSource,
+        ...dataSourceBase,
         type: "dropbox",
         data_v2: {},
       }),
     ).rejects.toThrow("Unsupported data source type: dropbox")
-    expect(synchronize).not.toHaveBeenCalled()
+    expect(mocks.webdav.synchronize).not.toHaveBeenCalled()
+    expect(mocks.server.synchronize).not.toHaveBeenCalled()
+  })
+
+  it("rejects a link whose type no plugin has, without a request", async () => {
+    renderHost()
+
+    await expect(
+      refreshMetadataWithPlugin({ linkType: "dropbox", linkData: {} }),
+    ).rejects.toThrow("Unsupported link type: dropbox")
+    expect(mocks.webdav.refreshMetadata).not.toHaveBeenCalled()
+    expect(mocks.server.refreshMetadata).not.toHaveBeenCalled()
   })
 })
