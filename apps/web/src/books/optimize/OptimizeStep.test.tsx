@@ -4,6 +4,7 @@ import {
   render,
   screen,
   waitFor,
+  within,
 } from "@testing-library/react"
 import { NEVER } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -111,6 +112,7 @@ const renderOptimizeStep = ({
     link={link}
     canUploadToDataSource={false}
     currentTab={currentTab}
+    onTabChange={vi.fn()}
   />
 )
 
@@ -119,13 +121,18 @@ const expectFormValidity = (validity: "valid" | "invalid") =>
     expect(screen.getByLabelText("Form validity").textContent).toBe(validity)
   })
 
+const tabErrorMarker = (label: string): HTMLElement | null =>
+  within(
+    screen.getByRole("tab", { name: new RegExp(`^${label}`) }),
+  ).queryByRole("img", { name: "Has errors" })
+
 describe("OptimizeStep", function testOptimizeStep() {
   afterEach(function cleanUpOptimizeStep() {
     cleanup()
     mocks.inspectionsByBookId.clear()
   })
 
-  it("shows the error of an identifier the book carries, on whichever tab is open", async function showSeededIdentifierError() {
+  it("marks the Metadata tab and shows the error of an identifier the book carries", async function showSeededIdentifierError() {
     mocks.inspectionsByBookId.set(book._id, await inspectBookWithIsbn("978-0"))
 
     render(renderOptimizeStep({ currentTab: BOOK_OPTIMIZE_TABS.CONTENT }))
@@ -134,6 +141,8 @@ describe("OptimizeStep", function testOptimizeStep() {
       await screen.findByText("Not a recognizable ISBN-10 or ISBN-13"),
     ).not.toBeNull()
     await expectFormValidity("invalid")
+    expect(tabErrorMarker("Metadata")).not.toBeNull()
+    expect(tabErrorMarker("Content")).toBeNull()
 
     const isbnField = screen.getByDisplayValue("978-0")
 
@@ -142,6 +151,7 @@ describe("OptimizeStep", function testOptimizeStep() {
     fireEvent.change(isbnField, { target: { value: "9783161484100" } })
 
     await expectFormValidity("valid")
+    expect(tabErrorMarker("Metadata")).toBeNull()
   })
 
   it("opens a book with a valid identifier of every scheme with no error", async function openEverySchemeValid() {
@@ -170,6 +180,28 @@ describe("OptimizeStep", function testOptimizeStep() {
 
     await expectFormValidity("valid")
     expect(container.querySelector('[aria-invalid="true"]')).toBeNull()
+    expect(tabErrorMarker("Metadata")).toBeNull()
+    expect(tabErrorMarker("Content")).toBeNull()
+  })
+
+  it("marks the Content tab when an image option is in error", async function markContentTab() {
+    mocks.inspectionsByBookId.set(
+      book._id,
+      await inspectBookWithIsbn("9783161484100"),
+    )
+
+    render(renderOptimizeStep({ currentTab: BOOK_OPTIMIZE_TABS.CONTENT }))
+
+    await expectFormValidity("valid")
+    fireEvent.click(screen.getByLabelText("Compress images"))
+
+    expect(
+      await screen.findByText(
+        "Set a maximum width or height when keeping the original format.",
+      ),
+    ).not.toBeNull()
+    expect(tabErrorMarker("Content")).not.toBeNull()
+    expect(tabErrorMarker("Metadata")).toBeNull()
   })
 
   it("keeps the edits when the inspection of the same book refreshes", async function keepEditsOnInspectionRefresh() {
