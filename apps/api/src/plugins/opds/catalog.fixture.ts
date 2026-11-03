@@ -95,6 +95,7 @@ type Route = {
   status?: number
   headers?: Record<string, string>
   body?: string
+  keepsAnswerOpen?: boolean
 }
 
 type ReceivedRequest = {
@@ -108,6 +109,7 @@ const isPortAddress = (
 
 export async function startServer(routes: Record<string, Route>) {
   const onRequest = vi.fn<(request: ReceivedRequest) => void>()
+  const onAnswerClosed = vi.fn<(path: string | undefined) => void>()
   const server = createServer(function answerFromRoutes(request, response) {
     onRequest({
       path: request.url,
@@ -127,10 +129,21 @@ export async function startServer(routes: Record<string, Route>) {
       "content-type": "application/atom+xml;charset=utf-8",
       ...route.headers,
     })
+
+    if (route.keepsAnswerOpen) {
+      response.on("close", function reportAnswerClosed() {
+        onAnswerClosed(request.url)
+      })
+      response.write(route.body ?? "")
+
+      return
+    }
+
     response.end(route.body)
   }).listen(0, "127.0.0.1")
 
   onTestFinished(async function closeServer() {
+    server.closeAllConnections()
     server.close()
     await once(server, "close")
   })
@@ -143,7 +156,7 @@ export async function startServer(routes: Record<string, Route>) {
 
   const host = `127.0.0.1:${address.port}`
 
-  return { host, origin: `http://${host}`, onRequest }
+  return { host, origin: `http://${host}`, onRequest, onAnswerClosed }
 }
 
 export const allowServers = (...servers: { host: string }[]) =>
