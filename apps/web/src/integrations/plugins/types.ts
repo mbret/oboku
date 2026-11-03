@@ -4,11 +4,9 @@ import type {
   DataSourceDocTypeFor,
   LinkData,
   LinkDataForProvider,
-  LinkDocType,
   LinkDocTypeForProvider,
   MetadataFileDownloadOverride,
   ProviderApiCredentials,
-  SettingsConnectorDocType,
   SettingsConnectorType,
 } from "@oboku/shared"
 import type { ComponentType, DOMAttributes, ReactNode } from "react"
@@ -119,19 +117,11 @@ export type RemoveResourceResult<
       reason: `unknown`
     }
 
-type RemoveResourceCapability<
+type UseRemoveResource<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> =
-  | {
-      canRemoveResource: true
-      removeResource: (
-        links: readonly Extract<LinkDocType, { type: T }>[],
-      ) => Promise<RemoveResourceResult<T>>
-    }
-  | {
-      canRemoveResource: false
-      removeResource?: undefined
-    }
+> = () => (
+  links: readonly LinkDocTypeForProvider<T>[],
+) => Promise<RemoveResourceResult<T>>
 
 export type UpsertFileComponentProps<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
@@ -165,20 +155,25 @@ type UpsertFileCapability<
       UpsertFileComponent?: undefined
     }
 
-/**
- * `connector` is the connector the data source names, or `undefined` when it
- * names none or the settings do not hold it.
- */
-export type GetDataSourceLabel<
+export type UseSyncSourceInfo<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (
-  dataSource: DeepReadonly<DataSourceDocTypeFor<T>>,
-  connector: Extract<SettingsConnectorDocType, { type: T }> | undefined,
-) => string | undefined
+> = (data: {
+  enabled: boolean
+  dataSource?: DeepReadonly<DataSourceDocTypeFor<T>> | undefined
+}) => {
+  name?: string
+}
 
-export type GetLinkLabel<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (linkData: LinkDataForProvider<T>) => string | undefined
+export type UseLinkInfo = (data: {
+  linkData?: LinkData | null
+  enabled: boolean
+}) => {
+  data:
+    | {
+        label?: string
+      }
+    | undefined
+}
 
 export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
   name: string
@@ -246,6 +241,7 @@ type ObokuPluginBase<
 > = {
   name: string
   canSynchronize?: boolean
+  canRemoveResource: boolean
   /**
    * Unique ID for the plugin
    */
@@ -271,24 +267,19 @@ type ObokuPluginBase<
   }>
   DownloadBookComponent: ComponentType<DownloadBookComponentProps<T>>
   Provider?: ComponentType<{ children: ReactNode }>
+  // The members below are hooks on purpose, even when no plugin calls a React
+  // hook in them and they return a plain value: a hook can use any React
+  // context, so the plugin API stays open to a future plugin. Never turn one
+  // into a plain function. Hooks cannot run in a loop, so generic code calls
+  // each plugin's hook by name, or runs it in a component made for its type.
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
-  getLinkLabel: GetLinkLabel<T>
-  getDataSourceLabel: GetDataSourceLabel<T>
-  /**
-   * Returns the function that forgets the provider session, so the next
-   * account does not inherit it.
-   *
-   * This is a hook on purpose, even though no plugin calls a React hook in it
-   * yet: a plugin may need React context to sign out. Keep it a hook, and keep
-   * `usePluginsSignOut` calling each plugin's hook.
-   */
+  useRemoveResource: UseRemoveResource<T>
+  useLinkInfo: UseLinkInfo
+  useSyncSourceInfo: UseSyncSourceInfo<T>
   useSignOut: () => () => void
 }
 
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = ObokuPluginBase<T> &
-  UpsertFileCapability<T> &
-  ConnectorCapability<T> &
-  RemoveResourceCapability<T>
+> = ObokuPluginBase<T> & UpsertFileCapability<T> & ConnectorCapability<T>

@@ -1,6 +1,7 @@
 /// <reference types="@types/dropbox-chooser" />
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
+import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import { DataSourceForm } from "./DataSourceForm"
 import DropboxIconAsset from "../../../assets/dropbox.svg?react"
 import { PLUGIN_NAME } from "./constants"
@@ -9,8 +10,8 @@ import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../../plugins/types"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
-import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
-import { getDataSourceLabel } from "./getDataSourceLabel"
+import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { UpsertFile } from "./UpsertFile"
 import { ROUTES } from "../../../navigation/routes"
 
@@ -37,8 +38,9 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   DataSourceForm,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
-  getLinkLabel: getFileIdLinkLabel,
-  getDataSourceLabel,
+  useRemoveResource: useUnsupportedRemoveResource,
+  useLinkInfo,
+  useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,

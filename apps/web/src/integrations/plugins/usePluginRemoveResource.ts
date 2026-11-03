@@ -1,6 +1,5 @@
-import type { DataSourceType, LinkDocType } from "@oboku/shared"
-import { UnsupportedMethodError } from "../../errors/errors.shared"
-import { getPluginByType } from "./configure"
+import { assertNever, type LinkDocType } from "@oboku/shared"
+import { pluginsByType } from "./configure"
 import type { RemoveResourceResult } from "./types"
 import { useMutation } from "@tanstack/react-query"
 
@@ -18,23 +17,59 @@ const isLinkOfType =
   (link: LinkDocType): link is Extract<LinkDocType, { type: T }> =>
     link.type === type
 
-function removeResourcesOfType<T extends DataSourceType>(
-  type: T,
-  links: readonly LinkDocType[],
-) {
-  const { removeResource } = getPluginByType(type)
-
-  if (!removeResource) {
-    throw new UnsupportedMethodError("This data source cannot remove books")
-  }
-
-  return removeResource(links.filter(isLinkOfType(type)))
-}
-
+/**
+ * Calls each plugin's `useRemoveResource` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginRemoveResource = () => {
+  const removeResourceFromWebdav = pluginsByType.webdav.useRemoveResource()
+  const removeResourceFromDropbox = pluginsByType.dropbox.useRemoveResource()
+  const removeResourceFromSynologyDrive =
+    pluginsByType["synology-drive"].useRemoveResource()
+  const removeResourceFromDrive = pluginsByType.DRIVE.useRemoveResource()
+  const removeResourceFromOneDrive =
+    pluginsByType["one-drive"].useRemoveResource()
+  const removeResourceFromFile = pluginsByType.file.useRemoveResource()
+  const removeResourceFromUri = pluginsByType.URI.useRemoveResource()
+  const removeResourceFromServer = pluginsByType.server.useRemoveResource()
+
   return useMutation({
-    mutationFn: async function removeResourceGroup(group: RemoveResourceGroup) {
-      return removeResourcesOfType(group.type, group.links)
+    mutationFn: async (group: RemoveResourceGroup) => {
+      switch (group.type) {
+        case "webdav":
+          return removeResourceFromWebdav(
+            group.links.filter(isLinkOfType("webdav")),
+          )
+        case "synology-drive":
+          return removeResourceFromSynologyDrive(
+            group.links.filter(isLinkOfType("synology-drive")),
+          )
+        case "dropbox":
+          return removeResourceFromDropbox(
+            group.links.filter(isLinkOfType("dropbox")),
+          )
+        case "DRIVE":
+          return removeResourceFromDrive(
+            group.links.filter(isLinkOfType("DRIVE")),
+          )
+        case "one-drive":
+          return removeResourceFromOneDrive(
+            group.links.filter(isLinkOfType("one-drive")),
+          )
+        case "file":
+          return removeResourceFromFile(
+            group.links.filter(isLinkOfType("file")),
+          )
+        case "URI":
+          return removeResourceFromUri(group.links.filter(isLinkOfType("URI")))
+        case "server":
+          return removeResourceFromServer(
+            group.links.filter(isLinkOfType("server")),
+          )
+        default:
+          return assertNever(group.type)
+      }
     },
   })
 }

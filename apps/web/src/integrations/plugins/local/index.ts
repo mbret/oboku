@@ -7,10 +7,11 @@ import {
   PLUGIN_FILE_TYPE,
 } from "@oboku/shared"
 import { memo, useEffect } from "react"
+import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { getLinkLabel } from "./getLinkLabel"
-import { getDataSourceLabel } from "./getDataSourceLabel"
+import { useLinkInfo } from "./useLinkInfo"
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
 export const plugin: ObokuPlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
@@ -20,10 +21,11 @@ export const plugin: ObokuPlugin<"file"> = {
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   collectionIdentityFields: ["filename"],
-  getLinkLabel,
-  getDataSourceLabel,
+  useLinkInfo,
+  useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: () => () => {},
   DownloadBookComponent: memo(function DownloadBook({ onError }) {
     useEffect(() => {
