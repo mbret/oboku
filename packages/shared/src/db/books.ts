@@ -253,13 +253,12 @@ const isDateSet = (date: string | null | undefined): date is string => !!date
  * since it existed only has the deprecated date.
  *
  * TODO(ask the maintainer, added 2026-09): this fallback and the deprecated
- * `readingStateCurrentBookmarkProgressUpdatedAt` are meant to be removed once
- * older versions of the app are gone. After a few months, raise it with the
- * maintainer rather than removing it: dropping it either needs a CouchDB
- * backfill first (the API's `MigrationService`, see AGENTS.md), or sends the
- * books still holding only the deprecated date to the bottom of recent
- * activity. Its entry in the RxDB book schema goes only once no CouchDB
- * document holds the field: RxDB rejects undeclared properties.
+ * `readingStateCurrentBookmarkProgressUpdatedAt` go with a CouchDB migration
+ * that backfills `readingStateUpdatedAt` (the API's `MigrationService`, see
+ * AGENTS.md). Without it, the books still holding only the deprecated date
+ * drop to the bottom of recent activity. Its entry in the RxDB book schema
+ * goes only once no CouchDB document holds the field: RxDB rejects undeclared
+ * properties.
  */
 export const getReadingStateUpdatedTime = ({
   readingStateUpdatedAt,
