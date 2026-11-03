@@ -40,8 +40,11 @@ export function OptimizeStep({
     )
   }
 
+  const bookLinkKey = `${book._id}:${link._id}`
+
   return (
     <BookOptimizeProvider
+      key={bookLinkKey}
       book={book}
       link={link}
       canUploadToDataSource={canUploadToDataSource}
