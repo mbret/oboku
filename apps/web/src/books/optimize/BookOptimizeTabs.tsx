@@ -28,12 +28,17 @@ const isBookOptimizeField = (
   name: string,
 ): name is keyof BookOptimizeFormValues => Object.hasOwn(TAB_OF_FIELD, name)
 
+const fieldsOfTab = (tab: BookOptimizeTab): (keyof BookOptimizeFormValues)[] =>
+  Object.keys(TAB_OF_FIELD)
+    .filter(isBookOptimizeField)
+    .filter((field) => TAB_OF_FIELD[field] === tab)
+
 export function BookOptimizeTabs() {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
 
-  const { control } = useBookOptimize()
+  const { control, trigger } = useBookOptimize()
   const { errors } = useFormState({ control })
   const { tab: selectedTab, selectTab } = useBookOptimizeTab()
   const tabsWithFieldInError = new Set(
@@ -47,7 +52,11 @@ export function BookOptimizeTabs() {
     <Tabs
       value={selectedTab}
       indicatorColor="primary"
-      onChange={function selectClickedTab(_event, nextTab: BookOptimizeTab) {
+      onChange={function showErrorsOfLeftTabThenSelect(
+        _event,
+        nextTab: BookOptimizeTab,
+      ) {
+        void trigger(fieldsOfTab(selectedTab))
         selectTab(nextTab)
       }}
     >

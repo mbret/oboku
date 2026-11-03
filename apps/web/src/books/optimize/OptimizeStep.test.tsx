@@ -155,6 +155,24 @@ describe("OptimizeStep", function testOptimizeStep() {
     expect(queryTabErrorMarker("Metadata")).toBeNull()
   })
 
+  it("marks the Metadata tab when it is left with an added identifier still empty", async function markMetadataTabForEmptyAddedIdentifier() {
+    mocks.inspectionsByBookId.set(
+      book._id,
+      await inspectBookWithIsbn("9783161484100"),
+    )
+
+    render(<TestOptimizeStep />)
+
+    await expectFormValidity("valid")
+    fireEvent.click(screen.getByRole("button", { name: "Add identifier" }))
+    await expectFormValidity("invalid")
+    fireEvent.click(getTab("Content"))
+
+    expect(await screen.findByText("Required")).not.toBeNull()
+    expect(getTab("Content").getAttribute("aria-selected")).toBe("true")
+    expect(queryTabErrorMarker("Metadata")).not.toBeNull()
+  })
+
   it("marks the Content tab when an image option is in error while Metadata is open", async function markContentTabFromMetadataTab() {
     mocks.inspectionsByBookId.set(
       book._id,
