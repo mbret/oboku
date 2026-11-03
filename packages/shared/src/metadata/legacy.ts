@@ -6,10 +6,8 @@
  * {@link getBookMetadataFields} and {@link getBookMetadataSource}, which read
  * both shapes.
  *
- * TODO(ask the maintainer, added 2026-10): revisit in 2027-10 at the
- * earliest. This file goes once no stored book holds these shapes, which
- * takes a CouchDB migration (AGENTS.md, "Data migrations"), and once the
- * older versions of the app that write `googleBookApi` priorities are gone.
+ * TODO(ask the maintainer, added 2026-10): this file goes with the CouchDB
+ * migration that converts these shapes (AGENTS.md, "Data migrations").
  */
 import type { BookMetadata, BookMetadataVariant } from "./index"
 
