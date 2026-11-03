@@ -68,13 +68,28 @@ describe("IntegrationsScreen", () => {
     }
   })
 
-  it("hides an integration whose provider the instance did not configure", () => {
+  it("lists the integrations in the order of their names", () => {
+    renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
+
+    const hrefs = screen
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
+
+    expect(hrefs).toEqual(Object.values(INTEGRATION_HREF_BY_NAME))
+  })
+
+  it.each([
+    ["Dropbox", "FEATURE_DROPBOX_ENABLED"],
+    ["Google", "FEATURE_GOOGLE_DRIVE_ENABLED"],
+    ["OneDrive", "FEATURE_ONE_DRIVE_ENABLED"],
+    ["Server", "FEATURE_SERVER_SYNC_ENABLED"],
+  ])("hides %s when the instance turns %s off", (name, featureFlag) => {
     renderIntegrationsScreen({
       ...EVERY_PROVIDER_CONFIGURED,
-      FEATURE_DROPBOX_ENABLED: false,
+      [featureFlag]: false,
     })
 
-    expect(queryIntegrationLink("Dropbox")).toBeNull()
+    expect(queryIntegrationLink(name)).toBeNull()
     expect(getIntegrationLink("KOReader")).toBeDefined()
   })
 

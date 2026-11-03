@@ -1,7 +1,8 @@
 import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
 import type { UploadBookComponentProps } from "../../plugins/types"
-import type { WebdavBackedType } from "./constants"
+import { CONNECTOR, type WebdavBackedType } from "./constants"
+import type { ConnectorDetails } from "../../plugins/types"
 import {
   ConnectorSelectionStep,
   type WebdavAuthResult,
@@ -12,7 +13,7 @@ import {
 } from "./upload/FileBrowseStep"
 
 type WebdavUploadBookProps<T extends WebdavBackedType> = {
-  connectorType: T
+  connector: ConnectorDetails<T>
   headerSubtitle?: string
   maxConnectors?: number
   onClose: (booksToAdd?: ReadonlyArray<WebdavUploadBookToAddPayload<T>>) => void
@@ -22,7 +23,7 @@ type WebdavUploadBookProps<T extends WebdavBackedType> = {
 }
 
 export function WebdavUploadBook<T extends WebdavBackedType>({
-  connectorType,
+  connector,
   headerSubtitle,
   maxConnectors,
   onClose,
@@ -47,7 +48,7 @@ export function WebdavUploadBook<T extends WebdavBackedType>({
       {authResult ? (
         <FileBrowseStep
           authResult={authResult}
-          connectorType={connectorType}
+          connectorType={connector.type}
           headerSubtitle={headerSubtitle}
           onCancel={closeWithoutBooks}
           onClose={onClose}
@@ -55,7 +56,7 @@ export function WebdavUploadBook<T extends WebdavBackedType>({
         />
       ) : (
         <ConnectorSelectionStep
-          connectorType={connectorType}
+          connector={connector}
           maxConnectors={maxConnectors}
           onAuthenticated={setAuthResult}
           onClose={closeWithoutBooks}
@@ -69,5 +70,5 @@ export function WebdavUploadBook<T extends WebdavBackedType>({
 export const UploadBook = memo(function UploadBook(
   props: UploadBookComponentProps<"webdav">,
 ) {
-  return <WebdavUploadBook {...props} connectorType="webdav" />
+  return <WebdavUploadBook {...props} connector={CONNECTOR} />
 })

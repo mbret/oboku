@@ -18,6 +18,7 @@ import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
 import { clearGoogleAccessToken } from "../auth"
+import { ROUTES } from "../../../navigation/routes"
 
 const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -32,6 +33,13 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   canUpsertFile: true,
   upsertPrunesVersionHistory: true,
   Icon: GoogleDriveIcon,
+  collectionIdentityFields: ["fileId"],
+  featureFlag: "FEATURE_GOOGLE_DRIVE_ENABLED",
+  integration: {
+    name: "Google",
+    description: "Manage contents from Google Drive",
+    route: ROUTES.INTEGRATION_GOOGLE,
+  },
   UploadBookComponent: UploadBook,
   canSynchronize: true,
   DownloadBookComponent: DownloadBook,

@@ -11,11 +11,11 @@ import { useMutation } from "@tanstack/react-query"
 import { ConnectorManagementButtons } from "../connectors/ConnectorManagementButtons"
 import { ConnectorSelector } from "../connectors/ConnectorSelector"
 import { useConnectors } from "../connectors/useConnectors"
-import type { SettingsConnectorType } from "@oboku/shared"
+import type { ConnectorDetails } from "../integrations/plugins/types"
 import { CancelButton } from "../common/forms/CancelButton"
 
 export type UploadConnectorSelectionStepProps<TAuthResult> = {
-  connectorType: SettingsConnectorType
+  connector: ConnectorDetails
   onAuthenticated: (result: TAuthResult) => void
   onClose: () => void
   /** Returns auth result; called when user clicks Connect/Sign in */
@@ -30,7 +30,7 @@ export function UploadConnectorSelectionStep<TAuthResult>(
   props: UploadConnectorSelectionStepProps<TAuthResult>,
 ) {
   const {
-    connectorType,
+    connector,
     onAuthenticated,
     onClose,
     authenticate,
@@ -38,7 +38,7 @@ export function UploadConnectorSelectionStep<TAuthResult>(
     maxConnectors,
   } = props
 
-  const { data: connectors = [] } = useConnectors({ type: connectorType })
+  const { data: connectors = [] } = useConnectors({ type: connector.type })
   const [selectedConnectorId, setSelectedConnectorId] = useState<
     string | undefined
   >(initialConnectorId)
@@ -69,12 +69,12 @@ export function UploadConnectorSelectionStep<TAuthResult>(
             Select a connector, then sign in to browse and add files.
           </Alert>
           <ConnectorSelector
-            connectorType={connectorType}
+            connector={connector}
             value={selectedConnectorId}
             onChange={(e) => setSelectedConnectorId(e.target.value)}
           />
           <ConnectorManagementButtons
-            connectorType={connectorType}
+            connector={connector}
             onNavigate={onClose}
             showNewButton={
               maxConnectors === undefined || connectors.length < maxConnectors

@@ -1,22 +1,19 @@
-import type {
-  SettingsConnectorDocType,
-  SettingsConnectorType,
-} from "@oboku/shared"
+import type { SettingsConnectorDocType } from "@oboku/shared"
 import { Alert, MenuItem, TextField, type TextFieldProps } from "@mui/material"
 import { memo } from "react"
-import { CONNECTOR_DETAILS } from "./connectorDetails"
+import type { ConnectorDetails } from "../integrations/plugins/types"
 import { useConnectors } from "./useConnectors"
 
 export type ConnectorSelectorProps = Omit<
   TextFieldProps,
   "select" | "children"
 > & {
-  connectorType: SettingsConnectorType
+  connector: ConnectorDetails
   connectors?: SettingsConnectorDocType[]
 }
 
 export const ConnectorSelector = memo(function ConnectorSelector({
-  connectorType,
+  connector: { type: connectorType, label },
   connectors: connectorsProp,
   ref: refProp,
   ...textFieldProps
@@ -25,7 +22,6 @@ export const ConnectorSelector = memo(function ConnectorSelector({
     type: connectorType,
   })
   const connectors = connectorsProp ?? connectorsFromHook
-  const { label } = CONNECTOR_DETAILS[connectorType]
 
   if (connectors.length === 0) {
     return (
