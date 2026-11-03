@@ -1,7 +1,7 @@
 import { Stack, Skeleton } from "@mui/material"
 import { memo } from "react"
 
-export const SkeletonLoader = memo(() => {
+export const SkeletonLoader = memo(function SkeletonLoader() {
   return (
     <Stack
       sx={{

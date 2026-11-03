@@ -8,7 +8,7 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-export const SecurityScreen = memo(() => {
+export const SecurityScreen = memo(function SecurityScreen() {
   const { data: accountSettings } = useSettings()
   const [
     isEditContentPasswordDialogOpened,

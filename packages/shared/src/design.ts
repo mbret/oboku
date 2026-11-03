@@ -23,6 +23,7 @@ export const links = {
   documentationSupport: `https://docs.oboku.me/support`,
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
+  privacyPolicy: `https://oboku.me/privacy-policy`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
   sponsor: `https://github.com/sponsors/mbret`,

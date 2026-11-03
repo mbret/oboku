@@ -19,121 +19,117 @@ import { links } from "@oboku/shared"
 import { PageSection } from "../common/PageSection"
 import { ROUTES } from "../navigation/routes"
 
-const ConnectorListItem = memo(
-  ({
-    id,
-    onClick,
-    connectorType,
-  }: {
-    id: string
-    connectorType: SettingsConnectorType
-    onClick: () => void
-  }) => {
-    const { data: connector } = useConnector({ id, type: connectorType })
+const ConnectorListItem = memo(function ConnectorListItem({
+  id,
+  onClick,
+  connectorType,
+}: {
+  id: string
+  connectorType: SettingsConnectorType
+  onClick: () => void
+}) {
+  const { data: connector } = useConnector({ id, type: connectorType })
 
-    return (
-      <ListItemButton onClick={onClick}>
-        <ListItemIcon>
-          <LinkRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary={connector?.url ?? connector?.username}
-          secondary={
-            connector?.url ? `${connector?.username}@********` : "********"
-          }
-        />
-      </ListItemButton>
-    )
-  },
-)
+  return (
+    <ListItemButton onClick={onClick}>
+      <ListItemIcon>
+        <LinkRounded />
+      </ListItemIcon>
+      <ListItemText
+        primary={connector?.url ?? connector?.username}
+        secondary={
+          connector?.url ? `${connector?.username}@********` : "********"
+        }
+      />
+    </ListItemButton>
+  )
+})
 
-export const ConnectorInfoSection = memo(
-  ({
-    connectorType,
-    maxConnectors,
-  }: {
-    connectorType: SettingsConnectorType
-    maxConnectors?: number
-  }) => {
-    const { data: connectors } = useConnectors({ type: connectorType })
-    const navigate = useNavigate()
-    const canAdd =
-      maxConnectors === undefined || (connectors?.length ?? 0) < maxConnectors
+export const ConnectorInfoSection = memo(function ConnectorInfoSection({
+  connectorType,
+  maxConnectors,
+}: {
+  connectorType: SettingsConnectorType
+  maxConnectors?: number
+}) {
+  const { data: connectors } = useConnectors({ type: connectorType })
+  const navigate = useNavigate()
+  const canAdd =
+    maxConnectors === undefined || (connectors?.length ?? 0) < maxConnectors
 
-    return (
-      <Box
+  return (
+    <Box
+      sx={{
+        display: "flex",
+        flex: 1,
+        flexDirection: "column",
+        overflow: "auto",
+      }}
+    >
+      <Stack
         sx={{
-          display: "flex",
-          flex: 1,
-          flexDirection: "column",
-          overflow: "auto",
+          px: 2,
+          pt: 2,
+          gap: 1,
         }}
       >
-        <Stack
+        <Typography
+          variant="subtitle2"
           sx={{
-            px: 2,
-            pt: 2,
-            gap: 1,
+            color: "text.secondary",
           }}
         >
-          <Typography
-            variant="subtitle2"
-            sx={{
-              color: "text.secondary",
-            }}
+          Connectors
+        </Typography>
+        <Alert severity="info" variant="standard">
+          Learn more about connectors{" "}
+          <MuiLink
+            href={links.documentationConnectors}
+            rel="noopener noreferrer"
+            target="_blank"
           >
-            Connectors
-          </Typography>
-          <Alert severity="info" variant="standard">
-            Learn more about connectors{" "}
-            <MuiLink
-              href={links.documentationConnectors}
-              rel="noopener noreferrer"
-              target="_blank"
-            >
-              here
-            </MuiLink>
-          </Alert>
-        </Stack>
-        {canAdd && (
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: { sm: "flex-start" },
-              mt: 2,
-              px: 2,
-            }}
+            here
+          </MuiLink>
+        </Alert>
+      </Stack>
+      {canAdd && (
+        <Box
+          sx={{
+            display: "flex",
+            flexDirection: { xs: "column", sm: "row" },
+            justifyContent: { sm: "flex-start" },
+            mt: 2,
+            px: 2,
+          }}
+        >
+          <Button
+            component={RouterLink}
+            to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
+              type: connectorType,
+            })}
+            variant="contained"
           >
-            <Button
-              component={RouterLink}
-              to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
-                type: connectorType,
-              })}
-              variant="contained"
-            >
-              Add a connector
-            </Button>
-          </Box>
-        )}
-        <PageSection>
-          {connectors?.map((connector) => (
-            <ConnectorListItem
-              id={connector.id}
-              key={connector.id}
-              connectorType={connectorType}
-              onClick={() => {
-                navigate(
-                  generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
-                    type: connectorType,
-                    id: connector.id,
-                  }),
-                )
-              }}
-            />
-          ))}
-        </PageSection>
-      </Box>
-    )
-  },
-)
+            Add a connector
+          </Button>
+        </Box>
+      )}
+      <PageSection>
+        {connectors?.map((connector) => (
+          <ConnectorListItem
+            id={connector.id}
+            key={connector.id}
+            connectorType={connectorType}
+            onClick={() => {
+              navigate(
+                generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
+                  type: connectorType,
+                  id: connector.id,
+                }),
+              )
+            }}
+          />
+        ))}
+      </PageSection>
+    </Box>
+  )
+})

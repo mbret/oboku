@@ -171,7 +171,7 @@ function BookMetadataStatus({
   )
 }
 
-export const BookListItemHorizontal = memo(function BookListItem({
+export const BookListItemHorizontal = memo(function BookListItemHorizontal({
   bookId,
   variant = "default",
   onItemClick,

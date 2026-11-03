@@ -27,42 +27,46 @@ export const getLabel = (readingState: ReadingState) => {
   }
 }
 
-export const ReadingStateFilterDialog = memo(
-  ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-    const state = useSignalValue(libraryShelvesFiltersSignal)
-    const readingStates = ["any", "ongoing", "finished"] as ReadingState[]
+export const ReadingStateFilterDialog = memo(function ReadingStateFilterDialog({
+  open,
+  onClose,
+}: {
+  open: boolean
+  onClose: () => void
+}) {
+  const state = useSignalValue(libraryShelvesFiltersSignal)
+  const readingStates = ["any", "ongoing", "finished"] as ReadingState[]
 
-    return (
-      <Dialog onClose={onClose} open={open}>
-        <DialogTitle>Reading state</DialogTitle>
-        <DialogContent>
-          <FormControl>
-            <RadioGroup
-              name="collection-state-radio-group"
-              value={state.readingState}
-              onChange={(event) => {
-                libraryShelvesFiltersSignal.setValue((state) => ({
-                  ...state,
-                  readingState: event.target.value as ReadingState,
-                }))
-                onClose()
-              }}
-            >
-              {readingStates.map((readingState) => (
-                <FormControlLabel
-                  key={readingState}
-                  value={readingState}
-                  control={<Radio />}
-                  label={getLabel(readingState)}
-                />
-              ))}
-            </RadioGroup>
-          </FormControl>
-        </DialogContent>
-        <DialogActions>
-          <CancelButton onClick={onClose} variant="outlined" autoFocus />
-        </DialogActions>
-      </Dialog>
-    )
-  },
-)
+  return (
+    <Dialog onClose={onClose} open={open}>
+      <DialogTitle>Reading state</DialogTitle>
+      <DialogContent>
+        <FormControl>
+          <RadioGroup
+            name="collection-state-radio-group"
+            value={state.readingState}
+            onChange={(event) => {
+              libraryShelvesFiltersSignal.setValue((state) => ({
+                ...state,
+                readingState: event.target.value as ReadingState,
+              }))
+              onClose()
+            }}
+          >
+            {readingStates.map((readingState) => (
+              <FormControlLabel
+                key={readingState}
+                value={readingState}
+                control={<Radio />}
+                label={getLabel(readingState)}
+              />
+            ))}
+          </RadioGroup>
+        </FormControl>
+      </DialogContent>
+      <DialogActions>
+        <CancelButton onClick={onClose} variant="outlined" autoFocus />
+      </DialogActions>
+    </Dialog>
+  )
+})

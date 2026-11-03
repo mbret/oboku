@@ -6,7 +6,9 @@ import { useSignalValue } from "reactjrx"
 import { consentShownSignal } from "../auth"
 import "./lib/picker.css"
 
-export const Provider: ObokuPlugin["Provider"] = memo(({ children }) => {
+export const Provider: ObokuPlugin["Provider"] = memo(function Provider({
+  children,
+}) {
   const consentPopupShown = useSignalValue(consentShownSignal)
 
   const { mutate: loadGapi } = useLoadGapi()

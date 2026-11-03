@@ -8,13 +8,7 @@ import type {
   MetadataFileDownloadOverride,
   ProviderApiCredentials,
 } from "@oboku/shared"
-import type {
-  ComponentType,
-  DOMAttributes,
-  FC,
-  FunctionComponent,
-  ReactNode,
-} from "react"
+import type { ComponentType, DOMAttributes, ReactNode } from "react"
 import type { SvgIconProps } from "@mui/material"
 import type { DeepReadonly } from "rxdb"
 import type {
@@ -51,7 +45,7 @@ export type UploadBookComponentProps<
 > = {
   onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
   requestPopup: () => Promise<boolean>
-  TagsSelector: FC<{
+  TagsSelector: ComponentType<{
     onChange: (tags: string[]) => void
   }>
   title: string
@@ -211,11 +205,11 @@ type ObokuPluginBase<
    */
   type: T
   Icon: ComponentType<SvgIconProps>
-  UploadBookComponent?: FunctionComponent<UploadBookComponentProps<T>>
+  UploadBookComponent?: ComponentType<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
     DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
   >
-  SelectItemComponent?: FunctionComponent<{
+  SelectItemComponent?: ComponentType<{
     open: boolean
     requestPopup: () => Promise<boolean>
     onClose: (
@@ -223,8 +217,8 @@ type ObokuPluginBase<
       item?: { data: LinkData } | undefined,
     ) => void
   }>
-  DownloadBookComponent: FunctionComponent<DownloadBookComponentProps<T>>
-  Provider?: FunctionComponent<{ children: ReactNode }>
+  DownloadBookComponent: ComponentType<DownloadBookComponentProps<T>>
+  Provider?: ComponentType<{ children: ReactNode }>
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
   useRemoveResource: UseRemoveResource<T>

@@ -30,39 +30,37 @@ export const testConnection: TestConnectionFn<WebdavConnectionParams> = async (
   }
 }
 
-export const ConnectorForm = memo(
-  ({
-    onSubmitSuccess,
-    children,
-    connectorId,
-  }: {
-    onSubmitSuccess: () => void
-    children?: React.ReactNode
-    connectorId?: string
-  }) => {
-    const { masterKey, unlockMasterKey } = useUnlockMasterKey()
+export const ConnectorForm = memo(function ConnectorForm({
+  onSubmitSuccess,
+  children,
+  connectorId,
+}: {
+  onSubmitSuccess: () => void
+  children?: React.ReactNode
+  connectorId?: string
+}) {
+  const { masterKey, unlockMasterKey } = useUnlockMasterKey()
 
-    return (
-      <GenericConnectorForm
-        connectorId={connectorId}
-        connectorType="webdav"
-        onSubmitSuccess={onSubmitSuccess}
-        testConnection={testConnection}
-        renderExtraActions={() => (
-          <Button disabled={!!masterKey} onClick={unlockMasterKey}>
-            {masterKey ? "Unlocked" : "Unlock secrets"}
-          </Button>
-        )}
-        topAlert={
-          <Alert severity="warning">
-            Connecting to WebDAV server involves several requirements, make sure
-            to <Link href={links.documentationConnectors}>read this</Link>{" "}
-            before proceeding.
-          </Alert>
-        }
-      >
-        {children}
-      </GenericConnectorForm>
-    )
-  },
-)
+  return (
+    <GenericConnectorForm
+      connectorId={connectorId}
+      connectorType="webdav"
+      onSubmitSuccess={onSubmitSuccess}
+      testConnection={testConnection}
+      renderExtraActions={() => (
+        <Button disabled={!!masterKey} onClick={unlockMasterKey}>
+          {masterKey ? "Unlocked" : "Unlock secrets"}
+        </Button>
+      )}
+      topAlert={
+        <Alert severity="warning">
+          Connecting to WebDAV server involves several requirements, make sure
+          to <Link href={links.documentationConnectors}>read this</Link> before
+          proceeding.
+        </Alert>
+      }
+    >
+      {children}
+    </GenericConnectorForm>
+  )
+})

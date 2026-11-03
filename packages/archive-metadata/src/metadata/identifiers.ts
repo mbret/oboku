@@ -5,8 +5,9 @@ import {
 
 /**
  * Scheme meaning "this identifier carries no scheme at all". The read side
- * reports it for an untagged identifier, so writing it back as a missing
- * scheme attribute is what keeps read → edit → write → read stable.
+ * reports it for an untagged identifier whose value announces none, so writing
+ * it back as a missing scheme attribute is what keeps read → edit → write →
+ * read stable.
  */
 export const UNTAGGED_IDENTIFIER_SCHEME = "Unknown"
 

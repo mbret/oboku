@@ -51,221 +51,219 @@ export type VirtuosoGridListHandle = {
   isGrid: boolean
 }
 
-export const VirtuosoList = memo(
-  ({
-    renderHeader,
-    itemsPerRow = 1,
-    style,
-    className,
-    listElementStyle,
-    data = [],
-    rowRenderer,
+export const VirtuosoList = memo(function VirtuosoList({
+  renderHeader,
+  itemsPerRow = 1,
+  style,
+  className,
+  listElementStyle,
+  data = [],
+  rowRenderer,
+  restoreScrollId,
+  horizontalDirection,
+  ref,
+  onScroll,
+  ...rest
+}: {
+  renderHeader?: () => React.ReactNode | ReactElement
+  style?: React.CSSProperties
+  className?: string
+  listElementStyle?: React.CSSProperties
+  data?: string[]
+  itemsPerRow?: number
+  restoreScrollId?: string
+  rowRenderer?: (
+    rowIndex: number,
+    item: string,
+    context: Context,
+  ) => React.ReactNode
+  horizontalDirection?: boolean
+  onScroll?: (event: React.UIEvent<HTMLDivElement, UIEvent>) => void
+  ref?: React.RefObject<VirtuosoGridListHandle | null>
+} & Pick<
+  SharedProps,
+  "scrollerRef" | "customScrollParent" | "useWindowScroll"
+>) {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
+  const virtuosoRef = useRef<VirtuosoHandle>(null)
+  const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
+  const _ref = useRef<VirtuosoGridListHandle>(null)
+  const finalRef = ref ?? _ref
+  const {
+    restoreScrollState,
+    saveScrollState,
+    restoreStateFromFirstValue,
+    isRestored,
+    resetScrollState,
+  } = useRestoreVirtuosoScroll({
     restoreScrollId,
-    horizontalDirection,
-    ref,
-    onScroll,
-    ...rest
-  }: {
-    renderHeader?: () => React.ReactNode | ReactElement
-    style?: React.CSSProperties
-    className?: string
-    listElementStyle?: React.CSSProperties
-    data?: string[]
-    itemsPerRow?: number
-    restoreScrollId?: string
-    rowRenderer?: (
-      rowIndex: number,
-      item: string,
-      context: Context,
-    ) => React.ReactNode
-    horizontalDirection?: boolean
-    onScroll?: (event: React.UIEvent<HTMLDivElement, UIEvent>) => void
-    ref?: React.RefObject<VirtuosoGridListHandle | null>
-  } & Pick<
-    SharedProps,
-    "scrollerRef" | "customScrollParent" | "useWindowScroll"
-  >) => {
-    // React Compiler cannot lower this function yet, so it bails out here.
-    // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
-    "use no memo"
+    virtuosoRef: finalRef,
+  })
+  const onScrollRef = useLiveRef(onScroll)
 
-    const virtuosoRef = useRef<VirtuosoHandle>(null)
-    const virtuosoGridRef = useRef<VirtuosoGridHandle>(null)
-    const _ref = useRef<VirtuosoGridListHandle>(null)
-    const finalRef = ref ?? _ref
-    const {
-      restoreScrollState,
-      saveScrollState,
-      restoreStateFromFirstValue,
-      isRestored,
-      resetScrollState,
-    } = useRestoreVirtuosoScroll({
-      restoreScrollId,
-      virtuosoRef: finalRef,
-    })
-    const onScrollRef = useLiveRef(onScroll)
+  const GridListComponent = useMemo(
+    () =>
+      forwardRef<HTMLDivElement, GridListProps & ContextProp<Context>>(
+        ({ children, style, ...props }, ref) => {
+          const _ref = ref
 
-    const GridListComponent = useMemo(
-      () =>
-        forwardRef<HTMLDivElement, GridListProps & ContextProp<Context>>(
-          ({ children, style, ...props }, ref) => {
-            const _ref = ref
-
-            return (
-              <GridStack
-                ref={_ref}
-                direction="row"
-                style={{ ...style, ...listElementStyle }}
-                {...props}
-              >
-                {children}
-              </GridStack>
-            )
-          },
-        ),
-      [listElementStyle],
-    )
-
-    const GridItem = useMemo(
-      () =>
-        ({
-          children,
-          ref,
-          ...props
-        }: GridItemProps & {
-          context?: Context
-        }) => (
-          <GridItemBox
-            ref={ref as Ref<HTMLDivElement>}
-            {...props}
-            itemsPerRow={itemsPerRow}
-          >
-            {children}
-          </GridItemBox>
-        ),
-      [itemsPerRow],
-    )
-
-    const size = data.length
-    const context = useMemo(() => ({ size }), [size])
-    const isGrid = itemsPerRow > 1
-    const isGridRef = useLiveRef(isGrid)
-    const gridStyle = useMemo(
-      (): React.CSSProperties => ({
-        ...style,
-        scrollbarWidth: "initial",
-      }),
-      [style],
-    )
-    const gridComponents = useMemo(
-      () => ({
-        Header: renderHeader,
-        Item: GridItem,
-        List: GridListComponent,
-      }),
-      [renderHeader, GridItem, GridListComponent],
-    )
-
-    const ListComponent = useMemo(
-      () =>
-        ({ style, ...props }: ListProps & ContextProp<Context>) => {
-          return <Box style={{ ...style, ...listElementStyle }} {...props} />
+          return (
+            <GridStack
+              ref={_ref}
+              direction="row"
+              style={{ ...style, ...listElementStyle }}
+              {...props}
+            >
+              {children}
+            </GridStack>
+          )
         },
-      [listElementStyle],
-    )
+      ),
+    [listElementStyle],
+  )
 
-    const listComponents = useMemo(
-      (): Components<string, Context> => ({
-        Header: renderHeader,
-        List: ListComponent,
-      }),
-      [renderHeader, ListComponent],
-    )
+  const GridItem = useMemo(
+    () =>
+      ({
+        children,
+        ref,
+        ...props
+      }: GridItemProps & {
+        context?: Context
+      }) => (
+        <GridItemBox
+          ref={ref as Ref<HTMLDivElement>}
+          {...props}
+          itemsPerRow={itemsPerRow}
+        >
+          {children}
+        </GridItemBox>
+      ),
+    [itemsPerRow],
+  )
 
-    const _onScroll = useCallback(
-      (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
-        saveScrollState(event)
-        onScrollRef.current?.(event)
+  const size = data.length
+  const context = useMemo(() => ({ size }), [size])
+  const isGrid = itemsPerRow > 1
+  const isGridRef = useLiveRef(isGrid)
+  const gridStyle = useMemo(
+    (): React.CSSProperties => ({
+      ...style,
+      scrollbarWidth: "initial",
+    }),
+    [style],
+  )
+  const gridComponents = useMemo(
+    () => ({
+      Header: renderHeader,
+      Item: GridItem,
+      List: GridListComponent,
+    }),
+    [renderHeader, GridItem, GridListComponent],
+  )
+
+  const ListComponent = useMemo(
+    () =>
+      ({ style, ...props }: ListProps & ContextProp<Context>) => {
+        return <Box style={{ ...style, ...listElementStyle }} {...props} />
       },
-      [saveScrollState, onScrollRef],
-    )
+    [listElementStyle],
+  )
 
-    const onReadyStateChanged = useCallback(
-      (ready: boolean) => {
-        if (ready && !isRestored) {
-          restoreScrollState()
-        }
-      },
-      [restoreScrollState, isRestored],
-    )
+  const listComponents = useMemo(
+    (): Components<string, Context> => ({
+      Header: renderHeader,
+      List: ListComponent,
+    }),
+    [renderHeader, ListComponent],
+  )
 
-    useImperativeHandle(finalRef, () => ({
-      scrollTo: (location: ScrollToOptions) => {
-        if (isGridRef.current) {
-          virtuosoGridRef.current?.scrollTo(location)
-        } else {
-          virtuosoRef.current?.scrollTo(location)
-        }
-      },
-      getState: (stateCb: StateCallback) =>
-        virtuosoRef.current?.getState(stateCb),
-      get isGrid() {
-        return isGridRef.current
-      },
-    }))
+  const _onScroll = useCallback(
+    (event: React.UIEvent<HTMLDivElement, UIEvent>) => {
+      saveScrollState(event)
+      onScrollRef.current?.(event)
+    },
+    [saveScrollState, onScrollRef],
+  )
 
-    useEffect(
-      function resetScrollStateOnTypeChange() {
-        void isGrid
+  const onReadyStateChanged = useCallback(
+    (ready: boolean) => {
+      if (ready && !isRestored) {
+        restoreScrollState()
+      }
+    },
+    [restoreScrollState, isRestored],
+  )
 
-        resetScrollState()
-      },
-      [isGrid, resetScrollState],
-    )
+  useImperativeHandle(finalRef, () => ({
+    scrollTo: (location: ScrollToOptions) => {
+      if (isGridRef.current) {
+        virtuosoGridRef.current?.scrollTo(location)
+      } else {
+        virtuosoRef.current?.scrollTo(location)
+      }
+    },
+    getState: (stateCb: StateCallback) =>
+      virtuosoRef.current?.getState(stateCb),
+    get isGrid() {
+      return isGridRef.current
+    },
+  }))
 
-    // When scrolling horizontally, opt Virtuoso's inner viewport element into
-    // being a size query container so items can resolve `100cqb` against the
-    // usable block size (excluding the scrollbar). See VirtuosoList.module.css.
-    const scrollerClassName =
-      [horizontalDirection ? styles.horizontalCarousel : undefined, className]
-        .filter(Boolean)
-        .join(" ") || undefined
+  useEffect(
+    function resetScrollStateOnTypeChange() {
+      void isGrid
 
-    return (
-      <>
-        {isGrid ? (
-          <VirtuosoGrid<string, Context>
-            ref={virtuosoGridRef}
-            style={gridStyle}
-            className={className}
-            totalCount={data.length}
-            components={gridComponents}
-            data={data}
-            itemContent={rowRenderer}
-            context={context}
-            readyStateChanged={onReadyStateChanged}
-            onScroll={_onScroll}
-            {...rest}
-          />
-        ) : (
-          <Virtuoso
-            ref={virtuosoRef}
-            style={style}
-            className={scrollerClassName}
-            totalCount={data.length}
-            components={listComponents}
-            context={context}
-            data={data}
-            horizontalDirection={horizontalDirection}
-            itemContent={rowRenderer}
-            onScroll={_onScroll}
-            {...(restoreStateFromFirstValue?.type === "list" && {
-              initialScrollTop: restoreStateFromFirstValue.state.scrollTop,
-            })}
-            {...rest}
-          />
-        )}
-      </>
-    )
-  },
-)
+      resetScrollState()
+    },
+    [isGrid, resetScrollState],
+  )
+
+  // When scrolling horizontally, opt Virtuoso's inner viewport element into
+  // being a size query container so items can resolve `100cqb` against the
+  // usable block size (excluding the scrollbar). See VirtuosoList.module.css.
+  const scrollerClassName =
+    [horizontalDirection ? styles.horizontalCarousel : undefined, className]
+      .filter(Boolean)
+      .join(" ") || undefined
+
+  return (
+    <>
+      {isGrid ? (
+        <VirtuosoGrid<string, Context>
+          ref={virtuosoGridRef}
+          style={gridStyle}
+          className={className}
+          totalCount={data.length}
+          components={gridComponents}
+          data={data}
+          itemContent={rowRenderer}
+          context={context}
+          readyStateChanged={onReadyStateChanged}
+          onScroll={_onScroll}
+          {...rest}
+        />
+      ) : (
+        <Virtuoso
+          ref={virtuosoRef}
+          style={style}
+          className={scrollerClassName}
+          totalCount={data.length}
+          components={listComponents}
+          context={context}
+          data={data}
+          horizontalDirection={horizontalDirection}
+          itemContent={rowRenderer}
+          onScroll={_onScroll}
+          {...(restoreStateFromFirstValue?.type === "list" && {
+            initialScrollTop: restoreStateFromFirstValue.state.scrollTop,
+          })}
+          {...rest}
+        />
+      )}
+    </>
+  )
+})
