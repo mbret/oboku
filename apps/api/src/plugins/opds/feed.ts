@@ -2,11 +2,7 @@ import type { Readable } from "node:stream"
 import { Logger } from "@nestjs/common"
 import { isFileSupported, type OpdsBookLinkData } from "@oboku/shared"
 import { XMLParser } from "fast-xml-parser"
-import {
-  getFromCatalog,
-  type OpdsConnector,
-  toCatalogRequestFailure,
-} from "./client.js"
+import { getFromCatalog, type OpdsConnector } from "./client.js"
 import { listEachBookOncePerTopFolder, type OpdsItem } from "./listings.js"
 
 const logger = new Logger("OpdsFeed")
@@ -238,20 +234,14 @@ async function readFeedPage(stream: Readable, servedUrl: URL) {
   const chunks: Buffer[] = []
   let byteCount = 0
 
-  try {
-    for await (const chunk of stream) {
-      byteCount += chunk.byteLength
+  for await (const chunk of stream) {
+    byteCount += chunk.byteLength
 
-      if (byteCount > MAX_FEED_PAGE_BYTES) {
-        throw new Error(
-          `${servedUrl.origin} answered with more than a feed page`,
-        )
-      }
-
-      chunks.push(chunk)
+    if (byteCount > MAX_FEED_PAGE_BYTES) {
+      throw new Error(`${servedUrl.origin} answered with more than a feed page`)
     }
-  } catch (error) {
-    throw toCatalogRequestFailure(servedUrl, error)
+
+    chunks.push(chunk)
   }
 
   return Buffer.concat(chunks).toString("utf8")

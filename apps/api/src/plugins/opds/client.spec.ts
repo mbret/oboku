@@ -122,6 +122,46 @@ describe("getFromCatalog", () => {
     expect(url.href).toBe(`${catalog.origin}/opds/v1/`)
   })
 
+  it("reports an answer cut short as a failed request, without the request's credentials", async () => {
+    const catalog = await startServer({
+      "/opds/books/1/file": { body: "epub bytes", keepsAnswerOpen: true },
+    })
+    allowServers(catalog)
+    const download = new AbortController()
+
+    const { stream } = await getFromCatalog(
+      connectorFor({ connectorUrl: catalog.origin }),
+      new URL(`${catalog.origin}/opds/books/1/file`),
+      { signal: download.signal },
+    )
+    const chunks = stream[Symbol.asyncIterator]()
+    await chunks.next()
+    download.abort()
+    const nextChunk = chunks.next()
+
+    await expect(nextChunk).rejects.toThrow(
+      `OPDS request to ${catalog.origin} failed: canceled`,
+    )
+    await expect(nextChunk).rejects.not.toHaveProperty("config")
+  })
+
+  it("closes the answer when its reader stops early", async () => {
+    const catalog = await startServer({
+      "/opds/books/1/file": { body: "epub bytes", keepsAnswerOpen: true },
+    })
+    allowServers(catalog)
+
+    const { stream } = await getFromCatalog(
+      connectorFor({ connectorUrl: catalog.origin }),
+      new URL(`${catalog.origin}/opds/books/1/file`),
+    )
+    stream.destroy()
+
+    await vi.waitFor(function expectAnswerClosed() {
+      expect(catalog.onAnswerClosed).toHaveBeenCalledWith("/opds/books/1/file")
+    })
+  })
+
   it("reports a catalog refusing the login as an unauthorized data source", async () => {
     const catalog = await startServer({
       "/opds": { status: 401, headers: { "www-authenticate": "Basic" } },
