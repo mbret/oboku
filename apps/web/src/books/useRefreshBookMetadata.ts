@@ -1,7 +1,7 @@
 import { booksRefreshMetadata } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useHttpClientApi } from "../http"
-import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
+import { refreshMetadataWithPlugin } from "../integrations/plugins/requests/pluginRequests"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { showDialog } from "../common/dialogs/createDialog"
@@ -23,9 +23,6 @@ export const useRefreshBookMetadata = () => {
     withoutGlobalErrorToast,
   )
   const network = useNetworkState()
-  const refreshPluginMetadata = usePluginRefreshMetadata(
-    withoutGlobalErrorToast,
-  )
 
   return async (bookId: string, { force }: { force?: boolean } = {}) => {
     try {
@@ -51,11 +48,14 @@ export const useRefreshBookMetadata = () => {
         return
       }
 
-      const { providerCredentials } = await refreshPluginMetadata({
-        linkId: firstLink._id,
-        linkType: firstLink.type,
-        linkData: firstLink.data,
-      })
+      const { providerCredentials } = await refreshMetadataWithPlugin(
+        {
+          linkId: firstLink._id,
+          linkType: firstLink.type,
+          linkData: firstLink.data,
+        },
+        withoutGlobalErrorToast,
+      )
 
       await incrementalPatchBook({
         doc: bookId,

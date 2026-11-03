@@ -1,6 +1,6 @@
 import { collectionsRefreshMetadata } from "@oboku/shared"
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
-import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
+import { refreshMetadataWithPlugin } from "../integrations/plugins/requests/pluginRequests"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
 import { useHttpClientApi } from "../http"
 import { useWithNetwork } from "../common/network/useWithNetwork"
@@ -14,9 +14,6 @@ const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 export const useRefreshCollectionMetadata = () => {
   const httpClientApi = useHttpClientApi()
   const { mutateAsync: updateCollection } = useCollectionIncrementalModify(
-    withoutGlobalErrorToast,
-  )
-  const getRefreshMetadataPluginData = usePluginRefreshMetadata(
     withoutGlobalErrorToast,
   )
   const withNetwork = useWithNetwork()
@@ -33,10 +30,13 @@ export const useRefreshCollectionMetadata = () => {
               if (!collection) throw new Error("Invalid collection id")
 
               const pluginData$ = from(
-                getRefreshMetadataPluginData({
-                  linkType: collection.linkType ?? "file",
-                  linkData: collection.linkData,
-                }),
+                refreshMetadataWithPlugin(
+                  {
+                    linkType: collection.linkType ?? "file",
+                    linkData: collection.linkData,
+                  },
+                  withoutGlobalErrorToast,
+                ),
               )
 
               return pluginData$.pipe(

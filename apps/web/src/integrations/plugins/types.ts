@@ -83,6 +83,12 @@ export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
   DataSourceDocType["type"]
 >
 
+export type ProviderCredentialsResult<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = {
+  providerCredentials: ProviderApiCredentials<T>
+}
+
 export type UseRefreshMetadataHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (

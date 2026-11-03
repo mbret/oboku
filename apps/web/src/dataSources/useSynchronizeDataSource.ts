@@ -5,7 +5,7 @@ import { from, filter, switchMap, catchError, map, of } from "rxjs"
 import { fromCreateDialog } from "../common/dialogs/fromCreateDialog"
 import { createOfflineDialogOptions } from "../common/dialogs/presets"
 import { useHttpClientApi } from "../http"
-import { usePluginSynchronize } from "../integrations/plugins/usePluginSynchronize"
+import { synchronizeWithPlugin } from "../integrations/plugins/requests/pluginRequests"
 import { useDatabase } from "../rxdb"
 import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
 import { Logger } from "../debug/logger.shared"
@@ -16,7 +16,6 @@ export const useSynchronizeDataSource = () => {
   const { db: database } = useDatabase()
   const { mutateAsync: atomicUpdateDataSource } =
     useDataSourceIncrementalPatch()
-  const synchronizeDataSource = usePluginSynchronize()
   const network = useNetworkState()
 
   return useMutation$({
@@ -35,7 +34,7 @@ export const useSynchronizeDataSource = () => {
 
       return datasource$.pipe(
         filter(isDefined),
-        switchMap((dataSource) => from(synchronizeDataSource(dataSource))),
+        switchMap((dataSource) => from(synchronizeWithPlugin(dataSource))),
         switchMap((data) => {
           return from(
             atomicUpdateDataSource({

@@ -33,6 +33,7 @@ import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
 import { BackToReadingDialog } from "./reading/BackToReadingDialog"
 import { PluginDownloadFlowHost } from "./download/flow/PluginDownloadFlowHost"
+import { PluginRequestsHost } from "./integrations/plugins/requests/PluginRequestsHost"
 import { CollectionActionsDrawer } from "./collections/CollectionActionsDrawer/CollectionActionsDrawer"
 import { BookActionsDrawer } from "./books/drawer/BookActionsDrawer"
 import { UploadBookDialogWithDragOver } from "./upload/UploadBookDialogWithDragOver"
@@ -103,6 +104,7 @@ const App = memo(function App({
                 <BookActionsDrawer />
                 <CollectionActionsDrawer />
                 <PluginDownloadFlowHost />
+                <PluginRequestsHost />
                 <BackToReadingDialog isProfileHydrated={isProfileHydrated} />
                 <SetupSecretDialog />
                 <AddTagDialog />
