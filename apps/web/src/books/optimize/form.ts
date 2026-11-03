@@ -42,9 +42,6 @@ export const hasImageCompressionOperation = (
 export const resolveBookOptimizeFormValues = (
   inspection: FileInspection,
 ): BookOptimizeFormValues => ({
+  ...EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
   ...resolveMetadataFixerFormValues(inspection),
-  compressImages: false,
-  imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
-  maxWidth: "",
-  maxHeight: "",
 })
