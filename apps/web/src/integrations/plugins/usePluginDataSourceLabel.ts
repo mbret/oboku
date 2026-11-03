@@ -1,48 +1,79 @@
-import type {
-  DataSourceDocType,
-  DataSourceDocTypeFor,
-  DataSourceType,
-  SettingsConnectorDocType,
+import {
+  assertNever,
+  type DataSourceDocType,
+  type DataSourceDocTypeFor,
 } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { findConnector } from "../../connectors/findConnector"
-import { isSettingsConnectorType } from "../../connectors/connectorDetails"
-import { useSettings } from "../../settings/useSettings"
-import { getPluginByType } from "./configure"
+import { pluginsByType } from "./configure"
 
-function getConnectorId(dataSource: DeepReadonly<DataSourceDocType>) {
-  const connectorId =
-    dataSource.data_v2 && "connectorId" in dataSource.data_v2
-      ? dataSource.data_v2.connectorId
-      : undefined
-
-  return typeof connectorId === "string" ? connectorId : undefined
-}
-
-function getPluginDataSourceLabel<T extends DataSourceType>(
+// TypeScript cannot narrow a generic discriminated-union parameter via
+// control flow, so the runtime guard + assertion is the only safe option.
+const syncSourceArgs = <T extends DataSourceDocType["type"]>(
+  dataSource: DeepReadonly<DataSourceDocType> | null | undefined,
   type: T,
-  dataSource: DeepReadonly<DataSourceDocTypeFor<T>>,
-  connectors: readonly SettingsConnectorDocType[] | undefined,
-) {
-  const connector = findConnector(connectors, getConnectorId(dataSource), type)
+) => {
+  const narrowed = (dataSource?.type === type ? dataSource : undefined) as
+    | DeepReadonly<DataSourceDocTypeFor<T>>
+    | undefined
 
-  return getPluginByType(type).getDataSourceLabel(dataSource, connector)
+  return { enabled: !!narrowed, dataSource: narrowed }
 }
 
+/**
+ * Calls each plugin's `useSyncSourceInfo` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
-  const { data: settings } = useSettings({
-    enabled: isSettingsConnectorType(dataSource?.type),
-  })
-
-  if (!dataSource) {
-    return undefined
-  }
-
-  return getPluginDataSourceLabel(
-    dataSource.type,
-    dataSource,
-    settings?.connectors,
+  const drive = pluginsByType.DRIVE.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "DRIVE"),
   )
+  const dropbox = pluginsByType.dropbox.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "dropbox"),
+  )
+  const oneDrive = pluginsByType["one-drive"].useSyncSourceInfo(
+    syncSourceArgs(dataSource, "one-drive"),
+  )
+  const file = pluginsByType.file.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "file"),
+  )
+  const synologyDrive = pluginsByType["synology-drive"].useSyncSourceInfo(
+    syncSourceArgs(dataSource, "synology-drive"),
+  )
+  const uri = pluginsByType.URI.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "URI"),
+  )
+  const webdav = pluginsByType.webdav.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "webdav"),
+  )
+  const server = pluginsByType.server.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "server"),
+  )
+
+  const dataSourceType = dataSource?.type
+
+  switch (dataSourceType) {
+    case "DRIVE":
+      return drive?.name
+    case "dropbox":
+      return dropbox?.name
+    case "one-drive":
+      return oneDrive?.name
+    case "file":
+      return file?.name
+    case "synology-drive":
+      return synologyDrive?.name
+    case "URI":
+      return uri?.name
+    case "webdav":
+      return webdav?.name
+    case "server":
+      return server?.name
+    case undefined:
+      return undefined
+    default:
+      return assertNever(dataSourceType)
+  }
 }

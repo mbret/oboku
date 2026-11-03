@@ -1,14 +1,15 @@
 import { SvgIcon } from "@mui/material"
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
+import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import type { ObokuPlugin } from "../../plugins/types"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
-import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
+import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import iconSynologyDrive from "../../../assets/icon_synology_drive_01.png"
-import { getDataSourceLabel } from "./getDataSourceLabel"
+import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { clearSynologyDriveSession } from "./auth/auth"
 import { ConnectorForm } from "./connectors/ConnectorForm"
 import { CONNECTOR } from "./constants"
@@ -39,10 +40,11 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,
-  getLinkLabel: getFileIdLinkLabel,
-  getDataSourceLabel,
+  useLinkInfo,
+  useSyncSourceInfo,
   useRefreshMetadata,
   useSynchronize,
+  useRemoveResource: useUnsupportedRemoveResource,
   useSignOut: function useSynologyDriveSignOut() {
     return clearSynologyDriveSession
   },
