@@ -17,6 +17,10 @@ const selectDownloadedBookIds = (bookDownloadState: BooksDownloadState) =>
   )
 
 export const useLibraryBooks = () => {
+  // Reads/writes a ref during render, which React Compiler refuses to memoize.
+  // TODO: rework so no ref is touched during render, then drop this opt-out.
+  "use no memo"
+
   const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
   const { data: unsortedBooks } = useBooks()

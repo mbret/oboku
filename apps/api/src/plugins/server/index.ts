@@ -1,7 +1,7 @@
 import { getDataFromDataSource, PLUGIN_SERVER_TYPE } from "@oboku/shared"
 import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
 import { createClient, type WebDAVClient } from "webdav"
-import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
+import { getConnectorById } from "../connectorHelpers.js"
 import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,

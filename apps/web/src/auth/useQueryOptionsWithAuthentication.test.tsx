@@ -120,6 +120,40 @@ describe("useQueryOptionsWithAuthentication", () => {
     expect(fetchNotifications).toHaveBeenCalledTimes(2)
   })
 
+  it("does not fetch while signed out", async () => {
+    clearActiveProfileId()
+    const queryClient = new QueryClient()
+    const fetchNotifications = vi.fn(async () => "notifications")
+    renderQueryOfActiveProfile({
+      queryClient,
+      queryKeyOf: inboxNotificationsQueryKey,
+      fetchForProfile: fetchNotifications,
+    })
+
+    await act(() => queryClient.refetchQueries())
+
+    expect(fetchNotifications).not.toHaveBeenCalled()
+  })
+
+  it("does not fetch while the session needs relogin", async () => {
+    profilesStore.set("reader", {
+      ...createProfile("reader"),
+      needsRelogin: true,
+    })
+    setActiveProfileId("reader")
+    const queryClient = new QueryClient()
+    const fetchNotifications = vi.fn(async () => "notifications")
+    renderQueryOfActiveProfile({
+      queryClient,
+      queryKeyOf: inboxNotificationsQueryKey,
+      fetchForProfile: fetchNotifications,
+    })
+
+    await act(() => queryClient.refetchQueries())
+
+    expect(fetchNotifications).not.toHaveBeenCalled()
+  })
+
   describe("after another tab switches accounts", () => {
     it("fetches for the next account only, under a key that names the account", async () => {
       profilesStore.set("reader", createProfile("reader"))

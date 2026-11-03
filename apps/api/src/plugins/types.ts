@@ -3,58 +3,22 @@ import {
   type LinkMetadata,
   type DataSourceDocTypeFor,
   type DataSourceType,
-  type DocType,
   type LinkDocType,
   type LinkDocTypeForProvider,
   type LinkWithCredentials,
-  type ModelOf,
   type ProviderApiCredentials,
-  type SafeMangoQuery,
   type SynchronizeAbleDataSource,
   type SynchronizeAbleItem,
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "../lib/sync/SyncReport.js"
+import { SyncReport } from "../datasource/sync/SyncReport.js"
 
 /** Re-export from shared so sync item/data source types are single source of truth. */
 export type {
   SynchronizeAbleItem,
   SynchronizeAbleDataSource,
 } from "@oboku/shared"
-
-export type Helpers = {
-  refreshBookMetadata: (opts: { bookId: string }) => Promise<any>
-  findOne: <M extends DocType["rx_model"], D extends ModelOf<M>>(
-    model: M,
-    query: SafeMangoQuery<D>,
-  ) => Promise<
-    | ({
-        _id: string
-        _rev: string
-      } & D)
-    | null
-  >
-  find: <M extends DocType["rx_model"], D extends ModelOf<M>>(
-    model: M,
-    query: SafeMangoQuery<D>,
-  ) => Promise<
-    ({
-      _id: string
-      _rev: string
-    } & D)[]
-  >
-  atomicUpdate: <M extends DocType["rx_model"], K extends ModelOf<M>>(
-    model: M,
-    id: string,
-    cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>,
-  ) => Promise<unknown>
-  create: <M extends DocType["rx_model"], D extends ModelOf<M>>(
-    model: M,
-    data: Omit<D, "rx_model" | "_id" | "_rev">,
-  ) => Promise<createNano.DocumentInsertResponse>
-  getOrCreateTagFromName: (name: string) => void
-}
 
 /** Sync context; generic so `providerCredentials` is the typed API credentials for the provider. */
 export type SyncContext<T extends DataSourceType = DataSourceType> = {

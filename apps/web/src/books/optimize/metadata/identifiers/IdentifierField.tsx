@@ -50,6 +50,10 @@ export function IdentifierField({
   disabled,
   onRemove,
 }: Props) {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const valueName = `identifiers.${index}.value` as const
   const schemeName = `identifiers.${index}.scheme` as const
 

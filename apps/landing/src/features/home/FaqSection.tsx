@@ -46,12 +46,12 @@ const questions: { question: string; answer: ReactNode }[] = [
         Yes. Oboku can be the sync server of KOReader, Readest, CrossPoint and
         the other apps that support KOReader sync: point them at oboku and they
         keep the same reading position wherever you read with them. Turn it on
-        from your profile and follow the{" "}
+        from Integrations &gt; KOReader and follow the{" "}
         <Link href={links.documentationKoreaderSyncServer} target="_blank">
           setup guide
         </Link>
-        . Turn on KOReader progress sync in your profile too, and oboku&apos;s
-        own reader syncs with them.
+        . Turn on KOReader progress sync there too, and oboku&apos;s own reader
+        syncs with them.
       </>
     ),
   },

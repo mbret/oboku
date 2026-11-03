@@ -24,7 +24,7 @@ import axios, { type AxiosError, AxiosResponse } from "axios"
 import type { Readable } from "node:stream"
 import { text as readText } from "node:stream/consumers"
 import type { SynchronizeAbleItem } from "../types.js"
-import { getUserAddressRequestOptions } from "../../lib/http/userAddressAgents.js"
+import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 
 type SynologyDriveRequestSession = SynologyDriveSession & {
   allowSelfSigned?: boolean

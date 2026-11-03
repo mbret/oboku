@@ -61,6 +61,8 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "The sync server did not accept this username and password."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE:
       return "The sync server could not be reached, or did not answer like a KOReader sync server. Check the address."
+    case ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED:
+      return "You have reached the maximum number of OPDS servers this instance allows. Delete servers you no longer use to create a new one."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:

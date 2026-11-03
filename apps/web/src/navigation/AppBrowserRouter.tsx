@@ -30,10 +30,16 @@ import { useActiveProfile } from "../profiles"
 import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
 import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
-import { KoreaderSyncServerScreen } from "../pages/profile/KoreaderSyncServerScreen"
-import { KoreaderProgressSyncScreen } from "../pages/profile/KoreaderProgressSyncScreen"
-import { PluginsScreen } from "../plugins/common/PluginsScreen"
-import { PluginScreen } from "../plugins/common/PluginScreen"
+import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
+import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
+import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
+import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegrationScreen"
+import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
+import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
+import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
+import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
+import { SynologyDriveIntegrationScreen } from "../integrations/synology-drive/SynologyDriveIntegrationScreen"
+import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegrationScreen"
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
@@ -180,15 +186,39 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<StatisticsScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_TYPE.slice(1)}
-                element={<PluginScreen />}
+                path={ROUTES.INTEGRATION_DROPBOX.slice(1)}
+                element={<DropboxIntegrationScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_NEW.slice(1)}
+                path={ROUTES.INTEGRATION_GOOGLE.slice(1)}
+                element={<GoogleIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_KOREADER.slice(1)}
+                element={<KoreaderIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_ONE_DRIVE.slice(1)}
+                element={<OneDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_SERVER.slice(1)}
+                element={<ServerIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_SYNOLOGY_DRIVE.slice(1)}
+                element={<SynologyDriveIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_WEBDAV.slice(1)}
+                element={<WebdavIntegrationScreen />}
+              />
+              <Route
+                path={ROUTES.INTEGRATION_CONNECTORS_NEW.slice(1)}
                 element={<AddConnectorScreen />}
               />
               <Route
-                path={ROUTES.PLUGINS_CONNECTORS_EDIT.slice(1)}
+                path={ROUTES.INTEGRATION_CONNECTORS_EDIT.slice(1)}
                 element={<EditConnectorScreen />}
               />
               <Route
@@ -202,7 +232,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route path="*" element={<MobileTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
                 <Route path="profile" element={<ProfileScreen />} />
-                <Route path="plugins" element={<PluginsScreen />} />
+                <Route path="integrations" element={<IntegrationsScreen />} />
                 <Route path="library" element={<LibraryTopTabNavigator />}>
                   <Route index element={<Navigate to="books" replace />} />
                   <Route path="books" element={<LibraryBooksScreen />} />

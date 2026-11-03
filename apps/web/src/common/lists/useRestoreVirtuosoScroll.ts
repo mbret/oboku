@@ -21,6 +21,10 @@ export const useRestoreVirtuosoScroll = ({
   virtuosoRef: React.RefObject<VirtuosoGridListHandle | null>
   restoreScrollId?: string
 }) => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const [isRestored, setIsRestored] = useState(false)
   const restoreStateFromFirstValue = useRef(
     restoreScrollId ? restoreScrollSignal.value[restoreScrollId] : undefined,

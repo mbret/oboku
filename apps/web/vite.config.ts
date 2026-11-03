@@ -1,11 +1,12 @@
 import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
-import react from "@vitejs/plugin-react"
+import react, { reactCompilerPreset } from "@vitejs/plugin-react"
+import babel from "@rolldown/plugin-babel"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
 import { readFileSync } from "node:fs"
-import { getAuthCallbackRollupInput } from "./src/plugins/common/authCallbackEntrypoints.shared.ts"
+import { getAuthCallbackRollupInput } from "./src/integrations/plugins/common/authCallbackEntrypoints.shared.ts"
 
 const productVersion = JSON.parse(
   readFileSync(path.resolve(import.meta.dirname, "../../package.json"), "utf8"),
@@ -167,6 +168,7 @@ export default defineConfig(({ mode }) => ({
       }),
     }),
     react({}),
+    babel({ presets: [reactCompilerPreset()] }),
     svgr({}),
     replace({
       // fix for util/util.js

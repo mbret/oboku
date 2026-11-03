@@ -14,6 +14,10 @@ import { useRequestMagicLink } from "../auth/useRequestMagicLink"
 import { useForm } from "react-hook-form"
 
 export const LoginScreen = () => {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { mutate, isPending, error } = useSignIn()
   const {
     mutate: requestMagicLink,

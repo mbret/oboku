@@ -16,7 +16,7 @@ import {
   toSyncPercentage,
   toSyncProgress,
 } from "../protocol.js"
-import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
+import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
 import type {
   KoreaderSyncConnectionDto,

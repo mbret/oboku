@@ -18,20 +18,19 @@ import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
 import type {
   DataSourceFormInternalProps,
   DataSourceSubmitPayload,
-} from "../../plugins/types"
+} from "../../integrations/plugins/types"
 import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
 import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { Page } from "../../common/Page"
-import { getPluginByType } from "../../plugins/configure"
+import { getPluginByType } from "../../integrations/plugins/configure"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 
 const SyncStatusAlert = styled(Alert)(function styleSyncStatusAlert({ theme }) {
   return {
     marginTop: theme.spacing(2),
-    marginBottom: theme.spacing(1),
   }
 })
 

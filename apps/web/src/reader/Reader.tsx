@@ -2,13 +2,7 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import {
-  type ComponentProps,
-  memo,
-  type RefObject,
-  useCallback,
-  useRef,
-} from "react"
+import { memo, type RefObject, useRef } from "react"
 import { readerSignal } from "./states"
 import { type BookOpening, BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
@@ -21,14 +15,14 @@ import { Box } from "@mui/material"
 import type { Manifest } from "@prose-reader/shared"
 import type { BookDocType } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { ReactReader } from "@prose-reader/react-reader"
+import { ReactReader, type ReactReaderProps } from "@prose-reader/react-reader"
 import "@prose-reader/react-reader/index.css"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
-import { useKoreaderPositionCheck } from "../koreader/syncConnection/useKoreaderPositionCheck"
+import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 
 export const Reader = memo(function Reader({
   bookId,
@@ -62,8 +56,7 @@ export const Reader = memo(function Reader({
     "readerFloatingProgress",
     "readerFloatingTime",
   ])
-  const { readerFontScale, readerSpreadMode, updateReaderSettings } =
-    useReaderSettings()
+  const { readerSettings, updateReaderSettings } = useReaderSettings()
   const { goBack } = useSafeGoBack()
   const openMoreDialog = useOpenMoreDialog()
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
@@ -72,21 +65,16 @@ export const Reader = memo(function Reader({
     enabled: !isPreview,
   })
 
-  const onItemClick = useCallback(
-    (
-      item: Parameters<
-        NonNullable<ComponentProps<typeof ReactReader>["onItemClick"]>
-      >[0],
-    ) => {
-      if (item === "more") {
-        openMoreDialog()
-      }
-      if (item === "back") {
-        showBookFinishedDialogOnClose()
-      }
-    },
-    [openMoreDialog, showBookFinishedDialogOnClose],
-  )
+  function onItemClick(
+    item: Parameters<NonNullable<ReactReaderProps["onItemClick"]>>[0],
+  ) {
+    if (item === "more") {
+      openMoreDialog()
+    }
+    if (item === "back") {
+      showBookFinishedDialogOnClose()
+    }
+  }
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
@@ -106,14 +94,8 @@ export const Reader = memo(function Reader({
           onItemClick={onItemClick}
           enableFloatingTime={localSettings.readerFloatingTime === "bottom"}
           reader={reader}
-          fontSize={readerFontScale}
-          onFontSizeChange={(_scope, fontSize) => {
-            updateReaderSettings({ readerFontScale: fontSize })
-          }}
-          spreadMode={readerSpreadMode}
-          onSpreadModeChange={(_scope, spreadMode) => {
-            updateReaderSettings({ readerSpreadMode: spreadMode })
-          }}
+          settings={readerSettings}
+          onSettingsChange={updateReaderSettings}
           enableFloatingProgress={
             localSettings.readerFloatingProgress === "bottom"
           }

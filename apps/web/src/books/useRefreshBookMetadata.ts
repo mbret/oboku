@@ -1,7 +1,7 @@
 import { booksRefreshMetadata } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useHttpClientApi } from "../http"
-import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { showDialog } from "../common/dialogs/createDialog"
@@ -13,6 +13,10 @@ import { notifyError } from "../notifications/toasts"
 const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 export const useRefreshBookMetadata = () => {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const httpClientApi = useHttpClientApi()
   const { db: database } = useDatabase()
   const { mutateAsync: incrementalPatchBook } = useIncrementalBookPatch(

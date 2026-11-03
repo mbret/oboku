@@ -1,10 +1,4 @@
-function escapeXml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-}
+import { escapeXml } from "../http/escapeXml.js"
 
 function encodeHrefPath(href: string): string {
   return href

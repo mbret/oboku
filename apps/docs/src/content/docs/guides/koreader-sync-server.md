@@ -12,7 +12,7 @@ This only syncs reading positions, as the KOReader sync server does. It does not
 
 ## Turn it on
 
-In oboku, open **Profile**, then **KOReader sync server** under **Other apps**, and generate a password. The screen then shows the three values a device needs:
+In oboku, open **Integrations > KOReader > KOReader sync server** and generate a password. The screen then shows the three values a device needs:
 
 * **Server**: your oboku API address followed by `/kosync`. Copy it from the screen rather than typing it from memory.
 * **Username**: the email of your oboku account.
@@ -36,4 +36,4 @@ Devices recognize a book only when they identify it the same way. KOReader ident
 
 ## Turn it off
 
-**Profile > KOReader sync server > Turn off the KOReader sync server** signs every device out and deletes the reading positions they synced. Deleting your account does the same.
+**Integrations > KOReader > KOReader sync server > Turn off the KOReader sync server** signs every device out and deletes the reading positions they synced. Deleting your account does the same.

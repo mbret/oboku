@@ -3,7 +3,6 @@ import {
   Link,
   Button,
   ListItemText,
-  SvgIcon,
   ListItemIcon,
   Typography,
   useTheme,
@@ -21,7 +20,7 @@ import {
   MoreVertOutlined,
 } from "@mui/icons-material"
 import { type DataSourceDocType, links } from "@oboku/shared"
-import { plugins as dataSourcePlugins } from "../../plugins/configure"
+import { plugins as dataSourcePlugins } from "../../integrations/plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
 import { generatePath, useNavigate, Link as RouterLink } from "react-router"
@@ -32,7 +31,7 @@ import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-export const DataSourcesListScreen = memo(() => {
+export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
@@ -49,7 +48,6 @@ export const DataSourcesListScreen = memo(() => {
             sx={{
               gap: 1,
               mt: 2,
-              mb: 1,
             }}
           >
             <Alert severity="info">
@@ -85,9 +83,7 @@ export const DataSourcesListScreen = memo(() => {
                 >
                   {dataSource && (
                     <ListItemIcon>
-                      <SvgIcon>
-                        {dataSource.Icon && <dataSource.Icon />}
-                      </SvgIcon>
+                      <dataSource.Icon />
                     </ListItemIcon>
                   )}
                   <ListItemText

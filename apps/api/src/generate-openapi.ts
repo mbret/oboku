@@ -1,7 +1,7 @@
 import { writeFile } from "node:fs/promises"
 import { NestFactory } from "@nestjs/core"
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger"
-import { HttpErrorResponseDto } from "./lib/error-response.dto.js"
+import { HttpErrorResponseDto } from "./openapi/error-response.dto.js"
 
 /**
  * `AppModule` validates the environment as soon as it is imported, so these

@@ -341,7 +341,7 @@ export const featureGroups: FeatureGroup[] = [
     features: [
       {
         Icon: SyncRounded,
-        title: "Set up from your profile",
+        title: "Set up from Integrations",
         description:
           "Generate a password in oboku, then enter it in KOReader's progress sync settings with the server and your username.",
       },
@@ -361,7 +361,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: AutoStoriesRounded,
         title: "oboku's reader syncs too",
         description:
-          "Turn on KOReader progress sync in your profile: EPUBs, PDFs and comics open where your e-reader left them, and the other way round, even after reading offline.",
+          "Turn on KOReader progress sync in Integrations: EPUBs, PDFs and comics open where your e-reader left them, and the other way round, even after reading offline.",
       },
       {
         Icon: DnsRounded,

@@ -3,7 +3,7 @@ import { useSettings } from "../settings/useSettings"
 import { useLiveRef } from "reactjrx"
 import { useLibraryBooks } from "../library/books/useLibraryBooks"
 import { useLibraryShelves } from "../library/shelves/useLibraryShelves"
-import { useKoreaderSyncConnection } from "../koreader/syncConnection/useKoreaderSyncConnection"
+import { useKoreaderSyncConnection } from "../integrations/koreader/client/useKoreaderSyncConnection"
 
 const usePrefetchAccountSettings = () => {
   const [prefetched, setPrefetched] = useState(false)
@@ -37,7 +37,11 @@ const usePrefetchAccountSettings = () => {
  * Do not keep expensive queries hot / live if not necessary as it would just keep
  * RAM usage high.
  */
-export const PreloadQueries = memo(({ onReady }: { onReady: () => void }) => {
+export const PreloadQueries = memo(function PreloadQueries({
+  onReady,
+}: {
+  onReady: () => void
+}) {
   const isAccountSettingsPreloaded = usePrefetchAccountSettings()
   const onReadyRef = useLiveRef(onReady)
 

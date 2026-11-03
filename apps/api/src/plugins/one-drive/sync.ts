@@ -6,7 +6,7 @@ import {
   type OneDriveLinkData,
 } from "@oboku/shared"
 import type { SynchronizeAbleItem } from "../types.js"
-import { createThrottler } from "../../lib/utils.js"
+import { createThrottler } from "../createThrottler.js"
 
 type OneDriveSyncDriveItem = GraphDriveItem & {
   id: string

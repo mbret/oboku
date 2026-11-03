@@ -1,4 +1,4 @@
-import { type FC, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -11,12 +11,17 @@ import { RadioButtonUnchecked, RadioButtonChecked } from "@mui/icons-material"
 
 type Sorting = "alpha" | "date" | "activity"
 
-export const SortByDialog: FC<{
+export const SortByDialog = ({
+  onClose,
+  open,
+  onChange,
+  value = "date",
+}: {
   onClose: () => void
   open: boolean
   onChange?: (sort: Sorting) => void
   value?: Sorting
-}> = ({ onClose, open, onChange, value = "date" }) => {
+}) => {
   const [innerSorting, setInnerSorting] = useState<Sorting>(value)
 
   useEffect(() => {

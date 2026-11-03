@@ -14,7 +14,7 @@ vi.mock("./AuthorizeActionDialog", () => ({
   useWithAuthorization: vi.fn(),
 }))
 
-vi.mock("../plugins/usePluginsSignOut", () => ({
+vi.mock("../integrations/plugins/usePluginsSignOut", () => ({
   usePluginsSignOut: () => signOutPlugins,
 }))
 

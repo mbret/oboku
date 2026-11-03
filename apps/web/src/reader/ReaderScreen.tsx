@@ -13,7 +13,7 @@ import type { ROUTES } from "../navigation/routes"
 export const READER_MODE_PARAM = "mode"
 export const READER_PREVIEW_MODE = "preview"
 
-export const ReaderScreen = memo(() => {
+export const ReaderScreen = memo(function ReaderScreen() {
   const { id: bookId } = useParams<PathParam<typeof ROUTES.READER>>()
   const [searchParams] = useSearchParams()
   const isPreview = searchParams.get(READER_MODE_PARAM) === READER_PREVIEW_MODE

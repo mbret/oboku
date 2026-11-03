@@ -3,11 +3,11 @@ import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
 import { useDataSourcePlugin } from "../dataSources/helpers"
 import { TagsSelector } from "../tags/TagsSelector"
-import { useCreateRequestPopupDialog } from "../plugins/useCreateRequestPopupDialog"
+import { useCreateRequestPopupDialog } from "../integrations/plugins/useCreateRequestPopupDialog"
 import type {
   UploadBookComponentProps,
   UploadBookToAddPayload,
-} from "../plugins/types"
+} from "../integrations/plugins/types"
 import { signal } from "reactjrx"
 import { capitalize } from "@mui/material"
 import { Logger } from "../debug/logger.shared"
@@ -23,6 +23,10 @@ export const UploadBookDialog = memo(function UploadBookDialog({
   openWith: string | undefined
   onClose: () => void
 } & DOMAttributes<any>) {
+  // React Compiler cannot lower this function yet, so it bails out here.
+  // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
+  "use no memo"
+
   const [addBook] = useAddBook()
   const { mutateAsync: downloadFile } = useDownloadBook()
   const dataSource = useDataSourcePlugin(openWith)

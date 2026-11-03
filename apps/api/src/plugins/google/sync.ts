@@ -4,7 +4,7 @@
  */
 import { type drive_v3 } from "googleapis"
 import type { SynchronizeAbleItem } from "../types.js"
-import { createThrottler } from "../../lib/utils.js"
+import { createThrottler } from "../createThrottler.js"
 import { isDefined } from "class-validator"
 
 const isFolder = (

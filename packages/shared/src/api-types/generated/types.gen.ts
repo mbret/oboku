@@ -32,7 +32,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000';
 };
 
 export type ObokuErrorResponseDto = {
@@ -234,11 +234,13 @@ export type InstanceSettingsResponseDto = {
     privateNetworkAllowedHosts: Array<string>;
     microsoftApplicationClientId?: string;
     microsoftApplicationAuthority?: string;
+    opdsServersMaxPerUser: number;
 };
 
 export type UpdateInstanceSettingsDto = {
     fileDownloadMaxSizeBytes?: number;
     microsoftApplicationAuthority?: string | '';
+    opdsServersMaxPerUser?: number;
     showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
@@ -490,6 +492,32 @@ export type KoreaderSyncPositionResponseDto = {
      * `null` while the server keeps no position for the book.
      */
     position: KoreaderSyncPositionDto | null;
+};
+
+export type OpdsServerDto = {
+    id: number;
+    /**
+     * The server's part of its catalog URL, such as `calm-snails-dream`. Generated and unique.
+     */
+    slug: string;
+    name: string;
+    /**
+     * What readers sign in with as username: the account email.
+     */
+    username: string;
+    createdAt: string;
+};
+
+export type OpdsServerPasswordResponseDto = {
+    server: OpdsServerDto;
+    /**
+     * Shown once: only a hash of it is kept.
+     */
+    password: string;
+};
+
+export type RenameOpdsServerDto = {
+    name: string;
 };
 
 export type AppGetHelloData = {
@@ -1780,3 +1808,120 @@ export type KoreaderSyncConnectionPullPositionResponses = {
 };
 
 export type KoreaderSyncConnectionPullPositionResponse = KoreaderSyncConnectionPullPositionResponses[keyof KoreaderSyncConnectionPullPositionResponses];
+
+export type OpdsServersListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/opds-servers';
+};
+
+export type OpdsServersListErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type OpdsServersListError = OpdsServersListErrors[keyof OpdsServersListErrors];
+
+export type OpdsServersListResponses = {
+    200: Array<OpdsServerDto>;
+};
+
+export type OpdsServersListResponse = OpdsServersListResponses[keyof OpdsServersListResponses];
+
+export type OpdsServersCreateData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/opds-servers';
+};
+
+export type OpdsServersCreateErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type OpdsServersCreateError = OpdsServersCreateErrors[keyof OpdsServersCreateErrors];
+
+export type OpdsServersCreateResponses = {
+    201: OpdsServerPasswordResponseDto;
+};
+
+export type OpdsServersCreateResponse = OpdsServersCreateResponses[keyof OpdsServersCreateResponses];
+
+export type OpdsServersDeleteData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/opds-servers/{id}';
+};
+
+export type OpdsServersDeleteErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type OpdsServersDeleteError = OpdsServersDeleteErrors[keyof OpdsServersDeleteErrors];
+
+export type OpdsServersDeleteResponses = {
+    200: OkResponseDto;
+};
+
+export type OpdsServersDeleteResponse = OpdsServersDeleteResponses[keyof OpdsServersDeleteResponses];
+
+export type OpdsServersRenameData = {
+    body: RenameOpdsServerDto;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/opds-servers/{id}';
+};
+
+export type OpdsServersRenameErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type OpdsServersRenameError = OpdsServersRenameErrors[keyof OpdsServersRenameErrors];
+
+export type OpdsServersRenameResponses = {
+    200: OpdsServerDto;
+};
+
+export type OpdsServersRenameResponse = OpdsServersRenameResponses[keyof OpdsServersRenameResponses];
+
+export type OpdsServersRegeneratePasswordData = {
+    body?: never;
+    path: {
+        id: number;
+    };
+    query?: never;
+    url: '/opds-servers/{id}/password';
+};
+
+export type OpdsServersRegeneratePasswordErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type OpdsServersRegeneratePasswordError = OpdsServersRegeneratePasswordErrors[keyof OpdsServersRegeneratePasswordErrors];
+
+export type OpdsServersRegeneratePasswordResponses = {
+    201: OpdsServerPasswordResponseDto;
+};
+
+export type OpdsServersRegeneratePasswordResponse = OpdsServersRegeneratePasswordResponses[keyof OpdsServersRegeneratePasswordResponses];

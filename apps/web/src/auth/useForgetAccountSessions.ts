@@ -1,4 +1,4 @@
-import { usePluginsSignOut } from "../plugins/usePluginsSignOut"
+import { usePluginsSignOut } from "../integrations/plugins/usePluginsSignOut"
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 
 /**

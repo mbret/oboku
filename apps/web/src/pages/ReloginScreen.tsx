@@ -27,6 +27,10 @@ const SignedInAsText = styled(Typography)(({ theme }) => ({
 }))
 
 export const ReLoginScreen = () => {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { data: auth } = useActiveProfile()
   const location = useLocation()
   const navigate = useNavigate()

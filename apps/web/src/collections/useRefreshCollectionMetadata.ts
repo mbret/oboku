@@ -1,6 +1,6 @@
 import { collectionsRefreshMetadata } from "@oboku/shared"
 import { catchError, defaultIfEmpty, EMPTY, from, map, switchMap } from "rxjs"
-import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
+import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
 import { useCollectionIncrementalModify } from "./useCollectionIncrementalModify"
 import { useHttpClientApi } from "../http"
 import { useWithNetwork } from "../common/network/useWithNetwork"

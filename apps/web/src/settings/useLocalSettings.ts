@@ -4,7 +4,7 @@
 import { signal, useSignalValue } from "reactjrx"
 import { isShallowEqual } from "@oboku/shared"
 import { useCallback, type DependencyList } from "react"
-import type { CoreInputSettings } from "@prose-reader/core"
+import type { CoreInputSettings, Theme } from "@prose-reader/core"
 
 import type { ThemeProviderProps } from "@mui/material"
 
@@ -22,6 +22,8 @@ export type LocalSettings = {
   readerSpreadMode?: CoreInputSettings["spreadMode"]
   /** `null` until changed on this device: see `useReaderSettings`. */
   readerFontScale?: number | null
+  /** `null` until changed on this device: see `useReaderSettings`. */
+  readerTheme?: Theme | null
 }
 
 export const localSettingsDefaultValues: Required<LocalSettings> = {
@@ -39,6 +41,7 @@ export const localSettingsDefaultValues: Required<LocalSettings> = {
   readerWakeLockEnabled: true,
   readerSpreadMode: "auto",
   readerFontScale: null,
+  readerTheme: null,
 }
 
 export const localSettingsSignal = signal<LocalSettings>({
@@ -56,6 +59,10 @@ export function useLocalSettings(): LocalSettings
 export function useLocalSettings(
   keyOrKeys?: keyof LocalSettings | readonly (keyof LocalSettings)[],
 ) {
+  // useCallback receives a dependency list that is not an array literal.
+  // TODO: inline the dependency array literal, then drop this opt-out.
+  "use no memo"
+
   const keys: DependencyList =
     typeof keyOrKeys === "string" ? [keyOrKeys] : (keyOrKeys ?? [])
 

@@ -12,7 +12,7 @@ import {
   MinLength,
   ValidateIf,
 } from "class-validator"
-import { AudienceDto } from "../lib/audience.dto.js"
+import { AudienceDto } from "./audience.dto.js"
 
 export class AdminSignInDto {
   @IsString()
@@ -113,6 +113,7 @@ export class InstanceSettingsResponseDto {
   privateNetworkAllowedHosts!: string[]
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
+  opdsServersMaxPerUser!: number
 }
 
 export class UpdateInstanceSettingsDto {
@@ -157,6 +158,12 @@ export class UpdateInstanceSettingsDto {
     require_protocol: true,
   })
   microsoftApplicationAuthority?: string
+
+  @ApiProperty({ type: "integer" })
+  @IsInt()
+  @Min(1)
+  @IsOptional()
+  opdsServersMaxPerUser?: number
 }
 
 export class ServerSyncCredentialsDto {

@@ -1,44 +1,11 @@
-import { useEffect } from "react"
-import { Button, Group, NumberInput, Paper, Stack, Text } from "@mantine/core"
-import { useForm } from "@mantine/form"
+import { Paper, Stack, Text } from "@mantine/core"
 import { useInstanceSettings } from "../useInstanceSettings"
-import { useUpdateInstanceSettings } from "../useUpdateInstanceSettings"
+import { NumberSettingForm } from "./NumberSettingForm"
 
 const BYTES_PER_MEGABYTE = 1024 * 1024
 
-type AdminDownloadsFormValues = {
-  fileDownloadMaxSizeMb: number | string
-}
-
 export const AdminDownloadsSection = () => {
   const instanceSettings = useInstanceSettings()
-  const updateInstanceSettings = useUpdateInstanceSettings()
-  const form = useForm<AdminDownloadsFormValues>({
-    mode: "controlled",
-    initialValues: {
-      fileDownloadMaxSizeMb: "",
-    },
-    validate: {
-      fileDownloadMaxSizeMb: (value) =>
-        typeof value === "number" && value >= 1
-          ? null
-          : "Must be at least 1 MB",
-    },
-  })
-
-  const savedMaxSizeBytes = instanceSettings.data?.fileDownloadMaxSizeBytes
-
-  useEffect(
-    function syncFormFromInstanceSettings() {
-      form.setValues({
-        fileDownloadMaxSizeMb:
-          savedMaxSizeBytes !== undefined
-            ? Math.round(savedMaxSizeBytes / BYTES_PER_MEGABYTE)
-            : "",
-      })
-    },
-    [savedMaxSizeBytes, form.setValues],
-  )
 
   return (
     <Paper withBorder p="md">
@@ -66,34 +33,24 @@ export const AdminDownloadsSection = () => {
           </Text>
         )}
 
-        {!instanceSettings.isLoading && !instanceSettings.error && (
-          <form
-            onSubmit={form.onSubmit(async (values) => {
-              await updateInstanceSettings.mutateAsync({
+        {instanceSettings.data && (
+          <NumberSettingForm
+            label="Maximum file download size (MB)"
+            saveLabel="save download settings"
+            minimumError="Must be at least 1 MB"
+            savedValue={Math.round(
+              instanceSettings.data.fileDownloadMaxSizeBytes /
+                BYTES_PER_MEGABYTE,
+            )}
+            step={50}
+            toSettings={function toDownloadSettings(megabytes) {
+              return {
                 fileDownloadMaxSizeBytes: Math.round(
-                  Number(values.fileDownloadMaxSizeMb) * BYTES_PER_MEGABYTE,
+                  megabytes * BYTES_PER_MEGABYTE,
                 ),
-              })
-            })}
-          >
-            <Stack gap="sm">
-              <NumberInput
-                label="Maximum file download size (MB)"
-                min={1}
-                step={50}
-                allowDecimal={false}
-                {...form.getInputProps("fileDownloadMaxSizeMb")}
-              />
-              <Group justify="flex-end">
-                <Button
-                  type="submit"
-                  loading={updateInstanceSettings.isPending}
-                >
-                  save download settings
-                </Button>
-              </Group>
-            </Stack>
-          </form>
+              }
+            }}
+          />
         )}
       </Stack>
     </Paper>

@@ -4,9 +4,10 @@ import { Button, Stack, type ButtonProps } from "@mui/material"
 import { memo } from "react"
 import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../navigation/routes"
+import { CONNECTOR_DETAILS } from "./connectorDetails"
 
 export const ConnectorManagementButtons = memo(
-  ({
+  function ConnectorManagementButtons({
     connectorType,
     onNavigate,
     variant = "outlined",
@@ -16,18 +17,20 @@ export const ConnectorManagementButtons = memo(
     onNavigate?: () => void
     variant?: ButtonProps["variant"]
     showNewButton?: boolean
-  }) => {
+  }) {
     const navigate = useNavigate()
 
     const handleManage = () => {
       onNavigate?.()
-      navigate(generatePath(ROUTES.PLUGINS_TYPE, { type: connectorType }))
+      navigate(CONNECTOR_DETAILS[connectorType].integrationRoute)
     }
 
     const handleNew = () => {
       onNavigate?.()
       navigate(
-        generatePath(ROUTES.PLUGINS_CONNECTORS_NEW, { type: connectorType }),
+        generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
+          type: connectorType,
+        }),
       )
     }
 

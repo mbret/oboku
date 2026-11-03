@@ -10,8 +10,8 @@ import {
 import type { AddressInfo } from "node:net"
 import { text } from "node:stream/consumers"
 import { inspect } from "node:util"
-import { isNonPublicAddressError } from "../../lib/http/publicAddress.js"
-import { setPrivateNetworkRequestsAllowed } from "../../lib/http/userAddressAgents.js"
+import { isNonPublicAddressError } from "../../http/publicAddress.js"
+import { setPrivateNetworkRequestsAllowed } from "../../http/userAddressAgents.js"
 import { downloadSynologyDriveStream, signInSynologyDrive } from "./client.js"
 
 const password = "dsm-password-1234"

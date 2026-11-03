@@ -47,6 +47,10 @@ const ModalHistoryContext = createContext<ModalHistoryContextValue | undefined>(
  * Mount once inside the router, above any overlay consumer.
  */
 export const ModalHistoryProvider = ({ children }: { children: ReactNode }) => {
+  // Coordinates overlays through ModalController objects that are mutated in place and tracked by identity; keep this whole mechanism outside React Compiler alongside useDismissibleOverlay.
+  // TODO: drop this opt-out once the controller registry no longer relies on in-place mutation.
+  "use no memo"
+
   const navigate = useNavigate()
   const state = useLocation().state as { __oboku_modal?: string } | null
   const modalHash = state?.__oboku_modal
@@ -150,6 +154,10 @@ export const ModalHistoryProvider = ({ children }: { children: ReactNode }) => {
 }
 
 export const useModalHistory = () => {
+  // Coordinates overlays through ModalController objects that are mutated in place and tracked by identity; keep this whole mechanism outside React Compiler alongside useDismissibleOverlay.
+  // TODO: drop this opt-out once the controller registry no longer relies on in-place mutation.
+  "use no memo"
+
   const context = useContext(ModalHistoryContext)
 
   if (!context) {

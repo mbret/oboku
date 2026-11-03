@@ -9,6 +9,7 @@ import {
   KoreaderSyncProgressPostgresEntity,
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
+  OpdsServerPostgresEntity,
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
@@ -18,6 +19,7 @@ import { UserPostgresService } from "./user-postgres.service.js"
 import { JwtService } from "@nestjs/jwt"
 import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connection-postgres.service.js"
+import { OpdsServerPostgresService } from "./opds-server-postgres.service.js"
 
 @Module({
   imports: [
@@ -30,6 +32,7 @@ import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connectio
       KoreaderSyncCredentialPostgresEntity,
       KoreaderSyncProgressPostgresEntity,
       KoreaderSyncConnectionPostgresEntity,
+      OpdsServerPostgresEntity,
     ]),
   ],
   providers: [
@@ -40,6 +43,7 @@ import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connectio
     UserPostgresService,
     KoreaderSyncPostgresService,
     KoreaderSyncConnectionPostgresService,
+    OpdsServerPostgresService,
     JwtService,
   ],
   exports: [
@@ -50,6 +54,7 @@ import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connectio
     UserPostgresService,
     KoreaderSyncPostgresService,
     KoreaderSyncConnectionPostgresService,
+    OpdsServerPostgresService,
   ],
 })
 export class PostgresModule {}

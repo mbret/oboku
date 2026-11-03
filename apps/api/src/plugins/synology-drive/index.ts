@@ -8,7 +8,7 @@ import { Logger } from "@nestjs/common"
 import type createNano from "nano"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findConnectorCandidates } from "../helpers.js"
-import { getConnectorById } from "../../lib/connectors/connectorHelpers.js"
+import { getConnectorById } from "../connectorHelpers.js"
 import {
   downloadSynologyDriveStream,
   getSynchronizeAbleDataSourceFromItems,

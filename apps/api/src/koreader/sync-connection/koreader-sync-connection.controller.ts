@@ -1,7 +1,7 @@
 import { Body, Controller, Delete, Get, Param, Put } from "@nestjs/common"
 import { type AuthUser, WithAuthUser } from "../../auth/auth.guard.js"
-import { OkResponseDto } from "../../lib/ok-response.dto.js"
-import { ApiObokuErrors } from "../../lib/api-oboku-errors.decorator.js"
+import { OkResponseDto } from "../../openapi/ok-response.dto.js"
+import { ApiObokuErrors } from "../../openapi/api-oboku-errors.decorator.js"
 import {
   ConnectKoreaderSyncServerDto,
   KoreaderSyncConnectionResponseDto,

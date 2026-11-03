@@ -107,6 +107,7 @@ describe("InstanceConfigService server sources", () => {
       fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
       allowPrivateNetworkRequests: false,
       privateNetworkAllowedHosts: [],
+      opdsServersMaxPerUser: 10,
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -238,6 +239,22 @@ describe("InstanceConfigService server sources", () => {
       allowPrivateNetworkRequests: false,
       privateNetworkAllowedHosts: [],
     })
+  })
+
+  it("allows 10 OPDS servers per user in a config file that predates the setting", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1 }),
+      "utf8",
+    )
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    expect(rebootedService.getConfig().value.opdsServersMaxPerUser).toBe(10)
   })
 
   it("refuses a config file with an allowed host it cannot read", async () => {

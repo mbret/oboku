@@ -12,12 +12,12 @@ import { memo, useState } from "react"
 import { useDataSourcePlugin } from "../../dataSources/helpers"
 import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
-import { useCreateRequestPopupDialog } from "../../plugins/useCreateRequestPopupDialog"
+import { useCreateRequestPopupDialog } from "../../integrations/plugins/useCreateRequestPopupDialog"
 import { showDialog } from "../../common/dialogs/createDialog"
 import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
-import { useLinkInfo } from "../../plugins/useLinkInfo"
+import { useLinkInfo } from "../../integrations/plugins/useLinkInfo"
 import { useUpsertLink } from "../../links/useUpsertLink"
 
 const TrailingIconStack = styled(Stack)({
@@ -26,7 +26,11 @@ const TrailingIconStack = styled(Stack)({
   flexShrink: 0,
 })
 
-export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
+export const DataSourceSection = memo(function DataSourceSection({
+  bookId,
+}: {
+  bookId: string
+}) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const { data: linkInfo } = useLinkInfo(bookId)
@@ -59,7 +63,7 @@ export const DataSourceSection = memo(({ bookId }: { bookId: string }) => {
             }}
           >
             <ListItemIcon>
-              {dataSourcePlugin.Icon && <dataSourcePlugin.Icon />}
+              <dataSourcePlugin.Icon />
             </ListItemIcon>
             <ListItemText
               primary={`${dataSourcePlugin?.name}`}

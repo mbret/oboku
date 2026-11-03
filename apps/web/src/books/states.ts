@@ -3,7 +3,7 @@ import { useProtectedTagIds } from "../tags/helpers"
 import { createLinkQueryOptions, useLink } from "../links/states"
 import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
 import { map, type Observable, switchMap } from "rxjs"
-import { plugin as localPlugin } from "../plugins/local"
+import { plugin as localPlugin } from "../integrations/plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import {
   type UseLiveQuery$Options,

@@ -8,7 +8,7 @@ Any KOReader sync server works: oboku's own [KOReader sync server](/guides/korea
 
 ## Turn it on
 
-Open **Profile**, then **KOReader progress sync** under **Other apps**. Enter the server, username and password your devices use, then tap **Turn on**.
+Open **Integrations > KOReader > KOReader progress sync**. Enter the server, username and password your devices use, then tap **Turn on**.
 
 When your devices use oboku's own server, the screen offers to fill in its address and your username: tap **Use it**, then enter the password you generated for your devices.
 
@@ -44,4 +44,4 @@ Offline, the book opens right away, where oboku left it.
 
 ## Turn it off
 
-**Profile > KOReader progress sync > Turn off progress sync** stops oboku's reader syncing with the server. The reading positions already on the server stay there.
+**Integrations > KOReader > KOReader progress sync > Turn off progress sync** stops oboku's reader syncing with the server. The reading positions already on the server stay there.

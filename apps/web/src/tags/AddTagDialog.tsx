@@ -32,6 +32,10 @@ const closeAddTagDialog = () => {
 }
 
 export function AddTagDialog() {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
   const { open } = useSignalValue(addTagDialogSignal)
   const { mutate: addTag } = useCreateTag()
   const { control, handleSubmit, setFocus, reset } = useForm<Inputs>({

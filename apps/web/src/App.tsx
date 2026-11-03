@@ -27,7 +27,7 @@ import { LoadConfiguration } from "./config/LoadConfiguration"
 import { SplashScreen } from "./common/SplashScreen"
 import { AppError } from "./errors/AppError"
 import { LegacyAuthMigration } from "./profiles/LegacyAuthMigration"
-import { useLoadGsi } from "./google/gsi"
+import { useLoadGsi } from "./integrations/google/gsi"
 import { Toasts } from "./notifications/toasts/Toasts"
 import { SetupSecretDialog } from "./secrets/SetupSecretDialog"
 import { DebugMenu } from "./debug/DebugMenu"
@@ -43,8 +43,8 @@ import { SyncProfilesAcrossTabs } from "./profiles/SyncProfilesAcrossTabs"
 import { NotifyExpiredSession } from "./auth/NotifyExpiredSession"
 import { AddTagDialog } from "./tags/AddTagDialog"
 import { AddCollectionDialog } from "./library/shelves/AddCollectionDialog"
-import { useSyncSentryUser } from "./debug/useSyncSentryUser"
-import { SyncKoreaderPositions } from "./koreader/syncConnection/SyncKoreaderPositions"
+import { SyncSentryUser } from "./debug/SyncSentryUser"
+import { SyncKoreaderPositions } from "./integrations/koreader/client/SyncKoreaderPositions"
 
 // @todo move to sw
 LibArchive.init({
@@ -154,6 +154,7 @@ export const AppWithConfig = memo(function AppWithConfig() {
                 <LegacyAuthMigration>
                   <RevokeLoggedOutProfiles />
                   <SyncProfilesAcrossTabs />
+                  <SyncSentryUser />
                   <LoadConfiguration>
                     <App onReadyChange={setIsAppReady} />
                   </LoadConfiguration>
@@ -170,12 +171,11 @@ export const AppWithConfig = memo(function AppWithConfig() {
   )
 })
 
-const OtherEffects = memo(() => {
+const OtherEffects = memo(function OtherEffects() {
   const { mutate: loadGsi } = useLoadGsi()
 
   useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
-  useSyncSentryUser()
 
   useEffect(() => {
     loadGsi()

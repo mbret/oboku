@@ -25,7 +25,7 @@ import {
 } from "@oboku/shared"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
-import { pluginsByType } from "../../plugins/configure"
+import { pluginsByType } from "../../integrations/plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import { getBookMetadataEntryFields } from "../metadata/fields"
 import {
