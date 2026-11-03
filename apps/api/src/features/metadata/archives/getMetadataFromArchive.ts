@@ -1,46 +1,25 @@
-import type { LegacyFileMetadata } from "@oboku/shared"
-import {
-  type Archive,
-  identifierValue,
-  mainTitle,
-  type ResolvedMetadata,
-  resolveArchive,
-} from "@prose-reader/archive-reader"
+import { type FileMetadata, getBookMetadataFields } from "@oboku/shared"
+import { type Archive, resolveArchive } from "@prose-reader/archive-reader"
 import { Logger } from "@nestjs/common"
 
 const logger = new Logger("getMetadataFromArchive")
 
-const authorNames = (metadata: ResolvedMetadata): string[] | undefined => {
-  const names: string[] = []
-
-  for (const contributor of metadata.contributors ?? []) {
-    if (contributor.roles.includes("author")) {
-      names.push(contributor.name)
-    }
-  }
-
-  return names.length > 0 ? names : undefined
-}
-
-const toMutableList = (
-  values: ReadonlyArray<string> | undefined,
-): string[] | undefined =>
-  values && values.length > 0 ? [...values] : undefined
-
 export const getMetadataFromArchive = async (
   archive: Archive,
-): Promise<LegacyFileMetadata> => {
-  const { metadata, mediaType, unreadableSources } = await resolveArchive(
-    archive,
-    { include: ["metadata"] },
-  )
-
-  const title = mainTitle(metadata)
-  const isbn = identifierValue(metadata.identifiers, "ISBN")
-  const googleVolumeId = identifierValue(metadata.identifiers, "GoogleBooks")
+): Promise<FileMetadata> => {
+  const { version, metadata, mediaType, unreadableSources } =
+    await resolveArchive(archive, { include: ["metadata"] })
+  const fileMetadata: FileMetadata = {
+    type: "file",
+    version,
+    contentType: mediaType,
+    metadata,
+  }
+  const { title, isbn, googleVolumeId, coverLink } =
+    getBookMetadataFields(fileMetadata)
 
   logger.log(
-    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, googleVolumeId=${googleVolumeId !== undefined}, cover=${metadata.cover !== undefined})`,
+    `Extracted archive metadata (title=${title !== undefined}, isbn=${isbn !== undefined}, googleVolumeId=${googleVolumeId !== undefined}, cover=${coverLink !== undefined})`,
   )
 
   if (unreadableSources.length > 0) {
@@ -49,20 +28,5 @@ export const getMetadataFromArchive = async (
     )
   }
 
-  return {
-    type: "file",
-    contentType: mediaType,
-    title,
-    authors: authorNames(metadata),
-    publisher: metadata.publication?.edition?.publisher,
-    rights: metadata.rights,
-    languages: toMutableList(metadata.languages),
-    date: metadata.publication?.edition?.date,
-    subjects: toMutableList(metadata.subjects),
-    coverLink: metadata.cover?.uri,
-    coverConfidence: metadata.cover?.confidence,
-    pageCount: metadata.numberOfPages,
-    isbn,
-    googleVolumeId,
-  }
+  return fileMetadata
 }

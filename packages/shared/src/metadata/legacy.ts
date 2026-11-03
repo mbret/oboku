@@ -1,9 +1,10 @@
 /**
  * Book metadata as stored before entries followed prose-reader's shapes:
  * flat `file` entries, `googleBookApi` entries, and `googleBookApi` in
- * `metadataSourcePriority`. The API still writes the entries, so readers of
- * `book.metadata` go through {@link getBookMetadataFields} and
- * {@link getBookMetadataSource}, which read both shapes.
+ * `metadataSourcePriority`. Stored books still hold them, and the API still
+ * writes `googleBookApi` entries, so readers of `book.metadata` go through
+ * {@link getBookMetadataFields} and {@link getBookMetadataSource}, which read
+ * both shapes.
  *
  * TODO(ask the maintainer, added 2026-10): revisit in 2027-10 at the
  * earliest. This file goes once no stored book holds these shapes, which
