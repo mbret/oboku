@@ -31,6 +31,25 @@ describe("resolveMetadataFixerFormValues", function testSeeding() {
     ])
   })
 
+  it("seeds an untyped URN under the scheme its namespace names", async function seedUrnRows() {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier id="pub-id">urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809</dc:identifier>' +
+          "<dc:identifier>urn:nbn:de:101:1-2011</dc:identifier>",
+      ),
+    })
+
+    expect(resolveMetadataFixerFormValues(inspection).identifiers).toEqual([
+      {
+        scheme: "UUID",
+        value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
+        unique: true,
+      },
+      { scheme: "URN", value: "urn:nbn:de:101:1-2011", unique: false },
+    ])
+  })
+
   it("collapses the ISBN and the ComicInfo GTIN holding it into one row", async function dedupeIsbnBearingSchemes() {
     const inspection = await inspect({
       "META-INF/container.xml": CONTAINER_XML,

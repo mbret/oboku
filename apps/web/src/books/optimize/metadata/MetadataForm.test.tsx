@@ -3,6 +3,7 @@ import {
   fireEvent,
   render,
   screen,
+  waitFor,
   within,
 } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -209,5 +210,75 @@ describe("MetadataForm", function testMetadataForm() {
     expect(
       screen.queryByText("Not a recognizable ISBN-10 or ISBN-13"),
     ).toBeNull()
+  })
+
+  it("shows an identifier the reader reads as a UUID under its scheme", function seedUuidScheme() {
+    render(
+      <MetadataFormHarness
+        identifiers={[
+          {
+            scheme: "UUID",
+            value: "urn:uuid:A1B0D67E-2E81-4DF5-9E67-A64CBE366809",
+            unique: true,
+          },
+        ]}
+      />,
+    )
+
+    expect(screen.getByText("UUID")).not.toBeNull()
+    expect(screen.queryByLabelText("Custom scheme")).toBeNull()
+  })
+
+  it.each([
+    "urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+    "f81d4fae-7dec-11d0-a765-00a0c91e6bf6",
+  ])(
+    "accepts the UUID %s and rejects a value that is not one",
+    async function validateUuid(uuid) {
+      render(
+        <MetadataFormHarness
+          identifiers={[{ scheme: "UUID", value: "", unique: false }]}
+        />,
+      )
+      const uuidError =
+        "Not a UUID, e.g. urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+
+      fireEvent.change(screen.getByLabelText("Value"), {
+        target: { value: "urn:uuid:not-a-uuid" },
+      })
+
+      expect(await screen.findByText(uuidError)).not.toBeNull()
+
+      fireEvent.change(screen.getByLabelText("Value"), {
+        target: { value: uuid },
+      })
+
+      await waitFor(function expectUuidAccepted() {
+        expect(screen.queryByText(uuidError)).toBeNull()
+      })
+    },
+  )
+
+  it("accepts a URN and rejects a value that is not one", async function validateUrn() {
+    render(
+      <MetadataFormHarness
+        identifiers={[{ scheme: "URN", value: "", unique: false }]}
+      />,
+    )
+    const urnError = "Not a URN, e.g. urn:nbn:de:101:1-2011"
+
+    fireEvent.change(screen.getByLabelText("Value"), {
+      target: { value: "nbn:de:101:1-2011" },
+    })
+
+    expect(await screen.findByText(urnError)).not.toBeNull()
+
+    fireEvent.change(screen.getByLabelText("Value"), {
+      target: { value: "urn:nbn:de:101:1-2011" },
+    })
+
+    await waitFor(function expectUrnAccepted() {
+      expect(screen.queryByText(urnError)).toBeNull()
+    })
   })
 })
