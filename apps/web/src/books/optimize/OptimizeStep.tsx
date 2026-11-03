@@ -42,6 +42,7 @@ export function OptimizeStep({
 
   return (
     <BookOptimizeProvider
+      key={book._id}
       book={book}
       link={link}
       canUploadToDataSource={canUploadToDataSource}

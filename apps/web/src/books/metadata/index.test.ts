@@ -9,6 +9,7 @@ const link: BookMetadata = {
 
 const file: BookMetadata = {
   type: "file",
+  version: 5,
   contentType: "application/epub+zip",
   metadata: {
     titles: [{ value: "The Final Empire" }],

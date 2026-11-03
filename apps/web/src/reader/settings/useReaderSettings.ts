@@ -13,18 +13,19 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
         ...localSettings,
         readerFontScale: changes.fontScale ?? localSettings.readerFontScale,
         readerSpreadMode: changes.spreadMode ?? localSettings.readerSpreadMode,
+        readerTheme: changes.theme ?? localSettings.readerTheme,
       }
     },
   )
 }
 
 /**
- * The reader settings the user changes in react-reader, the font scale and the
- * spread mode, from its menus or with a pinch, kept on the device and resolved
- * to what the reader should use. A device that has not changed its font scale
- * yet uses the account-wide `readerGlobalFontScale`, which older versions of
- * the app save. `updateReaderSettings` saves only the settings it is given, as
- * react-reader reports them.
+ * The reader settings the user changes in react-reader's menus, the font scale,
+ * the spread mode and the theme, kept on the device and resolved to what the
+ * reader should use. A device that has not changed its font scale yet uses the
+ * account-wide `readerGlobalFontScale`, which older versions of the app save.
+ * `updateReaderSettings` saves only the settings it is given, as react-reader
+ * reports them.
  *
  * TODO(ask the maintainer, added 2026-09): after a few months, once older
  * versions of the app are gone, raise dropping the fallback to
@@ -33,15 +34,17 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
  * The field stays in the RxDB settings schema while CouchDB documents hold it.
  */
 export function useReaderSettings() {
-  const { readerFontScale, readerSpreadMode } = useLocalSettings([
+  const { readerFontScale, readerSpreadMode, readerTheme } = useLocalSettings([
     "readerFontScale",
     "readerSpreadMode",
+    "readerTheme",
   ])
   const { data: accountSettings } = useSettings()
   const readerSettings: ReactReaderSettings = {
     fontScale:
       readerFontScale ?? accountSettings?.readerGlobalFontScale ?? undefined,
     spreadMode: readerSpreadMode,
+    theme: readerTheme ?? undefined,
   }
 
   return {

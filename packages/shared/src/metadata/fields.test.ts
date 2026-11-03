@@ -4,6 +4,7 @@ import { getBookMetadataFields } from "./fields"
 describe("getBookMetadataFields, for a file entry holding archive-reader's metadata", () => {
   const fields = getBookMetadataFields({
     type: "file",
+    version: 5,
     contentType: "application/epub+zip",
     metadata: {
       titles: [{ value: "The Final Empire", type: "main" }],
