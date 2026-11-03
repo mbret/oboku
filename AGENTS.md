@@ -98,7 +98,7 @@
 - **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).
 - Use RxDB migrations only as pass-throughs when a field is added (bump the schema version, return the document unchanged), or for data that never leaves the device.
 - **To change stored data, migrate CouchDB.** Add a method to the API's `MigrationService` and an admin endpoint in `admin.controller.ts`, following the existing ones: idempotent, one bulk write per user database. Devices receive the result through replication.
-- Older versions of the app keep running against the same data. When a field replaces another, keep reading the old one until they are gone, and say in a TODO when it can be removed.
+- **A planned migration replaces reading old data.** When a field replaces another and a CouchDB migration converts the stored data, new code reads the new field only. Ship the migration with the change, or plan it as the next one. Until it runs, and until older versions of the app update, the app may show blank values: that is acceptable. Breaking the app or losing data is not.
 
 ### Package manager
 
