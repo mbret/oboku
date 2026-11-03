@@ -54,7 +54,7 @@ export function BookOptimizeProvider({
   })
 
   useEffect(
-    function showErrorsOfValuesReadFromTheBook() {
+    function showErrorsOfSeededValues() {
       void trigger()
     },
     [trigger],
