@@ -255,11 +255,6 @@ const readsAsIdentifier = (
   element.textContent?.trim() === value.trim() &&
   schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
 
-/**
- * An element that already reads as the identifier is left as the book wrote
- * it: rewriting it would state a scheme its value already announces, or
- * respell the one it states.
- */
 const writeIdentifier = (
   metadata: XmlElement,
   element: XmlElement,
