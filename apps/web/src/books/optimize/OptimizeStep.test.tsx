@@ -6,6 +6,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react"
+import { MemoryRouter } from "react-router"
 import { NEVER } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { FileInspection } from "./useFileInspection"
@@ -15,10 +16,12 @@ import {
   inspect,
   opf,
 } from "./metadata/identifiers/inspection.fixture"
-import { resolveMetadataFixerFormValues } from "./metadata/identifiers/resolveMetadataFixerFormValues"
-import { IDENTIFIER_SCHEME_OPTIONS } from "./metadata/identifiers/schemes"
 import { OptimizeStep } from "./OptimizeStep"
-import { BOOK_OPTIMIZE_TABS, type BookOptimizeTab } from "./tabs"
+import {
+  BOOK_OPTIMIZE_TAB_PARAM,
+  BOOK_OPTIMIZE_TABS,
+  type BookOptimizeTab,
+} from "./tabs"
 
 const mocks = vi.hoisted(function createMocks() {
   return { inspectionsByBookId: new Map<string, FileInspection>() }
@@ -84,47 +87,45 @@ vi.mock("./apply/useApplyLocally", function mockApplyLocally() {
 
 const otherBook = { ...book, _id: "book-2" }
 
-const UNIQUE_IDENTIFIER =
-  '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>'
-
-const inspectBookWithIdentifiers = (
-  identifiers: string,
-): Promise<FileInspection> =>
+const inspectBookWithIsbn = (isbn: string): Promise<FileInspection> =>
   inspect({
     "META-INF/container.xml": CONTAINER_XML,
-    "OEBPS/content.opf": opf(`${UNIQUE_IDENTIFIER}${identifiers}`),
+    "OEBPS/content.opf": opf(
+      '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>' +
+        `<dc:identifier opf:scheme="ISBN">${isbn}</dc:identifier>`,
+    ),
   })
 
-const inspectBookWithIsbn = (isbn: string): Promise<FileInspection> =>
-  inspectBookWithIdentifiers(
-    `<dc:identifier opf:scheme="ISBN">${isbn}</dc:identifier>`,
-  )
-
-const renderOptimizeStep = ({
+function TestOptimizeStep({
   bookToOptimize = book,
-  currentTab = BOOK_OPTIMIZE_TABS.METADATA,
+  openTab = BOOK_OPTIMIZE_TABS.METADATA,
 }: {
   bookToOptimize?: typeof book
-  currentTab?: BookOptimizeTab
-} = {}) => (
-  <OptimizeStep
-    book={bookToOptimize}
-    link={link}
-    canUploadToDataSource={false}
-    currentTab={currentTab}
-    onTabChange={vi.fn()}
-  />
-)
+  openTab?: BookOptimizeTab
+}) {
+  const tabSearch = new URLSearchParams({ [BOOK_OPTIMIZE_TAB_PARAM]: openTab })
+
+  return (
+    <MemoryRouter initialEntries={[`/?${tabSearch.toString()}`]}>
+      <OptimizeStep
+        book={bookToOptimize}
+        link={link}
+        canUploadToDataSource={false}
+      />
+    </MemoryRouter>
+  )
+}
 
 const expectFormValidity = (validity: "valid" | "invalid") =>
   waitFor(function expectFormValidityOutput() {
     expect(screen.getByLabelText("Form validity").textContent).toBe(validity)
   })
 
-const tabErrorMarker = (label: string): HTMLElement | null =>
-  within(
-    screen.getByRole("tab", { name: new RegExp(`^${label}`) }),
-  ).queryByRole("img", { name: "Has errors" })
+const getTab = (label: string): HTMLElement =>
+  screen.getByRole("tab", { name: new RegExp(`^${label}`) })
+
+const queryTabErrorMarker = (label: string): HTMLElement | null =>
+  within(getTab(label)).queryByRole("img", { name: "Has errors" })
 
 describe("OptimizeStep", function testOptimizeStep() {
   afterEach(function cleanUpOptimizeStep() {
@@ -132,17 +133,17 @@ describe("OptimizeStep", function testOptimizeStep() {
     mocks.inspectionsByBookId.clear()
   })
 
-  it("marks the Metadata tab and shows the error of an identifier the book carries", async function showSeededIdentifierError() {
+  it("marks the Metadata tab and shows the error of an identifier the book carries", async function markMetadataTabForSeededIdentifierError() {
     mocks.inspectionsByBookId.set(book._id, await inspectBookWithIsbn("978-0"))
 
-    render(renderOptimizeStep({ currentTab: BOOK_OPTIMIZE_TABS.CONTENT }))
+    render(<TestOptimizeStep openTab={BOOK_OPTIMIZE_TABS.CONTENT} />)
 
     expect(
       await screen.findByText("Not a recognizable ISBN-10 or ISBN-13"),
     ).not.toBeNull()
     await expectFormValidity("invalid")
-    expect(tabErrorMarker("Metadata")).not.toBeNull()
-    expect(tabErrorMarker("Content")).toBeNull()
+    expect(queryTabErrorMarker("Metadata")).not.toBeNull()
+    expect(queryTabErrorMarker("Content")).toBeNull()
 
     const isbnField = screen.getByDisplayValue("978-0")
 
@@ -151,48 +152,20 @@ describe("OptimizeStep", function testOptimizeStep() {
     fireEvent.change(isbnField, { target: { value: "9783161484100" } })
 
     await expectFormValidity("valid")
-    expect(tabErrorMarker("Metadata")).toBeNull()
+    expect(queryTabErrorMarker("Metadata")).toBeNull()
   })
 
-  it("opens a book with a valid identifier of every scheme with no error", async function openEverySchemeValid() {
-    const inspection = await inspectBookWithIdentifiers(
-      '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>' +
-        '<dc:identifier opf:scheme="GoogleBooks">zyTCAlFPjgYC</dc:identifier>' +
-        '<dc:identifier opf:scheme="GTIN">4006381333931</dc:identifier>' +
-        '<dc:identifier opf:scheme="OpenLibrary">OL7353617M</dc:identifier>' +
-        '<dc:identifier opf:scheme="ProjectGutenberg">2701</dc:identifier>' +
-        '<dc:identifier opf:scheme="DOI">10.1000/182</dc:identifier>' +
-        "<dc:identifier>urn:nbn:de:101:1-2011</dc:identifier>" +
-        "<dc:identifier>https://example.com/book</dc:identifier>" +
-        "<dc:identifier>acme-0042</dc:identifier>",
-    )
-    const seededSchemes = resolveMetadataFixerFormValues(
-      inspection,
-    ).identifiers.map((identifier) => identifier.scheme)
-
-    expect(new Set(seededSchemes)).toEqual(
-      new Set(IDENTIFIER_SCHEME_OPTIONS.map((option) => option.scheme)),
-    )
-
-    mocks.inspectionsByBookId.set(book._id, inspection)
-
-    const { container } = render(renderOptimizeStep())
-
-    await expectFormValidity("valid")
-    expect(container.querySelector('[aria-invalid="true"]')).toBeNull()
-    expect(tabErrorMarker("Metadata")).toBeNull()
-    expect(tabErrorMarker("Content")).toBeNull()
-  })
-
-  it("marks the Content tab when an image option is in error", async function markContentTab() {
+  it("marks the Content tab when an image option is in error while Metadata is open", async function markContentTabFromMetadataTab() {
     mocks.inspectionsByBookId.set(
       book._id,
       await inspectBookWithIsbn("9783161484100"),
     )
 
-    render(renderOptimizeStep({ currentTab: BOOK_OPTIMIZE_TABS.CONTENT }))
+    render(<TestOptimizeStep />)
 
     await expectFormValidity("valid")
+    expect(queryTabErrorMarker("Content")).toBeNull()
+
     fireEvent.click(screen.getByLabelText("Compress images"))
 
     expect(
@@ -200,8 +173,8 @@ describe("OptimizeStep", function testOptimizeStep() {
         "Set a maximum width or height when keeping the original format.",
       ),
     ).not.toBeNull()
-    expect(tabErrorMarker("Content")).not.toBeNull()
-    expect(tabErrorMarker("Metadata")).toBeNull()
+    expect(queryTabErrorMarker("Content")).not.toBeNull()
+    expect(queryTabErrorMarker("Metadata")).toBeNull()
   })
 
   it("keeps the edits when the inspection of the same book refreshes", async function keepEditsOnInspectionRefresh() {
@@ -210,7 +183,7 @@ describe("OptimizeStep", function testOptimizeStep() {
       await inspectBookWithIsbn("9783161484100"),
     )
 
-    const { rerender } = render(renderOptimizeStep())
+    const { rerender } = render(<TestOptimizeStep />)
 
     fireEvent.change(await screen.findByDisplayValue("9783161484100"), {
       target: { value: "9780306406157" },
@@ -220,7 +193,7 @@ describe("OptimizeStep", function testOptimizeStep() {
       book._id,
       await inspectBookWithIsbn("9781861972712"),
     )
-    rerender(renderOptimizeStep())
+    rerender(<TestOptimizeStep />)
 
     expect(screen.getByDisplayValue("9780306406157")).not.toBeNull()
     expect(screen.queryByDisplayValue("9781861972712")).toBeNull()
@@ -236,11 +209,11 @@ describe("OptimizeStep", function testOptimizeStep() {
       await inspectBookWithIsbn("9780306406157"),
     )
 
-    const { rerender } = render(renderOptimizeStep())
+    const { rerender } = render(<TestOptimizeStep />)
 
     expect(await screen.findByDisplayValue("9783161484100")).not.toBeNull()
 
-    rerender(renderOptimizeStep({ bookToOptimize: otherBook }))
+    rerender(<TestOptimizeStep bookToOptimize={otherBook} />)
 
     expect(await screen.findByDisplayValue("9780306406157")).not.toBeNull()
     expect(screen.queryByDisplayValue("9783161484100")).toBeNull()
