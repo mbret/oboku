@@ -71,13 +71,18 @@ describe("useReaderSettings", () => {
     expect(result.current.readerSettings).toEqual({
       fontScale: 1.3,
       spreadMode: "always",
-      theme: "bright",
     })
     expect(localSettingsSignal.getValue()).toMatchObject({
       readerSpreadMode: "always",
       readerFontScale: 1.3,
       themeMode: "dark",
     })
+  })
+
+  it("leaves the theme to the reader until the device picks one", () => {
+    const { result } = renderHook(useReaderSettings)
+
+    expect(result.current.readerSettings.theme).toBeUndefined()
   })
 
   it("saves the theme on the device, keeping its other reader settings", () => {
@@ -87,8 +92,6 @@ describe("useReaderSettings", () => {
       },
     )
     const { result } = renderHook(useReaderSettings)
-
-    expect(result.current.readerSettings.theme).toBe("bright")
 
     act(function changeThemeOnDevice() {
       result.current.updateReaderSettings({ theme: "night" })

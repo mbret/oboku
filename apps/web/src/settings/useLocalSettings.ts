@@ -22,7 +22,8 @@ export type LocalSettings = {
   readerSpreadMode?: CoreInputSettings["spreadMode"]
   /** `null` until changed on this device: see `useReaderSettings`. */
   readerFontScale?: number | null
-  readerTheme?: Theme
+  /** `null` until changed on this device: see `useReaderSettings`. */
+  readerTheme?: Theme | null
 }
 
 export const localSettingsDefaultValues: Required<LocalSettings> = {
@@ -40,7 +41,7 @@ export const localSettingsDefaultValues: Required<LocalSettings> = {
   readerWakeLockEnabled: true,
   readerSpreadMode: "auto",
   readerFontScale: null,
-  readerTheme: "bright",
+  readerTheme: null,
 }
 
 export const localSettingsSignal = signal<LocalSettings>({

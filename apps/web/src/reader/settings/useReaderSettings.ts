@@ -44,7 +44,7 @@ export function useReaderSettings() {
     fontScale:
       readerFontScale ?? accountSettings?.readerGlobalFontScale ?? undefined,
     spreadMode: readerSpreadMode,
-    theme: readerTheme,
+    theme: readerTheme ?? undefined,
   }
 
   return {
