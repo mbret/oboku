@@ -24,7 +24,7 @@ export const plugin: ObokuPlugin<"file"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  signOut: function signOutOfLocalFiles() {},
+  useSignOut: () => () => {},
   DownloadBookComponent: memo(function DownloadBook({ onError }) {
     useEffect(() => {
       onError(

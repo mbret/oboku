@@ -41,7 +41,7 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   UpsertFileComponent: UpsertFile,
   getLinkLabel: getFileIdLinkLabel,
   useRefreshMetadata,
-  signOut: function signOutOfOneDrive() {
+  useSignOut: () => () => {
     void clearOneDriveSession()
   },
   useSynchronize,

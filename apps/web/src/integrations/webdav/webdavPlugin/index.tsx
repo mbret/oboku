@@ -39,7 +39,7 @@ const plugin: ObokuPlugin<"webdav"> = {
   getDataSourceLabel,
   getLinkLabel: getFilePathLinkLabel,
   useRefreshMetadata,
-  signOut: function signOutOfWebdav() {},
+  useSignOut: () => () => {},
   DownloadBookComponent: DownloadBook,
 }
 

@@ -7,7 +7,7 @@ import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import type { ObokuPlugin } from "../../plugins/types"
-import { signOut } from "./signOut"
+import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
 import { getFileIdLinkLabel } from "../../plugins/common/linkLabel"
 import { getDataSourceLabel } from "./getDataSourceLabel"
@@ -42,5 +42,5 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,
-  signOut,
+  useSignOut,
 }

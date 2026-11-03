@@ -43,5 +43,7 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  signOut: clearSynologyDriveSession,
+  useSignOut: function useSynologyDriveSignOut() {
+    return clearSynologyDriveSession
+  },
 }

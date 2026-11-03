@@ -49,6 +49,8 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   getLinkLabel: getFileIdLinkLabel,
   useRefreshMetadata,
   useSynchronize,
-  signOut: clearGoogleAccessToken,
+  useSignOut: function useGoogleDriveSignOut() {
+    return clearGoogleAccessToken
+  },
   Provider,
 }
