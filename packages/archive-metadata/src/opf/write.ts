@@ -242,11 +242,28 @@ const clearScheme = (metadata: XmlElement, element: XmlElement): void => {
   if (meta) metadata.removeChild(meta)
 }
 
-const writeIdentifier = (
+/**
+ * Whether an element is the identifier as the reader reads it: the same value,
+ * and the same scheme, which for an element stating none is the one its value
+ * announces.
+ */
+const readsAsIdentifier = (
   metadata: XmlElement,
   element: XmlElement,
   { scheme, value }: ArchiveMetadataIdentifier,
+): boolean =>
+  element.textContent?.trim() === value.trim() &&
+  schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
+
+const writeIdentifier = (
+  metadata: XmlElement,
+  element: XmlElement,
+  identifier: ArchiveMetadataIdentifier,
 ): void => {
+  if (readsAsIdentifier(metadata, element, identifier)) return
+
+  const { scheme, value } = identifier
+
   element.textContent = value
 
   if (isUntaggedIdentifierScheme(scheme)) {
@@ -337,12 +354,6 @@ const findUniqueIdentifierElement = (
 }
 
 /**
- * Rewrites the document's identifiers so it ends up carrying exactly the
- * patched set, reusing the existing element of a scheme rather than replacing
- * it — an element may be the target of `<meta refines>` entries, and its `id`
- * has to survive an edit for those to keep resolving.
- */
-/**
  * The element an identifier was read from: the one carrying both its scheme and
  * its value. Matched on both because a removal names an identifier the reader
  * reported, and nothing else should be mistaken for it.
@@ -350,13 +361,10 @@ const findUniqueIdentifierElement = (
 const findIdentifierElement = (
   metadata: XmlElement,
   elements: ReadonlyArray<XmlElement>,
-  { scheme, value }: ArchiveMetadataIdentifier,
+  identifier: ArchiveMetadataIdentifier,
 ): XmlElement | undefined =>
   elements.find(function carriesIdentifier(element) {
-    return (
-      element.textContent?.trim() === value.trim() &&
-      schemeKey(elementScheme(metadata, element)) === schemeKey(scheme)
-    )
+    return readsAsIdentifier(metadata, element, identifier)
   })
 
 /**

@@ -489,7 +489,7 @@ describe("OPF editing (buildPatchedOpfXml)", () => {
       { identifiers: readOpfIdentifiers(xml) },
     )
 
-    expect(readOpfIdentifiers(repatched)).toEqual(readOpfIdentifiers(xml))
+    expect(repatched).toBe(xml)
     expect(readOpfIdentifiers(xml)).toEqual([
       { value: UUID_IDENTIFIER, scheme: "UUID", unique: true },
       { value: "zyTCAlFPjgYC", scheme: "GoogleBooks" },
@@ -778,6 +778,75 @@ describe("OPF editing leaves unnamed identifiers alone", () => {
 
     expect(xml).toContain(UUID_IDENTIFIER)
     expect(xml).toContain('id="pub-id"')
+  })
+})
+
+describe("OPF editing leaves an identifier the patch keeps as the book wrote it", () => {
+  const uniqueUuid = `<dc:identifier id="pub-id">${UUID_IDENTIFIER}</dc:identifier>`
+
+  it.each([
+    { prefix: "declares", document: opf(uniqueUuid) },
+    {
+      prefix: "omits",
+      document:
+        '<?xml version="1.0" encoding="utf-8"?>' +
+        '<package xmlns="http://www.idpf.org/2007/opf"' +
+        ' xmlns:dc="http://purl.org/dc/elements/1.1/"' +
+        ' version="3.0" unique-identifier="pub-id">' +
+        `<metadata>${uniqueUuid}</metadata><manifest/><spine/>` +
+        "</package>",
+    },
+  ])(
+    "keeps an untyped urn:uuid unique identifier when the package $prefix the opf prefix",
+    async ({ document }) => {
+      const xml = await buildPatchedOpfXml(
+        makeEntry("OEBPS/content.opf", document),
+        {
+          identifiers: [
+            { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
+            { scheme: "ISBN", value: "9783161484100" },
+          ],
+        },
+      )
+
+      expect(xml).toContain(uniqueUuid)
+      expect(readOpfIsbn(xml)).toBe("9783161484100")
+    },
+  )
+
+  it("keeps an untyped URN untyped", async () => {
+    const urn = "<dc:identifier>urn:nbn:de:101:1-2011</dc:identifier>"
+
+    const xml = await buildPatchedOpfXml(
+      makeEntry("OEBPS/content.opf", opf(uniqueUuid + urn)),
+      {
+        identifiers: [
+          { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
+          { scheme: "URN", value: "urn:nbn:de:101:1-2011" },
+          { scheme: "ISBN", value: "9783161484100" },
+        ],
+      },
+    )
+
+    expect(xml).toContain(urn)
+  })
+
+  it("keeps the spelling of the scheme the book states", async () => {
+    const calibreUuid =
+      '<dc:identifier opf:scheme="uuid" id="uuid_id">f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>'
+
+    const xml = await buildPatchedOpfXml(
+      makeEntry("OEBPS/content.opf", opf(uniqueUuid + calibreUuid)),
+      {
+        identifiers: [
+          { scheme: "UUID", value: UUID_IDENTIFIER, unique: true },
+          { scheme: "UUID", value: "f81d4fae-7dec-11d0-a765-00a0c91e6bf6" },
+          { scheme: "ISBN", value: "9783161484100" },
+        ],
+      },
+    )
+
+    expect(xml).toContain(calibreUuid)
   })
 })
 
