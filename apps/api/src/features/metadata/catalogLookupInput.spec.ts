@@ -2,10 +2,9 @@ import type { FileMetadata } from "@oboku/shared"
 import { describe, expect, it } from "vitest"
 import { catalogLookupInput } from "./catalogLookupInput.js"
 
-const fileStating = (metadata: FileMetadata["metadata"]): FileMetadata => ({
-  type: "file",
-  metadata,
-})
+const fileStating = (
+  metadata: FileMetadata["metadata"],
+): Pick<FileMetadata, "metadata"> => ({ metadata })
 
 describe("catalogLookupInput", () => {
   it("asks what the file states", () => {

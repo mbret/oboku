@@ -30,7 +30,7 @@ export const catalogLookupInput = ({
   directiveIsbn,
   directiveGoogleVolumeId,
 }: {
-  fileMetadata: FileMetadata | undefined
+  fileMetadata: Pick<FileMetadata, "metadata"> | undefined
   linkName: string | undefined
   userIsbn: string | undefined
   directiveIsbn: string | undefined

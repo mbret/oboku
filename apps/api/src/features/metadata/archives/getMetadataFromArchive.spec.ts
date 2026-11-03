@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest"
 import {
   arrayBufferFileAccessors,
   createArchive,
+  resolveArchive,
 } from "@prose-reader/archive-reader"
 import { getBookMetadataFields } from "@oboku/shared"
 import { getMetadataFromArchive } from "./getMetadataFromArchive.js"
@@ -115,6 +116,15 @@ describe("getMetadataFromArchive", () => {
     )
 
     expect(metadata.contentType).toBe("application/vnd.comicbook+zip")
+  })
+
+  it("records the schema version archive-reader resolved the file under", async () => {
+    const archive = archiveWith(opfWith(""))
+    const { version } = await resolveArchive(archive, { include: [] })
+
+    const metadata = await getMetadataFromArchive(archive)
+
+    expect(metadata.version).toBe(version)
   })
 })
 

@@ -13,7 +13,9 @@ import type {
  * `coverConfidence` gets `assumed`, which is how cover picking already reads
  * a missing one.
  */
-const fileMetadataFromLegacy = (entry: LegacyFileMetadata): FileMetadata => {
+const fileMetadataFromLegacy = (
+  entry: LegacyFileMetadata,
+): Omit<FileMetadata, "version"> => {
   const identifiers: ResolvedMetadataIdentifier[] = [
     ...(entry.isbn ? [{ value: entry.isbn, scheme: "ISBN" }] : []),
     ...(entry.googleVolumeId
@@ -66,5 +68,5 @@ const fileMetadataFromLegacy = (entry: LegacyFileMetadata): FileMetadata => {
 /** A stored file entry in archive-reader's vocabulary, whatever shape it is in. */
 export const toFileMetadata = (
   entry: FileMetadata | LegacyFileMetadata,
-): FileMetadata =>
+): Omit<FileMetadata, "version"> =>
   isLegacyFileMetadata(entry) ? fileMetadataFromLegacy(entry) : entry

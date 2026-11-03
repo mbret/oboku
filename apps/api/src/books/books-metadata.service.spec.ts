@@ -5,6 +5,7 @@ import {
   buildBookBucketCoverKey,
   type CatalogMetadata,
   createBookDefaults,
+  type FileMetadata,
   type LegacyFileMetadata,
   type LinkDocType,
 } from "@oboku/shared"
@@ -18,7 +19,6 @@ import { InstanceConfigService } from "../admin/instance-config/instance-config.
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
-import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { BooksMetadataService } from "./books-metadata.service.js"
 
@@ -146,6 +146,35 @@ const refresh = async (book: BookDocType, linkName = "Dune.epub") => {
   return { storedBook, downloadLinkToTmp: pluginsService.downloadLinkToTmp }
 }
 
+const COVER_LINK = "OEBPS/cover.jpg"
+const FILE_ISBN = "9780441013593"
+const FILE_GOOGLE_VOLUME_ID = "zyTCAlFPjgYC"
+
+const flatFileEntry: LegacyFileMetadata = {
+  type: "file",
+  contentType: "application/epub+zip",
+  title: "Dune",
+  authors: ["Frank Herbert"],
+  coverLink: COVER_LINK,
+  isbn: FILE_ISBN,
+  googleVolumeId: FILE_GOOGLE_VOLUME_ID,
+}
+
+const resolvedFileEntry: FileMetadata = {
+  type: "file",
+  version: 5,
+  contentType: "application/epub+zip",
+  metadata: {
+    titles: [{ value: "Dune" }],
+    contributors: [{ name: "Frank Herbert", roles: ["author"] }],
+    cover: { uri: COVER_LINK, confidence: "derived" },
+    identifiers: [
+      { value: FILE_ISBN, scheme: "ISBN" },
+      { value: FILE_GOOGLE_VOLUME_ID, scheme: "GoogleBooks" },
+    ],
+  },
+}
+
 describe("BooksMetadataService.refreshMetadata", () => {
   beforeEach(() => {
     fetchMetadata.mockReset()
@@ -157,37 +186,69 @@ describe("BooksMetadataService.refreshMetadata", () => {
     })
   })
 
-  describe("for an unchanged file it may not download", () => {
-    const legacyFileEntry: LegacyFileMetadata = {
-      type: "file",
-      contentType: "application/epub+zip",
-      title: "Dune",
-      authors: ["Frank Herbert"],
-      coverLink: "OEBPS/cover.jpg",
-      coverConfidence: "derived",
-    }
-    const book = bookWith([linkEntry, legacyFileEntry], {
-      metadataFileDownloadEnabled: false,
-      metadataFetchEnabled: false,
-    })
+  describe.each<[string, BookMetadata]>([
+    ["flat", flatFileEntry],
+    ["archive-reader's", resolvedFileEntry],
+  ])(
+    "for an unchanged file whose entry is stored in %s shape",
+    (_shape, fileEntry) => {
+      const bookWithStoredCover = (
+        metadata: BookMetadata[],
+        overrides: Partial<BookDocType> = {},
+      ) =>
+        bookWith(metadata, {
+          bucketCoverKey: buildBookBucketCoverKey({
+            type: "file",
+            value: COVER_LINK,
+          }),
+          ...overrides,
+        })
 
-    it("stores the cached file entry in archive-reader's vocabulary", async () => {
-      const { storedBook, downloadLinkToTmp } = await refresh(book)
+      it("does not download the file", async () => {
+        const { downloadLinkToTmp } = await refresh(
+          bookWithStoredCover([linkEntry, fileEntry]),
+        )
 
-      expect(downloadLinkToTmp).not.toHaveBeenCalled()
-      expect(storedBook.metadata).toContainEqual(
-        toFileMetadata(legacyFileEntry),
-      )
-    })
+        expect(downloadLinkToTmp).not.toHaveBeenCalled()
+      })
 
-    it("keeps that entry on the next refresh", async () => {
-      const { storedBook: afterFirstRefresh } = await refresh(book)
-      const { storedBook: afterSecondRefresh } =
-        await refresh(afterFirstRefresh)
+      it("keeps the stored file entry as it was", async () => {
+        const { storedBook } = await refresh(
+          bookWithStoredCover([linkEntry, fileEntry]),
+        )
 
-      expect(afterSecondRefresh.metadata).toEqual(afterFirstRefresh.metadata)
-    })
-  })
+        expect(storedBook.metadata).toContainEqual(fileEntry)
+      })
+
+      it("looks the file's title, ISBN and Google Books volume id up", async () => {
+        await refresh(bookWithStoredCover([linkEntry, fileEntry]))
+
+        expect(fetchMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({
+            title: "Dune",
+            identifiers: [
+              { value: FILE_ISBN, scheme: "ISBN" },
+              { value: FILE_GOOGLE_VOLUME_ID, scheme: "GoogleBooks" },
+            ],
+          }),
+          expect.anything(),
+        )
+      })
+
+      it("looks the user's ISBN up in place of the file's identifiers", async () => {
+        const userEntry: BookMetadata = { type: "user", isbn: "9780593099322" }
+
+        await refresh(bookWithStoredCover([linkEntry, fileEntry, userEntry]))
+
+        expect(fetchMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({
+            identifiers: [{ value: "9780593099322", scheme: "ISBN" }],
+          }),
+          expect.anything(),
+        )
+      })
+    },
+  )
 
   describe("for an unchanged file whose cover a confirmed catalog match provides", () => {
     const coverUri = "https://books.google.com/books/content?id=zyTCAlFPjgYC"
@@ -200,11 +261,11 @@ describe("BooksMetadataService.refreshMetadata", () => {
         cover: { uri: coverUri, confidence: "derived" },
       },
     }
-    const fileWithFirstPageCover = toFileMetadata({
+    const fileWithFirstPageCover: FileMetadata = {
       type: "file",
-      coverLink: "page-001.jpg",
-      coverConfidence: "assumed",
-    })
+      version: 5,
+      metadata: { cover: { uri: "page-001.jpg", confidence: "assumed" } },
+    }
     const bookWithCatalogCover = (overrides: Partial<BookDocType> = {}) =>
       bookWith([linkEntry, confirmedCatalogEntry, fileWithFirstPageCover], {
         bucketCoverKey: buildBookBucketCoverKey({

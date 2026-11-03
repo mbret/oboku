@@ -261,11 +261,9 @@ export class BooksMetadataService {
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
       )
-      const storedFileMetadata = ctx.book.metadata?.find(
+      const previousFileMetadata = ctx.book.metadata?.find(
         (entry) => entry.type === "file",
       )
-      const previousFileMetadata =
-        storedFileMetadata && toFileMetadata(storedFileMetadata)
       const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
       const isCatalogLookupAllowed =
         !ignoreMetadataSources && externalFetchEnabled
@@ -411,16 +409,15 @@ export class BooksMetadataService {
        * unsupported content types, or download failures.
        */
       const isPreviousFileMetadataReusable =
-        !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
-      const reusedFileMetadata = isPreviousFileMetadataReusable
-        ? previousFileMetadata
-        : undefined
-      const fileMetadata = freshFileMetadata ?? reusedFileMetadata
+        !ctx.force && fileUnchanged && !ignoreMetadataFile
+      const fileMetadata =
+        freshFileMetadata ??
+        (isPreviousFileMetadataReusable ? previousFileMetadata : undefined)
       const catalogMetadata = isCatalogLookupAllowed
         ? await refreshCatalogEntry({
             bookId: ctx.book._id,
             lookupInput: catalogLookupInput({
-              fileMetadata,
+              fileMetadata: fileMetadata && toFileMetadata(fileMetadata),
               linkName: linkMetadata.title,
               userIsbn: previousUserMetadata?.isbn,
               directiveIsbn: isbn,

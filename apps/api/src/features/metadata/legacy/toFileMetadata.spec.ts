@@ -25,12 +25,17 @@ const fullLegacyEntry: LegacyFileMetadata = {
 
 describe("toFileMetadata, for a flat entry", () => {
   it("keeps every field the flat entry showed", () => {
-    expect(getBookMetadataFields(toFileMetadata(fullLegacyEntry))).toEqual(
+    const converted: FileMetadata = {
+      ...toFileMetadata(fullLegacyEntry),
+      version: 5,
+    }
+
+    expect(getBookMetadataFields(converted)).toEqual(
       getBookMetadataFields(fullLegacyEntry),
     )
   })
 
-  it("stores the fields in archive-reader's vocabulary", () => {
+  it("states the fields in archive-reader's vocabulary", () => {
     expect(toFileMetadata(fullLegacyEntry)).toEqual({
       type: "file",
       contentType: "application/epub+zip",
@@ -79,6 +84,7 @@ describe("toFileMetadata, for an entry in archive-reader's vocabulary", () => {
   it("returns it as it is", () => {
     const entry: FileMetadata = {
       type: "file",
+      version: 5,
       metadata: { titles: [{ value: "Dune" }] },
     }
 
