@@ -25,8 +25,8 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@prose-reader/archive-reader": "^38.0.0",
-    "@prose-reader/metadata-fetcher": "^38.0.0",
+    "@prose-reader/archive-reader": "^38.0.1",
+    "@prose-reader/metadata-fetcher": "^38.0.1",
     "zod": "^4.6.5"
   },
   "devDependencies": {
