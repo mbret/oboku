@@ -137,6 +137,7 @@ const flatFileEntry: LegacyFileMetadata = {
 
 const resolvedFileEntry: FileMetadata = {
   type: "file",
+  version: 5,
   contentType: "application/epub+zip",
   metadata: {
     titles: [{ value: "Dune" }],

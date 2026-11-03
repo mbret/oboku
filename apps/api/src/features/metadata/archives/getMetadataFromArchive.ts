@@ -7,12 +7,11 @@ const logger = new Logger("getMetadataFromArchive")
 export const getMetadataFromArchive = async (
   archive: Archive,
 ): Promise<FileMetadata> => {
-  const { metadata, mediaType, unreadableSources } = await resolveArchive(
-    archive,
-    { include: ["metadata"] },
-  )
+  const { version, metadata, mediaType, unreadableSources } =
+    await resolveArchive(archive, { include: ["metadata"] })
   const fileMetadata: FileMetadata = {
     type: "file",
+    version,
     contentType: mediaType,
     metadata,
   }
