@@ -1,45 +1,16 @@
-import { memo } from "react"
-import type { LinkDocType } from "@oboku/shared"
-import { pluginsByType } from "./configure"
+import type { DataSourceType } from "@oboku/shared"
+import { getPluginByType } from "./configure"
+import type { UpsertFileComponentProps } from "./types"
 
-type Props = {
-  link: LinkDocType
-  file: Blob | File
-  fileName: string
-  contentType?: string
-  signal: AbortSignal
-  onProgress: (progress: number) => void
-  onError: (error: unknown) => void
-  onSuccess: () => void
-}
-
-export const PluginUpsertFile = memo(function PluginUpsertFile({
+export function PluginUpsertFile<T extends DataSourceType>({
   link,
   ...props
-}: Props) {
-  switch (link.type) {
-    case "DRIVE": {
-      const { UpsertFileComponent } = pluginsByType.DRIVE
-      if (!UpsertFileComponent) break
+}: UpsertFileComponentProps<T>) {
+  const { UpsertFileComponent } = getPluginByType(link.type)
 
-      return <UpsertFileComponent {...props} link={link} />
-    }
-    case "dropbox": {
-      const { UpsertFileComponent } = pluginsByType.dropbox
-      if (!UpsertFileComponent) break
-
-      return <UpsertFileComponent {...props} link={link} />
-    }
-    case "one-drive": {
-      const { UpsertFileComponent } = pluginsByType["one-drive"]
-      if (!UpsertFileComponent) break
-
-      return <UpsertFileComponent {...props} link={link} />
-    }
-    default: {
-      break
-    }
+  if (!UpsertFileComponent) {
+    throw new Error(`Unsupported link type for upsert: ${link.type}`)
   }
 
-  throw new Error(`Unsupported link type for upsert: ${link.type}`)
-})
+  return <UpsertFileComponent {...props} link={link} />
+}
