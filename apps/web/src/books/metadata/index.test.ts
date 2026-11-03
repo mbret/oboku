@@ -63,6 +63,7 @@ describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
   it("takes the file's description over the catalog's", () => {
     const fileWithDescription: BookMetadata = {
       type: "file",
+      version: 5,
       metadata: { description: "<p>The Lord Ruler reigns.</p>" },
     }
 
