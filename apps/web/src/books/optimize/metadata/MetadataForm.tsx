@@ -57,6 +57,7 @@ export function MetadataForm() {
               index={index}
               unique={field.unique}
               disabled={isDisabled}
+              isStorable={isStorable}
               onRemove={function removeIdentifier() {
                 remove(index)
               }}

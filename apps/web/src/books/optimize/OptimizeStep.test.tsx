@@ -11,6 +11,7 @@ import { NEVER } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { FileInspection } from "./useFileInspection"
 import { book, link } from "./bookLink.fixture"
+import { hasWritableMetadataTarget } from "./metadata/identifiers/containers"
 import {
   CONTAINER_XML,
   inspect,
@@ -215,6 +216,30 @@ describe("OptimizeStep", function testOptimizeStep() {
 
     expect(screen.getByDisplayValue("9780306406157")).not.toBeNull()
     expect(screen.queryByDisplayValue("9781861972712")).toBeNull()
+  })
+
+  it("leaves unchecked the identifiers of a book that has nowhere to store them", async function skipIdentifiersWithNowhereToStore() {
+    const inspection = await inspect({
+      "META-INF/container.xml": CONTAINER_XML,
+      "OEBPS/content.opf": opf(
+        '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>' +
+          '<dc:identifier opf:scheme="ISBN">978-0</dc:identifier>',
+      ),
+      "ComicInfo.xml": "not xml",
+    })
+
+    expect(hasWritableMetadataTarget(inspection)).toBe(false)
+
+    mocks.inspectionsByBookId.set(book._id, inspection)
+
+    render(<TestOptimizeStep />)
+
+    expect(await screen.findByDisplayValue("978-0")).not.toBeNull()
+    await expectFormValidity("valid")
+    expect(
+      screen.queryByText("Not a recognizable ISBN-10 or ISBN-13"),
+    ).toBeNull()
+    expect(queryTabErrorMarker("Metadata")).toBeNull()
   })
 
   it("seeds the form again with the values of another book", async function seedAnotherBook() {
