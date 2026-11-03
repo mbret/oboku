@@ -29,4 +29,12 @@ describe("getDescriptionText", () => {
       getDescriptionText("Ash falls from the sky.\nMists &amp; more"),
     ).toBe("Ash falls from the sky.\nMists & more")
   })
+
+  it.each([
+    "Read <Dune> now, then the sequel.",
+    "Read <Summary> first, then the rest.",
+    "<p>Read <Dune> now.</p>",
+  ])("keeps every word of %s, which is not HTML", (description) => {
+    expect(getDescriptionText(description)).toBe(description)
+  })
 })
