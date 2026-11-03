@@ -1,5 +1,4 @@
 import type { ObokuPlugin } from "../../plugins/types"
-import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import { CONNECTOR, TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
@@ -40,7 +39,6 @@ const plugin: ObokuPlugin<"webdav"> = {
   getDataSourceLabel,
   getLinkLabel: getFilePathLinkLabel,
   useRefreshMetadata,
-  removeResource: rejectRemoveResource,
   signOut: function signOutOfWebdav() {},
   DownloadBookComponent: DownloadBook,
 }

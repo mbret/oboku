@@ -2,7 +2,7 @@ import type { GetDataSourceLabel } from "../../plugins/types"
 import {
   getHostname,
   getLabelWithItemCount,
-} from "../../plugins/common/syncSourceLabel"
+} from "../../plugins/common/dataSourceLabel"
 
 export const getDataSourceLabel: GetDataSourceLabel<"synology-drive"> =
   function getSynologyDriveDataSourceLabel(dataSource, connector) {

@@ -1,5 +1,5 @@
 import type { GetDataSourceLabel } from "../../plugins/types"
-import { getHostname } from "../../plugins/common/syncSourceLabel"
+import { getHostname } from "../../plugins/common/dataSourceLabel"
 
 export const getDataSourceLabel: GetDataSourceLabel<"webdav"> =
   function getWebdavDataSourceLabel(dataSource, connector) {

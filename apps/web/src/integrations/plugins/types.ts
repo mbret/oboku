@@ -119,11 +119,19 @@ export type RemoveResourceResult<
       reason: `unknown`
     }
 
-type RemoveResource<
+type RemoveResourceCapability<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = (
-  links: readonly Extract<LinkDocType, { type: T }>[],
-) => Promise<RemoveResourceResult<T>>
+> =
+  | {
+      canRemoveResource: true
+      removeResource: (
+        links: readonly Extract<LinkDocType, { type: T }>[],
+      ) => Promise<RemoveResourceResult<T>>
+    }
+  | {
+      canRemoveResource: false
+      removeResource?: undefined
+    }
 
 export type UpsertFileComponentProps<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
@@ -157,6 +165,10 @@ type UpsertFileCapability<
       UpsertFileComponent?: undefined
     }
 
+/**
+ * `connector` is the connector the data source names, or `undefined` when it
+ * names none or the settings do not hold it.
+ */
 export type GetDataSourceLabel<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (
@@ -234,7 +246,6 @@ type ObokuPluginBase<
 > = {
   name: string
   canSynchronize?: boolean
-  canRemoveResource: boolean
   /**
    * Unique ID for the plugin
    */
@@ -262,7 +273,6 @@ type ObokuPluginBase<
   Provider?: ComponentType<{ children: ReactNode }>
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
-  removeResource: RemoveResource<T>
   getLinkLabel: GetLinkLabel<T>
   getDataSourceLabel: GetDataSourceLabel<T>
   /** Forgets the provider session, so the next account does not inherit it. */
@@ -271,4 +281,7 @@ type ObokuPluginBase<
 
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = ObokuPluginBase<T> & UpsertFileCapability<T> & ConnectorCapability<T>
+> = ObokuPluginBase<T> &
+  UpsertFileCapability<T> &
+  ConnectorCapability<T> &
+  RemoveResourceCapability<T>

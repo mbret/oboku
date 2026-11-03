@@ -1,5 +1,4 @@
 import { DnsRounded } from "@mui/icons-material"
-import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import type { ObokuPlugin } from "../../plugins/types"
 import { CONNECTOR, TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
@@ -32,7 +31,6 @@ export const plugin: ObokuPlugin<"server"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  removeResource: rejectRemoveResource,
   signOut: function signOutOfServer() {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,

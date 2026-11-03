@@ -1,6 +1,5 @@
 import { SvgIcon } from "@mui/material"
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
-import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import type { ObokuPlugin } from "../../plugins/types"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
@@ -44,6 +43,5 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  removeResource: rejectRemoveResource,
   signOut: clearSynologyDriveSession,
 }

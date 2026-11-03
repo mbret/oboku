@@ -1,4 +1,5 @@
 import type { DataSourceType, LinkDocType } from "@oboku/shared"
+import { UnsupportedMethodError } from "../../errors/errors.shared"
 import { getPluginByType } from "./configure"
 import type { RemoveResourceResult } from "./types"
 import { useMutation } from "@tanstack/react-query"
@@ -21,7 +22,13 @@ function removeResourcesOfType<T extends DataSourceType>(
   type: T,
   links: readonly LinkDocType[],
 ) {
-  return getPluginByType(type).removeResource(links.filter(isLinkOfType(type)))
+  const { removeResource } = getPluginByType(type)
+
+  if (!removeResource) {
+    throw new UnsupportedMethodError("This data source cannot remove books")
+  }
+
+  return removeResource(links.filter(isLinkOfType(type)))
 }
 
 export const usePluginRemoveResource = () => {

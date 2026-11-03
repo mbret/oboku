@@ -2,7 +2,6 @@
 /// <reference types="@types/gapi.client.drive-v3" />
 /// <reference types="@types/google.accounts" />
 /// <reference types="@types/google.picker" />
-import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import { PLUGIN_NAME } from "./lib/constants"
 import GoogleDriveAsset from "../../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
@@ -50,7 +49,6 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   getLinkLabel: getFileIdLinkLabel,
   useRefreshMetadata,
   useSynchronize,
-  removeResource: rejectRemoveResource,
   signOut: clearGoogleAccessToken,
   Provider,
 }

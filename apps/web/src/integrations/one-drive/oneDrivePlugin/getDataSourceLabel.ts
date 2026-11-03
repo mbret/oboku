@@ -1,5 +1,5 @@
 import type { GetDataSourceLabel } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
+import { getLabelWithItemCount } from "../../plugins/common/dataSourceLabel"
 import { ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
 export const getDataSourceLabel: GetDataSourceLabel<"one-drive"> =

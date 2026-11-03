@@ -7,7 +7,6 @@ import {
   PLUGIN_FILE_TYPE,
 } from "@oboku/shared"
 import { memo, useEffect } from "react"
-import { rejectRemoveResource } from "../common/rejectRemoveResource"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import { getLinkLabel } from "./getLinkLabel"
@@ -25,7 +24,6 @@ export const plugin: ObokuPlugin<"file"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  removeResource: rejectRemoveResource,
   signOut: function signOutOfLocalFiles() {},
   DownloadBookComponent: memo(function DownloadBook({ onError }) {
     useEffect(() => {

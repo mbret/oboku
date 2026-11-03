@@ -1,5 +1,4 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
-import { rejectRemoveResource } from "../../plugins/common/rejectRemoveResource"
 import OneDriveAsset from "../../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
 import type { ObokuPlugin } from "../../plugins/types"
 import { clearOneDriveSession } from "./auth/auth"
@@ -42,7 +41,6 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   UpsertFileComponent: UpsertFile,
   getLinkLabel: getFileIdLinkLabel,
   useRefreshMetadata,
-  removeResource: rejectRemoveResource,
   signOut: function signOutOfOneDrive() {
     void clearOneDriveSession()
   },

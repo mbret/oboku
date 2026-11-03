@@ -17,7 +17,7 @@ import { showDialog } from "../../common/dialogs/createDialog"
 import { createNotImplementedDialogOptions } from "../../common/dialogs/presets"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 import { useLink } from "../../links/states"
-import { useLinkInfo } from "../../integrations/plugins/useLinkInfo"
+import { getPluginLinkLabel } from "../../integrations/plugins/getPluginLinkLabel"
 import { useUpsertLink } from "../../links/useUpsertLink"
 
 const TrailingIconStack = styled(Stack)({
@@ -33,7 +33,6 @@ export const DataSourceSection = memo(function DataSourceSection({
 }) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
-  const { data: linkInfo } = useLinkInfo(bookId)
   const dataSourcePlugin = useDataSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const createRequestPopupDialog = useCreateRequestPopupDialog()
@@ -67,7 +66,7 @@ export const DataSourceSection = memo(function DataSourceSection({
             </ListItemIcon>
             <ListItemText
               primary={`${dataSourcePlugin?.name}`}
-              secondary={linkInfo?.label}
+              secondary={getPluginLinkLabel(link)}
               slotProps={{
                 primary: {
                   style: {

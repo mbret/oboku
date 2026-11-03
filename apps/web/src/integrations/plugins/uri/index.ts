@@ -1,5 +1,4 @@
 import { HttpRounded } from "@mui/icons-material"
-import { rejectRemoveResource } from "../common/rejectRemoveResource"
 import { TYPE } from "./constants"
 import type { ObokuPlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
@@ -22,7 +21,6 @@ const plugin: ObokuPlugin<"URI"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  removeResource: rejectRemoveResource,
   signOut: function signOutOfUrls() {},
 }
 

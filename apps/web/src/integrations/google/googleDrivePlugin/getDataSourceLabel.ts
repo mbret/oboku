@@ -1,5 +1,5 @@
 import type { GetDataSourceLabel } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
+import { getLabelWithItemCount } from "../../plugins/common/dataSourceLabel"
 
 export const getDataSourceLabel: GetDataSourceLabel<"DRIVE"> =
   function getGoogleDriveDataSourceLabel(dataSource) {

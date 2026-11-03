@@ -73,6 +73,17 @@ describe("usePluginDataSourceLabel", () => {
     ).toBeUndefined()
   })
 
+  it("labels nothing without a data source", () => {
+    useSettings.mockReturnValue({ data: undefined })
+
+    const { result } = renderHook(function renderMissingDataSourceLabel() {
+      return usePluginDataSourceLabel(undefined)
+    })
+
+    expect(result.current).toBeUndefined()
+    expect(useSettings).toHaveBeenCalledWith({ enabled: false })
+  })
+
   it("labels a data source without a connector and does not read the settings", () => {
     expect(renderDataSourceLabel(dropboxDataSource, [serverConnector])).toBe(
       "Dropbox/Books",

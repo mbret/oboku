@@ -5,45 +5,44 @@ import type {
   SettingsConnectorDocType,
 } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
+import { findConnector } from "../../connectors/findConnector"
+import { isSettingsConnectorType } from "../../connectors/connectorDetails"
 import { useSettings } from "../../settings/useSettings"
 import { getPluginByType } from "./configure"
 
-function getDataSourceLabel<T extends DataSourceType>(
-  type: T,
-  dataSource: DeepReadonly<DataSourceDocTypeFor<T>>,
-  connectors: readonly SettingsConnectorDocType[],
-) {
-  const connectorId = getConnectorId(dataSource)
-  const connector = connectors.find(
-    function isDataSourceConnector(
-      candidate,
-    ): candidate is Extract<SettingsConnectorDocType, { type: T }> {
-      return candidate.id === connectorId && candidate.type === type
-    },
-  )
+function getConnectorId(dataSource: DeepReadonly<DataSourceDocType>) {
+  const connectorId =
+    dataSource.data_v2 && "connectorId" in dataSource.data_v2
+      ? dataSource.data_v2.connectorId
+      : undefined
 
-  return getPluginByType(type).getDataSourceLabel(dataSource, connector)
+  return typeof connectorId === "string" ? connectorId : undefined
 }
 
-function getConnectorId(dataSource: DeepReadonly<DataSourceDocType>) {
-  return dataSource.data_v2 && "connectorId" in dataSource.data_v2
-    ? dataSource.data_v2.connectorId
-    : undefined
+function getPluginDataSourceLabel<T extends DataSourceType>(
+  type: T,
+  dataSource: DeepReadonly<DataSourceDocTypeFor<T>>,
+  connectors: readonly SettingsConnectorDocType[] | undefined,
+) {
+  const connector = findConnector(connectors, getConnectorId(dataSource), type)
+
+  return getPluginByType(type).getDataSourceLabel(dataSource, connector)
 }
 
 export const usePluginDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
-  const hasConnector = !!dataSource && getConnectorId(dataSource) !== undefined
-  const { data: settings } = useSettings({ enabled: hasConnector })
+  const { data: settings } = useSettings({
+    enabled: isSettingsConnectorType(dataSource?.type),
+  })
 
   if (!dataSource) {
     return undefined
   }
 
-  return getDataSourceLabel(
+  return getPluginDataSourceLabel(
     dataSource.type,
     dataSource,
-    settings?.connectors ?? [],
+    settings?.connectors,
   )
 }
