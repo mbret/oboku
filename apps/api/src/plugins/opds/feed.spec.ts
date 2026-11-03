@@ -10,7 +10,7 @@ import {
   navigationEntry,
   nextPageLink,
   startServer,
-  syncFeed,
+  crawlCatalog,
 } from "./catalog.fixture.js"
 
 const UNKNOWN_MODIFIED_AT = "1970-01-01T00:00:00.000Z"
@@ -49,7 +49,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/series`,
       connectorUrl: catalog.origin,
     })
@@ -104,7 +104,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/books`,
       connectorUrl: catalog.origin,
     })
@@ -139,7 +139,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/libraries`,
       connectorUrl: catalog.origin,
     })
@@ -209,7 +209,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/collections`,
       connectorUrl: catalog.origin,
     })
@@ -257,7 +257,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -308,7 +308,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -362,7 +362,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -408,7 +408,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/authors`,
       connectorUrl: catalog.origin,
     })
@@ -479,7 +479,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -521,7 +521,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/catalog`,
       connectorUrl: catalog.origin,
     })
@@ -555,7 +555,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/books`,
       connectorUrl: catalog.origin,
     })
@@ -577,7 +577,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -605,7 +605,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -646,7 +646,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -702,7 +702,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -720,11 +720,25 @@ describe("OPDS crawl", () => {
     allowServers(catalog)
 
     await expect(
-      syncFeed({
+      crawlCatalog({
         feedUrl: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
     ).rejects.toThrow("did not answer with an OPDS feed")
+  })
+
+  it("refuses an answer larger than a feed page", async () => {
+    const catalog = await startServer({
+      "/opds": { body: "x".repeat(6 * 1024 * 1024) },
+    })
+    allowServers(catalog)
+
+    await expect(
+      crawlCatalog({
+        feedUrl: `${catalog.origin}/opds`,
+        connectorUrl: catalog.origin,
+      }),
+    ).rejects.toThrow("answered with more than a feed page")
   })
 
   it("stops following navigation ten feeds deep", async () => {
@@ -754,7 +768,7 @@ describe("OPDS crawl", () => {
     )
     allowServers(catalog)
 
-    await syncFeed({
+    await crawlCatalog({
       feedUrl: `${catalog.origin}/opds/0`,
       connectorUrl: catalog.origin,
     })
@@ -787,7 +801,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    await syncFeed({
+    await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
@@ -825,7 +839,7 @@ describe("OPDS crawl", () => {
     )
     allowServers(catalog)
 
-    await syncFeed({
+    await crawlCatalog({
       feedUrl: `${catalog.origin}/opds?page=0`,
       connectorUrl: catalog.origin,
     })
@@ -862,7 +876,7 @@ describe("OPDS crawl", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncFeed({
+    const items = await crawlCatalog({
       feedUrl: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })

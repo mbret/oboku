@@ -1,8 +1,22 @@
-import type { DataSourceDocTypeFor, OpdsLinkData } from "@oboku/shared"
+import { text } from "node:stream/consumers"
+import type {
+  DataSourceDocTypeFor,
+  LinkDocTypeForProvider,
+  OpdsLinkData,
+} from "@oboku/shared"
 import type createNano from "nano"
 import { SyncReport } from "../../datasource/sync/SyncReport.js"
 import { MODIFIED_AT_UNSUPPORTED, type SyncContext } from "../types.js"
-import { password } from "./catalog.fixture.js"
+import {
+  allowServers,
+  basicAuthorization,
+  bookEntry,
+  createUserDbWithConnector,
+  feed,
+  forgetAllowedServers,
+  password,
+  startServer,
+} from "./catalog.fixture.js"
 import { dataSource as opdsDataSource } from "./index.js"
 
 const bookLinkData = {
@@ -22,7 +36,9 @@ const folderLinkData = {
   title: "Series 1",
 } satisfies OpdsLinkData
 
-const dataSource: DataSourceDocTypeFor<"opds"> = {
+const dataSourceFor = (
+  data_v2: DataSourceDocTypeFor<"opds">["data_v2"],
+): DataSourceDocTypeFor<"opds"> => ({
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },
@@ -32,11 +48,42 @@ const dataSource: DataSourceDocTypeFor<"opds"> = {
   modifiedAt: null,
   lastSyncedAt: null,
   syncStatus: null,
-  data_v2: {
-    connectorId: "connector",
-    feedUrl: "https://catalog.example.com/opds",
-  },
-}
+  data_v2,
+})
+
+const dataSource = dataSourceFor({
+  connectorId: "connector",
+  feedUrl: "https://catalog.example.com/opds",
+})
+
+const linkTo = (data: OpdsLinkData): LinkDocTypeForProvider<"opds"> => ({
+  _id: "link",
+  _rev: "1-link",
+  rxdbMeta: { lwt: 0 },
+  rx_model: "link",
+  type: "opds",
+  book: "book",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  modifiedAt: null,
+  data,
+})
+
+const syncDataSource = ({
+  data_v2,
+  connectorUrl,
+}: {
+  data_v2: DataSourceDocTypeFor<"opds">["data_v2"]
+  connectorUrl: string
+}) =>
+  opdsDataSource.sync({
+    userName: "user",
+    dataSourceId: "data-source",
+    dataSourceType: "opds",
+    dataSource: dataSourceFor(data_v2),
+    providerCredentials: { password },
+    syncReport: new SyncReport("data-source", "user"),
+    db: createUserDbWithConnector(connectorUrl),
+  })
 
 function createSyncContext() {
   const find = vi.fn<(query: object) => Promise<{ docs: [] }>>(
@@ -71,6 +118,62 @@ const folderItem = (linkData: OpdsLinkData) => ({
 })
 
 describe("OPDS data source", () => {
+  afterEach(forgetAllowedServers)
+
+  it("syncs the feed of its data source with the credentials of its connector", async () => {
+    const catalog = await startServer({
+      "/opds": {
+        body: feed(
+          bookEntry({ id: "urn:book:1", title: "Book 1", href: "/1.epub" }),
+        ),
+      },
+    })
+    allowServers(catalog)
+
+    const { items } = await syncDataSource({
+      data_v2: { connectorId: "connector", feedUrl: `${catalog.origin}/opds` },
+      connectorUrl: catalog.origin,
+    })
+
+    expect(items.map(({ name }) => name)).toEqual(["Book 1"])
+    expect(catalog.onRequest.mock.calls).toEqual([
+      [{ path: "/opds", authorization: basicAuthorization }],
+    ])
+  })
+
+  it("refuses a data source without a feed URL", async () => {
+    await expect(
+      syncDataSource({
+        data_v2: { connectorId: "connector" },
+        connectorUrl: "https://catalog.example.com",
+      }),
+    ).rejects.toThrow("datasource not found or invalid")
+  })
+
+  it("downloads a book with the credentials of its connector", async () => {
+    const catalog = await startServer({
+      "/1.epub": { body: "epub bytes" },
+    })
+    allowServers(catalog)
+
+    const { stream } = await opdsDataSource.download(
+      linkTo({
+        ...bookLinkData,
+        acquisition: {
+          href: `${catalog.origin}/1.epub`,
+          type: "application/epub+zip",
+        },
+      }),
+      { password },
+      createUserDbWithConnector(catalog.origin),
+    )
+
+    await expect(text(stream)).resolves.toBe("epub bytes")
+    expect(catalog.onRequest.mock.calls).toEqual([
+      [{ path: "/1.epub", authorization: basicAuthorization }],
+    ])
+  })
+
   it("finds a book's links by its connector and entry id", async () => {
     const { ctx, find } = createSyncContext()
 
@@ -116,21 +219,7 @@ describe("OPDS data source", () => {
       opdsDataSource.getLinkCandidatesForItem(fileItem(folderLinkData), ctx),
     ).rejects.toThrow("Not the link data of an OPDS book")
     await expect(
-      opdsDataSource.download(
-        {
-          _id: "link",
-          _rev: "1-link",
-          rxdbMeta: { lwt: 0 },
-          rx_model: "link",
-          type: "opds",
-          book: "book",
-          createdAt: "2026-01-01T00:00:00.000Z",
-          modifiedAt: null,
-          data: folderLinkData,
-        },
-        { password },
-        ctx.db,
-      ),
+      opdsDataSource.download(linkTo(folderLinkData), { password }, ctx.db),
     ).rejects.toThrow("Not the link data of an OPDS book")
   })
 

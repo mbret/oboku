@@ -1,16 +1,11 @@
 import { once } from "node:events"
 import { createServer } from "node:http"
 import type { AddressInfo } from "node:net"
-import { text } from "node:stream/consumers"
-import type {
-  DataSourceDocTypeFor,
-  LinkDocTypeForProvider,
-  OpdsConnectorDocType,
-} from "@oboku/shared"
+import type { OpdsConnectorDocType } from "@oboku/shared"
 import type createNano from "nano"
-import { SyncReport } from "../../datasource/sync/SyncReport.js"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
-import { dataSource as opdsDataSource } from "./index.js"
+import type { OpdsConnector } from "./client.js"
+import { crawlOpdsFeed } from "./feed.js"
 
 const username = "reader"
 export const password = "opds-password-1234"
@@ -156,15 +151,30 @@ export const allowServers = (...servers: { host: string }[]) =>
 
 export const forgetAllowedServers = () => setPrivateNetworkAllowedHosts([])
 
-type ConnectorOptions = {
+export type ConnectorOptions = {
   connectorUrl: string
   allowSelfSigned?: boolean
 }
 
-const createUserDbWithConnector = ({
+export const connectorFor = ({
   connectorUrl,
   allowSelfSigned,
-}: ConnectorOptions) =>
+}: ConnectorOptions): OpdsConnector => ({
+  id: "connector",
+  type: "opds",
+  url: connectorUrl,
+  username,
+  password,
+  allowSelfSigned,
+})
+
+export const crawlCatalog = ({
+  feedUrl,
+  ...connector
+}: ConnectorOptions & { feedUrl: string }) =>
+  crawlOpdsFeed(connectorFor(connector), new URL(feedUrl))
+
+export const createUserDbWithConnector = (connectorUrl: string) =>
   ({
     get: async () => ({
       _id: "settings",
@@ -175,66 +185,8 @@ const createUserDbWithConnector = ({
           url: connectorUrl,
           username,
           passwordAsSecretId: "password-secret",
-          allowSelfSigned,
         } satisfies OpdsConnectorDocType,
       ],
     }),
     // Partial fake: getConnectorById only needs `get`.
   }) as unknown as createNano.DocumentScope<unknown>
-
-const dataSourceFor = (feedUrl: string): DataSourceDocTypeFor<"opds"> => ({
-  _id: "data-source",
-  _rev: "1-data-source",
-  rxdbMeta: { lwt: 0 },
-  rx_model: "datasource",
-  type: "opds",
-  createdAt: "2026-01-01T00:00:00.000Z",
-  modifiedAt: null,
-  lastSyncedAt: null,
-  syncStatus: null,
-  data_v2: { connectorId: "connector", feedUrl },
-})
-
-export const syncFeed = ({
-  feedUrl,
-  ...connector
-}: ConnectorOptions & { feedUrl: string }) =>
-  opdsDataSource.sync({
-    userName: "user",
-    dataSourceId: "data-source",
-    dataSourceType: "opds",
-    dataSource: dataSourceFor(feedUrl),
-    providerCredentials: { password },
-    syncReport: new SyncReport("data-source", "user"),
-    db: createUserDbWithConnector(connector),
-  })
-
-const bookLink = (acquisitionHref: string): LinkDocTypeForProvider<"opds"> => ({
-  _id: "link",
-  _rev: "1-link",
-  rxdbMeta: { lwt: 0 },
-  rx_model: "link",
-  type: "opds",
-  book: "book",
-  createdAt: "2026-01-01T00:00:00.000Z",
-  modifiedAt: null,
-  data: {
-    connectorId: "connector",
-    entryId: "urn:book:1",
-    title: "Book 1",
-    acquisition: { href: acquisitionHref, type: "application/epub+zip" },
-  },
-})
-
-export const downloadBook = async ({
-  acquisitionHref,
-  ...connector
-}: ConnectorOptions & { acquisitionHref: string }) => {
-  const { stream } = await opdsDataSource.download(
-    bookLink(acquisitionHref),
-    { password },
-    createUserDbWithConnector(connector),
-  )
-
-  return text(stream)
-}

@@ -2,13 +2,12 @@ import type { Readable } from "node:stream"
 import { Logger } from "@nestjs/common"
 import { isFileSupported, type OpdsBookLinkData } from "@oboku/shared"
 import { XMLParser } from "fast-xml-parser"
-import type { SynchronizeAbleItem } from "../types.js"
 import {
   getFromCatalog,
   type OpdsConnector,
   toCatalogRequestFailure,
 } from "./client.js"
-import { listEachBookOncePerTopFolder } from "./listings.js"
+import { listEachBookOncePerTopFolder, type OpdsItem } from "./listings.js"
 
 const logger = new Logger("OpdsFeed")
 
@@ -362,10 +361,7 @@ const toModifiedAt = (updated: string | undefined) => {
   return Number.isNaN(time) ? UNKNOWN_MODIFIED_AT : new Date(time).toISOString()
 }
 
-const toBookItem = (
-  connectorId: string,
-  entry: FileEntry,
-): SynchronizeAbleItem<"opds"> => ({
+const toBookItem = (connectorId: string, entry: FileEntry): OpdsItem => ({
   type: "file",
   name: entry.title,
   modifiedAt: toModifiedAt(entry.updated),
@@ -380,8 +376,8 @@ const toBookItem = (
 const toFolderItem = (
   connectorId: string,
   entry: FolderEntry,
-  items: SynchronizeAbleItem<"opds">[],
-): SynchronizeAbleItem<"opds"> => ({
+  items: OpdsItem[],
+): OpdsItem => ({
   type: "folder",
   name: entry.title,
   modifiedAt: toModifiedAt(entry.updated),
@@ -403,7 +399,7 @@ async function crawlFeed(
   url: URL,
   depth: number,
   followedFeeds: Set<string>,
-): Promise<SynchronizeAbleItem<"opds">[]> {
+): Promise<OpdsItem[]> {
   const entries = await readFeed(crawl, url)
   const folderEntries = entries.filter(
     (entry): entry is FolderEntry => entry.type === "folder",
@@ -421,7 +417,7 @@ async function crawlFeed(
     : claimFeedsToFollow(folderEntries, followedFeeds)
   const isTopLevel = depth === 0
   const { id: connectorId } = crawl.connector
-  const items: SynchronizeAbleItem<"opds">[] = []
+  const items: OpdsItem[] = []
 
   for (const entry of entries) {
     if (entry.type === "file") {

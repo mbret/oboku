@@ -1,7 +1,7 @@
 import { isOpdsBookLinkData } from "@oboku/shared"
 import type { SynchronizeAbleItem } from "../types.js"
 
-type OpdsItem = SynchronizeAbleItem<"opds">
+export type OpdsItem = SynchronizeAbleItem<"opds">
 
 const toEntryId = ({ linkData }: OpdsItem) => {
   if (!isOpdsBookLinkData(linkData)) {

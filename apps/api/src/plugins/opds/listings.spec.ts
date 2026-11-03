@@ -1,7 +1,4 @@
-import type { SynchronizeAbleItem } from "../types.js"
-import { listEachBookOncePerTopFolder } from "./listings.js"
-
-type OpdsItem = SynchronizeAbleItem<"opds">
+import { listEachBookOncePerTopFolder, type OpdsItem } from "./listings.js"
 
 const book = (entryId: string): OpdsItem => ({
   type: "file",

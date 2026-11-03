@@ -1,17 +1,16 @@
+import { text } from "node:stream/consumers"
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 import {
   allowServers,
   basicAuthorization,
-  bookEntry,
-  downloadBook,
-  feed,
+  type ConnectorOptions,
+  connectorFor,
   forgetAllowedServers,
-  navigationEntry,
   startServer,
-  syncFeed,
 } from "./catalog.fixture.js"
+import { getFromCatalog } from "./client.js"
 
 vi.mock(
   "../../http/userAddressAgents.js",
@@ -28,101 +27,75 @@ vi.mock(
   },
 )
 
-describe("OPDS requests", () => {
+const readFromCatalog = async ({
+  url,
+  ...connector
+}: ConnectorOptions & { url: string }) => {
+  const { stream } = await getFromCatalog(connectorFor(connector), new URL(url))
+
+  return text(stream)
+}
+
+describe("getFromCatalog", () => {
   afterEach(function resetRequests() {
     forgetAllowedServers()
     vi.mocked(getUserAddressRequestOptions).mockClear()
   })
 
   it("sends the connector's credentials to its origin only, redirects included", async () => {
-    const elsewhere = await startServer({
-      "/series/b": {
-        body: feed(
-          bookEntry({ id: "urn:book:b", title: "Book B", href: "/b.epub" }),
-        ),
-      },
-      "/series/c": {
-        body: feed(
-          bookEntry({ id: "urn:book:c", title: "Book C", href: "/c.epub" }),
-        ),
-      },
+    const files = await startServer({
+      "/1.epub": { body: "epub bytes" },
     })
     const catalog = await startServer({
-      "/opds": {
-        body: feed(
-          navigationEntry({
-            id: "urn:series:a",
-            title: "Series A",
-            href: "/opds/series/a",
-          }),
-          navigationEntry({
-            id: "urn:series:b",
-            title: "Series B",
-            href: `${elsewhere.origin}/series/b`,
-          }),
-          navigationEntry({
-            id: "urn:series:c",
-            title: "Series C",
-            href: "/opds/series/c",
-          }),
-        ),
-      },
-      "/opds/series/a": {
-        body: feed(
-          bookEntry({ id: "urn:book:a", title: "Book A", href: "/a.epub" }),
-        ),
-      },
-      "/opds/series/c": {
-        status: 302,
-        headers: { location: `${elsewhere.origin}/series/c` },
+      "/opds/books/1/file": { body: "epub bytes" },
+      "/opds/books/1/redirect": {
+        status: 307,
+        headers: { location: `${files.origin}/1.epub` },
       },
     })
-    allowServers(catalog, elsewhere)
+    allowServers(catalog, files)
+    const connectorUrl = `${catalog.origin}/opds`
 
-    const { items } = await syncFeed({
-      feedUrl: `${catalog.origin}/opds`,
-      connectorUrl: `${catalog.origin}/opds`,
-    })
+    await expect(
+      readFromCatalog({
+        url: `${catalog.origin}/opds/books/1/file`,
+        connectorUrl,
+      }),
+    ).resolves.toBe("epub bytes")
+    await expect(
+      readFromCatalog({
+        url: `${catalog.origin}/opds/books/1/redirect`,
+        connectorUrl,
+      }),
+    ).resolves.toBe("epub bytes")
+    await expect(
+      readFromCatalog({ url: `${files.origin}/1.epub`, connectorUrl }),
+    ).resolves.toBe("epub bytes")
 
-    expect(items.map(({ name }) => name)).toEqual([
-      "Series A",
-      "Series B",
-      "Series C",
-    ])
     expect(catalog.onRequest.mock.calls).toEqual([
-      [{ path: "/opds", authorization: basicAuthorization }],
-      [{ path: "/opds/series/a", authorization: basicAuthorization }],
-      [{ path: "/opds/series/c", authorization: basicAuthorization }],
+      [{ path: "/opds/books/1/file", authorization: basicAuthorization }],
+      [{ path: "/opds/books/1/redirect", authorization: basicAuthorization }],
     ])
-    expect(elsewhere.onRequest.mock.calls).toEqual([
-      [{ path: "/series/b", authorization: undefined }],
-      [{ path: "/series/c", authorization: undefined }],
+    expect(files.onRequest.mock.calls).toEqual([
+      [{ path: "/1.epub", authorization: undefined }],
+      [{ path: "/1.epub", authorization: undefined }],
     ])
   })
 
   it("accepts a self-signed certificate from the connector's origin only", async () => {
-    const elsewhere = await startServer({
-      "/series/b": {
-        body: feed(
-          bookEntry({ id: "urn:book:b", title: "Book B", href: "/b" }),
-        ),
-      },
+    const files = await startServer({
+      "/1.epub": { body: "epub bytes" },
     })
     const catalog = await startServer({
-      "/opds": {
-        body: feed(
-          navigationEntry({
-            id: "urn:series:b",
-            title: "Series B",
-            href: `${elsewhere.origin}/series/b`,
-          }),
-        ),
+      "/opds/books/1/file": {
+        status: 302,
+        headers: { location: `${files.origin}/1.epub` },
       },
     })
-    allowServers(catalog, elsewhere)
+    allowServers(catalog, files)
 
-    await syncFeed({
-      feedUrl: `${catalog.origin}/opds`,
+    await readFromCatalog({
+      url: `${catalog.origin}/opds/books/1/file`,
       connectorUrl: catalog.origin,
       allowSelfSigned: true,
     })
@@ -133,21 +106,20 @@ describe("OPDS requests", () => {
     ])
   })
 
-  it("downloads a book with the connector's credentials", async () => {
+  it("answers with the URL the answer came from, after redirects", async () => {
     const catalog = await startServer({
-      "/opds/books/1/file": { body: "epub bytes" },
+      "/opds": { status: 301, headers: { location: "/opds/v1/" } },
+      "/opds/v1/": { body: "feed" },
     })
     allowServers(catalog)
 
-    await expect(
-      downloadBook({
-        acquisitionHref: `${catalog.origin}/opds/books/1/file`,
-        connectorUrl: catalog.origin,
-      }),
-    ).resolves.toBe("epub bytes")
-    expect(catalog.onRequest.mock.calls).toEqual([
-      [{ path: "/opds/books/1/file", authorization: basicAuthorization }],
-    ])
+    const { stream, url } = await getFromCatalog(
+      connectorFor({ connectorUrl: catalog.origin }),
+      new URL(`${catalog.origin}/opds`),
+    )
+
+    await expect(text(stream)).resolves.toBe("feed")
+    expect(url.href).toBe(`${catalog.origin}/opds/v1/`)
   })
 
   it("reports a catalog refusing the login as an unauthorized data source", async () => {
@@ -156,13 +128,13 @@ describe("OPDS requests", () => {
     })
     allowServers(catalog)
 
-    const sync = syncFeed({
-      feedUrl: `${catalog.origin}/opds`,
+    const request = readFromCatalog({
+      url: `${catalog.origin}/opds`,
       connectorUrl: catalog.origin,
     })
 
-    await expect(sync).rejects.toBeInstanceOf(ObokuSharedError)
-    await expect(sync).rejects.toMatchObject({
+    await expect(request).rejects.toBeInstanceOf(ObokuSharedError)
+    await expect(request).rejects.toMatchObject({
       code: ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
     })
   })
@@ -174,8 +146,8 @@ describe("OPDS requests", () => {
     allowServers(catalog)
 
     await expect(
-      syncFeed({
-        feedUrl: `${catalog.origin}/opds`,
+      readFromCatalog({
+        url: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
     ).rejects.toThrow(
@@ -191,8 +163,8 @@ describe("OPDS requests", () => {
     allowServers(catalog)
 
     await expect(
-      syncFeed({
-        feedUrl: `${catalog.origin}/opds`,
+      readFromCatalog({
+        url: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
     ).rejects.toThrow(
@@ -210,33 +182,19 @@ describe("OPDS requests", () => {
     allowServers(catalog)
 
     await expect(
-      syncFeed({
-        feedUrl: `${catalog.origin}/opds`,
+      readFromCatalog({
+        url: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
     ).rejects.toThrow("OPDS URLs must be http(s), not ftp:")
   })
 
-  it("refuses an answer larger than a feed page", async () => {
-    const catalog = await startServer({
-      "/opds": { body: "x".repeat(6 * 1024 * 1024) },
-    })
-    allowServers(catalog)
-
-    await expect(
-      syncFeed({
-        feedUrl: `${catalog.origin}/opds`,
-        connectorUrl: catalog.origin,
-      }),
-    ).rejects.toThrow("answered with more than a feed page")
-  })
-
   it("refuses a catalog on a private network the instance does not allow", async () => {
-    const catalog = await startServer({ "/opds": { body: feed() } })
+    const catalog = await startServer({ "/opds": { body: "feed" } })
 
     await expect(
-      syncFeed({
-        feedUrl: `${catalog.origin}/opds`,
+      readFromCatalog({
+        url: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
     ).rejects.toSatisfy(isNonPublicAddressError)
