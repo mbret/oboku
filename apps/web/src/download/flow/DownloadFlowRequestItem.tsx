@@ -1,7 +1,8 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
 import { memo, useCallback, useEffect, useRef, useState } from "react"
 import { firstValueFrom } from "rxjs"
-import { pluginsByType } from "../../integrations/plugins/configure"
+import { isPluginType } from "../../integrations/plugins/configure"
+import { PluginDownloadBook } from "../../integrations/plugins/PluginDownloadBook"
 import type { DownloadBookResult } from "../../integrations/plugins/types"
 import { CancelError, ERROR_NO_LINK_MESSAGE } from "../../errors/errors.shared"
 import { latestDatabase$ } from "../../rxdb/RxDbProvider"
@@ -188,6 +189,10 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
             return
           }
 
+          if (!isPluginType(resolvedLink.type)) {
+            throw new Error(`Unsupported link type: ${resolvedLink.type}`)
+          }
+
           setLink(resolvedLink)
           setIsPreparing(false)
         } catch (error) {
@@ -209,47 +214,5 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
     signal: abortController.signal,
   }
 
-  switch (link.type) {
-    case "DRIVE": {
-      const { DownloadBookComponent } = pluginsByType.DRIVE
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "one-drive": {
-      const { DownloadBookComponent } = pluginsByType["one-drive"]
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "URI": {
-      const { DownloadBookComponent } = pluginsByType.URI
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "dropbox": {
-      const { DownloadBookComponent } = pluginsByType.dropbox
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "file": {
-      const { DownloadBookComponent } = pluginsByType.file
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "server": {
-      const { DownloadBookComponent } = pluginsByType.server
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "synology-drive": {
-      const { DownloadBookComponent } = pluginsByType["synology-drive"]
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    case "webdav": {
-      const { DownloadBookComponent } = pluginsByType.webdav
-      return <DownloadBookComponent {...downloadProps} link={link} />
-    }
-    default: {
-      const _exhaustive: never = link
-      onError(
-        new Error(
-          `Unsupported link type: ${(_exhaustive as DownloadLink).type}`,
-        ),
-      )
-      return null
-    }
-  }
+  return <PluginDownloadBook {...downloadProps} link={link} />
 })

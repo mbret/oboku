@@ -31,6 +31,7 @@ import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
 } from "../../plugins/types"
+import { CONNECTOR } from "./constants"
 
 type SynologyDriveFormData = DataSourceFormData<{
   connectorId: string
@@ -170,7 +171,7 @@ export const DataSourceForm = memo(function DataSourceForm({
     >
       <ConnectorSelector
         {...connectorField}
-        connectorType="synology-drive"
+        connector={CONNECTOR}
         onChange={(event) => handleConnectorChange(event)}
         helperText={
           connectorFieldState.invalid

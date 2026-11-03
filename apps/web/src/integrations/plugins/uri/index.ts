@@ -15,6 +15,7 @@ const plugin: ObokuPlugin<"URI"> = {
   canRemoveResource: false,
   canSynchronize: false,
   Icon: HttpRounded,
+  collectionIdentityFields: ["url"],
   UploadBookComponent,
   DownloadBookComponent: DownloadBook,
   useLinkInfo,

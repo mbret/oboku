@@ -6,9 +6,9 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import type { ROUTES } from "../navigation/routes"
 import { notify } from "../notifications/toasts"
-import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
+import { isSettingsConnectorType } from "./connectorDetails"
+import { getPluginByType } from "../integrations/plugins/configure"
 import { useDeleteConnector } from "./useDeleteConnector"
-import { getConnectorForm } from "./AddConnectorScreen"
 import { Page } from "../common/Page"
 import { PageSection } from "../common/PageSection"
 
@@ -21,10 +21,8 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
 
   if (!isSettingsConnectorType(type)) return null
 
-  const details = CONNECTOR_DETAILS[type]
-  const Form = getConnectorForm(type)
-
-  if (!Form) return null
+  const { label, ConnectorForm, integrationRoute } =
+    getPluginByType(type).connector
 
   const confirmThenDeleteConnector = () => {
     const confirm = confirmation()
@@ -35,7 +33,7 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
         {
           onSuccess: () => {
             notify("actionSuccess")
-            goBack(details.integrationRoute)
+            goBack(integrationRoute)
           },
         },
       )
@@ -44,17 +42,17 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
 
   return (
     <Page>
-      <TopBarNavigation title={`${details.label}: Edit connector`} />
-      <Form
+      <TopBarNavigation title={`${label}: Edit connector`} />
+      <ConnectorForm
         connectorId={id}
-        onSubmitSuccess={() => goBack(details.integrationRoute)}
+        onSubmitSuccess={() => goBack(integrationRoute)}
       >
         <PageSection title="Danger zone" tone="danger">
           <ListItemButton onClick={confirmThenDeleteConnector}>
             <ListItemText primary="Delete this connector" />
           </ListItemButton>
         </PageSection>
-      </Form>
+      </ConnectorForm>
     </Page>
   )
 })

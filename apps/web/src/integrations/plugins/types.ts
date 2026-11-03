@@ -7,6 +7,7 @@ import type {
   LinkDocTypeForProvider,
   MetadataFileDownloadOverride,
   ProviderApiCredentials,
+  SettingsConnectorType,
 } from "@oboku/shared"
 import type { ComponentType, DOMAttributes, ReactNode } from "react"
 import type { SvgIconProps } from "@mui/material"
@@ -15,6 +16,7 @@ import type {
   UseMutationOptions,
   UseMutationResult,
 } from "@tanstack/react-query"
+import type { Config } from "../../config/useConfig"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
 type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
@@ -194,6 +196,46 @@ export type DataSourceSubmitPayload = {
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
+type KeyOfEachMember<T> = T extends unknown ? keyof T : never
+
+type FeatureFlag = {
+  [K in keyof Config]: Config[K] extends boolean ? K : never
+}[keyof Config]
+
+export type ConnectorFormProps = {
+  onSubmitSuccess: () => void
+  children?: ReactNode
+  connectorId?: string
+}
+
+export type PluginIntegration = {
+  name: string
+  description: string
+  route: string
+}
+
+export type ConnectorDetails<
+  T extends SettingsConnectorType = SettingsConnectorType,
+> = {
+  type: T
+  label: string
+  integrationRoute: string
+}
+
+type ConnectorCapability<
+  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+> = T extends SettingsConnectorType
+  ? {
+      connector: ConnectorDetails<T> & {
+        ConnectorForm: ComponentType<ConnectorFormProps>
+      }
+      integration: PluginIntegration
+    }
+  : {
+      connector?: undefined
+      integration?: PluginIntegration
+    }
+
 type ObokuPluginBase<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
@@ -205,6 +247,12 @@ type ObokuPluginBase<
    */
   type: T
   Icon: ComponentType<SvgIconProps>
+  /** Collections whose link data match on these fields show as duplicates on the Problems screen. */
+  collectionIdentityFields: ReadonlyArray<
+    KeyOfEachMember<LinkDataForProvider<T>>
+  >
+  /** The config flag that turns the plugin on. A plugin without it is always enabled. */
+  featureFlag?: FeatureFlag
   UploadBookComponent?: ComponentType<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
     DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
@@ -229,4 +277,4 @@ type ObokuPluginBase<
 
 export type ObokuPlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
-> = ObokuPluginBase<T> & UpsertFileCapability<T>
+> = ObokuPluginBase<T> & UpsertFileCapability<T> & ConnectorCapability<T>
