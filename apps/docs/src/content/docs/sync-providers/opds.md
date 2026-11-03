@@ -63,5 +63,6 @@ oboku's server connects to your catalog to read its feeds during syncs and to do
 - Each sync refreshes the metadata of the books whose entry has a new update date. A server that dates every entry with the current time makes every sync refresh every book.
 - Kavita dates its entries with the time of the request and no time zone, which oboku ignores: a sync refreshes a Kavita book's metadata only when the book is new or has no cover.
 - Komga gives CBR files a type that oboku does not take yet, `application/x-rar-compressed`, so a sync skips them.
+- A sync that stops early, at one of the limits above, shows no warning in the app yet, and the books it did not reach are missing. A warning is tracked in [#899](https://github.com/mbret/oboku/issues/899).
 - A catalog without a login cannot be synced yet.
 - The catalog's own authors, ISBN, cover and summary are not used yet.
