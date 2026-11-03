@@ -33,7 +33,7 @@ export type RegisteredPlugin<T extends DataSourceType = DataSourceType> =
 
 /**
  * Adds the components that run the plugin's sync and metadata refresh hooks
- * for one request each, so generic code never calls a hook chosen by type.
+ * for one request each.
  */
 export function registerPlugin<T extends DataSourceType>(
   plugin: ObokuPlugin<T>,

@@ -78,7 +78,7 @@ export type UseRefreshMetadataVariables<
   linkData?: LinkDataForProvider<T> | null
 }
 
-/** Params for usePluginRefreshMetadata(); discriminated union on linkType. */
+/** Params for refreshMetadataWithPlugin(). */
 export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
   DataSourceDocType["type"]
 >
