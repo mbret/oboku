@@ -1,19 +1,16 @@
 import {
   cleanup,
+  fireEvent,
   render,
   screen,
   waitFor,
-  within,
 } from "@testing-library/react"
-import {
-  type BookDocType,
-  type LinkDocTypeForProvider,
-  ReadingStateState,
-} from "@oboku/shared"
 import { NEVER } from "rxjs"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { BookOptimizeProvider, useBookOptimize } from "./BookOptimizeProvider"
-import { MetadataForm } from "./metadata/MetadataForm"
+import { ContentTab } from "./ContentTab"
+import { MetadataTab } from "./MetadataTab"
+import { book, link } from "./bookLink.fixture"
 import {
   CONTAINER_XML,
   inspect,
@@ -55,37 +52,16 @@ vi.mock("./apply/useApplyLocally", function mockApplyLocally() {
   }
 })
 
-const book: BookDocType = {
-  _id: "book-1",
-  _rev: "1-book",
-  collections: [],
-  createdAt: 1,
-  isAttachedToDataSource: true,
-  lastMetadataUpdateError: null,
-  lastMetadataUpdatedAt: null,
-  links: ["link-1"],
-  metadataUpdateStatus: null,
-  modifiedAt: null,
-  readingStateCurrentBookmarkLocation: null,
-  readingStateCurrentBookmarkProgressPercent: 0,
-  readingStateUpdatedAt: null,
-  readingStateCurrentState: ReadingStateState.NotStarted,
-  rx_model: "book",
-  rxdbMeta: { lwt: 1 },
-  tags: [],
-}
+const UNIQUE_IDENTIFIER =
+  '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>'
 
-const link: LinkDocTypeForProvider<"URI"> = {
-  _id: "link-1",
-  _rev: "1-link",
-  book: book._id,
-  createdAt: "2026-08-01T00:00:00.000Z",
-  data: { url: "https://example.com/book.epub" },
-  modifiedAt: null,
-  rx_model: "link",
-  rxdbMeta: { lwt: 1 },
-  type: "URI",
-}
+const inspectBookWithIsbn = (isbn: string): Promise<FileInspection> =>
+  inspect({
+    "META-INF/container.xml": CONTAINER_XML,
+    "OEBPS/content.opf": opf(
+      `${UNIQUE_IDENTIFIER}<dc:identifier opf:scheme="ISBN">${isbn}</dc:identifier>`,
+    ),
+  })
 
 function FormValidity() {
   const { isValid } = useBookOptimize()
@@ -95,8 +71,8 @@ function FormValidity() {
   )
 }
 
-const renderOptimizeForm = (inspection: FileInspection) =>
-  render(
+function OptimizeForm({ inspection }: { inspection: FileInspection }) {
+  return (
     <BookOptimizeProvider
       book={book}
       link={link}
@@ -104,12 +80,16 @@ const renderOptimizeForm = (inspection: FileInspection) =>
       inspection={inspection}
     >
       <FormValidity />
-      <MetadataForm />
-    </BookOptimizeProvider>,
+      <MetadataTab hidden={false} />
+      <ContentTab hidden={false} />
+    </BookOptimizeProvider>
   )
+}
 
-const identifierRows = (): HTMLElement[] =>
-  screen.getAllByRole("group", { name: "Identifier" })
+const expectFormValidity = (validity: "valid" | "invalid") =>
+  waitFor(function expectFormValidityOutput() {
+    expect(screen.getByLabelText("Form validity").textContent).toBe(validity)
+  })
 
 describe("BookOptimizeProvider", function testBookOptimizeProvider() {
   afterEach(function cleanUpBookOptimizeProvider() {
@@ -117,40 +97,45 @@ describe("BookOptimizeProvider", function testBookOptimizeProvider() {
   })
 
   it("shows why an identifier the book carries keeps the form invalid", async function showSeededIdentifierError() {
-    renderOptimizeForm(
-      await inspect({
-        "META-INF/container.xml": CONTAINER_XML,
-        "OEBPS/content.opf": opf(
-          '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>' +
-            '<dc:identifier opf:scheme="ISBN">978-0</dc:identifier>',
-        ),
-      }),
-    )
+    render(<OptimizeForm inspection={await inspectBookWithIsbn("978-0")} />)
 
     expect(
       await screen.findByText("Not a recognizable ISBN-10 or ISBN-13"),
     ).not.toBeNull()
-    expect(screen.getByLabelText("Form validity").textContent).toBe("invalid")
+
+    const isbnField = screen.getByDisplayValue("978-0")
+
+    expect(isbnField.getAttribute("aria-invalid")).toBe("true")
+
+    fireEvent.change(isbnField, { target: { value: "9783161484100" } })
+
+    await expectFormValidity("valid")
   })
 
-  it("opens a book whose identifiers are valid with no error", async function openValidIdentifiers() {
-    renderOptimizeForm(
-      await inspect({
-        "META-INF/container.xml": CONTAINER_XML,
-        "OEBPS/content.opf": opf(
-          '<dc:identifier id="pub-id">urn:uuid:f81d4fae-7dec-11d0-a765-00a0c91e6bf6</dc:identifier>' +
-            '<dc:identifier opf:scheme="ISBN">9783161484100</dc:identifier>',
-        ),
-      }),
+  it("opens a book whose values are valid with no field in error", async function openValidBook() {
+    const { container } = render(
+      <OptimizeForm inspection={await inspectBookWithIsbn("9783161484100")} />,
     )
 
     expect(await screen.findByDisplayValue("9783161484100")).not.toBeNull()
-    await waitFor(function expectFormValid() {
-      expect(screen.getByLabelText("Form validity").textContent).toBe("valid")
+    await expectFormValidity("valid")
+    expect(container.querySelector('[aria-invalid="true"]')).toBeNull()
+  })
+
+  it("keeps the edits when the inspection of the same book refreshes", async function keepEditsOnInspectionRefresh() {
+    const { rerender } = render(
+      <OptimizeForm inspection={await inspectBookWithIsbn("9783161484100")} />,
+    )
+
+    fireEvent.change(await screen.findByDisplayValue("9783161484100"), {
+      target: { value: "9780306406157" },
     })
 
-    for (const row of identifierRows()) {
-      expect(within(row).queryByText(/^Not |^Required$/)).toBeNull()
-    }
+    rerender(
+      <OptimizeForm inspection={await inspectBookWithIsbn("9781861972712")} />,
+    )
+
+    expect(screen.getByDisplayValue("9780306406157")).not.toBeNull()
+    expect(screen.queryByDisplayValue("9781861972712")).toBeNull()
   })
 })
