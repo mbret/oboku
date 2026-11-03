@@ -12,7 +12,7 @@ type TextFieldProps = MuiTextFieldProps &
   (
     | { copyable?: false }
     | {
-        /** Adds a button that copies `value` to the clipboard. */
+        /** Puts a copy button in the input's end adornment, in place of any `slotProps.input.endAdornment`. */
         copyable: true
         label: string
         value: string
@@ -26,17 +26,32 @@ export function TextField({
   slotProps,
   ...props
 }: TextFieldProps) {
-  if (!copyable) {
-    return (
-      <MuiTextField
-        {...props}
-        label={label}
-        value={value}
-        slotProps={slotProps}
-      />
-    )
-  }
+  const inputSlotProps = copyable
+    ? mergeSlotProps(
+        {
+          endAdornment: <CopyValueInputAdornment label={label} value={value} />,
+        },
+        slotProps?.input ?? {},
+      )
+    : slotProps?.input
 
+  return (
+    <MuiTextField
+      {...props}
+      label={label}
+      value={value}
+      slotProps={{ ...slotProps, input: inputSlotProps }}
+    />
+  )
+}
+
+function CopyValueInputAdornment({
+  label,
+  value,
+}: {
+  label: string
+  value: string
+}) {
   const copyValueToClipboard = async () => {
     await navigator.clipboard.writeText(value)
 
@@ -48,26 +63,14 @@ export function TextField({
   }
 
   return (
-    <MuiTextField
-      {...props}
-      label={label}
-      value={value}
-      slotProps={{
-        ...slotProps,
-        input: mergeSlotProps(slotProps?.input, {
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton
-                edge="end"
-                onClick={copyValueToClipboard}
-                aria-label={`Copy ${label}`}
-              >
-                <ContentCopyRounded fontSize="small" />
-              </IconButton>
-            </InputAdornment>
-          ),
-        }),
-      }}
-    />
+    <InputAdornment position="end">
+      <IconButton
+        edge="end"
+        onClick={copyValueToClipboard}
+        aria-label={`Copy ${label}`}
+      >
+        <ContentCopyRounded fontSize="small" />
+      </IconButton>
+    </InputAdornment>
   )
 }

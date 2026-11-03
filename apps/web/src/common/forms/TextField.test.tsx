@@ -61,6 +61,22 @@ describe("TextField", () => {
         screen.getByRole("button", { name: "Copy Catalog URL" }),
       ).toBeTruthy()
     })
+
+    it("puts its copy button in place of a given end adornment", () => {
+      render(
+        <TextField
+          label="Catalog URL"
+          value={CATALOG_URL}
+          copyable
+          slotProps={{ input: { endAdornment: <span>Show</span> } }}
+        />,
+      )
+
+      expect(
+        screen.getByRole("button", { name: "Copy Catalog URL" }),
+      ).toBeTruthy()
+      expect(screen.queryByText("Show")).toBeNull()
+    })
   })
 
   it("has no copy button unless copyable", () => {
