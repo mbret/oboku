@@ -275,8 +275,15 @@ type ObokuPluginBase<
   useSynchronize: UseSynchronizeHook<T>
   getLinkLabel: GetLinkLabel<T>
   getDataSourceLabel: GetDataSourceLabel<T>
-  /** Forgets the provider session, so the next account does not inherit it. */
-  signOut: () => void
+  /**
+   * Returns the function that forgets the provider session, so the next
+   * account does not inherit it.
+   *
+   * This is a hook on purpose, even though no plugin calls a React hook in it
+   * yet: a plugin may need React context to sign out. Keep it a hook, and keep
+   * `usePluginsSignOut` calling each plugin's hook.
+   */
+  useSignOut: () => () => void
 }
 
 export type ObokuPlugin<

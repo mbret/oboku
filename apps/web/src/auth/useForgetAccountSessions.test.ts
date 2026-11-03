@@ -14,8 +14,8 @@ vi.mock("./AuthorizeActionDialog", () => ({
   useWithAuthorization: vi.fn(),
 }))
 
-vi.mock("../integrations/plugins/signOutPlugins", () => ({
-  signOutPlugins,
+vi.mock("../integrations/plugins/usePluginsSignOut", () => ({
+  usePluginsSignOut: () => signOutPlugins,
 }))
 
 import { useForgetAccountSessions } from "./useForgetAccountSessions"

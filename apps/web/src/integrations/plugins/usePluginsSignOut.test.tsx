@@ -1,3 +1,4 @@
+import { renderHook } from "@testing-library/react"
 import { DropboxAuth } from "dropbox"
 import { afterEach, describe, expect, it, onTestFinished, vi } from "vitest"
 import { Logger } from "../../debug/logger.shared"
@@ -6,14 +7,14 @@ import { pluginsByType } from "./configure"
 import { dropboxAuthSignal } from "../dropbox/dropboxPlugin/lib/auth"
 import { msalAccountSignal } from "../one-drive/oneDrivePlugin/auth/auth"
 import { synologyDriveSessionSignal } from "../synology-drive/synologyDrivePlugin/auth/auth"
-import { signOutPlugins } from "./signOutPlugins"
+import { usePluginsSignOut } from "./usePluginsSignOut"
 
 const synologyDriveSession = {
   auth: { baseUrl: "https://nas.example.com", username: "reader" },
   sid: "nas-session-id",
 }
 
-describe("signOutPlugins", () => {
+describe("usePluginsSignOut", () => {
   afterEach(() => {
     vi.restoreAllMocks()
   })
@@ -21,7 +22,9 @@ describe("signOutPlugins", () => {
   it("forgets the Synology Drive session so the next account in this tab does not inherit it", () => {
     synologyDriveSessionSignal.setValue(synologyDriveSession)
 
-    signOutPlugins()
+    const { result } = renderHook(usePluginsSignOut)
+
+    result.current()
 
     expect(synologyDriveSessionSignal.getValue()).toBeUndefined()
   })
@@ -41,7 +44,9 @@ describe("signOutPlugins", () => {
       created_at: Date.now(),
     })
 
-    signOutPlugins()
+    const { result } = renderHook(usePluginsSignOut)
+
+    result.current()
 
     expect(googleAccessTokenSignal.getValue()).toBeUndefined()
   })
@@ -51,7 +56,9 @@ describe("signOutPlugins", () => {
       new DropboxAuth({ accessToken: "dropbox-access-token" }),
     )
 
-    signOutPlugins()
+    const { result } = renderHook(usePluginsSignOut)
+
+    result.current()
 
     expect(dropboxAuthSignal.getValue()).toBeUndefined()
   })
@@ -65,7 +72,9 @@ describe("signOutPlugins", () => {
       localAccountId: "local-account-id",
     })
 
-    signOutPlugins()
+    const { result } = renderHook(usePluginsSignOut)
+
+    result.current()
 
     expect(msalAccountSignal.getValue()).toBeUndefined()
   })
@@ -73,18 +82,22 @@ describe("signOutPlugins", () => {
   it("logs a plugin whose sign-out throws and still signs the others out", () => {
     synologyDriveSessionSignal.setValue(synologyDriveSession)
     const signOutError = new Error("Dropbox sign-out failed")
-    const dropboxSignOut = pluginsByType.dropbox.signOut
+    const useDropboxSignOut = pluginsByType.dropbox.useSignOut
     onTestFinished(function restoreDropboxSignOut() {
-      pluginsByType.dropbox.signOut = dropboxSignOut
+      pluginsByType.dropbox.useSignOut = useDropboxSignOut
     })
-    pluginsByType.dropbox.signOut = function throwOnSignOut() {
-      throw signOutError
+    pluginsByType.dropbox.useSignOut = function useThrowingSignOut() {
+      return function throwOnSignOut() {
+        throw signOutError
+      }
     }
     const logError = vi
       .spyOn(Logger, "error")
       .mockImplementation(function silenceLogger() {})
 
-    expect(signOutPlugins).not.toThrow()
+    const { result } = renderHook(usePluginsSignOut)
+
+    expect(result.current).not.toThrow()
     expect(synologyDriveSessionSignal.getValue()).toBeUndefined()
     expect(logError).toHaveBeenCalledWith(
       expect.stringContaining("dropbox"),

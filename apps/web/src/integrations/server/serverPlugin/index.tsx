@@ -31,7 +31,7 @@ export const plugin: ObokuPlugin<"server"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  signOut: function signOutOfServer() {},
+  useSignOut: () => () => {},
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,

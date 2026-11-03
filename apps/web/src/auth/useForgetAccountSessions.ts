@@ -1,4 +1,4 @@
-import { signOutPlugins } from "../integrations/plugins/signOutPlugins"
+import { usePluginsSignOut } from "../integrations/plugins/usePluginsSignOut"
 import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
 
 /**
@@ -9,6 +9,8 @@ import { clearTemporaryMasterKey } from "./AuthorizeActionDialog"
  * out.
  */
 export const useForgetAccountSessions = () => {
+  const signOutPlugins = usePluginsSignOut()
+
   return function forgetAccountSessions() {
     clearTemporaryMasterKey()
     signOutPlugins()

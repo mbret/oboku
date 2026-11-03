@@ -21,7 +21,7 @@ const plugin: ObokuPlugin<"URI"> = {
   getDataSourceLabel,
   useRefreshMetadata,
   useSynchronize,
-  signOut: function signOutOfUrls() {},
+  useSignOut: () => () => {},
 }
 
 export default plugin
