@@ -9,6 +9,7 @@ const link: BookMetadata = {
 
 const file: BookMetadata = {
   type: "file",
+  version: 5,
   contentType: "application/epub+zip",
   metadata: {
     titles: [{ value: "The Final Empire" }],
@@ -57,6 +58,19 @@ describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
 
   it("keeps the filename's directives above the file", () => {
     expect(getMetadataFromBook({ metadata: [link, file] }).isbn).toBe("42")
+  })
+
+  it("takes the file's description over the catalog's", () => {
+    const fileWithDescription: BookMetadata = {
+      type: "file",
+      version: 5,
+      metadata: { description: "<p>The Lord Ruler reigns.</p>" },
+    }
+
+    expect(
+      getMetadataFromBook({ metadata: [link, catalog, fileWithDescription] })
+        .description,
+    ).toBe("<p>The Lord Ruler reigns.</p>")
   })
 })
 
