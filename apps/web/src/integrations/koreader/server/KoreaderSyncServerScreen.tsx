@@ -7,7 +7,6 @@ import {
   ListItemButton,
   ListItemText,
   Stack,
-  styled,
   Typography,
 } from "@mui/material"
 import { Link as RouterLink } from "react-router"
@@ -23,13 +22,6 @@ import { GeneratedPasswordField } from "../../../common/forms/GeneratedPasswordF
 import { useKoreaderSyncServer } from "./useKoreaderSyncServer"
 import { useCreateKoreaderSyncServerPassword } from "./useCreateKoreaderSyncServerPassword"
 import { useTurnOffKoreaderSyncServer } from "./useTurnOffKoreaderSyncServer"
-
-const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
-  return {
-    gap: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-  }
-})
 
 const SETUP_STEPS = [
   "In KOReader, open Tools > Progress sync > Custom sync server and enter the server above.",
@@ -85,7 +77,7 @@ export const KoreaderSyncServerScreen = memo(
       <Page>
         <TopBarNavigation title="KOReader sync server" />
         <PageContainer>
-          <IntroStack>
+          <Stack spacing={2} sx={{ pt: 2 }}>
             <Typography>
               oboku can be the sync server of KOReader, Readest, CrossPoint and
               the other apps that support KOReader sync: point them at oboku and
@@ -98,7 +90,7 @@ export const KoreaderSyncServerScreen = memo(
               </Link>{" "}
               with this server.
             </Alert>
-          </IntroStack>
+          </Stack>
         </PageContainer>
         <PageContainer disableGutters>
           <PageSection variant="stack">
