@@ -26,7 +26,7 @@ const RESPONSE_TIMEOUT_MS = 60_000
 
 const acceptEveryStatus = () => true
 
-const toCatalogRequestFailure = (url: URL, error: unknown) =>
+export const toCatalogRequestFailure = (url: URL, error: unknown) =>
   axios.isAxiosError(error)
     ? toRequestFailure(`OPDS request to ${url.origin} failed`, error)
     : error

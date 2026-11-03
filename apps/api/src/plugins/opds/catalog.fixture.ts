@@ -3,10 +3,91 @@ import { createServer } from "node:http"
 import type { AddressInfo } from "node:net"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
 import type { OpdsConnector } from "./client.js"
+import { crawlOpdsFeed } from "./feed.js"
 
 const username = "reader"
 export const password = "opds-password-1234"
 export const basicAuthorization = `Basic ${Buffer.from(`${username}:${password}`).toString("base64")}`
+
+export const ACQUISITION_REL = "http://opds-spec.org/acquisition"
+export const ACQUISITION_FEED_TYPE =
+  "application/atom+xml;profile=opds-catalog;kind=acquisition"
+
+export const feed = (
+  ...children: string[]
+) => `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:opds="http://opds-spec.org/2010/catalog">
+  <id>urn:catalog</id>
+  <title>Catalog</title>
+  <updated>2026-01-01T00:00:00Z</updated>
+  ${children.join("\n  ")}
+</feed>`
+
+export const link = ({
+  rel,
+  href,
+  type,
+  length,
+}: {
+  rel: string
+  href: string
+  type: string
+  length?: number
+}) =>
+  `<link rel="${rel}" href="${href}" type="${type}"${length === undefined ? "" : ` length="${length}"`}/>`
+
+export const entry = ({
+  id,
+  title,
+  updated = "2026-02-01T00:00:00Z",
+  links,
+}: {
+  id: string
+  title: string
+  updated?: string
+  links: string[]
+}) => `<entry>
+    <title>${title}</title>
+    <id>${id}</id>
+    <updated>${updated}</updated>
+    ${links.join("\n    ")}
+  </entry>`
+
+export const navigationEntry = ({
+  id,
+  title,
+  href,
+  rel = "subsection",
+}: {
+  id: string
+  title: string
+  href: string
+  rel?: string
+}) =>
+  entry({
+    id,
+    title,
+    links: [link({ rel, href, type: ACQUISITION_FEED_TYPE })],
+  })
+
+export const bookEntry = ({
+  id,
+  title,
+  href,
+  type = "application/epub+zip",
+  rel = ACQUISITION_REL,
+  updated,
+}: {
+  id: string
+  title: string
+  href: string
+  type?: string
+  rel?: string
+  updated?: string
+}) => entry({ id, title, updated, links: [link({ rel, href, type })] })
+
+export const nextPageLink = (href: string) =>
+  link({ rel: "next", href, type: ACQUISITION_FEED_TYPE })
 
 type Route = {
   status?: number
@@ -84,3 +165,9 @@ export const connectorFor = ({
   password,
   allowSelfSigned,
 })
+
+export const crawlCatalog = ({
+  feedUrl,
+  ...connector
+}: ConnectorOptions & { feedUrl: string }) =>
+  crawlOpdsFeed(connectorFor(connector), new URL(feedUrl))
