@@ -10,12 +10,10 @@ export type BookOptimizeFormValues = MetadataFixerFormValues & {
   maxHeight: string
 }
 
-const DEFAULT_IMAGE_OUTPUT_MODE: ImageOutputMode = "original"
-
 export const EMPTY_BOOK_OPTIMIZE_FORM_VALUES: BookOptimizeFormValues = {
   identifiers: [],
   compressImages: false,
-  imageOutputMode: DEFAULT_IMAGE_OUTPUT_MODE,
+  imageOutputMode: "original",
   maxWidth: "",
   maxHeight: "",
 }
