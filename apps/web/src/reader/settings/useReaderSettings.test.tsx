@@ -78,4 +78,34 @@ describe("useReaderSettings", () => {
       themeMode: "dark",
     })
   })
+
+  it("leaves the theme to the reader until the device picks one", () => {
+    const { result } = renderHook(useReaderSettings)
+
+    expect(result.current.readerSettings.theme).toBeUndefined()
+  })
+
+  it("saves the theme on the device, keeping its other reader settings", () => {
+    localSettingsSignal.update(
+      function withSpreadModeAndFontScale(settings): LocalSettings {
+        return { ...settings, readerSpreadMode: "always", readerFontScale: 1.3 }
+      },
+    )
+    const { result } = renderHook(useReaderSettings)
+
+    act(function changeThemeOnDevice() {
+      result.current.updateReaderSettings({ theme: "night" })
+    })
+
+    expect(result.current.readerSettings).toEqual({
+      fontScale: 1.3,
+      spreadMode: "always",
+      theme: "night",
+    })
+    expect(localSettingsSignal.getValue()).toMatchObject({
+      readerTheme: "night",
+      readerSpreadMode: "always",
+      readerFontScale: 1.3,
+    })
+  })
 })
