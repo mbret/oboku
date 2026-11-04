@@ -22,13 +22,13 @@ export const ConnectorForm = memo(function ConnectorForm({
       connectorType="opds"
       onSubmitSuccess={onSubmitSuccess}
       validateUrl={validateCatalogUrl}
+      urlHelperText="Your password goes to this address only, never to another server the catalog links to. Enter the address your catalog uses itself, such as https:// if it redirects there."
       topAlert={
         <Alert severity="info">
           OPDS connectors store the address of your catalog server, your
-          username, and a reference to a secret containing your password. oboku
-          sends your password to that address only, so that a link or a redirect
-          in the catalog cannot pass it to another server. Books download from
-          your browser, so your catalog has to allow it. Make sure to{" "}
+          username, and a reference to a secret containing your password. Books
+          download from your browser, so your catalog has to allow it. Make sure
+          to{" "}
           <Link href={links.documentationOpds} target="_blank">
             read this
           </Link>{" "}

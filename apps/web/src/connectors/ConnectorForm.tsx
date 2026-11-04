@@ -70,6 +70,7 @@ export type ConnectorFormConfig = {
   showUrl?: boolean
   /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
   validateUrl?: (url: string) => true | string
+  urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
   /** When provided, TestConnection is rendered; parent provides the async method to test the connection. */
@@ -84,6 +85,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   children,
   showUrl = true,
   validateUrl,
+  urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
   testConnection,
@@ -160,6 +162,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 fullWidth
                 label="URL"
                 name="urlValue"
+                helperText={urlHelperText}
                 rules={{
                   required: true,
                   pattern: URL_PATTERN,
