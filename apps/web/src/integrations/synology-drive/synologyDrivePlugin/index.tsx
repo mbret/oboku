@@ -11,8 +11,6 @@ import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import iconSynologyDrive from "../../../assets/icon_synology_drive_01.png"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { clearSynologyDriveSession } from "./auth/auth"
-import { ConnectorForm } from "./connectors/ConnectorForm"
-import { CONNECTOR } from "./constants"
 
 const SynologyDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -26,17 +24,6 @@ export const plugin: ObokuPlugin<"synology-drive"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: SynologyDriveIcon,
-  collectionIdentityFields: ["connectorId", "fileId"],
-  connector: {
-    ...CONNECTOR,
-    ConnectorForm,
-  },
-  integration: {
-    name: "Synology Drive",
-    description:
-      "Browse a Synology Drive library and add books by stable file id",
-    route: CONNECTOR.integrationRoute,
-  },
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
   DataSourceForm,

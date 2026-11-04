@@ -20,7 +20,6 @@ export const plugin: ObokuPlugin<"file"> = {
   canSynchronize: false,
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
-  collectionIdentityFields: ["filename"],
   useLinkInfo,
   useSyncSourceInfo,
   useRefreshMetadata,
