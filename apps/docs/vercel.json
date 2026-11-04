@@ -45,6 +45,11 @@
       "permanent": true
     },
     {
+      "source": "/self-hosting/opds-server",
+      "destination": "/guides/opds-servers",
+      "permanent": true
+    },
+    {
       "source": "/installation-and-usage",
       "destination": "/cloud/installation-and-usage",
       "permanent": true
