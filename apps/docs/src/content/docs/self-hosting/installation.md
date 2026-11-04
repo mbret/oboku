@@ -90,7 +90,7 @@ docker compose up -d
 An image name without a tag, as in the default compose file, means `latest`: the current release. Don't run the `preview` tag (e.g. `mbret/oboku-api:preview`) against data you want to keep. It is rebuilt from unreleased work on the `develop` branch every time it changes, so it can break at any time and can leave your data in a shape no release supports.
 :::
 
-If the Postgres log shows `collation version mismatch` after an update, rebuild its indexes once. The `postgres:17` image moved from Debian 12 to Debian 13, whose newer glibc can sort some text differently. Postgres cannot tell which indexes that affects, so it warns until they are rebuilt:
+If the Postgres log shows `collation version mismatch` after an update, rebuild its indexes once. The `postgres:17` image moved from Debian 12 to Debian 13, which has a newer glibc. Postgres cannot tell whether that changes how your text sorts, so it warns until the indexes are rebuilt:
 
 ```bash
 docker compose exec postgres sh -c '
