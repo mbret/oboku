@@ -51,8 +51,6 @@ services:
     environment:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: CHANGE_ME_COUCHDB
-      JWT_PRIVATE_KEY_FILE: /secrets/jwt_private_key.pem
-      JWT_PUBLIC_KEY_FILE: /secrets/jwt_public_key.pem
     volumes:
       - oboku-preview-secrets:/secrets
       - oboku-preview-couchdb-data:/opt/couchdb/data
@@ -94,8 +92,6 @@ services:
       POSTGRES_HOST: oboku-preview-postgres
       POSTGRES_DB: oboku
       POSTGRES_PASSWORD: CHANGE_ME_POSTGRES
-      JWT_PRIVATE_KEY_FILE: /secrets/jwt_private_key.pem
-      JWT_PUBLIC_KEY_FILE: /secrets/jwt_public_key.pem
       API_DATA_DIR: /var/lib/oboku/data
       API_CONFIG_DIR: /var/lib/oboku/config
       ADMIN_LOGIN: admin
