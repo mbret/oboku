@@ -80,7 +80,10 @@ export const DataSourceForm = memo(function DataSourceForm({
       <Alert severity="warning">
         Books download from your browser, straight from your catalog, which has
         to allow it. Make sure to{" "}
-        <Link href={links.documentationOpds}>read this</Link> before proceeding.
+        <Link href={links.documentationOpds} target="_blank">
+          read this
+        </Link>{" "}
+        before proceeding.
       </Alert>
       <ControlledConnectorSelector
         control={control}

@@ -28,8 +28,10 @@ export const ConnectorForm = memo(function ConnectorForm({
           username, and a reference to a secret containing your password, which
           only requests to that address receive. Books download from your
           browser, so your catalog has to allow it. Make sure to{" "}
-          <Link href={links.documentationOpds}>read this</Link> before
-          proceeding.
+          <Link href={links.documentationOpds} target="_blank">
+            read this
+          </Link>{" "}
+          before proceeding.
         </Alert>
       }
     >
