@@ -2,7 +2,6 @@ import { memo } from "react"
 import type { UploadBookComponentProps } from "../../plugins/types"
 import { WebdavUploadBook } from "../../webdav/webdavPlugin/UploadBook"
 import { useConfig } from "../../../config/useConfig"
-import { CONNECTOR } from "./constants"
 
 export const UploadBook = memo(function UploadBook(
   props: UploadBookComponentProps<"server">,
@@ -12,7 +11,7 @@ export const UploadBook = memo(function UploadBook(
   return (
     <WebdavUploadBook
       {...props}
-      connector={CONNECTOR}
+      connectorType="server"
       headerSubtitle="Connected to oboku server"
       maxConnectors={1}
       webdavUrl={config?.API_WEBDAV_URL}

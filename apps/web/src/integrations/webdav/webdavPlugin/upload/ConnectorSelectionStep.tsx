@@ -2,7 +2,6 @@ import { memo } from "react"
 import type { FileStat, WebDAVClient } from "webdav"
 import { connectWebdav, resolveWebdavUrl } from "../auth/connect"
 import type { WebdavBackedType } from "../constants"
-import type { ConnectorDetails } from "../../../plugins/types"
 import { useExtractConnectorData } from "../../../../connectors/useExtractConnectorData"
 import {
   UploadConnectorSelectionStep,
@@ -21,13 +20,13 @@ export const ConnectorSelectionStep = memo(function ConnectorSelectionStep({
   ...props
 }: Omit<
   UploadConnectorSelectionStepProps<WebdavAuthResult>,
-  "authenticate" | "connector"
+  "authenticate" | "connectorType"
 > & {
-  connector: ConnectorDetails<WebdavBackedType>
+  connectorType: WebdavBackedType
   webdavUrl?: string
 }) {
   const { mutateAsync: extractConnectorData } = useExtractConnectorData({
-    type: props.connector.type,
+    type: props.connectorType,
   })
 
   const authenticate = async (connectorId: string) => {

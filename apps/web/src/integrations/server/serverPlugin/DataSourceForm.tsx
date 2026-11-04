@@ -11,7 +11,6 @@ import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
 } from "../../plugins/types"
-import { CONNECTOR } from "./constants"
 
 type ServerFormData = DataSourceFormData<{
   connectorId: string
@@ -50,7 +49,7 @@ export const DataSourceForm = memo(function DataSourceForm({
         control={control}
         name="connectorId"
         rules={{ required: true }}
-        connector={CONNECTOR}
+        connectorType="server"
       />
     </DataSourceFormLayout>
   )

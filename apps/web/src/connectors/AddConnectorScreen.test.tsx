@@ -2,14 +2,15 @@ import { cleanup, render, screen } from "@testing-library/react"
 import { userEvent } from "vitest/browser"
 import { MemoryRouter, Route, Routes } from "react-router"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import type { ConnectorFormProps } from "../integrations/plugins/types"
 
 vi.mock(
   "../integrations/synology-drive/synologyDrivePlugin/connectors/ConnectorForm",
   () => ({
     ConnectorForm: function FakeSynologyConnectorForm({
       onSubmitSuccess,
-    }: ConnectorFormProps) {
+    }: {
+      onSubmitSuccess: () => void
+    }) {
       return (
         <button type="button" onClick={onSubmitSuccess}>
           Save connector

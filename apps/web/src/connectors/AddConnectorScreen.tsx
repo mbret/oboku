@@ -3,9 +3,25 @@ import { type PathParam, useParams } from "react-router"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import type { ROUTES } from "../navigation/routes"
-import { isSettingsConnectorType } from "./connectorDetails"
-import { getPluginByType } from "../integrations/plugins/configure"
+import type { SettingsConnectorType } from "@oboku/shared"
+import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
+import { ConnectorForm as WebdavConnectorForm } from "../integrations/webdav/webdavPlugin/connectors/ConnectorForm"
+import { ConnectorForm as SynologyDriveConnectorForm } from "../integrations/synology-drive/synologyDrivePlugin/connectors/ConnectorForm"
+import { ConnectorForm as ServerConnectorForm } from "../integrations/server/serverPlugin/connectors/ConnectorForm"
 import { Page } from "../common/Page"
+
+export function getConnectorForm(type: SettingsConnectorType) {
+  switch (type) {
+    case "webdav":
+      return WebdavConnectorForm
+    case "synology-drive":
+      return SynologyDriveConnectorForm
+    case "server":
+      return ServerConnectorForm
+    default:
+      return null
+  }
+}
 
 export const AddConnectorScreen = memo(function AddConnectorScreen() {
   const { type } =
@@ -14,13 +30,15 @@ export const AddConnectorScreen = memo(function AddConnectorScreen() {
 
   if (!isSettingsConnectorType(type)) return null
 
-  const { label, ConnectorForm, integrationRoute } =
-    getPluginByType(type).connector
+  const details = CONNECTOR_DETAILS[type]
+  const Form = getConnectorForm(type)
+
+  if (!Form) return null
 
   return (
     <Page>
-      <TopBarNavigation title={`${label}: New connector`} />
-      <ConnectorForm onSubmitSuccess={() => goBack(integrationRoute)} />
+      <TopBarNavigation title={`${details.label}: New connector`} />
+      <Form onSubmitSuccess={() => goBack(details.integrationRoute)} />
     </Page>
   )
 })

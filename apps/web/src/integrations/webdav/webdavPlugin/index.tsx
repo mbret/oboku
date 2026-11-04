@@ -1,6 +1,6 @@
 import type { ObokuPlugin } from "../../plugins/types"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
-import { CONNECTOR, TYPE } from "./constants"
+import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
@@ -10,7 +10,6 @@ import { UploadBook } from "./UploadBook"
 import { useFilePathLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { SvgIcon } from "@mui/material"
 import WebDAVIconAsset from "../../../assets/webdav-icon.svg?react"
-import { ConnectorForm } from "./connectors/ConnectorForm"
 
 const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -24,16 +23,6 @@ const plugin: ObokuPlugin<"webdav"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: WebDAVIcon,
-  collectionIdentityFields: ["connectorId", "filePath"],
-  connector: {
-    ...CONNECTOR,
-    ConnectorForm,
-  },
-  integration: {
-    name: "WebDAV",
-    description: "Manage contents from WebDAV",
-    route: CONNECTOR.integrationRoute,
-  },
   DataSourceForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
