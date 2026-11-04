@@ -97,7 +97,7 @@ export const SearchScreen = () => {
   }, [])
 
   useMount(() => {
-    searchStateSignal.setValue(searchParams.get("value") || "")
+    searchStateSignal.update(searchParams.get("value") || "")
   })
 
   const visibleCollections = useMemo(
@@ -130,7 +130,7 @@ export const SearchScreen = () => {
               autoFocus
               inputProps={{ "aria-label": "search" }}
               onChange={(e) => {
-                searchStateSignal.setValue(e.target.value)
+                searchStateSignal.update(e.target.value)
                 setSearchParams(
                   {
                     value: e.target.value,

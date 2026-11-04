@@ -20,7 +20,7 @@ describe("usePluginsSignOut", () => {
   })
 
   it("forgets the Synology Drive session so the next account in this tab does not inherit it", () => {
-    synologyDriveSessionSignal.setValue(synologyDriveSession)
+    synologyDriveSessionSignal.update(synologyDriveSession)
 
     const { result } = renderHook(usePluginsSignOut)
 
@@ -80,7 +80,7 @@ describe("usePluginsSignOut", () => {
   })
 
   it("logs a plugin whose sign-out throws and still signs the others out", () => {
-    synologyDriveSessionSignal.setValue(synologyDriveSession)
+    synologyDriveSessionSignal.update(synologyDriveSession)
     const signOutError = new Error("Dropbox sign-out failed")
     const useDropboxSignOut = pluginsByType.dropbox.useSignOut
     onTestFinished(function restoreDropboxSignOut() {

@@ -21,7 +21,7 @@ const useRestoreDownloadState = ({ onSuccess }: { onSuccess: () => void }) => {
             }
           }, {})
 
-          booksDownloadStateSignal.setValue(state)
+          booksDownloadStateSignal.update(state)
 
           return of(null)
         }),

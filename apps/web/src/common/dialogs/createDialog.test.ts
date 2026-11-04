@@ -21,7 +21,7 @@ const getOnlyTemplateDialog = () => {
 
 describe("createDialog", () => {
   afterEach(() => {
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   it("queues a template dialog and resolves with the action result", async () => {

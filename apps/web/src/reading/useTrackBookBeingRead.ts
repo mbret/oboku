@@ -12,15 +12,15 @@ export const useTrackBookBeingRead = (
   useEffect(() => {
     if (!enabled) return
 
-    bookBeingReadStateSignal.setValue(bookId)
-    hasOpenedReaderAlreadyStateSignal.setValue(true)
+    bookBeingReadStateSignal.update(bookId)
+    hasOpenedReaderAlreadyStateSignal.update(true)
   }, [bookId, enabled])
 
   useEffect(
     () => () => {
       if (!enabled) return
 
-      bookBeingReadStateSignal.setValue(SIGNAL_RESET)
+      bookBeingReadStateSignal.update(SIGNAL_RESET)
     },
     [enabled],
   )
