@@ -54,8 +54,9 @@ export const ConnectorInfoSection = memo(function ConnectorInfoSection({
 }) {
   const { data: connectors } = useConnectors({ type: connectorType })
   const navigate = useNavigate()
-  const canAdd =
-    maxConnectors === undefined || (connectors?.length ?? 0) < maxConnectors
+  const connectorCount = connectors?.length ?? 0
+  const canAdd = maxConnectors === undefined || connectorCount < maxConnectors
+  const hasConnectors = connectorCount > 0
 
   return (
     <Box
@@ -113,23 +114,25 @@ export const ConnectorInfoSection = memo(function ConnectorInfoSection({
           </Button>
         </Box>
       )}
-      <PageSection>
-        {connectors?.map((connector) => (
-          <ConnectorListItem
-            id={connector.id}
-            key={connector.id}
-            connectorType={connectorType}
-            onClick={() => {
-              navigate(
-                generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
-                  type: connectorType,
-                  id: connector.id,
-                }),
-              )
-            }}
-          />
-        ))}
-      </PageSection>
+      {hasConnectors && (
+        <PageSection>
+          {connectors?.map((connector) => (
+            <ConnectorListItem
+              id={connector.id}
+              key={connector.id}
+              connectorType={connectorType}
+              onClick={() => {
+                navigate(
+                  generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
+                    type: connectorType,
+                    id: connector.id,
+                  }),
+                )
+              }}
+            />
+          ))}
+        </PageSection>
+      )}
     </Box>
   )
 })

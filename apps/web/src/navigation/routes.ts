@@ -20,6 +20,7 @@ export const ROUTES = {
   INTEGRATION_GOOGLE: "/integrations/google",
   INTEGRATION_KOREADER: "/integrations/koreader",
   INTEGRATION_ONE_DRIVE: "/integrations/one-drive",
+  INTEGRATION_OPDS: "/integrations/opds",
   INTEGRATION_SERVER: "/integrations/server",
   INTEGRATION_SYNOLOGY_DRIVE: "/integrations/synology-drive",
   INTEGRATION_WEBDAV: "/integrations/webdav",

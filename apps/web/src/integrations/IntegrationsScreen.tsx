@@ -20,6 +20,7 @@ import { Page } from "../common/Page"
 import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
 import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
 import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
+import { plugin as opdsPlugin } from "./opds/opdsPlugin"
 import { plugin as serverPlugin } from "./server/serverPlugin"
 import { plugin as synologyDrivePlugin } from "./synology-drive/synologyDrivePlugin"
 import webdavPlugin from "./webdav/webdavPlugin"
@@ -86,6 +87,13 @@ export function IntegrationsScreen() {
             description="Manage contents from Microsoft OneDrive"
             Icon={oneDrivePlugin.Icon}
             plugin={oneDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_OPDS}
+            name="OPDS"
+            description="Sync the free books of an OPDS catalog, like Komga or Calibre-Web"
+            Icon={opdsPlugin.Icon}
+            plugin={opdsPlugin}
           />
           <IntegrationListItem
             to={ROUTES.INTEGRATION_SERVER}

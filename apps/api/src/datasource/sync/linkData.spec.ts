@@ -15,6 +15,26 @@ const storedLink: LinkDocTypeForProvider<"webdav"> = {
   modifiedAt: null,
 }
 
+const storedOpdsLink: LinkDocTypeForProvider<"opds"> = {
+  _id: "link-2",
+  _rev: "1",
+  rxdbMeta: { lwt: 0 },
+  rx_model: "link",
+  type: "opds",
+  book: "book-2",
+  data: {
+    connectorId: "connector",
+    entryId: "urn:book:2",
+    title: "Book 2",
+    acquisition: {
+      href: "https://catalog.example.com/2.epub",
+      type: "application/epub+zip",
+    },
+  },
+  createdAt: "2026-01-01T00:00:00.000Z",
+  modifiedAt: null,
+}
+
 const storedCollection: CollectionDocType<"webdav"> = {
   _id: "collection-1",
   _rev: "1",
@@ -96,6 +116,40 @@ describe("updateLinkData", () => {
       }),
     )
     expect(updateLink).toHaveBeenCalledWith("link-1")
+  })
+
+  it("writes nothing when an OPDS entry reports the same acquisition", async () => {
+    const ctx = createSyncContext(storedOpdsLink)
+
+    await updateLinkData(ctx, storedOpdsLink, {
+      ...storedOpdsLink.data,
+      acquisition: {
+        type: "application/epub+zip",
+        href: "https://catalog.example.com/2.epub",
+      },
+    })
+
+    expect(ctx.insert).not.toHaveBeenCalled()
+  })
+
+  it("stores the new acquisition an OPDS entry reports", async () => {
+    const ctx = createSyncContext(storedOpdsLink)
+    const movedAcquisition = {
+      href: "https://cdn.example.com/2.epub",
+      type: "application/epub+zip",
+    }
+
+    await updateLinkData(ctx, storedOpdsLink, {
+      ...storedOpdsLink.data,
+      acquisition: movedAcquisition,
+    })
+
+    expect(ctx.insert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        _id: "link-2",
+        data: { ...storedOpdsLink.data, acquisition: movedAcquisition },
+      }),
+    )
   })
 })
 

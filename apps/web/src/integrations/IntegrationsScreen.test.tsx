@@ -28,6 +28,7 @@ const INTEGRATION_HREF_BY_NAME = {
   Google: "/integrations/google",
   KOReader: "/integrations/koreader",
   OneDrive: "/integrations/one-drive",
+  OPDS: "/integrations/opds",
   Server: "/integrations/server",
   "Synology Drive": "/integrations/synology-drive",
   WebDAV: "/integrations/webdav",

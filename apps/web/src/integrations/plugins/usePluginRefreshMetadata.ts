@@ -81,6 +81,13 @@ export const usePluginRefreshMetadata = (
       }),
       meta,
     })
+  const { mutateAsync: refreshOpdsMetadata } =
+    pluginsByType.opds.useRefreshMetadata({
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.opds.name,
+      }),
+      meta,
+    })
 
   return useCallback(
     async (
@@ -121,6 +128,10 @@ export const usePluginRefreshMetadata = (
           return refreshServerMetadata(
             params as UseRefreshMetadataVariables<"server">,
           )
+        case "opds":
+          return refreshOpdsMetadata(
+            params as UseRefreshMetadataVariables<"opds">,
+          )
         default:
           return assertNever(params.linkType)
       }
@@ -130,6 +141,7 @@ export const usePluginRefreshMetadata = (
       refreshDropboxMetadata,
       refreshFileMetadata,
       refreshOneDriveMetadata,
+      refreshOpdsMetadata,
       refreshServerMetadata,
       refreshSynologyDriveMetadata,
       refreshUriMetadata,
