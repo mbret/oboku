@@ -5,44 +5,52 @@ import { Test } from "@nestjs/testing"
 import { AppConfigService } from "./AppConfigService.js"
 import { SecretsService } from "./SecretsService.js"
 
-describe("SecretsService", () => {
-  let keysDirectory: string
-  let privateKeyFile: string
-  let publicKeyFile: string
+type KeyFiles = {
+  keysDirectory: string
+  privateKeyFile: string
+  publicKeyFile: string
+}
 
-  const createModule = () =>
-    Test.createTestingModule({
-      providers: [
-        SecretsService,
-        {
-          provide: AppConfigService,
-          useValue: {
-            JWT_PRIVATE_KEY_FILE: privateKeyFile,
-            JWT_PUBLIC_KEY_FILE: publicKeyFile,
-          },
+async function createKeyFiles(): Promise<KeyFiles> {
+  const keysDirectory = await fs.promises.mkdtemp(
+    path.join(os.tmpdir(), "oboku-jwt-keys-"),
+  )
+
+  onTestFinished(function removeKeysDirectory() {
+    return fs.promises.rm(keysDirectory, { recursive: true, force: true })
+  })
+
+  return {
+    keysDirectory,
+    privateKeyFile: path.join(keysDirectory, "jwt_private_key.pem"),
+    publicKeyFile: path.join(keysDirectory, "jwt_public_key.pem"),
+  }
+}
+
+function createModule({ privateKeyFile, publicKeyFile }: KeyFiles) {
+  return Test.createTestingModule({
+    providers: [
+      SecretsService,
+      {
+        provide: AppConfigService,
+        useValue: {
+          JWT_PRIVATE_KEY_FILE: privateKeyFile,
+          JWT_PUBLIC_KEY_FILE: publicKeyFile,
         },
-      ],
-    }).compile()
+      },
+    ],
+  }).compile()
+}
 
-  beforeEach(async () => {
-    keysDirectory = await fs.promises.mkdtemp(
-      path.join(os.tmpdir(), "oboku-jwt-keys-"),
-    )
-    privateKeyFile = path.join(keysDirectory, "jwt_private_key.pem")
-    publicKeyFile = path.join(keysDirectory, "jwt_public_key.pem")
-  })
-
-  afterEach(async () => {
-    await fs.promises.rm(keysDirectory, { recursive: true, force: true })
-  })
-
+describe("SecretsService", () => {
   it("keeps the keys it reads at startup", async () => {
-    await fs.promises.writeFile(privateKeyFile, "private-key")
-    await fs.promises.writeFile(publicKeyFile, "public-key")
-    const module = await createModule()
+    const keyFiles = await createKeyFiles()
+    await fs.promises.writeFile(keyFiles.privateKeyFile, "private-key")
+    await fs.promises.writeFile(keyFiles.publicKeyFile, "public-key")
+    const module = await createModule(keyFiles)
 
     await module.init()
-    await fs.promises.rm(keysDirectory, { recursive: true, force: true })
+    await fs.promises.rm(keyFiles.keysDirectory, { recursive: true })
 
     const secrets = module.get(SecretsService)
     await expect(secrets.getJwtPrivateKey()).resolves.toBe("private-key")
@@ -50,8 +58,9 @@ describe("SecretsService", () => {
   })
 
   it("stops the startup when a key file is missing", async () => {
-    await fs.promises.writeFile(publicKeyFile, "public-key")
-    const module = await createModule()
+    const keyFiles = await createKeyFiles()
+    await fs.promises.writeFile(keyFiles.publicKeyFile, "public-key")
+    const module = await createModule(keyFiles)
 
     await expect(module.init()).rejects.toThrow(
       "Failed to read JWT private key file",
