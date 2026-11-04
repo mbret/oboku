@@ -65,6 +65,8 @@ openssl genrsa -out ./secrets/jwt_private_key.pem 4096
 openssl rsa -in ./secrets/jwt_private_key.pem -pubout -outform PEM -out ./secrets/jwt_public_key.pem
 ```
 
+The API and CouchDB read the pair from `/secrets`. To use other paths, set `JWT_PRIVATE_KEY_FILE` and `JWT_PUBLIC_KEY_FILE` on both containers.
+
 You can also supply the keys base64 encoded through `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY` rather than as files.
 
 ### Setup compose file
