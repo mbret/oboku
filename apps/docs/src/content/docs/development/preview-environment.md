@@ -88,7 +88,6 @@ services:
       oboku-preview-postgres:
         condition: service_started
     environment:
-      NODE_ENV: production
       APP_PUBLIC_URL: https://app.preview.oboku.me
       ADMIN_PUBLIC_URL: https://admin.preview.oboku.me
       COUCH_DB_URL: http://oboku-preview-couchdb:5984
