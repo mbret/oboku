@@ -92,8 +92,6 @@ services:
       POSTGRES_HOST: oboku-preview-postgres
       POSTGRES_DB: oboku
       POSTGRES_PASSWORD: CHANGE_ME_POSTGRES
-      API_DATA_DIR: /var/lib/oboku/data
-      API_CONFIG_DIR: /var/lib/oboku/config
       ADMIN_LOGIN: admin
       ADMIN_PASSWORD: CHANGE_ME_ADMIN
     volumes:
