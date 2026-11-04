@@ -122,7 +122,7 @@ export const BookListItemVertical = memo(function BookListItemVertical({
           }
 
           event.stopPropagation()
-          book?._id && bookActionDrawerSignal.setValue({ openedWith: book._id })
+          book?._id && bookActionDrawerSignal.update({ openedWith: book._id })
         }}
       >
         <div style={{ width: "100%", overflow: "hidden" }}>

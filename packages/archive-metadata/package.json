@@ -21,11 +21,11 @@
   },
   "dependencies": {
     "@jsquash/avif": "2.1.1",
-    "@prose-reader/archive-reader": "^38.0.1",
-    "@prose-reader/shared": "^38.0.0",
-    "@zip.js/zip.js": "^2.23.0"
+    "@prose-reader/archive-reader": "catalog:prose-reader",
+    "@prose-reader/shared": "catalog:prose-reader",
+    "@zip.js/zip.js": "^2.24.0"
   },
   "devDependencies": {
-    "vite": "^8.3.4"
+    "vite": "^8.3.5"
   }
 }

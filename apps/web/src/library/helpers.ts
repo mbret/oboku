@@ -7,12 +7,12 @@ export const useToggleTag = () => {
     const library = libraryStateSignal.getValue()
     const tagExist = library.tags.find((id) => tagId === id)
     if (tagExist) {
-      libraryStateSignal.setValue((old) => ({
+      libraryStateSignal.update((old) => ({
         ...old,
         tags: old.tags.filter((id) => id !== tagId),
       }))
     } else {
-      libraryStateSignal.setValue((old) => ({
+      libraryStateSignal.update((old) => ({
         ...old,
         tags: [...old.tags, tagId],
       }))

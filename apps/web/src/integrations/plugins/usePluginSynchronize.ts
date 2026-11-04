@@ -59,6 +59,9 @@ export const usePluginSynchronize = () => {
         name: pluginsByType.server.name,
       }),
     })
+  const { mutateAsync: synchronizeOpds } = pluginsByType.opds.useSynchronize({
+    requestPopup: createRequestPopupDialog({ name: pluginsByType.opds.name }),
+  })
 
   return useCallback(
     async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
@@ -79,6 +82,8 @@ export const usePluginSynchronize = () => {
           return synchronizeUri(dataSource)
         case "server":
           return synchronizeServer(dataSource)
+        case "opds":
+          return synchronizeOpds(dataSource)
         default:
           return assertNever(dataSource)
       }
@@ -88,6 +93,7 @@ export const usePluginSynchronize = () => {
       synchronizeDropbox,
       synchronizeFile,
       synchronizeOneDrive,
+      synchronizeOpds,
       synchronizeServer,
       synchronizeSynologyDrive,
       synchronizeUri,

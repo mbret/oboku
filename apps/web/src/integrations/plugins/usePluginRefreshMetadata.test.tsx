@@ -13,6 +13,7 @@ const { PLUGIN_TYPES, pluginsByType, createRequestPopupDialog } = vi.hoisted(
       "file",
       "URI",
       "server",
+      "opds",
     ] as const satisfies ReadonlyArray<DataSourceDocType["type"]>
 
     return {

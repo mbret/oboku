@@ -57,7 +57,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
   const { close: closeModalWithNavigation } = useDismissibleOverlay({
     open: !!openedWith,
     onClose: () => {
-      collectionActionDrawerState.setValue({
+      collectionActionDrawerState.update({
         openedWith: undefined,
         lastId: collectionId,
       })
@@ -82,7 +82,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
 
   const onRemoveCollection = (id: string) => {
     closeModalWithNavigation()
-    collectionActionDrawerChangesState.setValue([id, `delete`])
+    collectionActionDrawerChangesState.update([id, `delete`])
     id && removeCollection({ _id: id })
   }
 

@@ -9,7 +9,7 @@ import { getForwardedProto } from "../http/forwardedProto.js"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication
 // does not depend on CouchDB's `[cors]` config and we never emit a header
-// twice. These values mirror what the bundled CouchDB advertises.
+// twice.
 const ALLOWED_METHODS = "GET, HEAD, POST, PUT, DELETE, OPTIONS"
 const ALLOWED_HEADERS = "accept, authorization, content-type, origin, referer"
 // Headers the browser is allowed to read off responses. PouchDB/RxDB read a few

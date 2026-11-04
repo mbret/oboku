@@ -57,7 +57,7 @@ export const useBookActionDrawer = ({
 
   return useCallback(
     (params: Omit<SignalState, "onDeleteBook">) => {
-      bookActionDrawerSignal.setValue({
+      bookActionDrawerSignal.update({
         ...params,
         onDeleteBook: () => {
           onDeleteBookRef.current?.()
@@ -100,7 +100,7 @@ export const BookActionsDrawer = memo(function BookActionsDrawer() {
   const { close: handleClose } = useDismissibleOverlay({
     open: !!bookId,
     onClose: () => {
-      bookActionDrawerSignal.setValue({ openedWith: undefined })
+      bookActionDrawerSignal.update({ openedWith: undefined })
     },
   })
 

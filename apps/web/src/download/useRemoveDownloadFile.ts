@@ -17,7 +17,7 @@ export const useRemoveDownloadFile = (
     mutationFn: function removeDownloadFile({ bookId }) {
       return from(dexieDb.downloads.delete(bookId)).pipe(
         tap(function clearDownloadState() {
-          booksDownloadStateSignal.setValue(function markAsNotDownloaded(prev) {
+          booksDownloadStateSignal.update(function markAsNotDownloaded(prev) {
             return {
               ...prev,
               [bookId]: {

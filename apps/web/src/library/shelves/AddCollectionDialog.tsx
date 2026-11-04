@@ -17,11 +17,11 @@ const addCollectionDialogSignal = signal<{ open: boolean }>({
 })
 
 export const openAddCollectionDialog = () => {
-  addCollectionDialogSignal.setValue({ open: true })
+  addCollectionDialogSignal.update({ open: true })
 }
 
 const closeAddCollectionDialog = () => {
-  addCollectionDialogSignal.setValue({ open: false })
+  addCollectionDialogSignal.update({ open: false })
 }
 
 export function AddCollectionDialog() {

@@ -12,7 +12,7 @@ export const UploadBookDialogWithDragOver = () => {
   useEffect(() => {
     const onDragOver = () => {
       if (!uploadBookDialogOpenedSignal.getValue()) {
-        uploadBookDialogOpenedSignal.setValue(PLUGIN_FILE_TYPE)
+        uploadBookDialogOpenedSignal.update(PLUGIN_FILE_TYPE)
       }
     }
 
@@ -23,12 +23,12 @@ export const UploadBookDialogWithDragOver = () => {
 
   const onDragLeave = useCallback(() => {
     if (uploadBookDialogOpenedSignal.getValue() === PLUGIN_FILE_TYPE) {
-      uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
+      uploadBookDialogOpenedSignal.update(SIGNAL_RESET)
     }
   }, [])
 
   const onClose = useCallback(() => {
-    uploadBookDialogOpenedSignal.setValue(SIGNAL_RESET)
+    uploadBookDialogOpenedSignal.update(SIGNAL_RESET)
   }, [])
 
   if (!openWith) return null

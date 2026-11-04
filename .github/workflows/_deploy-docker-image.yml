@@ -4,15 +4,15 @@ on:
   workflow_call:
     inputs:
       sha:
-        description: 'Commit to build the image from'
+        description: "Commit to build the image from"
         required: true
         type: string
       tags:
-        description: 'Tags to push the image under, one per line (e.g. latest)'
+        description: "Tags to push the image under, one per line (e.g. latest)"
         required: true
         type: string
       target:
-        description: 'Dockerfile stage to build, pushed as mbret/oboku-<target>'
+        description: "Dockerfile stage to build, pushed as mbret/oboku-<target>"
         required: true
         type: string
     secrets:
@@ -24,7 +24,7 @@ env:
 
 jobs:
   build:
-    name: 'Build ${{ matrix.arch }}'
+    name: "Build ${{ matrix.arch }}"
     runs-on: ${{ matrix.runner }}
     strategy:
       fail-fast: false
@@ -75,7 +75,7 @@ jobs:
           retention-days: 1
 
   merge:
-    name: 'Merge'
+    name: "Merge"
     needs: build
     runs-on: ubuntu-latest
     steps:

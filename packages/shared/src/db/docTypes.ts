@@ -13,6 +13,11 @@ import type {
   OneDriveLinkData,
 } from "../plugins/oneDrive"
 import type {
+  OpdsConnectorDocType,
+  OpdsDataSourceDocType,
+  OpdsLinkData,
+} from "../plugins/opds"
+import type {
   ServerConnectorDocType,
   ServerDataSourceDocType,
   ServerLinkData,
@@ -41,6 +46,7 @@ export type LinkData =
   | SynologyDriveLinkData
   | ServerLinkData
   | UriLinkData
+  | OpdsLinkData
 
 type CommonBase = CouchDBMeta & RxDbMeta
 
@@ -66,7 +72,9 @@ export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
                 ? UriLinkData
                 : T extends "file"
                   ? FileLinkData
-                  : never
+                  : T extends "opds"
+                    ? OpdsLinkData
+                    : never
 
 /**
  * Link document for a specific provider; `data` is correctly typed as that provider's
@@ -92,6 +100,7 @@ export type LinkDocType =
   | LinkDocTypeForProvider<"dropbox">
   | LinkDocTypeForProvider<"URI">
   | LinkDocTypeForProvider<"server">
+  | LinkDocTypeForProvider<"opds">
 
 /**
  * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
@@ -141,6 +150,7 @@ export type DataSourceDocType =
   | FileDataSourceDocType
   | URIDataSourceDocType
   | ServerDataSourceDocType
+  | OpdsDataSourceDocType
 
 /** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
 export type DataSourceType = DataSourceDocType["type"]
@@ -238,6 +248,7 @@ export type SettingsConnectorDocType =
   | WebdavConnectorDocType
   | SynologyDriveConnectorDocType
   | ServerConnectorDocType
+  | OpdsConnectorDocType
 
 export type SettingsConnectorType = SettingsConnectorDocType["type"]
 

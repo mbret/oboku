@@ -107,7 +107,7 @@ export const useLoadGapi = (
           combineLatest([
             loadGapiClient().pipe(
               catchError((error) => {
-                gapiSignal.setValue((state) => ({
+                gapiSignal.update((state) => ({
                   ...state,
                   error: "Error while loading client script",
                 }))
@@ -118,7 +118,7 @@ export const useLoadGapi = (
             ),
             loadPicker().pipe(
               catchError((error) => {
-                gapiSignal.setValue((state) => ({
+                gapiSignal.update((state) => ({
                   ...state,
                   error: "Error while loading picker script",
                 }))
@@ -131,7 +131,7 @@ export const useLoadGapi = (
             mergeMap(() =>
               initClient(config?.GOOGLE_API_KEY).pipe(
                 catchError((error) => {
-                  gapiSignal.setValue((state) => ({
+                  gapiSignal.update((state) => ({
                     ...state,
                     error: "Error while initializing the client",
                   }))
@@ -142,7 +142,7 @@ export const useLoadGapi = (
               ),
             ),
             map(() => {
-              gapiSignal.setValue({
+              gapiSignal.update({
                 gapi: window.gapi,
                 state: "loaded",
                 error: undefined,

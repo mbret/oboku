@@ -1,6 +1,8 @@
 import { once } from "node:events"
 import { createServer } from "node:http"
 import type { AddressInfo } from "node:net"
+import type { OpdsConnectorDocType } from "@oboku/shared"
+import type createNano from "nano"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
 import type { OpdsConnector } from "./client.js"
 import { crawlOpdsFeed } from "./feed.js"
@@ -184,3 +186,20 @@ export const crawlCatalog = ({
   ...connector
 }: ConnectorOptions & { feedUrl: string }) =>
   crawlOpdsFeed(connectorFor(connector), new URL(feedUrl))
+
+export const createUserDbWithConnector = (connectorUrl: string) =>
+  ({
+    get: async () => ({
+      _id: "settings",
+      connectors: [
+        {
+          id: "connector",
+          type: "opds",
+          url: connectorUrl,
+          username,
+          passwordAsSecretId: "password-secret",
+        } satisfies OpdsConnectorDocType,
+      ],
+    }),
+    // Partial fake: getConnectorById only needs `get`.
+  }) as unknown as createNano.DocumentScope<unknown>

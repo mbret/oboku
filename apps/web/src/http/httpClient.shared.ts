@@ -246,9 +246,7 @@ export abstract class RefreshingHttpClient extends HttpClient {
   constructor(baseRequestInit: RequestInit = {}) {
     super(baseRequestInit)
 
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useRequestInterceptor(this.stampAuthEpoch)
-    // biome-ignore lint/correctness/useHookAtTopLevel: Not a hook
     this.useResponseInterceptor(this.refreshOnUnauthorized)
   }
 

@@ -125,8 +125,7 @@ export class DataSourceService {
       }
 
       this.logger.log(
-        `Execute sync process with ${plugin.type} plugin`,
-        synchronizeAbleDataSourceWithTags,
+        `Execute sync process with ${plugin.type} plugin for ${synchronizeAbleDataSourceWithTags.items.length} items`,
       )
 
       const collectionIdsToRefresh = await synchronizeFromDataSource(

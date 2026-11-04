@@ -5,15 +5,13 @@ import {
   isOpdsConnectorOrigin,
   ObokuErrorCode,
   ObokuSharedError,
-  type OpdsConnectorDocType,
+  type SettingsResolvedConnectorData,
 } from "@oboku/shared"
 import axios from "axios"
 import { toRequestFailure } from "../../http/requestFailure.js"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 
-export type OpdsConnector = Omit<OpdsConnectorDocType, "passwordAsSecretId"> & {
-  password: string
-}
+export type OpdsConnector = SettingsResolvedConnectorData<"opds">
 
 type CatalogRequestOptions = {
   headers?: Record<string, string>
