@@ -23,12 +23,12 @@ const renderDialogProvider = () => {
 
 describe("DialogProvider", () => {
   beforeEach(() => {
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   afterEach(() => {
     cleanup()
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   it("renders template dialogs created programmatically", async () => {

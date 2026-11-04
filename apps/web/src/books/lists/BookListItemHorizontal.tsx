@@ -235,7 +235,7 @@ export const BookListItemHorizontal = memo(function BookListItemHorizontal({
             onClick={(event) => {
               event.stopPropagation()
               book?._id &&
-                bookActionDrawerSignal.setValue({ openedWith: book._id })
+                bookActionDrawerSignal.update({ openedWith: book._id })
             }}
             sx={{
               alignSelf: isCompact ? "center" : "flex-end",

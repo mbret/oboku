@@ -11,7 +11,7 @@ export const gsiSignal = signal<
   default: { gsi: undefined, state: "loading" },
 })
 
-export const gsiOrThrow$ = gsiSignal.subject.pipe(
+export const gsiOrThrow$ = gsiSignal.pipe(
   map(({ gsi }) => {
     if (!gsi) {
       throw new Error("gsi not available")
@@ -33,7 +33,7 @@ export const useLoadGsi = () => {
       }).pipe(
         retryOnFailure,
         map(() => {
-          gsiSignal.setValue({
+          gsiSignal.update({
             gsi: window.google,
             state: "loaded",
           })

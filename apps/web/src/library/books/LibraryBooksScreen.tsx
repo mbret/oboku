@@ -90,7 +90,7 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
         fullWidth
         variant="outlined"
         onClick={() => {
-          isUploadBookDrawerOpenedStateSignal.setValue(true)
+          isUploadBookDrawerOpenedStateSignal.update(true)
         }}
       >
         Add a new book
@@ -115,7 +115,7 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
 
   const bookListRenderHeader = useCallback(() => listHeader, [listHeader])
 
-  useEffect(() => () => isUploadBookDrawerOpenedStateSignal.setValue(false), [])
+  useEffect(() => () => isUploadBookDrawerOpenedStateSignal.update(false), [])
 
   const isSelectionActionPending =
     isMarkBooksAsFinishedPending ||
@@ -221,7 +221,7 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
           onClose={() => setIsSortingDialogOpened(false)}
           open={isSortingDialogOpened}
           onChange={(newSort) => {
-            libraryStateSignal.setValue((s) => ({ ...s, sorting: newSort }))
+            libraryStateSignal.update((s) => ({ ...s, sorting: newSort }))
           }}
         />
         <LibraryFiltersDrawer
@@ -231,8 +231,8 @@ export const LibraryBooksScreen = memo(function LibraryBooksScreen() {
         <UploadBookDrawer
           open={isUploadBookDrawerOpened}
           onClose={(type) => {
-            isUploadBookDrawerOpenedStateSignal.setValue(false)
-            uploadBookDialogOpenedSignal.setValue(type)
+            isUploadBookDrawerOpenedStateSignal.update(false)
+            uploadBookDialogOpenedSignal.update(type)
           }}
         />
       </Stack>

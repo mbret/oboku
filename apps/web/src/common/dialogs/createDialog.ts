@@ -95,7 +95,7 @@ export const createDialog = <Result = undefined>({
       actions: createActions(),
     }
 
-    dialogSignal.setValue((old) => [...old, wrappedDialog])
+    dialogSignal.update((old) => [...old, wrappedDialog])
   })
 
   return {

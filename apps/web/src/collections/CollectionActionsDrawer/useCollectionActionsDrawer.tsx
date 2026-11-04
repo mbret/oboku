@@ -29,7 +29,7 @@ export const useCollectionActionsDrawer = (
   const latestChangesEmittedRef = useRef(collectionActionDrawerChanges)
 
   const open = useCallback(() => {
-    collectionActionDrawerState.setValue({ openedWith: id, lastId: id })
+    collectionActionDrawerState.update({ openedWith: id, lastId: id })
   }, [id])
 
   useEffect(() => {

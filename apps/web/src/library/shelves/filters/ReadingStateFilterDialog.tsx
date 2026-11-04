@@ -46,7 +46,7 @@ export const ReadingStateFilterDialog = memo(function ReadingStateFilterDialog({
             name="collection-state-radio-group"
             value={state.readingState}
             onChange={(event) => {
-              libraryShelvesFiltersSignal.setValue((state) => ({
+              libraryShelvesFiltersSignal.update((state) => ({
                 ...state,
                 readingState: event.target.value as ReadingState,
               }))

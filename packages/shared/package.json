@@ -25,11 +25,11 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@prose-reader/archive-reader": "^38.0.1",
-    "@prose-reader/metadata-fetcher": "^38.0.1",
-    "zod": "^4.6.5"
+    "@prose-reader/archive-reader": "catalog:prose-reader",
+    "@prose-reader/metadata-fetcher": "catalog:prose-reader",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "vite": "^8.3.4"
+    "vite": "^8.3.5"
   }
 }
