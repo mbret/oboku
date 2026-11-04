@@ -33,3 +33,9 @@ export const plugins = Object.values(pluginsByType)
 export function getPluginByType<T extends DataSourceDocType["type"]>(type: T) {
   return pluginsByType[type]
 }
+
+export function isPluginType(
+  type: string | undefined,
+): type is DataSourceDocType["type"] {
+  return type !== undefined && Object.hasOwn(pluginsByType, type)
+}

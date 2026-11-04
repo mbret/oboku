@@ -65,6 +65,8 @@ openssl genrsa -out ./secrets/jwt_private_key.pem 4096
 openssl rsa -in ./secrets/jwt_private_key.pem -pubout -outform PEM -out ./secrets/jwt_public_key.pem
 ```
 
+The API and CouchDB read the pair from `/secrets`. To use other paths, set `JWT_PRIVATE_KEY_FILE` and `JWT_PUBLIC_KEY_FILE` on both containers. The API does not start if it cannot read the pair.
+
 You can also supply the keys base64 encoded through `JWT_PRIVATE_KEY` and `JWT_PUBLIC_KEY` rather than as files.
 
 ### Setup compose file
@@ -89,6 +91,21 @@ docker compose up -d
 :::caution
 An image name without a tag, as in the default compose file, means `latest`: the current release. Don't run the `preview` tag (e.g. `mbret/oboku-api:preview`) against data you want to keep. It is rebuilt from unreleased work on the `develop` branch every time it changes, so it can break at any time and can leave your data in a shape no release supports.
 :::
+
+If the Postgres log shows `collation version mismatch` after an update, rebuild its indexes once. The `postgres:17` image moved from Debian 12 to Debian 13, which has a newer glibc. Postgres cannot tell whether that changes how your text sorts, so it warns until the indexes are rebuilt:
+
+```bash
+docker compose exec postgres sh -c '
+  user="${POSTGRES_USER:-postgres}"
+  psql -U "$user" -d postgres -tAc "select datname from pg_database where datallowconn" |
+    while IFS= read -r db; do
+      psql -v ON_ERROR_STOP=1 -U "$user" -d "$db" -c "REINDEX DATABASE \"$db\"" -c "ALTER DATABASE \"$db\" REFRESH COLLATION VERSION" || exit 1
+    done'
+```
+
+Without the compose file, as in Cosmos, run the same script with `docker exec <postgres container>` in place of `docker compose exec postgres`.
+
+Then set the image to `postgres:17-trixie` in your compose file or in Cosmos, as the default compose file does, so later updates keep the same Debian release.
 
 ## Installation with Cosmos
 

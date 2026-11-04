@@ -3,6 +3,11 @@ import { useBook } from "../../books/states"
 import { useLink } from "../../links/states"
 import { pluginsByType } from "./configure"
 
+/**
+ * Calls each plugin's `useLinkInfo` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const useLinkInfo = (bookId?: string) => {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })

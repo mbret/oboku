@@ -152,11 +152,13 @@ describe("pickCoverMetadata, with entries in prose-reader's shapes", () => {
   ])
   const resolvedFirstPage: BookMetadata = {
     type: "file",
+    version: 5,
     contentType: "application/x-cbz",
     metadata: { cover: { uri: "page-001.avif", confidence: "assumed" } },
   }
   const resolvedDeclaredCover: BookMetadata = {
     type: "file",
+    version: 5,
     contentType: "application/epub+zip",
     metadata: { cover: { uri: "OEBPS/cover.jpg", confidence: "derived" } },
   }

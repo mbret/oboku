@@ -11,6 +11,11 @@ type SynchronizeResult = {
   providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
+/**
+ * Calls each plugin's `useSynchronize` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const { mutateAsync: synchronizeWebdav } =

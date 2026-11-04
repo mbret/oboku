@@ -16,6 +16,11 @@ type RefreshMetadataResult = {
   providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
+/**
+ * Calls each plugin's `useRefreshMetadata` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginRefreshMetadata = (
   options?: Pick<UseMutationOptions, "meta">,
 ) => {

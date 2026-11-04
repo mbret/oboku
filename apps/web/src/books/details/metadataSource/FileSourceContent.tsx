@@ -21,6 +21,7 @@ export const FileSourceContent = ({ entry }: Props) => {
     <PageSection title="Fields" dense>
       <MetadataFieldRow label={L.title} value={fields?.title?.toString()} />
       <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />
+      <MetadataFieldRow label={L.description} value={fields?.description} />
       <MetadataFieldRow label={L.publisher} value={fields?.publisher} />
       <MetadataFieldRow label={L.rights} value={fields?.rights} />
       <MetadataFieldRow

@@ -14,7 +14,6 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
-  isLegacyFileMetadata,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
 } from "@oboku/shared"
@@ -254,7 +253,9 @@ export class BooksMetadataService {
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
       )
-      const previousFileMetadata = ctx.book.metadata?.find(isLegacyFileMetadata)
+      const previousFileMetadata = ctx.book.metadata?.find(
+        (entry) => entry.type === "file",
+      )
       const previousUserMetadata = ctx.book.metadata?.find(
         (entry): entry is UserMetadata => entry.type === "user",
       )
@@ -393,10 +394,12 @@ export class BooksMetadataService {
        * silently disappear under `metadataFileDownloadEnabled=false`,
        * unsupported content types, or download failures.
        */
-      const reusedFileMetadata =
-        !freshFileMetadata && !ctx.force && fileUnchanged && !ignoreMetadataFile
-          ? previousFileMetadata
-          : undefined
+      const isPreviousFileMetadataReusable =
+        !ctx.force && fileUnchanged && !ignoreMetadataFile
+      const fileMetadata =
+        freshFileMetadata ??
+        (isPreviousFileMetadataReusable ? previousFileMetadata : undefined)
+      const fileFields = fileMetadata && getBookMetadataFields(fileMetadata)
 
       /**
        * Single Google Books lookup — runs after extraction so it sees the
@@ -404,15 +407,9 @@ export class BooksMetadataService {
        * `user > directive > file > …` chain.
        */
       const lookupTitle = path.parse(linkMetadata.title?.toString() ?? "").name
-      const lookupIsbn =
-        previousUserMetadata?.isbn ??
-        isbn ??
-        freshFileMetadata?.isbn ??
-        reusedFileMetadata?.isbn
+      const lookupIsbn = previousUserMetadata?.isbn ?? isbn ?? fileFields?.isbn
       const lookupGoogleVolumeId =
-        directiveGoogleVolumeId ??
-        freshFileMetadata?.googleVolumeId ??
-        reusedFileMetadata?.googleVolumeId
+        directiveGoogleVolumeId ?? fileFields?.googleVolumeId
 
       const sourcesMetadata =
         ignoreMetadataSources || !externalFetchEnabled
@@ -439,11 +436,7 @@ export class BooksMetadataService {
       const metadataList: BookMetadata[] = [
         linkMetadata,
         ...sourcesMetadata,
-        ...(freshFileMetadata
-          ? [freshFileMetadata]
-          : reusedFileMetadata
-            ? [reusedFileMetadata]
-            : []),
+        ...(fileMetadata ? [fileMetadata] : []),
         ...(previousUserMetadata ? [previousUserMetadata] : []),
       ]
 

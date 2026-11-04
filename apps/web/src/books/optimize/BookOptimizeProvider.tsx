@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, type ReactNode } from "react"
+import { useEffect, useMemo, type ReactNode } from "react"
 import { useForm } from "react-hook-form"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
@@ -10,7 +10,6 @@ import {
   type BookOptimizeContextValue,
 } from "./BookOptimizeContext"
 import {
-  EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
   resolveBookOptimizeFormValues,
   type BookOptimizeFormValues,
 } from "./form"
@@ -46,29 +45,19 @@ export function BookOptimizeProvider({
   const {
     control,
     reset,
+    trigger,
     getValues,
     formState: { isValid, isDirty },
   } = useForm<BookOptimizeFormValues>({
-    defaultValues: EMPTY_BOOK_OPTIMIZE_FORM_VALUES,
+    defaultValues: resolveBookOptimizeFormValues(inspection),
     mode: "onChange",
   })
 
-  const resolvedValues = useMemo(
-    () => resolveBookOptimizeFormValues(inspection),
-    [inspection],
-  )
-
-  const formKey = `${book._id}:${link._id}`
-  const seededFormKeyRef = useRef<string | null>(null)
-
   useEffect(
-    function seedFormPerBookLink() {
-      if (seededFormKeyRef.current === formKey) return
-
-      seededFormKeyRef.current = formKey
-      reset(resolvedValues)
+    function showErrorsOfSeededValues() {
+      void trigger()
     },
-    [formKey, reset, resolvedValues],
+    [trigger],
   )
 
   // Upload pushes the current local file as-is; pending (un-applied) edits must
@@ -90,6 +79,7 @@ export function BookOptimizeProvider({
       isUploading,
       isValid,
       reset,
+      trigger,
       canUpload,
       uploadToDataSource,
       revertLocalChanges,
@@ -106,6 +96,7 @@ export function BookOptimizeProvider({
       isUploading,
       isValid,
       reset,
+      trigger,
       canUpload,
       uploadToDataSource,
       revertLocalChanges,

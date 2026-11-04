@@ -17,6 +17,11 @@ const isLinkOfType =
   (link: LinkDocType): link is Extract<LinkDocType, { type: T }> =>
     link.type === type
 
+/**
+ * Calls each plugin's `useRemoveResource` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginRemoveResource = () => {
   const removeResourceFromWebdav = pluginsByType.webdav.useRemoveResource()
   const removeResourceFromDropbox = pluginsByType.dropbox.useRemoveResource()
