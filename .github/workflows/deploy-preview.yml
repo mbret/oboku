@@ -10,7 +10,7 @@ concurrency:
 
 jobs:
   deploy-docker:
-    name: 'Deploy docker'
+    name: "Deploy docker"
     uses: ./.github/workflows/_deploy-docker.yml
     with:
       sha: ${{ github.sha }}

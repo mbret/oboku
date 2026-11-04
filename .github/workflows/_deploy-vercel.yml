@@ -4,14 +4,14 @@ on:
   workflow_call:
     inputs:
       app_directory:
-        description: 'Directory of the app to deploy (e.g., apps/web, apps/landing)'
+        description: "Directory of the app to deploy (e.g., apps/web, apps/landing)"
         required: true
         type: string
       deployment_name:
-        description: 'Name for the deployment job'
+        description: "Name for the deployment job"
         required: false
         type: string
-        default: 'production'
+        default: "production"
     secrets:
       VERCEL_TOKEN:
         required: true
@@ -22,7 +22,7 @@ on:
 
 jobs:
   deploy-production:
-    name: 'Deploy ${{ inputs.deployment_name }}'
+    name: "Deploy ${{ inputs.deployment_name }}"
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
@@ -31,8 +31,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
       # This is mostly used to have vercel cli, but we may as well just install everything
       - name: Install deps
         run: pnpm install --frozen-lockfile

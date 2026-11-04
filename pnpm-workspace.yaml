@@ -2,18 +2,18 @@ packages:
   - packages/*
   - apps/*
 catalog:
-  react: 19.3.0
-  react-dom: 19.3.0
+  react: 19.3.1
+  react-dom: 19.3.1
 # apps/web/tsconfig.json redirects @internationalized/* to
 # ../../node_modules/@internationalized/*/dist/types — keep that scope
 # physically hoisted at the root like npm used to.
 publicHoistPattern:
-  - '@internationalized/*'
+  - "@internationalized/*"
 allowBuilds:
-  '@firebase/util': true
-  '@scarf/scarf': false
-  '@sentry/node-cpu-profiler': true
-  '@swc/core': true
+  "@firebase/util": true
+  "@scarf/scarf": false
+  "@sentry/node-cpu-profiler": true
+  "@swc/core": true
   aws-sdk: false
   bcrypt: true
   esbuild: true
@@ -21,9 +21,9 @@ allowBuilds:
   protobufjs: false
   sharp: true
 patchedDependencies:
-  react-dom@19.3.0: patches/react-dom@19.3.0.patch
+  react-dom@19.3.1: patches/react-dom@19.3.1.patch
 # prose-reader and reactjrx share oboku's maintainer, so their releases are
 # installed as soon as they are out.
 minimumReleaseAgeExclude:
-  - '@prose-reader/*'
+  - "@prose-reader/*"
   - reactjrx

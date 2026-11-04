@@ -15,8 +15,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - name: Check
         run: |
@@ -28,7 +28,7 @@ jobs:
           pnpm run test
 
   release:
-    name: 'Release'
+    name: "Release"
     needs: build-and-test
     runs-on: ubuntu-latest
     permissions:
@@ -46,8 +46,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
 
       - name: Semantic release
         env:
@@ -65,7 +65,7 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
   deploy-docker:
-    name: 'Deploy docker'
+    name: "Deploy docker"
     needs: [build-and-test, release]
     uses: ./.github/workflows/_deploy-docker.yml
     with:
@@ -78,36 +78,36 @@ jobs:
       DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
 
   deploy-web-vercel:
-    name: 'Deploy web vercel'
+    name: "Deploy web vercel"
     needs: [build-and-test, release]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
-      app_directory: 'apps/web'
-      deployment_name: 'web production'
+      app_directory: "apps/web"
+      deployment_name: "web production"
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
   deploy-landing-vercel:
-    name: 'Deploy landing vercel'
+    name: "Deploy landing vercel"
     needs: [build-and-test]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
-      app_directory: 'apps/landing'
-      deployment_name: 'landing production'
+      app_directory: "apps/landing"
+      deployment_name: "landing production"
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
       VERCEL_PROJECT_ID: ${{ secrets.VERCEL_LANDING_PROJECT_ID }}
 
   deploy-docs-vercel:
-    name: 'Deploy docs vercel'
+    name: "Deploy docs vercel"
     needs: [build-and-test]
     uses: ./.github/workflows/_deploy-vercel.yml
     with:
-      app_directory: 'apps/docs'
-      deployment_name: 'docs production'
+      app_directory: "apps/docs"
+      deployment_name: "docs production"
     secrets:
       VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
       VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
