@@ -67,7 +67,7 @@ services:
       - oboku-preview
 
   oboku-preview-postgres:
-    image: postgres:17
+    image: postgres:17-trixie
     container_name: oboku-preview-postgres
     restart: always
     environment:

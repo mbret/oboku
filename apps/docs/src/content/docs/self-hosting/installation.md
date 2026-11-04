@@ -90,6 +90,20 @@ docker compose up -d
 An image name without a tag, as in the default compose file, means `latest`: the current release. Don't run the `preview` tag (e.g. `mbret/oboku-api:preview`) against data you want to keep. It is rebuilt from unreleased work on the `develop` branch every time it changes, so it can break at any time and can leave your data in a shape no release supports.
 :::
 
+If the Postgres log shows `collation version mismatch` after an update, rebuild its indexes once. The `postgres:17` image moved from Debian 12 to Debian 13, whose newer glibc can sort some text differently. Postgres cannot tell which indexes that affects, so it warns until they are rebuilt:
+
+```bash
+docker compose exec postgres sh -c '
+  user="${POSTGRES_USER:-postgres}"
+  for db in $(psql -U "$user" -d postgres -tAc "select datname from pg_database where datallowconn"); do
+    psql -v ON_ERROR_STOP=1 -U "$user" -d "$db" -c "REINDEX DATABASE \"$db\"" -c "ALTER DATABASE \"$db\" REFRESH COLLATION VERSION" || exit 1
+  done'
+```
+
+Without the compose file, as in Cosmos, run the same script with `docker exec <postgres container>` in place of `docker compose exec postgres`.
+
+Then set the image to `postgres:17-trixie` in your compose file or in Cosmos, as the default compose file does, so later updates keep the same Debian release.
+
 ## Installation with Cosmos
 
 Cosmos runs the same images as the docker compose installation above and serves them through its own reverse proxy.
