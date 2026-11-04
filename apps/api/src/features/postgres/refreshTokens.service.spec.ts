@@ -1,4 +1,3 @@
-// biome-ignore-all lint/complexity/useLiteralKeys: the spec calls the private successor helpers, which TypeScript only allows through bracket access
 import type { Mock } from "vitest"
 import { Logger } from "@nestjs/common"
 import { Test, TestingModule } from "@nestjs/testing"
