@@ -27,7 +27,9 @@ COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
-ENV NODE_ENV=production
+ENV NODE_ENV=production \
+    JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem \
+    JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
 CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
 FROM nginx:alpine AS spa
@@ -67,6 +69,8 @@ COPY --from=web-build /usr/src/app/apps/web/dist ${ASSET_TEMPLATE_DIR}
 FROM couchdb:3.5.3 AS couchdb
 COPY ./apps/couchdb/config/default.ini /opt/couchdb/etc/default.d/oboku.ini
 COPY ./apps/couchdb/update-secrets.sh /usr/local/bin/
+ENV JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem \
+    JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
 
 # Erlang sizes its port table from the open-files limit, which some Docker hosts
 # leave effectively unlimited. CouchDB then dies at boot trying to allocate 2 GiB
