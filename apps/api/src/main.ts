@@ -1,3 +1,4 @@
+import * as Sentry from "@sentry/nestjs"
 import { NestFactory } from "@nestjs/core"
 import { AppModule } from "./app.module.js"
 import { ConfigService } from "@nestjs/config"
@@ -109,4 +110,11 @@ async function bootstrap() {
   await app.listen(configService.getOrThrow("PORT"))
 }
 
-bootstrap()
+// Sentry's unhandled-rejection handler only logs by default (mode "warn"), so
+// an unhandled boot failure would leave the process running and exit 0.
+bootstrap().catch(async function exitOnBootstrapFailure(error: unknown) {
+  new Logger("Bootstrap").error(error)
+  Sentry.captureException(error)
+  await Sentry.flush(2000)
+  process.exit(1)
+})
