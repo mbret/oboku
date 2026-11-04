@@ -267,6 +267,11 @@ type ObokuPluginBase<
   }>
   DownloadBookComponent: ComponentType<DownloadBookComponentProps<T>>
   Provider?: ComponentType<{ children: ReactNode }>
+  // The members below are hooks on purpose, even when no plugin calls a React
+  // hook in them and they return a plain value: a hook can use any React
+  // context, so the plugin API stays open to a future plugin. Never turn one
+  // into a plain function. Hooks cannot run in a loop, so generic code calls
+  // each plugin's hook by name, or runs it in a component made for its type.
   useRefreshMetadata: UseRefreshMetadataHook<T>
   useSynchronize: UseSynchronizeHook<T>
   useRemoveResource: UseRemoveResource<T>

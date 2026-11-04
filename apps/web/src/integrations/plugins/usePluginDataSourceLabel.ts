@@ -19,6 +19,11 @@ const syncSourceArgs = <T extends DataSourceDocType["type"]>(
   return { enabled: !!narrowed, dataSource: narrowed }
 }
 
+/**
+ * Calls each plugin's `useSyncSourceInfo` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
