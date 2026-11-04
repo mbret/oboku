@@ -13,7 +13,6 @@ import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { UpsertFile } from "./UpsertFile"
-import { ROUTES } from "../../../navigation/routes"
 
 const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -27,13 +26,6 @@ export const plugin: ObokuPlugin<"dropbox"> = {
   canRemoveResource: false,
   canUpsertFile: true,
   Icon: DropboxIcon,
-  collectionIdentityFields: ["fileId"],
-  featureFlag: "FEATURE_DROPBOX_ENABLED",
-  integration: {
-    name: PLUGIN_NAME,
-    description: "Manage contents from Dropbox",
-    route: ROUTES.INTEGRATION_DROPBOX,
-  },
   UploadBookComponent: UploadBook,
   DataSourceForm,
   DownloadBookComponent: DownloadBook,

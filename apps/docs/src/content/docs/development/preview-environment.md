@@ -67,7 +67,7 @@ services:
       - oboku-preview
 
   oboku-preview-postgres:
-    image: postgres:17
+    image: postgres:17-trixie
     container_name: oboku-preview-postgres
     restart: always
     environment:
@@ -88,7 +88,6 @@ services:
       oboku-preview-postgres:
         condition: service_started
     environment:
-      NODE_ENV: production
       APP_PUBLIC_URL: https://app.preview.oboku.me
       ADMIN_PUBLIC_URL: https://admin.preview.oboku.me
       COUCH_DB_URL: http://oboku-preview-couchdb:5984

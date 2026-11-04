@@ -1,18 +1,19 @@
+import type { SettingsConnectorType } from "@oboku/shared"
 import { SettingsRounded } from "@mui/icons-material"
 import { Button, Stack, type ButtonProps } from "@mui/material"
 import { memo } from "react"
 import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../navigation/routes"
-import type { ConnectorDetails } from "../integrations/plugins/types"
+import { CONNECTOR_DETAILS } from "./connectorDetails"
 
 export const ConnectorManagementButtons = memo(
   function ConnectorManagementButtons({
-    connector,
+    connectorType,
     onNavigate,
     variant = "outlined",
     showNewButton = true,
   }: {
-    connector: ConnectorDetails
+    connectorType: SettingsConnectorType
     onNavigate?: () => void
     variant?: ButtonProps["variant"]
     showNewButton?: boolean
@@ -21,14 +22,14 @@ export const ConnectorManagementButtons = memo(
 
     const handleManage = () => {
       onNavigate?.()
-      navigate(connector.integrationRoute)
+      navigate(CONNECTOR_DETAILS[connectorType].integrationRoute)
     }
 
     const handleNew = () => {
       onNavigate?.()
       navigate(
         generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, {
-          type: connector.type,
+          type: connectorType,
         }),
       )
     }

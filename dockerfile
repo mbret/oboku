@@ -27,6 +27,7 @@ COPY --from=base /usr/src/app .
 COPY apps/api ./apps/api
 RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
+ENV NODE_ENV=production
 CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
 FROM nginx:alpine AS spa

@@ -23,7 +23,10 @@ services:
       start_period: 20s
 
   postgres:
-    image: postgres:17
+    # The tag pins the Debian release, because its glibc sets how Postgres sorts
+    # text. Another Debian release needs a REINDEX, see
+    # https://docs.oboku.me/self-hosting/installation#update
+    image: postgres:17-trixie
     restart: always
     env_file:
       - .env
@@ -60,7 +63,6 @@ services:
       - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-oboku}
-      NODE_ENV: ${NODE_ENV:-production}
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
       COUCH_DB_URL: ${COUCH_DB_URL:-http://couchdb:5984}
       JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}

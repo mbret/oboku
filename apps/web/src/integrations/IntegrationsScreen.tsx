@@ -9,47 +9,33 @@ import { MenuBookRounded } from "@mui/icons-material"
 import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
-import { plugins, type Plugin } from "./plugins/configure"
+import type { Plugin } from "./plugins/configure"
 import {
   useGetIsPluginEnabled,
   useGetIsPluginVisible,
 } from "./plugins/useIsPluginEnabled"
-import type { PluginIntegration } from "./plugins/types"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"
-
-type IntegrationEntry = PluginIntegration & {
-  Icon: ComponentType<SvgIconProps>
-  plugin?: Plugin
-}
-
-const koreaderIntegration: IntegrationEntry = {
-  name: "KOReader",
-  description: "Sync reading positions with KOReader, Readest, CrossPoint…",
-  route: ROUTES.INTEGRATION_KOREADER,
-  Icon: MenuBookRounded,
-}
-
-const pluginIntegrations = plugins.flatMap(
-  function toIntegrationEntry(plugin): IntegrationEntry[] {
-    return plugin.integration
-      ? [{ ...plugin.integration, Icon: plugin.Icon, plugin }]
-      : []
-  },
-)
-
-const integrationEntries = [
-  koreaderIntegration,
-  ...pluginIntegrations,
-].toSorted(function byName(a, b) {
-  return a.name.localeCompare(b.name)
-})
+import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
+import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
+import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
+import { plugin as serverPlugin } from "./server/serverPlugin"
+import { plugin as synologyDrivePlugin } from "./synology-drive/synologyDrivePlugin"
+import webdavPlugin from "./webdav/webdavPlugin"
 
 function IntegrationListItem({
-  integration: { name, description, route, Icon, plugin },
+  to,
+  name,
+  description,
+  Icon,
+  plugin,
 }: {
-  integration: IntegrationEntry
+  to: string
+  name: string
+  description: string
+  Icon: ComponentType<SvgIconProps>
+  plugin?: Plugin
 }) {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
@@ -59,7 +45,7 @@ function IntegrationListItem({
   if (!isVisible) return null
 
   return (
-    <ListItemButton component={Link} to={route} disabled={!isEnabled}>
+    <ListItemButton component={Link} to={to} disabled={!isEnabled}>
       <ListItemIcon>
         <Icon />
       </ListItemIcon>
@@ -74,12 +60,54 @@ export function IntegrationsScreen() {
       <TopBarNavigation title="Integrations" showBack={false} />
       <PageContainer disableGutters>
         <PageSection>
-          {integrationEntries.map((integration) => (
-            <IntegrationListItem
-              key={integration.route}
-              integration={integration}
-            />
-          ))}
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_DROPBOX}
+            name="Dropbox"
+            description="Manage contents from Dropbox"
+            Icon={dropboxPlugin.Icon}
+            plugin={dropboxPlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_GOOGLE}
+            name="Google"
+            description="Manage contents from Google Drive"
+            Icon={googleDrivePlugin.Icon}
+            plugin={googleDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_KOREADER}
+            name="KOReader"
+            description="Sync reading positions with KOReader, Readest, CrossPoint…"
+            Icon={MenuBookRounded}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_ONE_DRIVE}
+            name="OneDrive"
+            description="Manage contents from Microsoft OneDrive"
+            Icon={oneDrivePlugin.Icon}
+            plugin={oneDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_SERVER}
+            name="Server"
+            description="Manage contents from your oboku server"
+            Icon={serverPlugin.Icon}
+            plugin={serverPlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_SYNOLOGY_DRIVE}
+            name="Synology Drive"
+            description="Browse a Synology Drive library and add books by stable file id"
+            Icon={synologyDrivePlugin.Icon}
+            plugin={synologyDrivePlugin}
+          />
+          <IntegrationListItem
+            to={ROUTES.INTEGRATION_WEBDAV}
+            name="WebDAV"
+            description="Manage contents from WebDAV"
+            Icon={webdavPlugin.Icon}
+            plugin={webdavPlugin}
+          />
         </PageSection>
       </PageContainer>
     </Page>
