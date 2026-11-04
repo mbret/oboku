@@ -17,6 +17,7 @@ import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
 } from "../../plugins/types"
+import { CONNECTOR } from "./constants"
 
 type WebDAVFormData = DataSourceFormData<{
   connectorId: string
@@ -81,7 +82,7 @@ export const DataSourceForm = memo(function DataSourceForm({
         control={control}
         name="connectorId"
         rules={{ required: true }}
-        connectorType="webdav"
+        connector={CONNECTOR}
       />
       <TestConnection
         connectionData={{

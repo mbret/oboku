@@ -72,10 +72,12 @@ export type BookMetadataVariant<
 /**
  * What the book's file says about it, as archive-reader's `resolveArchive`
  * reads it from the container (EPUB OPF, ComicInfo, …). `contentType` is
- * the file's own, which the container does not describe.
+ * the file's own, which the container does not describe. `version` is the
+ * schema version of the resolved archive that produced it.
  */
 export type FileMetadata = {
   type: "file"
+  version: number
   contentType?: string
   metadata: ResolvedMetadata
 }

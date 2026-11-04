@@ -56,25 +56,32 @@ describe("IntegrationsScreen", () => {
     cleanup()
   })
 
-  it("links each integration to its page, without the plugins that belong to none", () => {
+  it("links each integration to its page, in the order of their names, without the plugins that belong to none", () => {
     renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
 
-    const integrationPages = Object.entries(INTEGRATION_HREF_BY_NAME)
+    const linkedPages = screen
+      .getAllByRole("link")
+      .map((link) => link.getAttribute("href"))
 
-    expect(screen.getAllByRole("link")).toHaveLength(integrationPages.length)
+    expect(linkedPages).toEqual(Object.values(INTEGRATION_HREF_BY_NAME))
 
-    for (const [name, href] of integrationPages) {
+    for (const [name, href] of Object.entries(INTEGRATION_HREF_BY_NAME)) {
       expect(getIntegrationLink(name).getAttribute("href")).toBe(href)
     }
   })
 
-  it("hides an integration whose provider the instance did not configure", () => {
+  it.each([
+    ["Dropbox", "FEATURE_DROPBOX_ENABLED"],
+    ["Google", "FEATURE_GOOGLE_DRIVE_ENABLED"],
+    ["OneDrive", "FEATURE_ONE_DRIVE_ENABLED"],
+    ["Server", "FEATURE_SERVER_SYNC_ENABLED"],
+  ])("hides %s when the instance turns %s off", (name, featureFlag) => {
     renderIntegrationsScreen({
       ...EVERY_PROVIDER_CONFIGURED,
-      FEATURE_DROPBOX_ENABLED: false,
+      [featureFlag]: false,
     })
 
-    expect(queryIntegrationLink("Dropbox")).toBeNull()
+    expect(queryIntegrationLink(name)).toBeNull()
     expect(getIntegrationLink("KOReader")).toBeDefined()
   })
 

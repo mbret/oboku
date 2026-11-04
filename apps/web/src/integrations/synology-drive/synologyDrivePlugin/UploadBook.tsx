@@ -3,6 +3,7 @@ import { memo, useState } from "react"
 import type { ObokuPlugin } from "../../plugins/types"
 import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
 import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
+import { CONNECTOR } from "./constants"
 
 export const UploadBook: ObokuPlugin<"synology-drive">["UploadBookComponent"] =
   memo(function UploadBook({ onClose, title }) {
@@ -21,7 +22,7 @@ export const UploadBook: ObokuPlugin<"synology-drive">["UploadBookComponent"] =
           />
         ) : (
           <ConnectorSelectionStep
-            connectorType="synology-drive"
+            connector={CONNECTOR}
             onAuthenticated={setAuthResult}
             onClose={onClose}
           />

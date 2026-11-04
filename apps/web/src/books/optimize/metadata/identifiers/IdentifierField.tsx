@@ -40,6 +40,7 @@ type Props = {
   index: number
   unique: boolean
   disabled: boolean
+  isStorable: boolean
   onRemove: () => void
 }
 
@@ -48,6 +49,7 @@ export function IdentifierField({
   index,
   unique,
   disabled,
+  isStorable,
   onRemove,
 }: Props) {
   // react-hook-form is on React Compiler's incompatible-library list.
@@ -63,7 +65,14 @@ export function IdentifierField({
   } = useController({
     control,
     name: schemeName,
-    rules: { validate: validateIdentifierScheme, deps: [valueName] },
+    rules: {
+      validate: function validateSchemeIfStorable(value) {
+        if (!isStorable) return true
+
+        return validateIdentifierScheme(value)
+      },
+      deps: [valueName],
+    },
   })
 
   const [isCustomScheme, setIsCustomScheme] = useState(
@@ -120,6 +129,8 @@ export function IdentifierField({
         name={valueName}
         rules={{
           validate: function validateValueAgainstItsScheme(value, values) {
+            if (!isStorable) return true
+
             return validateIdentifierValue(
               values.identifiers[index]?.scheme ?? "",
               value,

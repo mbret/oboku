@@ -27,13 +27,6 @@ import { useKoreaderSyncConnection } from "./useKoreaderSyncConnection"
 import { useConnectKoreaderSyncServer } from "./useConnectKoreaderSyncServer"
 import { useDisconnectKoreaderSyncServer } from "./useDisconnectKoreaderSyncServer"
 
-const IntroStack = styled(Stack)(function styleIntroStack({ theme }) {
-  return {
-    gap: theme.spacing(2),
-    paddingTop: theme.spacing(2),
-  }
-})
-
 const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
   theme,
 }) {
@@ -123,7 +116,7 @@ const ConnectionForm = memo(function ConnectionForm() {
   return (
     <>
       <PageContainer>
-        <IntroStack>
+        <Stack spacing={2} sx={{ pt: 2 }}>
           <Typography>
             oboku's reader can sync its reading position through a KOReader sync
             server, like KOReader, Readest or CrossPoint do. Use the server and
@@ -135,7 +128,7 @@ const ConnectionForm = memo(function ConnectionForm() {
               setValue("username", username, { shouldValidate: true })
             }}
           />
-        </IntroStack>
+        </Stack>
       </PageContainer>
       <PageContainer disableGutters>
         <form
