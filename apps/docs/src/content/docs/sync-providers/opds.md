@@ -17,7 +17,7 @@ oboku can sync the free books of an OPDS catalog, the protocol that self-hosted 
 An OPDS data source needs a connector, which holds:
 
 - **URL**: the address of your catalog server, starting with `http://` or `https://`.
-- **Username** and **password**: your login on the catalog, the password kept in a [secret](/guides/secrets). oboku sends them with HTTP Basic authentication, and only with requests to the connector's address: its scheme, host and port. A catalog that serves its files from another host, a CDN for instance, never receives them. If your server redirects `http://` to `https://`, enter its `https://` address.
+- **Username** and **password**: your login on the catalog, the password kept in a [secret](/guides/secrets). oboku sends them with HTTP Basic authentication, and only with requests to the connector's address: its scheme, host and port. A catalog decides where its links and redirects lead, and Basic authentication does not encrypt the password, so any server that receives it can read it. Limiting it to the connector's address keeps it from a CDN, a mirror, or any other host a catalog links to. If your server redirects `http://` to `https://`, enter its `https://` address.
 - **Allow self-signed certificate**: for a server using a self-signed certificate. oboku accepts it from the connector's address only. Since books download from your browser, open your server's address once in it to trust the certificate as well.
 
 Kavita does not ask OPDS readers to log in: the OPDS URL it gives you carries your key. Enter your username and any password.
@@ -64,5 +64,6 @@ oboku's server connects to your catalog to read its feeds during syncs and to do
 - Kavita dates its entries with the time of the request and no time zone, which oboku ignores: a sync refreshes a Kavita book's metadata only when the book is new or has no cover.
 - Komga gives CBR files a type that oboku does not take yet, `application/x-rar-compressed`, so a sync skips them.
 - A sync that stops early, at one of the limits above, shows no warning in the app yet, and the books it did not reach are missing. A warning is tracked in [#899](https://github.com/mbret/oboku/issues/899).
+- A catalog that serves feeds or files from another server, and asks for your login there too, does not work: oboku sends your password to the connector's address only.
 - A catalog without a login cannot be synced yet.
 - The catalog's own authors, ISBN, cover and summary are not used yet.
