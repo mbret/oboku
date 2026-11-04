@@ -31,8 +31,7 @@ export const useDismissibleOverlay = ({
 
   const { register, reserve, close: closeEntry } = useModalHistory()
 
-  const onCloseRef = useRef(onClose)
-  onCloseRef.current = onClose
+  const onCloseRef = useLiveRef(onClose)
   const openRef = useLiveRef(open)
   const wasOpenRef = useRef(open)
 

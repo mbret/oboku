@@ -50,7 +50,7 @@ export const FiltersDrawer = memo(function FiltersDrawer({
             </ListItemButton>
             <ListItemButton
               onClick={() =>
-                libraryShelvesFiltersSignal.setValue((state) => ({
+                libraryShelvesFiltersSignal.update((state) => ({
                   ...state,
                   showNotInterestedCollections:
                     !state.showNotInterestedCollections,

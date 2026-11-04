@@ -6,8 +6,6 @@ services:
       - .env
     environment:
       COUCHDB_USER: ${COUCHDB_USER:-admin}
-      JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
-      JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
     volumes:
       # couchdb generates the JWT pair into this directory on first start
       - ./secrets:/secrets
@@ -23,7 +21,10 @@ services:
       start_period: 20s
 
   postgres:
-    image: postgres:17
+    # The tag pins the Debian release, because its glibc sets how Postgres sorts
+    # text. Another Debian release needs a REINDEX, see
+    # https://docs.oboku.me/self-hosting/installation#update
+    image: postgres:17-trixie
     restart: always
     env_file:
       - .env
@@ -60,13 +61,8 @@ services:
       - .env
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-oboku}
-      NODE_ENV: ${NODE_ENV:-production}
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
       COUCH_DB_URL: ${COUCH_DB_URL:-http://couchdb:5984}
-      JWT_PRIVATE_KEY_FILE: ${JWT_PRIVATE_KEY_FILE:-/secrets/jwt_private_key.pem}
-      JWT_PUBLIC_KEY_FILE: ${JWT_PUBLIC_KEY_FILE:-/secrets/jwt_public_key.pem}
-      API_DATA_DIR: ${API_DATA_DIR:-/var/lib/oboku/data}
-      API_CONFIG_DIR: ${API_CONFIG_DIR:-/var/lib/oboku/config}
     volumes:
       - ./secrets:/secrets:ro
       - ./config:${API_CONFIG_DIR:-/var/lib/oboku/config}

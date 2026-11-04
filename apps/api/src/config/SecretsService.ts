@@ -1,13 +1,17 @@
-import { Injectable } from "@nestjs/common"
+import { Injectable, OnModuleInit } from "@nestjs/common"
 import { AppConfigService } from "./AppConfigService.js"
 import fs from "node:fs"
 
 @Injectable()
-export class SecretsService {
+export class SecretsService implements OnModuleInit {
   private jwtPrivateKey: string | undefined
   private jwtPublicKey: string | undefined
 
   constructor(public appConfig: AppConfigService) {}
+
+  async onModuleInit() {
+    await Promise.all([this.getJwtPrivateKey(), this.getJwtPublicKey()])
+  }
 
   async getJwtPrivateKey() {
     if (this.jwtPrivateKey) {

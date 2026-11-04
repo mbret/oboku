@@ -17,6 +17,11 @@ const isLinkOfType =
   (link: LinkDocType): link is Extract<LinkDocType, { type: T }> =>
     link.type === type
 
+/**
+ * Calls each plugin's `useRemoveResource` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginRemoveResource = () => {
   const removeResourceFromWebdav = pluginsByType.webdav.useRemoveResource()
   const removeResourceFromDropbox = pluginsByType.dropbox.useRemoveResource()
@@ -28,6 +33,7 @@ export const usePluginRemoveResource = () => {
   const removeResourceFromFile = pluginsByType.file.useRemoveResource()
   const removeResourceFromUri = pluginsByType.URI.useRemoveResource()
   const removeResourceFromServer = pluginsByType.server.useRemoveResource()
+  const removeResourceFromOpds = pluginsByType.opds.useRemoveResource()
 
   return useMutation({
     mutationFn: async (group: RemoveResourceGroup) => {
@@ -61,6 +67,10 @@ export const usePluginRemoveResource = () => {
         case "server":
           return removeResourceFromServer(
             group.links.filter(isLinkOfType("server")),
+          )
+        case "opds":
+          return removeResourceFromOpds(
+            group.links.filter(isLinkOfType("opds")),
           )
         default:
           return assertNever(group.type)

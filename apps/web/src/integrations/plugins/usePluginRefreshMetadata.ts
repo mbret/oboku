@@ -16,6 +16,11 @@ type RefreshMetadataResult = {
   providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
+/**
+ * Calls each plugin's `useRefreshMetadata` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginRefreshMetadata = (
   options?: Pick<UseMutationOptions, "meta">,
 ) => {
@@ -76,6 +81,13 @@ export const usePluginRefreshMetadata = (
       }),
       meta,
     })
+  const { mutateAsync: refreshOpdsMetadata } =
+    pluginsByType.opds.useRefreshMetadata({
+      requestPopup: createRequestPopupDialog({
+        name: pluginsByType.opds.name,
+      }),
+      meta,
+    })
 
   return useCallback(
     async (
@@ -116,6 +128,10 @@ export const usePluginRefreshMetadata = (
           return refreshServerMetadata(
             params as UseRefreshMetadataVariables<"server">,
           )
+        case "opds":
+          return refreshOpdsMetadata(
+            params as UseRefreshMetadataVariables<"opds">,
+          )
         default:
           return assertNever(params.linkType)
       }
@@ -125,6 +141,7 @@ export const usePluginRefreshMetadata = (
       refreshDropboxMetadata,
       refreshFileMetadata,
       refreshOneDriveMetadata,
+      refreshOpdsMetadata,
       refreshServerMetadata,
       refreshSynologyDriveMetadata,
       refreshUriMetadata,

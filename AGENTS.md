@@ -93,6 +93,11 @@
 - Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
 - Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
 
+### Web plugins: members named `use*` are hooks
+
+- A plugin member named `use*` in `apps/web/src/integrations/plugins/types.ts` (`useLinkInfo`, `useSyncSourceInfo`, `useRemoveResource`, `useSignOut`, `useSynchronize`, `useRefreshMetadata`) is a hook on purpose, even when no plugin calls a React hook in it and it returns a plain value. A hook can use any React context, so the plugin API stays open to a future plugin.
+- Never turn such a member into a plain function. Hooks cannot run in a loop, so generic code calls each plugin's hook by name, or runs it in a component made for the plugin's type.
+
 ### Data migrations: RxDB is local, CouchDB is the data
 
 - **An RxDB schema migration only rewrites the device's copy.** `migrationStrategies` rewrite the documents stored locally, keep their `_meta.lwt`, and rewrite RxDB's record of the server copy the same way, so the replication never pushes them. CouchDB keeps the old data, a new device pulls it unmigrated, and the next server-side change to a document overwrites the migrated copy. RxDB "assumes that you run the exact same migration on the servers and the clients" ([docs](https://rxdb.info/migration-schema.html)).
@@ -106,6 +111,7 @@
 - Prefer `pnpm` commands over `npm` or `yarn` unless the user explicitly asks otherwise.
 - When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `pnpm-lock.yaml` as the source of truth.
 - Workspace-internal dependencies (`@oboku/*`) use the `workspace:*` protocol.
+- The `@prose-reader/*` packages and `reactjrx` use `catalog:prose-reader`. Their versions live in the `prose-reader` catalog of `pnpm-workspace.yaml`, and they move together.
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 

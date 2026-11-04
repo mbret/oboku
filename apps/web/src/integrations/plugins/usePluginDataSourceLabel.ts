@@ -19,6 +19,11 @@ const syncSourceArgs = <T extends DataSourceDocType["type"]>(
   return { enabled: !!narrowed, dataSource: narrowed }
 }
 
+/**
+ * Calls each plugin's `useSyncSourceInfo` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginDataSourceLabel = (
   dataSource?: DeepReadonly<DataSourceDocType> | null,
 ) => {
@@ -46,6 +51,9 @@ export const usePluginDataSourceLabel = (
   const server = pluginsByType.server.useSyncSourceInfo(
     syncSourceArgs(dataSource, "server"),
   )
+  const opds = pluginsByType.opds.useSyncSourceInfo(
+    syncSourceArgs(dataSource, "opds"),
+  )
 
   const dataSourceType = dataSource?.type
 
@@ -66,6 +74,8 @@ export const usePluginDataSourceLabel = (
       return webdav?.name
     case "server":
       return server?.name
+    case "opds":
+      return opds?.name
     case undefined:
       return undefined
     default:

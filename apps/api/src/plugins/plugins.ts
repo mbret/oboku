@@ -7,6 +7,7 @@ import { dataSource as urlDataSource } from "./uri/index.js"
 import { dataSource as webdavDataSource } from "./webdav/index.js"
 import { plugin as filePlugin } from "./file/index.js"
 import { dataSource as serverDataSource } from "./server/index.js"
+import { dataSource as opdsDataSource } from "./opds/index.js"
 import type { DataSourcePlugin } from "./types.js"
 
 /**
@@ -24,6 +25,7 @@ export const plugins: {
   webdav: webdavDataSource,
   file: filePlugin,
   server: serverDataSource,
+  opds: opdsDataSource,
 }
 
 /** Returns the plugin for the given provider; sync return type is typed per provider. */

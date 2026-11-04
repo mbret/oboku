@@ -148,7 +148,7 @@ export const CollectionDetailsScreen = () => {
             customScrollParent={scrollerEl ?? undefined}
             style={bookListStyle}
             onViewModeChange={(value) => {
-              collectionDetailsScreenListControlsStateSignal.setValue(
+              collectionDetailsScreenListControlsStateSignal.update(
                 (state) => ({
                   ...state,
                   viewMode: value,
@@ -156,7 +156,7 @@ export const CollectionDetailsScreen = () => {
               )
             }}
             onSortingChange={(value) => {
-              collectionDetailsScreenListControlsStateSignal.setValue(
+              collectionDetailsScreenListControlsStateSignal.update(
                 (state) => ({
                   ...state,
                   sorting: value,

@@ -31,12 +31,12 @@ function openConfirmation(prunesVersionHistory: boolean): Promise<boolean> {
 
 describe("confirmUploadToDataSource", function testConfirmUploadToDataSource() {
   beforeEach(function resetDialogs() {
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   afterEach(function cleanUpDialogs() {
     cleanup()
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   it("announces the version history replacement as a locked option", async function announceVersionHistoryPruning() {

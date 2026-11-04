@@ -11,7 +11,7 @@ import {
 
 describe("BlockingBackdrop lock state", () => {
   afterEach(() => {
-    lockState.setValue([])
+    lockState.update([])
   })
 
   it("does not duplicate an existing lock key", () => {

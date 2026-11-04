@@ -9,7 +9,7 @@ import { booksDownloadStateSignal, DownloadState } from "./states"
 
 describe("purgeAllDownloads", () => {
   it("clears the downloads table and resets the in-memory download state", async () => {
-    booksDownloadStateSignal.setValue({
+    booksDownloadStateSignal.update({
       "book-1": { downloadState: DownloadState.Downloaded, size: 42 },
     })
 

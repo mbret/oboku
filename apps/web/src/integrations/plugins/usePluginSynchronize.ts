@@ -11,6 +11,11 @@ type SynchronizeResult = {
   providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
 }
 
+/**
+ * Calls each plugin's `useSynchronize` by name. Plugin members named `use*` are
+ * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * new plugin adds its line here.
+ */
 export const usePluginSynchronize = () => {
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const { mutateAsync: synchronizeWebdav } =
@@ -54,6 +59,9 @@ export const usePluginSynchronize = () => {
         name: pluginsByType.server.name,
       }),
     })
+  const { mutateAsync: synchronizeOpds } = pluginsByType.opds.useSynchronize({
+    requestPopup: createRequestPopupDialog({ name: pluginsByType.opds.name }),
+  })
 
   return useCallback(
     async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
@@ -74,6 +82,8 @@ export const usePluginSynchronize = () => {
           return synchronizeUri(dataSource)
         case "server":
           return synchronizeServer(dataSource)
+        case "opds":
+          return synchronizeOpds(dataSource)
         default:
           return assertNever(dataSource)
       }
@@ -83,6 +93,7 @@ export const usePluginSynchronize = () => {
       synchronizeDropbox,
       synchronizeFile,
       synchronizeOneDrive,
+      synchronizeOpds,
       synchronizeServer,
       synchronizeSynologyDrive,
       synchronizeUri,

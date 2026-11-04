@@ -24,11 +24,11 @@ const addTagDialogSignal = signal<{ open: boolean }>({
 })
 
 export const openAddTagDialog = () => {
-  addTagDialogSignal.setValue({ open: true })
+  addTagDialogSignal.update({ open: true })
 }
 
 const closeAddTagDialog = () => {
-  addTagDialogSignal.setValue({ open: false })
+  addTagDialogSignal.update({ open: false })
 }
 
 export function AddTagDialog() {

@@ -63,7 +63,7 @@ export const useRequestToken = ({
             if (!confirmed) throw new CancelError()
           }),
           mergeMap(() => {
-            consentShownSignal.setValue(true)
+            consentShownSignal.update(true)
 
             return from(
               requestGoogleAccessToken(
@@ -73,7 +73,7 @@ export const useRequestToken = ({
               ),
             ).pipe(
               mergeMap((accessToken) => {
-                consentShownSignal.setValue(false)
+                consentShownSignal.update(false)
 
                 if (accessToken.error) {
                   Logger.error(`google access token error`, accessToken)
@@ -90,7 +90,7 @@ export const useRequestToken = ({
                   created_at: Date.now(),
                 }
 
-                googleAccessTokenSignal.setValue(googleAccessToken)
+                googleAccessTokenSignal.update(googleAccessToken)
 
                 return of(googleAccessToken)
               }),
@@ -99,7 +99,7 @@ export const useRequestToken = ({
         )
       }),
       catchError((e) => {
-        consentShownSignal.setValue(false)
+        consentShownSignal.update(false)
 
         if (isPopupClosedError(e)) {
           throw new CancelError()
