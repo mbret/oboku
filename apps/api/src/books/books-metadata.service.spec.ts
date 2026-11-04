@@ -3,11 +3,16 @@ import {
   type BookDocType,
   type BookMetadata,
   buildBookBucketCoverKey,
+  type CatalogMetadata,
   createBookDefaults,
   type FileMetadata,
   type LegacyFileMetadata,
   type LinkDocType,
 } from "@oboku/shared"
+import {
+  FETCHED_METADATA_VERSION,
+  type MetadataMatch,
+} from "@prose-reader/metadata-fetcher"
 import { of } from "rxjs"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
@@ -17,18 +22,15 @@ import { CoversService } from "../covers/covers.service.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { BooksMetadataService } from "./books-metadata.service.js"
 
-const { getBookSourcesMetadata } = vi.hoisted(function createLookupSpy() {
-  return {
-    getBookSourcesMetadata: vi.fn(async function findNoCatalogRecord(
-      ..._args: unknown[]
-    ) {
-      return []
-    }),
-  }
+type MetadataFetcher = typeof import("@prose-reader/metadata-fetcher")
+
+const { fetchMetadata } = vi.hoisted(function createFetchMetadataSpy() {
+  return { fetchMetadata: vi.fn<MetadataFetcher["fetchMetadata"]>() }
 })
 
-vi.mock("../features/metadata/getBookSourcesMetadata.js", () => ({
-  getBookSourcesMetadata,
+vi.mock("@prose-reader/metadata-fetcher", async (importOriginal) => ({
+  ...(await importOriginal<MetadataFetcher>()),
+  fetchMetadata,
 }))
 
 const LINK_MODIFIED_AT = "2026-10-01T10:00:00.000Z"
@@ -66,7 +68,24 @@ const bookWith = (
   ...overrides,
 })
 
-const refresh = async (book: BookDocType) => {
+const acceptedMatch: MetadataMatch = {
+  providerId: "googleBooks",
+  score: 1,
+  accepted: true,
+  signals: [
+    {
+      field: "isbn",
+      score: 1,
+      weight: 1,
+      query: "9780441013593",
+      candidate: "9780441013593",
+    },
+  ],
+  metadata: { titles: [{ value: "Dune" }] },
+  id: "zyTCAlFPjgYC",
+}
+
+const refresh = async (book: BookDocType, linkName = "Dune.epub") => {
   const insert = vi.fn(async function storeBook(_doc: BookDocType) {
     return { ok: true }
   })
@@ -79,7 +98,7 @@ const refresh = async (book: BookDocType) => {
   }
   const pluginsService = {
     getFileMetadata: async () => ({
-      name: "Dune.epub",
+      name: linkName,
       contentType: "application/epub+zip",
       modifiedAt: LINK_MODIFIED_AT,
       canDownload: true,
@@ -92,7 +111,13 @@ const refresh = async (book: BookDocType) => {
   const module = await Test.createTestingModule({
     providers: [
       BooksMetadataService,
-      { provide: AppConfigService, useValue: {} },
+      {
+        provide: AppConfigService,
+        useValue: {
+          GOOGLE_BOOK_API_URL: "https://www.googleapis.com/books/v1",
+          METADATA_EXTRACTOR_SUPPORTED_EXTENSIONS: ["application/epub+zip"],
+        },
+      },
       {
         provide: CouchService,
         useValue: { createNanoInstanceForUser: async () => db },
@@ -152,7 +177,13 @@ const resolvedFileEntry: FileMetadata = {
 
 describe("BooksMetadataService.refreshMetadata", () => {
   beforeEach(() => {
-    getBookSourcesMetadata.mockClear()
+    fetchMetadata.mockReset()
+    fetchMetadata.mockResolvedValue({
+      version: FETCHED_METADATA_VERSION,
+      matches: [acceptedMatch],
+      sources: {},
+      failedProviders: [],
+    })
   })
 
   describe.each<[string, BookMetadata]>([
@@ -189,31 +220,135 @@ describe("BooksMetadataService.refreshMetadata", () => {
         expect(storedBook.metadata).toContainEqual(fileEntry)
       })
 
-      it("looks the file's ISBN and Google Books volume id up", async () => {
+      it("looks the file's title, ISBN and Google Books volume id up", async () => {
         await refresh(bookWithStoredCover([linkEntry, fileEntry]))
 
-        expect(getBookSourcesMetadata).toHaveBeenCalledWith(
-          {
+        expect(fetchMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({
             title: "Dune",
-            isbn: FILE_ISBN,
-            googleVolumeId: FILE_GOOGLE_VOLUME_ID,
-          },
-          expect.anything(),
+            identifiers: [
+              { value: FILE_ISBN, scheme: "ISBN" },
+              { value: FILE_GOOGLE_VOLUME_ID, scheme: "GoogleBooks" },
+            ],
+          }),
           expect.anything(),
         )
       })
 
-      it("looks the user's ISBN up over the file's", async () => {
+      it("looks the user's ISBN up in place of the file's identifiers", async () => {
         const userEntry: BookMetadata = { type: "user", isbn: "9780593099322" }
 
         await refresh(bookWithStoredCover([linkEntry, fileEntry, userEntry]))
 
-        expect(getBookSourcesMetadata).toHaveBeenCalledWith(
-          expect.objectContaining({ isbn: "9780593099322" }),
-          expect.anything(),
+        expect(fetchMetadata).toHaveBeenCalledWith(
+          expect.objectContaining({
+            identifiers: [{ value: "9780593099322", scheme: "ISBN" }],
+          }),
           expect.anything(),
         )
       })
     },
   )
+
+  describe("for an unchanged file whose cover a confirmed catalog match provides", () => {
+    const coverUri = "https://books.google.com/books/content?id=zyTCAlFPjgYC"
+    const confirmedCatalogEntry: CatalogMetadata = {
+      type: "catalog",
+      version: FETCHED_METADATA_VERSION,
+      ...acceptedMatch,
+      metadata: {
+        titles: [{ value: "Dune" }],
+        cover: { uri: coverUri, confidence: "derived" },
+      },
+    }
+    const fileWithFirstPageCover: FileMetadata = {
+      type: "file",
+      version: 5,
+      metadata: { cover: { uri: "page-001.jpg", confidence: "assumed" } },
+    }
+    const bookWithCatalogCover = (overrides: Partial<BookDocType> = {}) =>
+      bookWith([linkEntry, confirmedCatalogEntry, fileWithFirstPageCover], {
+        bucketCoverKey: buildBookBucketCoverKey({
+          type: "catalog",
+          value: coverUri,
+        }),
+        ...overrides,
+      })
+
+    it("does not download the file", async () => {
+      const { downloadLinkToTmp } = await refresh(bookWithCatalogCover())
+
+      expect(downloadLinkToTmp).not.toHaveBeenCalled()
+    })
+
+    it("downloads the file for its cover when the catalog is no longer asked", async () => {
+      const { downloadLinkToTmp } = await refresh(
+        bookWithCatalogCover({ metadataFetchEnabled: false }),
+      )
+
+      expect(downloadLinkToTmp).toHaveBeenCalled()
+    })
+  })
+
+  describe("its catalog lookup", () => {
+    const legacyCatalogEntry: BookMetadata = {
+      type: "googleBookApi",
+      title: "Dune",
+    }
+
+    it("asks about the book and stores the accepted match", async () => {
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry]),
+      )
+
+      expect(fetchMetadata).toHaveBeenCalledWith(
+        { title: "Dune" },
+        expect.objectContaining({ providers: expect.any(Array) }),
+      )
+      expect(storedBook.metadata).toEqual([
+        linkEntry,
+        {
+          type: "catalog",
+          version: FETCHED_METADATA_VERSION,
+          ...acceptedMatch,
+        },
+      ])
+    })
+
+    it("keeps the previous entry when a catalog failed and none matched", async () => {
+      fetchMetadata.mockResolvedValue({
+        version: FETCHED_METADATA_VERSION,
+        matches: [],
+        sources: {},
+        failedProviders: [{ id: "googleBooks", status: 429 }],
+      })
+
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry]),
+      )
+
+      expect(storedBook.metadata).toEqual([linkEntry, legacyCatalogEntry])
+    })
+
+    it("asks nothing and stores no entry when external metadata is off", async () => {
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry], {
+          metadataFetchEnabled: false,
+        }),
+      )
+
+      expect(fetchMetadata).not.toHaveBeenCalled()
+      expect(storedBook.metadata).toEqual([linkEntry])
+    })
+
+    it("asks nothing when the book gives nothing to search on", async () => {
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry]),
+        "[oboku~tags~unread].epub",
+      )
+
+      expect(fetchMetadata).not.toHaveBeenCalled()
+      expect(storedBook.metadata).not.toContainEqual(legacyCatalogEntry)
+    })
+  })
 })

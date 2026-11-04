@@ -29,13 +29,17 @@ The `GOOGLE_API_KEY` is public so make sure to apply enoughts constraints on it 
 ## Enable Google Book Metadata
 
 :::tip
-Will use google book API to enrich metadata
+Adds Google Books to the catalogs oboku looks books up in
 :::
 
-To be able to enrich your metadata with google book, you need to provide:&#x20;
+oboku completes a book's metadata from online catalogs. Open Library and Project Gutenberg need no configuration. To look books up in Google Books too, provide:
 
 * `GOOGLE_API_KEY`: You need to create or update the API Keys credential in the google cloud console and  enable the following API
   * Books API
+
+The API server calls Google Books with this key, so a key restricted to your website's address (HTTP referrers) fails those lookups. The server logs a failing catalog with its HTTP status on every refresh.
+
+Requests to Open Library and Project Gutenberg identify themselves as oboku, including the ones your server makes.
 
 ## Enable ComicVine support
 
