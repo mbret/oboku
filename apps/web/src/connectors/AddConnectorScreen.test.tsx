@@ -45,7 +45,7 @@ describe("AddConnectorScreen", () => {
     cleanup()
   })
 
-  it("shows the form of the connector's plugin and returns to its integration page once saved", async () => {
+  it("shows the form of the connector type and returns to its integration page once saved", async () => {
     renderAddConnectorScreen("/integrations/synology-drive/connectors/new")
 
     expect(screen.getByText("Synology: New connector")).toBeDefined()
