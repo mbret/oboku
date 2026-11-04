@@ -12,6 +12,55 @@ catalogs:
     react-dom:
       specifier: 19.3.1
       version: 19.3.1
+  prose-reader:
+    '@prose-reader/archive-reader':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/cbz':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/core':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-audio':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-gallery':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-gestures':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-koreader':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-pdf':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-refit':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/enhancer-search':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/koreader':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/metadata-fetcher':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/react-reader':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/shared':
+      specifier: ^39.0.0
+      version: 39.0.0
+    '@prose-reader/streamer':
+      specifier: ^39.0.0
+      version: 39.0.0
+    reactjrx:
+      specifier: ^4.0.4
+      version: 4.0.4
 
 patchedDependencies:
   react-dom@19.3.1: 38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6
@@ -121,7 +170,7 @@ importers:
         specifier: 'catalog:'
         version: 19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1)
       reactjrx:
-        specifier: ^4.0.4
+        specifier: catalog:prose-reader
         version: 4.0.4(@tanstack/react-query@5.105.3(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
       rxjs:
         specifier: ^7.8.2
@@ -209,7 +258,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/synology
       '@prose-reader/archive-reader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@sentry/nestjs':
         specifier: ^11.10.0
@@ -482,49 +531,49 @@ importers:
         specifier: workspace:*
         version: link:../../packages/synology
       '@prose-reader/archive-reader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/cbz':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/archive-reader@39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/cfi@39.0.0)(@prose-reader/core@39.0.0(rxjs@7.8.2))(@prose-reader/shared@39.0.0)(@prose-reader/streamer@39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5))
       '@prose-reader/core':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(rxjs@7.8.2)
       '@prose-reader/enhancer-audio':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-gallery':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-gestures':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))(gesturx@2.0.1(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-koreader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))
       '@prose-reader/enhancer-pdf':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/archive-reader@39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5))(@prose-reader/core@39.0.0(rxjs@7.8.2))(pdfjs-dist@6.5.438)(rxjs@7.8.2)
       '@prose-reader/enhancer-refit':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-search':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@prose-reader/core@39.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/koreader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0
       '@prose-reader/metadata-fetcher':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/react-reader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(a2d007558213fcbebf75623d402c1f4f)
       '@prose-reader/shared':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0
       '@prose-reader/streamer':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(rxjs@7.8.2)(unzipper@0.12.5)
       '@sentry/react':
         specifier: ^11.10.0
@@ -596,7 +645,7 @@ importers:
         specifier: ^4.18.20
         version: 4.18.20(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)
       reactjrx:
-        specifier: ^4.0.4
+        specifier: catalog:prose-reader
         version: 4.0.4(@tanstack/react-query@5.105.3(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
       rxdb:
         specifier: ^17.6.0
@@ -684,10 +733,10 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       '@prose-reader/archive-reader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/shared':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0
       '@zip.js/zip.js':
         specifier: ^2.24.0
@@ -700,10 +749,10 @@ importers:
   packages/shared:
     dependencies:
       '@prose-reader/archive-reader':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/metadata-fetcher':
-        specifier: ^39.0.0
+        specifier: catalog:prose-reader
         version: 39.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       zod:
         specifier: ^4.6.7

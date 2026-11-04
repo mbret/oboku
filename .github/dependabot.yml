@@ -6,6 +6,11 @@ updates:
       interval: weekly
       time: "01:00"
     open-pull-requests-limit: 5
+    groups:
+      prose-reader:
+        patterns:
+          - "@prose-reader/*"
+          - reactjrx
     ignore:
       # Stays on v9 until @semantic-release/release-notes-generator renders
       # with conventional-changelog-writer 9: see release.config.mjs.
