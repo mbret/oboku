@@ -2,7 +2,6 @@ import { Module } from "@nestjs/common"
 import { AdminController } from "./admin.controller.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { JwtService } from "@nestjs/jwt"
-import { SecretsService } from "../config/SecretsService.js"
 import { CouchModule } from "../couch/couch.module.js"
 import { CoversModule } from "../covers/covers.module.js"
 import { MigrationModule } from "../migrations/migration.module.js"
@@ -30,7 +29,6 @@ import { AdminSecurityService } from "./admin-security.service.js"
   providers: [
     AppConfigService,
     JwtService,
-    SecretsService,
     AdminCoversService,
     AdminAuthGuard,
     InstanceConfigService,
