@@ -95,9 +95,10 @@ If the Postgres log shows `collation version mismatch` after an update, rebuild 
 ```bash
 docker compose exec postgres sh -c '
   user="${POSTGRES_USER:-postgres}"
-  for db in $(psql -U "$user" -d postgres -tAc "select datname from pg_database where datallowconn"); do
-    psql -v ON_ERROR_STOP=1 -U "$user" -d "$db" -c "REINDEX DATABASE \"$db\"" -c "ALTER DATABASE \"$db\" REFRESH COLLATION VERSION" || exit 1
-  done'
+  psql -U "$user" -d postgres -tAc "select datname from pg_database where datallowconn" |
+    while IFS= read -r db; do
+      psql -v ON_ERROR_STOP=1 -U "$user" -d "$db" -c "REINDEX DATABASE \"$db\"" -c "ALTER DATABASE \"$db\" REFRESH COLLATION VERSION" || exit 1
+    done'
 ```
 
 Without the compose file, as in Cosmos, run the same script with `docker exec <postgres container>` in place of `docker compose exec postgres`.
