@@ -29,7 +29,9 @@ RUN pnpm exec lerna run build --scope=@oboku/api
 WORKDIR /usr/src/app/apps/api
 ENV NODE_ENV=production \
     JWT_PRIVATE_KEY_FILE=/secrets/jwt_private_key.pem \
-    JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem
+    JWT_PUBLIC_KEY_FILE=/secrets/jwt_public_key.pem \
+    API_DATA_DIR=/var/lib/oboku/data \
+    API_CONFIG_DIR=/var/lib/oboku/config
 CMD ["node", "--import", "./dist/instrument.js", "dist/main"]
 
 FROM nginx:alpine AS spa

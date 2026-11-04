@@ -63,8 +63,6 @@ services:
       POSTGRES_DB: ${POSTGRES_DB:-oboku}
       APP_PUBLIC_URL: ${APP_PUBLIC_URL:-http://localhost}
       COUCH_DB_URL: ${COUCH_DB_URL:-http://couchdb:5984}
-      API_DATA_DIR: ${API_DATA_DIR:-/var/lib/oboku/data}
-      API_CONFIG_DIR: ${API_CONFIG_DIR:-/var/lib/oboku/config}
     volumes:
       - ./secrets:/secrets:ro
       - ./config:${API_CONFIG_DIR:-/var/lib/oboku/config}
