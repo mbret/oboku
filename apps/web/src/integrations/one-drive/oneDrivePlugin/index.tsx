@@ -13,7 +13,6 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { SvgIcon } from "@mui/material"
-import { ROUTES } from "../../../navigation/routes"
 
 const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   <SvgIcon {...props}>
@@ -28,13 +27,6 @@ export const plugin: ObokuPlugin<"one-drive"> = {
   DataSourceForm,
   DownloadBookComponent: DownloadBook,
   Icon: OneDriveIcon,
-  collectionIdentityFields: ["driveId", "fileId"],
-  featureFlag: "FEATURE_ONE_DRIVE_ENABLED",
-  integration: {
-    name: "OneDrive",
-    description: "Manage contents from Microsoft OneDrive",
-    route: ROUTES.INTEGRATION_ONE_DRIVE,
-  },
   name: "OneDrive",
   Provider,
   type: PLUGIN_ONE_DRIVE_TYPE,

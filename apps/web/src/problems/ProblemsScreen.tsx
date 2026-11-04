@@ -5,7 +5,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
-import { groupBy } from "@oboku/shared"
+import { groupBy, type DataSourceType } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -25,10 +25,17 @@ import { BookDanglingLinks } from "./BookDanglingLinks"
 import { useFixableLinks } from "./useFixableLinks"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
-import {
-  getPluginByType,
-  isPluginType,
-} from "../integrations/plugins/configure"
+
+const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
+  DRIVE: ["fileId"],
+  dropbox: ["fileId"],
+  "one-drive": ["driveId", "fileId"],
+  webdav: ["connectorId", "filePath"],
+  "synology-drive": ["connectorId", "fileId"],
+  server: ["connectorId", "filePath"],
+  URI: ["url"],
+  file: ["filename"],
+}
 
 export const ProblemsScreen = memo(function ProblemsScreen() {
   const fixCollections = useFixCollections()
@@ -44,10 +51,8 @@ export const ProblemsScreen = memo(function ProblemsScreen() {
 
   const duplicatedCollections = useMemo(() => {
     const collectionKey = (c: (typeof collections)[0]) => {
-      const identityFields: readonly string[] | undefined = isPluginType(
-        c.linkType,
-      )
-        ? getPluginByType(c.linkType).collectionIdentityFields
+      const identityFields = c.linkType
+        ? COLLECTION_IDENTITY_FIELDS[c.linkType]
         : undefined
 
       const identityEntries = c.linkData
