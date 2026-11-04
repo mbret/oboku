@@ -125,6 +125,31 @@ describe("nextCatalogEntry", () => {
     })
   })
 
+  it.each([401, 403])(
+    "stores no entry when a catalog refused with %i and none matched",
+    (status) => {
+      expect(
+        nextCatalogEntry(
+          fetchedWith([rejectedMatch], [{ id: "googleBooks", status }]),
+          previousLegacyEntry,
+        ),
+      ).toBeUndefined()
+    },
+  )
+
+  it("replaces the previous entry with an unconfirmed match when a catalog refused", () => {
+    expect(
+      nextCatalogEntry(
+        fetchedWith([titleMatch], [{ id: "googleBooks", status: 403 }]),
+        previousCatalogEntry,
+      ),
+    ).toEqual({
+      type: "catalog",
+      version: FETCHED_METADATA_VERSION,
+      ...titleMatch,
+    })
+  })
+
   it("stores an unconfirmed match while a catalog fails when there was no entry", () => {
     expect(
       nextCatalogEntry(

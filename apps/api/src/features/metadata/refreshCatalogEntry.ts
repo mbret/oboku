@@ -1,20 +1,46 @@
 import { Logger } from "@nestjs/common"
 import {
   type FailedMetadataProvider,
+  type FetchedMetadata,
   type FetchMetadataInput,
   fetchMetadata,
   hasSearchTerms,
   type MetadataProvider,
 } from "@prose-reader/metadata-fetcher"
 import {
+  isCatalogOutage,
   nextCatalogEntry,
   type StoredCatalogEntry,
 } from "./nextCatalogEntry.js"
 
 const logger = new Logger("refreshCatalogEntry")
 
-const describeFailedProvider = ({ id, status }: FailedMetadataProvider) =>
-  status === undefined ? id : `${id} (${status})`
+const describeFailedProviders = (
+  failedProviders: ReadonlyArray<FailedMetadataProvider>,
+) =>
+  failedProviders
+    .map(({ id, status }) => (status === undefined ? id : `${id} (${status})`))
+    .join(", ")
+
+const logFailedCatalogs = (
+  bookId: string,
+  { failedProviders }: FetchedMetadata,
+) => {
+  const outages = failedProviders.filter(isCatalogOutage)
+  const refusals = failedProviders.filter((failed) => !isCatalogOutage(failed))
+
+  if (outages.length > 0) {
+    logger.warn(
+      `Catalogs down for ${bookId}: ${describeFailedProviders(outages)}`,
+    )
+  }
+
+  if (refusals.length > 0) {
+    logger.error(
+      `Catalogs refused the lookup for ${bookId}: ${describeFailedProviders(refusals)}`,
+    )
+  }
+}
 
 /** The catalog entry a book refresh stores, after asking the catalogs. */
 export const refreshCatalogEntry = async ({
@@ -32,11 +58,7 @@ export const refreshCatalogEntry = async ({
 
   const fetched = await fetchMetadata(lookupInput, { providers })
 
-  if (fetched.failedProviders.length > 0) {
-    logger.warn(
-      `Catalogs failed for ${bookId}: ${fetched.failedProviders.map(describeFailedProvider).join(", ")}`,
-    )
-  }
+  logFailedCatalogs(bookId, fetched)
 
   return nextCatalogEntry(fetched, previous)
 }
