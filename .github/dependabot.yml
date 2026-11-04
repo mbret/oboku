@@ -19,6 +19,11 @@ updates:
       # scripts/check-dexie-version.mjs enforces on install, so it only moves
       # together with rxdb.
       - dependency-name: dexie
+      # babel-plugin-react-compiler 1.0.0 is built on @babel/types 7. With
+      # Babel 8 it skips about a sixth of the web app's functions without a
+      # warning, so Babel moves to 8 with a compiler release that supports it.
+      - dependency-name: "@babel/core"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: "/"
     schedule:

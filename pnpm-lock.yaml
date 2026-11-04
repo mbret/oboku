@@ -70,8 +70,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@microsoft/api-extractor@7.60.1(@types/node@24.19.2))(esbuild@0.27.0)(rolldown@1.2.16)(rollup@4.67.4)(supports-color@10.2.2)(typescript@6.0.3)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(webpack@5.106.2(@swc/core@1.16.21(@swc/helpers@0.5.23))(csso@5.0.5)(esbuild@0.27.0)(lightningcss@1.33.0)(postcss@8.5.32)(uglify-js@3.19.3))
       vercel:
-        specifier: ^63.1.2
-        version: 63.1.2(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+        specifier: ^65.11.0
+        version: 65.11.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       vite:
         specifier: ^8.3.5
         version: 8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)
@@ -131,8 +131,8 @@ importers:
         specifier: ^7.29.7
         version: 7.29.7(supports-color@10.2.2)
       '@rolldown/plugin-babel':
-        specifier: ^0.2.3
-        version: 0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+        specifier: ^0.3.0
+        version: 0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
       '@testing-library/dom':
         specifier: ^10.4.2
         version: 10.4.2
@@ -147,7 +147,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: ^6.2.1
-        version: 6.2.1(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+        version: 6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -245,8 +245,8 @@ importers:
         specifier: ^11.3.3
         version: 11.3.3(supports-color@10.2.2)
       googleapis:
-        specifier: ^185.0.0
-        version: 185.0.0(supports-color@10.2.2)
+        specifier: ^189.0.0
+        version: 189.0.0(supports-color@10.2.2)
       http-proxy-3:
         specifier: ^2.0.2
         version: 2.0.2(supports-color@10.2.2)
@@ -373,7 +373,7 @@ importers:
         version: 7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)
       astro-mermaid:
         specifier: ^2.2.0
-        version: 2.2.0(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(mermaid@11.17.2)
+        version: 2.2.0(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(mermaid@12.3.0)
       astro-og-canvas:
         specifier: ^0.13.3
         version: 0.13.3(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
@@ -381,8 +381,8 @@ importers:
         specifier: ^0.42.0
         version: 0.42.0
       mermaid:
-        specifier: ^11.17.2
-        version: 11.17.2
+        specifier: ^12.3.0
+        version: 12.3.0
       starlight-links-validator:
         specifier: ^0.27.0
         version: 0.27.0(@astrojs/starlight@0.42.8(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(supports-color@10.2.2)(typescript@6.0.3))(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(supports-color@10.2.2)
@@ -633,8 +633,8 @@ importers:
         specifier: ^7.29.7
         version: 7.29.7(supports-color@10.2.2)
       '@rolldown/plugin-babel':
-        specifier: ^0.2.3
-        version: 0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+        specifier: ^0.3.0
+        version: 0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
       '@testing-library/react':
         specifier: ^16.3.3
         version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)
@@ -664,7 +664,7 @@ importers:
         version: 19.3.0(@types/react@19.3.0)
       '@vitejs/plugin-react':
         specifier: ^6.2.1
-        version: 6.2.1(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+        version: 6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
       babel-plugin-react-compiler:
         specifier: ^1.0.0
         version: 1.0.0
@@ -1677,8 +1677,20 @@ packages:
       react: '>=18'
       react-dom: '>=18'
 
-  '@chevrotain/types@11.1.2':
-    resolution: {integrity: sha512-U+HFai5+zmJCkK86QsaJtoITlboZHBqrVketcO2ROv865xfCMSFpELQoz1GkX5GzME8pTa+3kbKrZHQtI0gdbw==}
+  '@chevrotain/cst-dts-gen@13.2.0':
+    resolution: {integrity: sha512-bA9dvWlhAUcHkNwU+8w9yiUxJPlj/Lm3VqS7MD+NbIR/7LmpNLuK/AWNFdCo/T3SK5ND0/UHf3IJvl/Jn/i6yg==}
+
+  '@chevrotain/gast@13.2.0':
+    resolution: {integrity: sha512-bCARdAsG+eEbOveSXcOAC7pVxA04I1ionzeMOwIYf5NX7SaS7zgn4Dgug2BSqoL+iyKeMNSorQjsFSHJHsCNwg==}
+
+  '@chevrotain/regexp-to-ast@13.2.0':
+    resolution: {integrity: sha512-kxpUkLtiaK09ph+dib+Yvm+3sWSnuwlo25gqfKRgTPNmF6H7uW4gVkMjaRdtnN783S9sM6vUNWh9CsxYX4QwKw==}
+
+  '@chevrotain/types@13.2.0':
+    resolution: {integrity: sha512-7qrYHRlKfWf2AvBfJi5eVOrKAkbxvMFsy/iIHTGIiApNcEecCaVIdR+mIQhyCBsTDJxBz4JWXHMo6krbhR9hVg==}
+
+  '@chevrotain/utils@13.2.0':
+    resolution: {integrity: sha512-SzKYY68rseOrb9KILVzPsl6SjkQtdWw01SRGB5aCVI5kFcHltQsOYV3JB0Ffst72DgkvHCyDQ0NLwxtmCCf97Q==}
 
   '@clack/core@1.4.3':
     resolution: {integrity: sha512-/kr3UWNtdJfxZtPgDqUOmG2pvwlmcLGheex5yiZKdwbzZJxhV+HMNR9QNmyY5cGwTNV6LrR7Jtp+KjhUAP1qBQ==}
@@ -2791,6 +2803,106 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
+  '@koromix/koffi-android-arm64@3.3.3':
+    resolution: {integrity: sha512-c8iDq/mPXkgQmrmZ6SpqWIVF3ZnJEpjVQswzKzbrCSdr68pmSY/cNj1t4qvv32T8nNjW71/hB+E8Rq1+vVpmQg==}
+    cpu: [arm64]
+    os: [android]
+
+  '@koromix/koffi-android-x64@3.3.3':
+    resolution: {integrity: sha512-yAFu4oX6rpBCqr4HiGo3FpywmRN11LOSde4+GJZvfkFymqV3wZtx6TgVe8rZ4ogJZz9B8o1tDeKsZ6pqeoH40g==}
+    cpu: [x64]
+    os: [android]
+
+  '@koromix/koffi-darwin-arm64@3.3.3':
+    resolution: {integrity: sha512-aFYI3YMdQWOAmHlVA+GfBlJZTpvfbUv/NoeBBkqblWN7BxuY02bkWMyoksUEl+mnx7ScoMonnjzXKJkNQXmR3w==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@koromix/koffi-darwin-x64@3.3.3':
+    resolution: {integrity: sha512-6Q8/DDhVADPMm3lFnZFJRETJtf485jZKzn1KogXeA9Gfztv/XMFiCOK4aEouFc256h9uWzC69mGimtcVcwK+Ww==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@koromix/koffi-freebsd-arm64@3.3.3':
+    resolution: {integrity: sha512-IynEDMMU9pp7EVVqQwXVU9x0JH7Opj8KB0wbcKgYNEhRM9eGzJ4ai7iwG8y8tdD/Y8niSVrVTj5WLNCCvUWXIw==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@koromix/koffi-freebsd-ia32@3.3.3':
+    resolution: {integrity: sha512-5b4W9jX+wmfWn9vG7DvKIrNhhRpPDAx7YQV5i9epUR0Ogxz4s4a3APz/beLCvgHt4WhaSRrazxGYQz1oFOlfow==}
+    cpu: [ia32]
+    os: [freebsd]
+
+  '@koromix/koffi-freebsd-x64@3.3.3':
+    resolution: {integrity: sha512-+NmMrp3ji1NN4PTaLaXDCKMaJ5Fl+0+nrClmtsu/7wi+fjCrCSGMrJZUmTIJPm1nd8Z5fMRjWesiVvQiy/ETDg==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@koromix/koffi-linux-arm64@3.3.3':
+    resolution: {integrity: sha512-y7UHjwOKbj2IjIpWtHmI8LEKXchidt47k605DCv5+YQMIDTbzhz/i3zTI1kRp6EYBLTBwRkR1X1PGt3uUi+rKQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@koromix/koffi-linux-arm@3.3.3':
+    resolution: {integrity: sha512-K+NFO4/SiF4ANCS1ykem36wbEjfBJKsaakLKZ+6LbaLqyLjHHGky4fEIgipac/+XJtD4ZXjhexPIVjwzkO+rMQ==}
+    cpu: [arm]
+    os: [linux]
+
+  '@koromix/koffi-linux-ia32@3.3.3':
+    resolution: {integrity: sha512-dbcpe7IrWr18AAbIKa/RvJ8pM1lEpSELWYW6wsEBIYw/RTLfXqWJ6d9Ya0NWJgHTW+N7783KVQaV5c1Sr3ONDQ==}
+    cpu: [ia32]
+    os: [linux]
+
+  '@koromix/koffi-linux-loong64@3.3.3':
+    resolution: {integrity: sha512-kbJFmWSoDHGZgxgDhInuvDi8MzrHafBfQ7iWN5P+nHv297beQXrHecFfCNBApnG9d2wrhEoY+EH/TdITuvaSwQ==}
+    cpu: [loong64]
+    os: [linux]
+
+  '@koromix/koffi-linux-ppc64@3.3.3':
+    resolution: {integrity: sha512-YwGxjudYHsiDZ6qH4WmEawHXmTaZzjiZ4xdjcbzsVHqNvgZ3Nz7WG03PybecJ+BVH2vqBOntGZ2VsG/sL0WY1g==}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@koromix/koffi-linux-riscv64@3.3.3':
+    resolution: {integrity: sha512-k/txpUsOO/L4TexahQHxqdFRmBEGE+g++np9M5eNcsHWNXmazeWBrrfB9sjl6cZAP69KZFO0toP+ZMfDUDHmnQ==}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@koromix/koffi-linux-x64@3.3.3':
+    resolution: {integrity: sha512-AI4kcNNWeGmzQzsNb0S+ZL/ht4HMtDcQl5nYFkkuVUO2g1/2KdvNekkwNWhpp805mDbLSDoRZtlioHyH/v8poQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@koromix/koffi-openbsd-arm64@3.3.3':
+    resolution: {integrity: sha512-NEbQMrixbAWSmWCh4XyHWuhgEqgO4tegWyHoJej7Q3PmyIlgxKHTcRZsjAJ9C3sfgBDNIqPWTjMy3KO2mqEp1g==}
+    cpu: [arm64]
+    os: [openbsd]
+
+  '@koromix/koffi-openbsd-ia32@3.3.3':
+    resolution: {integrity: sha512-zGFX0KwZGmrV7AZY0+oozBpMuQZT7yQEY3NCDSb0rEqKyOrYLBNiXiXA5T8NSY3ipaW0b71L5Cu0KLKabdLY0A==}
+    cpu: [ia32]
+    os: [openbsd]
+
+  '@koromix/koffi-openbsd-x64@3.3.3':
+    resolution: {integrity: sha512-c1HMWkZPAZKQesKj2HqA6Zk1YEcv7Doc6JU9YJepXG8KpK4XZmI0L5vESSfySmidmasm05QDyLAcwDnNSvtfRA==}
+    cpu: [x64]
+    os: [openbsd]
+
+  '@koromix/koffi-win32-arm64@3.3.3':
+    resolution: {integrity: sha512-eL7gW4D22OBb3fi04s5ElzzNk+gkGEahaTNMB29UDLDeORe+0qIkhccBPovXW3/IRpdt8W7o8X2myUDXlTSYDQ==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@koromix/koffi-win32-ia32@3.3.3':
+    resolution: {integrity: sha512-3sw9vvQqro4yKsOWfKebzfTcdPKRwMrodGXWbfwkTsL61EQKdwsMNKA/0dDe0/ubAAZ0yPgstX8/gs94Svzfgw==}
+    cpu: [ia32]
+    os: [win32]
+
+  '@koromix/koffi-win32-x64@3.3.3':
+    resolution: {integrity: sha512-tLTF17wl4CCwOlo1Tt0NbduwUduDvM6c8JSyearcLu6hpNHQo44RF3rKN2i7UkxwCqXyiudZK0lS421CC/TPZA==}
+    cpu: [x64]
+    os: [win32]
+
   '@lukeed/csprng@1.1.0':
     resolution: {integrity: sha512-Z7C/xXCiGWsg0KuKsHTKJxbWhpI3Vs5GwLfOean7MGyVFGqdRgBbAjOCh6u4bbjPc/8MJ2pZmK/0DLdCbivLDA==}
     engines: {node: '>=8'}
@@ -2840,8 +2952,9 @@ packages:
   '@maxim_mazurok/gapi.client.drive-v3@0.3.20261028':
     resolution: {integrity: sha512-97zabWo5K39UFSYgGAkMQHxGwOpx/y0lHO2L3eGy45dgxwyV1Nj5XvMrvvdc5VKjdIwxGRaUeL6AtSSa2imZKA==}
 
-  '@mermaid-js/parser@1.2.1':
-    resolution: {integrity: sha512-n12NohV3mrUyUL2o93IgG/ifeW9FTyeJn3zDxkhwa8MJ9Fxg3HQMlA3RiGmD/3UnJvheztkjjQAjA2T4LmUcpw==}
+  '@mermaid-js/parser@2.0.1':
+    resolution: {integrity: sha512-j37dj/h6p6pots1L7pLPPNuABEEu9WP4OYg9pW1g+nYG331j0+3canE9OagtYdytYvdSAMG+2fKU5cxep6LgjA==}
+    engines: {node: '>=22.12.0'}
 
   '@microsoft/api-extractor-model@7.33.16':
     resolution: {integrity: sha512-MO61eHRI3DDieE9pxNo5xc096NGUQAIKzEPW6IhNNGU9K4EIhRSYiXfroDZX4joNkrWBMzAMp3WhbPGbHG5zHQ==}
@@ -4490,10 +4603,6 @@ packages:
   '@remix-run/route-pattern@0.22.1':
     resolution: {integrity: sha512-czdGJWh09Lapvcqt7Vb09KlrU2PhRJ8xQaI+AItTuD9aDJ5MAgxnS38lnys6Ll+6RJEqPiaUqTwIQhVLwFvv+w==}
 
-  '@renovatebot/pep440@4.2.1':
-    resolution: {integrity: sha512-2FK1hF93Fuf1laSdfiEmJvSJPVIDHEUTz68D3Fi9s0IZrrpaEcj6pTFBTbYvsgC5du4ogrtf5re7yMMvrKNgkw==}
-    engines: {node: ^20.9.0 || ^22.11.0 || ^24, pnpm: ^10.0.0}
-
   '@rolldown/binding-android-arm-eabi@1.2.16':
     resolution: {integrity: sha512-ia3DwAs0OsMGS7+IConptSiyk9pEXkOx/AbJ2n/lAGxH3QkWQus1t8d7gnAT38FCU2sQu8lUbeR6AiZFv4JxaA==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -4671,8 +4780,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@rolldown/plugin-babel@0.2.4':
-    resolution: {integrity: sha512-ygmm2j/mN+aCvstHo0x3IOu4uc6LqXT9SJ3q4kpfG/+Yhfz0B+E47FITcC0FljZADwUFARP6E2kiE+Lc26D8wg==}
+  '@rolldown/plugin-babel@0.3.0':
+    resolution: {integrity: sha512-cB9Z6aqn7i8Zflv1D4tyIy/wvnWt+QVUPX2e3Jxq/4fvdX+Xk2gQyNN2sfYscfLIZN1LCQbCl4olpf9Ki+U1zw==}
     engines: {node: '>=22.12.0 || ^24.0.0'}
     peerDependencies:
       '@babel/core': ^7.29.0 || ^8.0.0-rc.1
@@ -5831,58 +5940,70 @@ packages:
   '@upsetjs/venn.js@2.0.0':
     resolution: {integrity: sha512-WbBhLrooyePuQ1VZxrJjtLvTc4NVfpOyKx0sKqioq9bX1C1m7Jgykkn8gLrtwumBioXIqam8DLxp88Adbue6Hw==}
 
-  '@vercel/backends@18.0.1':
-    resolution: {integrity: sha512-GfJRE1DM14cc4oy3r1NAXatOGjwGaE/09q5JgxHVUvM5XpBmdmcKA4jsgC3nuVprXOJENbbJJ8jy1GPsQVB5nQ==}
+  '@vercel/backends@24.0.1':
+    resolution: {integrity: sha512-MSxAZXjbAfUC9sClH6+hU99DUSKvvXPvjPw3vIHveHeT90KMeRbG94DJfa9bD46q9JsspazmFo3Puciy2TE8NA==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/blob@2.8.0':
     resolution: {integrity: sha512-Nu+HWKpkgovCh/ezlG7wCVwF7RErTzLzZMbGKFBdGBCbTKyK+s5VXPLl+0+TpNEQPH8AVaGzOpIsXUOtkqylCQ==}
     engines: {node: '>=20.0.0'}
 
-  '@vercel/build-utils@14.20.1':
-    resolution: {integrity: sha512-Bq1xRt8ymFuhfi8dMWKE1myzdZrdxk6I19b3jbcqFrW9PXZSbjsNBTgMcEQ5CG6MYgTgU73/4RoJ7M6rnYn51Q==}
+  '@vercel/build-utils@15.2.1':
+    resolution: {integrity: sha512-iHs3kSNBXU2bqkGOR9JPx44sMepQivu8DOp2Ty4BOtOtDsOldLZb/7OYLA88EmA2qb1SDCPxyTltzcLralgVsw==}
 
-  '@vercel/cervel@0.1.79':
-    resolution: {integrity: sha512-dbW6GD2aGQHiekmh8z4PHiVy8UJ7kRQPbDGBvem6W48vkpvqO7cgS5sZ/PTW/fQfAWi7hKrW3TRg+qyp+O4zVg==}
+  '@vercel/cervel@0.1.92':
+    resolution: {integrity: sha512-2xrnGnZknt7UY7YpZFIuKlYOIRqCQ/MjS6Q7DyxUnd70zzirzAsn/0oqj5KWlUgkcizSI36mo+KK/bgQSrfqCw==}
     hasBin: true
 
-  '@vercel/cli-auth@0.3.10':
-    resolution: {integrity: sha512-uI8JzvaGOiZkSN9lnTkwERwNlsubiRnL8Y4oACtLq3CAEeJTplETjCknzkzkNvV7bz8KkNZC8YYrsPOMDrMHkQ==}
+  '@vercel/cli-auth@0.3.15':
+    resolution: {integrity: sha512-iObcfLVw4tqIdPFul+SX9Ouz/ftqA9JUVAKO0JCZibHT4uiJvL2JzBOhRotjmMErLDn+hgt2gzkDZVBYfe5Xyg==}
 
   '@vercel/cli-config@0.3.1':
     resolution: {integrity: sha512-sISbygqlFXYb8qfPu/+2Cf/A8IjrlAuZePdag3EDQr2PRA455s7UZtl9Ro674CWsB/saBRmz3jEkw0YsQs8OoQ==}
+
+  '@vercel/cli-config@0.3.6':
+    resolution: {integrity: sha512-jKsEWixJ+yMs2V29fqFxeDTQDglsgj7hvSXJf9pPmyYISvuTpTt45j/g47O6RWbe7aJycPbDOk7uKPHPA+LDYg==}
 
   '@vercel/cli-exec@1.0.1':
     resolution: {integrity: sha512-g9XerViJ/paZujufXYcu5XYI2vU2rtB4sgdpjUHde5RnOkdmpu0ngH46LCFGHoPXO/C+qDPSczIHIRN+8Q2YKQ==}
     engines: {node: '>= 18'}
 
-  '@vercel/container@18.0.1':
-    resolution: {integrity: sha512-J3RrH98KYcL0C94mLcjWrtT89fpA2SXCM2c5F4taqcHyVuGetU8HMIDgw+yn7XpszksADlU/EvkArC2EYBAJjg==}
-    peerDependencies:
-      '@vercel/build-utils': 14.20.1
+  '@vercel/cli-support@65.11.0':
+    resolution: {integrity: sha512-9zZUeBOU7jF3vR6kDN4xuM2RxxbgIHjtvAEWVJaHe6tO22jPPxFd0X/kWmm+TY7gSy7gnbwciqZOBYe89rJHvw==}
+    engines: {node: '>= 20'}
+    os: ['!darwin', '!linux', '!win32']
 
-  '@vercel/detect-agent@1.2.6':
-    resolution: {integrity: sha512-MpsC5alyelZCSI93gX12Sjd29LFJUNn0auiJ3YZ0fAcmeT7HvaM+GFpoNhrgJuZGSEXysRRUcew9hPqITwKZMg==}
+  '@vercel/container@24.0.1':
+    resolution: {integrity: sha512-nvH3foXkCyr36qFWa2F09rhOh6c3+MbIm+sTRXQL0RI+CGPYGQWfa4Xe8oH54aJMfpZVhx1Z7duNDBXwQ77nMw==}
+    peerDependencies:
+      '@vercel/build-utils': 15.2.1
+
+  '@vercel/detect-agent@1.2.5':
+    resolution: {integrity: sha512-0krENrjuitlW8s6TJu0MlqCevyCU7K7JK63jZAf7xZ6n17tx+vUEwzHT3sTxawtwZxaW21hu+oFUpoOrm49FsQ==}
     engines: {node: '>=14'}
 
-  '@vercel/elysia@18.0.1':
-    resolution: {integrity: sha512-Su32Vr6jt43QJKhFd90DTIsPtD68aJzkw5UwPhzLChcL2dWah1xCR4bLaYbLgy0soCwJI//ERhznoMbzk+mF8A==}
+  '@vercel/detect-agent@1.2.7':
+    resolution: {integrity: sha512-5tWaC9V+u4SHcSMKBz9FQb3Dhl/1A2lQ6QqHovu8uQeb8dTyjEevpJMANm/uQEn/usYB63fpdjWYjkJ8/bGtjA==}
+    engines: {node: '>=14'}
+
+  '@vercel/elysia@24.0.1':
+    resolution: {integrity: sha512-oEbUW09g6DcsGdoKF2/FvRlSGm9MuoR4kJCPB+cVguETkKpZ42RtedvHVrTqIjJsVTBmZC9jLN7rNZFOSCntBw==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/error-utils@2.2.1':
     resolution: {integrity: sha512-9DhP8jP7raLML4hGsBemxX5fXuQnu5xxMV+HjGygGbzEmVK/+KyJ3QP2Cw7PdF0uXdb9N0Qa4c3tRGH34ZX6vw==}
 
-  '@vercel/express@18.0.1':
-    resolution: {integrity: sha512-jHAULH+zqm7VOIHaaK1Zgw1nCh+3V1V1EeQlflhGMikEQucI3jL9Kg3oBAuphpQZyKpB14TGtFgfnWffChxkMw==}
+  '@vercel/express@24.0.1':
+    resolution: {integrity: sha512-k5gexv+G4CsRFAwRwVo7NAdDU6Lq+slURRNKbQNQLMsnWqIhbZb8JcelDnQWUsBwJ+y4ywodBjYlruMkjEZd8g==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/fastify@18.0.1':
-    resolution: {integrity: sha512-gixNskRqTnZCPN5a8vrYXvZZhnfmaqb0C6y3EBiC7tuzQOPWHHu7a7xslQ/rFcH3J1VI+mN/lONcc33J0LuN0A==}
+  '@vercel/fastify@24.0.1':
+    resolution: {integrity: sha512-5wqTVfETe1Vhinpj/kk20rxtN/F7nl/PBmitP0yCUSCrhzmAmRj5MErCSYG9Q429Y2TdBmMXdZN1gVnH/fdjWA==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/fun@1.3.6':
     resolution: {integrity: sha512-c05ioJxn3ShXAPoQAX7UbLVaKw7HSMDfJt2yljfCsDqGHN+Iw6mK4AMor4vcA+zsGFPngmJO0kVWP4zF2Q9rTQ==}
@@ -5891,133 +6012,145 @@ packages:
   '@vercel/gatsby-plugin-vercel-analytics@1.0.12':
     resolution: {integrity: sha512-Ejlhwxr7EBYJxtwYnlh6Vm6A2dPsUSPxMdYrfv0koZkgAzVwo7cG4aDQiy7iASMaGzwuI/PAnwlY2sJBF5b4OA==}
 
-  '@vercel/gatsby-plugin-vercel-builder@2.2.71':
-    resolution: {integrity: sha512-5qp7UxhbNnI2gEKHDjY7Z9DWFek6lKwK0OlIqsh9yLeboRxm3SRDnimtlUVQb87XfVIvWO/tEL3qPBUOvLTGUg==}
+  '@vercel/gatsby-plugin-vercel-builder@2.2.84':
+    resolution: {integrity: sha512-4HLOLhaZGyfaVYRWVzd8rKieY4km/7uJr77TmXTwe3lyymMEVZaKUjTeEc0LMfCbKjAt4H+17CbF0+Y7n/GfVw==}
 
-  '@vercel/go@21.0.1':
-    resolution: {integrity: sha512-qzjz5lCwsLMTWIdMWHqIBu/dgMd26oo9lSKT5bi0rGMU0M5036+dLUkwq9LUYSWSz4TGG8gV/pKxHfbpTr5NFA==}
+  '@vercel/go@27.0.1':
+    resolution: {integrity: sha512-d5FM8txvWvWHB9fYmu1OdoKU84+zfWp89OX7oEODNJfGkqA5phUSYcLJGeps+jODPnXMuX34usDNM0VaYgYQIg==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/h3@18.0.1':
-    resolution: {integrity: sha512-l1CDntUWowNNrhjnA4Nf1wTv/vavHVbeR0CV4f+kCUfYFjoyD1YrOWqNBLWLP5u/jUhmJNnlEJeE6WD4rtnSMg==}
+  '@vercel/h3@24.0.1':
+    resolution: {integrity: sha512-XhXco1ruwCL54Yj9gUad84VvDskZEdYxJESNTkgAM8cR6qxK9lMIJvVgt4H7oNvuJMzhfivCGpta7KNAm4wR2A==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/hono@18.0.1':
-    resolution: {integrity: sha512-JU0ex4SaFMvuntVRnD8Bnbq2h6wSVysRUCiMsrL973+tMeWBn9D9wkvu+9a/EebfTzmaq8jnmQVXrNxsPYZH7w==}
+  '@vercel/hono@24.0.1':
+    resolution: {integrity: sha512-m7n7zLWejxdF9Wz6v9iH2Jd+R6d5gI/eJU+j6i3qmrKgW0q6ZSkgs7iDUKlJIgXQAHzn2YyTH0qNAdT+vAynyQ==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/hydrogen@19.0.1':
-    resolution: {integrity: sha512-yl2jPz1Huija4zhRZavlShNvLwginOi2zNHG9hYN9gXxsDekOe33uAIkd30xGBqoLOcSKPHLAhB9MlWV3tKInw==}
+  '@vercel/hydrogen@25.0.1':
+    resolution: {integrity: sha512-Sz3kBAtBZSJDCXLpRY0pwW8RoePJy/9qpNps/N5gYHVvU+Mjkc8RFVOhOMS+mqePEnDX+AL1vy1N4t+OySxZ5A==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/koa@18.0.1':
-    resolution: {integrity: sha512-awMZP8BUaP4XItAKDX+rN1KJEnJb204RB4g8dWepyfRiTdE3KUPYe+pfurZbbs7F4yEFM0kgbRqLpiVwjvaS5w==}
+  '@vercel/koa@24.0.1':
+    resolution: {integrity: sha512-bcwR3MiYJiUHeudBZ+NMNbS8Yv9G1dXrit+rM+f/OJVsZhwiqziGUc+EYen1BQiRgRMUT79e+SzAGO6RDR3uaQ==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/nestjs@18.0.1':
-    resolution: {integrity: sha512-6RLGoMiH6cXVZ58tzEU2Vl+9MjvRjmCdJXIkiLbYUC8BR3f8nElji+LljvrtYPD2PoInWGl9gtyHbi9tWOdiOQ==}
+  '@vercel/nestjs@24.0.1':
+    resolution: {integrity: sha512-lD4Cv96OwMZLHW1nUTyWJB0rxWb891T4zhobEp1iofrh/us/xTBTqRqlMq2pQ5qY8LQj+/ckNzLpJcNgNSWSpQ==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/next@22.0.1':
-    resolution: {integrity: sha512-nJSKoQgBlOhIOJrDLPbBwPItP1Ag9U56PdHQoB+tkUcRP6UVXGh4TbY4jH3wcwvK8gpMHXicAV4EJgzx/8qglA==}
+  '@vercel/next@28.0.1':
+    resolution: {integrity: sha512-KA/j4/oScPbChQsbvR5YN+HcSsZA+c7Cz7IRd0YsSAvBRkgKbkg8DZzMfBG1I0GEwY0QrjTT8P9bkYKXTmdqJQ==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/nft@1.10.0':
     resolution: {integrity: sha512-iLOW4fcsgkipfOh2Bw3wB38YDfxTlxr7+j4uFeui2OswkNT28jIitS/aMce7tS0mef1YPQ8zLIDYr3a0aahNrA==}
     engines: {node: '>=20'}
     hasBin: true
 
-  '@vercel/node@23.0.1':
-    resolution: {integrity: sha512-3FsWUIXUe8P/EH231i8N3ZFqMy1/GQ+SvhizOBrpdhk/BlqC+INcqN/3puqEO97okNR4bMWealSJH4V6oi/l8A==}
+  '@vercel/node@29.0.1':
+    resolution: {integrity: sha512-Eizo7ONetfn9zcHYKjjM8qiSO/lmiVyzehWHyLd6uxenB87E65C0nt/xTF7+jWxX6hxo79LAqwvCITFbzAOaYg==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
-
-  '@vercel/oidc@3.2.0':
-    resolution: {integrity: sha512-UycprH3T6n3jH0k44NHMa7pnFHGu/N05MjojYr+Mc6I7obkoLIJujSWwin1pCvdy/eOxrI/l3uDLQsmcrOb4ug==}
-    engines: {node: '>= 20'}
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/oidc@3.8.10':
     resolution: {integrity: sha512-sPw1kIfQEA6/2dB+zlAJHnhhNBRJ8t/t4HfFvKO+g0EPBA7NbCKyGovuhgAV6Mnl865ka7HqCEguIy596czdAw==}
     engines: {node: '>= 20'}
 
-  '@vercel/prepare-flags-definitions@0.3.0':
-    resolution: {integrity: sha512-/0nuDFwYje0nqZnVKSd2VfJy2wOPQwbkas1qO1JQgtb0sLl+EeSCW4O9hrvq55pN50PNlAZ/APSeWHIAT9ZGHg==}
+  '@vercel/oidc@4.0.0':
+    resolution: {integrity: sha512-ko6ATeRUlHZMB5hLFdC7+/Q1dI2f3NX3gZHxtpALdkxurwjD5HFHGWYF+4o+4SF0E47jg6KzcHknmRpHcKgJ5A==}
+    engines: {node: '>= 20'}
 
-  '@vercel/python-analysis@0.14.0':
-    resolution: {integrity: sha512-qyVxbaU14gAi/AsaR8syZLukUsOp69Jkm1xn80rZPy4k9+zRUTIfqs0AOk7L8wwBxDDB6LLjcBUAmafhbJQnUQ==}
+  '@vercel/prepare-flags-definitions@0.6.1':
+    resolution: {integrity: sha512-0Z4ULrbGwiff425y7R4G+HKkgL/aRDPEzWL/iQvhxHJCO0OONst3d28XWKUIxRUQ1GF36/3K/W79CGzDzd7ovw==}
 
-  '@vercel/python@24.0.1':
-    resolution: {integrity: sha512-LOEO6Sl60Iefkj41f+3Ofi99FLl6hh3IiqWWSYAH1BflRACKYy3J2hvA3MxcWCbC4ILbW13L1anT0hk+kJj2kg==}
+  '@vercel/python-analysis@0.15.3':
+    resolution: {integrity: sha512-WICWt4qXg4K6agFzfg0cv0o8dJILPiaGrqZpb/8IXWympfCrIh9f/mRMeSUlJDaaSS/tXmBt0Hj919CWccae9A==}
+
+  '@vercel/python@30.1.0':
+    resolution: {integrity: sha512-5FEcDWtvLYRk0nCbs/ZQj7ZaWdgiqjgFBgoFqmxJ6CP5t5uaNhMfQjlsjf1afQU1c0VliuK7J/lmJGVG8pKKuw==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/redwood@20.0.1':
-    resolution: {integrity: sha512-2GyBVYrisbj7Km0DWO5BFB1Mk9tCY54dW1d4RT6zN+e4QgGp9RFAHwYSe5IU9ct3GnyWGNl1MkDVxB0atO8msg==}
+  '@vercel/redwood@26.0.1':
+    resolution: {integrity: sha512-RUAyD7gRWa/NqGfoc47CCT2mECMVPIB/RRFcySRvYfcpge3q/WO7rOeHUsMTvT6XY0XDF+82FmNyM8SRL4/txg==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/remix-builder@23.0.1':
-    resolution: {integrity: sha512-PTIOIMZQW5NexS5eLvRIb2+AQeEV3/M8LjNaHArXCVKuvPrKLKbdUQOX2ILNTuD9VbK/By71yqtWj2WRBmuuyA==}
+  '@vercel/remix-builder@29.0.1':
+    resolution: {integrity: sha512-kpptQdse9BQfzPW0aprg7TJxfpCi9y5OkHLOv8Pb/1MjuE9fEqQWfE5G7spPeGEJi5Lfwsd1FoYPN7nIxZMzDQ==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/ruby@20.0.1':
-    resolution: {integrity: sha512-IWMwd94UW7gXAoyP6noWQ80iI9bbnGtAW11faaK2n/3GCgnfwrCjkTn7uQJK0TMsYZzArCJiyUoKXKoZGJyx0g==}
+  '@vercel/ruby@26.0.1':
+    resolution: {integrity: sha512-BbrnCwCCk6V8HhKDXQTh/NaHVWfvzU6fZegtPKoaem8fZvqxt79xEp5F4+j1sT5qLe6S0dViridxInznh1IHmg==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/rust@19.0.1':
-    resolution: {integrity: sha512-6ljfuXUI+PWsaJ70FecdzLUdFqBr7iCiIwQF1v6EPT+CnK2JcR5nOeIbmOt/jqcWMt1kgmY+j2Y1nogjQRjy2A==}
+  '@vercel/rust@25.0.1':
+    resolution: {integrity: sha512-zQtn6Zv95yf6twPO8nrT9e2kkSoJgfs/M26k8FeZo2Rddx4Vtai0PMUyLM7PcfBcZF95Uevm/5t10RuKU0Wa7w==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/sandbox@3.3.0':
-    resolution: {integrity: sha512-TclqRD2joExyECTrrHsioi3Onw20X2YfpOYEzs3JpJUtAjOKYw2bMeXldKrUg+TB/TT7tPdDu8uKNxj9NE7QUg==}
+  '@vercel/sandbox@3.9.1':
+    resolution: {integrity: sha512-8/3vqPknI2WrE1Zd4O3LbMFbrD9elCXqCe0JjqSJH+EqsEtBHGafwwxx1raq1kTWvpLLk4lh0bZW9dMy6L5efA==}
 
-  '@vercel/static-build@20.0.1':
-    resolution: {integrity: sha512-MdRMCfIlXw7nBphmhO/grRTN/lm5VDWCOryDcitx0eoERlozzpNvr7vQ/SZBkPGhoCaJnaILFbN/hAdtkz+HxQ==}
+  '@vercel/static-build@26.0.1':
+    resolution: {integrity: sha512-WoVd0LYrFvU/RkM2T/XsajTP0Hk8xFdHeAcr+Xt9UGs2wWdve1iV/pMR7VKC55bqohWktSJ7uF0IkQdKnVQgwA==}
     peerDependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
   '@vercel/static-config@3.4.4':
     resolution: {integrity: sha512-WppaPyEKQhO8qo5gVee3mSo1QSCgDZaUcUDHrqICSlt90oYeC/SHTmKCPWY1x1NB9hU+kR2oDzJwAeRKKv5NIw==}
 
-  '@vercel/vc-native-darwin-arm64@63.1.2':
-    resolution: {integrity: sha512-ezZdamD7USFfoHv6ImmSVI+d6tw/oOR7HjCm7lci52VxPOvosFg252bQnlAZ6X6WAIg06fhAhqZABIuYyT3q0w==}
+  '@vercel/vc-native-darwin-arm64@65.11.0':
+    resolution: {integrity: sha512-mvNIMqLt8LhVbJ3MTtMZMu6NjQeZgXWe4SuQiIF3Xy5L7cfLeqQCpN7XW99KH5qpI27jNrI6ux5MO6LaX0+5Og==}
     cpu: [arm64]
     os: [darwin]
 
-  '@vercel/vc-native-darwin-x64@63.1.2':
-    resolution: {integrity: sha512-iXLlKF/X4OuQyfMWGLKdfEPmUd6lRU1zmpMqyUsQx1VFxxFfNopd/L/+k2JhbmBdmJxU317wd6mV10WsBlKhhw==}
+  '@vercel/vc-native-darwin-x64@65.11.0':
+    resolution: {integrity: sha512-uJx9hZd83B/1eE2YOvvRfj7sGjkXQ/TANWaZpoSuORaI5+kLHR0rz1hu/cZCClmyO7rZpjoBkcWVAL1NvhmXsg==}
     cpu: [x64]
     os: [darwin]
 
-  '@vercel/vc-native-linux-arm64@63.1.2':
-    resolution: {integrity: sha512-UkqNIQEJGYAsJJ07jVWoUhCm+15DGq4bfz2ZBpXjImw61l/rCXW9qoY1j0JzJhS+Wt9JWoi/SEDsH8LIxuZWxg==}
+  '@vercel/vc-native-linux-arm64-musl@65.11.0':
+    resolution: {integrity: sha512-rX/jzKrBWLa451CjLZCuW56Buk76HYoOWCHdH5WxRTamUgNnryke3k59vBY+WnGelmT6tLf1GqvL8hRNf8Kcug==}
+    cpu: [arm64]
+    os: [linux]
+    libc: [musl]
+
+  '@vercel/vc-native-linux-arm64@65.11.0':
+    resolution: {integrity: sha512-57vA1tsudA30ex8q4bFiFmCxgFkC41bGn6Rf8c5Ppk4QHUWcXNVRROgoTPjenGbC4h0q7a3hENLYmNLan8zXPg==}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@vercel/vc-native-linux-x64@63.1.2':
-    resolution: {integrity: sha512-caQBi4OUQzwUL65dnCkTvQn+RP8VA7WbygwKEZj8KJLXyIatzrIfvj/YcPaAv5dlZJaoChzg8VmLaUOVsJ5Yxg==}
+  '@vercel/vc-native-linux-x64-musl@65.11.0':
+    resolution: {integrity: sha512-6ICTwsGE+0zwoUbcV68MS/zgAX2SxLORWbo8x4GpSSeiyJMg9bNRTlO9EDuAqsXpliz8l6xTY+Pi6SeVi2HL1Q==}
+    cpu: [x64]
+    os: [linux]
+    libc: [musl]
+
+  '@vercel/vc-native-linux-x64@65.11.0':
+    resolution: {integrity: sha512-rZAHMe8uyHRLUFIoTxot4t9hYwyyt9OPvqQRY58dmHZHCqJnT/zWS0juXWh+wo3PMDMsaWDEZSKwTWW2j3RsFA==}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@vercel/vc-native-win32-arm64@63.1.2':
-    resolution: {integrity: sha512-+UUQ8DqfNQf2crJC5ApBZXu46KoFZQd6a/gpUxBF8V9fo2mK+FFvtUbtWAMtHG8jdbUc9RTTWxFfaf/mVl7SsQ==}
+  '@vercel/vc-native-win32-arm64@65.11.0':
+    resolution: {integrity: sha512-zVB3MGDTKx4mMLXy6CPIwumaDoOIS+ROl8YMamOuBsN/J2ZTt3ooXOkUrzC5fzL8gy3DBSAW6Wf+whCwvXGOwQ==}
     cpu: [arm64]
     os: [win32]
 
-  '@vercel/vc-native-win32-x64@63.1.2':
-    resolution: {integrity: sha512-DduUx5mEv0/7qh4fQF3RBcfg+S5HImXcuVLplug9pSmhiuErDcEwG7jTNiwcik6C6swsiCYcCDpqeaf3cODnmg==}
+  '@vercel/vc-native-win32-x64@65.11.0':
+    resolution: {integrity: sha512-ByTtt0GMLt2j1rwO6rk2BYIPAkvgzcDzhORJY9fkeZPLFyACSual6Oqk+/VYHo7PgqcJ3qHZE+6fzy8N8JVlFQ==}
     cpu: [x64]
     os: [win32]
 
@@ -6702,6 +6835,10 @@ packages:
     resolution: {integrity: sha512-BNoCY6SXXPQ7gF2opIP4GBE+Xw7U+pHMYKuzjgCN3GwiaIR09UUeKfheyIry77QtrCBlC0KK0q5/TER/tYh3PQ==}
     engines: {node: '>= 0.4'}
 
+  artichokie@0.4.5:
+    resolution: {integrity: sha512-ma9643oYgSgA6CeDvKIU0zxL1eKOkbgH8/v83xFpFYB2VOPFoEmmg1iC+ooHFjLIJ3qdtfwPbEKpIW3/YxPovg==}
+    engines: {node: ^18.0.0 || >=20.0.0}
+
   as-typed@1.3.2:
     resolution: {integrity: sha512-94ezeKlKB97OJUyMaU7dQUAB+Cmjlgr4T9/cxCoKaLM4F2HAmuIHm3Q5ClGCsX5PvRwCQehCzAa/6foRFXRbqA==}
 
@@ -7068,6 +7205,10 @@ packages:
 
   charenc@0.0.2:
     resolution: {integrity: sha512-yrLQ/yVUFXkzg7EDQsPieE/53+0RlaWTs+wBrvW36cyilJ2SaDWfl4Yj7MtLTXleV9uEKefbAGUPv2/iWSooRA==}
+
+  chevrotain@13.2.0:
+    resolution: {integrity: sha512-GTouk5YzgBxlTPCaDn5q0q2EJKkrYmnPF+HmF8v0Qo4r3iyPG7HJivkN1wthCXZcm3sIcZFpGTRovLPNdJNRCA==}
+    engines: {node: '>=22.0.0'}
 
   chokidar@4.0.0:
     resolution: {integrity: sha512-mxIojEAQcuEvT/lyXq+jf/3cO/KoA6z4CeNDGGevTybECPOMFCnQy3OPahluUkbqgPNGw5Bi78UC7Po6Lhy+NA==}
@@ -7496,147 +7637,147 @@ packages:
     peerDependencies:
       cytoscape: ^3.2.0
 
-  cytoscape@3.34.3:
-    resolution: {integrity: sha512-yfYGhRcGAntq6YBD583j4n0Eg3jIxvWmZtz/5uz9UYkeIStSlMxuUja+ec5j3iBD8nv1rwaOAYMW09tBdkSeaQ==}
+  cytoscape@3.34.4:
+    resolution: {integrity: sha512-msY99tMY8iWTg+sIPGfSqDcPNOt4xcj+v/K/7qUFaCUxxlqnMkUYLBjRUzn9W5CU/R2hrmtJa5+UtovrEM2ctg==}
     engines: {node: '>=0.10'}
 
   d3-array@2.12.1:
     resolution: {integrity: sha512-B0ErZK/66mHtEsR1TkPEEkwdy+WDesimkM5gpZr5Dsg54BiTA5RXtYW5qTLIAcekaS9xfZrzBLF/OAkB3Qn1YQ==}
 
-  d3-array@3.2.4:
-    resolution: {integrity: sha512-tdQAmyA18i4J7wprpYq8ClcxZy3SC31QMeByyCFyRt7BVHdREQZ5lpzoe5mFEYZUWe+oq8HBvk9JjpibyEV4Jg==}
+  d3-array@3.2.5:
+    resolution: {integrity: sha512-Th8qGXoBalmWsstpkuhmBuTsBQIFqYOJtjlBvNVvBfJ8E3uYusBUwUR8HU20U0qKKQkgCvKyR1YjiozWadk5QA==}
     engines: {node: '>=12'}
 
-  d3-axis@3.0.0:
-    resolution: {integrity: sha512-IH5tgjV4jE/GhHkRV0HiVYPDtvfjHQlQfJHs0usq7M30XcSBvOotpmH1IgkcXsO/5gEQZD43B//fc7SRT5S+xw==}
+  d3-axis@3.0.1:
+    resolution: {integrity: sha512-E5QCXfaf/uJZEHHiqoWRq+bQEm2PzoVFv2rDC7CZ3wwI0MjfMW3w83J3ubobG4IJj3lShAI5eiPJhOu/8wHofA==}
     engines: {node: '>=12'}
 
-  d3-brush@3.0.0:
-    resolution: {integrity: sha512-ALnjWlVYkXsVIGlOsuWH1+3udkYFI48Ljihfnh8FZPF2QS9o+PzGLBslO0PjzVoHLZ2KCVgAM8NVkXPJB2aNnQ==}
+  d3-brush@3.0.1:
+    resolution: {integrity: sha512-L5Glqa/Gb7LU3ndIOMtA5mDzlJ0aXKp5ELP2X09ctWF23jO7+faIUVDbmaIi+D6k3EemXFWn1F3lkfguExoVhA==}
     engines: {node: '>=12'}
 
-  d3-chord@3.0.1:
-    resolution: {integrity: sha512-VE5S6TNa+j8msksl7HwjxMHDM2yNK3XCkusIlpX5kwauBfXuyLAtNg9jCp/iHH61tgI4sb6R/EIMWCqEIdjT/g==}
+  d3-chord@3.0.2:
+    resolution: {integrity: sha512-cGmADo5M2PTi3ewJZ2lcE32eURd4JmHtQ5JwRIUcas5L1SXqufG9yPyjWp8fW0gRi7aZi9bgbZPFZO1eyZ+1CQ==}
     engines: {node: '>=12'}
 
-  d3-color@3.1.0:
-    resolution: {integrity: sha512-zg/chbXyeBtMQ1LbD/WSoW2DpC3I0mpmPdW+ynRTj/x2DAWYrIY7qeZIHidozwV24m4iavr15lNwIwLxRmOxhA==}
+  d3-color@3.1.1:
+    resolution: {integrity: sha512-lfab8x0Bj0UO7SNsY8dZSbNIA6ipbkE3X0NG9nqjCu6CfCHZseuDnOSJY7hidKrjpP++i1M2qT+FlAdPKYRilA==}
     engines: {node: '>=12'}
 
-  d3-contour@4.0.2:
-    resolution: {integrity: sha512-4EzFTRIikzs47RGmdxbeUvLWtGedDUNkTcmzoeyg4sP/dvCexO47AaQL7VKy/gul85TOxw+IBgA8US2xwbToNA==}
+  d3-contour@4.0.3:
+    resolution: {integrity: sha512-5DYURc8KwXPOhSUBblU0P9rVcArsSPxPOxsfO0Eud0s28oU0sB2e80aRHRL9AZW3usT8ikFKyIHpHHLNWLdRVA==}
     engines: {node: '>=12'}
 
-  d3-delaunay@6.0.4:
-    resolution: {integrity: sha512-mdjtIZ1XLAM8bm/hx3WwjfHt6Sggek7qH043O8KEjDXN40xi3vx/6pYSVTwLjEgiXQTbvaouWKynLBiUZ6SK6A==}
+  d3-delaunay@6.0.6:
+    resolution: {integrity: sha512-DMQIEvSJhZCB6pwedcXaAlQ+MeKU5LlM2XakKtc73b/VM+RBiI1SRXycOEOKg2jsKj4zZ9F0KGYG6nCGwwWu/g==}
     engines: {node: '>=12'}
 
-  d3-dispatch@3.0.1:
-    resolution: {integrity: sha512-rzUyPU/S7rwUflMyLc1ETDeBj0NRuHKKAcvukozwhshr6g6c5d8zh4c2gQjY2bZ0dXeGLWc1PF174P2tVvKhfg==}
+  d3-dispatch@3.0.2:
+    resolution: {integrity: sha512-sAzH4Y4nsLo8eSqw5jKiZt+LU2wZmL/qS+OkxQGjhwazB/D7TY34R/QK1eshfGr7cZEKymKZ/Haem7m+lu98Sg==}
     engines: {node: '>=12'}
 
-  d3-drag@3.0.0:
-    resolution: {integrity: sha512-pWbUJLdETVA8lQNJecMxoXfH6x+mO2UQo8rSmZ+QqxcbyA3hfeprFgIT//HW2nlHChWeIIMwS2Fq+gEARkhTkg==}
+  d3-drag@3.0.1:
+    resolution: {integrity: sha512-OWeoayCq8J69hUIjvL+Mb6Q6Oaj/fyHV5XaXByEUAG+JUjIfTGDnk3qGpcXrD3VmQ3BSV96fcbM6fqq7C0tbPA==}
     engines: {node: '>=12'}
 
-  d3-dsv@3.0.1:
-    resolution: {integrity: sha512-UG6OvdI5afDIFP9w4G0mNq50dSOsXHJaRE8arAS5o9ApWnIElp8GZw1Dun8vP8OyHOZ/QJUKUJwxiiCCnUwm+Q==}
+  d3-dsv@3.0.2:
+    resolution: {integrity: sha512-FUnXhX7I4/AXyRCZzwfZTDGSq8PGZ4oR0tiCBqNGOZMsDrQ+6sIWNQnBzcCGhzJKZ6uCvCezTwflUqI209RRiQ==}
     engines: {node: '>=12'}
     hasBin: true
 
-  d3-ease@3.0.1:
-    resolution: {integrity: sha512-wR/XK3D3XcLIZwpbvQwQ5fK+8Ykds1ip7A2Txe0yxncXSdq1L9skcG7blcedkOX+ZcgxGAmLX1FrRGbADwzi0w==}
+  d3-ease@3.0.2:
+    resolution: {integrity: sha512-B5znKqRmKROAN4oHWQ50W/qisVjA9GXh2WMsVKdFVp4DxWmcrOsweqgUOUVsv5th96kwaZlokU6SlV4J3gak1w==}
     engines: {node: '>=12'}
 
-  d3-fetch@3.0.1:
-    resolution: {integrity: sha512-kpkQIM20n3oLVBKGg6oHrUchHM3xODkTzjMoj7aWQFq5QEM+R6E4WkzT5+tojDY7yjez8KgCBRoj4aEr99Fdqw==}
+  d3-fetch@3.0.2:
+    resolution: {integrity: sha512-1wGF62bgjMRbF6mqbD+6rRWBL2hwWVYQjFO2UP3Wm1nIAvJZKaQxXM5caVY7athoCa8wIq9lCf7g44lPWFk50g==}
     engines: {node: '>=12'}
 
-  d3-force@3.0.0:
-    resolution: {integrity: sha512-zxV/SsA+U4yte8051P4ECydjD/S+qeYtnaIyAs9tgHCqfguma/aAQDjo85A9Z6EKhBirHRJHXIgJUlffT4wdLg==}
+  d3-force@3.0.1:
+    resolution: {integrity: sha512-kAaaHLFebBYwgi5cYBXAI8vKrQFMCD2MEswj2QuPKKbdU1wYLc8WXtS7O8F/b6POCIe3gJjY6hkDstHi1yMETQ==}
     engines: {node: '>=12'}
 
-  d3-format@3.1.2:
-    resolution: {integrity: sha512-AJDdYOdnyRDV5b6ArilzCPPwc1ejkHcoyFarqlPqT7zRYjhavcT3uSrqcMvsgh2CgoPbK3RCwyHaVyxYcP2Arg==}
+  d3-format@3.1.3:
+    resolution: {integrity: sha512-+F+/49swqmGuQJmSKnVMIDH/QkEFV5li9QRj0xm/KhyAUBv099O5PrvpQFxBp24PYph17Mnvt9mjKQV0ii0nMA==}
     engines: {node: '>=12'}
 
-  d3-geo@3.1.1:
-    resolution: {integrity: sha512-637ln3gXKXOwhalDzinUgY83KzNWZRKbYubaG+fGVuc/dxO64RRljtCTnf5ecMyE1RIdtqpkVcq0IbtU2S8j2Q==}
+  d3-geo@3.1.2:
+    resolution: {integrity: sha512-5R8ZgDQorIxmauv7R6gpE/ndz+Z0qAZssigq0aXFdvPHdY41RqtW02jrRUQAL724NdPABYXo1+gQEGBBr7uKNg==}
     engines: {node: '>=12'}
 
-  d3-hierarchy@3.1.2:
-    resolution: {integrity: sha512-FX/9frcub54beBdugHjDCdikxThEqjnR93Qt7PvQTOHxyiNCAlvMrHhclk3cD5VeAaq9fxmfRp+CnWw9rEMBuA==}
+  d3-hierarchy@3.1.3:
+    resolution: {integrity: sha512-GRajN5ZcnEwYFWqqdzhG1qJ3+fDg6WWzk47TJg7ePY7yvYAgRfD2r1mUx+wviBOWuCwamCUzjwMSdato43jbGA==}
     engines: {node: '>=12'}
 
-  d3-interpolate@3.0.1:
-    resolution: {integrity: sha512-3bYs1rOD33uo8aqJfKP3JWPAibgw8Zm2+L9vBKEHJ2Rg+viTR7o5Mmv5mZcieN+FRYaAOWX5SJATX6k1PWz72g==}
+  d3-interpolate@3.0.2:
+    resolution: {integrity: sha512-IRzGU62DtxhvsnSTWMQIdnoZ6gA+BCWwBon1EJI6SjoN595799b6z/QRBzXfFhE8iupUPp3042yBNo0STPqnzQ==}
     engines: {node: '>=12'}
 
   d3-path@1.0.9:
     resolution: {integrity: sha512-VLaYcn81dtHVTjEHd8B+pbe9yHWpXKZUC87PzoFmsFrJqgFwDe/qxfp5MlfsfM1V5E/iVt0MmEbWQ7FVIXh/bg==}
 
-  d3-path@3.1.0:
-    resolution: {integrity: sha512-p3KP5HCf/bvjBSSKuXid6Zqijx7wIfNW+J/maPs+iwR35at5JCbLUT0LzF1cnjbCHWhqzQTIN2Jpe8pRebIEFQ==}
+  d3-path@3.1.1:
+    resolution: {integrity: sha512-jsbgV8zIT38ReB9O7X7gcLndTQRONSqNNd+oGIaTBdUug4r5jFmp0N6RY9R5GWbdUDucn0qoTGyfjapT4tDhcg==}
     engines: {node: '>=12'}
 
-  d3-polygon@3.0.1:
-    resolution: {integrity: sha512-3vbA7vXYwfe1SYhED++fPUQlWSYTTGmFmQiany/gdbiWgU/iEyQzyymwL9SkJjFFuCS4902BSzewVGsHHmHtXg==}
+  d3-polygon@3.0.2:
+    resolution: {integrity: sha512-WAUvPudGU1Dn4mDPfb6+JnnbeVEV53hG/BoT+bxts6AkZsOpTEiV1jHYX+2vtwCICNFG9Wxv8QS+eW1zE/Dwfg==}
     engines: {node: '>=12'}
 
-  d3-quadtree@3.0.1:
-    resolution: {integrity: sha512-04xDrxQTDTCFwP5H6hRhsRcb9xxv2RzkcsygFzmkSIOJy3PeRJP7sNk3VRIbKXcog561P9oU0/rVH6vDROAgUw==}
+  d3-quadtree@3.0.2:
+    resolution: {integrity: sha512-9Lu9mqJKRbIk0d6mKDjpvPURaPdwHVK5CYbcdd0/4vBgz4ldz/7TIOse3kNERsByGNfld58KEco507AztJWyTQ==}
     engines: {node: '>=12'}
 
-  d3-random@3.0.1:
-    resolution: {integrity: sha512-FXMe9GfxTxqd5D6jFsQ+DJ8BJS4E/fT5mqqdjovykEB2oFbTMDVdg1MGFxfQW+FBOGoB++k8swBrgwSHT1cUXQ==}
+  d3-random@3.0.2:
+    resolution: {integrity: sha512-PxJi9LNV+7mulaYO77nd+oGurXGL1fhedXjHnB3pWLUcqDnQtF4VASoqnQGHgoXLByVdv5QJ/2kfwkGn5HTS8g==}
     engines: {node: '>=12'}
 
   d3-sankey@0.12.3:
     resolution: {integrity: sha512-nQhsBRmM19Ax5xEIPLMY9ZmJ/cDvd1BG3UVvt5h3WRxKg5zGRbvnteTyWAbzeSvlh3tW7ZEmq4VwR5mB3tutmQ==}
 
-  d3-scale-chromatic@3.1.0:
-    resolution: {integrity: sha512-A3s5PWiZ9YCXFye1o246KoscMWqf8BsD9eRiJ3He7C9OBaxKhAd5TFCdEx/7VbKtxxTsu//1mMJFrEt572cEyQ==}
+  d3-scale-chromatic@3.1.1:
+    resolution: {integrity: sha512-lA5gfN2yMvmChubmptnDiBfeGpHD7Yb1EbvCz0TZE0WHXhyR6W2allPuhKtzV5ILQRqeOdefF0qYtERReLUBDg==}
     engines: {node: '>=12'}
 
-  d3-scale@4.0.2:
-    resolution: {integrity: sha512-GZW464g1SH7ag3Y7hXjf8RoUuAFIqklOAq3MRl4OaWabTFJY9PN/E1YklhXLh+OQ3fM9yS2nOkCoS+WLZ6kvxQ==}
+  d3-scale@4.0.3:
+    resolution: {integrity: sha512-66cWobCNzcMvlfoaDHCxuIv9TBUWG1BLOWdv9kHHFuCr1JdqAWPvTmsaEYDD5NRMyWZ5+7u0GqiCDfMXMqh3hg==}
     engines: {node: '>=12'}
 
-  d3-selection@3.0.0:
-    resolution: {integrity: sha512-fmTRWbNMmsmWq6xJV8D19U/gw/bwrHfNXxrIN+HfZgnzqTHp9jOmKMhsTUjXOJnZOdZY9Q28y4yebKzqDKlxlQ==}
+  d3-selection@3.0.1:
+    resolution: {integrity: sha512-ODSf35vqCrlCfp7hrm0eZjvOosSXSYLjqvIlhMBV9q9VOx7EBJG6pc+uXBswEZNJgCGJ+qnKYcWutbZDIxe/Xg==}
     engines: {node: '>=12'}
 
   d3-shape@1.3.7:
     resolution: {integrity: sha512-EUkvKjqPFUAZyOlhY5gzCxCeI0Aep04LwIRpsZ/mLFelJiUfnK56jo5JMDSE7yyP2kLSb6LtF+S5chMk7uqPqw==}
 
-  d3-shape@3.2.0:
-    resolution: {integrity: sha512-SaLBuwGm3MOViRq2ABk3eLoxwZELpH6zhl3FbAoJ7Vm1gofKx6El1Ib5z23NUEhF9AsGl7y+dzLe5Cw2AArGTA==}
+  d3-shape@3.2.1:
+    resolution: {integrity: sha512-dm2o+lbKdzg9tY7GEag/dB9hcbodLfwkE/DkvqbELJXaMz0yKzWWhZqhbI7CKubukA7HnRyz0avdtvi7EPxPvw==}
     engines: {node: '>=12'}
 
-  d3-time-format@4.1.0:
-    resolution: {integrity: sha512-dJxPBlzC7NugB2PDLwo9Q8JiTR3M3e4/XANkreKSUxF8vvXKqm1Yfq4Q5dl8budlunRVlUUaDUgFt7eA8D6NLg==}
+  d3-time-format@4.1.1:
+    resolution: {integrity: sha512-22XaqjyCjpqgda20erhsOjGmC3vvYwTNYniKAd45W5UWLDF43moeOuV9qYpRqobIlsnK0UhnKZjUUJm3VgORUA==}
     engines: {node: '>=12'}
 
-  d3-time@3.1.0:
-    resolution: {integrity: sha512-VqKjzBLejbSMT4IgbmVgDjpkYrNWUYJnbCGo874u7MMKIWsILRX+OpX/gTk8MqjpT1A/c6HY2dCA77ZN0lkQ2Q==}
+  d3-time@3.1.1:
+    resolution: {integrity: sha512-Ze7rjrhMzdeulh0/hjcfFj7XLAHOfowtEMfsoG6DU866HPynQNW7Wfen6hzXcqKTv8XzxvF6Hzr5XD6bMHr2ug==}
     engines: {node: '>=12'}
 
-  d3-timer@3.0.1:
-    resolution: {integrity: sha512-ndfJ/JxxMd3nw31uyKoY2naivF+r29V+Lc0svZxe1JvvIRmi8hUsrMvdOwgS1o6uBHmiz91geQ0ylPP0aj1VUA==}
+  d3-timer@3.0.2:
+    resolution: {integrity: sha512-1Il1aliroVSErrv5aulRBxAY+7+DnaoLIWGd1C6SsBTWDeobWiP/V69vwb8vT6abR1kKwaNe1196pmaQ1fK90A==}
     engines: {node: '>=12'}
 
-  d3-transition@3.0.1:
-    resolution: {integrity: sha512-ApKvfjsSR6tg06xrL434C0WydLr7JewBB3V+/39RMHsaXTOG0zmt/OAXeng5M5LBm0ojmxJrpomQVZ1aPvBL4w==}
+  d3-transition@3.0.2:
+    resolution: {integrity: sha512-RcjCsdFgyFoDB+QXLC5m60ZkTN0k9zH+ovoLlTdJnDS1AbfbcuowiM4pCKSTOclNibS4f4J4cbv2m7O7y8NTOQ==}
     engines: {node: '>=12'}
     peerDependencies:
       d3-selection: 2 - 3
 
-  d3-zoom@3.0.0:
-    resolution: {integrity: sha512-b8AmV3kfQaqWAuacbPuNbL6vahnOJflOhexLzMMNLga62+/nh0JzvJ0aO/5a5MVgUFGS7Hu1P9P03o3fJkDCyw==}
+  d3-zoom@3.0.1:
+    resolution: {integrity: sha512-kfjD3BDQu/FOatpZ6JdMSyIoDwTxIpI29ySTI2J5ZlDaH1WbuJGQJ2Q9oJkWTEZEW98j6idezoomSD3Cn2zwiw==}
     engines: {node: '>=12'}
 
-  d3@7.9.0:
-    resolution: {integrity: sha512-e1U46jVP+w7Iut8Jt8ri1YsPOvFpg46k+K8TpCb0P+zjCkjkPnV7WzfDJzMHy1LnA+wj5pLT1wjO901gLXeEhA==}
+  d3@7.9.2:
+    resolution: {integrity: sha512-ZKb/mONPVKzaO5UlcWcwN8bS4ezvQaYu+bsou+XgNABdGC800kwH651ADTbbTxMPHW13UlvbQafdmJQDk1w7Mg==}
     engines: {node: '>=12'}
 
   dagre-d3-es@7.0.14:
@@ -7833,8 +7974,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.16:
-    resolution: {integrity: sha512-sqo+pNp3qRhCIpbgRi1y8Tgk27Bo2Ry7w0dC1NBeNTdZChWjz9Xb/KOoZbRP/R6pQZ80Qw8YhXw13hWWBbMRnQ==}
+  dompurify@3.4.17:
+    resolution: {integrity: sha512-B/pSlYVHQ58kqISD/yDjuJ1yfzI34m1gF4lAod2bwSRhiN4K5Cl3H8Af7hqB2PmTL911tdEudnnXn5FnhRoz0w==}
 
   domutils@3.2.2:
     resolution: {integrity: sha512-6kZKyUajlDuqlHKVX1w7gyslj9MPIXzIFiz/rGu35uC1wMi+kMhQwGhl4lt9unC9Vb9INnY9Z3/ZA3+FhASLaw==}
@@ -7905,6 +8046,9 @@ packages:
 
   electron-to-chromium@1.5.393:
     resolution: {integrity: sha512-kiDJdIUawuEIcp9XoICKp1iTYDEbgguIPq526N1Q7jIQDeQ3CqoMx71025PI/7E48Ddtw2HuWsVjY7afEgNxmg==}
+
+  elkjs@0.12.1:
+    resolution: {integrity: sha512-IhMYKHE4S2vtx0QrhBP3lYOIKDeIiJXBrdq9MGYkuB8ZHqhrBnHNfSUndjXFewrX1CPK8chwq+2NA0K0hliYuw==}
 
   emmet@2.4.11:
     resolution: {integrity: sha512-23QPJB3moh/U9sT4rQzGgeyyGIrcM+GH5uVYg2C6wZIxAIJq7Ng3QLT79tl8FUwDXhyq9SusfknOrofAKqvgyQ==}
@@ -8016,6 +8160,9 @@ packages:
 
   es-toolkit@1.52.0:
     resolution: {integrity: sha512-XTNEJQh1tY1ZJVcf6ayP/2n4ZPyaHlW2FWs7xvw5ddPuhUVjLD3olQVQS7kf58JbAB48iL0uL/jerTrjtV3lDA==}
+
+  es-toolkit@1.53.1:
+    resolution: {integrity: sha512-VhMc6IXmexu8iYFfL2aaAww6IvJTdHlqBLruLoEUs33YD4IcP5DdZcLOybMsMmmLsiy1c8PsiLsrM0DdIuuRUA==}
 
   esbuild@0.27.0:
     resolution: {integrity: sha512-jd0f4NHbD6cALCyGElNpGAOtWxSq46l9X/sWB0Nzd5er4Kz2YTm+Vl0qKFT9KUJvD8+fiO8AvoHhFvEatfVixA==}
@@ -8198,9 +8345,6 @@ packages:
   fast-xml-parser@5.12.0:
     resolution: {integrity: sha512-/pXxRBtwxY9w8z7YbgsvIPPcPvFDsTbIkWwTQJhzNJPokj+TbN6ftmcv4j/pEQDvOCNnKGDzuk5Bo2oogIOiFg==}
     hasBin: true
-
-  fastdom@1.0.12:
-    resolution: {integrity: sha512-LB+xjSTEbjHE1cWsxu+tN2Xqr1kpi+V9aADI7sVM5ZMaXyYGPHULQMzpJMYqOTULK/73pUkWVzzObFRBkPr+hg==}
 
   fastest-stable-stringify@2.0.2:
     resolution: {integrity: sha512-bijHueCGd0LqqNK9b5oCMHc0MluJAx0cwqASgbWMvkO01lCYgIhacVRLcaDz3QnyYIRNJRDwMb41VuT6pHJ91Q==}
@@ -8428,10 +8572,6 @@ packages:
     resolution: {integrity: sha512-sQtrEfA+ez/3G0cCZecF70oqpCRttCexYUG4mUrtWL49ULUzUyxokt5kyqwtKzj1270RaKih+hcP3qLcumccow==}
     engines: {node: '>=10'}
 
-  gaxios@7.3.1:
-    resolution: {integrity: sha512-kB3rzJV7d9juLZh8/56QTXCwQfxyhdOMdyYk1HdQKFtF8TJTDTZQJtixWIwXdE9Jji91mC41DUNpjleo4L4eAQ==}
-    engines: {node: '>=18'}
-
   gaxios@8.3.2:
     resolution: {integrity: sha512-7VsaTExxjbDv2ZK1YuC4jbgfN33NI/6/7zdYWUHB6mcg51v4tCBZe+xzjqPzOpVzI+C5k1Kk9OQ80WVrXAHOqw==}
     engines: {node: '>=22'}
@@ -8581,12 +8721,12 @@ packages:
     resolution: {integrity: sha512-jYZOPMaRGS3Hldyudft6bdibW9ZWUKBkMdB2TeSETkV1c2T9TR4zxEWZETHv9xJ8KHr2hgkNLaSa8kcEcwlpeQ==}
     engines: {node: '>=22'}
 
-  googleapis-common@9.2.0:
-    resolution: {integrity: sha512-OYCBMfAPDJSB4E1RiQQzrIxCJLGMVrCgeVvuUKzSLBgnSSA+hH3X16/q76UMjS/HCJmOjcVVopwhUUnTo2SHyg==}
+  googleapis-common@9.3.1:
+    resolution: {integrity: sha512-wtv/e7JYgmtpIPcSez2EFD/Wx49DPsRX2rj15D7hTwc7tDsP82dcwoX/I4+zE38mu6S9PcghizzzADLf+ZMunA==}
     engines: {node: '>=22'}
 
-  googleapis@185.0.0:
-    resolution: {integrity: sha512-w/rO9+ank7JpAj65X6DzUoSLbxvHtsTf4F2kD9+8AScA3KEzDjeTFOUFVldDSePSuRSlpJkP/s36fMaqgFX3sw==}
+  googleapis@189.0.0:
+    resolution: {integrity: sha512-TmFQmaLNcY/aaGNC9wZW9GvPueWB/fdNmt6eNFLKo5nrAxod4OAnvQNRxZuGO8iKObie5g3iLJloHQ8iiiIlvA==}
     engines: {node: '>=22.0.0'}
 
   gopd@1.2.0:
@@ -9378,8 +9518,8 @@ packages:
   jws@4.0.1:
     resolution: {integrity: sha512-EKI/M/yqPncGUUh44xz0PxSidXFr/+r0pA70+gIYhjv+et7yxM+s29Y+VGDkovRofQem0fs7Uvf4+YmAdyRduA==}
 
-  katex@0.16.47:
-    resolution: {integrity: sha512-Eeo8Ys1doU1z+x8AZsPpQu+p/QcZBI5PeOo7QGQdy2x2m0MU/hYagBbGOmXwr5KVbEfVuWv9LpnQWeehogurjg==}
+  katex@0.18.10:
+    resolution: {integrity: sha512-/B6p9eY9DX7aHBfpkHdpirDTZ5QH9xTwL9y837PWuzuv41O5jFdqNQwVQEQsimY0/iVNkwBY4+4hMfhQ7d4Dbw==}
     hasBin: true
 
   keyv@5.6.0:
@@ -9399,6 +9539,9 @@ packages:
   klona@2.0.6:
     resolution: {integrity: sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==}
     engines: {node: '>= 8'}
+
+  koffi@3.3.3:
+    resolution: {integrity: sha512-XWNI4eyxJJzR2MakPZzR3QeZ06JOklLbxglin0dHhx/qIQCby8lqHs9Acq4Q7CpCKnOrBSj+6b9J5y69wfr2ZA==}
 
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
@@ -9768,8 +9911,9 @@ packages:
     resolution: {integrity: sha512-8q7VEgMJW4J8tcfVPy8g09NcQwZdbwFEqhe/WZkoIzjn/3TGDwtOCYtXGxA3O8tPzpczCCDgv+P2P5y00ZJOOg==}
     engines: {node: '>= 8'}
 
-  mermaid@11.17.2:
-    resolution: {integrity: sha512-V6K3C8EBdEsPFZXSKMJe6ppQOENxuHARr9GvHX4hh47lAbhMRD9qf4oEK7LoaRQxULMa80/qt5gHO73aCleBBg==}
+  mermaid@12.3.0:
+    resolution: {integrity: sha512-4113TdXeLAsMruJ79OpFL5O8+LTFXhQqZ260rF3tgUmiNAtRm4Uume04I+65PRN6yZ69J4f8rVYWW8zRk65UYw==}
+    engines: {node: '>=22.12.0'}
 
   methods@1.1.2:
     resolution: {integrity: sha512-iclAHeNqNm68zFtnZ0e+1L2yUIdvzNoauKU4WBA3VvH/vPFieF7qfRlwUZU+DA9P9bPXIS90ulxoUoCH23sV2w==}
@@ -11422,8 +11566,8 @@ packages:
   safer-buffer@2.1.2:
     resolution: {integrity: sha512-YZo3K82SD7Riyi0E1EQPojLz7kpepnSQI9IyPbHHg1XXXevb5dJI7tpyN2ADxGcQbHG7vcyRHk0cbwqcQriUtg==}
 
-  sandbox@4.4.0:
-    resolution: {integrity: sha512-8DlAEKlHbOQmz5R05dAYE+P1wNQ44nEvAnf1jnWtF0LZWHiu/F48USSMKyY8Ib8iE1MCfo3Yvhmky8bUppLaWA==}
+  sandbox@4.11.1:
+    resolution: {integrity: sha512-TRjMwPjn7lKQculAXJ9rmv73jQ+9+5Hr2L5KMm1HfQiDhDXgO0pZACiy5ExtSzRW6mZgTGniWmWslhOu77DQdA==}
     hasBin: true
 
   satteri@0.10.5:
@@ -11795,9 +11939,6 @@ packages:
 
   streamx@2.28.1:
     resolution: {integrity: sha512-zEzXb0s5Cds7tqMH6rhZ05lcJydCWiQPEwiNngVqzsxCc962vLY4Uw+mW7od8kDH258k2Uz/JrOkdIAAhSh9VA==}
-
-  strictdom@1.0.1:
-    resolution: {integrity: sha512-cEmp9QeXXRmjj/rVp9oyiqcvyocWab/HaoN4+bwFeZ7QzykJD6L3yD4v12K1x0tHpqRqVpJevN3gW7kyM39Bqg==}
 
   string-argv@0.3.2:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
@@ -12723,8 +12864,8 @@ packages:
     resolution: {integrity: sha512-BNGbWLfd0eUPabhkXUVm0j8uuvREyTh5ovRa/dyow/BqAbZJyC+5fU+IzQOzmAKzYqYRAISoRhdQr3eIZ/PXqg==}
     engines: {node: '>= 0.8'}
 
-  vercel@63.1.2:
-    resolution: {integrity: sha512-kD/AKQVTV5Lwlg69fUNaW0OBGh6iSX42UTRrka10CtbOJDcxcqE8VoDRIuAsduGHiD3Hf90Ak9dX39nNzq8srA==}
+  vercel@65.11.0:
+    resolution: {integrity: sha512-Zf4mh2J5+XsfPwQKAyMqUsY9LGBlXwCoHZuRMWvf/GLqP0cNwIv7reDKRPgnykioCbZyIPWYziaFYlbE9qrIBw==}
     engines: {node: '>= 20'}
     hasBin: true
 
@@ -13163,6 +13304,18 @@ packages:
 
   ws@8.22.0:
     resolution: {integrity: sha512-Ydggc987+RO0AnWtZ/7Wq9FtNvcrL1b/RO0ud9mWjUPgDrsAAwQSF51sm2hm1XofbU/4jkpGEsLFsZZxU+1DOg==}
+    engines: {node: '>=10.0.0'}
+    peerDependencies:
+      bufferutil: ^4.0.1
+      utf-8-validate: '>=5.0.2'
+    peerDependenciesMeta:
+      bufferutil:
+        optional: true
+      utf-8-validate:
+        optional: true
+
+  ws@8.22.1:
+    resolution: {integrity: sha512-oyL6OPYme/CmiFvNuGzeoxCJ4nOrZE2O1FwM9MWM1AsGri6nLXB2pg+lNA8aLeXMSav0J6eIVS1j6vUPzUtK9g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -14624,7 +14777,20 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1)
 
-  '@chevrotain/types@11.1.2': {}
+  '@chevrotain/cst-dts-gen@13.2.0':
+    dependencies:
+      '@chevrotain/gast': 13.2.0
+      '@chevrotain/types': 13.2.0
+
+  '@chevrotain/gast@13.2.0':
+    dependencies:
+      '@chevrotain/types': 13.2.0
+
+  '@chevrotain/regexp-to-ast@13.2.0': {}
+
+  '@chevrotain/types@13.2.0': {}
+
+  '@chevrotain/utils@13.2.0': {}
 
   '@clack/core@1.4.3':
     dependencies:
@@ -15752,6 +15918,66 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
+  '@koromix/koffi-android-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-android-x64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-darwin-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-darwin-x64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-freebsd-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-freebsd-ia32@3.3.3':
+    optional: true
+
+  '@koromix/koffi-freebsd-x64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-arm@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-ia32@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-loong64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-ppc64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-riscv64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-linux-x64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-openbsd-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-openbsd-ia32@3.3.3':
+    optional: true
+
+  '@koromix/koffi-openbsd-x64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-win32-arm64@3.3.3':
+    optional: true
+
+  '@koromix/koffi-win32-ia32@3.3.3':
+    optional: true
+
+  '@koromix/koffi-win32-x64@3.3.3':
+    optional: true
+
   '@lukeed/csprng@1.1.0': {}
 
   '@lukeed/ms@2.0.2': {}
@@ -15816,9 +16042,9 @@ snapshots:
       '@types/gapi.client': 1.0.8
       '@types/gapi.client.discovery-v1': 0.0.4
 
-  '@mermaid-js/parser@1.2.1':
+  '@mermaid-js/parser@2.0.1':
     dependencies:
-      '@chevrotain/types': 11.1.2
+      '@chevrotain/types': 13.2.0
 
   '@microsoft/api-extractor-model@7.33.16(@types/node@24.19.2)':
     dependencies:
@@ -17203,8 +17429,6 @@ snapshots:
 
   '@remix-run/route-pattern@0.22.1': {}
 
-  '@renovatebot/pep440@4.2.1': {}
-
   '@rolldown/binding-android-arm-eabi@1.2.16':
     optional: true
 
@@ -17294,9 +17518,10 @@ snapshots:
   '@rolldown/binding-win32-x64-msvc@1.2.16':
     optional: true
 
-  '@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))':
+  '@rolldown/plugin-babel@0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))':
     dependencies:
       '@babel/core': 7.29.7(supports-color@10.2.2)
+      artichokie: 0.4.5
       picomatch: 4.0.7
       rolldown: 1.2.16
     optionalDependencies:
@@ -18525,12 +18750,12 @@ snapshots:
 
   '@upsetjs/venn.js@2.0.0':
     optionalDependencies:
-      d3-selection: 3.0.0
-      d3-transition: 3.0.1(d3-selection@3.0.0)
+      d3-selection: 3.0.1
+      d3-transition: 3.0.2(d3-selection@3.0.1)
 
-  '@vercel/backends@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/backends@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       execa: 3.2.0
@@ -18560,14 +18785,14 @@ snapshots:
       throttleit: 2.1.0
       undici: 6.29.1
 
-  '@vercel/build-utils@14.20.1':
+  '@vercel/build-utils@15.2.1':
     dependencies:
       cjs-module-lexer: 1.2.3
       es-module-lexer: 1.5.0
 
-  '@vercel/cervel@0.1.79(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/cervel@0.1.92(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/backends': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/backends': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -18576,35 +18801,95 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/cli-auth@0.3.10':
+  '@vercel/cli-auth@0.3.15':
     dependencies:
       '@napi-rs/keyring': 1.2.0
-      '@vercel/cli-config': 0.3.1
+      '@vercel/cli-config': 0.3.6
       async-listen: 3.0.0
       open: 8.4.0
-      zod: 4.1.11
+      zod: 4.6.7
+    optionalDependencies:
+      koffi: 3.3.3
 
   '@vercel/cli-config@0.3.1':
     dependencies:
       xdg-app-paths: 5.5.1
       zod: 4.1.11
 
+  '@vercel/cli-config@0.3.6':
+    dependencies:
+      xdg-app-paths: 5.5.1
+      zod: 4.6.7
+
   '@vercel/cli-exec@1.0.1':
     dependencies:
       execa: 5.1.1
 
-  '@vercel/container@18.0.1(@vercel/build-utils@14.20.1)':
+  '@vercel/cli-support@65.11.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/backends': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/blob': 2.8.0
+      '@vercel/build-utils': 15.2.1
+      '@vercel/cli-auth': 0.3.15
+      '@vercel/cli-config': 0.3.6
+      '@vercel/container': 24.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/detect-agent': 1.2.7
+      '@vercel/elysia': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/express': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/fastify': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/fun': 1.3.6(encoding@0.1.13)(supports-color@10.2.2)
+      '@vercel/go': 27.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/h3': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/hono': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/hydrogen': 25.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)
+      '@vercel/koa': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/nestjs': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/next': 28.0.1(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/prepare-flags-definitions': 0.6.1
+      '@vercel/python': 30.1.0(@vercel/build-utils@15.2.1)
+      '@vercel/python-analysis': 0.15.3
+      '@vercel/redwood': 26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/remix-builder': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/ruby': 26.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/rust': 25.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/static-build': 26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)
+      chokidar: 4.0.0
+      esbuild: 0.27.0
+      jose: 5.9.6
+      jsonc-parser: 3.3.1
+      luxon: 3.7.2
+      sandbox: 4.11.1(supports-color@10.2.2)
+      smol-toml: 1.5.2
+      undici: 5.29.0
+      uuid: 14.0.1
+      zod: 4.6.7
+    transitivePeerDependencies:
+      - '@emnapi/core'
+      - '@emnapi/runtime'
+      - bare-abort-controller
+      - bufferutil
+      - encoding
+      - react-native-b4a
+      - rollup
+      - supports-color
+      - utf-8-validate
+    optional: true
+
+  '@vercel/container@24.0.1(@vercel/build-utils@15.2.1)':
+    dependencies:
+      '@vercel/build-utils': 15.2.1
       smol-toml: 1.5.2
       tar: 7.5.11
 
-  '@vercel/detect-agent@1.2.6': {}
+  '@vercel/detect-agent@1.2.5': {}
 
-  '@vercel/elysia@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/detect-agent@1.2.7': {}
+
+  '@vercel/elysia@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -18615,12 +18900,12 @@ snapshots:
 
   '@vercel/error-utils@2.2.1': {}
 
-  '@vercel/express@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/express@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/cervel': 0.1.79(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/cervel': 0.1.92(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       fs-extra: 11.1.0
       path-to-regexp: 8.3.0
@@ -18633,10 +18918,10 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/fastify@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/fastify@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -18671,22 +18956,22 @@ snapshots:
     dependencies:
       web-vitals: 0.2.4
 
-  '@vercel/gatsby-plugin-vercel-builder@2.2.71':
+  '@vercel/gatsby-plugin-vercel-builder@2.2.84':
     dependencies:
       '@sinclair/typebox': 0.25.24
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       esbuild: 0.27.0
       etag: 1.8.1
       fs-extra: 11.1.0
 
-  '@vercel/go@21.0.1(@vercel/build-utils@14.20.1)':
+  '@vercel/go@27.0.1(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/h3@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/h3@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -18695,11 +18980,11 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/hono@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/hono@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       fs-extra: 11.1.0
       path-to-regexp: 8.3.0
@@ -18712,19 +18997,19 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/hydrogen@19.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)':
+  '@vercel/hydrogen@25.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       ts-morph: 12.0.0
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@vercel/koa@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/koa@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -18733,10 +19018,10 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/nestjs@18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/nestjs@24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
     transitivePeerDependencies:
       - '@emnapi/core'
@@ -18745,9 +19030,9 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/next@22.0.1(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/next@28.0.1(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
     transitivePeerDependencies:
       - encoding
@@ -18773,13 +19058,13 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/node@23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/node@29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
       '@edge-runtime/node-utils': 2.3.0
       '@edge-runtime/primitives': 4.1.0
       '@edge-runtime/vm': 3.2.0
       '@types/node': 20.11.0
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/error-utils': 2.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
@@ -18804,34 +19089,37 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/oidc@3.2.0': {}
-
   '@vercel/oidc@3.8.10':
     dependencies:
       '@vercel/cli-config': 0.3.1
       '@vercel/cli-exec': 1.0.1
       jose: 5.10.0
 
-  '@vercel/prepare-flags-definitions@0.3.0': {}
+  '@vercel/oidc@4.0.0':
+    dependencies:
+      '@vercel/cli-config': 0.3.1
+      '@vercel/cli-exec': 1.0.1
+      jose: 5.9.6
 
-  '@vercel/python-analysis@0.14.0':
+  '@vercel/prepare-flags-definitions@0.6.1': {}
+
+  '@vercel/python-analysis@0.15.3':
     dependencies:
       '@bytecodealliance/preview2-shim': 0.17.6
-      '@renovatebot/pep440': 4.2.1
       fs-extra: 11.1.1
       js-yaml: 4.1.1
       minimatch: 10.1.1
       smol-toml: 1.5.2
       zod: 3.22.4
 
-  '@vercel/python@24.0.1(@vercel/build-utils@14.20.1)':
+  '@vercel/python@30.1.0(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
-      '@vercel/python-analysis': 0.14.0
+      '@vercel/build-utils': 15.2.1
+      '@vercel/python-analysis': 0.15.3
 
-  '@vercel/redwood@20.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/redwood@26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       semver: 6.3.1
@@ -18843,9 +19131,9 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/remix-builder@23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
+  '@vercel/remix-builder@29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/error-utils': 2.2.1
       '@vercel/nft': 1.10.0(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
@@ -18859,20 +19147,21 @@ snapshots:
       - rollup
       - supports-color
 
-  '@vercel/ruby@20.0.1(@vercel/build-utils@14.20.1)':
+  '@vercel/ruby@26.0.1(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
 
-  '@vercel/rust@19.0.1(@vercel/build-utils@14.20.1)':
+  '@vercel/rust@25.0.1(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       execa: 5.1.1
       get-port: 5.1.1
       smol-toml: 1.5.2
 
-  '@vercel/sandbox@3.3.0':
+  '@vercel/sandbox@3.9.1':
     dependencies:
-      '@vercel/oidc': 3.2.0
+      '@vercel/detect-agent': 1.2.5
+      '@vercel/oidc': 4.0.0
       '@workflow/serde': 4.1.0-beta.2
       async-retry: 1.3.3
       jose: 6.2.3
@@ -18888,11 +19177,11 @@ snapshots:
       - bare-abort-controller
       - react-native-b4a
 
-  '@vercel/static-build@20.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)':
+  '@vercel/static-build@26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)':
     dependencies:
-      '@vercel/build-utils': 14.20.1
+      '@vercel/build-utils': 15.2.1
       '@vercel/gatsby-plugin-vercel-analytics': 1.0.12
-      '@vercel/gatsby-plugin-vercel-builder': 2.2.71
+      '@vercel/gatsby-plugin-vercel-builder': 2.2.84
       '@vercel/static-config': 3.4.4(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)
       ts-morph: 12.0.0
     transitivePeerDependencies:
@@ -18909,30 +19198,36 @@ snapshots:
       - '@emnapi/core'
       - '@emnapi/runtime'
 
-  '@vercel/vc-native-darwin-arm64@63.1.2':
+  '@vercel/vc-native-darwin-arm64@65.11.0':
     optional: true
 
-  '@vercel/vc-native-darwin-x64@63.1.2':
+  '@vercel/vc-native-darwin-x64@65.11.0':
     optional: true
 
-  '@vercel/vc-native-linux-arm64@63.1.2':
+  '@vercel/vc-native-linux-arm64-musl@65.11.0':
     optional: true
 
-  '@vercel/vc-native-linux-x64@63.1.2':
+  '@vercel/vc-native-linux-arm64@65.11.0':
     optional: true
 
-  '@vercel/vc-native-win32-arm64@63.1.2':
+  '@vercel/vc-native-linux-x64-musl@65.11.0':
     optional: true
 
-  '@vercel/vc-native-win32-x64@63.1.2':
+  '@vercel/vc-native-linux-x64@65.11.0':
     optional: true
 
-  '@vitejs/plugin-react@6.2.1(@rolldown/plugin-babel@0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))':
+  '@vercel/vc-native-win32-arm64@65.11.0':
+    optional: true
+
+  '@vercel/vc-native-win32-x64@65.11.0':
+    optional: true
+
+  '@vitejs/plugin-react@6.2.1(@rolldown/plugin-babel@0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)))(babel-plugin-react-compiler@1.0.0)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))':
     dependencies:
       '@rolldown/pluginutils': 1.0.1
       vite: 8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)
     optionalDependencies:
-      '@rolldown/plugin-babel': 0.2.4(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
+      '@rolldown/plugin-babel': 0.3.0(@babel/core@7.29.7(supports-color@10.2.2))(@babel/runtime@8.1.0)(rolldown@1.2.16)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))
       babel-plugin-react-compiler: 1.0.0
 
   '@vitest/browser-playwright@5.1.0(playwright@1.64.1)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(vitest@5.1.0)':
@@ -20035,6 +20330,8 @@ snapshots:
       get-intrinsic: 1.3.0
       is-array-buffer: 3.0.5
 
+  artichokie@0.4.5: {}
+
   as-typed@1.3.2: {}
 
   asap@2.0.6: {}
@@ -20053,12 +20350,12 @@ snapshots:
       rehype-expressive-code: 0.44.3
       url-extras: 0.1.0
 
-  astro-mermaid@2.2.0(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(mermaid@11.17.2):
+  astro-mermaid@2.2.0(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1))(mermaid@12.3.0):
     dependencies:
       astro: 7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)
       import-meta-resolve: 4.2.0
       mdast-util-to-string: 4.0.0
-      mermaid: 11.17.2
+      mermaid: 12.3.0
       unist-util-visit: 5.2.0
 
   astro-og-canvas@0.13.3(astro@7.4.5(@types/node@24.19.2)(@vercel/blob@2.8.0)(esbuild@0.27.0)(jiti@2.7.0)(sugarss@5.0.2(postcss@8.5.32))(terser@5.51.2)(tsx@4.21.0)(yaml@2.9.1)):
@@ -20500,6 +20797,14 @@ snapshots:
 
   charenc@0.0.2: {}
 
+  chevrotain@13.2.0:
+    dependencies:
+      '@chevrotain/cst-dts-gen': 13.2.0
+      '@chevrotain/gast': 13.2.0
+      '@chevrotain/regexp-to-ast': 13.2.0
+      '@chevrotain/types': 13.2.0
+      '@chevrotain/utils': 13.2.0
+
   chokidar@4.0.0:
     dependencies:
       readdirp: 4.1.2
@@ -20883,188 +21188,189 @@ snapshots:
 
   custom-idle-queue@5.0.2: {}
 
-  cytoscape-cose-bilkent@4.1.0(cytoscape@3.34.3):
+  cytoscape-cose-bilkent@4.1.0(cytoscape@3.34.4):
     dependencies:
       cose-base: 1.0.3
-      cytoscape: 3.34.3
+      cytoscape: 3.34.4
 
-  cytoscape-fcose@2.2.0(cytoscape@3.34.3):
+  cytoscape-fcose@2.2.0(cytoscape@3.34.4):
     dependencies:
       cose-base: 2.2.0
-      cytoscape: 3.34.3
+      cytoscape: 3.34.4
 
-  cytoscape@3.34.3: {}
+  cytoscape@3.34.4: {}
 
   d3-array@2.12.1:
     dependencies:
       internmap: 1.0.1
 
-  d3-array@3.2.4:
+  d3-array@3.2.5:
     dependencies:
       internmap: 2.0.3
 
-  d3-axis@3.0.0: {}
+  d3-axis@3.0.1: {}
 
-  d3-brush@3.0.0:
+  d3-brush@3.0.1:
     dependencies:
-      d3-dispatch: 3.0.1
-      d3-drag: 3.0.0
-      d3-interpolate: 3.0.1
-      d3-selection: 3.0.0
-      d3-transition: 3.0.1(d3-selection@3.0.0)
+      d3-dispatch: 3.0.2
+      d3-drag: 3.0.1
+      d3-interpolate: 3.0.2
+      d3-selection: 3.0.1
+      d3-transition: 3.0.2(d3-selection@3.0.1)
 
-  d3-chord@3.0.1:
+  d3-chord@3.0.2:
     dependencies:
-      d3-path: 3.1.0
+      d3-path: 3.1.1
 
-  d3-color@3.1.0: {}
+  d3-color@3.1.1: {}
 
-  d3-contour@4.0.2:
+  d3-contour@4.0.3:
     dependencies:
-      d3-array: 3.2.4
+      d3-array: 3.2.5
 
-  d3-delaunay@6.0.4:
+  d3-delaunay@6.0.6:
     dependencies:
       delaunator: 5.1.0
 
-  d3-dispatch@3.0.1: {}
+  d3-dispatch@3.0.2: {}
 
-  d3-drag@3.0.0:
+  d3-drag@3.0.1:
     dependencies:
-      d3-dispatch: 3.0.1
-      d3-selection: 3.0.0
+      d3-dispatch: 3.0.2
+      d3-selection: 3.0.1
 
-  d3-dsv@3.0.1:
+  d3-dsv@3.0.2:
     dependencies:
       commander: 7.2.0
       iconv-lite: 0.6.3
       rw: 1.3.3
 
-  d3-ease@3.0.1: {}
+  d3-ease@3.0.2: {}
 
-  d3-fetch@3.0.1:
+  d3-fetch@3.0.2:
     dependencies:
-      d3-dsv: 3.0.1
+      d3-dsv: 3.0.2
 
-  d3-force@3.0.0:
+  d3-force@3.0.1:
     dependencies:
-      d3-dispatch: 3.0.1
-      d3-quadtree: 3.0.1
-      d3-timer: 3.0.1
+      d3-dispatch: 3.0.2
+      d3-quadtree: 3.0.2
+      d3-timer: 3.0.2
 
-  d3-format@3.1.2: {}
+  d3-format@3.1.3: {}
 
-  d3-geo@3.1.1:
+  d3-geo@3.1.2:
     dependencies:
-      d3-array: 3.2.4
+      d3-array: 3.2.5
 
-  d3-hierarchy@3.1.2: {}
+  d3-hierarchy@3.1.3: {}
 
-  d3-interpolate@3.0.1:
+  d3-interpolate@3.0.2:
     dependencies:
-      d3-color: 3.1.0
+      d3-color: 3.1.1
 
   d3-path@1.0.9: {}
 
-  d3-path@3.1.0: {}
+  d3-path@3.1.1: {}
 
-  d3-polygon@3.0.1: {}
+  d3-polygon@3.0.2: {}
 
-  d3-quadtree@3.0.1: {}
+  d3-quadtree@3.0.2: {}
 
-  d3-random@3.0.1: {}
+  d3-random@3.0.2: {}
 
   d3-sankey@0.12.3:
     dependencies:
       d3-array: 2.12.1
       d3-shape: 1.3.7
 
-  d3-scale-chromatic@3.1.0:
+  d3-scale-chromatic@3.1.1:
     dependencies:
-      d3-color: 3.1.0
-      d3-interpolate: 3.0.1
+      d3-color: 3.1.1
+      d3-interpolate: 3.0.2
+      d3-scale: 4.0.3
 
-  d3-scale@4.0.2:
+  d3-scale@4.0.3:
     dependencies:
-      d3-array: 3.2.4
-      d3-format: 3.1.2
-      d3-interpolate: 3.0.1
-      d3-time: 3.1.0
-      d3-time-format: 4.1.0
+      d3-array: 3.2.5
+      d3-format: 3.1.3
+      d3-interpolate: 3.0.2
+      d3-time: 3.1.1
+      d3-time-format: 4.1.1
 
-  d3-selection@3.0.0: {}
+  d3-selection@3.0.1: {}
 
   d3-shape@1.3.7:
     dependencies:
       d3-path: 1.0.9
 
-  d3-shape@3.2.0:
+  d3-shape@3.2.1:
     dependencies:
-      d3-path: 3.1.0
+      d3-path: 3.1.1
 
-  d3-time-format@4.1.0:
+  d3-time-format@4.1.1:
     dependencies:
-      d3-time: 3.1.0
+      d3-time: 3.1.1
 
-  d3-time@3.1.0:
+  d3-time@3.1.1:
     dependencies:
-      d3-array: 3.2.4
+      d3-array: 3.2.5
 
-  d3-timer@3.0.1: {}
+  d3-timer@3.0.2: {}
 
-  d3-transition@3.0.1(d3-selection@3.0.0):
+  d3-transition@3.0.2(d3-selection@3.0.1):
     dependencies:
-      d3-color: 3.1.0
-      d3-dispatch: 3.0.1
-      d3-ease: 3.0.1
-      d3-interpolate: 3.0.1
-      d3-selection: 3.0.0
-      d3-timer: 3.0.1
+      d3-color: 3.1.1
+      d3-dispatch: 3.0.2
+      d3-ease: 3.0.2
+      d3-interpolate: 3.0.2
+      d3-selection: 3.0.1
+      d3-timer: 3.0.2
 
-  d3-zoom@3.0.0:
+  d3-zoom@3.0.1:
     dependencies:
-      d3-dispatch: 3.0.1
-      d3-drag: 3.0.0
-      d3-interpolate: 3.0.1
-      d3-selection: 3.0.0
-      d3-transition: 3.0.1(d3-selection@3.0.0)
+      d3-dispatch: 3.0.2
+      d3-drag: 3.0.1
+      d3-interpolate: 3.0.2
+      d3-selection: 3.0.1
+      d3-transition: 3.0.2(d3-selection@3.0.1)
 
-  d3@7.9.0:
+  d3@7.9.2:
     dependencies:
-      d3-array: 3.2.4
-      d3-axis: 3.0.0
-      d3-brush: 3.0.0
-      d3-chord: 3.0.1
-      d3-color: 3.1.0
-      d3-contour: 4.0.2
-      d3-delaunay: 6.0.4
-      d3-dispatch: 3.0.1
-      d3-drag: 3.0.0
-      d3-dsv: 3.0.1
-      d3-ease: 3.0.1
-      d3-fetch: 3.0.1
-      d3-force: 3.0.0
-      d3-format: 3.1.2
-      d3-geo: 3.1.1
-      d3-hierarchy: 3.1.2
-      d3-interpolate: 3.0.1
-      d3-path: 3.1.0
-      d3-polygon: 3.0.1
-      d3-quadtree: 3.0.1
-      d3-random: 3.0.1
-      d3-scale: 4.0.2
-      d3-scale-chromatic: 3.1.0
-      d3-selection: 3.0.0
-      d3-shape: 3.2.0
-      d3-time: 3.1.0
-      d3-time-format: 4.1.0
-      d3-timer: 3.0.1
-      d3-transition: 3.0.1(d3-selection@3.0.0)
-      d3-zoom: 3.0.0
+      d3-array: 3.2.5
+      d3-axis: 3.0.1
+      d3-brush: 3.0.1
+      d3-chord: 3.0.2
+      d3-color: 3.1.1
+      d3-contour: 4.0.3
+      d3-delaunay: 6.0.6
+      d3-dispatch: 3.0.2
+      d3-drag: 3.0.1
+      d3-dsv: 3.0.2
+      d3-ease: 3.0.2
+      d3-fetch: 3.0.2
+      d3-force: 3.0.1
+      d3-format: 3.1.3
+      d3-geo: 3.1.2
+      d3-hierarchy: 3.1.3
+      d3-interpolate: 3.0.2
+      d3-path: 3.1.1
+      d3-polygon: 3.0.2
+      d3-quadtree: 3.0.2
+      d3-random: 3.0.2
+      d3-scale: 4.0.3
+      d3-scale-chromatic: 3.1.1
+      d3-selection: 3.0.1
+      d3-shape: 3.2.1
+      d3-time: 3.1.1
+      d3-time-format: 4.1.1
+      d3-timer: 3.0.2
+      d3-transition: 3.0.2(d3-selection@3.0.1)
+      d3-zoom: 3.0.1
 
   dagre-d3-es@7.0.14:
     dependencies:
-      d3: 7.9.0
+      d3: 7.9.2
       lodash-es: 4.18.1
 
   data-uri-to-buffer@4.0.1: {}
@@ -21231,7 +21537,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.16:
+  dompurify@3.4.17:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -21303,6 +21609,8 @@ snapshots:
   ejs@5.0.1: {}
 
   electron-to-chromium@1.5.393: {}
+
+  elkjs@0.12.1: {}
 
   emmet@2.4.11:
     dependencies:
@@ -21457,6 +21765,8 @@ snapshots:
       is-symbol: 1.1.1
 
   es-toolkit@1.52.0: {}
+
+  es-toolkit@1.53.1: {}
 
   esbuild@0.27.0:
     optionalDependencies:
@@ -21733,10 +22043,6 @@ snapshots:
       path-expression-matcher: 1.6.2
       strnum: 2.5.1
       xml-naming: 0.3.0
-
-  fastdom@1.0.12:
-    dependencies:
-      strictdom: 1.0.1
 
   fastest-stable-stringify@2.0.2: {}
 
@@ -22030,14 +22336,6 @@ snapshots:
 
   fuse.js@7.5.0: {}
 
-  gaxios@7.3.1(supports-color@10.2.2):
-    dependencies:
-      extend: 3.0.2
-      https-proxy-agent: 7.0.6(supports-color@10.2.2)
-      node-fetch: 3.3.2
-    transitivePeerDependencies:
-      - supports-color
-
   gaxios@8.3.2(supports-color@10.2.2):
     dependencies:
       extend: 3.0.2
@@ -22207,10 +22505,10 @@ snapshots:
 
   google-logging-utils@2.1.1: {}
 
-  googleapis-common@9.2.0(supports-color@10.2.2):
+  googleapis-common@9.3.1(supports-color@10.2.2):
     dependencies:
       extend: 3.0.2
-      gaxios: 7.3.1(supports-color@10.2.2)
+      gaxios: 8.3.2(supports-color@10.2.2)
       google-auth-library: 11.3.3(supports-color@10.2.2)
       google-logging-utils: 2.1.1
       qs: 6.17.1
@@ -22218,10 +22516,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  googleapis@185.0.0(supports-color@10.2.2):
+  googleapis@189.0.0(supports-color@10.2.2):
     dependencies:
       google-auth-library: 11.3.3(supports-color@10.2.2)
-      googleapis-common: 9.2.0(supports-color@10.2.2)
+      googleapis-common: 9.3.1(supports-color@10.2.2)
     transitivePeerDependencies:
       - supports-color
 
@@ -23077,9 +23375,9 @@ snapshots:
       jwa: 2.0.1
       safe-buffer: 5.2.1
 
-  katex@0.16.47:
+  katex@0.18.10:
     dependencies:
-      commander: 8.3.0
+      commander: 15.0.0
 
   keyv@5.6.0:
     dependencies:
@@ -23092,6 +23390,30 @@ snapshots:
   kleur@4.1.5: {}
 
   klona@2.0.6: {}
+
+  koffi@3.3.3:
+    optionalDependencies:
+      '@koromix/koffi-android-arm64': 3.3.3
+      '@koromix/koffi-android-x64': 3.3.3
+      '@koromix/koffi-darwin-arm64': 3.3.3
+      '@koromix/koffi-darwin-x64': 3.3.3
+      '@koromix/koffi-freebsd-arm64': 3.3.3
+      '@koromix/koffi-freebsd-ia32': 3.3.3
+      '@koromix/koffi-freebsd-x64': 3.3.3
+      '@koromix/koffi-linux-arm': 3.3.3
+      '@koromix/koffi-linux-arm64': 3.3.3
+      '@koromix/koffi-linux-ia32': 3.3.3
+      '@koromix/koffi-linux-loong64': 3.3.3
+      '@koromix/koffi-linux-ppc64': 3.3.3
+      '@koromix/koffi-linux-riscv64': 3.3.3
+      '@koromix/koffi-linux-x64': 3.3.3
+      '@koromix/koffi-openbsd-arm64': 3.3.3
+      '@koromix/koffi-openbsd-ia32': 3.3.3
+      '@koromix/koffi-openbsd-x64': 3.3.3
+      '@koromix/koffi-win32-arm64': 3.3.3
+      '@koromix/koffi-win32-ia32': 3.3.3
+      '@koromix/koffi-win32-x64': 3.3.3
+    optional: true
 
   kolorist@1.8.0: {}
 
@@ -23605,30 +23927,30 @@ snapshots:
 
   merge2@1.4.1: {}
 
-  mermaid@11.17.2:
+  mermaid@12.3.0:
     dependencies:
       '@braintree/sanitize-url': 7.1.2
       '@iconify/utils': 3.1.7
-      '@mermaid-js/parser': 1.2.1
+      '@mermaid-js/parser': 2.0.1
       '@types/d3': 7.4.3
       '@upsetjs/venn.js': 2.0.0
-      cytoscape: 3.34.3
-      cytoscape-cose-bilkent: 4.1.0(cytoscape@3.34.3)
-      cytoscape-fcose: 2.2.0(cytoscape@3.34.3)
-      d3: 7.9.0
+      chevrotain: 13.2.0
+      cytoscape: 3.34.4
+      cytoscape-cose-bilkent: 4.1.0(cytoscape@3.34.4)
+      cytoscape-fcose: 2.2.0(cytoscape@3.34.4)
+      d3: 7.9.2
       d3-sankey: 0.12.3
       dagre-d3-es: 7.0.14
       dayjs: 1.11.23
-      dompurify: 3.4.16
-      es-toolkit: 1.52.0
-      fastdom: 1.0.12
-      katex: 0.16.47
+      dompurify: 3.4.17
+      elkjs: 0.12.1
+      es-toolkit: 1.53.1
+      katex: 0.18.10
       khroma: 2.1.0
       marked: 16.4.2
       roughjs: 4.6.6
       stylis: 4.4.0
       ts-dedent: 2.3.0
-      uuid: 14.0.1
 
   methods@1.1.2: {}
 
@@ -25636,12 +25958,12 @@ snapshots:
 
   safer-buffer@2.1.2: {}
 
-  sandbox@4.4.0(supports-color@10.2.2):
+  sandbox@4.11.1(supports-color@10.2.2):
     dependencies:
-      '@vercel/sandbox': 3.3.0
+      '@vercel/sandbox': 3.9.1
       async-retry: 1.3.3
       debug: 4.4.3(supports-color@10.2.2)
-      ws: 8.22.0
+      ws: 8.22.1
       zod: 4.6.7
     transitivePeerDependencies:
       - bare-abort-controller
@@ -26128,8 +26450,6 @@ snapshots:
     transitivePeerDependencies:
       - bare-abort-controller
       - react-native-b4a
-
-  strictdom@1.0.1: {}
 
   string-argv@0.3.2: {}
 
@@ -26932,52 +27252,55 @@ snapshots:
 
   vary@1.1.2: {}
 
-  vercel@63.1.2(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2):
+  vercel@65.11.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2):
     dependencies:
-      '@vercel/backends': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/backends': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/blob': 2.8.0
-      '@vercel/build-utils': 14.20.1
-      '@vercel/cli-auth': 0.3.10
-      '@vercel/cli-config': 0.3.1
-      '@vercel/container': 18.0.1(@vercel/build-utils@14.20.1)
-      '@vercel/detect-agent': 1.2.6
-      '@vercel/elysia': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/express': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/fastify': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/build-utils': 15.2.1
+      '@vercel/cli-auth': 0.3.15
+      '@vercel/cli-config': 0.3.6
+      '@vercel/container': 24.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/detect-agent': 1.2.7
+      '@vercel/elysia': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/express': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/fastify': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
       '@vercel/fun': 1.3.6(encoding@0.1.13)(supports-color@10.2.2)
-      '@vercel/go': 21.0.1(@vercel/build-utils@14.20.1)
-      '@vercel/h3': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/hono': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/hydrogen': 19.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)
-      '@vercel/koa': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/nestjs': 18.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/next': 22.0.1(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/node': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/prepare-flags-definitions': 0.3.0
-      '@vercel/python': 24.0.1(@vercel/build-utils@14.20.1)
-      '@vercel/python-analysis': 0.14.0
-      '@vercel/redwood': 20.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/remix-builder': 23.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
-      '@vercel/ruby': 20.0.1(@vercel/build-utils@14.20.1)
-      '@vercel/rust': 19.0.1(@vercel/build-utils@14.20.1)
-      '@vercel/static-build': 20.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@14.20.1)
+      '@vercel/go': 27.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/h3': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/hono': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/hydrogen': 25.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)
+      '@vercel/koa': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/nestjs': 24.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/next': 28.0.1(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/node': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/prepare-flags-definitions': 0.6.1
+      '@vercel/python': 30.1.0(@vercel/build-utils@15.2.1)
+      '@vercel/python-analysis': 0.15.3
+      '@vercel/redwood': 26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/remix-builder': 29.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/ruby': 26.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/rust': 25.0.1(@vercel/build-utils@15.2.1)
+      '@vercel/static-build': 26.0.1(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(@vercel/build-utils@15.2.1)
       chokidar: 4.0.0
       esbuild: 0.27.0
       jose: 5.9.6
       jsonc-parser: 3.3.1
       luxon: 3.7.2
-      sandbox: 4.4.0(supports-color@10.2.2)
+      sandbox: 4.11.1(supports-color@10.2.2)
       smol-toml: 1.5.2
       undici: 5.29.0
       uuid: 14.0.1
-      zod: 4.1.11
+      zod: 4.6.7
     optionalDependencies:
-      '@vercel/vc-native-darwin-arm64': 63.1.2
-      '@vercel/vc-native-darwin-x64': 63.1.2
-      '@vercel/vc-native-linux-arm64': 63.1.2
-      '@vercel/vc-native-linux-x64': 63.1.2
-      '@vercel/vc-native-win32-arm64': 63.1.2
-      '@vercel/vc-native-win32-x64': 63.1.2
+      '@vercel/cli-support': 65.11.0(@emnapi/core@1.11.3)(@emnapi/runtime@1.11.3)(encoding@0.1.13)(rollup@4.67.4)(supports-color@10.2.2)
+      '@vercel/vc-native-darwin-arm64': 65.11.0
+      '@vercel/vc-native-darwin-x64': 65.11.0
+      '@vercel/vc-native-linux-arm64': 65.11.0
+      '@vercel/vc-native-linux-arm64-musl': 65.11.0
+      '@vercel/vc-native-linux-x64': 65.11.0
+      '@vercel/vc-native-linux-x64-musl': 65.11.0
+      '@vercel/vc-native-win32-arm64': 65.11.0
+      '@vercel/vc-native-win32-x64': 65.11.0
     transitivePeerDependencies:
       - '@emnapi/core'
       - '@emnapi/runtime'
@@ -27501,6 +27824,8 @@ snapshots:
       signal-exit: 4.1.0
 
   ws@8.22.0: {}
+
+  ws@8.22.1: {}
 
   wsl-utils@0.3.1:
     dependencies:

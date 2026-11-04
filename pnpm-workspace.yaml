@@ -17,6 +17,7 @@ allowBuilds:
   aws-sdk: false
   bcrypt: true
   esbuild: true
+  koffi: false
   nx: true
   protobufjs: false
   sharp: true

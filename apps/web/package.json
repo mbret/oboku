@@ -70,7 +70,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
-    "@rolldown/plugin-babel": "^0.2.3",
+    "@rolldown/plugin-babel": "^0.3.0",
     "@testing-library/react": "^16.3.3",
     "@types/babel__core": "^7.20.5",
     "@types/dropbox-chooser": "^1.0.8",
