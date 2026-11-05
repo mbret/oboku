@@ -129,4 +129,20 @@ describe("useReaderSettings", () => {
       readerFontScale: 1.3,
     })
   })
+
+  it("sends the font scale back to the account's when the device sets it back to default", () => {
+    mocks.accountSettings = { readerGlobalFontScale: 1.4 }
+    localSettingsSignal.update(function withFontScale(settings): LocalSettings {
+      return { ...settings, readerFontScale: 1.3 }
+    })
+    const { result } = renderHook(useReaderSettings)
+
+    act(function setFontScaleBackToDefault() {
+      result.current.updateReaderSettings({ fontScale: undefined })
+    })
+
+    expect(result.current.readerSettings.fontScale).toBeUndefined()
+    expect(result.current.defaultReaderSettings.fontScale).toBe(1.4)
+    expect(localSettingsSignal.getValue().readerFontScale).toBeNull()
+  })
 })
