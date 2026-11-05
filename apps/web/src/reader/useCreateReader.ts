@@ -33,10 +33,11 @@ const getOpeningTarget = ({
 }
 
 /**
- * The `createReader` that `ReactReaderProvider` calls to create the reader of
- * the book, `undefined` until the manifest, the streamer mode, the KOReader
- * document and the book to open are known. The provider creates a new reader
- * each time it changes, so it changes only with them.
+ * The `createReader` for `ReactReaderProvider`: `undefined` until the
+ * manifest, the streamer mode, the KOReader document and the book to open are
+ * known, then a function that changes only when one of the hook's inputs
+ * does, since each new one makes the provider create a new reader. A reader
+ * it creates prunes the web streamer once destroyed.
  */
 export const useCreateReader = ({
   isUsingWebStreamer,
@@ -49,14 +50,11 @@ export const useCreateReader = ({
   bookId: string
   manifest?: Manifest
   koreaderDocument?: string
-  /**
-   * The book to open at its bookmark, `null` to open at the start. The reader
-   * waits while it is `undefined`, and is created again whenever it changes.
-   */
+  /** The book to open at its bookmark, `null` to open at the start. */
   book: DeepReadonly<BookDocType> | null | undefined
 }) =>
   useMemo(
-    function createReaderOnceBookIsKnown() {
+    function getCreateReaderOnceInputsAreKnown() {
       if (
         !manifest ||
         isUsingWebStreamer === undefined ||
@@ -105,6 +103,10 @@ export const useCreateReader = ({
               )
             },
           }),
+        })
+
+        instance.$.destroy$.subscribe(function pruneWebStreamerOnceDestroyed() {
+          webStreamer.prune()
         })
 
         // @ts-expect-error

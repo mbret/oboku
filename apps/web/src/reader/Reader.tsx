@@ -2,10 +2,9 @@
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js
  * @see https://github.com/pgaskin/ePubViewer/blob/gh-pages/script.js#L407-L469
  */
-import { memo, useEffect } from "react"
+import { memo } from "react"
 import { type BookOpening, BookLoading } from "./BookLoading"
 import { useSyncBookProgress } from "./progress/useSyncBookProgress"
-import { useObserve } from "reactjrx"
 import { useManifest } from "./manifest/useManifest"
 import { useCreateReader } from "./useCreateReader"
 import { useBookToOpen } from "./useBookToOpen"
@@ -24,7 +23,6 @@ import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
-import { webStreamer } from "./streamer/webStreamer"
 
 export const Reader = memo(function Reader({
   bookId,
@@ -72,29 +70,26 @@ export const Reader = memo(function Reader({
       defaultSettings={defaultReaderSettings}
       onSettingsChange={updateReaderSettings}
     >
-      <ReaderView
+      <ReaderView bookId={bookId} isPreview={isPreview} opening={opening} />
+      <Effects
         bookId={bookId}
         isPreview={isPreview}
-        opening={opening}
         koreaderDocument={koreaderDocument}
       />
     </ReactReaderProvider>
   )
 })
 
-const ReaderView = memo(function ReaderView({
+function ReaderView({
   bookId,
   isPreview,
   opening,
-  koreaderDocument,
 }: {
   bookId: string
   isPreview: boolean
   opening: BookOpening
-  koreaderDocument?: string
 }) {
   const reader = useReader()
-  const { data: isReaderMounted } = useObserve(() => reader?.mounted$, [reader])
   const localSettings = useLocalSettings([
     "readerFloatingProgress",
     "readerFloatingTime",
@@ -137,15 +132,10 @@ const ReaderView = memo(function ReaderView({
         />
       </Box>
       {/* Need to be after reader container so it shows on top and hide loading */}
-      {!isReaderMounted && <BookLoading opening={opening} />}
-      <Effects
-        bookId={bookId}
-        isPreview={isPreview}
-        koreaderDocument={koreaderDocument}
-      />
+      {!reader && <BookLoading opening={opening} />}
     </>
   )
-})
+}
 
 const Effects = memo(function Effects({
   bookId,
@@ -156,20 +146,7 @@ const Effects = memo(function Effects({
   isPreview: boolean
   koreaderDocument?: string
 }) {
-  const reader = useReader()
-
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
-
-  useEffect(
-    function pruneWebStreamerOnceReaderIsGone() {
-      if (!reader) return
-
-      return function pruneWebStreamer() {
-        webStreamer.prune()
-      }
-    },
-    [reader],
-  )
 
   return null
 })
