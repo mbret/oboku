@@ -12,7 +12,7 @@ import { useEffect } from "react"
 import { isDefined } from "reactjrx"
 import { useIncrementalBookModify } from "../../books"
 import { dispatchBookmarkMoved } from "../events"
-import { useReader } from "../states"
+import { useReader } from "@prose-reader/react-reader"
 import { isBookmarkMovedAt } from "./bookProgressPatches"
 import { observeBookProgressPatches } from "./observeBookProgressPatches"
 
