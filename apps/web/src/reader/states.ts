@@ -1,15 +1,7 @@
-import { signal, useSignalValue } from "reactjrx"
+import { signal } from "reactjrx"
 import type { createAppReader } from "./createAppReader"
 
 export type ReaderInstance = ReturnType<typeof createAppReader>
-
-export const readerSignal = signal<ReaderInstance | undefined>({
-  key: "readerState",
-})
-
-export const useReader = () => {
-  return useSignalValue(readerSignal)
-}
 
 export const isMenuShownStateSignal = signal({
   key: "isMenuShownState",
