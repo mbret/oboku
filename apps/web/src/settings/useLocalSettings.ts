@@ -19,11 +19,11 @@ export type LocalSettings = {
   readerFloatingTime?: "bottom" | "off"
   readerFloatingProgress?: "bottom" | "off"
   readerWakeLockEnabled?: boolean
-  /** `null` until changed on this device: see `useReaderSettings`. */
+  /** `null` while this device has no value of its own: see `useReaderSettings`. */
   readerSpreadMode?: CoreInputSettings["spreadMode"] | null
-  /** `null` until changed on this device: see `useReaderSettings`. */
+  /** `null` while this device has no value of its own: see `useReaderSettings`. */
   readerFontScale?: number | null
-  /** `null` until changed on this device: see `useReaderSettings`. */
+  /** `null` while this device has no value of its own: see `useReaderSettings`. */
   readerTheme?: Theme | null
 }
 

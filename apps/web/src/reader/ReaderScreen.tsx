@@ -40,12 +40,11 @@ const Effects = memo(function Effects({
   useWakeLock({ enabled: isWakeLockEnabled })
   useFullscreenAutoSwitch()
 
-  useEffect(
-    () => () => {
+  useEffect(function resetReaderStateOnLeave() {
+    return function resetMenuShownOnUnmount() {
       isMenuShownStateSignal.update(SIGNAL_RESET)
-    },
-    [],
-  )
+    }
+  }, [])
 
   return null
 })
