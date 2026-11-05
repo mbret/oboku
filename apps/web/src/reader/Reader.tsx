@@ -58,7 +58,8 @@ export const Reader = memo(function Reader({
     koreaderDocument,
     book: bookToOpen,
   })
-  const { readerSettings, updateReaderSettings } = useReaderSettings()
+  const { readerSettings, defaultReaderSettings, updateReaderSettings } =
+    useReaderSettings()
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
@@ -68,6 +69,7 @@ export const Reader = memo(function Reader({
     <ReactReaderProvider
       createReader={createReader}
       settings={readerSettings}
+      defaultSettings={defaultReaderSettings}
       onSettingsChange={updateReaderSettings}
     >
       <ReaderView
