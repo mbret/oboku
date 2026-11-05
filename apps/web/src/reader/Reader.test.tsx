@@ -38,19 +38,26 @@ const createManifest = (): Manifest => ({
   ],
 })
 
+type ReaderOpening = {
+  manifest: Manifest | undefined
+  bookToOpen: null | undefined
+}
+
+type AccountSettings = { readerGlobalFontScale?: number }
+
 const mocks = vi.hoisted(function createReaderMocks() {
   const openingListeners = new Set<() => void>()
-  const opening = {
-    manifest: undefined as Manifest | undefined,
-    bookToOpen: undefined as null | undefined,
-  }
+  const opening: ReaderOpening = { manifest: undefined, bookToOpen: undefined }
+  const events: string[] = []
+  const readers: ReaderInstance[] = []
+  const accountSettings: AccountSettings = {}
 
   return {
-    events: [] as string[],
-    readers: [] as ReaderInstance[],
-    accountSettings: {} as { readerGlobalFontScale?: number },
+    events,
+    readers,
+    accountSettings,
     opening,
-    updateOpening: function updateOpening(changes: Partial<typeof opening>) {
+    updateOpening: function updateOpening(changes: Partial<ReaderOpening>) {
       Object.assign(opening, changes)
       for (const listener of openingListeners) listener()
     },
