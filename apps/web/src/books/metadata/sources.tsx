@@ -34,7 +34,7 @@ export const getBookMetadataSourceLabel = (
     case "user":
       return "User"
     case "link":
-      return "Link"
+      return "Source"
   }
 }
 

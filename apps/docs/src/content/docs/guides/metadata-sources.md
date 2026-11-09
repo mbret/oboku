@@ -15,7 +15,7 @@ title: "Metadata Sources"
 * mangadex
 * mangaupdates
 * biblioreads
-* link (from the linked provider)
+* source (what the series' provider reports)
 * comicvine
 
 ## Books
@@ -26,7 +26,7 @@ title: "Metadata Sources"
 * Directives
 * File
 * Catalog
-* Provider link
+* Source (what the book's provider reports about its file)
 
 You can swap File and Catalog on a book's metadata sources screen.
 
