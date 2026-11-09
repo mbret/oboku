@@ -36,8 +36,7 @@ const getOpeningTarget = ({
  * The `createReader` for `ReactReaderProvider`: `undefined` until the
  * manifest, the streamer mode, the KOReader document and the book to open are
  * known, then a function that changes only when one of the hook's inputs
- * does, since each new one makes the provider create a new reader. A reader
- * it creates prunes the web streamer once destroyed.
+ * does, since each new one makes the provider create a new reader.
  */
 export const useCreateReader = ({
   isUsingWebStreamer,
@@ -103,10 +102,6 @@ export const useCreateReader = ({
               )
             },
           }),
-        })
-
-        instance.$.destroy$.subscribe(function pruneWebStreamerOnceDestroyed() {
-          webStreamer.prune()
         })
 
         // @ts-expect-error

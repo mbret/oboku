@@ -6,18 +6,14 @@ import {
 } from "@oboku/shared"
 import type { Manifest } from "@prose-reader/shared"
 import { cleanup, renderHook } from "@testing-library/react"
-import { Subject } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(function createReaderMocks() {
-  const prune = vi.fn()
-
   return {
-    prune,
     createAppReader: vi.fn(function createFakeReader(_options: {
       target?: unknown
     }) {
-      return { $: { destroy$: new Subject<void>() } }
+      return {}
     }),
   }
 })
@@ -29,7 +25,6 @@ vi.mock("./createAppReader", function mockCreateAppReader() {
 vi.mock("./streamer/webStreamer", function mockWebStreamer() {
   return {
     webStreamer: {
-      prune: mocks.prune,
       accessArchiveWithoutLock: vi.fn(),
       fetchResource: vi.fn(),
     },
@@ -104,7 +99,6 @@ const createReaderFor = (book: BookDocType | null) => {
 describe("useCreateReader", () => {
   beforeEach(() => {
     mocks.createAppReader.mockClear()
-    mocks.prune.mockClear()
   })
 
   afterEach(() => {
@@ -142,16 +136,6 @@ describe("useCreateReader", () => {
     result.current?.()
 
     expect(mocks.createAppReader).toHaveBeenCalledTimes(2)
-  })
-
-  it("prunes the web streamer once the reader it created is destroyed", () => {
-    const reader = createReaderFor(BOOK)
-
-    expect(mocks.prune).not.toHaveBeenCalled()
-
-    reader.$.destroy$.next()
-
-    expect(mocks.prune).toHaveBeenCalledOnce()
   })
 
   it("opens at the bookmark's cfi", () => {

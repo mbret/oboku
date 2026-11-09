@@ -83,6 +83,9 @@ vi.mock(
       ) {
         mocks.events.push("create")
         const reader = actual.createAppReader(options)
+        reader.$.destroy$.subscribe(function recordDestroy() {
+          mocks.events.push("destroy")
+        })
         mocks.readers.push(reader)
 
         return reader
@@ -243,7 +246,7 @@ describe("Reader", () => {
     })
   })
 
-  it("prunes the web streamer once a reader is destroyed, before the next one is created", async () => {
+  it("keeps the archive while it recreates the reader, and prunes it once the reader is destroyed on leave", async () => {
     mocks.opening.bookToOpen = null
 
     const { unmount } = render(<TestReader />)
@@ -258,6 +261,12 @@ describe("Reader", () => {
 
     unmount()
 
-    expect(mocks.events).toEqual(["create", "prune", "create", "prune"])
+    expect(mocks.events).toEqual([
+      "create",
+      "destroy",
+      "create",
+      "destroy",
+      "prune",
+    ])
   })
 })
