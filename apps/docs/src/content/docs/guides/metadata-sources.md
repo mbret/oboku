@@ -25,7 +25,9 @@ title: "Metadata Sources"
 * User information
 * Directives
 * File
-* Catalog (Google Books)
+* Catalog
 * Provider link
 
 You can swap File and Catalog on a book's metadata sources screen.
+
+The catalog entry is the best match oboku finds for the book in Google Books (when the server has a Google API key), Open Library and Project Gutenberg. Project Gutenberg is only asked about books that carry a Project Gutenberg identifier.

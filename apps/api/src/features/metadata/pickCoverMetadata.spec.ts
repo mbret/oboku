@@ -18,6 +18,10 @@ const googleCover: BookMetadata = {
   type: "googleBookApi",
   coverLink: "https://books.google.com/books/content?id=Ebb6DQAAQBAJ",
 }
+const linkNamingTheVolume: BookMetadata = {
+  type: "link",
+  title: "BLAME! [oboku~google-volume-id~Ebb6DQAAQBAJ].cbz",
+}
 
 describe("pickCoverMetadata, with no source certain of its cover", () => {
   it("takes the highest-priority cover", () => {
@@ -48,9 +52,35 @@ describe("pickCoverMetadata, with no source certain of its cover", () => {
 describe("pickCoverMetadata, when one source is certain", () => {
   it("prefers a confirmed catalog match over the archive's first page", () => {
     expect(
-      pickCoverMetadata([googleCover, firstPage], undefined, {
-        catalogIdentityIsConfirmed: true,
-      }),
+      pickCoverMetadata(
+        [linkNamingTheVolume, googleCover, firstPage],
+        undefined,
+      ),
+    ).toBe(googleCover)
+  })
+
+  it("does not confirm a catalog match showing another volume than the one named", () => {
+    expect(
+      pickCoverMetadata(
+        [
+          {
+            type: "link",
+            title: "BLAME! [oboku~google-volume-id~zyTCAlFPjgYC].cbz",
+          },
+          googleCover,
+          firstPage,
+        ],
+        undefined,
+      ),
+    ).toBe(firstPage)
+  })
+
+  it("confirms a catalog match by the volume id the file states", () => {
+    expect(
+      pickCoverMetadata(
+        [googleCover, { ...firstPage, googleVolumeId: "Ebb6DQAAQBAJ" }],
+        undefined,
+      ),
     ).toBe(googleCover)
   })
 
@@ -65,9 +95,10 @@ describe("pickCoverMetadata, when one source is certain", () => {
 
   it("falls back to the guess when the certain source has no cover", () => {
     expect(
-      pickCoverMetadata([{ type: "googleBookApi" }, firstPage], undefined, {
-        catalogIdentityIsConfirmed: true,
-      }),
+      pickCoverMetadata(
+        [linkNamingTheVolume, { type: "googleBookApi" }, firstPage],
+        undefined,
+      ),
     ).toBe(firstPage)
   })
 })
@@ -75,18 +106,16 @@ describe("pickCoverMetadata, when one source is certain", () => {
 describe("pickCoverMetadata, when both sources are certain", () => {
   it("defers to the priority order", () => {
     expect(
-      pickCoverMetadata([googleCover, declaredCover], undefined, {
-        catalogIdentityIsConfirmed: true,
-      }),
+      pickCoverMetadata(
+        [linkNamingTheVolume, googleCover, declaredCover],
+        undefined,
+      ),
     ).toBe(declaredCover)
 
     expect(
       pickCoverMetadata(
-        [googleCover, declaredCover],
+        [linkNamingTheVolume, googleCover, declaredCover],
         ["googleBookApi", "file"],
-        {
-          catalogIdentityIsConfirmed: true,
-        },
       ),
     ).toBe(googleCover)
   })
@@ -101,9 +130,10 @@ describe("pickCoverMetadata, when the archive never stated its cover", () => {
 
   it("does not treat an unanswered cover as declared", () => {
     expect(
-      pickCoverMetadata([googleCover, unknownCover], undefined, {
-        catalogIdentityIsConfirmed: true,
-      }),
+      pickCoverMetadata(
+        [linkNamingTheVolume, googleCover, unknownCover],
+        undefined,
+      ),
     ).toBe(googleCover)
   })
 
