@@ -229,7 +229,6 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
     "title",
     "authors",
     "description",
-    "formatType",
     "rating",
     "coverLink",
     "pageCount",

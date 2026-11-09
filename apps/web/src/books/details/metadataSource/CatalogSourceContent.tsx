@@ -31,10 +31,6 @@ export const CatalogSourceContent = ({ entry }: Props) => {
       <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />
       <MetadataFieldRow label={L.description} value={fields?.description} />
       <MetadataFieldRow
-        label={L.formatType}
-        value={formatList(fields?.formatType)}
-      />
-      <MetadataFieldRow
         label={L.rating}
         value={fields?.rating !== undefined ? `${fields.rating}` : undefined}
       />
