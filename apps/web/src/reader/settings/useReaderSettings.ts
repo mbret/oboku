@@ -11,9 +11,13 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
     function withReaderSettings(localSettings): LocalSettings {
       return {
         ...localSettings,
-        readerFontScale: changes.fontScale ?? localSettings.readerFontScale,
-        readerSpreadMode: changes.spreadMode ?? localSettings.readerSpreadMode,
-        readerTheme: changes.theme ?? localSettings.readerTheme,
+        ...("fontScale" in changes && {
+          readerFontScale: changes.fontScale ?? null,
+        }),
+        ...("spreadMode" in changes && {
+          readerSpreadMode: changes.spreadMode ?? null,
+        }),
+        ...("theme" in changes && { readerTheme: changes.theme ?? null }),
       }
     },
   )
@@ -21,17 +25,18 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
 
 /**
  * The reader settings the user changes in react-reader's menus, the font scale,
- * the spread mode and the theme, kept on the device and resolved to what the
- * reader should use. A device that has not changed its font scale yet uses the
- * account-wide `readerGlobalFontScale`, which older versions of the app save.
- * `updateReaderSettings` saves only the settings it is given, as react-reader
- * reports them.
+ * the spread mode and the theme, as this device keeps them. The default font
+ * scale is the account-wide `readerGlobalFontScale`, which older versions of
+ * the app save. `updateReaderSettings` saves only the settings it is given, as
+ * react-reader reports them: a setting reported as `undefined` goes back to
+ * its default on this device.
  *
  * TODO(ask the maintainer, added 2026-09): after a few months, once older
- * versions of the app are gone, raise dropping the fallback to
- * `readerGlobalFontScale` with the maintainer rather than removing it: a
- * device that never changed its font scale since would go back to the default.
- * The field stays in the RxDB settings schema while CouchDB documents hold it.
+ * versions of the app are gone, raise dropping `readerGlobalFontScale` as the
+ * default font scale with the maintainer rather than removing it: a device
+ * that never changed its font scale since would go back to the reader's
+ * default. The field stays in the RxDB settings schema while CouchDB
+ * documents hold it.
  */
 export function useReaderSettings() {
   const { readerFontScale, readerSpreadMode, readerTheme } = useLocalSettings([
@@ -41,14 +46,17 @@ export function useReaderSettings() {
   ])
   const { data: accountSettings } = useSettings()
   const readerSettings: ReactReaderSettings = {
-    fontScale:
-      readerFontScale ?? accountSettings?.readerGlobalFontScale ?? undefined,
-    spreadMode: readerSpreadMode,
+    fontScale: readerFontScale ?? undefined,
+    spreadMode: readerSpreadMode ?? undefined,
     theme: readerTheme ?? undefined,
+  }
+  const defaultReaderSettings: ReactReaderSettings = {
+    fontScale: accountSettings?.readerGlobalFontScale ?? undefined,
   }
 
   return {
     readerSettings,
+    defaultReaderSettings,
     updateReaderSettings: saveReaderSettingsOnDevice,
   }
 }

@@ -54,7 +54,7 @@ const mocks = vi.hoisted(function createSyncBookProgressMocks() {
   return { state, incrementalBookModify, toStoredDocument }
 })
 
-vi.mock("../states", function mockReaderState() {
+vi.mock("@prose-reader/react-reader", function mockReactReader() {
   return {
     useReader: function useMockReader() {
       return mocks.state.reader
