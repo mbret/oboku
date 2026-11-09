@@ -68,6 +68,9 @@ export type ConnectorFormConfig = {
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
+  /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
+  validateUrl?: (url: string) => true | string
+  urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
   /** When provided, TestConnection is rendered; parent provides the async method to test the connection. */
@@ -81,6 +84,8 @@ export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
   children,
   showUrl = true,
+  validateUrl,
+  urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
   testConnection,
@@ -157,7 +162,12 @@ export const ConnectorForm = memo(function ConnectorForm({
                 fullWidth
                 label="URL"
                 name="urlValue"
-                rules={{ required: true, pattern: URL_PATTERN }}
+                helperText={urlHelperText}
+                rules={{
+                  required: true,
+                  pattern: URL_PATTERN,
+                  validate: validateUrl,
+                }}
               />
             )}
             <ControlledTextField

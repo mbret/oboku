@@ -1,22 +1,21 @@
-import { type OpdsServersDeleteData, opdsServersDelete } from "@oboku/shared"
+import { opdsServersCreate } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import { useHttpClientApi } from "../../http"
-import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { useHttpClientApi } from "../../../http"
+import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { opdsServersQueryKey } from "./queryKeys"
 
-export const useDeleteOpdsServer = () => {
+export const useCreateOpdsServer = () => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
 
   return useMutation({
-    mutationFn: function deleteOpdsServer(
-      id: OpdsServersDeleteData["path"]["id"],
-    ) {
-      return opdsServersDelete({
+    mutationFn: async function createOpdsServer() {
+      const { data } = await opdsServersCreate({
         client: httpClientApi.sdkClient,
-        path: { id },
       })
+
+      return data
     },
     onSuccess: function refreshOpdsServers() {
       return queryClient.invalidateQueries({

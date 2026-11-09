@@ -81,7 +81,7 @@ export const ManageStorageScreen = () => {
 
   const onItemClick = useCallback(
     (id: string) =>
-      bookActionDrawerSignal.setValue({
+      bookActionDrawerSignal.update({
         openedWith: id,
         actions: ["removeDownload"],
       }),

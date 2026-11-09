@@ -69,7 +69,7 @@ export const createCustomDialog = <Result = undefined>({
         }),
     }
 
-    dialogSignal.setValue((old) => [...old, wrappedDialog])
+    dialogSignal.update((old) => [...old, wrappedDialog])
   })
 
   return {

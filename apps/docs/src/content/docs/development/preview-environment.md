@@ -51,8 +51,6 @@ services:
     environment:
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: CHANGE_ME_COUCHDB
-      JWT_PRIVATE_KEY_FILE: /secrets/jwt_private_key.pem
-      JWT_PUBLIC_KEY_FILE: /secrets/jwt_public_key.pem
     volumes:
       - oboku-preview-secrets:/secrets
       - oboku-preview-couchdb-data:/opt/couchdb/data
@@ -67,7 +65,7 @@ services:
       - oboku-preview
 
   oboku-preview-postgres:
-    image: postgres:17
+    image: postgres:17-trixie
     container_name: oboku-preview-postgres
     restart: always
     environment:
@@ -88,17 +86,12 @@ services:
       oboku-preview-postgres:
         condition: service_started
     environment:
-      NODE_ENV: production
       APP_PUBLIC_URL: https://app.preview.oboku.me
       ADMIN_PUBLIC_URL: https://admin.preview.oboku.me
       COUCH_DB_URL: http://oboku-preview-couchdb:5984
       POSTGRES_HOST: oboku-preview-postgres
       POSTGRES_DB: oboku
       POSTGRES_PASSWORD: CHANGE_ME_POSTGRES
-      JWT_PRIVATE_KEY_FILE: /secrets/jwt_private_key.pem
-      JWT_PUBLIC_KEY_FILE: /secrets/jwt_public_key.pem
-      API_DATA_DIR: /var/lib/oboku/data
-      API_CONFIG_DIR: /var/lib/oboku/config
       ADMIN_LOGIN: admin
       ADMIN_PASSWORD: CHANGE_ME_ADMIN
     volumes:

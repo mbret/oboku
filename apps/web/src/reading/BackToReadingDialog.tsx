@@ -61,7 +61,7 @@ export const BackToReadingDialog = memo(function BackToReadingDialog({
           // otherwise we can conflict with the signal being set somewhere else in the app.
           // If the user press OK, we don't want to reset since he is going to the reader.
           // The reset might happens after the signal is set from the reader (creating a conflict).
-          bookBeingReadStateSignal.setValue(SIGNAL_RESET)
+          bookBeingReadStateSignal.update(SIGNAL_RESET)
 
           throw err
         }),

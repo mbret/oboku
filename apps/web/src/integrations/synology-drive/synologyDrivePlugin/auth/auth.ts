@@ -52,7 +52,7 @@ export const isSynologyDriveSessionExpired = (
 }
 
 export const clearSynologyDriveSession = () => {
-  synologyDriveSessionSignal.setValue(undefined)
+  synologyDriveSessionSignal.update(undefined)
 }
 
 export const useRequestSynologyDriveSession = (
@@ -93,7 +93,7 @@ export const useRequestSynologyDriveSession = (
           passwordAsSecretId: data.passwordAsSecretId,
         }
 
-        synologyDriveSessionSignal.setValue(sessionWithConnector)
+        synologyDriveSessionSignal.update(sessionWithConnector)
 
         return sessionWithConnector
       }

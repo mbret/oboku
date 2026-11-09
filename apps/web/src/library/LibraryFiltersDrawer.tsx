@@ -75,7 +75,7 @@ export const LibraryFiltersDrawer = ({
             </ListItemButton>
             <ListItemButton
               onClick={() =>
-                libraryStateSignal.setValue((state) => ({
+                libraryStateSignal.update((state) => ({
                   ...state,
                   downloadState:
                     library.downloadState === DownloadState.Downloaded
@@ -150,14 +150,14 @@ const ReadingStateDialog = ({
           key={readingState}
           onClick={() => {
             if (library.readingStates.includes(readingState)) {
-              libraryStateSignal.setValue((state) => ({
+              libraryStateSignal.update((state) => ({
                 ...state,
                 readingStates: library.readingStates.filter(
                   (s) => s !== readingState,
                 ),
               }))
             } else {
-              libraryStateSignal.setValue((state) => ({
+              libraryStateSignal.update((state) => ({
                 ...state,
                 readingStates: [...library.readingStates, readingState],
               }))

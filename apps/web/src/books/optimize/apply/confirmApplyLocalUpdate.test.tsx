@@ -29,12 +29,12 @@ function openConfirmation(actions: WebArchiveUpdateAction[]): Promise<boolean> {
 
 describe("confirmApplyLocalUpdate", function testConfirmApplyLocalUpdate() {
   beforeEach(function resetDialogs() {
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   afterEach(function cleanUpDialogs() {
     cleanup()
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   it("lists every update and the final file replacement", async function listUpdates() {

@@ -5,7 +5,7 @@ import {
   ListItemText,
   type SvgIconProps,
 } from "@mui/material"
-import { MenuBookRounded, RssFeedRounded } from "@mui/icons-material"
+import { MenuBookRounded } from "@mui/icons-material"
 import { Link } from "react-router"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
@@ -20,6 +20,7 @@ import { Page } from "../common/Page"
 import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
 import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
 import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
+import { plugin as opdsPlugin } from "./opds/opdsPlugin"
 import { plugin as serverPlugin } from "./server/serverPlugin"
 import { plugin as synologyDrivePlugin } from "./synology-drive/synologyDrivePlugin"
 import webdavPlugin from "./webdav/webdavPlugin"
@@ -90,8 +91,9 @@ export function IntegrationsScreen() {
           <IntegrationListItem
             to={ROUTES.INTEGRATION_OPDS}
             name="OPDS"
-            description="Let KOReader and other reading apps browse your library"
-            Icon={RssFeedRounded}
+            description="Sync books from OPDS catalogs, or let reading apps browse your library"
+            Icon={opdsPlugin.Icon}
+            plugin={opdsPlugin}
           />
           <IntegrationListItem
             to={ROUTES.INTEGRATION_SERVER}

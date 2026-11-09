@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query"
 import { opdsServersList } from "@oboku/shared"
-import { useQueryOptionsWithAuthentication } from "../../auth"
-import { useHttpClientApi } from "../../http"
-import { useActiveProfileId } from "../../profiles/active/activeProfileId"
+import { useQueryOptionsWithAuthentication } from "../../../auth"
+import { useHttpClientApi } from "../../../http"
+import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { opdsServersQueryKey } from "./queryKeys"
 
 export const useOpdsServers = () => {

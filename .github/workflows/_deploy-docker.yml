@@ -4,11 +4,11 @@ on:
   workflow_call:
     inputs:
       sha:
-        description: 'Commit to build the images from'
+        description: "Commit to build the images from"
         required: true
         type: string
       tags:
-        description: 'Tags to push every image under, one per line (e.g. latest)'
+        description: "Tags to push every image under, one per line (e.g. latest)"
         required: true
         type: string
     secrets:
@@ -17,7 +17,7 @@ on:
 
 jobs:
   deploy:
-    name: 'Deploy ${{ matrix.target }}'
+    name: "Deploy ${{ matrix.target }}"
     strategy:
       fail-fast: false
       matrix:

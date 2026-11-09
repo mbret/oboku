@@ -24,7 +24,7 @@ const getOnlyCustomDialog = () => {
 
 describe("createCustomDialog", () => {
   afterEach(() => {
-    dialogSignal.setValue([])
+    dialogSignal.update([])
   })
 
   it("queues a custom dialog and resolves through render controls", async () => {

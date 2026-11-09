@@ -28,7 +28,7 @@ export const useDownloadBook = (
       return new Promise<void>(function appendDownloadRequest(resolve, reject) {
         requestId += 1
 
-        downloadFlowRequestsSignal.setValue(function appendRequest(requests) {
+        downloadFlowRequestsSignal.update(function appendRequest(requests) {
           return [
             ...requests,
             {

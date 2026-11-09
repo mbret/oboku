@@ -8,7 +8,7 @@ import {
   TextField,
 } from "@mui/material"
 import { type OpdsServerDto, zRenameOpdsServerDto } from "@oboku/shared"
-import { CancelButton } from "../../common/forms/CancelButton"
+import { CancelButton } from "../../../common/forms/CancelButton"
 import { useRenameOpdsServer } from "./useRenameOpdsServer"
 
 const serverNameSchema = zRenameOpdsServerDto.shape.name

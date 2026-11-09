@@ -3,7 +3,7 @@ import { libraryStateSignal, libraryStateSignalDefaultValue } from "../states"
 
 export const useResetFilters = () => {
   return useCallback(() => {
-    libraryStateSignal.setValue((state) => ({
+    libraryStateSignal.update((state) => ({
       ...state,
       tags: [],
       readingStates: libraryStateSignalDefaultValue.readingStates,

@@ -74,7 +74,7 @@ export const Toolbar = ({
       <ViewModeIconButton
         viewMode={library.viewMode}
         onViewModeChange={(value) => {
-          libraryStateSignal.setValue((state) => ({
+          libraryStateSignal.update((state) => ({
             ...state,
             viewMode: value,
           }))

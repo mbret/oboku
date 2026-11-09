@@ -2,28 +2,49 @@ packages:
   - packages/*
   - apps/*
 catalog:
-  react: 19.3.0
-  react-dom: 19.3.0
+  react: 19.3.1
+  react-dom: 19.3.1
+catalogs:
+  # react-reader declares reactjrx as a peer, so reactjrx moves with the
+  # prose-reader packages.
+  prose-reader:
+    "@prose-reader/archive-reader": ^40.0.0
+    "@prose-reader/cbz": ^40.0.0
+    "@prose-reader/core": ^40.0.0
+    "@prose-reader/enhancer-audio": ^40.0.0
+    "@prose-reader/enhancer-gallery": ^40.0.0
+    "@prose-reader/enhancer-gestures": ^40.0.0
+    "@prose-reader/enhancer-koreader": ^40.0.0
+    "@prose-reader/enhancer-pdf": ^40.0.0
+    "@prose-reader/enhancer-refit": ^40.0.0
+    "@prose-reader/enhancer-search": ^40.0.0
+    "@prose-reader/koreader": ^40.0.0
+    "@prose-reader/metadata-fetcher": ^40.0.0
+    "@prose-reader/react-reader": ^40.0.0
+    "@prose-reader/shared": ^40.0.0
+    "@prose-reader/streamer": ^40.0.0
+    reactjrx: ^4.0.9
 # apps/web/tsconfig.json redirects @internationalized/* to
 # ../../node_modules/@internationalized/*/dist/types — keep that scope
 # physically hoisted at the root like npm used to.
 publicHoistPattern:
-  - '@internationalized/*'
+  - "@internationalized/*"
 allowBuilds:
-  '@firebase/util': true
-  '@scarf/scarf': false
-  '@sentry/node-cpu-profiler': true
-  '@swc/core': true
+  "@firebase/util": true
+  "@scarf/scarf": false
+  "@sentry/node-cpu-profiler": true
+  "@swc/core": true
   aws-sdk: false
   bcrypt: true
   esbuild: true
+  koffi: false
   nx: true
   protobufjs: false
   sharp: true
 patchedDependencies:
-  react-dom@19.3.0: patches/react-dom@19.3.0.patch
+  react-dom@19.3.1: patches/react-dom@19.3.1.patch
 # prose-reader and reactjrx share oboku's maintainer, so their releases are
 # installed as soon as they are out.
 minimumReleaseAgeExclude:
-  - '@prose-reader/*'
+  - "@prose-reader/*"
   - reactjrx

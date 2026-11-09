@@ -20,6 +20,10 @@ export const CONNECTOR_DETAILS: Record<
     label: "Server",
     integrationRoute: ROUTES.INTEGRATION_SERVER,
   },
+  opds: {
+    label: "OPDS",
+    integrationRoute: ROUTES.OPDS_CATALOGS,
+  },
 }
 
 export const isSettingsConnectorType = (

@@ -3,7 +3,7 @@ name: check
 on:
   push:
     branches:
-      - 'develop'
+      - "develop"
   pull_request:
 
 jobs:
@@ -14,8 +14,8 @@ jobs:
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
-          node-version: '24'
-          cache: 'pnpm'
+          node-version: "24"
+          cache: "pnpm"
       - name: Check
         run: |
           pnpm install --frozen-lockfile

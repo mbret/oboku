@@ -3,7 +3,7 @@ import {
   opdsServersRegeneratePassword,
 } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
-import { useHttpClientApi } from "../../http"
+import { useHttpClientApi } from "../../../http"
 
 export const useRegenerateOpdsServerPassword = () => {
   const httpClientApi = useHttpClientApi()
