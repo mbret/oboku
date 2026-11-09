@@ -29,8 +29,9 @@ export const webStreamer = new Streamer({
   },
   /**
    * Some formats like PDF hold non-serializable resources (e.g. PDFDocumentProxy)
-   * that must stay alive for the entire reading session. The streamer is pruned
-   * explicitly on book unload instead.
+   * that must stay alive for the entire reading session. A book's archive
+   * stays until the streamer opens another book, which purges it, or until
+   * `Reader` prunes the streamer as the user leaves the reader.
    */
   cleanArchiveAfter: Infinity,
   getArchive: async (bookId) => {
