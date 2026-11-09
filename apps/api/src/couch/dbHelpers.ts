@@ -241,15 +241,21 @@ export const insert = async <
   return doc
 }
 
-/** Fetches the singleton settings document. Returns null if missing or on error. */
+/**
+ * Fetches the singleton settings document, or `null` when the account has
+ * none yet. Any other failure throws, so a caller never takes it for the
+ * defaults.
+ */
 export const getSettings = async (
   db: createNano.DocumentScope<unknown>,
 ): Promise<SettingsDocType | null> => {
   try {
     const doc = await retryFn(() => db.get("settings"))
     return doc as SettingsDocType
-  } catch {
-    return null
+  } catch (error) {
+    if (isCouchNotFound(error)) return null
+
+    throw error
   }
 }
 
