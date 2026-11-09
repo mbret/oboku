@@ -33,7 +33,7 @@ export const settingsSchema: RxJsonSchema<
     contentPassword?: string | null
   }
 > = {
-  version: 1,
+  version: 2,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -85,6 +85,17 @@ export const settingsSchema: RxJsonSchema<
     readerMobileFontScale: { type: ["number", "null"] },
     readerTabletFontScale: { type: ["number", "null"] },
     readerDesktopFontScale: { type: ["number", "null"] },
+    catalogs: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          id: { type: "string" },
+          isEnabled: { type: "boolean" },
+        },
+        required: ["id", "isEnabled"],
+      },
+    },
     ...getReplicationProperties(`settings`),
   },
 }
@@ -97,6 +108,7 @@ export const isConnectorOfType = <T extends SettingsConnectorType>(
 
 export const settingsSchemaMigrationStrategies: MigrationStrategies = {
   1: (oldDoc: Record<string, unknown>) => oldDoc,
+  2: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const settingsCollectionMethods: SettingsCollectionMethods = {

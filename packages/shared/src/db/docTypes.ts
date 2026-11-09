@@ -269,6 +269,15 @@ export type SettingsResolvedConnectorData<
   password: string
 }
 
+/**
+ * A catalog's settings for the account, under its metadata-fetcher provider
+ * id. A catalog with no entry keeps its defaults, so it is enabled.
+ */
+export type SettingsCatalogDocType = {
+  id: string
+  isEnabled: boolean
+}
+
 export type SettingsDocType = {
   _id: "settings"
   masterEncryptionKey?: {
@@ -286,6 +295,7 @@ export type SettingsDocType = {
   readerMobileFontScale?: number | null
   readerTabletFontScale?: number | null
   readerDesktopFontScale?: number | null
+  catalogs?: SettingsCatalogDocType[]
 }
 
 type MangoSelectorOperator<T> = {

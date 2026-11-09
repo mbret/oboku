@@ -7,6 +7,7 @@ import {
   toCurrentBookMetadataSourceName,
 } from "./legacy"
 
+export * from "./catalogs"
 export * from "./fields"
 export * from "./legacy"
 

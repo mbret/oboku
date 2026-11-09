@@ -15,6 +15,7 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
+  isCatalogEnabled,
   isCatalogEntry,
   resolveMetadataFetchEnabled,
   resolveMetadataFileDownloadEnabled,
@@ -29,7 +30,7 @@ import { firstValueFrom } from "rxjs"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CouchService, emailToNameHex } from "../couch/couch.service.js"
-import { atomicUpdate, findOne } from "../couch/dbHelpers.js"
+import { atomicUpdate, findOne, getSettings } from "../couch/dbHelpers.js"
 import { isBookProtected } from "../couch/isBookProtected.js"
 import { CoversService } from "../covers/covers.service.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
@@ -107,7 +108,6 @@ const isCachedFileMetadataReusable = (
 export class BooksMetadataService {
   private readonly logger = new Logger(BooksMetadataService.name)
   private readonly catalogProviders: ReadonlyArray<MetadataProvider>
-  private readonly isGoogleBooksAsked: boolean
 
   constructor(
     appConfigService: AppConfigService,
@@ -120,9 +120,6 @@ export class BooksMetadataService {
       googleApiKey: appConfigService.GOOGLE_API_KEY,
       googleBooksBaseUrl: appConfigService.GOOGLE_BOOK_API_URL,
     })
-    this.isGoogleBooksAsked = this.catalogProviders.some(
-      ({ id }) => id === GOOGLE_BOOKS_PROVIDER_ID,
-    )
   }
 
   public refreshMetadata = async (
@@ -220,6 +217,13 @@ export class BooksMetadataService {
         ctx.book.metadataFetchEnabled,
         bookIsProtected,
       )
+      const accountSettings = await getSettings(ctx.db)
+      const catalogProviders = this.catalogProviders.filter(({ id }) =>
+        isCatalogEnabled(accountSettings?.catalogs, id),
+      )
+      const isGoogleBooksAsked = catalogProviders.some(
+        ({ id }) => id === GOOGLE_BOOKS_PROVIDER_ID,
+      )
       const fileDownloadEnabled = resolveMetadataFileDownloadEnabled(
         ctx.book.metadataFileDownloadEnabled,
       )
@@ -275,7 +279,9 @@ export class BooksMetadataService {
       )
       const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
       const isCatalogLookupAllowed =
-        !ignoreMetadataSources && externalFetchEnabled
+        !ignoreMetadataSources &&
+        externalFetchEnabled &&
+        catalogProviders.length > 0
       const previousUserMetadata = ctx.book.metadata?.find(
         (entry): entry is UserMetadata => entry.type === "user",
       )
@@ -300,7 +306,7 @@ export class BooksMetadataService {
       const isDownloadNeededForMetadata =
         ctx.force ||
         !(ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
-      const lookupGoogleVolumeId = this.isGoogleBooksAsked
+      const lookupGoogleVolumeId = isGoogleBooksAsked
         ? directiveGoogleVolumeId
         : undefined
       const lookUpCatalogEntry = (
@@ -319,7 +325,7 @@ export class BooksMetadataService {
                 directiveGoogleVolumeId: lookupGoogleVolumeId,
               }),
               previous: previousCatalogMetadata,
-              providers: this.catalogProviders,
+              providers: catalogProviders,
             })
           : Promise.resolve(undefined)
       /**
