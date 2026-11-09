@@ -1,11 +1,11 @@
-import { useMutation$ } from "reactjrx"
-import { from, switchMap } from "rxjs"
-import { latestDatabase$ } from "../../rxdb/RxDbProvider"
+import { useMutation } from "@tanstack/react-query"
+import { useDatabase } from "../../rxdb"
 
-export const useSetCatalogEnabled = () =>
-  useMutation$({
+export const useSetCatalogEnabled = () => {
+  const { db } = useDatabase()
+
+  return useMutation({
     mutationFn: ({ id, isEnabled }: { id: string; isEnabled: boolean }) =>
-      latestDatabase$.pipe(
-        switchMap((db) => from(db.settings.setCatalogEnabled(id, isEnabled))),
-      ),
+      db?.settings.setCatalogEnabled(id, isEnabled),
   })
+}
