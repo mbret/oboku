@@ -547,7 +547,7 @@ importers:
         version: 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-gestures':
         specifier: catalog:prose-reader
-        version: 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.0.1(rxjs@7.8.2))(rxjs@7.8.2)
+        version: 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.2.2(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-koreader':
         specifier: catalog:prose-reader
         version: 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))
@@ -568,7 +568,7 @@ importers:
         version: 40.0.0(@zip.js/zip.js@2.24.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/react-reader':
         specifier: catalog:prose-reader
-        version: 40.0.0(c47b7be084adf69254f3feb36e993a11)
+        version: 40.0.0(f1bd51b0ddb4463f3878e0a2630fb3d5)
       '@prose-reader/shared':
         specifier: catalog:prose-reader
         version: 40.0.0
@@ -604,7 +604,7 @@ importers:
         version: 7.5.0
       gesturx:
         specifier: ^2.0.1
-        version: 2.0.1(rxjs@7.8.2)
+        version: 2.2.2(rxjs@7.8.2)
       jose:
         specifier: ^6.2.15
         version: 6.2.15
@@ -8647,8 +8647,8 @@ packages:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
     engines: {node: '>=6.9.0'}
 
-  gesturx@2.0.1:
-    resolution: {integrity: sha512-NvFJRChAdu5UzvoL6OjPcyTrIpcEhBXQtkLXexmJqEDKZvXeAX50zp/r1a/1hbG8OjC6bBG5BM2hodu36xKNYg==}
+  gesturx@2.2.2:
+    resolution: {integrity: sha512-I9EALA5AxOoUY7XKlIdftTfGVy0JUh0RbnMGBwXF41+LWJVPcM+pR7DwE6dWFdijMw+kD9iHEpkU11acTpvWVw==}
     peerDependencies:
       rxjs: 7.x
 
@@ -17371,10 +17371,10 @@ snapshots:
       '@prose-reader/core': 40.0.0(rxjs@7.8.2)
       rxjs: 7.8.2
 
-  '@prose-reader/enhancer-gestures@40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.0.1(rxjs@7.8.2))(rxjs@7.8.2)':
+  '@prose-reader/enhancer-gestures@40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.2.2(rxjs@7.8.2))(rxjs@7.8.2)':
     dependencies:
       '@prose-reader/core': 40.0.0(rxjs@7.8.2)
-      gesturx: 2.0.1(rxjs@7.8.2)
+      gesturx: 2.2.2(rxjs@7.8.2)
       rxjs: 7.8.2
 
   '@prose-reader/enhancer-koreader@40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))':
@@ -17419,7 +17419,7 @@ snapshots:
       - node-unrar-js
       - unzipper
 
-  '@prose-reader/react-reader@40.0.0(c47b7be084adf69254f3feb36e993a11)':
+  '@prose-reader/react-reader@40.0.0(f1bd51b0ddb4463f3878e0a2630fb3d5)':
     dependencies:
       '@chakra-ui/react': 3.38.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)
       '@emotion/react': 11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2)
@@ -17428,7 +17428,7 @@ snapshots:
       '@prose-reader/enhancer-annotations': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(@prose-reader/shared@40.0.0)(rxjs@7.8.2)
       '@prose-reader/enhancer-audio': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-gallery': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(rxjs@7.8.2)
-      '@prose-reader/enhancer-gestures': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.0.1(rxjs@7.8.2))(rxjs@7.8.2)
+      '@prose-reader/enhancer-gestures': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(gesturx@2.2.2(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-refit': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/enhancer-search': 40.0.0(@prose-reader/core@40.0.0(rxjs@7.8.2))(rxjs@7.8.2)
       '@prose-reader/shared': 40.0.0
@@ -22415,7 +22415,7 @@ snapshots:
 
   gensync@1.0.0-beta.2: {}
 
-  gesturx@2.0.1(rxjs@7.8.2):
+  gesturx@2.2.2(rxjs@7.8.2):
     dependencies:
       rxjs: 7.8.2
 
