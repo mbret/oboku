@@ -64,4 +64,20 @@ describe("settings collection", () => {
       { type: "opds", url: "https://catalog.example.com" },
     ])
   })
+
+  it("stores a catalog's switch and keeps the other catalogs", async () => {
+    const database = await openDatabase(`settings-${crypto.randomUUID()}`)
+
+    await database.settings.setCatalogEnabled("openLibrary", false)
+    await database.settings.setCatalogEnabled("googleBooks", false)
+    const settings = await database.settings.setCatalogEnabled(
+      "openLibrary",
+      true,
+    )
+
+    expect(settings.catalogs).toEqual([
+      { id: "openLibrary", isEnabled: true },
+      { id: "googleBooks", isEnabled: false },
+    ])
+  })
 })

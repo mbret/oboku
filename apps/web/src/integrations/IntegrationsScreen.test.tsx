@@ -13,6 +13,10 @@ vi.mock("../config/useConfig", async function mockConfig(importOriginal) {
   }
 })
 
+vi.mock("./catalogs/CatalogsSection", function mockCatalogsSection() {
+  return { CatalogsSection: () => null }
+})
+
 import { IntegrationsScreen } from "./IntegrationsScreen"
 
 const EVERY_PROVIDER_CONFIGURED = {

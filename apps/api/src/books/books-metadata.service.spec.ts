@@ -8,6 +8,7 @@ import {
   type FileMetadata,
   type LegacyFileMetadata,
   type LinkDocType,
+  type SettingsDocType,
 } from "@oboku/shared"
 import {
   FETCHED_METADATA_VERSION,
@@ -85,7 +86,11 @@ const acceptedMatch: MetadataMatch = {
   id: "zyTCAlFPjgYC",
 }
 
-const refresh = async (book: BookDocType, linkName = "Dune.epub") => {
+const refresh = async (
+  book: BookDocType,
+  linkName = "Dune.epub",
+  settings: SettingsDocType = { _id: "settings" },
+) => {
   const insert = vi.fn(async function storeBook(_doc: BookDocType) {
     return { ok: true }
   })
@@ -93,7 +98,7 @@ const refresh = async (book: BookDocType, linkName = "Dune.epub") => {
     find: async ({ selector }: { selector: { rx_model: string } }) => ({
       docs: [selector.rx_model === "link" ? link : book],
     }),
-    get: async () => book,
+    get: async (id: string) => (id === "settings" ? settings : book),
     insert,
   }
   const pluginsService = {
@@ -316,6 +321,36 @@ describe("BooksMetadataService.refreshMetadata", () => {
       type: "googleBookApi",
       title: "Dune",
     }
+
+    it("asks only the catalogs the account keeps on", async () => {
+      await refresh(bookWith([linkEntry]), "Dune.epub", {
+        _id: "settings",
+        catalogs: [{ id: "openLibrary", isEnabled: false }],
+      })
+
+      const askedCatalogIds = fetchMetadata.mock.calls.flatMap(
+        ([, options]) => options?.providers?.map(({ id }) => id) ?? [],
+      )
+
+      expect(askedCatalogIds).toEqual(["projectGutenberg"])
+    })
+
+    it("asks nothing and stores no entry when the account turns every catalog off", async () => {
+      const { storedBook } = await refresh(
+        bookWith([linkEntry, legacyCatalogEntry]),
+        "Dune.epub",
+        {
+          _id: "settings",
+          catalogs: [
+            { id: "openLibrary", isEnabled: false },
+            { id: "projectGutenberg", isEnabled: false },
+          ],
+        },
+      )
+
+      expect(fetchMetadata).not.toHaveBeenCalled()
+      expect(storedBook.metadata).toEqual([linkEntry])
+    })
 
     it("ignores a volume-id directive while Google Books is not asked", async () => {
       const linkName = "Dune [oboku~google-volume-id~zyTCAlFPjgYC].epub"
