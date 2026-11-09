@@ -18,10 +18,6 @@ type SettingsCollectionMethods = {
     json: Partial<Omit<SettingsConnectorDocType, "id">>,
   ) => Promise<SettingsDocType>
   getConnector: (id: string) => Promise<SettingsConnectorDocType | null>
-  setCatalogEnabled: (
-    id: string,
-    isEnabled: boolean,
-  ) => Promise<SettingsDocType>
 }
 
 export type SettingsCollection = RxCollection<
@@ -181,26 +177,6 @@ export const settingsCollectionMethods: SettingsCollectionMethods = {
     )
 
     return connector ?? null
-  },
-  setCatalogEnabled: async function (this: SettingsCollection, id, isEnabled) {
-    const settings = await this.findOne("settings").exec()
-
-    if (!settings) {
-      throw new Error("Settings not found")
-    }
-
-    return settings.incrementalModify((doc) => {
-      const hasEntry = doc.catalogs?.some((catalog) => catalog.id === id)
-
-      return {
-        ...doc,
-        catalogs: hasEntry
-          ? doc.catalogs?.map((catalog) =>
-              catalog.id === id ? { ...catalog, isEnabled } : catalog,
-            )
-          : [...(doc.catalogs ?? []), { id, isEnabled }],
-      }
-    })
   },
 }
 
