@@ -4,6 +4,8 @@ import {
   type BookDocType,
   type BookMetadata,
   type DataSourceType,
+  type FileMetadata,
+  type LegacyFileMetadata,
   type LinkDocType,
   type LinkMetadata,
   type ProviderApiCredentials,
@@ -19,7 +21,10 @@ import {
 } from "@oboku/shared"
 import type nano from "nano"
 import type { Archive } from "@prose-reader/archive-reader"
-import type { MetadataProvider } from "@prose-reader/metadata-fetcher"
+import {
+  GOOGLE_BOOKS_PROVIDER_ID,
+  type MetadataProvider,
+} from "@prose-reader/metadata-fetcher"
 import { firstValueFrom } from "rxjs"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
@@ -102,6 +107,7 @@ const isCachedFileMetadataReusable = (
 export class BooksMetadataService {
   private readonly logger = new Logger(BooksMetadataService.name)
   private readonly catalogProviders: ReadonlyArray<MetadataProvider>
+  private readonly isGoogleBooksAsked: boolean
 
   constructor(
     appConfigService: AppConfigService,
@@ -114,6 +120,9 @@ export class BooksMetadataService {
       googleApiKey: appConfigService.GOOGLE_API_KEY,
       googleBooksBaseUrl: appConfigService.GOOGLE_BOOK_API_URL,
     })
+    this.isGoogleBooksAsked = this.catalogProviders.some(
+      ({ id }) => id === GOOGLE_BOOKS_PROVIDER_ID,
+    )
   }
 
   public refreshMetadata = async (
@@ -276,13 +285,59 @@ export class BooksMetadataService {
         linkMetadata,
       )
 
+      /**
+       * Carry the previously-extracted `type:"file"` entry forward when
+       * the file is unchanged and no fresh extraction happened — without
+       * this, the cached `authors`/`publisher`/`date`/`coverLink` would
+       * silently disappear under `metadataFileDownloadEnabled=false`,
+       * unsupported content types, or download failures.
+       */
+      const isPreviousFileMetadataReusable =
+        !ctx.force && fileUnchanged && !ignoreMetadataFile
+      const reusableFileMetadata = isPreviousFileMetadataReusable
+        ? previousFileMetadata
+        : undefined
+      const isDownloadNeededForMetadata =
+        ctx.force ||
+        !(ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
+      const lookupGoogleVolumeId = this.isGoogleBooksAsked
+        ? directiveGoogleVolumeId
+        : undefined
+      const lookUpCatalogEntry = (
+        fileMetadataForLookup: FileMetadata | LegacyFileMetadata | undefined,
+      ) =>
+        isCatalogLookupAllowed
+          ? refreshCatalogEntry({
+              bookId: ctx.book._id,
+              lookupInput: catalogLookupInput({
+                fileMetadata:
+                  fileMetadataForLookup &&
+                  toFileMetadata(fileMetadataForLookup),
+                linkName: linkMetadata.title,
+                userIsbn: previousUserMetadata?.isbn,
+                directiveIsbn: isbn,
+                directiveGoogleVolumeId: lookupGoogleVolumeId,
+              }),
+              previous: previousCatalogMetadata,
+              providers: this.catalogProviders,
+            })
+          : Promise.resolve(undefined)
+      /**
+       * When the file's metadata does not need a download, the catalogs
+       * answer first, so the cover prediction sees the entry this refresh
+       * stores rather than the one it replaces.
+       */
+      const catalogMetadataBeforeDownload = isDownloadNeededForMetadata
+        ? undefined
+        : await lookUpCatalogEntry(reusableFileMetadata)
+
       const coverObjectKey = getBookCoverKey(ctx.userNameHex, ctx.book._id)
 
       const predictedCoverMetadata = pickCoverMetadata(
         [
           linkMetadata,
-          ...(isCatalogLookupAllowed && previousCatalogMetadata
-            ? [previousCatalogMetadata]
+          ...(catalogMetadataBeforeDownload
+            ? [catalogMetadataBeforeDownload]
             : []),
           ...(previousFileMetadata ? [previousFileMetadata] : []),
           ...(previousUserMetadata ? [previousUserMetadata] : []),
@@ -308,9 +363,7 @@ export class BooksMetadataService {
           )))
 
       const skipDownload =
-        !ctx.force &&
-        !fileCoverNeedsRefresh &&
-        (ignoreMetadataFile || (fileUnchanged && !!previousFileMetadata))
+        !isDownloadNeededForMetadata && !fileCoverNeedsRefresh
 
       if (skipDownload) {
         this.logger.log(
@@ -401,32 +454,10 @@ export class BooksMetadataService {
         ? await getMetadataFromArchive(archive)
         : undefined
 
-      /**
-       * Carry the previously-extracted `type:"file"` entry forward when
-       * the file is unchanged and no fresh extraction happened — without
-       * this, the cached `authors`/`publisher`/`date`/`coverLink` would
-       * silently disappear under `metadataFileDownloadEnabled=false`,
-       * unsupported content types, or download failures.
-       */
-      const isPreviousFileMetadataReusable =
-        !ctx.force && fileUnchanged && !ignoreMetadataFile
-      const fileMetadata =
-        freshFileMetadata ??
-        (isPreviousFileMetadataReusable ? previousFileMetadata : undefined)
-      const catalogMetadata = isCatalogLookupAllowed
-        ? await refreshCatalogEntry({
-            bookId: ctx.book._id,
-            lookupInput: catalogLookupInput({
-              fileMetadata: fileMetadata && toFileMetadata(fileMetadata),
-              linkName: linkMetadata.title,
-              userIsbn: previousUserMetadata?.isbn,
-              directiveIsbn: isbn,
-              directiveGoogleVolumeId,
-            }),
-            previous: previousCatalogMetadata,
-            providers: this.catalogProviders,
-          })
-        : undefined
+      const fileMetadata = freshFileMetadata ?? reusableFileMetadata
+      const catalogMetadata = isDownloadNeededForMetadata
+        ? await lookUpCatalogEntry(fileMetadata)
+        : catalogMetadataBeforeDownload
 
       if (freshFileMetadata) {
         this.logger.log(`Pushing file metadata for book ${ctx.book._id}`)

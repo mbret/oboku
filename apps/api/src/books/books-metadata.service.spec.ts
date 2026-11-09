@@ -276,9 +276,30 @@ describe("BooksMetadataService.refreshMetadata", () => {
       })
 
     it("does not download the file", async () => {
+      const { type: _, version: __, ...catalogMatch } = confirmedCatalogEntry
+      fetchMetadata.mockResolvedValue({
+        version: FETCHED_METADATA_VERSION,
+        matches: [catalogMatch],
+        sources: {},
+        failedProviders: [],
+      })
+
       const { downloadLinkToTmp } = await refresh(bookWithCatalogCover())
 
       expect(downloadLinkToTmp).not.toHaveBeenCalled()
+    })
+
+    it("downloads the file for its cover when the catalog no longer matches", async () => {
+      fetchMetadata.mockResolvedValue({
+        version: FETCHED_METADATA_VERSION,
+        matches: [],
+        sources: {},
+        failedProviders: [],
+      })
+
+      const { downloadLinkToTmp } = await refresh(bookWithCatalogCover())
+
+      expect(downloadLinkToTmp).toHaveBeenCalled()
     })
 
     it("downloads the file for its cover when the catalog is no longer asked", async () => {
@@ -295,6 +316,25 @@ describe("BooksMetadataService.refreshMetadata", () => {
       type: "googleBookApi",
       title: "Dune",
     }
+
+    it("ignores a volume-id directive while Google Books is not asked", async () => {
+      const linkName = "Dune [oboku~google-volume-id~zyTCAlFPjgYC].epub"
+
+      await refresh(
+        bookWith([{ ...linkEntry, title: linkName }, resolvedFileEntry]),
+        linkName,
+      )
+
+      expect(fetchMetadata).toHaveBeenCalledWith(
+        expect.objectContaining({
+          identifiers: [
+            { value: FILE_ISBN, scheme: "ISBN" },
+            { value: FILE_GOOGLE_VOLUME_ID, scheme: "GoogleBooks" },
+          ],
+        }),
+        expect.anything(),
+      )
+    })
 
     it("asks about the book and stores the accepted match", async () => {
       const { storedBook } = await refresh(
