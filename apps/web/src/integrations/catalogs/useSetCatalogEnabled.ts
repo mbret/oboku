@@ -5,7 +5,7 @@ export const useSetCatalogEnabled = () => {
   const { db } = useDatabase()
 
   return useMutation({
-    mutationFn: ({ id, isEnabled }: { id: string; isEnabled: boolean }) =>
+    mutationFn: async ({ id, isEnabled }: { id: string; isEnabled: boolean }) =>
       db?.settings.setCatalogEnabled(id, isEnabled),
   })
 }
