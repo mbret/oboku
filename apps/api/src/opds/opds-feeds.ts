@@ -79,10 +79,10 @@ export const toBooksFeed = (server: CatalogServer): CatalogFeed => ({
   path: OPDS_BOOKS_ROUTE,
 })
 
-const toOpds1Root = (slug: string) =>
+const toCatalogRoot = (slug: string) =>
   `/${OPDS_CATALOG_ROUTE}/${encodeURIComponent(slug)}`
 
-const toOpds2Root = (slug: string) => `${toOpds1Root(slug)}/${OPDS_2_ROUTE}`
+const toOpds2Root = (slug: string) => `${toCatalogRoot(slug)}/${OPDS_2_ROUTE}`
 
 const toHref = (root: string, path: CatalogPath) =>
   path ? `${root}/${path}` : root
@@ -105,7 +105,7 @@ export const toOpds1Feed = ({
   feed: CatalogFeed
   updated: Date
 }) => {
-  const root = toOpds1Root(slug)
+  const root = toCatalogRoot(slug)
   const updatedXml = `<updated>${updated.toISOString()}</updated>`
   const links: AtomLink[] = [
     {
@@ -176,15 +176,20 @@ export const toOpds2Feed = ({
   }
 }
 
-export const toAuthenticationDocumentHref = (slug: string) =>
-  `${toOpds1Root(slug)}/${OPDS_AUTHENTICATION_ROUTE}`
-
 /**
- * How OPDS 2.0 apps sign in to a catalog (Authentication for OPDS 1.0 §2.3).
- * It names no server, so it cannot tell a reader which servers exist.
+ * How a reading app signs in to a catalog (Authentication for OPDS 1.0 §2.3),
+ * with the absolute URL the document's schema asks of `id`. Built from the
+ * request alone, never from a stored server, so it cannot tell a reader which
+ * servers exist.
  */
-export const toAuthenticationDocument = (slug: string) => ({
-  id: toAuthenticationDocumentHref(slug),
+export const toAuthenticationDocument = ({
+  origin,
+  slug,
+}: {
+  origin: string
+  slug: string
+}) => ({
+  id: `${origin}${toCatalogRoot(slug)}/${OPDS_AUTHENTICATION_ROUTE}`,
   title: "oboku",
   description:
     "Sign in with the email of your oboku account and the password of this OPDS server.",

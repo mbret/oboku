@@ -53,7 +53,10 @@ function OpdsServerSection({
   createdPassword: string | undefined
 }) {
   const { data: config } = useConfig()
-  const catalogUrl = config ? `${config.API_OPDS_URL}/${server.slug}` : ""
+  const opds1CatalogUrl = config ? `${config.API_OPDS_URL}/${server.slug}` : ""
+  const opds2CatalogUrl = config
+    ? `${config.API_OPDS_URL}/${server.slug}/v2`
+    : ""
   const {
     mutate: regeneratePassword,
     data: regenerationResult,
@@ -97,14 +100,14 @@ function OpdsServerSection({
       <PageSection title={server.name} variant="stack">
         <TextField
           label="OPDS 1.2 catalog URL"
-          value={catalogUrl}
+          value={opds1CatalogUrl}
           copyable
           fullWidth
           slotProps={{ input: { readOnly: true } }}
         />
         <TextField
           label="OPDS 2.0 catalog URL"
-          value={catalogUrl && `${catalogUrl}/v2`}
+          value={opds2CatalogUrl}
           copyable
           fullWidth
           slotProps={{ input: { readOnly: true } }}

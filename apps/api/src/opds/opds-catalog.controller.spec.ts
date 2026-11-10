@@ -45,8 +45,10 @@ const ownerTokenPayload: TokenPayload = {
 
 const OPDS_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
-const toAuthenticationDocument = (slug: string) => ({
-  id: `/opds/${slug}/authentication`,
+const API_HOST = "api.oboku.test"
+
+const toAuthenticationDocument = (slug: string, protocol = "https") => ({
+  id: `${protocol}://${API_HOST}/opds/${slug}/authentication`,
   title: "oboku",
   description:
     "Sign in with the email of your oboku account and the password of this OPDS server.",
@@ -79,7 +81,11 @@ describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
 
   const getCatalog = (path: string, authorization?: string) => {
-    const pendingRequest = request(app.getHttpServer()).get(path)
+    const pendingRequest = request(app.getHttpServer())
+      .get(path)
+      .set("Host", "api:3000")
+      .set("X-Forwarded-Host", API_HOST)
+      .set("X-Forwarded-Proto", "https")
 
     return authorization
       ? pendingRequest.set("Authorization", authorization)
@@ -234,14 +240,38 @@ describe("OpdsCatalogController", () => {
     })
   })
 
-  it("serves the authentication document without credentials", async () => {
-    const response = await getCatalog("/opds/calm-snails-dream/authentication")
+  it.each([
+    ["a server without credentials", "calm-snails-dream", undefined],
+    ["an unknown server", "brave-foxes-run", undefined],
+    [
+      "a server with a wrong password",
+      "calm-snails-dream",
+      toBasicAuthorization(`${OWNER.email}:k7mq-x2fp-9dwa-hc4m`),
+    ],
+  ])(
+    "serves the same authentication document to %s",
+    async (_, slug, authorization) => {
+      const response = await getCatalog(
+        `/opds/${slug}/authentication`,
+        authorization,
+      )
 
-    expect(response.status).toBe(200)
-    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
-      new Set(["application/opds-authentication+json", "charset=utf-8"]),
+      expect(response.status).toBe(200)
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set(["application/opds-authentication+json", "charset=utf-8"]),
+      )
+      expect(response.body).toEqual(toAuthenticationDocument(slug))
+    },
+  )
+
+  it("gives the authentication document the scheme of the connection without a proxy", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/opds/calm-snails-dream/authentication")
+      .set("Host", API_HOST)
+
+    expect(response.body).toEqual(
+      toAuthenticationDocument("calm-snails-dream", "http"),
     )
-    expect(response.body).toEqual(toAuthenticationDocument("calm-snails-dream"))
   })
 
   it("accepts the owner's email in any case", async () => {

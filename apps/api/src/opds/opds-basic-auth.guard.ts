@@ -8,6 +8,7 @@ import {
 import type { Request, Response } from "express"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { parseBasicAuthorization } from "../http/basicAuthorization.js"
+import { getRequestOrigin } from "../http/requestOrigin.js"
 import { OpdsCatalogService } from "./opds-catalog.service.js"
 import {
   OPDS_AUTHENTICATION_DOCUMENT_TYPE,
@@ -45,7 +46,9 @@ export class OpdsBasicAuthGuard implements CanActivate {
         "Content-Type": OPDS_AUTHENTICATION_DOCUMENT_TYPE,
       })
 
-      throw new UnauthorizedException(toAuthenticationDocument(slug))
+      throw new UnauthorizedException(
+        toAuthenticationDocument({ origin: getRequestOrigin(request), slug }),
+      )
     }
 
     request.opdsServer = server
