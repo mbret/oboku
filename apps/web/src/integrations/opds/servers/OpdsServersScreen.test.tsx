@@ -125,14 +125,18 @@ describe("OpdsServersScreen", () => {
     onlineManager.setOnline(true)
   })
 
-  it("lists the newest server first, with the catalog URL and username a reading app signs in with", async () => {
+  it("lists the newest server first, with the catalog URLs and username a reading app signs in with", async () => {
     renderScreen(listing([COMICS, NOVELS]))
 
     await screen.findByRole("group", { name: "Novels" })
 
-    expect(fieldValues("Catalog URL")).toEqual([
+    expect(fieldValues("OPDS 1.2 catalog URL")).toEqual([
       "https://api.oboku.test/opds/brave-foxes-run",
       "https://api.oboku.test/opds/calm-snails-dream",
+    ])
+    expect(fieldValues("OPDS 2.0 catalog URL")).toEqual([
+      "https://api.oboku.test/opds/brave-foxes-run/v2",
+      "https://api.oboku.test/opds/calm-snails-dream/v2",
     ])
     expect(fieldValues("Username")).toEqual([
       "reader@example.com",
