@@ -181,6 +181,91 @@ describe("InstanceConfigService server sources", () => {
     expect(rebootedService.getConfig().value).not.toHaveProperty("googleApiKey")
   })
 
+  it("migrates a version 1 file written while the API runs", async () => {
+    const { appConfig, instanceConfigService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+    })
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1, fileDownloadMaxSizeBytes: 789 }),
+      "utf8",
+    )
+
+    await expect(
+      firstValueFrom(
+        instanceConfigService
+          .getConfig()
+          .pipe(filter((config) => config.fileDownloadMaxSizeBytes === 789)),
+      ),
+    ).resolves.toMatchObject({ version: 2, googleClientId: "client-id" })
+
+    await instanceConfigService.updateConfig((config) => config)
+
+    expect(
+      JSON.parse(await fs.promises.readFile(appConfig.CONFIG_FILE, "utf8")),
+    ).toMatchObject({ version: 2, googleClientId: "client-id" })
+  })
+
+  it("boots on a version 1 file it cannot write, with the migrated settings", async () => {
+    const { appConfig, serverSourcesService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+    })
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1 }),
+      "utf8",
+    )
+    const writeFileSync = vi
+      .spyOn(fs, "writeFileSync")
+      .mockImplementation(function refuseWrite() {
+        throw new Error("EROFS: read-only file system")
+      })
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    writeFileSync.mockRestore()
+
+    expect(rebootedService.getConfig().value).toMatchObject({
+      version: 2,
+      googleClientId: "client-id",
+    })
+  })
+
+  it("clears the Google client secret with an empty string", async () => {
+    const { instanceConfigService } = await createServices()
+
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientSecret: "client-secret",
+    }))
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientSecret: "",
+    }))
+
+    expect(instanceConfigService.getConfig().value).not.toHaveProperty(
+      "googleClientSecret",
+    )
+  })
+
+  it("does not quote a malformed config file in its error", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      '{ "googleClientSecret": GOCSPX-secret }',
+      "utf8",
+    )
+
+    expect(
+      () => new InstanceConfigService(appConfig, serverSourcesService),
+    ).toThrow(/^Invalid JSON in instance config file at [^:]*$/)
+  })
+
   it("keeps the config file readable by its owner alone", async () => {
     const { appConfig, instanceConfigService } = await createServices()
     const toPermissions = async () =>

@@ -176,21 +176,76 @@ export class InstanceConfigService implements OnModuleDestroy {
           fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
         )
       : MISSING_CONFIG_FILE_CONTENT
+    const { config, isMigrated } = this.toCurrentVersion(content)
 
-    if (!isVersion1Config(content)) {
-      return this.validateConfigFileContent(content)
+    if (isMigrated) {
+      this.saveMigratedConfig(config)
+    } else {
+      this.warnAboutIgnoredEnvironmentVariables(config)
     }
 
-    const config = this.validateConfigFileContent(
-      migrateToVersion2(content, {
-        clientId: this.appConfig.GOOGLE_CLIENT_ID,
-        apiKey: this.appConfig.GOOGLE_API_KEY,
-      }),
+    return config
+  }
+
+  /** Every read goes through it, so a version 1 file restored later still loads. */
+  private toCurrentVersion(content: unknown) {
+    if (!isVersion1Config(content)) {
+      return {
+        config: this.validateConfigFileContent(content),
+        isMigrated: false,
+      }
+    }
+
+    const environment = {
+      clientId: this.appConfig.GOOGLE_CLIENT_ID,
+      apiKey: this.appConfig.GOOGLE_API_KEY,
+    }
+
+    return {
+      config: this.validateConfigFileContent(
+        migrateToVersion2(content, environment),
+      ),
+      isMigrated: true,
+    }
+  }
+
+  /**
+   * A read-only config file keeps the API booting: it migrates the file again
+   * at each start until it can write it.
+   */
+  private saveMigratedConfig(config: InstanceConfig) {
+    try {
+      this.writeConfigFile(config)
+    } catch (error) {
+      this.logger.warn(
+        `Could not save the instance config migrated to version ${INSTANCE_CONFIG_VERSION} to ${this.appConfig.CONFIG_FILE}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. The API migrates it again at each start until it can write it.`,
+      )
+    }
+  }
+
+  private warnAboutIgnoredEnvironmentVariables(config: InstanceConfig) {
+    const ignoredVariables = [
+      {
+        name: "GOOGLE_CLIENT_ID",
+        value: this.appConfig.GOOGLE_CLIENT_ID,
+        configValue: config.googleClientId,
+      },
+      {
+        name: "GOOGLE_API_KEY",
+        value: this.appConfig.GOOGLE_API_KEY,
+        configValue: config.googleApiKey,
+      },
+    ].filter(
+      ({ value, configValue }) => value !== undefined && value !== configValue,
     )
 
-    this.writeConfigFile(config)
-
-    return config
+    for (const { name } of ignoredVariables) {
+      this.logger.warn(
+        `${name} differs from the instance config and is no longer read: set it in the admin panel's Google tab.`,
+      )
+    }
   }
 
   private watchConfigFile() {
@@ -383,23 +438,20 @@ export class InstanceConfigService implements OnModuleDestroy {
   }
 
   private readConfigFile(): InstanceConfig {
-    return this.parseConfigFileContent(
-      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
-    )
+    return this.toCurrentVersion(
+      this.parseConfigFileJson(
+        fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+      ),
+    ).config
   }
 
-  private parseConfigFileContent(rawContent: string): InstanceConfig {
-    return this.validateConfigFileContent(this.parseConfigFileJson(rawContent))
-  }
-
+  /** JSON.parse's message quotes the input around the error, which may be a secret. */
   private parseConfigFileJson(rawContent: string): unknown {
     try {
       return JSON.parse(rawContent)
-    } catch (error) {
+    } catch {
       throw new Error(
-        `Invalid JSON in instance config file at ${this.appConfig.CONFIG_FILE}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Invalid JSON in instance config file at ${this.appConfig.CONFIG_FILE}`,
       )
     }
   }
@@ -424,11 +476,12 @@ export class InstanceConfigService implements OnModuleDestroy {
     )
     const serialized = JSON.stringify(config, null, 2)
 
+    // `mode` only applies to a file the write creates, not to one a crash left.
+    fs.rmSync(temporaryFile, { force: true })
     fs.writeFileSync(temporaryFile, `${serialized}\n`, {
       encoding: "utf8",
       mode: CONFIG_FILE_MODE,
     })
-    fs.chmodSync(temporaryFile, CONFIG_FILE_MODE)
     fs.renameSync(temporaryFile, this.appConfig.CONFIG_FILE)
   }
 }
