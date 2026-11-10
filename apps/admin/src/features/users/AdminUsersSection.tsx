@@ -21,6 +21,7 @@ import {
   ValidationModule,
 } from "ag-grid-community"
 import { AgGridReact } from "ag-grid-react"
+import { formatDateTime } from "@/features/formatDateTime"
 import { useAdminUsers } from "./useAdminUsers"
 
 ModuleRegistry.registerModules([
@@ -67,7 +68,7 @@ export const AdminUsersSection = () => {
         minWidth: 180,
         filter: false,
         valueFormatter: (params: { value: string | null | undefined }) =>
-          params.value ? new Date(params.value).toLocaleString() : "",
+          params.value ? formatDateTime(params.value) : "",
       },
     ],
     [],

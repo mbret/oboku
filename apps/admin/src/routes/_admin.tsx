@@ -128,6 +128,8 @@ function AdminLayout() {
   const [opened, { toggle, close }] = useDisclosure(false)
   const isAuthenticated = useIsAuthenticated()
   const { pathname } = useLocation()
+  const matches = useMatches()
+  const isFullWidthPage = matches.some((match) => match.staticData.fullWidth)
 
   useEffect(function checkSessionOnLoad() {
     if (!authState.value.access_token) {
@@ -195,7 +197,7 @@ function AdminLayout() {
       </AppShell.Navbar>
 
       <AppShell.Main>
-        <Box maw={960}>
+        <Box maw={isFullWidthPage ? undefined : 960}>
           <AppBreadcrumbs />
           <Outlet />
         </Box>
