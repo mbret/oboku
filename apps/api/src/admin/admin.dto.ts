@@ -111,6 +111,10 @@ export class InstanceSettingsResponseDto {
   fileDownloadMaxSizeBytes!: number
   allowPrivateNetworkRequests!: boolean
   privateNetworkAllowedHosts!: string[]
+  googleClientId?: string
+  googleApiKey?: string
+  /** The secret itself never leaves the API. */
+  googleClientSecretConfigured!: boolean
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   opdsServersMaxPerUser!: number
@@ -137,6 +141,19 @@ export class UpdateInstanceSettingsDto {
   @IsString({ each: true })
   @IsOptional()
   privateNetworkAllowedHosts?: string[]
+
+  /** `""` clears it, like the other Google settings. */
+  @IsOptional()
+  @IsString()
+  googleClientId?: string
+
+  @IsOptional()
+  @IsString()
+  googleApiKey?: string
+
+  @IsOptional()
+  @IsString()
+  googleClientSecret?: string
 
   @IsOptional()
   @ValidateIf((_object, value) => value !== "")

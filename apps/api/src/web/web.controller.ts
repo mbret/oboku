@@ -18,8 +18,8 @@ export class WebController {
     const config = this.instanceConfigService.getConfig().value
 
     return {
-      GOOGLE_CLIENT_ID: this.appConfigService.GOOGLE_CLIENT_ID,
-      GOOGLE_API_KEY: this.appConfigService.GOOGLE_API_KEY,
+      GOOGLE_CLIENT_ID: config.googleClientId,
+      GOOGLE_API_KEY: config.googleApiKey,
       DROPBOX_CLIENT_ID: this.appConfigService.DROPBOX_CLIENT_ID,
       MICROSOFT_APPLICATION_CLIENT_ID: config.microsoftApplicationClientId,
       MICROSOFT_APPLICATION_AUTHORITY:

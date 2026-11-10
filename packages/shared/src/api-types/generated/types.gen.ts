@@ -232,6 +232,12 @@ export type InstanceSettingsResponseDto = {
     fileDownloadMaxSizeBytes: number;
     allowPrivateNetworkRequests: boolean;
     privateNetworkAllowedHosts: Array<string>;
+    googleClientId?: string;
+    googleApiKey?: string;
+    /**
+     * The secret itself never leaves the API.
+     */
+    googleClientSecretConfigured: boolean;
     microsoftApplicationClientId?: string;
     microsoftApplicationAuthority?: string;
     opdsServersMaxPerUser: number;
@@ -244,6 +250,12 @@ export type UpdateInstanceSettingsDto = {
     showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
+    /**
+     * `""` clears it, like the other Google settings.
+     */
+    googleClientId?: string;
+    googleApiKey?: string;
+    googleClientSecret?: string;
     microsoftApplicationClientId?: string;
 };
 
