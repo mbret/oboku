@@ -165,11 +165,17 @@ function OpdsServerSection({
 export function OpdsServersScreen() {
   const serversQuery = useOpdsServers()
   const { data: servers, isLoading, isError } = serversQuery
-  const {
-    mutate: createServer,
-    data: creationResult,
-    isPending: isCreatingServer,
-  } = useCreateOpdsServer()
+  const [createdPasswords, setCreatedPasswords] = useState<
+    ReadonlyMap<OpdsServerDto["id"], string>
+  >(new Map())
+  const { mutate: createServer, isPending: isCreatingServer } =
+    useCreateOpdsServer({
+      onSuccess: function keepCreatedPassword({ server, password }) {
+        setCreatedPasswords((passwords) =>
+          new Map(passwords).set(server.id, password),
+        )
+      },
+    })
   const serversNewestFirst = servers?.toSorted((a, b) => b.id - a.id)
   const isUnavailable = isQueryUnavailable(serversQuery)
   const hasNoServer = servers?.length === 0
@@ -209,11 +215,7 @@ export function OpdsServersScreen() {
           <OpdsServerSection
             key={server.id}
             server={server}
-            createdPassword={
-              creationResult?.server.id === server.id
-                ? creationResult.password
-                : undefined
-            }
+            createdPassword={createdPasswords.get(server.id)}
           />
         ))}
         <PageSection title="Set up a reading app">
