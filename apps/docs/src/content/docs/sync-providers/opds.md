@@ -4,6 +4,8 @@ title: "OPDS"
 
 oboku can sync the free books of an OPDS catalog, the protocol that self-hosted library servers such as Komga, Calibre-Web and Kavita share. A sync reads one feed of the catalog and creates books and collections from it, like the other sync providers.
 
+To let reading apps browse your oboku library through OPDS instead, see [OPDS Servers](/guides/opds-servers).
+
 ## What is supported
 
 - OPDS 1 catalogs, whose feeds are Atom XML. OPDS 2 catalogs (JSON) are not supported yet.
