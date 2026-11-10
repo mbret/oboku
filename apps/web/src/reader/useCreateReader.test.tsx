@@ -25,7 +25,7 @@ vi.mock("./createAppReader", function mockCreateAppReader() {
 vi.mock("./streamer/webStreamer", function mockWebStreamer() {
   return {
     webStreamer: {
-      accessArchiveWithoutLock: vi.fn(),
+      accessArchive: vi.fn(),
       fetchResource: vi.fn(),
     },
   }

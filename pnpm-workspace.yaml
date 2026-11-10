@@ -8,21 +8,21 @@ catalogs:
   # react-reader declares reactjrx as a peer, so reactjrx moves with the
   # prose-reader packages.
   prose-reader:
-    "@prose-reader/archive-reader": ^40.0.0
-    "@prose-reader/cbz": ^40.0.0
-    "@prose-reader/core": ^40.0.0
-    "@prose-reader/enhancer-audio": ^40.0.0
-    "@prose-reader/enhancer-gallery": ^40.0.0
-    "@prose-reader/enhancer-gestures": ^40.0.0
-    "@prose-reader/enhancer-koreader": ^40.0.0
-    "@prose-reader/enhancer-pdf": ^40.0.0
-    "@prose-reader/enhancer-refit": ^40.0.0
-    "@prose-reader/enhancer-search": ^40.0.0
-    "@prose-reader/koreader": ^40.0.0
-    "@prose-reader/metadata-fetcher": ^40.0.0
-    "@prose-reader/react-reader": ^40.0.0
-    "@prose-reader/shared": ^40.0.0
-    "@prose-reader/streamer": ^40.0.0
+    "@prose-reader/archive-reader": ^41.0.0
+    "@prose-reader/cbz": ^41.0.0
+    "@prose-reader/core": ^41.0.0
+    "@prose-reader/enhancer-audio": ^41.0.0
+    "@prose-reader/enhancer-gallery": ^41.0.0
+    "@prose-reader/enhancer-gestures": ^41.0.0
+    "@prose-reader/enhancer-koreader": ^41.0.0
+    "@prose-reader/enhancer-pdf": ^41.0.0
+    "@prose-reader/enhancer-refit": ^41.0.0
+    "@prose-reader/enhancer-search": ^41.0.0
+    "@prose-reader/koreader": ^41.0.0
+    "@prose-reader/metadata-fetcher": ^41.0.0
+    "@prose-reader/react-reader": ^41.0.0
+    "@prose-reader/shared": ^41.0.0
+    "@prose-reader/streamer": ^41.0.0
     reactjrx: ^4.0.9
 # apps/web/tsconfig.json redirects @internationalized/* to
 # ../../node_modules/@internationalized/*/dist/types — keep that scope
