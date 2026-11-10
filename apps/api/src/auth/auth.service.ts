@@ -102,8 +102,9 @@ export class AuthService {
   private async authenticateWithGoogle(token: string) {
     const { googleClientId } = this.instanceConfigService.getConfig().value
 
-    // google-auth-library skips the audience check without an audience, which
-    // would accept an ID token Google issued to any other app.
+    // google-auth-library 11 skips the audience check without an audience
+    // (OAuth2Client.verifySignedJwtWithCertsAsync), which would accept an ID
+    // token Google issued to any other app.
     if (!googleClientId) {
       throw new BadRequestException()
     }

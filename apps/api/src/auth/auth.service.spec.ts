@@ -17,6 +17,17 @@ import { UsersService } from "../users/users.service.js"
 import { AuthService } from "./auth.service.js"
 import { RefreshProofService } from "./refresh-proof.service.js"
 
+const { verifyIdToken } = vi.hoisted(function createVerifyIdTokenSpy() {
+  return { verifyIdToken: vi.fn() }
+})
+
+vi.mock("google-auth-library", async (importOriginal) => ({
+  ...(await importOriginal()),
+  OAuth2Client: function FakeOAuth2Client() {
+    return { verifyIdToken }
+  },
+}))
+
 vi.mock("../couch/userDbIndexes.js", function mockUserDbIndexes() {
   return {
     ensureUserDbIndexes: vi
@@ -121,6 +132,7 @@ describe("AuthService", () => {
   let instanceConfig: BehaviorSubject<Pick<InstanceConfig, "googleClientId">>
 
   beforeEach(async () => {
+    verifyIdToken.mockReset()
     instanceConfig = new BehaviorSubject({})
     usersService = {
       findUserByEmail: vi.fn(),
@@ -330,7 +342,24 @@ describe("AuthService", () => {
         public_key: readerSignIn.public_key,
       }),
     ).rejects.toBeInstanceOf(BadRequestException)
-    expect(usersService.findUserByEmail).not.toHaveBeenCalled()
+    expect(verifyIdToken).not.toHaveBeenCalled()
+  })
+
+  it("checks a Google ID token against the configured Google client id", async () => {
+    instanceConfig.next({ googleClientId: "client-id" })
+    verifyIdToken.mockResolvedValue({ getPayload: () => undefined })
+
+    await expect(
+      service.signInWithGoogle({
+        token: "google-id-token",
+        installation_id: readerSignIn.installation_id,
+        public_key: readerSignIn.public_key,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException)
+    expect(verifyIdToken).toHaveBeenCalledWith({
+      idToken: "google-id-token",
+      audience: "client-id",
+    })
   })
 
   it("delegates deleteAccount to UsersService", async () => {

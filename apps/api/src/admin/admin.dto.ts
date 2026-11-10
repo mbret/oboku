@@ -142,7 +142,6 @@ export class UpdateInstanceSettingsDto {
   @IsOptional()
   privateNetworkAllowedHosts?: string[]
 
-  /** `""` clears it, like the other Google settings. */
   @IsOptional()
   @IsString()
   googleClientId?: string
@@ -151,6 +150,7 @@ export class UpdateInstanceSettingsDto {
   @IsString()
   googleApiKey?: string
 
+  /** Write-only: `""` clears it. */
   @IsOptional()
   @IsString()
   googleClientSecret?: string

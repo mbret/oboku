@@ -250,11 +250,11 @@ export type UpdateInstanceSettingsDto = {
     showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
-    /**
-     * `""` clears it, like the other Google settings.
-     */
     googleClientId?: string;
     googleApiKey?: string;
+    /**
+     * Write-only: `""` clears it.
+     */
     googleClientSecret?: string;
     microsoftApplicationClientId?: string;
 };
