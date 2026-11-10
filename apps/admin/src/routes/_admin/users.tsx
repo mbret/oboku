@@ -3,5 +3,5 @@ import { AdminUsersSection } from "@/features/users/AdminUsersSection"
 
 export const Route = createFileRoute("/_admin/users")({
   component: AdminUsersSection,
-  staticData: { breadcrumb: "Users" },
+  staticData: { breadcrumb: "Users", fullWidth: true },
 })
