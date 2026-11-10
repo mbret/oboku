@@ -234,15 +234,29 @@ describe("OpdsCatalogController", () => {
     })
   })
 
-  it("serves the authentication document without credentials", async () => {
-    const response = await getCatalog("/opds/calm-snails-dream/authentication")
+  it.each([
+    ["a server without credentials", "calm-snails-dream", undefined],
+    ["an unknown server", "brave-foxes-run", undefined],
+    [
+      "a server with a wrong password",
+      "calm-snails-dream",
+      toBasicAuthorization(`${OWNER.email}:k7mq-x2fp-9dwa-hc4m`),
+    ],
+  ])(
+    "serves the same authentication document to %s",
+    async (_, slug, authorization) => {
+      const response = await getCatalog(
+        `/opds/${slug}/authentication`,
+        authorization,
+      )
 
-    expect(response.status).toBe(200)
-    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
-      new Set(["application/opds-authentication+json", "charset=utf-8"]),
-    )
-    expect(response.body).toEqual(toAuthenticationDocument("calm-snails-dream"))
-  })
+      expect(response.status).toBe(200)
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set(["application/opds-authentication+json", "charset=utf-8"]),
+      )
+      expect(response.body).toEqual(toAuthenticationDocument(slug))
+    },
+  )
 
   it("accepts the owner's email in any case", async () => {
     const response = await getCatalog(
