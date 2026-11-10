@@ -1,4 +1,5 @@
 import { Stack, Tabs, Text, Title } from "@mantine/core"
+import { AdminGoogleSection } from "./AdminGoogleSection"
 import { AdminMicrosoftSection } from "./AdminMicrosoftSection"
 
 export const AdminProvidersSection = () => {
@@ -14,10 +15,15 @@ export const AdminProvidersSection = () => {
         </Text>
       </div>
 
-      <Tabs defaultValue="microsoft">
+      <Tabs defaultValue="google">
         <Tabs.List>
+          <Tabs.Tab value="google">Google</Tabs.Tab>
           <Tabs.Tab value="microsoft">Microsoft</Tabs.Tab>
         </Tabs.List>
+
+        <Tabs.Panel value="google" pt="md">
+          <AdminGoogleSection />
+        </Tabs.Panel>
 
         <Tabs.Panel value="microsoft" pt="md">
           <AdminMicrosoftSection />
