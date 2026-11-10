@@ -19,6 +19,7 @@ import { CouchModule } from "./couch/couch.module.js"
 import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module.js"
+import { InstanceConfigModule } from "./admin/instance-config/instance-config.module.js"
 import { DataSourceModule } from "./datasource/datasource.module.js"
 import { StorageModule } from "./storage/storage.module.js"
 import { WebDavModule } from "./webdav/webdav.module.js"
@@ -111,6 +112,7 @@ import { OpdsModule } from "./opds/opds.module.js"
     CouchModule,
     CoversModule,
     AdminModule,
+    InstanceConfigModule,
     DataSourceModule,
     NotificationsModule,
     WebDavModule,

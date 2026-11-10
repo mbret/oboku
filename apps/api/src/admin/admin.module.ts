@@ -35,6 +35,5 @@ import { AdminSecurityService } from "./admin-security.service.js"
     AdminSecurityService,
   ],
   controllers: [AdminController],
-  exports: [InstanceConfigModule],
 })
 export class AdminModule {}
