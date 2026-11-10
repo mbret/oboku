@@ -38,6 +38,8 @@ import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegratio
 import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
 import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
 import { OpdsIntegrationScreen } from "../integrations/opds/OpdsIntegrationScreen"
+import { OpdsServersScreen } from "../integrations/opds/servers/OpdsServersScreen"
+import { OpdsCatalogsScreen } from "../integrations/opds/catalogs/OpdsCatalogsScreen"
 import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
 import { SynologyDriveIntegrationScreen } from "../integrations/synology-drive/SynologyDriveIntegrationScreen"
 import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegrationScreen"
@@ -177,6 +179,14 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.KOREADER_PROGRESS_SYNC.slice(1)}
                 element={<KoreaderProgressSyncScreen />}
+              />
+              <Route
+                path={ROUTES.OPDS_SERVERS.slice(1)}
+                element={<OpdsServersScreen />}
+              />
+              <Route
+                path={ROUTES.OPDS_CATALOGS.slice(1)}
+                element={<OpdsCatalogsScreen />}
               />
               <Route
                 path={ROUTES.SETTINGS.slice(1)}

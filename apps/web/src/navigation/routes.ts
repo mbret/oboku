@@ -28,6 +28,8 @@ export const ROUTES = {
   INTEGRATION_CONNECTORS_EDIT: "/integrations/:type/connectors/:id",
   KOREADER_SYNC_SERVER: "/integrations/koreader/sync-server",
   KOREADER_PROGRESS_SYNC: "/integrations/koreader/progress-sync",
+  OPDS_SERVERS: "/integrations/opds/servers",
+  OPDS_CATALOGS: "/integrations/opds/catalogs",
   SYNC: "/sync",
   SYNC_DATASOURCES: "/sync/datasources",
   SYNC_NEW_DATASOURCES: "/sync/new-datasources/:type",

@@ -92,7 +92,7 @@ export function IntegrationsScreen() {
           <IntegrationListItem
             to={ROUTES.INTEGRATION_OPDS}
             name="OPDS"
-            description="Sync the free books of an OPDS catalog, like Komga or Calibre-Web"
+            description="Sync books from OPDS catalogs, or let reading apps browse your library"
             Icon={opdsPlugin.Icon}
             plugin={opdsPlugin}
           />

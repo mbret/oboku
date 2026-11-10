@@ -22,7 +22,7 @@ export const CONNECTOR_DETAILS: Record<
   },
   opds: {
     label: "OPDS",
-    integrationRoute: ROUTES.INTEGRATION_OPDS,
+    integrationRoute: ROUTES.OPDS_CATALOGS,
   },
 }
 

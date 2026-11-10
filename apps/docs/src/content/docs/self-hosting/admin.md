@@ -32,6 +32,10 @@ A KOReader sync server on your network takes an entry too. So does this instance
 
 The API cannot tell when a public address leads back into your own network, for instance the host's public IP seen from inside a container, or another of your servers. Keep internal services such as CouchDB and Postgres off public addresses: bind them to loopback or a private network, or leave their ports unpublished, as the provided `docker-compose.yml` does.
 
+## OPDS servers
+
+**Maximum OPDS servers per user**, on the panel's home page, caps how many [OPDS servers](/guides/opds-servers) each user can have: 10 by default. Lowering it deletes no server, but a user above the new limit cannot create one until they are below it.
+
 ## Security
 
 The **Security** section lists the refresh tokens currently issued and lets you revoke them, either for every user or for specific email addresses. Revoked tokens are deleted outright, so the affected users have to sign in again.
