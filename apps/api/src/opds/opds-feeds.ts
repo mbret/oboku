@@ -176,16 +176,20 @@ export const toOpds2Feed = ({
   }
 }
 
-const toAuthenticationDocumentHref = (slug: string) =>
-  `${toCatalogRoot(slug)}/${OPDS_AUTHENTICATION_ROUTE}`
-
 /**
- * How a reading app signs in to a catalog (Authentication for OPDS 1.0 §2.3).
- * Built from the requested slug alone, never from a stored server, so it
- * cannot tell a reader which servers exist.
+ * How a reading app signs in to a catalog (Authentication for OPDS 1.0 §2.3),
+ * with the absolute URL the document's schema asks of `id`. Built from the
+ * request alone, never from a stored server, so it cannot tell a reader which
+ * servers exist.
  */
-export const toAuthenticationDocument = (slug: string) => ({
-  id: toAuthenticationDocumentHref(slug),
+export const toAuthenticationDocument = ({
+  origin,
+  slug,
+}: {
+  origin: string
+  slug: string
+}) => ({
+  id: `${origin}${toCatalogRoot(slug)}/${OPDS_AUTHENTICATION_ROUTE}`,
   title: "oboku",
   description:
     "Sign in with the email of your oboku account and the password of this OPDS server.",

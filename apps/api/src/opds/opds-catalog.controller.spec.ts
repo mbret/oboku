@@ -45,8 +45,10 @@ const ownerTokenPayload: TokenPayload = {
 
 const OPDS_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
-const toAuthenticationDocument = (slug: string) => ({
-  id: `/opds/${slug}/authentication`,
+const API_HOST = "api.oboku.test"
+
+const toAuthenticationDocument = (slug: string, protocol = "https") => ({
+  id: `${protocol}://${API_HOST}/opds/${slug}/authentication`,
   title: "oboku",
   description:
     "Sign in with the email of your oboku account and the password of this OPDS server.",
@@ -79,7 +81,10 @@ describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
 
   const getCatalog = (path: string, authorization?: string) => {
-    const pendingRequest = request(app.getHttpServer()).get(path)
+    const pendingRequest = request(app.getHttpServer())
+      .get(path)
+      .set("Host", API_HOST)
+      .set("X-Forwarded-Proto", "https")
 
     return authorization
       ? pendingRequest.set("Authorization", authorization)
@@ -257,6 +262,16 @@ describe("OpdsCatalogController", () => {
       expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
+
+  it("gives the authentication document the scheme of the connection without a proxy", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/opds/calm-snails-dream/authentication")
+      .set("Host", API_HOST)
+
+    expect(response.body).toEqual(
+      toAuthenticationDocument("calm-snails-dream", "http"),
+    )
+  })
 
   it("accepts the owner's email in any case", async () => {
     const response = await getCatalog(

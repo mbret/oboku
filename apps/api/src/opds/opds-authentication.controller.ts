@@ -1,6 +1,8 @@
-import { Controller, Get, Header, Param } from "@nestjs/common"
+import { Controller, Get, Header, Param, Req } from "@nestjs/common"
+import type { Request } from "express"
 import { ApiExcludeController } from "@nestjs/swagger"
 import { Public } from "../auth/auth.guard.js"
+import { getRequestOrigin } from "../http/requestOrigin.js"
 import {
   OPDS_AUTHENTICATION_DOCUMENT_TYPE,
   OPDS_AUTHENTICATION_ROUTE,
@@ -15,7 +17,10 @@ import {
 export class OpdsAuthenticationController {
   @Get()
   @Header("Content-Type", OPDS_AUTHENTICATION_DOCUMENT_TYPE)
-  getAuthenticationDocument(@Param("slug") slug: string) {
-    return toAuthenticationDocument(slug)
+  getAuthenticationDocument(
+    @Req() request: Request,
+    @Param("slug") slug: string,
+  ) {
+    return toAuthenticationDocument({ origin: getRequestOrigin(request), slug })
   }
 }
