@@ -5,7 +5,7 @@ import type { Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { TrustedOriginsService } from "../config/trusted-origin.service.js"
 import { ACCESS_TOKEN_COOKIE } from "../auth/auth-cookies.js"
-import { getForwardedProto } from "../http/forwardedProto.js"
+import { getOutermostForwardedValue } from "../http/forwardedHeader.js"
 
 // CORS is owned by this proxy rather than delegated to CouchDB, so replication
 // does not depend on CouchDB's `[cors]` config and we never emit a header
@@ -100,7 +100,7 @@ export class CouchProxyService {
       // a TLS-terminating proxy sits in front of the API; fall back to this
       // hop's scheme otherwise.
       const forwardedProto =
-        getForwardedProto(req.headers["x-forwarded-proto"]) ??
+        getOutermostForwardedValue(req.headers["x-forwarded-proto"]) ??
         ("encrypted" in req.socket && req.socket.encrypted ? "https" : "http")
 
       proxyReq.setHeader("X-Forwarded-For", forwardedFor)

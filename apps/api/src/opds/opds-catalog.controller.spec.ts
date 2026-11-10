@@ -83,7 +83,8 @@ describe("OpdsCatalogController", () => {
   const getCatalog = (path: string, authorization?: string) => {
     const pendingRequest = request(app.getHttpServer())
       .get(path)
-      .set("Host", API_HOST)
+      .set("Host", "api:3000")
+      .set("X-Forwarded-Host", API_HOST)
       .set("X-Forwarded-Proto", "https")
 
     return authorization

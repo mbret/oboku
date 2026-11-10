@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import type { CookieOptions, Request, Response } from "express"
 import { AppConfigService } from "../config/AppConfigService.js"
-import { getForwardedProto } from "../http/forwardedProto.js"
+import { getOutermostForwardedValue } from "../http/forwardedHeader.js"
 import { parseUrl } from "../http/url.js"
 
 export const ACCESS_TOKEN_COOKIE = "oboku_access_token"
@@ -23,7 +23,7 @@ const REFRESH_TOKEN_COOKIE_PATH = "/auth"
 
 const isRequestSecure = (request: Request) =>
   request.secure ||
-  getForwardedProto(request.headers["x-forwarded-proto"]) === "https"
+  getOutermostForwardedValue(request.headers["x-forwarded-proto"]) === "https"
 
 const isHttpsUrl = (url: string) => parseUrl(url)?.protocol === "https:"
 
