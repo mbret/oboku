@@ -74,8 +74,8 @@ export const AdminGoogleSection = () => {
           </Text>
           <Text size="sm" c="dimmed">
             The Google Cloud OAuth client the web app uses for Google sign-in
-            and Google Drive, and the API key for the Google Drive picker and
-            Google Books lookups.
+            and Google Drive, and the API key for Google Drive and Google Books
+            lookups.
           </Text>
         </div>
 
@@ -125,7 +125,7 @@ export const AdminGoogleSection = () => {
                 />
                 <TextInput
                   label="API key"
-                  description="For the Google Drive picker and Google Books lookups."
+                  description="For Google Drive, its picker, and Google Books lookups."
                   autoComplete="off"
                   {...form.getInputProps("googleApiKey")}
                 />
