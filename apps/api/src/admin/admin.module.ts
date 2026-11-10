@@ -8,8 +8,7 @@ import { MigrationModule } from "../migrations/migration.module.js"
 import { AdminCoversService } from "./admin-covers.service.js"
 import { AdminAuthGuard } from "./admin.guard.js"
 import { AuthModule } from "../auth/auth.module.js"
-import { InstanceConfigService } from "./instance-config/instance-config.service.js"
-import { ServerSourcesService } from "./instance-config/server-sources.service.js"
+import { InstanceConfigModule } from "./instance-config/instance-config.module.js"
 import { NotificationsModule } from "../notifications/notifications.module.js"
 import { EmailModule } from "../email/email.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
@@ -25,18 +24,17 @@ import { AdminSecurityService } from "./admin-security.service.js"
     NotificationsModule,
     EmailModule,
     PostgresModule,
+    InstanceConfigModule,
   ],
   providers: [
     AppConfigService,
     JwtService,
     AdminCoversService,
     AdminAuthGuard,
-    InstanceConfigService,
-    ServerSourcesService,
     AdminEmailService,
     AdminSecurityService,
   ],
   controllers: [AdminController],
-  exports: [InstanceConfigService],
+  exports: [InstanceConfigModule],
 })
 export class AdminModule {}
