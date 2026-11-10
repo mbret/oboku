@@ -83,6 +83,20 @@ describe("buildConfig", () => {
     ).toBe(false)
   })
 
+  it("enables google books only when the server has an api key", () => {
+    expect(
+      buildConfig({ ...baseServerConfig, GOOGLE_API_KEY: "api-key" })
+        .FEATURE_GOOGLE_BOOKS_ENABLED,
+    ).toBe(true)
+    expect(buildConfig(baseServerConfig).FEATURE_GOOGLE_BOOKS_ENABLED).toBe(
+      false,
+    )
+    expect(
+      buildConfig({ ...baseServerConfig, GOOGLE_API_KEY: "  " })
+        .FEATURE_GOOGLE_BOOKS_ENABLED,
+    ).toBe(false)
+  })
+
   it("derives dropbox and one-drive feature flags from their client ids", () => {
     const config = buildConfig({
       ...baseServerConfig,

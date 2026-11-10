@@ -44,6 +44,7 @@ type DerivedConfig = {
   GOOGLE_APP_ID: string | undefined
   FEATURE_GOOGLE_SIGN_ENABLED: boolean
   FEATURE_GOOGLE_DRIVE_ENABLED: boolean
+  FEATURE_GOOGLE_BOOKS_ENABLED: boolean
   FEATURE_DROPBOX_ENABLED: boolean
   FEATURE_ONE_DRIVE_ENABLED: boolean
 }
@@ -65,6 +66,7 @@ export const buildConfig = (server: WebGetConfigResponse): Config => {
     FEATURE_GOOGLE_SIGN_ENABLED: !!server.GOOGLE_CLIENT_ID,
     FEATURE_GOOGLE_DRIVE_ENABLED:
       !!server.GOOGLE_API_KEY && !!googleAppId && !!server.GOOGLE_CLIENT_ID,
+    FEATURE_GOOGLE_BOOKS_ENABLED: !!server.GOOGLE_API_KEY?.trim(),
     FEATURE_DROPBOX_ENABLED: !!server.DROPBOX_CLIENT_ID,
     FEATURE_ONE_DRIVE_ENABLED: !!server.MICROSOFT_APPLICATION_CLIENT_ID,
   }

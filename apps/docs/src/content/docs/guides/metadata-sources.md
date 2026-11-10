@@ -32,4 +32,4 @@ You can swap File and Catalog on a book's metadata sources screen.
 
 The catalog entry is the best match oboku finds for the book in Google Books (when the server has a Google API key), Open Library and Project Gutenberg. Project Gutenberg is only asked about books that carry a Project Gutenberg identifier.
 
-To stop asking a catalog for your books, turn it off in Integrations, under Catalogs.
+To stop asking a catalog for your books, turn it off in Integrations, under Catalogs. Google Books is listed there only when the server has a Google API key.
