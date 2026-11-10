@@ -9,14 +9,11 @@ import { cleanup, renderHook } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(function createReaderMocks() {
-  const reader = { mount: vi.fn(), destroy: vi.fn() }
-
   return {
-    reader,
     createAppReader: vi.fn(function createFakeReader(_options: {
       target?: unknown
     }) {
-      return reader
+      return {}
     }),
   }
 })
@@ -28,7 +25,6 @@ vi.mock("./createAppReader", function mockCreateAppReader() {
 vi.mock("./streamer/webStreamer", function mockWebStreamer() {
   return {
     webStreamer: {
-      prune: vi.fn(),
       accessArchiveWithoutLock: vi.fn(),
       fetchResource: vi.fn(),
     },
@@ -74,26 +70,30 @@ const BOOK_WITH_ONLY_KOREADER_BOOKMARK: BookDocType = {
   readingStateCurrentBookmarkKoreaderProgress: KOREADER_PROGRESS,
 }
 
-const renderCreateReader = (initialBook: BookDocType | null | undefined) => {
-  const containerRef = { current: document.createElement("div") }
-
-  return renderHook(
+const renderCreateReader = (initialBook: BookDocType | null | undefined) =>
+  renderHook(
     function renderUseCreateReader({
       book,
     }: {
       book: BookDocType | null | undefined
     }) {
-      useCreateReader({
+      return useCreateReader({
         bookId: BOOK_ID,
         isUsingWebStreamer: false,
         manifest: MANIFEST,
         koreaderDocument: KOREADER_DOCUMENT,
         book,
-        containerRef,
       })
     },
     { initialProps: { book: initialBook } },
   )
+
+const createReaderFor = (book: BookDocType | null) => {
+  const { result } = renderCreateReader(book)
+
+  if (!result.current) throw new Error("Expected createReader")
+
+  return result.current()
 }
 
 describe("useCreateReader", () => {
@@ -105,18 +105,41 @@ describe("useCreateReader", () => {
     cleanup()
   })
 
-  it("waits for the book to open before creating the reader", () => {
-    const { rerender } = renderCreateReader(undefined)
+  it("gives no createReader until the book to open is known", () => {
+    const { result, rerender } = renderCreateReader(undefined)
 
-    expect(mocks.createAppReader).not.toHaveBeenCalled()
+    expect(result.current).toBeUndefined()
 
     rerender({ book: BOOK })
 
-    expect(mocks.createAppReader).toHaveBeenCalledOnce()
+    expect(result.current).toBeTypeOf("function")
+    expect(mocks.createAppReader).not.toHaveBeenCalled()
+  })
+
+  it("keeps its createReader while the book to open stays, and gives a new one when it changes", () => {
+    const { result, rerender } = renderCreateReader(BOOK)
+    const createReaderForBook = result.current
+
+    rerender({ book: BOOK })
+
+    expect(result.current).toBe(createReaderForBook)
+
+    rerender({ book: { ...BOOK, ...emptyBookmark } })
+
+    expect(result.current).not.toBe(createReaderForBook)
+  })
+
+  it("creates a new reader on each call", () => {
+    const { result } = renderCreateReader(BOOK)
+
+    result.current?.()
+    result.current?.()
+
+    expect(mocks.createAppReader).toHaveBeenCalledTimes(2)
   })
 
   it("opens at the bookmark's cfi", () => {
-    renderCreateReader(BOOK)
+    createReaderFor(BOOK)
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
@@ -126,7 +149,7 @@ describe("useCreateReader", () => {
   })
 
   it("opens at the bookmark's KOReader form when it has no cfi", () => {
-    renderCreateReader(BOOK_WITH_ONLY_KOREADER_BOOKMARK)
+    createReaderFor(BOOK_WITH_ONLY_KOREADER_BOOKMARK)
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
@@ -136,7 +159,7 @@ describe("useCreateReader", () => {
   })
 
   it("opens at the start when the bookmark is only in KOReader's form, for another file", () => {
-    renderCreateReader({
+    createReaderFor({
       ...BOOK_WITH_ONLY_KOREADER_BOOKMARK,
       readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
     })
@@ -147,7 +170,7 @@ describe("useCreateReader", () => {
   })
 
   it("opens at the start a book that has no bookmark", () => {
-    renderCreateReader({ ...BOOK, ...emptyBookmark })
+    createReaderFor({ ...BOOK, ...emptyBookmark })
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
       expect.not.objectContaining({ target: expect.anything() }),
@@ -155,7 +178,7 @@ describe("useCreateReader", () => {
   })
 
   it("opens at the start without a book to restore", () => {
-    renderCreateReader(null)
+    createReaderFor(null)
 
     expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
       expect.not.objectContaining({ target: expect.anything() }),

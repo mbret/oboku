@@ -5,7 +5,7 @@ import { useFullscreenAutoSwitch } from "./settings/fullScreen"
 import { Reader } from "./Reader"
 import { MoreDialog } from "./navigation/MoreDialog"
 import { useTrackBookBeingRead } from "../reading/useTrackBookBeingRead"
-import { isMenuShownStateSignal, readerSignal } from "./states"
+import { isMenuShownStateSignal } from "./states"
 import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import type { ROUTES } from "../navigation/routes"
@@ -40,13 +40,11 @@ const Effects = memo(function Effects({
   useWakeLock({ enabled: isWakeLockEnabled })
   useFullscreenAutoSwitch()
 
-  useEffect(
-    () => () => {
+  useEffect(function resetReaderStateOnLeave() {
+    return function resetMenuShownOnUnmount() {
       isMenuShownStateSignal.update(SIGNAL_RESET)
-      readerSignal.update(SIGNAL_RESET)
-    },
-    [],
-  )
+    }
+  }, [])
 
   return null
 })

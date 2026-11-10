@@ -19,3 +19,9 @@ export const createAppReader = koreaderEnhancer(
     ),
   ),
 )
+
+declare module "@prose-reader/react-reader" {
+  interface Register {
+    reader: ReturnType<typeof createAppReader>
+  }
+}

@@ -7,6 +7,7 @@ import {
   find,
   FIND_PAGE_SIZE,
   getOrCreateUserFromEmail,
+  getSettings,
 } from "./dbHelpers.js"
 
 type StoredDoc = {
@@ -376,6 +377,26 @@ describe("doesCouchDatabaseExist", () => {
 
     await expect(
       doesCouchDatabaseExist(createFakeServer(get), "userdb-1"),
+    ).rejects.toThrow("unauthorized")
+  })
+})
+
+describe("getSettings", () => {
+  const dbFailingWith = (error: Error) =>
+    // Only `db.get` is exercised; nano's full DocumentScope surface is not.
+    ({
+      get: vi.fn().mockRejectedValue(error),
+    }) as unknown as createNano.DocumentScope<unknown>
+
+  it("is null when the account has no settings document", async () => {
+    await expect(
+      getSettings(dbFailingWith(couchError(404, "not_found"))),
+    ).resolves.toBeNull()
+  })
+
+  it("rethrows any other failure", async () => {
+    await expect(
+      getSettings(dbFailingWith(couchError(401, "unauthorized"))),
     ).rejects.toThrow("unauthorized")
   })
 })

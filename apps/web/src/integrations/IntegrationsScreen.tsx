@@ -17,6 +17,7 @@ import {
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"
+import { CatalogsSection } from "./catalogs/CatalogsSection"
 import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
 import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
 import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
@@ -117,6 +118,7 @@ export function IntegrationsScreen() {
             plugin={webdavPlugin}
           />
         </PageSection>
+        <CatalogsSection />
       </PageContainer>
     </Page>
   )

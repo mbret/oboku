@@ -77,7 +77,6 @@ export const formatBookMetadataField = (
     case "authors":
     case "languages":
     case "subjects":
-    case "formatType":
       return formatList(fields[field])
     case "date":
       return formatBookMetadataDate(fields[field])

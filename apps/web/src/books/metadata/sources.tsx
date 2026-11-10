@@ -34,7 +34,7 @@ export const getBookMetadataSourceLabel = (
     case "user":
       return "User"
     case "link":
-      return "Link"
+      return "Source"
   }
 }
 
@@ -53,7 +53,14 @@ export const getBookMetadataSourceIcon = (
   }
 }
 
-const getCatalogProviderNameById = (providerId: string): string => {
+/** The catalogs a metadata refresh can ask, in the order the app lists them. */
+export const CATALOG_PROVIDER_IDS = [
+  GOOGLE_BOOKS_PROVIDER_ID,
+  OPEN_LIBRARY_PROVIDER_ID,
+  PROJECT_GUTENBERG_PROVIDER_ID,
+]
+
+export const getCatalogProviderNameById = (providerId: string): string => {
   switch (providerId) {
     case GOOGLE_BOOKS_PROVIDER_ID:
       return "Google Books"
