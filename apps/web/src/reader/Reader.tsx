@@ -32,6 +32,12 @@ export const Reader = memo(function Reader({
   bookId: string
   isPreview: boolean
 }) {
+  useEffect(function releaseBookArchivesOnLeave() {
+    return function pruneWebStreamer() {
+      webStreamer.prune()
+    }
+  }, [])
+
   const {
     data: { isUsingWebStreamer, manifest, koreaderDocument } = {},
     error: manifestError,
@@ -148,16 +154,6 @@ const Effects = memo(function Effects({
   koreaderDocument?: string
 }) {
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
-
-  useEffect(function releaseBookArchivesOnLeave() {
-    // The prune must follow the reader's destroy, which stops its PDF renders:
-    // pdf.js must not clean up a document while a page renders. React cleans
-    // up a removed tree parent first and in render order, and
-    // `ReactReaderProvider` renders the reader's lifecycle before its children.
-    return function pruneWebStreamer() {
-      webStreamer.prune()
-    }
-  }, [])
 
   return null
 })
