@@ -29,7 +29,6 @@ const createHttpClientApiStub = (sdkFetch: typeof fetch): HttpApiClientWeb =>
 const baseServerConfig: WebGetConfigResponse = {
   MICROSOFT_APPLICATION_AUTHORITY: "https://login.microsoftonline.com/common",
   FEATURE_SERVER_SYNC_ENABLED: false,
-  FEATURE_GOOGLE_CONNECTION_ENABLED: false,
   SHOW_DISABLED_PLUGINS: false,
 }
 
@@ -119,7 +118,6 @@ describe("fetchConfig", () => {
           MICROSOFT_APPLICATION_AUTHORITY:
             "https://login.microsoftonline.com/common",
           FEATURE_SERVER_SYNC_ENABLED: true,
-          FEATURE_GOOGLE_CONNECTION_ENABLED: true,
           SHOW_DISABLED_PLUGINS: false,
         }),
         { headers: { "Content-Type": "application/json" } },

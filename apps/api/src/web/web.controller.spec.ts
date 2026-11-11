@@ -48,11 +48,15 @@ describe("WebController", () => {
 
   it("turns the Google connection on once the client id and secret are both set", async () => {
     const configured = (await createController(CONFIG)).getConfig()
+    const withoutClientId = (
+      await createController({ ...CONFIG, googleClientId: undefined })
+    ).getConfig()
     const withoutSecret = (
       await createController({ ...CONFIG, googleClientSecret: undefined })
     ).getConfig()
 
     expect(configured.FEATURE_GOOGLE_CONNECTION_ENABLED).toBe(true)
+    expect(withoutClientId.FEATURE_GOOGLE_CONNECTION_ENABLED).toBe(false)
     expect(withoutSecret.FEATURE_GOOGLE_CONNECTION_ENABLED).toBe(false)
   })
 })

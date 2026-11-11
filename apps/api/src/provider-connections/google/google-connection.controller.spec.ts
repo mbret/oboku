@@ -42,13 +42,19 @@ vi.mock("google-auth-library", async (importOriginal) => ({
 
 const READER_ID = 1
 const READER_SESSION = "reader-session"
+const OTHER_READER_SESSION = "other-reader-session"
 
-const readerTokenPayload: TokenPayload = {
-  name: "reader@example.com",
-  sub: "reader@example.com",
-  userId: READER_ID,
+const toTokenPayload = (email: string, userId: number): TokenPayload => ({
+  name: email,
+  sub: email,
+  userId,
   "couchdb.roles": [],
-}
+})
+
+const SESSION_PAYLOADS = new Map([
+  [READER_SESSION, toTokenPayload("reader@example.com", READER_ID)],
+  [OTHER_READER_SESSION, toTokenPayload("other@example.com", 2)],
+])
 
 const CLIENT_ID = "123-oboku.apps.googleusercontent.com"
 const CLIENT_SECRET = "client-secret"
@@ -73,6 +79,12 @@ const CONFIG: InstanceConfig = {
   opdsServersMaxPerUser: 10,
 }
 
+const CONNECTION_METHODS: Array<"get" | "put" | "delete"> = [
+  "get",
+  "put",
+  "delete",
+]
+
 const grantTokens = (tokens: Record<string, unknown>) => {
   getToken.mockResolvedValue({ tokens, res: null })
 }
@@ -93,10 +105,10 @@ describe("GoogleConnectionController", () => {
   let providerConnectionsService: ProviderConnectionsService
   let googleConnectionService: GoogleConnectionService
 
-  const getConnection = () =>
+  const getConnection = (session = READER_SESSION) =>
     request(app.getHttpServer())
       .get("/provider-connections/google")
-      .set("Authorization", `Bearer ${READER_SESSION}`)
+      .set("Authorization", `Bearer ${session}`)
 
   const connect = (body: Record<string, unknown>) =>
     request(app.getHttpServer())
@@ -104,10 +116,10 @@ describe("GoogleConnectionController", () => {
       .set("Authorization", `Bearer ${READER_SESSION}`)
       .send(body)
 
-  const disconnect = () =>
+  const disconnect = (session = READER_SESSION) =>
     request(app.getHttpServer())
       .delete("/provider-connections/google")
-      .set("Authorization", `Bearer ${READER_SESSION}`)
+      .set("Authorization", `Bearer ${session}`)
 
   beforeEach(async () => {
     createOAuth2Client.mockReset()
@@ -144,9 +156,11 @@ describe("GoogleConnectionController", () => {
           provide: JwtService,
           useValue: {
             verifyAsync: async (token: string) => {
-              if (token !== READER_SESSION) throw new Error("no session")
+              const payload = SESSION_PAYLOADS.get(token)
 
-              return readerTokenPayload
+              if (!payload) throw new Error("no session")
+
+              return payload
             },
           },
         },
@@ -220,8 +234,14 @@ describe("GoogleConnectionController", () => {
     expect(connection.body).toEqual(response.body)
   })
 
-  it("refuses to connect until the admin sets the client secret", async () => {
-    instanceConfig.next({ ...CONFIG, googleClientSecret: undefined })
+  it.each([
+    { missingSetting: "client id", config: { googleClientId: undefined } },
+    {
+      missingSetting: "client secret",
+      config: { googleClientSecret: undefined },
+    },
+  ])("refuses to connect without the $missingSetting", async ({ config }) => {
+    instanceConfig.next({ ...CONFIG, ...config })
 
     const response = await connect({ code: CODE })
 
@@ -249,15 +269,33 @@ describe("GoogleConnectionController", () => {
 
     const error = await googleConnectionService
       .connect({ userId: READER_ID, code: CODE })
-      .then(
-        () => undefined,
-        (failure: unknown) => failure,
-      )
+      .catch(function captureFailure(failure: unknown) {
+        return failure
+      })
     const inspected = inspect(error, { depth: Number.POSITIVE_INFINITY })
 
+    expect(error).toBeInstanceOf(Error)
     expect(inspected).toContain("invalid_client")
     expect(inspected).not.toContain(CODE)
     expect(inspected).not.toContain(CLIENT_SECRET)
+    expect(rows.size).toBe(0)
+  })
+
+  it("keeps the ID token out of the error when it does not verify", async () => {
+    verifyIdToken.mockRejectedValue(
+      new Error(`Invalid token signature: ${ID_TOKEN}`),
+    )
+
+    const error = await googleConnectionService
+      .connect({ userId: READER_ID, code: CODE })
+      .catch(function captureFailure(failure: unknown) {
+        return failure
+      })
+
+    expect(error).toBeInstanceOf(Error)
+    expect(inspect(error, { depth: Number.POSITIVE_INFINITY })).not.toContain(
+      ID_TOKEN,
+    )
     expect(rows.size).toBe(0)
   })
 
@@ -341,11 +379,30 @@ describe("GoogleConnectionController", () => {
     expect((await getConnection()).body).toEqual({ connection: null })
   })
 
-  it("answers only a signed-in user", async () => {
-    const response = await request(app.getHttpServer()).get(
-      "/provider-connections/google",
-    )
+  it("keeps each user's connection to themselves", async () => {
+    await connect({ code: CODE })
 
-    expect(response.status).toBe(401)
+    expect((await getConnection(OTHER_READER_SESSION)).body).toEqual({
+      connection: null,
+    })
+
+    await disconnect(OTHER_READER_SESSION)
+
+    expect((await getConnection()).body.connection).toMatchObject({
+      accountName: GOOGLE_ACCOUNT.email,
+    })
   })
+
+  it.each(CONNECTION_METHODS)(
+    "answers %s only for a signed-in user",
+    async (method) => {
+      const response = await request(app.getHttpServer())
+        [method]("/provider-connections/google")
+        .send({ code: CODE })
+
+      expect(response.status).toBe(401)
+      expect(getToken).not.toHaveBeenCalled()
+      expect(rows.size).toBe(0)
+    },
+  )
 })

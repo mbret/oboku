@@ -18,7 +18,7 @@ export const zWebConfigResponseDto = z.object({
     MICROSOFT_APPLICATION_CLIENT_ID: z.string().optional(),
     MICROSOFT_APPLICATION_AUTHORITY: z.string(),
     FEATURE_SERVER_SYNC_ENABLED: z.boolean(),
-    FEATURE_GOOGLE_CONNECTION_ENABLED: z.boolean(),
+    FEATURE_GOOGLE_CONNECTION_ENABLED: z.boolean().optional(),
     SHOW_DISABLED_PLUGINS: z.boolean()
 });
 

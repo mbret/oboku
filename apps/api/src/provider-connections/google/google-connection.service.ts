@@ -1,10 +1,11 @@
-import { BadRequestException, Injectable } from "@nestjs/common"
+import { Injectable } from "@nestjs/common"
 import { GOOGLE_DRIVE_FILE_SCOPE, ObokuErrorCode } from "@oboku/shared"
 import { OAuth2Client } from "google-auth-library"
 import {
   type InstanceConfig,
   InstanceConfigService,
 } from "../../admin/instance-config/instance-config.service.js"
+import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import {
   type ConnectionProvider,
   ProviderConnectionsService,
@@ -19,17 +20,18 @@ const POPUP_REDIRECT_URI = "postmessage"
 /** What Google answers for a code that is wrong, expired or already used (RFC 6749 §5.2). */
 const INVALID_GRANT_ERROR = "invalid_grant"
 
-const createConnectionError = (code: ObokuErrorCode) =>
-  new BadRequestException({ errors: [{ code }] })
-
 /** The OAuth client a code is exchanged with, `null` until the admin sets its id and secret. */
-export const toGoogleOAuthClientOptions = ({
+const toGoogleOAuthClientOptions = ({
   googleClientId,
   googleClientSecret,
 }: Pick<InstanceConfig, "googleClientId" | "googleClientSecret">) =>
   googleClientId && googleClientSecret
     ? { clientId: googleClientId, clientSecret: googleClientSecret }
     : null
+
+export const isGoogleConnectionConfigured = (
+  config: Pick<InstanceConfig, "googleClientId" | "googleClientSecret">,
+) => toGoogleOAuthClientOptions(config) !== null
 
 /** The OAuth error in Google's answer to a refused exchange, such as `invalid_grant`. */
 const toOAuthError = (error: unknown) => {
@@ -63,13 +65,37 @@ const exchangeCode = async (client: OAuth2Client, code: string) => {
     const isCodeRefused = oauthError === INVALID_GRANT_ERROR
 
     if (isCodeRefused) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CODE_REFUSED,
       )
     }
 
     throw new Error(
       `The code exchange with Google failed: ${oauthError ?? "no OAuth error in the answer"}`,
+    )
+  }
+}
+
+/**
+ * The account in the ID token, once verified. A failure is rethrown without
+ * google-auth-library's error, whose message quotes the token or its payload.
+ */
+const verifyAccount = async ({
+  client,
+  idToken,
+  audience,
+}: {
+  client: OAuth2Client
+  idToken: string
+  audience: string
+}) => {
+  try {
+    const ticket = await client.verifyIdToken({ idToken, audience })
+
+    return ticket.getPayload()
+  } catch {
+    throw new Error(
+      "Google's ID token for the connected account did not verify",
     )
   }
 }
@@ -107,7 +133,7 @@ export class GoogleConnectionService {
     )
 
     if (!clientOptions) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED,
       )
     }
@@ -119,31 +145,31 @@ export class GoogleConnectionService {
     const tokens = await exchangeCode(client, code)
     const scopes = tokens.scope?.split(" ") ?? []
     const isDriveGranted = scopes.includes(GOOGLE_DRIVE_FILE_SCOPE)
+    const openIdToken = tokens.id_token
 
-    // Google sends an ID token only with the `openid` scope.
-    if (!isDriveGranted || !tokens.id_token) {
-      throw createConnectionError(
+    if (!isDriveGranted || !openIdToken) {
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED,
       )
     }
 
-    const ticket = await client.verifyIdToken({
-      idToken: tokens.id_token,
+    const account = await verifyAccount({
+      client,
+      idToken: openIdToken,
       audience: clientOptions.clientId,
     })
-    const account = ticket.getPayload()
+    const grantedEmail = account?.email
 
-    // The ID token carries the email only with the `email` scope.
-    if (!account?.email) {
-      throw createConnectionError(
+    if (!account || !grantedEmail) {
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED,
       )
     }
 
-    // Google issues a refresh token only when the user first grants access,
-    // until the grant is revoked.
+    // Google issues a refresh token only with a user's first grant to oboku,
+    // until it is revoked: the popup code flow cannot ask for consent again.
     if (!tokens.refresh_token) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NO_REFRESH_TOKEN,
       )
     }
@@ -153,7 +179,7 @@ export class GoogleConnectionService {
       provider: GOOGLE_PROVIDER,
       credentials: { refreshToken: tokens.refresh_token },
       accountId: account.sub,
-      accountName: account.email,
+      accountName: grantedEmail,
       scopes,
     })
 

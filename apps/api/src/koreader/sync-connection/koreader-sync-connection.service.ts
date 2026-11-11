@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common"
+import { Injectable, NotFoundException } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
 import type { KoreaderSyncConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
@@ -16,6 +12,7 @@ import {
   toSyncPercentage,
   toSyncProgress,
 } from "../protocol.js"
+import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import {
   AtRestCipher,
@@ -38,16 +35,13 @@ const UNAUTHORIZED_STATUSES = [401, 403]
 /** The `device` oboku pushes positions as, which KOReader shows. */
 const OBOKU_DEVICE_NAME = "oboku"
 
-const createConnectionError = (code: ObokuErrorCode) =>
-  new BadRequestException({ errors: [{ code }] })
-
 const toConnectionError = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
-    return createConnectionError(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
+    return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
   }
 
   if (error instanceof KoreaderSyncServerUnreachableError) {
-    return createConnectionError(
+    return createObokuBadRequest(
       ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
     )
   }
@@ -202,7 +196,7 @@ export class KoreaderSyncConnectionService {
     const canSignIn = key !== null
 
     if (!canSignIn) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
       )
     }
@@ -229,7 +223,7 @@ export class KoreaderSyncConnectionService {
     const isCredentialRefused = UNAUTHORIZED_STATUSES.includes(response.status)
 
     if (isCredentialRefused) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
       )
     }
@@ -237,7 +231,7 @@ export class KoreaderSyncConnectionService {
     const didSucceed = response.status === HTTP_OK
 
     if (!didSucceed) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
       )
     }

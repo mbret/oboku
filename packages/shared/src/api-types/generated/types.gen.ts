@@ -24,9 +24,11 @@ export type WebConfigResponseDto = {
     MICROSOFT_APPLICATION_AUTHORITY: string;
     FEATURE_SERVER_SYNC_ENABLED: boolean;
     /**
-     * Whether users can connect their Google account, which needs the client id and secret.
+     * Whether users can connect their Google account, which needs the client id
+     * and secret. Optional so that a config cached by an earlier release still
+     * validates when the app starts offline.
      */
-    FEATURE_GOOGLE_CONNECTION_ENABLED: boolean;
+    FEATURE_GOOGLE_CONNECTION_ENABLED?: boolean;
     SHOW_DISABLED_PLUGINS: boolean;
 };
 

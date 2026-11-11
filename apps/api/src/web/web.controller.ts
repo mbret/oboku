@@ -3,7 +3,7 @@ import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { Public } from "../auth/auth.guard.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import { toGoogleOAuthClientOptions } from "../provider-connections/google/google-connection.service.js"
+import { isGoogleConnectionConfigured } from "../provider-connections/google/google-connection.service.js"
 import { PublicServerSourceDto, WebConfigResponseDto } from "./web.dto.js"
 
 @Controller("web")
@@ -27,8 +27,7 @@ export class WebController {
         config.microsoftApplicationAuthority ||
         DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
       FEATURE_SERVER_SYNC_ENABLED: config.serverSync.enabled,
-      FEATURE_GOOGLE_CONNECTION_ENABLED:
-        toGoogleOAuthClientOptions(config) !== null,
+      FEATURE_GOOGLE_CONNECTION_ENABLED: isGoogleConnectionConfigured(config),
       SHOW_DISABLED_PLUGINS: config.showDisabledPlugins,
     }
   }
