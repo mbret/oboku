@@ -17,7 +17,10 @@ import {
   toSyncProgress,
 } from "../protocol.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
+import {
+  AtRestCipher,
+  KOREADER_SYNC_KEY_PURPOSE,
+} from "../../crypto/at-rest-cipher.js"
 import type {
   KoreaderSyncConnectionDto,
   KoreaderSyncPositionDto,
@@ -30,9 +33,6 @@ import {
 } from "./koreader-sync-client.js"
 
 const HTTP_OK = 200
-
-/** The label the sync keys' encryption key is derived with: changing it loses them. */
-const SYNC_KEY_ENCRYPTION_PURPOSE = "oboku/koreader-sync-connection/key"
 const UNAUTHORIZED_STATUSES = [401, 403]
 
 /** The `device` oboku pushes positions as, which KOReader shows. */
@@ -138,7 +138,7 @@ export class KoreaderSyncConnectionService {
       serverUrl: normalizedServerUrl,
       username,
       encryptedKey: await this.atRestCipher.encryptUnversioned({
-        purpose: SYNC_KEY_ENCRYPTION_PURPOSE,
+        purpose: KOREADER_SYNC_KEY_PURPOSE,
         plaintext: key,
       }),
     })
@@ -196,7 +196,7 @@ export class KoreaderSyncConnectionService {
     }
 
     const key = await this.atRestCipher.decryptUnversioned({
-      purpose: SYNC_KEY_ENCRYPTION_PURPOSE,
+      purpose: KOREADER_SYNC_KEY_PURPOSE,
       ciphertext: connection.encrypted_key,
     })
     const canSignIn = key !== null

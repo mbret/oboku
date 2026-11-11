@@ -30,7 +30,10 @@ import { KoreaderSyncAuthGuard } from "../sync-server/koreader-sync-auth.guard.j
 import { KoreaderSyncProtocolController } from "../sync-server/koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "../sync-server/koreader-sync-server.service.js"
 import { setPrivateNetworkRequestsAllowed } from "../../http/userAddressAgents.js"
-import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
+import {
+  AtRestCipher,
+  KOREADER_SYNC_KEY_PURPOSE,
+} from "../../crypto/at-rest-cipher.js"
 import { KoreaderSyncConnectionController } from "./koreader-sync-connection.controller.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
 
@@ -295,7 +298,7 @@ describe("KoreaderSyncConnectionController", () => {
     expect(stored?.encrypted_key).not.toContain(readerPassword)
     expect(
       await atRestCipher.decryptUnversioned({
-        purpose: "oboku/koreader-sync-connection/key",
+        purpose: KOREADER_SYNC_KEY_PURPOSE,
         ciphertext: stored?.encrypted_key ?? "",
       }),
     ).toBe(toSyncKey(readerPassword))

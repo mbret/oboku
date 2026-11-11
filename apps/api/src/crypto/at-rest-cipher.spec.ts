@@ -1,12 +1,18 @@
-import { hkdfSync } from "node:crypto"
 import { Test } from "@nestjs/testing"
 import { SecretsService } from "../config/SecretsService.js"
-import { encryptAes256Gcm } from "./aes256Gcm.js"
-import { AtRestCipher } from "./at-rest-cipher.js"
+import {
+  AtRestCipher,
+  KOREADER_SYNC_KEY_PURPOSE,
+  PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
+} from "./at-rest-cipher.js"
 
 const JWT_PRIVATE_KEY =
   "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----"
-const PURPOSE = "oboku/test/credentials"
+const PURPOSE = PROVIDER_CONNECTION_CREDENTIALS_PURPOSE
+
+/** "sync-key" as the API stored KOReader sync keys under JWT_PRIVATE_KEY: IV, tag, ciphertext, base64. */
+const STORED_KOREADER_SYNC_KEY =
+  "AAECAwQFBgcICQoLs93iFWEeOu5I0Jo2kZ3JYk4HWvr33Oc7"
 
 const createCipher = async () => {
   const module = await Test.createTestingModule({
@@ -23,18 +29,13 @@ const createCipher = async () => {
 }
 
 describe("AtRestCipher", () => {
-  it("reads a KOReader sync key encrypted before the cipher was shared", async () => {
-    const koreaderPurpose = "oboku/koreader-sync-connection/key"
-    const koreaderKey = Buffer.from(
-      hkdfSync("sha256", JWT_PRIVATE_KEY, "", koreaderPurpose, 32),
-    )
-    const storedKey = encryptAes256Gcm("sync-key", koreaderKey)
+  it("reads KOReader sync keys stored without a version", async () => {
     const cipher = await createCipher()
 
     await expect(
       cipher.decryptUnversioned({
-        purpose: koreaderPurpose,
-        ciphertext: storedKey,
+        purpose: KOREADER_SYNC_KEY_PURPOSE,
+        ciphertext: STORED_KOREADER_SYNC_KEY,
       }),
     ).resolves.toBe("sync-key")
   })
@@ -74,19 +75,25 @@ describe("AtRestCipher", () => {
     ).resolves.toBeNull()
   })
 
-  it("refuses a ciphertext of another purpose", async () => {
+  it("needs associated data, which GCM would otherwise ignore when empty", async () => {
     const cipher = await createCipher()
-    const ciphertext = await cipher.encrypt({
-      purpose: PURPOSE,
-      plaintext: "refresh-token",
-      associatedData: "user:1:google",
+    const unversionedCiphertext = await cipher.encryptUnversioned({
+      purpose: KOREADER_SYNC_KEY_PURPOSE,
+      plaintext: "sync-key",
     })
 
     await expect(
+      cipher.encrypt({
+        purpose: PURPOSE,
+        plaintext: "refresh-token",
+        associatedData: "",
+      }),
+    ).rejects.toThrow()
+    await expect(
       cipher.decrypt({
-        purpose: "oboku/test/other",
-        ciphertext,
-        associatedData: "user:1:google",
+        purpose: PURPOSE,
+        ciphertext: `1.${unversionedCiphertext}`,
+        associatedData: "",
       }),
     ).resolves.toBeNull()
   })
@@ -128,7 +135,7 @@ describe("AtRestCipher", () => {
       cipher.decrypt({
         purpose: PURPOSE,
         ciphertext: await cipher.encryptUnversioned({
-          purpose: PURPOSE,
+          purpose: KOREADER_SYNC_KEY_PURPOSE,
           plaintext: "refresh-token",
         }),
         associatedData: "user:1:google",
