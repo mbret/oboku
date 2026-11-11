@@ -19,6 +19,7 @@ import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
+import { GoogleConnectionSection } from "./connection/GoogleConnectionSection"
 
 export function GoogleIntegrationScreen() {
   const gapi = useSignalValue(gapiSignal)
@@ -35,7 +36,7 @@ export function GoogleIntegrationScreen() {
       <TopBarNavigation title="Google" showBack />
       <PageContainer disableGutters>
         <Stack>
-          <PageSection>
+          <PageSection title="Google scripts">
             <ListItem>
               <ListItemText
                 primary="Google API"
@@ -86,6 +87,7 @@ export function GoogleIntegrationScreen() {
               Force reload Google API script
             </Button>
           </Stack>
+          <GoogleConnectionSection />
         </Stack>
       </PageContainer>
     </Page>

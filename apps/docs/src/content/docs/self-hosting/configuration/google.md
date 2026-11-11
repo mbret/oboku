@@ -9,7 +9,7 @@ oboku uses one Google Cloud project for Google sign-in, Google Drive and Google 
 1. In the [Google Cloud console](https://console.cloud.google.com/apis/credentials), create an **OAuth client ID** of type **Web application**.
 2. Under **Authorized JavaScript origins**, add the address you open oboku at, such as `https://oboku.example.com`.
 3. Copy the **Client ID**. Google sign-in stays off until it is set.
-4. On the client's page, copy its **Client secret**, or add a new one. Nothing uses it yet: the upcoming Google Drive connection, which lets the server reach a user's books without their browser, will.
+4. On the client's page, copy its **Client secret**, or add a new one. It lets users [connect their Google account](/guides/google-account-connection), which upcoming features use to reach their Drive books without their browser. Without it, **Connect** does not appear.
 
 ## Create the API key
 

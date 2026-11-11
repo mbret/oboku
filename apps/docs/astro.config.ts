@@ -90,6 +90,7 @@ export default defineConfig({
             "guides/koreader-sync-server",
             "guides/koreader-progress-sync",
             "guides/opds-servers",
+            "guides/google-account-connection",
             "guides/connectors",
             "guides/collections",
             "guides/tags",
