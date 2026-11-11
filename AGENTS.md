@@ -111,7 +111,7 @@
 - Prefer `pnpm` commands over `npm` or `yarn` unless the user explicitly asks otherwise.
 - When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `pnpm-lock.yaml` as the source of truth.
 - Workspace-internal dependencies (`@oboku/*`) use the `workspace:*` protocol.
-- The `@prose-reader/*` packages and `reactjrx` use `catalog:prose-reader`. Their versions live in the `prose-reader` catalog of `pnpm-workspace.yaml`, and they move together.
+- The `@prose-reader/*` packages, `gesturx` and `reactjrx` use `catalog:prose-reader`. Their versions live in the `prose-reader` catalog of `pnpm-workspace.yaml`, and they move together.
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 

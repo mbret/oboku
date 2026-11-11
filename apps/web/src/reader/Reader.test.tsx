@@ -1,7 +1,7 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import type { Manifest } from "@prose-reader/shared"
 import { MemoryRouter } from "react-router"
-import { SIGNAL_RESET } from "reactjrx"
+import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
 import { NEVER } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
@@ -192,9 +192,11 @@ function TestReader() {
   return (
     <MemoryRouter>
       <ThemeProvider>
-        <div style={{ width: 600, height: 800 }}>
-          <Reader bookId={BOOK_ID} isPreview={false} />
-        </div>
+        <SignalContextProvider>
+          <div style={{ width: 600, height: 800 }}>
+            <Reader bookId={BOOK_ID} isPreview={false} />
+          </div>
+        </SignalContextProvider>
       </ThemeProvider>
     </MemoryRouter>
   )
