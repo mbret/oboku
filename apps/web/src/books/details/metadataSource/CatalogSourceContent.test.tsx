@@ -1,3 +1,4 @@
+import type { CatalogMetadata } from "@oboku/shared"
 import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
 import { CatalogSourceContent } from "./CatalogSourceContent"
@@ -6,6 +7,16 @@ const COVER_URL =
   "https://books.google.com/books/publisher/content?id=Ebb6DQAAQBAJ&printsec=frontcover&img=1&zoom=0&source=gbs_api"
 
 const RECORD_URL = "https://openlibrary.org/works/OL15358691W"
+
+const OPEN_LIBRARY_MATCH = {
+  type: "catalog",
+  version: 1,
+  providerId: "openLibrary",
+  score: 1,
+  accepted: true,
+  signals: [],
+  metadata: { titles: [{ value: "Mistborn" }] },
+} satisfies CatalogMetadata
 
 afterEach(cleanup)
 
@@ -53,12 +64,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
     render(
       <CatalogSourceContent
         entry={{
-          type: "catalog",
-          version: 1,
-          providerId: "openLibrary",
-          score: 1,
-          accepted: true,
-          signals: [],
+          ...OPEN_LIBRARY_MATCH,
           metadata: {
             titles: [{ value: "Mistborn" }],
             contributors: [{ name: "Brandon Sanderson", roles: ["author"] }],
@@ -77,16 +83,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
   it("links the catalog name to the matched record, in a new tab", () => {
     render(
       <CatalogSourceContent
-        entry={{
-          type: "catalog",
-          version: 1,
-          providerId: "openLibrary",
-          score: 1,
-          accepted: true,
-          signals: [],
-          metadata: { titles: [{ value: "Mistborn" }] },
-          url: RECORD_URL,
-        }}
+        entry={{ ...OPEN_LIBRARY_MATCH, url: RECORD_URL }}
       />,
     )
 
@@ -99,19 +96,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
   })
 
   it("names the catalog without a link when the match has no url", () => {
-    render(
-      <CatalogSourceContent
-        entry={{
-          type: "catalog",
-          version: 1,
-          providerId: "openLibrary",
-          score: 1,
-          accepted: true,
-          signals: [],
-          metadata: { titles: [{ value: "Mistborn" }] },
-        }}
-      />,
-    )
+    render(<CatalogSourceContent entry={OPEN_LIBRARY_MATCH} />)
 
     expect(screen.getByText("Open Library")).toBeTruthy()
     expect(screen.queryByRole("link")).toBeNull()
