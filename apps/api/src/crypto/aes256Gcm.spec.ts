@@ -31,4 +31,12 @@ describe("aes256Gcm", () => {
 
     expect(decryptAes256Gcm(packed.toString("base64"), key)).toBeNull()
   })
+
+  it("decrypts only with the associated data it was encrypted with", () => {
+    const payload = encryptAes256Gcm("secret", key, "row-1")
+
+    expect(decryptAes256Gcm(payload, key, "row-1")).toBe("secret")
+    expect(decryptAes256Gcm(payload, key, "row-2")).toBeNull()
+    expect(decryptAes256Gcm(payload, key)).toBeNull()
+  })
 })
