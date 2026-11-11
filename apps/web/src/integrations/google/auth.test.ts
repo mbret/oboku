@@ -73,6 +73,25 @@ describe("requestGoogleAuthorizationCode", () => {
     ).rejects.toBeInstanceOf(CancelError)
   })
 
+  it("asks to allow pop-ups when Google's window cannot open", async () => {
+    const popupBlocked: google.accounts.oauth2.ClientConfigError = {
+      name: "Error",
+      message: "Failed to open popup window",
+      type: "popup_failed_to_open",
+    }
+    const { gsi } = createGsi(function blockPopup(config) {
+      config.error_callback?.(popupBlocked)
+    })
+
+    await expect(
+      requestGoogleAuthorizationCode({
+        gsi,
+        scopes: SCOPES,
+        clientId: CLIENT_ID,
+      }),
+    ).rejects.toThrow("Allow pop-ups for oboku")
+  })
+
   it("cancels when the user denies the consent screen", async () => {
     const { gsi } = createGsi(function deny(config) {
       config.callback?.({ ...CODE_RESPONSE, code: "", error: "access_denied" })

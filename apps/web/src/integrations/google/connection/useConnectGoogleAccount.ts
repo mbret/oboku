@@ -9,16 +9,18 @@ import {
   type GoogleConnectionConnectResponse,
   googleConnectionConnect,
 } from "@oboku/shared"
-import { firstValueFrom } from "rxjs"
 import { useConfig } from "../../../config/useConfig"
 import { useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { requestGoogleAuthorizationCode } from "../auth"
-import { gsiOrThrow$ } from "../gsi"
+import { gsiSignal } from "../gsi"
 import { googleConnectionQueryKey } from "./queryKeys"
 
 /** Drive's picked files, and the email that tells the user which account is connected. */
 const GOOGLE_CONNECTION_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE, "openid", "email"]
+
+const GSI_NOT_LOADED_MESSAGE =
+  "Google's sign-in script has not loaded. Make sure nothing blocks accounts.google.com, then try again."
 
 export const useConnectGoogleAccount = (
   options?: Pick<
@@ -34,8 +36,12 @@ export const useConnectGoogleAccount = (
   return useMutation({
     ...options,
     mutationFn: async function connectGoogleAccount() {
+      const { gsi } = gsiSignal.getValue()
+
+      if (!gsi) throw new Error(GSI_NOT_LOADED_MESSAGE)
+
       const code = await requestGoogleAuthorizationCode({
-        gsi: await firstValueFrom(gsiOrThrow$),
+        gsi,
         scopes: GOOGLE_CONNECTION_SCOPES,
         clientId: config?.GOOGLE_CLIENT_ID ?? "",
       })

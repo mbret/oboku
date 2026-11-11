@@ -1,4 +1,3 @@
-import { memo } from "react"
 import {
   Button,
   ListItem,
@@ -19,22 +18,27 @@ import { useGoogleConnection } from "./useGoogleConnection"
 
 const SECTION_TITLE = "Google account"
 
-const ConnectGoogleAccount = memo(function ConnectGoogleAccount() {
+function ConnectGoogleAccount() {
   const {
     mutate: connect,
     error,
     isPending,
   } = useConnectGoogleAccount({ meta: { suppressGlobalErrorToast: true } })
-  const isConnectionRefused = !!error && !(error instanceof CancelError)
+  const hasConnectionFailed = !!error && !(error instanceof CancelError)
 
   return (
     <PageSection title={SECTION_TITLE} variant="stack">
       <Typography>
-        Connect your Google account to let oboku's server reach the Google Drive
-        books you added, without this browser. It reaches only the files you
-        picked or opened with oboku, never the rest of your Drive.
+        Connect your Google account to let oboku's server keep access to the
+        Google Drive books you added, so that it can reach them without this
+        browser. It reaches only the files you picked or opened with oboku,
+        never the rest of your Drive.
       </Typography>
-      {isConnectionRefused && <ErrorAlert error={error} />}
+      <Typography color="text.secondary">
+        No feature uses the connection yet: connecting has no visible effect
+        until they arrive.
+      </Typography>
+      {hasConnectionFailed && <ErrorAlert error={error} />}
       <Stack sx={{ alignItems: "flex-start" }}>
         <Button
           variant="contained"
@@ -48,9 +52,9 @@ const ConnectGoogleAccount = memo(function ConnectGoogleAccount() {
       </Stack>
     </PageSection>
   )
-})
+}
 
-const ConnectedGoogleAccount = memo(function ConnectedGoogleAccount({
+function ConnectedGoogleAccount({
   connection,
 }: {
   connection: GoogleConnectionDto
@@ -90,15 +94,15 @@ const ConnectedGoogleAccount = memo(function ConnectedGoogleAccount({
         <ListItemButton onClick={confirmThenDisconnect}>
           <ListItemText
             primary="Disconnect your Google account"
-            secondary="oboku's server can no longer reach your Drive"
+            secondary="oboku's server forgets its access to your Drive"
           />
         </ListItemButton>
       </PageSection>
     </>
   )
-})
+}
 
-const GoogleConnection = memo(function GoogleConnection() {
+function GoogleConnection() {
   const { data, isPending } = useGoogleConnection()
   const connection = data?.connection
 
@@ -109,13 +113,12 @@ const GoogleConnection = memo(function GoogleConnection() {
   ) : (
     <ConnectGoogleAccount />
   )
-})
+}
 
-/** Shown once the instance's admin has set Google's client secret. */
-export const GoogleConnectionSection = memo(function GoogleConnectionSection() {
+export function GoogleConnectionSection() {
   const { data: config } = useConfig()
 
   if (!config?.FEATURE_GOOGLE_CONNECTION_ENABLED) return null
 
   return <GoogleConnection />
-})
+}

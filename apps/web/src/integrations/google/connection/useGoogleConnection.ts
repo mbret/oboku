@@ -5,7 +5,7 @@ import { type HttpApiClientWeb, useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { googleConnectionQueryKey } from "./queryKeys"
 
-export const createGoogleConnectionQueryOptions = ({
+const createGoogleConnectionQueryOptions = ({
   httpClientApi,
   profileId,
 }: {

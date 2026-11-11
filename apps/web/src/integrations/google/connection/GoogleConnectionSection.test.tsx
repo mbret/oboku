@@ -33,23 +33,25 @@ vi.mock("../../../config/useConfig", function mockConfig() {
 
 vi.mock("../gsi", async function mockGsi() {
   const { of } = await import("rxjs")
-
-  return {
-    gsiOrThrow$: of({
-      accounts: {
-        oauth2: {
-          initCodeClient: function createCodeClient(
-            config: google.accounts.oauth2.CodeClientConfig,
-          ) {
-            return {
-              requestCode: function openPopup() {
-                requestCode(config)
-              },
-            }
-          },
+  const gsi = {
+    accounts: {
+      oauth2: {
+        initCodeClient: function createCodeClient(
+          config: google.accounts.oauth2.CodeClientConfig,
+        ) {
+          return {
+            requestCode: function openPopup() {
+              requestCode(config)
+            },
+          }
         },
       },
-    }),
+    },
+  }
+
+  return {
+    gsiOrThrow$: of(gsi),
+    gsiSignal: { getValue: () => ({ gsi, state: "loaded" }) },
   }
 })
 
@@ -179,15 +181,7 @@ describe("GoogleConnectionSection", () => {
   })
 
   it("shows no error when the user closes Google's popup", async () => {
-    requestCode.mockImplementation(function closePopup(
-      config: google.accounts.oauth2.CodeClientConfig,
-    ) {
-      config.error_callback?.({
-        name: "Error",
-        message: "Popup window closed",
-        type: "popup_closed",
-      })
-    })
+    requestCode.mockImplementation(function keepPopupOpen() {})
     const api = renderSection({ connection: null })
     const connectButton = await screen.findByRole("button", {
       name: "Connect",
@@ -196,13 +190,39 @@ describe("GoogleConnectionSection", () => {
     fireEvent.click(connectButton)
 
     await waitFor(() => {
-      expect(requestCode).toHaveBeenCalled()
+      expect(connectButton.hasAttribute("disabled")).toBe(true)
     })
+
+    const [popupConfig] = requestCode.mock.calls[0] ?? []
+
+    popupConfig?.error_callback?.({
+      name: "Error",
+      message: "Popup window closed",
+      type: "popup_closed",
+    })
+
     await waitFor(() => {
       expect(connectButton.hasAttribute("disabled")).toBe(false)
     })
     expect(screen.queryByRole("alert")).toBeNull()
     expect(api.put).not.toHaveBeenCalled()
+  })
+
+  it("asks to allow pop-ups when Google's window cannot open", async () => {
+    requestCode.mockImplementation(function blockPopup(
+      config: google.accounts.oauth2.CodeClientConfig,
+    ) {
+      config.error_callback?.({
+        name: "Error",
+        message: "Failed to open popup window",
+        type: "popup_failed_to_open",
+      })
+    })
+    renderSection({ connection: null })
+
+    fireEvent.click(await screen.findByRole("button", { name: "Connect" }))
+
+    expect(await screen.findByText(/Allow pop-ups for oboku/)).toBeTruthy()
   })
 
   it("disconnects once the user confirms", async () => {
@@ -220,5 +240,22 @@ describe("GoogleConnectionSection", () => {
     expect(api.delete).toHaveBeenCalledWith(
       expect.objectContaining({ url: "/provider-connections/google" }),
     )
+  })
+
+  it("keeps the connection when the user dismisses the confirmation", async () => {
+    const api = renderSection({ connection: CONNECTION })
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: /Disconnect your Google account/,
+      }),
+    )
+    fireEvent.click(await screen.findByRole("button", { name: "Cancel" }))
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull()
+    })
+    expect(api.delete).not.toHaveBeenCalled()
+    expect(screen.getByText(CONNECTION.accountName)).toBeTruthy()
   })
 })

@@ -36,7 +36,6 @@ export function GoogleIntegrationScreen() {
       <TopBarNavigation title="Google" showBack />
       <PageContainer disableGutters>
         <Stack>
-          <GoogleConnectionSection />
           <PageSection title="Google scripts">
             <ListItem>
               <ListItemText
@@ -88,6 +87,7 @@ export function GoogleIntegrationScreen() {
               Force reload Google API script
             </Button>
           </Stack>
+          <GoogleConnectionSection />
         </Stack>
       </PageContainer>
     </Page>

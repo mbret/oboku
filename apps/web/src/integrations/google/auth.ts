@@ -54,6 +54,15 @@ export const requestGoogleAccessToken = async (
 /** Google's answer when the user closes its consent screen with "Cancel". */
 const ACCESS_DENIED_ERROR = "access_denied"
 
+const POPUP_BLOCKED_MESSAGE =
+  "Google's window could not open. Allow pop-ups for oboku, then try again."
+
+export const isPopupClosedError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "type" in error &&
+  error.type === "popup_closed"
+
 /**
  * Opens Google's popup code flow, whose code the API exchanges for a refresh
  * token. Closing the popup or cancelling the consent screen rejects with a
@@ -96,7 +105,15 @@ export const requestGoogleAuthorizationCode = ({
         resolve(response.code)
       },
       error_callback: function rejectPopupFailure(error) {
-        reject(error.type === "popup_closed" ? new CancelError() : error)
+        const isPopupBlocked = error.type === "popup_failed_to_open"
+
+        if (isPopupClosedError(error)) {
+          reject(new CancelError())
+
+          return
+        }
+
+        reject(isPopupBlocked ? new Error(POPUP_BLOCKED_MESSAGE) : error)
       },
     })
 

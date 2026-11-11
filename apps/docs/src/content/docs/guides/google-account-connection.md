@@ -2,9 +2,13 @@
 title: "Google Account Connection"
 ---
 
-Connecting your Google account lets oboku's server reach the Google Drive books you added to oboku, without your browser. It reaches only the files you picked in Google's file picker or opened with oboku, never the rest of your Drive.
+Connecting your Google account lets oboku's server keep access to the Google Drive books you added to oboku, so that it can reach them without your browser. It reaches only the files you picked in Google's file picker or opened with oboku, never the rest of your Drive.
 
 The connection is optional. Without it, oboku reaches Google Drive through your browser, as before.
+
+:::note
+No feature uses the connection yet: connecting has no visible effect until they arrive.
+:::
 
 ## Connect
 
@@ -19,7 +23,7 @@ The screen then shows the account and when you connected it.
 oboku's server keeps the access Google gives it, encrypted. It never leaves the server.
 :::
 
-On a self-hosted oboku, **Connect** appears once the admin has set Google's client secret. See [Google](/self-hosting/configuration/google).
+On a self-hosted oboku, **Connect** appears once the admin has set up Google, its client secret included. See [Google](/self-hosting/configuration/google).
 
 ## Disconnect
 
