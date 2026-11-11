@@ -17,7 +17,7 @@ import {
   toSyncProgress,
 } from "../protocol.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
+import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
 import type {
   KoreaderSyncConnectionDto,
   KoreaderSyncPositionDto,
@@ -30,6 +30,9 @@ import {
 } from "./koreader-sync-client.js"
 
 const HTTP_OK = 200
+
+/** The label the sync keys' encryption key is derived with: changing it loses them. */
+const SYNC_KEY_ENCRYPTION_PURPOSE = "oboku/koreader-sync-connection/key"
 const UNAUTHORIZED_STATUSES = [401, 403]
 
 /** The `device` oboku pushes positions as, which KOReader shows. */
@@ -95,7 +98,7 @@ const normalizeServerUrl = (serverUrl: string) =>
 export class KoreaderSyncConnectionService {
   constructor(
     private readonly connectionPostgresService: KoreaderSyncConnectionPostgresService,
-    private readonly keyCipher: KoreaderSyncConnectionKeyCipher,
+    private readonly atRestCipher: AtRestCipher,
   ) {}
 
   async find(userId: number) {
@@ -134,7 +137,10 @@ export class KoreaderSyncConnectionService {
       userId,
       serverUrl: normalizedServerUrl,
       username,
-      encryptedKey: await this.keyCipher.encrypt(key),
+      encryptedKey: await this.atRestCipher.encryptUnversioned({
+        purpose: SYNC_KEY_ENCRYPTION_PURPOSE,
+        plaintext: key,
+      }),
     })
 
     return this.find(userId)
@@ -189,7 +195,10 @@ export class KoreaderSyncConnectionService {
       throw new NotFoundException("No KOReader sync server connected")
     }
 
-    const key = await this.keyCipher.decrypt(connection.encrypted_key)
+    const key = await this.atRestCipher.decryptUnversioned({
+      purpose: SYNC_KEY_ENCRYPTION_PURPOSE,
+      ciphertext: connection.encrypted_key,
+    })
     const canSignIn = key !== null
 
     if (!canSignIn) {

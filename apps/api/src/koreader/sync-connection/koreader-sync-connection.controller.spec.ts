@@ -30,7 +30,7 @@ import { KoreaderSyncAuthGuard } from "../sync-server/koreader-sync-auth.guard.j
 import { KoreaderSyncProtocolController } from "../sync-server/koreader-sync-protocol.controller.js"
 import { KoreaderSyncServerService } from "../sync-server/koreader-sync-server.service.js"
 import { setPrivateNetworkRequestsAllowed } from "../../http/userAddressAgents.js"
-import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
+import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
 import { KoreaderSyncConnectionController } from "./koreader-sync-connection.controller.js"
 import { KoreaderSyncConnectionService } from "./koreader-sync-connection.service.js"
 
@@ -164,7 +164,7 @@ describe("KoreaderSyncConnectionController", () => {
   let readerPassword: string
   let koreaderSyncServerService: KoreaderSyncServerService
   let connections: Map<number, KoreaderSyncConnectionPostgresEntity>
-  let keyCipher: KoreaderSyncConnectionKeyCipher
+  let atRestCipher: AtRestCipher
   const upstreamServers: Server[] = []
 
   const connect = (body: Record<string, unknown>) =>
@@ -216,7 +216,7 @@ describe("KoreaderSyncConnectionController", () => {
       ],
       providers: [
         KoreaderSyncConnectionService,
-        KoreaderSyncConnectionKeyCipher,
+        AtRestCipher,
         KoreaderSyncServerService,
         KoreaderSyncAuthGuard,
         { provide: UserPostgresService, useValue: createUserStore() },
@@ -254,7 +254,7 @@ describe("KoreaderSyncConnectionController", () => {
     await app.listen(0, "127.0.0.1")
 
     obokuServerUrl = `${await app.getUrl()}/kosync`
-    keyCipher = module.get(KoreaderSyncConnectionKeyCipher)
+    atRestCipher = module.get(AtRestCipher)
     koreaderSyncServerService = module.get(KoreaderSyncServerService)
     readerPassword = await koreaderSyncServerService.createPassword(READER.id)
   })
@@ -293,9 +293,12 @@ describe("KoreaderSyncConnectionController", () => {
 
     expect(stored?.encrypted_key).not.toContain(toSyncKey(readerPassword))
     expect(stored?.encrypted_key).not.toContain(readerPassword)
-    expect(await keyCipher.decrypt(stored?.encrypted_key ?? "")).toBe(
-      toSyncKey(readerPassword),
-    )
+    expect(
+      await atRestCipher.decryptUnversioned({
+        purpose: "oboku/koreader-sync-connection/key",
+        ciphertext: stored?.encrypted_key ?? "",
+      }),
+    ).toBe(toSyncKey(readerPassword))
   })
 
   it("signs in the way KOReader does", async () => {
