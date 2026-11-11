@@ -42,7 +42,7 @@
     "dropbox": "^10.47.0",
     "firebase": "^13.2.0",
     "fuse.js": "^7.5.0",
-    "gesturx": "^2.0.1",
+    "gesturx": "catalog:prose-reader",
     "jose": "^6.2.15",
     "libarchive.js": "^2.0.2",
     "next-themes": "^0.4.6",
