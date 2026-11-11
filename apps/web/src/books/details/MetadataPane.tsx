@@ -1,3 +1,4 @@
+import { formatBytes } from "@oboku/shared"
 import { Box, List, ListItem, ListItemText, Stack } from "@mui/material"
 import { TagsRow } from "./TagsRow"
 import { DescriptionRow } from "./DescriptionRow"
@@ -62,6 +63,12 @@ export const MetadataPane = ({ bookId }: { bookId?: string }) => {
             <ListItemText
               primary="Page count"
               secondary={metadata.pageCount ?? "unknown"}
+            />
+          </ListItem>
+          <ListItem disableGutters disablePadding>
+            <ListItemText
+              primary="File size"
+              secondary={formatBytes(metadata.size) ?? "unknown"}
             />
           </ListItem>
         </List>
