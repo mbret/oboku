@@ -51,6 +51,58 @@ export const requestGoogleAccessToken = async (
   )
 }
 
+/** Google's answer when the user closes its consent screen with "Cancel". */
+const ACCESS_DENIED_ERROR = "access_denied"
+
+/**
+ * Opens Google's popup code flow, whose code the API exchanges for a refresh
+ * token. Closing the popup or cancelling the consent screen rejects with a
+ * `CancelError`.
+ *
+ * @see https://developers.google.com/identity/oauth2/web/reference/js-reference#google.accounts.oauth2.initCodeClient
+ */
+export const requestGoogleAuthorizationCode = ({
+  gsi,
+  scopes,
+  clientId,
+}: {
+  gsi: {
+    accounts: {
+      oauth2: Pick<typeof google.accounts.oauth2, "initCodeClient">
+    }
+  }
+  scopes: string[]
+  clientId: string
+}) =>
+  new Promise<string>(function requestCodeFromPopup(resolve, reject) {
+    const codeClient = gsi.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: scopes.join(" "),
+      ux_mode: "popup",
+      select_account: true,
+      callback: function receiveCodeResponse(response) {
+        if (response.error === ACCESS_DENIED_ERROR) {
+          reject(new CancelError())
+
+          return
+        }
+
+        if (response.error) {
+          reject(new Error(response.error_description || response.error))
+
+          return
+        }
+
+        resolve(response.code)
+      },
+      error_callback: function rejectPopupFailure(error) {
+        reject(error.type === "popup_closed" ? new CancelError() : error)
+      },
+    })
+
+    codeClient.requestCode()
+  })
+
 export const hasGrantedPermissions = (
   gsi: typeof google,
   accessToken: google.accounts.oauth2.TokenResponse,

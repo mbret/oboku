@@ -1,0 +1,121 @@
+import { memo } from "react"
+import {
+  Button,
+  ListItem,
+  ListItemButton,
+  ListItemText,
+  Stack,
+  Typography,
+} from "@mui/material"
+import type { GoogleConnectionDto } from "@oboku/shared"
+import { PageSection } from "../../../common/PageSection"
+import { showConfirmDialog } from "../../../common/dialogs/presets"
+import { useConfig } from "../../../config/useConfig"
+import { ErrorAlert } from "../../../errors/ErrorMessage"
+import { CancelError } from "../../../errors/errors.shared"
+import { useConnectGoogleAccount } from "./useConnectGoogleAccount"
+import { useDisconnectGoogleAccount } from "./useDisconnectGoogleAccount"
+import { useGoogleConnection } from "./useGoogleConnection"
+
+const SECTION_TITLE = "Google account"
+
+const ConnectGoogleAccount = memo(function ConnectGoogleAccount() {
+  const {
+    mutate: connect,
+    error,
+    isPending,
+  } = useConnectGoogleAccount({ meta: { suppressGlobalErrorToast: true } })
+  const isConnectionRefused = !!error && !(error instanceof CancelError)
+
+  return (
+    <PageSection title={SECTION_TITLE} variant="stack">
+      <Typography>
+        Connect your Google account to let oboku's server reach the Google Drive
+        books you added, without this browser. It reaches only the files you
+        picked or opened with oboku, never the rest of your Drive.
+      </Typography>
+      {isConnectionRefused && <ErrorAlert error={error} />}
+      <Stack sx={{ alignItems: "flex-start" }}>
+        <Button
+          variant="contained"
+          loading={isPending}
+          onClick={function connectGoogleAccount() {
+            connect()
+          }}
+        >
+          Connect
+        </Button>
+      </Stack>
+    </PageSection>
+  )
+})
+
+const ConnectedGoogleAccount = memo(function ConnectedGoogleAccount({
+  connection,
+}: {
+  connection: GoogleConnectionDto
+}) {
+  const { mutate: disconnect } = useDisconnectGoogleAccount()
+
+  const confirmThenDisconnect = async () => {
+    const confirmed = await showConfirmDialog({
+      title: "Disconnect your Google account?",
+      message:
+        "oboku's server forgets its access to your Drive, and your books stay in your library. To connect again later, first remove oboku from the third-party apps of your Google Account.",
+      actions: [{ title: "Disconnect" }],
+    })
+
+    if (!confirmed) return
+
+    disconnect()
+  }
+
+  return (
+    <>
+      <PageSection title={SECTION_TITLE}>
+        <ListItem>
+          <ListItemText
+            primary="Connected as"
+            secondary={connection.accountName}
+          />
+        </ListItem>
+        <ListItem>
+          <ListItemText
+            primary="Connected"
+            secondary={new Date(connection.connectedAt).toLocaleString()}
+          />
+        </ListItem>
+      </PageSection>
+      <PageSection title="Danger zone" tone="danger">
+        <ListItemButton onClick={confirmThenDisconnect}>
+          <ListItemText
+            primary="Disconnect your Google account"
+            secondary="oboku's server can no longer reach your Drive"
+          />
+        </ListItemButton>
+      </PageSection>
+    </>
+  )
+})
+
+const GoogleConnection = memo(function GoogleConnection() {
+  const { data, isPending } = useGoogleConnection()
+  const connection = data?.connection
+
+  if (isPending) return null
+
+  return connection ? (
+    <ConnectedGoogleAccount connection={connection} />
+  ) : (
+    <ConnectGoogleAccount />
+  )
+})
+
+/** Shown once the instance's admin has set Google's client secret. */
+export const GoogleConnectionSection = memo(function GoogleConnectionSection() {
+  const { data: config } = useConfig()
+
+  if (!config?.FEATURE_GOOGLE_CONNECTION_ENABLED) return null
+
+  return <GoogleConnection />
+})
