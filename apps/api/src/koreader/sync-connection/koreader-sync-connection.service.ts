@@ -17,7 +17,10 @@ import {
   toSyncProgress,
 } from "../protocol.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
+import {
+  AtRestCipher,
+  KOREADER_SYNC_KEY_PURPOSE,
+} from "../../crypto/at-rest-cipher.js"
 import type {
   KoreaderSyncConnectionDto,
   KoreaderSyncPositionDto,
@@ -95,7 +98,7 @@ const normalizeServerUrl = (serverUrl: string) =>
 export class KoreaderSyncConnectionService {
   constructor(
     private readonly connectionPostgresService: KoreaderSyncConnectionPostgresService,
-    private readonly keyCipher: KoreaderSyncConnectionKeyCipher,
+    private readonly atRestCipher: AtRestCipher,
   ) {}
 
   async find(userId: number) {
@@ -134,7 +137,10 @@ export class KoreaderSyncConnectionService {
       userId,
       serverUrl: normalizedServerUrl,
       username,
-      encryptedKey: await this.keyCipher.encrypt(key),
+      encryptedKey: await this.atRestCipher.encryptUnversioned({
+        purpose: KOREADER_SYNC_KEY_PURPOSE,
+        plaintext: key,
+      }),
     })
 
     return this.find(userId)
@@ -189,7 +195,10 @@ export class KoreaderSyncConnectionService {
       throw new NotFoundException("No KOReader sync server connected")
     }
 
-    const key = await this.keyCipher.decrypt(connection.encrypted_key)
+    const key = await this.atRestCipher.decryptUnversioned({
+      purpose: KOREADER_SYNC_KEY_PURPOSE,
+      ciphertext: connection.encrypted_key,
+    })
     const canSignIn = key !== null
 
     if (!canSignIn) {
