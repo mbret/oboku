@@ -67,6 +67,7 @@ export default defineConfig({
                 "self-hosting/configuration/environment-variables",
                 "self-hosting/configuration/enable-features",
                 "self-hosting/configuration/dropbox",
+                "self-hosting/configuration/google",
                 "self-hosting/configuration/microsoft-and-one-drive",
               ],
             },

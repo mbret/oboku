@@ -250,6 +250,9 @@ export const zInstanceSettingsResponseDto = z.object({
     fileDownloadMaxSizeBytes: z.number(),
     allowPrivateNetworkRequests: z.boolean(),
     privateNetworkAllowedHosts: z.array(z.string()),
+    googleClientId: z.string().optional(),
+    googleApiKey: z.string().optional(),
+    googleClientSecretConfigured: z.boolean(),
     microsoftApplicationClientId: z.string().optional(),
     microsoftApplicationAuthority: z.string().optional(),
     opdsServersMaxPerUser: z.number()
@@ -265,6 +268,9 @@ export const zUpdateInstanceSettingsDto = z.object({
     showDisabledPlugins: z.boolean().optional(),
     allowPrivateNetworkRequests: z.boolean().optional(),
     privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
+    googleClientId: z.string().optional(),
+    googleApiKey: z.string().optional(),
+    googleClientSecret: z.string().optional(),
     microsoftApplicationClientId: z.string().optional()
 });
 

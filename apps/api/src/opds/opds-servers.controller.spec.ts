@@ -52,7 +52,7 @@ const TOKEN_PAYLOADS = new Map([
 const SERVER_LIMIT = 3
 
 const INSTANCE_CONFIG: InstanceConfig = {
-  version: 1,
+  version: 2,
   serverSync: { enabled: false, credentials: null, sources: [] },
   showDisabledPlugins: true,
   fileDownloadMaxSizeBytes: 1,

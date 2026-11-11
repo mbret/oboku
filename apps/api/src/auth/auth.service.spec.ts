@@ -5,6 +5,9 @@ import { Test, TestingModule } from "@nestjs/testing"
 import { ObokuErrorCode } from "@oboku/shared"
 import bcrypt from "bcrypt"
 import type createNano from "nano"
+import { BehaviorSubject } from "rxjs"
+import type { InstanceConfig } from "../admin/instance-config/instance-config.service.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { CouchService, emailToUserDbName } from "../couch/couch.service.js"
@@ -13,6 +16,17 @@ import { RefreshTokensService } from "../features/postgres/refreshTokens.service
 import { UsersService } from "../users/users.service.js"
 import { AuthService } from "./auth.service.js"
 import { RefreshProofService } from "./refresh-proof.service.js"
+
+const { verifyIdToken } = vi.hoisted(function createVerifyIdTokenSpy() {
+  return { verifyIdToken: vi.fn() }
+})
+
+vi.mock("google-auth-library", async (importOriginal) => ({
+  ...(await importOriginal()),
+  OAuth2Client: function FakeOAuth2Client() {
+    return { verifyIdToken }
+  },
+}))
 
 vi.mock("../couch/userDbIndexes.js", function mockUserDbIndexes() {
   return {
@@ -115,8 +129,11 @@ describe("AuthService", () => {
     sendSignUpLink: Mock
     sendMagicLink: Mock
   }
+  let instanceConfig: BehaviorSubject<Pick<InstanceConfig, "googleClientId">>
 
   beforeEach(async () => {
+    verifyIdToken.mockReset()
+    instanceConfig = new BehaviorSubject({})
     usersService = {
       findUserByEmail: vi.fn(),
       findUserById: vi.fn(),
@@ -190,6 +207,10 @@ describe("AuthService", () => {
         {
           provide: RefreshProofService,
           useValue: refreshProofService,
+        },
+        {
+          provide: InstanceConfigService,
+          useValue: { getConfig: () => instanceConfig },
         },
       ],
     }).compile()
@@ -311,6 +332,34 @@ describe("AuthService", () => {
     expect(refreshTokensService.revokeBySessionId).toHaveBeenCalledWith(
       "session-1",
     )
+  })
+
+  it("refuses Google sign-in while no Google client id is configured", async () => {
+    await expect(
+      service.signInWithGoogle({
+        token: "google-id-token",
+        installation_id: readerSignIn.installation_id,
+        public_key: readerSignIn.public_key,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException)
+    expect(verifyIdToken).not.toHaveBeenCalled()
+  })
+
+  it("checks a Google ID token against the configured Google client id", async () => {
+    instanceConfig.next({ googleClientId: "client-id" })
+    verifyIdToken.mockResolvedValue({ getPayload: () => undefined })
+
+    await expect(
+      service.signInWithGoogle({
+        token: "google-id-token",
+        installation_id: readerSignIn.installation_id,
+        public_key: readerSignIn.public_key,
+      }),
+    ).rejects.toBeInstanceOf(BadRequestException)
+    expect(verifyIdToken).toHaveBeenCalledWith({
+      idToken: "google-id-token",
+      audience: "client-id",
+    })
   })
 
   it("delegates deleteAccount to UsersService", async () => {

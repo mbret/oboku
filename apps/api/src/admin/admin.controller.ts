@@ -20,6 +20,7 @@ import { timingSafeStringEqual } from "../crypto/timingSafeStringEqual.js"
 import { AdminAuthGuard, AdminPublic } from "./admin.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { InstanceConfigService } from "./instance-config/instance-config.service.js"
+import { toInstanceSettings } from "./instance-settings.js"
 import { formatAllowedHost, parseAllowedHost } from "../http/allowedHosts.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { MigrationService } from "../migrations/migration.service.js"
@@ -261,17 +262,7 @@ export class AdminController {
 
   @Get("settings")
   getSettings(): InstanceSettingsResponseDto {
-    const config = this.instanceConfigService.getConfig().value
-
-    return {
-      showDisabledPlugins: config.showDisabledPlugins,
-      fileDownloadMaxSizeBytes: config.fileDownloadMaxSizeBytes,
-      allowPrivateNetworkRequests: config.allowPrivateNetworkRequests,
-      privateNetworkAllowedHosts: config.privateNetworkAllowedHosts,
-      microsoftApplicationClientId: config.microsoftApplicationClientId,
-      microsoftApplicationAuthority: config.microsoftApplicationAuthority,
-      opdsServersMaxPerUser: config.opdsServersMaxPerUser,
-    }
+    return toInstanceSettings(this.instanceConfigService.getConfig().value)
   }
 
   @Patch("settings")

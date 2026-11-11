@@ -31,6 +31,7 @@ export class AppConfigService {
     return this.config.get("POSTGRES_DB", { infer: true })
   }
 
+  /** Read only to migrate the instance config to version 2, which took it over. */
   get GOOGLE_CLIENT_ID(): string | undefined {
     return this.config.get("GOOGLE_CLIENT_ID", { infer: true })
   }
@@ -39,6 +40,7 @@ export class AppConfigService {
     return "http://localhost:3000/auth/google/callback"
   }
 
+  /** Read only to migrate the instance config to version 2, which took it over. */
   get GOOGLE_API_KEY() {
     return this.config.get("GOOGLE_API_KEY", { infer: true })
   }

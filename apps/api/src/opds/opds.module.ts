@@ -1,5 +1,5 @@
 import { Module } from "@nestjs/common"
-import { AdminModule } from "../admin/admin.module.js"
+import { InstanceConfigModule } from "../admin/instance-config/instance-config.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
@@ -9,7 +9,7 @@ import { OpdsServersController } from "./opds-servers.controller.js"
 import { OpdsServersService } from "./opds-servers.service.js"
 
 @Module({
-  imports: [PostgresModule, AdminModule],
+  imports: [PostgresModule, InstanceConfigModule],
   controllers: [
     OpdsCatalogController,
     OpdsAuthenticationController,
