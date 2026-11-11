@@ -71,9 +71,12 @@ export class AtRestCipher {
     ciphertext: string
     associatedData: string
   }) {
-    const [version, payload] = ciphertext.split(VERSION_SEPARATOR)
+    const segments = ciphertext.split(VERSION_SEPARATOR)
+    const [version, payload] = segments
     const isCurrentVersion =
-      version === CURRENT_VERSION && payload !== undefined
+      segments.length === 2 &&
+      version === CURRENT_VERSION &&
+      payload !== undefined
 
     if (!isCurrentVersion) return null
 

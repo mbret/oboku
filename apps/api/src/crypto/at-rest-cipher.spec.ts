@@ -91,6 +91,23 @@ describe("AtRestCipher", () => {
     ).resolves.toBeNull()
   })
 
+  it("refuses a ciphertext with anything after its payload", async () => {
+    const cipher = await createCipher()
+    const ciphertext = await cipher.encrypt({
+      purpose: PURPOSE,
+      plaintext: "refresh-token",
+      associatedData: "user:1:google",
+    })
+
+    await expect(
+      cipher.decrypt({
+        purpose: PURPOSE,
+        ciphertext: `${ciphertext}.anything`,
+        associatedData: "user:1:google",
+      }),
+    ).resolves.toBeNull()
+  })
+
   it("refuses an unknown version and an unversioned ciphertext", async () => {
     const cipher = await createCipher()
     const ciphertext = await cipher.encrypt({
