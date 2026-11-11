@@ -2,7 +2,7 @@ import { googleConnectionDisconnect } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../../http"
 import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
-import { googleConnectionQueryKey } from "./queryKeys"
+import { createGoogleConnectionQueryOptions } from "./useGoogleConnection"
 
 export const useDisconnectGoogleAccount = () => {
   const queryClient = useQueryClient()
@@ -23,7 +23,10 @@ export const useDisconnectGoogleAccount = () => {
     },
     onSuccess: function refreshGoogleConnection(_response, { profileId }) {
       return queryClient.invalidateQueries({
-        queryKey: googleConnectionQueryKey(profileId),
+        queryKey: createGoogleConnectionQueryOptions({
+          httpClientApi,
+          profileId,
+        }).queryKey,
       })
     },
   })

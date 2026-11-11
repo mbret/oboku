@@ -3,9 +3,9 @@ import { googleConnectionGet } from "@oboku/shared"
 import { useQueryOptionsWithAuthentication } from "../../../auth"
 import { type HttpApiClientWeb, useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
-import { googleConnectionQueryKey } from "./queryKeys"
+import { API_QUERY_KEY_PREFIX } from "../../../queries/queryClient"
 
-const createGoogleConnectionQueryOptions = ({
+export const createGoogleConnectionQueryOptions = ({
   httpClientApi,
   profileId,
 }: {
@@ -13,7 +13,7 @@ const createGoogleConnectionQueryOptions = ({
   profileId: string | undefined
 }) =>
   queryOptions({
-    queryKey: googleConnectionQueryKey(profileId),
+    queryKey: [API_QUERY_KEY_PREFIX, "google-connection", profileId],
     queryFn: async function fetchGoogleConnection({ signal }) {
       const { data } = await googleConnectionGet({
         client: httpClientApi.sdkClient,

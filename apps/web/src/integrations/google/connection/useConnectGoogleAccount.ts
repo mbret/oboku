@@ -14,7 +14,7 @@ import { useHttpClientApi } from "../../../http"
 import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
 import { requestGoogleAuthorizationCode } from "../auth"
 import { gsiSignal } from "../gsi"
-import { googleConnectionQueryKey } from "./queryKeys"
+import { createGoogleConnectionQueryOptions } from "./useGoogleConnection"
 
 /** Drive's picked files, and the email that tells the user which account is connected. */
 const GOOGLE_CONNECTION_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE, "openid", "email"]
@@ -66,7 +66,11 @@ export const useConnectGoogleAccount = (
       return data
     },
     onSuccess: function rememberGoogleConnection(data, { profileId }) {
-      queryClient.setQueryData(googleConnectionQueryKey(profileId), data)
+      queryClient.setQueryData(
+        createGoogleConnectionQueryOptions({ httpClientApi, profileId })
+          .queryKey,
+        data,
+      )
     },
   })
 }

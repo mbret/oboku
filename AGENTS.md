@@ -168,6 +168,11 @@
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
 
+### React-query cache keys (web)
+
+- Read and write a query's cache through the key its `queryOptions` returns: `createGoogleConnectionQueryOptions({ httpClientApi, profileId }).queryKey`, `profilesQueryOptions.queryKey`. That key carries the query's data type, so `setQueryData` and `getQueryData` check the value against what the query returns.
+- Never pass `setQueryData` or `getQueryData` a key built on its own, as a literal array or by a function that only builds keys: its data is untyped, so any value type-checks. Build the key once, inside the query's `queryOptions`.
+
 ### React Compiler
 
 - React Compiler is enabled in every React app: `apps/web` and `apps/admin` wire `reactCompilerPreset()` into `@rolldown/plugin-babel` alongside `@vitejs/plugin-react`, and `apps/landing` sets `reactCompiler: true` in `next.config.mjs`.
