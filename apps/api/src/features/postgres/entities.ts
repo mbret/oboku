@@ -371,3 +371,43 @@ export class OpdsServerPostgresEntity {
   @Column({ type: "timestamp with time zone" })
   created_at!: Date
 }
+
+/**
+ * A user's long-lived permission at an account provider, one per user and
+ * provider. `encrypted_credentials` holds what the provider grants, such as a
+ * refresh token, encrypted at rest and bound to the row's user and provider.
+ */
+@Entity({ name: "provider_connections" })
+@Index(["user_id", "provider"], { unique: true })
+export class ProviderConnectionPostgresEntity {
+  @PrimaryGeneratedColumn("identity")
+  id!: number
+
+  @Column({ type: "integer" })
+  user_id!: number
+
+  /** The account provider, such as `google`. */
+  @Column({ type: "text" })
+  provider!: string
+
+  @Column({ type: "text" })
+  encrypted_credentials!: string
+
+  /** The provider's stable id for the account, such as Google's `sub`. */
+  @Column({ type: "text" })
+  account_id!: string
+
+  /** What the app shows for the account, such as its email. */
+  @Column({ type: "text" })
+  account_name!: string
+
+  @Column({ type: "text", array: true })
+  scopes!: string[]
+
+  @Column({ type: "timestamp with time zone" })
+  connected_at!: Date
+
+  /** Changes when the credentials do, for providers that rotate them. */
+  @Column({ type: "timestamp with time zone" })
+  updated_at!: Date
+}
