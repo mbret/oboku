@@ -29,6 +29,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
 import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
 import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 import { OpdsModule } from "./opds/opds.module.js"
+import { ProviderConnectionsModule } from "./provider-connections/provider-connections.module.js"
 
 @Module({
   imports: [
@@ -122,6 +123,7 @@ import { OpdsModule } from "./opds/opds.module.js"
     KoreaderSyncServerModule,
     KoreaderSyncConnectionModule,
     OpdsModule,
+    ProviderConnectionsModule,
   ],
   providers: [AppService, SyncReportPostgresService],
   controllers: [AppController, WebController],

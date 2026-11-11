@@ -18,6 +18,7 @@ export const zWebConfigResponseDto = z.object({
     MICROSOFT_APPLICATION_CLIENT_ID: z.string().optional(),
     MICROSOFT_APPLICATION_AUTHORITY: z.string(),
     FEATURE_SERVER_SYNC_ENABLED: z.boolean(),
+    FEATURE_GOOGLE_CONNECTION_ENABLED: z.boolean(),
     SHOW_DISABLED_PLUGINS: z.boolean()
 });
 
@@ -49,7 +50,11 @@ export const zObokuErrorDto = z.object({
         '8000',
         '8001',
         '9000',
-        '10000'
+        '10000',
+        '11000',
+        '11001',
+        '11002',
+        '11003'
     ])
 });
 
@@ -489,6 +494,19 @@ export const zRenameOpdsServerDto = z.object({
     name: z.string().min(1).max(100).regex(/\S/)
 });
 
+export const zGoogleConnectionDto = z.object({
+    accountName: z.string(),
+    connectedAt: z.string()
+});
+
+export const zGoogleConnectionResponseDto = z.object({
+    connection: zGoogleConnectionDto.nullable()
+});
+
+export const zConnectGoogleAccountDto = z.object({
+    code: z.string().min(1)
+});
+
 export const zAppGetHelloResponse = z.string();
 
 export const zWebGetConfigResponse = zWebConfigResponseDto;
@@ -712,3 +730,11 @@ export const zOpdsServersRegeneratePasswordPath = z.object({
 });
 
 export const zOpdsServersRegeneratePasswordResponse = zOpdsServerPasswordResponseDto;
+
+export const zGoogleConnectionDisconnectResponse = zOkResponseDto;
+
+export const zGoogleConnectionGetResponse = zGoogleConnectionResponseDto;
+
+export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
+
+export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;
