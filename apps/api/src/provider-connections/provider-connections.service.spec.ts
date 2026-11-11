@@ -4,8 +4,8 @@ import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
 } from "../crypto/at-rest-cipher.js"
-import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { createConnectionStore } from "./provider-connection-store.fixture.js"
 import { ProviderConnectionsService } from "./provider-connections.service.js"
 
 const READER_ID = 1
@@ -24,40 +24,6 @@ const GOOGLE_CONNECTION: {
   accountId: "google-sub",
   accountName: "reader@gmail.com",
   scopes: ["https://www.googleapis.com/auth/drive.file"],
-}
-
-/** Keeps rows in memory, keyed like the table's unique index. */
-const createConnectionStore = () => {
-  const rows = new Map<string, ProviderConnectionPostgresEntity>()
-  const toKey = ({ userId, provider }: { userId: number; provider: string }) =>
-    `${userId}:${provider}`
-
-  const store: Pick<
-    ProviderConnectionPostgresService,
-    "find" | "save" | "delete"
-  > = {
-    find: async (key) => rows.get(toKey(key)) ?? null,
-    save: async (connection) => {
-      const connectedAt = new Date()
-
-      rows.set(toKey(connection), {
-        id: rows.size + 1,
-        user_id: connection.userId,
-        provider: connection.provider,
-        encrypted_credentials: connection.encryptedCredentials,
-        account_id: connection.accountId,
-        account_name: connection.accountName,
-        scopes: connection.scopes,
-        connected_at: connectedAt,
-        updated_at: connectedAt,
-      })
-    },
-    delete: async (key) => {
-      rows.delete(toKey(key))
-    },
-  }
-
-  return { rows, store }
 }
 
 const createService = async () => {

@@ -23,6 +23,12 @@ export type WebConfigResponseDto = {
     MICROSOFT_APPLICATION_CLIENT_ID?: string;
     MICROSOFT_APPLICATION_AUTHORITY: string;
     FEATURE_SERVER_SYNC_ENABLED: boolean;
+    /**
+     * Whether users can connect their Google account, which needs the client id
+     * and secret. Optional so that a config cached by an earlier release still
+     * validates when the app starts offline.
+     */
+    FEATURE_GOOGLE_CONNECTION_ENABLED?: boolean;
     SHOW_DISABLED_PLUGINS: boolean;
 };
 
@@ -32,7 +38,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003';
 };
 
 export type ObokuErrorResponseDto = {
@@ -530,6 +536,31 @@ export type OpdsServerPasswordResponseDto = {
 
 export type RenameOpdsServerDto = {
     name: string;
+};
+
+export type GoogleConnectionDto = {
+    /**
+     * The Google account's email.
+     */
+    accountName: string;
+    /**
+     * When the user last connected the account.
+     */
+    connectedAt: string;
+};
+
+export type GoogleConnectionResponseDto = {
+    /**
+     * `null` while no Google account is connected.
+     */
+    connection: GoogleConnectionDto | null;
+};
+
+export type ConnectGoogleAccountDto = {
+    /**
+     * The authorization code Google's code flow popup gives the web app.
+     */
+    code: string;
 };
 
 export type AppGetHelloData = {
@@ -1937,3 +1968,70 @@ export type OpdsServersRegeneratePasswordResponses = {
 };
 
 export type OpdsServersRegeneratePasswordResponse = OpdsServersRegeneratePasswordResponses[keyof OpdsServersRegeneratePasswordResponses];
+
+export type GoogleConnectionDisconnectData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/provider-connections/google';
+};
+
+export type GoogleConnectionDisconnectErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type GoogleConnectionDisconnectError = GoogleConnectionDisconnectErrors[keyof GoogleConnectionDisconnectErrors];
+
+export type GoogleConnectionDisconnectResponses = {
+    200: OkResponseDto;
+};
+
+export type GoogleConnectionDisconnectResponse = GoogleConnectionDisconnectResponses[keyof GoogleConnectionDisconnectResponses];
+
+export type GoogleConnectionGetData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/provider-connections/google';
+};
+
+export type GoogleConnectionGetErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type GoogleConnectionGetError = GoogleConnectionGetErrors[keyof GoogleConnectionGetErrors];
+
+export type GoogleConnectionGetResponses = {
+    200: GoogleConnectionResponseDto;
+};
+
+export type GoogleConnectionGetResponse = GoogleConnectionGetResponses[keyof GoogleConnectionGetResponses];
+
+export type GoogleConnectionConnectData = {
+    body: ConnectGoogleAccountDto;
+    path?: never;
+    query?: never;
+    url: '/provider-connections/google';
+};
+
+export type GoogleConnectionConnectErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type GoogleConnectionConnectError = GoogleConnectionConnectErrors[keyof GoogleConnectionConnectErrors];
+
+export type GoogleConnectionConnectResponses = {
+    200: GoogleConnectionResponseDto;
+};
+
+export type GoogleConnectionConnectResponse = GoogleConnectionConnectResponses[keyof GoogleConnectionConnectResponses];
