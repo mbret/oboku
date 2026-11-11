@@ -88,11 +88,15 @@ const createApiError = (code: ObokuErrorCode) =>
 
 const renderSection = ({
   connection,
+  loadError,
 }: {
   connection: GoogleConnectionDto | null
+  loadError?: Error
 }) => {
   const api = {
-    get: vi.fn().mockResolvedValue({ data: { connection } }),
+    get: loadError
+      ? vi.fn().mockRejectedValue(loadError)
+      : vi.fn().mockResolvedValue({ data: { connection } }),
     put: vi.fn().mockResolvedValue({ data: { connection: CONNECTION } }),
     delete: vi.fn().mockResolvedValue({ data: { ok: true } }),
   }
@@ -240,6 +244,60 @@ describe("GoogleConnectionSection", () => {
     expect(api.delete).toHaveBeenCalledWith(
       expect.objectContaining({ url: "/provider-connections/google" }),
     )
+  })
+
+  it("drops the code when another tab switches profiles while Google's popup is open", async () => {
+    requestCode.mockImplementation(function keepPopupOpen() {})
+    const api = renderSection({ connection: null })
+
+    fireEvent.click(await screen.findByRole("button", { name: "Connect" }))
+    await waitFor(() => {
+      expect(requestCode).toHaveBeenCalled()
+    })
+
+    setActiveProfileId("other-profile")
+
+    const [popupConfig] = requestCode.mock.calls[0] ?? []
+
+    popupConfig && grantCode(popupConfig)
+
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledTimes(2)
+    })
+    expect(api.put).not.toHaveBeenCalled()
+  })
+
+  it("keeps the connection when another tab switches profiles while the confirmation is open", async () => {
+    const api = renderSection({ connection: CONNECTION })
+
+    fireEvent.click(
+      await screen.findByRole("button", {
+        name: /Disconnect your Google account/,
+      }),
+    )
+    const confirmButton = await screen.findByRole("button", {
+      name: "Disconnect",
+    })
+
+    setActiveProfileId("other-profile")
+    fireEvent.click(confirmButton)
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull()
+    })
+    expect(api.delete).not.toHaveBeenCalled()
+  })
+
+  it("explains a connection that could not load, without offering to connect", async () => {
+    renderSection({
+      connection: null,
+      loadError: new Error("The server could not be reached"),
+    })
+
+    expect(
+      await screen.findByText("The server could not be reached"),
+    ).toBeTruthy()
+    expect(screen.queryByRole("button", { name: "Connect" })).toBeNull()
   })
 
   it("keeps the connection when the user dismisses the confirmation", async () => {

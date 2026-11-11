@@ -11,7 +11,7 @@ import {
 } from "@oboku/shared"
 import { useConfig } from "../../../config/useConfig"
 import { useHttpClientApi } from "../../../http"
-import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
+import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
 import { requestGoogleAuthorizationCode } from "../auth"
 import { gsiSignal } from "../gsi"
 import { googleConnectionQueryKey } from "./queryKeys"
@@ -22,20 +22,30 @@ const GOOGLE_CONNECTION_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE, "openid", "email"]
 const GSI_NOT_LOADED_MESSAGE =
   "Google's sign-in script has not loaded. Make sure nothing blocks accounts.google.com, then try again."
 
+type ConnectGoogleAccountRequest = {
+  /** The profile that connects, whose session the request must carry. */
+  profileId: string | undefined
+}
+
 export const useConnectGoogleAccount = (
   options?: Pick<
-    UseMutationOptions<GoogleConnectionConnectResponse, DefaultError, void>,
+    UseMutationOptions<
+      GoogleConnectionConnectResponse,
+      DefaultError,
+      ConnectGoogleAccountRequest
+    >,
     "meta"
   >,
 ) => {
   const queryClient = useQueryClient()
   const httpClientApi = useHttpClientApi()
-  const activeProfileId = useActiveProfileId()
   const { data: config } = useConfig()
 
   return useMutation({
     ...options,
-    mutationFn: async function connectGoogleAccount() {
+    mutationFn: async function connectGoogleAccount({
+      profileId,
+    }: ConnectGoogleAccountRequest) {
       const { gsi } = gsiSignal.getValue()
 
       if (!gsi) throw new Error(GSI_NOT_LOADED_MESSAGE)
@@ -45,6 +55,9 @@ export const useConnectGoogleAccount = (
         scopes: GOOGLE_CONNECTION_SCOPES,
         clientId: config?.GOOGLE_CLIENT_ID ?? "",
       })
+
+      cancelUnlessProfileIsActive(profileId)
+
       const { data } = await googleConnectionConnect({
         client: httpClientApi.sdkClient,
         body: { code },
@@ -52,8 +65,8 @@ export const useConnectGoogleAccount = (
 
       return data
     },
-    onSuccess: function rememberGoogleConnection(data) {
-      queryClient.setQueryData(googleConnectionQueryKey(activeProfileId), data)
+    onSuccess: function rememberGoogleConnection(data, { profileId }) {
+      queryClient.setQueryData(googleConnectionQueryKey(profileId), data)
     },
   })
 }

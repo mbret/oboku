@@ -12,6 +12,7 @@ import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { useConfig } from "../../../config/useConfig"
 import { ErrorAlert } from "../../../errors/ErrorMessage"
 import { CancelError } from "../../../errors/errors.shared"
+import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { useConnectGoogleAccount } from "./useConnectGoogleAccount"
 import { useDisconnectGoogleAccount } from "./useDisconnectGoogleAccount"
 import { useGoogleConnection } from "./useGoogleConnection"
@@ -19,6 +20,7 @@ import { useGoogleConnection } from "./useGoogleConnection"
 const SECTION_TITLE = "Google account"
 
 function ConnectGoogleAccount() {
+  const activeProfileId = useActiveProfileId()
   const {
     mutate: connect,
     error,
@@ -44,7 +46,7 @@ function ConnectGoogleAccount() {
           variant="contained"
           loading={isPending}
           onClick={function connectGoogleAccount() {
-            connect()
+            connect({ profileId: activeProfileId })
           }}
         >
           Connect
@@ -59,6 +61,7 @@ function ConnectedGoogleAccount({
 }: {
   connection: GoogleConnectionDto
 }) {
+  const activeProfileId = useActiveProfileId()
   const { mutate: disconnect } = useDisconnectGoogleAccount()
 
   const confirmThenDisconnect = async () => {
@@ -71,7 +74,7 @@ function ConnectedGoogleAccount({
 
     if (!confirmed) return
 
-    disconnect()
+    disconnect({ profileId: activeProfileId })
   }
 
   return (
@@ -103,10 +106,19 @@ function ConnectedGoogleAccount({
 }
 
 function GoogleConnection() {
-  const { data, isPending } = useGoogleConnection()
-  const connection = data?.connection
+  const { data, error, isPending } = useGoogleConnection()
 
   if (isPending) return null
+
+  if (!data) {
+    return (
+      <PageSection title={SECTION_TITLE} variant="stack">
+        <ErrorAlert error={error} />
+      </PageSection>
+    )
+  }
+
+  const { connection } = data
 
   return connection ? (
     <ConnectedGoogleAccount connection={connection} />
