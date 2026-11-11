@@ -17,6 +17,14 @@ type ConnectionKey<P extends ConnectionProvider = ConnectionProvider> = {
   provider: P
 }
 
+/** A provider with its own credentials, never another provider's. */
+type ProviderAndCredentials = {
+  [P in ConnectionProvider]: {
+    provider: P
+    credentials: ProviderCredentials[P]
+  }
+}[ConnectionProvider]
+
 const credentialsParsers: {
   [P in ConnectionProvider]: (value: unknown) => ProviderCredentials[P] | null
 } = {
@@ -30,7 +38,16 @@ const credentialsParsers: {
   },
 }
 
-/** Binds the credentials to their row, so they cannot be copied into another one. */
+/** `undefined` for invalid JSON, without the error, whose message quotes the input. */
+const parseJson = (text: string): unknown => {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return undefined
+  }
+}
+
+/** Binds the credentials to their user and provider, so they cannot be copied to another connection. */
 const toAssociatedData = ({ userId, provider }: ConnectionKey) =>
   `${userId}:${provider}`
 
@@ -58,15 +75,15 @@ export class ProviderConnectionsService {
   }
 
   /** Replaces the user's previous connection to the provider, if any. */
-  async connect<P extends ConnectionProvider>({
+  async connect({
     userId,
     provider,
     credentials,
     accountId,
     accountName,
     scopes,
-  }: ConnectionKey<P> & {
-    credentials: ProviderCredentials[P]
+  }: ProviderAndCredentials & {
+    userId: number
     accountId: string
     accountName: string
     scopes: string[]
@@ -106,7 +123,7 @@ export class ProviderConnectionsService {
 
     if (plaintext === null) return null
 
-    return credentialsParsers[key.provider](JSON.parse(plaintext))
+    return credentialsParsers[key.provider](parseJson(plaintext))
   }
 
   async disconnect(key: ConnectionKey) {

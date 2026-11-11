@@ -407,7 +407,7 @@ export class ProviderConnectionPostgresEntity {
   @Column({ type: "timestamp with time zone" })
   connected_at!: Date
 
-  /** Changes when the credentials do, for providers that rotate them. */
+  /** When the credentials were last written. */
   @Column({ type: "timestamp with time zone" })
   updated_at!: Date
 }

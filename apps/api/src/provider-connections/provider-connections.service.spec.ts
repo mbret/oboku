@@ -1,6 +1,9 @@
 import { Test } from "@nestjs/testing"
 import { SecretsService } from "../config/SecretsService.js"
-import { AtRestCipher } from "../crypto/at-rest-cipher.js"
+import {
+  AtRestCipher,
+  PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
+} from "../crypto/at-rest-cipher.js"
 import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
 import { ProviderConnectionsService } from "./provider-connections.service.js"
@@ -71,7 +74,11 @@ const createService = async () => {
     ],
   }).compile()
 
-  return { rows, service: module.get(ProviderConnectionsService) }
+  return {
+    rows,
+    service: module.get(ProviderConnectionsService),
+    atRestCipher: module.get(AtRestCipher),
+  }
 }
 
 describe("ProviderConnectionsService", () => {
@@ -98,12 +105,48 @@ describe("ProviderConnectionsService", () => {
       provider: "google",
     })
 
-    expect(connection).toMatchObject({
+    expect(connection).toEqual({
       accountId: "google-sub",
       accountName: "reader@gmail.com",
       scopes: ["https://www.googleapis.com/auth/drive.file"],
+      connectedAt: expect.any(Date),
+      updatedAt: expect.any(Date),
     })
-    expect(JSON.stringify(connection)).not.toContain("credentials")
+  })
+
+  it("replaces the credentials when the user connects again", async () => {
+    const { service } = await createService()
+
+    await service.connect({ userId: READER_ID, ...GOOGLE_CONNECTION })
+    await service.connect({
+      userId: READER_ID,
+      ...GOOGLE_CONNECTION,
+      credentials: { refreshToken: "new-refresh-token" },
+    })
+
+    await expect(
+      service.getCredentials({ userId: READER_ID, provider: "google" }),
+    ).resolves.toEqual({ refreshToken: "new-refresh-token" })
+  })
+
+  it("refuses credentials that are not the provider's shape", async () => {
+    const { rows, service, atRestCipher } = await createService()
+
+    await service.connect({ userId: READER_ID, ...GOOGLE_CONNECTION })
+
+    const readerRow = rows.get(`${READER_ID}:google`)
+
+    if (!readerRow) throw new Error("The connection was not saved")
+
+    readerRow.encrypted_credentials = await atRestCipher.encrypt({
+      purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
+      plaintext: JSON.stringify({ accessToken: "access-token" }),
+      associatedData: `${READER_ID}:google`,
+    })
+
+    await expect(
+      service.getCredentials({ userId: READER_ID, provider: "google" }),
+    ).resolves.toBeNull()
   })
 
   it("refuses credentials copied into another user's connection", async () => {
