@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from "@nestjs/common"
+import { Injectable, NotFoundException } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
 import type { KoreaderSyncConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { KoreaderSyncConnectionPostgresService } from "../../features/postgres/koreader-sync-connection-postgres.service.js"
@@ -16,8 +12,12 @@ import {
   toSyncPercentage,
   toSyncProgress,
 } from "../protocol.js"
+import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { KoreaderSyncConnectionKeyCipher } from "./connection-key-cipher.js"
+import {
+  AtRestCipher,
+  KOREADER_SYNC_KEY_PURPOSE,
+} from "../../crypto/at-rest-cipher.js"
 import type {
   KoreaderSyncConnectionDto,
   KoreaderSyncPositionDto,
@@ -35,16 +35,13 @@ const UNAUTHORIZED_STATUSES = [401, 403]
 /** The `device` oboku pushes positions as, which KOReader shows. */
 const OBOKU_DEVICE_NAME = "oboku"
 
-const createConnectionError = (code: ObokuErrorCode) =>
-  new BadRequestException({ errors: [{ code }] })
-
 const toConnectionError = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
-    return createConnectionError(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
+    return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
   }
 
   if (error instanceof KoreaderSyncServerUnreachableError) {
-    return createConnectionError(
+    return createObokuBadRequest(
       ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
     )
   }
@@ -95,7 +92,7 @@ const normalizeServerUrl = (serverUrl: string) =>
 export class KoreaderSyncConnectionService {
   constructor(
     private readonly connectionPostgresService: KoreaderSyncConnectionPostgresService,
-    private readonly keyCipher: KoreaderSyncConnectionKeyCipher,
+    private readonly atRestCipher: AtRestCipher,
   ) {}
 
   async find(userId: number) {
@@ -134,7 +131,10 @@ export class KoreaderSyncConnectionService {
       userId,
       serverUrl: normalizedServerUrl,
       username,
-      encryptedKey: await this.keyCipher.encrypt(key),
+      encryptedKey: await this.atRestCipher.encryptUnversioned({
+        purpose: KOREADER_SYNC_KEY_PURPOSE,
+        plaintext: key,
+      }),
     })
 
     return this.find(userId)
@@ -189,11 +189,14 @@ export class KoreaderSyncConnectionService {
       throw new NotFoundException("No KOReader sync server connected")
     }
 
-    const key = await this.keyCipher.decrypt(connection.encrypted_key)
+    const key = await this.atRestCipher.decryptUnversioned({
+      purpose: KOREADER_SYNC_KEY_PURPOSE,
+      ciphertext: connection.encrypted_key,
+    })
     const canSignIn = key !== null
 
     if (!canSignIn) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
       )
     }
@@ -220,7 +223,7 @@ export class KoreaderSyncConnectionService {
     const isCredentialRefused = UNAUTHORIZED_STATUSES.includes(response.status)
 
     if (isCredentialRefused) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED,
       )
     }
@@ -228,7 +231,7 @@ export class KoreaderSyncConnectionService {
     const didSucceed = response.status === HTTP_OK
 
     if (!didSucceed) {
-      throw createConnectionError(
+      throw createObokuBadRequest(
         ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE,
       )
     }

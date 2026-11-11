@@ -4,7 +4,7 @@ import { createAppReader } from "./createAppReader"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
-import { from, of } from "rxjs"
+import { from } from "rxjs"
 import pdfjsViewerInlineCss from "pdfjs-dist/web/pdf_viewer.css?inline"
 import { type BookDocType, getBookmark } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
@@ -82,12 +82,8 @@ export const useCreateReader = ({
           },
           pdf: {
             pdfjsViewerInlineCss,
-            getArchiveForItem: function getPdfArchiveForItem(item) {
-              if (!item.href.endsWith(`pdf`)) {
-                return of(undefined)
-              }
-
-              return webStreamer.accessArchiveWithoutLock(bookId)
+            getArchiveForItem: function holdPdfArchiveForItem() {
+              return webStreamer.accessArchive(bookId)
             },
           },
           ...(isUsingWebStreamer && {

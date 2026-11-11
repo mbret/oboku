@@ -10,6 +10,7 @@ updates:
       prose-reader:
         patterns:
           - "@prose-reader/*"
+          - gesturx
           - reactjrx
     ignore:
       # Stays on v9 until @semantic-release/release-notes-generator renders

@@ -51,6 +51,75 @@ export const requestGoogleAccessToken = async (
   )
 }
 
+/** Google's answer when the user closes its consent screen with "Cancel". */
+const ACCESS_DENIED_ERROR = "access_denied"
+
+const POPUP_BLOCKED_MESSAGE =
+  "Google's window could not open. Allow pop-ups for oboku, then try again."
+
+export const isPopupClosedError = (error: unknown) =>
+  typeof error === "object" &&
+  error !== null &&
+  "type" in error &&
+  error.type === "popup_closed"
+
+/**
+ * Opens Google's popup code flow, whose code the API exchanges for a refresh
+ * token. Closing the popup or cancelling the consent screen rejects with a
+ * `CancelError`.
+ *
+ * @see https://developers.google.com/identity/oauth2/web/reference/js-reference#google.accounts.oauth2.initCodeClient
+ */
+export const requestGoogleAuthorizationCode = ({
+  gsi,
+  scopes,
+  clientId,
+}: {
+  gsi: {
+    accounts: {
+      oauth2: Pick<typeof google.accounts.oauth2, "initCodeClient">
+    }
+  }
+  scopes: string[]
+  clientId: string
+}) =>
+  new Promise<string>(function requestCodeFromPopup(resolve, reject) {
+    const codeClient = gsi.accounts.oauth2.initCodeClient({
+      client_id: clientId,
+      scope: scopes.join(" "),
+      ux_mode: "popup",
+      select_account: true,
+      callback: function receiveCodeResponse(response) {
+        if (response.error === ACCESS_DENIED_ERROR) {
+          reject(new CancelError())
+
+          return
+        }
+
+        if (response.error) {
+          reject(new Error(response.error_description || response.error))
+
+          return
+        }
+
+        resolve(response.code)
+      },
+      error_callback: function rejectPopupFailure(error) {
+        const isPopupBlocked = error.type === "popup_failed_to_open"
+
+        if (isPopupClosedError(error)) {
+          reject(new CancelError())
+
+          return
+        }
+
+        reject(isPopupBlocked ? new Error(POPUP_BLOCKED_MESSAGE) : error)
+      },
+    })
+
+    codeClient.requestCode()
+  })
+
 export const hasGrantedPermissions = (
   gsi: typeof google,
   accessToken: google.accounts.oauth2.TokenResponse,

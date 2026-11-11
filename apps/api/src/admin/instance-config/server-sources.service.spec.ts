@@ -36,7 +36,9 @@ describe("InstanceConfigService server sources", () => {
     return service
   }
 
-  const createServices = async () => {
+  const createServices = async (
+    environment: Partial<EnvironmentVariables> = {},
+  ) => {
     const rootDir = await fs.promises.mkdtemp(
       path.join(os.tmpdir(), "oboku-server-sources-"),
     )
@@ -58,6 +60,7 @@ describe("InstanceConfigService server sources", () => {
       API_CONFIG_DIR: rootDir,
       COVERS_STORAGE_STRATEGY: "fs",
       APP_PUBLIC_URL: "http://localhost",
+      ...environment,
     }
     const appConfig = new AppConfigService(
       new ConfigService<EnvironmentVariables>(env),
@@ -90,7 +93,7 @@ describe("InstanceConfigService server sources", () => {
     )
 
     expect(persistedConfigRaw).toEqual({
-      version: 1,
+      version: 2,
       serverSync: {
         enabled: false,
         credentials: null,
@@ -116,6 +119,167 @@ describe("InstanceConfigService server sources", () => {
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationAuthority",
     )
+  })
+
+  it("copies Google's settings from the environment into a new config file", async () => {
+    const { instanceConfigService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+      GOOGLE_API_KEY: "api-key",
+    })
+
+    expect(instanceConfigService.getConfig().value).toMatchObject({
+      version: 2,
+      googleClientId: "client-id",
+      googleApiKey: "api-key",
+    })
+  })
+
+  it("copies Google's settings from the environment into a version 1 config file", async () => {
+    const { appConfig, serverSourcesService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+      GOOGLE_API_KEY: "api-key",
+    })
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1, showDisabledPlugins: false }),
+      "utf8",
+    )
+
+    trackService(new InstanceConfigService(appConfig, serverSourcesService))
+
+    expect(
+      JSON.parse(await fs.promises.readFile(appConfig.CONFIG_FILE, "utf8")),
+    ).toMatchObject({
+      version: 2,
+      googleClientId: "client-id",
+      googleApiKey: "api-key",
+      showDisabledPlugins: false,
+    })
+  })
+
+  it("does not copy Google's settings from the environment again once migrated", async () => {
+    const { appConfig, serverSourcesService, instanceConfigService } =
+      await createServices({
+        GOOGLE_CLIENT_ID: "client-id",
+        GOOGLE_API_KEY: "api-key",
+      })
+
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientId: "",
+      googleApiKey: "",
+    }))
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    expect(rebootedService.getConfig().value).not.toHaveProperty(
+      "googleClientId",
+    )
+    expect(rebootedService.getConfig().value).not.toHaveProperty("googleApiKey")
+  })
+
+  it("migrates a version 1 file written while the API runs", async () => {
+    const { appConfig, instanceConfigService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+    })
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1, fileDownloadMaxSizeBytes: 789 }),
+      "utf8",
+    )
+
+    await expect(
+      firstValueFrom(
+        instanceConfigService
+          .getConfig()
+          .pipe(filter((config) => config.fileDownloadMaxSizeBytes === 789)),
+      ),
+    ).resolves.toMatchObject({ version: 2, googleClientId: "client-id" })
+
+    await instanceConfigService.updateConfig((config) => config)
+
+    expect(
+      JSON.parse(await fs.promises.readFile(appConfig.CONFIG_FILE, "utf8")),
+    ).toMatchObject({ version: 2, googleClientId: "client-id" })
+  })
+
+  it("boots on a version 1 file it cannot write, with the migrated settings", async () => {
+    const { appConfig, serverSourcesService } = await createServices({
+      GOOGLE_CLIENT_ID: "client-id",
+    })
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      JSON.stringify({ version: 1 }),
+      "utf8",
+    )
+    const writeFileSync = vi
+      .spyOn(fs, "writeFileSync")
+      .mockImplementation(function refuseWrite() {
+        throw new Error("EROFS: read-only file system")
+      })
+
+    const rebootedService = trackService(
+      new InstanceConfigService(appConfig, serverSourcesService),
+    )
+
+    writeFileSync.mockRestore()
+
+    expect(rebootedService.getConfig().value).toMatchObject({
+      version: 2,
+      googleClientId: "client-id",
+    })
+  })
+
+  it("clears the Google client secret with an empty string", async () => {
+    const { instanceConfigService } = await createServices()
+
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientSecret: "client-secret",
+    }))
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientSecret: "",
+    }))
+
+    expect(instanceConfigService.getConfig().value).not.toHaveProperty(
+      "googleClientSecret",
+    )
+  })
+
+  it("does not quote a malformed config file in its error", async () => {
+    const { appConfig, serverSourcesService } = await createServices()
+
+    await fs.promises.writeFile(
+      appConfig.CONFIG_FILE,
+      '{ "googleClientSecret": GOCSPX-secret }',
+      "utf8",
+    )
+
+    expect(
+      () => new InstanceConfigService(appConfig, serverSourcesService),
+    ).toThrow(/^Invalid JSON in instance config file at [^:]*$/)
+  })
+
+  it("keeps the config file readable by its owner alone", async () => {
+    const { appConfig, instanceConfigService } = await createServices()
+    const toPermissions = async () =>
+      (await fs.promises.stat(appConfig.CONFIG_FILE)).mode & 0o777
+
+    expect(await toPermissions()).toBe(0o600)
+
+    await fs.promises.chmod(appConfig.CONFIG_FILE, 0o644)
+    await instanceConfigService.updateConfig((config) => ({
+      ...config,
+      googleClientSecret: "client-secret",
+    }))
+
+    expect(await toPermissions()).toBe(0o600)
   })
 
   it("rejects duplicate normalized paths", async () => {

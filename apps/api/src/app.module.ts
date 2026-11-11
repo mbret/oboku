@@ -19,6 +19,7 @@ import { CouchModule } from "./couch/couch.module.js"
 import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module.js"
+import { InstanceConfigModule } from "./admin/instance-config/instance-config.module.js"
 import { DataSourceModule } from "./datasource/datasource.module.js"
 import { StorageModule } from "./storage/storage.module.js"
 import { WebDavModule } from "./webdav/webdav.module.js"
@@ -28,6 +29,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
 import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
 import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 import { OpdsModule } from "./opds/opds.module.js"
+import { ProviderConnectionsModule } from "./provider-connections/provider-connections.module.js"
 
 @Module({
   imports: [
@@ -111,6 +113,7 @@ import { OpdsModule } from "./opds/opds.module.js"
     CouchModule,
     CoversModule,
     AdminModule,
+    InstanceConfigModule,
     DataSourceModule,
     NotificationsModule,
     WebDavModule,
@@ -120,6 +123,7 @@ import { OpdsModule } from "./opds/opds.module.js"
     KoreaderSyncServerModule,
     KoreaderSyncConnectionModule,
     OpdsModule,
+    ProviderConnectionsModule,
   ],
   providers: [AppService, SyncReportPostgresService],
   controllers: [AppController, WebController],

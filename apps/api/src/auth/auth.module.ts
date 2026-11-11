@@ -10,9 +10,10 @@ import { CouchService } from "../couch/couch.service.js"
 import { EmailModule } from "../email/email.module.js"
 import { AuthCookiesService } from "./auth-cookies.js"
 import { RefreshProofService } from "./refresh-proof.service.js"
+import { InstanceConfigModule } from "../admin/instance-config/instance-config.module.js"
 
 @Module({
-  imports: [UsersModule, PostgresModule, EmailModule],
+  imports: [UsersModule, PostgresModule, EmailModule, InstanceConfigModule],
   providers: [
     AuthService,
     JwtService,

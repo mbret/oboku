@@ -12,6 +12,7 @@ import {
 } from "@oboku/shared"
 import {
   FETCHED_METADATA_VERSION,
+  GOOGLE_BOOKS_PROVIDER_ID,
   type MetadataMatch,
 } from "@prose-reader/metadata-fetcher"
 import { of } from "rxjs"
@@ -90,6 +91,7 @@ const refresh = async (
   book: BookDocType,
   linkName = "Dune.epub",
   settings: SettingsDocType = { _id: "settings" },
+  googleApiKey?: string,
 ) => {
   const insert = vi.fn(async function storeBook(_doc: BookDocType) {
     return { ok: true }
@@ -133,7 +135,7 @@ const refresh = async (
         provide: InstanceConfigService,
         useValue: {
           getConfig: () => ({
-            value: { fileDownloadMaxSizeBytes: 100_000_000 },
+            value: { fileDownloadMaxSizeBytes: 100_000_000, googleApiKey },
           }),
         },
       },
@@ -333,6 +335,21 @@ describe("BooksMetadataService.refreshMetadata", () => {
       )
 
       expect(askedCatalogIds).toEqual(["projectGutenberg"])
+    })
+
+    it("asks Google Books too once the instance config holds a Google API key", async () => {
+      await refresh(
+        bookWith([linkEntry]),
+        "Dune.epub",
+        { _id: "settings" },
+        "google-api-key",
+      )
+
+      const askedCatalogIds = fetchMetadata.mock.calls.flatMap(
+        ([, options]) => options?.providers?.map(({ id }) => id) ?? [],
+      )
+
+      expect(askedCatalogIds).toContain(GOOGLE_BOOKS_PROVIDER_ID)
     })
 
     it("asks nothing and stores no entry when the account turns every catalog off", async () => {

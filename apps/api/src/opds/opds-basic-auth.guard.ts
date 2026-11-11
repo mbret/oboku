@@ -8,18 +8,23 @@ import {
 import type { Request, Response } from "express"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { parseBasicAuthorization } from "../http/basicAuthorization.js"
+import { getRequestOrigin } from "../http/requestOrigin.js"
 import { OpdsCatalogService } from "./opds-catalog.service.js"
+import {
+  OPDS_AUTHENTICATION_DOCUMENT_TYPE,
+  toAuthenticationDocument,
+} from "./opds-feeds.js"
 
 const OPDS_BASIC_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
-type OpdsCatalogRequest = Request<{ slug?: string }> & {
+type OpdsCatalogRequest = Request<{ slug: string }> & {
   opdsServer?: OpdsServerPostgresEntity
 }
 
 /**
  * Signs a reader in to the server of the URL's slug with HTTP Basic Auth.
- * Every refusal answers the same 401 and challenge, so a reader cannot tell
- * which servers or emails exist.
+ * Every refusal answers the same 401, Basic challenge and authentication
+ * document, so a reader cannot tell which servers or emails exist.
  */
 @Injectable()
 export class OpdsBasicAuthGuard implements CanActivate {
@@ -31,15 +36,19 @@ export class OpdsBasicAuthGuard implements CanActivate {
     const credentials = parseBasicAuthorization(request.headers.authorization)
     const { slug } = request.params
 
-    const server =
-      credentials && slug
-        ? await this.opdsCatalogService.authorize({ slug, ...credentials })
-        : undefined
+    const server = credentials
+      ? await this.opdsCatalogService.authorize({ slug, ...credentials })
+      : undefined
 
     if (!server) {
-      http.getResponse<Response>().set("WWW-Authenticate", OPDS_BASIC_CHALLENGE)
+      http.getResponse<Response>().set({
+        "WWW-Authenticate": OPDS_BASIC_CHALLENGE,
+        "Content-Type": OPDS_AUTHENTICATION_DOCUMENT_TYPE,
+      })
 
-      throw new UnauthorizedException()
+      throw new UnauthorizedException(
+        toAuthenticationDocument({ origin: getRequestOrigin(request), slug }),
+      )
     }
 
     request.opdsServer = server

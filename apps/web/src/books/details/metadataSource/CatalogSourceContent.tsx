@@ -20,12 +20,27 @@ type Props = {
 /** Read-only content of the catalog record matched to the book. */
 export const CatalogSourceContent = ({ entry }: Props) => {
   const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+  const catalogName = entry ? getCatalogProviderName(entry) : undefined
+  const recordUrl = entry?.type === "catalog" ? entry.url : undefined
 
   return (
     <PageSection title="Fields" dense>
       <MetadataFieldRow
         label="Catalog"
-        value={entry ? getCatalogProviderName(entry) : undefined}
+        value={
+          recordUrl ? (
+            <Link
+              href={recordUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              title={recordUrl}
+            >
+              {catalogName}
+            </Link>
+          ) : (
+            catalogName
+          )
+        }
       />
       <MetadataFieldRow label={L.title} value={fields?.title?.toString()} />
       <MetadataFieldRow label={L.authors} value={formatList(fields?.authors)} />

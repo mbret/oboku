@@ -55,6 +55,14 @@ const NOVELS: OpdsServerDto = {
   createdAt: "2026-02-01T00:00:00.000Z",
 }
 
+const POETRY: OpdsServerDto = {
+  id: 3,
+  slug: "quiet-owls-sing",
+  name: "Poetry",
+  username: "reader@example.com",
+  createdAt: "2026-03-01T00:00:00.000Z",
+}
+
 const withPassword = (
   server: OpdsServerDto,
   password: string,
@@ -125,14 +133,18 @@ describe("OpdsServersScreen", () => {
     onlineManager.setOnline(true)
   })
 
-  it("lists the newest server first, with the catalog URL and username a reading app signs in with", async () => {
+  it("lists the newest server first, with the catalog URLs and username a reading app signs in with", async () => {
     renderScreen(listing([COMICS, NOVELS]))
 
     await screen.findByRole("group", { name: "Novels" })
 
-    expect(fieldValues("Catalog URL")).toEqual([
+    expect(fieldValues("OPDS 1.2 catalog URL")).toEqual([
       "https://api.oboku.test/opds/brave-foxes-run",
       "https://api.oboku.test/opds/calm-snails-dream",
+    ])
+    expect(fieldValues("OPDS 2.0 catalog URL")).toEqual([
+      "https://api.oboku.test/opds/brave-foxes-run/v2",
+      "https://api.oboku.test/opds/calm-snails-dream/v2",
     ])
     expect(fieldValues("Username")).toEqual([
       "reader@example.com",
@@ -198,6 +210,47 @@ describe("OpdsServersScreen", () => {
     expect(api.post).toHaveBeenCalledWith(
       expect.objectContaining({ url: "/opds-servers" }),
     )
+  })
+
+  it("keeps the password of every server it creates, even after a creation fails", async () => {
+    const api = renderScreen(
+      listing([COMICS], [COMICS, NOVELS], [COMICS, NOVELS, POETRY]),
+    )
+    const failedCreation = Promise.withResolvers<never>()
+    api.post
+      .mockResolvedValueOnce(withPassword(NOVELS, "k7mq-x2fp-9dwa-hc4n"))
+      .mockReturnValueOnce(failedCreation.promise)
+      .mockResolvedValueOnce(withPassword(POETRY, "p3rt-h8vb-2kca-wq6e"))
+
+    await findServerSection("Comics")
+    const createButton = screen.getByRole<HTMLButtonElement>("button", {
+      name: "Create a server",
+    })
+    fireEvent.click(createButton)
+    const novels = await findServerSection("Novels")
+    await novels.findByDisplayValue("k7mq-x2fp-9dwa-hc4n")
+    fireEvent.click(createButton)
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(true)
+    })
+
+    expect(novels.getByDisplayValue("k7mq-x2fp-9dwa-hc4n")).not.toBeNull()
+
+    failedCreation.reject(new Error("Network down"))
+    await waitFor(() => {
+      expect(createButton.disabled).toBe(false)
+    })
+
+    expect(novels.getByDisplayValue("k7mq-x2fp-9dwa-hc4n")).not.toBeNull()
+
+    fireEvent.click(createButton)
+    const poetry = await findServerSection("Poetry")
+    await poetry.findByDisplayValue("p3rt-h8vb-2kca-wq6e")
+
+    expect(fieldValues("Password")).toEqual([
+      "p3rt-h8vb-2kca-wq6e",
+      "k7mq-x2fp-9dwa-hc4n",
+    ])
   })
 
   it("shows each new password with its server, even when the requests overlap", async () => {

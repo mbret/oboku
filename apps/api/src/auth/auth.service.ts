@@ -26,6 +26,7 @@ import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { EmailService } from "../email/EmailService.js"
 import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import type {
   AuthProofPublicKeyDto,
   AuthSessionResponseDto,
@@ -73,6 +74,7 @@ export class AuthService {
     private secretService: SecretsService,
     private emailService: EmailService,
     private refreshProofService: RefreshProofService,
+    private instanceConfigService: InstanceConfigService,
   ) {}
 
   async hashPassword(password: string): Promise<string> {
@@ -98,10 +100,19 @@ export class AuthService {
    * email verification flow.
    */
   private async authenticateWithGoogle(token: string) {
+    const { googleClientId } = this.instanceConfigService.getConfig().value
+
+    // google-auth-library 11 skips the audience check without an audience
+    // (OAuth2Client.verifySignedJwtWithCertsAsync), which would accept an ID
+    // token Google issued to any other app.
+    if (!googleClientId) {
+      throw new BadRequestException()
+    }
+
     const client = new OAuth2Client()
     const ticket = await client.verifyIdToken({
       idToken: token,
-      audience: this.appConfigService.GOOGLE_CLIENT_ID,
+      audience: googleClientId,
     })
 
     const payload = ticket.getPayload()

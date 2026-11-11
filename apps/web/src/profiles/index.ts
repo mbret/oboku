@@ -4,14 +4,15 @@ import { localSettingsSignal } from "../settings/useLocalSettings"
 import { libraryShelvesFiltersSignal } from "../library/shelves/filters/states"
 import { collectionDetailsScreenListControlsStateSignal } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
 import { searchListActionsToolbarSignal } from "../search/list/states"
-import type { SignalPersistenceConfig } from "reactjrx"
+import type { SignalPersistenceConfig, SignalValue } from "reactjrx"
 
 export const signalEntriesToPersist = [
   {
     signal: libraryStateSignal,
     version: 0,
     hydrate: ({ value }) => ({
-      ...value,
+      // only this app writes the entry, and version 0 is the only version it has written
+      ...(value as SignalValue<typeof libraryStateSignal>),
       isLibraryUnlocked: false,
     }),
   } satisfies SignalPersistenceConfig<typeof libraryStateSignal>,

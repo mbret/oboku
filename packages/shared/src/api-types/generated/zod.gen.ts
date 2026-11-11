@@ -18,6 +18,7 @@ export const zWebConfigResponseDto = z.object({
     MICROSOFT_APPLICATION_CLIENT_ID: z.string().optional(),
     MICROSOFT_APPLICATION_AUTHORITY: z.string(),
     FEATURE_SERVER_SYNC_ENABLED: z.boolean(),
+    FEATURE_GOOGLE_CONNECTION_ENABLED: z.boolean().optional(),
     SHOW_DISABLED_PLUGINS: z.boolean()
 });
 
@@ -49,7 +50,11 @@ export const zObokuErrorDto = z.object({
         '8000',
         '8001',
         '9000',
-        '10000'
+        '10000',
+        '11000',
+        '11001',
+        '11002',
+        '11003'
     ])
 });
 
@@ -250,6 +255,9 @@ export const zInstanceSettingsResponseDto = z.object({
     fileDownloadMaxSizeBytes: z.number(),
     allowPrivateNetworkRequests: z.boolean(),
     privateNetworkAllowedHosts: z.array(z.string()),
+    googleClientId: z.string().optional(),
+    googleApiKey: z.string().optional(),
+    googleClientSecretConfigured: z.boolean(),
     microsoftApplicationClientId: z.string().optional(),
     microsoftApplicationAuthority: z.string().optional(),
     opdsServersMaxPerUser: z.number()
@@ -265,6 +273,9 @@ export const zUpdateInstanceSettingsDto = z.object({
     showDisabledPlugins: z.boolean().optional(),
     allowPrivateNetworkRequests: z.boolean().optional(),
     privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
+    googleClientId: z.string().optional(),
+    googleApiKey: z.string().optional(),
+    googleClientSecret: z.string().optional(),
     microsoftApplicationClientId: z.string().optional()
 });
 
@@ -481,6 +492,19 @@ export const zOpdsServerPasswordResponseDto = z.object({
 
 export const zRenameOpdsServerDto = z.object({
     name: z.string().min(1).max(100).regex(/\S/)
+});
+
+export const zGoogleConnectionDto = z.object({
+    accountName: z.string(),
+    connectedAt: z.string()
+});
+
+export const zGoogleConnectionResponseDto = z.object({
+    connection: zGoogleConnectionDto.nullable()
+});
+
+export const zConnectGoogleAccountDto = z.object({
+    code: z.string().min(1)
 });
 
 export const zAppGetHelloResponse = z.string();
@@ -706,3 +730,11 @@ export const zOpdsServersRegeneratePasswordPath = z.object({
 });
 
 export const zOpdsServersRegeneratePasswordResponse = zOpdsServerPasswordResponseDto;
+
+export const zGoogleConnectionDisconnectResponse = zOkResponseDto;
+
+export const zGoogleConnectionGetResponse = zGoogleConnectionResponseDto;
+
+export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
+
+export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;

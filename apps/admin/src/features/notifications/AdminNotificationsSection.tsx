@@ -20,6 +20,7 @@ import {
   parseEmails,
   validateRecipientEmails,
 } from "@/components/AudienceFields"
+import { formatDateTime } from "@/features/formatDateTime"
 import { useCreateAdminNotification } from "./useCreateAdminNotification"
 import { useAdminNotifications } from "./useAdminNotifications"
 
@@ -191,7 +192,7 @@ export const AdminNotificationsSection = () => {
                           {notification.title}
                         </Text>
                         <Text size="xs" c="dimmed">
-                          {new Date(notification.createdAt).toLocaleString()}
+                          {formatDateTime(notification.createdAt)}
                         </Text>
                       </div>
                       <Group gap="xs">

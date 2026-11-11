@@ -16,6 +16,7 @@ export const design = {
 export const links = {
   documentation: `https://docs.oboku.me`,
   documentationConnectors: `https://docs.oboku.me/guides/connectors`,
+  documentationGoogle: `https://docs.oboku.me/self-hosting/configuration/google`,
   documentationKoreaderSyncServer: `https://docs.oboku.me/guides/koreader-sync-server`,
   documentationOpds: `https://docs.oboku.me/sync-providers/opds`,
   documentationSecrets: `https://docs.oboku.me/guides/secrets`,

@@ -111,7 +111,7 @@
 - Prefer `pnpm` commands over `npm` or `yarn` unless the user explicitly asks otherwise.
 - When installing dependencies, running scripts, or reproducing CI/local workflows, follow the root `pnpm-lock.yaml` as the source of truth.
 - Workspace-internal dependencies (`@oboku/*`) use the `workspace:*` protocol.
-- The `@prose-reader/*` packages and `reactjrx` use `catalog:prose-reader`. Their versions live in the `prose-reader` catalog of `pnpm-workspace.yaml`, and they move together.
+- The `@prose-reader/*` packages, `gesturx` and `reactjrx` use `catalog:prose-reader`. Their versions live in the `prose-reader` catalog of `pnpm-workspace.yaml`, and they move together.
 - pnpm does not hoist, so every package must declare what it imports; do not rely on transitive dependencies being resolvable.
 - Dependency build scripts are opt-in via `allowBuilds` in `pnpm-workspace.yaml`; when pnpm reports newly ignored build scripts, add an explicit `true`/`false` entry there.
 
@@ -168,10 +168,16 @@
 - `suppressGlobalErrorToast` is always the **consumer's** decision: only the call site knows whether the mutation is a standalone user-facing action (toast wanted) or is nested inside another mutation / background flow that owns its error handling (toast unwanted).
 - Never hard-code `meta: { suppressGlobalErrorToast: true }` inside a reusable mutation hook. Instead, have the hook accept `options?: Pick<UseMutationOptions<...>, "meta">` and spread it into `useMutation` (see `useSignIn`, `useDeleteProfile`), letting each call site opt out of the toast.
 
+### React-query cache keys (web)
+
+- Read and write a query's cache through the key its `queryOptions` returns: `createGoogleConnectionQueryOptions({ httpClientApi, profileId }).queryKey`, `profilesQueryOptions.queryKey`. That key carries the query's data type, so `setQueryData` and `getQueryData` check the value against what the query returns.
+- Never pass `setQueryData` or `getQueryData` a key built on its own, as a literal array or by a function that only builds keys: its data is untyped, so any value type-checks. Build the key once, inside the query's `queryOptions`.
+
 ### React Compiler
 
 - React Compiler is enabled in every React app: `apps/web` and `apps/admin` wire `reactCompilerPreset()` into `@rolldown/plugin-babel` alongside `@vitejs/plugin-react`, and `apps/landing` sets `reactCompiler: true` in `next.config.mjs`.
 - Do not hand-write `useMemo`, `useCallback`, or `memo` for referential stability alone — the compiler does that. Reach for them only when memoization is load-bearing beyond identity (an expensive computation the compiler cannot see, or a dependency the compiler is not allowed to assume stable).
+- The compiler compiles a `use*` function only when it calls another hook. Keep a `useMemo` that is the only hook such a function calls: without it the compiler skips the function, and its value changes on every render. `useCreateReader` is one: a new factory makes `ReactReaderProvider` create a new reader.
 - The compiler bails out per function, never per file, so a function it cannot compile silently keeps its current behaviour. A bailout is either a Rules of React violation (most often a ref read or written during render) or a gap in what the compiler can lower yet; the message tells you which.
 - **Render must be pure.** A value a compiled function reads during render from outside React (`Date.now()`, storage, a module variable, a mutable instance) is treated as a constant: it is computed again only when a prop, state or hook value it is combined with changes, or once per mount when there is none. The compiler does not flag these reads. Read such a value through a hook or state, or opt the function out.
 - `"use no memo"` opts one function out. It must be the **first statement inside the function body**. A directive on a function the compiler already bails out of changes nothing, because validation runs before the opt-out is consulted, so an opt-out only does real work on a function that would otherwise compile. At file level it opts the whole file out only as the file's first statement, above the imports; after them it is a plain string and is silently ignored.

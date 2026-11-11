@@ -63,6 +63,14 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "The sync server could not be reached, or did not answer like a KOReader sync server. Check the address."
     case ObokuErrorCode.ERROR_OPDS_SERVER_LIMIT_REACHED:
       return "You have reached the maximum number of OPDS servers this instance allows. Delete servers you no longer use to create a new one."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED:
+      return "This oboku server is not set up to connect this account. An admin can set it up in the admin panel."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CODE_REFUSED:
+      return "The sign-in was refused or has expired. Connect again."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NO_REFRESH_TOKEN:
+      return "oboku already has access to this account, so it was not given a lasting one. Remove oboku from the third-party apps of your account, then connect again."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED:
+      return "oboku needs every permission it asks for. Connect again and allow them all."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:

@@ -13,6 +13,7 @@ import type {
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
 import { OpdsCatalogService } from "./opds-catalog.service.js"
@@ -44,6 +45,21 @@ const ownerTokenPayload: TokenPayload = {
 
 const OPDS_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
+const API_HOST = "api.oboku.test"
+
+const toAuthenticationDocument = (slug: string, protocol = "https") => ({
+  id: `${protocol}://${API_HOST}/opds/${slug}/authentication`,
+  title: "oboku",
+  description:
+    "Sign in with the email of your oboku account and the password of this OPDS server.",
+  authentication: [
+    {
+      type: "http://opds-spec.org/auth/basic",
+      labels: { login: "Email", password: "Server password" },
+    },
+  ],
+})
+
 /** Express adds a charset and sorts the parameters, which leaves the type the same. */
 const toMediaTypeParts = (contentType: string | undefined) =>
   new Set(contentType?.split(";").map((part) => part.trim()))
@@ -65,7 +81,11 @@ describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
 
   const getCatalog = (path: string, authorization?: string) => {
-    const pendingRequest = request(app.getHttpServer()).get(path)
+    const pendingRequest = request(app.getHttpServer())
+      .get(path)
+      .set("Host", "api:3000")
+      .set("X-Forwarded-Host", API_HOST)
+      .set("X-Forwarded-Proto", "https")
 
     return authorization
       ? pendingRequest.set("Authorization", authorization)
@@ -74,7 +94,7 @@ describe("OpdsCatalogController", () => {
 
   beforeEach(async () => {
     const module = await Test.createTestingModule({
-      controllers: [OpdsCatalogController],
+      controllers: [OpdsCatalogController, OpdsAuthenticationController],
       providers: [
         OpdsCatalogService,
         OpdsBasicAuthGuard,
@@ -157,6 +177,103 @@ describe("OpdsCatalogController", () => {
     expect(response.text).not.toContain("<entry>")
   })
 
+  it("serves the OPDS 2.0 catalog root under v2", async () => {
+    const response = await getCatalog(
+      "/opds/calm-snails-dream/v2",
+      OWNER_AUTHORIZATION,
+    )
+
+    expect(response.status).toBe(200)
+    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+      new Set(["application/opds+json", "charset=utf-8"]),
+    )
+    expect(response.body).toEqual({
+      metadata: { title: `Kids' <books> & "more"` },
+      links: [
+        {
+          rel: "self",
+          href: "/opds/calm-snails-dream/v2",
+          type: "application/opds+json",
+        },
+        {
+          rel: "start",
+          href: "/opds/calm-snails-dream/v2",
+          type: "application/opds+json",
+        },
+      ],
+      navigation: [
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/books",
+          type: "application/opds+json",
+          title: "All books",
+        },
+      ],
+    })
+  })
+
+  it("lists no books yet in OPDS 2.0", async () => {
+    const response = await getCatalog(
+      "/opds/calm-snails-dream/v2/books",
+      OWNER_AUTHORIZATION,
+    )
+
+    expect(response.status).toBe(200)
+    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+      new Set(["application/opds+json", "charset=utf-8"]),
+    )
+    expect(response.body).toEqual({
+      metadata: { title: "All books" },
+      links: [
+        {
+          rel: "self",
+          href: "/opds/calm-snails-dream/v2/books",
+          type: "application/opds+json",
+        },
+        {
+          rel: "start",
+          href: "/opds/calm-snails-dream/v2",
+          type: "application/opds+json",
+        },
+      ],
+      publications: [],
+    })
+  })
+
+  it.each([
+    ["a server without credentials", "calm-snails-dream", undefined],
+    ["an unknown server", "brave-foxes-run", undefined],
+    [
+      "a server with a wrong password",
+      "calm-snails-dream",
+      toBasicAuthorization(`${OWNER.email}:k7mq-x2fp-9dwa-hc4m`),
+    ],
+  ])(
+    "serves the same authentication document to %s",
+    async (_, slug, authorization) => {
+      const response = await getCatalog(
+        `/opds/${slug}/authentication`,
+        authorization,
+      )
+
+      expect(response.status).toBe(200)
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set(["application/opds-authentication+json", "charset=utf-8"]),
+      )
+      expect(response.body).toEqual(toAuthenticationDocument(slug))
+    },
+  )
+
+  it("gives the authentication document the scheme of the connection without a proxy", async () => {
+    const response = await request(app.getHttpServer())
+      .get("/opds/calm-snails-dream/authentication")
+      .set("Host", API_HOST)
+
+    expect(response.body).toEqual(
+      toAuthenticationDocument("calm-snails-dream", "http"),
+    )
+  })
+
   it("accepts the owner's email in any case", async () => {
     const response = await getCatalog(
       "/opds/calm-snails-dream",
@@ -185,17 +302,23 @@ describe("OpdsCatalogController", () => {
       toBasicAuthorization(`other@example.com:${PASSWORD}`),
     ],
     ["an unknown server", "/opds/brave-foxes-run", OWNER_AUTHORIZATION],
+    [
+      "missing credentials in OPDS 2.0",
+      "/opds/calm-snails-dream/v2",
+      undefined,
+    ],
   ])(
-    "refuses %s with the same Basic challenge",
+    "refuses %s with the same Basic challenge and authentication document",
     async (_, path, authorization) => {
       const response = await getCatalog(path, authorization)
+      const slug = path.split("/")[2] ?? ""
 
       expect(response.status).toBe(401)
       expect(response.headers["www-authenticate"]).toBe(OPDS_CHALLENGE)
-      expect(response.body).toEqual({
-        message: "Unauthorized",
-        statusCode: 401,
-      })
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set(["application/opds-authentication+json", "charset=utf-8"]),
+      )
+      expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
 })

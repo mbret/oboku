@@ -1,9 +1,9 @@
 import { Module } from "@nestjs/common"
-import { AdminModule } from "../admin/admin.module.js"
+import { InstanceConfigModule } from "../admin/instance-config/instance-config.module.js"
 import { WebDavService } from "./webdav.service.js"
 
 @Module({
-  imports: [AdminModule],
+  imports: [InstanceConfigModule],
   providers: [WebDavService],
   exports: [WebDavService],
 })

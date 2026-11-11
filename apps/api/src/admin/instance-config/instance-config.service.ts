@@ -30,8 +30,12 @@ export type ServerSyncConfig = {
 }
 
 export type InstanceConfig = {
-  version: 1
+  version: 2
   serverSync: ServerSyncConfig
+  googleClientId?: string
+  googleApiKey?: string
+  /** Never leaves the API: the admin routes only say whether it is set. */
+  googleClientSecret?: string
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   showDisabledPlugins: boolean
@@ -46,15 +50,37 @@ const DEFAULT_OPDS_SERVERS_MAX_PER_USER = 10
 
 const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
-const DEFAULT_INSTANCE_CONFIG: InstanceConfig = {
-  version: 1,
-  serverSync: { enabled: false, credentials: null, sources: [] },
-  showDisabledPlugins: true,
-  fileDownloadMaxSizeBytes: DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES,
-  allowPrivateNetworkRequests: false,
-  privateNetworkAllowedHosts: [],
-  opdsServersMaxPerUser: DEFAULT_OPDS_SERVERS_MAX_PER_USER,
+/** Readable by the API's user alone, since the file holds secrets. */
+const CONFIG_FILE_MODE = 0o600
+
+const INSTANCE_CONFIG_VERSION = 2
+
+/** A missing file starts from version 1, so it goes through every migration. */
+const MISSING_CONFIG_FILE_CONTENT = { version: 1 }
+
+type EnvironmentGoogleSettings = {
+  clientId: string | undefined
+  apiKey: string | undefined
 }
+
+const isVersion1Config = (
+  value: unknown,
+): value is { version: 1 } & Record<string, unknown> =>
+  typeof value === "object" &&
+  value !== null &&
+  "version" in value &&
+  value.version === 1
+
+/** Version 2 takes Google's settings over from the environment variables. */
+const migrateToVersion2 = (
+  config: { version: 1 } & Record<string, unknown>,
+  environment: EnvironmentGoogleSettings,
+) => ({
+  ...config,
+  version: INSTANCE_CONFIG_VERSION,
+  googleClientId: environment.clientId,
+  googleApiKey: environment.apiKey,
+})
 
 const serverSourceConfigSchema = Joi.object<ServerSourceConfig>({
   id: Joi.string().trim().min(1).required(),
@@ -75,12 +101,15 @@ const serverSyncConfigSchema = Joi.object<ServerSyncConfig>({
 })
 
 const instanceConfigSchema = Joi.object<InstanceConfig>({
-  version: Joi.number().valid(1).required(),
+  version: Joi.number().valid(INSTANCE_CONFIG_VERSION).required(),
   serverSync: serverSyncConfigSchema.default({
     enabled: false,
     credentials: null,
     sources: [],
   }),
+  googleClientId: Joi.string().trim().empty("").optional(),
+  googleApiKey: Joi.string().trim().empty("").optional(),
+  googleClientSecret: Joi.string().trim().empty("").optional(),
   microsoftApplicationClientId: Joi.string().trim().empty("").optional(),
   microsoftApplicationAuthority: Joi.string().trim().uri().allow("").optional(),
   showDisabledPlugins: Joi.boolean().default(true),
@@ -125,7 +154,7 @@ export class InstanceConfigService implements OnModuleDestroy {
     @Inject(AppConfigService)
     private readonly appConfig: Pick<
       AppConfigService,
-      "CONFIG_DIR" | "CONFIG_FILE"
+      "CONFIG_DIR" | "CONFIG_FILE" | "GOOGLE_CLIENT_ID" | "GOOGLE_API_KEY"
     >,
     private readonly serverSourcesService: ServerSourcesService,
   ) {
@@ -142,13 +171,81 @@ export class InstanceConfigService implements OnModuleDestroy {
   private initializeConfigFile(): InstanceConfig {
     fs.mkdirSync(this.appConfig.CONFIG_DIR, { recursive: true })
 
-    if (!fs.existsSync(this.appConfig.CONFIG_FILE)) {
-      this.writeConfigFile(DEFAULT_INSTANCE_CONFIG)
+    const content = fs.existsSync(this.appConfig.CONFIG_FILE)
+      ? this.parseConfigFileJson(
+          fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+        )
+      : MISSING_CONFIG_FILE_CONTENT
+    const { config, isMigrated } = this.toCurrentVersion(content)
 
-      return DEFAULT_INSTANCE_CONFIG
+    if (isMigrated) {
+      this.saveMigratedConfig(config)
+    } else {
+      this.warnAboutIgnoredEnvironmentVariables(config)
     }
 
-    return this.readConfigFile()
+    return config
+  }
+
+  /** Every read goes through it, so a version 1 file restored later still loads. */
+  private toCurrentVersion(content: unknown) {
+    if (!isVersion1Config(content)) {
+      return {
+        config: this.validateConfigFileContent(content),
+        isMigrated: false,
+      }
+    }
+
+    const environment = {
+      clientId: this.appConfig.GOOGLE_CLIENT_ID,
+      apiKey: this.appConfig.GOOGLE_API_KEY,
+    }
+
+    return {
+      config: this.validateConfigFileContent(
+        migrateToVersion2(content, environment),
+      ),
+      isMigrated: true,
+    }
+  }
+
+  /**
+   * A read-only config file keeps the API booting: it migrates the file again
+   * at each start until it can write it.
+   */
+  private saveMigratedConfig(config: InstanceConfig) {
+    try {
+      this.writeConfigFile(config)
+    } catch (error) {
+      this.logger.warn(
+        `Could not save the instance config migrated to version ${INSTANCE_CONFIG_VERSION} to ${this.appConfig.CONFIG_FILE}: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }. The API migrates it again at each start until it can write it.`,
+      )
+    }
+  }
+
+  private warnAboutIgnoredEnvironmentVariables(config: InstanceConfig) {
+    const ignoredVariables = [
+      {
+        name: "GOOGLE_CLIENT_ID",
+        value: this.appConfig.GOOGLE_CLIENT_ID,
+        configValue: config.googleClientId,
+      },
+      {
+        name: "GOOGLE_API_KEY",
+        value: this.appConfig.GOOGLE_API_KEY,
+        configValue: config.googleApiKey,
+      },
+    ].filter(
+      ({ value, configValue }) => value !== undefined && value !== configValue,
+    )
+
+    for (const { name } of ignoredVariables) {
+      this.logger.warn(
+        `${name} differs from the instance config and is no longer read: set it in the admin panel's Google tab.`,
+      )
+    }
   }
 
   private watchConfigFile() {
@@ -341,26 +438,27 @@ export class InstanceConfigService implements OnModuleDestroy {
   }
 
   private readConfigFile(): InstanceConfig {
-    return this.parseConfigFileContent(
-      fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
-    )
+    return this.toCurrentVersion(
+      this.parseConfigFileJson(
+        fs.readFileSync(this.appConfig.CONFIG_FILE, "utf8"),
+      ),
+    ).config
   }
 
-  private parseConfigFileContent(rawContent: string): InstanceConfig {
-    let parsedContent: unknown
-
+  /** JSON.parse's message quotes the input around the error, which may be a secret. */
+  private parseConfigFileJson(rawContent: string): unknown {
     try {
-      parsedContent = JSON.parse(rawContent)
-    } catch (error) {
+      return JSON.parse(rawContent)
+    } catch {
       throw new Error(
-        `Invalid JSON in instance config file at ${this.appConfig.CONFIG_FILE}: ${
-          error instanceof Error ? error.message : "Unknown error"
-        }`,
+        `Invalid JSON in instance config file at ${this.appConfig.CONFIG_FILE}`,
       )
     }
+  }
 
+  private validateConfigFileContent(content: unknown): InstanceConfig {
     try {
-      return parseInstanceConfig(parsedContent)
+      return parseInstanceConfig(content)
     } catch (error) {
       throw new Error(
         `Invalid instance config file at ${this.appConfig.CONFIG_FILE}: ${
@@ -378,7 +476,12 @@ export class InstanceConfigService implements OnModuleDestroy {
     )
     const serialized = JSON.stringify(config, null, 2)
 
-    fs.writeFileSync(temporaryFile, `${serialized}\n`, "utf8")
+    // `mode` only applies to a file the write creates, not to one a crash left.
+    fs.rmSync(temporaryFile, { force: true })
+    fs.writeFileSync(temporaryFile, `${serialized}\n`, {
+      encoding: "utf8",
+      mode: CONFIG_FILE_MODE,
+    })
     fs.renameSync(temporaryFile, this.appConfig.CONFIG_FILE)
   }
 }

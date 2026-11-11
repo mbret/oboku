@@ -4,6 +4,7 @@ import {
   consentShownSignal,
   hasGrantedPermissions,
   getTokenExpirationDate,
+  isPopupClosedError,
   requestGoogleAccessToken,
 } from "../../auth"
 import { Logger } from "../../../../debug/logger.shared"
@@ -11,15 +12,6 @@ import { useGoogleScripts } from "./scripts"
 import { CancelError } from "../../../../errors/errors.shared"
 import { useConfig } from "../../../../config/useConfig"
 import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
-
-const isPopupClosedError = (error: unknown) => {
-  return (
-    error &&
-    typeof error === "object" &&
-    "type" in error &&
-    error.type === "popup_closed"
-  )
-}
 
 export const useRequestToken = ({
   requestPopup,

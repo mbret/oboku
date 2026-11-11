@@ -6,7 +6,6 @@ import { SettingsList } from "../settings/SettingsList"
 import { useSetSignal, useSignalValue, virtualSignal } from "reactjrx"
 
 const isContentsDialogOpenedStateSignal = virtualSignal<boolean>({
-  key: "isContentsDialogOpenedState",
   default: false,
 })
 

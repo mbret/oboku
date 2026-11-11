@@ -11,7 +11,7 @@ import {
 } from "@oboku/shared"
 import { useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
-import { koreaderSyncConnectionQueryKey } from "./queryKeys"
+import { createKoreaderSyncConnectionQueryOptions } from "./useKoreaderSyncConnection"
 
 export const useConnectKoreaderSyncServer = (
   options?: Pick<
@@ -41,7 +41,10 @@ export const useConnectKoreaderSyncServer = (
     },
     onSuccess: function rememberKoreaderSyncConnection(data) {
       queryClient.setQueryData(
-        koreaderSyncConnectionQueryKey(activeProfileId),
+        createKoreaderSyncConnectionQueryOptions({
+          httpClientApi,
+          profileId: activeProfileId,
+        }).queryKey,
         data,
       )
     },

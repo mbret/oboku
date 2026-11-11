@@ -107,18 +107,19 @@ const isCachedFileMetadataReusable = (
 @Injectable()
 export class BooksMetadataService {
   private readonly logger = new Logger(BooksMetadataService.name)
-  private readonly catalogProviders: ReadonlyArray<MetadataProvider>
 
   constructor(
-    appConfigService: AppConfigService,
+    private readonly appConfigService: AppConfigService,
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
     private readonly pluginsService: PluginsService,
     private readonly instanceConfigService: InstanceConfigService,
-  ) {
-    this.catalogProviders = createCatalogProviders({
-      googleApiKey: appConfigService.GOOGLE_API_KEY,
-      googleBooksBaseUrl: appConfigService.GOOGLE_BOOK_API_URL,
+  ) {}
+
+  private createCatalogProviders(): ReadonlyArray<MetadataProvider> {
+    return createCatalogProviders({
+      googleApiKey: this.instanceConfigService.getConfig().value.googleApiKey,
+      googleBooksBaseUrl: this.appConfigService.GOOGLE_BOOK_API_URL,
     })
   }
 
@@ -218,7 +219,7 @@ export class BooksMetadataService {
         bookIsProtected,
       )
       const accountSettings = await getSettings(ctx.db)
-      const catalogProviders = this.catalogProviders.filter(({ id }) =>
+      const catalogProviders = this.createCatalogProviders().filter(({ id }) =>
         isCatalogEnabled(accountSettings?.catalogs, id),
       )
       const isGoogleBooksAsked = catalogProviders.some(

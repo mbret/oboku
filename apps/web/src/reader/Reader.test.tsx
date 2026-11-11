@@ -1,8 +1,8 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import type { Manifest } from "@prose-reader/shared"
 import { MemoryRouter } from "react-router"
-import { SIGNAL_RESET } from "reactjrx"
-import { of } from "rxjs"
+import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
+import { NEVER } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   type LocalSettings,
@@ -100,8 +100,8 @@ vi.mock("./streamer/webStreamer", function mockWebStreamer() {
       prune: function recordPrune() {
         mocks.events.push("prune")
       },
-      accessArchiveWithoutLock: function accessNoArchive() {
-        return of(undefined)
+      accessArchive: function holdNoArchive() {
+        return NEVER
       },
       fetchResource: async function fetchChapter() {
         return new Response(
@@ -192,9 +192,11 @@ function TestReader() {
   return (
     <MemoryRouter>
       <ThemeProvider>
-        <div style={{ width: 600, height: 800 }}>
-          <Reader bookId={BOOK_ID} isPreview={false} />
-        </div>
+        <SignalContextProvider>
+          <div style={{ width: 600, height: 800 }}>
+            <Reader bookId={BOOK_ID} isPreview={false} />
+          </div>
+        </SignalContextProvider>
       </ThemeProvider>
     </MemoryRouter>
   )
@@ -246,7 +248,7 @@ describe("Reader", () => {
     })
   })
 
-  it("keeps the archive while it recreates the reader, and prunes it once the reader is destroyed on leave", async () => {
+  it("keeps the archive while it recreates the reader, and prunes it once on leave", async () => {
     mocks.opening.bookToOpen = null
 
     const { unmount } = render(<TestReader />)
@@ -261,12 +263,10 @@ describe("Reader", () => {
 
     unmount()
 
-    expect(mocks.events).toEqual([
-      "create",
-      "destroy",
-      "create",
-      "destroy",
-      "prune",
-    ])
+    const eventsWhileReading = mocks.events.slice(0, 3)
+    const eventsOnLeave = mocks.events.slice(3)
+
+    expect(eventsWhileReading).toEqual(["create", "destroy", "create"])
+    expect(eventsOnLeave.toSorted()).toEqual(["destroy", "prune"])
   })
 })

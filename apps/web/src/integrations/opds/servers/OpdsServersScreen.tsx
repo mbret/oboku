@@ -41,8 +41,8 @@ const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
 
 const SETUP_STEPS = [
   "In KOReader's file browser, open the search menu (the magnifying glass), then OPDS catalog.",
-  "Tap + at the top left, name the catalog, then enter the catalog URL, username and password of a server above.",
-  "Other reading apps that support OPDS catalogs ask for the same three values.",
+  "Tap + at the top left, name the catalog, then enter the OPDS 1.2 catalog URL, username and password of a server above.",
+  "Other reading apps ask for the same three values. Give the OPDS 2.0 catalog URL to apps that read OPDS 2.0.",
 ]
 
 function OpdsServerSection({
@@ -53,6 +53,10 @@ function OpdsServerSection({
   createdPassword: string | undefined
 }) {
   const { data: config } = useConfig()
+  const opds1CatalogUrl = config ? `${config.API_OPDS_URL}/${server.slug}` : ""
+  const opds2CatalogUrl = config
+    ? `${config.API_OPDS_URL}/${server.slug}/v2`
+    : ""
   const {
     mutate: regeneratePassword,
     data: regenerationResult,
@@ -95,8 +99,15 @@ function OpdsServerSection({
     <FormControl component="fieldset" fullWidth aria-label={server.name}>
       <PageSection title={server.name} variant="stack">
         <TextField
-          label="Catalog URL"
-          value={config ? `${config.API_OPDS_URL}/${server.slug}` : ""}
+          label="OPDS 1.2 catalog URL"
+          value={opds1CatalogUrl}
+          copyable
+          fullWidth
+          slotProps={{ input: { readOnly: true } }}
+        />
+        <TextField
+          label="OPDS 2.0 catalog URL"
+          value={opds2CatalogUrl}
           copyable
           fullWidth
           slotProps={{ input: { readOnly: true } }}
@@ -154,11 +165,17 @@ function OpdsServerSection({
 export function OpdsServersScreen() {
   const serversQuery = useOpdsServers()
   const { data: servers, isLoading, isError } = serversQuery
-  const {
-    mutate: createServer,
-    data: creationResult,
-    isPending: isCreatingServer,
-  } = useCreateOpdsServer()
+  const [createdPasswords, setCreatedPasswords] = useState<
+    ReadonlyMap<OpdsServerDto["id"], string>
+  >(new Map())
+  const { mutate: createServer, isPending: isCreatingServer } =
+    useCreateOpdsServer({
+      onSuccess: function keepCreatedPassword({ server, password }) {
+        setCreatedPasswords((passwords) =>
+          new Map(passwords).set(server.id, password),
+        )
+      },
+    })
   const serversNewestFirst = servers?.toSorted((a, b) => b.id - a.id)
   const isUnavailable = isQueryUnavailable(serversQuery)
   const hasNoServer = servers?.length === 0
@@ -170,8 +187,8 @@ export function OpdsServersScreen() {
         <Stack spacing={2} sx={{ pt: 2 }}>
           <Typography>
             An OPDS server turns your library into a catalog that KOReader and
-            the other reading apps that support OPDS can browse. Each server has
-            its own address and password.
+            other reading apps can browse, in OPDS 1.2 or OPDS 2.0. Each server
+            has its own address and password.
           </Typography>
           <Alert severity="info">
             Catalogs are empty for now: oboku cannot serve your books through
@@ -198,11 +215,7 @@ export function OpdsServersScreen() {
           <OpdsServerSection
             key={server.id}
             server={server}
-            createdPassword={
-              creationResult?.server.id === server.id
-                ? creationResult.password
-                : undefined
-            }
+            createdPassword={createdPasswords.get(server.id)}
           />
         ))}
         <PageSection title="Set up a reading app">
