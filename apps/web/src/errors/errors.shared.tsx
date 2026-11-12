@@ -1,4 +1,5 @@
 import {
+  type ObokuErrorCode,
   type ObokuErrorResponseDto,
   zObokuErrorResponseDto,
 } from "@oboku/shared"
@@ -62,3 +63,7 @@ export const ERROR_NO_LINK_MESSAGE =
 export const isApiError = (error: unknown): error is HttpApiError =>
   error instanceof HttpClientError &&
   zObokuErrorResponseDto.safeParse(error.response?.data).success
+
+/** Whether the API refused the request with `code` as its first error. */
+export const hasApiErrorCode = (error: unknown, code: ObokuErrorCode) =>
+  isApiError(error) && error.response.data.errors[0]?.code === code

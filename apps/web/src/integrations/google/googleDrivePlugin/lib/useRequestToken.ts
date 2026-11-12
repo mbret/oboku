@@ -18,8 +18,9 @@ import { getActiveProfileId } from "../../../../profiles/active/activeProfileId"
 import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
 
 /**
- * Gets a Drive access token, in this order: the browser's current one, one
- * minted from the user's Google connection, then Google's sign-in popup.
+ * Gets a Drive access token, in this order: the token in use while it stays
+ * valid, one minted from the user's Google connection, then Google's sign-in
+ * popup.
  */
 export const useRequestToken = ({
   requestPopup,
@@ -53,7 +54,7 @@ export const useRequestToken = ({
 
         return isScopeGranted ? accessToken : null
       }),
-      tap(function useTokenForDrive(accessToken) {
+      tap(function rememberTokenForDrive(accessToken) {
         if (!accessToken) return
 
         // Google's sign-in sets its own tokens on gapi; a minted one needs setting.
@@ -71,16 +72,16 @@ export const useRequestToken = ({
     scope: string[]
   }) =>
     from(requestPopup()).pipe(
-      tap((confirmed) => {
+      tap(function cancelUnlessConfirmed(confirmed) {
         if (!confirmed) throw new CancelError()
       }),
-      mergeMap(() => {
+      mergeMap(function openGoogleSignIn() {
         consentShownSignal.update(true)
 
         return from(
           requestGoogleAccessToken(gsi, scope, config?.GOOGLE_CLIENT_ID ?? ""),
         ).pipe(
-          mergeMap((accessToken) => {
+          mergeMap(function keepGrantedToken(accessToken) {
             consentShownSignal.update(false)
 
             if (accessToken.error) {
@@ -108,7 +109,7 @@ export const useRequestToken = ({
 
   const requestToken = ({ scope }: { scope: string[] }) =>
     getGoogleScripts().pipe(
-      mergeMap(({ gsi, gapi: gapiInstance }) => {
+      mergeMap(function reuseOrRequestToken({ gsi, gapi: gapiInstance }) {
         const accessToken = googleAccessTokenSignal.getValue()
         const minimumValidityMs = config?.MINIMUM_TOKEN_VALIDITY_MS
 
@@ -141,7 +142,7 @@ export const useRequestToken = ({
           }),
         )
       }),
-      catchError((e) => {
+      catchError(function cancelOnClosedPopup(e) {
         consentShownSignal.update(false)
 
         if (isPopupClosedError(e)) {

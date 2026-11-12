@@ -17,9 +17,10 @@ export class GoogleConnectionDto {
 
 /** An access token minted from the connection's stored refresh token. */
 export class GoogleAccessTokenResponseDto {
-  /** Reaches the connected account's Drive within `scopes`, until `expiresAt`. */
+  /** Reaches the connected account's Drive within `scopes`, for `expiresIn` seconds. */
   accessToken!: string
-  expiresAt!: string
+  /** Seconds the token stays valid from this answer, like OAuth's `expires_in`. */
+  expiresIn!: number
   scopes!: string[]
 }
 

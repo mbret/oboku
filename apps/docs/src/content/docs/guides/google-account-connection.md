@@ -12,6 +12,8 @@ Without the connection, oboku opens Google's sign-in window whenever it needs yo
 
 Books added before August 2025 are the exception. oboku found them by browsing your Drive with a wider permission it no longer asks for, so its server cannot reach them yet. The first time you open one of them while connected, Google's file picker shows the book: select it to give oboku access to it. oboku then reaches it without asking again.
 
+oboku reaches every Drive book with the connected account. Books you added with another Google account cannot be reached while you are connected: disconnect to reach them through Google's sign-in window again.
+
 If oboku's server loses its access, because you removed oboku from your Google Account or Google expired its access, oboku tells you, opens Google's sign-in window as before, and shows your account as disconnected. Connect again to stop the window from opening.
 
 ## Connect

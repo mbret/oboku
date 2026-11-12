@@ -3,6 +3,7 @@ import {
   ERROR_LINK_INVALID_MESSAGE,
   ERROR_NO_LINK_MESSAGE,
   OfflineError,
+  hasApiErrorCode,
   isApiError,
 } from "./errors.shared"
 import { HttpClientError } from "../http/httpClient.shared"
@@ -74,7 +75,7 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND:
       return "No account is connected."
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST:
-      return "oboku's server lost its access to your account: it was removed from your account, or it expired. Connect your account again."
+      return "oboku's server lost its access to your account: you removed oboku from your account, or the access expired. Connect your account again."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:
@@ -95,19 +96,11 @@ export const errorToMessage = (error: unknown) => {
     return ERROR_RESOURCE_NOT_REACHABLE_MESSAGE
   }
 
-  if (
-    isApiError(error) &&
-    error.response?.data.errors[0]?.code ===
-      ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL
-  ) {
+  if (hasApiErrorCode(error, ObokuErrorCode.ERROR_SIGNIN_NO_EMAIL)) {
     return "Please make your email address accessible with this provider"
   }
 
-  if (
-    isApiError(error) &&
-    error.response?.data.errors[0]?.code ===
-      ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED
-  ) {
+  if (hasApiErrorCode(error, ObokuErrorCode.ERROR_SIGNIN_EMAIL_NO_VERIFIED)) {
     return "Your local account needs email verification before password sign-in. Use the magic link below to verify this account once."
   }
 

@@ -18,7 +18,7 @@ import {
   setActiveProfileId,
 } from "../../../../profiles/active/activeProfileId"
 import { clearGoogleAccessToken, googleAccessTokenSignal } from "../../auth"
-import { createGoogleConnectionQueryOptions } from "../../connection/useGoogleConnection"
+import { createGoogleConnectionQueryOptions } from "../../connection/googleConnectionQueryOptions"
 import { useRequestToken } from "./useRequestToken"
 
 const { useConfig, setGapiToken, initTokenClient } = vi.hoisted(
@@ -55,7 +55,7 @@ vi.mock("./scripts", async function mockGoogleScripts() {
 
 const PROFILE_ID = "profile"
 const DRIVE_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE]
-const ONE_HOUR_MS = 60 * 60 * 1000
+const MINIMUM_TOKEN_VALIDITY_MS = 60_000
 
 const BROWSER_TOKEN_RESPONSE: google.accounts.oauth2.TokenResponse = {
   access_token: "browser-token",
@@ -70,11 +70,13 @@ const BROWSER_TOKEN_RESPONSE: google.accounts.oauth2.TokenResponse = {
   error_uri: "",
 }
 
-const createMintedToken = (
+const createMintedToken = ({
+  accessToken = "minted-token",
+  expiresIn = 3599,
   scopes = [GOOGLE_DRIVE_FILE_SCOPE, "openid"],
-): GoogleAccessTokenResponseDto => ({
-  accessToken: "minted-token",
-  expiresAt: new Date(Date.now() + ONE_HOUR_MS).toISOString(),
+}: Partial<GoogleAccessTokenResponseDto> = {}): GoogleAccessTokenResponseDto => ({
+  accessToken,
+  expiresIn,
   scopes,
 })
 
@@ -131,7 +133,7 @@ describe("useRequestToken", () => {
     useConfig.mockReturnValue({
       data: {
         FEATURE_GOOGLE_CONNECTION_ENABLED: true,
-        MINIMUM_TOKEN_VALIDITY_MS: 60_000,
+        MINIMUM_TOKEN_VALIDITY_MS,
         GOOGLE_CLIENT_ID: "123-oboku.apps.googleusercontent.com",
       },
     })
@@ -189,7 +191,7 @@ describe("useRequestToken", () => {
     expect(initTokenClient).not.toHaveBeenCalled()
   })
 
-  it("keeps using the minted token until it expires", async () => {
+  it("reuses the minted token while it stays valid", async () => {
     const { requestToken, post } = renderRequestToken({
       mint: async () => ({ data: createMintedToken() }),
     })
@@ -201,12 +203,42 @@ describe("useRequestToken", () => {
     expect(post).toHaveBeenCalledTimes(1)
   })
 
+  it("mints another token once the minted one is about to expire", async () => {
+    const { requestToken, post } = renderRequestToken({
+      mint: async () => ({ data: createMintedToken() }),
+    })
+    const expiringSoonSeconds = MINIMUM_TOKEN_VALIDITY_MS / 1000 - 1
+    post.mockResolvedValueOnce({
+      data: createMintedToken({
+        accessToken: "expiring-token",
+        expiresIn: expiringSoonSeconds,
+      }),
+    })
+
+    await requestToken()
+    const secondToken = await requestToken()
+
+    expect(secondToken.access_token).toBe("minted-token")
+    expect(post).toHaveBeenCalledTimes(2)
+  })
+
   it("opens Google's sign-in, without a message, when the user has not connected", async () => {
-    const { requestToken, requestPopup } = renderRequestToken({
-      mint: () =>
-        Promise.reject(
-          createApiError(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND),
-        ),
+    const { requestToken, requestPopup, queryClient, client } =
+      renderRequestToken({
+        mint: () =>
+          Promise.reject(
+            createApiError(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND),
+          ),
+      })
+    const connectionQueryKey = createGoogleConnectionQueryOptions({
+      httpClientApi: client,
+      profileId: PROFILE_ID,
+    }).queryKey
+    queryClient.setQueryData(connectionQueryKey, {
+      connection: {
+        accountName: "reader@gmail.com",
+        connectedAt: "2026-11-11T08:00:00.000Z",
+      },
     })
 
     const token = await requestToken()
@@ -214,6 +246,9 @@ describe("useRequestToken", () => {
     expect(token.access_token).toBe("browser-token")
     expect(requestPopup).toHaveBeenCalled()
     expect(showToast).not.toHaveBeenCalled()
+    expect(queryClient.getQueryData(connectionQueryKey)).toEqual({
+      connection: null,
+    })
   })
 
   it("tells the user a lost connection is gone, then opens Google's sign-in", async () => {
@@ -256,7 +291,7 @@ describe("useRequestToken", () => {
 
   it("opens Google's sign-in when the minted token lacks a requested scope", async () => {
     const { requestToken, requestPopup } = renderRequestToken({
-      mint: async () => ({ data: createMintedToken(["openid"]) }),
+      mint: async () => ({ data: createMintedToken({ scopes: ["openid"] }) }),
     })
 
     const token = await requestToken()
@@ -270,7 +305,7 @@ describe("useRequestToken", () => {
     useConfig.mockReturnValue({
       data: {
         FEATURE_GOOGLE_CONNECTION_ENABLED: false,
-        MINIMUM_TOKEN_VALIDITY_MS: 60_000,
+        MINIMUM_TOKEN_VALIDITY_MS,
         GOOGLE_CLIENT_ID: "123-oboku.apps.googleusercontent.com",
       },
     })
@@ -301,5 +336,26 @@ describe("useRequestToken", () => {
     await expect(token).rejects.toBeInstanceOf(CancelError)
     expect(googleAccessTokenSignal.getValue()).toBeUndefined()
     expect(setGapiToken).not.toHaveBeenCalled()
+  })
+
+  it("keeps quiet about the previous profile's lost connection after a profile switch", async () => {
+    const mintResponse = Promise.withResolvers<unknown>()
+    const { requestToken, post, requestPopup } = renderRequestToken({
+      mint: () => mintResponse.promise,
+    })
+
+    const token = requestToken()
+
+    await waitFor(() => {
+      expect(post).toHaveBeenCalled()
+    })
+    setActiveProfileId("other-profile")
+    mintResponse.reject(
+      createApiError(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
+    )
+
+    await expect(token).rejects.toBeInstanceOf(CancelError)
+    expect(showToast).not.toHaveBeenCalled()
+    expect(requestPopup).not.toHaveBeenCalled()
   })
 })
