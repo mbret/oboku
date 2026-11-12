@@ -15,6 +15,14 @@ export class GoogleConnectionDto {
   connectedAt!: string
 }
 
+/** An access token minted from the connection's stored refresh token. */
+export class GoogleAccessTokenResponseDto {
+  /** Reaches the connected account's Drive within `scopes`, until `expiresAt`. */
+  accessToken!: string
+  expiresAt!: string
+  scopes!: string[]
+}
+
 export class GoogleConnectionResponseDto {
   /** `null` while no Google account is connected. */
   connection!: GoogleConnectionDto | null

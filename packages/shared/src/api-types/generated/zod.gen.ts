@@ -54,7 +54,9 @@ export const zObokuErrorDto = z.object({
         '11000',
         '11001',
         '11002',
-        '11003'
+        '11003',
+        '11004',
+        '11005'
     ])
 });
 
@@ -507,6 +509,12 @@ export const zConnectGoogleAccountDto = z.object({
     code: z.string().min(1)
 });
 
+export const zGoogleAccessTokenResponseDto = z.object({
+    accessToken: z.string(),
+    expiresAt: z.string(),
+    scopes: z.array(z.string())
+});
+
 export const zAppGetHelloResponse = z.string();
 
 export const zWebGetConfigResponse = zWebConfigResponseDto;
@@ -738,3 +746,5 @@ export const zGoogleConnectionGetResponse = zGoogleConnectionResponseDto;
 export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
 
 export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;
+
+export const zGoogleConnectionMintAccessTokenResponse = zGoogleAccessTokenResponseDto;
