@@ -13,14 +13,11 @@ import { useConfig } from "../../../config/useConfig"
 import { useHttpClientApi } from "../../../http"
 import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
 import { requestGoogleAuthorizationCode } from "../auth"
-import { gsiSignal } from "../gsi"
+import { getGsiOrThrow } from "../gsi"
 import { createGoogleConnectionQueryOptions } from "./useGoogleConnection"
 
 /** Drive's picked files, and the email that tells the user which account is connected. */
 const GOOGLE_CONNECTION_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE, "openid", "email"]
-
-const GSI_NOT_LOADED_MESSAGE =
-  "Google's sign-in script has not loaded. Make sure nothing blocks accounts.google.com, then try again."
 
 type ConnectGoogleAccountRequest = {
   /** The profile that connects, whose session the request must carry. */
@@ -46,12 +43,8 @@ export const useConnectGoogleAccount = (
     mutationFn: async function connectGoogleAccount({
       profileId,
     }: ConnectGoogleAccountRequest) {
-      const { gsi } = gsiSignal.getValue()
-
-      if (!gsi) throw new Error(GSI_NOT_LOADED_MESSAGE)
-
       const code = await requestGoogleAuthorizationCode({
-        gsi,
+        gsi: getGsiOrThrow(),
         scopes: GOOGLE_CONNECTION_SCOPES,
         clientId: config?.GOOGLE_CLIENT_ID ?? "",
       })

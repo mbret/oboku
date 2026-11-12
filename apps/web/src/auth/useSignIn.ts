@@ -4,6 +4,7 @@ import { useReCreateDb } from "../rxdb"
 import { useHttpClientApi } from "../http"
 import { useMutation$ } from "reactjrx"
 import { signInWithGooglePrompt } from "../integrations/google/auth"
+import { getGsiOrThrow } from "../integrations/google/gsi"
 import { useConfig } from "../config/useConfig"
 import { completeAuthentication } from "./completeAuthentication"
 import { useForgetAccountSessions } from "./useForgetAccountSessions"
@@ -51,7 +52,12 @@ export const useSignIn = (
                   proofKey,
                 ),
               )
-            : signInWithGooglePrompt(config?.GOOGLE_CLIENT_ID ?? "").pipe(
+            : from(
+                signInWithGooglePrompt({
+                  gsi: getGsiOrThrow(),
+                  clientId: config?.GOOGLE_CLIENT_ID ?? "",
+                }),
+              ).pipe(
                 switchMap((authResponse) =>
                   from(
                     httpClientApi.signInWithGoogle(

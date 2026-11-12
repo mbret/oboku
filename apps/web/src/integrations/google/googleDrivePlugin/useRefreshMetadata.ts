@@ -32,7 +32,7 @@ export const useRefreshMetadata: ObokuPlugin<"DRIVE">[`useRefreshMetadata`] = ({
 
       const token = await firstValueFrom(
         combineLatest([token$, getGoogleScripts()]).pipe(
-          switchMap(([token, [, gapi]]) =>
+          switchMap(([token, { gapi }]) =>
             requestFilesAccess(gapi, [fileId]).pipe(map(() => token)),
           ),
         ),

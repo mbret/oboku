@@ -62,7 +62,7 @@ export const DataSourceForm = ({
   const { mutate: requestFilesAccessMutation } = useMutation$({
     mutationFn: () =>
       getGoogleScripts().pipe(
-        switchMap(([, gapi]) => requestFilesAccess(gapi, items)),
+        switchMap(({ gapi }) => requestFilesAccess(gapi, items)),
       ),
   })
   const createQuery = useCreateDriveFileQuery()

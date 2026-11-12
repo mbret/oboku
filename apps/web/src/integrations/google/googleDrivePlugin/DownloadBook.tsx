@@ -55,7 +55,7 @@ export const DownloadBook = memo(function DownloadBook({
       )
 
       return getGoogleScripts().pipe(
-        switchMap(([, gapi]) =>
+        switchMap(({ gapi }) =>
           requestFilesAccess(gapi, [fileId]).pipe(
             switchMap(() =>
               getDriveFile(gapi, {
