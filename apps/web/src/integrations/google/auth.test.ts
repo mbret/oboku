@@ -146,7 +146,7 @@ describe("requestGoogleAuthorizationCode", () => {
 })
 
 describe("signInWithGooglePrompt", () => {
-  it("prompts once when Google's script loads again before sign-in completes", async () => {
+  it("prompts once when Google's script loads again after the user picks an account", async () => {
     const credential: google.accounts.id.CredentialResponse = {
       credential: "id-token",
       select_by: "user",
@@ -158,7 +158,9 @@ describe("signInWithGooglePrompt", () => {
 
     const subscription =
       signInWithGooglePrompt(CLIENT_ID).subscribe(onCredential)
-    await vi.waitFor(() => expect(onCredential).toHaveBeenCalledOnce())
+    await vi.waitFor(function expectCredentialReceived() {
+      expect(onCredential).toHaveBeenCalledOnce()
+    })
     gsi$.next(gsi$.getValue())
     subscription.unsubscribe()
 
