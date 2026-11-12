@@ -1,8 +1,8 @@
 import type { BookDocType, CollectionDocType } from "@oboku/shared"
 import { useMutation$ } from "reactjrx"
-import { first, from, map, mergeMap, of } from "rxjs"
+import { from, map, mergeMap, of } from "rxjs"
 import type { DeepReadonlyObject } from "rxdb"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 
 export const useRepair = () => {
   return useMutation$({
@@ -28,7 +28,7 @@ export const useRepair = () => {
             items: string[]
           },
     ) => {
-      const db$ = latestDatabase$.pipe(first())
+      const db$ = getLatestDatabase()
 
       if (action.type === "collectionDanglingBooks") {
         const yes = window.confirm(
