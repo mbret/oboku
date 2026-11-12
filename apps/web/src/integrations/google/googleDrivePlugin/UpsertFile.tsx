@@ -53,7 +53,7 @@ export const UpsertFile: UpsertFileComponent<"DRIVE"> = memo(
         const fileId = link.data.fileId
 
         return getGoogleScripts().pipe(
-          switchMap(([, gapiInstance]) =>
+          switchMap(({ gapi: gapiInstance }) =>
             requestFilesAccess(gapiInstance, [fileId]).pipe(
               switchMap(() =>
                 requestToken({ scope: GOOGLE_DRIVE_FILE_SCOPES }),

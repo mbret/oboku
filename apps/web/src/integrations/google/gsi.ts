@@ -22,16 +22,6 @@ export const getGsiOrThrow = () => {
   return gsi
 }
 
-export const gsiOrThrow$ = gsiSignal.pipe(
-  map(({ gsi }) => {
-    if (!gsi) {
-      throw new Error("gsi not available")
-    }
-
-    return gsi
-  }),
-)
-
 export const useLoadGsi = () => {
   return useSwitchMutation$({
     scope: {

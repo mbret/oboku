@@ -26,7 +26,7 @@ export const useDrivePicker = ({
     multiSelect?: boolean
   }) =>
     getGoogleScripts().pipe(
-      switchMap(([gsi]) => {
+      switchMap(({ gsi }) => {
         return requestToken({
           scope,
         }).pipe(

@@ -1,7 +1,7 @@
-import { catchError, combineLatest, first } from "rxjs"
+import { catchError, defer, of } from "rxjs"
 import type { UseMutation$Options } from "reactjrx"
-import { gsiOrThrow$ } from "../../gsi"
-import { gapiOrThrow$, useLoadGapi } from "./gapi"
+import { getGsiOrThrow } from "../../gsi"
+import { getGapiOrThrow, useLoadGapi } from "./gapi"
 import { showDialog } from "../../../../common/dialogs/createDialog"
 import { useCallback } from "react"
 
@@ -12,8 +12,10 @@ export const useGoogleScripts = (
 
   const getGoogleScripts = useCallback(
     () =>
-      combineLatest([gsiOrThrow$, gapiOrThrow$]).pipe(
-        catchError((error) => {
+      defer(function readLoadedScripts() {
+        return of({ gsi: getGsiOrThrow(), gapi: getGapiOrThrow() })
+      }).pipe(
+        catchError(function reportScriptsNotLoaded(error) {
           showDialog({
             title: "Script error",
             message:
@@ -24,7 +26,6 @@ export const useGoogleScripts = (
 
           throw error
         }),
-        first(),
       ),
     [loadGapi],
   )

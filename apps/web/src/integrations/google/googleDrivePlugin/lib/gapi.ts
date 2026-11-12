@@ -29,17 +29,13 @@ export const gapiSignal = signal<
   },
 })
 
-export const gapi$ = gapiSignal.pipe(map(({ gapi }) => gapi))
+export const getGapiOrThrow = () => {
+  const { gapi } = gapiSignal.getValue()
 
-export const gapiOrThrow$ = gapi$.pipe(
-  map((gapi) => {
-    if (!gapi) {
-      throw new GapiNotAvailableError()
-    }
+  if (!gapi) throw new GapiNotAvailableError()
 
-    return gapi
-  }),
-)
+  return gapi
+}
 
 export const useGapi = () => {
   return useSignalValue(gapiSignal).gapi

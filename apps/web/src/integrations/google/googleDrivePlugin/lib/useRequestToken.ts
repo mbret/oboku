@@ -23,7 +23,7 @@ export const useRequestToken = ({
 
   const requestToken = ({ scope }: { scope: string[] }) =>
     getGoogleScripts().pipe(
-      mergeMap(([gsi]) => {
+      mergeMap(({ gsi }) => {
         const firstScope = scope[0]
         const accessToken = googleAccessTokenSignal.getValue()
         const minimumValidityMs = config?.MINIMUM_TOKEN_VALIDITY_MS
