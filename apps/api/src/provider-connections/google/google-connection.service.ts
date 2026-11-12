@@ -23,6 +23,16 @@ const POPUP_REDIRECT_URI = "postmessage"
 /** What Google answers for a code or refresh token it does not honour (RFC 6749 §5.2). */
 const INVALID_GRANT_ERROR = "invalid_grant"
 
+/**
+ * What Google answers for a refresh token it will never honour again: revoked
+ * or expired (`invalid_grant`), or issued to another client id than the one
+ * the admin set since (`unauthorized_client`). RFC 6749 §5.2.
+ */
+const REFRESH_TOKEN_REFUSED_ERRORS = [
+  INVALID_GRANT_ERROR,
+  "unauthorized_client",
+]
+
 type GoogleOAuthClientOptions = { clientId: string; clientSecret: string }
 
 /** The OAuth client a code is exchanged with, `null` until the admin sets its id and secret. */
@@ -60,9 +70,15 @@ const toOAuthError = (error: unknown) => {
 }
 
 /**
- * Exchanges the code for Google's tokens. A failure the user cannot fix is
- * rethrown without Google's error, whose request config carries the code.
+ * Google's failure without gaxios's error, whose request config carries the
+ * code or the refresh token the request sent.
  */
+const createGoogleFailure = (
+  operation: string,
+  oauthError: string | undefined,
+) => new Error(`${operation}: ${oauthError ?? "no OAuth error in the answer"}`)
+
+/** Exchanges the code for Google's tokens. */
 const exchangeCode = async (client: OAuth2Client, code: string) => {
   try {
     const { tokens } = await client.getToken(code)
@@ -78,18 +94,14 @@ const exchangeCode = async (client: OAuth2Client, code: string) => {
       )
     }
 
-    throw new Error(
-      `The code exchange with Google failed: ${oauthError ?? "no OAuth error in the answer"}`,
+    throw createGoogleFailure(
+      "The code exchange with Google failed",
+      oauthError,
     )
   }
 }
 
-/**
- * `null` once Google no longer honours the refresh token: the user removed
- * oboku's access, or the token expired unused. A failure the user cannot fix is
- * rethrown without Google's error, whose request config carries the refresh
- * token.
- */
+/** `null` once Google will never honour the refresh token again. */
 const refreshAccessToken = async ({
   clientOptions,
   refreshToken,
@@ -107,12 +119,15 @@ const refreshAccessToken = async ({
     return credentials
   } catch (error) {
     const oauthError = toOAuthError(error)
-    const isRefreshTokenRefused = oauthError === INVALID_GRANT_ERROR
+    const isRefreshTokenRefused =
+      oauthError !== undefined &&
+      REFRESH_TOKEN_REFUSED_ERRORS.includes(oauthError)
 
     if (isRefreshTokenRefused) return null
 
-    throw new Error(
-      `Google refused to refresh the access token: ${oauthError ?? "no OAuth error in the answer"}`,
+    throw createGoogleFailure(
+      "Google refused to refresh the access token",
+      oauthError,
     )
   }
 }
@@ -258,29 +273,35 @@ export class GoogleConnectionService {
       userId,
       provider: GOOGLE_PROVIDER,
     })
-    const tokens =
+    const tokensOfLiveConnection =
       credentials &&
       (await refreshAccessToken({
         clientOptions,
         refreshToken: credentials.refreshToken,
       }))
 
-    if (!tokens) {
+    if (!tokensOfLiveConnection) {
       await this.disconnect(userId)
 
       throw createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST)
     }
 
-    if (!tokens.access_token || !tokens.expiry_date) {
+    const {
+      access_token: accessToken,
+      expiry_date: expiryDate,
+      scope,
+    } = tokensOfLiveConnection
+
+    if (!accessToken || !expiryDate) {
       throw new Error(
         "Google's refresh answer lacks the access token or its expiry",
       )
     }
 
     return {
-      accessToken: tokens.access_token,
-      expiresAt: new Date(tokens.expiry_date).toISOString(),
-      scopes: tokens.scope?.split(" ") ?? connection.scopes,
+      accessToken,
+      expiresAt: new Date(expiryDate).toISOString(),
+      scopes: scope?.split(" ") ?? connection.scopes,
     }
   }
 

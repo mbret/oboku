@@ -98,24 +98,24 @@ const grantTokens = (tokens: Record<string, unknown>) => {
 const FRESH_ACCESS_TOKEN = "ya29.fresh-access-token"
 const FRESH_TOKEN_EXPIRY = Date.parse("2026-11-12T15:00:00.000Z")
 
-/** What gaxios rejects with when Google's token endpoint refuses a refresh. */
-const createRefreshRefusal = (oauthError: string, status: number) =>
-  Object.assign(new Error(oauthError), {
-    config: {
-      data: new URLSearchParams({
-        refresh_token: REFRESH_TOKEN,
-        client_secret: CLIENT_SECRET,
-      }),
-    },
-    response: { status, data: { error: oauthError } },
-  })
+const CODE_EXCHANGE_FORM = { code: CODE, client_secret: CLIENT_SECRET }
+const REFRESH_FORM = {
+  refresh_token: REFRESH_TOKEN,
+  client_secret: CLIENT_SECRET,
+}
 
-/** What gaxios rejects with when Google's token endpoint refuses a request. */
-const createGoogleRefusal = (oauthError: string, status: number) =>
+/** What gaxios rejects with when Google's token endpoint refuses the form it sent. */
+const createGoogleRefusal = ({
+  oauthError,
+  status,
+  form,
+}: {
+  oauthError: string
+  status: number
+  form: Record<string, string>
+}) =>
   Object.assign(new Error(oauthError), {
-    config: {
-      data: new URLSearchParams({ code: CODE, client_secret: CLIENT_SECRET }),
-    },
+    config: { data: new URLSearchParams(form) },
     response: { status, data: { error: oauthError } },
   })
 
@@ -290,7 +290,13 @@ describe("GoogleConnectionController", () => {
   })
 
   it("refuses a code Google does not accept", async () => {
-    getToken.mockRejectedValue(createGoogleRefusal("invalid_grant", 400))
+    getToken.mockRejectedValue(
+      createGoogleRefusal({
+        oauthError: "invalid_grant",
+        status: 400,
+        form: CODE_EXCHANGE_FORM,
+      }),
+    )
 
     const response = await connect({ code: CODE })
 
@@ -302,7 +308,13 @@ describe("GoogleConnectionController", () => {
   })
 
   it("keeps the code and the client secret out of the error of a failed exchange", async () => {
-    getToken.mockRejectedValue(createGoogleRefusal("invalid_client", 401))
+    getToken.mockRejectedValue(
+      createGoogleRefusal({
+        oauthError: "invalid_client",
+        status: 401,
+        form: CODE_EXCHANGE_FORM,
+      }),
+    )
 
     const error = await googleConnectionService
       .connect({ userId: READER_ID, code: CODE })
@@ -482,26 +494,78 @@ describe("GoogleConnectionController", () => {
 
       const response = await mintAccessToken()
 
+      expect(response.status).toBe(400)
       expect(response.body.errors).toEqual([
         { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED },
       ])
       expect(refreshAccessToken).not.toHaveBeenCalled()
+      expect(rows.size).toBe(1)
     })
 
-    it("drops a connection whose refresh token Google refuses", async () => {
+    it("answers the scopes Google gives the access token, else the granted ones", async () => {
       await connect({ code: CODE })
-      refreshAccessToken.mockRejectedValue(
-        createRefreshRefusal("invalid_grant", 400),
-      )
+      refreshAccessToken.mockResolvedValueOnce({
+        credentials: {
+          access_token: FRESH_ACCESS_TOKEN,
+          expiry_date: FRESH_TOKEN_EXPIRY,
+          scope: DRIVE_FILE_SCOPE,
+        },
+        res: null,
+      })
+      refreshAccessToken.mockResolvedValueOnce({
+        credentials: {
+          access_token: FRESH_ACCESS_TOKEN,
+          expiry_date: FRESH_TOKEN_EXPIRY,
+        },
+        res: null,
+      })
+
+      const narrowed = await mintAccessToken()
+      const unstated = await mintAccessToken()
+
+      expect(narrowed.body.scopes).toEqual([DRIVE_FILE_SCOPE])
+      expect(unstated.body.scopes).toEqual(GRANTED_SCOPE.split(" "))
+    })
+
+    it("mints only from the signed-in user's own connection", async () => {
+      await connect({ code: CODE })
+
+      const response = await mintAccessToken(OTHER_READER_SESSION)
+
+      expect(response.body.errors).toEqual([
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND },
+      ])
+      expect(refreshAccessToken).not.toHaveBeenCalled()
+      expect(rows.size).toBe(1)
+    })
+
+    it("keeps the connection when Google cannot be reached", async () => {
+      await connect({ code: CODE })
+      refreshAccessToken.mockRejectedValue(new Error("socket hang up"))
 
       const response = await mintAccessToken()
 
-      expect(response.status).toBe(400)
-      expect(response.body.errors).toEqual([
-        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST },
-      ])
-      expect(rows.size).toBe(0)
+      expect(response.status).toBe(500)
+      expect(rows.size).toBe(1)
     })
+
+    it.each(["invalid_grant", "unauthorized_client"])(
+      "drops a connection whose refresh token Google refuses with %s",
+      async (oauthError) => {
+        await connect({ code: CODE })
+        refreshAccessToken.mockRejectedValue(
+          createGoogleRefusal({ oauthError, status: 400, form: REFRESH_FORM }),
+        )
+
+        const response = await mintAccessToken()
+
+        expect(response.status).toBe(400)
+        expect(response.body.errors).toEqual([
+          { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST },
+        ])
+        expect(rows.size).toBe(0)
+      },
+    )
 
     it("drops a connection whose credentials no longer decrypt", async () => {
       await connect({ code: CODE })
@@ -523,7 +587,11 @@ describe("GoogleConnectionController", () => {
     it("keeps the connection, and the refresh token out of the error, when a refresh fails otherwise", async () => {
       await connect({ code: CODE })
       refreshAccessToken.mockRejectedValue(
-        createRefreshRefusal("invalid_client", 401),
+        createGoogleRefusal({
+          oauthError: "invalid_client",
+          status: 401,
+          form: REFRESH_FORM,
+        }),
       )
 
       const error = await googleConnectionService
