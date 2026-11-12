@@ -1,5 +1,5 @@
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
-import { from, switchMap } from "rxjs"
+import { first, from, switchMap } from "rxjs"
 import { gsiOrThrow$ } from "./gsi"
 import { CancelError } from "../../errors/errors.shared"
 import { addSeconds } from "../../common/date/addSeconds"
@@ -144,6 +144,7 @@ export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
 
 export const signInWithGooglePrompt = (clientId: string) =>
   gsiOrThrow$.pipe(
+    first(),
     switchMap((gsi) => {
       const signInWithPopup =
         new Promise<google.accounts.id.CredentialResponse>(

@@ -1,6 +1,25 @@
 import { describe, expect, it, vi } from "vitest"
 import { CancelError } from "../../errors/errors.shared"
-import { requestGoogleAuthorizationCode } from "./auth"
+import { requestGoogleAuthorizationCode, signInWithGooglePrompt } from "./auth"
+
+const { gsi$, initialize, prompt } = await vi.hoisted(
+  async function createGsiSpies() {
+    const { BehaviorSubject } = await import("rxjs")
+    const initialize =
+      vi.fn<(config: google.accounts.id.IdConfiguration) => void>()
+    const prompt = vi.fn<typeof google.accounts.id.prompt>()
+
+    return {
+      initialize,
+      prompt,
+      gsi$: new BehaviorSubject({ accounts: { id: { initialize, prompt } } }),
+    }
+  },
+)
+
+vi.mock("./gsi", function mockGsi() {
+  return { gsiOrThrow$: gsi$ }
+})
 
 const CLIENT_ID = "123-oboku.apps.googleusercontent.com"
 const SCOPES = ["https://www.googleapis.com/auth/drive.file", "openid", "email"]
@@ -123,5 +142,27 @@ describe("requestGoogleAuthorizationCode", () => {
         clientId: CLIENT_ID,
       }),
     ).rejects.toThrow("Missing required parameter: scope")
+  })
+})
+
+describe("signInWithGooglePrompt", () => {
+  it("prompts once when Google's script loads again before sign-in completes", async () => {
+    const credential: google.accounts.id.CredentialResponse = {
+      credential: "id-token",
+      select_by: "user",
+    }
+    prompt.mockImplementation(function chooseAccount() {
+      initialize.mock.lastCall?.[0].callback?.(credential)
+    })
+    const onCredential = vi.fn()
+
+    const subscription =
+      signInWithGooglePrompt(CLIENT_ID).subscribe(onCredential)
+    await vi.waitFor(() => expect(onCredential).toHaveBeenCalledOnce())
+    gsi$.next(gsi$.getValue())
+    subscription.unsubscribe()
+
+    expect(onCredential).toHaveBeenCalledWith(credential)
+    expect(prompt).toHaveBeenCalledOnce()
   })
 })
