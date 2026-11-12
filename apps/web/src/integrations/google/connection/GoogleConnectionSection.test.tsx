@@ -31,8 +31,7 @@ vi.mock("../../../config/useConfig", function mockConfig() {
   return { useConfig }
 })
 
-vi.mock("../gsi", async function mockGsi() {
-  const { of } = await import("rxjs")
+vi.mock("../gsi", function mockGsi() {
   const gsi = {
     accounts: {
       oauth2: {
@@ -50,8 +49,9 @@ vi.mock("../gsi", async function mockGsi() {
   }
 
   return {
-    gsiOrThrow$: of(gsi),
-    gsiSignal: { getValue: () => ({ gsi, state: "loaded" }) },
+    getGsiOrThrow() {
+      return gsi
+    },
   }
 })
 

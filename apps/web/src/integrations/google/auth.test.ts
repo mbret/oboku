@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest"
 import { CancelError } from "../../errors/errors.shared"
-import { requestGoogleAuthorizationCode } from "./auth"
+import { requestGoogleAuthorizationCode, signInWithGooglePrompt } from "./auth"
 
 const CLIENT_ID = "123-oboku.apps.googleusercontent.com"
 const SCOPES = ["https://www.googleapis.com/auth/drive.file", "openid", "email"]
@@ -123,5 +123,31 @@ describe("requestGoogleAuthorizationCode", () => {
         clientId: CLIENT_ID,
       }),
     ).rejects.toThrow("Missing required parameter: scope")
+  })
+})
+
+describe("signInWithGooglePrompt", () => {
+  it("opens Google's prompt once and resolves with the picked account's credential", async () => {
+    const credential: google.accounts.id.CredentialResponse = {
+      credential: "id-token",
+      select_by: "user",
+    }
+    const initialize = vi.fn<typeof google.accounts.id.initialize>()
+    const prompt = vi.fn<typeof google.accounts.id.prompt>(
+      function chooseAccount() {
+        initialize.mock.lastCall?.[0].callback?.(credential)
+      },
+    )
+
+    await expect(
+      signInWithGooglePrompt({
+        gsi: { accounts: { id: { initialize, prompt } } },
+        clientId: CLIENT_ID,
+      }),
+    ).resolves.toBe(credential)
+    expect(initialize).toHaveBeenCalledWith(
+      expect.objectContaining({ client_id: CLIENT_ID, context: "signin" }),
+    )
+    expect(prompt).toHaveBeenCalledOnce()
   })
 })

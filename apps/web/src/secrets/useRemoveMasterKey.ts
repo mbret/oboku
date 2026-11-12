@@ -1,6 +1,6 @@
 import { useMutation$ } from "reactjrx"
 import { from, of, switchMap } from "rxjs"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { getSettingsDocument } from "../settings/dbHelpers"
 import { throwIfNotDefined } from "../common/rxjs/operators"
 
@@ -15,7 +15,7 @@ export const useRemoveMasterKey = () => {
         return of(null)
       }
 
-      return latestDatabase$.pipe(
+      return getLatestDatabase().pipe(
         switchMap((db) => {
           return getSettingsDocument(db).pipe(
             throwIfNotDefined,

@@ -2,7 +2,7 @@ import type { SettingsDocType } from "@oboku/shared"
 import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
 import type { RxDocument } from "rxdb"
 import { useMutation$ } from "reactjrx"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
 import { getSettingsDocument } from "../settings/dbHelpers"
 import { throwIfNotDefined } from "../common/rxjs/operators"
@@ -24,7 +24,7 @@ export const useUpdateMasterKey = (
   return useMutation$({
     ...options,
     mutationFn: ({ newPassword, oldPassword }: UpdateMasterKeyVariables) => {
-      return latestDatabase$.pipe(
+      return getLatestDatabase().pipe(
         switchMap((db) =>
           getSettingsDocument(db).pipe(
             throwIfNotDefined,

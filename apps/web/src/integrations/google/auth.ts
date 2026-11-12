@@ -1,6 +1,4 @@
 import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
-import { from, switchMap } from "rxjs"
-import { gsiOrThrow$ } from "./gsi"
 import { CancelError } from "../../errors/errors.shared"
 import { addSeconds } from "../../common/date/addSeconds"
 
@@ -142,50 +140,54 @@ export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {
   return addSeconds(accessToken.created_at, expiresInSeconds)
 }
 
-export const signInWithGooglePrompt = (clientId: string) =>
-  gsiOrThrow$.pipe(
-    switchMap((gsi) => {
-      const signInWithPopup =
-        new Promise<google.accounts.id.CredentialResponse>(
-          (resolve, reject) => {
-            gsi.accounts.id.initialize({
-              client_id: clientId,
-              context: "signin",
-              ux_mode: "popup",
-              use_fedcm_for_prompt: false,
-              callback: (response) => {
-                resolve(response)
-              },
-            })
+/**
+ * Opens Google's sign-in prompt once and resolves with the credential of the
+ * account the user picks. Closing or dismissing the prompt rejects with a
+ * `CancelError`.
+ */
+export const signInWithGooglePrompt = ({
+  gsi,
+  clientId,
+}: {
+  gsi: {
+    accounts: {
+      id: Pick<typeof google.accounts.id, "initialize" | "prompt">
+    }
+  }
+  clientId: string
+}) =>
+  new Promise<google.accounts.id.CredentialResponse>(
+    function promptForGoogleAccount(resolve, reject) {
+      gsi.accounts.id.initialize({
+        client_id: clientId,
+        context: "signin",
+        ux_mode: "popup",
+        use_fedcm_for_prompt: false,
+        callback: resolve,
+      })
 
-            gsi.accounts.id.prompt((notification) => {
-              if (notification.isSkippedMoment()) {
-                const skippedReason = notification.getSkippedReason()
+      gsi.accounts.id.prompt(function rejectUnansweredPrompt(notification) {
+        if (notification.isSkippedMoment()) {
+          const skippedReason = notification.getSkippedReason()
 
-                if (CANCEL_SKIP_REASONS.includes(skippedReason)) {
-                  return reject(new CancelError())
-                }
+          if (CANCEL_SKIP_REASONS.includes(skippedReason)) {
+            return reject(new CancelError())
+          }
 
-                console.warn(
-                  `Google sign in skipped with reason: ${skippedReason}`,
-                )
+          console.warn(`Google sign in skipped with reason: ${skippedReason}`)
 
-                return reject(
-                  new Error(
-                    "Google sign in was skipped. If this error persists make sure your browser is not blocking this site's third party sign-in.",
-                  ),
-                )
-              }
+          return reject(
+            new Error(
+              "Google sign in was skipped. If this error persists make sure your browser is not blocking this site's third party sign-in.",
+            ),
+          )
+        }
 
-              if (notification.isDismissedMoment()) {
-                reject(new CancelError())
-              }
-            })
-          },
-        )
-
-      return from(signInWithPopup)
-    }),
+        if (notification.isDismissedMoment()) {
+          reject(new CancelError())
+        }
+      })
+    },
   )
 
 export const useAccessToken = () => {
