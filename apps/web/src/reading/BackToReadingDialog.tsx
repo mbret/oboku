@@ -7,7 +7,7 @@ import {
 import { SIGNAL_RESET, useSwitchMutation$ } from "reactjrx"
 import { getMetadataFromBook } from "../books/metadata"
 import { useCreateBackToBookDialog } from "./useCreateBackToBookDialog"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
 import { ReadingStateState } from "@oboku/shared"
 import { CancelError } from "../errors/errors.shared"
@@ -33,7 +33,7 @@ export const BackToReadingDialog = memo(function BackToReadingDialog({
       )
         throw new CancelError()
 
-      return latestDatabase$.pipe(
+      return getLatestDatabase().pipe(
         switchMap((db) => {
           const book$ = from(db.book.findOne(bookBeingReadId).exec())
 
