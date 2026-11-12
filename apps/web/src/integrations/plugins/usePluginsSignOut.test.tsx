@@ -33,14 +33,8 @@ describe("usePluginsSignOut", () => {
     googleAccessTokenSignal.next({
       access_token: "google-access-token",
       expires_in: "3600",
-      hd: "",
-      prompt: "",
       token_type: "Bearer",
       scope: "https://www.googleapis.com/auth/drive.file",
-      state: "",
-      error: "",
-      error_description: "",
-      error_uri: "",
       created_at: Date.now(),
     })
 

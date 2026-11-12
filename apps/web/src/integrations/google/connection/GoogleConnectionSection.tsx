@@ -37,8 +37,8 @@ function ConnectGoogleAccount() {
         never the rest of your Drive.
       </Typography>
       <Typography color="text.secondary">
-        No feature uses the connection yet: connecting has no visible effect
-        until they arrive.
+        While connected, oboku stops opening Google's sign-in window whenever it
+        needs your Drive.
       </Typography>
       {hasConnectionFailed && <ErrorAlert error={error} />}
       <Stack sx={{ alignItems: "flex-start" }}>

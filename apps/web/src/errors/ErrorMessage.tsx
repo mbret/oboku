@@ -71,6 +71,10 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "oboku already has access to this account, so it was not given a lasting one. Remove oboku from the third-party apps of your account, then connect again."
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED:
       return "oboku needs every permission it asks for. Connect again and allow them all."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND:
+      return "No account is connected."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST:
+      return "oboku's server lost its access to your account: it was removed from your account, or it expired. Connect your account again."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:

@@ -1,4 +1,5 @@
-import { catchError, from, mergeMap, of, tap } from "rxjs"
+import { useQueryClient } from "@tanstack/react-query"
+import { catchError, from, map, mergeMap, of, tap } from "rxjs"
 import {
   googleAccessTokenSignal,
   consentShownSignal,
@@ -7,12 +8,19 @@ import {
   isPopupClosedError,
   requestGoogleAccessToken,
 } from "../../auth"
+import { mintGoogleAccessToken } from "../../connection/mintGoogleAccessToken"
 import { Logger } from "../../../../debug/logger.shared"
 import { useGoogleScripts } from "./scripts"
 import { CancelError } from "../../../../errors/errors.shared"
 import { useConfig } from "../../../../config/useConfig"
+import { useHttpClientApi } from "../../../../http"
+import { getActiveProfileId } from "../../../../profiles/active/activeProfileId"
 import { hasMinimumValidityLeft } from "../../../plugins/common/tokenValidity"
 
+/**
+ * Gets a Drive access token, in this order: the browser's current one, one
+ * minted from the user's Google connection, then Google's sign-in popup.
+ */
 export const useRequestToken = ({
   requestPopup,
 }: {
@@ -20,11 +28,87 @@ export const useRequestToken = ({
 }) => {
   const { data: config } = useConfig()
   const { getGoogleScripts } = useGoogleScripts()
+  const httpClientApi = useHttpClientApi()
+  const queryClient = useQueryClient()
+
+  const requestTokenFromConnection = ({
+    gapiInstance,
+    scope,
+  }: {
+    gapiInstance: typeof gapi
+    scope: string[]
+  }) => {
+    if (!config?.FEATURE_GOOGLE_CONNECTION_ENABLED) return of(null)
+
+    return from(
+      mintGoogleAccessToken({
+        httpClientApi,
+        queryClient,
+        profileId: getActiveProfileId(),
+      }),
+    ).pipe(
+      map(function keepTokenGrantingScope(accessToken) {
+        const isScopeGranted =
+          !!accessToken && hasGrantedPermissions(accessToken, scope)
+
+        return isScopeGranted ? accessToken : null
+      }),
+      tap(function useTokenForDrive(accessToken) {
+        if (!accessToken) return
+
+        // Google's sign-in sets its own tokens on gapi; a minted one needs setting.
+        gapiInstance.client.setToken({ access_token: accessToken.access_token })
+        googleAccessTokenSignal.update(accessToken)
+      }),
+    )
+  }
+
+  const requestTokenFromPopup = ({
+    gsi,
+    scope,
+  }: {
+    gsi: typeof google
+    scope: string[]
+  }) =>
+    from(requestPopup()).pipe(
+      tap((confirmed) => {
+        if (!confirmed) throw new CancelError()
+      }),
+      mergeMap(() => {
+        consentShownSignal.update(true)
+
+        return from(
+          requestGoogleAccessToken(gsi, scope, config?.GOOGLE_CLIENT_ID ?? ""),
+        ).pipe(
+          mergeMap((accessToken) => {
+            consentShownSignal.update(false)
+
+            if (accessToken.error) {
+              Logger.error(`google access token error`, accessToken)
+
+              throw new Error(accessToken.error)
+            }
+
+            if (!hasGrantedPermissions(accessToken, scope)) {
+              throw new Error("not enough permissions")
+            }
+
+            const googleAccessToken = {
+              ...accessToken,
+              created_at: Date.now(),
+            }
+
+            googleAccessTokenSignal.update(googleAccessToken)
+
+            return of(googleAccessToken)
+          }),
+        )
+      }),
+    )
 
   const requestToken = ({ scope }: { scope: string[] }) =>
     getGoogleScripts().pipe(
-      mergeMap(({ gsi }) => {
-        const firstScope = scope[0]
+      mergeMap(({ gsi, gapi: gapiInstance }) => {
         const accessToken = googleAccessTokenSignal.getValue()
         const minimumValidityMs = config?.MINIMUM_TOKEN_VALIDITY_MS
 
@@ -35,8 +119,7 @@ export const useRequestToken = ({
          */
         if (accessToken && minimumValidityMs !== undefined) {
           if (
-            (!firstScope ||
-              (firstScope && hasGrantedPermissions(gsi, accessToken, scope))) &&
+            hasGrantedPermissions(accessToken, scope) &&
             hasMinimumValidityLeft({
               expiresAt: getTokenExpirationDate(accessToken),
               minimumValidityMs,
@@ -50,43 +133,11 @@ export const useRequestToken = ({
           `google token invalid or below ${minimumValidityMs}ms validity, requesting new one`,
         )
 
-        return from(requestPopup()).pipe(
-          tap((confirmed) => {
-            if (!confirmed) throw new CancelError()
-          }),
-          mergeMap(() => {
-            consentShownSignal.update(true)
+        return requestTokenFromConnection({ gapiInstance, scope }).pipe(
+          mergeMap(function fallBackToPopup(connectionToken) {
+            if (connectionToken) return of(connectionToken)
 
-            return from(
-              requestGoogleAccessToken(
-                gsi,
-                scope,
-                config?.GOOGLE_CLIENT_ID ?? "",
-              ),
-            ).pipe(
-              mergeMap((accessToken) => {
-                consentShownSignal.update(false)
-
-                if (accessToken.error) {
-                  Logger.error(`google access token error`, accessToken)
-
-                  throw new Error(accessToken.error)
-                }
-
-                if (!hasGrantedPermissions(gsi, accessToken, scope)) {
-                  throw new Error("not enough permissions")
-                }
-
-                const googleAccessToken = {
-                  ...accessToken,
-                  created_at: Date.now(),
-                }
-
-                googleAccessTokenSignal.update(googleAccessToken)
-
-                return of(googleAccessToken)
-              }),
-            )
+            return requestTokenFromPopup({ gsi, scope })
           }),
         )
       }),
