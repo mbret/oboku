@@ -50,6 +50,7 @@ export class GoogleConnectionController {
   // RFC 6749 §5.1: a response that carries a token must not be cached.
   @ApiObokuErrors()
   @Header("Cache-Control", "no-store")
+  @Header("Pragma", "no-cache")
   @Post("access-token")
   mintAccessToken(
     @WithAuthUser() user: AuthUser,

@@ -20,18 +20,13 @@ const GOOGLE_PROVIDER = "google" satisfies ConnectionProvider
 /** The redirect URI of a code from Google Identity Services' popup code flow. */
 const POPUP_REDIRECT_URI = "postmessage"
 
-/** What Google answers for a code or refresh token it does not honour (RFC 6749 §5.2). */
-const INVALID_GRANT_ERROR = "invalid_grant"
-
 /**
- * What Google answers for a refresh token it will never honour again: revoked
- * or expired (`invalid_grant`), or issued to another client id than the one
- * the admin set since (`unauthorized_client`). RFC 6749 §5.2.
+ * What Google answers for a code or refresh token it will never honour: wrong,
+ * expired, revoked, or issued to another client (RFC 6749 §5.2). Every other
+ * error, such as `unauthorized_client`, concerns the client's configuration
+ * and every user's grant, so it never drops a connection.
  */
-const REFRESH_TOKEN_REFUSED_ERRORS = [
-  INVALID_GRANT_ERROR,
-  "unauthorized_client",
-]
+const INVALID_GRANT_ERROR = "invalid_grant"
 
 type GoogleOAuthClientOptions = { clientId: string; clientSecret: string }
 
@@ -119,9 +114,7 @@ const refreshAccessToken = async ({
     return credentials
   } catch (error) {
     const oauthError = toOAuthError(error)
-    const isRefreshTokenRefused =
-      oauthError !== undefined &&
-      REFRESH_TOKEN_REFUSED_ERRORS.includes(oauthError)
+    const isRefreshTokenRefused = oauthError === INVALID_GRANT_ERROR
 
     if (isRefreshTokenRefused) return null
 

@@ -469,6 +469,7 @@ describe("GoogleConnectionController", () => {
         scopes: GRANTED_SCOPE.split(" "),
       })
       expect(response.headers["cache-control"]).toBe("no-store")
+      expect(response.headers.pragma).toBe("no-cache")
       expect(createOAuth2Client).toHaveBeenCalledWith({
         clientId: CLIENT_ID,
         clientSecret: CLIENT_SECRET,
@@ -549,23 +550,40 @@ describe("GoogleConnectionController", () => {
       expect(rows.size).toBe(1)
     })
 
-    it.each(["invalid_grant", "unauthorized_client"])(
-      "drops a connection whose refresh token Google refuses with %s",
-      async (oauthError) => {
-        await connect({ code: CODE })
-        refreshAccessToken.mockRejectedValue(
-          createGoogleRefusal({ oauthError, status: 400, form: REFRESH_FORM }),
-        )
+    it("drops a connection whose refresh token Google refuses", async () => {
+      await connect({ code: CODE })
+      refreshAccessToken.mockRejectedValue(
+        createGoogleRefusal({
+          oauthError: "invalid_grant",
+          status: 400,
+          form: REFRESH_FORM,
+        }),
+      )
 
-        const response = await mintAccessToken()
+      const response = await mintAccessToken()
 
-        expect(response.status).toBe(400)
-        expect(response.body.errors).toEqual([
-          { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST },
-        ])
-        expect(rows.size).toBe(0)
-      },
-    )
+      expect(response.status).toBe(400)
+      expect(response.body.errors).toEqual([
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST },
+      ])
+      expect(rows.size).toBe(0)
+    })
+
+    it("keeps the connection when Google refuses the client rather than the token", async () => {
+      await connect({ code: CODE })
+      refreshAccessToken.mockRejectedValue(
+        createGoogleRefusal({
+          oauthError: "unauthorized_client",
+          status: 400,
+          form: REFRESH_FORM,
+        }),
+      )
+
+      const response = await mintAccessToken()
+
+      expect(response.status).toBe(500)
+      expect(rows.size).toBe(1)
+    })
 
     it("drops a connection whose credentials no longer decrypt", async () => {
       await connect({ code: CODE })
