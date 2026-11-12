@@ -11,6 +11,17 @@ export const gsiSignal = signal<
   default: { gsi: undefined, state: "loading" },
 })
 
+const GSI_NOT_LOADED_MESSAGE =
+  "Google's sign-in script has not loaded. Make sure nothing blocks accounts.google.com, then try again."
+
+export const getGsiOrThrow = () => {
+  const { gsi } = gsiSignal.getValue()
+
+  if (!gsi) throw new Error(GSI_NOT_LOADED_MESSAGE)
+
+  return gsi
+}
+
 export const gsiOrThrow$ = gsiSignal.pipe(
   map(({ gsi }) => {
     if (!gsi) {

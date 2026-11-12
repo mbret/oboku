@@ -2,25 +2,6 @@ import { describe, expect, it, vi } from "vitest"
 import { CancelError } from "../../errors/errors.shared"
 import { requestGoogleAuthorizationCode, signInWithGooglePrompt } from "./auth"
 
-const { gsi$, initialize, prompt } = await vi.hoisted(
-  async function createGsiSpies() {
-    const { BehaviorSubject } = await import("rxjs")
-    const initialize =
-      vi.fn<(config: google.accounts.id.IdConfiguration) => void>()
-    const prompt = vi.fn<typeof google.accounts.id.prompt>()
-
-    return {
-      initialize,
-      prompt,
-      gsi$: new BehaviorSubject({ accounts: { id: { initialize, prompt } } }),
-    }
-  },
-)
-
-vi.mock("./gsi", function mockGsi() {
-  return { gsiOrThrow$: gsi$ }
-})
-
 const CLIENT_ID = "123-oboku.apps.googleusercontent.com"
 const SCOPES = ["https://www.googleapis.com/auth/drive.file", "openid", "email"]
 
@@ -146,25 +127,27 @@ describe("requestGoogleAuthorizationCode", () => {
 })
 
 describe("signInWithGooglePrompt", () => {
-  it("prompts once when Google's script loads again after the user picks an account", async () => {
+  it("opens Google's prompt once and resolves with the picked account's credential", async () => {
     const credential: google.accounts.id.CredentialResponse = {
       credential: "id-token",
       select_by: "user",
     }
-    prompt.mockImplementation(function chooseAccount() {
-      initialize.mock.lastCall?.[0].callback?.(credential)
-    })
-    const onCredential = vi.fn()
+    const initialize = vi.fn<typeof google.accounts.id.initialize>()
+    const prompt = vi.fn<typeof google.accounts.id.prompt>(
+      function chooseAccount() {
+        initialize.mock.lastCall?.[0].callback?.(credential)
+      },
+    )
 
-    const subscription =
-      signInWithGooglePrompt(CLIENT_ID).subscribe(onCredential)
-    await vi.waitFor(function expectCredentialReceived() {
-      expect(onCredential).toHaveBeenCalledOnce()
-    })
-    gsi$.next(gsi$.getValue())
-    subscription.unsubscribe()
-
-    expect(onCredential).toHaveBeenCalledWith(credential)
+    await expect(
+      signInWithGooglePrompt({
+        gsi: { accounts: { id: { initialize, prompt } } },
+        clientId: CLIENT_ID,
+      }),
+    ).resolves.toBe(credential)
+    expect(initialize).toHaveBeenCalledWith(
+      expect.objectContaining({ client_id: CLIENT_ID, context: "signin" }),
+    )
     expect(prompt).toHaveBeenCalledOnce()
   })
 })
