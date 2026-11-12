@@ -2,6 +2,7 @@ import { googleConnectionDisconnect } from "@oboku/shared"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../../http"
 import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
+import { clearGoogleAccessToken } from "../auth"
 import { createGoogleConnectionQueryOptions } from "./googleConnectionQueryOptions"
 
 export const useDisconnectGoogleAccount = () => {
@@ -21,7 +22,12 @@ export const useDisconnectGoogleAccount = () => {
         client: httpClientApi.sdkClient,
       })
     },
-    onSuccess: function refreshGoogleConnection(_response, { profileId }) {
+    onSuccess: function forgetGoogleConnection(_response, { profileId }) {
+      // The token in use may be minted from the connection: dropping it makes
+      // the next Drive request open Google's sign-in, where the user picks an
+      // account.
+      clearGoogleAccessToken()
+
       return queryClient.invalidateQueries({
         queryKey: createGoogleConnectionQueryOptions({
           httpClientApi,
