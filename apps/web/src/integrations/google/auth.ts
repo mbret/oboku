@@ -87,6 +87,11 @@ export const requestGoogleAuthorizationCode = ({
       scope: scopes.join(" "),
       ux_mode: "popup",
       select_account: true,
+      // Google's default adds every scope the account granted oboku before,
+      // such as the full Drive scopes of versions before August 2025: the
+      // refresh token would reach the whole Drive, and Google warns that the
+      // app is unverified for them.
+      include_granted_scopes: false,
       callback: function receiveCodeResponse(response) {
         if (response.error === ACCESS_DENIED_ERROR) {
           reject(new CancelError())
