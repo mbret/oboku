@@ -32,7 +32,7 @@ const createGsi = (
 }
 
 describe("requestGoogleAuthorizationCode", () => {
-  it("opens Google's popup for the scopes and resolves with its code", async () => {
+  it("opens Google's popup for only these scopes and resolves with its code", async () => {
     const { gsi, initCodeClient } = createGsi(function grant(config) {
       config.callback?.(CODE_RESPONSE)
     })
@@ -50,6 +50,7 @@ describe("requestGoogleAuthorizationCode", () => {
         scope: SCOPES.join(" "),
         ux_mode: "popup",
         select_account: true,
+        include_granted_scopes: false,
       }),
     )
   })
