@@ -1,5 +1,5 @@
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
-import { combineLatest, first, from, of, switchMap } from "rxjs"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
+import { combineLatest, from, of, switchMap } from "rxjs"
 import { useEffect } from "react"
 import { Logger } from "../debug/logger.shared"
 import { useMutation$ } from "reactjrx"
@@ -8,8 +8,7 @@ import { useConfig } from "../config/useConfig"
 const useRemoveDanglingLinks = () => {
   return useMutation$({
     mutationFn: () => {
-      return latestDatabase$.pipe(
-        first(),
+      return getLatestDatabase().pipe(
         switchMap((db) =>
           combineLatest([
             from(db.link.find().exec()),

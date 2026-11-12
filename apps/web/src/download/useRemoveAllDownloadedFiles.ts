@@ -1,6 +1,6 @@
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
-import { combineLatest, defaultIfEmpty, first, from, switchMap } from "rxjs"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { combineLatest, defaultIfEmpty, from, switchMap } from "rxjs"
+import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { useMutation$ } from "reactjrx"
 import { partitionDownloadedBooks } from "./partitionDownloadedBooks"
 
@@ -9,8 +9,7 @@ export const useRemoveAllDownloadedFiles = () => {
 
   return useMutation$({
     mutationFn: () =>
-      latestDatabase$.pipe(
-        first(),
+      getLatestDatabase().pipe(
         switchMap((db) => from(partitionDownloadedBooks(db))),
         switchMap(({ removable }) =>
           combineLatest(

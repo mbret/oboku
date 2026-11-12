@@ -5,7 +5,7 @@ import { isPluginType } from "../../integrations/plugins/configure"
 import { PluginDownloadBook } from "../../integrations/plugins/PluginDownloadBook"
 import type { DownloadBookResult } from "../../integrations/plugins/types"
 import { CancelError, ERROR_NO_LINK_MESSAGE } from "../../errors/errors.shared"
-import { latestDatabase$ } from "../../rxdb/RxDbProvider"
+import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { getLinkStateAsync } from "../../links/states"
 import { dexieDb } from "../../rxdb/dexie"
 import { bytesToMb } from "../../common/utils"
@@ -166,7 +166,7 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
         }
 
         try {
-          const database = await firstValueFrom(latestDatabase$)
+          const database = await firstValueFrom(getLatestDatabase())
           const resolvedLink = await getLinkStateAsync({
             linkId: links[0] || "",
             db: database,
