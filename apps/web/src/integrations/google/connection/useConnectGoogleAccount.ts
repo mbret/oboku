@@ -14,7 +14,7 @@ import { useHttpClientApi } from "../../../http"
 import { cancelUnlessProfileIsActive } from "../../../profiles/active/activeProfileId"
 import { requestGoogleAuthorizationCode } from "../auth"
 import { getGsiOrThrow } from "../gsi"
-import { createGoogleConnectionQueryOptions } from "./useGoogleConnection"
+import { createGoogleConnectionQueryOptions } from "./googleConnectionQueryOptions"
 
 /** Drive's picked files, and the email that tells the user which account is connected. */
 const GOOGLE_CONNECTION_SCOPES = [GOOGLE_DRIVE_FILE_SCOPE, "openid", "email"]

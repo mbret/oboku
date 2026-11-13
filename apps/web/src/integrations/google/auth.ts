@@ -2,7 +2,11 @@ import { SIGNAL_RESET, signal, useSignalValue } from "reactjrx"
 import { CancelError } from "../../errors/errors.shared"
 import { addSeconds } from "../../common/date/addSeconds"
 
-type GoogleAccessToken = google.accounts.oauth2.TokenResponse & {
+/** A Drive access token, from Google's sign-in or minted from the user's Google connection. */
+export type GoogleAccessToken = Pick<
+  google.accounts.oauth2.TokenResponse,
+  "access_token" | "expires_in" | "scope" | "token_type"
+> & {
   created_at: number
 }
 
@@ -124,19 +128,12 @@ export const requestGoogleAuthorizationCode = ({
   })
 
 export const hasGrantedPermissions = (
-  gsi: typeof google,
-  accessToken: google.accounts.oauth2.TokenResponse,
+  accessToken: Pick<GoogleAccessToken, "scope">,
   scopes: string[],
 ) => {
-  const firstScope = scopes[0]
+  const grantedScopes = accessToken.scope.split(" ")
 
-  if (!firstScope) return true
-
-  return gsi.accounts.oauth2.hasGrantedAllScopes(
-    accessToken,
-    firstScope,
-    ...scopes,
-  )
+  return scopes.every((scope) => grantedScopes.includes(scope))
 }
 
 export const getTokenExpirationDate = (accessToken: GoogleAccessToken) => {

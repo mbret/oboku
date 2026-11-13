@@ -565,10 +565,13 @@ export type ConnectGoogleAccountDto = {
 
 export type GoogleAccessTokenResponseDto = {
     /**
-     * Reaches the connected account's Drive within `scopes`, until `expiresAt`.
+     * Reaches the connected account's Drive within `scopes`, for `expiresIn` seconds.
      */
     accessToken: string;
-    expiresAt: string;
+    /**
+     * Seconds the token stays valid from this answer, like OAuth's `expires_in`.
+     */
+    expiresIn: number;
     scopes: Array<string>;
 };
 

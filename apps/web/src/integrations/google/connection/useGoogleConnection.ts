@@ -1,29 +1,8 @@
-import { queryOptions, useQuery } from "@tanstack/react-query"
-import { googleConnectionGet } from "@oboku/shared"
+import { useQuery } from "@tanstack/react-query"
 import { useQueryOptionsWithAuthentication } from "../../../auth"
-import { type HttpApiClientWeb, useHttpClientApi } from "../../../http"
+import { useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
-import { API_QUERY_KEY_PREFIX } from "../../../queries/queryClient"
-
-export const createGoogleConnectionQueryOptions = ({
-  httpClientApi,
-  profileId,
-}: {
-  httpClientApi: HttpApiClientWeb
-  profileId: string | undefined
-}) =>
-  queryOptions({
-    queryKey: [API_QUERY_KEY_PREFIX, "google-connection", profileId],
-    queryFn: async function fetchGoogleConnection({ signal }) {
-      const { data } = await googleConnectionGet({
-        client: httpClientApi.sdkClient,
-        signal,
-      })
-
-      return data
-    },
-    gcTime: 5 * 60 * 1000,
-  })
+import { createGoogleConnectionQueryOptions } from "./googleConnectionQueryOptions"
 
 export const useGoogleConnection = () => {
   const httpClientApi = useHttpClientApi()

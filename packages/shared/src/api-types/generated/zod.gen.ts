@@ -511,7 +511,7 @@ export const zConnectGoogleAccountDto = z.object({
 
 export const zGoogleAccessTokenResponseDto = z.object({
     accessToken: z.string(),
-    expiresAt: z.string(),
+    expiresIn: z.number(),
     scopes: z.array(z.string())
 });
 

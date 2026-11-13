@@ -293,7 +293,7 @@ export class GoogleConnectionService {
 
     return {
       accessToken,
-      expiresAt: new Date(expiryDate).toISOString(),
+      expiresIn: Math.floor((expiryDate - Date.now()) / 1000),
       scopes: scope?.split(" ") ?? connection.scopes,
     }
   }

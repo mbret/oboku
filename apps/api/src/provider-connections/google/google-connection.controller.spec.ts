@@ -96,7 +96,10 @@ const grantTokens = (tokens: Record<string, unknown>) => {
 }
 
 const FRESH_ACCESS_TOKEN = "ya29.fresh-access-token"
-const FRESH_TOKEN_EXPIRY = Date.parse("2026-11-12T15:00:00.000Z")
+const FRESH_TOKEN_LIFETIME_SECONDS = 3599
+
+const createFreshTokenExpiry = () =>
+  Date.now() + FRESH_TOKEN_LIFETIME_SECONDS * 1000
 
 const CODE_EXCHANGE_FORM = { code: CODE, client_secret: CLIENT_SECRET }
 const REFRESH_FORM = {
@@ -156,7 +159,7 @@ describe("GoogleConnectionController", () => {
     refreshAccessToken.mockResolvedValue({
       credentials: {
         access_token: FRESH_ACCESS_TOKEN,
-        expiry_date: FRESH_TOKEN_EXPIRY,
+        expiry_date: createFreshTokenExpiry(),
         scope: GRANTED_SCOPE,
         refresh_token: REFRESH_TOKEN,
       },
@@ -465,9 +468,15 @@ describe("GoogleConnectionController", () => {
       expect(response.status).toBe(201)
       expect(response.body).toEqual({
         accessToken: FRESH_ACCESS_TOKEN,
-        expiresAt: new Date(FRESH_TOKEN_EXPIRY).toISOString(),
+        expiresIn: expect.any(Number),
         scopes: GRANTED_SCOPE.split(" "),
       })
+      expect(response.body.expiresIn).toBeGreaterThan(
+        FRESH_TOKEN_LIFETIME_SECONDS - 60,
+      )
+      expect(response.body.expiresIn).toBeLessThanOrEqual(
+        FRESH_TOKEN_LIFETIME_SECONDS,
+      )
       expect(response.headers["cache-control"]).toBe("no-store")
       expect(response.headers.pragma).toBe("no-cache")
       expect(createOAuth2Client).toHaveBeenCalledWith({
@@ -508,7 +517,7 @@ describe("GoogleConnectionController", () => {
       refreshAccessToken.mockResolvedValueOnce({
         credentials: {
           access_token: FRESH_ACCESS_TOKEN,
-          expiry_date: FRESH_TOKEN_EXPIRY,
+          expiry_date: createFreshTokenExpiry(),
           scope: DRIVE_FILE_SCOPE,
         },
         res: null,
@@ -516,7 +525,7 @@ describe("GoogleConnectionController", () => {
       refreshAccessToken.mockResolvedValueOnce({
         credentials: {
           access_token: FRESH_ACCESS_TOKEN,
-          expiry_date: FRESH_TOKEN_EXPIRY,
+          expiry_date: createFreshTokenExpiry(),
         },
         res: null,
       })
