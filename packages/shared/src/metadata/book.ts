@@ -18,6 +18,15 @@ export type BookDisplayMetadata = ReadonlyBookMetadataFields & {
   readonly language?: string | undefined
 }
 
+/** How the consuming app words what the merge adds to a title. */
+export type BookTitleFormat = {
+  /**
+   * A catalog volume's title, given the volume's position in its series, when
+   * the catalog's title leaves the position out.
+   */
+  formatVolumeTitle: (title: string | number, position: number) => string
+}
+
 /**
  * One input of the merge: an entry of the book, or the directives parsed
  * from its link's filename, which rank just below the user.
@@ -35,6 +44,7 @@ type MergeLayer = {
 const getCatalogTitle = (
   entry: DeepReadonly<CatalogMetadata>,
   title: ReadonlyBookMetadataFields["title"],
+  { formatVolumeTitle }: BookTitleFormat,
 ) => {
   const position = entry.metadata.belongsTo?.series?.[0]?.position
   const isPositionInTitle = title
@@ -43,7 +53,7 @@ const getCatalogTitle = (
     ?.some((numberInTitle) => Number(numberInTitle) === position)
 
   return title !== undefined && position !== undefined && !isPositionInTitle
-    ? `${title} Vol ${position}`
+    ? formatVolumeTitle(title, position)
     : title
 }
 
@@ -53,11 +63,12 @@ const getCatalogTitle = (
  */
 export const getBookMetadataEntryFields = (
   entry: DeepReadonly<BookMetadata>,
+  format: BookTitleFormat,
 ): ReadonlyBookMetadataFields => {
   const fields = getBookMetadataFields(entry)
 
   return entry.type === "catalog"
-    ? { ...fields, title: getCatalogTitle(entry, fields.title) }
+    ? { ...fields, title: getCatalogTitle(entry, fields.title, format) }
     : fields
 }
 
@@ -81,6 +92,7 @@ export const getMetadataFromBook = (
     | DeepReadonly<Pick<BookDocType, "metadata" | "metadataSourcePriority">>
     | null
     | undefined,
+  format: BookTitleFormat,
 ): BookDisplayMetadata => {
   const list = book?.metadata ?? []
 
@@ -112,7 +124,7 @@ export const getMetadataFromBook = (
     ...list.map(
       (entry): MergeLayer => ({
         source: getBookMetadataSource(entry),
-        fields: getBookMetadataEntryFields(entry),
+        fields: getBookMetadataEntryFields(entry, format),
       }),
     ),
     ...(directiveLayer ? [directiveLayer] : []),

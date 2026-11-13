@@ -1,6 +1,16 @@
 import { describe, expect, it } from "vitest"
-import { getBookMetadataEntryFields, getMetadataFromBook } from "./book"
+import {
+  type BookTitleFormat,
+  getBookMetadataEntryFields,
+  getMetadataFromBook,
+} from "./book"
 import type { BookMetadata } from "./index"
+
+const format: BookTitleFormat = {
+  formatVolumeTitle(title, position) {
+    return `${title} Vol ${position}`
+  },
+}
 
 const link: BookMetadata = {
   type: "link",
@@ -32,7 +42,10 @@ const catalog: BookMetadata = {
 
 describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
   it("merges the file above the catalog by default", () => {
-    const metadata = getMetadataFromBook({ metadata: [link, catalog, file] })
+    const metadata = getMetadataFromBook(
+      { metadata: [link, catalog, file] },
+      format,
+    )
 
     expect(metadata.title).toBe("The Final Empire")
     expect(metadata.description).toBe("Ash falls from the sky.")
@@ -40,24 +53,32 @@ describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
 
   it("puts the catalog first when the book says so", () => {
     expect(
-      getMetadataFromBook({
-        metadata: [link, catalog, file],
-        metadataSourcePriority: ["catalog", "file"],
-      }).title,
+      getMetadataFromBook(
+        {
+          metadata: [link, catalog, file],
+          metadataSourcePriority: ["catalog", "file"],
+        },
+        format,
+      ).title,
     ).toBe("Mistborn: The Final Empire")
   })
 
   it("reads the catalog's legacy name in a priority older versions wrote", () => {
     expect(
-      getMetadataFromBook({
-        metadata: [link, catalog, file],
-        metadataSourcePriority: ["googleBookApi", "file"],
-      }).title,
+      getMetadataFromBook(
+        {
+          metadata: [link, catalog, file],
+          metadataSourcePriority: ["googleBookApi", "file"],
+        },
+        format,
+      ).title,
     ).toBe("Mistborn: The Final Empire")
   })
 
   it("keeps the filename's directives above the file", () => {
-    expect(getMetadataFromBook({ metadata: [link, file] }).isbn).toBe("42")
+    expect(getMetadataFromBook({ metadata: [link, file] }, format).isbn).toBe(
+      "42",
+    )
   })
 
   it("takes the file's description over the catalog's", () => {
@@ -68,8 +89,10 @@ describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
     }
 
     expect(
-      getMetadataFromBook({ metadata: [link, catalog, fileWithDescription] })
-        .description,
+      getMetadataFromBook(
+        { metadata: [link, catalog, fileWithDescription] },
+        format,
+      ).description,
     ).toBe("<p>The Lord Ruler reigns.</p>")
   })
 })
@@ -83,9 +106,12 @@ describe("getMetadataFromBook, with entries stored before", () => {
   }
 
   it("merges them as the file and the catalog", () => {
-    const metadata = getMetadataFromBook({
-      metadata: [link, legacyCatalog, legacyFile],
-    })
+    const metadata = getMetadataFromBook(
+      {
+        metadata: [link, legacyCatalog, legacyFile],
+      },
+      format,
+    )
 
     expect(metadata.title).toBe("The Final Empire")
     expect(metadata.description).toBe("Ash falls from the sky.")
@@ -93,10 +119,13 @@ describe("getMetadataFromBook, with entries stored before", () => {
 
   it("ranks a legacy catalog entry where the priority puts the catalog", () => {
     expect(
-      getMetadataFromBook({
-        metadata: [link, legacyCatalog, legacyFile],
-        metadataSourcePriority: ["catalog", "file"],
-      }).title,
+      getMetadataFromBook(
+        {
+          metadata: [link, legacyCatalog, legacyFile],
+          metadataSourcePriority: ["catalog", "file"],
+        },
+        format,
+      ).title,
     ).toBe("Mistborn: The Final Empire")
   })
 })
@@ -117,7 +146,7 @@ const catalogTitle = (title: string, position: number | undefined) => {
     },
   }
 
-  return getBookMetadataEntryFields(entry).title
+  return getBookMetadataEntryFields(entry, format).title
 }
 
 describe("getBookMetadataEntryFields, for a catalog match of a series volume", () => {

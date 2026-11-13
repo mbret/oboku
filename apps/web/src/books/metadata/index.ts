@@ -6,6 +6,7 @@ import {
 } from "@oboku/shared"
 import { useMemo } from "react"
 import type { DeepReadonlyObject, RxDocument } from "rxdb"
+import { BOOK_TITLE_FORMAT } from "./fields"
 
 type BookWithMetadata = Pick<BookDocType, "metadata" | "metadataSourcePriority">
 
@@ -18,6 +19,7 @@ export const getMetadataFromBook = (
     // prose-reader's metadata into objects. The stored values are the plain
     // JSON strings those types describe.
     book as unknown as DeepReadonly<BookWithMetadata> | null | undefined,
+    BOOK_TITLE_FORMAT,
   )
 
 export const useMetadataFromBook = (
