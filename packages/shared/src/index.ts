@@ -13,6 +13,7 @@ export { ObokuErrorCode, ObokuSharedError } from "./errors"
 
 export * from "./metadata"
 export * from "./metadata/policy"
+export * from "./metadata/book"
 export * from "./sync/types"
 export * from "./utils/objects"
 export * from "./utils/difference"

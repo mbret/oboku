@@ -15,6 +15,7 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
+  getMetadataFromBook,
   isCatalogEnabled,
   isCatalogEntry,
   resolveMetadataFetchEnabled,
@@ -40,7 +41,6 @@ import { catalogLookupInput } from "../features/metadata/catalogLookupInput.js"
 import { createCatalogProviders } from "../features/metadata/catalogProviders.js"
 import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { pickCoverMetadata } from "../features/metadata/pickCoverMetadata.js"
-import { reduceMetadata } from "../features/metadata/reduceMetadata.js"
 import { refreshCatalogEntry } from "../features/metadata/refreshCatalogEntry.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types.js"
@@ -206,8 +206,7 @@ export class BooksMetadataService {
     let archive: Archive | undefined
 
     try {
-      bookNameForDebug =
-        reduceMetadata(ctx.book.metadata).title?.toString() || ""
+      bookNameForDebug = getMetadataFromBook(ctx.book).title?.toString() || ""
 
       this.logger.log(
         `processing ${ctx.book._id} with link of type ${ctx.link.type} with id ${ctx.link._id}`,
