@@ -15,6 +15,7 @@ import {
   getBookCoverKey,
   getBookMetadataFields,
   getBookMetadataSource,
+  getMetadataFromBook,
   isCatalogEnabled,
   isCatalogEntry,
   resolveMetadataFetchEnabled,
@@ -33,6 +34,7 @@ import { CouchService, emailToNameHex } from "../couch/couch.service.js"
 import { atomicUpdate, findOne, getSettings } from "../couch/dbHelpers.js"
 import { isBookProtected } from "../couch/isBookProtected.js"
 import { CoversService } from "../covers/covers.service.js"
+import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
 import { isMaybeExtractableContentType } from "../features/metadata/archives/isMaybeExtractableContentType.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
@@ -40,7 +42,6 @@ import { catalogLookupInput } from "../features/metadata/catalogLookupInput.js"
 import { createCatalogProviders } from "../features/metadata/catalogProviders.js"
 import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
 import { pickCoverMetadata } from "../features/metadata/pickCoverMetadata.js"
-import { reduceMetadata } from "../features/metadata/reduceMetadata.js"
 import { refreshCatalogEntry } from "../features/metadata/refreshCatalogEntry.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types.js"
@@ -207,7 +208,7 @@ export class BooksMetadataService {
 
     try {
       bookNameForDebug =
-        reduceMetadata(ctx.book.metadata).title?.toString() || ""
+        getMetadataFromBook(ctx.book, BOOK_TITLE_FORMAT).title?.toString() || ""
 
       this.logger.log(
         `processing ${ctx.book._id} with link of type ${ctx.link.type} with id ${ctx.link._id}`,

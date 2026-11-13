@@ -1,43 +1,27 @@
 import {
   type BookMetadata,
-  type CatalogMetadata,
+  type BookTitleFormat,
   type DeepReadonly,
-  getBookMetadataFields,
+  getBookMetadataEntryFields as getEntryFields,
   type ReadonlyBookMetadataFields,
 } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 
-/**
- * Google Books leaves a series volume's number out of its title and states
- * it as the volume's position in the series, which would show every volume
- * of a series under one title.
- */
-const getCatalogTitle = (
-  entry: DeepReadonly<CatalogMetadata>,
-  title: ReadonlyBookMetadataFields["title"],
-) => {
-  const position = entry.metadata.belongsTo?.series?.[0]?.position
-  const isPositionInTitle = title
-    ?.toString()
-    .match(/\d+(?:\.\d+)?/g)
-    ?.some((numberInTitle) => Number(numberInTitle) === position)
-
-  return title !== undefined && position !== undefined && !isPositionInTitle
-    ? `${title} Vol ${position}`
-    : title
+/** How the app words what the metadata merge adds to a book's title. */
+export const BOOK_TITLE_FORMAT: BookTitleFormat = {
+  formatVolumeTitle(title, position) {
+    return `${title} Vol ${position}`
+  },
 }
 
-/** {@link getBookMetadataFields} for an entry of an rxdb book document. */
+/** {@link getEntryFields} for an entry of an rxdb book document. */
 export const getBookMetadataEntryFields = (
   rxdbEntry: DeepReadonlyObject<BookMetadata>,
-): ReadonlyBookMetadataFields => {
+): ReadonlyBookMetadataFields =>
   // rxdb's DeepReadonly turns the branded `string & {}` types of
   // prose-reader's metadata into objects. The stored values are the plain
   // JSON strings those types describe.
-  const entry = rxdbEntry as unknown as DeepReadonly<BookMetadata>
-  const fields = getBookMetadataFields(entry)
-
-  return entry.type === "catalog"
-    ? { ...fields, title: getCatalogTitle(entry, fields.title) }
-    : fields
-}
+  getEntryFields(
+    rxdbEntry as unknown as DeepReadonly<BookMetadata>,
+    BOOK_TITLE_FORMAT,
+  )
