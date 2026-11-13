@@ -14,6 +14,7 @@ import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
 import { User } from "./couchDbEntities.js"
 import { generatePassword } from "./generatePassword.js"
 import { findOne } from "./findOne.js"
+import { isRecord } from "../http/isRecord.js"
 
 const waitForRandomTime = (min: number, max: number) =>
   new Promise((resolve) =>
@@ -318,6 +319,32 @@ export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
 
   // db is untyped; the rx_model selector is what makes these D documents.
   return docs as (createNano.MangoResponse<unknown>["docs"][number] & D)[]
+}
+
+/**
+ * The documents of `rxModel` among `ids`, in the order of `ids`, read by id:
+ * a Mango `$in` on `_id` scans every document. An id of a missing, deleted or
+ * other model's document has none.
+ */
+export const fetchByIds = async <
+  M extends DocType["rx_model"],
+  D extends ModelOf<M>,
+>(
+  db: createNano.DocumentScope<unknown>,
+  rxModel: M,
+  ids: ReadonlyArray<string>,
+) => {
+  if (ids.length === 0) return []
+
+  const { rows } = await retryFn(() => db.fetch({ keys: [...ids] }))
+
+  return rows.flatMap(function toModelDocument(row) {
+    const doc: unknown = "doc" in row ? row.doc : undefined
+    const isModelDocument = isRecord(doc) && doc.rx_model === rxModel
+
+    // db is untyped; the rx_model check is what makes this a D document.
+    return isModelDocument ? [doc as createNano.Document & D] : []
+  })
 }
 
 export const createBook = async (

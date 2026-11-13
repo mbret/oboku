@@ -16,7 +16,6 @@ import type {
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
-import { isRecord } from "../http/isRecord.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
@@ -178,38 +177,53 @@ const LIBRARY = {
   ],
 }
 
-const isInCondition = (
-  condition: unknown,
-): condition is { $in: ReadonlyArray<unknown> } =>
-  isRecord(condition) && Array.isArray(condition.$in)
+type LibraryDocument = { _id: string }
 
-/** Answers CouchDB's `_find` for the selectors the catalog sends. */
+/** Answers CouchDB's `_find` and `_all_docs` as the catalog asks them. */
 const createLibraryDb = (library: {
-  books: ReadonlyArray<object>
-  links: ReadonlyArray<object>
-  tags: ReadonlyArray<object>
-}) => ({
-  find: async ({ selector }: { selector: Record<string, unknown> }) => {
-    const docs = [...library.books, ...library.links, ...library.tags].filter(
-      function matchesSelector(doc) {
-        const fields = new Map(Object.entries(doc))
+  books: ReadonlyArray<LibraryDocument>
+  links: ReadonlyArray<LibraryDocument>
+  tags: ReadonlyArray<LibraryDocument>
+}) => {
+  const documents = [...library.books, ...library.links, ...library.tags]
 
-        return Object.entries(selector).every(function matchesCondition([
-          field,
-          condition,
-        ]) {
-          const value = fields.get(field)
+  return {
+    find: async ({
+      selector,
+      fields,
+    }: {
+      selector: Record<string, unknown>
+      fields?: ReadonlyArray<string>
+    }) => {
+      const docs = documents
+        .filter(function matchesSelector(doc) {
+          const values = new Map(Object.entries(doc))
 
-          return isInCondition(condition)
-            ? condition.$in.includes(value)
-            : value === condition
+          return Object.entries(selector).every(
+            ([field, value]) => values.get(field) === value,
+          )
         })
-      },
-    )
+        .map(function keepAskedFields(doc) {
+          return fields
+            ? Object.fromEntries(
+                Object.entries(doc).filter(([field]) => fields.includes(field)),
+              )
+            : doc
+        })
 
-    return { docs, bookmark: "nil" }
-  },
-})
+      return { docs, bookmark: "nil" }
+    },
+    fetch: async ({ keys }: { keys: ReadonlyArray<string> }) => ({
+      rows: keys.map(function toRow(key) {
+        const doc = documents.find(({ _id }) => _id === key)
+
+        return doc
+          ? { id: key, key, value: { rev: "1-a" }, doc }
+          : { key, error: "not_found" }
+      }),
+    }),
+  }
+}
 
 /** One more Drive book than a page lists, the newest last created. */
 const LARGE_LIBRARY = {
