@@ -3,6 +3,7 @@ import {
   Alert,
   Button,
   FormControl,
+  Link,
   ListItem,
   ListItemText,
   Stack,
@@ -10,6 +11,8 @@ import {
   Typography,
 } from "@mui/material"
 import type { OpdsServerDto } from "@oboku/shared"
+import { Link as RouterLink } from "react-router"
+import { ROUTES } from "../../../navigation/routes"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import { Page } from "../../../common/Page"
 import { PageContainer } from "../../../common/PageContainer"
@@ -191,8 +194,12 @@ export function OpdsServersScreen() {
             has its own address and password.
           </Typography>
           <Alert severity="info">
-            Catalogs are empty for now: oboku cannot serve your books through
-            them yet.
+            Catalogs list your Google Drive books while your{" "}
+            <Link component={RouterLink} to={ROUTES.INTEGRATION_GOOGLE}>
+              Google account
+            </Link>{" "}
+            is connected, except those under a protected tag or marked not
+            interested.
           </Alert>
           <Button
             variant="contained"

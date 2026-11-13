@@ -10,6 +10,8 @@ The connection is optional. Without it, oboku reaches Google Drive through your 
 
 Without the connection, oboku opens Google's sign-in window whenever it needs your Drive after Google's last sign-in expired, such as when you download a book. While connected, oboku asks its server for access instead, and the window no longer opens.
 
+While connected, your [OPDS servers](/guides/opds-servers) list your Google Drive books, and reading apps download them through oboku's server.
+
 Books added before August 2025 are the exception. oboku found them by browsing your Drive with a wider permission it no longer asks for, so its server cannot reach them yet. The first time you open one of them while connected, Google's file picker shows the book: select it to give oboku access to it. oboku then reaches it without asking again.
 
 oboku reaches every Drive book with the connected account. Books you added with another Google account cannot be reached while you are connected: disconnect to reach them through Google's sign-in window again.

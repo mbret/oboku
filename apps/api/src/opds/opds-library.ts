@@ -18,6 +18,15 @@ const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
 /** Express keeps only what follows the last of them in a file name it sends. */
 const PATH_SEPARATORS = /[/\\]/g
 
+/** How many books a page of a catalog's books lists. */
+export const SERVED_BOOKS_PAGE_SIZE = 50
+
+/** The library's order: the books added last first, then by id for books added together. */
+export const compareNewestFirst = (
+  a: Pick<BookDocType, "_id" | "createdAt">,
+  b: Pick<BookDocType, "_id" | "createdAt">,
+) => b.createdAt - a.createdAt || a._id.localeCompare(b._id)
+
 /**
  * Whether the library shows the book: no protected tag hides it, and the
  * user did not mark it not interested. The catalogs serve the shown books

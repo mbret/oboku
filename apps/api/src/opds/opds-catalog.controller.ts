@@ -1,9 +1,13 @@
 import {
+  BadRequestException,
   Controller,
+  DefaultValuePipe,
   Get,
   Header,
   HttpStatus,
   Param,
+  ParseIntPipe,
+  Query,
   Res,
   StreamableFile,
   UseGuards,
@@ -58,10 +62,14 @@ export class OpdsCatalogController {
 
   @Get(OPDS_BOOKS_ROUTE)
   @Header("Content-Type", OPDS_ACQUISITION_FEED_TYPE)
-  getBooks(@WithOpdsServer() server: OpdsServerPostgresEntity) {
+  async getBooks(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
     return toOpds1Feed({
       slug: server.slug,
-      feed: toBooksFeed(server),
+      feed: await this.findBooksFeed({ server, owner, page }),
       updated: new Date(),
     })
   }
@@ -74,8 +82,15 @@ export class OpdsCatalogController {
 
   @Get(`${OPDS_2_ROUTE}/${OPDS_BOOKS_ROUTE}`)
   @Header("Content-Type", OPDS_2_FEED_TYPE)
-  getOpds2Books(@WithOpdsServer() server: OpdsServerPostgresEntity) {
-    return toOpds2Feed({ slug: server.slug, feed: toBooksFeed(server) })
+  async getOpds2Books(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds2Feed({
+      slug: server.slug,
+      feed: await this.findBooksFeed({ server, owner, page }),
+    })
   }
 
   /**
@@ -117,5 +132,26 @@ export class OpdsCatalogController {
         streamResponse.send("Bad Gateway")
       },
     )
+  }
+
+  private async findBooksFeed({
+    server,
+    owner,
+    page,
+  }: {
+    server: OpdsServerPostgresEntity
+    owner: UserPostgresEntity
+    page: number
+  }) {
+    const isPageNumber = page >= 1
+
+    if (!isPageNumber) throw new BadRequestException()
+
+    const servedBooks = await this.opdsLibraryService.listServedBooks({
+      owner,
+      page,
+    })
+
+    return toBooksFeed({ server, ...servedBooks })
   }
 }

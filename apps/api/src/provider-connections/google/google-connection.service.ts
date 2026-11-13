@@ -163,6 +163,15 @@ export class GoogleConnectionService {
     }
   }
 
+  /** Whether the API can reach the user's Drive: the instance can connect accounts, and the user connected one. */
+  async isConnected(userId: number) {
+    const isConfigured = isGoogleConnectionConfigured(
+      this.instanceConfigService.getConfig().value,
+    )
+
+    return isConfigured && (await this.find(userId)) !== null
+  }
+
   /**
    * Exchanges a code from Google's popup for a refresh token, with the client
    * the web app signs in with, and keeps it encrypted. Replaces the user's

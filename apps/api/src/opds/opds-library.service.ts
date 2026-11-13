@@ -1,4 +1,5 @@
 import { Readable } from "node:stream"
+import type { BookDocType } from "@oboku/shared"
 import {
   BadGatewayException,
   BadRequestException,
@@ -8,6 +9,7 @@ import {
   ServiceUnavailableException,
 } from "@nestjs/common"
 import { CouchService } from "../couch/couch.service.js"
+import { find } from "../couch/dbHelpers.js"
 import { findOne } from "../couch/findOne.js"
 import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
@@ -15,7 +17,13 @@ import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
 import { isRecord } from "../http/isRecord.js"
-import { isBookShown, SERVED_LINK_TYPE, toServedFile } from "./opds-library.js"
+import {
+  compareNewestFirst,
+  isBookShown,
+  SERVED_BOOKS_PAGE_SIZE,
+  SERVED_LINK_TYPE,
+  toServedFile,
+} from "./opds-library.js"
 
 /** Drive's reasons for a 403 that a later request may not get. */
 const DRIVE_RATE_LIMIT_REASONS: ReadonlyArray<string> = [
@@ -72,6 +80,86 @@ export class OpdsLibraryService {
     private readonly googleConnectionService: GoogleConnectionService,
     private readonly pluginsService: PluginsService,
   ) {}
+
+  /**
+   * A page of the books the owner's catalogs serve, in the library's order:
+   * none while the owner has no usable Google connection.
+   *
+   * @param page 1-based.
+   * @throws `NotFoundException` for a page past the last; the first always
+   * exists, empty or not.
+   */
+  async listServedBooks({
+    owner,
+    page,
+  }: {
+    owner: Pick<UserPostgresEntity, "id" | "couchName">
+    page: number
+  }) {
+    const { couchName } = owner
+    const isLibraryServed =
+      !!couchName && (await this.googleConnectionService.isConnected(owner.id))
+    const servedBooks = isLibraryServed
+      ? await this.findServedBookSummaries(couchName)
+      : { db: undefined, summaries: [] }
+    const total = servedBooks.summaries.length
+    const firstIndex = (page - 1) * SERVED_BOOKS_PAGE_SIZE
+    const isPastLastPage = page > 1 && firstIndex >= total
+
+    if (isPastLastPage) throw new NotFoundException()
+
+    const pageIds = servedBooks.summaries
+      .slice(firstIndex, firstIndex + SERVED_BOOKS_PAGE_SIZE)
+      .map(({ _id }) => _id)
+    const pageBooks =
+      servedBooks.db && pageIds.length > 0
+        ? await find(servedBooks.db, "book", {
+            selector: { _id: { $in: pageIds } },
+          })
+        : []
+    const booksById = new Map(pageBooks.map((book) => [book._id, book]))
+
+    return {
+      books: pageIds.flatMap((id) => booksById.get(id) ?? []),
+      page: { number: page, size: SERVED_BOOKS_PAGE_SIZE, total },
+    }
+  }
+
+  /** The served books' summaries, in the library's order, from one read of the library. */
+  private async findServedBookSummaries(couchName: string) {
+    const db = await this.couchService.createNanoInstanceForUser({
+      email: couchName,
+    })
+    const [protectedTagIds, driveLinks, bookSummaries] = await Promise.all([
+      findProtectedTagIds(db),
+      find(db, "link", {
+        selector: { type: SERVED_LINK_TYPE },
+        fields: ["_id"],
+      }),
+      find(db, "book", {
+        selector: {},
+        fields: ["_id", "links", "tags", "isNotInterested", "createdAt"],
+      }),
+    ])
+    const driveLinkIds = new Set(driveLinks.map(({ _id }) => _id))
+    const summaries: Pick<
+      BookDocType,
+      "_id" | "links" | "tags" | "isNotInterested" | "createdAt"
+    >[] = bookSummaries
+
+    return {
+      db,
+      summaries: summaries
+        .filter(function isServedBook(book) {
+          const firstLinkId = book.links[0]
+          const isFirstLinkOnDrive =
+            firstLinkId !== undefined && driveLinkIds.has(firstLinkId)
+
+          return isFirstLinkOnDrive && isBookShown({ book, protectedTagIds })
+        })
+        .toSorted(compareNewestFirst),
+    }
+  }
 
   /**
    * Opens the file of a book the owner's catalogs serve, from Google Drive.
