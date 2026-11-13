@@ -1,10 +1,11 @@
-import path from "node:path"
 import {
   type BookDocType,
   directives,
   getMetadataFromBook,
+  getUrlExtension,
   isBookProtected,
   type LinkDocType,
+  READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
 import { extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
@@ -14,24 +15,23 @@ export const SERVED_LINK_TYPE = "DRIVE" satisfies LinkDocType["type"]
 
 const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
 
+/** Express keeps only what follows the last of them in a file name it sends. */
+const PATH_SEPARATORS = /[/\\]/g
+
 /**
- * Whether the catalogs serve the book: its first link, the one the app reads
- * it from, is a Google Drive file, and the library does not hide it.
+ * Whether the library shows the book: no protected tag hides it, and the
+ * user did not mark it not interested. The catalogs serve the shown books
+ * whose first link, the one the app reads them from, is a Google Drive file.
  */
-export const isServedBook = ({
+export const isBookShown = ({
   book,
-  firstLinkType,
   protectedTagIds,
 }: {
   book: Readonly<Pick<BookDocType, "isNotInterested">> & {
     readonly tags: ReadonlyArray<string>
   }
-  firstLinkType: LinkDocType["type"] | undefined
   protectedTagIds: ReadonlyArray<string>
-}) =>
-  firstLinkType === SERVED_LINK_TYPE &&
-  !book.isNotInterested &&
-  !isBookProtected(protectedTagIds, book)
+}) => !book.isNotInterested && !isBookProtected(protectedTagIds, book)
 
 /**
  * The name and media type a reading app saves the book's file under: the
@@ -49,12 +49,17 @@ export const toServedFile = (
   const baseName =
     directives
       .removeDirectiveFromString(String(providerFileName ?? metadata.title))
+      .replaceAll(PATH_SEPARATORS, "-")
       .trim() || book._id
   const knownContentType = metadata.contentType || undefined
   const typeExtension = knownContentType && extension(knownContentType)
-  const hasExtension = path.extname(baseName) !== ""
+  const hasBookExtension = READER_ACCEPTED_EXTENSIONS.includes(
+    `.${getUrlExtension(baseName).toLowerCase()}`,
+  )
   const name =
-    hasExtension || !typeExtension ? baseName : `${baseName}.${typeExtension}`
+    hasBookExtension || !typeExtension
+      ? baseName
+      : `${baseName}.${typeExtension}`
 
   return { name, contentType: knownContentType ?? UNKNOWN_CONTENT_TYPE }
 }

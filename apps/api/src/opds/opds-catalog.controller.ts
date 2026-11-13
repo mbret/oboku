@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Header,
+  HttpStatus,
   Param,
   Res,
   StreamableFile,
@@ -96,6 +97,25 @@ export class OpdsCatalogController {
     // own media type replaces it.
     response.attachment(file.name).type(file.contentType)
 
-    return new StreamableFile(file.stream, { length: file.size })
+    const bookFile = new StreamableFile(file.stream, { length: file.size })
+    const handleStreamFailure = bookFile.errorHandler
+
+    // Nest answers 400 for a stream that fails before its first byte; Drive
+    // failed, not the request.
+    return bookFile.setErrorHandler(
+      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
+        const isAnswerStarted =
+          streamResponse.destroyed || streamResponse.headersSent
+
+        if (isAnswerStarted) {
+          handleStreamFailure(error, streamResponse)
+
+          return
+        }
+
+        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
+        streamResponse.send("Bad Gateway")
+      },
+    )
   }
 }

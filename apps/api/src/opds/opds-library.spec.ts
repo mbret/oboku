@@ -1,43 +1,31 @@
 import type { BookMetadata } from "@oboku/shared"
-import { isServedBook, toServedFile } from "./opds-library.js"
+import { isBookShown, toServedFile } from "./opds-library.js"
 
 const PROTECTED_TAG_IDS = ["tag-private"]
 
-describe("isServedBook", () => {
-  it("serves a book whose first link is a Google Drive file", () => {
+describe("isBookShown", () => {
+  it("shows a book no protected tag hides", () => {
     expect(
-      isServedBook({
+      isBookShown({
         book: { tags: ["tag-reading"] },
-        firstLinkType: "DRIVE",
         protectedTagIds: PROTECTED_TAG_IDS,
       }),
     ).toBe(true)
   })
 
   it.each([
-    [
-      "a book under a protected tag",
-      { tags: ["tag-reading", "tag-private"] },
-      "DRIVE",
-    ],
-    [
-      "a book marked not interested",
-      { tags: [], isNotInterested: true },
-      "DRIVE",
-    ],
-    ["a book on another provider", { tags: [] }, "dropbox"],
-    ["a book without links", { tags: [] }, undefined],
-  ] as const)("leaves out %s", (_, book, firstLinkType) => {
-    expect(
-      isServedBook({ book, firstLinkType, protectedTagIds: PROTECTED_TAG_IDS }),
-    ).toBe(false)
+    ["a book under a protected tag", { tags: ["tag-reading", "tag-private"] }],
+    ["a book marked not interested", { tags: [], isNotInterested: true }],
+  ] as const)("hides %s", (_, book) => {
+    expect(isBookShown({ book, protectedTagIds: PROTECTED_TAG_IDS })).toBe(
+      false,
+    )
   })
 
-  it("keeps a book whose tag id names no protected tag", () => {
+  it("shows a book whose tag id names no protected tag", () => {
     expect(
-      isServedBook({
+      isBookShown({
         book: { tags: ["tag-deleted"], isNotInterested: false },
-        firstLinkType: "DRIVE",
         protectedTagIds: PROTECTED_TAG_IDS,
       }),
     ).toBe(true)
@@ -52,6 +40,12 @@ describe("toServedFile", () => {
     metadata: { titles: [{ value: "Dune" }] },
   }
 
+  const nameOf = (providerFileName: string) =>
+    toServedFile({
+      _id: "book-dune",
+      metadata: [{ type: "link", title: providerFileName }, epubEntry],
+    }).name
+
   it("names the file as on its provider, without oboku's directives", () => {
     expect(
       toServedFile({
@@ -64,13 +58,13 @@ describe("toServedFile", () => {
     ).toEqual({ name: "Dune.epub", contentType: "application/epub+zip" })
   })
 
-  it("adds the media type's extension to a name without one", () => {
-    expect(
-      toServedFile({
-        _id: "book-dune",
-        metadata: [{ type: "link", title: "Dune" }, epubEntry],
-      }).name,
-    ).toBe("Dune.epub")
+  it("adds the media type's extension to a name without a book extension", () => {
+    expect(nameOf("Dune")).toBe("Dune.epub")
+    expect(nameOf("Dr. Sleep")).toBe("Dr. Sleep.epub")
+  })
+
+  it("keeps a name's path separators from cutting it short", () => {
+    expect(nameOf("Fate/Zero 01.epub")).toBe("Fate-Zero 01.epub")
   })
 
   it("names the file after the book's title when its provider's name is unknown", () => {

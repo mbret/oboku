@@ -1,5 +1,5 @@
 import { Readable } from "node:stream"
-import type { INestApplication } from "@nestjs/common"
+import { type INestApplication, Logger } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { ObokuErrorCode } from "@oboku/shared"
@@ -185,6 +185,21 @@ const libraryDb = {
   },
 }
 
+/**
+ * A refusal of a streamed download as gaxios throws it: no parsed body, and
+ * Drive's answer only in the message.
+ */
+const createDriveStreamRefusal = (status: number) =>
+  Object.assign(
+    new Error(
+      `Request failed with status code ${status}: ${DRIVE_ACCESS_TOKEN}`,
+    ),
+    {
+      config: { headers: { Authorization: `Bearer ${DRIVE_ACCESS_TOKEN}` } },
+      response: { status },
+    },
+  )
+
 /** A refusal from Drive as gaxios throws it, the access token in its config. */
 const createDriveRefusal = (status: number, reason?: string) =>
   Object.assign(new Error(`Request failed with status code ${status}`), {
@@ -265,6 +280,7 @@ describe("OpdsCatalogController", () => {
 
   afterEach(async () => {
     await app.close()
+    vi.restoreAllMocks()
     vi.clearAllMocks()
   })
 
@@ -583,6 +599,7 @@ describe("OpdsCatalogController", () => {
     ])(
       "answers %s with %i, keeping the access token out",
       async (_, refusal, status) => {
+        const warn = vi.spyOn(Logger.prototype, "warn")
         getFileMetadata.mockRejectedValue(refusal)
 
         const response = await getBookFile("book-dune")
@@ -592,7 +609,43 @@ describe("OpdsCatalogController", () => {
           DRIVE_ACCESS_TOKEN,
         )
         expect(response.body.toString()).not.toContain(DRIVE_ACCESS_TOKEN)
+        expect(JSON.stringify(warn.mock.calls)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
       },
     )
+
+    it.each([
+      ["a download limit once the file's metadata came", 403, 503],
+      ["a file gone between both requests", 404, 404],
+      ["a failing download", 500, 502],
+    ])(
+      "answers %s with %i, though gaxios keeps no body of a stream",
+      async (_, driveStatus, status) => {
+        const warn = vi.spyOn(Logger.prototype, "warn")
+        download.mockRejectedValue(createDriveStreamRefusal(driveStatus))
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(status)
+        expect(JSON.stringify(warn.mock.calls)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
+      },
+    )
+
+    it("answers 502 when Drive's stream fails before its first byte", async () => {
+      download.mockResolvedValue({
+        stream: new Readable({
+          read() {
+            this.destroy(new Error("socket hang up"))
+          },
+        }),
+      })
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(502)
+    })
   })
 })

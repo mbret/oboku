@@ -215,10 +215,9 @@ export class BooksMetadataService {
         `processing ${ctx.book._id} with link of type ${ctx.link.type} with id ${ctx.link._id}`,
       )
 
-      const bookIsProtected = isBookProtected(
-        await findProtectedTagIds(ctx.db),
-        ctx.book,
-      )
+      const bookIsProtected =
+        ctx.book.tags.length > 0 &&
+        isBookProtected(await findProtectedTagIds(ctx.db), ctx.book)
       const externalFetchEnabled = resolveMetadataFetchEnabled(
         ctx.book.metadataFetchEnabled,
         bookIsProtected,

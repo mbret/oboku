@@ -13,7 +13,9 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
-import { isServedBook, SERVED_LINK_TYPE, toServedFile } from "./opds-library.js"
+import { toGoogleApiFailure } from "../http/googleApiFailure.js"
+import { isRecord } from "../http/isRecord.js"
+import { isBookShown, SERVED_LINK_TYPE, toServedFile } from "./opds-library.js"
 
 /** Drive's reasons for a 403 that a later request may not get. */
 const DRIVE_RATE_LIMIT_REASONS: ReadonlyArray<string> = [
@@ -21,48 +23,36 @@ const DRIVE_RATE_LIMIT_REASONS: ReadonlyArray<string> = [
   "userRateLimitExceeded",
 ]
 
-const isObject = (value: unknown): value is object =>
-  typeof value === "object" && value !== null
-
 /** The status Drive answered a refused request with, and its first error's reason. */
 const toDriveRefusal = (error: unknown) => {
-  const response =
-    isObject(error) && "response" in error ? error.response : undefined
-  const status =
-    isObject(response) && "status" in response ? response.status : undefined
-  const body =
-    isObject(response) && "data" in response ? response.data : undefined
-  const driveError = isObject(body) && "error" in body ? body.error : undefined
-  const errors =
-    isObject(driveError) && "errors" in driveError
-      ? driveError.errors
-      : undefined
+  const { status, body } = toGoogleApiFailure(error)
+  const driveError = isRecord(body) ? body.error : undefined
+  const errors = isRecord(driveError) ? driveError.errors : undefined
   const firstError: unknown = Array.isArray(errors) ? errors[0] : undefined
-  const reason =
-    isObject(firstError) && "reason" in firstError
-      ? firstError.reason
-      : undefined
+  const reason = isRecord(firstError) ? firstError.reason : undefined
 
-  return {
-    status: typeof status === "number" ? status : undefined,
-    reason: typeof reason === "string" ? reason : undefined,
-  }
+  return { status, reason: typeof reason === "string" ? reason : undefined }
 }
 
 /**
  * What a reading app gets for a file Drive would not send. A 401 would read
- * as wrong catalog credentials, so Drive's refusals never answer one, and
- * gaxios's error, whose config carries the access token, stays here.
+ * as wrong catalog credentials, so Drive's refusals never answer one.
+ *
+ * Once Drive answered the file's metadata, a 403 on its download is a limit,
+ * on the rate or on the file's downloads: gaxios keeps no body of a streamed
+ * answer to read the reason from.
  */
 const toDriveFailure = ({
-  status,
-  reason,
-}: ReturnType<typeof toDriveRefusal>) => {
+  refusal: { status, reason },
+  isFileReadable,
+}: {
+  refusal: ReturnType<typeof toDriveRefusal>
+  isFileReadable: boolean
+}) => {
+  const isRateLimitReason =
+    reason !== undefined && DRIVE_RATE_LIMIT_REASONS.includes(reason)
   const isRateLimited =
-    status === 429 ||
-    (status === 403 &&
-      reason !== undefined &&
-      DRIVE_RATE_LIMIT_REASONS.includes(reason))
+    status === 429 || (status === 403 && (isFileReadable || isRateLimitReason))
   const isFileUnreachable = status === 404 || status === 403
 
   if (isRateLimited) return new ServiceUnavailableException()
@@ -114,10 +104,12 @@ export class OpdsLibraryService {
       ? await findOne("link", { selector: { _id: firstLinkId } }, { db })
       : null
 
+    const isFirstLinkOnDrive = firstLink?.type === SERVED_LINK_TYPE
+
     if (
       !book ||
-      firstLink?.type !== SERVED_LINK_TYPE ||
-      !isServedBook({ book, firstLinkType: firstLink.type, protectedTagIds })
+      !isFirstLinkOnDrive ||
+      !isBookShown({ book, protectedTagIds })
     ) {
       throw new NotFoundException()
     }
@@ -125,23 +117,38 @@ export class OpdsLibraryService {
     const providerCredentials = {
       access_token: await this.mintDriveAccessToken(owner.id),
     }
+    const { pluginsService } = this
+    const { bookMetadata } = await this.askDrive(
+      { bookId, isFileReadable: false },
+      function readFileMetadata() {
+        return pluginsService.getFileMetadata({
+          link: firstLink,
+          providerCredentials,
+        })
+      },
+    )
+    const { stream } = await this.askDrive(
+      { bookId, isFileReadable: true },
+      function openFileStream() {
+        return pluginsService.download({ link: firstLink, providerCredentials })
+      },
+    )
+    const size = Number(bookMetadata?.size)
 
+    return {
+      ...toServedFile(book),
+      stream: stream instanceof Readable ? stream : Readable.from(stream),
+      size: Number.isSafeInteger(size) ? size : undefined,
+    }
+  }
+
+  /** Runs a request to Drive, turning its refusal into what a reading app gets. */
+  private async askDrive<TAnswer>(
+    { bookId, isFileReadable }: { bookId: string; isFileReadable: boolean },
+    request: () => Promise<TAnswer>,
+  ) {
     try {
-      const { bookMetadata } = await this.pluginsService.getFileMetadata({
-        link: firstLink,
-        providerCredentials,
-      })
-      const { stream } = await this.pluginsService.download({
-        link: firstLink,
-        providerCredentials,
-      })
-      const size = Number(bookMetadata?.size)
-
-      return {
-        ...toServedFile(book),
-        stream: stream instanceof Readable ? stream : Readable.from(stream),
-        size: Number.isSafeInteger(size) ? size : undefined,
-      }
+      return await request()
     } catch (error) {
       const refusal = toDriveRefusal(error)
 
@@ -149,7 +156,7 @@ export class OpdsLibraryService {
         `Drive refused book ${bookId}: status ${refusal.status ?? "none"}, reason ${refusal.reason ?? "none"}`,
       )
 
-      throw toDriveFailure(refusal)
+      throw toDriveFailure({ refusal, isFileReadable })
     }
   }
 
