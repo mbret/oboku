@@ -239,10 +239,13 @@ describe("OpdsCatalogController", () => {
     })
     getFileMetadata.mockResolvedValue({
       modifiedAt: "2026-11-12T08:00:00.000Z",
-      bookMetadata: { size: String(BOOK_BYTES.length) },
+      bookMetadata: { size: "1" },
     })
     download.mockImplementation(async function streamBook() {
-      return { stream: Readable.from([Buffer.from(BOOK_BYTES)]) }
+      return {
+        stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+        size: BOOK_BYTES.length,
+      }
     })
 
     const module = await Test.createTestingModule({
@@ -509,6 +512,18 @@ describe("OpdsCatalogController", () => {
         link: expect.objectContaining({ _id: DRIVE_LINK._id }),
         providerCredentials: { access_token: DRIVE_ACCESS_TOKEN },
       })
+    })
+
+    it("states no length when Drive's download states none", async () => {
+      download.mockResolvedValue({
+        stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+      })
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-length"]).toBeUndefined()
+      expect(response.body.toString()).toBe(BOOK_BYTES)
     })
 
     it("sends the book's own media type, not the one its extension suggests", async () => {

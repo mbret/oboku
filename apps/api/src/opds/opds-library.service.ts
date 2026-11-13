@@ -118,27 +118,30 @@ export class OpdsLibraryService {
       access_token: await this.mintDriveAccessToken(owner.id),
     }
     const { pluginsService } = this
-    const { bookMetadata } = await this.askDrive(
+
+    // Drive's answer about the file tells a file the token cannot read from a
+    // limit, which a refused download cannot: see `toDriveFailure`.
+    await this.askDrive(
       { bookId, isFileReadable: false },
-      function readFileMetadata() {
+      function checkFileReadable() {
         return pluginsService.getFileMetadata({
           link: firstLink,
           providerCredentials,
         })
       },
     )
-    const { stream } = await this.askDrive(
+
+    const { stream, size } = await this.askDrive(
       { bookId, isFileReadable: true },
       function openFileStream() {
         return pluginsService.download({ link: firstLink, providerCredentials })
       },
     )
-    const size = Number(bookMetadata?.size)
 
     return {
       ...toServedFile(book),
       stream: stream instanceof Readable ? stream : Readable.from(stream),
-      size: Number.isSafeInteger(size) ? size : undefined,
+      size,
     }
   }
 

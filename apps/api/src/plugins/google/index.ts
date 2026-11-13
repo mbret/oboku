@@ -8,6 +8,7 @@ import { getDataFromDataSource } from "@oboku/shared"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
+import { toDecodedContentLength } from "../../http/contentLength.js"
 
 const DRIVE_TYPE = "DRIVE"
 
@@ -93,6 +94,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
 
     return {
       stream: response.data,
+      size: toDecodedContentLength(response.headers),
     }
   },
   sync: async (ctx) => {

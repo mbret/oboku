@@ -124,6 +124,8 @@ export type DataSourcePlugin<
     db?: createNano.DocumentScope<unknown>,
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
+    /** The number of bytes `stream` yields, when the provider's answer states it. */
+    size?: number
   }>
   /** Find all links that match this item (same resource). Caller cleans/merges and uses one. */
   getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
