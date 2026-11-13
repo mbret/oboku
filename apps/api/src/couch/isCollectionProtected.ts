@@ -1,10 +1,11 @@
 import type createNano from "nano"
-import { find, findOne } from "./dbHelpers.js"
+import { findOne } from "./dbHelpers.js"
+import { findProtectedTagIds } from "./findProtectedTagIds.js"
 
 /**
  * A collection is considered protected when at least one of its books carries
- * a protected tag. Mirrors {@link isBookProtected} but resolves through the
- * collection's `books` array.
+ * a protected tag. Mirrors `isBookProtected` from `@oboku/shared`, but
+ * resolves through the collection's `books` array.
  */
 export const isCollectionProtected = async (
   db: createNano.DocumentScope<unknown>,
@@ -12,14 +13,9 @@ export const isCollectionProtected = async (
 ) => {
   if (!collection.books.length) return false
 
-  const protectedTags = await find(db, "tag", {
-    selector: { isProtected: true },
-    fields: ["_id"],
-  })
+  const protectedTagIds = await findProtectedTagIds(db)
 
-  if (!protectedTags.length) return false
-
-  const protectedTagIds = protectedTags.map(({ _id }) => _id)
+  if (!protectedTagIds.length) return false
 
   const protectedBook = await findOne(
     "book",

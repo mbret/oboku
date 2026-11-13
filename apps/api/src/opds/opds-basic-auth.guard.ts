@@ -6,7 +6,10 @@ import {
   UnauthorizedException,
 } from "@nestjs/common"
 import type { Request, Response } from "express"
-import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
+import type {
+  OpdsServerPostgresEntity,
+  UserPostgresEntity,
+} from "../features/postgres/entities.js"
 import { parseBasicAuthorization } from "../http/basicAuthorization.js"
 import { getRequestOrigin } from "../http/requestOrigin.js"
 import { OpdsCatalogService } from "./opds-catalog.service.js"
@@ -19,6 +22,7 @@ const OPDS_BASIC_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
 type OpdsCatalogRequest = Request<{ slug: string }> & {
   opdsServer?: OpdsServerPostgresEntity
+  opdsOwner?: UserPostgresEntity
 }
 
 /**
@@ -36,11 +40,11 @@ export class OpdsBasicAuthGuard implements CanActivate {
     const credentials = parseBasicAuthorization(request.headers.authorization)
     const { slug } = request.params
 
-    const server = credentials
+    const access = credentials
       ? await this.opdsCatalogService.authorize({ slug, ...credentials })
       : undefined
 
-    if (!server) {
+    if (!access) {
       http.getResponse<Response>().set({
         "WWW-Authenticate": OPDS_BASIC_CHALLENGE,
         "Content-Type": OPDS_AUTHENTICATION_DOCUMENT_TYPE,
@@ -51,7 +55,8 @@ export class OpdsBasicAuthGuard implements CanActivate {
       )
     }
 
-    request.opdsServer = server
+    request.opdsServer = access.server
+    request.opdsOwner = access.owner
 
     return true
   }
@@ -66,4 +71,16 @@ export const WithOpdsServer = createParamDecorator(function getOpdsServer(
   if (!opdsServer) throw new UnauthorizedException()
 
   return opdsServer
+})
+
+/** The account that owns the server the reader signed in to. */
+export const WithOpdsOwner = createParamDecorator(function getOpdsOwner(
+  _,
+  context: ExecutionContext,
+) {
+  const { opdsOwner } = context.switchToHttp().getRequest<OpdsCatalogRequest>()
+
+  if (!opdsOwner) throw new UnauthorizedException()
+
+  return opdsOwner
 })

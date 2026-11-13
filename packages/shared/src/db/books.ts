@@ -219,6 +219,15 @@ export const getBookmark = ({
 }
 
 /**
+ * Whether the book carries one of the protected tags, which hide it until
+ * the library is unlocked.
+ */
+export const isBookProtected = (
+  protectedTagIds: ReadonlyArray<string>,
+  book: { readonly tags?: ReadonlyArray<string> | null },
+) => book.tags?.some((tagId) => protectedTagIds.includes(tagId)) ?? false
+
+/**
  * A book nothing has happened to yet: no metadata fetched, never opened, in
  * no collection. The web app and the API create their books from it, with
  * what they know of each on top.

@@ -1,11 +1,14 @@
+import { Readable } from "node:stream"
 import type { INestApplication } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
+import { ObokuErrorCode } from "@oboku/shared"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
+import { CouchService } from "../couch/couch.service.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
@@ -13,15 +16,28 @@ import type {
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { createObokuBadRequest } from "../http/obokuBadRequest.js"
+import { PluginsService } from "../plugins/plugins.service.js"
+import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
 import { OpdsCatalogService } from "./opds-catalog.service.js"
+import { OpdsLibraryService } from "./opds-library.service.js"
 
 const OWNER: UserPostgresEntity = {
   id: 1,
   email: "reader@example.com",
   username: "reader@example.com",
+  couchName: "reader@example.com",
+  createdAt: new Date(),
+}
+
+/** An account that has not signed in since its CouchDB user name is recorded. */
+const NEWCOMER: UserPostgresEntity = {
+  id: 2,
+  email: "newcomer@example.com",
+  username: "newcomer@example.com",
   createdAt: new Date(),
 }
 const OWNER_SESSION = "reader-session"
@@ -34,6 +50,13 @@ const SERVER: OpdsServerPostgresEntity = {
   name: `Kids' <books> & "more"`,
   password_hash: hashSecret(PASSWORD),
   created_at: new Date(),
+}
+
+const NEWCOMER_SERVER: OpdsServerPostgresEntity = {
+  ...SERVER,
+  id: 8,
+  user_id: NEWCOMER.id,
+  slug: "quiet-owls-wait",
 }
 
 const ownerTokenPayload: TokenPayload = {
@@ -70,12 +93,107 @@ const toBasicAuthorization = (credentials: string) =>
 const OWNER_AUTHORIZATION = toBasicAuthorization(`${OWNER.email}:${PASSWORD}`)
 
 const serverStore: Pick<OpdsServerPostgresService, "findBySlug"> = {
-  findBySlug: async (slug) => (slug === SERVER.slug ? SERVER : null),
+  findBySlug: async (slug) =>
+    [SERVER, NEWCOMER_SERVER].find((server) => server.slug === slug) ?? null,
 }
 
 const userStore: Pick<UserPostgresService, "findById"> = {
-  findById: async (userId) => (userId === OWNER.id ? OWNER : null),
+  findById: async (userId) =>
+    [OWNER, NEWCOMER].find((user) => user.id === userId) ?? null,
 }
+
+const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
+const BOOK_BYTES = "epub bytes"
+
+const DRIVE_LINK = {
+  _id: "link-drive",
+  rx_model: "link",
+  type: "DRIVE",
+  data: { fileId: "drive-file-dune" },
+  book: "book-dune",
+}
+
+const DROPBOX_LINK = {
+  _id: "link-dropbox",
+  rx_model: "link",
+  type: "dropbox",
+  data: { fileId: "dropbox-file" },
+  book: "book-dropbox",
+}
+
+const PROTECTED_TAG = { _id: "tag-private", rx_model: "tag", isProtected: true }
+
+const DUNE = {
+  _id: "book-dune",
+  rx_model: "book",
+  links: [DRIVE_LINK._id],
+  tags: [],
+  metadata: [
+    { type: "link", title: "Dune [oboku~isbn~9780441013593].epub" },
+    {
+      type: "file",
+      version: 5,
+      contentType: "application/epub+zip",
+      metadata: { titles: [{ value: "Dune" }] },
+    },
+  ],
+}
+
+const LIBRARY = {
+  books: [
+    DUNE,
+    { ...DUNE, _id: "book-private", tags: [PROTECTED_TAG._id] },
+    { ...DUNE, _id: "book-skipped", isNotInterested: true },
+    { ...DUNE, _id: "book-dropbox", links: [DROPBOX_LINK._id] },
+    { ...DUNE, _id: "book-mixed", links: [DROPBOX_LINK._id, DRIVE_LINK._id] },
+    { ...DUNE, _id: "book-unlinked", links: [] },
+    {
+      ...DUNE,
+      _id: "book-blame",
+      metadata: [
+        { type: "link", title: "BLAME! 03.cbz" },
+        {
+          type: "file",
+          version: 5,
+          contentType: "application/vnd.comicbook+zip",
+          metadata: { titles: [{ value: "BLAME! 03" }] },
+        },
+      ],
+    },
+  ],
+  links: [DRIVE_LINK, DROPBOX_LINK],
+  tags: [
+    PROTECTED_TAG,
+    { _id: "tag-reading", rx_model: "tag", isProtected: false },
+  ],
+}
+
+/** Answers CouchDB's `_find` for the selectors the catalog sends. */
+const libraryDb = {
+  find: async ({ selector }: { selector: Record<string, unknown> }) => {
+    const docs = [...LIBRARY.books, ...LIBRARY.links, ...LIBRARY.tags].filter(
+      function matchesSelector(doc) {
+        const fields = new Map(Object.entries(doc))
+
+        return Object.entries(selector).every(
+          ([field, value]) => fields.get(field) === value,
+        )
+      },
+    )
+
+    return { docs, bookmark: "nil" }
+  },
+}
+
+/** A refusal from Drive as gaxios throws it, the access token in its config. */
+const createDriveRefusal = (status: number, reason?: string) =>
+  Object.assign(new Error(`Request failed with status code ${status}`), {
+    config: { headers: { Authorization: `Bearer ${DRIVE_ACCESS_TOKEN}` } },
+    response: {
+      status,
+      data: { error: { code: status, errors: [{ reason }] } },
+    },
+  })
 
 describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
@@ -92,12 +210,35 @@ describe("OpdsCatalogController", () => {
       : pendingRequest
   }
 
+  const createNanoInstanceForUser = vi.fn()
+  const mintAccessToken = vi.fn()
+  const getFileMetadata = vi.fn()
+  const download = vi.fn()
+
   beforeEach(async () => {
+    createNanoInstanceForUser.mockResolvedValue(libraryDb)
+    mintAccessToken.mockResolvedValue({
+      accessToken: DRIVE_ACCESS_TOKEN,
+      expiresIn: 3599,
+      scopes: ["https://www.googleapis.com/auth/drive.file"],
+    })
+    getFileMetadata.mockResolvedValue({
+      modifiedAt: "2026-11-12T08:00:00.000Z",
+      bookMetadata: { size: String(BOOK_BYTES.length) },
+    })
+    download.mockImplementation(async function streamBook() {
+      return { stream: Readable.from([Buffer.from(BOOK_BYTES)]) }
+    })
+
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
       providers: [
         OpdsCatalogService,
+        OpdsLibraryService,
         OpdsBasicAuthGuard,
+        { provide: CouchService, useValue: { createNanoInstanceForUser } },
+        { provide: GoogleConnectionService, useValue: { mintAccessToken } },
+        { provide: PluginsService, useValue: { getFileMetadata, download } },
         { provide: OpdsServerPostgresService, useValue: serverStore },
         { provide: UserPostgresService, useValue: userStore },
         { provide: APP_GUARD, useClass: AuthGuard },
@@ -124,6 +265,7 @@ describe("OpdsCatalogController", () => {
 
   afterEach(async () => {
     await app.close()
+    vi.clearAllMocks()
   })
 
   it("serves the catalog root to the owner's email and the server's password", async () => {
@@ -303,6 +445,11 @@ describe("OpdsCatalogController", () => {
     ],
     ["an unknown server", "/opds/brave-foxes-run", OWNER_AUTHORIZATION],
     [
+      "missing credentials on a book's file",
+      "/opds/calm-snails-dream/books/book-dune/Dune.epub",
+      undefined,
+    ],
+    [
       "missing credentials in OPDS 2.0",
       "/opds/calm-snails-dream/v2",
       undefined,
@@ -321,4 +468,131 @@ describe("OpdsCatalogController", () => {
       expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
+  describe("book files", () => {
+    const getBookFile = (bookId: string, slug = SERVER.slug) =>
+      getCatalog(
+        `/opds/${slug}/books/${bookId}/Dune.epub`,
+        OWNER_AUTHORIZATION,
+      ).responseType("blob")
+
+    it("streams a served book's Drive file, typed and named for reading apps", async () => {
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe("application/epub+zip")
+      expect(response.headers["content-disposition"]).toBe(
+        "attachment; filename=Dune.epub",
+      )
+      expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(createNanoInstanceForUser).toHaveBeenCalledWith({
+        email: OWNER.couchName,
+      })
+      expect(mintAccessToken).toHaveBeenCalledWith(OWNER.id)
+      expect(download).toHaveBeenCalledWith({
+        link: expect.objectContaining({ _id: DRIVE_LINK._id }),
+        providerCredentials: { access_token: DRIVE_ACCESS_TOKEN },
+      })
+    })
+
+    it("sends the book's own media type, not the one its extension suggests", async () => {
+      const response = await getBookFile("book-blame")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe(
+        "application/vnd.comicbook+zip",
+      )
+      expect(response.headers["content-disposition"]).toBe(
+        'attachment; filename="BLAME! 03.cbz"',
+      )
+    })
+
+    it.each([
+      ["an unknown book", "book-missing"],
+      ["a book under a protected tag", "book-private"],
+      ["a book marked not interested", "book-skipped"],
+      ["a book on another provider", "book-dropbox"],
+      ["a book whose Drive link is not its first", "book-mixed"],
+      ["a book without links", "book-unlinked"],
+    ])("answers 404 for %s, without asking Google", async (_, bookId) => {
+      const response = await getBookFile(bookId)
+
+      expect(response.status).toBe(404)
+      expect(mintAccessToken).not.toHaveBeenCalled()
+    })
+
+    it("serves no file of an owner whose library it cannot open yet", async () => {
+      const response = await getCatalog(
+        "/opds/quiet-owls-wait/books/book-dune/Dune.epub",
+        toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),
+      )
+
+      expect(response.status).toBe(404)
+      expect(createNanoInstanceForUser).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      [
+        "no Google connection",
+        createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND,
+        ),
+        404,
+      ],
+      [
+        "a lost Google connection",
+        createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
+        404,
+      ],
+      [
+        "an instance without Google's client secret",
+        createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED,
+        ),
+        404,
+      ],
+      [
+        "Google failing to refresh the token",
+        new Error("Google refused to refresh the access token: internal"),
+        502,
+      ],
+    ])("answers %s with %i", async (_, mintFailure, status) => {
+      mintAccessToken.mockRejectedValue(mintFailure)
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(status)
+      expect(download).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["a file Drive cannot find", createDriveRefusal(404, "notFound"), 404],
+      [
+        "a file the token may not read",
+        createDriveRefusal(403, "insufficientFilePermissions"),
+        404,
+      ],
+      [
+        "Drive's rate limit",
+        createDriveRefusal(403, "userRateLimitExceeded"),
+        503,
+      ],
+      ["too many requests", createDriveRefusal(429), 503],
+      ["a token Drive refuses", createDriveRefusal(401, "authError"), 502],
+      ["a failing Drive", createDriveRefusal(500, "backendError"), 502],
+    ])(
+      "answers %s with %i, keeping the access token out",
+      async (_, refusal, status) => {
+        getFileMetadata.mockRejectedValue(refusal)
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(status)
+        expect(JSON.stringify(response.headers)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
+        expect(response.body.toString()).not.toContain(DRIVE_ACCESS_TOKEN)
+      },
+    )
+  })
 })

@@ -1,4 +1,4 @@
-import { intersection } from "@oboku/shared"
+import { isBookProtected } from "@oboku/shared"
 import { useProtectedTagIds } from "../tags/helpers"
 import { createLinkQueryOptions, useLink } from "../links/states"
 import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
@@ -132,11 +132,6 @@ export const useBook = ({
 }
 
 export type BookQueryResult = NonNullable<ReturnType<typeof useBook>["data"]>
-
-export const isBookProtected = (
-  protectedTags: string[],
-  book: Pick<DeepReadonlyObject<BookDocType>, "tags">,
-) => intersection(protectedTags, book?.tags || []).length > 0
 
 export const useIsBookLocal = ({ id }: { id?: string }) => {
   const { data: book } = useBook({ id })
