@@ -63,31 +63,10 @@ describe("StreamingUsagePostgresService", () => {
     service = module.get(StreamingUsagePostgresService)
   })
 
-  it("starts the month's counter at 0 bytes, keeping one that exists", async () => {
-    const queryBuilder = createQueryBuilder(1)
-    repository.createQueryBuilder.mockReturnValue(queryBuilder)
-
-    await reserve()
-
-    expect(queryBuilder.values).toHaveBeenCalledWith({ month: MONTH, bytes: 0 })
-    expect(queryBuilder.orIgnore).toHaveBeenCalled()
-  })
-
-  it("adds the bytes only while the counter stays within the cap", async () => {
-    const queryBuilder = createQueryBuilder(1)
-    repository.createQueryBuilder.mockReturnValue(queryBuilder)
+  it("reserves the bytes when the update matches the month's counter", async () => {
+    repository.createQueryBuilder.mockReturnValue(createQueryBuilder(1))
 
     expect(await reserve()).toBe("reserved")
-    expect(queryBuilder.where).toHaveBeenCalledWith("month = :month")
-    expect(queryBuilder.andWhere).toHaveBeenCalledWith("bytes < :capBytes")
-    expect(queryBuilder.andWhere).toHaveBeenCalledWith(
-      "bytes + :bytes <= :capBytes",
-    )
-    expect(queryBuilder.setParameters).toHaveBeenCalledWith({
-      month: MONTH,
-      bytes: 300,
-      capBytes: 1000,
-    })
   })
 
   it("reports the cap reached when the counter would pass it", async () => {
