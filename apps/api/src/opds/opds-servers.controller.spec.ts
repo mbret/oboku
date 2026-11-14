@@ -59,6 +59,7 @@ const INSTANCE_CONFIG: InstanceConfig = {
   allowPrivateNetworkRequests: false,
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: SERVER_LIMIT,
+  proxiedDownloadBytesMaxPerMonth: 1,
 }
 
 const instanceConfigService: Pick<InstanceConfigService, "getConfig"> = {

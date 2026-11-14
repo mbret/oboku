@@ -15,4 +15,5 @@ export const toInstanceSettings = (
   microsoftApplicationClientId: config.microsoftApplicationClientId,
   microsoftApplicationAuthority: config.microsoftApplicationAuthority,
   opdsServersMaxPerUser: config.opdsServersMaxPerUser,
+  proxiedDownloadBytesMaxPerMonth: config.proxiedDownloadBytesMaxPerMonth,
 })
