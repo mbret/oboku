@@ -44,7 +44,8 @@ allowBuilds:
   sharp: true
 # lerna pins conventional-commits-parser 7.1.2, and the
 # @conventional-changelog/git-client it installs asks for ^7.1.3. The override
-# is keyed on that pin: semantic-release's analyzer still uses parser 6.
+# is keyed on that pin: semantic-release's analyzer still uses parser 6. It
+# goes once lerna pins 7.1.3 or later.
 overrides:
   conventional-commits-parser@7.1.2: ^7.1.3
 patchedDependencies:
