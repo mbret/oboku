@@ -11,6 +11,7 @@ const CONFIG: InstanceConfig = {
   allowPrivateNetworkRequests: false,
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
+  proxiedDownloadBytesMaxPerMonth: 1,
 }
 
 describe("toInstanceSettings", () => {

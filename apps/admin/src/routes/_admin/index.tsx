@@ -4,6 +4,7 @@ import { AdminCustomizationSection } from "@/features/admin/AdminCustomizationSe
 import { AdminDownloadsSection } from "@/features/admin/AdminDownloadsSection"
 import { AdminOpdsSection } from "@/features/admin/AdminOpdsSection"
 import { AdminPrivateNetworksSection } from "@/features/admin/AdminPrivateNetworksSection"
+import { AdminQuotasSection } from "@/features/admin/AdminQuotasSection"
 
 export const Route = createFileRoute("/_admin/")({
   component: AdminHomePage,
@@ -15,6 +16,7 @@ function AdminHomePage() {
       <AdminCustomizationSection />
       <AdminDownloadsSection />
       <AdminOpdsSection />
+      <AdminQuotasSection />
       <AdminPrivateNetworksSection />
     </Stack>
   )
