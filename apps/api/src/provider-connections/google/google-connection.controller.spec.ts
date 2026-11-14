@@ -83,6 +83,7 @@ const CONFIG: InstanceConfig = {
   allowPrivateNetworkRequests: false,
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
+  streamedBytesMaxPerMonth: 1,
 }
 
 const CONNECTION_METHODS: Array<"get" | "put" | "delete"> = [

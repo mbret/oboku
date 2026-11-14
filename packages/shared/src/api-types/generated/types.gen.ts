@@ -247,12 +247,14 @@ export type InstanceSettingsResponseDto = {
     microsoftApplicationClientId?: string;
     microsoftApplicationAuthority?: string;
     opdsServersMaxPerUser: number;
+    streamedBytesMaxPerMonth: number;
 };
 
 export type UpdateInstanceSettingsDto = {
     fileDownloadMaxSizeBytes?: number;
     microsoftApplicationAuthority?: string | '';
     opdsServersMaxPerUser?: number;
+    streamedBytesMaxPerMonth?: number;
     showDisabledPlugins?: boolean;
     allowPrivateNetworkRequests?: boolean;
     privateNetworkAllowedHosts?: Array<string>;
