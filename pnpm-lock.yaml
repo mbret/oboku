@@ -313,7 +313,7 @@ importers:
         version: 18.3.1
       jose:
         specifier: ^6.2.15
-        version: 6.2.15
+        version: 6.2.16
       mime-types:
         specifier: ^3.0.2
         version: 3.0.2
@@ -613,7 +613,7 @@ importers:
         version: 8.0.0(rxjs@7.8.2)
       jose:
         specifier: ^6.2.15
-        version: 6.2.15
+        version: 6.2.16
       libarchive.js:
         specifier: ^2.0.2
         version: 2.0.2
@@ -9449,8 +9449,8 @@ packages:
   jose@5.9.6:
     resolution: {integrity: sha512-AMlnetc9+CV9asI19zHmrgS/WYsWUwCn2R7RzlbJWD7F9eWYUTGyBmU9o6PxngtLGOiDGPRu+Uc4fhKzbpteZQ==}
 
-  jose@6.2.15:
-    resolution: {integrity: sha512-qdF6ewcZARtef63fJ9AKKZPgxw+t7USH6HLXYcD4CrdmSvDp79rpJSPFEKc90QBeGS63u1KQtN2MZQHC0yDIzA==}
+  jose@6.2.16:
+    resolution: {integrity: sha512-4LSJpbuBuPdGrONCdZUy0xnxtLf8eEz+EY0SMXdHQEBU7bgUHDVblU/JAjryv3wID9/LK7/YuwFwq+AQNfMscQ==}
 
   jose@6.2.3:
     resolution: {integrity: sha512-YYVDInQKFJfR/xa3ojUTl8c2KoTwiL1R5Wg9YCydwH0x0B9grbzlg5HC7mMjCtUJjbQ/YnGEZIhI5tCgfTb4Hw==}
@@ -23300,7 +23300,7 @@ snapshots:
 
   jose@5.9.6: {}
 
-  jose@6.2.15: {}
+  jose@6.2.16: {}
 
   jose@6.2.3: {}
 
