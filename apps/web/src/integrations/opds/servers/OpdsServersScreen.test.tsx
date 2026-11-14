@@ -1,6 +1,7 @@
 import type {
   OpdsServerDto,
   OpdsServerPasswordResponseDto,
+  ProxiedDownloadQuotaResponseDto,
 } from "@oboku/shared"
 import {
   onlineManager,
@@ -63,6 +64,12 @@ const POETRY: OpdsServerDto = {
   createdAt: "2026-03-01T00:00:00.000Z",
 }
 
+const PROXIED_DOWNLOAD_QUOTA: ProxiedDownloadQuotaResponseDto = {
+  usedBytes: 12_300_000_000,
+  quotaBytes: 500_000_000_000,
+  resetsAt: "2026-12-01T00:00:00.000Z",
+}
+
 const withPassword = (
   server: OpdsServerDto,
   password: string,
@@ -83,7 +90,13 @@ const listing = (...serverLists: OpdsServerDto[][]) => {
 
 const renderScreen = (listServers: Mock) => {
   const api = {
-    get: listServers,
+    get: vi.fn(function answerGet(options: { url: string }) {
+      const isQuotaRequest = options.url === "/quotas/proxied-downloads"
+
+      return isQuotaRequest
+        ? Promise.resolve({ data: PROXIED_DOWNLOAD_QUOTA })
+        : listServers(options)
+    }),
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn().mockResolvedValue({ data: { ok: true } }),
@@ -151,6 +164,17 @@ describe("OpdsServersScreen", () => {
       "reader@example.com",
     ])
     expect(screen.queryByRole("textbox", { name: "Password" })).toBeNull()
+  })
+
+  it("shows the download quota used this month, for all users, and when it starts over", async () => {
+    renderScreen(listing([]))
+
+    expect(
+      await screen.findByText("12.3 GB of 500.0 GB used this month"),
+    ).toBeTruthy()
+    expect(
+      screen.getByText(/The quota starts over on December 1, 2026\./),
+    ).toBeTruthy()
   })
 
   it("points to the Google account the catalogs list books through", async () => {

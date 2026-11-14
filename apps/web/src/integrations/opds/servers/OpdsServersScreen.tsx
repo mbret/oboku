@@ -31,6 +31,7 @@ import { useCreateOpdsServer } from "./useCreateOpdsServer"
 import { useRegenerateOpdsServerPassword } from "./useRegenerateOpdsServerPassword"
 import { useDeleteOpdsServer } from "./useDeleteOpdsServer"
 import { RenameOpdsServerDialog } from "./RenameOpdsServerDialog"
+import { ProxiedDownloadQuotaSection } from "./ProxiedDownloadQuotaSection"
 
 const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
   theme,
@@ -225,6 +226,7 @@ export function OpdsServersScreen() {
             createdPassword={createdPasswords.get(server.id)}
           />
         ))}
+        <ProxiedDownloadQuotaSection />
         <PageSection title="Set up a reading app">
           {SETUP_STEPS.map((step, index) => (
             <ListItem key={step}>
