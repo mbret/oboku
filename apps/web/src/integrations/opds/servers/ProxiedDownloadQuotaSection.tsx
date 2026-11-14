@@ -2,7 +2,9 @@ import { ListItem, ListItemText } from "@mui/material"
 import { formatBytes } from "@oboku/shared"
 import { FetchErrorAlert } from "../../../common/alerts/FetchErrorAlert"
 import { LoadingAlert } from "../../../common/alerts/LoadingAlert"
+import { UnavailableAlert } from "../../../common/alerts/UnavailableAlert"
 import { PageSection } from "../../../common/PageSection"
+import { isQueryUnavailable } from "../../../queries/isQueryUnavailable"
 import { useProxiedDownloadQuota } from "./useProxiedDownloadQuota"
 
 const resetDateFormatter = new Intl.DateTimeFormat(undefined, {
@@ -11,7 +13,9 @@ const resetDateFormatter = new Intl.DateTimeFormat(undefined, {
 })
 
 export function ProxiedDownloadQuotaSection() {
-  const { data: quota, isLoading, isError } = useProxiedDownloadQuota()
+  const quotaQuery = useProxiedDownloadQuota()
+  const { data: quota, isLoading, isError } = quotaQuery
+  const isUnavailable = isQueryUnavailable(quotaQuery)
 
   return (
     <PageSection title="Download quota">
@@ -26,6 +30,13 @@ export function ProxiedDownloadQuotaSection() {
             Something went wrong while loading the download quota. Please try
             again later.
           </FetchErrorAlert>
+        </ListItem>
+      )}
+      {isUnavailable && (
+        <ListItem>
+          <UnavailableAlert>
+            The download quota can't be loaded right now.
+          </UnavailableAlert>
         </ListItem>
       )}
       {quota && (

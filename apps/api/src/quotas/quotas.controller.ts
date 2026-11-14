@@ -9,7 +9,7 @@ export class QuotasController {
   ) {}
 
   @Get("proxied-downloads")
-  getProxiedDownloads(): Promise<ProxiedDownloadQuotaResponseDto> {
+  getProxiedDownloadQuota(): Promise<ProxiedDownloadQuotaResponseDto> {
     return this.proxiedDownloadQuotaService.getUsage()
   }
 }

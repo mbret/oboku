@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
-import { quotasGetProxiedDownloads } from "@oboku/shared"
+import { quotasGetProxiedDownloadQuota } from "@oboku/shared"
 import { useQueryOptionsWithAuthentication } from "../../../auth"
 import { useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
-import { proxiedDownloadQuotaQueryKey } from "./queryKeys"
+import { API_QUERY_KEY_PREFIX } from "../../../queries/queryClient"
 
 export const useProxiedDownloadQuota = () => {
   const httpClientApi = useHttpClientApi()
@@ -11,9 +11,14 @@ export const useProxiedDownloadQuota = () => {
 
   return useQuery(
     useQueryOptionsWithAuthentication({
-      queryKey: proxiedDownloadQuotaQueryKey(activeProfileId),
+      queryKey: [
+        API_QUERY_KEY_PREFIX,
+        "quotas",
+        "proxied-downloads",
+        activeProfileId,
+      ],
       queryFn: async function fetchProxiedDownloadQuota() {
-        const { data } = await quotasGetProxiedDownloads({
+        const { data } = await quotasGetProxiedDownloadQuota({
           client: httpClientApi.sdkClient,
         })
 

@@ -1,14 +1,10 @@
 import { Text } from "@mantine/core"
 import { formatBytes } from "@oboku/shared"
+import { formatUtcDate } from "../formatDateTime"
 import { useProxiedDownloadQuota } from "../useProxiedDownloadQuota"
 import { NumberSettingSection } from "./NumberSettingSection"
 
 const BYTES_PER_GIGABYTE = 1000 ** 3
-
-const resetDateFormatter = new Intl.DateTimeFormat(undefined, {
-  dateStyle: "long",
-  timeZone: "UTC",
-})
 
 function ProxiedDownloadUsageText() {
   const { data: quota, error } = useProxiedDownloadQuota()
@@ -25,7 +21,7 @@ function ProxiedDownloadUsageText() {
 
   return (
     <Text size="sm">
-      {`Used this month: ${formatBytes(quota.usedBytes)}. The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
+      {`Used this month: ${formatBytes(quota.usedBytes)}. The quota starts over on ${formatUtcDate(quota.resetsAt)}.`}
     </Text>
   )
 }

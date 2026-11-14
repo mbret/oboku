@@ -1631,27 +1631,27 @@ export type NotificationsArchiveResponses = {
 
 export type NotificationsArchiveResponse = NotificationsArchiveResponses[keyof NotificationsArchiveResponses];
 
-export type QuotasGetProxiedDownloadsData = {
+export type QuotasGetProxiedDownloadQuotaData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/quotas/proxied-downloads';
 };
 
-export type QuotasGetProxiedDownloadsErrors = {
+export type QuotasGetProxiedDownloadQuotaErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type QuotasGetProxiedDownloadsError = QuotasGetProxiedDownloadsErrors[keyof QuotasGetProxiedDownloadsErrors];
+export type QuotasGetProxiedDownloadQuotaError = QuotasGetProxiedDownloadQuotaErrors[keyof QuotasGetProxiedDownloadQuotaErrors];
 
-export type QuotasGetProxiedDownloadsResponses = {
+export type QuotasGetProxiedDownloadQuotaResponses = {
     200: ProxiedDownloadQuotaResponseDto;
 };
 
-export type QuotasGetProxiedDownloadsResponse = QuotasGetProxiedDownloadsResponses[keyof QuotasGetProxiedDownloadsResponses];
+export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];
 
 export type DataSourcesListSyncReportsData = {
     body?: never;

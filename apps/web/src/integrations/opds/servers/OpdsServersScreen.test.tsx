@@ -88,14 +88,17 @@ const listing = (...serverLists: OpdsServerDto[][]) => {
   return listServers
 }
 
-const renderScreen = (listServers: Mock) => {
+const renderScreen = (
+  listServers: Mock,
+  fetchQuota: Mock = vi
+    .fn()
+    .mockResolvedValue({ data: PROXIED_DOWNLOAD_QUOTA }),
+) => {
   const api = {
     get: vi.fn(function answerGet(options: { url: string }) {
       const isQuotaRequest = options.url === "/quotas/proxied-downloads"
 
-      return isQuotaRequest
-        ? Promise.resolve({ data: PROXIED_DOWNLOAD_QUOTA })
-        : listServers(options)
+      return isQuotaRequest ? fetchQuota(options) : listServers(options)
     }),
     post: vi.fn(),
     patch: vi.fn(),
@@ -177,6 +180,19 @@ describe("OpdsServersScreen", () => {
     ).toBeTruthy()
   })
 
+  it("says when the download quota cannot load", async () => {
+    renderScreen(
+      listing([]),
+      vi.fn().mockRejectedValue(new Error("Network down")),
+    )
+
+    expect(
+      await screen.findByText(
+        "Something went wrong while loading the download quota. Please try again later.",
+      ),
+    ).toBeTruthy()
+  })
+
   it("points to the Google account the catalogs list books through", async () => {
     renderScreen(listing([]))
 
@@ -220,6 +236,9 @@ describe("OpdsServersScreen", () => {
     expect(
       await screen.findByText("Your OPDS servers can't be loaded right now."),
     ).not.toBeNull()
+    expect(
+      screen.getByText("The download quota can't be loaded right now."),
+    ).toBeTruthy()
     expect(
       screen.getByRole<HTMLButtonElement>("button", { name: "Create a server" })
         .disabled,

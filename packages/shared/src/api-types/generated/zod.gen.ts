@@ -687,7 +687,7 @@ export const zNotificationsArchivePath = z.object({
 
 export const zNotificationsArchiveResponse = zOkResponseDto;
 
-export const zQuotasGetProxiedDownloadsResponse = zProxiedDownloadQuotaResponseDto;
+export const zQuotasGetProxiedDownloadQuotaResponse = zProxiedDownloadQuotaResponseDto;
 
 export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
 
