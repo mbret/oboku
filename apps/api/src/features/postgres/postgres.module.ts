@@ -4,7 +4,7 @@ import { NotificationPostgresService } from "./notification-postgres.service.js"
 import { SyncReportPostgresService } from "./SyncReportPostgresService.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import {
-  InstanceStreamingUsagePostgresEntity,
+  ProxiedDownloadUsagePostgresEntity,
   KoreaderSyncConnectionPostgresEntity,
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
@@ -23,7 +23,7 @@ import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js
 import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "./opds-server-postgres.service.js"
 import { ProviderConnectionPostgresService } from "./provider-connection-postgres.service.js"
-import { StreamingUsagePostgresService } from "./streaming-usage-postgres.service.js"
+import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-postgres.service.js"
 
 @Module({
   imports: [
@@ -38,7 +38,7 @@ import { StreamingUsagePostgresService } from "./streaming-usage-postgres.servic
       KoreaderSyncConnectionPostgresEntity,
       OpdsServerPostgresEntity,
       ProviderConnectionPostgresEntity,
-      InstanceStreamingUsagePostgresEntity,
+      ProxiedDownloadUsagePostgresEntity,
     ]),
   ],
   providers: [
@@ -51,7 +51,7 @@ import { StreamingUsagePostgresService } from "./streaming-usage-postgres.servic
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
     ProviderConnectionPostgresService,
-    StreamingUsagePostgresService,
+    ProxiedDownloadUsagePostgresService,
     JwtService,
   ],
   exports: [
@@ -64,7 +64,7 @@ import { StreamingUsagePostgresService } from "./streaming-usage-postgres.servic
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
     ProviderConnectionPostgresService,
-    StreamingUsagePostgresService,
+    ProxiedDownloadUsagePostgresService,
   ],
 })
 export class PostgresModule {}

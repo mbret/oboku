@@ -4,7 +4,7 @@ import { NumberSettingForm } from "./NumberSettingForm"
 
 const BYTES_PER_GIBIBYTE = 1024 ** 3
 
-export function AdminStreamingSection() {
+export function AdminQuotasSection() {
   const instanceSettings = useInstanceSettings()
 
   return (
@@ -12,13 +12,14 @@ export function AdminStreamingSection() {
       <Stack gap="sm">
         <div>
           <Text size="sm" fw={500} mb="xs">
-            Streaming
+            Quotas
           </Text>
           <Text size="sm" c="dimmed">
-            Monthly cap on the data the server streams to all users together,
-            such as the books reading apps download from an OPDS server. Keep it
-            below the monthly outbound traffic your host includes, with a margin
-            for the server's other traffic.
+            Proxied downloads are files the server fetches from a provider and
+            passes on to users, such as the books reading apps download from an
+            OPDS server. Their quota caps what the server sends for all users
+            together each month. Keep it below the monthly outbound traffic your
+            host includes, with a margin for the server's other traffic.
           </Text>
         </div>
 
@@ -36,17 +37,17 @@ export function AdminStreamingSection() {
 
         {instanceSettings.data && (
           <NumberSettingForm
-            label="Maximum streamed per month (GiB)"
-            saveLabel="save streaming settings"
+            label="Proxied download quota per month (GiB)"
+            saveLabel="save quota settings"
             minimumError="Must be at least 1 GiB"
             savedValue={Math.round(
-              instanceSettings.data.streamedBytesMaxPerMonth /
+              instanceSettings.data.proxiedDownloadBytesMaxPerMonth /
                 BYTES_PER_GIBIBYTE,
             )}
             step={50}
-            toSettings={function toStreamingSettings(gibibytes) {
+            toSettings={function toQuotaSettings(gibibytes) {
               return {
-                streamedBytesMaxPerMonth: gibibytes * BYTES_PER_GIBIBYTE,
+                proxiedDownloadBytesMaxPerMonth: gibibytes * BYTES_PER_GIBIBYTE,
               }
             }}
           />

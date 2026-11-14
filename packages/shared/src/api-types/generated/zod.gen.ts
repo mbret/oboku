@@ -263,7 +263,7 @@ export const zInstanceSettingsResponseDto = z.object({
     microsoftApplicationClientId: z.string().optional(),
     microsoftApplicationAuthority: z.string().optional(),
     opdsServersMaxPerUser: z.number(),
-    streamedBytesMaxPerMonth: z.number()
+    proxiedDownloadBytesMaxPerMonth: z.number()
 });
 
 export const zUpdateInstanceSettingsDto = z.object({
@@ -273,7 +273,7 @@ export const zUpdateInstanceSettingsDto = z.object({
         z.enum([''])
     ]).optional(),
     opdsServersMaxPerUser: z.int().gte(1).optional(),
-    streamedBytesMaxPerMonth: z.int().gte(1).optional(),
+    proxiedDownloadBytesMaxPerMonth: z.int().gte(1).optional(),
     showDisabledPlugins: z.boolean().optional(),
     allowPrivateNetworkRequests: z.boolean().optional(),
     privateNetworkAllowedHosts: z.array(z.string()).max(100).optional(),
