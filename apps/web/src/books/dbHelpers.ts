@@ -2,7 +2,7 @@ import type { DeepReadonlyArray, MangoQuery, MangoQueryNoLimit } from "rxdb"
 import type { BookDocType } from "@oboku/shared"
 import type { Database } from "../rxdb"
 import { combineLatest, map } from "rxjs"
-import { intersection } from "@oboku/shared"
+import { isBookProtected } from "@oboku/shared"
 
 export const getBookById = async ({
   database,
@@ -84,11 +84,9 @@ export const observeBooks = ({
       const protectedTagIds = protectedTags.map(({ _id }) => _id)
 
       return books?.filter((book) => {
-        const tagsInCommon = intersection(protectedTagIds, book?.tags || [])
+        const isProtected = isBookProtected(protectedTagIds, book)
 
-        if (_protected === "only") return tagsInCommon.length >= 1
-
-        return tagsInCommon.length === 0
+        return _protected === "only" ? isProtected : !isProtected
       })
     }) ?? [],
   )

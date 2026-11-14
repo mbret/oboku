@@ -14,5 +14,6 @@ import { ProviderConnectionsService } from "./provider-connections.service.js"
     GoogleConnectionService,
     AtRestCipher,
   ],
+  exports: [GoogleConnectionService],
 })
 export class ProviderConnectionsModule {}

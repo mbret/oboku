@@ -1,8 +1,25 @@
-import { Controller, Get, Header, UseGuards } from "@nestjs/common"
+import {
+  Controller,
+  Get,
+  Header,
+  HttpStatus,
+  Param,
+  Res,
+  StreamableFile,
+  UseGuards,
+} from "@nestjs/common"
 import { ApiExcludeController } from "@nestjs/swagger"
+import type { Response } from "express"
 import { Public } from "../auth/auth.guard.js"
-import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
-import { OpdsBasicAuthGuard, WithOpdsServer } from "./opds-basic-auth.guard.js"
+import type {
+  OpdsServerPostgresEntity,
+  UserPostgresEntity,
+} from "../features/postgres/entities.js"
+import {
+  OpdsBasicAuthGuard,
+  WithOpdsOwner,
+  WithOpdsServer,
+} from "./opds-basic-auth.guard.js"
 import {
   OPDS_2_FEED_TYPE,
   OPDS_2_ROUTE,
@@ -15,6 +32,7 @@ import {
   toOpds2Feed,
   toRootFeed,
 } from "./opds-feeds.js"
+import { OpdsLibraryService } from "./opds-library.service.js"
 
 /**
  * The catalog of an OPDS server, in OPDS 1.2 at its root and in OPDS 2.0
@@ -26,6 +44,8 @@ import {
 @UseGuards(OpdsBasicAuthGuard)
 @Controller(`${OPDS_CATALOG_ROUTE}/:slug`)
 export class OpdsCatalogController {
+  constructor(private readonly opdsLibraryService: OpdsLibraryService) {}
+
   @Get()
   @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
   getRoot(@WithOpdsServer() server: OpdsServerPostgresEntity) {
@@ -56,5 +76,46 @@ export class OpdsCatalogController {
   @Header("Content-Type", OPDS_2_FEED_TYPE)
   getOpds2Books(@WithOpdsServer() server: OpdsServerPostgresEntity) {
     return toOpds2Feed({ slug: server.slug, feed: toBooksFeed(server) })
+  }
+
+  /**
+   * The file of a book the catalog serves. The last segment names the file
+   * for reading apps that take the name from the link, KOReader among them.
+   */
+  @Get(`${OPDS_BOOKS_ROUTE}/:bookId/:fileName`)
+  async downloadBook(
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("bookId") bookId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const file = await this.opdsLibraryService.openServedFile({
+      owner,
+      bookId,
+    })
+
+    // `attachment` types the response from the name's extension: the book's
+    // own media type replaces it.
+    response.attachment(file.name).type(file.contentType)
+
+    const bookFile = new StreamableFile(file.stream, { length: file.size })
+    const handleStreamFailure = bookFile.errorHandler
+
+    // Nest answers 400 for a stream that fails before its first byte; Drive
+    // failed, not the request.
+    return bookFile.setErrorHandler(
+      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
+        const isAnswerStarted =
+          streamResponse.destroyed || streamResponse.headersSent
+
+        if (isAnswerStarted) {
+          handleStreamFailure(error, streamResponse)
+
+          return
+        }
+
+        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
+        streamResponse.send("Bad Gateway")
+      },
+    )
   }
 }

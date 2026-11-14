@@ -5,6 +5,8 @@ import {
   type InstanceConfig,
   InstanceConfigService,
 } from "../../admin/instance-config/instance-config.service.js"
+import { toGoogleApiFailure } from "../../http/googleApiFailure.js"
+import { isRecord } from "../../http/isRecord.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import {
   type ConnectionProvider,
@@ -48,18 +50,8 @@ export const isGoogleConnectionConfigured = (
 
 /** The OAuth error in Google's answer to a refused exchange, such as `invalid_grant`. */
 const toOAuthError = (error: unknown) => {
-  const response =
-    typeof error === "object" && error !== null && "response" in error
-      ? error.response
-      : undefined
-  const body =
-    typeof response === "object" && response !== null && "data" in response
-      ? response.data
-      : undefined
-  const oauthError =
-    typeof body === "object" && body !== null && "error" in body
-      ? body.error
-      : undefined
+  const { body } = toGoogleApiFailure(error)
+  const oauthError = isRecord(body) ? body.error : undefined
 
   return typeof oauthError === "string" ? oauthError : undefined
 }

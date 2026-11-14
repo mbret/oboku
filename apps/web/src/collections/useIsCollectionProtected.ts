@@ -1,6 +1,6 @@
-import type { CollectionDocType } from "@oboku/shared"
+import { type CollectionDocType, isBookProtected } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
-import { isBookProtected, useBooks } from "../books/states"
+import { useBooks } from "../books/states"
 import { useProtectedTagIds } from "../tags/helpers"
 
 /**
