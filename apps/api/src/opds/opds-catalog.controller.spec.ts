@@ -6,6 +6,7 @@ import { ObokuErrorCode } from "@oboku/shared"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
 import type { App } from "supertest/types.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
@@ -15,10 +16,12 @@ import type {
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
+import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import { StreamingUsageService } from "../streaming/streaming-usage.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
@@ -111,6 +114,8 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
+const STORED_FILE_SIZE = 12
+const STREAMED_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
 
 const DRIVE_LINK = {
   _id: "link-drive",
@@ -280,6 +285,8 @@ describe("OpdsCatalogController", () => {
   const mintAccessToken = vi.fn()
   const getFileMetadata = vi.fn()
   const download = vi.fn()
+  const reserveUnderCap = vi.fn()
+  const adjust = vi.fn()
 
   beforeEach(async () => {
     createNanoInstanceForUser.mockResolvedValue(createLibraryDb(LIBRARY))
@@ -291,7 +298,7 @@ describe("OpdsCatalogController", () => {
     })
     getFileMetadata.mockResolvedValue({
       modifiedAt: "2026-11-12T08:00:00.000Z",
-      bookMetadata: { size: "1" },
+      bookMetadata: { size: String(STORED_FILE_SIZE) },
     })
     download.mockImplementation(async function streamBook() {
       return {
@@ -299,6 +306,8 @@ describe("OpdsCatalogController", () => {
         size: BOOK_BYTES.length,
       }
     })
+    reserveUnderCap.mockResolvedValue("reserved")
+    adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
@@ -312,6 +321,19 @@ describe("OpdsCatalogController", () => {
           useValue: { isConnected, mintAccessToken },
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
+        StreamingUsageService,
+        {
+          provide: StreamingUsagePostgresService,
+          useValue: { reserveUnderCap, adjust },
+        },
+        {
+          provide: InstanceConfigService,
+          useValue: {
+            getConfig: () => ({
+              value: { streamedBytesMaxPerMonth: STREAMED_BYTES_MAX_PER_MONTH },
+            }),
+          },
+        },
         { provide: OpdsServerPostgresService, useValue: serverStore },
         { provide: UserPostgresService, useValue: userStore },
         { provide: APP_GUARD, useClass: AuthGuard },
@@ -788,6 +810,98 @@ describe("OpdsCatalogController", () => {
         )
       },
     )
+
+    describe("monthly streaming cap", () => {
+      const NOVEMBER = "2026-11-01"
+
+      beforeEach(() => {
+        vi.useFakeTimers({ toFake: ["Date"] })
+        vi.setSystemTime(new Date("2026-11-14T21:00:00.000Z"))
+      })
+
+      afterEach(() => {
+        vi.useRealTimers()
+      })
+
+      it("reserves the length Drive's download states, and keeps it once the whole file is sent", async () => {
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(200)
+        expect(response.body.toString()).toBe(BOOK_BYTES)
+        expect(reserveUnderCap).toHaveBeenCalledWith({
+          month: NOVEMBER,
+          bytes: BOOK_BYTES.length,
+          capBytes: STREAMED_BYTES_MAX_PER_MONTH,
+        })
+        expect(adjust).not.toHaveBeenCalled()
+      })
+
+      it("answers 429 until the next month once the download would pass the cap", async () => {
+        vi.setSystemTime(new Date("2026-12-31T23:30:00.000Z"))
+        reserveUnderCap.mockResolvedValue("cap-reached")
+        const driveStream = Readable.from([Buffer.from(BOOK_BYTES)])
+        download.mockResolvedValue({
+          stream: driveStream,
+          size: BOOK_BYTES.length,
+        })
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(429)
+        expect(response.headers["retry-after"]).toBe(
+          "Fri, 01 Jan 2027 00:00:00 GMT",
+        )
+        expect(response.headers["content-disposition"]).toBeUndefined()
+        expect(driveStream.destroyed).toBe(true)
+      })
+
+      it("gives the whole reservation back for a HEAD request", async () => {
+        const response = await request(app.getHttpServer())
+          .head(`/opds/${SERVER.slug}/books/book-dune/Dune.epub`)
+          .set("Authorization", OWNER_AUTHORIZATION)
+
+        expect(response.status).toBe(200)
+        await vi.waitFor(() =>
+          expect(adjust).toHaveBeenCalledWith({
+            month: NOVEMBER,
+            bytes: -BOOK_BYTES.length,
+          }),
+        )
+      })
+
+      it.each([
+        [
+          "the stored file's size",
+          { size: String(STORED_FILE_SIZE) },
+          STORED_FILE_SIZE,
+        ],
+        ["nothing when Drive states no size", {}, 0],
+      ])(
+        "reserves %s when Drive's download states no length, then counts the bytes sent",
+        async (_, bookMetadata, reservedBytes) => {
+          getFileMetadata.mockResolvedValue({
+            modifiedAt: "2026-11-12T08:00:00.000Z",
+            bookMetadata,
+          })
+          download.mockResolvedValue({
+            stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+          })
+
+          const response = await getBookFile("book-dune")
+
+          expect(response.status).toBe(200)
+          expect(reserveUnderCap).toHaveBeenCalledWith(
+            expect.objectContaining({ bytes: reservedBytes }),
+          )
+          await vi.waitFor(() =>
+            expect(adjust).toHaveBeenCalledWith({
+              month: NOVEMBER,
+              bytes: BOOK_BYTES.length - reservedBytes,
+            }),
+          )
+        },
+      )
+    })
 
     it("answers 502 when Drive's stream fails before its first byte", async () => {
       download.mockResolvedValue({

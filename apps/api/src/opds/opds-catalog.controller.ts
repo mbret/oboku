@@ -4,16 +4,18 @@ import {
   DefaultValuePipe,
   Get,
   Header,
+  HttpException,
   HttpStatus,
   Param,
   ParseIntPipe,
   Query,
+  Req,
   Res,
   StreamableFile,
   UseGuards,
 } from "@nestjs/common"
 import { ApiExcludeController } from "@nestjs/swagger"
-import type { Response } from "express"
+import type { Request, Response } from "express"
 import { Public } from "../auth/auth.guard.js"
 import type {
   OpdsServerPostgresEntity,
@@ -37,6 +39,7 @@ import {
   toRootFeed,
 } from "./opds-feeds.js"
 import { OpdsBooksService } from "./opds-books.service.js"
+import { StreamingUsageService } from "../streaming/streaming-usage.service.js"
 
 /**
  * The catalog of an OPDS server, in OPDS 1.2 at its root and in OPDS 2.0
@@ -48,7 +51,10 @@ import { OpdsBooksService } from "./opds-books.service.js"
 @UseGuards(OpdsBasicAuthGuard)
 @Controller(`${OPDS_CATALOG_ROUTE}/:slug`)
 export class OpdsCatalogController {
-  constructor(private readonly opdsBooksService: OpdsBooksService) {}
+  constructor(
+    private readonly opdsBooksService: OpdsBooksService,
+    private readonly streamingUsageService: StreamingUsageService,
+  ) {}
 
   @Get()
   @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
@@ -96,23 +102,40 @@ export class OpdsCatalogController {
   /**
    * The file of a book the catalog serves. The last segment names the file
    * for reading apps that take the name from the link, KOReader among them.
+   * Past the instance's monthly streaming cap, it answers 429 until the next
+   * month.
    */
   @Get(`${OPDS_BOOKS_ROUTE}/:bookId/:fileName`)
   async downloadBook(
     @WithOpdsOwner() owner: UserPostgresEntity,
     @Param("bookId") bookId: string,
+    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ) {
     const file = await this.opdsBooksService.streamServedBook({
       owner,
       bookId,
     })
+    const isHeadRequest = request.method === "HEAD"
+    const meteredFile = await this.streamingUsageService.meter({
+      stream: file.stream,
+      expectedBytes: file.expectedSize,
+      isBodySent: !isHeadRequest,
+    })
+
+    if (meteredFile.status === "cap-reached") {
+      response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
+
+      throw new HttpException("Too Many Requests", HttpStatus.TOO_MANY_REQUESTS)
+    }
 
     // `attachment` types the response from the name's extension: the book's
     // own media type replaces it.
     response.attachment(file.name).type(file.contentType)
 
-    const bookFile = new StreamableFile(file.stream, { length: file.size })
+    const bookFile = new StreamableFile(meteredFile.stream, {
+      length: file.size,
+    })
     const handleStreamFailure = bookFile.errorHandler
 
     // Nest answers 400 for a stream that fails before its first byte; Drive
