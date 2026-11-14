@@ -97,6 +97,52 @@ describe("getMetadataFromBook, with entries in prose-reader's shapes", () => {
   })
 })
 
+describe("getMetadataFromBook, for the authors several sources name", () => {
+  const authors = (...names: string[]) =>
+    names.map((name) => ({ name, roles: ["author"] }))
+
+  const fileByFrank: BookMetadata = {
+    type: "file",
+    version: 5,
+    metadata: {
+      titles: [{ value: "Dune" }],
+      contributors: authors("Frank Herbert"),
+    },
+  }
+
+  const catalogByBoth: BookMetadata = {
+    type: "catalog",
+    version: 1,
+    providerId: "googleBooks",
+    score: 1,
+    accepted: true,
+    signals: [],
+    metadata: {
+      titles: [{ value: "Dune" }],
+      contributors: authors("Frank Herbert", "Brian Herbert"),
+    },
+  }
+
+  it("takes them from the highest source that names any", () => {
+    expect(
+      getMetadataFromBook({ metadata: [catalogByBoth, fileByFrank] }, format)
+        .authors,
+    ).toEqual(["Frank Herbert"])
+  })
+
+  it("takes the catalog's when the book puts the catalog first", () => {
+    expect(
+      getMetadataFromBook(
+        {
+          metadata: [catalogByBoth, fileByFrank],
+          metadataSourcePriority: ["catalog", "file"],
+        },
+        format,
+      ).authors,
+    ).toEqual(["Frank Herbert", "Brian Herbert"])
+  })
+})
+
 describe("getMetadataFromBook, with entries stored before", () => {
   const legacyFile: BookMetadata = { type: "file", title: "The Final Empire" }
   const legacyCatalog: BookMetadata = {
@@ -127,6 +173,31 @@ describe("getMetadataFromBook, with entries stored before", () => {
         format,
       ).title,
     ).toBe("Mistborn: The Final Empire")
+  })
+
+  it("leaves a list or a date an entry stores empty to a lower source", () => {
+    const legacyFileWithEmptyFields: BookMetadata = {
+      type: "file",
+      title: "Dune",
+      authors: [],
+      subjects: [],
+      date: {},
+    }
+    const legacyCatalogByFrank: BookMetadata = {
+      type: "googleBookApi",
+      authors: ["Frank Herbert"],
+      subjects: ["Fiction"],
+      date: { year: 1965 },
+    }
+
+    const metadata = getMetadataFromBook(
+      { metadata: [legacyCatalogByFrank, legacyFileWithEmptyFields] },
+      format,
+    )
+
+    expect(metadata.authors).toEqual(["Frank Herbert"])
+    expect(metadata.subjects).toEqual(["Fiction"])
+    expect(metadata.date).toEqual({ year: 1965 })
   })
 })
 
