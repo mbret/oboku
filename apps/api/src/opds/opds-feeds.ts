@@ -112,8 +112,7 @@ const toCatalogPublication = (
   return {
     id: `${toBooksId(slug)}:${book._id}`,
     title: String(metadata.title ?? "") || file.name,
-    // The merge adds up every source's authors, which can name one twice.
-    authors: [...new Set(metadata.authors)],
+    authors: metadata.authors ?? [],
     language: metadata.language,
     description: metadata.description,
     updated: new Date(book.lastMetadataUpdatedAt ?? book.createdAt),
