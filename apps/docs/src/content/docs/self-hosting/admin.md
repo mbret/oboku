@@ -36,6 +36,16 @@ The API cannot tell when a public address leads back into your own network, for 
 
 **Maximum OPDS servers per user**, on the panel's home page, caps how many [OPDS servers](/guides/opds-servers) each user can have: 10 by default. Lowering it deletes no server, but a user above the new limit cannot create one until they are below it.
 
+## Streaming
+
+Some files pass through the API on their way to users: a reading app that downloads a book from an [OPDS server](/guides/opds-servers) gets it from the API, which reads it from Google Drive. Every byte of these files counts towards one monthly cap for the whole instance: **Maximum streamed per month (GiB)**, in the **Streaming** section of the panel's home page, 500 GiB by default.
+
+Months follow UTC. Once the instance reaches the cap, nobody can download until the next month: a download answers `429 Too Many Requests`, with a `Retry-After` header set to the start of the next month. The cap applies right away, without a restart.
+
+Files the API downloads to read their metadata do not count: most hosts bill outbound traffic only.
+
+To set the cap, start from the outbound traffic your host includes each month, then keep a margin for the server's other traffic: CouchDB replication, the API's answers and covers. Your host's bandwidth graphs show that traffic.
+
 ## Security
 
 The **Security** section lists the refresh tokens currently issued and lets you revoke them, either for every user or for specific email addresses. Revoked tokens are deleted outright, so the affected users have to sign in again.
