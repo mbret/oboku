@@ -22,14 +22,17 @@ export function ProxiedDownloadQuotaSection() {
       )}
       {isError && (
         <ListItem>
-          <FetchErrorAlert subject="download quota" />
+          <FetchErrorAlert>
+            Something went wrong while loading the download quota. Please try
+            again later.
+          </FetchErrorAlert>
         </ListItem>
       )}
       {quota && (
         <ListItem>
           <ListItemText
             primary={`${formatBytes(quota.usedBytes)} of ${formatBytes(quota.quotaBytes)} used this month`}
-            secondary={`Every user's reading app downloads count. The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
+            secondary={`All users' reading apps share it. The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
           />
         </ListItem>
       )}

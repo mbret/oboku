@@ -25,7 +25,7 @@ function ProxiedDownloadUsageText() {
 
   return (
     <Text size="sm">
-      {`This month: ${formatBytes(quota.usedBytes)} used. The count starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
+      {`Used this month: ${formatBytes(quota.usedBytes)}. The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
     </Text>
   )
 }
