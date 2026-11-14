@@ -4,7 +4,7 @@ import type { AdminUpdateSettingsData } from "@oboku/shared"
 import { useEffect } from "react"
 import { useUpdateInstanceSettings } from "../useUpdateInstanceSettings"
 
-type NumberSettingFormProps = {
+export type NumberSettingFormProps = {
   label: string
   saveLabel: string
   /** Shown when the value is below 1. */
