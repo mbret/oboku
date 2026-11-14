@@ -1,13 +1,13 @@
 import { memo } from "react"
-import { Alert, InputAdornment, Link } from "@mui/material"
+import { InputAdornment } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import { links } from "@oboku/shared"
 import type { WebDAVDataSourceDocType } from "@oboku/shared"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
+import { WebdavRequirementsAlert } from "./WebdavRequirementsAlert"
 import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
   buildDataSourceSubmitPayload,
@@ -60,11 +60,7 @@ export const DataSourceForm = memo(function DataSourceForm({
       )}
       submitLabel={submitLabel}
     >
-      <Alert severity="warning">
-        Connecting to WebDAV server involves several requirements, make sure to{" "}
-        <Link href={links.documentationConnectors}>read this</Link> before
-        proceeding.
-      </Alert>
+      <WebdavRequirementsAlert />
       <ControlledTextField
         name="directory"
         label="Directory"

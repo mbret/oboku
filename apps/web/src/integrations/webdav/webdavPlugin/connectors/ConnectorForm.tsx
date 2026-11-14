@@ -1,5 +1,4 @@
-import { Alert, Button, Link } from "@mui/material"
-import { links } from "@oboku/shared"
+import { Button } from "@mui/material"
 import { memo } from "react"
 import type {
   ConnectionParams,
@@ -8,6 +7,7 @@ import type {
 import { ConnectorForm as GenericConnectorForm } from "../../../../connectors/ConnectorForm"
 import { useUnlockMasterKey } from "../../../../secrets/useUnlockMasterKey"
 import { connectWebdav } from "../auth/connect"
+import { WebdavRequirementsAlert } from "../WebdavRequirementsAlert"
 
 export type WebdavConnectionParams = ConnectionParams & { directory?: string }
 
@@ -52,13 +52,7 @@ export const ConnectorForm = memo(function ConnectorForm({
           {masterKey ? "Unlocked" : "Unlock secrets"}
         </Button>
       )}
-      topAlert={
-        <Alert severity="warning">
-          Connecting to WebDAV server involves several requirements, make sure
-          to <Link href={links.documentationConnectors}>read this</Link> before
-          proceeding.
-        </Alert>
-      }
+      topAlert={<WebdavRequirementsAlert />}
     >
       {children}
     </GenericConnectorForm>
