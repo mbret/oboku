@@ -9,7 +9,7 @@ import { InstanceConfigService } from "../admin/instance-config/instance-config.
 import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
 
 /**
- * Counts the bytes it passes on, read once the stream is done. A `compose`
+ * Counts the bytes it passes on, read once the pipeline ends. A `compose`
  * with an async generator would keep the count in one scope, but it fails
  * with an `AbortError` when Nest destroys it after a HEAD answer, which
  * Nest's `StreamableFile` handles as a failed download.
@@ -76,6 +76,16 @@ export class StreamingUsageService {
     const { streamedBytesMaxPerMonth } =
       this.instanceConfigService.getConfig().value
 
+    const byteCounter = new ByteCountingStream()
+    // The pipeline listens to the Drive stream before the reservation is
+    // awaited: an error emitted with no listener stops the process. Its own
+    // error is the stream's, which the route answers.
+    const transferEnded = new Promise<number>(function countUntilEnd(resolve) {
+      pipeline(stream, byteCounter, function resolvePassedBytes() {
+        resolve(byteCounter.passedBytes)
+      })
+    })
+
     const reservation = await this.streamingUsagePostgresService
       .reserveUnderCap({
         month,
@@ -94,18 +104,15 @@ export class StreamingUsageService {
       return { status: "cap-reached", resetsAt: toNextUsageMonthStart(now) }
     }
 
-    const byteCounter = new ByteCountingStream()
     const { streamingUsagePostgresService, logger } = this
 
-    // The pipeline's error is the stream's own, which the route answers: a
-    // HEAD answer and a client that disconnects end it with a premature close.
-    pipeline(stream, byteCounter, function settleReservation() {
-      const sentBytes = isBodySent ? byteCounter.passedBytes : 0
+    void transferEnded.then(function settleReservation(passedBytes) {
+      const sentBytes = isBodySent ? passedBytes : 0
       const unreservedBytes = sentBytes - reservedBytes
 
       if (unreservedBytes === 0) return
 
-      streamingUsagePostgresService
+      return streamingUsagePostgresService
         .adjust({ month, bytes: unreservedBytes })
         .catch(function logFailedSettle(error: unknown) {
           logger.error(

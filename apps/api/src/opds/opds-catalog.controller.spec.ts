@@ -114,7 +114,7 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
-const STORED_FILE_SIZE = 12
+const DRIVE_METADATA_SIZE = 12
 const STREAMED_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
 
 const DRIVE_LINK = {
@@ -298,7 +298,7 @@ describe("OpdsCatalogController", () => {
     })
     getFileMetadata.mockResolvedValue({
       modifiedAt: "2026-11-12T08:00:00.000Z",
-      bookMetadata: { size: String(STORED_FILE_SIZE) },
+      bookMetadata: { size: String(DRIVE_METADATA_SIZE) },
     })
     download.mockImplementation(async function streamBook() {
       return {
@@ -869,13 +869,44 @@ describe("OpdsCatalogController", () => {
         )
       })
 
+      it("answers 502 and gives the reservation back when Drive fails while the reservation waits", async () => {
+        const driveStream = new Readable({ read() {} })
+        download.mockResolvedValue({
+          stream: driveStream,
+          size: BOOK_BYTES.length,
+        })
+        reserveUnderCap.mockImplementation(
+          async function failDriveWhileReserving() {
+            const driveClosed = new Promise(function waitForClose(resolve) {
+              driveStream.once("close", resolve)
+            })
+
+            driveStream.destroy(new Error("socket hang up"))
+            await driveClosed
+
+            return "reserved"
+          },
+        )
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(502)
+        await vi.waitFor(() =>
+          expect(adjust).toHaveBeenCalledWith({
+            month: NOVEMBER,
+            bytes: -BOOK_BYTES.length,
+          }),
+        )
+      })
+
       it.each([
         [
-          "the stored file's size",
-          { size: String(STORED_FILE_SIZE) },
-          STORED_FILE_SIZE,
+          "Drive's file metadata size",
+          { size: String(DRIVE_METADATA_SIZE) },
+          DRIVE_METADATA_SIZE,
         ],
         ["nothing when Drive states no size", {}, 0],
+        ["nothing when Drive's size is not a byte count", { size: "12 kB" }, 0],
       ])(
         "reserves %s when Drive's download states no length, then counts the bytes sent",
         async (_, bookMetadata, reservedBytes) => {
@@ -915,6 +946,11 @@ describe("OpdsCatalogController", () => {
       const response = await getBookFile("book-dune")
 
       expect(response.status).toBe(502)
+      await vi.waitFor(() =>
+        expect(adjust).toHaveBeenCalledWith(
+          expect.objectContaining({ bytes: -DRIVE_METADATA_SIZE }),
+        ),
+      )
     })
   })
 })

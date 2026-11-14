@@ -16,6 +16,7 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import { toByteCount } from "../http/contentLength.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
 import { isRecord } from "../http/isRecord.js"
 import {
@@ -217,8 +218,7 @@ export class OpdsBooksService {
         return pluginsService.download({ link: firstLink, providerCredentials })
       },
     )
-    const metadataSize =
-      bookMetadata?.size === undefined ? undefined : Number(bookMetadata.size)
+    const metadataSize = toByteCount(bookMetadata?.size)
 
     return {
       ...toServedFile(book),

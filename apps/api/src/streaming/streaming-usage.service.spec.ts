@@ -1,4 +1,5 @@
 import { Readable } from "node:stream"
+import { Logger } from "@nestjs/common"
 import { Test } from "@nestjs/testing"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
@@ -44,6 +45,7 @@ describe("StreamingUsageService", () => {
   })
 
   afterEach(() => {
+    vi.restoreAllMocks()
     vi.clearAllMocks()
   })
 
@@ -66,6 +68,59 @@ describe("StreamingUsageService", () => {
 
     expect(givenBackBytes).toBeLessThan(0)
     expect(givenBackBytes).toBeGreaterThan(-FILE_BYTES)
+  })
+
+  it("gives back the bytes a Drive stream failing midway did not pass on", async () => {
+    let pushedChunks = 0
+    const failingDriveStream = new Readable({
+      read() {
+        if (pushedChunks === 2) {
+          this.destroy(new Error("socket hang up"))
+
+          return
+        }
+
+        pushedChunks += 1
+        this.push(Buffer.alloc(CHUNK_BYTES))
+      },
+    })
+    const metered = await service.meter({
+      stream: failingDriveStream,
+      expectedBytes: FILE_BYTES,
+      isBodySent: true,
+    })
+
+    if (metered.status !== "metered") throw new Error("expected a reservation")
+
+    metered.stream.on("error", function ignoreDriveFailure() {})
+    metered.stream.resume()
+
+    await vi.waitFor(() =>
+      expect(adjust).toHaveBeenCalledWith({
+        month: expect.any(String),
+        bytes: 2 * CHUNK_BYTES - FILE_BYTES,
+      }),
+    )
+  })
+
+  it("logs a settle that fails, without throwing", async () => {
+    const logError = vi.spyOn(Logger.prototype, "error")
+    adjust.mockRejectedValue(new Error("connection refused"))
+    const metered = await service.meter({
+      stream: createDriveStream(),
+      expectedBytes: undefined,
+      isBodySent: true,
+    })
+
+    if (metered.status !== "metered") throw new Error("expected a reservation")
+
+    metered.stream.resume()
+
+    await vi.waitFor(() =>
+      expect(logError).toHaveBeenCalledWith(
+        `Could not count ${FILE_BYTES} streamed bytes: connection refused`,
+      ),
+    )
   })
 
   it("destroys the Drive stream when the counter cannot be reached", async () => {

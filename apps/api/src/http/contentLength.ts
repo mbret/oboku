@@ -7,6 +7,14 @@ const isFetchHeaders = (headers: unknown): headers is FetchHeaders =>
   typeof headers.get === "function" &&
   typeof headers.has === "function"
 
+/** `value` as a number of bytes, none when it is not one. */
+export const toByteCount = (value: string | null | undefined) => {
+  const count =
+    value === null || value === undefined ? Number.NaN : Number(value)
+
+  return Number.isSafeInteger(count) && count >= 0 ? count : undefined
+}
+
 /**
  * The number of bytes a fetched body yields, from its `Content-Length`. None
  * for a compressed answer: fetch decompresses the body, and the header counts
@@ -18,11 +26,7 @@ const isFetchHeaders = (headers: unknown): headers is FetchHeaders =>
 export const toDecodedContentLength = (headers: unknown) => {
   if (!isFetchHeaders(headers)) return undefined
 
-  const contentLength = headers.get("content-length")
   const isCompressed = headers.has("content-encoding")
-  const length = contentLength === null ? Number.NaN : Number(contentLength)
 
-  return !isCompressed && Number.isSafeInteger(length) && length >= 0
-    ? length
-    : undefined
+  return isCompressed ? undefined : toByteCount(headers.get("content-length"))
 }
