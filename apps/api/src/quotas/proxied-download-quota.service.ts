@@ -7,6 +7,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
+import type { ProxiedDownloadQuotaResponseDto } from "./quotas.dto.js"
 
 /**
  * Counts the bytes it passes on, read once the pipeline ends. A `compose`
@@ -45,6 +46,21 @@ export class ProxiedDownloadQuotaService {
     private readonly instanceConfigService: InstanceConfigService,
     private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
+
+  async getUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
+    const now = new Date()
+    const usedBytes = await this.proxiedDownloadUsagePostgresService.findBytes(
+      toUsageMonth(now),
+    )
+
+    return {
+      usedBytes,
+      quotaBytes:
+        this.instanceConfigService.getConfig().value
+          .proxiedDownloadBytesMaxPerMonth,
+      resetsAt: toNextUsageMonthStart(now).toISOString(),
+    }
+  }
 
   /**
    * Reserves `expectedBytes` on this month's counter, then counts the bytes
