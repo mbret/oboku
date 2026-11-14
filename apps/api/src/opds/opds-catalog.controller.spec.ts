@@ -16,12 +16,12 @@ import type {
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
-import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
+import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
-import { StreamingUsageService } from "../streaming/streaming-usage.service.js"
+import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
@@ -115,7 +115,7 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
 const DRIVE_METADATA_SIZE = 12
-const STREAMED_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
+const PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
 
 const DRIVE_LINK = {
   _id: "link-drive",
@@ -285,7 +285,7 @@ describe("OpdsCatalogController", () => {
   const mintAccessToken = vi.fn()
   const getFileMetadata = vi.fn()
   const download = vi.fn()
-  const reserveUnderCap = vi.fn()
+  const reserveWithinQuota = vi.fn()
   const adjust = vi.fn()
 
   beforeEach(async () => {
@@ -306,7 +306,7 @@ describe("OpdsCatalogController", () => {
         size: BOOK_BYTES.length,
       }
     })
-    reserveUnderCap.mockResolvedValue("reserved")
+    reserveWithinQuota.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
@@ -321,16 +321,19 @@ describe("OpdsCatalogController", () => {
           useValue: { isConnected, mintAccessToken },
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
-        StreamingUsageService,
+        ProxiedDownloadQuotaService,
         {
-          provide: StreamingUsagePostgresService,
-          useValue: { reserveUnderCap, adjust },
+          provide: ProxiedDownloadUsagePostgresService,
+          useValue: { reserveWithinQuota, adjust },
         },
         {
           provide: InstanceConfigService,
           useValue: {
             getConfig: () => ({
-              value: { streamedBytesMaxPerMonth: STREAMED_BYTES_MAX_PER_MONTH },
+              value: {
+                proxiedDownloadBytesMaxPerMonth:
+                  PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
+              },
             }),
           },
         },
@@ -811,7 +814,7 @@ describe("OpdsCatalogController", () => {
       },
     )
 
-    describe("monthly streaming cap", () => {
+    describe("monthly proxied download quota", () => {
       const NOVEMBER = "2026-11-01"
 
       beforeEach(() => {
@@ -828,17 +831,17 @@ describe("OpdsCatalogController", () => {
 
         expect(response.status).toBe(200)
         expect(response.body.toString()).toBe(BOOK_BYTES)
-        expect(reserveUnderCap).toHaveBeenCalledWith({
+        expect(reserveWithinQuota).toHaveBeenCalledWith({
           month: NOVEMBER,
           bytes: BOOK_BYTES.length,
-          capBytes: STREAMED_BYTES_MAX_PER_MONTH,
+          quotaBytes: PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
         })
         expect(adjust).not.toHaveBeenCalled()
       })
 
-      it("answers 429 until the next month once the download would pass the cap", async () => {
+      it("answers 429 until the next month once the download would pass the quota", async () => {
         vi.setSystemTime(new Date("2026-12-31T23:30:00.000Z"))
-        reserveUnderCap.mockResolvedValue("cap-reached")
+        reserveWithinQuota.mockResolvedValue("quota-reached")
         const driveStream = Readable.from([Buffer.from(BOOK_BYTES)])
         download.mockResolvedValue({
           stream: driveStream,
@@ -875,7 +878,7 @@ describe("OpdsCatalogController", () => {
           stream: driveStream,
           size: BOOK_BYTES.length,
         })
-        reserveUnderCap.mockImplementation(
+        reserveWithinQuota.mockImplementation(
           async function failDriveWhileReserving() {
             const driveClosed = new Promise(function waitForClose(resolve) {
               driveStream.once("close", resolve)
@@ -921,7 +924,7 @@ describe("OpdsCatalogController", () => {
           const response = await getBookFile("book-dune")
 
           expect(response.status).toBe(200)
-          expect(reserveUnderCap).toHaveBeenCalledWith(
+          expect(reserveWithinQuota).toHaveBeenCalledWith(
             expect.objectContaining({ bytes: reservedBytes }),
           )
           await vi.waitFor(() =>

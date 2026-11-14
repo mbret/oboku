@@ -39,7 +39,7 @@ import {
   toRootFeed,
 } from "./opds-feeds.js"
 import { OpdsBooksService } from "./opds-books.service.js"
-import { StreamingUsageService } from "../streaming/streaming-usage.service.js"
+import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 
 /**
  * The catalog of an OPDS server, in OPDS 1.2 at its root and in OPDS 2.0
@@ -53,7 +53,7 @@ import { StreamingUsageService } from "../streaming/streaming-usage.service.js"
 export class OpdsCatalogController {
   constructor(
     private readonly opdsBooksService: OpdsBooksService,
-    private readonly streamingUsageService: StreamingUsageService,
+    private readonly proxiedDownloadQuotaService: ProxiedDownloadQuotaService,
   ) {}
 
   @Get()
@@ -102,8 +102,8 @@ export class OpdsCatalogController {
   /**
    * The file of a book the catalog serves. The last segment names the file
    * for reading apps that take the name from the link, KOReader among them.
-   * Past the instance's monthly streaming cap, it answers 429 until the next
-   * month.
+   * A download that would pass the instance's monthly proxied download quota
+   * answers 429 until the next month.
    */
   @Get(`${OPDS_BOOKS_ROUTE}/:bookId/:fileName`)
   async downloadBook(
@@ -117,13 +117,13 @@ export class OpdsCatalogController {
       bookId,
     })
     const isHeadRequest = request.method === "HEAD"
-    const meteredFile = await this.streamingUsageService.meter({
+    const meteredFile = await this.proxiedDownloadQuotaService.meter({
       stream: file.stream,
       expectedBytes: file.expectedSize,
       isBodySent: !isHeadRequest,
     })
 
-    if (meteredFile.status === "cap-reached") {
+    if (meteredFile.status === "quota-reached") {
       response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
 
       throw new HttpException("Too Many Requests", HttpStatus.TOO_MANY_REQUESTS)

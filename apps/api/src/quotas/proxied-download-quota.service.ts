@@ -6,7 +6,7 @@ import {
 } from "node:stream"
 import { Injectable, Logger } from "@nestjs/common"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
+import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 
 /**
  * Counts the bytes it passes on, read once the pipeline ends. A `compose`
@@ -34,16 +34,16 @@ const toNextUsageMonthStart = (date: Date) =>
 
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
-  | { status: "cap-reached"; resetsAt: Date }
+  | { status: "quota-reached"; resetsAt: Date }
 
-/** Keeps what the instance streams to users under its monthly cap. */
+/** Keeps the files the instance passes on to users under its monthly quota. */
 @Injectable()
-export class StreamingUsageService {
-  private readonly logger = new Logger(StreamingUsageService.name)
+export class ProxiedDownloadQuotaService {
+  private readonly logger = new Logger(ProxiedDownloadQuotaService.name)
 
   constructor(
     private readonly instanceConfigService: InstanceConfigService,
-    private readonly streamingUsagePostgresService: StreamingUsagePostgresService,
+    private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
 
   /**
@@ -51,15 +51,17 @@ export class StreamingUsageService {
    * the returned stream passes on. Once it ends, fails or is destroyed, the
    * counter gets the difference: bytes back for a cancelled download, more
    * for one longer than expected. A file of unknown size reserves nothing,
-   * and only passes below the cap.
+   * and only passes below the quota.
    *
    * The count runs ahead of what the client received by what the streams
    * and the socket still buffer.
    *
    * @param isBodySent false for a HEAD request, whose body Node discards:
    * it gives the whole reservation back.
-   * @returns `cap-reached`, the source destroyed, when the download would
-   * pass the cap; `resetsAt` is when the next month starts, UTC.
+   * @returns `quota-reached`, the source destroyed, when the download would
+   * pass the quota; `resetsAt` is when the next month starts, UTC.
+   * @throws the counter's error, the source destroyed, when the reservation
+   * fails.
    */
   async meter({
     stream,
@@ -73,7 +75,7 @@ export class StreamingUsageService {
     const now = new Date()
     const month = toUsageMonth(now)
     const reservedBytes = expectedBytes ?? 0
-    const { streamedBytesMaxPerMonth } =
+    const { proxiedDownloadBytesMaxPerMonth } =
       this.instanceConfigService.getConfig().value
 
     const byteCounter = new ByteCountingStream()
@@ -86,11 +88,11 @@ export class StreamingUsageService {
       })
     })
 
-    const reservation = await this.streamingUsagePostgresService
-      .reserveUnderCap({
+    const reservation = await this.proxiedDownloadUsagePostgresService
+      .reserveWithinQuota({
         month,
         bytes: reservedBytes,
-        capBytes: streamedBytesMaxPerMonth,
+        quotaBytes: proxiedDownloadBytesMaxPerMonth,
       })
       .catch(function destroySourceOnFailedReservation(error: unknown) {
         stream.destroy()
@@ -98,13 +100,13 @@ export class StreamingUsageService {
         throw error
       })
 
-    if (reservation === "cap-reached") {
+    if (reservation === "quota-reached") {
       stream.destroy()
 
-      return { status: "cap-reached", resetsAt: toNextUsageMonthStart(now) }
+      return { status: "quota-reached", resetsAt: toNextUsageMonthStart(now) }
     }
 
-    const { streamingUsagePostgresService, logger } = this
+    const { proxiedDownloadUsagePostgresService, logger } = this
 
     void transferEnded.then(function settleReservation(passedBytes) {
       const sentBytes = isBodySent ? passedBytes : 0
@@ -112,7 +114,7 @@ export class StreamingUsageService {
 
       if (unreservedBytes === 0) return
 
-      return streamingUsagePostgresService
+      return proxiedDownloadUsagePostgresService
         .adjust({ month, bytes: unreservedBytes })
         .catch(function logFailedSettle(error: unknown) {
           logger.error(

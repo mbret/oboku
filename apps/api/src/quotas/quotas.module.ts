@@ -1,11 +1,11 @@
 import { Module } from "@nestjs/common"
 import { InstanceConfigModule } from "../admin/instance-config/instance-config.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
-import { StreamingUsageService } from "./streaming-usage.service.js"
+import { ProxiedDownloadQuotaService } from "./proxied-download-quota.service.js"
 
 @Module({
   imports: [PostgresModule, InstanceConfigModule],
-  providers: [StreamingUsageService],
-  exports: [StreamingUsageService],
+  providers: [ProxiedDownloadQuotaService],
+  exports: [ProxiedDownloadQuotaService],
 })
-export class StreamingModule {}
+export class QuotasModule {}

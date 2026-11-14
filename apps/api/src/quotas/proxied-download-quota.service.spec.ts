@@ -2,8 +2,8 @@ import { Readable } from "node:stream"
 import { Logger } from "@nestjs/common"
 import { Test } from "@nestjs/testing"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import { StreamingUsagePostgresService } from "../features/postgres/streaming-usage-postgres.service.js"
-import { StreamingUsageService } from "./streaming-usage.service.js"
+import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
+import { ProxiedDownloadQuotaService } from "./proxied-download-quota.service.js"
 
 const CHUNK_BYTES = 64 * 1024
 const CHUNK_COUNT = 100
@@ -14,34 +14,34 @@ const createDriveStream = () =>
     Array.from({ length: CHUNK_COUNT }, () => Buffer.alloc(CHUNK_BYTES)),
   )
 
-describe("StreamingUsageService", () => {
-  let service: StreamingUsageService
-  const reserveUnderCap = vi.fn()
+describe("ProxiedDownloadQuotaService", () => {
+  let service: ProxiedDownloadQuotaService
+  const reserveWithinQuota = vi.fn()
   const adjust = vi.fn()
 
   beforeEach(async () => {
-    reserveUnderCap.mockResolvedValue("reserved")
+    reserveWithinQuota.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
       providers: [
-        StreamingUsageService,
+        ProxiedDownloadQuotaService,
         {
-          provide: StreamingUsagePostgresService,
-          useValue: { reserveUnderCap, adjust },
+          provide: ProxiedDownloadUsagePostgresService,
+          useValue: { reserveWithinQuota, adjust },
         },
         {
           provide: InstanceConfigService,
           useValue: {
             getConfig: () => ({
-              value: { streamedBytesMaxPerMonth: 1024 ** 4 },
+              value: { proxiedDownloadBytesMaxPerMonth: 1024 ** 4 },
             }),
           },
         },
       ],
     }).compile()
 
-    service = module.get(StreamingUsageService)
+    service = module.get(ProxiedDownloadQuotaService)
   })
 
   afterEach(() => {
@@ -125,7 +125,7 @@ describe("StreamingUsageService", () => {
 
   it("destroys the Drive stream when the counter cannot be reached", async () => {
     const driveStream = createDriveStream()
-    reserveUnderCap.mockRejectedValue(new Error("connection refused"))
+    reserveWithinQuota.mockRejectedValue(new Error("connection refused"))
 
     await expect(
       service.meter({
