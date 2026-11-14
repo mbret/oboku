@@ -2,7 +2,7 @@ import { type BookDocType, getMetadataFromBook } from "@oboku/shared"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { escapeXml } from "../http/escapeXml.js"
-import { toServedFile } from "./opds-library.js"
+import { toServedFile } from "./opds-books.js"
 
 export const OPDS_CATALOG_ROUTE = "opds"
 export const OPDS_BOOKS_ROUTE = "books"

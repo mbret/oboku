@@ -36,7 +36,7 @@ import {
   toOpds2Feed,
   toRootFeed,
 } from "./opds-feeds.js"
-import { OpdsLibraryService } from "./opds-library.service.js"
+import { OpdsBooksService } from "./opds-books.service.js"
 
 /**
  * The catalog of an OPDS server, in OPDS 1.2 at its root and in OPDS 2.0
@@ -48,7 +48,7 @@ import { OpdsLibraryService } from "./opds-library.service.js"
 @UseGuards(OpdsBasicAuthGuard)
 @Controller(`${OPDS_CATALOG_ROUTE}/:slug`)
 export class OpdsCatalogController {
-  constructor(private readonly opdsLibraryService: OpdsLibraryService) {}
+  constructor(private readonly opdsBooksService: OpdsBooksService) {}
 
   @Get()
   @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
@@ -103,7 +103,7 @@ export class OpdsCatalogController {
     @Param("bookId") bookId: string,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const file = await this.opdsLibraryService.openServedFile({
+    const file = await this.opdsBooksService.streamServedBook({
       owner,
       bookId,
     })
@@ -147,7 +147,7 @@ export class OpdsCatalogController {
 
     if (!isPageNumber) throw new BadRequestException()
 
-    const servedBooks = await this.opdsLibraryService.listServedBooks({
+    const servedBooks = await this.opdsBooksService.listServedBooks({
       owner,
       page,
     })

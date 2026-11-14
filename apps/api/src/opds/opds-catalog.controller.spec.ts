@@ -22,8 +22,8 @@ import { GoogleConnectionService } from "../provider-connections/google/google-c
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
-import { OpdsCatalogService } from "./opds-catalog.service.js"
-import { OpdsLibraryService } from "./opds-library.service.js"
+import { OpdsAuthService } from "./opds-auth.service.js"
+import { OpdsBooksService } from "./opds-books.service.js"
 
 const OWNER: UserPostgresEntity = {
   id: 1,
@@ -303,8 +303,8 @@ describe("OpdsCatalogController", () => {
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
       providers: [
-        OpdsCatalogService,
-        OpdsLibraryService,
+        OpdsAuthService,
+        OpdsBooksService,
         OpdsBasicAuthGuard,
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
         {
@@ -398,6 +398,9 @@ describe("OpdsCatalogController", () => {
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: OWNER.couchName,
     })
+    expect(mintAccessToken).not.toHaveBeenCalled()
+    expect(getFileMetadata).not.toHaveBeenCalled()
+    expect(download).not.toHaveBeenCalled()
   })
 
   it("lists the same books in OPDS 2.0", async () => {
@@ -443,7 +446,7 @@ describe("OpdsCatalogController", () => {
     },
   )
 
-  it("lists no books of an owner whose library it cannot open yet", async () => {
+  it("lists no books of an owner without a CouchDB user name", async () => {
     const response = await getCatalog(
       "/opds/quiet-owls-wait/books",
       toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),
@@ -689,7 +692,7 @@ describe("OpdsCatalogController", () => {
       expect(mintAccessToken).not.toHaveBeenCalled()
     })
 
-    it("serves no file of an owner whose library it cannot open yet", async () => {
+    it("serves no file of an owner without a CouchDB user name", async () => {
       const response = await getCatalog(
         "/opds/quiet-owls-wait/books/book-dune/Dune.epub",
         toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),

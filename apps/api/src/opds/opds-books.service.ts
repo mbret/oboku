@@ -24,7 +24,7 @@ import {
   SERVED_BOOKS_PAGE_SIZE,
   SERVED_LINK_TYPE,
   toServedFile,
-} from "./opds-library.js"
+} from "./opds-books.js"
 
 /** Drive's reasons for a 403 that a later request may not get. */
 const DRIVE_RATE_LIMIT_REASONS: ReadonlyArray<string> = [
@@ -102,8 +102,8 @@ const findServedBookSummaries = async (
 
 /** The books an owner's OPDS servers serve, and their files. */
 @Injectable()
-export class OpdsLibraryService {
-  private readonly logger = new Logger(OpdsLibraryService.name)
+export class OpdsBooksService {
+  private readonly logger = new Logger(OpdsBooksService.name)
 
   constructor(
     private readonly couchService: CouchService,
@@ -150,14 +150,15 @@ export class OpdsLibraryService {
   }
 
   /**
-   * Opens the file of a book the owner's catalogs serve, from Google Drive.
+   * Streams the file of a book the owner's catalogs serve, from Google Drive,
+   * as Drive sends it.
    *
    * @throws `NotFoundException` for a book the catalogs do not serve, an
    * owner without a usable Google connection, or a file Drive refuses;
    * `ServiceUnavailableException` while Drive rate-limits;
    * `BadGatewayException` for any other failure of Google.
    */
-  async openServedFile({
+  async streamServedBook({
     owner,
     bookId,
   }: {
@@ -209,7 +210,7 @@ export class OpdsLibraryService {
 
     const { stream, size } = await this.askDrive(
       { bookId, isFileReadable: true },
-      function openFileStream() {
+      function requestDriveStream() {
         return pluginsService.download({ link: firstLink, providerCredentials })
       },
     )

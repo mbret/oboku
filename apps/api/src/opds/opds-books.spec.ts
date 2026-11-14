@@ -1,9 +1,5 @@
 import type { BookMetadata } from "@oboku/shared"
-import {
-  compareNewestFirst,
-  isBookShown,
-  toServedFile,
-} from "./opds-library.js"
+import { compareNewestFirst, isBookShown, toServedFile } from "./opds-books.js"
 
 const PROTECTED_TAG_IDS = ["tag-private"]
 
