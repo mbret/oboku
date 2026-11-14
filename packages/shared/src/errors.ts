@@ -25,6 +25,8 @@ export enum ObokuErrorCode {
   ERROR_PROVIDER_CONNECTION_CODE_REFUSED = "11001",
   ERROR_PROVIDER_CONNECTION_NO_REFRESH_TOKEN = "11002",
   ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED = "11003",
+  ERROR_PROVIDER_CONNECTION_NOT_FOUND = "11004",
+  ERROR_PROVIDER_CONNECTION_LOST = "11005",
 }
 
 export type ObokuErrorSeverity = "internal" | "user"
@@ -56,6 +58,8 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CODE_REFUSED]: "user",
   [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NO_REFRESH_TOKEN]: "user",
   [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SCOPE_NOT_GRANTED]: "user",
+  [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND]: "user",
+  [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST]: "user",
 }
 
 export class ObokuSharedError extends Error {

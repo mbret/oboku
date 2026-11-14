@@ -17,6 +17,7 @@ import {
   clearActiveProfileId,
   setActiveProfileId,
 } from "../../../profiles/active/activeProfileId"
+import { clearGoogleAccessToken, googleAccessTokenSignal } from "../auth"
 import { GoogleConnectionSection } from "./GoogleConnectionSection"
 
 const { useConfig, requestCode } = vi.hoisted(function createSpies() {
@@ -133,6 +134,7 @@ describe("GoogleConnectionSection", () => {
 
   afterEach(() => {
     cleanup()
+    clearGoogleAccessToken()
     dialogSignal.update([])
     clearActiveProfileId()
     vi.clearAllMocks()
@@ -229,7 +231,14 @@ describe("GoogleConnectionSection", () => {
     expect(await screen.findByText(/Allow pop-ups for oboku/)).toBeTruthy()
   })
 
-  it("disconnects once the user confirms", async () => {
+  it("disconnects once the user confirms, and stops using the connection's token", async () => {
+    googleAccessTokenSignal.update({
+      access_token: "minted-token",
+      expires_in: "3599",
+      scope: "https://www.googleapis.com/auth/drive.file",
+      token_type: "Bearer",
+      created_at: Date.now(),
+    })
     const api = renderSection({ connection: CONNECTION })
     api.get.mockResolvedValue({ data: { connection: null } })
 
@@ -244,6 +253,7 @@ describe("GoogleConnectionSection", () => {
     expect(api.delete).toHaveBeenCalledWith(
       expect.objectContaining({ url: "/provider-connections/google" }),
     )
+    expect(googleAccessTokenSignal.getValue()).toBeUndefined()
   })
 
   it("drops the code when another tab switches profiles while Google's popup is open", async () => {

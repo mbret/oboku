@@ -153,6 +153,17 @@ describe("OpdsServersScreen", () => {
     expect(screen.queryByRole("textbox", { name: "Password" })).toBeNull()
   })
 
+  it("points to the Google account the catalogs list books through", async () => {
+    renderScreen(listing([]))
+
+    const googleAccountLink = await screen.findByRole<HTMLAnchorElement>(
+      "link",
+      { name: "Google account" },
+    )
+
+    expect(googleAccountLink.getAttribute("href")).toBe("/integrations/google")
+  })
+
   it("says when the user has no server yet", async () => {
     renderScreen(listing([]))
 

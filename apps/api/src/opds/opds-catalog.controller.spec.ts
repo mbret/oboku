@@ -1,11 +1,14 @@
-import type { INestApplication } from "@nestjs/common"
+import { Readable } from "node:stream"
+import { type INestApplication, Logger } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
+import { ObokuErrorCode } from "@oboku/shared"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
+import { CouchService } from "../couch/couch.service.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
@@ -13,15 +16,28 @@ import type {
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
+import { createObokuBadRequest } from "../http/obokuBadRequest.js"
+import { PluginsService } from "../plugins/plugins.service.js"
+import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
-import { OpdsCatalogService } from "./opds-catalog.service.js"
+import { OpdsAuthService } from "./opds-auth.service.js"
+import { OpdsBooksService } from "./opds-books.service.js"
 
 const OWNER: UserPostgresEntity = {
   id: 1,
   email: "reader@example.com",
   username: "reader@example.com",
+  couchName: "reader@example.com",
+  createdAt: new Date(),
+}
+
+/** An account that has not signed in since its CouchDB user name is recorded. */
+const NEWCOMER: UserPostgresEntity = {
+  id: 2,
+  email: "newcomer@example.com",
+  username: "newcomer@example.com",
   createdAt: new Date(),
 }
 const OWNER_SESSION = "reader-session"
@@ -34,6 +50,13 @@ const SERVER: OpdsServerPostgresEntity = {
   name: `Kids' <books> & "more"`,
   password_hash: hashSecret(PASSWORD),
   created_at: new Date(),
+}
+
+const NEWCOMER_SERVER: OpdsServerPostgresEntity = {
+  ...SERVER,
+  id: 8,
+  user_id: NEWCOMER.id,
+  slug: "quiet-owls-wait",
 }
 
 const ownerTokenPayload: TokenPayload = {
@@ -60,6 +83,13 @@ const toAuthenticationDocument = (slug: string, protocol = "https") => ({
   ],
 })
 
+/** The ids of the books an OPDS 1.2 feed lists, in its order. */
+const toListedBookIds = (feedXml: string) =>
+  Array.from(
+    feedXml.matchAll(/<id>urn:oboku:opds:[^:<]+:books:([^<]+)<\/id>/g),
+    ([, bookId]) => bookId,
+  )
+
 /** Express adds a charset and sorts the parameters, which leaves the type the same. */
 const toMediaTypeParts = (contentType: string | undefined) =>
   new Set(contentType?.split(";").map((part) => part.trim()))
@@ -70,12 +100,165 @@ const toBasicAuthorization = (credentials: string) =>
 const OWNER_AUTHORIZATION = toBasicAuthorization(`${OWNER.email}:${PASSWORD}`)
 
 const serverStore: Pick<OpdsServerPostgresService, "findBySlug"> = {
-  findBySlug: async (slug) => (slug === SERVER.slug ? SERVER : null),
+  findBySlug: async (slug) =>
+    [SERVER, NEWCOMER_SERVER].find((server) => server.slug === slug) ?? null,
 }
 
 const userStore: Pick<UserPostgresService, "findById"> = {
-  findById: async (userId) => (userId === OWNER.id ? OWNER : null),
+  findById: async (userId) =>
+    [OWNER, NEWCOMER].find((user) => user.id === userId) ?? null,
 }
+
+const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
+const BOOK_BYTES = "epub bytes"
+
+const DRIVE_LINK = {
+  _id: "link-drive",
+  rx_model: "link",
+  type: "DRIVE",
+  data: { fileId: "drive-file-dune" },
+  book: "book-dune",
+}
+
+const DROPBOX_LINK = {
+  _id: "link-dropbox",
+  rx_model: "link",
+  type: "dropbox",
+  data: { fileId: "dropbox-file" },
+  book: "book-dropbox",
+}
+
+const PROTECTED_TAG = { _id: "tag-private", rx_model: "tag", isProtected: true }
+
+const DUNE = {
+  _id: "book-dune",
+  rx_model: "book",
+  links: [DRIVE_LINK._id],
+  tags: [],
+  createdAt: Date.parse("2026-01-10T08:00:00.000Z"),
+  metadata: [
+    { type: "link", title: "Dune [oboku~isbn~9780441013593].epub" },
+    {
+      type: "file",
+      version: 5,
+      contentType: "application/epub+zip",
+      metadata: { titles: [{ value: "Dune" }] },
+    },
+  ],
+}
+
+const LIBRARY = {
+  books: [
+    DUNE,
+    { ...DUNE, _id: "book-private", tags: [PROTECTED_TAG._id] },
+    { ...DUNE, _id: "book-skipped", isNotInterested: true },
+    { ...DUNE, _id: "book-dropbox", links: [DROPBOX_LINK._id] },
+    { ...DUNE, _id: "book-mixed", links: [DROPBOX_LINK._id, DRIVE_LINK._id] },
+    { ...DUNE, _id: "book-unlinked", links: [] },
+    {
+      ...DUNE,
+      _id: "book-blame",
+      createdAt: Date.parse("2026-03-05T08:00:00.000Z"),
+      metadata: [
+        { type: "link", title: "BLAME! 03.cbz" },
+        {
+          type: "file",
+          version: 5,
+          contentType: "application/vnd.comicbook+zip",
+          metadata: { titles: [{ value: "BLAME! 03" }] },
+        },
+      ],
+    },
+  ],
+  links: [DRIVE_LINK, DROPBOX_LINK],
+  tags: [
+    PROTECTED_TAG,
+    { _id: "tag-reading", rx_model: "tag", isProtected: false },
+  ],
+}
+
+type LibraryDocument = { _id: string }
+
+/** Answers CouchDB's `_find` and `_all_docs` as the catalog asks them. */
+const createLibraryDb = (library: {
+  books: ReadonlyArray<LibraryDocument>
+  links: ReadonlyArray<LibraryDocument>
+  tags: ReadonlyArray<LibraryDocument>
+}) => {
+  const documents = [...library.books, ...library.links, ...library.tags]
+
+  return {
+    find: async ({
+      selector,
+      fields,
+    }: {
+      selector: Record<string, unknown>
+      fields?: ReadonlyArray<string>
+    }) => {
+      const docs = documents
+        .filter(function matchesSelector(doc) {
+          const values = new Map(Object.entries(doc))
+
+          return Object.entries(selector).every(
+            ([field, value]) => values.get(field) === value,
+          )
+        })
+        .map(function keepAskedFields(doc) {
+          return fields
+            ? Object.fromEntries(
+                Object.entries(doc).filter(([field]) => fields.includes(field)),
+              )
+            : doc
+        })
+
+      return { docs, bookmark: "nil" }
+    },
+    fetch: async ({ keys }: { keys: ReadonlyArray<string> }) => ({
+      rows: keys.map(function toRow(key) {
+        const doc = documents.find(({ _id }) => _id === key)
+
+        return doc
+          ? { id: key, key, value: { rev: "1-a" }, doc }
+          : { key, error: "not_found" }
+      }),
+    }),
+  }
+}
+
+/** One more Drive book than a page lists, the newest last created. */
+const LARGE_LIBRARY = {
+  ...LIBRARY,
+  books: Array.from({ length: 51 }, (_, index) => ({
+    ...DUNE,
+    _id: `book-${String(index).padStart(2, "0")}`,
+    createdAt: DUNE.createdAt + index,
+  })),
+}
+
+/**
+ * A refusal of a streamed download as gaxios throws it: no parsed body, and
+ * Drive's answer only in the message.
+ */
+const createDriveStreamRefusal = (status: number) =>
+  Object.assign(
+    new Error(
+      `Request failed with status code ${status}: ${DRIVE_ACCESS_TOKEN}`,
+    ),
+    {
+      config: { headers: { Authorization: `Bearer ${DRIVE_ACCESS_TOKEN}` } },
+      response: { status },
+    },
+  )
+
+/** A refusal from Drive as gaxios throws it, the access token in its config. */
+const createDriveRefusal = (status: number, reason?: string) =>
+  Object.assign(new Error(`Request failed with status code ${status}`), {
+    config: { headers: { Authorization: `Bearer ${DRIVE_ACCESS_TOKEN}` } },
+    response: {
+      status,
+      data: { error: { code: status, errors: [{ reason }] } },
+    },
+  })
 
 describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
@@ -92,12 +275,43 @@ describe("OpdsCatalogController", () => {
       : pendingRequest
   }
 
+  const createNanoInstanceForUser = vi.fn()
+  const isConnected = vi.fn()
+  const mintAccessToken = vi.fn()
+  const getFileMetadata = vi.fn()
+  const download = vi.fn()
+
   beforeEach(async () => {
+    createNanoInstanceForUser.mockResolvedValue(createLibraryDb(LIBRARY))
+    isConnected.mockResolvedValue(true)
+    mintAccessToken.mockResolvedValue({
+      accessToken: DRIVE_ACCESS_TOKEN,
+      expiresIn: 3599,
+      scopes: ["https://www.googleapis.com/auth/drive.file"],
+    })
+    getFileMetadata.mockResolvedValue({
+      modifiedAt: "2026-11-12T08:00:00.000Z",
+      bookMetadata: { size: "1" },
+    })
+    download.mockImplementation(async function streamBook() {
+      return {
+        stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+        size: BOOK_BYTES.length,
+      }
+    })
+
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
       providers: [
-        OpdsCatalogService,
+        OpdsAuthService,
+        OpdsBooksService,
         OpdsBasicAuthGuard,
+        { provide: CouchService, useValue: { createNanoInstanceForUser } },
+        {
+          provide: GoogleConnectionService,
+          useValue: { isConnected, mintAccessToken },
+        },
+        { provide: PluginsService, useValue: { getFileMetadata, download } },
         { provide: OpdsServerPostgresService, useValue: serverStore },
         { provide: UserPostgresService, useValue: userStore },
         { provide: APP_GUARD, useClass: AuthGuard },
@@ -124,6 +338,8 @@ describe("OpdsCatalogController", () => {
 
   afterEach(async () => {
     await app.close()
+    vi.restoreAllMocks()
+    vi.clearAllMocks()
   })
 
   it("serves the catalog root to the owner's email and the server's password", async () => {
@@ -155,7 +371,7 @@ describe("OpdsCatalogController", () => {
     )
   })
 
-  it("lists no books yet", async () => {
+  it("lists the Drive books the library shows, newest first", async () => {
     const response = await getCatalog(
       "/opds/calm-snails-dream/books",
       OWNER_AUTHORIZATION,
@@ -174,7 +390,120 @@ describe("OpdsCatalogController", () => {
     expect(response.text).toContain(
       `<link rel="start" href="/opds/calm-snails-dream" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>`,
     )
-    expect(response.text).not.toContain("<entry>")
+    expect(toListedBookIds(response.text)).toEqual(["book-blame", "book-dune"])
+    expect(response.text).toContain(
+      `<link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-dune/Dune.epub" type="application/epub+zip"/>`,
+    )
+    expect(isConnected).toHaveBeenCalledWith(OWNER.id)
+    expect(createNanoInstanceForUser).toHaveBeenCalledWith({
+      email: OWNER.couchName,
+    })
+    expect(mintAccessToken).not.toHaveBeenCalled()
+    expect(getFileMetadata).not.toHaveBeenCalled()
+    expect(download).not.toHaveBeenCalled()
+  })
+
+  it("lists the same books in OPDS 2.0", async () => {
+    const response = await getCatalog(
+      "/opds/calm-snails-dream/v2/books",
+      OWNER_AUTHORIZATION,
+    )
+
+    expect(response.status).toBe(200)
+    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+      new Set(["application/opds+json", "charset=utf-8"]),
+    )
+    expect(response.body.metadata).toEqual({
+      title: "All books",
+      numberOfItems: 2,
+      itemsPerPage: 50,
+      currentPage: 1,
+    })
+    expect(
+      response.body.publications.map(
+        (publication: { metadata: { identifier: string } }) =>
+          publication.metadata.identifier,
+      ),
+    ).toEqual([
+      "urn:oboku:opds:calm-snails-dream:books:book-blame",
+      "urn:oboku:opds:calm-snails-dream:books:book-dune",
+    ])
+  })
+
+  it.each([
+    "/opds/calm-snails-dream/books",
+    "/opds/calm-snails-dream/v2/books",
+  ])(
+    "lists no books at %s while the owner has no Google connection",
+    async (path) => {
+      isConnected.mockResolvedValue(false)
+
+      const response = await getCatalog(path, OWNER_AUTHORIZATION)
+
+      expect(response.status).toBe(200)
+      expect(response.text).not.toContain("book-dune")
+      expect(createNanoInstanceForUser).not.toHaveBeenCalled()
+    },
+  )
+
+  it("lists no books of an owner without a CouchDB user name", async () => {
+    const response = await getCatalog(
+      "/opds/quiet-owls-wait/books",
+      toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),
+    )
+
+    expect(response.status).toBe(200)
+    expect(toListedBookIds(response.text)).toEqual([])
+    expect(createNanoInstanceForUser).not.toHaveBeenCalled()
+  })
+
+  describe("pages", () => {
+    beforeEach(() => {
+      createNanoInstanceForUser.mockResolvedValue(
+        createLibraryDb(LARGE_LIBRARY),
+      )
+    })
+
+    it("lists 50 books a page, linking the next", async () => {
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/books",
+        OWNER_AUTHORIZATION,
+      )
+      const listedBookIds = toListedBookIds(response.text)
+
+      expect(listedBookIds).toHaveLength(50)
+      expect(listedBookIds[0]).toBe("book-50")
+      expect(response.text).toContain(
+        `<link rel="next" href="/opds/calm-snails-dream/books?page=2" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>`,
+      )
+    })
+
+    it("lists the rest on the next page", async () => {
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/books?page=2",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(200)
+      expect(toListedBookIds(response.text)).toEqual(["book-00"])
+      expect(response.text).toContain(
+        `<link rel="self" href="/opds/calm-snails-dream/books?page=2" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>`,
+      )
+    })
+
+    it.each([
+      ["a page past the last", "books?page=3", 404],
+      ["a page past the last in OPDS 2.0", "v2/books?page=3", 404],
+      ["page 0", "books?page=0", 400],
+      ["a page that is not a number", "v2/books?page=next", 400],
+    ])("answers %s with %i", async (_, path, status) => {
+      const response = await getCatalog(
+        `/opds/calm-snails-dream/${path}`,
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(status)
+    })
   })
 
   it("serves the OPDS 2.0 catalog root under v2", async () => {
@@ -209,34 +538,6 @@ describe("OpdsCatalogController", () => {
           title: "All books",
         },
       ],
-    })
-  })
-
-  it("lists no books yet in OPDS 2.0", async () => {
-    const response = await getCatalog(
-      "/opds/calm-snails-dream/v2/books",
-      OWNER_AUTHORIZATION,
-    )
-
-    expect(response.status).toBe(200)
-    expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
-      new Set(["application/opds+json", "charset=utf-8"]),
-    )
-    expect(response.body).toEqual({
-      metadata: { title: "All books" },
-      links: [
-        {
-          rel: "self",
-          href: "/opds/calm-snails-dream/v2/books",
-          type: "application/opds+json",
-        },
-        {
-          rel: "start",
-          href: "/opds/calm-snails-dream/v2",
-          type: "application/opds+json",
-        },
-      ],
-      publications: [],
     })
   })
 
@@ -303,6 +604,11 @@ describe("OpdsCatalogController", () => {
     ],
     ["an unknown server", "/opds/brave-foxes-run", OWNER_AUTHORIZATION],
     [
+      "missing credentials on a book's file",
+      "/opds/calm-snails-dream/books/book-dune/Dune.epub",
+      undefined,
+    ],
+    [
       "missing credentials in OPDS 2.0",
       "/opds/calm-snails-dream/v2",
       undefined,
@@ -321,4 +627,180 @@ describe("OpdsCatalogController", () => {
       expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
+  describe("book files", () => {
+    const getBookFile = (bookId: string, slug = SERVER.slug) =>
+      getCatalog(
+        `/opds/${slug}/books/${bookId}/Dune.epub`,
+        OWNER_AUTHORIZATION,
+      ).responseType("blob")
+
+    it("streams a served book's Drive file, typed and named for reading apps", async () => {
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe("application/epub+zip")
+      expect(response.headers["content-disposition"]).toBe(
+        "attachment; filename=Dune.epub",
+      )
+      expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(createNanoInstanceForUser).toHaveBeenCalledWith({
+        email: OWNER.couchName,
+      })
+      expect(mintAccessToken).toHaveBeenCalledWith(OWNER.id)
+      expect(download).toHaveBeenCalledWith({
+        link: expect.objectContaining({ _id: DRIVE_LINK._id }),
+        providerCredentials: { access_token: DRIVE_ACCESS_TOKEN },
+      })
+    })
+
+    it("states no length when Drive's download states none", async () => {
+      download.mockResolvedValue({
+        stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+      })
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-length"]).toBeUndefined()
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+    })
+
+    it("sends the book's own media type, not the one its extension suggests", async () => {
+      const response = await getBookFile("book-blame")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe(
+        "application/vnd.comicbook+zip",
+      )
+      expect(response.headers["content-disposition"]).toBe(
+        'attachment; filename="BLAME! 03.cbz"',
+      )
+    })
+
+    it.each([
+      ["an unknown book", "book-missing"],
+      ["a book under a protected tag", "book-private"],
+      ["a book marked not interested", "book-skipped"],
+      ["a book on another provider", "book-dropbox"],
+      ["a book whose Drive link is not its first", "book-mixed"],
+      ["a book without links", "book-unlinked"],
+    ])("answers 404 for %s, without asking Google", async (_, bookId) => {
+      const response = await getBookFile(bookId)
+
+      expect(response.status).toBe(404)
+      expect(mintAccessToken).not.toHaveBeenCalled()
+    })
+
+    it("serves no file of an owner without a CouchDB user name", async () => {
+      const response = await getCatalog(
+        "/opds/quiet-owls-wait/books/book-dune/Dune.epub",
+        toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),
+      )
+
+      expect(response.status).toBe(404)
+      expect(createNanoInstanceForUser).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      [
+        "no Google connection",
+        createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND,
+        ),
+        404,
+      ],
+      [
+        "a lost Google connection",
+        createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
+        404,
+      ],
+      [
+        "an instance without Google's client secret",
+        createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED,
+        ),
+        404,
+      ],
+      [
+        "Google failing to refresh the token",
+        new Error("Google refused to refresh the access token: internal"),
+        502,
+      ],
+    ])("answers %s with %i", async (_, mintFailure, status) => {
+      mintAccessToken.mockRejectedValue(mintFailure)
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(status)
+      expect(download).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["a file Drive cannot find", createDriveRefusal(404, "notFound"), 404],
+      [
+        "a file the token may not read",
+        createDriveRefusal(403, "insufficientFilePermissions"),
+        404,
+      ],
+      [
+        "Drive's rate limit",
+        createDriveRefusal(403, "userRateLimitExceeded"),
+        503,
+      ],
+      ["too many requests", createDriveRefusal(429), 503],
+      ["a token Drive refuses", createDriveRefusal(401, "authError"), 502],
+      ["a failing Drive", createDriveRefusal(500, "backendError"), 502],
+    ])(
+      "answers %s with %i, keeping the access token out",
+      async (_, refusal, status) => {
+        const warn = vi.spyOn(Logger.prototype, "warn")
+        getFileMetadata.mockRejectedValue(refusal)
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(status)
+        expect(JSON.stringify(response.headers)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
+        expect(response.body.toString()).not.toContain(DRIVE_ACCESS_TOKEN)
+        expect(JSON.stringify(warn.mock.calls)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
+      },
+    )
+
+    it.each([
+      ["a download limit once the file's metadata came", 403, 503],
+      ["a file gone between both requests", 404, 404],
+      ["a failing download", 500, 502],
+    ])(
+      "answers %s with %i, though gaxios keeps no body of a stream",
+      async (_, driveStatus, status) => {
+        const warn = vi.spyOn(Logger.prototype, "warn")
+        download.mockRejectedValue(createDriveStreamRefusal(driveStatus))
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(status)
+        expect(JSON.stringify(warn.mock.calls)).not.toContain(
+          DRIVE_ACCESS_TOKEN,
+        )
+      },
+    )
+
+    it("answers 502 when Drive's stream fails before its first byte", async () => {
+      download.mockResolvedValue({
+        stream: new Readable({
+          read() {
+            this.destroy(new Error("socket hang up"))
+          },
+        }),
+      })
+
+      const response = await getBookFile("book-dune")
+
+      expect(response.status).toBe(502)
+    })
+  })
 })

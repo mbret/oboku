@@ -4,9 +4,20 @@ title: "OPDS Servers"
 
 An OPDS server turns your oboku library into a catalog that KOReader and other reading apps can browse. Each server serves its catalog in OPDS 1.2 and in OPDS 2.0, at two addresses. You can create several, each with its own addresses and password, for example one per device.
 
-:::caution
-Catalogs are empty for now: oboku cannot serve your books through them yet. You can already create a server and sign a reading app in to it.
-:::
+## What a catalog lists
+
+A catalog lists the books of your library that oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection). Reading apps download them through oboku's server, which reaches Drive with that connection. Without it, catalogs are empty.
+
+Books appear newest first, 50 per page. A catalog leaves out:
+
+* books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
+* books you marked not interested;
+* books oboku reads from another provider, such as Dropbox or WebDAV.
+
+Some listed books cannot be downloaded yet:
+
+* Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
+* Books added with another Google account than the connected one: oboku reaches Drive with one account only.
 
 ## Create a server
 

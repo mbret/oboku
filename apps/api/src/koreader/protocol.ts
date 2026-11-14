@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto"
+import { isRecord } from "../http/isRecord.js"
 
 /** The media type KOReader's sync client accepts (its `api.json`). */
 export const KOREADER_SYNC_MEDIA_TYPE = "application/vnd.koreader.v1+json"
@@ -24,9 +25,6 @@ export const toSyncTimestamp = (date: Date) => Math.floor(date.getTime() / 1000)
 
 export const fromSyncTimestamp = (timestamp: number) =>
   new Date(timestamp * 1000)
-
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null
 
 /** The fields of a sync request or answer, none when its body is not an object. */
 export const toSyncFields = (body: unknown): Record<string, unknown> =>

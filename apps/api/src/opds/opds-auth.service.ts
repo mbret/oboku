@@ -7,15 +7,15 @@ import {
 } from "../features/postgres/user-postgres.service.js"
 
 @Injectable()
-export class OpdsCatalogService {
+export class OpdsAuthService {
   constructor(
     private readonly opdsServerPostgresService: OpdsServerPostgresService,
     private readonly userPostgresService: UserPostgresService,
   ) {}
 
   /**
-   * The server a reader signs in to: `username` is its owner's email, in any
-   * case, and `password` the server's own.
+   * The server a reader signs in to, with its owner: `username` is the
+   * owner's email, in any case, and `password` the server's own.
    *
    * @returns `undefined` for an unknown slug or wrong credentials alike.
    */
@@ -35,9 +35,12 @@ export class OpdsCatalogService {
     }
 
     const owner = await this.userPostgresService.findById(server.user_id)
-    const isOwnerEmail =
-      owner !== null && normalizeEmail(username) === normalizeEmail(owner.email)
 
-    return isOwnerEmail ? server : undefined
+    if (!owner) return undefined
+
+    const isOwnerEmail =
+      normalizeEmail(username) === normalizeEmail(owner.email)
+
+    return isOwnerEmail ? { server, owner } : undefined
   }
 }

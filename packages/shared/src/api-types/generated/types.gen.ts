@@ -38,7 +38,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005';
 };
 
 export type ObokuErrorResponseDto = {
@@ -561,6 +561,18 @@ export type ConnectGoogleAccountDto = {
      * The authorization code Google's code flow popup gives the web app.
      */
     code: string;
+};
+
+export type GoogleAccessTokenResponseDto = {
+    /**
+     * Reaches the connected account's Drive within `scopes`, for `expiresIn` seconds.
+     */
+    accessToken: string;
+    /**
+     * Seconds the token stays valid from this answer, like OAuth's `expires_in`.
+     */
+    expiresIn: number;
+    scopes: Array<string>;
 };
 
 export type AppGetHelloData = {
@@ -2035,3 +2047,26 @@ export type GoogleConnectionConnectResponses = {
 };
 
 export type GoogleConnectionConnectResponse = GoogleConnectionConnectResponses[keyof GoogleConnectionConnectResponses];
+
+export type GoogleConnectionMintAccessTokenData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/provider-connections/google/access-token';
+};
+
+export type GoogleConnectionMintAccessTokenErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type GoogleConnectionMintAccessTokenError = GoogleConnectionMintAccessTokenErrors[keyof GoogleConnectionMintAccessTokenErrors];
+
+export type GoogleConnectionMintAccessTokenResponses = {
+    201: GoogleAccessTokenResponseDto;
+};
+
+export type GoogleConnectionMintAccessTokenResponse = GoogleConnectionMintAccessTokenResponses[keyof GoogleConnectionMintAccessTokenResponses];

@@ -6,10 +6,13 @@ import {
   UnauthorizedException,
 } from "@nestjs/common"
 import type { Request, Response } from "express"
-import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
+import type {
+  OpdsServerPostgresEntity,
+  UserPostgresEntity,
+} from "../features/postgres/entities.js"
 import { parseBasicAuthorization } from "../http/basicAuthorization.js"
 import { getRequestOrigin } from "../http/requestOrigin.js"
-import { OpdsCatalogService } from "./opds-catalog.service.js"
+import { OpdsAuthService } from "./opds-auth.service.js"
 import {
   OPDS_AUTHENTICATION_DOCUMENT_TYPE,
   toAuthenticationDocument,
@@ -19,6 +22,7 @@ const OPDS_BASIC_CHALLENGE = 'Basic realm="oboku-opds", charset="UTF-8"'
 
 type OpdsCatalogRequest = Request<{ slug: string }> & {
   opdsServer?: OpdsServerPostgresEntity
+  opdsOwner?: UserPostgresEntity
 }
 
 /**
@@ -28,7 +32,7 @@ type OpdsCatalogRequest = Request<{ slug: string }> & {
  */
 @Injectable()
 export class OpdsBasicAuthGuard implements CanActivate {
-  constructor(private readonly opdsCatalogService: OpdsCatalogService) {}
+  constructor(private readonly opdsAuthService: OpdsAuthService) {}
 
   async canActivate(context: ExecutionContext) {
     const http = context.switchToHttp()
@@ -36,11 +40,11 @@ export class OpdsBasicAuthGuard implements CanActivate {
     const credentials = parseBasicAuthorization(request.headers.authorization)
     const { slug } = request.params
 
-    const server = credentials
-      ? await this.opdsCatalogService.authorize({ slug, ...credentials })
+    const access = credentials
+      ? await this.opdsAuthService.authorize({ slug, ...credentials })
       : undefined
 
-    if (!server) {
+    if (!access) {
       http.getResponse<Response>().set({
         "WWW-Authenticate": OPDS_BASIC_CHALLENGE,
         "Content-Type": OPDS_AUTHENTICATION_DOCUMENT_TYPE,
@@ -51,7 +55,8 @@ export class OpdsBasicAuthGuard implements CanActivate {
       )
     }
 
-    request.opdsServer = server
+    request.opdsServer = access.server
+    request.opdsOwner = access.owner
 
     return true
   }
@@ -66,4 +71,16 @@ export const WithOpdsServer = createParamDecorator(function getOpdsServer(
   if (!opdsServer) throw new UnauthorizedException()
 
   return opdsServer
+})
+
+/** The account that owns the server the reader signed in to. */
+export const WithOpdsOwner = createParamDecorator(function getOpdsOwner(
+  _,
+  context: ExecutionContext,
+) {
+  const { opdsOwner } = context.switchToHttp().getRequest<OpdsCatalogRequest>()
+
+  if (!opdsOwner) throw new UnauthorizedException()
+
+  return opdsOwner
 })
