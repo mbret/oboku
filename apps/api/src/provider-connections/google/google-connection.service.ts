@@ -163,13 +163,23 @@ export class GoogleConnectionService {
     }
   }
 
-  /** Whether the API can reach the user's Drive: the instance can connect accounts, and the user connected one. */
+  /**
+   * Whether the API can reach the user's Drive, as far as it can tell without
+   * asking Google: the instance can connect accounts, and the user's
+   * connection holds credentials the API can still decrypt.
+   */
   async isConnected(userId: number) {
     const isConfigured = isGoogleConnectionConfigured(
       this.instanceConfigService.getConfig().value,
     )
+    const credentials = isConfigured
+      ? await this.providerConnectionsService.getCredentials({
+          userId,
+          provider: GOOGLE_PROVIDER,
+        })
+      : null
 
-    return isConfigured && (await this.find(userId)) !== null
+    return credentials !== null
   }
 
   /**
