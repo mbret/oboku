@@ -420,8 +420,8 @@ const bigintAsNumber: ValueTransformer = {
   from: (value: string) => Number(value),
 }
 
-@Entity({ name: "instance_streaming_usage" })
-export class InstanceStreamingUsagePostgresEntity {
+@Entity({ name: "proxied_download_usage" })
+export class ProxiedDownloadUsagePostgresEntity {
   /** The first day of the month, UTC. */
   @PrimaryColumn({ type: "date" })
   month!: string

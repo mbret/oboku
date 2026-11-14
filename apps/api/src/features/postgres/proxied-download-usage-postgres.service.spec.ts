@@ -1,8 +1,8 @@
 import type { Mock } from "vitest"
 import { Test } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
-import { InstanceStreamingUsagePostgresEntity } from "./entities.js"
-import { StreamingUsagePostgresService } from "./streaming-usage-postgres.service.js"
+import { ProxiedDownloadUsagePostgresEntity } from "./entities.js"
+import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-postgres.service.js"
 
 const MONTH = "2026-11-01"
 
@@ -40,27 +40,27 @@ const createQueryBuilder = (updatedRows: number) => {
   return queryBuilder
 }
 
-describe("StreamingUsagePostgresService", () => {
-  let service: StreamingUsagePostgresService
+describe("ProxiedDownloadUsagePostgresService", () => {
+  let service: ProxiedDownloadUsagePostgresService
   let repository: { createQueryBuilder: Mock; increment: Mock }
 
   const reserve = () =>
-    service.reserveUnderCap({ month: MONTH, bytes: 300, capBytes: 1000 })
+    service.reserveWithinQuota({ month: MONTH, bytes: 300, quotaBytes: 1000 })
 
   beforeEach(async () => {
     repository = { createQueryBuilder: vi.fn(), increment: vi.fn() }
 
     const module = await Test.createTestingModule({
       providers: [
-        StreamingUsagePostgresService,
+        ProxiedDownloadUsagePostgresService,
         {
-          provide: getRepositoryToken(InstanceStreamingUsagePostgresEntity),
+          provide: getRepositoryToken(ProxiedDownloadUsagePostgresEntity),
           useValue: repository,
         },
       ],
     }).compile()
 
-    service = module.get(StreamingUsagePostgresService)
+    service = module.get(ProxiedDownloadUsagePostgresService)
   })
 
   it("reserves the bytes when the update matches the month's counter", async () => {
@@ -69,10 +69,10 @@ describe("StreamingUsagePostgresService", () => {
     expect(await reserve()).toBe("reserved")
   })
 
-  it("reports the cap reached when the counter would pass it", async () => {
+  it("reports the quota reached when the counter would pass it", async () => {
     repository.createQueryBuilder.mockReturnValue(createQueryBuilder(0))
 
-    expect(await reserve()).toBe("cap-reached")
+    expect(await reserve()).toBe("quota-reached")
   })
 
   it("adds a signed amount to the month's counter", async () => {

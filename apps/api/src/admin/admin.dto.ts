@@ -118,7 +118,7 @@ export class InstanceSettingsResponseDto {
   microsoftApplicationClientId?: string
   microsoftApplicationAuthority?: string
   opdsServersMaxPerUser!: number
-  streamedBytesMaxPerMonth!: number
+  proxiedDownloadBytesMaxPerMonth!: number
 }
 
 export class UpdateInstanceSettingsDto {
@@ -187,7 +187,7 @@ export class UpdateInstanceSettingsDto {
   @IsInt()
   @Min(1)
   @IsOptional()
-  streamedBytesMaxPerMonth?: number
+  proxiedDownloadBytesMaxPerMonth?: number
 }
 
 export class ServerSyncCredentialsDto {

@@ -1,34 +1,34 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
-import { InstanceStreamingUsagePostgresEntity } from "./entities.js"
+import { ProxiedDownloadUsagePostgresEntity } from "./entities.js"
 
-export type StreamingReservationResult = "reserved" | "cap-reached"
+export type ProxiedDownloadReservationResult = "reserved" | "quota-reached"
 
 @Injectable()
-export class StreamingUsagePostgresService {
+export class ProxiedDownloadUsagePostgresService {
   constructor(
-    @InjectRepository(InstanceStreamingUsagePostgresEntity)
-    private readonly usageRepository: Repository<InstanceStreamingUsagePostgresEntity>,
+    @InjectRepository(ProxiedDownloadUsagePostgresEntity)
+    private readonly usageRepository: Repository<ProxiedDownloadUsagePostgresEntity>,
   ) {}
 
   /**
-   * Adds `bytes` to the month's counter unless that would pass `capBytes`.
+   * Adds `bytes` to the month's counter unless that would pass `quotaBytes`.
    * A reservation of no bytes, for a file of unknown size, fits only below
-   * the cap. Postgres checks the condition again on the row a concurrent
+   * the quota. Postgres checks the condition again on the row a concurrent
    * update left, so each reservation counts the bytes the others added.
    *
    * @param month the first day of the month, UTC, as `YYYY-MM-DD`.
    */
-  async reserveUnderCap({
+  async reserveWithinQuota({
     month,
     bytes,
-    capBytes,
+    quotaBytes,
   }: {
     month: string
     bytes: number
-    capBytes: number
-  }): Promise<StreamingReservationResult> {
+    quotaBytes: number
+  }): Promise<ProxiedDownloadReservationResult> {
     await this.usageRepository
       .createQueryBuilder()
       .insert()
@@ -41,13 +41,13 @@ export class StreamingUsagePostgresService {
       .update()
       .set({ bytes: () => "bytes + :bytes" })
       .where("month = :month")
-      .andWhere("bytes < :capBytes")
-      .andWhere("bytes + :bytes <= :capBytes")
-      .setParameters({ month, bytes, capBytes })
+      .andWhere("bytes < :quotaBytes")
+      .andWhere("bytes + :bytes <= :quotaBytes")
+      .setParameters({ month, bytes, quotaBytes })
       .execute()
     const isReserved = affected === 1
 
-    return isReserved ? "reserved" : "cap-reached"
+    return isReserved ? "reserved" : "quota-reached"
   }
 
   /**

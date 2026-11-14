@@ -18,7 +18,7 @@ const CONFIG: InstanceConfig = {
   allowPrivateNetworkRequests: false,
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
-  streamedBytesMaxPerMonth: 1,
+  proxiedDownloadBytesMaxPerMonth: 1,
 }
 
 const createController = async (config: InstanceConfig) => {
