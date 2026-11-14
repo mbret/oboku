@@ -644,4 +644,34 @@ describe("GoogleConnectionController", () => {
       expect(refreshAccessToken).not.toHaveBeenCalled()
     })
   })
+
+  describe("isConnected", () => {
+    it("is false before the user connects", async () => {
+      expect(await googleConnectionService.isConnected(READER_ID)).toBe(false)
+    })
+
+    it("is true once the user connects", async () => {
+      await connect({ code: CODE })
+
+      expect(await googleConnectionService.isConnected(READER_ID)).toBe(true)
+    })
+
+    it("is false once the stored credentials no longer decrypt", async () => {
+      await connect({ code: CODE })
+      const readerRow = rows.get(`${READER_ID}:google`)
+
+      if (!readerRow) throw new Error("The connection was not saved")
+
+      readerRow.encrypted_credentials = "1.no-longer-decrypts"
+
+      expect(await googleConnectionService.isConnected(READER_ID)).toBe(false)
+    })
+
+    it("is false while the instance lacks the client secret", async () => {
+      await connect({ code: CODE })
+      instanceConfig.next({ ...CONFIG, googleClientSecret: undefined })
+
+      expect(await googleConnectionService.isConnected(READER_ID)).toBe(false)
+    })
+  })
 })

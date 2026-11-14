@@ -12,7 +12,7 @@ import type {
 } from "../features/postgres/entities.js"
 import { parseBasicAuthorization } from "../http/basicAuthorization.js"
 import { getRequestOrigin } from "../http/requestOrigin.js"
-import { OpdsCatalogService } from "./opds-catalog.service.js"
+import { OpdsAuthService } from "./opds-auth.service.js"
 import {
   OPDS_AUTHENTICATION_DOCUMENT_TYPE,
   toAuthenticationDocument,
@@ -32,7 +32,7 @@ type OpdsCatalogRequest = Request<{ slug: string }> & {
  */
 @Injectable()
 export class OpdsBasicAuthGuard implements CanActivate {
-  constructor(private readonly opdsCatalogService: OpdsCatalogService) {}
+  constructor(private readonly opdsAuthService: OpdsAuthService) {}
 
   async canActivate(context: ExecutionContext) {
     const http = context.switchToHttp()
@@ -41,7 +41,7 @@ export class OpdsBasicAuthGuard implements CanActivate {
     const { slug } = request.params
 
     const access = credentials
-      ? await this.opdsCatalogService.authorize({ slug, ...credentials })
+      ? await this.opdsAuthService.authorize({ slug, ...credentials })
       : undefined
 
     if (!access) {

@@ -1,5 +1,5 @@
 import type { BookMetadata } from "@oboku/shared"
-import { isBookShown, toServedFile } from "./opds-library.js"
+import { compareNewestFirst, isBookShown, toServedFile } from "./opds-books.js"
 
 const PROTECTED_TAG_IDS = ["tag-private"]
 
@@ -78,5 +78,21 @@ describe("toServedFile", () => {
       name: "book-unknown",
       contentType: "application/octet-stream",
     })
+  })
+})
+
+describe("compareNewestFirst", () => {
+  it("orders the books added last first, then books added together by id", () => {
+    const books = [
+      { _id: "book-dune", createdAt: 1 },
+      { _id: "book-emma", createdAt: 2 },
+      { _id: "book-arrakis", createdAt: 1 },
+    ]
+
+    expect(books.toSorted(compareNewestFirst).map(({ _id }) => _id)).toEqual([
+      "book-emma",
+      "book-arrakis",
+      "book-dune",
+    ])
   })
 })

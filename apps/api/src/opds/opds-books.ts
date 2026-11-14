@@ -1,5 +1,6 @@
 import {
   type BookDocType,
+  compareDesc,
   directives,
   getMetadataFromBook,
   getUrlExtension,
@@ -17,6 +18,17 @@ const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
 
 /** Express keeps only what follows the last of them in a file name it sends. */
 const PATH_SEPARATORS = /[/\\]/g
+
+export const SERVED_BOOKS_PAGE_SIZE = 50
+
+/**
+ * The library's order, the books added last first. Books added together, as
+ * a sync can, keep one order by id, so pages neither repeat nor skip them.
+ */
+export const compareNewestFirst = (
+  a: Pick<BookDocType, "_id" | "createdAt">,
+  b: Pick<BookDocType, "_id" | "createdAt">,
+) => compareDesc(a.createdAt, b.createdAt) || a._id.localeCompare(b._id)
 
 /**
  * Whether the library shows the book: no protected tag hides it, and the

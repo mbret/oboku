@@ -7,8 +7,8 @@ import { ProviderConnectionsModule } from "../provider-connections/provider-conn
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
-import { OpdsCatalogService } from "./opds-catalog.service.js"
-import { OpdsLibraryService } from "./opds-library.service.js"
+import { OpdsAuthService } from "./opds-auth.service.js"
+import { OpdsBooksService } from "./opds-books.service.js"
 import { OpdsServersController } from "./opds-servers.controller.js"
 import { OpdsServersService } from "./opds-servers.service.js"
 
@@ -27,8 +27,8 @@ import { OpdsServersService } from "./opds-servers.service.js"
   ],
   providers: [
     OpdsServersService,
-    OpdsCatalogService,
-    OpdsLibraryService,
+    OpdsAuthService,
+    OpdsBooksService,
     OpdsBasicAuthGuard,
   ],
 })

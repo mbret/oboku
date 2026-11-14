@@ -7,7 +7,7 @@ import {
 } from "../features/postgres/user-postgres.service.js"
 
 @Injectable()
-export class OpdsCatalogService {
+export class OpdsAuthService {
   constructor(
     private readonly opdsServerPostgresService: OpdsServerPostgresService,
     private readonly userPostgresService: UserPostgresService,

@@ -164,6 +164,25 @@ export class GoogleConnectionService {
   }
 
   /**
+   * Whether the API can reach the user's Drive, as far as it can tell without
+   * asking Google: the instance can connect accounts, and the user's
+   * connection holds credentials the API can still decrypt.
+   */
+  async isConnected(userId: number) {
+    const isConfigured = isGoogleConnectionConfigured(
+      this.instanceConfigService.getConfig().value,
+    )
+    const credentials = isConfigured
+      ? await this.providerConnectionsService.getCredentials({
+          userId,
+          provider: GOOGLE_PROVIDER,
+        })
+      : null
+
+    return credentials !== null
+  }
+
+  /**
    * Exchanges a code from Google's popup for a refresh token, with the client
    * the web app signs in with, and keeps it encrypted. Replaces the user's
    * previous Google connection.
