@@ -12,7 +12,9 @@ import {
   CreateDateColumn,
   Entity,
   Index,
+  PrimaryColumn,
   PrimaryGeneratedColumn,
+  type ValueTransformer,
 } from "typeorm"
 
 @Entity({ name: "sync_reports" })
@@ -410,4 +412,20 @@ export class ProviderConnectionPostgresEntity {
   /** When the credentials were last written. */
   @Column({ type: "timestamp with time zone" })
   updated_at!: Date
+}
+
+/** node-postgres returns `bigint` as a string: a month's bytes stay far below 2^53. */
+const bigintAsNumber: ValueTransformer = {
+  to: (value: number | undefined) => value,
+  from: (value: string) => Number(value),
+}
+
+@Entity({ name: "instance_streaming_usage" })
+export class InstanceStreamingUsagePostgresEntity {
+  /** The first day of the month, UTC. */
+  @PrimaryColumn({ type: "date" })
+  month!: string
+
+  @Column({ type: "bigint", default: 0, transformer: bigintAsNumber })
+  bytes!: number
 }

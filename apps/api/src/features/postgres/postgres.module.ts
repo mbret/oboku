@@ -4,6 +4,7 @@ import { NotificationPostgresService } from "./notification-postgres.service.js"
 import { SyncReportPostgresService } from "./SyncReportPostgresService.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import {
+  InstanceStreamingUsagePostgresEntity,
   KoreaderSyncConnectionPostgresEntity,
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
@@ -22,6 +23,7 @@ import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js
 import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "./opds-server-postgres.service.js"
 import { ProviderConnectionPostgresService } from "./provider-connection-postgres.service.js"
+import { StreamingUsagePostgresService } from "./streaming-usage-postgres.service.js"
 
 @Module({
   imports: [
@@ -36,6 +38,7 @@ import { ProviderConnectionPostgresService } from "./provider-connection-postgre
       KoreaderSyncConnectionPostgresEntity,
       OpdsServerPostgresEntity,
       ProviderConnectionPostgresEntity,
+      InstanceStreamingUsagePostgresEntity,
     ]),
   ],
   providers: [
@@ -48,6 +51,7 @@ import { ProviderConnectionPostgresService } from "./provider-connection-postgre
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
     ProviderConnectionPostgresService,
+    StreamingUsagePostgresService,
     JwtService,
   ],
   exports: [
@@ -60,6 +64,7 @@ import { ProviderConnectionPostgresService } from "./provider-connection-postgre
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
     ProviderConnectionPostgresService,
+    StreamingUsagePostgresService,
   ],
 })
 export class PostgresModule {}
