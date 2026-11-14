@@ -19,6 +19,12 @@ Some listed books cannot be downloaded yet:
 * Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
 * Books added with another Google account than the connected one: oboku reaches Drive with one account only.
 
+## Monthly download quota
+
+Reading apps download books through oboku's server, so each instance has a monthly quota on what it sends, for all users together. A download that would pass the quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
+
+The instance's administrator sets the quota from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GiB a month by default.
+
 ## Create a server
 
 In oboku, open **Integrations > OPDS > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
