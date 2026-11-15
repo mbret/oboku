@@ -1,4 +1,4 @@
-import { DownloadRounded } from "@mui/icons-material"
+import { GroupsRounded, PersonRounded } from "@mui/icons-material"
 import {
   Link,
   ListItem,
@@ -42,8 +42,8 @@ export function QuotasScreen() {
                   <Link component={RouterLink} to={ROUTES.OPDS_SERVERS}>
                     OPDS servers
                   </Link>{" "}
-                  pass through oboku's server and count towards this monthly
-                  quota, which all users share.
+                  pass through oboku's server. They count towards your monthly
+                  quota and towards the quota of all users.
                 </>
               }
             />
@@ -69,26 +69,49 @@ export function QuotasScreen() {
             </ListItem>
           )}
           {quota && (
-            <ListItem>
-              <ListItemIcon>
-                <DownloadRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Used this month"
-                disableTypography
-                secondary={
-                  <>
+            <>
+              <ListItem>
+                <ListItemIcon>
+                  <PersonRounded />
+                </ListItemIcon>
+                <ListItemText
+                  primary="You"
+                  disableTypography
+                  secondary={
+                    <>
+                      <UsageProgress
+                        usedBytes={quota.userUsedBytes}
+                        totalBytes={quota.userQuotaBytes}
+                      />
+                      <Typography variant="body2" color="textSecondary">
+                        You can download up to this amount while the quota of
+                        all users lasts.
+                      </Typography>
+                    </>
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemIcon>
+                  <GroupsRounded />
+                </ListItemIcon>
+                <ListItemText
+                  primary="All users"
+                  disableTypography
+                  secondary={
                     <UsageProgress
                       usedBytes={quota.usedBytes}
                       totalBytes={quota.quotaBytes}
                     />
-                    <Typography variant="body2" color="textSecondary">
-                      {`The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
-                    </Typography>
-                  </>
-                }
-              />
-            </ListItem>
+                  }
+                />
+              </ListItem>
+              <ListItem>
+                <ListItemText
+                  secondary={`Both quotas start over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
+                />
+              </ListItem>
+            </>
           )}
         </PageSection>
       </PageContainer>
