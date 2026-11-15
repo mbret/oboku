@@ -168,7 +168,10 @@ export default defineConfig(({ mode }) => ({
         },
       }),
     }),
-    lingui({ macroTransform: true }),
+    lingui({
+      macroTransform: true,
+      configPath: path.resolve(import.meta.dirname, "lingui.config.ts"),
+    }),
     react({}),
     babel({ presets: [reactCompilerPreset()] }),
     svgr({}),
