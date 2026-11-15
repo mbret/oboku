@@ -40,7 +40,9 @@ The API cannot tell when a public address leads back into your own network, for 
 
 Some files pass through the API on their way to users: a reading app that downloads a book from an [OPDS server](/guides/opds-servers) gets it from the API, which reads it from Google Drive. These proxied downloads count towards one monthly quota for the whole instance: **Proxied download quota per month (GB)**, in the **Quotas** section of the panel's home page, 500 GB by default. Above the field, the section shows how much proxied downloads used this month, and when the quota starts over.
 
-Months follow UTC. A download that would take the instance past the quota answers `429 Too Many Requests`, with a `Retry-After` header set to the start of the next month. The quota applies right away, without a restart.
+Each user may also use at most a share of that quota: **Share of the quota each user may use (%)**, 5% by default, which is 25 GB of the default quota. A share only caps one user. The shares of all users can add up to more than the quota, so a user under their share can still be stopped once the instance reaches its quota.
+
+Months follow UTC. A download that would pass the instance's quota or the user's share answers `429 Too Many Requests`, with a `Retry-After` header set to the start of the next month. Both settings apply right away, without a restart.
 
 Files the API downloads to read their metadata do not count: most hosts bill outbound traffic only.
 

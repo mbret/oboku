@@ -1,6 +1,7 @@
 import { Controller, Get } from "@nestjs/common"
+import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { ProxiedDownloadQuotaService } from "./proxied-download-quota.service.js"
-import type { ProxiedDownloadQuotaResponseDto } from "./quotas.dto.js"
+import type { UserProxiedDownloadQuotaResponseDto } from "./quotas.dto.js"
 
 @Controller("quotas")
 export class QuotasController {
@@ -9,7 +10,9 @@ export class QuotasController {
   ) {}
 
   @Get("proxied-downloads")
-  getProxiedDownloadQuota(): Promise<ProxiedDownloadQuotaResponseDto> {
-    return this.proxiedDownloadQuotaService.getUsage()
+  getProxiedDownloadQuota(
+    @WithAuthUser() user: AuthUser,
+  ): Promise<UserProxiedDownloadQuotaResponseDto> {
+    return this.proxiedDownloadQuotaService.getUserUsage(user.userId)
   }
 }

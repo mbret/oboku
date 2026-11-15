@@ -1,4 +1,4 @@
-import type { ProxiedDownloadQuotaResponseDto } from "@oboku/shared"
+import type { UserProxiedDownloadQuotaResponseDto } from "@oboku/shared"
 import {
   onlineManager,
   QueryClient,
@@ -19,9 +19,11 @@ vi.mock("../auth/useIsAuthenticated", function mockIsAuthenticated() {
   return { useIsAuthenticated: () => true }
 })
 
-const PROXIED_DOWNLOAD_QUOTA: ProxiedDownloadQuotaResponseDto = {
+const PROXIED_DOWNLOAD_QUOTA: UserProxiedDownloadQuotaResponseDto = {
   usedBytes: 12_300_000_000,
   quotaBytes: 500_000_000_000,
+  userUsedBytes: 2_100_000_000,
+  userQuotaBytes: 25_000_000_000,
   resetsAt: "2026-12-01T00:00:00.000Z",
 }
 
@@ -53,33 +55,36 @@ describe("QuotasScreen", () => {
     onlineManager.setOnline(true)
   })
 
-  it("shows the download quota used this month, and when it starts over", async () => {
+  it("shows the user's download quota and the one of all users, and when both start over", async () => {
     renderScreen(vi.fn().mockResolvedValue({ data: PROXIED_DOWNLOAD_QUOTA }))
 
     expect(
-      await screen.findByText("12.3 GB used of 500.0 GB (2.46%)"),
+      await screen.findByText("2.1 GB used of 25.0 GB (8.40%)"),
     ).toBeTruthy()
-    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
-      "2.46",
-    )
+    expect(screen.getByText("12.3 GB used of 500.0 GB (2.46%)")).toBeTruthy()
     expect(
-      screen.getByText("The quota starts over on December 1, 2026."),
+      screen
+        .getAllByRole("progressbar")
+        .map((bar) => bar.getAttribute("aria-valuenow")),
+    ).toEqual(["8.4", "2.46"])
+    expect(
+      screen.getByText("Both quotas start over on December 1, 2026."),
     ).toBeTruthy()
   })
 
-  it("fills the bar when the downloads passed the quota", async () => {
+  it("fills the bar of a quota the downloads passed", async () => {
     renderScreen(
       vi.fn().mockResolvedValue({
-        data: { ...PROXIED_DOWNLOAD_QUOTA, usedBytes: 510_000_000_000 },
+        data: { ...PROXIED_DOWNLOAD_QUOTA, userUsedBytes: 25_500_000_000 },
       }),
     )
 
     expect(
-      await screen.findByText("510.0 GB used of 500.0 GB (102.00%)"),
+      await screen.findByText("25.5 GB used of 25.0 GB (102.00%)"),
     ).toBeTruthy()
-    expect(screen.getByRole("progressbar").getAttribute("aria-valuenow")).toBe(
-      "100",
-    )
+    expect(
+      screen.getAllByRole("progressbar")[0]?.getAttribute("aria-valuenow"),
+    ).toBe("100")
   })
 
   it("says the OPDS servers' downloads count towards it, linking to them", async () => {
@@ -99,7 +104,7 @@ describe("QuotasScreen", () => {
 
     expect(
       await screen.findByText(
-        "Something went wrong while loading the download quota. Please try again later.",
+        "Something went wrong while loading the download quotas. Please try again later.",
       ),
     ).toBeTruthy()
   })
@@ -109,7 +114,7 @@ describe("QuotasScreen", () => {
     renderScreen(vi.fn().mockResolvedValue({ data: PROXIED_DOWNLOAD_QUOTA }))
 
     expect(
-      await screen.findByText("The download quota can't be loaded right now."),
+      await screen.findByText("The download quotas can't be loaded right now."),
     ).toBeTruthy()
   })
 })

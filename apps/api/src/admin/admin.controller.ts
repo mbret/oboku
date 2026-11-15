@@ -291,7 +291,7 @@ export class AdminController {
 
   @Get("quotas/proxied-downloads")
   getProxiedDownloadQuota(): Promise<ProxiedDownloadQuotaResponseDto> {
-    return this.proxiedDownloadQuotaService.getUsage()
+    return this.proxiedDownloadQuotaService.getInstanceUsage()
   }
 
   @Get("server-sync")
