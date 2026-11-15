@@ -1,5 +1,4 @@
 import { type BookDocType, createBookDefaults } from "@oboku/shared"
-import type { ReadingPosition } from "@prose-reader/core"
 import type { Manifest } from "@prose-reader/shared"
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
@@ -52,13 +51,13 @@ const createManifest = (): Manifest => ({
   ],
 })
 
-const createStoredBook = (): BookDocType => ({
+const STORED_BOOK: BookDocType = {
   ...createBookDefaults(),
   _id: BOOK_ID,
   _rev: "1-book",
   rx_model: "book",
   rxdbMeta: { lwt: 1 },
-})
+}
 
 type ReaderOpening = {
   manifest: Manifest | undefined
@@ -73,29 +72,30 @@ const mocks = vi.hoisted(function createReaderMocks() {
   const events: string[] = []
   const readers: ReaderInstance[] = []
   const accountSettings: AccountSettings = {}
-  const store: { book?: BookDocType } = {}
+  const state: { book?: BookDocType } = {}
+
+  const toStoredDocument = (storedBook: BookDocType) => ({
+    toJSON: function toStoredBook() {
+      return storedBook
+    },
+  })
 
   return {
     events,
     readers,
     accountSettings,
-    store,
+    state,
     opening,
-    modifyStoredBook: async function modifyStoredBook({
+    incrementalBookModify: async function modifyStoredBook({
       mutationFn,
     }: {
       mutationFn: (old: BookDocType) => BookDocType
     }) {
-      if (!store.book) throw new Error("No book stored")
+      if (!state.book) throw new Error("No book stored")
 
-      const savedBook = mutationFn(store.book)
-      store.book = savedBook
+      state.book = mutationFn(state.book)
 
-      return {
-        toJSON: function toSavedBook() {
-          return savedBook
-        },
-      }
+      return toStoredDocument(state.book)
     },
     updateOpening: function updateOpening(changes: Partial<ReaderOpening>) {
       Object.assign(opening, changes)
@@ -213,8 +213,8 @@ vi.mock("../settings/useSettings", function mockAccountSettings() {
 
 vi.mock("../books", function mockBooks() {
   return {
-    useIncrementalBookModify: function useStoredBookModify() {
-      return { mutateAsync: mocks.modifyStoredBook }
+    useIncrementalBookModify: function useMockIncrementalBookModify() {
+      return { mutateAsync: mocks.incrementalBookModify }
     },
   }
 })
@@ -260,6 +260,21 @@ const waitForFirstReader = () =>
     return reader
   })
 
+const waitForFoundPositionInSpineItem = (
+  reader: ReaderInstance,
+  spineItemIndex: number,
+) =>
+  firstValueFrom(
+    reader.navigation.readingPosition$.pipe(
+      filter(function isFoundPositionInSpineItem(position) {
+        return (
+          position.status === "success" &&
+          reader.cfi.parseCfi(position.cfi).itemIndex === spineItemIndex
+        )
+      }),
+    ),
+  )
+
 describe("Reader", () => {
   beforeEach(function resetReaderAndSettings() {
     localSettingsSignal.update(SIGNAL_RESET)
@@ -268,7 +283,7 @@ describe("Reader", () => {
     mocks.opening.manifest = createManifest()
     mocks.opening.bookToOpen = undefined
     mocks.accountSettings = {}
-    mocks.store.book = createStoredBook()
+    mocks.state.book = STORED_BOOK
   })
 
   afterEach(function unmountReader() {
@@ -324,41 +339,24 @@ describe("Reader", () => {
     expect(eventsOnLeave.toSorted()).toEqual(["destroy", "prune"])
   })
 
-  it("saves the position of a navigation in the reader the provider created", async () => {
+  it("saves the bookmark where the provider's reader moved, once the user leaves", async () => {
     mocks.opening.bookToOpen = null
-    render(<TestReader />)
+    const { unmount } = render(<TestReader />)
     const reader = await waitForFirstReader()
-    const isFoundPositionInSpineItem = (
-      position: ReadingPosition,
-      spineItemIndex: number,
-    ) =>
-      position.status === "success" &&
-      reader.cfi.parseCfi(position.cfi).itemIndex === spineItemIndex
-    await firstValueFrom(
-      reader.navigation.readingPosition$.pipe(
-        filter(function isFoundPositionInFirstChapter(position) {
-          return isFoundPositionInSpineItem(position, 0)
-        }),
-      ),
-    )
+    await waitForFoundPositionInSpineItem(reader, 0)
 
     reader.navigation.goToSpineItem({ indexOrId: 1 })
+    const secondChapterPosition = await waitForFoundPositionInSpineItem(
+      reader,
+      1,
+    )
+    unmount()
 
-    const secondChapterPosition = await firstValueFrom(
-      reader.navigation.readingPosition$.pipe(
-        filter(function isFoundPositionInSecondChapter(position) {
-          return isFoundPositionInSpineItem(position, 1)
-        }),
-      ),
-    )
-    await waitFor(
-      function expectSecondChapterPositionSaved() {
-        expect(mocks.store.book?.readingStateCurrentBookmarkLocation).toBe(
-          secondChapterPosition.cfi,
-        )
-      },
-      { timeout: 3000 },
-    )
+    await waitFor(function expectSecondChapterPositionSaved() {
+      expect(mocks.state.book?.readingStateCurrentBookmarkLocation).toBe(
+        secondChapterPosition.cfi,
+      )
+    })
   })
 
   it("exposes the reader on window while it is open, and removes it on leave", async () => {
