@@ -34,7 +34,7 @@ describe("ProxiedDownloadUsagePostgresService", () => {
     findOneOrFail: Mock
     increment: Mock
   }
-  let userUsageRepository: { findOneBy: Mock; delete: Mock }
+  let userUsageRepository: { findOneBy: Mock }
   let usageRepository: {
     findOneBy: Mock
     manager: { transaction: Mock }
@@ -71,10 +71,7 @@ describe("ProxiedDownloadUsagePostgresService", () => {
       findOneOrFail: vi.fn(),
       increment: vi.fn(),
     }
-    userUsageRepository = {
-      findOneBy: vi.fn().mockResolvedValue(null),
-      delete: vi.fn(),
-    }
+    userUsageRepository = { findOneBy: vi.fn().mockResolvedValue(null) }
     usageRepository = {
       findOneBy: vi.fn().mockResolvedValue(null),
       manager: {
@@ -173,13 +170,5 @@ describe("ProxiedDownloadUsagePostgresService", () => {
         -120,
       ],
     ])
-  })
-
-  it("deletes a user's counters only", async () => {
-    await service.deleteByUserId(USER_ID)
-
-    expect(userUsageRepository.delete).toHaveBeenCalledWith({
-      user_id: USER_ID,
-    })
   })
 })

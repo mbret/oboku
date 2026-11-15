@@ -7,11 +7,10 @@ import { useUpdateInstanceSettings } from "../useUpdateInstanceSettings"
 export type NumberSettingFormProps = {
   label: string
   saveLabel: string
-  /** Shown when the value is below 1. */
-  minimumError: string
+  /** Shown when the value is below 1, or above `max`. */
+  rangeError: string
   savedValue: number
   step?: number
-  /** Values above it are cut down to it as they are typed. */
   max?: number
   toSettings: (value: number) => AdminUpdateSettingsData["body"]
 }
@@ -19,7 +18,7 @@ export type NumberSettingFormProps = {
 export function NumberSettingForm({
   label,
   saveLabel,
-  minimumError,
+  rangeError,
   savedValue,
   step,
   max,
@@ -30,8 +29,13 @@ export function NumberSettingForm({
     mode: "controlled",
     initialValues: { value: "" },
     validate: {
-      value: function validateAtLeastOne(value) {
-        return typeof value === "number" && value >= 1 ? null : minimumError
+      value: function validateWithinRange(value) {
+        const isWithinRange =
+          typeof value === "number" &&
+          value >= 1 &&
+          (max === undefined || value <= max)
+
+        return isWithinRange ? null : rangeError
       },
     },
   })
@@ -54,7 +58,6 @@ export function NumberSettingForm({
           label={label}
           min={1}
           max={max}
-          clampBehavior={max === undefined ? "blur" : "strict"}
           step={step}
           allowDecimal={false}
           {...form.getInputProps("value")}

@@ -6,6 +6,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material"
+import type { ReactNode } from "react"
 import { Link as RouterLink } from "react-router"
 import { FetchErrorAlert } from "../common/alerts/FetchErrorAlert"
 import { LoadingAlert } from "../common/alerts/LoadingAlert"
@@ -23,6 +24,40 @@ const resetDateFormatter = new Intl.DateTimeFormat(undefined, {
   dateStyle: "long",
   timeZone: "UTC",
 })
+
+function QuotaUsageListItem({
+  icon,
+  primary,
+  usedBytes,
+  quotaBytes,
+  caption,
+}: {
+  icon: ReactNode
+  primary: string
+  usedBytes: number
+  quotaBytes: number
+  caption?: string
+}) {
+  return (
+    <ListItem>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText
+        primary={primary}
+        disableTypography
+        secondary={
+          <>
+            <UsageProgress usedBytes={usedBytes} totalBytes={quotaBytes} />
+            {caption && (
+              <Typography variant="body2" color="textSecondary">
+                {caption}
+              </Typography>
+            )}
+          </>
+        }
+      />
+    </ListItem>
+  )
+}
 
 export function QuotasScreen() {
   const quotaQuery = useProxiedDownloadQuota()
@@ -70,42 +105,19 @@ export function QuotasScreen() {
           )}
           {quota && (
             <>
-              <ListItem>
-                <ListItemIcon>
-                  <PersonRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary="You"
-                  disableTypography
-                  secondary={
-                    <>
-                      <UsageProgress
-                        usedBytes={quota.userUsedBytes}
-                        totalBytes={quota.userQuotaBytes}
-                      />
-                      <Typography variant="body2" color="textSecondary">
-                        You can download up to this amount while the quota of
-                        all users lasts.
-                      </Typography>
-                    </>
-                  }
-                />
-              </ListItem>
-              <ListItem>
-                <ListItemIcon>
-                  <GroupsRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary="All users"
-                  disableTypography
-                  secondary={
-                    <UsageProgress
-                      usedBytes={quota.usedBytes}
-                      totalBytes={quota.quotaBytes}
-                    />
-                  }
-                />
-              </ListItem>
+              <QuotaUsageListItem
+                icon={<PersonRounded />}
+                primary="You"
+                usedBytes={quota.userUsedBytes}
+                quotaBytes={quota.userQuotaBytes}
+                caption="You can download up to this amount while the quota of all users lasts."
+              />
+              <QuotaUsageListItem
+                icon={<GroupsRounded />}
+                primary="All users"
+                usedBytes={quota.usedBytes}
+                quotaBytes={quota.quotaBytes}
+              />
               <ListItem>
                 <ListItemText
                   secondary={`Both quotas start over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}

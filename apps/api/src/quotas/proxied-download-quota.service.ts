@@ -69,8 +69,37 @@ export class ProxiedDownloadQuotaService {
     private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
 
-  async getInstanceUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
-    const { month, resetsAt } = toUsagePeriod(new Date())
+  getInstanceUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
+    return this.findInstanceUsage(toUsagePeriod(new Date()))
+  }
+
+  async getUserUsage(
+    userId: number,
+  ): Promise<UserProxiedDownloadQuotaResponseDto> {
+    const period = toUsagePeriod(new Date())
+    const [instanceUsage, userUsedBytes] = await Promise.all([
+      this.findInstanceUsage(period),
+      this.proxiedDownloadUsagePostgresService.findUserBytes({
+        userId,
+        month: period.month,
+      }),
+    ])
+
+    return {
+      ...instanceUsage,
+      userUsedBytes,
+      userQuotaBytes: toUserQuotaBytes(
+        this.instanceConfigService.getConfig().value,
+      ),
+    }
+  }
+
+  private async findInstanceUsage({
+    month,
+    resetsAt,
+  }: ReturnType<
+    typeof toUsagePeriod
+  >): Promise<ProxiedDownloadQuotaResponseDto> {
     const usedBytes =
       await this.proxiedDownloadUsagePostgresService.findBytes(month)
 
@@ -79,25 +108,6 @@ export class ProxiedDownloadQuotaService {
       quotaBytes:
         this.instanceConfigService.getConfig().value
           .proxiedDownloadBytesMaxPerMonth,
-      resetsAt: resetsAt.toISOString(),
-    }
-  }
-
-  async getUserUsage(
-    userId: number,
-  ): Promise<UserProxiedDownloadQuotaResponseDto> {
-    const { month, resetsAt } = toUsagePeriod(new Date())
-    const config = this.instanceConfigService.getConfig().value
-    const [usedBytes, userUsedBytes] = await Promise.all([
-      this.proxiedDownloadUsagePostgresService.findBytes(month),
-      this.proxiedDownloadUsagePostgresService.findUserBytes({ userId, month }),
-    ])
-
-    return {
-      usedBytes,
-      quotaBytes: config.proxiedDownloadBytesMaxPerMonth,
-      userUsedBytes,
-      userQuotaBytes: toUserQuotaBytes(config),
       resetsAt: resetsAt.toISOString(),
     }
   }

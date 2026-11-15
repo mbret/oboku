@@ -102,8 +102,8 @@ export class OpdsCatalogController {
   /**
    * The file of a book the catalog serves. The last segment names the file
    * for reading apps that take the name from the link, KOReader among them.
-   * A download that would pass the instance's monthly proxied download quota
-   * answers 429 until the next month.
+   * A download that would pass the instance's or the user's monthly proxied
+   * download quota answers 429 until the next month.
    */
   @Get(`${OPDS_BOOKS_ROUTE}/:bookId/:fileName`)
   async downloadBook(

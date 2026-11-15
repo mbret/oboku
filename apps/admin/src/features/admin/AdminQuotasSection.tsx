@@ -38,7 +38,7 @@ export function AdminQuotasSection() {
             <NumberSettingForm
               label="Proxied download quota per month (GB)"
               saveLabel="save quota settings"
-              minimumError="Must be at least 1 GB"
+              rangeError="Must be at least 1 GB"
               step={50}
               savedValue={Math.round(
                 settings.proxiedDownloadBytesMaxPerMonth / BYTES_PER_GIGABYTE,
@@ -53,7 +53,7 @@ export function AdminQuotasSection() {
             <NumberSettingForm
               label="Share of the quota each user may use (%)"
               saveLabel="save share per user"
-              minimumError="Must be at least 1%"
+              rangeError="Must be between 1% and 100%"
               max={100}
               savedValue={settings.proxiedDownloadUserQuota.percent}
               toSettings={function toUserQuotaSettings(percent) {

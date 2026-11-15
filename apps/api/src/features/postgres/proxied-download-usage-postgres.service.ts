@@ -8,7 +8,7 @@ import {
 
 export type ProxiedDownloadReservationResult = "reserved" | "quota-reached"
 
-type MonthlyCounters = {
+type UserMonth = {
   userId: number
   /** The first day of the month, UTC, as `YYYY-MM-DD`. */
   month: string
@@ -32,7 +32,7 @@ const fitsWithinQuota = ({
  */
 const lockCounters = async (
   manager: EntityManager,
-  { userId, month }: MonthlyCounters,
+  { userId, month }: UserMonth,
 ) => {
   await manager
     .createQueryBuilder()
@@ -64,7 +64,7 @@ const lockCounters = async (
 /** Adds `bytes` to the month's counters, the instance's first, as `lockCounters` locks them. */
 const addToCounters = async (
   manager: EntityManager,
-  { userId, month, bytes }: MonthlyCounters & { bytes: number },
+  { userId, month, bytes }: UserMonth & { bytes: number },
 ) => {
   await manager.increment(
     ProxiedDownloadUsagePostgresEntity,
@@ -100,7 +100,7 @@ export class ProxiedDownloadUsagePostgresService {
     bytes,
     quotaBytes,
     userQuotaBytes,
-  }: MonthlyCounters & {
+  }: UserMonth & {
     bytes: number
     quotaBytes: number
     userQuotaBytes: number
@@ -137,7 +137,7 @@ export class ProxiedDownloadUsagePostgresService {
     return usage?.bytes ?? 0
   }
 
-  async findUserBytes({ userId, month }: MonthlyCounters) {
+  async findUserBytes({ userId, month }: UserMonth) {
     const userUsage = await this.userUsageRepository.findOneBy({
       user_id: userId,
       month,
@@ -150,10 +150,10 @@ export class ProxiedDownloadUsagePostgresService {
    * Adds `bytes` to the month's counters of the instance and of the user:
    * negative to give reserved bytes back.
    */
-  adjust(counters: MonthlyCounters & { bytes: number }) {
+  adjust(userMonth: UserMonth & { bytes: number }) {
     return this.usageRepository.manager.transaction(
       function adjustCounters(manager) {
-        return addToCounters(manager, counters)
+        return addToCounters(manager, userMonth)
       },
     )
   }
