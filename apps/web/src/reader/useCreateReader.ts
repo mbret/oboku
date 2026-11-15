@@ -69,7 +69,7 @@ export const useCreateReader = ({
           : undefined
         const isEInkMode = localSettingsSignal.getValue().themeMode === "e-ink"
 
-        const instance = createAppReader({
+        return createAppReader({
           manifest,
           target,
           ...(isEInkMode && {
@@ -99,11 +99,6 @@ export const useCreateReader = ({
             },
           }),
         })
-
-        // @ts-expect-error
-        window.reader = instance
-
-        return instance
       }
     },
     [manifest, isUsingWebStreamer, bookId, book, koreaderDocument],

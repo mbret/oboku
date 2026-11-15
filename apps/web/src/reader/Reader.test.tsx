@@ -360,4 +360,28 @@ describe("Reader", () => {
       { timeout: 3000 },
     )
   })
+
+  it("exposes the reader on window while it is open, and removes it on leave", async () => {
+    mocks.opening.bookToOpen = null
+
+    const { unmount } = render(<TestReader />)
+
+    await waitForReaderCount(1)
+    await waitFor(function expectFirstReaderOnWindow() {
+      expect(window.reader).toBe(mocks.readers[0])
+    })
+
+    act(function reloadManifest() {
+      mocks.updateOpening({ manifest: createManifest() })
+    })
+
+    await waitForReaderCount(2)
+    await waitFor(function expectRecreatedReaderOnWindow() {
+      expect(window.reader).toBe(mocks.readers[1])
+    })
+
+    unmount()
+
+    expect(window.reader).toBeUndefined()
+  })
 })
