@@ -429,3 +429,16 @@ export class ProxiedDownloadUsagePostgresEntity {
   @Column({ type: "bigint", default: 0, transformer: bigintAsNumber })
   bytes!: number
 }
+
+@Entity({ name: "user_proxied_download_usage" })
+export class UserProxiedDownloadUsagePostgresEntity {
+  @PrimaryColumn({ type: "integer" })
+  user_id!: number
+
+  /** The first day of the month, UTC. */
+  @PrimaryColumn({ type: "date" })
+  month!: string
+
+  @Column({ type: "bigint", default: 0, transformer: bigintAsNumber })
+  bytes!: number
+}

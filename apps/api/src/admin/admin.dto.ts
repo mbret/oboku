@@ -1,16 +1,20 @@
 import { ApiProperty } from "@nestjs/swagger"
+import { Type } from "class-transformer"
 import {
   ArrayMaxSize,
   IsArray,
   IsBoolean,
   IsEmail,
+  IsIn,
   IsInt,
   IsOptional,
   IsString,
   IsUrl,
+  Max,
   Min,
   MinLength,
   ValidateIf,
+  ValidateNested,
 } from "class-validator"
 import { AudienceDto } from "./audience.dto.js"
 
@@ -106,6 +110,19 @@ export class RevokeTokensResponseDto {
   targetedUsers!: number | null
 }
 
+/** Each user's monthly proxied download quota: a share of the instance's. */
+export class ProxiedDownloadUserQuotaRuleDto {
+  @ApiProperty({ enum: ["percentage"] })
+  @IsIn(["percentage"])
+  type!: "percentage"
+
+  @ApiProperty({ type: "integer", minimum: 1, maximum: 100 })
+  @IsInt()
+  @Min(1)
+  @Max(100)
+  percent!: number
+}
+
 export class InstanceSettingsResponseDto {
   showDisabledPlugins!: boolean
   fileDownloadMaxSizeBytes!: number
@@ -119,6 +136,7 @@ export class InstanceSettingsResponseDto {
   microsoftApplicationAuthority?: string
   opdsServersMaxPerUser!: number
   proxiedDownloadBytesMaxPerMonth!: number
+  proxiedDownloadUserQuota!: ProxiedDownloadUserQuotaRuleDto
 }
 
 export class UpdateInstanceSettingsDto {
@@ -188,6 +206,11 @@ export class UpdateInstanceSettingsDto {
   @Min(1)
   @IsOptional()
   proxiedDownloadBytesMaxPerMonth?: number
+
+  @ValidateNested()
+  @Type(() => ProxiedDownloadUserQuotaRuleDto)
+  @IsOptional()
+  proxiedDownloadUserQuota?: ProxiedDownloadUserQuotaRuleDto
 }
 
 export class ServerSyncCredentialsDto {

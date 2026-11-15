@@ -118,6 +118,7 @@ export class OpdsCatalogController {
     })
     const isHeadRequest = request.method === "HEAD"
     const meteredFile = await this.proxiedDownloadQuotaService.meter({
+      userId: owner.id,
       stream: file.stream,
       expectedBytes: file.expectedSize,
       isBodySent: !isHeadRequest,

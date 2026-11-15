@@ -12,6 +12,7 @@ const CONFIG: InstanceConfig = {
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
   proxiedDownloadBytesMaxPerMonth: 1,
+  proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
 }
 
 describe("toInstanceSettings", () => {

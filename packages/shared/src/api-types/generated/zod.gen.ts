@@ -252,6 +252,11 @@ export const zRevokeTokensResponseDto = z.object({
     targetedUsers: z.number().nullable()
 });
 
+export const zProxiedDownloadUserQuotaRuleDto = z.object({
+    type: z.enum(['percentage']),
+    percent: z.int().gte(1).lte(100)
+});
+
 export const zInstanceSettingsResponseDto = z.object({
     showDisabledPlugins: z.boolean(),
     fileDownloadMaxSizeBytes: z.number(),
@@ -263,7 +268,8 @@ export const zInstanceSettingsResponseDto = z.object({
     microsoftApplicationClientId: z.string().optional(),
     microsoftApplicationAuthority: z.string().optional(),
     opdsServersMaxPerUser: z.number(),
-    proxiedDownloadBytesMaxPerMonth: z.number()
+    proxiedDownloadBytesMaxPerMonth: z.number(),
+    proxiedDownloadUserQuota: zProxiedDownloadUserQuotaRuleDto
 });
 
 export const zUpdateInstanceSettingsDto = z.object({
@@ -280,7 +286,8 @@ export const zUpdateInstanceSettingsDto = z.object({
     googleClientId: z.string().optional(),
     googleApiKey: z.string().optional(),
     googleClientSecret: z.string().optional(),
-    microsoftApplicationClientId: z.string().optional()
+    microsoftApplicationClientId: z.string().optional(),
+    proxiedDownloadUserQuota: zProxiedDownloadUserQuotaRuleDto.optional()
 });
 
 export const zProxiedDownloadQuotaResponseDto = z.object({
@@ -381,6 +388,14 @@ export const zSyncFinishedNotificationDto = z.object({
 
 export const zUnreadNotificationsCountResponseDto = z.object({
     count: z.number()
+});
+
+export const zUserProxiedDownloadQuotaResponseDto = z.object({
+    usedBytes: z.number(),
+    quotaBytes: z.number(),
+    resetsAt: z.string(),
+    userUsedBytes: z.number(),
+    userQuotaBytes: z.number()
 });
 
 export const zSyncReportRelationDto = z.object({
@@ -687,7 +702,7 @@ export const zNotificationsArchivePath = z.object({
 
 export const zNotificationsArchiveResponse = zOkResponseDto;
 
-export const zQuotasGetProxiedDownloadQuotaResponse = zProxiedDownloadQuotaResponseDto;
+export const zQuotasGetProxiedDownloadQuotaResponse = zUserProxiedDownloadQuotaResponseDto;
 
 export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
 

@@ -15,6 +15,7 @@ import {
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
+  UserProxiedDownloadUsagePostgresEntity,
 } from "./entities.js"
 import { RefreshTokensService } from "./refreshTokens.service.js"
 import { UserPostgresService } from "./user-postgres.service.js"
@@ -39,6 +40,7 @@ import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-po
       OpdsServerPostgresEntity,
       ProviderConnectionPostgresEntity,
       ProxiedDownloadUsagePostgresEntity,
+      UserProxiedDownloadUsagePostgresEntity,
     ]),
   ],
   providers: [
