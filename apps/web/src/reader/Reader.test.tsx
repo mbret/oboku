@@ -1,8 +1,10 @@
-import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
+import { type BookDocType, createBookDefaults } from "@oboku/shared"
+import type { ReadingPosition } from "@prose-reader/core"
 import type { Manifest } from "@prose-reader/shared"
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
-import { NEVER } from "rxjs"
+import { filter, firstValueFrom, NEVER } from "rxjs"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import {
   type LocalSettings,
@@ -22,20 +24,40 @@ const createManifest = (): Manifest => ({
   readingDirection: "ltr",
   spineItems: [
     {
-      id: "chapter",
+      id: "chapter-1",
       index: 0,
-      href: "http://localhost/streamer/book-1/chapter.xhtml",
+      href: "http://localhost/streamer/book-1/chapter-1.xhtml",
       mediaType: "application/xhtml+xml",
-      containerUri: "chapter.xhtml",
+      containerUri: "chapter-1.xhtml",
+    },
+    {
+      id: "chapter-2",
+      index: 1,
+      href: "http://localhost/streamer/book-1/chapter-2.xhtml",
+      mediaType: "application/xhtml+xml",
+      containerUri: "chapter-2.xhtml",
     },
   ],
   items: [
     {
-      id: "chapter",
-      href: "http://localhost/streamer/book-1/chapter.xhtml",
+      id: "chapter-1",
+      href: "http://localhost/streamer/book-1/chapter-1.xhtml",
+      mediaType: "application/xhtml+xml",
+    },
+    {
+      id: "chapter-2",
+      href: "http://localhost/streamer/book-1/chapter-2.xhtml",
       mediaType: "application/xhtml+xml",
     },
   ],
+})
+
+const createStoredBook = (): BookDocType => ({
+  ...createBookDefaults(),
+  _id: BOOK_ID,
+  _rev: "1-book",
+  rx_model: "book",
+  rxdbMeta: { lwt: 1 },
 })
 
 type ReaderOpening = {
@@ -51,12 +73,30 @@ const mocks = vi.hoisted(function createReaderMocks() {
   const events: string[] = []
   const readers: ReaderInstance[] = []
   const accountSettings: AccountSettings = {}
+  const store: { book?: BookDocType } = {}
 
   return {
     events,
     readers,
     accountSettings,
+    store,
     opening,
+    modifyStoredBook: async function modifyStoredBook({
+      mutationFn,
+    }: {
+      mutationFn: (old: BookDocType) => BookDocType
+    }) {
+      if (!store.book) throw new Error("No book stored")
+
+      const savedBook = mutationFn(store.book)
+      store.book = savedBook
+
+      return {
+        toJSON: function toSavedBook() {
+          return savedBook
+        },
+      }
+    },
     updateOpening: function updateOpening(changes: Partial<ReaderOpening>) {
       Object.assign(opening, changes)
       for (const listener of openingListeners) listener()
@@ -171,8 +211,12 @@ vi.mock("../settings/useSettings", function mockAccountSettings() {
   }
 })
 
-vi.mock("./progress/useSyncBookProgress", function mockSyncBookProgress() {
-  return { useSyncBookProgress: function useNoBookProgressSync() {} }
+vi.mock("../books", function mockBooks() {
+  return {
+    useIncrementalBookModify: function useStoredBookModify() {
+      return { mutateAsync: mocks.modifyStoredBook }
+    },
+  }
 })
 
 vi.mock(
@@ -207,6 +251,15 @@ const waitForReaderCount = (count: number) =>
     expect(mocks.readers).toHaveLength(count)
   })
 
+const waitForFirstReader = () =>
+  waitFor(function getFirstReader() {
+    const [reader] = mocks.readers
+
+    if (!reader) throw new Error("The provider has not created a reader yet")
+
+    return reader
+  })
+
 describe("Reader", () => {
   beforeEach(function resetReaderAndSettings() {
     localSettingsSignal.update(SIGNAL_RESET)
@@ -215,6 +268,7 @@ describe("Reader", () => {
     mocks.opening.manifest = createManifest()
     mocks.opening.bookToOpen = undefined
     mocks.accountSettings = {}
+    mocks.store.book = createStoredBook()
   })
 
   afterEach(function unmountReader() {
@@ -268,5 +322,42 @@ describe("Reader", () => {
 
     expect(eventsWhileReading).toEqual(["create", "destroy", "create"])
     expect(eventsOnLeave.toSorted()).toEqual(["destroy", "prune"])
+  })
+
+  it("saves the position of a navigation in the reader the provider created", async () => {
+    mocks.opening.bookToOpen = null
+    render(<TestReader />)
+    const reader = await waitForFirstReader()
+    const isFoundPositionInSpineItem = (
+      position: ReadingPosition,
+      spineItemIndex: number,
+    ) =>
+      position.status === "success" &&
+      reader.cfi.parseCfi(position.cfi).itemIndex === spineItemIndex
+    await firstValueFrom(
+      reader.navigation.readingPosition$.pipe(
+        filter(function isFoundPositionInFirstChapter(position) {
+          return isFoundPositionInSpineItem(position, 0)
+        }),
+      ),
+    )
+
+    reader.navigation.goToSpineItem({ indexOrId: 1 })
+
+    const secondChapterPosition = await firstValueFrom(
+      reader.navigation.readingPosition$.pipe(
+        filter(function isFoundPositionInSecondChapter(position) {
+          return isFoundPositionInSpineItem(position, 1)
+        }),
+      ),
+    )
+    await waitFor(
+      function expectSecondChapterPositionSaved() {
+        expect(mocks.store.book?.readingStateCurrentBookmarkLocation).toBe(
+          secondChapterPosition.cfi,
+        )
+      },
+      { timeout: 3000 },
+    )
   })
 })
