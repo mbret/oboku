@@ -1,3 +1,4 @@
+import type { ReactReaderSettings } from "@prose-reader/react-reader"
 import { act, renderHook } from "@testing-library/react"
 import { SIGNAL_RESET } from "reactjrx"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -111,24 +112,45 @@ describe("useReaderSettings", () => {
     })
   })
 
-  it("sets a setting back to its default on the device when react-reader reports it as undefined", () => {
-    localSettingsSignal.update(
-      function withThemeAndFontScale(settings): LocalSettings {
-        return { ...settings, readerTheme: "night", readerFontScale: 1.3 }
-      },
-    )
-    const { result } = renderHook(useReaderSettings)
+  it.each<{
+    setting: string
+    deviceSettings: Partial<LocalSettings>
+    reportedChange: ReactReaderSettings
+    storedDefault: Partial<LocalSettings>
+  }>([
+    {
+      setting: "theme",
+      deviceSettings: { readerTheme: "night" },
+      reportedChange: { theme: undefined },
+      storedDefault: { readerTheme: null },
+    },
+    {
+      setting: "spread mode",
+      deviceSettings: { readerSpreadMode: "always" },
+      reportedChange: { spreadMode: undefined },
+      storedDefault: { readerSpreadMode: null },
+    },
+  ])(
+    "sets the $setting back to its default on the device when react-reader reports it as undefined",
+    ({ deviceSettings, reportedChange, storedDefault }) => {
+      localSettingsSignal.update(
+        function withSettingAndFontScale(settings): LocalSettings {
+          return { ...settings, ...deviceSettings, readerFontScale: 1.3 }
+        },
+      )
+      const { result } = renderHook(useReaderSettings)
 
-    act(function setThemeBackToDefault() {
-      result.current.updateReaderSettings({ theme: undefined })
-    })
+      act(function setSettingBackToDefault() {
+        result.current.updateReaderSettings(reportedChange)
+      })
 
-    expect(result.current.readerSettings).toEqual({ fontScale: 1.3 })
-    expect(localSettingsSignal.getValue()).toMatchObject({
-      readerTheme: null,
-      readerFontScale: 1.3,
-    })
-  })
+      expect(result.current.readerSettings).toEqual({ fontScale: 1.3 })
+      expect(localSettingsSignal.getValue()).toMatchObject({
+        ...storedDefault,
+        readerFontScale: 1.3,
+      })
+    },
+  )
 
   it("sends the font scale back to the account's when the device sets it back to default", () => {
     mocks.accountSettings = { readerGlobalFontScale: 1.4 }
