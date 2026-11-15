@@ -6,11 +6,11 @@ import { ROUTES } from "../../navigation/routes"
 const SYNC_SERVER_TURNED_ON_AT = "2026-10-01T08:00:00.000Z"
 
 vi.mock(
-  "./server/useKoreaderSyncServer",
+  "../koreader/server/useKoreaderSyncServer",
   async function mockKoreaderSyncServer(importOriginal) {
     return {
       ...(await importOriginal<
-        typeof import("./server/useKoreaderSyncServer")
+        typeof import("../koreader/server/useKoreaderSyncServer")
       >()),
       useKoreaderSyncServer: function useKoreaderSyncServer() {
         return { data: { passwordCreatedAt: SYNC_SERVER_TURNED_ON_AT } }
@@ -20,11 +20,11 @@ vi.mock(
 )
 
 vi.mock(
-  "./client/useKoreaderSyncConnection",
+  "../koreader/client/useKoreaderSyncConnection",
   async function mockKoreaderSyncConnection(importOriginal) {
     return {
       ...(await importOriginal<
-        typeof import("./client/useKoreaderSyncConnection")
+        typeof import("../koreader/client/useKoreaderSyncConnection")
       >()),
       useKoreaderSyncConnection: function useKoreaderSyncConnection() {
         return {
@@ -35,20 +35,23 @@ vi.mock(
   },
 )
 
-import { KoreaderIntegrationScreen } from "./KoreaderIntegrationScreen"
+import { ReadingAppsSection } from "./ReadingAppsSection"
 
-describe("KoreaderIntegrationScreen", () => {
+describe("ReadingAppsSection", () => {
   afterEach(() => {
     cleanup()
   })
 
-  it("shows the KOReader sync server and progress sync with their status", () => {
+  it("links to the OPDS servers, the KOReader sync server and progress sync, with their status", () => {
     render(
       <MemoryRouter>
-        <KoreaderIntegrationScreen />
+        <ReadingAppsSection />
       </MemoryRouter>,
     )
 
+    expect(
+      screen.getByRole("link", { name: /^OPDS servers/ }).getAttribute("href"),
+    ).toBe(ROUTES.OPDS_SERVERS)
     expect(
       screen
         .getByRole("link", { name: /^KOReader sync server/ })

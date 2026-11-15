@@ -17,6 +17,10 @@ vi.mock("./catalogs/CatalogsSection", function mockCatalogsSection() {
   return { CatalogsSection: () => null }
 })
 
+vi.mock("./reading-apps/ReadingAppsSection", function mockReadingAppsSection() {
+  return { ReadingAppsSection: () => null }
+})
+
 import { IntegrationsScreen } from "./IntegrationsScreen"
 
 const EVERY_PROVIDER_CONFIGURED = {
@@ -30,9 +34,8 @@ const EVERY_PROVIDER_CONFIGURED = {
 const INTEGRATION_HREF_BY_NAME = {
   Dropbox: "/integrations/dropbox",
   Google: "/integrations/google",
-  KOReader: "/integrations/koreader",
   OneDrive: "/integrations/one-drive",
-  OPDS: "/integrations/opds",
+  "OPDS catalogs": "/integrations/opds/catalogs",
   Server: "/integrations/server",
   "Synology Drive": "/integrations/synology-drive",
   WebDAV: "/integrations/webdav",
@@ -87,7 +90,7 @@ describe("IntegrationsScreen", () => {
     })
 
     expect(queryIntegrationLink(name)).toBeNull()
-    expect(getIntegrationLink("KOReader")).toBeDefined()
+    expect(getIntegrationLink("WebDAV")).toBeDefined()
   })
 
   it("shows it disabled when the instance shows non-configured providers", () => {
@@ -100,7 +103,7 @@ describe("IntegrationsScreen", () => {
     expect(getIntegrationLink("Dropbox").getAttribute("aria-disabled")).toBe(
       "true",
     )
-    expect(getIntegrationLink("KOReader").getAttribute("aria-disabled")).toBe(
+    expect(getIntegrationLink("WebDAV").getAttribute("aria-disabled")).toBe(
       null,
     )
   })
