@@ -11,6 +11,8 @@
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
     "@fontsource/roboto": "^5.3.0",
+    "@lingui/core": "^6.12.0",
+    "@lingui/react": "^6.12.0",
     "@mui/icons-material": "^9.5.0",
     "@mui/material": "^9.5.0",
     "@mui/utils": "^9.5.0",
@@ -70,6 +72,9 @@
   },
   "devDependencies": {
     "@babel/core": "^8.1.2",
+    "@lingui/cli": "^6.12.0",
+    "@lingui/format-po": "^6.12.0",
+    "@lingui/vite-plugin": "^6.12.0",
     "@rolldown/plugin-babel": "^0.3.1",
     "@testing-library/react": "^16.3.3",
     "@types/babel__core": "^7.20.5",
@@ -91,6 +96,7 @@
     "start": "vite",
     "start:dev": "vite",
     "build": "tsc -b && vite build",
+    "extract:messages": "lingui extract --clean",
     "preview": "vite preview",
     "test": "vitest run"
   }

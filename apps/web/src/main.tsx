@@ -11,8 +11,13 @@ import "./common/animations.css"
 import { AppWithConfig } from "./App"
 import { ErrorBoundary } from "@sentry/react"
 import { purgeStagedFiles } from "@oboku/archive-metadata/web"
+import { i18n } from "@lingui/core"
+import { I18nProvider } from "@lingui/react"
+import { activateLocale, getBrowserLocale } from "./i18n/activateLocale"
 
 void purgeStagedFiles()
+
+await activateLocale(getBrowserLocale())
 
 const rootElm = document.getElementById("root")
 
@@ -21,9 +26,11 @@ if (rootElm) {
 
   root.render(
     <React.StrictMode>
-      <ErrorBoundary>
-        <AppWithConfig />
-      </ErrorBoundary>
+      <I18nProvider i18n={i18n}>
+        <ErrorBoundary>
+          <AppWithConfig />
+        </ErrorBoundary>
+      </I18nProvider>
     </React.StrictMode>,
   )
 }

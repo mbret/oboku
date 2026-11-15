@@ -23,6 +23,7 @@
     "build:landing": "lerna run build --scope=@oboku/landing",
     "build:docs": "lerna run build --scope=@oboku/docs",
     "generate:api-types": "pnpm run build:api && lerna run generate:api-types --scope=@oboku/api",
+    "extract:messages": "lerna run extract:messages --scope=@oboku/web",
     "test": "lerna run test",
     "check:service-worker": "node scripts/check-service-worker.mjs",
     "tsc": "lerna run tsc",
