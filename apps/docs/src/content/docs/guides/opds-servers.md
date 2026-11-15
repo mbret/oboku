@@ -21,9 +21,9 @@ Some listed books cannot be downloaded yet:
 
 ## Monthly download quota
 
-Reading apps download books through oboku's server, so each instance has a monthly quota on what it sends, for all users together. A download that would pass the quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
+Reading apps download books through oboku's server, so each instance has a monthly quota on what it sends, for all users together. Each user may also download at most a share of it: 5% by default. A download that would pass either quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
 
-**Profile > Quotas** shows how much of the quota is used this month, and when it starts over. The **OPDS servers** screen links to it. The instance's administrator sets the quota from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default.
+**Profile > Quotas** shows how much of your quota and of the quota of all users is used this month, and when both start over. The **OPDS servers** screen links to it. The instance's administrator sets both from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default, 5% of it per user.
 
 ## Create a server
 
