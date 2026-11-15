@@ -3,19 +3,19 @@ import { describe, expect, it, onTestFinished, vi } from "vitest"
 const callbackPage = "/auth-callback-dropbox.html"
 const settledMessage = "callback-page-settled"
 
-const collectMessagesFrom = (getSource: () => MessageEventSource | null) => {
-  const events: MessageEvent[] = []
+const firstMessageFrom = (getSource: () => MessageEventSource | null) => {
+  const { promise, resolve } = Promise.withResolvers<MessageEvent>()
 
-  function collectMessageFromSource(event: MessageEvent) {
-    if (event.source === getSource()) events.push(event)
+  function resolveWithMessageFromSource(event: MessageEvent) {
+    if (event.source === getSource()) resolve(event)
   }
 
-  window.addEventListener("message", collectMessageFromSource)
-  onTestFinished(function stopCollectingMessages() {
-    window.removeEventListener("message", collectMessageFromSource)
+  window.addEventListener("message", resolveWithMessageFromSource)
+  onTestFinished(function stopListeningToMessages() {
+    window.removeEventListener("message", resolveWithMessageFromSource)
   })
 
-  return events
+  return promise
 }
 
 const loadInFrame = async (url: string) => {
@@ -53,19 +53,17 @@ const postSettledFromFrame = (frame: HTMLIFrameElement) => {
 describe("postAuthToOpener", () => {
   it("posts auth params back to the opener using the app origin", async () => {
     let popup: Window | null = null
-    const events = collectMessagesFrom(() => popup)
+    const authMessage = firstMessageFrom(() => popup)
 
     popup = window.open(`${callbackPage}?code=reader-code&state=reader-state`)
 
-    await vi.waitFor(function waitForTheAuthParams() {
-      expect(events).toHaveLength(1)
-    })
+    const { data, origin } = await authMessage
 
-    expect(events[0]?.data).toEqual({
+    expect(data).toEqual({
       source: "oauth-redirect",
       params: "?code=reader-code&state=reader-state",
     })
-    expect(events[0]?.origin).toBe(window.location.origin)
+    expect(origin).toBe(window.location.origin)
     await vi.waitFor(function waitForThePopupToClose() {
       expect(popup?.closed).toBe(true)
     })
@@ -73,14 +71,11 @@ describe("postAuthToOpener", () => {
 
   it("does nothing when the popup has no opener", async () => {
     let frame: HTMLIFrameElement | null = null
-    const events = collectMessagesFrom(() => frame?.contentWindow ?? null)
+    const firstMessage = firstMessageFrom(() => frame?.contentWindow ?? null)
 
     frame = await loadInFrame(`${callbackPage}?code=reader-code`)
     postSettledFromFrame(frame)
 
-    await vi.waitFor(function waitForTheFrameToSettle() {
-      expect(events.map((event) => event.data)).toContain(settledMessage)
-    })
-    expect(events.map((event) => event.data)).toEqual([settledMessage])
+    expect((await firstMessage).data).toBe(settledMessage)
   })
 })
