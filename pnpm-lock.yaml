@@ -70,7 +70,7 @@ overrides:
 
 patchedDependencies:
   react-dom@19.3.1: 38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6
-  webdav@5.11.0: 16d08567aca49e52870135f732dbfde62f828b489adbab2fecc030df006a432c
+  webdav@5.11.0: 345e77e92de4fa6d096b70ba371b45ffd7d491636d87f6f70b1d89d168ec6a4f
 
 importers:
 
@@ -350,7 +350,7 @@ importers:
         version: 0.12.5
       webdav:
         specifier: ^5.11.0
-        version: 5.11.0(patch_hash=16d08567aca49e52870135f732dbfde62f828b489adbab2fecc030df006a432c)
+        version: 5.11.0(patch_hash=345e77e92de4fa6d096b70ba371b45ffd7d491636d87f6f70b1d89d168ec6a4f)
     devDependencies:
       '@hey-api/openapi-ts':
         specifier: 0.99.0
@@ -668,7 +668,7 @@ importers:
         version: 6.0.2
       webdav:
         specifier: ^5.11.0
-        version: 5.11.0(patch_hash=16d08567aca49e52870135f732dbfde62f828b489adbab2fecc030df006a432c)
+        version: 5.11.0(patch_hash=345e77e92de4fa6d096b70ba371b45ffd7d491636d87f6f70b1d89d168ec6a4f)
       workbox-core:
         specifier: ^7.4.1
         version: 7.4.1
@@ -28347,7 +28347,7 @@ snapshots:
 
   web-worker@1.5.0: {}
 
-  webdav@5.11.0(patch_hash=16d08567aca49e52870135f732dbfde62f828b489adbab2fecc030df006a432c):
+  webdav@5.11.0(patch_hash=345e77e92de4fa6d096b70ba371b45ffd7d491636d87f6f70b1d89d168ec6a4f):
     dependencies:
       '@buttercup/fetch': 0.2.1
       '@nodable/entities': 3.1.0
