@@ -50,6 +50,12 @@ overrides:
   conventional-commits-parser@7.1.2: ^7.1.3
 patchedDependencies:
   react-dom@19.3.1: patches/react-dom@19.3.1.patch
+  # Once a webdav client uses Digest auth, its handleResponseCode returns a
+  # 401 instead of throwing, so a wrong password reads as a parse error and a
+  # download yields the 401 page (#845). The patch deletes that early return
+  # in the Node and browser builds. It goes once a webdav release fixes
+  # source/response.ts upstream.
+  webdav@5.11.0: patches/webdav@5.11.0.patch
 # prose-reader, gesturx and reactjrx share oboku's maintainer, so their
 # releases are installed as soon as they are out.
 minimumReleaseAgeExclude:
