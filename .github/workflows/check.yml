@@ -34,3 +34,13 @@ jobs:
             echo "::error::The API types are out of date. Run pnpm generate:api-types and commit the result."
             exit 1
           fi
+      - name: Check the translation catalogs are up to date
+        run: |
+          pnpm run extract:messages
+          catalogs=apps/web/src/i18n/locales
+          if [ -n "$(git status --porcelain -- "$catalogs")" ]; then
+            git status --short -- "$catalogs"
+            git diff -- "$catalogs"
+            echo "::error::The translation catalogs are out of date. Run pnpm extract:messages and commit the result."
+            exit 1
+          fi
