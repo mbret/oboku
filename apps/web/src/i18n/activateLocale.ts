@@ -1,20 +1,18 @@
-import { i18n } from "@lingui/core"
-import {
-  isSupportedLocale,
-  sourceLocale,
-  type SupportedLocale,
-} from "./supportedLocales"
+import { i18n, type Messages } from "@lingui/core"
+import { pickSupportedLocale, type SupportedLocale } from "./supportedLocales"
 
-export function getBrowserLocale(): SupportedLocale {
-  const browserLanguages = navigator.languages.map(
-    (language) => new Intl.Locale(language).language,
-  )
+const catalogLoaders = {
+  en: () => import("./locales/en.po"),
+  fr: () => import("./locales/fr.po"),
+} satisfies Record<SupportedLocale, () => Promise<{ messages: Messages }>>
 
-  return browserLanguages.find(isSupportedLocale) ?? sourceLocale
+export function getBrowserLocale() {
+  return pickSupportedLocale(navigator.languages)
 }
 
 export async function activateLocale(locale: SupportedLocale) {
-  const { messages } = await import(`./locales/${locale}.po`)
+  const { messages } = await catalogLoaders[locale]()
 
   i18n.loadAndActivate({ locale, messages })
+  document.documentElement.lang = locale
 }

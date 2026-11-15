@@ -37,6 +37,9 @@ const showCollectionWithProtectedContentChoices = (
 export const SettingsScreen = memo(function SettingsScreen() {
   const { t, i18n } = useLingui()
   const localSettings = useLocalSettings()
+  const activeLanguageName = new Intl.DisplayNames([i18n.locale], {
+    type: "language",
+  }).of(i18n.locale)
 
   return (
     <Page>
@@ -46,7 +49,7 @@ export const SettingsScreen = memo(function SettingsScreen() {
           <ListItem>
             <ListItemText
               primary={t`Language`}
-              secondary={navigator.language}
+              secondary={activeLanguageName}
             />
           </ListItem>
           <ListItemSwitch
@@ -66,12 +69,7 @@ export const SettingsScreen = memo(function SettingsScreen() {
           <ListItemSelect
             primary={t`Show collections containing protected content`}
             value={localSettings.showCollectionWithProtectedContent}
-            choices={showCollectionWithProtectedContentChoices.map(
-              (choice) => ({
-                ...choice,
-                label: i18n._(choice.label),
-              }),
-            )}
+            choices={showCollectionWithProtectedContentChoices}
             onChange={(value) => {
               localSettingsSignal.update((old) => ({
                 ...old,
@@ -97,10 +95,7 @@ export const SettingsScreen = memo(function SettingsScreen() {
           <ListItemSelect
             primary={t`Color mode`}
             value={localSettings.themeMode ?? "system"}
-            choices={themeOptions.map((option) => ({
-              ...option,
-              label: i18n._(option.label),
-            }))}
+            choices={themeOptions}
             onChange={(value) => {
               localSettingsSignal.update((old) => ({
                 ...old,

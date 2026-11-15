@@ -24,7 +24,7 @@ const fullScreenChoices = (
  * and the in-reader settings list.
  */
 export const ReadingSettings = () => {
-  const { t, i18n } = useLingui()
+  const { t } = useLingui()
   const localSettings = useLocalSettings([
     "readerWakeLockEnabled",
     "readerFloatingProgress",
@@ -37,10 +37,7 @@ export const ReadingSettings = () => {
       <ListItemSelect
         primary={t`Automatically switch to fullscreen upon opening`}
         value={localSettings.readingFullScreenSwitchMode}
-        choices={fullScreenChoices.map((choice) => ({
-          ...choice,
-          label: i18n._(choice.label),
-        }))}
+        choices={fullScreenChoices}
         onChange={(value) => {
           localSettingsSignal.update((state) => ({
             ...state,

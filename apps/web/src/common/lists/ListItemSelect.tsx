@@ -5,6 +5,8 @@ import {
   type ListItemTextProps,
 } from "@mui/material"
 import { useState } from "react"
+import type { MessageDescriptor } from "@lingui/core"
+import { useLingui } from "@lingui/react/macro"
 import { MultipleChoiceDrawer } from "../MultipleChoiceDrawer"
 
 /**
@@ -20,11 +22,18 @@ export const ListItemSelect = <Value extends string>({
   onChange,
 }: {
   value: Value
-  choices: { value: Value; label: string }[]
+  choices: { value: Value; label: MessageDescriptor }[]
   onChange: (value: Value) => void
 } & Pick<ListItemTextProps, "primary">) => {
+  const { i18n } = useLingui()
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
-  const selectedLabel = choices.find((choice) => choice.value === value)?.label
+  const translatedChoices = choices.map((choice) => ({
+    value: choice.value,
+    label: i18n._(choice.label),
+  }))
+  const selectedLabel = translatedChoices.find(
+    (choice) => choice.value === value,
+  )?.label
 
   return (
     <>
@@ -38,7 +47,7 @@ export const ListItemSelect = <Value extends string>({
         onClose={() => setIsDrawerOpened(false)}
         anchor="bottom"
         selected={value}
-        choices={choices}
+        choices={translatedChoices}
         onChoiceSelect={(value) => {
           onChange(value)
           setIsDrawerOpened(false)

@@ -84,6 +84,10 @@ msgstr "Lecture"
 msgid "Reload book"
 msgstr "Recharger le livre"
 
+#: src/common/MultipleChoiceDrawer.tsx
+msgid "selected"
+msgstr "sélectionné"
+
 #: src/pages/SettingsScreen.tsx
 msgid "Settings"
 msgstr "Paramètres"
