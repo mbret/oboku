@@ -16,7 +16,6 @@ import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
-import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 
 @Injectable()
 export class UsersService {
@@ -33,7 +32,6 @@ export class UsersService {
     private koreaderSyncConnectionPostgresService: KoreaderSyncConnectionPostgresService,
     private opdsServerPostgresService: OpdsServerPostgresService,
     private providerConnectionPostgresService: ProviderConnectionPostgresService,
-    private proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
 
   async findUserByEmail(email: string) {
@@ -105,7 +103,6 @@ export class UsersService {
     await this.koreaderSyncConnectionPostgresService.deleteByUserId(userId)
     await this.opdsServerPostgresService.deleteByUserId(userId)
     await this.providerConnectionPostgresService.deleteByUserId(userId)
-    await this.proxiedDownloadUsagePostgresService.deleteByUserId(userId)
     await this.userPostgresService.deleteById(userId)
 
     if (coverKeys.length > 0) {

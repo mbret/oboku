@@ -1,10 +1,7 @@
 import type { Mock } from "vitest"
 import { Test } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
-import {
-  ProxiedDownloadUsagePostgresEntity,
-  UserProxiedDownloadUsagePostgresEntity,
-} from "./entities.js"
+import { UserProxiedDownloadUsagePostgresEntity } from "./entities.js"
 import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-postgres.service.js"
 
 const MONTH = "2026-11-01"
@@ -30,30 +27,33 @@ const createInsertQueryBuilder = () => {
 describe("ProxiedDownloadUsagePostgresService", () => {
   let service: ProxiedDownloadUsagePostgresService
   let transactionManager: {
+    query: Mock
     createQueryBuilder: Mock
-    findOneOrFail: Mock
+    findOneByOrFail: Mock
     increment: Mock
   }
-  let userUsageRepository: { findOneBy: Mock }
-  let usageRepository: {
+  let userUsageRepository: {
     findOneBy: Mock
-    manager: { transaction: Mock }
+    increment: Mock
+    manager: { transaction: Mock; query: Mock }
   }
 
-  /** Locks counters holding `usedBytes` for the instance and `userUsedBytes` for the user. */
-  const lockingCounters = ({
+  /** The month's counters sum to `usedBytes`, the user's holds `userUsedBytes`. */
+  const holdingUsage = ({
     usedBytes,
     userUsedBytes,
   }: {
     usedBytes: number
     userUsedBytes: number
   }) => {
-    transactionManager.findOneOrFail.mockImplementation(
-      async (entity: unknown) =>
-        entity === ProxiedDownloadUsagePostgresEntity
-          ? { month: MONTH, bytes: usedBytes }
-          : { user_id: USER_ID, month: MONTH, bytes: userUsedBytes },
+    transactionManager.query.mockImplementation(async (sql: string) =>
+      sql.includes("SUM") ? [{ bytes: String(usedBytes) }] : [],
     )
+    transactionManager.findOneByOrFail.mockResolvedValue({
+      user_id: USER_ID,
+      month: MONTH,
+      bytes: userUsedBytes,
+    })
   }
 
   const reserve = (bytes: number) =>
@@ -67,27 +67,25 @@ describe("ProxiedDownloadUsagePostgresService", () => {
 
   beforeEach(async () => {
     transactionManager = {
+      query: vi.fn(),
       createQueryBuilder: vi.fn(createInsertQueryBuilder),
-      findOneOrFail: vi.fn(),
+      findOneByOrFail: vi.fn(),
       increment: vi.fn(),
     }
-    userUsageRepository = { findOneBy: vi.fn().mockResolvedValue(null) }
-    usageRepository = {
+    userUsageRepository = {
       findOneBy: vi.fn().mockResolvedValue(null),
+      increment: vi.fn(),
       manager: {
         transaction: vi.fn((runInTransaction: (manager: unknown) => unknown) =>
           runInTransaction(transactionManager),
         ),
+        query: vi.fn().mockResolvedValue([{ bytes: "0" }]),
       },
     }
 
     const module = await Test.createTestingModule({
       providers: [
         ProxiedDownloadUsagePostgresService,
-        {
-          provide: getRepositoryToken(ProxiedDownloadUsagePostgresEntity),
-          useValue: usageRepository,
-        },
         {
           provide: getRepositoryToken(UserProxiedDownloadUsagePostgresEntity),
           useValue: userUsageRepository,
@@ -98,19 +96,16 @@ describe("ProxiedDownloadUsagePostgresService", () => {
     service = module.get(ProxiedDownloadUsagePostgresService)
   })
 
-  it("adds the bytes to both counters while both stay within their quotas", async () => {
-    lockingCounters({ usedBytes: 500, userUsedBytes: 60 })
+  it("adds the bytes to the user's counter while both usages stay within their quotas", async () => {
+    holdingUsage({ usedBytes: 500, userUsedBytes: 60 })
 
     expect(await reserve(40)).toBe("reserved")
-    expect(transactionManager.increment.mock.calls).toEqual([
-      [ProxiedDownloadUsagePostgresEntity, { month: MONTH }, "bytes", 40],
-      [
-        UserProxiedDownloadUsagePostgresEntity,
-        { user_id: USER_ID, month: MONTH },
-        "bytes",
-        40,
-      ],
-    ])
+    expect(transactionManager.increment).toHaveBeenCalledWith(
+      UserProxiedDownloadUsagePostgresEntity,
+      { user_id: USER_ID, month: MONTH },
+      "bytes",
+      40,
+    )
   })
 
   it.each([
@@ -121,34 +116,25 @@ describe("ProxiedDownloadUsagePostgresService", () => {
       { usedBytes: 0, userUsedBytes: 100 },
       0,
     ],
-  ])(
-    "adds nothing when %s quota would be passed",
-    async (_, counters, bytes) => {
-      lockingCounters(counters)
+  ])("adds nothing when %s quota would be passed", async (_, usage, bytes) => {
+    holdingUsage(usage)
 
-      expect(await reserve(bytes)).toBe("quota-reached")
-      expect(transactionManager.increment).not.toHaveBeenCalled()
-    },
-  )
+    expect(await reserve(bytes)).toBe("quota-reached")
+    expect(transactionManager.increment).not.toHaveBeenCalled()
+  })
 
-  it("locks the instance's counter before the user's", async () => {
-    lockingCounters({ usedBytes: 0, userUsedBytes: 0 })
+  it("locks the month before it reads the month's sum", async () => {
+    holdingUsage({ usedBytes: 0, userUsedBytes: 0 })
 
     await reserve(10)
 
-    expect(transactionManager.findOneOrFail.mock.calls).toEqual([
-      [
-        ProxiedDownloadUsagePostgresEntity,
-        { where: { month: MONTH }, lock: { mode: "pessimistic_write" } },
-      ],
-      [
-        UserProxiedDownloadUsagePostgresEntity,
-        {
-          where: { user_id: USER_ID, month: MONTH },
-          lock: { mode: "pessimistic_write" },
-        },
-      ],
+    const [lockCall, sumCall] = transactionManager.query.mock.calls
+
+    expect(lockCall).toEqual([
+      "SELECT pg_advisory_xact_lock(hashtext($1))",
+      [`proxied_download_usage:${MONTH}`],
     ])
+    expect(sumCall?.[1]).toEqual([MONTH])
   })
 
   it("finds no bytes for a month without counters", async () => {
@@ -158,17 +144,13 @@ describe("ProxiedDownloadUsagePostgresService", () => {
     )
   })
 
-  it("adds a signed amount to both counters", async () => {
+  it("adds a signed amount to the user's counter", async () => {
     await service.adjust({ userId: USER_ID, month: MONTH, bytes: -120 })
 
-    expect(transactionManager.increment.mock.calls).toEqual([
-      [ProxiedDownloadUsagePostgresEntity, { month: MONTH }, "bytes", -120],
-      [
-        UserProxiedDownloadUsagePostgresEntity,
-        { user_id: USER_ID, month: MONTH },
-        "bytes",
-        -120,
-      ],
-    ])
+    expect(userUsageRepository.increment).toHaveBeenCalledWith(
+      { user_id: USER_ID, month: MONTH },
+      "bytes",
+      -120,
+    )
   })
 })

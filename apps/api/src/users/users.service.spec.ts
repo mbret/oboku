@@ -8,7 +8,6 @@ import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
-import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { UsersService } from "./users.service.js"
@@ -38,7 +37,6 @@ describe("UsersService", () => {
   let koreaderSyncConnectionPostgresService: { deleteByUserId: Mock }
   let opdsServerPostgresService: { deleteByUserId: Mock }
   let providerConnectionPostgresService: { deleteByUserId: Mock }
-  let proxiedDownloadUsagePostgresService: { deleteByUserId: Mock }
 
   beforeEach(async () => {
     userPostgresService = {
@@ -56,7 +54,6 @@ describe("UsersService", () => {
     koreaderSyncConnectionPostgresService = { deleteByUserId: vi.fn() }
     opdsServerPostgresService = { deleteByUserId: vi.fn() }
     providerConnectionPostgresService = { deleteByUserId: vi.fn() }
-    proxiedDownloadUsagePostgresService = { deleteByUserId: vi.fn() }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -91,10 +88,6 @@ describe("UsersService", () => {
         {
           provide: ProviderConnectionPostgresService,
           useValue: providerConnectionPostgresService,
-        },
-        {
-          provide: ProxiedDownloadUsagePostgresService,
-          useValue: proxiedDownloadUsagePostgresService,
         },
       ],
     }).compile()
@@ -161,9 +154,6 @@ describe("UsersService", () => {
     expect(opdsServerPostgresService.deleteByUserId).toHaveBeenCalledWith(1)
     expect(
       providerConnectionPostgresService.deleteByUserId,
-    ).toHaveBeenCalledWith(1)
-    expect(
-      proxiedDownloadUsagePostgresService.deleteByUserId,
     ).toHaveBeenCalledWith(1)
     expect(userPostgresService.deleteById).toHaveBeenCalledWith(1)
   })

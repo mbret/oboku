@@ -420,17 +420,12 @@ const bigintAsNumber: ValueTransformer = {
   from: (value: string) => Number(value),
 }
 
-@Entity({ name: "proxied_download_usage" })
-export class ProxiedDownloadUsagePostgresEntity {
-  /** The first day of the month, UTC. */
-  @PrimaryColumn({ type: "date" })
-  month!: string
-
-  @Column({ type: "bigint", default: 0, transformer: bigintAsNumber })
-  bytes!: number
-}
-
+/**
+ * The bytes proxied downloads sent to a user in a month. The instance's
+ * usage is the sum of the month's rows, so a deleted account keeps its rows.
+ */
 @Entity({ name: "user_proxied_download_usage" })
+@Index(["month"])
 export class UserProxiedDownloadUsagePostgresEntity {
   @PrimaryColumn({ type: "integer" })
   user_id!: number

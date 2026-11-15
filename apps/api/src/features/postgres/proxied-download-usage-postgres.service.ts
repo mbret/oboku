@@ -1,10 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import type { EntityManager, Repository } from "typeorm"
-import {
-  ProxiedDownloadUsagePostgresEntity,
-  UserProxiedDownloadUsagePostgresEntity,
-} from "./entities.js"
+import { UserProxiedDownloadUsagePostgresEntity } from "./entities.js"
 
 export type ProxiedDownloadReservationResult = "reserved" | "quota-reached"
 
@@ -26,73 +23,35 @@ const fitsWithinQuota = ({
 }) => usedBytes < quotaBytes && usedBytes + bytes <= quotaBytes
 
 /**
- * Creates the month's counters and locks them. Every transaction that
- * writes both counters takes the instance's first, then the user's, the
- * inserts included, so two of them never deadlock.
+ * Makes the month's reservations take turns until the transaction ends, so
+ * each one reads a sum that holds the bytes the others added.
  */
-const lockCounters = async (
-  manager: EntityManager,
-  { userId, month }: UserMonth,
-) => {
-  await manager
-    .createQueryBuilder()
-    .insert()
-    .into(ProxiedDownloadUsagePostgresEntity)
-    .values({ month, bytes: 0 })
-    .orIgnore()
-    .execute()
-  await manager
-    .createQueryBuilder()
-    .insert()
-    .into(UserProxiedDownloadUsagePostgresEntity)
-    .values({ user_id: userId, month, bytes: 0 })
-    .orIgnore()
-    .execute()
+const lockMonth = (manager: EntityManager, month: string) =>
+  manager.query("SELECT pg_advisory_xact_lock(hashtext($1))", [
+    `proxied_download_usage:${month}`,
+  ])
 
-  const usage = await manager.findOneOrFail(
-    ProxiedDownloadUsagePostgresEntity,
-    { where: { month }, lock: { mode: "pessimistic_write" } },
-  )
-  const userUsage = await manager.findOneOrFail(
-    UserProxiedDownloadUsagePostgresEntity,
-    { where: { user_id: userId, month }, lock: { mode: "pessimistic_write" } },
+const sumMonthBytes = async (manager: EntityManager, month: string) => {
+  // `SUM` of a `bigint` is a `numeric`, which node-postgres returns as a string.
+  const [{ bytes }]: [{ bytes: string }] = await manager.query(
+    "SELECT COALESCE(SUM(bytes), 0) AS bytes FROM user_proxied_download_usage WHERE month = $1",
+    [month],
   )
 
-  return { usage, userUsage }
-}
-
-/** Adds `bytes` to the month's counters, the instance's first, as `lockCounters` locks them. */
-const addToCounters = async (
-  manager: EntityManager,
-  { userId, month, bytes }: UserMonth & { bytes: number },
-) => {
-  await manager.increment(
-    ProxiedDownloadUsagePostgresEntity,
-    { month },
-    "bytes",
-    bytes,
-  )
-  await manager.increment(
-    UserProxiedDownloadUsagePostgresEntity,
-    { user_id: userId, month },
-    "bytes",
-    bytes,
-  )
+  return Number(bytes)
 }
 
 @Injectable()
 export class ProxiedDownloadUsagePostgresService {
   constructor(
-    @InjectRepository(ProxiedDownloadUsagePostgresEntity)
-    private readonly usageRepository: Repository<ProxiedDownloadUsagePostgresEntity>,
     @InjectRepository(UserProxiedDownloadUsagePostgresEntity)
     private readonly userUsageRepository: Repository<UserProxiedDownloadUsagePostgresEntity>,
   ) {}
 
   /**
-   * Adds `bytes` to the month's counters of the instance and of the user,
-   * unless either would pass its quota. Concurrent reservations wait for
-   * each other's locks, so each counts the bytes the others added.
+   * Adds `bytes` to the user's counter for the month, unless the user's or
+   * the instance's usage would pass its quota. The instance's usage is the
+   * sum of the month's counters.
    */
   reserveWithinQuotas({
     userId,
@@ -105,16 +64,26 @@ export class ProxiedDownloadUsagePostgresService {
     quotaBytes: number
     userQuotaBytes: number
   }) {
-    return this.usageRepository.manager.transaction(
-      async function reserveWhileCountersAreLocked(
+    return this.userUsageRepository.manager.transaction(
+      async function reserveWhileMonthIsLocked(
         manager,
       ): Promise<ProxiedDownloadReservationResult> {
-        const { usage, userUsage } = await lockCounters(manager, {
-          userId,
-          month,
-        })
+        await lockMonth(manager, month)
+        await manager
+          .createQueryBuilder()
+          .insert()
+          .into(UserProxiedDownloadUsagePostgresEntity)
+          .values({ user_id: userId, month, bytes: 0 })
+          .orIgnore()
+          .execute()
+
+        const usedBytes = await sumMonthBytes(manager, month)
+        const userUsage = await manager.findOneByOrFail(
+          UserProxiedDownloadUsagePostgresEntity,
+          { user_id: userId, month },
+        )
         const isWithinQuotas =
-          fitsWithinQuota({ usedBytes: usage.bytes, bytes, quotaBytes }) &&
+          fitsWithinQuota({ usedBytes, bytes, quotaBytes }) &&
           fitsWithinQuota({
             usedBytes: userUsage.bytes,
             bytes,
@@ -123,7 +92,12 @@ export class ProxiedDownloadUsagePostgresService {
 
         if (!isWithinQuotas) return "quota-reached"
 
-        await addToCounters(manager, { userId, month, bytes })
+        await manager.increment(
+          UserProxiedDownloadUsagePostgresEntity,
+          { user_id: userId, month },
+          "bytes",
+          bytes,
+        )
 
         return "reserved"
       },
@@ -131,10 +105,8 @@ export class ProxiedDownloadUsagePostgresService {
   }
 
   /** @param month the first day of the month, UTC, as `YYYY-MM-DD`. */
-  async findBytes(month: string) {
-    const usage = await this.usageRepository.findOneBy({ month })
-
-    return usage?.bytes ?? 0
+  findBytes(month: string) {
+    return sumMonthBytes(this.userUsageRepository.manager, month)
   }
 
   async findUserBytes({ userId, month }: UserMonth) {
@@ -146,20 +118,12 @@ export class ProxiedDownloadUsagePostgresService {
     return userUsage?.bytes ?? 0
   }
 
-  /**
-   * Adds `bytes` to the month's counters of the instance and of the user:
-   * negative to give reserved bytes back.
-   */
-  adjust(userMonth: UserMonth & { bytes: number }) {
-    return this.usageRepository.manager.transaction(
-      function adjustCounters(manager) {
-        return addToCounters(manager, userMonth)
-      },
+  /** Adds `bytes` to the user's counter for the month: negative to give reserved bytes back. */
+  async adjust({ userId, month, bytes }: UserMonth & { bytes: number }) {
+    await this.userUsageRepository.increment(
+      { user_id: userId, month },
+      "bytes",
+      bytes,
     )
-  }
-
-  /** The instance's counters keep the bytes the user's downloads added. */
-  async deleteByUserId(userId: number) {
-    await this.userUsageRepository.delete({ user_id: userId })
   }
 }
