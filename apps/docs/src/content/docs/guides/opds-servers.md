@@ -27,7 +27,7 @@ Reading apps download books through oboku's server, so each instance has a month
 
 ## Create a server
 
-In oboku, open **Integrations > OPDS > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
+In oboku, open **Integrations > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
 
 * **OPDS 1.2 catalog URL**: your oboku API address followed by `/opds/` and the server's words, such as `/opds/calm-snails-dream`. Copy it from the screen rather than typing it from memory.
 * **OPDS 2.0 catalog URL**: the same address followed by `/v2`.
@@ -51,7 +51,7 @@ Other reading apps ask for the same three values: a catalog URL, the username an
 
 ## Manage your servers
 
-Each server on the **Integrations > OPDS > OPDS servers** screen has three actions:
+Each server on the **Integrations > OPDS servers** screen has three actions:
 
 * **Rename** changes the server's name. The catalog URLs stay the same.
 * **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.

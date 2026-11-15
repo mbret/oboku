@@ -36,9 +36,7 @@ import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/Kore
 import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
 import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegrationScreen"
 import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
-import { KoreaderIntegrationScreen } from "../integrations/koreader/KoreaderIntegrationScreen"
 import { OneDriveIntegrationScreen } from "../integrations/one-drive/OneDriveIntegrationScreen"
-import { OpdsIntegrationScreen } from "../integrations/opds/OpdsIntegrationScreen"
 import { OpdsServersScreen } from "../integrations/opds/servers/OpdsServersScreen"
 import { OpdsCatalogsScreen } from "../integrations/opds/catalogs/OpdsCatalogsScreen"
 import { ServerIntegrationScreen } from "../integrations/server/ServerIntegrationScreen"
@@ -207,16 +205,8 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<GoogleIntegrationScreen />}
               />
               <Route
-                path={ROUTES.INTEGRATION_KOREADER.slice(1)}
-                element={<KoreaderIntegrationScreen />}
-              />
-              <Route
                 path={ROUTES.INTEGRATION_ONE_DRIVE.slice(1)}
                 element={<OneDriveIntegrationScreen />}
-              />
-              <Route
-                path={ROUTES.INTEGRATION_OPDS.slice(1)}
-                element={<OpdsIntegrationScreen />}
               />
               <Route
                 path={ROUTES.INTEGRATION_SERVER.slice(1)}
