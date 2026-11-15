@@ -1,4 +1,5 @@
 import { Paper, Stack, Text } from "@mantine/core"
+import type { ReactNode } from "react"
 import type { InstanceSettingsResponseDto } from "@oboku/shared"
 import { useInstanceSettings } from "../useInstanceSettings"
 import {
@@ -10,12 +11,14 @@ type NumberSettingSectionProps = Omit<NumberSettingFormProps, "savedValue"> & {
   title: string
   description: string
   toSavedValue: (settings: InstanceSettingsResponseDto) => number
+  children?: ReactNode
 }
 
 export function NumberSettingSection({
   title,
   description,
   toSavedValue,
+  children,
   ...formProps
 }: NumberSettingSectionProps) {
   const instanceSettings = useInstanceSettings()
@@ -31,6 +34,8 @@ export function NumberSettingSection({
             {description}
           </Text>
         </div>
+
+        {children}
 
         {instanceSettings.isLoading && (
           <Text size="sm" c="dimmed">

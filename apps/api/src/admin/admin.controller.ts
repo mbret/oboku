@@ -41,6 +41,8 @@ import { AdminSecurityService } from "./admin-security.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
 import { OkResponseDto } from "../openapi/ok-response.dto.js"
+import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
+import type { ProxiedDownloadQuotaResponseDto } from "../quotas/quotas.dto.js"
 import {
   AdminRefreshTokenDto,
   AdminSignInDto,
@@ -106,6 +108,7 @@ export class AdminController {
     private readonly adminEmailService: AdminEmailService,
     private readonly adminSecurityService: AdminSecurityService,
     private readonly userPostgresService: UserPostgresService,
+    private readonly proxiedDownloadQuotaService: ProxiedDownloadQuotaService,
   ) {}
 
   private async signAdminTokens() {
@@ -284,6 +287,11 @@ export class AdminController {
     )
 
     return {}
+  }
+
+  @Get("quotas/proxied-downloads")
+  getProxiedDownloadQuota(): Promise<ProxiedDownloadQuotaResponseDto> {
+    return this.proxiedDownloadQuotaService.getUsage()
   }
 
   @Get("server-sync")

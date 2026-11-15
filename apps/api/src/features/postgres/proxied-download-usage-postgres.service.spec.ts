@@ -42,13 +42,21 @@ const createQueryBuilder = (updatedRows: number) => {
 
 describe("ProxiedDownloadUsagePostgresService", () => {
   let service: ProxiedDownloadUsagePostgresService
-  let repository: { createQueryBuilder: Mock; increment: Mock }
+  let repository: {
+    createQueryBuilder: Mock
+    increment: Mock
+    findOneBy: Mock
+  }
 
   const reserve = () =>
     service.reserveWithinQuota({ month: MONTH, bytes: 300, quotaBytes: 1000 })
 
   beforeEach(async () => {
-    repository = { createQueryBuilder: vi.fn(), increment: vi.fn() }
+    repository = {
+      createQueryBuilder: vi.fn(),
+      increment: vi.fn(),
+      findOneBy: vi.fn().mockResolvedValue(null),
+    }
 
     const module = await Test.createTestingModule({
       providers: [
@@ -73,6 +81,11 @@ describe("ProxiedDownloadUsagePostgresService", () => {
     repository.createQueryBuilder.mockReturnValue(createQueryBuilder(0))
 
     expect(await reserve()).toBe("quota-reached")
+  })
+
+  it("finds no bytes for a month without a counter", async () => {
+    expect(await service.findBytes(MONTH)).toBe(0)
+    expect(repository.findOneBy).toHaveBeenCalledWith({ month: MONTH })
   })
 
   it("adds a signed amount to the month's counter", async () => {

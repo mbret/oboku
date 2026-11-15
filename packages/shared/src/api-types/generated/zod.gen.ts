@@ -283,6 +283,12 @@ export const zUpdateInstanceSettingsDto = z.object({
     microsoftApplicationClientId: z.string().optional()
 });
 
+export const zProxiedDownloadQuotaResponseDto = z.object({
+    usedBytes: z.number(),
+    quotaBytes: z.number(),
+    resetsAt: z.string()
+});
+
 export const zServerSyncCredentialsDto = z.object({
     configured: z.boolean(),
     username: z.string().nullable()
@@ -629,6 +635,8 @@ export const zAdminUpdateSettingsBody = zUpdateInstanceSettingsDto;
 
 export const zAdminUpdateSettingsResponse = zEmptyResponseDto;
 
+export const zAdminGetProxiedDownloadQuotaResponse = zProxiedDownloadQuotaResponseDto;
+
 export const zAdminGetServerSyncResponse = zServerSyncResponseDto;
 
 export const zAdminUpdateServerSyncBody = zUpdateServerSyncDto;
@@ -678,6 +686,8 @@ export const zNotificationsArchivePath = z.object({
 });
 
 export const zNotificationsArchiveResponse = zOkResponseDto;
+
+export const zQuotasGetProxiedDownloadQuotaResponse = zProxiedDownloadQuotaResponseDto;
 
 export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
 

@@ -6,6 +6,7 @@ import { ObokuErrorCode } from "@oboku/shared"
 import { Test } from "@nestjs/testing"
 import request from "supertest"
 import type { App } from "supertest/types.js"
+import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
@@ -15,10 +16,12 @@ import type {
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
+import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
 import { OpdsCatalogController } from "./opds-catalog.controller.js"
@@ -111,6 +114,8 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
+const DRIVE_METADATA_SIZE = 12
+const PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
 
 const DRIVE_LINK = {
   _id: "link-drive",
@@ -280,6 +285,8 @@ describe("OpdsCatalogController", () => {
   const mintAccessToken = vi.fn()
   const getFileMetadata = vi.fn()
   const download = vi.fn()
+  const reserveWithinQuota = vi.fn()
+  const adjust = vi.fn()
 
   beforeEach(async () => {
     createNanoInstanceForUser.mockResolvedValue(createLibraryDb(LIBRARY))
@@ -291,7 +298,7 @@ describe("OpdsCatalogController", () => {
     })
     getFileMetadata.mockResolvedValue({
       modifiedAt: "2026-11-12T08:00:00.000Z",
-      bookMetadata: { size: "1" },
+      bookMetadata: { size: String(DRIVE_METADATA_SIZE) },
     })
     download.mockImplementation(async function streamBook() {
       return {
@@ -299,6 +306,8 @@ describe("OpdsCatalogController", () => {
         size: BOOK_BYTES.length,
       }
     })
+    reserveWithinQuota.mockResolvedValue("reserved")
+    adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
@@ -312,6 +321,22 @@ describe("OpdsCatalogController", () => {
           useValue: { isConnected, mintAccessToken },
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
+        ProxiedDownloadQuotaService,
+        {
+          provide: ProxiedDownloadUsagePostgresService,
+          useValue: { reserveWithinQuota, adjust },
+        },
+        {
+          provide: InstanceConfigService,
+          useValue: {
+            getConfig: () => ({
+              value: {
+                proxiedDownloadBytesMaxPerMonth:
+                  PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
+              },
+            }),
+          },
+        },
         { provide: OpdsServerPostgresService, useValue: serverStore },
         { provide: UserPostgresService, useValue: userStore },
         { provide: APP_GUARD, useClass: AuthGuard },
@@ -789,6 +814,129 @@ describe("OpdsCatalogController", () => {
       },
     )
 
+    describe("monthly proxied download quota", () => {
+      const NOVEMBER = "2026-11-01"
+
+      beforeEach(() => {
+        vi.useFakeTimers({ toFake: ["Date"] })
+        vi.setSystemTime(new Date("2026-11-14T21:00:00.000Z"))
+      })
+
+      afterEach(() => {
+        vi.useRealTimers()
+      })
+
+      it("reserves the length Drive's download states, and keeps it once the whole file is sent", async () => {
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(200)
+        expect(response.body.toString()).toBe(BOOK_BYTES)
+        expect(reserveWithinQuota).toHaveBeenCalledWith({
+          month: NOVEMBER,
+          bytes: BOOK_BYTES.length,
+          quotaBytes: PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
+        })
+        expect(adjust).not.toHaveBeenCalled()
+      })
+
+      it("answers 429 until the next month once the download would pass the quota", async () => {
+        vi.setSystemTime(new Date("2026-12-31T23:30:00.000Z"))
+        reserveWithinQuota.mockResolvedValue("quota-reached")
+        const driveStream = Readable.from([Buffer.from(BOOK_BYTES)])
+        download.mockResolvedValue({
+          stream: driveStream,
+          size: BOOK_BYTES.length,
+        })
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(429)
+        expect(response.headers["retry-after"]).toBe(
+          "Fri, 01 Jan 2027 00:00:00 GMT",
+        )
+        expect(response.headers["content-disposition"]).toBeUndefined()
+        expect(driveStream.destroyed).toBe(true)
+      })
+
+      it("gives the whole reservation back for a HEAD request", async () => {
+        const response = await request(app.getHttpServer())
+          .head(`/opds/${SERVER.slug}/books/book-dune/Dune.epub`)
+          .set("Authorization", OWNER_AUTHORIZATION)
+
+        expect(response.status).toBe(200)
+        await vi.waitFor(() =>
+          expect(adjust).toHaveBeenCalledWith({
+            month: NOVEMBER,
+            bytes: -BOOK_BYTES.length,
+          }),
+        )
+      })
+
+      it("answers 502 and gives the reservation back when Drive fails while the reservation waits", async () => {
+        const driveStream = new Readable({ read() {} })
+        download.mockResolvedValue({
+          stream: driveStream,
+          size: BOOK_BYTES.length,
+        })
+        reserveWithinQuota.mockImplementation(
+          async function failDriveWhileReserving() {
+            const driveClosed = new Promise(function waitForClose(resolve) {
+              driveStream.once("close", resolve)
+            })
+
+            driveStream.destroy(new Error("socket hang up"))
+            await driveClosed
+
+            return "reserved"
+          },
+        )
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(502)
+        await vi.waitFor(() =>
+          expect(adjust).toHaveBeenCalledWith({
+            month: NOVEMBER,
+            bytes: -BOOK_BYTES.length,
+          }),
+        )
+      })
+
+      it.each([
+        [
+          "Drive's file metadata size",
+          { size: String(DRIVE_METADATA_SIZE) },
+          DRIVE_METADATA_SIZE,
+        ],
+        ["nothing when Drive states no size", {}, 0],
+        ["nothing when Drive's size is not a byte count", { size: "12 kB" }, 0],
+      ])(
+        "reserves %s when Drive's download states no length, then counts the bytes sent",
+        async (_, bookMetadata, reservedBytes) => {
+          getFileMetadata.mockResolvedValue({
+            modifiedAt: "2026-11-12T08:00:00.000Z",
+            bookMetadata,
+          })
+          download.mockResolvedValue({
+            stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+          })
+
+          const response = await getBookFile("book-dune")
+
+          expect(response.status).toBe(200)
+          expect(reserveWithinQuota).toHaveBeenCalledWith(
+            expect.objectContaining({ bytes: reservedBytes }),
+          )
+          await vi.waitFor(() =>
+            expect(adjust).toHaveBeenCalledWith({
+              month: NOVEMBER,
+              bytes: BOOK_BYTES.length - reservedBytes,
+            }),
+          )
+        },
+      )
+    })
+
     it("answers 502 when Drive's stream fails before its first byte", async () => {
       download.mockResolvedValue({
         stream: new Readable({
@@ -801,6 +949,11 @@ describe("OpdsCatalogController", () => {
       const response = await getBookFile("book-dune")
 
       expect(response.status).toBe(502)
+      await vi.waitFor(() =>
+        expect(adjust).toHaveBeenCalledWith(
+          expect.objectContaining({ bytes: -DRIVE_METADATA_SIZE }),
+        ),
+      )
     })
   })
 })

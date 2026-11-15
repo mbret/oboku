@@ -19,9 +19,15 @@ Some listed books cannot be downloaded yet:
 * Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
 * Books added with another Google account than the connected one: oboku reaches Drive with one account only.
 
+## Monthly download quota
+
+Reading apps download books through oboku's server, so each instance has a monthly quota on what it sends, for all users together. A download that would pass the quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
+
+**Profile > Quotas** shows how much of the quota is used this month, and when it starts over. The **OPDS servers** screen links to it. The instance's administrator sets the quota from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default.
+
 ## Create a server
 
-In oboku, open **Integrations > OPDS > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
+In oboku, open **Integrations > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
 
 * **OPDS 1.2 catalog URL**: your oboku API address followed by `/opds/` and the server's words, such as `/opds/calm-snails-dream`. Copy it from the screen rather than typing it from memory.
 * **OPDS 2.0 catalog URL**: the same address followed by `/v2`.
@@ -45,7 +51,7 @@ Other reading apps ask for the same three values: a catalog URL, the username an
 
 ## Manage your servers
 
-Each server on the **Integrations > OPDS > OPDS servers** screen has three actions:
+Each server on the **Integrations > OPDS servers** screen has three actions:
 
 * **Rename** changes the server's name. The catalog URLs stay the same.
 * **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.

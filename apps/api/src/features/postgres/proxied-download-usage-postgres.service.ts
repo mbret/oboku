@@ -50,6 +50,13 @@ export class ProxiedDownloadUsagePostgresService {
     return isReserved ? "reserved" : "quota-reached"
   }
 
+  /** @param month the first day of the month, UTC, as `YYYY-MM-DD`. */
+  async findBytes(month: string) {
+    const usage = await this.usageRepository.findOneBy({ month })
+
+    return usage?.bytes ?? 0
+  }
+
   /**
    * Adds `bytes` to the month's counter: negative to give reserved bytes
    * back.

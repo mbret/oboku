@@ -72,20 +72,29 @@ export const getBookMetadataEntryFields = (
     : fields
 }
 
-const withoutUndefinedFields = (
+const isFieldStated = (
+  value: ReadonlyBookMetadataFields[keyof ReadonlyBookMetadataFields],
+) => {
+  if (value === undefined) return false
+  if (Array.isArray(value)) return value.length > 0
+  if (typeof value === "object") return Object.values(value).length > 0
+
+  return true
+}
+
+const withStatedFieldsOnly = (
   fields: ReadonlyBookMetadataFields,
 ): ReadonlyBookMetadataFields =>
   // `Object.fromEntries` types every key as `string`; the entries are
-  // `fields`' own, minus those whose value is `undefined`.
+  // `fields`' own, minus the fields the entry does not state.
   Object.fromEntries(
-    Object.entries(fields).filter(([, value]) => value !== undefined),
+    Object.entries(fields).filter(([, value]) => isFieldStated(value)),
   ) as ReadonlyBookMetadataFields
 
 /**
- * The book's display metadata: its entries merged from the lowest priority
- * source to the highest, the user's edits winning. A field a source does
- * not state leaves the lower one's value, authors add up, and the title
- * loses its directives.
+ * The book's display metadata: each field from the highest priority source
+ * that states it, the user's edits winning. An empty list or date states
+ * nothing, and the title loses its directives.
  */
 export const getMetadataFromBook = (
   book:
@@ -134,25 +143,16 @@ export const getMetadataFromBook = (
       priorityLowestFirst.indexOf(b.source),
   )
 
-  const reducedMetadata = orderedLayers.reduce<BookDisplayMetadata>(
-    function mergeLayer(acc, { fields: item }) {
-      const mergedValue = { ...acc, ...withoutUndefinedFields(item) }
-      const date = Object.values(item.date ?? {}).length ? item.date : acc.date
-      const subjects = item.subjects?.length ? item.subjects : acc.subjects
-
-      return {
-        ...mergedValue,
-        date,
-        subjects,
-        authors: [...(acc.authors ?? []), ...(item.authors ?? [])],
-        language: (mergedValue.languages ?? [])[0],
-      }
+  const reducedMetadata = orderedLayers.reduce<ReadonlyBookMetadataFields>(
+    function mergeLayer(acc, { fields }) {
+      return { ...acc, ...withStatedFieldsOnly(fields) }
     },
     {},
   )
 
   return {
     ...reducedMetadata,
+    language: reducedMetadata.languages?.[0],
     title: directives.removeDirectiveFromString(
       reducedMetadata.title?.toString() ?? "",
     ),

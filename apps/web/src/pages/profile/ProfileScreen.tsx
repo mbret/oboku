@@ -1,6 +1,7 @@
 import { useCallback, useState } from "react"
 import {
   BarChartRounded,
+  DataUsageRounded,
   GavelRounded,
   KeyRounded,
   LaunchRounded,
@@ -42,6 +43,7 @@ import { useUnreadNotificationsCount } from "../../notifications/inbox/useUnread
 import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
+import { useProxiedDownloadQuota } from "../../quotas/useProxiedDownloadQuota"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -56,6 +58,7 @@ export const ProfileScreen = () => {
   const signOut = useSignOut()
   const { mutate: removeAllContents } = useRemoveAllContents()
   const { unreadCount } = useUnreadNotificationsCount()
+  const { data: proxiedDownloadQuota } = useProxiedDownloadQuota()
   const { db } = useDatabase()
 
   const confirmThenSignOut = useCallback(
@@ -159,6 +162,22 @@ export const ProfileScreen = () => {
               <BarChartRounded />
             </ListItemIcon>
             <ListItemText primary="Statistics" />
+          </ListItemButton>
+          <ListItemButton
+            onClick={function openQuotas() {
+              navigate(ROUTES.QUOTAS)
+            }}
+          >
+            <ListItemIcon>
+              <DataUsageRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Quotas"
+              secondary={
+                proxiedDownloadQuota &&
+                `Downloads: ${formatBytes(proxiedDownloadQuota.usedBytes)} used of ${formatBytes(proxiedDownloadQuota.quotaBytes)} this month`
+              }
+            />
           </ListItemButton>
         </PageSection>
         <PageSection title="Device">

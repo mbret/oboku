@@ -267,6 +267,18 @@ export type UpdateInstanceSettingsDto = {
     microsoftApplicationClientId?: string;
 };
 
+export type ProxiedDownloadQuotaResponseDto = {
+    /**
+     * What proxied downloads sent to all users this month, UTC.
+     */
+    usedBytes: number;
+    quotaBytes: number;
+    /**
+     * When the next month starts, UTC, as an ISO 8601 date-time.
+     */
+    resetsAt: string;
+};
+
 export type ServerSyncCredentialsDto = {
     configured: boolean;
     username: string | null;
@@ -1303,6 +1315,28 @@ export type AdminUpdateSettingsResponses = {
 
 export type AdminUpdateSettingsResponse = AdminUpdateSettingsResponses[keyof AdminUpdateSettingsResponses];
 
+export type AdminGetProxiedDownloadQuotaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/quotas/proxied-downloads';
+};
+
+export type AdminGetProxiedDownloadQuotaErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminGetProxiedDownloadQuotaError = AdminGetProxiedDownloadQuotaErrors[keyof AdminGetProxiedDownloadQuotaErrors];
+
+export type AdminGetProxiedDownloadQuotaResponses = {
+    200: ProxiedDownloadQuotaResponseDto;
+};
+
+export type AdminGetProxiedDownloadQuotaResponse = AdminGetProxiedDownloadQuotaResponses[keyof AdminGetProxiedDownloadQuotaResponses];
+
 export type AdminGetServerSyncData = {
     body?: never;
     path?: never;
@@ -1596,6 +1630,28 @@ export type NotificationsArchiveResponses = {
 };
 
 export type NotificationsArchiveResponse = NotificationsArchiveResponses[keyof NotificationsArchiveResponses];
+
+export type QuotasGetProxiedDownloadQuotaData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/quotas/proxied-downloads';
+};
+
+export type QuotasGetProxiedDownloadQuotaErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type QuotasGetProxiedDownloadQuotaError = QuotasGetProxiedDownloadQuotaErrors[keyof QuotasGetProxiedDownloadQuotaErrors];
+
+export type QuotasGetProxiedDownloadQuotaResponses = {
+    200: ProxiedDownloadQuotaResponseDto;
+};
+
+export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];
 
 export type DataSourcesListSyncReportsData = {
     body?: never;

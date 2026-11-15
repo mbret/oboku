@@ -16,6 +16,7 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import { toByteCount } from "../http/contentLength.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
 import { isRecord } from "../http/isRecord.js"
 import {
@@ -151,7 +152,10 @@ export class OpdsBooksService {
 
   /**
    * Streams the file of a book the owner's catalogs serve, from Google Drive,
-   * as Drive sends it.
+   * as Drive sends it. `size` is the length Drive's download states, none
+   * when Drive compresses it; `expectedSize` falls back to the size Drive's
+   * file metadata states, an estimate only: the file can change between the
+   * two requests.
    *
    * @throws `NotFoundException` for a book the catalogs do not serve, an
    * owner without a usable Google connection, or a file Drive refuses;
@@ -198,7 +202,7 @@ export class OpdsBooksService {
 
     // Drive's answer about the file tells a file the token cannot read from a
     // limit, which a refused download cannot: see `toDriveFailure`.
-    await this.askDrive(
+    const { bookMetadata } = await this.askDrive(
       { bookId, isFileReadable: false },
       function checkFileReadable() {
         return pluginsService.getFileMetadata({
@@ -214,11 +218,13 @@ export class OpdsBooksService {
         return pluginsService.download({ link: firstLink, providerCredentials })
       },
     )
+    const metadataSize = toByteCount(bookMetadata?.size)
 
     return {
       ...toServedFile(book),
       stream: stream instanceof Readable ? stream : Readable.from(stream),
       size,
+      expectedSize: size ?? metadataSize,
     }
   }
 

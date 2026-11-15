@@ -3,10 +3,7 @@ import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
 import {
   ListItem,
   ListItemText,
-  LinearProgress,
   ListItemIcon,
-  Typography,
-  Box,
   useTheme,
   Button,
   Divider,
@@ -34,6 +31,7 @@ import { useRemoveAllDownloads } from "../../../settings/useRemoveAllDownloads"
 import { StoragePersistenceListItem } from "./StoragePersistenceListItem"
 import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
+import { UsageProgress } from "../../../common/UsageProgress"
 
 const bookListStyle = { width: "100%" }
 
@@ -45,14 +43,8 @@ export const ManageStorageScreen = () => {
     () => visibleBooks?.map((item) => item._id) ?? [],
     [visibleBooks],
   )
-  const {
-    quotaUsed,
-    quota,
-    usage,
-    covers,
-    coversWeightBytes,
-    refreshStorageEstimate,
-  } = useStorageUse()
+  const { quota, usage, covers, coversWeightBytes, refreshStorageEstimate } =
+    useStorageUse()
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
   const { data: downloadedBooks = [], refetch: refetchDownloadedFilesInfo } =
@@ -107,24 +99,7 @@ export const ManageStorageScreen = () => {
             <ListItemText
               primary="Available storage"
               disableTypography
-              secondary={
-                <div>
-                  <Box
-                    sx={{
-                      marginY: 1,
-                    }}
-                  >
-                    <LinearProgress
-                      variant="determinate"
-                      value={quotaUsed * 100}
-                    />
-                  </Box>
-                  <Typography
-                    gutterBottom
-                    variant="body2"
-                  >{`${formatBytes(usage)} used of ${formatBytes(quota)} (${(quotaUsed * 100).toFixed(2)}%)`}</Typography>
-                </div>
-              }
+              secondary={<UsageProgress usedBytes={usage} totalBytes={quota} />}
             />
           </ListItem>
           <StoragePersistenceListItem />

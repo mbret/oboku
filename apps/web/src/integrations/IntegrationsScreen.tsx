@@ -1,12 +1,6 @@
 import type { ComponentType } from "react"
-import {
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  type SvgIconProps,
-} from "@mui/material"
-import { MenuBookRounded } from "@mui/icons-material"
-import { Link } from "react-router"
+import type { SvgIconProps } from "@mui/material"
+import { ListItemLink } from "../common/lists"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
 import type { Plugin } from "./plugins/configure"
@@ -18,6 +12,7 @@ import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 import { Page } from "../common/Page"
 import { CatalogsSection } from "./catalogs/CatalogsSection"
+import { ReadingAppsSection } from "./reading-apps/ReadingAppsSection"
 import { plugin as dropboxPlugin } from "./dropbox/dropboxPlugin"
 import { plugin as googleDrivePlugin } from "./google/googleDrivePlugin"
 import { plugin as oneDrivePlugin } from "./one-drive/oneDrivePlugin"
@@ -37,22 +32,21 @@ function IntegrationListItem({
   name: string
   description: string
   Icon: ComponentType<SvgIconProps>
-  plugin?: Plugin
+  plugin: Plugin
 }) {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
-  const isVisible = !plugin || isPluginVisible(plugin)
-  const isEnabled = !plugin || isPluginEnabled(plugin)
 
-  if (!isVisible) return null
+  if (!isPluginVisible(plugin)) return null
 
   return (
-    <ListItemButton component={Link} to={to} disabled={!isEnabled}>
-      <ListItemIcon>
-        <Icon />
-      </ListItemIcon>
-      <ListItemText primary={name} secondary={description} />
-    </ListItemButton>
+    <ListItemLink
+      to={to}
+      icon={<Icon />}
+      primary={name}
+      secondary={description}
+      disabled={!isPluginEnabled(plugin)}
+    />
   )
 }
 
@@ -77,12 +71,6 @@ export function IntegrationsScreen() {
             plugin={googleDrivePlugin}
           />
           <IntegrationListItem
-            to={ROUTES.INTEGRATION_KOREADER}
-            name="KOReader"
-            description="Sync reading positions with KOReader, Readest, CrossPoint…"
-            Icon={MenuBookRounded}
-          />
-          <IntegrationListItem
             to={ROUTES.INTEGRATION_ONE_DRIVE}
             name="OneDrive"
             description="Manage contents from Microsoft OneDrive"
@@ -90,9 +78,9 @@ export function IntegrationsScreen() {
             plugin={oneDrivePlugin}
           />
           <IntegrationListItem
-            to={ROUTES.INTEGRATION_OPDS}
-            name="OPDS"
-            description="Sync books from OPDS catalogs, or let reading apps browse your library"
+            to={ROUTES.OPDS_CATALOGS}
+            name="OPDS catalogs"
+            description="Sync the free books of an OPDS catalog, like Komga or Calibre-Web"
             Icon={opdsPlugin.Icon}
             plugin={opdsPlugin}
           />
@@ -118,6 +106,7 @@ export function IntegrationsScreen() {
             plugin={webdavPlugin}
           />
         </PageSection>
+        <ReadingAppsSection />
         <CatalogsSection />
       </PageContainer>
     </Page>
