@@ -6,6 +6,7 @@ import { BottomTabBar } from "./BottomTabBar"
 import { DesktopDrawer } from "./DesktopDrawer"
 import { ProfileScreen } from "../pages/profile/ProfileScreen"
 import { ManageStorageScreen } from "../pages/profile/manage-storage/ManageStorageScreen"
+import { QuotasScreen } from "../quotas/QuotasScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
@@ -156,6 +157,7 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 path={ROUTES.MANAGE_STORAGE.slice(1)}
                 element={<ManageStorageScreen />}
               />
+              <Route path={ROUTES.QUOTAS.slice(1)} element={<QuotasScreen />} />
               <Route
                 path={ROUTES.NOTIFICATIONS.slice(1)}
                 element={<NotificationsScreen />}

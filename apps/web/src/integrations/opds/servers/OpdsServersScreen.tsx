@@ -31,7 +31,6 @@ import { useCreateOpdsServer } from "./useCreateOpdsServer"
 import { useRegenerateOpdsServerPassword } from "./useRegenerateOpdsServerPassword"
 import { useDeleteOpdsServer } from "./useDeleteOpdsServer"
 import { RenameOpdsServerDialog } from "./RenameOpdsServerDialog"
-import { ProxiedDownloadQuotaSection } from "./ProxiedDownloadQuotaSection"
 
 const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
   theme,
@@ -202,6 +201,13 @@ export function OpdsServersScreen() {
             is connected, except those under a protected tag or marked not
             interested.
           </Alert>
+          <Alert severity="info">
+            Downloads from your OPDS servers count towards the monthly{" "}
+            <Link component={RouterLink} to={ROUTES.QUOTAS}>
+              download quota
+            </Link>
+            .
+          </Alert>
           <Button
             variant="contained"
             loading={isCreatingServer}
@@ -226,7 +232,6 @@ export function OpdsServersScreen() {
             createdPassword={createdPasswords.get(server.id)}
           />
         ))}
-        <ProxiedDownloadQuotaSection />
         <PageSection title="Set up a reading app">
           {SETUP_STEPS.map((step, index) => (
             <ListItem key={step}>

@@ -15,6 +15,7 @@ export const ROUTES = {
   SETTINGS: "/profile/settings",
   STATISTICS: "/profile/statistics",
   MANAGE_STORAGE: "/profile/manage-storage",
+  QUOTAS: "/profile/quotas",
   INTEGRATIONS: "/integrations",
   INTEGRATION_DROPBOX: "/integrations/dropbox",
   INTEGRATION_GOOGLE: "/integrations/google",

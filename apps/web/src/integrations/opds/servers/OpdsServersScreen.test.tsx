@@ -1,7 +1,6 @@
 import type {
   OpdsServerDto,
   OpdsServerPasswordResponseDto,
-  ProxiedDownloadQuotaResponseDto,
 } from "@oboku/shared"
 import {
   onlineManager,
@@ -64,12 +63,6 @@ const POETRY: OpdsServerDto = {
   createdAt: "2026-03-01T00:00:00.000Z",
 }
 
-const PROXIED_DOWNLOAD_QUOTA: ProxiedDownloadQuotaResponseDto = {
-  usedBytes: 12_300_000_000,
-  quotaBytes: 500_000_000_000,
-  resetsAt: "2026-12-01T00:00:00.000Z",
-}
-
 const withPassword = (
   server: OpdsServerDto,
   password: string,
@@ -88,18 +81,9 @@ const listing = (...serverLists: OpdsServerDto[][]) => {
   return listServers
 }
 
-const renderScreen = (
-  listServers: Mock,
-  fetchQuota: Mock = vi
-    .fn()
-    .mockResolvedValue({ data: PROXIED_DOWNLOAD_QUOTA }),
-) => {
+const renderScreen = (listServers: Mock) => {
   const api = {
-    get: vi.fn(function answerGet(options: { url: string }) {
-      const isQuotaRequest = options.url === "/quotas/proxied-downloads"
-
-      return isQuotaRequest ? fetchQuota(options) : listServers(options)
-    }),
+    get: listServers,
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn().mockResolvedValue({ data: { ok: true } }),
@@ -169,28 +153,14 @@ describe("OpdsServersScreen", () => {
     expect(screen.queryByRole("textbox", { name: "Password" })).toBeNull()
   })
 
-  it("shows the download quota used this month, for all users, and when it starts over", async () => {
+  it("points to the download quota its downloads count towards", async () => {
     renderScreen(listing([]))
 
-    expect(
-      await screen.findByText("12.3 GB of 500.0 GB used this month"),
-    ).toBeTruthy()
-    expect(
-      screen.getByText(/The quota starts over on December 1, 2026\./),
-    ).toBeTruthy()
-  })
+    const quotaLink = await screen.findByRole<HTMLAnchorElement>("link", {
+      name: "download quota",
+    })
 
-  it("says when the download quota cannot load", async () => {
-    renderScreen(
-      listing([]),
-      vi.fn().mockRejectedValue(new Error("Network down")),
-    )
-
-    expect(
-      await screen.findByText(
-        "Something went wrong while loading the download quota. Please try again later.",
-      ),
-    ).toBeTruthy()
+    expect(quotaLink.getAttribute("href")).toBe("/profile/quotas")
   })
 
   it("points to the Google account the catalogs list books through", async () => {
@@ -236,9 +206,6 @@ describe("OpdsServersScreen", () => {
     expect(
       await screen.findByText("Your OPDS servers can't be loaded right now."),
     ).not.toBeNull()
-    expect(
-      screen.getByText("The download quota can't be loaded right now."),
-    ).toBeTruthy()
     expect(
       screen.getByRole<HTMLButtonElement>("button", { name: "Create a server" })
         .disabled,

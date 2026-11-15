@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query"
 import { quotasGetProxiedDownloadQuota } from "@oboku/shared"
-import { useQueryOptionsWithAuthentication } from "../../../auth"
-import { useHttpClientApi } from "../../../http"
-import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
-import { API_QUERY_KEY_PREFIX } from "../../../queries/queryClient"
+import { useQueryOptionsWithAuthentication } from "../auth"
+import { useHttpClientApi } from "../http"
+import { useActiveProfileId } from "../profiles/active/activeProfileId"
+import { API_QUERY_KEY_PREFIX } from "../queries/queryClient"
 
 export const useProxiedDownloadQuota = () => {
   const httpClientApi = useHttpClientApi()
