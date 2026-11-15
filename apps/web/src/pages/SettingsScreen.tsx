@@ -3,7 +3,7 @@ import type { MessageDescriptor } from "@lingui/core"
 import { msg } from "@lingui/core/macro"
 import { useLingui } from "@lingui/react/macro"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { ListItem, ListItemText } from "@mui/material"
+import { capitalize, ListItem, ListItemText } from "@mui/material"
 import {
   localSettingsSignal,
   useLocalSettings,
@@ -37,9 +37,11 @@ const showCollectionWithProtectedContentChoices = (
 export const SettingsScreen = memo(function SettingsScreen() {
   const { t, i18n } = useLingui()
   const localSettings = useLocalSettings()
-  const activeLanguageName = new Intl.DisplayNames([i18n.locale], {
-    type: "language",
-  }).of(i18n.locale)
+  const activeLanguageName = capitalize(
+    new Intl.DisplayNames([i18n.locale], { type: "language" }).of(
+      i18n.locale,
+    ) ?? i18n.locale,
+  )
 
   return (
     <Page>

@@ -13,11 +13,12 @@ import { ErrorBoundary } from "@sentry/react"
 import { purgeStagedFiles } from "@oboku/archive-metadata/web"
 import { i18n } from "@lingui/core"
 import { I18nProvider } from "@lingui/react"
-import { activateLocale, getBrowserLocale } from "./i18n/activateLocale"
+import { activateLocale } from "./i18n/activateLocale"
+import { pickSupportedLocale } from "./i18n/supportedLocales"
 
 void purgeStagedFiles()
 
-await activateLocale(getBrowserLocale())
+await activateLocale(pickSupportedLocale(navigator.languages))
 
 const rootElm = document.getElementById("root")
 

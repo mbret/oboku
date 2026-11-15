@@ -5,7 +5,6 @@ import { sourceLocale, supportedLocales } from "./src/i18n/supportedLocales.ts"
 export default defineConfig({
   sourceLocale,
   locales: [...supportedLocales],
-  fallbackLocales: { default: sourceLocale },
   catalogs: [
     {
       path: "<rootDir>/src/i18n/locales/{locale}",

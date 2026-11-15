@@ -30,7 +30,7 @@ pnpm extract:messages
 
 The command adds each new string to every catalog. The English catalog holds the source text as the translation, and the other catalogs get an empty translation. The command also removes the strings that the code no longer uses.
 
-Write the translations in the PO file of each other language. Commit the catalogs with the code. CI fails when the catalogs differ from the output of the command.
+Write the translations in the PO file of each other language. Commit the catalogs with the code. CI runs `pnpm check:messages`, which fails when the catalogs differ from what `pnpm extract:messages` writes.
 
 If a translation is empty, the app shows the English text.
 
@@ -47,4 +47,4 @@ The app uses the first language in the browser's language list that oboku suppor
 
 ## Testing a translated component
 
-In tests and in development, `useLingui()` throws outside `I18nProvider`. Call `await activateLocale("en")`, then render the component inside `I18nProvider`, as in `SettingsList.test.tsx`. With English active, queries find elements by their English text.
+`useLingui()` fails outside `I18nProvider`, and `I18nProvider` renders nothing until a locale is active. In a test, call `await activateLocale("en")`, then render the component inside `I18nProvider`, as in `SettingsList.test.tsx`. With English active, queries find elements by their English text.

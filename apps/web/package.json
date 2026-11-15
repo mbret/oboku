@@ -97,6 +97,7 @@
     "start:dev": "vite",
     "build": "tsc -b && vite build",
     "extract:messages": "lingui extract --clean",
+    "check:messages": "lingui check sync --clean",
     "preview": "vite preview",
     "test": "vitest run"
   }
