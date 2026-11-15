@@ -104,7 +104,7 @@ describe("QuotasScreen", () => {
 
     expect(
       await screen.findByText(
-        "Something went wrong while loading the download quota. Please try again later.",
+        "Something went wrong while loading the download quotas. Please try again later.",
       ),
     ).toBeTruthy()
   })
@@ -114,7 +114,7 @@ describe("QuotasScreen", () => {
     renderScreen(vi.fn().mockResolvedValue({ data: PROXIED_DOWNLOAD_QUOTA }))
 
     expect(
-      await screen.findByText("The download quota can't be loaded right now."),
+      await screen.findByText("The download quotas can't be loaded right now."),
     ).toBeTruthy()
   })
 })

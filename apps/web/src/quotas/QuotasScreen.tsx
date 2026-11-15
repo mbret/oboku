@@ -33,7 +33,7 @@ export function QuotasScreen() {
     <Page>
       <TopBarNavigation title="Quotas" showBack />
       <PageContainer disableGutters>
-        <PageSection title="Download quota">
+        <PageSection title="Download quotas">
           <ListItem>
             <ListItemText
               secondary={
@@ -50,13 +50,13 @@ export function QuotasScreen() {
           </ListItem>
           {isLoading && (
             <ListItem>
-              <LoadingAlert subject="download quota" />
+              <LoadingAlert subject="download quotas" />
             </ListItem>
           )}
           {isError && (
             <ListItem>
               <FetchErrorAlert>
-                Something went wrong while loading the download quota. Please
+                Something went wrong while loading the download quotas. Please
                 try again later.
               </FetchErrorAlert>
             </ListItem>
@@ -64,7 +64,7 @@ export function QuotasScreen() {
           {isUnavailable && (
             <ListItem>
               <UnavailableAlert>
-                The download quota can't be loaded right now.
+                The download quotas can't be loaded right now.
               </UnavailableAlert>
             </ListItem>
           )}

@@ -6,7 +6,7 @@ import { useInstanceSettings } from "../useInstanceSettings"
 type InstanceSettingsSectionProps = {
   title: string
   description: string
-  /** Shown under the description, before the settings load. */
+  /** Shown under the description, above the settings. */
   children?: ReactNode
   renderSettings: (settings: InstanceSettingsResponseDto) => ReactNode
 }

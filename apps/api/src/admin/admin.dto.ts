@@ -110,7 +110,6 @@ export class RevokeTokensResponseDto {
   targetedUsers!: number | null
 }
 
-/** Each user's monthly proxied download quota: a share of the instance's. */
 export class ProxiedDownloadUserQuotaRuleDto {
   @ApiProperty({ enum: ["percentage"] })
   @IsIn(["percentage"])

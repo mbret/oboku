@@ -19,9 +19,8 @@ export type ServerSourceConfig = {
 }
 
 /**
- * How each user's monthly proxied download quota follows from the
- * instance's. One `type` per rule: later rules, such as a fixed amount, join
- * this union.
+ * How each user's monthly proxied download quota is set. One `type` per
+ * rule: later rules, such as a fixed amount, join this union.
  */
 export type ProxiedDownloadUserQuotaRule = {
   type: "percentage"

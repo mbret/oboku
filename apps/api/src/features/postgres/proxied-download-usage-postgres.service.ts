@@ -28,7 +28,7 @@ const fitsWithinQuota = ({
 /**
  * Creates the month's counters and locks them. Every transaction that
  * writes both counters takes the instance's first, then the user's, the
- * inserts included, so two of them never wait for each other's.
+ * inserts included, so two of them never deadlock.
  */
 const lockCounters = async (
   manager: EntityManager,

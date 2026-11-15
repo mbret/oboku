@@ -42,7 +42,6 @@ const toUsagePeriod = (date: Date) => ({
   ),
 })
 
-/** The bytes each user may download in a month, from the instance's rule. */
 const toUserQuotaBytes = ({
   proxiedDownloadBytesMaxPerMonth,
   proxiedDownloadUserQuota,
@@ -70,8 +69,7 @@ export class ProxiedDownloadQuotaService {
     private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
 
-  /** The instance's usage this month, for its admin. */
-  async getUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
+  async getInstanceUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
     const { month, resetsAt } = toUsagePeriod(new Date())
     const usedBytes =
       await this.proxiedDownloadUsagePostgresService.findBytes(month)
@@ -85,7 +83,6 @@ export class ProxiedDownloadQuotaService {
     }
   }
 
-  /** The instance's usage this month, and the user's own. */
   async getUserUsage(
     userId: number,
   ): Promise<UserProxiedDownloadQuotaResponseDto> {
