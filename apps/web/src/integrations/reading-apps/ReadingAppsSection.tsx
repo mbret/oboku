@@ -1,10 +1,9 @@
 import { CloudSyncRounded, DnsRounded, SyncRounded } from "@mui/icons-material"
-import { ListItemButton, ListItemIcon, ListItemText } from "@mui/material"
 import type {
   KoreaderSyncConnectionGetResponse,
   KoreaderSyncServerGetResponse,
 } from "@oboku/shared"
-import { Link } from "react-router"
+import { ListItemLink } from "../../common/lists"
 import { PageSection } from "../../common/PageSection"
 import { ROUTES } from "../../navigation/routes"
 import { useKoreaderSyncConnection } from "../koreader/client/useKoreaderSyncConnection"
@@ -39,33 +38,24 @@ export function ReadingAppsSection() {
 
   return (
     <PageSection title="Reading apps">
-      <ListItemButton component={Link} to={ROUTES.OPDS_SERVERS}>
-        <ListItemIcon>
-          <DnsRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary="OPDS servers"
-          secondary="Let KOReader and other reading apps browse your library"
-        />
-      </ListItemButton>
-      <ListItemButton component={Link} to={ROUTES.KOREADER_SYNC_SERVER}>
-        <ListItemIcon>
-          <SyncRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary="KOReader sync server"
-          secondary={describeKoreaderSyncServer(koreaderSyncServer)}
-        />
-      </ListItemButton>
-      <ListItemButton component={Link} to={ROUTES.KOREADER_PROGRESS_SYNC}>
-        <ListItemIcon>
-          <CloudSyncRounded />
-        </ListItemIcon>
-        <ListItemText
-          primary="KOReader progress sync"
-          secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
-        />
-      </ListItemButton>
+      <ListItemLink
+        to={ROUTES.OPDS_SERVERS}
+        icon={<DnsRounded />}
+        primary="OPDS servers"
+        secondary="Let KOReader and other reading apps browse your library"
+      />
+      <ListItemLink
+        to={ROUTES.KOREADER_SYNC_SERVER}
+        icon={<SyncRounded />}
+        primary="KOReader sync server"
+        secondary={describeKoreaderSyncServer(koreaderSyncServer)}
+      />
+      <ListItemLink
+        to={ROUTES.KOREADER_PROGRESS_SYNC}
+        icon={<CloudSyncRounded />}
+        primary="KOReader progress sync"
+        secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
+      />
     </PageSection>
   )
 }

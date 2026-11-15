@@ -1,11 +1,6 @@
 import type { ComponentType } from "react"
-import {
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  type SvgIconProps,
-} from "@mui/material"
-import { Link } from "react-router"
+import type { SvgIconProps } from "@mui/material"
+import { ListItemLink } from "../common/lists"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { ROUTES } from "../navigation/routes"
 import type { Plugin } from "./plugins/configure"
@@ -45,16 +40,13 @@ function IntegrationListItem({
   if (!isPluginVisible(plugin)) return null
 
   return (
-    <ListItemButton
-      component={Link}
+    <ListItemLink
       to={to}
+      icon={<Icon />}
+      primary={name}
+      secondary={description}
       disabled={!isPluginEnabled(plugin)}
-    >
-      <ListItemIcon>
-        <Icon />
-      </ListItemIcon>
-      <ListItemText primary={name} secondary={description} />
-    </ListItemButton>
+    />
   )
 }
 
