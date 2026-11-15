@@ -24,6 +24,13 @@ import { useReaderSettings } from "./settings/useReaderSettings"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 import { webStreamer } from "./streamer/webStreamer"
+import type { ReaderInstance } from "./states"
+
+declare global {
+  interface Window {
+    reader?: ReaderInstance
+  }
+}
 
 export const Reader = memo(function Reader({
   bookId,
@@ -153,7 +160,22 @@ const Effects = memo(function Effects({
   isPreview: boolean
   koreaderDocument?: string
 }) {
+  const reader = useReader()
+
   useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
+
+  useEffect(
+    function exposeReaderOnWindow() {
+      if (!reader) return
+
+      window.reader = reader
+
+      return function removeReaderFromWindow() {
+        delete window.reader
+      }
+    },
+    [reader],
+  )
 
   return null
 })

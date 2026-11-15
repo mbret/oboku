@@ -84,6 +84,7 @@ const CONFIG: InstanceConfig = {
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
   proxiedDownloadBytesMaxPerMonth: 1,
+  proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
 }
 
 const CONNECTION_METHODS: Array<"get" | "put" | "delete"> = [

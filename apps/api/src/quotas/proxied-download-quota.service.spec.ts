@@ -16,11 +16,11 @@ const createDriveStream = () =>
 
 describe("ProxiedDownloadQuotaService", () => {
   let service: ProxiedDownloadQuotaService
-  const reserveWithinQuota = vi.fn()
+  const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
   beforeEach(async () => {
-    reserveWithinQuota.mockResolvedValue("reserved")
+    reserveWithinQuotas.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
@@ -28,13 +28,16 @@ describe("ProxiedDownloadQuotaService", () => {
         ProxiedDownloadQuotaService,
         {
           provide: ProxiedDownloadUsagePostgresService,
-          useValue: { reserveWithinQuota, adjust },
+          useValue: { reserveWithinQuotas, adjust },
         },
         {
           provide: InstanceConfigService,
           useValue: {
             getConfig: () => ({
-              value: { proxiedDownloadBytesMaxPerMonth: 1024 ** 4 },
+              value: {
+                proxiedDownloadBytesMaxPerMonth: 1024 ** 4,
+                proxiedDownloadUserQuota: { type: "percentage", percent: 100 },
+              },
             }),
           },
         },
@@ -51,6 +54,7 @@ describe("ProxiedDownloadQuotaService", () => {
 
   it("gives back the bytes a download cancelled midway did not pass on", async () => {
     const metered = await service.meter({
+      userId: 1,
       stream: createDriveStream(),
       expectedBytes: FILE_BYTES,
       isBodySent: true,
@@ -85,6 +89,7 @@ describe("ProxiedDownloadQuotaService", () => {
       },
     })
     const metered = await service.meter({
+      userId: 1,
       stream: failingDriveStream,
       expectedBytes: FILE_BYTES,
       isBodySent: true,
@@ -97,6 +102,7 @@ describe("ProxiedDownloadQuotaService", () => {
 
     await vi.waitFor(() =>
       expect(adjust).toHaveBeenCalledWith({
+        userId: 1,
         month: expect.any(String),
         bytes: 2 * CHUNK_BYTES - FILE_BYTES,
       }),
@@ -107,6 +113,7 @@ describe("ProxiedDownloadQuotaService", () => {
     const logError = vi.spyOn(Logger.prototype, "error")
     adjust.mockRejectedValue(new Error("connection refused"))
     const metered = await service.meter({
+      userId: 1,
       stream: createDriveStream(),
       expectedBytes: undefined,
       isBodySent: true,
@@ -125,10 +132,11 @@ describe("ProxiedDownloadQuotaService", () => {
 
   it("destroys the Drive stream when the counter cannot be reached", async () => {
     const driveStream = createDriveStream()
-    reserveWithinQuota.mockRejectedValue(new Error("connection refused"))
+    reserveWithinQuotas.mockRejectedValue(new Error("connection refused"))
 
     await expect(
       service.meter({
+        userId: 1,
         stream: driveStream,
         expectedBytes: FILE_BYTES,
         isBodySent: true,

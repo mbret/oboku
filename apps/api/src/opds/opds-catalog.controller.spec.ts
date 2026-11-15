@@ -115,7 +115,8 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
 const DRIVE_METADATA_SIZE = 12
-const PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * 1024 ** 3
+const PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * 1000 ** 3
+const PROXIED_DOWNLOAD_USER_QUOTA_BYTES = 25 * 1000 ** 3
 
 const DRIVE_LINK = {
   _id: "link-drive",
@@ -285,7 +286,7 @@ describe("OpdsCatalogController", () => {
   const mintAccessToken = vi.fn()
   const getFileMetadata = vi.fn()
   const download = vi.fn()
-  const reserveWithinQuota = vi.fn()
+  const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
   beforeEach(async () => {
@@ -306,7 +307,7 @@ describe("OpdsCatalogController", () => {
         size: BOOK_BYTES.length,
       }
     })
-    reserveWithinQuota.mockResolvedValue("reserved")
+    reserveWithinQuotas.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
@@ -324,7 +325,7 @@ describe("OpdsCatalogController", () => {
         ProxiedDownloadQuotaService,
         {
           provide: ProxiedDownloadUsagePostgresService,
-          useValue: { reserveWithinQuota, adjust },
+          useValue: { reserveWithinQuotas, adjust },
         },
         {
           provide: InstanceConfigService,
@@ -333,6 +334,7 @@ describe("OpdsCatalogController", () => {
               value: {
                 proxiedDownloadBytesMaxPerMonth:
                   PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
+                proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
               },
             }),
           },
@@ -831,17 +833,19 @@ describe("OpdsCatalogController", () => {
 
         expect(response.status).toBe(200)
         expect(response.body.toString()).toBe(BOOK_BYTES)
-        expect(reserveWithinQuota).toHaveBeenCalledWith({
+        expect(reserveWithinQuotas).toHaveBeenCalledWith({
+          userId: OWNER.id,
           month: NOVEMBER,
           bytes: BOOK_BYTES.length,
           quotaBytes: PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH,
+          userQuotaBytes: PROXIED_DOWNLOAD_USER_QUOTA_BYTES,
         })
         expect(adjust).not.toHaveBeenCalled()
       })
 
       it("answers 429 until the next month once the download would pass the quota", async () => {
         vi.setSystemTime(new Date("2026-12-31T23:30:00.000Z"))
-        reserveWithinQuota.mockResolvedValue("quota-reached")
+        reserveWithinQuotas.mockResolvedValue("quota-reached")
         const driveStream = Readable.from([Buffer.from(BOOK_BYTES)])
         download.mockResolvedValue({
           stream: driveStream,
@@ -866,6 +870,7 @@ describe("OpdsCatalogController", () => {
         expect(response.status).toBe(200)
         await vi.waitFor(() =>
           expect(adjust).toHaveBeenCalledWith({
+            userId: OWNER.id,
             month: NOVEMBER,
             bytes: -BOOK_BYTES.length,
           }),
@@ -878,7 +883,7 @@ describe("OpdsCatalogController", () => {
           stream: driveStream,
           size: BOOK_BYTES.length,
         })
-        reserveWithinQuota.mockImplementation(
+        reserveWithinQuotas.mockImplementation(
           async function failDriveWhileReserving() {
             const driveClosed = new Promise(function waitForClose(resolve) {
               driveStream.once("close", resolve)
@@ -896,6 +901,7 @@ describe("OpdsCatalogController", () => {
         expect(response.status).toBe(502)
         await vi.waitFor(() =>
           expect(adjust).toHaveBeenCalledWith({
+            userId: OWNER.id,
             month: NOVEMBER,
             bytes: -BOOK_BYTES.length,
           }),
@@ -924,11 +930,12 @@ describe("OpdsCatalogController", () => {
           const response = await getBookFile("book-dune")
 
           expect(response.status).toBe(200)
-          expect(reserveWithinQuota).toHaveBeenCalledWith(
+          expect(reserveWithinQuotas).toHaveBeenCalledWith(
             expect.objectContaining({ bytes: reservedBytes }),
           )
           await vi.waitFor(() =>
             expect(adjust).toHaveBeenCalledWith({
+              userId: OWNER.id,
               month: NOVEMBER,
               bytes: BOOK_BYTES.length - reservedBytes,
             }),

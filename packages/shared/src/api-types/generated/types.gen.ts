@@ -233,6 +233,11 @@ export type RevokeTokensResponseDto = {
     targetedUsers: number | null;
 };
 
+export type ProxiedDownloadUserQuotaRuleDto = {
+    type: 'percentage';
+    percent: number;
+};
+
 export type InstanceSettingsResponseDto = {
     showDisabledPlugins: boolean;
     fileDownloadMaxSizeBytes: number;
@@ -248,6 +253,7 @@ export type InstanceSettingsResponseDto = {
     microsoftApplicationAuthority?: string;
     opdsServersMaxPerUser: number;
     proxiedDownloadBytesMaxPerMonth: number;
+    proxiedDownloadUserQuota: ProxiedDownloadUserQuotaRuleDto;
 };
 
 export type UpdateInstanceSettingsDto = {
@@ -265,6 +271,7 @@ export type UpdateInstanceSettingsDto = {
      */
     googleClientSecret?: string;
     microsoftApplicationClientId?: string;
+    proxiedDownloadUserQuota?: ProxiedDownloadUserQuotaRuleDto;
 };
 
 export type ProxiedDownloadQuotaResponseDto = {
@@ -361,6 +368,26 @@ export type SyncFinishedNotificationDto = {
 
 export type UnreadNotificationsCountResponseDto = {
     count: number;
+};
+
+export type UserProxiedDownloadQuotaResponseDto = {
+    /**
+     * What proxied downloads sent to all users this month, UTC.
+     */
+    usedBytes: number;
+    quotaBytes: number;
+    /**
+     * When the next month starts, UTC, as an ISO 8601 date-time.
+     */
+    resetsAt: string;
+    /**
+     * What proxied downloads sent to this user this month, UTC.
+     */
+    userUsedBytes: number;
+    /**
+     * At most what the user may download this month, while the instance's quota lasts.
+     */
+    userQuotaBytes: number;
 };
 
 export type SyncReportRelationDto = {
@@ -1648,7 +1675,7 @@ export type QuotasGetProxiedDownloadQuotaErrors = {
 export type QuotasGetProxiedDownloadQuotaError = QuotasGetProxiedDownloadQuotaErrors[keyof QuotasGetProxiedDownloadQuotaErrors];
 
 export type QuotasGetProxiedDownloadQuotaResponses = {
-    200: ProxiedDownloadQuotaResponseDto;
+    200: UserProxiedDownloadQuotaResponseDto;
 };
 
 export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];

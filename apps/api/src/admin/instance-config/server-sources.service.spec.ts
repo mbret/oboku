@@ -112,6 +112,7 @@ describe("InstanceConfigService server sources", () => {
       privateNetworkAllowedHosts: [],
       opdsServersMaxPerUser: 10,
       proxiedDownloadBytesMaxPerMonth: 500 * 1000 ** 3,
+      proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
     })
     expect(persistedConfigRaw).not.toHaveProperty(
       "microsoftApplicationClientId",
@@ -422,7 +423,7 @@ describe("InstanceConfigService server sources", () => {
     expect(rebootedService.getConfig().value.opdsServersMaxPerUser).toBe(10)
   })
 
-  it("sets the proxied download quota to 500 GB a month in a config file that predates the setting", async () => {
+  it("sets the proxied download quota to 500 GB a month, 5% of it per user, in a config file that predates the settings", async () => {
     const { appConfig, serverSourcesService } = await createServices()
 
     await fs.promises.writeFile(
@@ -435,9 +436,10 @@ describe("InstanceConfigService server sources", () => {
       new InstanceConfigService(appConfig, serverSourcesService),
     )
 
-    expect(
-      rebootedService.getConfig().value.proxiedDownloadBytesMaxPerMonth,
-    ).toBe(500 * 1000 ** 3)
+    expect(rebootedService.getConfig().value).toMatchObject({
+      proxiedDownloadBytesMaxPerMonth: 500 * 1000 ** 3,
+      proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
+    })
   })
 
   it("refuses a config file with an allowed host it cannot read", async () => {

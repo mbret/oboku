@@ -1,4 +1,4 @@
-import { DownloadRounded } from "@mui/icons-material"
+import { GroupsRounded, PersonRounded } from "@mui/icons-material"
 import {
   Link,
   ListItem,
@@ -6,6 +6,7 @@ import {
   ListItemText,
   Typography,
 } from "@mui/material"
+import type { ReactNode } from "react"
 import { Link as RouterLink } from "react-router"
 import { FetchErrorAlert } from "../common/alerts/FetchErrorAlert"
 import { LoadingAlert } from "../common/alerts/LoadingAlert"
@@ -24,6 +25,40 @@ const resetDateFormatter = new Intl.DateTimeFormat(undefined, {
   timeZone: "UTC",
 })
 
+function QuotaUsageListItem({
+  icon,
+  primary,
+  usedBytes,
+  quotaBytes,
+  caption,
+}: {
+  icon: ReactNode
+  primary: string
+  usedBytes: number
+  quotaBytes: number
+  caption?: string
+}) {
+  return (
+    <ListItem>
+      <ListItemIcon>{icon}</ListItemIcon>
+      <ListItemText
+        primary={primary}
+        disableTypography
+        secondary={
+          <>
+            <UsageProgress usedBytes={usedBytes} totalBytes={quotaBytes} />
+            {caption && (
+              <Typography variant="body2" color="textSecondary">
+                {caption}
+              </Typography>
+            )}
+          </>
+        }
+      />
+    </ListItem>
+  )
+}
+
 export function QuotasScreen() {
   const quotaQuery = useProxiedDownloadQuota()
   const { data: quota, isLoading, isError } = quotaQuery
@@ -33,7 +68,7 @@ export function QuotasScreen() {
     <Page>
       <TopBarNavigation title="Quotas" showBack />
       <PageContainer disableGutters>
-        <PageSection title="Download quota">
+        <PageSection title="Download quotas">
           <ListItem>
             <ListItemText
               secondary={
@@ -42,21 +77,21 @@ export function QuotasScreen() {
                   <Link component={RouterLink} to={ROUTES.OPDS_SERVERS}>
                     OPDS servers
                   </Link>{" "}
-                  pass through oboku's server and count towards this monthly
-                  quota, which all users share.
+                  pass through oboku's server. They count towards your monthly
+                  quota and towards the quota of all users.
                 </>
               }
             />
           </ListItem>
           {isLoading && (
             <ListItem>
-              <LoadingAlert subject="download quota" />
+              <LoadingAlert subject="download quotas" />
             </ListItem>
           )}
           {isError && (
             <ListItem>
               <FetchErrorAlert>
-                Something went wrong while loading the download quota. Please
+                Something went wrong while loading the download quotas. Please
                 try again later.
               </FetchErrorAlert>
             </ListItem>
@@ -64,31 +99,31 @@ export function QuotasScreen() {
           {isUnavailable && (
             <ListItem>
               <UnavailableAlert>
-                The download quota can't be loaded right now.
+                The download quotas can't be loaded right now.
               </UnavailableAlert>
             </ListItem>
           )}
           {quota && (
-            <ListItem>
-              <ListItemIcon>
-                <DownloadRounded />
-              </ListItemIcon>
-              <ListItemText
-                primary="Used this month"
-                disableTypography
-                secondary={
-                  <>
-                    <UsageProgress
-                      usedBytes={quota.usedBytes}
-                      totalBytes={quota.quotaBytes}
-                    />
-                    <Typography variant="body2" color="textSecondary">
-                      {`The quota starts over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
-                    </Typography>
-                  </>
-                }
+            <>
+              <QuotaUsageListItem
+                icon={<PersonRounded />}
+                primary="You"
+                usedBytes={quota.userUsedBytes}
+                quotaBytes={quota.userQuotaBytes}
+                caption="You can download up to this amount while the quota of all users lasts."
               />
-            </ListItem>
+              <QuotaUsageListItem
+                icon={<GroupsRounded />}
+                primary="All users"
+                usedBytes={quota.usedBytes}
+                quotaBytes={quota.quotaBytes}
+              />
+              <ListItem>
+                <ListItemText
+                  secondary={`Both quotas start over on ${resetDateFormatter.format(new Date(quota.resetsAt))}.`}
+                />
+              </ListItem>
+            </>
           )}
         </PageSection>
       </PageContainer>

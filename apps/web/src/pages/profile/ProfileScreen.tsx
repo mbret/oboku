@@ -175,7 +175,7 @@ export const ProfileScreen = () => {
               primary="Quotas"
               secondary={
                 proxiedDownloadQuota &&
-                `Downloads: ${formatBytes(proxiedDownloadQuota.usedBytes)} used of ${formatBytes(proxiedDownloadQuota.quotaBytes)} this month`
+                `Downloads: ${formatBytes(proxiedDownloadQuota.userUsedBytes)} used of ${formatBytes(proxiedDownloadQuota.userQuotaBytes)} this month`
               }
             />
           </ListItemButton>

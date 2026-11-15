@@ -5,9 +5,15 @@ import {
   type TransformCallback,
 } from "node:stream"
 import { Injectable, Logger } from "@nestjs/common"
-import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
+import {
+  type InstanceConfig,
+  InstanceConfigService,
+} from "../admin/instance-config/instance-config.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
-import type { ProxiedDownloadQuotaResponseDto } from "./quotas.dto.js"
+import type {
+  ProxiedDownloadQuotaResponseDto,
+  UserProxiedDownloadQuotaResponseDto,
+} from "./quotas.dto.js"
 
 /**
  * Counts the bytes it passes on, read once the pipeline ends. A `compose`
@@ -36,11 +42,24 @@ const toUsagePeriod = (date: Date) => ({
   ),
 })
 
+const toUserQuotaBytes = ({
+  proxiedDownloadBytesMaxPerMonth,
+  proxiedDownloadUserQuota,
+}: InstanceConfig) => {
+  switch (proxiedDownloadUserQuota.type) {
+    case "percentage":
+      return Math.floor(
+        (proxiedDownloadBytesMaxPerMonth * proxiedDownloadUserQuota.percent) /
+          100,
+      )
+  }
+}
+
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
 
-/** Keeps the files the instance passes on to users under its monthly quota. */
+/** Keeps the files the instance passes on to users under its monthly quotas. */
 @Injectable()
 export class ProxiedDownloadQuotaService {
   private readonly logger = new Logger(ProxiedDownloadQuotaService.name)
@@ -50,8 +69,37 @@ export class ProxiedDownloadQuotaService {
     private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
 
-  async getUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
-    const { month, resetsAt } = toUsagePeriod(new Date())
+  getInstanceUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
+    return this.findInstanceUsage(toUsagePeriod(new Date()))
+  }
+
+  async getUserUsage(
+    userId: number,
+  ): Promise<UserProxiedDownloadQuotaResponseDto> {
+    const period = toUsagePeriod(new Date())
+    const [instanceUsage, userUsedBytes] = await Promise.all([
+      this.findInstanceUsage(period),
+      this.proxiedDownloadUsagePostgresService.findUserBytes({
+        userId,
+        month: period.month,
+      }),
+    ])
+
+    return {
+      ...instanceUsage,
+      userUsedBytes,
+      userQuotaBytes: toUserQuotaBytes(
+        this.instanceConfigService.getConfig().value,
+      ),
+    }
+  }
+
+  private async findInstanceUsage({
+    month,
+    resetsAt,
+  }: ReturnType<
+    typeof toUsagePeriod
+  >): Promise<ProxiedDownloadQuotaResponseDto> {
     const usedBytes =
       await this.proxiedDownloadUsagePostgresService.findBytes(month)
 
@@ -65,11 +113,11 @@ export class ProxiedDownloadQuotaService {
   }
 
   /**
-   * Reserves `expectedBytes` on this month's counter, then counts the bytes
-   * the returned stream passes on. Once it ends, fails or is destroyed, the
-   * counter gets the difference: bytes back for a cancelled download, more
-   * for one longer than expected. A file of unknown size reserves nothing,
-   * and only passes below the quota.
+   * Reserves `expectedBytes` on this month's counters of the instance and of
+   * the user, then counts the bytes the returned stream passes on. Once it
+   * ends, fails or is destroyed, the counters get the difference: bytes back
+   * for a cancelled download, more for one longer than expected. A file of
+   * unknown size reserves nothing, and only passes below the quotas.
    *
    * The count runs ahead of what the client received by what the streams
    * and the socket still buffer.
@@ -77,23 +125,24 @@ export class ProxiedDownloadQuotaService {
    * @param isBodySent false for a HEAD request, whose body Node discards:
    * it gives the whole reservation back.
    * @returns `quota-reached`, the source destroyed, when the download would
-   * pass the quota; `resetsAt` is when the next month starts, UTC.
+   * pass either quota; `resetsAt` is when the next month starts, UTC.
    * @throws the counter's error, the source destroyed, when the reservation
    * fails.
    */
   async meter({
+    userId,
     stream,
     expectedBytes,
     isBodySent,
   }: {
+    userId: number
     stream: Readable
     expectedBytes: number | undefined
     isBodySent: boolean
   }): Promise<MeteredStream> {
     const { month, resetsAt } = toUsagePeriod(new Date())
     const reservedBytes = expectedBytes ?? 0
-    const { proxiedDownloadBytesMaxPerMonth } =
-      this.instanceConfigService.getConfig().value
+    const config = this.instanceConfigService.getConfig().value
 
     const byteCounter = new ByteCountingStream()
     // The pipeline listens to the Drive stream before the reservation is
@@ -106,10 +155,12 @@ export class ProxiedDownloadQuotaService {
     })
 
     const reservation = await this.proxiedDownloadUsagePostgresService
-      .reserveWithinQuota({
+      .reserveWithinQuotas({
+        userId,
         month,
         bytes: reservedBytes,
-        quotaBytes: proxiedDownloadBytesMaxPerMonth,
+        quotaBytes: config.proxiedDownloadBytesMaxPerMonth,
+        userQuotaBytes: toUserQuotaBytes(config),
       })
       .catch(function destroySourceOnFailedReservation(error: unknown) {
         stream.destroy()
@@ -132,7 +183,7 @@ export class ProxiedDownloadQuotaService {
       if (unreservedBytes === 0) return
 
       return proxiedDownloadUsagePostgresService
-        .adjust({ month, bytes: unreservedBytes })
+        .adjust({ userId, month, bytes: unreservedBytes })
         .catch(function logFailedSettle(error: unknown) {
           logger.error(
             `Could not count ${unreservedBytes} streamed bytes: ${error instanceof Error ? error.message : "unknown error"}`,
