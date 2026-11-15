@@ -18,7 +18,7 @@ vi.mock("./catalogs/CatalogsSection", function mockCatalogsSection() {
 })
 
 vi.mock("./reading-apps/ReadingAppsSection", function mockReadingAppsSection() {
-  return { ReadingAppsSection: () => null }
+  return { ReadingAppsSection: () => <section>Reading apps section</section> }
 })
 
 import { IntegrationsScreen } from "./IntegrationsScreen"
@@ -76,6 +76,12 @@ describe("IntegrationsScreen", () => {
     for (const [name, href] of Object.entries(INTEGRATION_HREF_BY_NAME)) {
       expect(getIntegrationLink(name).getAttribute("href")).toBe(href)
     }
+  })
+
+  it("shows the reading apps section", () => {
+    renderIntegrationsScreen(EVERY_PROVIDER_CONFIGURED)
+
+    expect(screen.getByText("Reading apps section")).toBeDefined()
   })
 
   it.each([
