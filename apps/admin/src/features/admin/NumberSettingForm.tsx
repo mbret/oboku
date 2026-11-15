@@ -11,6 +11,8 @@ export type NumberSettingFormProps = {
   minimumError: string
   savedValue: number
   step?: number
+  /** Values above it are cut down to it as they are typed. */
+  max?: number
   toSettings: (value: number) => AdminUpdateSettingsData["body"]
 }
 
@@ -20,6 +22,7 @@ export function NumberSettingForm({
   minimumError,
   savedValue,
   step,
+  max,
   toSettings,
 }: NumberSettingFormProps) {
   const { mutate: updateSettings, isPending } = useUpdateInstanceSettings()
@@ -50,6 +53,8 @@ export function NumberSettingForm({
         <NumberInput
           label={label}
           min={1}
+          max={max}
+          clampBehavior={max === undefined ? "blur" : "strict"}
           step={step}
           allowDecimal={false}
           {...form.getInputProps("value")}
