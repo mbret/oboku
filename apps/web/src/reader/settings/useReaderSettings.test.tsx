@@ -130,6 +130,25 @@ describe("useReaderSettings", () => {
     })
   })
 
+  it("sets the spread mode back to its default on the device when react-reader reports it as undefined", () => {
+    localSettingsSignal.update(
+      function withSpreadModeAndFontScale(settings): LocalSettings {
+        return { ...settings, readerSpreadMode: "always", readerFontScale: 1.3 }
+      },
+    )
+    const { result } = renderHook(useReaderSettings)
+
+    act(function setSpreadModeBackToDefault() {
+      result.current.updateReaderSettings({ spreadMode: undefined })
+    })
+
+    expect(result.current.readerSettings).toEqual({ fontScale: 1.3 })
+    expect(localSettingsSignal.getValue()).toMatchObject({
+      readerSpreadMode: null,
+      readerFontScale: 1.3,
+    })
+  })
+
   it("sends the font scale back to the account's when the device sets it back to default", () => {
     mocks.accountSettings = { readerGlobalFontScale: 1.4 }
     localSettingsSignal.update(function withFontScale(settings): LocalSettings {
