@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(function stubFetchBeforeWebdavBindsIt() {
   const fetch = vi.fn<typeof globalThis.fetch>()
@@ -35,12 +35,8 @@ const answerAsServer = ({ challenge }: PasswordRefusingServer) =>
   })
 
 describe("WebDAV client, when the server refuses the password", () => {
-  beforeEach(function forgetPreviousServer() {
-    mocks.fetch.mockReset()
-  })
-
   it.each([basicServer, digestServer])(
-    "fails to list a folder of a server that only accepts $scheme auth with a 401",
+    "rejects a folder listing with a 401 from a server that only accepts $scheme auth",
     async (server) => {
       answerAsServer(server)
 
@@ -55,7 +51,7 @@ describe("WebDAV client, when the server refuses the password", () => {
   )
 
   it.each([basicServer, digestServer])(
-    "fails to download a book from a server that only accepts $scheme auth with a 401",
+    "rejects a book download with a 401 from a server that only accepts $scheme auth",
     async (server) => {
       answerAsServer(server)
       const client = createWebdavClient({
