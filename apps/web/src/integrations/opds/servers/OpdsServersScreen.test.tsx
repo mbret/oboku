@@ -153,6 +153,16 @@ describe("OpdsServersScreen", () => {
     expect(screen.queryByRole("textbox", { name: "Password" })).toBeNull()
   })
 
+  it("points to the download quota its downloads count towards", async () => {
+    renderScreen(listing([]))
+
+    const quotaLink = await screen.findByRole<HTMLAnchorElement>("link", {
+      name: "download quota",
+    })
+
+    expect(quotaLink.getAttribute("href")).toBe("/profile/quotas")
+  })
+
   it("points to the Google account the catalogs list books through", async () => {
     renderScreen(listing([]))
 

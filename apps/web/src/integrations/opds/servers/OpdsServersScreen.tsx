@@ -201,6 +201,13 @@ export function OpdsServersScreen() {
             is connected, except those under a protected tag or marked not
             interested.
           </Alert>
+          <Alert severity="info">
+            Downloads from your OPDS servers count towards the monthly{" "}
+            <Link component={RouterLink} to={ROUTES.QUOTAS}>
+              download quota
+            </Link>
+            .
+          </Alert>
           <Button
             variant="contained"
             loading={isCreatingServer}

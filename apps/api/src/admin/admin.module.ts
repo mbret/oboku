@@ -14,6 +14,7 @@ import { EmailModule } from "../email/email.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
 import { AdminEmailService } from "./admin-email.service.js"
 import { AdminSecurityService } from "./admin-security.service.js"
+import { QuotasModule } from "../quotas/quotas.module.js"
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { AdminSecurityService } from "./admin-security.service.js"
     EmailModule,
     PostgresModule,
     InstanceConfigModule,
+    QuotasModule,
   ],
   providers: [
     AppConfigService,

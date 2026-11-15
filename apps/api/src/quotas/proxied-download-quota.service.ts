@@ -7,6 +7,7 @@ import {
 import { Injectable, Logger } from "@nestjs/common"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
+import type { ProxiedDownloadQuotaResponseDto } from "./quotas.dto.js"
 
 /**
  * Counts the bytes it passes on, read once the pipeline ends. A `compose`
@@ -27,10 +28,13 @@ class ByteCountingStream extends Transform {
   }
 }
 
-const toUsageMonth = (date: Date) => `${date.toISOString().slice(0, 7)}-01`
-
-const toNextUsageMonthStart = (date: Date) =>
-  new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1))
+/** The UTC month `date` falls in, as its counter's key, and when the next one starts. */
+const toUsagePeriod = (date: Date) => ({
+  month: `${date.toISOString().slice(0, 7)}-01`,
+  resetsAt: new Date(
+    Date.UTC(date.getUTCFullYear(), date.getUTCMonth() + 1, 1),
+  ),
+})
 
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
@@ -45,6 +49,20 @@ export class ProxiedDownloadQuotaService {
     private readonly instanceConfigService: InstanceConfigService,
     private readonly proxiedDownloadUsagePostgresService: ProxiedDownloadUsagePostgresService,
   ) {}
+
+  async getUsage(): Promise<ProxiedDownloadQuotaResponseDto> {
+    const { month, resetsAt } = toUsagePeriod(new Date())
+    const usedBytes =
+      await this.proxiedDownloadUsagePostgresService.findBytes(month)
+
+    return {
+      usedBytes,
+      quotaBytes:
+        this.instanceConfigService.getConfig().value
+          .proxiedDownloadBytesMaxPerMonth,
+      resetsAt: resetsAt.toISOString(),
+    }
+  }
 
   /**
    * Reserves `expectedBytes` on this month's counter, then counts the bytes
@@ -72,8 +90,7 @@ export class ProxiedDownloadQuotaService {
     expectedBytes: number | undefined
     isBodySent: boolean
   }): Promise<MeteredStream> {
-    const now = new Date()
-    const month = toUsageMonth(now)
+    const { month, resetsAt } = toUsagePeriod(new Date())
     const reservedBytes = expectedBytes ?? 0
     const { proxiedDownloadBytesMaxPerMonth } =
       this.instanceConfigService.getConfig().value
@@ -103,7 +120,7 @@ export class ProxiedDownloadQuotaService {
     if (reservation === "quota-reached") {
       stream.destroy()
 
-      return { status: "quota-reached", resetsAt: toNextUsageMonthStart(now) }
+      return { status: "quota-reached", resetsAt }
     }
 
     const { proxiedDownloadUsagePostgresService, logger } = this
