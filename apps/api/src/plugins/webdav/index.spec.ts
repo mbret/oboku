@@ -2,6 +2,7 @@ import { createHash } from "node:crypto"
 import { once } from "node:events"
 import { createServer, type IncomingMessage } from "node:http"
 import type { AddressInfo } from "node:net"
+import { Readable } from "node:stream"
 import type {
   DataSourceDocTypeFor,
   WebdavConnectorDocType,
@@ -136,6 +137,42 @@ async function startBooksServer({ challenge, isAuthorized }: ServerAuth) {
   return `127.0.0.1:${address.port}`
 }
 
+/** A server that sends a book with no end, until its client goes away. */
+async function startEndlessBookServer() {
+  const server = createServer(function streamUntilClosed(request, response) {
+    if (!isAuthorizedWithBasic(request)) {
+      response.writeHead(401, { "www-authenticate": basicAuth.challenge })
+      response.end()
+
+      return
+    }
+
+    response.writeHead(200, { "content-type": "application/epub+zip" })
+    const writing = setInterval(function writeChunk() {
+      response.write(Buffer.alloc(16 * 1024))
+    }, 5)
+
+    response.once("close", function stopWriting() {
+      clearInterval(writing)
+    })
+  }).listen(0, "127.0.0.1")
+  const bookRequested = once(server, "request")
+
+  onTestFinished(async function closeEndlessBookServer() {
+    server.closeAllConnections()
+    server.close()
+    await once(server, "close")
+  })
+
+  await once(server, "listening")
+
+  const address = server.address()
+
+  if (!isPortAddress(address)) throw new Error("Not listening on a port")
+
+  return { host: `127.0.0.1:${address.port}`, bookRequested }
+}
+
 const createUserDbWithConnector = (url: string) => {
   const connector: WebdavConnectorDocType = {
     id: "connector",
@@ -185,6 +222,33 @@ describe("WebDAV data source", () => {
       ])
     },
   )
+
+  it("stops the server's answer once the stream it gave is destroyed", async () => {
+    const { host, bookRequested } = await startEndlessBookServer()
+    setPrivateNetworkAllowedHosts([host])
+    const { stream } = await webdavDataSource.download(
+      {
+        _id: "link",
+        _rev: "1-link",
+        rxdbMeta: { lwt: 0 },
+        rx_model: "link",
+        type: "webdav",
+        book: "book",
+        modifiedAt: null,
+        createdAt: "2026-01-01T00:00:00.000Z",
+        data: { connectorId: "connector", filePath: "/books/book.epub" },
+      },
+      { password },
+      createUserDbWithConnector(`http://${host}`),
+    )
+    const [, bookResponse] = await bookRequested
+    await once(stream, "data")
+
+    if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
+    stream.destroy()
+
+    await once(bookResponse, "close")
+  })
 
   it("refuses a server on a private network the instance does not allow", async () => {
     const host = await startBooksServer(basicAuth)

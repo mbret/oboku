@@ -119,11 +119,18 @@ export async function downloadFromWebdav(
   client: WebDAVClient,
   filePath: string,
 ) {
-  const stream = client.createReadStream(filePath)
+  const request = new AbortController()
+  const stream = client.createReadStream(filePath, { signal: request.signal })
 
   if (!(stream instanceof Readable)) {
     throw new Error("webdav did not return a node readable stream")
   }
+
+  // webdav pipes the response into the stream it returns, so destroying that
+  // stream leaves the request open until the server gives up on it.
+  stream.once("close", function abortUnfinishedRequest() {
+    request.abort()
+  })
 
   return { stream }
 }
