@@ -57,7 +57,7 @@ describe("errorToMessage", () => {
     })
 
     expect(errorToMessage(error)).toBe(
-      "The server refused this username and password. Check the connector.",
+      "The connector's server refused this username and password, or denied them access. Check the connector.",
     )
   })
 
