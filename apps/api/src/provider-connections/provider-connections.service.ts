@@ -1,14 +1,21 @@
 import { Injectable } from "@nestjs/common"
+import type { WebdavConnectorDocType } from "@oboku/shared"
 import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
 } from "../crypto/at-rest-cipher.js"
 import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { isRecord } from "../http/isRecord.js"
+import { isWebdavConnector } from "../plugins/webdav/index.js"
 
-/** What each account provider grants, as the API keeps it. */
+/**
+ * What each account provider grants, as the API keeps it. A connector's
+ * credentials hold the connector as it was when the user connected it.
+ */
 export type ProviderCredentials = {
   google: { refreshToken: string }
+  webdav: { connector: WebdavConnectorDocType; password: string }
 }
 
 export type ConnectionProvider = keyof ProviderCredentials
@@ -39,6 +46,17 @@ const credentialsParsers: {
     if (!hasRefreshToken || typeof value.refreshToken !== "string") return null
 
     return { refreshToken: value.refreshToken }
+  },
+  webdav: function parseWebdavCredentials(value) {
+    if (!isRecord(value)) return null
+
+    const { connector, password } = value
+    const isWebdavCredentials =
+      typeof password === "string" && isWebdavConnector(connector)
+
+    if (!isWebdavCredentials) return null
+
+    return { connector, password }
   },
 }
 

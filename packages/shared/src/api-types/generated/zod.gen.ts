@@ -56,7 +56,10 @@ export const zObokuErrorDto = z.object({
         '11002',
         '11003',
         '11004',
-        '11005'
+        '11005',
+        '11006',
+        '11007',
+        '11008'
     ])
 });
 
@@ -538,6 +541,24 @@ export const zGoogleAccessTokenResponseDto = z.object({
     scopes: z.array(z.string())
 });
 
+export const zConnectorConnectionDto = z.object({
+    status: z.enum(['connected', 'connector-changed']),
+    connectorId: z.string(),
+    connectedAt: z.string()
+});
+
+export const zConnectorConnectionsResponseDto = z.object({
+    connections: z.array(zConnectorConnectionDto)
+});
+
+export const zConnectConnectorDto = z.object({
+    password: z.string().min(1)
+});
+
+export const zConnectorConnectionResponseDto = z.object({
+    connection: zConnectorConnectionDto
+});
+
 export const zAppGetHelloResponse = z.string();
 
 export const zWebGetConfigResponse = zWebConfigResponseDto;
@@ -775,3 +796,19 @@ export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
 export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;
 
 export const zGoogleConnectionMintAccessTokenResponse = zGoogleAccessTokenResponseDto;
+
+export const zConnectorConnectionListResponse = zConnectorConnectionsResponseDto;
+
+export const zConnectorConnectionDisconnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionDisconnectResponse = zOkResponseDto;
+
+export const zConnectorConnectionConnectBody = zConnectConnectorDto;
+
+export const zConnectorConnectionConnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionConnectResponse = zConnectorConnectionResponseDto;
