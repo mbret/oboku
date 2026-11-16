@@ -3,7 +3,9 @@ import { InjectRepository } from "@nestjs/typeorm"
 import type { Repository } from "typeorm"
 import { ProviderConnectionPostgresEntity } from "./entities.js"
 
-type ConnectionKey = { userId: number; provider: string }
+type ProviderKey = { userId: number; provider: string }
+
+type ConnectionKey = ProviderKey & { accountId: string }
 
 @Injectable()
 export class ProviderConnectionPostgresService {
@@ -12,23 +14,30 @@ export class ProviderConnectionPostgresService {
     private readonly connectionRepository: Repository<ProviderConnectionPostgresEntity>,
   ) {}
 
-  find({ userId, provider }: ConnectionKey) {
+  find({ userId, provider, accountId }: ConnectionKey) {
     return this.connectionRepository.findOne({
-      where: { user_id: userId, provider },
+      where: { user_id: userId, provider, account_id: accountId },
     })
   }
 
-  /** Replaces the user's previous connection to the provider, if any. */
+  /** The user's connections to the provider, the latest first. */
+  list({ userId, provider }: ProviderKey) {
+    return this.connectionRepository.find({
+      where: { user_id: userId, provider },
+      order: { connected_at: "DESC", id: "DESC" },
+    })
+  }
+
+  /** Replaces the user's previous connection to the same account, if any. */
   async save({
     userId,
     provider,
-    encryptedCredentials,
     accountId,
+    encryptedCredentials,
     accountName,
     scopes,
   }: ConnectionKey & {
     encryptedCredentials: string
-    accountId: string
     accountName: string
     scopes: string[]
   }) {
@@ -45,12 +54,16 @@ export class ProviderConnectionPostgresService {
         connected_at: connectedAt,
         updated_at: connectedAt,
       },
-      ["user_id", "provider"],
+      ["user_id", "provider", "account_id"],
     )
   }
 
-  async delete({ userId, provider }: ConnectionKey) {
-    await this.connectionRepository.delete({ user_id: userId, provider })
+  async delete({ userId, provider, accountId }: ConnectionKey) {
+    await this.connectionRepository.delete({
+      user_id: userId,
+      provider,
+      account_id: accountId,
+    })
   }
 
   async deleteByUserId(userId: number) {

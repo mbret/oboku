@@ -149,11 +149,45 @@ export class GoogleConnectionService {
     private readonly providerConnectionsService: ProviderConnectionsService,
   ) {}
 
-  async find(userId: number): Promise<GoogleConnectionDto | null> {
-    const connection = await this.providerConnectionsService.find({
+  /** A user connects one Google account for now; several are #996. */
+  private async findConnection(userId: number) {
+    const [latestConnection] = await this.providerConnectionsService.list({
       userId,
       provider: GOOGLE_PROVIDER,
     })
+
+    return latestConnection ?? null
+  }
+
+  /** Deletes the user's Google connections, except `keptAccountId`'s. */
+  private async disconnectAccounts({
+    userId,
+    keptAccountId,
+  }: {
+    userId: number
+    keptAccountId?: string
+  }) {
+    const connections = await this.providerConnectionsService.list({
+      userId,
+      provider: GOOGLE_PROVIDER,
+    })
+    const replacedConnections = connections.filter(
+      ({ accountId }) => accountId !== keptAccountId,
+    )
+
+    await Promise.all(
+      replacedConnections.map(({ accountId }) =>
+        this.providerConnectionsService.disconnect({
+          userId,
+          provider: GOOGLE_PROVIDER,
+          accountId,
+        }),
+      ),
+    )
+  }
+
+  async find(userId: number): Promise<GoogleConnectionDto | null> {
+    const connection = await this.findConnection(userId)
 
     if (!connection) return null
 
@@ -172,10 +206,12 @@ export class GoogleConnectionService {
     const isConfigured = isGoogleConnectionConfigured(
       this.instanceConfigService.getConfig().value,
     )
-    const credentials = isConfigured
+    const connection = isConfigured ? await this.findConnection(userId) : null
+    const credentials = connection
       ? await this.providerConnectionsService.getCredentials({
           userId,
           provider: GOOGLE_PROVIDER,
+          accountId: connection.accountId,
         })
       : null
 
@@ -242,6 +278,7 @@ export class GoogleConnectionService {
       accountName: grantedEmail,
       scopes,
     })
+    await this.disconnectAccounts({ userId, keptAccountId: account.sub })
 
     return this.find(userId)
   }
@@ -262,10 +299,7 @@ export class GoogleConnectionService {
       )
     }
 
-    const connection = await this.providerConnectionsService.find({
-      userId,
-      provider: GOOGLE_PROVIDER,
-    })
+    const connection = await this.findConnection(userId)
 
     if (!connection) {
       throw createObokuBadRequest(
@@ -276,6 +310,7 @@ export class GoogleConnectionService {
     const credentials = await this.providerConnectionsService.getCredentials({
       userId,
       provider: GOOGLE_PROVIDER,
+      accountId: connection.accountId,
     })
     const tokensOfLiveConnection =
       credentials &&
@@ -314,9 +349,6 @@ export class GoogleConnectionService {
    * browser's sign-in and the user's picked files keep working.
    */
   disconnect(userId: number) {
-    return this.providerConnectionsService.disconnect({
-      userId,
-      provider: GOOGLE_PROVIDER,
-    })
+    return this.disconnectAccounts({ userId })
   }
 }

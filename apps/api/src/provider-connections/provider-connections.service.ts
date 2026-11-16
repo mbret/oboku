@@ -3,6 +3,7 @@ import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
 } from "../crypto/at-rest-cipher.js"
+import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
 
 /** What each account provider grants, as the API keeps it. */
@@ -12,10 +13,13 @@ export type ProviderCredentials = {
 
 export type ConnectionProvider = keyof ProviderCredentials
 
-type ConnectionKey<P extends ConnectionProvider = ConnectionProvider> = {
+type ProviderKey<P extends ConnectionProvider = ConnectionProvider> = {
   userId: number
   provider: P
 }
+
+type ConnectionKey<P extends ConnectionProvider = ConnectionProvider> =
+  ProviderKey<P> & { accountId: string }
 
 /** A provider with its own credentials, never another provider's. */
 type ProviderAndCredentials = {
@@ -47,9 +51,27 @@ const parseJson = (text: string): unknown => {
   }
 }
 
-/** Binds the credentials to their user and provider, so they cannot be copied to another connection. */
-const toAssociatedData = ({ userId, provider }: ConnectionKey) =>
+/** Binds the credentials to their connection, so they cannot be copied to another one. */
+const toAssociatedData = ({ userId, provider, accountId }: ConnectionKey) =>
+  `${userId}:${provider}:${accountId}`
+
+/**
+ * Credentials saved while a user had at most one connection per provider are
+ * bound to the user and provider only. They stay readable until the user
+ * connects that account again.
+ */
+const toProviderWideAssociatedData = ({ userId, provider }: ProviderKey) =>
   `${userId}:${provider}`
+
+const toConnectionWithoutCredentials = (
+  connection: ProviderConnectionPostgresEntity,
+) => ({
+  accountId: connection.account_id,
+  accountName: connection.account_name,
+  scopes: connection.scopes,
+  connectedAt: connection.connected_at,
+  updatedAt: connection.updated_at,
+})
 
 /** The long-lived permissions users give the API at account providers. */
 @Injectable()
@@ -59,22 +81,14 @@ export class ProviderConnectionsService {
     private readonly atRestCipher: AtRestCipher,
   ) {}
 
-  /** The connection without its credentials, or `null`. */
-  async find(key: ConnectionKey) {
-    const connection = await this.connectionPostgresService.find(key)
+  /** The user's connections to the provider without their credentials, the latest first. */
+  async list(key: ProviderKey) {
+    const connections = await this.connectionPostgresService.list(key)
 
-    if (!connection) return null
-
-    return {
-      accountId: connection.account_id,
-      accountName: connection.account_name,
-      scopes: connection.scopes,
-      connectedAt: connection.connected_at,
-      updatedAt: connection.updated_at,
-    }
+    return connections.map(toConnectionWithoutCredentials)
   }
 
-  /** Replaces the user's previous connection to the provider, if any. */
+  /** Replaces the user's previous connection to the same account, if any. */
   async connect({
     userId,
     provider,
@@ -91,14 +105,14 @@ export class ProviderConnectionsService {
     const encryptedCredentials = await this.atRestCipher.encrypt({
       purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
       plaintext: JSON.stringify(credentials),
-      associatedData: toAssociatedData({ userId, provider }),
+      associatedData: toAssociatedData({ userId, provider, accountId }),
     })
 
     await this.connectionPostgresService.save({
       userId,
       provider,
-      encryptedCredentials,
       accountId,
+      encryptedCredentials,
       accountName,
       scopes,
     })
@@ -115,11 +129,15 @@ export class ProviderConnectionsService {
 
     if (!connection) return null
 
-    const plaintext = await this.atRestCipher.decrypt({
-      purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
-      ciphertext: connection.encrypted_credentials,
-      associatedData: toAssociatedData(key),
-    })
+    const decryptBoundTo = (associatedData: string) =>
+      this.atRestCipher.decrypt({
+        purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
+        ciphertext: connection.encrypted_credentials,
+        associatedData,
+      })
+    const plaintext =
+      (await decryptBoundTo(toAssociatedData(key))) ??
+      (await decryptBoundTo(toProviderWideAssociatedData(key)))
 
     if (plaintext === null) return null
 

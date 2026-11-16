@@ -6,6 +6,7 @@ import { ProviderConnectionPostgresService } from "./provider-connection-postgre
 const createService = async () => {
   const repository = {
     findOne: vi.fn(),
+    find: vi.fn(),
     upsert: vi.fn(),
     delete: vi.fn(),
   }
@@ -23,7 +24,7 @@ const createService = async () => {
 }
 
 describe("ProviderConnectionPostgresService", () => {
-  it("replaces the user's connection to the provider, with fresh dates", async () => {
+  it("replaces the user's connection to the same account, with fresh dates", async () => {
     const { repository, service } = await createService()
 
     await service.save({
@@ -46,22 +47,35 @@ describe("ProviderConnectionPostgresService", () => {
         connected_at: expect.any(Date),
         updated_at: expect.any(Date),
       },
-      ["user_id", "provider"],
+      ["user_id", "provider", "account_id"],
     )
   })
 
-  it("finds and deletes a connection by user and provider", async () => {
+  it("finds and deletes a connection by user, provider and account", async () => {
     const { repository, service } = await createService()
+    const key = { userId: 1, provider: "google", accountId: "google-sub" }
 
-    await service.find({ userId: 1, provider: "google" })
-    await service.delete({ userId: 1, provider: "google" })
+    await service.find(key)
+    await service.delete(key)
 
     expect(repository.findOne).toHaveBeenCalledWith({
-      where: { user_id: 1, provider: "google" },
+      where: { user_id: 1, provider: "google", account_id: "google-sub" },
     })
     expect(repository.delete).toHaveBeenCalledWith({
       user_id: 1,
       provider: "google",
+      account_id: "google-sub",
+    })
+  })
+
+  it("lists the user's connections to the provider, the latest first", async () => {
+    const { repository, service } = await createService()
+
+    await service.list({ userId: 1, provider: "webdav" })
+
+    expect(repository.find).toHaveBeenCalledWith({
+      where: { user_id: 1, provider: "webdav" },
+      order: { connected_at: "DESC", id: "DESC" },
     })
   })
 
