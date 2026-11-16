@@ -159,24 +159,14 @@ export class GoogleConnectionService {
     return latestConnection ?? null
   }
 
-  /** Deletes the user's Google connections, except `keptAccountId`'s. */
-  private async disconnectAccounts({
-    userId,
-    keptAccountId,
-  }: {
-    userId: number
-    keptAccountId?: string
-  }) {
+  private async disconnectEveryAccount(userId: number) {
     const connections = await this.providerConnectionsService.list({
       userId,
       provider: GOOGLE_PROVIDER,
     })
-    const replacedConnections = connections.filter(
-      ({ accountId }) => accountId !== keptAccountId,
-    )
 
     await Promise.all(
-      replacedConnections.map(({ accountId }) =>
+      connections.map(({ accountId }) =>
         this.providerConnectionsService.disconnect({
           userId,
           provider: GOOGLE_PROVIDER,
@@ -277,8 +267,8 @@ export class GoogleConnectionService {
       accountId: account.sub,
       accountName: grantedEmail,
       scopes,
+      replacesOtherAccounts: true,
     })
-    await this.disconnectAccounts({ userId, keptAccountId: account.sub })
 
     return this.find(userId)
   }
@@ -349,6 +339,6 @@ export class GoogleConnectionService {
    * browser's sign-in and the user's picked files keep working.
    */
   disconnect(userId: number) {
-    return this.disconnectAccounts({ userId })
+    return this.disconnectEveryAccount(userId)
   }
 }

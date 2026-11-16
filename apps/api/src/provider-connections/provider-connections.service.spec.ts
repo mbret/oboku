@@ -143,6 +143,27 @@ describe("ProviderConnectionsService", () => {
     })
   })
 
+  it("deletes the provider's other accounts when the connection replaces them", async () => {
+    const { service } = await createService()
+
+    await service.connect({ userId: READER_ID, ...GOOGLE_CONNECTION })
+    await service.connect({
+      userId: READER_ID,
+      ...GOOGLE_CONNECTION,
+      ...OTHER_GOOGLE_ACCOUNT,
+      replacesOtherAccounts: true,
+    })
+
+    const connections = await service.list({
+      userId: READER_ID,
+      provider: "google",
+    })
+
+    expect(connections.map(({ accountId }) => accountId)).toEqual([
+      OTHER_GOOGLE_ACCOUNT.accountId,
+    ])
+  })
+
   it("refuses credentials that are not the provider's shape", async () => {
     const { rows, service, atRestCipher } = await createService()
 

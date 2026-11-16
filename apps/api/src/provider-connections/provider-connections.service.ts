@@ -88,7 +88,11 @@ export class ProviderConnectionsService {
     return connections.map(toConnectionWithoutCredentials)
   }
 
-  /** Replaces the user's previous connection to the same account, if any. */
+  /**
+   * Replaces the user's previous connection to the same account, if any. With
+   * `replacesOtherAccounts`, also deletes the user's connections to the
+   * provider's other accounts, in one step.
+   */
   async connect({
     userId,
     provider,
@@ -96,26 +100,33 @@ export class ProviderConnectionsService {
     accountId,
     accountName,
     scopes,
+    replacesOtherAccounts = false,
   }: ProviderAndCredentials & {
     userId: number
     accountId: string
     accountName: string
     scopes: string[]
+    replacesOtherAccounts?: boolean
   }) {
     const encryptedCredentials = await this.atRestCipher.encrypt({
       purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
       plaintext: JSON.stringify(credentials),
       associatedData: toAssociatedData({ userId, provider, accountId }),
     })
-
-    await this.connectionPostgresService.save({
+    const connection = {
       userId,
       provider,
       accountId,
       encryptedCredentials,
       accountName,
       scopes,
-    })
+    }
+
+    if (replacesOtherAccounts) {
+      await this.connectionPostgresService.saveAsOnlyAccount(connection)
+    } else {
+      await this.connectionPostgresService.save(connection)
+    }
   }
 
   /**

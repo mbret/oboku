@@ -1,14 +1,29 @@
 import { Test } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
-import { ProviderConnectionPostgresEntity } from "./entities.js"
+import { Not } from "typeorm"
+import {
+  ProviderConnectionPostgresEntity,
+  UserPostgresEntity,
+} from "./entities.js"
 import { ProviderConnectionPostgresService } from "./provider-connection-postgres.service.js"
 
 const createService = async () => {
+  const transactionManager = {
+    findOne: vi.fn(),
+    delete: vi.fn(),
+    upsert: vi.fn(),
+  }
   const repository = {
     findOne: vi.fn(),
     find: vi.fn(),
     upsert: vi.fn(),
     delete: vi.fn(),
+    manager: {
+      transaction: vi.fn(
+        (runInTransaction: (manager: typeof transactionManager) => unknown) =>
+          runInTransaction(transactionManager),
+      ),
+    },
   }
   const module = await Test.createTestingModule({
     providers: [
@@ -20,7 +35,11 @@ const createService = async () => {
     ],
   }).compile()
 
-  return { repository, service: module.get(ProviderConnectionPostgresService) }
+  return {
+    repository,
+    transactionManager,
+    service: module.get(ProviderConnectionPostgresService),
+  }
 }
 
 describe("ProviderConnectionPostgresService", () => {
@@ -77,6 +96,44 @@ describe("ProviderConnectionPostgresService", () => {
       where: { user_id: 1, provider: "webdav" },
       order: { connected_at: "DESC", id: "DESC" },
     })
+  })
+
+  it("saves the only account of a user's provider once the user's row is locked", async () => {
+    const { transactionManager, service } = await createService()
+
+    await service.saveAsOnlyAccount({
+      userId: 1,
+      provider: "google",
+      encryptedCredentials: "1.payload",
+      accountId: "work-sub",
+      accountName: "reader@work.example",
+      scopes: ["https://www.googleapis.com/auth/drive.file"],
+    })
+
+    expect(transactionManager.findOne).toHaveBeenCalledWith(
+      UserPostgresEntity,
+      { where: { id: 1 }, lock: { mode: "pessimistic_write" } },
+    )
+    expect(transactionManager.delete).toHaveBeenCalledWith(
+      ProviderConnectionPostgresEntity,
+      { user_id: 1, provider: "google", account_id: Not("work-sub") },
+    )
+    expect(transactionManager.upsert).toHaveBeenCalledWith(
+      ProviderConnectionPostgresEntity,
+      expect.objectContaining({
+        user_id: 1,
+        provider: "google",
+        account_id: "work-sub",
+      }),
+      ["user_id", "provider", "account_id"],
+    )
+
+    const [lockOrder] = transactionManager.findOne.mock.invocationCallOrder
+    const [deleteOrder] = transactionManager.delete.mock.invocationCallOrder
+    const [upsertOrder] = transactionManager.upsert.mock.invocationCallOrder
+
+    expect(lockOrder).toBeLessThan(deleteOrder ?? 0)
+    expect(deleteOrder).toBeLessThan(upsertOrder ?? 0)
   })
 
   it("deletes every connection of a user", async () => {
