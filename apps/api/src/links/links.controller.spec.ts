@@ -224,6 +224,21 @@ describe("LinksController", () => {
     },
   )
 
+  it("answers 502 with the server's refusal when the WebDAV server refuses the file it described", async () => {
+    download.mockRejectedValue(
+      Object.assign(new Error("Invalid response: 403"), { status: 403 }),
+    )
+
+    const response = await downloadLink(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED },
+      ],
+    })
+  })
+
   it.each([
     ["no size", {}],
     ["a size of 0", { size: "0" }],

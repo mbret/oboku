@@ -50,6 +50,10 @@ const toServerFailure = (error: unknown) => {
   )
 }
 
+const throwServerFailure = (error: unknown): never => {
+  throw toServerFailure(error)
+}
+
 @Injectable()
 export class LinksService {
   constructor(
@@ -87,9 +91,7 @@ export class LinksService {
 
     const { name, contentType, bookMetadata } = await this.pluginsService
       .getFileMetadata({ link, providerCredentials, db })
-      .catch(function throwServerFailure(error: unknown) {
-        throw toServerFailure(error)
-      })
+      .catch(throwServerFailure)
     const statedSize = toByteCount(bookMetadata?.size)
     const isSizeStated = statedSize !== undefined && statedSize > 0
 
@@ -99,11 +101,9 @@ export class LinksService {
       )
     }
 
-    const { stream } = await this.pluginsService.download({
-      link,
-      providerCredentials,
-      db,
-    })
+    const { stream } = await this.pluginsService
+      .download({ link, providerCredentials, db })
+      .catch(throwServerFailure)
 
     return {
       stream: pipeline(

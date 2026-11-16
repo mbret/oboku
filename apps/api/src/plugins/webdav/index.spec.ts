@@ -3,6 +3,7 @@ import { once } from "node:events"
 import { createServer, type IncomingMessage } from "node:http"
 import type { AddressInfo } from "node:net"
 import { Readable } from "node:stream"
+import { finished } from "node:stream/promises"
 import type {
   DataSourceDocTypeFor,
   WebdavConnectorDocType,
@@ -188,6 +189,23 @@ const createUserDbWithConnector = (url: string) => {
   } as unknown as createNano.DocumentScope<unknown>
 }
 
+const downloadBookFrom = (host: string) =>
+  webdavDataSource.download(
+    {
+      _id: "link",
+      _rev: "1-link",
+      rxdbMeta: { lwt: 0 },
+      rx_model: "link",
+      type: "webdav",
+      book: "book",
+      modifiedAt: null,
+      createdAt: "2026-01-01T00:00:00.000Z",
+      data: { connectorId: "connector", filePath: "/books/book.epub" },
+    },
+    { password },
+    createUserDbWithConnector(`http://${host}`),
+  )
+
 const syncBooksFrom = (host: string) =>
   webdavDataSource.sync({
     userName: "user",
@@ -226,21 +244,7 @@ describe("WebDAV data source", () => {
   it("stops the server's answer once the stream it gave is destroyed", async () => {
     const { host, bookRequested } = await startEndlessBookServer()
     setPrivateNetworkAllowedHosts([host])
-    const { stream } = await webdavDataSource.download(
-      {
-        _id: "link",
-        _rev: "1-link",
-        rxdbMeta: { lwt: 0 },
-        rx_model: "link",
-        type: "webdav",
-        book: "book",
-        modifiedAt: null,
-        createdAt: "2026-01-01T00:00:00.000Z",
-        data: { connectorId: "connector", filePath: "/books/book.epub" },
-      },
-      { password },
-      createUserDbWithConnector(`http://${host}`),
-    )
+    const { stream } = await downloadBookFrom(host)
     const [, bookResponse] = await bookRequested
     await once(stream, "data")
 
@@ -248,6 +252,20 @@ describe("WebDAV data source", () => {
     stream.destroy()
 
     await once(bookResponse, "close")
+  })
+
+  it("fails the stream it gave once the server drops the connection mid-file", async () => {
+    const { host, bookRequested } = await startEndlessBookServer()
+    setPrivateNetworkAllowedHosts([host])
+    const { stream } = await downloadBookFrom(host)
+    const [, bookResponse] = await bookRequested
+    await once(stream, "data")
+
+    if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
+    const streamFinished = finished(stream)
+    bookResponse.socket.destroy()
+
+    await expect(streamFinished).rejects.toThrow()
   })
 
   it("refuses a server on a private network the instance does not allow", async () => {
