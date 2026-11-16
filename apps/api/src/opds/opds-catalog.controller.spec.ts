@@ -89,6 +89,13 @@ const toAuthenticationDocument = (slug: string, protocol = "https") => ({
   ],
 })
 
+/** The ids of the shelves an OPDS 1.2 feed lists, in its order. */
+const toListedShelfIds = (feedXml: string) =>
+  Array.from(
+    feedXml.matchAll(/<id>urn:oboku:opds:[^:<]+:shelves:([^<]+)<\/id>/g),
+    ([, shelfId]) => shelfId,
+  )
+
 /** The ids of the books an OPDS 1.2 feed lists, in its order. */
 const toListedBookIds = (feedXml: string) =>
   Array.from(
@@ -179,6 +186,59 @@ const LIBRARY = {
         },
       ],
     },
+    {
+      ...DUNE,
+      _id: "book-arrakis",
+      createdAt: Date.parse("2026-01-05T08:00:00.000Z"),
+      metadata: [
+        { type: "link", title: "Arrakis.epub" },
+        {
+          type: "file",
+          version: 5,
+          contentType: "application/epub+zip",
+          metadata: { titles: [{ value: "Arrakis" }] },
+        },
+      ],
+    },
+  ],
+  collections: [
+    {
+      _id: "shelf-dune",
+      rx_model: "obokucollection",
+      books: ["book-dune", "book-blame", "book-arrakis", "book-dropbox"],
+      metadata: [{ type: "link", title: "Dune saga [oboku~series]" }],
+    },
+    {
+      _id: "shelf-comics",
+      rx_model: "obokucollection",
+      books: ["book-blame"],
+      metadata: [{ type: "user", title: "comics" }],
+    },
+    {
+      _id: "shelf-blame",
+      rx_model: "obokucollection",
+      type: "series",
+      books: ["book-blame"],
+      metadata: [{ type: "link", title: "BLAME!" }],
+    },
+    {
+      _id: "shelf-untitled",
+      rx_model: "obokucollection",
+      books: ["book-arrakis"],
+      metadata: [],
+    },
+    {
+      _id: "shelf-private",
+      rx_model: "obokucollection",
+      books: ["book-dune", "book-private"],
+      metadata: [{ type: "link", title: "Private" }],
+    },
+    {
+      _id: "shelf-unserved",
+      rx_model: "obokucollection",
+      books: ["book-skipped", "book-dropbox"],
+      metadata: [{ type: "link", title: "Unserved" }],
+    },
   ],
   links: [DRIVE_LINK, DROPBOX_LINK],
   tags: [
@@ -192,10 +252,16 @@ type LibraryDocument = { _id: string }
 /** Answers CouchDB's `_find` and `_all_docs` as the catalog asks them. */
 const createLibraryDb = (library: {
   books: ReadonlyArray<LibraryDocument>
+  collections: ReadonlyArray<LibraryDocument>
   links: ReadonlyArray<LibraryDocument>
   tags: ReadonlyArray<LibraryDocument>
 }) => {
-  const documents = [...library.books, ...library.links, ...library.tags]
+  const documents = [
+    ...library.books,
+    ...library.collections,
+    ...library.links,
+    ...library.tags,
+  ]
 
   return {
     find: async ({
@@ -410,6 +476,9 @@ describe("OpdsCatalogController", () => {
     expect(response.text).toContain(
       `<content type="text">Every book in this catalog</content>`,
     )
+    expect(response.text).toContain(
+      `<link rel="subsection" href="/opds/calm-snails-dream/shelves" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>`,
+    )
   })
 
   it("lists the Drive books the library shows, newest first", async () => {
@@ -431,7 +500,11 @@ describe("OpdsCatalogController", () => {
     expect(response.text).toContain(
       `<link rel="start" href="/opds/calm-snails-dream" type="application/atom+xml;profile=opds-catalog;kind=navigation"/>`,
     )
-    expect(toListedBookIds(response.text)).toEqual(["book-blame", "book-dune"])
+    expect(toListedBookIds(response.text)).toEqual([
+      "book-blame",
+      "book-dune",
+      "book-arrakis",
+    ])
     expect(response.text).toContain(
       `<link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-dune/Dune.epub" type="application/epub+zip"/>`,
     )
@@ -459,7 +532,7 @@ describe("OpdsCatalogController", () => {
     )
     expect(response.body.metadata).toEqual({
       title: "All books",
-      numberOfItems: 2,
+      numberOfItems: 3,
       itemsPerPage: 50,
       currentPage: 1,
     })
@@ -471,6 +544,7 @@ describe("OpdsCatalogController", () => {
     ).toEqual([
       "urn:oboku:opds:calm-snails-dream:books:book-blame",
       "urn:oboku:opds:calm-snails-dream:books:book-dune",
+      "urn:oboku:opds:calm-snails-dream:books:book-arrakis",
     ])
   })
 
@@ -581,6 +655,12 @@ describe("OpdsCatalogController", () => {
           type: "application/opds+json",
           title: "All books",
         },
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/shelves",
+          type: "application/opds+json",
+          title: "Shelves",
+        },
       ],
     })
   })
@@ -658,6 +738,11 @@ describe("OpdsCatalogController", () => {
       undefined,
     ],
     [
+      "missing credentials on a shelf",
+      "/opds/calm-snails-dream/shelves/shelf-dune",
+      undefined,
+    ],
+    [
       "missing credentials in OPDS 2.0",
       "/opds/calm-snails-dream/v2",
       undefined,
@@ -676,6 +761,166 @@ describe("OpdsCatalogController", () => {
       expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
+  describe("shelves", () => {
+    it("lists the shelves from A to Z, whatever their type, with how many books each serves", async () => {
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/shelves",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(200)
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set([
+          "application/atom+xml",
+          "profile=opds-catalog",
+          "kind=navigation",
+          "charset=utf-8",
+        ]),
+      )
+      expect(toListedShelfIds(response.text)).toEqual([
+        "shelf-blame",
+        "shelf-comics",
+        "shelf-dune",
+        "shelf-untitled",
+      ])
+      expect(response.text).toContain(`<title>Dune saga</title>`)
+      expect(response.text).toContain(`<title>Untitled shelf</title>`)
+      expect(response.text).toContain(`<content type="text">3 books</content>`)
+      expect(response.text).toContain(`<content type="text">1 book</content>`)
+      expect(response.text).toContain(
+        `<link rel="subsection" href="/opds/calm-snails-dream/shelves/shelf-dune" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>`,
+      )
+    })
+
+    it("lists the same shelves in OPDS 2.0, with their books' count", async () => {
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/v2/shelves",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(200)
+      expect(response.body.metadata).toEqual({
+        title: "Shelves",
+        numberOfItems: 4,
+        itemsPerPage: 50,
+        currentPage: 1,
+      })
+      expect(response.body.navigation).toEqual([
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/shelves/shelf-blame",
+          type: "application/opds+json",
+          title: "BLAME!",
+          properties: { numberOfItems: 1 },
+        },
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/shelves/shelf-comics",
+          type: "application/opds+json",
+          title: "comics",
+          properties: { numberOfItems: 1 },
+        },
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/shelves/shelf-dune",
+          type: "application/opds+json",
+          title: "Dune saga",
+          properties: { numberOfItems: 3 },
+        },
+        {
+          rel: "subsection",
+          href: "/opds/calm-snails-dream/v2/shelves/shelf-untitled",
+          type: "application/opds+json",
+          title: "Untitled shelf",
+          properties: { numberOfItems: 1 },
+        },
+      ])
+    })
+
+    it.each([
+      "/opds/calm-snails-dream/shelves/shelf-dune",
+      "/opds/calm-snails-dream/v2/shelves/shelf-dune",
+    ])("lists a shelf's served books from A to Z at %s", async (path) => {
+      const response = await getCatalog(path, OWNER_AUTHORIZATION)
+      const listedBookIds = path.includes("/v2/")
+        ? response.body.publications.map(
+            (publication: { metadata: { identifier: string } }) =>
+              publication.metadata.identifier.split(":").at(-1),
+          )
+        : toListedBookIds(response.text)
+
+      expect(response.status).toBe(200)
+      expect(listedBookIds).toEqual(["book-arrakis", "book-blame", "book-dune"])
+    })
+
+    it("titles a shelf's feed after the shelf", async () => {
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/shelves/shelf-dune",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(toMediaTypeParts(response.headers["content-type"])).toEqual(
+        new Set([
+          "application/atom+xml",
+          "profile=opds-catalog",
+          "kind=acquisition",
+          "charset=utf-8",
+        ]),
+      )
+      expect(response.text).toContain(
+        `  <id>urn:oboku:opds:calm-snails-dream:shelves:shelf-dune</id>\n  <title>Dune saga</title>`,
+      )
+      expect(response.text).toContain(
+        `<link rel="self" href="/opds/calm-snails-dream/shelves/shelf-dune" type="application/atom+xml;profile=opds-catalog;kind=acquisition"/>`,
+      )
+    })
+
+    it.each([
+      ["a shelf holding a book under a protected tag", "shelf-private"],
+      ["a shelf without a served book", "shelf-unserved"],
+      ["an unknown shelf", "shelf-missing"],
+    ])("answers 404 for %s", async (_, shelfId) => {
+      const response = await getCatalog(
+        `/opds/calm-snails-dream/shelves/${shelfId}`,
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(404)
+    })
+
+    it("lists no shelf and serves none while the owner has no Google connection", async () => {
+      isConnected.mockResolvedValue(false)
+
+      const shelves = await getCatalog(
+        "/opds/calm-snails-dream/shelves",
+        OWNER_AUTHORIZATION,
+      )
+      const shelf = await getCatalog(
+        "/opds/calm-snails-dream/shelves/shelf-dune",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(shelves.status).toBe(200)
+      expect(toListedShelfIds(shelves.text)).toEqual([])
+      expect(shelf.status).toBe(404)
+      expect(createNanoInstanceForUser).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["a page past the last", 404, "shelves?page=2"],
+      ["a shelf's page past the last", 404, "shelves/shelf-dune?page=2"],
+      ["page 0", 400, "shelves?page=0"],
+      ["a shelf's page 0 in OPDS 2.0", 400, "v2/shelves/shelf-dune?page=0"],
+    ])("answers %s with %i", async (_, status, path) => {
+      const response = await getCatalog(
+        `/opds/calm-snails-dream/${path}`,
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(status)
+    })
+  })
+
   describe("book covers", () => {
     const getBookCover = (bookId: string) =>
       getCatalog(
