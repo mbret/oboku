@@ -14,6 +14,14 @@ Your browser will not sends the credentials for a preflight request (see [https:
 
 You can configure a reverse proxy in front of your WebDAV server and intercept OPTIONS requests to return a 200 status
 
+## Connect through oboku's server
+
+Some WebDAV servers refuse requests from the browser, and you cannot change their CORS or OPTIONS answers. Koofr (`https://app.koofr.net/dav/Koofr`, with an app password) is one of them. For such a server, check **Connect through oboku's server** on the connector.
+
+oboku's server then downloads your books from the WebDAV server and passes them on to you. Add the server as a data source: adding a single book still lists the server's folders from the browser, which fails. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of both you used this month.
+
+Without the setting, your browser downloads books from the WebDAV server, and they do not count towards the quota.
+
 ## Servers on your local network
 
 oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
