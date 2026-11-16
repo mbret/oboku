@@ -41,7 +41,6 @@ type CatalogNavigationEntry = {
   description: string
   path: CatalogPath
   kind: CatalogFeedKind
-  /** How many items the feed it leads to lists, when known. */
   itemCount?: number
 }
 
