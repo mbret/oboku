@@ -78,6 +78,8 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "oboku's server lost its access to your account: you removed oboku from your account, or the access expired. Connect your account again."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
+    case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED:
+      return "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage."
     default:
       return `Something went wrong. Error code: ${error}`
   }

@@ -75,7 +75,9 @@ export const isWebdavConnector = (
   typeof value.username === "string" &&
   typeof value.passwordAsSecretId === "string" &&
   (value.allowSelfSigned === undefined ||
-    typeof value.allowSelfSigned === "boolean")
+    typeof value.allowSelfSigned === "boolean") &&
+  (value.connectThroughServer === undefined ||
+    typeof value.connectThroughServer === "boolean")
 
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({

@@ -45,6 +45,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     <GenericConnectorForm
       connectorId={connectorId}
       connectorType="webdav"
+      showConnectThroughServer
       onSubmitSuccess={onSubmitSuccess}
       testConnection={testConnection}
       renderExtraActions={() => (

@@ -39,6 +39,16 @@ describe("errorToMessage", () => {
     )
   })
 
+  it("explains a download refused by the monthly download quota", () => {
+    const error = createApiError(429, {
+      errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED }],
+    })
+
+    expect(errorToMessage(error)).toBe(
+      "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage.",
+    )
+  })
+
   it("ignores a code oboku does not define", () => {
     const error = createApiError(400, { errors: [{ code: "not-a-code" }] })
 

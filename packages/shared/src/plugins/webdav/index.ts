@@ -13,6 +13,8 @@ export type WebdavConnectorDocType = {
   username: string
   passwordAsSecretId: string
   allowSelfSigned?: boolean
+  /** For a server that refuses requests from the browser (CORS): oboku's API makes them instead. */
+  connectThroughServer?: boolean
   type: "webdav"
 }
 

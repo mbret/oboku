@@ -33,7 +33,7 @@ export const settingsSchema: RxJsonSchema<
     contentPassword?: string | null
   }
 > = {
-  version: 2,
+  version: 3,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -63,6 +63,7 @@ export const settingsSchema: RxJsonSchema<
           username: { type: "string" },
           passwordAsSecretId: { type: "string" },
           allowSelfSigned: { type: "boolean" },
+          connectThroughServer: { type: "boolean" },
         },
         required: ["id", "type", "username", "passwordAsSecretId"],
       },
@@ -109,6 +110,7 @@ export const isConnectorOfType = <T extends SettingsConnectorType>(
 export const settingsSchemaMigrationStrategies: MigrationStrategies = {
   1: (oldDoc: Record<string, unknown>) => oldDoc,
   2: (oldDoc: Record<string, unknown>) => oldDoc,
+  3: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const settingsCollectionMethods: SettingsCollectionMethods = {

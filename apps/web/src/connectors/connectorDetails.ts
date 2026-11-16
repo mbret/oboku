@@ -1,4 +1,7 @@
-import type { SettingsConnectorType } from "@oboku/shared"
+import type {
+  SettingsConnectorDocType,
+  SettingsConnectorType,
+} from "@oboku/shared"
 import { ROUTES } from "../navigation/routes"
 
 export const CONNECTOR_DETAILS: Record<
@@ -30,3 +33,7 @@ export const isSettingsConnectorType = (
   type: string | undefined,
 ): type is SettingsConnectorType =>
   type !== undefined && Object.hasOwn(CONNECTOR_DETAILS, type)
+
+export const isConnectedThroughServer = (
+  connector: SettingsConnectorDocType | undefined,
+) => connector?.type === "webdav" && !!connector.connectThroughServer
