@@ -73,10 +73,10 @@ describe("DataSourceForm (WebDAV)", () => {
     expect(await screen.findByText("Connection test")).toBeDefined()
   })
 
-  it("leaves the connection test out for a connector that connects through oboku's server", async () => {
+  it("leaves the connection test out for a connector that uses oboku's server as a proxy", async () => {
     mocks.connector.mockReturnValue({
       ...koofrConnector,
-      connectThroughServer: true,
+      proxyThroughServer: true,
     })
 
     render(<DataSourceForm onSubmit={vi.fn()} submitLabel="Save" />)

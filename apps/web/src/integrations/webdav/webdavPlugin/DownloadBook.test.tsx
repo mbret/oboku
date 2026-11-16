@@ -97,11 +97,11 @@ describe("DownloadBook (WebDAV)", () => {
     vi.clearAllMocks()
   })
 
-  it("downloads the book through oboku's server when the connector connects through it", async () => {
+  it("downloads the book through oboku's server when the connector uses it as a proxy", async () => {
     mocks.extractConnectorData.mockResolvedValue({
       data: {
         ...koofrConnector,
-        connectThroughServer: true,
+        proxyThroughServer: true,
         password: PASSWORD,
       },
     })
@@ -134,7 +134,7 @@ describe("DownloadBook (WebDAV)", () => {
     mocks.extractConnectorData.mockResolvedValue({
       data: {
         ...koofrConnector,
-        connectThroughServer: true,
+        proxyThroughServer: true,
         password: PASSWORD,
       },
     })

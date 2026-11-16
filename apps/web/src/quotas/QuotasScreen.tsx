@@ -78,7 +78,7 @@ export function QuotasScreen() {
                     OPDS servers
                   </Link>{" "}
                   pass through oboku's server, and so do books from WebDAV
-                  connectors set to connect through it. They count towards your
+                  connectors that use it as a proxy. They count towards your
                   monthly quota and towards the quota of all users.
                 </>
               }
