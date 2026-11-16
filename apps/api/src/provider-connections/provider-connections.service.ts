@@ -1,5 +1,5 @@
 import { Injectable } from "@nestjs/common"
-import type { WebdavConnectorDocType } from "@oboku/shared"
+import type { SecretDocType, WebdavConnectorDocType } from "@oboku/shared"
 import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
@@ -9,13 +9,21 @@ import { ProviderConnectionPostgresService } from "../features/postgres/provider
 import { isRecord } from "../http/isRecord.js"
 import { isWebdavConnector } from "../plugins/webdav/index.js"
 
+/** A secret's value as the app stores it, encrypted with the user's master key. */
+export type EncryptedSecretValue = NonNullable<SecretDocType["value"]>
+
 /**
  * What each account provider grants, as the API keeps it. A connector's
- * credentials hold the connector as it was when the user connected it.
+ * credentials hold the connector, and its password secret's encrypted value,
+ * as they were when the user connected it.
  */
 export type ProviderCredentials = {
   google: { refreshToken: string }
-  webdav: { connector: WebdavConnectorDocType; password: string }
+  webdav: {
+    connector: WebdavConnectorDocType
+    passwordSecretValue: EncryptedSecretValue | null
+    password: string
+  }
 }
 
 export type ConnectionProvider = keyof ProviderCredentials
@@ -36,6 +44,13 @@ type ProviderAndCredentials = {
   }
 }[ConnectionProvider]
 
+const isEncryptedSecretValue = (
+  value: unknown,
+): value is EncryptedSecretValue =>
+  isRecord(value) &&
+  typeof value.iv === "string" &&
+  typeof value.data === "string"
+
 const credentialsParsers: {
   [P in ConnectionProvider]: (value: unknown) => ProviderCredentials[P] | null
 } = {
@@ -50,13 +65,16 @@ const credentialsParsers: {
   webdav: function parseWebdavCredentials(value) {
     if (!isRecord(value)) return null
 
-    const { connector, password } = value
+    const { connector, passwordSecretValue, password } = value
     const isWebdavCredentials =
-      typeof password === "string" && isWebdavConnector(connector)
+      typeof password === "string" &&
+      isWebdavConnector(connector) &&
+      (passwordSecretValue === null ||
+        isEncryptedSecretValue(passwordSecretValue))
 
     if (!isWebdavCredentials) return null
 
-    return { connector, password }
+    return { connector, passwordSecretValue, password }
   },
 }
 

@@ -7,6 +7,7 @@ import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
 import {
   ObokuErrorCode,
+  type SecretDocType,
   type SettingsConnectorDocType,
   type WebdavConnectorDocType,
 } from "@oboku/shared"
@@ -108,6 +109,23 @@ async function startServer({ isWebdav }: { isWebdav: boolean }) {
   return { host: `127.0.0.1:${address.port}`, requests }
 }
 
+/** The password secret's value, as the app encrypts it with the master key. */
+const ENCRYPTED_PASSWORD = { iv: "password-iv", data: "encrypted-password" }
+
+const toPasswordSecret = (
+  id: string,
+  value: SecretDocType["value"] = ENCRYPTED_PASSWORD,
+): SecretDocType => ({
+  _id: id,
+  _rev: "1-secret",
+  rxdbMeta: { lwt: 0 },
+  rx_model: "secret",
+  name: "NAS password",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  modifiedAt: null,
+  value,
+})
+
 const toWebdavConnector = (
   host: string,
   id = "nas-connector",
@@ -123,6 +141,7 @@ describe("ConnectorConnectionController", () => {
   let app: INestApplication<App>
   let rows: Map<string, ProviderConnectionPostgresEntity>
   let connectorsByEmail: Map<string, SettingsConnectorDocType[]>
+  let secretsById: Map<string, SecretDocType>
   let createNanoInstanceForUser: ReturnType<typeof vi.fn>
   let providerConnectionsService: ProviderConnectionsService
 
@@ -142,8 +161,18 @@ describe("ConnectorConnectionController", () => {
       .delete(`/provider-connections/connectors/${connectorId}`)
       .set("Authorization", `Bearer ${READER_SESSION}`)
 
+  /** Also gives each connector a password secret, unless it has one. */
   const setReaderConnectors = (connectors: SettingsConnectorDocType[]) => {
     connectorsByEmail.set(READER_EMAIL, connectors)
+
+    for (const { passwordAsSecretId } of connectors) {
+      if (!secretsById.has(passwordAsSecretId)) {
+        secretsById.set(
+          passwordAsSecretId,
+          toPasswordSecret(passwordAsSecretId),
+        )
+      }
+    }
   }
 
   const readerRowKey = (connectorId = "nas-connector") =>
@@ -157,10 +186,20 @@ describe("ConnectorConnectionController", () => {
     const connectionStore = createConnectionStore()
     rows = connectionStore.rows
     connectorsByEmail = new Map()
+    secretsById = new Map()
     createNanoInstanceForUser = vi.fn(async ({ email }: { email: string }) => ({
       get: async () => ({
         _id: "settings",
         connectors: connectorsByEmail.get(email) ?? [],
+      }),
+      fetch: async ({ keys }: { keys: string[] }) => ({
+        rows: keys.map(function toAllDocsRow(key) {
+          const doc = secretsById.get(key)
+
+          return doc
+            ? { id: key, key, value: { rev: doc._rev }, doc }
+            : { key, error: "not_found" }
+        }),
       }),
     }))
 
@@ -247,7 +286,11 @@ describe("ConnectorConnectionController", () => {
         provider: "webdav",
         accountId: connector.id,
       }),
-    ).resolves.toEqual({ connector, password: WEBDAV_PASSWORD })
+    ).resolves.toEqual({
+      connector,
+      passwordSecretValue: ENCRYPTED_PASSWORD,
+      password: WEBDAV_PASSWORD,
+    })
     expect((await listConnections()).body).toEqual({
       connections: [response.body.connection],
     })
@@ -344,6 +387,22 @@ describe("ConnectorConnectionController", () => {
     ])
   })
 
+  it("refuses a connector whose password secret the settings do not hold, without contacting its server", async () => {
+    const { host, requests } = await startServer({ isWebdav: true })
+    const connector = toWebdavConnector(host)
+    setPrivateNetworkAllowedHosts([host])
+    setReaderConnectors([connector])
+    secretsById.delete(connector.passwordAsSecretId)
+
+    const response = await connect(connector.id, { password: WEBDAV_PASSWORD })
+
+    expect(response.body.errors).toEqual([
+      { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND },
+    ])
+    expect(requests).toEqual([])
+    expect(rows.size).toBe(0)
+  })
+
   it("refuses a connector type it cannot sign in to", async () => {
     setReaderConnectors([
       {
@@ -398,8 +457,52 @@ describe("ConnectorConnectionController", () => {
       }),
     ).resolves.toEqual({
       connector: editedConnector,
+      passwordSecretValue: ENCRYPTED_PASSWORD,
       password: WEBDAV_PASSWORD,
     })
+  })
+
+  it("lists a connection whose password changed as such, and one whose secret was only renamed as connected", async () => {
+    const { host } = await startServer({ isWebdav: true })
+    const connector = toWebdavConnector(host)
+    setPrivateNetworkAllowedHosts([host])
+    setReaderConnectors([connector])
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
+
+    secretsById.set(connector.passwordAsSecretId, {
+      ...toPasswordSecret(connector.passwordAsSecretId),
+      name: "Renamed NAS password",
+    })
+
+    expect((await listConnections()).body.connections).toEqual([
+      expect.objectContaining({ status: "connected" }),
+    ])
+
+    secretsById.set(
+      connector.passwordAsSecretId,
+      toPasswordSecret(connector.passwordAsSecretId, {
+        iv: "new-password-iv",
+        data: "encrypted-new-password",
+      }),
+    )
+
+    expect((await listConnections()).body.connections).toEqual([
+      expect.objectContaining({ status: "connector-changed" }),
+    ])
+    expect(rows.size).toBe(1)
+  })
+
+  it("deletes a connection whose password secret is gone", async () => {
+    const { host } = await startServer({ isWebdav: true })
+    const connector = toWebdavConnector(host)
+    setPrivateNetworkAllowedHosts([host])
+    setReaderConnectors([connector])
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
+
+    secretsById.delete(connector.passwordAsSecretId)
+
+    expect((await listConnections()).body).toEqual({ connections: [] })
+    expect(rows.size).toBe(0)
   })
 
   it("deletes a connection whose connector is gone", async () => {

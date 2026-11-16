@@ -2,13 +2,14 @@ import { isDeepStrictEqual } from "node:util"
 import { BadRequestException, Injectable } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
-import { getSettings } from "../../couch/dbHelpers.js"
+import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { isRecord } from "../../http/isRecord.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { signInToWebdav } from "../../plugins/webdav/index.js"
 import {
   type ConnectionProvider,
+  type EncryptedSecretValue,
   ProviderConnectionsService,
 } from "../provider-connections.service.js"
 import type {
@@ -43,6 +44,26 @@ const toSignInError = (error: unknown) => {
   )
 }
 
+type UserDb = Awaited<ReturnType<CouchService["createNanoInstanceForUser"]>>
+
+const readConnectors = async (db: UserDb) => {
+  const settings = await getSettings(db)
+
+  return settings?.connectors ?? []
+}
+
+/** The value of each secret the user's database holds, by id. */
+const readSecretValues = async (
+  db: UserDb,
+  secretIds: ReadonlyArray<string>,
+) => {
+  const secrets = await fetchByIds(db, "secret", secretIds)
+
+  return new Map<string, EncryptedSecretValue | null>(
+    secrets.map((secret) => [secret._id, secret.value ?? null]),
+  )
+}
+
 const toConnectorConnection = ({
   connectorId,
   status,
@@ -69,13 +90,6 @@ export class ConnectorConnectionService {
     private readonly providerConnectionsService: ProviderConnectionsService,
   ) {}
 
-  private async readConnectors(email: string) {
-    const db = await this.couchService.createNanoInstanceForUser({ email })
-    const settings = await getSettings(db)
-
-    return settings?.connectors ?? []
-  }
-
   private async listStoredConnections(userId: number) {
     const { providerConnectionsService } = this
     const connectionsByType = await Promise.all(
@@ -96,8 +110,8 @@ export class ConnectorConnectionService {
 
   /**
    * Signs in to the connector's server with `password`, then keeps a copy of
-   * the connector with the password, encrypted. Replaces the connector's
-   * previous connection.
+   * the connector and of its password secret's encrypted value, with the
+   * password, encrypted. Replaces the connector's previous connection.
    */
   async connect({
     userId,
@@ -110,10 +124,19 @@ export class ConnectorConnectionService {
     connectorId: string
     password: string
   }): Promise<ConnectorConnectionDto> {
-    const connectors = await this.readConnectors(email)
+    const db = await this.couchService.createNanoInstanceForUser({ email })
+    const connectors = await readConnectors(db)
     const connector = connectors.find(({ id }) => id === connectorId)
+    const secretValues = await readSecretValues(
+      db,
+      connector ? [connector.passwordAsSecretId] : [],
+    )
+    const passwordSecretValue = connector
+      ? secretValues.get(connector.passwordAsSecretId)
+      : undefined
+    const isPasswordSecretStored = passwordSecretValue !== undefined
 
-    if (!connector) {
+    if (!connector || !isPasswordSecretStored) {
       throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
       )
@@ -138,7 +161,7 @@ export class ConnectorConnectionService {
     await this.providerConnectionsService.connect({
       userId,
       provider: connector.type,
-      credentials: { connector, password },
+      credentials: { connector, passwordSecretValue, password },
       accountId: connector.id,
       accountName: connector.url,
       scopes: [],
@@ -161,8 +184,9 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * The user's connector connections. A connection whose connector no longer
-   * exists, or whose credentials no longer decrypt, is deleted.
+   * The user's connector connections. A connection whose connector or
+   * password secret no longer exists, or whose credentials no longer decrypt,
+   * is deleted.
    */
   async list({
     userId,
@@ -176,7 +200,12 @@ export class ConnectorConnectionService {
     if (storedConnections.length === 0) return []
 
     const { providerConnectionsService } = this
-    const connectors = await this.readConnectors(email)
+    const db = await this.couchService.createNanoInstanceForUser({ email })
+    const connectors = await readConnectors(db)
+    const secretValues = await readSecretValues(
+      db,
+      connectors.map(({ passwordAsSecretId }) => passwordAsSecretId),
+    )
     const connections = await Promise.all(
       storedConnections.map(async function toCurrentConnection({
         provider,
@@ -188,21 +217,27 @@ export class ConnectorConnectionService {
         const connector = connectors.find(
           ({ id, type }) => id === connectorId && type === provider,
         )
+        const passwordSecretValue = connector
+          ? secretValues.get(connector.passwordAsSecretId)
+          : undefined
+        const isPasswordSecretStored = passwordSecretValue !== undefined
 
-        if (!credentials || !connector) {
+        if (!credentials || !connector || !isPasswordSecretStored) {
           await providerConnectionsService.disconnect(key)
 
           return null
         }
 
-        const isConnectorUnchanged = isDeepStrictEqual(
-          credentials.connector,
-          connector,
-        )
+        const isUnchangedSinceConnected =
+          isDeepStrictEqual(credentials.connector, connector) &&
+          isDeepStrictEqual(
+            credentials.passwordSecretValue,
+            passwordSecretValue,
+          )
 
         return toConnectorConnection({
           connectorId,
-          status: isConnectorUnchanged ? "connected" : "connector-changed",
+          status: isUnchangedSinceConnected ? "connected" : "connector-changed",
           connectedAt,
         })
       }),

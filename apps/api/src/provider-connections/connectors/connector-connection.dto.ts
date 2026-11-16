@@ -20,9 +20,9 @@ export class ConnectConnectorDto {
 export class ConnectorConnectionDto {
   connectorId!: string
   /**
-   * `connector-changed` once the connector differs from the one the user
-   * connected: the API no longer uses the password until the user connects
-   * the connector again.
+   * `connector-changed` once the connector, or its password secret's value,
+   * differs from the one the user connected: the API no longer uses the
+   * password until the user connects the connector again.
    */
   @ApiProperty({ enum: CONNECTOR_CONNECTION_STATUSES })
   status!: ConnectorConnectionStatus
