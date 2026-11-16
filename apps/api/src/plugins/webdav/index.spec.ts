@@ -13,7 +13,7 @@ import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
 import { SyncReport } from "../../datasource/sync/SyncReport.js"
 import { buildMultiStatusXml } from "../../webdav/webdav.xml.js"
-import { dataSource as webdavDataSource } from "./index.js"
+import { isSignInRefused, dataSource as webdavDataSource } from "./index.js"
 
 const username = "reader"
 const password = "webdav-password-1234"
@@ -189,8 +189,11 @@ const createUserDbWithConnector = (url: string) => {
   } as unknown as createNano.DocumentScope<unknown>
 }
 
-const downloadBookFrom = (host: string) =>
-  webdavDataSource.download(
+const downloadBookFrom = async (
+  host: string,
+  providerCredentials = { password },
+) => {
+  const { stream } = await webdavDataSource.download(
     {
       _id: "link",
       _rev: "1-link",
@@ -202,9 +205,14 @@ const downloadBookFrom = (host: string) =>
       createdAt: "2026-01-01T00:00:00.000Z",
       data: { connectorId: "connector", filePath: "/books/book.epub" },
     },
-    { password },
+    providerCredentials,
     createUserDbWithConnector(`http://${host}`),
   )
+
+  if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
+
+  return stream
+}
 
 const syncBooksFrom = (host: string) =>
   webdavDataSource.sync({
@@ -244,11 +252,10 @@ describe("WebDAV data source", () => {
   it("stops the server's answer once the stream it gave is destroyed", async () => {
     const { host, bookRequested } = await startEndlessBookServer()
     setPrivateNetworkAllowedHosts([host])
-    const { stream } = await downloadBookFrom(host)
+    const stream = await downloadBookFrom(host)
     const [, bookResponse] = await bookRequested
     await once(stream, "data")
 
-    if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
     stream.destroy()
 
     await once(bookResponse, "close")
@@ -257,15 +264,23 @@ describe("WebDAV data source", () => {
   it("fails the stream it gave once the server drops the connection mid-file", async () => {
     const { host, bookRequested } = await startEndlessBookServer()
     setPrivateNetworkAllowedHosts([host])
-    const { stream } = await downloadBookFrom(host)
+    const stream = await downloadBookFrom(host)
     const [, bookResponse] = await bookRequested
     await once(stream, "data")
 
-    if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
     const streamFinished = finished(stream)
     bookResponse.socket.destroy()
 
     await expect(streamFinished).rejects.toThrow()
+  })
+
+  it("refuses a password a digest auth server refuses, instead of passing on its error page", async () => {
+    const host = await startBooksServer(digestAuth)
+    setPrivateNetworkAllowedHosts([host])
+
+    await expect(
+      downloadBookFrom(host, { password: "not-the-password" }),
+    ).rejects.toSatisfy(isSignInRefused)
   })
 
   it("refuses a server on a private network the instance does not allow", async () => {

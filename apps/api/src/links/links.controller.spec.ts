@@ -47,6 +47,42 @@ const PROVIDER_CREDENTIALS = { password: "koofr-app-password" }
 const BOOK_BYTES = "epub bytes"
 const WEBDAV_STAT_SIZE = 12
 
+const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
+  [
+    [
+      "a missing file with 404",
+      Object.assign(new Error("Invalid response: 404"), { status: 404 }),
+      404,
+      ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
+    ],
+    [
+      "a refused password (401) with 502",
+      Object.assign(new Error("Invalid response: 401"), { status: 401 }),
+      502,
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED,
+    ],
+    [
+      "a refused password (403) with 502",
+      Object.assign(new Error("Invalid response: 403"), { status: 403 }),
+      502,
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED,
+    ],
+    [
+      "a server it cannot reach with 502",
+      Object.assign(new Error("connect ECONNREFUSED"), {
+        code: "ECONNREFUSED",
+      }),
+      502,
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+    ],
+    [
+      "an address the instance does not reach with 400",
+      new NonPublicAddressError("nas.local"),
+      400,
+      ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED,
+    ],
+  ]
+
 const createLibraryDb = (
   documents: ReadonlyArray<Record<string, unknown>>,
 ) => ({
@@ -184,35 +220,8 @@ describe("LinksController", () => {
     expect(download).not.toHaveBeenCalled()
   })
 
-  it.each([
-    [
-      "a missing file with 404",
-      Object.assign(new Error("Invalid response: 404"), { status: 404 }),
-      404,
-      ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
-    ],
-    [
-      "a refused password with 502",
-      Object.assign(new Error("Invalid response: 401"), { status: 401 }),
-      502,
-      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED,
-    ],
-    [
-      "a server it cannot reach with 502",
-      Object.assign(new Error("connect ECONNREFUSED"), {
-        code: "ECONNREFUSED",
-      }),
-      502,
-      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
-    ],
-    [
-      "an address the instance does not reach with 400",
-      new NonPublicAddressError("nas.local"),
-      400,
-      ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED,
-    ],
-  ])(
-    "answers %s, before it downloads the file",
+  it.each(SERVER_FAILURES)(
+    "answers %s when the WebDAV server describes the file",
     async (_, serverFailure, routeStatus, code) => {
       getFileMetadata.mockRejectedValue(serverFailure)
 
@@ -224,20 +233,17 @@ describe("LinksController", () => {
     },
   )
 
-  it("answers 502 with the server's refusal when the WebDAV server refuses the file it described", async () => {
-    download.mockRejectedValue(
-      Object.assign(new Error("Invalid response: 403"), { status: 403 }),
-    )
+  it.each(SERVER_FAILURES)(
+    "answers %s when the WebDAV server sends the file",
+    async (_, serverFailure, routeStatus, code) => {
+      download.mockRejectedValue(serverFailure)
 
-    const response = await downloadLink(WEBDAV_LINK._id)
+      const response = await downloadLink(WEBDAV_LINK._id)
 
-    expect(response.status).toBe(502)
-    expect(response.body).toEqual({
-      errors: [
-        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED },
-      ],
-    })
-  })
+      expect(response.status).toBe(routeStatus)
+      expect(response.body).toEqual({ errors: [{ code }] })
+    },
+  )
 
   it.each([
     ["no size", {}],
@@ -264,7 +270,9 @@ describe("LinksController", () => {
     download.mockResolvedValue({
       stream: new Readable({
         read() {
-          this.destroy(new Error("Invalid response: 403 Forbidden"))
+          this.destroy(
+            Object.assign(new Error("aborted"), { code: "ECONNRESET" }),
+          )
         },
       }),
     })
