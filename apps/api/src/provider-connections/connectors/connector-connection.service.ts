@@ -3,10 +3,9 @@ import { BadRequestException, Injectable } from "@nestjs/common"
 import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
-import { isRecord } from "../../http/isRecord.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { signInToWebdav } from "../../plugins/webdav/index.js"
+import { isSignInRefused, signInToWebdav } from "../../plugins/webdav/index.js"
 import {
   type EncryptedSecretValue,
   ProviderConnectionsService,
@@ -18,23 +17,13 @@ import type {
 
 const SIGN_IN_DEADLINE_MS = 10_000
 
-const UNAUTHORIZED_STATUSES = [401, 403]
-
-/** The status a server answered with, which WebDAV client errors carry. */
-const toAnsweredStatus = (error: unknown) =>
-  isRecord(error) && typeof error.status === "number" ? error.status : null
-
 const toSignInError = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
   }
 
-  const answeredStatus = toAnsweredStatus(error)
-  const isSignInRefused =
-    answeredStatus !== null && UNAUTHORIZED_STATUSES.includes(answeredStatus)
-
   return createObokuBadRequest(
-    isSignInRefused
+    isSignInRefused(error)
       ? ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED
       : ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
   )

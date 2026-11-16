@@ -1,10 +1,19 @@
 import {
   pipeline,
-  type Readable,
+  Readable,
   Transform,
   type TransformCallback,
 } from "node:stream"
-import { Injectable, Logger } from "@nestjs/common"
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  StreamableFile,
+} from "@nestjs/common"
+import { ObokuErrorCode } from "@oboku/shared"
+import type { Response } from "express"
+import { toObokuErrorBody } from "../http/obokuBadRequest.js"
 import {
   type InstanceConfig,
   InstanceConfigService,
@@ -58,6 +67,18 @@ const toUserQuotaBytes = ({
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
+
+export type ProxiedFile = {
+  stream: NodeJS.ReadableStream
+  /** The file name the answer gives, which also types it by its extension. */
+  name: string
+  /** The media type the answer gives, which replaces the one of the name. */
+  contentType: string
+  /** The number of bytes `stream` yields, when the provider states it. */
+  size?: number
+  /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
+  expectedSize?: number
+}
 
 /** Keeps the files the instance passes on to users under its monthly quotas. */
 @Injectable()
@@ -145,7 +166,7 @@ export class ProxiedDownloadQuotaService {
     const config = this.instanceConfigService.getConfig().value
 
     const byteCounter = new ByteCountingStream()
-    // The pipeline listens to the Drive stream before the reservation is
+    // The pipeline listens to the source stream before the reservation is
     // awaited: an error emitted with no listener stops the process. Its own
     // error is the stream's, which the route answers.
     const transferEnded = new Promise<number>(function countUntilEnd(resolve) {
@@ -192,5 +213,80 @@ export class ProxiedDownloadQuotaService {
     })
 
     return { status: "metered", stream: byteCounter }
+  }
+
+  /**
+   * Answers a route with `file`, metered by {@link meter}.
+   *
+   * @throws a 429 with `Retry-After` set to the start of the next month, UTC,
+   * and `ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED`, when the download would pass
+   * either quota.
+   * @returns a file that answers 502 with
+   * `ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE` when the provider's stream
+   * fails before its first byte.
+   */
+  async deliver({
+    userId,
+    file,
+    isBodySent,
+    response,
+  }: {
+    userId: number
+    file: ProxiedFile
+    /** False for a HEAD request, see {@link meter}. */
+    isBodySent: boolean
+    response: Response
+  }): Promise<StreamableFile> {
+    const meteredFile = await this.meter({
+      userId,
+      stream:
+        file.stream instanceof Readable
+          ? file.stream
+          : Readable.from(file.stream),
+      expectedBytes: file.expectedSize,
+      isBodySent,
+    })
+
+    if (meteredFile.status === "quota-reached") {
+      response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
+
+      throw new HttpException(
+        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
+        HttpStatus.TOO_MANY_REQUESTS,
+      )
+    }
+
+    response.attachment(file.name).type(file.contentType)
+
+    const streamableFile = new StreamableFile(meteredFile.stream, {
+      length: file.size,
+    })
+    const handleStreamFailure = streamableFile.errorHandler
+
+    // Nest answers 400 for a stream that fails before its first byte; the
+    // provider failed, not the request.
+    return streamableFile.setErrorHandler(
+      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
+        const isAnswerStarted =
+          streamResponse.destroyed || streamResponse.headersSent
+
+        if (isAnswerStarted) {
+          handleStreamFailure(error, streamResponse)
+
+          return
+        }
+
+        // `streamResponse` is `response`, typed with `send` only.
+        response.removeHeader("Content-Disposition")
+        response
+          .status(HttpStatus.BAD_GATEWAY)
+          .type("json")
+          .json(
+            toObokuErrorBody(
+              ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+            ),
+          )
+      },
+    )
   }
 }
