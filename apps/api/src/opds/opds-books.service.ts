@@ -1,4 +1,3 @@
-import { Readable } from "node:stream"
 import type createNano from "nano"
 import { lastValueFrom } from "rxjs"
 import {
@@ -326,7 +325,7 @@ export class OpdsBooksService {
 
     return {
       ...toServedFile(book),
-      stream: stream instanceof Readable ? stream : Readable.from(stream),
+      stream,
       size,
       expectedSize: size ?? metadataSize,
     }

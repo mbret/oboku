@@ -4,14 +4,11 @@ import {
   DefaultValuePipe,
   Get,
   Header,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Query,
   Req,
   Res,
-  StreamableFile,
   UseGuards,
 } from "@nestjs/common"
 import { ApiExcludeController } from "@nestjs/swagger"
@@ -204,46 +201,14 @@ export class OpdsCatalogController {
       owner,
       bookId,
     })
-    const isHeadRequest = request.method === "HEAD"
-    const meteredFile = await this.proxiedDownloadQuotaService.meter({
+
+    return this.proxiedDownloadQuotaService.deliver({
       userId: owner.id,
-      stream: file.stream,
-      expectedBytes: file.expectedSize,
-      isBodySent: !isHeadRequest,
+      file,
+      request,
+      response,
+      attachment: { name: file.name, contentType: file.contentType },
     })
-
-    if (meteredFile.status === "quota-reached") {
-      response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
-
-      throw new HttpException("Too Many Requests", HttpStatus.TOO_MANY_REQUESTS)
-    }
-
-    // `attachment` types the response from the name's extension: the book's
-    // own media type replaces it.
-    response.attachment(file.name).type(file.contentType)
-
-    const bookFile = new StreamableFile(meteredFile.stream, {
-      length: file.size,
-    })
-    const handleStreamFailure = bookFile.errorHandler
-
-    // Nest answers 400 for a stream that fails before its first byte; Drive
-    // failed, not the request.
-    return bookFile.setErrorHandler(
-      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
-        const isAnswerStarted =
-          streamResponse.destroyed || streamResponse.headersSent
-
-        if (isAnswerStarted) {
-          handleStreamFailure(error, streamResponse)
-
-          return
-        }
-
-        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
-        streamResponse.send("Bad Gateway")
-      },
-    )
   }
 
   private async findBooksFeed({

@@ -1,10 +1,19 @@
 import {
   pipeline,
-  type Readable,
+  Readable,
   Transform,
   type TransformCallback,
 } from "node:stream"
-import { Injectable, Logger } from "@nestjs/common"
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  Logger,
+  StreamableFile,
+} from "@nestjs/common"
+import { ObokuErrorCode } from "@oboku/shared"
+import type { Request, Response } from "express"
+import type { ObokuErrorResponseDto } from "../openapi/error-response.dto.js"
 import {
   type InstanceConfig,
   InstanceConfigService,
@@ -58,6 +67,18 @@ const toUserQuotaBytes = ({
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
+
+export type ProxiedFile = {
+  stream: NodeJS.ReadableStream
+  /** The number of bytes `stream` yields, when the provider states it. */
+  size?: number
+  /** The bytes to reserve on the quotas: `size`, or the provider's own idea of it. */
+  expectedSize?: number
+}
+
+const quotaReachedBody: ObokuErrorResponseDto = {
+  errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED }],
+}
 
 /** Keeps the files the instance passes on to users under its monthly quotas. */
 @Injectable()
@@ -192,5 +213,74 @@ export class ProxiedDownloadQuotaService {
     })
 
     return { status: "metered", stream: byteCounter }
+  }
+
+  /**
+   * Answers a route with `file`, metered by {@link meter}.
+   *
+   * @param attachment names and types the file, once the quotas let it pass.
+   * @throws a 429 with `Retry-After` set to the start of the next month, UTC,
+   * and `ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED`, when the download would pass
+   * either quota.
+   * @returns a file that answers 502 when the provider's stream fails before
+   * its first byte.
+   */
+  async deliver({
+    userId,
+    file,
+    request,
+    response,
+    attachment,
+  }: {
+    userId: number
+    file: ProxiedFile
+    request: Pick<Request, "method">
+    response: Response
+    attachment?: { name: string; contentType: string }
+  }): Promise<StreamableFile> {
+    const meteredFile = await this.meter({
+      userId,
+      stream:
+        file.stream instanceof Readable
+          ? file.stream
+          : Readable.from(file.stream),
+      expectedBytes: file.expectedSize,
+      isBodySent: request.method !== "HEAD",
+    })
+
+    if (meteredFile.status === "quota-reached") {
+      response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
+
+      throw new HttpException(quotaReachedBody, HttpStatus.TOO_MANY_REQUESTS)
+    }
+
+    if (attachment) {
+      // `attachment` types the response from the name's extension: the file's
+      // own media type replaces it.
+      response.attachment(attachment.name).type(attachment.contentType)
+    }
+
+    const streamableFile = new StreamableFile(meteredFile.stream, {
+      length: file.size,
+    })
+    const handleStreamFailure = streamableFile.errorHandler
+
+    // Nest answers 400 for a stream that fails before its first byte; the
+    // provider failed, not the request.
+    return streamableFile.setErrorHandler(
+      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
+        const isAnswerStarted =
+          streamResponse.destroyed || streamResponse.headersSent
+
+        if (isAnswerStarted) {
+          handleStreamFailure(error, streamResponse)
+
+          return
+        }
+
+        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
+        streamResponse.send("Bad Gateway")
+      },
+    )
   }
 }

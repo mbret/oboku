@@ -59,7 +59,8 @@ export const zObokuErrorDto = z.object({
         '11005',
         '11006',
         '11007',
-        '11008'
+        '11008',
+        '12000'
     ])
 });
 
@@ -454,6 +455,15 @@ export const zRefreshBookMetadataDto = z.object({
     providerCredentials: z.record(z.string(), z.unknown())
 });
 
+export const zWebdavCredentialsDto = z.object({
+    password: z.string()
+});
+
+export const zDownloadLinkDto = z.object({
+    linkId: z.string(),
+    providerCredentials: zWebdavCredentialsDto
+});
+
 export const zRefreshCollectionMetadataDto = z.object({
     collectionId: z.string(),
     soft: z.boolean().optional(),
@@ -734,6 +744,10 @@ export const zDataSourcesSyncResponse = zEmptyResponseDto;
 export const zBooksRefreshMetadataBody = zRefreshBookMetadataDto;
 
 export const zBooksRefreshMetadataResponse = zEmptyResponseDto;
+
+export const zLinksDownloadBody = zDownloadLinkDto;
+
+export const zLinksDownloadResponse = z.string();
 
 export const zCollectionsRefreshMetadataBody = zRefreshCollectionMetadataDto;
 

@@ -38,7 +38,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000';
 };
 
 export type ObokuErrorResponseDto = {
@@ -450,6 +450,15 @@ export type RefreshBookMetadataDto = {
     providerCredentials: {
         [key: string]: unknown;
     };
+};
+
+export type WebdavCredentialsDto = {
+    password: string;
+};
+
+export type DownloadLinkDto = {
+    linkId: string;
+    providerCredentials: WebdavCredentialsDto;
 };
 
 export type RefreshCollectionMetadataDto = {
@@ -1774,6 +1783,29 @@ export type BooksRefreshMetadataResponses = {
 };
 
 export type BooksRefreshMetadataResponse = BooksRefreshMetadataResponses[keyof BooksRefreshMetadataResponses];
+
+export type LinksDownloadData = {
+    body: DownloadLinkDto;
+    path?: never;
+    query?: never;
+    url: '/links/download';
+};
+
+export type LinksDownloadErrors = {
+    429: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type LinksDownloadError = LinksDownloadErrors[keyof LinksDownloadErrors];
+
+export type LinksDownloadResponses = {
+    200: Blob | File;
+};
+
+export type LinksDownloadResponse = LinksDownloadResponses[keyof LinksDownloadResponses];
 
 export type CollectionsRefreshMetadataData = {
     body: RefreshCollectionMetadataDto;
