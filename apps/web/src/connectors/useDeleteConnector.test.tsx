@@ -1,5 +1,10 @@
 import type { SettingsConnectorType } from "@oboku/shared"
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import {
+  MutationCache,
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
 import { act, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { of } from "rxjs"
@@ -15,6 +20,7 @@ const mocks = vi.hoisted(function createDeleteConnectorMocks() {
   return {
     deleteConnector: vi.fn(),
     disconnect: vi.fn(),
+    onMutationError: vi.fn(),
   }
 })
 
@@ -39,7 +45,10 @@ function renderUseDeleteConnector({
   const client = {
     sdkClient: { delete: mocks.disconnect },
   } as unknown as HttpApiClientWeb
-  const queryClient = new QueryClient()
+  const queryClient = new QueryClient({
+    mutationCache: new MutationCache({ onError: mocks.onMutationError }),
+    defaultOptions: { mutations: { networkMode: "always" } },
+  })
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
@@ -64,16 +73,16 @@ describe("useDeleteConnector", () => {
   beforeEach(() => {
     setActiveProfileId("profile")
     mocks.deleteConnector.mockResolvedValue({})
+    mocks.disconnect.mockResolvedValue({ data: { ok: true } })
   })
 
   afterEach(() => {
+    onlineManager.setOnline(true)
     clearActiveProfileId()
     vi.clearAllMocks()
   })
 
   it("asks oboku's server to forget the deleted connector's connection", async () => {
-    mocks.disconnect.mockResolvedValue({ data: { ok: true } })
-
     renderUseDeleteConnector()
 
     await waitFor(() => {
@@ -87,16 +96,43 @@ describe("useDeleteConnector", () => {
     expect(mocks.deleteConnector).toHaveBeenCalledWith(CONNECTOR_ID)
   })
 
-  it("deletes the connector even when oboku's server cannot be reached", async () => {
-    mocks.disconnect.mockRejectedValue(new Error("offline"))
+  it("deletes the connector offline, and tells oboku's server once the browser is back online", async () => {
+    onlineManager.setOnline(false)
 
     const result = renderUseDeleteConnector()
 
     await waitFor(() => {
+      expect(result.current.isSuccess).toBe(true)
+    })
+    expect(mocks.disconnect).not.toHaveBeenCalled()
+
+    onlineManager.setOnline(true)
+
+    await waitFor(() => {
       expect(mocks.disconnect).toHaveBeenCalled()
     })
+  })
+
+  it("keeps the deletion, without an error toast, when oboku's server refuses the disconnect", async () => {
+    const refusal = new Error("Internal server error")
+    mocks.disconnect.mockRejectedValue(refusal)
+
+    const result = renderUseDeleteConnector()
+
+    await waitFor(() => {
+      expect(mocks.onMutationError).toHaveBeenCalledWith(
+        refusal,
+        expect.anything(),
+        undefined,
+        expect.objectContaining({
+          options: expect.objectContaining({
+            meta: { suppressGlobalErrorToast: true },
+          }),
+        }),
+        expect.anything(),
+      )
+    })
     expect(result.current.isSuccess).toBe(true)
-    expect(mocks.deleteConnector).toHaveBeenCalledWith(CONNECTOR_ID)
   })
 
   it("sends no request for a connector type that cannot be connected", async () => {

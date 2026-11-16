@@ -2,7 +2,7 @@ import { ListItemButton, ListItemText } from "@mui/material"
 import { isConnectableConnectorType } from "@oboku/shared"
 import { memo } from "react"
 import { type PathParam, useParams } from "react-router"
-import { useConfirmation } from "../common/useConfirmation"
+import { showConfirmDialog } from "../common/dialogs/presets"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import type { ROUTES } from "../navigation/routes"
@@ -24,7 +24,6 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const { goBack } = useSafeGoBack()
   const activeProfileId = useActiveProfileId()
   const { mutate: deleteConnector } = useDeleteConnector()
-  const confirmation = useConfirmation()
 
   if (!isSettingsConnectorType(type)) return null
 
@@ -35,20 +34,26 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
 
   const isConnectableConnector = isConnectableConnectorType(type)
 
-  const confirmThenDeleteConnector = () => {
-    const confirm = confirmation()
+  const confirmThenDeleteConnector = async () => {
+    const confirmed = await showConfirmDialog({
+      title: "Delete this connector?",
+      message: isConnectableConnector
+        ? "oboku's server also forgets this connector's password if it keeps it."
+        : undefined,
+      actions: [{ title: "Delete" }],
+    })
 
-    if (confirm) {
-      deleteConnector(
-        { id, type, profileId: activeProfileId },
-        {
-          onSuccess: () => {
-            notify("actionSuccess")
-            goBack(details.integrationRoute)
-          },
+    if (!confirmed) return
+
+    deleteConnector(
+      { id, type, profileId: activeProfileId },
+      {
+        onSuccess: () => {
+          notify("actionSuccess")
+          goBack(details.integrationRoute)
         },
-      )
-    }
+      },
+    )
   }
 
   return (

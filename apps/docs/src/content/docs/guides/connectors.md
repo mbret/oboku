@@ -31,4 +31,4 @@ If you edited the connector or its password since you connected it, the screen s
 
 Tap **Disconnect this connector** in the connector's danger zone, then confirm. oboku's server forgets the password, and the connector stays in your settings.
 
-Deleting a connector disconnects it too. If oboku cannot reach its server when you delete the connector, as when you are offline, the server keeps the password until the deletion has synced and you open a WebDAV connector in oboku. To be sure, disconnect before you delete.
+Deleting a connector disconnects it too. If you are offline, oboku tells its server once you are back online. If you close oboku first, or its server cannot be reached, the server keeps the password until the deletion has synced and you open a WebDAV connector in oboku. To be sure, disconnect before you delete.

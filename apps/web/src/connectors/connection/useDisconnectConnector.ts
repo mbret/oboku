@@ -25,7 +25,7 @@ export const useDisconnectConnector = (
       DefaultError,
       DisconnectConnectorRequest
     >,
-    "meta"
+    "meta" | "networkMode"
   >,
 ) => {
   const queryClient = useQueryClient()
