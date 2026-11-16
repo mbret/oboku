@@ -212,15 +212,22 @@ export class OpdsBooksService {
    * cover, else the placeholder the app shows. Covers do not count towards the
    * download quotas.
    *
-   * @throws `NotFoundException` for a book the catalogs do not serve.
+   * @throws `NotFoundException` for a book the catalogs do not serve, or an
+   * owner without a usable Google connection, whose catalogs list no books.
    */
   async deliverServedBookCover({
     owner,
     bookId,
   }: {
-    owner: Pick<UserPostgresEntity, "couchName">
+    owner: Pick<UserPostgresEntity, "id" | "couchName">
     bookId: string
   }) {
+    const isLibraryServed = await this.googleConnectionService.isConnected(
+      owner.id,
+    )
+
+    if (!isLibraryServed) throw new NotFoundException()
+
     const { couchName } = await this.findServedBook({ owner, bookId })
     const coverKey = getBookCoverKey(emailToNameHex(couchName), bookId)
 

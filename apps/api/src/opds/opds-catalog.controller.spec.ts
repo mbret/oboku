@@ -721,6 +721,16 @@ describe("OpdsCatalogController", () => {
       expect(deliverCover).not.toHaveBeenCalled()
     })
 
+    it("serves no cover while the owner has no Google connection, as the catalog lists no books", async () => {
+      isConnected.mockResolvedValue(false)
+
+      const response = await getBookCover("book-dune")
+
+      expect(response.status).toBe(404)
+      expect(isConnected).toHaveBeenCalledWith(OWNER.id)
+      expect(deliverCover).not.toHaveBeenCalled()
+    })
+
     it("serves no cover of an owner without a CouchDB user name", async () => {
       const response = await getCatalog(
         "/opds/quiet-owls-wait/covers/books/book-dune",
