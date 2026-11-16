@@ -25,7 +25,7 @@ import type {
 import { TestConnection, type TestConnectionFn } from "./TestConnection"
 import { useAddConnector } from "./useAddConnector"
 import { useConnector } from "./useConnector"
-import { isConnectedThroughServer } from "./connectorDetails"
+import { isProxiedThroughServer } from "./connectorDetails"
 import { useUpdateConnector } from "./useUpdateConnector"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { PageContainer } from "../common/PageContainer"
@@ -80,7 +80,7 @@ export type FormData = {
   username: string
   passwordAsSecretId: string
   allowSelfSigned: boolean
-  connectThroughServer: boolean
+  proxyThroughServer: boolean
 }
 
 function ControlledCheckboxField({
@@ -127,8 +127,8 @@ export type ConnectorFormConfig = {
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
-  /** Shows the "Connect through oboku's server" checkbox and saves its value. */
-  showConnectThroughServer?: boolean
+  /** Shows the "Use oboku's server as a proxy" checkbox and saves its value. */
+  showProxyThroughServer?: boolean
   /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
   validateUrl?: (url: string) => true | string
   urlHelperText?: ReactNode
@@ -145,7 +145,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
   children,
   showUrl = true,
-  showConnectThroughServer = false,
+  showProxyThroughServer = false,
   validateUrl,
   urlHelperText,
   topAlert,
@@ -174,14 +174,14 @@ export const ConnectorForm = memo(function ConnectorForm({
       username: "",
       passwordAsSecretId: "",
       allowSelfSigned: false,
-      connectThroughServer: false,
+      proxyThroughServer: false,
     },
     values: {
       urlValue: getConnectorUrl(connector),
       username: connector?.username ?? "",
       passwordAsSecretId: connector?.passwordAsSecretId ?? "",
       allowSelfSigned: connector?.allowSelfSigned ?? false,
-      connectThroughServer: isConnectedThroughServer(connector),
+      proxyThroughServer: isProxiedThroughServer(connector),
     },
   })
   const data = watch()
@@ -200,8 +200,8 @@ export const ConnectorForm = memo(function ConnectorForm({
           url: data.urlValue,
           allowSelfSigned: data.allowSelfSigned,
         }),
-        ...(showConnectThroughServer && {
-          connectThroughServer: data.connectThroughServer,
+        ...(showProxyThroughServer && {
+          proxyThroughServer: data.proxyThroughServer,
         }),
       }
       if (isEditing && connectorId) {
@@ -215,7 +215,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     },
   })
 
-  const canTestFromBrowser = !data.connectThroughServer
+  const canTestFromBrowser = !data.proxyThroughServer
 
   return (
     <>
@@ -261,12 +261,12 @@ export const ConnectorForm = memo(function ConnectorForm({
                 caption="Used by API sync, metadata, and download requests. Browser connection tests may still require trusting the certificate in your browser."
               />
             )}
-            {showConnectThroughServer && (
+            {showProxyThroughServer && (
               <ControlledCheckboxField
                 control={control}
-                name="connectThroughServer"
-                label="Connect through oboku's server"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it, and they count towards your monthly download quota. The connection test runs from the browser, so the form hides it."
+                name="proxyThroughServer"
+                label="Use oboku's server as a proxy"
+                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it and passes them on to you. They count towards your monthly download quota. The connection test runs from the browser, so the form hides it."
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}

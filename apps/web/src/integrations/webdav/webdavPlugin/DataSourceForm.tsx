@@ -4,7 +4,7 @@ import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { WebDAVDataSourceDocType } from "@oboku/shared"
-import { isConnectedThroughServer } from "../../../connectors/connectorDetails"
+import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
@@ -47,7 +47,7 @@ export const DataSourceForm = memo(function DataSourceForm({
     id: connectorId || undefined,
     type: "webdav",
   })
-  const canTestFromBrowser = !isConnectedThroughServer(connector)
+  const canTestFromBrowser = !isProxiedThroughServer(connector)
 
   return (
     <DataSourceFormLayout

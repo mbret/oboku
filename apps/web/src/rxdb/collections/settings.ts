@@ -63,7 +63,7 @@ export const settingsSchema: RxJsonSchema<
           username: { type: "string" },
           passwordAsSecretId: { type: "string" },
           allowSelfSigned: { type: "boolean" },
-          connectThroughServer: { type: "boolean" },
+          proxyThroughServer: { type: "boolean" },
         },
         required: ["id", "type", "username", "passwordAsSecretId"],
       },

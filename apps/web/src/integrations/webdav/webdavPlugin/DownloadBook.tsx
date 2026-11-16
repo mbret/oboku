@@ -11,7 +11,7 @@ import {
 import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../../plugins/types"
 import { ObokuErrorCode } from "@oboku/shared"
-import { isConnectedThroughServer } from "../../../connectors/connectorDetails"
+import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
@@ -20,7 +20,10 @@ import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
 import { resolveWebdavUrl } from "./auth/connect"
-import { downloadFromWebdavServer, downloadThroughServer } from "./download"
+import {
+  downloadFromWebdavServer,
+  downloadThroughServerProxy,
+} from "./download"
 import type { WebdavBackedType } from "./constants"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {
@@ -33,7 +36,7 @@ type WebdavDownloadBookProps = DownloadBookComponentProps & {
 /**
  * Shared download component for plugins backed by a WebDAV endpoint. It reads
  * the file from `webdavUrl` when given, else from the connector's URL, or
- * through oboku's API for a connector that connects through it.
+ * through oboku's server for a connector that uses it as a proxy.
  */
 export const WebdavDownloadBook = memo(function WebdavDownloadBook({
   link,
@@ -62,8 +65,8 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
       return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
         mergeMap(function downloadFile({ data }) {
           return fromAbortable(function downloadUntilCancelled(downloadSignal) {
-            return isConnectedThroughServer(data)
-              ? downloadThroughServer({
+            return isProxiedThroughServer(data)
+              ? downloadThroughServerProxy({
                   httpClientApi,
                   linkId: link._id,
                   password: data.password,

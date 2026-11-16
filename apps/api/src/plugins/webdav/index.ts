@@ -76,8 +76,8 @@ export const isWebdavConnector = (
   typeof value.passwordAsSecretId === "string" &&
   (value.allowSelfSigned === undefined ||
     typeof value.allowSelfSigned === "boolean") &&
-  (value.connectThroughServer === undefined ||
-    typeof value.connectThroughServer === "boolean")
+  (value.proxyThroughServer === undefined ||
+    typeof value.proxyThroughServer === "boolean")
 
 /** The status a server answered with, which WebDAV client errors carry. */
 export const toAnsweredStatus = (error: unknown) =>

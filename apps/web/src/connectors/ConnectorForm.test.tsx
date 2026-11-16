@@ -62,7 +62,7 @@ const koofrConnector: WebdavConnectorDocType = {
   url: "https://app.koofr.net/dav/Koofr",
   username: "reader@example.com",
   passwordAsSecretId: "koofr-secret",
-  connectThroughServer: true,
+  proxyThroughServer: true,
 }
 
 const synologyConnector: SynologyDriveConnectorDocType = {
@@ -76,7 +76,7 @@ const synologyConnector: SynologyDriveConnectorDocType = {
 const renderConnectorForm = (
   props: Pick<
     Parameters<typeof ConnectorForm>[0],
-    "connectorType" | "showConnectThroughServer"
+    "connectorType" | "showProxyThroughServer"
   >,
 ) =>
   render(
@@ -97,21 +97,21 @@ describe("ConnectorForm", () => {
     vi.clearAllMocks()
   })
 
-  it("saves 'Connect through oboku's server' once unchecked, and tests the connection from the browser only without it", async () => {
+  it("saves 'Use oboku's server as a proxy' once unchecked, and tests the connection from the browser only without it", async () => {
     mocks.connector.mockReturnValue(koofrConnector)
     mocks.updateConnector.mockResolvedValue(undefined)
     renderConnectorForm({
       connectorType: "webdav",
-      showConnectThroughServer: true,
+      showProxyThroughServer: true,
     })
-    const connectThroughServer = await screen.findByRole("checkbox", {
-      name: "Connect through oboku's server",
+    const proxyCheckbox = await screen.findByRole("checkbox", {
+      name: "Use oboku's server as a proxy",
     })
 
-    await expect.element(connectThroughServer).toBeChecked()
+    await expect.element(proxyCheckbox).toBeChecked()
     expect(screen.queryByText("Connection test")).toBeNull()
 
-    await userEvent.click(connectThroughServer)
+    await userEvent.click(proxyCheckbox)
     await expect
       .poll(() => screen.queryByText("Connection test"))
       .not.toBeNull()
@@ -119,7 +119,7 @@ describe("ConnectorForm", () => {
 
     await expect
       .poll(() => mocks.updateConnector.mock.calls)
-      .toEqual([[expect.objectContaining({ connectThroughServer: false })]])
+      .toEqual([[expect.objectContaining({ proxyThroughServer: false })]])
   })
 
   it("leaves the setting out of a form that does not show it", async () => {
@@ -132,14 +132,14 @@ describe("ConnectorForm", () => {
 
     expect(
       screen.queryByRole("checkbox", {
-        name: "Connect through oboku's server",
+        name: "Use oboku's server as a proxy",
       }),
     ).toBeNull()
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }))
 
     await expect.poll(() => mocks.updateConnector.mock.calls).toHaveLength(1)
     expect(mocks.updateConnector.mock.calls[0]?.[0]).not.toHaveProperty(
-      "connectThroughServer",
+      "proxyThroughServer",
     )
   })
 })

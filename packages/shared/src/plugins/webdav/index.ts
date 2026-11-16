@@ -13,8 +13,11 @@ export type WebdavConnectorDocType = {
   username: string
   passwordAsSecretId: string
   allowSelfSigned?: boolean
-  /** oboku's API downloads the connector's books, for a server that refuses requests from the browser (CORS). */
-  connectThroughServer?: boolean
+  /**
+   * oboku's server proxies the connector's book downloads, for a server that
+   * refuses requests from the browser (CORS).
+   */
+  proxyThroughServer?: boolean
   type: "webdav"
 }
 

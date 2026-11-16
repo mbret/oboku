@@ -3,7 +3,7 @@ import type { HttpApiClientWeb } from "../../../http"
 import { createWebdavClient } from "./auth/connect"
 
 /** Downloads a link's file through oboku's API, which reads it from the WebDAV server. */
-export const downloadThroughServer = async ({
+export const downloadThroughServerProxy = async ({
   httpClientApi,
   linkId,
   password,

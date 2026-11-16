@@ -34,6 +34,6 @@ export const isSettingsConnectorType = (
 ): type is SettingsConnectorType =>
   type !== undefined && Object.hasOwn(CONNECTOR_DETAILS, type)
 
-export const isConnectedThroughServer = (
+export const isProxiedThroughServer = (
   connector: SettingsConnectorDocType | undefined,
-) => connector?.type === "webdav" && !!connector.connectThroughServer
+) => connector?.type === "webdav" && !!connector.proxyThroughServer
