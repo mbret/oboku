@@ -174,7 +174,7 @@ describe("ConnectorConnectionSection", () => {
 
     expect(
       await screen.findByText(
-        "The connector's server refused this username and password.",
+        /The connector's server refused this username and password/,
       ),
     ).toBeTruthy()
   })

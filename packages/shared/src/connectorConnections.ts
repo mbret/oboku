@@ -1,6 +1,6 @@
 import type { SettingsConnectorType } from "./db/docTypes"
 
-/** The connector types whose server oboku's server can sign in to, so that a user can connect them. */
+/** The connector types oboku's server can sign in to. */
 export const CONNECTABLE_CONNECTOR_TYPES = [
   "webdav",
 ] as const satisfies ReadonlyArray<SettingsConnectorType>

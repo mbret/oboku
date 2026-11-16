@@ -4,7 +4,7 @@ import { useHttpClientApi } from "../../http"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { createConnectorConnectionsQueryOptions } from "./connectorConnectionsQueryOptions"
 
-/** The connector's connection, or `null` while it is not connected. */
+/** The connector's connection, or `null` when oboku's server keeps none for it. */
 export const useConnectorConnection = ({
   connectorId,
 }: {

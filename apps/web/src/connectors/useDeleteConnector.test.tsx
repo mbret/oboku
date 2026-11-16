@@ -35,7 +35,7 @@ function renderUseDeleteConnector({
 }: {
   type?: SettingsConnectorType
 } = {}) {
-  // test double: the hook only calls the generated client's HTTP methods
+  // test double: the hook only calls the generated client's `delete`
   const client = {
     sdkClient: { delete: mocks.disconnect },
   } as unknown as HttpApiClientWeb

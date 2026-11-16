@@ -36,8 +36,7 @@ function ConnectConsentMessage() {
         connect again.
       </Typography>
       <Typography color="text.secondary">
-        To make the server forget the password, disconnect or delete the
-        connector.
+        To make the server forget the password, disconnect the connector.
       </Typography>
     </Stack>
   )
@@ -121,7 +120,6 @@ function ConnectedConnector({
   )
 }
 
-/** The connector's connection to oboku's server, and how to connect it. */
 export function ConnectorConnectionSection({
   connectorId,
   connectorType,
@@ -158,7 +156,6 @@ export function ConnectorConnectionSection({
   )
 }
 
-/** A danger-zone row that disconnects the connector, shown while it has a connection. */
 export function DisconnectConnectorListItem({
   connectorId,
 }: {
