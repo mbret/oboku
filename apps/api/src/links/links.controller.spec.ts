@@ -242,6 +242,7 @@ describe("LinksController", () => {
 
       expect(response.status).toBe(routeStatus)
       expect(response.body).toEqual({ errors: [{ code }] })
+      expect(reserveWithinQuotas).not.toHaveBeenCalled()
     },
   )
 

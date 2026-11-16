@@ -68,8 +68,8 @@ export class LinksService {
    *
    * @throws a 400 for a link of another type or an address the instance does
    * not reach, a 404 when the library has no such link or the server no such
-   * file, and a 502 when the server refuses the password, cannot be reached,
-   * or states no size for the file.
+   * file, and a 502 when the server refuses the password or the file, cannot
+   * be reached, or states no size for the file.
    */
   async streamLinkFile({
     email,

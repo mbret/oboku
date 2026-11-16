@@ -4,6 +4,7 @@ import { createServer, type IncomingMessage } from "node:http"
 import type { AddressInfo } from "node:net"
 import { Readable } from "node:stream"
 import { finished } from "node:stream/promises"
+import { buffer } from "node:stream/consumers"
 import type {
   DataSourceDocTypeFor,
   WebdavConnectorDocType,
@@ -246,6 +247,18 @@ describe("WebDAV data source", () => {
           linkData: { connectorId: "connector", filePath: "/books/book.epub" },
         },
       ])
+    },
+  )
+
+  it.each([basicAuth, digestAuth])(
+    "downloads from a server that only accepts $scheme auth",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
+
+      const stream = await downloadBookFrom(host)
+
+      expect((await buffer(stream)).toString()).toBe(booksListing)
     },
   )
 
