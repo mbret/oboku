@@ -6,6 +6,7 @@ import {
   createBookDefaults,
   type DocType,
   type ModelOf,
+  type SecretDocType,
   type SettingsDocType,
   isShallowEqual,
 } from "@oboku/shared"
@@ -321,14 +322,16 @@ export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
   return docs as (createNano.MangoResponse<unknown>["docs"][number] & D)[]
 }
 
+type FetchableDocType = DocType | SecretDocType
+
 /**
  * The documents of `rxModel` among `ids`, in the order of `ids`, read by id:
  * a Mango `$in` on `_id` scans every document. An id of a missing, deleted or
  * other model's document has none.
  */
 export const fetchByIds = async <
-  M extends DocType["rx_model"],
-  D extends ModelOf<M>,
+  M extends FetchableDocType["rx_model"],
+  D extends Extract<FetchableDocType, { rx_model: M }>,
 >(
   db: createNano.DocumentScope<unknown>,
   rxModel: M,

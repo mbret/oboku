@@ -5,8 +5,10 @@ import type { DataSourcePlugin } from "../types.js"
 import {
   getDataFromDataSource,
   type WebDAVDataSourceDocType,
+  type WebdavConnectorDocType,
 } from "@oboku/shared"
 import { AuthType, createClient } from "webdav"
+import { isRecord } from "../../http/isRecord.js"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 import { getConnectorById } from "../connectorHelpers.js"
 import {
@@ -62,6 +64,34 @@ const createWebdavClient = (connector: {
       allowSelfSigned: connector.allowSelfSigned,
     }),
   })
+
+export const isWebdavConnector = (
+  value: unknown,
+): value is WebdavConnectorDocType =>
+  isRecord(value) &&
+  value.type === WEBDAV_TYPE &&
+  typeof value.id === "string" &&
+  typeof value.url === "string" &&
+  typeof value.username === "string" &&
+  typeof value.passwordAsSecretId === "string" &&
+  (value.allowSelfSigned === undefined ||
+    typeof value.allowSelfSigned === "boolean")
+
+/** Lists the connector's root, as the app's connection test does. */
+export const signInToWebdav = async ({
+  connector,
+  password,
+  signal,
+}: {
+  connector: WebdavConnectorDocType
+  password: string
+  signal: AbortSignal
+}) => {
+  await createWebdavClient({ ...connector, password }).getDirectoryContents(
+    "/",
+    { signal },
+  )
+}
 
 export const dataSource: DataSourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
