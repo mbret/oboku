@@ -1,6 +1,6 @@
 import { isDeepStrictEqual } from "node:util"
 import { BadRequestException, Injectable } from "@nestjs/common"
-import { ObokuErrorCode } from "@oboku/shared"
+import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { isRecord } from "../../http/isRecord.js"
@@ -8,7 +8,6 @@ import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { signInToWebdav } from "../../plugins/webdav/index.js"
 import {
-  type ConnectionProvider,
   type EncryptedSecretValue,
   ProviderConnectionsService,
 } from "../provider-connections.service.js"
@@ -16,9 +15,6 @@ import type {
   ConnectorConnectionDto,
   ConnectorConnectionStatus,
 } from "./connector-connection.dto.js"
-
-/** The connector types whose server the API can sign in to. */
-const CONNECTABLE_CONNECTOR_TYPES = ["webdav"] satisfies ConnectionProvider[]
 
 const SIGN_IN_DEADLINE_MS = 10_000
 
