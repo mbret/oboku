@@ -119,19 +119,25 @@ export async function downloadFromWebdav(
   client: WebDAVClient,
   filePath: string,
 ) {
-  const request = new AbortController()
-  const stream = client.createReadStream(filePath, { signal: request.signal })
+  // Not createReadStream: webdav 5.11 pipes the response into the stream it
+  // returns, which then neither fails when the server drops the connection
+  // nor closes the request when destroyed.
+  const response = await client.customRequest(filePath, { method: "GET" })
+  const body = "body" in response ? response.body : undefined
 
-  if (!(stream instanceof Readable)) {
+  if (!(body instanceof Readable)) {
     throw new Error("webdav did not return a node readable stream")
   }
 
-  // webdav 5.11's createReadStream pipes the response into the stream it
-  // returns, so destroying that stream leaves the request open until the
-  // server gives up on it.
-  stream.once("close", function abortUnfinishedRequest() {
-    request.abort()
-  })
+  // webdav 5.11 resolves with a 401 once it has tried digest auth.
+  if (!response.ok) {
+    body.destroy()
 
-  return { stream }
+    throw Object.assign(
+      new Error(`Invalid response: ${response.status} ${response.statusText}`),
+      { status: response.status },
+    )
+  }
+
+  return { stream: body }
 }

@@ -50,6 +50,10 @@ const toServerFailure = (error: unknown) => {
   )
 }
 
+const throwServerFailure = (error: unknown): never => {
+  throw toServerFailure(error)
+}
+
 @Injectable()
 export class LinksService {
   constructor(
@@ -64,8 +68,8 @@ export class LinksService {
    *
    * @throws a 400 for a link of another type or an address the instance does
    * not reach, a 404 when the library has no such link or the server no such
-   * file, and a 502 when the server refuses the password, cannot be reached,
-   * or states no size for the file.
+   * file, and a 502 when the server refuses the password or the file, cannot
+   * be reached, or states no size for the file.
    */
   async streamLinkFile({
     email,
@@ -87,9 +91,7 @@ export class LinksService {
 
     const { name, contentType, bookMetadata } = await this.pluginsService
       .getFileMetadata({ link, providerCredentials, db })
-      .catch(function throwServerFailure(error: unknown) {
-        throw toServerFailure(error)
-      })
+      .catch(throwServerFailure)
     const statedSize = toByteCount(bookMetadata?.size)
     const isSizeStated = statedSize !== undefined && statedSize > 0
 
@@ -99,11 +101,9 @@ export class LinksService {
       )
     }
 
-    const { stream } = await this.pluginsService.download({
-      link,
-      providerCredentials,
-      db,
-    })
+    const { stream } = await this.pluginsService
+      .download({ link, providerCredentials, db })
+      .catch(throwServerFailure)
 
     return {
       stream: pipeline(
