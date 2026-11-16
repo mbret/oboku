@@ -66,7 +66,6 @@ export class CoversService implements OnModuleInit {
     this.taskQueueService.createQueue({
       name: COVER_DELIVERY_QUEUE_NAME,
       maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
-      deduplicate: true,
     })
   }
 
@@ -166,7 +165,9 @@ export class CoversService implements OnModuleInit {
   /**
    * The cover as a response, encoded for delivery: the stored cover, else the
    * placeholder. Every route that sends covers goes through one queue, which
-   * caps how many are encoded at once.
+   * caps how many are encoded at once. Every request gets its own delivery,
+   * two for the same cover included: a reading app asks for a cover's image
+   * and thumbnail at once, and each response consumes its own stream.
    */
   deliverCover(objectKey: string, format?: string) {
     const coverFile$ = defer(() =>
@@ -183,7 +184,6 @@ export class CoversService implements OnModuleInit {
     return this.taskQueueService.enqueue(
       COVER_DELIVERY_QUEUE_NAME,
       () => coverFile$,
-      { id: objectKey },
     )
   }
 
