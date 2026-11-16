@@ -126,8 +126,9 @@ export async function downloadFromWebdav(
     throw new Error("webdav did not return a node readable stream")
   }
 
-  // webdav pipes the response into the stream it returns, so destroying that
-  // stream leaves the request open until the server gives up on it.
+  // webdav 5.11's createReadStream pipes the response into the stream it
+  // returns, so destroying that stream leaves the request open until the
+  // server gives up on it.
   stream.once("close", function abortUnfinishedRequest() {
     request.abort()
   })

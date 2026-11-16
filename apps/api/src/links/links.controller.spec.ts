@@ -247,13 +247,16 @@ describe("LinksController", () => {
       modifiedAt: "2026-11-16T08:00:00.000Z",
       bookMetadata: { size: "4" },
     })
-    download.mockResolvedValue({
-      stream: Readable.from([Buffer.from("epu"), Buffer.from("b bytes")]),
-    })
+    const providerStream = Readable.from([
+      Buffer.from("epu"),
+      Buffer.from("b bytes"),
+    ])
+    download.mockResolvedValue({ stream: providerStream })
 
     await expect(
       downloadLink(WEBDAV_LINK._id).responseType("blob"),
-    ).rejects.toThrow()
+    ).rejects.toThrow("aborted")
+    expect(providerStream.destroyed).toBe(true)
     await vi.waitFor(() =>
       expect(adjust).toHaveBeenCalledWith(
         expect.objectContaining({ bytes: -1 }),

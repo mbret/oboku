@@ -105,7 +105,6 @@ export class LinksService {
     })
 
     return {
-      // Errors reach the route through the stream the quota meters.
       stream: pipeline(
         stream,
         createByteLimitTransform(statedSize),
