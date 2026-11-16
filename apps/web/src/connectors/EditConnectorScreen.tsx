@@ -7,6 +7,7 @@ import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import type { ROUTES } from "../navigation/routes"
 import { notify } from "../notifications/toasts"
+import { useActiveProfileId } from "../profiles/active/activeProfileId"
 import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
 import { getConnectorForm } from "./AddConnectorScreen"
@@ -21,6 +22,7 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const { type, id = "-1" } =
     useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_EDIT>>()
   const { goBack } = useSafeGoBack()
+  const activeProfileId = useActiveProfileId()
   const { mutate: deleteConnector } = useDeleteConnector()
   const confirmation = useConfirmation()
 
@@ -38,7 +40,7 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
 
     if (confirm) {
       deleteConnector(
-        { id },
+        { id, type, profileId: activeProfileId },
         {
           onSuccess: () => {
             notify("actionSuccess")
