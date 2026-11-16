@@ -174,6 +174,7 @@ describe("DownloadBook (WebDAV)", () => {
     expect(await onResolve.mock.lastCall?.[0]?.data.text()).toBe(BOOK_BYTES)
     expect(getFileContents).toHaveBeenCalledWith("/Books/Dune.epub", {
       format: "binary",
+      signal: expect.any(AbortSignal),
     })
     expect(api).not.toHaveBeenCalled()
   })

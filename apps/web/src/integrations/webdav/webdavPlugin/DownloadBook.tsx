@@ -5,21 +5,22 @@ import {
   merge,
   mergeMap,
   takeUntil,
-  tap,
   throwIfEmpty,
   type Observable,
 } from "rxjs"
 import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../../plugins/types"
-import { linksDownload, ObokuErrorCode } from "@oboku/shared"
+import { ObokuErrorCode } from "@oboku/shared"
 import { isConnectedThroughServer } from "../../../connectors/connectorDetails"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
+import { fromAbortable } from "../../../common/rxjs/fromAbortable"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import { createWebdavClient, resolveWebdavUrl } from "./auth/connect"
+import { resolveWebdavUrl } from "./auth/connect"
+import { downloadFromWebdavServer, downloadThroughServer } from "./download"
 import type { WebdavBackedType } from "./constants"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {
@@ -58,46 +59,24 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
       connectorId: string
       onUnmount$: Observable<void>
     }) {
-      const abortController = new AbortController()
-
-      const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
-        tap(function abortDownload() {
-          abortController.abort()
-        }),
-      )
-
       return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
-        mergeMap(async function downloadFile({ data }) {
-          if (isConnectedThroughServer(data)) {
-            const { data: file } = await linksDownload({
-              client: httpClientApi.sdkClient,
-              body: {
-                linkId: link._id,
-                providerCredentials: { password: data.password },
-              },
-              parseAs: "blob",
-              signal: abortController.signal,
-            })
-
-            // The reader takes a blob's type as the book's format, and the
-            // API's `application/octet-stream` is none.
-            return new Blob([file])
-          }
-
-          const client = createWebdavClient({
-            url: resolveWebdavUrl({ connectorUrl: data.url, webdavUrl }),
-            username: data.username,
-            password: data.password,
+        mergeMap(function downloadFile({ data }) {
+          return fromAbortable(function downloadUntilCancelled(downloadSignal) {
+            return isConnectedThroughServer(data)
+              ? downloadThroughServer({
+                  httpClientApi,
+                  linkId: link._id,
+                  password: data.password,
+                  signal: downloadSignal,
+                })
+              : downloadFromWebdavServer({
+                  url: resolveWebdavUrl({ connectorUrl: data.url, webdavUrl }),
+                  username: data.username,
+                  password: data.password,
+                  filePath,
+                  signal: downloadSignal,
+                })
           })
-          const content = await client.getFileContents(filePath, {
-            format: "binary",
-          })
-
-          if (!(content instanceof ArrayBuffer)) {
-            throw new Error("Unknown data type")
-          }
-
-          return new Blob([content])
         }),
         map(function toDownloadResult(file) {
           return {
@@ -105,7 +84,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
             fileName: filePath.split("/").pop() ?? filePath,
           }
         }),
-        takeUntil(cancel$),
+        takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
         throwIfEmpty(() => new CancelError()),
       )
     },

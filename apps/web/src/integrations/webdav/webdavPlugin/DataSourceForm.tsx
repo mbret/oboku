@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import type { WebDAVDataSourceDocType } from "@oboku/shared"
+import { isConnectedThroughServer } from "../../../connectors/connectorDetails"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
 import { testConnection } from "./connectors/ConnectorForm"
@@ -46,6 +47,7 @@ export const DataSourceForm = memo(function DataSourceForm({
     id: connectorId || undefined,
     type: "webdav",
   })
+  const canTestFromBrowser = !isConnectedThroughServer(connector)
 
   return (
     <DataSourceFormLayout
@@ -79,16 +81,18 @@ export const DataSourceForm = memo(function DataSourceForm({
         rules={{ required: true }}
         connectorType="webdav"
       />
-      <TestConnection
-        connectionData={{
-          url: connector?.url ?? "",
-          username: connector?.username ?? "",
-          passwordAsSecretId: connector?.passwordAsSecretId ?? "",
-          directory: directory || undefined,
-        }}
-        connectorType="webdav"
-        testConnection={testConnection}
-      />
+      {canTestFromBrowser && (
+        <TestConnection
+          connectionData={{
+            url: connector?.url ?? "",
+            username: connector?.username ?? "",
+            passwordAsSecretId: connector?.passwordAsSecretId ?? "",
+            directory: directory || undefined,
+          }}
+          connectorType="webdav"
+          testConnection={testConnection}
+        />
+      )}
     </DataSourceFormLayout>
   )
 })

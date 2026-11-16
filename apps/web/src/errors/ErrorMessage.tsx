@@ -78,6 +78,10 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "oboku's server lost its access to your account: you removed oboku from your account, or the access expired. Connect your account again."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED:
+      return "The server refused this username and password. Check the connector."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE:
+      return "oboku's server could not reach this server, or it did not answer like a WebDAV server. Check its address: on the cloud version, the server must be reachable from the internet."
     case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED:
       return "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage."
     default:

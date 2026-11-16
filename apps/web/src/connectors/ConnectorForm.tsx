@@ -48,12 +48,6 @@ const FormActionsStack = styled(Stack)(function styleFormActionsStack({
   }
 })
 
-function getConnectorUrl(
-  connector: SettingsConnectorDocType | undefined,
-): string {
-  return connector?.url ?? ""
-}
-
 const CheckboxFieldStack = styled(Stack)(function styleCheckboxFieldStack({
   theme,
 }) {
@@ -69,6 +63,12 @@ const CaptionTypography = styled(Typography)(function styleCaptionTypography({
     color: theme.palette.text.secondary,
   }
 })
+
+function getConnectorUrl(
+  connector: SettingsConnectorDocType | undefined,
+): string {
+  return connector?.url ?? ""
+}
 
 const URL_PATTERN = {
   value: /^(https?:\/\/)?([\w-]+\.)*[\w-]+(:\d{1,5})?(\/[\w- ./?%&=]*)?$/,
@@ -107,12 +107,7 @@ function ControlledCheckboxField({
           <CheckboxFieldStack>
             <FormControlLabel
               control={
-                <Checkbox
-                  checked={field.value}
-                  onChange={function updateCheckedValue(_, checked) {
-                    field.onChange(checked)
-                  }}
-                />
+                <Checkbox checked={field.value} onChange={field.onChange} />
               }
               label={label}
             />

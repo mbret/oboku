@@ -49,6 +49,18 @@ describe("errorToMessage", () => {
     )
   })
 
+  it("says the WebDAV server refused the connector's password", () => {
+    const error = createApiError(502, {
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED },
+      ],
+    })
+
+    expect(errorToMessage(error)).toBe(
+      "The server refused this username and password. Check the connector.",
+    )
+  })
+
   it("ignores a code oboku does not define", () => {
     const error = createApiError(400, { errors: [{ code: "not-a-code" }] })
 
