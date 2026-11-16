@@ -12,8 +12,8 @@ import {
   StreamableFile,
 } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
-import type { Request, Response } from "express"
-import type { ObokuErrorResponseDto } from "../openapi/error-response.dto.js"
+import type { Response } from "express"
+import { toObokuErrorBody } from "../http/obokuBadRequest.js"
 import {
   type InstanceConfig,
   InstanceConfigService,
@@ -70,14 +70,14 @@ export type MeteredStream =
 
 export type ProxiedFile = {
   stream: NodeJS.ReadableStream
+  /** The file name the answer gives, which also types it by its extension. */
+  name: string
+  /** The media type the answer gives, which replaces the one of the name. */
+  contentType: string
   /** The number of bytes `stream` yields, when the provider states it. */
   size?: number
   /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
   expectedSize?: number
-}
-
-const quotaReachedBody: ObokuErrorResponseDto = {
-  errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED }],
 }
 
 /** Keeps the files the instance passes on to users under its monthly quotas. */
@@ -227,15 +227,14 @@ export class ProxiedDownloadQuotaService {
   async deliver({
     userId,
     file,
-    request,
+    isBodySent,
     response,
-    attachment,
   }: {
     userId: number
     file: ProxiedFile
-    request: Pick<Request, "method">
+    /** False for a HEAD request, see {@link meter}. */
+    isBodySent: boolean
     response: Response
-    attachment?: { name: string; contentType: string }
   }): Promise<StreamableFile> {
     const meteredFile = await this.meter({
       userId,
@@ -244,20 +243,19 @@ export class ProxiedDownloadQuotaService {
           ? file.stream
           : Readable.from(file.stream),
       expectedBytes: file.expectedSize,
-      isBodySent: request.method !== "HEAD",
+      isBodySent,
     })
 
     if (meteredFile.status === "quota-reached") {
       response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
 
-      throw new HttpException(quotaReachedBody, HttpStatus.TOO_MANY_REQUESTS)
+      throw new HttpException(
+        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
+        HttpStatus.TOO_MANY_REQUESTS,
+      )
     }
 
-    if (attachment) {
-      // `response.attachment()` types the response from the name's
-      // extension: the file's own media type replaces it.
-      response.attachment(attachment.name).type(attachment.contentType)
-    }
+    response.attachment(file.name).type(file.contentType)
 
     const streamableFile = new StreamableFile(meteredFile.stream, {
       length: file.size,

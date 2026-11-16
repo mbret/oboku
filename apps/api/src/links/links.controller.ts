@@ -4,17 +4,19 @@ import {
   HttpCode,
   HttpStatus,
   Post,
-  Req,
   Res,
   StreamableFile,
 } from "@nestjs/common"
 import {
+  ApiBadGatewayResponse,
+  ApiNotFoundResponse,
   ApiOkResponse,
   ApiProduces,
   ApiTooManyRequestsResponse,
 } from "@nestjs/swagger"
-import type { Request, Response } from "express"
+import type { Response } from "express"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
+import { ApiObokuErrors } from "../openapi/api-oboku-errors.decorator.js"
 import { ObokuErrorResponseDto } from "../openapi/error-response.dto.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { DownloadLinkDto } from "./links.dto.js"
@@ -37,11 +39,13 @@ export class LinksController {
   @HttpCode(HttpStatus.OK)
   @ApiProduces("application/octet-stream")
   @ApiOkResponse({ schema: { type: "string", format: "binary" } })
+  @ApiObokuErrors()
+  @ApiNotFoundResponse({ type: ObokuErrorResponseDto })
+  @ApiBadGatewayResponse({ type: ObokuErrorResponseDto })
   @ApiTooManyRequestsResponse({ type: ObokuErrorResponseDto })
   async download(
     @Body() { linkId, providerCredentials }: DownloadLinkDto,
     @WithAuthUser() user: AuthUser,
-    @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<StreamableFile> {
     const file = await this.linksService.streamLinkFile({
@@ -53,7 +57,7 @@ export class LinksController {
     return this.proxiedDownloadQuotaService.deliver({
       userId: user.userId,
       file,
-      request,
+      isBodySent: true,
       response,
     })
   }

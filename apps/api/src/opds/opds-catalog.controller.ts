@@ -205,9 +205,8 @@ export class OpdsCatalogController {
     return this.proxiedDownloadQuotaService.deliver({
       userId: owner.id,
       file,
-      request,
+      isBodySent: request.method !== "HEAD",
       response,
-      attachment: { name: file.name, contentType: file.contentType },
     })
   }
 

@@ -12,6 +12,7 @@ import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
+import { NonPublicAddressError } from "../http/publicAddress.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { LinksController } from "./links.controller.js"
@@ -169,6 +170,9 @@ describe("LinksController", () => {
     const response = await downloadLink("link-of-someone-else")
 
     expect(response.status).toBe(404)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND }],
+    })
     expect(download).not.toHaveBeenCalled()
   })
 
@@ -181,23 +185,81 @@ describe("LinksController", () => {
   })
 
   it.each([
-    [404, 404],
-    [401, 502],
+    [
+      "a missing file with 404",
+      Object.assign(new Error("Invalid response: 404"), { status: 404 }),
+      404,
+      ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
+    ],
+    [
+      "a refused password with 502",
+      Object.assign(new Error("Invalid response: 401"), { status: 401 }),
+      502,
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED,
+    ],
+    [
+      "a server it cannot reach with 502",
+      Object.assign(new Error("connect ECONNREFUSED"), {
+        code: "ECONNREFUSED",
+      }),
+      502,
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+    ],
+    [
+      "an address the instance does not reach with 400",
+      new NonPublicAddressError("nas.local"),
+      400,
+      ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED,
+    ],
   ])(
-    "answers the WebDAV server's %i, when it describes the file, with %i",
-    async (serverStatus, routeStatus) => {
-      getFileMetadata.mockRejectedValue(
-        Object.assign(new Error(`Invalid response: ${serverStatus}`), {
-          status: serverStatus,
-        }),
-      )
+    "answers %s, before it downloads the file",
+    async (_, serverFailure, routeStatus, code) => {
+      getFileMetadata.mockRejectedValue(serverFailure)
 
       const response = await downloadLink(WEBDAV_LINK._id)
 
       expect(response.status).toBe(routeStatus)
+      expect(response.body).toEqual({ errors: [{ code }] })
       expect(download).not.toHaveBeenCalled()
     },
   )
+
+  it.each([
+    ["no size", {}],
+    ["a size of 0", { size: "0" }],
+  ])(
+    "answers 502 when the WebDAV server states %s for the file",
+    async (_, bookMetadata) => {
+      getFileMetadata.mockResolvedValue({
+        modifiedAt: "2026-11-16T08:00:00.000Z",
+        bookMetadata,
+      })
+
+      const response = await downloadLink(WEBDAV_LINK._id)
+
+      expect(response.status).toBe(502)
+      expect(download).not.toHaveBeenCalled()
+    },
+  )
+
+  it("cuts the file once the WebDAV server sends more than the size it states", async () => {
+    getFileMetadata.mockResolvedValue({
+      modifiedAt: "2026-11-16T08:00:00.000Z",
+      bookMetadata: { size: "4" },
+    })
+    download.mockResolvedValue({
+      stream: Readable.from([Buffer.from("epu"), Buffer.from("b bytes")]),
+    })
+
+    await expect(
+      downloadLink(WEBDAV_LINK._id).responseType("blob"),
+    ).rejects.toThrow()
+    await vi.waitFor(() =>
+      expect(adjust).toHaveBeenCalledWith(
+        expect.objectContaining({ bytes: -1 }),
+      ),
+    )
+  })
 
   it("answers 429 with the quota's error code until the next month once the download would pass a quota", async () => {
     vi.useFakeTimers({ toFake: ["Date"] })

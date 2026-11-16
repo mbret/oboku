@@ -79,6 +79,21 @@ export const isWebdavConnector = (
   (value.connectThroughServer === undefined ||
     typeof value.connectThroughServer === "boolean")
 
+/** The status a server answered with, which WebDAV client errors carry. */
+export const toAnsweredStatus = (error: unknown) =>
+  isRecord(error) && typeof error.status === "number" ? error.status : null
+
+const UNAUTHORIZED_STATUSES = [401, 403]
+
+/** Whether the server refused the connector's username and password. */
+export const isSignInRefused = (error: unknown) => {
+  const answeredStatus = toAnsweredStatus(error)
+
+  return (
+    answeredStatus !== null && UNAUTHORIZED_STATUSES.includes(answeredStatus)
+  )
+}
+
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({
   connector,

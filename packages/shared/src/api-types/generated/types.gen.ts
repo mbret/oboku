@@ -1792,7 +1792,10 @@ export type LinksDownloadData = {
 };
 
 export type LinksDownloadErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
     429: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
     /**
      * The request failed
      */
