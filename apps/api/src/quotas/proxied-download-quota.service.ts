@@ -221,8 +221,9 @@ export class ProxiedDownloadQuotaService {
    * @throws a 429 with `Retry-After` set to the start of the next month, UTC,
    * and `ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED`, when the download would pass
    * either quota.
-   * @returns a file that answers 502 when the provider's stream fails before
-   * its first byte.
+   * @returns a file that answers 502 with
+   * `ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE` when the provider's stream
+   * fails before its first byte.
    */
   async deliver({
     userId,
@@ -275,8 +276,16 @@ export class ProxiedDownloadQuotaService {
           return
         }
 
-        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
-        streamResponse.send("Bad Gateway")
+        // `streamResponse` is `response`, typed with `send` only.
+        response.removeHeader("Content-Disposition")
+        response
+          .status(HttpStatus.BAD_GATEWAY)
+          .type("json")
+          .json(
+            toObokuErrorBody(
+              ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+            ),
+          )
       },
     )
   }

@@ -82,6 +82,8 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "The server refused this username and password. Check the connector."
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE:
       return "oboku's server could not reach this server, or it did not answer like a WebDAV server. Check its address: on the cloud version, the server must be reachable from the internet."
+    case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN:
+      return "The WebDAV server does not state the size of this file, so oboku's server cannot download it for you."
     case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED:
       return "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage."
     default:

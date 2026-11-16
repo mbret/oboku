@@ -28,13 +28,6 @@ const createResourceNotFound = () =>
     toObokuErrorBody(ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND),
   )
 
-const createServerUnreachable = () =>
-  new BadGatewayException(
-    toObokuErrorBody(
-      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
-    ),
-  )
-
 const toServerFailure = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
@@ -50,7 +43,11 @@ const toServerFailure = (error: unknown) => {
     )
   }
 
-  return createServerUnreachable()
+  return new BadGatewayException(
+    toObokuErrorBody(
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+    ),
+  )
 }
 
 @Injectable()
@@ -68,7 +65,7 @@ export class LinksService {
    * @throws a 400 for a link of another type or an address the instance does
    * not reach, a 404 when the library has no such link or the server no such
    * file, and a 502 when the server refuses the password, cannot be reached,
-   * or states no size.
+   * or states no size for the file.
    */
   async streamLinkFile({
     email,
@@ -96,7 +93,11 @@ export class LinksService {
     const statedSize = toByteCount(bookMetadata?.size)
     const isSizeStated = statedSize !== undefined && statedSize > 0
 
-    if (!isSizeStated) throw createServerUnreachable()
+    if (!isSizeStated) {
+      throw new BadGatewayException(
+        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN),
+      )
+    }
 
     const { stream } = await this.pluginsService.download({
       link,

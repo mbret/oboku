@@ -238,9 +238,32 @@ describe("LinksController", () => {
       const response = await downloadLink(WEBDAV_LINK._id)
 
       expect(response.status).toBe(502)
+      expect(response.body).toEqual({
+        errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN }],
+      })
       expect(download).not.toHaveBeenCalled()
     },
   )
+
+  it("answers 502 with a code, and names no file, when the WebDAV stream fails before its first byte", async () => {
+    download.mockResolvedValue({
+      stream: new Readable({
+        read() {
+          this.destroy(new Error("Invalid response: 403 Forbidden"))
+        },
+      }),
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.headers["content-disposition"]).toBeUndefined()
+    expect(response.body).toEqual({
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE },
+      ],
+    })
+  })
 
   it("cuts the file once the WebDAV server sends more than the size it states", async () => {
     getFileMetadata.mockResolvedValue({

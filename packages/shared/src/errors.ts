@@ -31,6 +31,7 @@ export enum ObokuErrorCode {
   ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED = "11007",
   ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE = "11008",
   ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED = "12000",
+  ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN = "12001",
 }
 
 export type ObokuErrorSeverity = "internal" | "user"
@@ -68,6 +69,7 @@ const errorCodeSeverity: Record<ObokuErrorCode, ObokuErrorSeverity> = {
   [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED]: "user",
   [ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE]: "user",
   [ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED]: "user",
+  [ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN]: "user",
 }
 
 export class ObokuSharedError extends Error {
