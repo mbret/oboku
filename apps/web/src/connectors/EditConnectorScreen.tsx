@@ -1,4 +1,5 @@
 import { ListItemButton, ListItemText } from "@mui/material"
+import { isConnectableConnectorType } from "@oboku/shared"
 import { memo } from "react"
 import { type PathParam, useParams } from "react-router"
 import { useConfirmation } from "../common/useConfirmation"
@@ -11,6 +12,10 @@ import { useDeleteConnector } from "./useDeleteConnector"
 import { getConnectorForm } from "./AddConnectorScreen"
 import { Page } from "../common/Page"
 import { PageSection } from "../common/PageSection"
+import {
+  ConnectorConnectionSection,
+  DisconnectConnectorListItem,
+} from "./connection/ConnectorConnectionSection"
 
 export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const { type, id = "-1" } =
@@ -25,6 +30,8 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const Form = getConnectorForm(type)
 
   if (!Form) return null
+
+  const isConnectableConnector = isConnectableConnectorType(type)
 
   const confirmThenDeleteConnector = () => {
     const confirm = confirmation()
@@ -49,7 +56,13 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
         connectorId={id}
         onSubmitSuccess={() => goBack(details.integrationRoute)}
       >
+        {isConnectableConnector && (
+          <ConnectorConnectionSection connectorId={id} connectorType={type} />
+        )}
         <PageSection title="Danger zone" tone="danger">
+          {isConnectableConnector && (
+            <DisconnectConnectorListItem connectorId={id} />
+          )}
           <ListItemButton onClick={confirmThenDeleteConnector}>
             <ListItemText primary="Delete this connector" />
           </ListItemButton>

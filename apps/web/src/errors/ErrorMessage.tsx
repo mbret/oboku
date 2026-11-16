@@ -76,6 +76,12 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
       return "No account is connected."
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST:
       return "oboku's server lost its access to your account: you removed oboku from your account, or the access expired. Connect your account again."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND:
+      return "This connector or its password has not reached oboku's server yet. Try again once your settings have synced."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED:
+      return "The connector's server refused this username and password."
+    case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE:
+      return "oboku's server could not reach the connector's server, or it did not answer like a WebDAV server. Check the address. On oboku's cloud version, the server must be reachable from the internet."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     default:
