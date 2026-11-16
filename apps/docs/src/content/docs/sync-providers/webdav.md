@@ -18,6 +18,13 @@ You can configure a reverse proxy in front of your WebDAV server and intercept O
 
 oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
 
+## Connect for OPDS servers
+
+Your [OPDS servers](/guides/opds-servers) can serve the books of a WebDAV connector once you connect it: oboku's server then keeps the connector's password and downloads the books itself. See [Connect a connector](/guides/connectors#connect-a-connector) for how, and [Passwords kept by oboku's server](/guides/secrets#passwords-kept-by-obokus-server) for what the server keeps.
+
+* oboku's server signs in to your WebDAV server when you connect, so the rules of [Servers on your local network](#servers-on-your-local-network) apply. On the cloud version, your server must be reachable from the internet.
+* The password often opens your whole server. If your server allows it, connect with an account that can only read your books, or with an app password.
+
 ## Sync behavior
 
 When you sync you can prodive a directory as "root" or leave it empty for `/` path. This directory is from where the sync begins and therefore all sub folders will start being detected as collection.

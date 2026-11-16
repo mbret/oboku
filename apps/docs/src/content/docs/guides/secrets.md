@@ -4,11 +4,22 @@ title: "Secrets"
 
 Secrets are how you keep your confidential information safe.
 
-Some configuration such as adding a datasource or configuring extra features will requires you to provide confidential information only you should know. Although oboku will need to use them at some points, they are encrypted in your own database and can be decrypted only by you.
+Some configuration such as adding a datasource or configuring extra features will requires you to provide confidential information only you should know. Although oboku will need to use them at some points, they are encrypted in your own database and can be decrypted only by you. The one exception is the password of a connector you connect: see [Passwords kept by oboku's server](#passwords-kept-by-obokus-server).
 
-This means that in the situation were oboku would be compromised, an attacker would have no way to read your secrets.
+This means that in the situation were oboku would be compromised, an attacker would have no way to read your secrets, except the passwords of connected connectors.
 
 When oboku needs to read your secrets to perform actions (eg: synchronize a datasource) it will prompt you for your passport and use the decrypted secrets only for that process lifetime. They will be kept in memory and discarded as soon as the process is done.
+
+## Passwords kept by oboku's server
+
+When you [connect a connector](/guides/connectors#connect-a-connector), oboku decrypts its password once and sends it to oboku's server, so that your [OPDS servers](/guides/opds-servers) can serve the connector's books. The server keeps the password encrypted, but unlike your other secrets, the server can read it.
+
+* The server sends the password only to the connector's address, for its username.
+* If you edit the connector, or put a new password in its secret, the server stops using the password until you connect the connector again.
+* If you disconnect the connector, or delete it, the server forgets the password.
+* Changing or removing your master password does not disconnect the connector.
+
+Connecting is your decision for each connector. A connector you do not connect keeps its password a secret that only you can decrypt.
 
 ## Master Password
 
