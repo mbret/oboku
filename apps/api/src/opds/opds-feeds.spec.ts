@@ -1,5 +1,10 @@
 import type { BookMetadata } from "@oboku/shared"
-import { toBooksFeed, toOpds1Feed, toOpds2Feed } from "./opds-feeds.js"
+import {
+  toBooksFeed,
+  toOpds1Feed,
+  toOpds2Feed,
+  toShelvesFeed,
+} from "./opds-feeds.js"
 
 const SERVER = { slug: "calm-snails-dream", name: "Kids" }
 
@@ -281,5 +286,54 @@ describe("toOpds2Feed of the books", () => {
     })
 
     expect(toPageLinks(feed).map(({ rel }) => rel)).toEqual(["self"])
+  })
+})
+
+describe("the shelves feed", () => {
+  const NAVIGATION_FEED_TYPE =
+    "application/atom+xml;profile=opds-catalog;kind=navigation"
+
+  it("links a middle page of shelves to the pages around it", () => {
+    const xml = toOpds1Feed({
+      slug: SERVER.slug,
+      feed: toShelvesFeed({
+        server: SERVER,
+        shelves: [{ id: "shelf-dune", title: "Dune", bookCount: 2 }],
+        page: { number: 2, size: 50, total: 120 },
+      }),
+      updated: new Date(),
+    })
+
+    expect(xml).toContain(
+      [
+        `  <link rel="self" href="/opds/calm-snails-dream/shelves?page=2" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="start" href="/opds/calm-snails-dream" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="first" href="/opds/calm-snails-dream/shelves" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="previous" href="/opds/calm-snails-dream/shelves" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="next" href="/opds/calm-snails-dream/shelves?page=3" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="last" href="/opds/calm-snails-dream/shelves?page=3" type="${NAVIGATION_FEED_TYPE}"/>`,
+      ].join("\n"),
+    )
+  })
+
+  it("links a shelf whose id needs escaping", () => {
+    const feed = toOpds2Feed({
+      slug: SERVER.slug,
+      feed: toShelvesFeed({
+        server: SERVER,
+        shelves: [{ id: "shelf/a b", title: "Dune", bookCount: 2 }],
+        page: FIRST_PAGE,
+      }),
+    })
+
+    expect(feed).toMatchObject({
+      metadata: { numberOfItems: 1, itemsPerPage: 50, currentPage: 1 },
+      navigation: [
+        {
+          href: "/opds/calm-snails-dream/v2/shelves/shelf%2Fa%20b",
+          properties: { numberOfItems: 2 },
+        },
+      ],
+    })
   })
 })

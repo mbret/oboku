@@ -8,11 +8,16 @@ An OPDS server turns your oboku library into a catalog that KOReader and other r
 
 A catalog lists the books of your library that oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection). Reading apps download them through oboku's server, which reaches Drive with that connection. Without it, catalogs are empty.
 
-Books appear newest first, 50 per page, each with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
+Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 
 * books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
 * books you marked not interested;
 * books oboku reads from another provider, such as Dropbox or WebDAV.
+
+A catalog opens on two entries, each listing 50 items per page:
+
+* **All books**: every book it lists, newest first.
+* **Shelves**: your [shelves](/guides/collections), from A to Z, as in the app's **Shelves** tab, each with its books from A to Z. It leaves out a shelf holding a book under a protected tag, and shelves without a book the catalog lists.
 
 Some listed books cannot be downloaded yet:
 

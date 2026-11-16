@@ -34,10 +34,13 @@ import {
   OPDS_CATALOG_ROUTE,
   OPDS_COVERS_ROUTE,
   OPDS_NAVIGATION_FEED_TYPE,
+  OPDS_SHELVES_ROUTE,
   toBooksFeed,
   toOpds1Feed,
   toOpds2Feed,
   toRootFeed,
+  toShelfFeed,
+  toShelvesFeed,
 } from "./opds-feeds.js"
 import { OpdsBooksService } from "./opds-books.service.js"
 import { IMMUTABLE_COVER_CACHE_CONTROL } from "../covers/covers.service.js"
@@ -48,6 +51,12 @@ import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.se
  * under `v2`. Readers sign in with HTTP Basic Auth, the account email and the
  * server's password, not an app session.
  */
+const assertPageNumber = (page: number) => {
+  const isPageNumber = page >= 1
+
+  if (!isPageNumber) throw new BadRequestException()
+}
+
 @Public()
 @ApiExcludeController()
 @UseGuards(OpdsBasicAuthGuard)
@@ -98,6 +107,62 @@ export class OpdsCatalogController {
     return toOpds2Feed({
       slug: server.slug,
       feed: await this.findBooksFeed({ server, owner, page }),
+    })
+  }
+
+  @Get(OPDS_SHELVES_ROUTE)
+  @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
+  async getShelves(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds1Feed({
+      slug: server.slug,
+      feed: await this.findShelvesFeed({ server, owner, page }),
+      updated: new Date(),
+    })
+  }
+
+  @Get(`${OPDS_SHELVES_ROUTE}/:shelfId`)
+  @Header("Content-Type", OPDS_ACQUISITION_FEED_TYPE)
+  async getShelf(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("shelfId") shelfId: string,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds1Feed({
+      slug: server.slug,
+      feed: await this.findShelfFeed({ server, owner, shelfId, page }),
+      updated: new Date(),
+    })
+  }
+
+  @Get(`${OPDS_2_ROUTE}/${OPDS_SHELVES_ROUTE}`)
+  @Header("Content-Type", OPDS_2_FEED_TYPE)
+  async getOpds2Shelves(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds2Feed({
+      slug: server.slug,
+      feed: await this.findShelvesFeed({ server, owner, page }),
+    })
+  }
+
+  @Get(`${OPDS_2_ROUTE}/${OPDS_SHELVES_ROUTE}/:shelfId`)
+  @Header("Content-Type", OPDS_2_FEED_TYPE)
+  async getOpds2Shelf(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("shelfId") shelfId: string,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds2Feed({
+      slug: server.slug,
+      feed: await this.findShelfFeed({ server, owner, shelfId, page }),
     })
   }
 
@@ -190,9 +255,7 @@ export class OpdsCatalogController {
     owner: UserPostgresEntity
     page: number
   }) {
-    const isPageNumber = page >= 1
-
-    if (!isPageNumber) throw new BadRequestException()
+    assertPageNumber(page)
 
     const servedBooks = await this.opdsBooksService.listServedBooks({
       owner,
@@ -200,5 +263,46 @@ export class OpdsCatalogController {
     })
 
     return toBooksFeed({ server, ...servedBooks })
+  }
+
+  private async findShelvesFeed({
+    server,
+    owner,
+    page,
+  }: {
+    server: OpdsServerPostgresEntity
+    owner: UserPostgresEntity
+    page: number
+  }) {
+    assertPageNumber(page)
+
+    const servedShelves = await this.opdsBooksService.listServedShelves({
+      owner,
+      page,
+    })
+
+    return toShelvesFeed({ server, ...servedShelves })
+  }
+
+  private async findShelfFeed({
+    server,
+    owner,
+    shelfId,
+    page,
+  }: {
+    server: OpdsServerPostgresEntity
+    owner: UserPostgresEntity
+    shelfId: string
+    page: number
+  }) {
+    assertPageNumber(page)
+
+    const servedShelf = await this.opdsBooksService.listServedShelfBooks({
+      owner,
+      shelfId,
+      page,
+    })
+
+    return toShelfFeed({ server, ...servedShelf })
   }
 }
