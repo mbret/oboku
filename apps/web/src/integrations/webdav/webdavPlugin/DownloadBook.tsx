@@ -1,9 +1,9 @@
 import { memo } from "react"
 import {
   from,
+  map,
   merge,
   mergeMap,
-  of,
   takeUntil,
   throwIfEmpty,
   type Observable,
@@ -11,12 +11,19 @@ import {
 import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../../plugins/types"
 import { ObokuErrorCode } from "@oboku/shared"
+import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
+import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
+import { fromAbortable } from "../../../common/rxjs/fromAbortable"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import { createWebdavClient, resolveWebdavUrl } from "./auth/connect"
+import { resolveWebdavUrl } from "./auth/connect"
+import {
+  downloadFromWebdavServer,
+  downloadThroughServerProxy,
+} from "./download"
 import type { WebdavBackedType } from "./constants"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {
@@ -27,11 +34,12 @@ type WebdavDownloadBookProps = DownloadBookComponentProps & {
 }
 
 /**
- * Shared download component for plugins backed by a WebDAV endpoint.
- * When `webdavUrl` is provided it is used directly; otherwise the URL
- * is read from the connector data (standard webdav flow).
+ * Shared download component for plugins backed by a WebDAV endpoint. It reads
+ * the file from `webdavUrl` when given, else from the connector's URL, or
+ * through oboku's server for a connector that uses it as a proxy.
  */
 export const WebdavDownloadBook = memo(function WebdavDownloadBook({
+  link,
   onError,
   onResolve,
   signal,
@@ -44,42 +52,45 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
     { type: connectorType },
     { meta: { suppressGlobalErrorToast: true } },
   )
+  const httpClientApi = useHttpClientApi()
   const onErrorRef = useLiveRef(onError)
   const { mutate: download } = useMutation$({
-    mutationFn: ({
+    mutationFn: function downloadWithConnector({
       connectorId: connectorIdParam,
       onUnmount$,
     }: {
       connectorId: string
       onUnmount$: Observable<void>
-    }) =>
-      from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
-        mergeMap(({ data }) => {
-          const client = createWebdavClient({
-            url: resolveWebdavUrl({ connectorUrl: data.url, webdavUrl }),
-            username: data.username,
-            password: data.password,
+    }) {
+      return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
+        mergeMap(function downloadFile({ data }) {
+          return fromAbortable(function downloadUntilCancelled(downloadSignal) {
+            return isProxiedThroughServer(data)
+              ? downloadThroughServerProxy({
+                  httpClientApi,
+                  linkId: link._id,
+                  password: data.password,
+                  signal: downloadSignal,
+                })
+              : downloadFromWebdavServer({
+                  url: resolveWebdavUrl({ connectorUrl: data.url, webdavUrl }),
+                  username: data.username,
+                  password: data.password,
+                  filePath,
+                  signal: downloadSignal,
+                })
           })
-
-          return from(
-            client.getFileContents(filePath, {
-              format: "binary",
-            }),
-          )
         }),
-        mergeMap((content) => {
-          if (!(content instanceof ArrayBuffer)) {
-            throw new Error("Unknown data type")
-          }
-
-          return of({
-            data: new Blob([content]),
+        map(function toDownloadResult(file) {
+          return {
+            data: file,
             fileName: filePath.split("/").pop() ?? filePath,
-          })
+          }
         }),
         takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
         throwIfEmpty(() => new CancelError()),
-      ),
+      )
+    },
     onSuccess: onResolve,
     onError,
     meta: { suppressGlobalErrorToast: true },

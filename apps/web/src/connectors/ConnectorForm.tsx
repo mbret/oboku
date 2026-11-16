@@ -7,7 +7,12 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import { Controller, useForm } from "react-hook-form"
+import {
+  type Control,
+  Controller,
+  type FieldPathByValue,
+  useForm,
+} from "react-hook-form"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
@@ -20,6 +25,7 @@ import type {
 import { TestConnection, type TestConnectionFn } from "./TestConnection"
 import { useAddConnector } from "./useAddConnector"
 import { useConnector } from "./useConnector"
+import { isProxiedThroughServer } from "./connectorDetails"
 import { useUpdateConnector } from "./useUpdateConnector"
 import { ErrorAlert } from "../errors/ErrorMessage"
 import { PageContainer } from "../common/PageContainer"
@@ -42,6 +48,22 @@ const FormActionsStack = styled(Stack)(function styleFormActionsStack({
   }
 })
 
+const CheckboxFieldStack = styled(Stack)(function styleCheckboxFieldStack({
+  theme,
+}) {
+  return {
+    gap: theme.spacing(0.5),
+  }
+})
+
+const CaptionTypography = styled(Typography)(function styleCaptionTypography({
+  theme,
+}) {
+  return {
+    color: theme.palette.text.secondary,
+  }
+})
+
 function getConnectorUrl(
   connector: SettingsConnectorDocType | undefined,
 ): string {
@@ -58,6 +80,43 @@ export type FormData = {
   username: string
   passwordAsSecretId: string
   allowSelfSigned: boolean
+  proxyThroughServer: boolean
+}
+
+function ControlledCheckboxField({
+  control,
+  name,
+  label,
+  caption,
+}: {
+  control: Control<FormData>
+  name: FieldPathByValue<FormData, boolean>
+  label: string
+  caption: string
+}) {
+  // react-hook-form is on React Compiler's incompatible-library list.
+  // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
+  "use no memo"
+
+  return (
+    <Controller
+      control={control}
+      name={name}
+      render={function renderCheckboxField({ field }) {
+        return (
+          <CheckboxFieldStack>
+            <FormControlLabel
+              control={
+                <Checkbox checked={field.value} onChange={field.onChange} />
+              }
+              label={label}
+            />
+            <CaptionTypography variant="caption">{caption}</CaptionTypography>
+          </CheckboxFieldStack>
+        )
+      }}
+    />
+  )
 }
 
 export type ConnectorFormConfig = {
@@ -68,6 +127,8 @@ export type ConnectorFormConfig = {
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
+  /** Shows the "Use oboku's server as a proxy" checkbox and saves its value. */
+  showProxyThroughServer?: boolean
   /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
   validateUrl?: (url: string) => true | string
   urlHelperText?: ReactNode
@@ -84,6 +145,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
   children,
   showUrl = true,
+  showProxyThroughServer = false,
   validateUrl,
   urlHelperText,
   topAlert,
@@ -112,12 +174,14 @@ export const ConnectorForm = memo(function ConnectorForm({
       username: "",
       passwordAsSecretId: "",
       allowSelfSigned: false,
+      proxyThroughServer: false,
     },
     values: {
       urlValue: getConnectorUrl(connector),
       username: connector?.username ?? "",
       passwordAsSecretId: connector?.passwordAsSecretId ?? "",
       allowSelfSigned: connector?.allowSelfSigned ?? false,
+      proxyThroughServer: isProxiedThroughServer(connector),
     },
   })
   const data = watch()
@@ -136,6 +200,9 @@ export const ConnectorForm = memo(function ConnectorForm({
           url: data.urlValue,
           allowSelfSigned: data.allowSelfSigned,
         }),
+        ...(showProxyThroughServer && {
+          proxyThroughServer: data.proxyThroughServer,
+        }),
       }
       if (isEditing && connectorId) {
         return from(updateConnector({ id: connectorId, ...payload }))
@@ -147,6 +214,8 @@ export const ConnectorForm = memo(function ConnectorForm({
       onSubmitSuccess()
     },
   })
+
+  const canTestFromBrowser = !data.proxyThroughServer
 
   return (
     <>
@@ -185,40 +254,23 @@ export const ConnectorForm = memo(function ConnectorForm({
               rules={{ required: true }}
             />
             {showUrl && (
-              <Controller
+              <ControlledCheckboxField
                 control={control}
                 name="allowSelfSigned"
-                render={({ field }) => (
-                  <Stack
-                    sx={{
-                      gap: 0.5,
-                    }}
-                  >
-                    <FormControlLabel
-                      control={
-                        <Checkbox
-                          checked={!!field.value}
-                          onChange={(_, checked) => field.onChange(checked)}
-                        />
-                      }
-                      label="Allow self-signed certificate"
-                    />
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        color: "text.secondary",
-                      }}
-                    >
-                      Used by API sync, metadata, and download requests. Browser
-                      connection tests may still require trusting the
-                      certificate in your browser.
-                    </Typography>
-                  </Stack>
-                )}
+                label="Allow self-signed certificate"
+                caption="Used by API sync, metadata, and download requests. Browser connection tests may still require trusting the certificate in your browser."
+              />
+            )}
+            {showProxyThroughServer && (
+              <ControlledCheckboxField
+                control={control}
+                name="proxyThroughServer"
+                label="Use oboku's server as a proxy"
+                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it and passes them on to you. They count towards your monthly download quota. The connection test runs from the browser, so the form hides it."
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}
-            {testConnection && (
+            {testConnection && canTestFromBrowser && (
               <TestConnection
                 connectionData={{ ...data, url: data.urlValue }}
                 connectorType={connectorType}
