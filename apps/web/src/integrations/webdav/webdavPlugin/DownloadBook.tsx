@@ -30,9 +30,9 @@ type WebdavDownloadBookProps = DownloadBookComponentProps & {
 }
 
 /**
- * Shared download component for plugins backed by a WebDAV endpoint.
- * When `webdavUrl` is provided it is used directly; otherwise the URL
- * is read from the connector data (standard webdav flow).
+ * Shared download component for plugins backed by a WebDAV endpoint. It reads
+ * the file from `webdavUrl` when given, else from the connector's URL, or
+ * through oboku's API for a connector that connects through it.
  */
 export const WebdavDownloadBook = memo(function WebdavDownloadBook({
   link,

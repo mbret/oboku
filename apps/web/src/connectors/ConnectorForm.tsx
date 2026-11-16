@@ -271,7 +271,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 control={control}
                 name="connectThroughServer"
                 label="Connect through oboku's server"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it, and they count towards your monthly download quota."
+                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it, and they count towards your monthly download quota. The connection test runs from the browser, so the form hides it."
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}

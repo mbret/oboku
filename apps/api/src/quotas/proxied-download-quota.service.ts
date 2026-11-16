@@ -72,7 +72,7 @@ export type ProxiedFile = {
   stream: NodeJS.ReadableStream
   /** The number of bytes `stream` yields, when the provider states it. */
   size?: number
-  /** The bytes to reserve on the quotas: `size`, or the provider's own idea of it. */
+  /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
   expectedSize?: number
 }
 
@@ -166,7 +166,7 @@ export class ProxiedDownloadQuotaService {
     const config = this.instanceConfigService.getConfig().value
 
     const byteCounter = new ByteCountingStream()
-    // The pipeline listens to the Drive stream before the reservation is
+    // The pipeline listens to the source stream before the reservation is
     // awaited: an error emitted with no listener stops the process. Its own
     // error is the stream's, which the route answers.
     const transferEnded = new Promise<number>(function countUntilEnd(resolve) {
@@ -218,7 +218,6 @@ export class ProxiedDownloadQuotaService {
   /**
    * Answers a route with `file`, metered by {@link meter}.
    *
-   * @param attachment names and types the file, once the quotas let it pass.
    * @throws a 429 with `Retry-After` set to the start of the next month, UTC,
    * and `ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED`, when the download would pass
    * either quota.
@@ -255,8 +254,8 @@ export class ProxiedDownloadQuotaService {
     }
 
     if (attachment) {
-      // `attachment` types the response from the name's extension: the file's
-      // own media type replaces it.
+      // `response.attachment()` types the response from the name's
+      // extension: the file's own media type replaces it.
       response.attachment(attachment.name).type(attachment.contentType)
     }
 
