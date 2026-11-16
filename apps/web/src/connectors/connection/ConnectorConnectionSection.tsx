@@ -1,20 +1,12 @@
-import {
-  Alert,
-  Button,
-  ListItem,
-  ListItemButton,
-  ListItemText,
-  Stack,
-  Typography,
-} from "@mui/material"
-import type {
-  ConnectableConnectorType,
-  ConnectorConnectionDto,
-} from "@oboku/shared"
-import { PageSection } from "../../common/PageSection"
+import { Alert, Stack, Typography } from "@mui/material"
+import type { ConnectableConnectorType } from "@oboku/shared"
 import { showConfirmDialog } from "../../common/dialogs/presets"
-import { ErrorAlert } from "../../errors/ErrorMessage"
-import { CancelError } from "../../errors/errors.shared"
+import {
+  ConnectSection,
+  ConnectionDetailsSection,
+  ConnectionLoadErrorSection,
+  DisconnectListItem,
+} from "../../connections/ConnectionSections"
 import { useActiveProfileId } from "../../profiles/active/activeProfileId"
 import { useConnectConnector } from "./useConnectConnector"
 import { useConnectorConnection } from "./useConnectorConnection"
@@ -60,7 +52,6 @@ function ConnectConnector({
     { type: connectorType },
     { meta: { suppressGlobalErrorToast: true } },
   )
-  const hasConnectionFailed = !!error && !(error instanceof CancelError)
 
   const confirmThenConnect = async () => {
     const confirmed = await showConfirmDialog({
@@ -75,7 +66,13 @@ function ConnectConnector({
   }
 
   return (
-    <PageSection title={SECTION_TITLE} variant="stack">
+    <ConnectSection
+      title={SECTION_TITLE}
+      error={error}
+      isPending={isPending}
+      connectLabel={isConnectorChanged ? "Connect again" : "Connect"}
+      onConnect={confirmThenConnect}
+    >
       {isConnectorChanged ? (
         <Alert severity="warning">
           You changed this connector or its password after you connected it.
@@ -88,34 +85,7 @@ function ConnectConnector({
           that your OPDS servers can serve its books without this browser.
         </Typography>
       )}
-      {hasConnectionFailed && <ErrorAlert error={error} />}
-      <Stack sx={{ alignItems: "flex-start" }}>
-        <Button
-          variant="contained"
-          loading={isPending}
-          onClick={confirmThenConnect}
-        >
-          {isConnectorChanged ? "Connect again" : "Connect"}
-        </Button>
-      </Stack>
-    </PageSection>
-  )
-}
-
-function ConnectedConnector({
-  connection,
-}: {
-  connection: ConnectorConnectionDto
-}) {
-  return (
-    <PageSection title={SECTION_TITLE}>
-      <ListItem>
-        <ListItemText
-          primary="Connected"
-          secondary={new Date(connection.connectedAt).toLocaleString()}
-        />
-      </ListItem>
-    </PageSection>
+    </ConnectSection>
   )
 }
 
@@ -139,15 +109,14 @@ export function ConnectorConnectionSection({
   const hasConnectionsLoaded = connection !== undefined
 
   if (!hasConnectionsLoaded) {
-    return (
-      <PageSection title={SECTION_TITLE} variant="stack">
-        <ErrorAlert error={error} />
-      </PageSection>
-    )
+    return <ConnectionLoadErrorSection title={SECTION_TITLE} error={error} />
   }
 
   return connection?.status === "connected" ? (
-    <ConnectedConnector connection={connection} />
+    <ConnectionDetailsSection
+      title={SECTION_TITLE}
+      connectedAt={connection.connectedAt}
+    />
   ) : (
     <ConnectConnector
       connectorId={connectorId}
@@ -168,25 +137,18 @@ export function DisconnectConnectorListItem({
 
   if (!connection) return null
 
-  const confirmThenDisconnect = async () => {
-    const confirmed = await showConfirmDialog({
-      title: "Disconnect this connector?",
-      message:
-        "oboku's server forgets this connector's password, and your OPDS servers stop serving its books. The connector stays in your settings.",
-      actions: [{ title: "Disconnect" }],
-    })
-
-    if (!confirmed) return
-
-    disconnect({ profileId: activeProfileId, connectorId })
-  }
-
   return (
-    <ListItemButton onClick={confirmThenDisconnect}>
-      <ListItemText
-        primary="Disconnect this connector"
-        secondary="oboku's server forgets its password"
-      />
-    </ListItemButton>
+    <DisconnectListItem
+      label="Disconnect this connector"
+      description="oboku's server forgets its password"
+      confirmation={{
+        title: "Disconnect this connector?",
+        message:
+          "oboku's server forgets this connector's password, and your OPDS servers stop serving its books. The connector stays in your settings.",
+      }}
+      onDisconnect={function disconnectConnector() {
+        disconnect({ profileId: activeProfileId, connectorId })
+      }}
+    />
   )
 }
