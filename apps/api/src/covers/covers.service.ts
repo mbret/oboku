@@ -1,10 +1,15 @@
-import { Injectable, Logger } from "@nestjs/common"
+import {
+  Injectable,
+  Logger,
+  type OnModuleInit,
+  StreamableFile,
+} from "@nestjs/common"
 import {
   type Archive,
   getArchiveFileRecordByUri,
 } from "@prose-reader/archive-reader"
 import axios from "axios"
-import { firstValueFrom, from, map, switchMap, tap } from "rxjs"
+import { defer, firstValueFrom, from, map, switchMap, tap } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "../config/AppConfigService.js"
 import fs from "node:fs"
@@ -12,11 +17,18 @@ import path from "node:path"
 import { CoversFsService } from "./covers-fs.service.js"
 import { CoversS3Service } from "./covers-s3.service.js"
 import { getUserAddressRequestOptions } from "../http/userAddressAgents.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 
 const WEBP_MIME_TYPE = "image/webp"
 const JPEG_MIME_TYPE = "image/jpeg"
 
 export const COVER_DELIVERY_FORMATS = [WEBP_MIME_TYPE, JPEG_MIME_TYPE]
+
+/** For cover URLs that change whenever the cover does. */
+export const IMMUTABLE_COVER_CACHE_CONTROL =
+  "private, max-age=31536000, immutable"
+
+const COVER_DELIVERY_QUEUE_NAME = "covers.findOne"
 
 type DeliveryFormat = typeof WEBP_MIME_TYPE | typeof JPEG_MIME_TYPE
 
@@ -39,7 +51,7 @@ export type StoredCover = {
 }
 
 @Injectable()
-export class CoversService {
+export class CoversService implements OnModuleInit {
   private readonly logger = new Logger(CoversService.name)
   private deliverablePlaceholders = new Map<DeliveryFormat, Promise<Buffer>>()
 
@@ -47,7 +59,16 @@ export class CoversService {
     public appConfig: AppConfigService,
     private fsService: CoversFsService,
     private s3Service: CoversS3Service,
+    private taskQueueService: InMemoryTaskQueueService,
   ) {}
+
+  onModuleInit() {
+    this.taskQueueService.createQueue({
+      name: COVER_DELIVERY_QUEUE_NAME,
+      maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
+      deduplicate: true,
+    })
+  }
 
   private get backend() {
     return this.appConfig.COVERS_STORAGE_STRATEGY === "s3"
@@ -139,6 +160,30 @@ export class CoversService {
     return from(this.backend.getCover(id)).pipe(
       switchMap(deliverStoredCoverOrPlaceholder),
       map(withDeliveryFormat),
+    )
+  }
+
+  /**
+   * The cover as a response, encoded for delivery: the stored cover, else the
+   * placeholder. Every route that sends covers goes through one queue, which
+   * caps how many are encoded at once.
+   */
+  deliverCover(objectKey: string, format?: string) {
+    const coverFile$ = defer(() =>
+      this.getCoverForDelivery(objectKey, format).pipe(
+        map(function toInlineCoverFile(delivered) {
+          return new StreamableFile(delivered.cover, {
+            disposition: "inline",
+            type: delivered.format,
+          })
+        }),
+      ),
+    )
+
+    return this.taskQueueService.enqueue(
+      COVER_DELIVERY_QUEUE_NAME,
+      () => coverFile$,
+      { id: objectKey },
     )
   }
 

@@ -1,6 +1,7 @@
 import { Module } from "@nestjs/common"
 import { InstanceConfigModule } from "../admin/instance-config/instance-config.module.js"
 import { CouchModule } from "../couch/couch.module.js"
+import { CoversModule } from "../covers/covers.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
 import { PluginsModule } from "../plugins/plugins.module.js"
 import { ProviderConnectionsModule } from "../provider-connections/provider-connections.module.js"
@@ -18,6 +19,7 @@ import { OpdsServersService } from "./opds-servers.service.js"
     PostgresModule,
     InstanceConfigModule,
     CouchModule,
+    CoversModule,
     PluginsModule,
     ProviderConnectionsModule,
     QuotasModule,
