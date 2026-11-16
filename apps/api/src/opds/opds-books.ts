@@ -14,6 +14,9 @@ import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 /** The provider whose books the catalogs serve, through the owner's Google connection. */
 export const SERVED_LINK_TYPE = "DRIVE" satisfies LinkDocType["type"]
 
+/** E-reader apps decode JPEG; not all of them decode the WebP oboku stores. */
+export const SERVED_COVER_TYPE = "image/jpeg"
+
 const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
 
 /** Express keeps only what follows the last of them in a file name it sends. */
