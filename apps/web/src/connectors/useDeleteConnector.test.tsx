@@ -120,17 +120,13 @@ describe("useDeleteConnector", () => {
     const result = renderUseDeleteConnector()
 
     await waitFor(() => {
-      expect(mocks.onMutationError).toHaveBeenCalledWith(
-        refusal,
-        expect.anything(),
-        undefined,
-        expect.objectContaining({
-          options: expect.objectContaining({
-            meta: { suppressGlobalErrorToast: true },
-          }),
-        }),
-        expect.anything(),
-      )
+      expect(mocks.onMutationError).toHaveBeenCalled()
+    })
+    const [error, , , failedMutation] =
+      mocks.onMutationError.mock.lastCall ?? []
+    expect(error).toBe(refusal)
+    expect(failedMutation?.options.meta).toEqual({
+      suppressGlobalErrorToast: true,
     })
     expect(result.current.isSuccess).toBe(true)
   })

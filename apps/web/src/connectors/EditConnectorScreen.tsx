@@ -38,7 +38,7 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
     const confirmed = await showConfirmDialog({
       title: "Delete this connector?",
       message: isConnectableConnector
-        ? "oboku's server also forgets this connector's password if it keeps it."
+        ? "If oboku's server keeps this connector's password, it forgets it once oboku reaches the server. To be sure, disconnect the connector first."
         : undefined,
       actions: [{ title: "Delete" }],
     })
@@ -48,7 +48,7 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
     deleteConnector(
       { id, type, profileId: activeProfileId },
       {
-        onSuccess: () => {
+        onSuccess: function goBackToConnectorList() {
           notify("actionSuccess")
           goBack(details.integrationRoute)
         },

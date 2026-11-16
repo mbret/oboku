@@ -16,7 +16,7 @@ When you [connect a connector](/guides/connectors#connect-a-connector), oboku de
 
 * The server sends the password only to the connector's address, for its username.
 * If you edit the connector, or put a new password in its secret, the server stops using the password until you connect the connector again.
-* If you disconnect the connector, the server forgets the password. Deleting the connector or its password secret makes it forget the password too, once the server sees the deletion: see [Disconnect](/guides/connectors#disconnect).
+* If you disconnect the connector, the server forgets the password. Deleting the connector or its password secret makes it forget the password too, at the latest the next time you open a WebDAV connector in oboku after the deletion syncs: see [Disconnect](/guides/connectors#disconnect).
 * Changing or removing your master password does not disconnect the connector.
 
 Connecting is your decision for each connector. A connector you do not connect keeps its password a secret that only you can decrypt.

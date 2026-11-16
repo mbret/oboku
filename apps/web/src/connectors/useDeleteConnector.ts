@@ -16,10 +16,10 @@ type DeleteConnectorRequest = {
 
 /**
  * Deletes the connector from the settings, then asks oboku's server to forget
- * its connection. Offline, the request waits until the browser is online again.
- * When it never runs, as when oboku closes first, or when it fails, the server
- * forgets the connection the next time the app lists connections after the
- * deletion syncs.
+ * its connection. When the browser goes offline, the request waits until it is
+ * online again. When it never runs, as when oboku started offline or closes
+ * first, or when it fails, the server forgets the connection the next time the
+ * app lists connections after the deletion syncs.
  */
 export const useDeleteConnector = () => {
   const { mutate: disconnectConnector } = useDisconnectConnector({

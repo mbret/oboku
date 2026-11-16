@@ -153,6 +153,32 @@ describe("ConnectorConnectionSection", () => {
     ).toBeTruthy()
   })
 
+  it("keeps Connect loading until the refreshed connections arrive", async () => {
+    const api = renderSection({ connections: [] })
+    const connectButton = await screen.findByRole("button", {
+      name: "Connect",
+    })
+    const { promise: connectionsRefetched, resolve: answerRefetch } =
+      Promise.withResolvers<{
+        data: { connections: ConnectorConnectionDto[] }
+      }>()
+    api.get.mockReturnValue(connectionsRefetched)
+
+    await clickConnectThenConsent()
+    await waitFor(() => {
+      expect(api.get).toHaveBeenCalledTimes(2)
+    })
+
+    await waitFor(() => {
+      expect(within(connectButton).getByRole("progressbar")).toBeTruthy()
+    })
+    expect(api.put).toHaveBeenCalled()
+
+    answerRefetch({ data: { connections: [CONNECTION] } })
+
+    expect(await screen.findByText("Connected")).toBeTruthy()
+  })
+
   it("decrypts and sends nothing when the user does not consent", async () => {
     const api = renderSection({ connections: [] })
 
