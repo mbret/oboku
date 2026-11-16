@@ -1,39 +1,18 @@
-import {
-  Controller,
-  Get,
-  Header,
-  OnModuleInit,
-  Param,
-  Query,
-  StreamableFile,
-} from "@nestjs/common"
+import { Controller, Get, Header, Param, Query } from "@nestjs/common"
 import { ApiOkResponse, ApiProduces } from "@nestjs/swagger"
-import { defer, map, type Observable } from "rxjs"
-import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
-import { AppConfigService } from "../config/AppConfigService.js"
-import { COVER_DELIVERY_FORMATS, CoversService } from "./covers.service.js"
+import {
+  COVER_DELIVERY_FORMATS,
+  CoversService,
+  IMMUTABLE_COVER_CACHE_CONTROL,
+} from "./covers.service.js"
 import { CoverQueryDto } from "./covers.dto.js"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
 import { emailToNameHex } from "../couch/couch.service.js"
 import { getBookCoverKey, getCollectionCoverKey } from "@oboku/shared"
 
 @Controller("covers")
-export class CoversController implements OnModuleInit {
-  private QUEUE_NAME = "covers.findOne"
-
-  constructor(
-    private taskQueueService: InMemoryTaskQueueService,
-    private coversService: CoversService,
-    private appConfig: AppConfigService,
-  ) {}
-
-  onModuleInit() {
-    this.taskQueueService.createQueue({
-      name: this.QUEUE_NAME,
-      maxConcurrent: this.appConfig.QUEUE_COVERS_DELIVERY_MAX_CONCURRENT,
-      deduplicate: true,
-    })
-  }
+export class CoversController {
+  constructor(private coversService: CoversService) {}
 
   /**
    * The `userNameHex` is intentionally derived from the verified JWT and never
@@ -43,7 +22,7 @@ export class CoversController implements OnModuleInit {
    * key in storage. The same applies to collection covers.
    */
   @Get("books/:bookId")
-  @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @Header("Cache-Control", IMMUTABLE_COVER_CACHE_CONTROL)
   @ApiProduces(...COVER_DELIVERY_FORMATS)
   @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findBookCover(
@@ -54,11 +33,11 @@ export class CoversController implements OnModuleInit {
     const userNameHex = emailToNameHex(user.email)
     const objectKey = getBookCoverKey(userNameHex, bookId)
 
-    return this.serveCover(objectKey, query.format)
+    return this.coversService.deliverCover(objectKey, query.format)
   }
 
   @Get("collections/:collectionId")
-  @Header("Cache-Control", "private, max-age=31536000, immutable")
+  @Header("Cache-Control", IMMUTABLE_COVER_CACHE_CONTROL)
   @ApiProduces(...COVER_DELIVERY_FORMATS)
   @ApiOkResponse({ schema: { type: "string", format: "binary" } })
   findCollectionCover(
@@ -69,27 +48,6 @@ export class CoversController implements OnModuleInit {
     const userNameHex = emailToNameHex(user.email)
     const objectKey = getCollectionCoverKey(userNameHex, collectionId)
 
-    return this.serveCover(objectKey, query.format)
-  }
-
-  private serveCover(
-    objectKey: string,
-    format?: string,
-  ): Observable<StreamableFile> {
-    const response$ = defer(() =>
-      this.coversService.getCoverForDelivery(objectKey, format).pipe(
-        map(
-          (delivered) =>
-            new StreamableFile(delivered.cover, {
-              disposition: `inline`,
-              type: delivered.format,
-            }),
-        ),
-      ),
-    )
-
-    return this.taskQueueService.enqueue(this.QUEUE_NAME, () => response$, {
-      id: objectKey,
-    })
+    return this.coversService.deliverCover(objectKey, query.format)
   }
 }

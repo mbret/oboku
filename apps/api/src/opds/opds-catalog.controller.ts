@@ -32,6 +32,7 @@ import {
   OPDS_ACQUISITION_FEED_TYPE,
   OPDS_BOOKS_ROUTE,
   OPDS_CATALOG_ROUTE,
+  OPDS_COVERS_ROUTE,
   OPDS_NAVIGATION_FEED_TYPE,
   toBooksFeed,
   toOpds1Feed,
@@ -39,6 +40,7 @@ import {
   toRootFeed,
 } from "./opds-feeds.js"
 import { OpdsBooksService } from "./opds-books.service.js"
+import { IMMUTABLE_COVER_CACHE_CONTROL } from "../covers/covers.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 
 /**
@@ -97,6 +99,27 @@ export class OpdsCatalogController {
       slug: server.slug,
       feed: await this.findBooksFeed({ server, owner, page }),
     })
+  }
+
+  /**
+   * The cover of a book the catalog serves. Its URL changes with the cover,
+   * so reading apps may keep it as long as they like, but not a refusal: the
+   * header goes out with the cover only.
+   */
+  @Get(`${OPDS_COVERS_ROUTE}/${OPDS_BOOKS_ROUTE}/:bookId`)
+  async getBookCover(
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("bookId") bookId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const cover = await this.opdsBooksService.deliverServedBookCover({
+      owner,
+      bookId,
+    })
+
+    response.setHeader("Cache-Control", IMMUTABLE_COVER_CACHE_CONTROL)
+
+    return cover
   }
 
   /**

@@ -1,6 +1,7 @@
 import { Readable } from "node:stream"
 import type createNano from "nano"
-import type { BookDocType } from "@oboku/shared"
+import { lastValueFrom } from "rxjs"
+import { type BookDocType, getBookCoverKey } from "@oboku/shared"
 import {
   BadGatewayException,
   BadRequestException,
@@ -9,7 +10,8 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from "@nestjs/common"
-import { CouchService } from "../couch/couch.service.js"
+import { CouchService, emailToNameHex } from "../couch/couch.service.js"
+import { CoversService } from "../covers/covers.service.js"
 import { fetchByIds, find } from "../couch/dbHelpers.js"
 import { findOne } from "../couch/findOne.js"
 import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
@@ -23,6 +25,7 @@ import {
   compareNewestFirst,
   isBookShown,
   SERVED_BOOKS_PAGE_SIZE,
+  SERVED_COVER_TYPE,
   SERVED_LINK_TYPE,
   toServedFile,
 } from "./opds-books.js"
@@ -110,6 +113,7 @@ export class OpdsBooksService {
     private readonly couchService: CouchService,
     private readonly googleConnectionService: GoogleConnectionService,
     private readonly pluginsService: PluginsService,
+    private readonly coversService: CoversService,
   ) {}
 
   /**
@@ -169,32 +173,7 @@ export class OpdsBooksService {
     owner: Pick<UserPostgresEntity, "id" | "couchName">
     bookId: string
   }) {
-    const { couchName } = owner
-
-    if (!couchName) throw new NotFoundException()
-
-    const db = await this.couchService.createNanoInstanceForUser({
-      email: couchName,
-    })
-    const [book, protectedTagIds] = await Promise.all([
-      findOne("book", { selector: { _id: bookId } }, { db }),
-      findProtectedTagIds(db),
-    ])
-    const firstLinkId = book?.links[0]
-    const firstLink = firstLinkId
-      ? await findOne("link", { selector: { _id: firstLinkId } }, { db })
-      : null
-
-    const isFirstLinkOnDrive = firstLink?.type === SERVED_LINK_TYPE
-
-    if (
-      !book ||
-      !isFirstLinkOnDrive ||
-      !isBookShown({ book, protectedTagIds })
-    ) {
-      throw new NotFoundException()
-    }
-
+    const { book, firstLink } = await this.findServedBook({ owner, bookId })
     const providerCredentials = {
       access_token: await this.mintDriveAccessToken(owner.id),
     }
@@ -226,6 +205,71 @@ export class OpdsBooksService {
       size,
       expectedSize: size ?? metadataSize,
     }
+  }
+
+  /**
+   * The cover of a book the owner's catalogs serve, as a JPEG: its stored
+   * cover, else the placeholder the app shows. Covers do not count towards the
+   * download quotas.
+   *
+   * @throws `NotFoundException` for a book the catalogs do not serve.
+   */
+  async deliverServedBookCover({
+    owner,
+    bookId,
+  }: {
+    owner: Pick<UserPostgresEntity, "couchName">
+    bookId: string
+  }) {
+    const { couchName } = await this.findServedBook({ owner, bookId })
+    const coverKey = getBookCoverKey(emailToNameHex(couchName), bookId)
+
+    return lastValueFrom(
+      this.coversService.deliverCover(coverKey, SERVED_COVER_TYPE),
+    )
+  }
+
+  /**
+   * A book the owner's catalogs serve, with its Drive link, from the owner's
+   * library, whose CouchDB user name also keys the book's cover.
+   *
+   * @throws `NotFoundException` for an owner without a CouchDB user name, or a
+   * book the catalogs do not serve.
+   */
+  private async findServedBook({
+    owner,
+    bookId,
+  }: {
+    owner: Pick<UserPostgresEntity, "couchName">
+    bookId: string
+  }) {
+    const { couchName } = owner
+
+    if (!couchName) throw new NotFoundException()
+
+    const db = await this.couchService.createNanoInstanceForUser({
+      email: couchName,
+    })
+    const [book, protectedTagIds] = await Promise.all([
+      findOne("book", { selector: { _id: bookId } }, { db }),
+      findProtectedTagIds(db),
+    ])
+    const firstLinkId = book?.links[0]
+    const firstLink = firstLinkId
+      ? await findOne("link", { selector: { _id: firstLinkId } }, { db })
+      : null
+
+    const isFirstLinkOnDrive = firstLink?.type === SERVED_LINK_TYPE
+
+    if (
+      !book ||
+      !isFirstLinkOnDrive ||
+      !isBookShown({ book, protectedTagIds })
+    ) {
+      throw new NotFoundException()
+    }
+
+    return { couchName, book, firstLink }
   }
 
   /** Runs a request to Drive, turning its refusal into what a reading app gets. */

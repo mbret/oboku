@@ -1,15 +1,17 @@
 import { Readable } from "node:stream"
-import { type INestApplication, Logger } from "@nestjs/common"
+import { type INestApplication, Logger, StreamableFile } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
-import { ObokuErrorCode } from "@oboku/shared"
+import { getBookCoverKey, ObokuErrorCode } from "@oboku/shared"
 import { Test } from "@nestjs/testing"
+import { of } from "rxjs"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
-import { CouchService } from "../couch/couch.service.js"
+import { CouchService, emailToNameHex } from "../couch/couch.service.js"
+import { CoversService } from "../covers/covers.service.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
@@ -28,11 +30,12 @@ import { OpdsCatalogController } from "./opds-catalog.controller.js"
 import { OpdsAuthService } from "./opds-auth.service.js"
 import { OpdsBooksService } from "./opds-books.service.js"
 
+/** An account created before emails were normalized: its CouchDB user name keeps the casing it signed up with. */
 const OWNER: UserPostgresEntity = {
   id: 1,
   email: "reader@example.com",
   username: "reader@example.com",
-  couchName: "reader@example.com",
+  couchName: "Reader@Example.com",
   createdAt: new Date(),
 }
 
@@ -114,6 +117,7 @@ const userStore: Pick<UserPostgresService, "findById"> = {
 
 const DRIVE_ACCESS_TOKEN = "ya29.minted-drive-token"
 const BOOK_BYTES = "epub bytes"
+const COVER_BYTES = "jpeg bytes"
 const DRIVE_METADATA_SIZE = 12
 const PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * 1000 ** 3
 const PROXIED_DOWNLOAD_USER_QUOTA_BYTES = 25 * 1000 ** 3
@@ -286,6 +290,7 @@ describe("OpdsCatalogController", () => {
   const mintAccessToken = vi.fn()
   const getFileMetadata = vi.fn()
   const download = vi.fn()
+  const deliverCover = vi.fn()
   const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
@@ -308,6 +313,14 @@ describe("OpdsCatalogController", () => {
       }
     })
     reserveWithinQuotas.mockResolvedValue("reserved")
+    deliverCover.mockImplementation(function deliverStoredCover() {
+      return of(
+        new StreamableFile(Buffer.from(COVER_BYTES), {
+          disposition: "inline",
+          type: "image/jpeg",
+        }),
+      )
+    })
     adjust.mockResolvedValue(undefined)
 
     const module = await Test.createTestingModule({
@@ -322,6 +335,7 @@ describe("OpdsCatalogController", () => {
           useValue: { isConnected, mintAccessToken },
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
+        { provide: CoversService, useValue: { deliverCover } },
         ProxiedDownloadQuotaService,
         {
           provide: ProxiedDownloadUsagePostgresService,
@@ -421,6 +435,9 @@ describe("OpdsCatalogController", () => {
     expect(response.text).toContain(
       `<link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-dune/Dune.epub" type="application/epub+zip"/>`,
     )
+    expect(response.text).toContain(
+      `<link rel="http://opds-spec.org/image" href="/opds/calm-snails-dream/covers/books/book-dune" type="image/jpeg"/>`,
+    )
     expect(isConnected).toHaveBeenCalledWith(OWNER.id)
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: OWNER.couchName,
@@ -519,11 +536,11 @@ describe("OpdsCatalogController", () => {
     })
 
     it.each([
-      ["a page past the last", "books?page=3", 404],
-      ["a page past the last in OPDS 2.0", "v2/books?page=3", 404],
-      ["page 0", "books?page=0", 400],
-      ["a page that is not a number", "v2/books?page=next", 400],
-    ])("answers %s with %i", async (_, path, status) => {
+      ["a page past the last", 404, "books?page=3"],
+      ["a page past the last in OPDS 2.0", 404, "v2/books?page=3"],
+      ["page 0", 400, "books?page=0"],
+      ["a page that is not a number", 400, "v2/books?page=next"],
+    ])("answers %s with %i", async (_, status, path) => {
       const response = await getCatalog(
         `/opds/calm-snails-dream/${path}`,
         OWNER_AUTHORIZATION,
@@ -636,6 +653,11 @@ describe("OpdsCatalogController", () => {
       undefined,
     ],
     [
+      "missing credentials on a book's cover",
+      "/opds/calm-snails-dream/covers/books/book-dune",
+      undefined,
+    ],
+    [
       "missing credentials in OPDS 2.0",
       "/opds/calm-snails-dream/v2",
       undefined,
@@ -654,6 +676,62 @@ describe("OpdsCatalogController", () => {
       expect(response.body).toEqual(toAuthenticationDocument(slug))
     },
   )
+  describe("book covers", () => {
+    const getBookCover = (bookId: string) =>
+      getCatalog(
+        `/opds/calm-snails-dream/covers/books/${bookId}?hash=1767254400000`,
+        OWNER_AUTHORIZATION,
+      ).responseType("blob")
+
+    it("serves a served book's cover as JPEG, found under the owner's CouchDB user name", async () => {
+      const response = await getBookCover("book-dune")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe("image/jpeg")
+      expect(response.headers["cache-control"]).toBe(
+        "private, max-age=31536000, immutable",
+      )
+      expect(response.body.toString()).toBe(COVER_BYTES)
+      expect(deliverCover).toHaveBeenCalledWith(
+        getBookCoverKey(emailToNameHex("Reader@Example.com"), "book-dune"),
+        "image/jpeg",
+      )
+    })
+
+    it("asks neither Google nor the download quota", async () => {
+      await getBookCover("book-dune")
+
+      expect(mintAccessToken).not.toHaveBeenCalled()
+      expect(getFileMetadata).not.toHaveBeenCalled()
+      expect(reserveWithinQuotas).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      ["an unknown book", "book-missing"],
+      ["a book under a protected tag", "book-private"],
+      ["a book marked not interested", "book-skipped"],
+      ["a book on another provider", "book-dropbox"],
+      ["a book whose Drive link is not its first", "book-mixed"],
+      ["a book without links", "book-unlinked"],
+    ])("answers 404 for %s, sending no cover", async (_, bookId) => {
+      const response = await getBookCover(bookId)
+
+      expect(response.status).toBe(404)
+      expect(response.headers["cache-control"]).toBeUndefined()
+      expect(deliverCover).not.toHaveBeenCalled()
+    })
+
+    it("serves no cover of an owner without a CouchDB user name", async () => {
+      const response = await getCatalog(
+        "/opds/quiet-owls-wait/covers/books/book-dune",
+        toBasicAuthorization(`${NEWCOMER.email}:${PASSWORD}`),
+      )
+
+      expect(response.status).toBe(404)
+      expect(deliverCover).not.toHaveBeenCalled()
+    })
+  })
+
   describe("book files", () => {
     const getBookFile = (bookId: string, slug = SERVER.slug) =>
       getCatalog(
@@ -732,29 +810,29 @@ describe("OpdsCatalogController", () => {
     it.each([
       [
         "no Google connection",
+        404,
         createObokuBadRequest(
           ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND,
         ),
-        404,
       ],
       [
         "a lost Google connection",
-        createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
         404,
+        createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
       ],
       [
         "an instance without Google's client secret",
+        404,
         createObokuBadRequest(
           ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_CONFIGURED,
         ),
-        404,
       ],
       [
         "Google failing to refresh the token",
-        new Error("Google refused to refresh the access token: internal"),
         502,
+        new Error("Google refused to refresh the access token: internal"),
       ],
-    ])("answers %s with %i", async (_, mintFailure, status) => {
+    ])("answers %s with %i", async (_, status, mintFailure) => {
       mintAccessToken.mockRejectedValue(mintFailure)
 
       const response = await getBookFile("book-dune")
@@ -764,23 +842,23 @@ describe("OpdsCatalogController", () => {
     })
 
     it.each([
-      ["a file Drive cannot find", createDriveRefusal(404, "notFound"), 404],
+      ["a file Drive cannot find", 404, createDriveRefusal(404, "notFound")],
       [
         "a file the token may not read",
-        createDriveRefusal(403, "insufficientFilePermissions"),
         404,
+        createDriveRefusal(403, "insufficientFilePermissions"),
       ],
       [
         "Drive's rate limit",
-        createDriveRefusal(403, "userRateLimitExceeded"),
         503,
+        createDriveRefusal(403, "userRateLimitExceeded"),
       ],
-      ["too many requests", createDriveRefusal(429), 503],
-      ["a token Drive refuses", createDriveRefusal(401, "authError"), 502],
-      ["a failing Drive", createDriveRefusal(500, "backendError"), 502],
+      ["too many requests", 503, createDriveRefusal(429)],
+      ["a token Drive refuses", 502, createDriveRefusal(401, "authError")],
+      ["a failing Drive", 502, createDriveRefusal(500, "backendError")],
     ])(
       "answers %s with %i, keeping the access token out",
-      async (_, refusal, status) => {
+      async (_, status, refusal) => {
         const warn = vi.spyOn(Logger.prototype, "warn")
         getFileMetadata.mockRejectedValue(refusal)
 
@@ -798,12 +876,12 @@ describe("OpdsCatalogController", () => {
     )
 
     it.each([
-      ["a download limit once the file's metadata came", 403, 503],
+      ["a download limit once the file's metadata came", 503, 403],
       ["a file gone between both requests", 404, 404],
-      ["a failing download", 500, 502],
+      ["a failing download", 502, 500],
     ])(
       "answers %s with %i, though gaxios keeps no body of a stream",
-      async (_, driveStatus, status) => {
+      async (_, status, driveStatus) => {
         const warn = vi.spyOn(Logger.prototype, "warn")
         download.mockRejectedValue(createDriveStreamRefusal(driveStatus))
 

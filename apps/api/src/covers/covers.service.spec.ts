@@ -11,6 +11,7 @@ import { AppConfigService } from "../config/AppConfigService.js"
 import { CoversFsService } from "./covers-fs.service.js"
 import { CoversS3Service } from "./covers-s3.service.js"
 import { CoversService } from "./covers.service.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 
 const DELIVERY_SIZE = { width: 600, height: 600 }
 
@@ -75,6 +76,7 @@ describe("CoversService", () => {
         },
         { provide: CoversFsService, useValue: fsService },
         { provide: CoversS3Service, useValue: {} },
+        InMemoryTaskQueueService,
       ],
     }).compile()
 
@@ -175,6 +177,7 @@ describe("CoversService.saveCoverFromArchive", () => {
         },
         { provide: CoversFsService, useValue: fsService },
         { provide: CoversS3Service, useValue: {} },
+        InMemoryTaskQueueService,
       ],
     }).compile()
 

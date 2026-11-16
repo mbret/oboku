@@ -2,10 +2,11 @@ import { type BookDocType, getMetadataFromBook } from "@oboku/shared"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { escapeXml } from "../http/escapeXml.js"
-import { toServedFile } from "./opds-books.js"
+import { SERVED_COVER_TYPE, toServedFile } from "./opds-books.js"
 
 export const OPDS_CATALOG_ROUTE = "opds"
 export const OPDS_BOOKS_ROUTE = "books"
+export const OPDS_COVERS_ROUTE = "covers"
 export const OPDS_2_ROUTE = "v2"
 export const OPDS_AUTHENTICATION_ROUTE = "authentication"
 
@@ -50,6 +51,7 @@ type CatalogPublication = {
   description: string | undefined
   updated: Date
   acquisition: { href: string; type: string }
+  cover: { href: string; type: string }
 }
 
 /** Where a feed's page stands in the list it pages through; `number` is 1-based. */
@@ -102,6 +104,26 @@ const toBookFileHref = ({
 }) =>
   `${toCatalogRoot(slug)}/${OPDS_BOOKS_ROUTE}/${encodeURIComponent(bookId)}/${encodeURIComponent(fileName)}`
 
+/**
+ * The cover route of a book. Like the app's cover URLs, it carries the time
+ * of the book's last metadata refresh, which saves a new cover, so a reading
+ * app never keeps a stale one from its cache.
+ */
+const toBookCoverHref = ({
+  slug,
+  bookId,
+  coverVersion,
+}: {
+  slug: string
+  bookId: string
+  coverVersion: number | null
+}) => {
+  const href = `${toCatalogRoot(slug)}/${OPDS_COVERS_ROUTE}/${OPDS_BOOKS_ROUTE}/${encodeURIComponent(bookId)}`
+  const isCoverVersioned = typeof coverVersion === "number"
+
+  return isCoverVersioned ? `${href}?hash=${coverVersion}` : href
+}
+
 const toCatalogPublication = (
   slug: string,
   book: CatalogBook,
@@ -119,6 +141,14 @@ const toCatalogPublication = (
     acquisition: {
       href: toBookFileHref({ slug, bookId: book._id, fileName: file.name }),
       type: file.contentType,
+    },
+    cover: {
+      href: toBookCoverHref({
+        slug,
+        bookId: book._id,
+        coverVersion: book.lastMetadataUpdatedAt,
+      }),
+      type: SERVED_COVER_TYPE,
     },
   }
 }
@@ -195,6 +225,10 @@ const toFeedHref = (root: string, feed: CatalogFeed) => {
 // OPDS 1.2 §5.4 and OPDS 2.0 §5.1: the relation of a link that gets the
 // book's file.
 const ACQUISITION_RELATION = "http://opds-spec.org/acquisition"
+// OPDS 1.2: the relations of a link to a publication's cover and to its
+// thumbnail.
+const IMAGE_RELATION = "http://opds-spec.org/image"
+const THUMBNAIL_RELATION = "http://opds-spec.org/image/thumbnail"
 
 type AtomLink = { rel: string; href: string; type: string }
 
@@ -215,6 +249,8 @@ const toPublicationEntryXml = (publication: CatalogPublication) => [
   // RFC 4287 §4.1.2: an entry without an alternate link needs a content.
   `    <content type="text">${escapeXml(publication.description ?? "")}</content>`,
   `    ${toLinkXml({ rel: ACQUISITION_RELATION, ...publication.acquisition })}`,
+  `    ${toLinkXml({ rel: IMAGE_RELATION, ...publication.cover })}`,
+  `    ${toLinkXml({ rel: THUMBNAIL_RELATION, ...publication.cover })}`,
   `  </entry>`,
 ]
 
@@ -287,6 +323,7 @@ const toOpds2Publication = (publication: CatalogPublication) => ({
     modified: publication.updated.toISOString(),
   },
   links: [{ rel: ACQUISITION_RELATION, ...publication.acquisition }],
+  images: [publication.cover],
 })
 
 /**

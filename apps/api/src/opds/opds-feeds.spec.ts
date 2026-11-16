@@ -34,7 +34,7 @@ const toPageLinks = (feed: ReturnType<typeof toOpds2Feed>) =>
   feed.links.filter(({ rel }) => rel !== "start")
 
 describe("toOpds1Feed of the books", () => {
-  it("writes an entry for each book, with its acquisition link", () => {
+  it("writes an entry for each book, with its acquisition and cover links", () => {
     const xml = toOpds1Feed({
       slug: SERVER.slug,
       feed: toBooksFeed({ server: SERVER, books: [DUNE], page: FIRST_PAGE }),
@@ -54,6 +54,8 @@ describe("toOpds1Feed of the books", () => {
         `    <dc:language>en</dc:language>`,
         `    <content type="text">Spice &amp; sand</content>`,
         `    <link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-dune/Dune.epub" type="application/epub+zip"/>`,
+        `    <link rel="http://opds-spec.org/image" href="/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}" type="image/jpeg"/>`,
+        `    <link rel="http://opds-spec.org/image/thumbnail" href="/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}" type="image/jpeg"/>`,
         `  </entry>`,
       ].join("\n"),
     )
@@ -85,6 +87,8 @@ describe("toOpds1Feed of the books", () => {
         `    <updated>2026-01-10T08:00:00.000Z</updated>`,
         `    <content type="text"></content>`,
         `    <link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-untitled/Fate-Zero%2001.cbz" type="application/octet-stream"/>`,
+        `    <link rel="http://opds-spec.org/image" href="/opds/calm-snails-dream/covers/books/book-untitled" type="image/jpeg"/>`,
+        `    <link rel="http://opds-spec.org/image/thumbnail" href="/opds/calm-snails-dream/covers/books/book-untitled" type="image/jpeg"/>`,
         `  </entry>`,
       ].join("\n"),
     )
@@ -228,6 +232,12 @@ describe("toOpds2Feed of the books", () => {
               rel: "http://opds-spec.org/acquisition",
               href: "/opds/calm-snails-dream/books/book-dune/Dune.epub",
               type: "application/epub+zip",
+            },
+          ],
+          images: [
+            {
+              href: `/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}`,
+              type: "image/jpeg",
             },
           ],
         },
