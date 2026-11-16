@@ -132,6 +132,8 @@ describe("ConnectorConnectionSection", () => {
 
   it("sends the decrypted password to oboku's server once the user consents, then shows the connection", async () => {
     const api = renderSection({ connections: [] })
+    await screen.findByRole("button", { name: "Connect" })
+    api.get.mockResolvedValue({ data: { connections: [CONNECTION] } })
 
     await clickConnectThenConsent()
 
@@ -231,6 +233,7 @@ describe("ConnectorConnectionSection", () => {
     expect(
       await screen.findByText(/You changed this connector or its password/),
     ).toBeTruthy()
+    api.get.mockResolvedValue({ data: { connections: [CONNECTION] } })
     expect(
       screen.getByRole("button", { name: /Disconnect this connector/ }),
     ).toBeTruthy()
@@ -267,6 +270,25 @@ describe("ConnectorConnectionSection", () => {
     expect(
       screen.queryByRole("button", { name: /Disconnect this connector/ }),
     ).toBeNull()
+  })
+
+  it("keeps the connection when another tab switches profiles while the disconnect confirmation is open", async () => {
+    const api = renderSection({ connections: [CONNECTION] })
+
+    fireEvent.click(
+      await screen.findByRole("button", { name: /Disconnect this connector/ }),
+    )
+    const confirmButton = await screen.findByRole("button", {
+      name: "Disconnect",
+    })
+
+    setActiveProfileId("other-profile")
+    fireEvent.click(confirmButton)
+
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull()
+    })
+    expect(api.delete).not.toHaveBeenCalled()
   })
 
   it("keeps the connection when the user dismisses the disconnect confirmation", async () => {

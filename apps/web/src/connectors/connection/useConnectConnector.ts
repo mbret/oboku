@@ -64,23 +64,13 @@ export const useConnectConnector = (
 
       return data
     },
-    onSuccess: function rememberConnectorConnection(
-      { connection },
-      { profileId },
-    ) {
-      queryClient.setQueryData(
-        createConnectorConnectionsQueryOptions({ httpClientApi, profileId })
-          .queryKey,
-        function replaceConnectorConnection(previous) {
-          if (!previous) return previous
-
-          const otherConnections = previous.connections.filter(
-            ({ connectorId }) => connectorId !== connection.connectorId,
-          )
-
-          return { connections: [connection, ...otherConnections] }
-        },
-      )
+    onSuccess: function refreshConnectorConnections(_response, { profileId }) {
+      return queryClient.invalidateQueries({
+        queryKey: createConnectorConnectionsQueryOptions({
+          httpClientApi,
+          profileId,
+        }).queryKey,
+      })
     },
   })
 }

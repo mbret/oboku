@@ -45,11 +45,11 @@ function ConnectConsentMessage() {
 function ConnectConnector({
   connectorId,
   connectorType,
-  connection,
+  isConnectorChanged,
 }: {
   connectorId: string
   connectorType: ConnectableConnectorType
-  connection: ConnectorConnectionDto | null
+  isConnectorChanged: boolean
 }) {
   const activeProfileId = useActiveProfileId()
   const {
@@ -61,7 +61,6 @@ function ConnectConnector({
     { meta: { suppressGlobalErrorToast: true } },
   )
   const hasConnectionFailed = !!error && !(error instanceof CancelError)
-  const isConnectorChanged = connection?.status === "connector-changed"
 
   const confirmThenConnect = async () => {
     const confirmed = await showConfirmDialog({
@@ -137,7 +136,9 @@ export function ConnectorConnectionSection({
 
   if (isPending) return null
 
-  if (connection === undefined) {
+  const hasConnectionsLoaded = connection !== undefined
+
+  if (!hasConnectionsLoaded) {
     return (
       <PageSection title={SECTION_TITLE} variant="stack">
         <ErrorAlert error={error} />
@@ -151,7 +152,7 @@ export function ConnectorConnectionSection({
     <ConnectConnector
       connectorId={connectorId}
       connectorType={connectorType}
-      connection={connection}
+      isConnectorChanged={connection?.status === "connector-changed"}
     />
   )
 }
