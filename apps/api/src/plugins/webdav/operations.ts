@@ -129,7 +129,6 @@ export async function downloadFromWebdav(
     throw new Error("webdav did not return a node readable stream")
   }
 
-  // webdav 5.11 resolves with a 401 once it has tried digest auth.
   if (!response.ok) {
     body.destroy()
 
