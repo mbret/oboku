@@ -56,7 +56,12 @@ export const zObokuErrorDto = z.object({
         '11002',
         '11003',
         '11004',
-        '11005'
+        '11005',
+        '11006',
+        '11007',
+        '11008',
+        '12000',
+        '12001'
     ])
 });
 
@@ -451,6 +456,15 @@ export const zRefreshBookMetadataDto = z.object({
     providerCredentials: z.record(z.string(), z.unknown())
 });
 
+export const zWebdavCredentialsDto = z.object({
+    password: z.string()
+});
+
+export const zDownloadLinkDto = z.object({
+    linkId: z.string(),
+    providerCredentials: zWebdavCredentialsDto
+});
+
 export const zRefreshCollectionMetadataDto = z.object({
     collectionId: z.string(),
     soft: z.boolean().optional(),
@@ -536,6 +550,24 @@ export const zGoogleAccessTokenResponseDto = z.object({
     accessToken: z.string(),
     expiresIn: z.number(),
     scopes: z.array(z.string())
+});
+
+export const zConnectorConnectionDto = z.object({
+    status: z.enum(['connected', 'connector-changed']),
+    connectorId: z.string(),
+    connectedAt: z.string()
+});
+
+export const zConnectorConnectionsResponseDto = z.object({
+    connections: z.array(zConnectorConnectionDto)
+});
+
+export const zConnectConnectorDto = z.object({
+    password: z.string().min(1)
+});
+
+export const zConnectorConnectionResponseDto = z.object({
+    connection: zConnectorConnectionDto
 });
 
 export const zAppGetHelloResponse = z.string();
@@ -714,6 +746,10 @@ export const zBooksRefreshMetadataBody = zRefreshBookMetadataDto;
 
 export const zBooksRefreshMetadataResponse = zEmptyResponseDto;
 
+export const zLinksDownloadBody = zDownloadLinkDto;
+
+export const zLinksDownloadResponse = z.string();
+
 export const zCollectionsRefreshMetadataBody = zRefreshCollectionMetadataDto;
 
 export const zCollectionsRefreshMetadataResponse = zEmptyResponseDto;
@@ -775,3 +811,19 @@ export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
 export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;
 
 export const zGoogleConnectionMintAccessTokenResponse = zGoogleAccessTokenResponseDto;
+
+export const zConnectorConnectionListResponse = zConnectorConnectionsResponseDto;
+
+export const zConnectorConnectionDisconnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionDisconnectResponse = zOkResponseDto;
+
+export const zConnectorConnectionConnectBody = zConnectConnectorDto;
+
+export const zConnectorConnectionConnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionConnectResponse = zConnectorConnectionResponseDto;

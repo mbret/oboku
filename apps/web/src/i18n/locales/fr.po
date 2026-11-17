@@ -1,0 +1,129 @@
+msgid ""
+msgstr ""
+"POT-Creation-Date: 2026-11-15 12:07+0000\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: @lingui/cli\n"
+"Language: fr\n"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Always"
+msgstr "Toujours"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Automatic (based on device)"
+msgstr "Automatique (selon l'appareil)"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Automatically hide directives from collection name"
+msgstr "Masquer automatiquement les directives dans le nom des collections"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Automatically switch to fullscreen upon opening"
+msgstr "Passer en plein écran à l'ouverture"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Color mode"
+msgstr "Mode de couleur"
+
+#: src/theme/themeOptions.ts
+msgid "Dark"
+msgstr "Sombre"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Display the current book progress on overlay of the book (not in comics)"
+msgstr "Affiche la progression par-dessus le livre (sauf pour les bandes dessinées)"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Display the current time on overlay of the book (not in comics)"
+msgstr "Affiche l'heure par-dessus le livre (sauf pour les bandes dessinées)"
+
+#: src/theme/themeOptions.ts
+msgid "E-ink"
+msgstr "E-ink"
+
+#: src/pages/SettingsScreen.tsx
+msgid "General"
+msgstr "Général"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Keep screen on"
+msgstr "Garder l'écran allumé"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Language"
+msgstr "Langue"
+
+#: src/theme/themeOptions.ts
+msgid "Light"
+msgstr "Clair"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Never"
+msgstr "Jamais"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Only when unlocked (safe)"
+msgstr "Seulement une fois déverrouillé (sûr)"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Prevent the device screen from turning off while reading"
+msgstr "Empêche l'écran de s'éteindre pendant la lecture"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Privacy & sensitive content"
+msgstr "Confidentialité et contenu sensible"
+
+#: src/pages/SettingsScreen.tsx
+#: src/reader/settings/SettingsList.tsx
+msgid "Reading"
+msgstr "Lecture"
+
+#: src/reader/settings/SettingsList.tsx
+msgid "Reload book"
+msgstr "Recharger le livre"
+
+#: src/common/MultipleChoiceDrawer.tsx
+msgid "selected"
+msgstr "sélectionné"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Settings"
+msgstr "Paramètres"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Show collections containing protected content"
+msgstr "Afficher les collections qui contiennent du contenu protégé"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Show current progress"
+msgstr "Afficher la progression"
+
+#: src/settings/ReadingSettings.tsx
+msgid "Show current time"
+msgstr "Afficher l'heure"
+
+#: src/theme/themeOptions.ts
+msgid "System"
+msgstr "Système"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Theming"
+msgstr "Apparence"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Unblur cover when protected content is visible"
+msgstr "Ne plus flouter les couvertures quand le contenu protégé est visible"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Will display a collection named \"My collection [oboku~foo]\" as \"My collection\""
+msgstr "Affiche une collection nommée « Ma collection [oboku~foo] » comme « Ma collection »"
+
+#: src/pages/SettingsScreen.tsx
+msgid "Yes (unsafe)"
+msgstr "Oui (non sûr)"
+
+#: src/reader/settings/SettingsList.tsx
+msgid "You may try to reload the book if you encounter weird behavior or crash"
+msgstr "Rechargez le livre s'il se comporte de façon étrange ou s'il plante"

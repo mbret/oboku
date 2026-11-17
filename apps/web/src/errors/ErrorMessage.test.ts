@@ -39,6 +39,28 @@ describe("errorToMessage", () => {
     )
   })
 
+  it("explains a download refused by the monthly download quota", () => {
+    const error = createApiError(429, {
+      errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED }],
+    })
+
+    expect(errorToMessage(error)).toBe(
+      "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage.",
+    )
+  })
+
+  it("says the WebDAV server refused the connector's password", () => {
+    const error = createApiError(502, {
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED },
+      ],
+    })
+
+    expect(errorToMessage(error)).toBe(
+      "The connector's server refused this username and password, or denied them access. Check the connector.",
+    )
+  })
+
   it("ignores a code oboku does not define", () => {
     const error = createApiError(400, { errors: [{ code: "not-a-code" }] })
 

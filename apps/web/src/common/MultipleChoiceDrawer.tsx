@@ -1,5 +1,6 @@
 import type { ComponentProps } from "react"
 import { Drawer, List, ListItemButton, ListItemText } from "@mui/material"
+import { useLingui } from "@lingui/react/macro"
 
 export const MultipleChoiceDrawer = <
   Choice extends { value: string; label: string },
@@ -13,6 +14,8 @@ export const MultipleChoiceDrawer = <
   onChoiceSelect: (value: Choice["value"]) => void
   selected: Choice["value"]
 } & ComponentProps<typeof Drawer>) => {
+  const { t } = useLingui()
+
   return (
     <Drawer {...rest}>
       <List>
@@ -26,7 +29,7 @@ export const MultipleChoiceDrawer = <
             <ListItemText
               primary={label}
               {...(selected === value && {
-                secondary: `selected`,
+                secondary: t`selected`,
               })}
             />
           </ListItemButton>

@@ -38,7 +38,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001';
 };
 
 export type ObokuErrorResponseDto = {
@@ -452,6 +452,15 @@ export type RefreshBookMetadataDto = {
     };
 };
 
+export type WebdavCredentialsDto = {
+    password: string;
+};
+
+export type DownloadLinkDto = {
+    linkId: string;
+    providerCredentials: WebdavCredentialsDto;
+};
+
 export type RefreshCollectionMetadataDto = {
     collectionId: string;
     soft?: boolean;
@@ -614,6 +623,35 @@ export type GoogleAccessTokenResponseDto = {
      */
     expiresIn: number;
     scopes: Array<string>;
+};
+
+export type ConnectorConnectionDto = {
+    /**
+     * `connector-changed` once the connector, or its password secret's value,
+     * differs from the one the user connected: the API no longer uses the
+     * password until the user connects the connector again.
+     */
+    status: 'connected' | 'connector-changed';
+    connectorId: string;
+    /**
+     * When the user last connected the connector.
+     */
+    connectedAt: string;
+};
+
+export type ConnectorConnectionsResponseDto = {
+    connections: Array<ConnectorConnectionDto>;
+};
+
+export type ConnectConnectorDto = {
+    /**
+     * The connector's password, which the app decrypts from its secret.
+     */
+    password: string;
+};
+
+export type ConnectorConnectionResponseDto = {
+    connection: ConnectorConnectionDto;
 };
 
 export type AppGetHelloData = {
@@ -1746,6 +1784,32 @@ export type BooksRefreshMetadataResponses = {
 
 export type BooksRefreshMetadataResponse = BooksRefreshMetadataResponses[keyof BooksRefreshMetadataResponses];
 
+export type LinksDownloadData = {
+    body: DownloadLinkDto;
+    path?: never;
+    query?: never;
+    url: '/links/download';
+};
+
+export type LinksDownloadErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
+    429: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type LinksDownloadError = LinksDownloadErrors[keyof LinksDownloadErrors];
+
+export type LinksDownloadResponses = {
+    200: Blob | File;
+};
+
+export type LinksDownloadResponse = LinksDownloadResponses[keyof LinksDownloadResponses];
+
 export type CollectionsRefreshMetadataData = {
     body: RefreshCollectionMetadataDto;
     path?: never;
@@ -2155,3 +2219,74 @@ export type GoogleConnectionMintAccessTokenResponses = {
 };
 
 export type GoogleConnectionMintAccessTokenResponse = GoogleConnectionMintAccessTokenResponses[keyof GoogleConnectionMintAccessTokenResponses];
+
+export type ConnectorConnectionListData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/provider-connections/connectors';
+};
+
+export type ConnectorConnectionListErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorConnectionListError = ConnectorConnectionListErrors[keyof ConnectorConnectionListErrors];
+
+export type ConnectorConnectionListResponses = {
+    200: ConnectorConnectionsResponseDto;
+};
+
+export type ConnectorConnectionListResponse = ConnectorConnectionListResponses[keyof ConnectorConnectionListResponses];
+
+export type ConnectorConnectionDisconnectData = {
+    body?: never;
+    path: {
+        connectorId: string;
+    };
+    query?: never;
+    url: '/provider-connections/connectors/{connectorId}';
+};
+
+export type ConnectorConnectionDisconnectErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorConnectionDisconnectError = ConnectorConnectionDisconnectErrors[keyof ConnectorConnectionDisconnectErrors];
+
+export type ConnectorConnectionDisconnectResponses = {
+    200: OkResponseDto;
+};
+
+export type ConnectorConnectionDisconnectResponse = ConnectorConnectionDisconnectResponses[keyof ConnectorConnectionDisconnectResponses];
+
+export type ConnectorConnectionConnectData = {
+    body: ConnectConnectorDto;
+    path: {
+        connectorId: string;
+    };
+    query?: never;
+    url: '/provider-connections/connectors/{connectorId}';
+};
+
+export type ConnectorConnectionConnectErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorConnectionConnectError = ConnectorConnectionConnectErrors[keyof ConnectorConnectionConnectErrors];
+
+export type ConnectorConnectionConnectResponses = {
+    200: ConnectorConnectionResponseDto;
+};
+
+export type ConnectorConnectionConnectResponse = ConnectorConnectionConnectResponses[keyof ConnectorConnectionConnectResponses];

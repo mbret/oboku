@@ -119,11 +119,24 @@ export async function downloadFromWebdav(
   client: WebDAVClient,
   filePath: string,
 ) {
-  const stream = client.createReadStream(filePath)
+  // Not createReadStream: webdav 5.11 pipes the response into the stream it
+  // returns, which then neither fails when the server drops the connection
+  // nor closes the request when destroyed.
+  const response = await client.customRequest(filePath, { method: "GET" })
+  const body = "body" in response ? response.body : undefined
 
-  if (!(stream instanceof Readable)) {
+  if (!(body instanceof Readable)) {
     throw new Error("webdav did not return a node readable stream")
   }
 
-  return { stream }
+  if (!response.ok) {
+    body.destroy()
+
+    throw Object.assign(
+      new Error(`Invalid response: ${response.status} ${response.statusText}`),
+      { status: response.status },
+    )
+  }
+
+  return { stream: body }
 }

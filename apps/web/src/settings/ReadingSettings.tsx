@@ -1,3 +1,6 @@
+import type { MessageDescriptor } from "@lingui/core"
+import { msg } from "@lingui/core/macro"
+import { useLingui } from "@lingui/react/macro"
 import { ListItemSelect, ListItemSwitch } from "../common/lists"
 import { localSettingsSignal, useLocalSettings } from "./useLocalSettings"
 
@@ -5,11 +8,11 @@ type LocalSettings = ReturnType<typeof useLocalSettings>
 
 const fullScreenModes: Record<
   LocalSettings["readingFullScreenSwitchMode"],
-  string
+  MessageDescriptor
 > = {
-  automatic: "Automatic (based on device)",
-  always: "Always",
-  never: "Never",
+  automatic: msg`Automatic (based on device)`,
+  always: msg`Always`,
+  never: msg`Never`,
 }
 
 const fullScreenChoices = (
@@ -21,6 +24,7 @@ const fullScreenChoices = (
  * and the in-reader settings list.
  */
 export const ReadingSettings = () => {
+  const { t } = useLingui()
   const localSettings = useLocalSettings([
     "readerWakeLockEnabled",
     "readerFloatingProgress",
@@ -31,7 +35,7 @@ export const ReadingSettings = () => {
   return (
     <>
       <ListItemSelect
-        primary="Automatically switch to fullscreen upon opening"
+        primary={t`Automatically switch to fullscreen upon opening`}
         value={localSettings.readingFullScreenSwitchMode}
         choices={fullScreenChoices}
         onChange={(value) => {
@@ -42,8 +46,8 @@ export const ReadingSettings = () => {
         }}
       />
       <ListItemSwitch
-        primary="Show current time"
-        secondary="Display the current time on overlay of the book (not in comics)"
+        primary={t`Show current time`}
+        secondary={t`Display the current time on overlay of the book (not in comics)`}
         onClick={() => {
           localSettingsSignal.update((state) => ({
             ...state,
@@ -56,8 +60,8 @@ export const ReadingSettings = () => {
         checked={localSettings.readerFloatingTime === "bottom"}
       />
       <ListItemSwitch
-        primary="Show current progress"
-        secondary="Display the current book progress on overlay of the book (not in comics)"
+        primary={t`Show current progress`}
+        secondary={t`Display the current book progress on overlay of the book (not in comics)`}
         onClick={() => {
           localSettingsSignal.update((state) => ({
             ...state,
@@ -70,8 +74,8 @@ export const ReadingSettings = () => {
         checked={localSettings.readerFloatingProgress === "bottom"}
       />
       <ListItemSwitch
-        primary="Keep screen on"
-        secondary="Prevent the device screen from turning off while reading"
+        primary={t`Keep screen on`}
+        secondary={t`Prevent the device screen from turning off while reading`}
         onClick={() => {
           localSettingsSignal.update((state) => ({
             ...state,
