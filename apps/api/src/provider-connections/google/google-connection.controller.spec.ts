@@ -16,7 +16,10 @@ import { SecretsService } from "../../config/SecretsService.js"
 import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
 import type { ProviderConnectionPostgresEntity } from "../../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../../features/postgres/provider-connection-postgres.service.js"
-import { createConnectionStore } from "../provider-connection-store.fixture.js"
+import {
+  createConnectionStore,
+  toConnectionRowKey,
+} from "../provider-connection-store.fixture.js"
 import { ProviderConnectionsService } from "../provider-connections.service.js"
 import { GoogleConnectionController } from "./google-connection.controller.js"
 import { GoogleConnectionService } from "./google-connection.service.js"
@@ -72,6 +75,12 @@ const EMAIL_SCOPE = "https://www.googleapis.com/auth/userinfo.email"
 const GRANTED_SCOPE = `openid ${DRIVE_FILE_SCOPE} ${EMAIL_SCOPE}`
 const GOOGLE_ACCOUNT = { sub: "google-sub", email: "reader@gmail.com" }
 
+const READER_GOOGLE_ROW_KEY = toConnectionRowKey({
+  userId: READER_ID,
+  provider: "google",
+  accountId: GOOGLE_ACCOUNT.sub,
+})
+
 const CONFIG: InstanceConfig = {
   version: 2,
   serverSync: { enabled: false, credentials: null, sources: [] },
@@ -84,6 +93,7 @@ const CONFIG: InstanceConfig = {
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: 10,
   proxiedDownloadBytesMaxPerMonth: 1,
+  proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
 }
 
 const CONNECTION_METHODS: Array<"get" | "put" | "delete"> = [
@@ -255,7 +265,7 @@ describe("GoogleConnectionController", () => {
       audience: CLIENT_ID,
     })
 
-    const stored = rows.get(`${READER_ID}:google`)
+    const stored = rows.get(READER_GOOGLE_ROW_KEY)
 
     expect(stored).toMatchObject({
       account_id: GOOGLE_ACCOUNT.sub,
@@ -267,6 +277,7 @@ describe("GoogleConnectionController", () => {
       providerConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "google",
+        accountId: GOOGLE_ACCOUNT.sub,
       }),
     ).resolves.toEqual({ refreshToken: REFRESH_TOKEN })
 
@@ -408,6 +419,7 @@ describe("GoogleConnectionController", () => {
       providerConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "google",
+        accountId: GOOGLE_ACCOUNT.sub,
       }),
     ).resolves.toEqual({ refreshToken: REFRESH_TOKEN })
   })
@@ -444,6 +456,38 @@ describe("GoogleConnectionController", () => {
     expect((await getConnection()).body.connection).toMatchObject({
       accountName: GOOGLE_ACCOUNT.email,
     })
+  })
+
+  it("replaces the connection when the user connects another Google account", async () => {
+    const workAccount = { sub: "work-sub", email: "reader@work.example" }
+
+    await connect({ code: CODE })
+    grantTokens({
+      refresh_token: "1//work-refresh-token",
+      id_token: ID_TOKEN,
+      scope: GRANTED_SCOPE,
+    })
+    verifyIdToken.mockResolvedValue({ getPayload: () => workAccount })
+
+    const response = await connect({ code: "4/work-code" })
+
+    expect(response.status).toBe(200)
+    expect([...rows.values()]).toEqual([
+      expect.objectContaining({
+        account_id: workAccount.sub,
+        account_name: workAccount.email,
+      }),
+    ])
+    expect((await getConnection()).body.connection).toMatchObject({
+      accountName: workAccount.email,
+    })
+    await expect(
+      providerConnectionsService.getCredentials({
+        userId: READER_ID,
+        provider: "google",
+        accountId: workAccount.sub,
+      }),
+    ).resolves.toEqual({ refreshToken: "1//work-refresh-token" })
   })
 
   it.each(CONNECTION_METHODS)(
@@ -597,7 +641,7 @@ describe("GoogleConnectionController", () => {
 
     it("drops a connection whose credentials no longer decrypt", async () => {
       await connect({ code: CODE })
-      const readerRow = rows.get(`${READER_ID}:google`)
+      const readerRow = rows.get(READER_GOOGLE_ROW_KEY)
 
       if (!readerRow) throw new Error("The connection was not saved")
 
@@ -659,7 +703,7 @@ describe("GoogleConnectionController", () => {
 
     it("is false once the stored credentials no longer decrypt", async () => {
       await connect({ code: CODE })
-      const readerRow = rows.get(`${READER_ID}:google`)
+      const readerRow = rows.get(READER_GOOGLE_ROW_KEY)
 
       if (!readerRow) throw new Error("The connection was not saved")
 

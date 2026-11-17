@@ -24,7 +24,7 @@ Visit the [User Accounts](/self-hosting/user-accounts) section
 
 The API sends requests to the addresses users enter: their WebDAV and Synology Drive servers and OPDS catalogs, the KOReader sync server they connect to, the links they add and the covers their collections point to. By default it only connects to servers on the public internet, so that nobody with an account can use those requests to reach your network or the services running next to the API. The machine's own addresses count as private too, public ones included: a request to them never leaves the machine, so it would reach whatever listens there.
 
-If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance.
+If your users keep their books on your network or on the machine running oboku, on a NAS or a WebDAV server at home for instance, check **Allow requests to private networks** on the panel's home page. It applies right away, without a restart. Only allow it when you trust everyone with an account on your instance: through any WebDAV connector, a user can have the API download a file from those servers and [pass it on to them](/sync-providers/webdav#use-obokus-server-as-a-proxy).
 
 To let only some servers through, list them under **Allowed hosts** instead, one per line: a host (`nas.local`), a host and port (`nas.local:5001`), or a URL (`http://192.168.1.20:5005`), of which only the host and port count. A host without a port opens every service on it, so give the port whenever you can, and always for the machine running oboku.
 
@@ -38,9 +38,11 @@ The API cannot tell when a public address leads back into your own network, for 
 
 ## Proxied download quota
 
-Some files pass through the API on their way to users: a reading app that downloads a book from an [OPDS server](/guides/opds-servers) gets it from the API, which reads it from Google Drive. These proxied downloads count towards one monthly quota for the whole instance: **Proxied download quota per month (GB)**, in the **Quotas** section of the panel's home page, 500 GB by default. Above the field, the section shows how much proxied downloads used this month, and when the quota starts over.
+Some files pass through the API on their way to users: a reading app that downloads a book from an [OPDS server](/guides/opds-servers) gets it from the API, which reads it from Google Drive. A book downloaded from a [WebDAV connector that uses oboku's server as a proxy](/sync-providers/webdav#use-obokus-server-as-a-proxy) passes through the API too, which reads it from the WebDAV server. These proxied downloads count towards one monthly quota for the whole instance: **Proxied download quota per month (GB)**, in the **Quotas** section of the panel's home page, 500 GB by default. Above the field, the section shows how much proxied downloads used this month, and when the quota starts over.
 
-Months follow UTC. A download that would take the instance past the quota answers `429 Too Many Requests`, with a `Retry-After` header set to the start of the next month. The quota applies right away, without a restart.
+Each user may also use at most a share of that quota: **Share of the quota each user may use (%)**, 5% by default, which is 25 GB of the default quota. A share only caps one user. The shares of all users can add up to more than the quota, so a user under their share can still be stopped once the instance reaches its quota.
+
+Months follow UTC. A download that would pass the instance's quota or the user's share answers `429 Too Many Requests`, with a `Retry-After` header set to the start of the next month. Both settings apply right away, without a restart.
 
 Files the API downloads to read their metadata do not count: most hosts bill outbound traffic only.
 

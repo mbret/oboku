@@ -5,12 +5,14 @@ import {
   createArchive,
 } from "@prose-reader/archive-reader"
 import path from "node:path"
-import { firstValueFrom } from "rxjs"
+import { setTimeout } from "node:timers/promises"
+import { firstValueFrom, lastValueFrom } from "rxjs"
 import sharp from "sharp"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CoversFsService } from "./covers-fs.service.js"
 import { CoversS3Service } from "./covers-s3.service.js"
 import { CoversService } from "./covers.service.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 
 const DELIVERY_SIZE = { width: 600, height: 600 }
 
@@ -75,6 +77,7 @@ describe("CoversService", () => {
         },
         { provide: CoversFsService, useValue: fsService },
         { provide: CoversS3Service, useValue: {} },
+        InMemoryTaskQueueService,
       ],
     }).compile()
 
@@ -156,6 +159,53 @@ describe("CoversService", () => {
   })
 })
 
+describe("CoversService.deliverCover", () => {
+  it("delivers every request waiting for a slot, two for the same cover included", async () => {
+    const storedCover = await createCover({
+      width: 400,
+      height: 600,
+      format: "webp",
+    })
+    const getCover = vi
+      .fn()
+      .mockReturnValueOnce(setTimeout(20, storedCover))
+      .mockResolvedValue(storedCover)
+    const module = await Test.createTestingModule({
+      providers: [
+        CoversService,
+        {
+          provide: AppConfigService,
+          useValue: {
+            COVERS_STORAGE_STRATEGY: "fs",
+            COVERS_MAXIMUM_SIZE_FOR_DELIVERY: DELIVERY_SIZE,
+            QUEUE_COVERS_DELIVERY_MAX_CONCURRENT: 1,
+          },
+        },
+        { provide: CoversFsService, useValue: { getCover } },
+        { provide: CoversS3Service, useValue: {} },
+        InMemoryTaskQueueService,
+      ],
+    }).compile()
+    const service = module.get(CoversService)
+
+    service.onModuleInit()
+
+    const deliveries = [
+      lastValueFrom(service.deliverCover("cover-dune", "image/jpeg")),
+      lastValueFrom(service.deliverCover("cover-emma", "image/jpeg")),
+      lastValueFrom(service.deliverCover("cover-emma", "image/jpeg")),
+    ]
+
+    const outcomes = await Promise.allSettled(deliveries)
+
+    expect(outcomes.map(({ status }) => status)).toEqual([
+      "fulfilled",
+      "fulfilled",
+      "fulfilled",
+    ])
+  })
+})
+
 describe("CoversService.saveCoverFromArchive", () => {
   let service: CoversService
   let fsService: { saveCover: Mock }
@@ -175,6 +225,7 @@ describe("CoversService.saveCoverFromArchive", () => {
         },
         { provide: CoversFsService, useValue: fsService },
         { provide: CoversS3Service, useValue: {} },
+        InMemoryTaskQueueService,
       ],
     }).compile()
 

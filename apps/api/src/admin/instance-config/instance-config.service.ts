@@ -18,6 +18,15 @@ export type ServerSourceConfig = {
   enabled: boolean
 }
 
+/**
+ * How each user's monthly proxied download quota is set. One `type` per
+ * rule: later rules, such as a fixed amount, join this union.
+ */
+export type ProxiedDownloadUserQuotaRule = {
+  type: "percentage"
+  percent: number
+}
+
 export type WebDavCredentials = {
   username: string
   password: string
@@ -44,12 +53,17 @@ export type InstanceConfig = {
   privateNetworkAllowedHosts: string[]
   opdsServersMaxPerUser: number
   proxiedDownloadBytesMaxPerMonth: number
+  proxiedDownloadUserQuota: ProxiedDownloadUserQuotaRule
 }
 
 export const DEFAULT_FILE_DOWNLOAD_MAX_SIZE_BYTES = 500 * 1024 * 1024
 const DEFAULT_OPDS_SERVERS_MAX_PER_USER = 10
 const BYTES_PER_GIGABYTE = 1000 ** 3
 const DEFAULT_PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH = 500 * BYTES_PER_GIGABYTE
+const DEFAULT_PROXIED_DOWNLOAD_USER_QUOTA: ProxiedDownloadUserQuotaRule = {
+  type: "percentage",
+  percent: 5,
+}
 
 const CONFIG_FILE_RELOAD_DEBOUNCE_MS = 100
 
@@ -136,6 +150,10 @@ const instanceConfigSchema = Joi.object<InstanceConfig>({
     .integer()
     .min(1)
     .default(DEFAULT_PROXIED_DOWNLOAD_BYTES_MAX_PER_MONTH),
+  proxiedDownloadUserQuota: Joi.object<ProxiedDownloadUserQuotaRule>({
+    type: Joi.string().valid("percentage").required(),
+    percent: Joi.number().integer().min(1).max(100).required(),
+  }).default(DEFAULT_PROXIED_DOWNLOAD_USER_QUOTA),
 })
 
 const parseInstanceConfig = (value: unknown): InstanceConfig => {

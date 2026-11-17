@@ -1,5 +1,10 @@
 import type { BookMetadata } from "@oboku/shared"
-import { toBooksFeed, toOpds1Feed, toOpds2Feed } from "./opds-feeds.js"
+import {
+  toBooksFeed,
+  toOpds1Feed,
+  toOpds2Feed,
+  toShelvesFeed,
+} from "./opds-feeds.js"
 
 const SERVER = { slug: "calm-snails-dream", name: "Kids" }
 
@@ -34,7 +39,7 @@ const toPageLinks = (feed: ReturnType<typeof toOpds2Feed>) =>
   feed.links.filter(({ rel }) => rel !== "start")
 
 describe("toOpds1Feed of the books", () => {
-  it("writes an entry for each book, with its acquisition link", () => {
+  it("writes an entry for each book, with its acquisition and cover links", () => {
     const xml = toOpds1Feed({
       slug: SERVER.slug,
       feed: toBooksFeed({ server: SERVER, books: [DUNE], page: FIRST_PAGE }),
@@ -54,6 +59,8 @@ describe("toOpds1Feed of the books", () => {
         `    <dc:language>en</dc:language>`,
         `    <content type="text">Spice &amp; sand</content>`,
         `    <link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-dune/Dune.epub" type="application/epub+zip"/>`,
+        `    <link rel="http://opds-spec.org/image" href="/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}" type="image/jpeg"/>`,
+        `    <link rel="http://opds-spec.org/image/thumbnail" href="/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}" type="image/jpeg"/>`,
         `  </entry>`,
       ].join("\n"),
     )
@@ -85,6 +92,8 @@ describe("toOpds1Feed of the books", () => {
         `    <updated>2026-01-10T08:00:00.000Z</updated>`,
         `    <content type="text"></content>`,
         `    <link rel="http://opds-spec.org/acquisition" href="/opds/calm-snails-dream/books/book-untitled/Fate-Zero%2001.cbz" type="application/octet-stream"/>`,
+        `    <link rel="http://opds-spec.org/image" href="/opds/calm-snails-dream/covers/books/book-untitled" type="image/jpeg"/>`,
+        `    <link rel="http://opds-spec.org/image/thumbnail" href="/opds/calm-snails-dream/covers/books/book-untitled" type="image/jpeg"/>`,
         `  </entry>`,
       ].join("\n"),
     )
@@ -230,6 +239,12 @@ describe("toOpds2Feed of the books", () => {
               type: "application/epub+zip",
             },
           ],
+          images: [
+            {
+              href: `/opds/calm-snails-dream/covers/books/book-dune?hash=${DUNE.lastMetadataUpdatedAt}`,
+              type: "image/jpeg",
+            },
+          ],
         },
       ],
     })
@@ -271,5 +286,54 @@ describe("toOpds2Feed of the books", () => {
     })
 
     expect(toPageLinks(feed).map(({ rel }) => rel)).toEqual(["self"])
+  })
+})
+
+describe("the shelves feed", () => {
+  const NAVIGATION_FEED_TYPE =
+    "application/atom+xml;profile=opds-catalog;kind=navigation"
+
+  it("links a middle page of shelves to the pages around it", () => {
+    const xml = toOpds1Feed({
+      slug: SERVER.slug,
+      feed: toShelvesFeed({
+        server: SERVER,
+        shelves: [{ id: "shelf-dune", title: "Dune", bookCount: 2 }],
+        page: { number: 2, size: 50, total: 120 },
+      }),
+      updated: new Date(),
+    })
+
+    expect(xml).toContain(
+      [
+        `  <link rel="self" href="/opds/calm-snails-dream/shelves?page=2" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="start" href="/opds/calm-snails-dream" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="first" href="/opds/calm-snails-dream/shelves" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="previous" href="/opds/calm-snails-dream/shelves" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="next" href="/opds/calm-snails-dream/shelves?page=3" type="${NAVIGATION_FEED_TYPE}"/>`,
+        `  <link rel="last" href="/opds/calm-snails-dream/shelves?page=3" type="${NAVIGATION_FEED_TYPE}"/>`,
+      ].join("\n"),
+    )
+  })
+
+  it("links a shelf whose id needs escaping", () => {
+    const feed = toOpds2Feed({
+      slug: SERVER.slug,
+      feed: toShelvesFeed({
+        server: SERVER,
+        shelves: [{ id: "shelf/a b", title: "Dune", bookCount: 2 }],
+        page: FIRST_PAGE,
+      }),
+    })
+
+    expect(feed).toMatchObject({
+      metadata: { numberOfItems: 1, itemsPerPage: 50, currentPage: 1 },
+      navigation: [
+        {
+          href: "/opds/calm-snails-dream/v2/shelves/shelf%2Fa%20b",
+          properties: { numberOfItems: 2 },
+        },
+      ],
+    })
   })
 })

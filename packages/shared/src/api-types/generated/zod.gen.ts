@@ -56,7 +56,12 @@ export const zObokuErrorDto = z.object({
         '11002',
         '11003',
         '11004',
-        '11005'
+        '11005',
+        '11006',
+        '11007',
+        '11008',
+        '12000',
+        '12001'
     ])
 });
 
@@ -252,6 +257,11 @@ export const zRevokeTokensResponseDto = z.object({
     targetedUsers: z.number().nullable()
 });
 
+export const zProxiedDownloadUserQuotaRuleDto = z.object({
+    type: z.enum(['percentage']),
+    percent: z.int().gte(1).lte(100)
+});
+
 export const zInstanceSettingsResponseDto = z.object({
     showDisabledPlugins: z.boolean(),
     fileDownloadMaxSizeBytes: z.number(),
@@ -263,7 +273,8 @@ export const zInstanceSettingsResponseDto = z.object({
     microsoftApplicationClientId: z.string().optional(),
     microsoftApplicationAuthority: z.string().optional(),
     opdsServersMaxPerUser: z.number(),
-    proxiedDownloadBytesMaxPerMonth: z.number()
+    proxiedDownloadBytesMaxPerMonth: z.number(),
+    proxiedDownloadUserQuota: zProxiedDownloadUserQuotaRuleDto
 });
 
 export const zUpdateInstanceSettingsDto = z.object({
@@ -280,7 +291,8 @@ export const zUpdateInstanceSettingsDto = z.object({
     googleClientId: z.string().optional(),
     googleApiKey: z.string().optional(),
     googleClientSecret: z.string().optional(),
-    microsoftApplicationClientId: z.string().optional()
+    microsoftApplicationClientId: z.string().optional(),
+    proxiedDownloadUserQuota: zProxiedDownloadUserQuotaRuleDto.optional()
 });
 
 export const zProxiedDownloadQuotaResponseDto = z.object({
@@ -383,6 +395,14 @@ export const zUnreadNotificationsCountResponseDto = z.object({
     count: z.number()
 });
 
+export const zUserProxiedDownloadQuotaResponseDto = z.object({
+    usedBytes: z.number(),
+    quotaBytes: z.number(),
+    resetsAt: z.string(),
+    userUsedBytes: z.number(),
+    userQuotaBytes: z.number()
+});
+
 export const zSyncReportRelationDto = z.object({
     id: z.string(),
     label: z.string().optional(),
@@ -434,6 +454,15 @@ export const zRefreshBookMetadataDto = z.object({
     bookId: z.string(),
     force: z.boolean().optional(),
     providerCredentials: z.record(z.string(), z.unknown())
+});
+
+export const zWebdavCredentialsDto = z.object({
+    password: z.string()
+});
+
+export const zDownloadLinkDto = z.object({
+    linkId: z.string(),
+    providerCredentials: zWebdavCredentialsDto
 });
 
 export const zRefreshCollectionMetadataDto = z.object({
@@ -521,6 +550,24 @@ export const zGoogleAccessTokenResponseDto = z.object({
     accessToken: z.string(),
     expiresIn: z.number(),
     scopes: z.array(z.string())
+});
+
+export const zConnectorConnectionDto = z.object({
+    status: z.enum(['connected', 'connector-changed']),
+    connectorId: z.string(),
+    connectedAt: z.string()
+});
+
+export const zConnectorConnectionsResponseDto = z.object({
+    connections: z.array(zConnectorConnectionDto)
+});
+
+export const zConnectConnectorDto = z.object({
+    password: z.string().min(1)
+});
+
+export const zConnectorConnectionResponseDto = z.object({
+    connection: zConnectorConnectionDto
 });
 
 export const zAppGetHelloResponse = z.string();
@@ -687,7 +734,7 @@ export const zNotificationsArchivePath = z.object({
 
 export const zNotificationsArchiveResponse = zOkResponseDto;
 
-export const zQuotasGetProxiedDownloadQuotaResponse = zProxiedDownloadQuotaResponseDto;
+export const zQuotasGetProxiedDownloadQuotaResponse = zUserProxiedDownloadQuotaResponseDto;
 
 export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
 
@@ -698,6 +745,10 @@ export const zDataSourcesSyncResponse = zEmptyResponseDto;
 export const zBooksRefreshMetadataBody = zRefreshBookMetadataDto;
 
 export const zBooksRefreshMetadataResponse = zEmptyResponseDto;
+
+export const zLinksDownloadBody = zDownloadLinkDto;
+
+export const zLinksDownloadResponse = z.string();
 
 export const zCollectionsRefreshMetadataBody = zRefreshCollectionMetadataDto;
 
@@ -760,3 +811,19 @@ export const zGoogleConnectionConnectBody = zConnectGoogleAccountDto;
 export const zGoogleConnectionConnectResponse = zGoogleConnectionResponseDto;
 
 export const zGoogleConnectionMintAccessTokenResponse = zGoogleAccessTokenResponseDto;
+
+export const zConnectorConnectionListResponse = zConnectorConnectionsResponseDto;
+
+export const zConnectorConnectionDisconnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionDisconnectResponse = zOkResponseDto;
+
+export const zConnectorConnectionConnectBody = zConnectConnectorDto;
+
+export const zConnectorConnectionConnectPath = z.object({
+    connectorId: z.string()
+});
+
+export const zConnectorConnectionConnectResponse = zConnectorConnectionResponseDto;

@@ -1,18 +1,23 @@
-import { NumberSettingSection } from "./NumberSettingSection"
+import { InstanceSettingsSection } from "./InstanceSettingsSection"
+import { NumberSettingForm } from "./NumberSettingForm"
 
 export function AdminOpdsSection() {
   return (
-    <NumberSettingSection
+    <InstanceSettingsSection
       title="OPDS servers"
       description="Maximum number of OPDS servers each user can have. Lowering it deletes none of their servers."
-      label="Maximum OPDS servers per user"
-      saveLabel="save OPDS settings"
-      minimumError="Must be at least 1"
-      toSavedValue={function toOpdsServersMaxPerUser(settings) {
-        return settings.opdsServersMaxPerUser
-      }}
-      toSettings={function toOpdsSettings(opdsServersMaxPerUser) {
-        return { opdsServersMaxPerUser }
+      renderSettings={function renderOpdsSettings(settings) {
+        return (
+          <NumberSettingForm
+            label="Maximum OPDS servers per user"
+            saveLabel="save OPDS settings"
+            rangeError="Must be at least 1"
+            savedValue={settings.opdsServersMaxPerUser}
+            toSettings={function toOpdsSettings(opdsServersMaxPerUser) {
+              return { opdsServersMaxPerUser }
+            }}
+          />
+        )
       }}
     />
   )

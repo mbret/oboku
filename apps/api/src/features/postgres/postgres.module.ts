@@ -4,7 +4,6 @@ import { NotificationPostgresService } from "./notification-postgres.service.js"
 import { SyncReportPostgresService } from "./SyncReportPostgresService.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import {
-  ProxiedDownloadUsagePostgresEntity,
   KoreaderSyncConnectionPostgresEntity,
   KoreaderSyncCredentialPostgresEntity,
   KoreaderSyncProgressPostgresEntity,
@@ -15,6 +14,7 @@ import {
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
+  UserProxiedDownloadUsagePostgresEntity,
 } from "./entities.js"
 import { RefreshTokensService } from "./refreshTokens.service.js"
 import { UserPostgresService } from "./user-postgres.service.js"
@@ -38,7 +38,7 @@ import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-po
       KoreaderSyncConnectionPostgresEntity,
       OpdsServerPostgresEntity,
       ProviderConnectionPostgresEntity,
-      ProxiedDownloadUsagePostgresEntity,
+      UserProxiedDownloadUsagePostgresEntity,
     ]),
   ],
   providers: [

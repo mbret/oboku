@@ -1,6 +1,10 @@
-import { Readable } from "node:stream"
 import type createNano from "nano"
-import type { BookDocType } from "@oboku/shared"
+import { lastValueFrom } from "rxjs"
+import {
+  type BookDocType,
+  getBookCoverKey,
+  isBookProtected,
+} from "@oboku/shared"
 import {
   BadGatewayException,
   BadRequestException,
@@ -9,7 +13,8 @@ import {
   NotFoundException,
   ServiceUnavailableException,
 } from "@nestjs/common"
-import { CouchService } from "../couch/couch.service.js"
+import { CouchService, emailToNameHex } from "../couch/couch.service.js"
+import { CoversService } from "../covers/covers.service.js"
 import { fetchByIds, find } from "../couch/dbHelpers.js"
 import { findOne } from "../couch/findOne.js"
 import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
@@ -20,11 +25,16 @@ import { toByteCount } from "../http/contentLength.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
 import { isRecord } from "../http/isRecord.js"
 import {
+  compareByTitle,
   compareNewestFirst,
   isBookShown,
-  SERVED_BOOKS_PAGE_SIZE,
+  SERVED_COVER_TYPE,
   SERVED_LINK_TYPE,
+  toCatalogPage,
   toServedFile,
+  toServedShelfBookIds,
+  toServedTitle,
+  toShelfTitle,
 } from "./opds-books.js"
 
 /** Drive's reasons for a 403 that a later request may not get. */
@@ -72,10 +82,11 @@ const toDriveFailure = ({
   return new BadGatewayException()
 }
 
-/** The summaries of the books the catalogs serve, in the library's order. */
-const findServedBookSummaries = async (
-  db: createNano.DocumentScope<unknown>,
-) => {
+/**
+ * The summaries of the books the catalogs serve, in the library's order, and
+ * the ids of every book under a protected tag, served or not.
+ */
+const readServedLibrary = async (db: createNano.DocumentScope<unknown>) => {
   const [protectedTagIds, driveLinks, bookSummaries] = await Promise.all([
     findProtectedTagIds(db),
     find(db, "link", { selector: { type: SERVED_LINK_TYPE }, fields: ["_id"] }),
@@ -90,15 +101,56 @@ const findServedBookSummaries = async (
     "_id" | "links" | "tags" | "isNotInterested" | "createdAt"
   >[] = bookSummaries
 
-  return summaries
-    .filter(function isServedBook(book) {
-      const firstLinkId = book.links[0]
-      const isFirstLinkOnDrive =
-        firstLinkId !== undefined && driveLinkIds.has(firstLinkId)
+  return {
+    summaries: summaries
+      .filter(function isServedBook(book) {
+        const firstLinkId = book.links[0]
+        const isFirstLinkOnDrive =
+          firstLinkId !== undefined && driveLinkIds.has(firstLinkId)
 
-      return isFirstLinkOnDrive && isBookShown({ book, protectedTagIds })
+        return isFirstLinkOnDrive && isBookShown({ book, protectedTagIds })
+      })
+      .toSorted(compareNewestFirst),
+    protectedBookIds: new Set(
+      summaries
+        .filter((book) => isBookProtected(protectedTagIds, book))
+        .map(({ _id }) => _id),
+    ),
+  }
+}
+
+/**
+ * The shelves the catalogs list, alphabetically, with how many of their books
+ * the catalogs serve.
+ */
+const readServedShelves = async ({
+  db,
+  servedBookIds,
+  protectedBookIds,
+}: {
+  db: createNano.DocumentScope<unknown>
+  servedBookIds: ReadonlySet<string>
+  protectedBookIds: ReadonlySet<string>
+}) => {
+  const collections = await find(db, "obokucollection", {
+    selector: {},
+    fields: ["_id", "books", "metadata"],
+  })
+
+  return collections
+    .flatMap(function toServedShelf(collection) {
+      const bookCount = toServedShelfBookIds({
+        shelfBookIds: collection.books,
+        servedBookIds,
+        protectedBookIds,
+      }).length
+      const isShelfListed = bookCount > 0
+
+      return isShelfListed
+        ? [{ id: collection._id, title: toShelfTitle(collection), bookCount }]
+        : []
     })
-    .toSorted(compareNewestFirst)
+    .toSorted(compareByTitle)
 }
 
 /** The books an owner's OPDS servers serve, and their files. */
@@ -110,6 +162,7 @@ export class OpdsBooksService {
     private readonly couchService: CouchService,
     private readonly googleConnectionService: GoogleConnectionService,
     private readonly pluginsService: PluginsService,
+    private readonly coversService: CoversService,
   ) {}
 
   /**
@@ -127,26 +180,101 @@ export class OpdsBooksService {
     owner: Pick<UserPostgresEntity, "id" | "couchName">
     page: number
   }) {
-    const { couchName } = owner
-    const isLibraryServed =
-      !!couchName && (await this.googleConnectionService.isConnected(owner.id))
-    const db = isLibraryServed
-      ? await this.couchService.createNanoInstanceForUser({ email: couchName })
-      : undefined
-    const summaries = db ? await findServedBookSummaries(db) : []
-    const total = summaries.length
-    const firstIndex = (page - 1) * SERVED_BOOKS_PAGE_SIZE
-    const isPastLastPage = page > 1 && firstIndex >= total
+    const library = await this.findServedLibrary(owner)
+    const servedPage = toCatalogPage(library?.summaries ?? [], page)
 
-    if (isPastLastPage) throw new NotFoundException()
+    if (!servedPage) throw new NotFoundException()
 
-    const pageIds = summaries
-      .slice(firstIndex, firstIndex + SERVED_BOOKS_PAGE_SIZE)
-      .map(({ _id }) => _id)
+    const pageIds = servedPage.items.map(({ _id }) => _id)
 
     return {
-      books: db ? await fetchByIds(db, "book", pageIds) : [],
-      page: { number: page, size: SERVED_BOOKS_PAGE_SIZE, total },
+      books: library ? await fetchByIds(library.db, "book", pageIds) : [],
+      page: servedPage.page,
+    }
+  }
+
+  /**
+   * A page of the shelves the owner's catalogs list, alphabetically, as the
+   * app's Shelves tab: every collection, whatever its type, but those holding
+   * a book under a protected tag and those with no served book. None while
+   * the owner has no usable Google connection.
+   *
+   * @param page 1-based.
+   * @throws `NotFoundException` for a page past the last; the first always
+   * exists, empty or not.
+   */
+  async listServedShelves({
+    owner,
+    page,
+  }: {
+    owner: Pick<UserPostgresEntity, "id" | "couchName">
+    page: number
+  }) {
+    const library = await this.findServedLibrary(owner)
+    const shelves = library
+      ? await readServedShelves({
+          db: library.db,
+          servedBookIds: new Set(library.summaries.map(({ _id }) => _id)),
+          protectedBookIds: library.protectedBookIds,
+        })
+      : []
+    const servedPage = toCatalogPage(shelves, page)
+
+    if (!servedPage) throw new NotFoundException()
+
+    return { shelves: servedPage.items, page: servedPage.page }
+  }
+
+  /**
+   * A page of a listed shelf's served books, alphabetically, as the app
+   * sorts a shelf.
+   *
+   * @param page 1-based.
+   * @throws `NotFoundException` for a shelf the catalogs do not list, or a
+   * page past the last.
+   */
+  async listServedShelfBooks({
+    owner,
+    shelfId,
+    page,
+  }: {
+    owner: Pick<UserPostgresEntity, "id" | "couchName">
+    shelfId: string
+    page: number
+  }) {
+    const library = await this.findServedLibrary(owner)
+
+    if (!library) throw new NotFoundException()
+
+    const collection = await findOne(
+      "obokucollection",
+      { selector: { _id: shelfId } },
+      { db: library.db },
+    )
+    const shelfBookIds = collection
+      ? toServedShelfBookIds({
+          shelfBookIds: collection.books,
+          servedBookIds: new Set(library.summaries.map(({ _id }) => _id)),
+          protectedBookIds: library.protectedBookIds,
+        })
+      : []
+    const isShelfListed = !!collection && shelfBookIds.length > 0
+
+    if (!isShelfListed) throw new NotFoundException()
+
+    const books = await fetchByIds(library.db, "book", shelfBookIds)
+    const booksByTitle = books
+      .map((book) => ({ id: book._id, title: toServedTitle(book), book }))
+      .toSorted(compareByTitle)
+      .map(({ book }) => book)
+    const servedPage = toCatalogPage(booksByTitle, page)
+
+    if (!servedPage) throw new NotFoundException()
+
+    return {
+      shelf: { id: collection._id, title: toShelfTitle(collection) },
+      books: servedPage.items,
+      page: servedPage.page,
     }
   }
 
@@ -167,6 +295,83 @@ export class OpdsBooksService {
     bookId,
   }: {
     owner: Pick<UserPostgresEntity, "id" | "couchName">
+    bookId: string
+  }) {
+    const { book, firstLink } = await this.findServedBook({ owner, bookId })
+    const providerCredentials = {
+      access_token: await this.mintDriveAccessToken(owner.id),
+    }
+    const { pluginsService } = this
+
+    // Drive's answer about the file tells a file the token cannot read from a
+    // limit, which a refused download cannot: see `toDriveFailure`.
+    const { bookMetadata } = await this.askDrive(
+      { bookId, isFileReadable: false },
+      function checkFileReadable() {
+        return pluginsService.getFileMetadata({
+          link: firstLink,
+          providerCredentials,
+        })
+      },
+    )
+
+    const { stream, size } = await this.askDrive(
+      { bookId, isFileReadable: true },
+      function requestDriveStream() {
+        return pluginsService.download({ link: firstLink, providerCredentials })
+      },
+    )
+    const metadataSize = toByteCount(bookMetadata?.size)
+
+    return {
+      ...toServedFile(book),
+      stream,
+      size,
+      expectedSize: size ?? metadataSize,
+    }
+  }
+
+  /**
+   * The cover of a book the owner's catalogs serve, as a JPEG: its stored
+   * cover, else the placeholder the app shows. Covers do not count towards the
+   * download quotas.
+   *
+   * @throws `NotFoundException` for a book the catalogs do not serve, or an
+   * owner without a usable Google connection, whose catalogs list no books.
+   */
+  async deliverServedBookCover({
+    owner,
+    bookId,
+  }: {
+    owner: Pick<UserPostgresEntity, "id" | "couchName">
+    bookId: string
+  }) {
+    const isLibraryServed = await this.googleConnectionService.isConnected(
+      owner.id,
+    )
+
+    if (!isLibraryServed) throw new NotFoundException()
+
+    const { couchName } = await this.findServedBook({ owner, bookId })
+    const coverKey = getBookCoverKey(emailToNameHex(couchName), bookId)
+
+    return lastValueFrom(
+      this.coversService.deliverCover(coverKey, SERVED_COVER_TYPE),
+    )
+  }
+
+  /**
+   * A book the owner's catalogs serve, with its Drive link, from the owner's
+   * library, whose CouchDB user name also keys the book's cover.
+   *
+   * @throws `NotFoundException` for an owner without a CouchDB user name, or a
+   * book the catalogs do not serve.
+   */
+  private async findServedBook({
+    owner,
+    bookId,
+  }: {
+    owner: Pick<UserPostgresEntity, "couchName">
     bookId: string
   }) {
     const { couchName } = owner
@@ -195,37 +400,27 @@ export class OpdsBooksService {
       throw new NotFoundException()
     }
 
-    const providerCredentials = {
-      access_token: await this.mintDriveAccessToken(owner.id),
-    }
-    const { pluginsService } = this
+    return { couchName, book, firstLink }
+  }
 
-    // Drive's answer about the file tells a file the token cannot read from a
-    // limit, which a refused download cannot: see `toDriveFailure`.
-    const { bookMetadata } = await this.askDrive(
-      { bookId, isFileReadable: false },
-      function checkFileReadable() {
-        return pluginsService.getFileMetadata({
-          link: firstLink,
-          providerCredentials,
-        })
-      },
-    )
+  /**
+   * The owner's library as the catalogs serve it, none while the owner has no
+   * usable Google connection or no CouchDB user name yet.
+   */
+  private async findServedLibrary(
+    owner: Pick<UserPostgresEntity, "id" | "couchName">,
+  ) {
+    const { couchName } = owner
+    const isLibraryServed =
+      !!couchName && (await this.googleConnectionService.isConnected(owner.id))
 
-    const { stream, size } = await this.askDrive(
-      { bookId, isFileReadable: true },
-      function requestDriveStream() {
-        return pluginsService.download({ link: firstLink, providerCredentials })
-      },
-    )
-    const metadataSize = toByteCount(bookMetadata?.size)
+    if (!isLibraryServed) return undefined
 
-    return {
-      ...toServedFile(book),
-      stream: stream instanceof Readable ? stream : Readable.from(stream),
-      size,
-      expectedSize: size ?? metadataSize,
-    }
+    const db = await this.couchService.createNanoInstanceForUser({
+      email: couchName,
+    })
+
+    return { db, ...(await readServedLibrary(db)) }
   }
 
   /** Runs a request to Drive, turning its refusal into what a reading app gets. */

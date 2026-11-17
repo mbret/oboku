@@ -60,6 +60,7 @@ const INSTANCE_CONFIG: InstanceConfig = {
   privateNetworkAllowedHosts: [],
   opdsServersMaxPerUser: SERVER_LIMIT,
   proxiedDownloadBytesMaxPerMonth: 1,
+  proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
 }
 
 const instanceConfigService: Pick<InstanceConfigService, "getConfig"> = {

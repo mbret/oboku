@@ -1,23 +1,29 @@
 import { ListItemButton, ListItemText } from "@mui/material"
+import { isConnectableConnectorType } from "@oboku/shared"
 import { memo } from "react"
 import { type PathParam, useParams } from "react-router"
-import { useConfirmation } from "../common/useConfirmation"
+import { showConfirmDialog } from "../common/dialogs/presets"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import type { ROUTES } from "../navigation/routes"
 import { notify } from "../notifications/toasts"
+import { useActiveProfileId } from "../profiles/active/activeProfileId"
 import { CONNECTOR_DETAILS, isSettingsConnectorType } from "./connectorDetails"
 import { useDeleteConnector } from "./useDeleteConnector"
 import { getConnectorForm } from "./AddConnectorScreen"
 import { Page } from "../common/Page"
 import { PageSection } from "../common/PageSection"
+import {
+  ConnectorConnectionSection,
+  DisconnectConnectorListItem,
+} from "./connection/ConnectorConnectionSection"
 
 export const EditConnectorScreen = memo(function EditConnectorScreen() {
   const { type, id = "-1" } =
     useParams<PathParam<typeof ROUTES.INTEGRATION_CONNECTORS_EDIT>>()
   const { goBack } = useSafeGoBack()
+  const activeProfileId = useActiveProfileId()
   const { mutate: deleteConnector } = useDeleteConnector()
-  const confirmation = useConfirmation()
 
   if (!isSettingsConnectorType(type)) return null
 
@@ -26,20 +32,28 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
 
   if (!Form) return null
 
-  const confirmThenDeleteConnector = () => {
-    const confirm = confirmation()
+  const isConnectableConnector = isConnectableConnectorType(type)
 
-    if (confirm) {
-      deleteConnector(
-        { id },
-        {
-          onSuccess: () => {
-            notify("actionSuccess")
-            goBack(details.integrationRoute)
-          },
+  const confirmThenDeleteConnector = async () => {
+    const confirmed = await showConfirmDialog({
+      title: "Delete this connector?",
+      message: isConnectableConnector
+        ? "If oboku's server keeps this connector's password, it forgets it once oboku reaches the server. To be sure, disconnect the connector first."
+        : undefined,
+      actions: [{ title: "Delete" }],
+    })
+
+    if (!confirmed) return
+
+    deleteConnector(
+      { id, type, profileId: activeProfileId },
+      {
+        onSuccess: function goBackToConnectorList() {
+          notify("actionSuccess")
+          goBack(details.integrationRoute)
         },
-      )
-    }
+      },
+    )
   }
 
   return (
@@ -49,7 +63,13 @@ export const EditConnectorScreen = memo(function EditConnectorScreen() {
         connectorId={id}
         onSubmitSuccess={() => goBack(details.integrationRoute)}
       >
+        {isConnectableConnector && (
+          <ConnectorConnectionSection connectorId={id} connectorType={type} />
+        )}
         <PageSection title="Danger zone" tone="danger">
+          {isConnectableConnector && (
+            <DisconnectConnectorListItem connectorId={id} />
+          )}
           <ListItemButton onClick={confirmThenDeleteConnector}>
             <ListItemText primary="Delete this connector" />
           </ListItemButton>

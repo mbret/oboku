@@ -2,8 +2,9 @@ import { createHash } from "node:crypto"
 import { once } from "node:events"
 import { createServer, type IncomingMessage } from "node:http"
 import type { AddressInfo } from "node:net"
-import { text } from "node:stream/consumers"
+import { Readable } from "node:stream"
 import { finished } from "node:stream/promises"
+import { buffer } from "node:stream/consumers"
 import type {
   DataSourceDocTypeFor,
   LinkDocTypeForProvider,
@@ -14,7 +15,7 @@ import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
 import { SyncReport } from "../../datasource/sync/SyncReport.js"
 import { buildMultiStatusXml } from "../../webdav/webdav.xml.js"
-import { dataSource as webdavDataSource } from "./index.js"
+import { isSignInRefused, dataSource as webdavDataSource } from "./index.js"
 
 const username = "reader"
 const password = "webdav-password-1234"
@@ -36,19 +37,6 @@ const dataSource: DataSourceDocTypeFor<"webdav"> = {
   data_v2: { connectorId: "connector", directory: "books" },
 }
 
-const bookLink: LinkDocTypeForProvider<"webdav"> = {
-  _id: "link",
-  _rev: "1-link",
-  rxdbMeta: { lwt: 0 },
-  rx_model: "link",
-  type: "webdav",
-  book: "book",
-  data: { connectorId: "connector", filePath: "/books/book.epub" },
-  createdAt: "2026-01-01T00:00:00.000Z",
-  modifiedAt: null,
-}
-
-const bookContent = "epub-content"
 const unauthorizedPage = "<html><body>401 Unauthorized</body></html>"
 
 const booksListing = buildMultiStatusXml([
@@ -126,17 +114,10 @@ const isPortAddress = (
 
 async function startBooksServer({ challenge, isAuthorized }: ServerAuth) {
   const server = createServer(
-    function answerAuthorizedRequest(request, response) {
+    function answerAuthorizedPropfind(request, response) {
       if (!isAuthorized(request)) {
         response.writeHead(401, { "www-authenticate": challenge })
         response.end(unauthorizedPage)
-
-        return
-      }
-
-      if (request.method === "GET") {
-        response.writeHead(200, { "content-type": "application/epub+zip" })
-        response.end(bookContent)
 
         return
       }
@@ -162,11 +143,40 @@ async function startBooksServer({ challenge, isAuthorized }: ServerAuth) {
   return `127.0.0.1:${address.port}`
 }
 
-const startAllowedBooksServer = async (serverAuth: ServerAuth) => {
-  const host = await startBooksServer(serverAuth)
-  setPrivateNetworkAllowedHosts([host])
+/** A server that sends a book with no end, until its client goes away. */
+async function startEndlessBookServer() {
+  const server = createServer(function streamUntilClosed(request, response) {
+    if (!isAuthorizedWithBasic(request)) {
+      response.writeHead(401, { "www-authenticate": basicAuth.challenge })
+      response.end()
 
-  return host
+      return
+    }
+
+    response.writeHead(200, { "content-type": "application/epub+zip" })
+    const writing = setInterval(function writeChunk() {
+      response.write(Buffer.alloc(16 * 1024))
+    }, 5)
+
+    response.once("close", function stopWriting() {
+      clearInterval(writing)
+    })
+  }).listen(0, "127.0.0.1")
+  const bookRequested = once(server, "request")
+
+  onTestFinished(async function closeEndlessBookServer() {
+    server.closeAllConnections()
+    server.close()
+    await once(server, "close")
+  })
+
+  await once(server, "listening")
+
+  const address = server.address()
+
+  if (!isPortAddress(address)) throw new Error("Not listening on a port")
+
+  return { host: `127.0.0.1:${address.port}`, bookRequested }
 }
 
 const createUserDbWithConnector = (url: string) => {
@@ -184,99 +194,154 @@ const createUserDbWithConnector = (url: string) => {
   } as unknown as createNano.DocumentScope<unknown>
 }
 
-const syncBooksFrom = (host: string, providerPassword: string) =>
+const bookLink: LinkDocTypeForProvider<"webdav"> = {
+  _id: "link",
+  _rev: "1-link",
+  rxdbMeta: { lwt: 0 },
+  rx_model: "link",
+  type: "webdav",
+  book: "book",
+  modifiedAt: null,
+  createdAt: "2026-01-01T00:00:00.000Z",
+  data: { connectorId: "connector", filePath: "/books/book.epub" },
+}
+
+const downloadBookFrom = async (
+  host: string,
+  providerCredentials = { password },
+) => {
+  const { stream } = await webdavDataSource.download(
+    bookLink,
+    providerCredentials,
+    createUserDbWithConnector(`http://${host}`),
+  )
+
+  if (!(stream instanceof Readable)) throw new Error("Not a Node stream")
+
+  return stream
+}
+
+const syncBooksFrom = (host: string, providerCredentials = { password }) =>
   webdavDataSource.sync({
     userName: "user",
     dataSourceId: dataSource._id,
     dataSourceType: "webdav",
     dataSource,
-    providerCredentials: { password: providerPassword },
+    providerCredentials,
     syncReport: new SyncReport(dataSource._id, "user"),
     db: createUserDbWithConnector(`http://${host}`),
   })
 
-const readBookMetadataFrom = (host: string, providerPassword: string) =>
+const readBookMetadataFrom = (
+  host: string,
+  providerCredentials = { password },
+) =>
   webdavDataSource.getFileMetadata({
     link: bookLink,
-    providerCredentials: { password: providerPassword },
+    providerCredentials,
     db: createUserDbWithConnector(`http://${host}`),
   })
-
-const downloadBookFrom = (host: string, providerPassword: string) =>
-  webdavDataSource.download(
-    bookLink,
-    { password: providerPassword },
-    createUserDbWithConnector(`http://${host}`),
-  )
 
 describe("WebDAV data source", () => {
   afterEach(function forgetAllowedHosts() {
     setPrivateNetworkAllowedHosts([])
   })
 
-  describe.each([basicAuth, digestAuth])(
-    "on a server that only accepts $scheme auth",
-    (serverAuth) => {
-      it("syncs", async () => {
-        const host = await startAllowedBooksServer(serverAuth)
+  it.each([basicAuth, digestAuth])(
+    "syncs a server that only accepts $scheme auth",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
 
-        const { items } = await syncBooksFrom(host, password)
+      const { items } = await syncBooksFrom(host)
 
-        expect(items).toEqual([
-          {
-            type: "file",
-            name: "book.epub",
-            modifiedAt: lastModified.toISOString(),
-            linkData: {
-              connectorId: "connector",
-              filePath: "/books/book.epub",
-            },
-          },
-        ])
-      })
+      expect(items).toEqual([
+        {
+          type: "file",
+          name: "book.epub",
+          modifiedAt: lastModified.toISOString(),
+          linkData: { connectorId: "connector", filePath: "/books/book.epub" },
+        },
+      ])
+    },
+  )
 
-      it("downloads a book", async () => {
-        const host = await startAllowedBooksServer(serverAuth)
+  it.each([basicAuth, digestAuth])(
+    "downloads from a server that only accepts $scheme auth",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
 
-        const { stream } = await downloadBookFrom(host, password)
+      const stream = await downloadBookFrom(host)
 
-        expect(await text(stream)).toBe(bookContent)
-      })
+      expect((await buffer(stream)).toString()).toBe(booksListing)
+    },
+  )
 
-      it("rejects a sync with a 401 when the server refuses the password", async () => {
-        const host = await startAllowedBooksServer(serverAuth)
+  it("stops the server's answer once the stream it gave is destroyed", async () => {
+    const { host, bookRequested } = await startEndlessBookServer()
+    setPrivateNetworkAllowedHosts([host])
+    const stream = await downloadBookFrom(host)
+    const [, bookResponse] = await bookRequested
+    await once(stream, "data")
 
-        await expect(syncBooksFrom(host, wrongPassword)).rejects.toMatchObject({
-          status: 401,
-        })
-      })
+    stream.destroy()
 
-      it("rejects a metadata read with a 401 when the server refuses the password", async () => {
-        const host = await startAllowedBooksServer(serverAuth)
+    await once(bookResponse, "close")
+  })
 
-        await expect(
-          readBookMetadataFrom(host, wrongPassword),
-        ).rejects.toMatchObject({ status: 401 })
-      })
+  it("fails the stream it gave once the server drops the connection mid-file", async () => {
+    const { host, bookRequested } = await startEndlessBookServer()
+    setPrivateNetworkAllowedHosts([host])
+    const stream = await downloadBookFrom(host)
+    const [, bookResponse] = await bookRequested
+    await once(stream, "data")
 
-      it("ends the download stream with a 401 and no data when the server refuses the password", async () => {
-        const host = await startAllowedBooksServer(serverAuth)
-        const onData = vi.fn()
+    const streamFinished = finished(stream)
+    bookResponse.socket.destroy()
 
-        const { stream } = await downloadBookFrom(host, wrongPassword)
-        stream.on("data", onData)
+    await expect(streamFinished).rejects.toThrow()
+  })
 
-        await expect(finished(stream)).rejects.toMatchObject({ status: 401 })
-        expect(onData).not.toHaveBeenCalled()
-      })
+  it.each([basicAuth, digestAuth])(
+    "refuses a sync when a server that only accepts $scheme auth refuses the password",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
+
+      await expect(
+        syncBooksFrom(host, { password: wrongPassword }),
+      ).rejects.toSatisfy(isSignInRefused)
+    },
+  )
+
+  it.each([basicAuth, digestAuth])(
+    "refuses a metadata read when a server that only accepts $scheme auth refuses the password",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
+
+      await expect(
+        readBookMetadataFrom(host, { password: wrongPassword }),
+      ).rejects.toSatisfy(isSignInRefused)
+    },
+  )
+
+  it.each([basicAuth, digestAuth])(
+    "refuses a download when a server that only accepts $scheme auth refuses the password, instead of passing on its error page",
+    async (serverAuth) => {
+      const host = await startBooksServer(serverAuth)
+      setPrivateNetworkAllowedHosts([host])
+
+      await expect(
+        downloadBookFrom(host, { password: wrongPassword }),
+      ).rejects.toSatisfy(isSignInRefused)
     },
   )
 
   it("refuses a server on a private network the instance does not allow", async () => {
     const host = await startBooksServer(basicAuth)
 
-    await expect(syncBooksFrom(host, password)).rejects.toSatisfy(
-      isNonPublicAddressError,
-    )
+    await expect(syncBooksFrom(host)).rejects.toSatisfy(isNonPublicAddressError)
   })
 })

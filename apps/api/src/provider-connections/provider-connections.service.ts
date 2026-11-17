@@ -1,21 +1,40 @@
 import { Injectable } from "@nestjs/common"
+import type { SecretDocType, WebdavConnectorDocType } from "@oboku/shared"
 import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
 } from "../crypto/at-rest-cipher.js"
+import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { isRecord } from "../http/isRecord.js"
+import { isWebdavConnector } from "../plugins/webdav/index.js"
 
-/** What each account provider grants, as the API keeps it. */
+/** A secret's value as the app stores it, encrypted with the user's master key. */
+export type EncryptedSecretValue = NonNullable<SecretDocType["value"]>
+
+/**
+ * What each account provider grants, as the API keeps it. A connector's
+ * credentials hold the connector, and its password secret's encrypted value,
+ * as they were when the user connected it.
+ */
 export type ProviderCredentials = {
   google: { refreshToken: string }
+  webdav: {
+    connector: WebdavConnectorDocType
+    passwordSecretValue: EncryptedSecretValue | null
+    password: string
+  }
 }
 
 export type ConnectionProvider = keyof ProviderCredentials
 
-type ConnectionKey<P extends ConnectionProvider = ConnectionProvider> = {
+type ProviderKey<P extends ConnectionProvider = ConnectionProvider> = {
   userId: number
   provider: P
 }
+
+type ConnectionKey<P extends ConnectionProvider = ConnectionProvider> =
+  ProviderKey<P> & { accountId: string }
 
 /** A provider with its own credentials, never another provider's. */
 type ProviderAndCredentials = {
@@ -24,6 +43,13 @@ type ProviderAndCredentials = {
     credentials: ProviderCredentials[P]
   }
 }[ConnectionProvider]
+
+const isEncryptedSecretValue = (
+  value: unknown,
+): value is EncryptedSecretValue =>
+  isRecord(value) &&
+  typeof value.iv === "string" &&
+  typeof value.data === "string"
 
 const credentialsParsers: {
   [P in ConnectionProvider]: (value: unknown) => ProviderCredentials[P] | null
@@ -36,6 +62,20 @@ const credentialsParsers: {
 
     return { refreshToken: value.refreshToken }
   },
+  webdav: function parseWebdavCredentials(value) {
+    if (!isRecord(value)) return null
+
+    const { connector, passwordSecretValue, password } = value
+    const isWebdavCredentials =
+      typeof password === "string" &&
+      isWebdavConnector(connector) &&
+      (passwordSecretValue === null ||
+        isEncryptedSecretValue(passwordSecretValue))
+
+    if (!isWebdavCredentials) return null
+
+    return { connector, passwordSecretValue, password }
+  },
 }
 
 /** `undefined` for invalid JSON, without the error, whose message quotes the input. */
@@ -47,9 +87,27 @@ const parseJson = (text: string): unknown => {
   }
 }
 
-/** Binds the credentials to their user and provider, so they cannot be copied to another connection. */
-const toAssociatedData = ({ userId, provider }: ConnectionKey) =>
+/** Binds the credentials to their connection, so they cannot be copied to another one. */
+const toAssociatedData = ({ userId, provider, accountId }: ConnectionKey) =>
+  `${userId}:${provider}:${accountId}`
+
+/**
+ * Credentials saved while a user had at most one connection per provider are
+ * bound to the user and provider only. They stay readable until the user
+ * connects that account again.
+ */
+const toProviderWideAssociatedData = ({ userId, provider }: ProviderKey) =>
   `${userId}:${provider}`
+
+const toConnectionWithoutCredentials = (
+  connection: ProviderConnectionPostgresEntity,
+) => ({
+  accountId: connection.account_id,
+  accountName: connection.account_name,
+  scopes: connection.scopes,
+  connectedAt: connection.connected_at,
+  updatedAt: connection.updated_at,
+})
 
 /** The long-lived permissions users give the API at account providers. */
 @Injectable()
@@ -59,22 +117,18 @@ export class ProviderConnectionsService {
     private readonly atRestCipher: AtRestCipher,
   ) {}
 
-  /** The connection without its credentials, or `null`. */
-  async find(key: ConnectionKey) {
-    const connection = await this.connectionPostgresService.find(key)
+  /** The user's connections to the provider without their credentials, the latest first. */
+  async list(key: ProviderKey) {
+    const connections = await this.connectionPostgresService.list(key)
 
-    if (!connection) return null
-
-    return {
-      accountId: connection.account_id,
-      accountName: connection.account_name,
-      scopes: connection.scopes,
-      connectedAt: connection.connected_at,
-      updatedAt: connection.updated_at,
-    }
+    return connections.map(toConnectionWithoutCredentials)
   }
 
-  /** Replaces the user's previous connection to the provider, if any. */
+  /**
+   * Replaces the user's previous connection to the same account, if any. With
+   * `replacesOtherAccounts`, also deletes the user's connections to the
+   * provider's other accounts, in one step.
+   */
   async connect({
     userId,
     provider,
@@ -82,26 +136,33 @@ export class ProviderConnectionsService {
     accountId,
     accountName,
     scopes,
+    replacesOtherAccounts = false,
   }: ProviderAndCredentials & {
     userId: number
     accountId: string
     accountName: string
     scopes: string[]
+    replacesOtherAccounts?: boolean
   }) {
     const encryptedCredentials = await this.atRestCipher.encrypt({
       purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
       plaintext: JSON.stringify(credentials),
-      associatedData: toAssociatedData({ userId, provider }),
+      associatedData: toAssociatedData({ userId, provider, accountId }),
     })
-
-    await this.connectionPostgresService.save({
+    const connection = {
       userId,
       provider,
-      encryptedCredentials,
       accountId,
+      encryptedCredentials,
       accountName,
       scopes,
-    })
+    }
+
+    if (replacesOtherAccounts) {
+      await this.connectionPostgresService.saveAsOnlyAccount(connection)
+    } else {
+      await this.connectionPostgresService.save(connection)
+    }
   }
 
   /**
@@ -115,11 +176,15 @@ export class ProviderConnectionsService {
 
     if (!connection) return null
 
-    const plaintext = await this.atRestCipher.decrypt({
-      purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
-      ciphertext: connection.encrypted_credentials,
-      associatedData: toAssociatedData(key),
-    })
+    const decryptBoundTo = (associatedData: string) =>
+      this.atRestCipher.decrypt({
+        purpose: PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
+        ciphertext: connection.encrypted_credentials,
+        associatedData,
+      })
+    const plaintext =
+      (await decryptBoundTo(toAssociatedData(key))) ??
+      (await decryptBoundTo(toProviderWideAssociatedData(key)))
 
     if (plaintext === null) return null
 

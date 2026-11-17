@@ -375,12 +375,13 @@ export class OpdsServerPostgresEntity {
 }
 
 /**
- * A user's long-lived permission at an account provider, one per user and
- * provider. `encrypted_credentials` holds what the provider grants, such as a
- * refresh token, encrypted at rest and bound to the row's user and provider.
+ * A user's long-lived permission at an account provider, one per user,
+ * provider and account. `encrypted_credentials` holds what the provider grants,
+ * such as a refresh token, encrypted at rest and bound to the row's user,
+ * provider and account.
  */
 @Entity({ name: "provider_connections" })
-@Index(["user_id", "provider"], { unique: true })
+@Index(["user_id", "provider", "account_id"], { unique: true })
 export class ProviderConnectionPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
@@ -395,7 +396,7 @@ export class ProviderConnectionPostgresEntity {
   @Column({ type: "text" })
   encrypted_credentials!: string
 
-  /** The provider's stable id for the account, such as Google's `sub`. */
+  /** The provider's stable id for the account, such as Google's `sub` or a connector's id. */
   @Column({ type: "text" })
   account_id!: string
 
@@ -420,8 +421,16 @@ const bigintAsNumber: ValueTransformer = {
   from: (value: string) => Number(value),
 }
 
-@Entity({ name: "proxied_download_usage" })
-export class ProxiedDownloadUsagePostgresEntity {
+/**
+ * The bytes proxied downloads sent to a user in a month. The instance's
+ * usage is the sum of the month's rows, so a deleted account keeps its rows.
+ */
+@Entity({ name: "user_proxied_download_usage" })
+@Index(["month"])
+export class UserProxiedDownloadUsagePostgresEntity {
+  @PrimaryColumn({ type: "integer" })
+  user_id!: number
+
   /** The first day of the month, UTC. */
   @PrimaryColumn({ type: "date" })
   month!: string

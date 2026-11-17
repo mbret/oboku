@@ -4,14 +4,11 @@ import {
   DefaultValuePipe,
   Get,
   Header,
-  HttpException,
-  HttpStatus,
   Param,
   ParseIntPipe,
   Query,
   Req,
   Res,
-  StreamableFile,
   UseGuards,
 } from "@nestjs/common"
 import { ApiExcludeController } from "@nestjs/swagger"
@@ -32,13 +29,18 @@ import {
   OPDS_ACQUISITION_FEED_TYPE,
   OPDS_BOOKS_ROUTE,
   OPDS_CATALOG_ROUTE,
+  OPDS_COVERS_ROUTE,
   OPDS_NAVIGATION_FEED_TYPE,
+  OPDS_SHELVES_ROUTE,
   toBooksFeed,
   toOpds1Feed,
   toOpds2Feed,
   toRootFeed,
+  toShelfFeed,
+  toShelvesFeed,
 } from "./opds-feeds.js"
 import { OpdsBooksService } from "./opds-books.service.js"
+import { IMMUTABLE_COVER_CACHE_CONTROL } from "../covers/covers.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 
 /**
@@ -46,6 +48,12 @@ import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.se
  * under `v2`. Readers sign in with HTTP Basic Auth, the account email and the
  * server's password, not an app session.
  */
+const assertPageNumber = (page: number) => {
+  const isPageNumber = page >= 1
+
+  if (!isPageNumber) throw new BadRequestException()
+}
+
 @Public()
 @ApiExcludeController()
 @UseGuards(OpdsBasicAuthGuard)
@@ -99,11 +107,88 @@ export class OpdsCatalogController {
     })
   }
 
+  @Get(OPDS_SHELVES_ROUTE)
+  @Header("Content-Type", OPDS_NAVIGATION_FEED_TYPE)
+  async getShelves(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds1Feed({
+      slug: server.slug,
+      feed: await this.findShelvesFeed({ server, owner, page }),
+      updated: new Date(),
+    })
+  }
+
+  @Get(`${OPDS_SHELVES_ROUTE}/:shelfId`)
+  @Header("Content-Type", OPDS_ACQUISITION_FEED_TYPE)
+  async getShelf(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("shelfId") shelfId: string,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds1Feed({
+      slug: server.slug,
+      feed: await this.findShelfFeed({ server, owner, shelfId, page }),
+      updated: new Date(),
+    })
+  }
+
+  @Get(`${OPDS_2_ROUTE}/${OPDS_SHELVES_ROUTE}`)
+  @Header("Content-Type", OPDS_2_FEED_TYPE)
+  async getOpds2Shelves(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds2Feed({
+      slug: server.slug,
+      feed: await this.findShelvesFeed({ server, owner, page }),
+    })
+  }
+
+  @Get(`${OPDS_2_ROUTE}/${OPDS_SHELVES_ROUTE}/:shelfId`)
+  @Header("Content-Type", OPDS_2_FEED_TYPE)
+  async getOpds2Shelf(
+    @WithOpdsServer() server: OpdsServerPostgresEntity,
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("shelfId") shelfId: string,
+    @Query("page", new DefaultValuePipe(1), ParseIntPipe) page: number,
+  ) {
+    return toOpds2Feed({
+      slug: server.slug,
+      feed: await this.findShelfFeed({ server, owner, shelfId, page }),
+    })
+  }
+
+  /**
+   * The cover of a book the catalog serves. Its URL changes with the cover,
+   * so reading apps may keep it as long as they like, but not a refusal: the
+   * header goes out with the cover only.
+   */
+  @Get(`${OPDS_COVERS_ROUTE}/${OPDS_BOOKS_ROUTE}/:bookId`)
+  async getBookCover(
+    @WithOpdsOwner() owner: UserPostgresEntity,
+    @Param("bookId") bookId: string,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    const cover = await this.opdsBooksService.deliverServedBookCover({
+      owner,
+      bookId,
+    })
+
+    response.setHeader("Cache-Control", IMMUTABLE_COVER_CACHE_CONTROL)
+
+    return cover
+  }
+
   /**
    * The file of a book the catalog serves. The last segment names the file
    * for reading apps that take the name from the link, KOReader among them.
-   * A download that would pass the instance's monthly proxied download quota
-   * answers 429 until the next month.
+   * A download that would pass the instance's or the user's monthly proxied
+   * download quota answers 429 until the next month.
    */
   @Get(`${OPDS_BOOKS_ROUTE}/:bookId/:fileName`)
   async downloadBook(
@@ -116,45 +201,13 @@ export class OpdsCatalogController {
       owner,
       bookId,
     })
-    const isHeadRequest = request.method === "HEAD"
-    const meteredFile = await this.proxiedDownloadQuotaService.meter({
-      stream: file.stream,
-      expectedBytes: file.expectedSize,
-      isBodySent: !isHeadRequest,
+
+    return this.proxiedDownloadQuotaService.deliver({
+      userId: owner.id,
+      file,
+      isBodySent: request.method !== "HEAD",
+      response,
     })
-
-    if (meteredFile.status === "quota-reached") {
-      response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
-
-      throw new HttpException("Too Many Requests", HttpStatus.TOO_MANY_REQUESTS)
-    }
-
-    // `attachment` types the response from the name's extension: the book's
-    // own media type replaces it.
-    response.attachment(file.name).type(file.contentType)
-
-    const bookFile = new StreamableFile(meteredFile.stream, {
-      length: file.size,
-    })
-    const handleStreamFailure = bookFile.errorHandler
-
-    // Nest answers 400 for a stream that fails before its first byte; Drive
-    // failed, not the request.
-    return bookFile.setErrorHandler(
-      function answerBadGatewayBeforeFirstByte(error, streamResponse) {
-        const isAnswerStarted =
-          streamResponse.destroyed || streamResponse.headersSent
-
-        if (isAnswerStarted) {
-          handleStreamFailure(error, streamResponse)
-
-          return
-        }
-
-        streamResponse.statusCode = HttpStatus.BAD_GATEWAY
-        streamResponse.send("Bad Gateway")
-      },
-    )
   }
 
   private async findBooksFeed({
@@ -166,9 +219,7 @@ export class OpdsCatalogController {
     owner: UserPostgresEntity
     page: number
   }) {
-    const isPageNumber = page >= 1
-
-    if (!isPageNumber) throw new BadRequestException()
+    assertPageNumber(page)
 
     const servedBooks = await this.opdsBooksService.listServedBooks({
       owner,
@@ -176,5 +227,46 @@ export class OpdsCatalogController {
     })
 
     return toBooksFeed({ server, ...servedBooks })
+  }
+
+  private async findShelvesFeed({
+    server,
+    owner,
+    page,
+  }: {
+    server: OpdsServerPostgresEntity
+    owner: UserPostgresEntity
+    page: number
+  }) {
+    assertPageNumber(page)
+
+    const servedShelves = await this.opdsBooksService.listServedShelves({
+      owner,
+      page,
+    })
+
+    return toShelvesFeed({ server, ...servedShelves })
+  }
+
+  private async findShelfFeed({
+    server,
+    owner,
+    shelfId,
+    page,
+  }: {
+    server: OpdsServerPostgresEntity
+    owner: UserPostgresEntity
+    shelfId: string
+    page: number
+  }) {
+    assertPageNumber(page)
+
+    const servedShelf = await this.opdsBooksService.listServedShelfBooks({
+      owner,
+      shelfId,
+      page,
+    })
+
+    return toShelfFeed({ server, ...servedShelf })
   }
 }

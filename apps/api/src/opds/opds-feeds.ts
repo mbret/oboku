@@ -2,10 +2,12 @@ import { type BookDocType, getMetadataFromBook } from "@oboku/shared"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import type { OpdsServerPostgresEntity } from "../features/postgres/entities.js"
 import { escapeXml } from "../http/escapeXml.js"
-import { toServedFile } from "./opds-books.js"
+import { SERVED_COVER_TYPE, toServedFile, toServedTitle } from "./opds-books.js"
 
 export const OPDS_CATALOG_ROUTE = "opds"
 export const OPDS_BOOKS_ROUTE = "books"
+export const OPDS_COVERS_ROUTE = "covers"
+export const OPDS_SHELVES_ROUTE = "shelves"
 export const OPDS_2_ROUTE = "v2"
 export const OPDS_AUTHENTICATION_ROUTE = "authentication"
 
@@ -39,6 +41,7 @@ type CatalogNavigationEntry = {
   description: string
   path: CatalogPath
   kind: CatalogFeedKind
+  itemCount?: number
 }
 
 /** A book of an acquisition feed, before an OPDS version writes it. */
@@ -50,6 +53,7 @@ type CatalogPublication = {
   description: string | undefined
   updated: Date
   acquisition: { href: string; type: string }
+  cover: { href: string; type: string }
 }
 
 /** Where a feed's page stands in the list it pages through; `number` is 1-based. */
@@ -61,13 +65,21 @@ type CatalogFeed = {
   title: string
   path: CatalogPath
 } & (
-  | { kind: "navigation"; entries: CatalogNavigationEntry[] }
+  | {
+      kind: "navigation"
+      entries: CatalogNavigationEntry[]
+      /** None for a menu that lists everything at once. */
+      page?: CatalogPage
+    }
   | {
       kind: "acquisition"
       publications: CatalogPublication[]
       page: CatalogPage
     }
 )
+
+/** A shelf a catalog lists, with how many of its books the catalog serves. */
+type CatalogShelf = { id: string; title: string; bookCount: number }
 
 /** The fields of a served book a feed reads. */
 type CatalogBook = Pick<
@@ -80,10 +92,19 @@ type CatalogBook = Pick<
 >
 
 const ALL_BOOKS_TITLE = "All books"
+const SHELVES_TITLE = "Shelves"
 
 const toCatalogId = (slug: string) => `urn:oboku:opds:${slug}`
 
 const toBooksId = (slug: string) => `${toCatalogId(slug)}:books`
+
+const toShelvesId = (slug: string) => `${toCatalogId(slug)}:shelves`
+
+const toShelfId = (slug: string, shelfId: string) =>
+  `${toShelvesId(slug)}:${shelfId}`
+
+const toShelfPath = (shelfId: string) =>
+  `${OPDS_SHELVES_ROUTE}/${encodeURIComponent(shelfId)}`
 
 const toCatalogRoot = (slug: string) =>
   `/${OPDS_CATALOG_ROUTE}/${encodeURIComponent(slug)}`
@@ -102,6 +123,26 @@ const toBookFileHref = ({
 }) =>
   `${toCatalogRoot(slug)}/${OPDS_BOOKS_ROUTE}/${encodeURIComponent(bookId)}/${encodeURIComponent(fileName)}`
 
+/**
+ * The cover route of a book. Like the app's cover URLs, it carries the time
+ * of the book's last metadata refresh, which saves a new cover, so a reading
+ * app never keeps a stale one from its cache.
+ */
+const toBookCoverHref = ({
+  slug,
+  bookId,
+  coverVersion,
+}: {
+  slug: string
+  bookId: string
+  coverVersion: number | null
+}) => {
+  const href = `${toCatalogRoot(slug)}/${OPDS_COVERS_ROUTE}/${OPDS_BOOKS_ROUTE}/${encodeURIComponent(bookId)}`
+  const isCoverVersioned = typeof coverVersion === "number"
+
+  return isCoverVersioned ? `${href}?hash=${coverVersion}` : href
+}
+
 const toCatalogPublication = (
   slug: string,
   book: CatalogBook,
@@ -111,7 +152,7 @@ const toCatalogPublication = (
 
   return {
     id: `${toBooksId(slug)}:${book._id}`,
-    title: String(metadata.title ?? "") || file.name,
+    title: toServedTitle(book),
     authors: metadata.authors ?? [],
     language: metadata.language,
     description: metadata.description,
@@ -119,6 +160,14 @@ const toCatalogPublication = (
     acquisition: {
       href: toBookFileHref({ slug, bookId: book._id, fileName: file.name }),
       type: file.contentType,
+    },
+    cover: {
+      href: toBookCoverHref({
+        slug,
+        bookId: book._id,
+        coverVersion: book.lastMetadataUpdatedAt,
+      }),
+      type: SERVED_COVER_TYPE,
     },
   }
 }
@@ -137,6 +186,13 @@ export const toRootFeed = (server: CatalogServer): CatalogFeed => ({
       path: OPDS_BOOKS_ROUTE,
       kind: "acquisition",
     },
+    {
+      id: toShelvesId(server.slug),
+      title: SHELVES_TITLE,
+      description: "Your shelves, from A to Z",
+      path: OPDS_SHELVES_ROUTE,
+      kind: "navigation",
+    },
   ],
 })
 
@@ -154,6 +210,51 @@ export const toBooksFeed = ({
   id: toBooksId(server.slug),
   title: ALL_BOOKS_TITLE,
   path: OPDS_BOOKS_ROUTE,
+  publications: books.map((book) => toCatalogPublication(server.slug, book)),
+  page,
+})
+
+/** A page of the shelves the catalog lists, each leading to its books. */
+export const toShelvesFeed = ({
+  server,
+  shelves,
+  page,
+}: {
+  server: CatalogServer
+  shelves: ReadonlyArray<CatalogShelf>
+  page: CatalogPage
+}): CatalogFeed => ({
+  kind: "navigation",
+  id: toShelvesId(server.slug),
+  title: SHELVES_TITLE,
+  path: OPDS_SHELVES_ROUTE,
+  entries: shelves.map((shelf) => ({
+    id: toShelfId(server.slug, shelf.id),
+    title: shelf.title,
+    description: shelf.bookCount === 1 ? "1 book" : `${shelf.bookCount} books`,
+    path: toShelfPath(shelf.id),
+    kind: "acquisition",
+    itemCount: shelf.bookCount,
+  })),
+  page,
+})
+
+/** A page of a shelf's books. */
+export const toShelfFeed = ({
+  server,
+  shelf,
+  books,
+  page,
+}: {
+  server: CatalogServer
+  shelf: Pick<CatalogShelf, "id" | "title">
+  books: ReadonlyArray<CatalogBook>
+  page: CatalogPage
+}): CatalogFeed => ({
+  kind: "acquisition",
+  id: toShelfId(server.slug, shelf.id),
+  title: shelf.title,
+  path: toShelfPath(shelf.id),
   publications: books.map((book) => toCatalogPublication(server.slug, book)),
   page,
 })
@@ -189,12 +290,34 @@ const toPageRelations = ({ number, size, total }: CatalogPage) => {
 const toFeedHref = (root: string, feed: CatalogFeed) => {
   const href = toHref(root, feed.path)
 
-  return feed.kind === "acquisition" ? toPageHref(href, feed.page.number) : href
+  return feed.page ? toPageHref(href, feed.page.number) : href
 }
+
+/** The links to the pages around a feed's page, none for an unpaged feed. */
+const toPageLinks = ({
+  root,
+  feed,
+  type,
+}: {
+  root: string
+  feed: CatalogFeed
+  type: string
+}) =>
+  feed.page
+    ? toPageRelations(feed.page).map(({ rel, pageNumber }) => ({
+        rel,
+        href: toPageHref(toHref(root, feed.path), pageNumber),
+        type,
+      }))
+    : []
 
 // OPDS 1.2 §5.4 and OPDS 2.0 §5.1: the relation of a link that gets the
 // book's file.
 const ACQUISITION_RELATION = "http://opds-spec.org/acquisition"
+// OPDS 1.2: the relations of a link to a publication's cover and to its
+// thumbnail.
+const IMAGE_RELATION = "http://opds-spec.org/image"
+const THUMBNAIL_RELATION = "http://opds-spec.org/image/thumbnail"
 
 type AtomLink = { rel: string; href: string; type: string }
 
@@ -215,6 +338,8 @@ const toPublicationEntryXml = (publication: CatalogPublication) => [
   // RFC 4287 §4.1.2: an entry without an alternate link needs a content.
   `    <content type="text">${escapeXml(publication.description ?? "")}</content>`,
   `    ${toLinkXml({ rel: ACQUISITION_RELATION, ...publication.acquisition })}`,
+  `    ${toLinkXml({ rel: IMAGE_RELATION, ...publication.cover })}`,
+  `    ${toLinkXml({ rel: THUMBNAIL_RELATION, ...publication.cover })}`,
   `  </entry>`,
 ]
 
@@ -234,18 +359,10 @@ export const toOpds1Feed = ({
   const root = toCatalogRoot(slug)
   const feedType = OPDS_1_FEED_TYPES[feed.kind]
   const updatedXml = `<updated>${updated.toISOString()}</updated>`
-  const pageLinks: AtomLink[] =
-    feed.kind === "acquisition"
-      ? toPageRelations(feed.page).map(({ rel, pageNumber }) => ({
-          rel,
-          href: toPageHref(toHref(root, feed.path), pageNumber),
-          type: feedType,
-        }))
-      : []
   const links: AtomLink[] = [
     { rel: "self", href: toFeedHref(root, feed), type: feedType },
     { rel: "start", href: root, type: OPDS_NAVIGATION_FEED_TYPE },
-    ...pageLinks,
+    ...toPageLinks({ root, feed, type: feedType }),
   ]
   const navigationEntries = feed.kind === "navigation" ? feed.entries : []
   const publications = feed.kind === "acquisition" ? feed.publications : []
@@ -287,6 +404,7 @@ const toOpds2Publication = (publication: CatalogPublication) => ({
     modified: publication.updated.toISOString(),
   },
   links: [{ rel: ACQUISITION_RELATION, ...publication.acquisition }],
+  images: [publication.cover],
 })
 
 /**
@@ -301,44 +419,40 @@ export const toOpds2Feed = ({
   feed: CatalogFeed
 }) => {
   const root = toOpds2Root(slug)
-  const startLink = { rel: "start", href: root, type: OPDS_2_FEED_TYPE }
-  const selfLink = {
-    rel: "self",
-    href: toFeedHref(root, feed),
-    type: OPDS_2_FEED_TYPE,
+  const { page } = feed
+  const metadata = {
+    title: feed.title,
+    ...(page && {
+      numberOfItems: page.total,
+      itemsPerPage: page.size,
+      currentPage: page.number,
+    }),
   }
+  const links = [
+    { rel: "self", href: toFeedHref(root, feed), type: OPDS_2_FEED_TYPE },
+    { rel: "start", href: root, type: OPDS_2_FEED_TYPE },
+    ...toPageLinks({ root, feed, type: OPDS_2_FEED_TYPE }),
+  ]
 
   if (feed.kind === "acquisition") {
-    const { page } = feed
-
     return {
-      metadata: {
-        title: feed.title,
-        numberOfItems: page.total,
-        itemsPerPage: page.size,
-        currentPage: page.number,
-      },
-      links: [
-        selfLink,
-        startLink,
-        ...toPageRelations(page).map(({ rel, pageNumber }) => ({
-          rel,
-          href: toPageHref(toHref(root, feed.path), pageNumber),
-          type: OPDS_2_FEED_TYPE,
-        })),
-      ],
+      metadata,
+      links,
       publications: feed.publications.map(toOpds2Publication),
     }
   }
 
   return {
-    metadata: { title: feed.title },
-    links: [selfLink, startLink],
+    metadata,
+    links,
     navigation: feed.entries.map((entry) => ({
       rel: "subsection",
       href: toHref(root, entry.path),
       type: OPDS_2_FEED_TYPE,
       title: entry.title,
+      ...(entry.itemCount !== undefined && {
+        properties: { numberOfItems: entry.itemCount },
+      }),
     })),
   }
 }

@@ -8,11 +8,16 @@ An OPDS server turns your oboku library into a catalog that KOReader and other r
 
 A catalog lists the books of your library that oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection). Reading apps download them through oboku's server, which reaches Drive with that connection. Without it, catalogs are empty.
 
-Books appear newest first, 50 per page. A catalog leaves out:
+Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 
 * books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
 * books you marked not interested;
 * books oboku reads from another provider, such as Dropbox or WebDAV.
+
+A catalog opens on two entries, each listing 50 items per page:
+
+* **All books**: every book it lists, newest first.
+* **Shelves**: your [shelves](/guides/collections), from A to Z, as in the app's **Shelves** tab, each with its books from A to Z. It leaves out a shelf holding a book under a protected tag, and shelves without a book the catalog lists.
 
 Some listed books cannot be downloaded yet:
 
@@ -21,9 +26,9 @@ Some listed books cannot be downloaded yet:
 
 ## Monthly download quota
 
-Reading apps download books through oboku's server, so each instance has a monthly quota on what it sends, for all users together. A download that would pass the quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
+Reading apps download books through oboku's server, and so do books from a [WebDAV connector that uses it as a proxy](/sync-providers/webdav#use-obokus-server-as-a-proxy). Each instance has a monthly quota on what its server sends, for all users together. Each user also has their own quota, 5% of it by default. A download that would pass either quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
 
-**Profile > Quotas** shows how much of the quota is used this month, and when it starts over. The **OPDS servers** screen links to it. The instance's administrator sets the quota from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default.
+**Profile > Quotas** shows how much of your quota and of the quota of all users is used this month, and when both start over. The **OPDS servers** screen links to it. The instance's administrator sets both from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default, 5% of it per user.
 
 ## Create a server
 

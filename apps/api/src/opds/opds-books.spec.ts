@@ -1,5 +1,14 @@
 import type { BookMetadata } from "@oboku/shared"
-import { compareNewestFirst, isBookShown, toServedFile } from "./opds-books.js"
+import {
+  CATALOG_PAGE_SIZE,
+  compareByTitle,
+  compareNewestFirst,
+  isBookShown,
+  toCatalogPage,
+  toServedFile,
+  toServedShelfBookIds,
+  toShelfTitle,
+} from "./opds-books.js"
 
 const PROTECTED_TAG_IDS = ["tag-private"]
 
@@ -94,5 +103,87 @@ describe("compareNewestFirst", () => {
       "book-arrakis",
       "book-dune",
     ])
+  })
+})
+
+describe("compareByTitle", () => {
+  it("orders titles naturally, ignoring case, then by id", () => {
+    const shelves = [
+      { id: "shelf-c", title: "Vol 10" },
+      { id: "shelf-b", title: "vol 2" },
+      { id: "shelf-a", title: "Vol 2" },
+    ]
+
+    expect(shelves.toSorted(compareByTitle).map(({ id }) => id)).toEqual([
+      "shelf-a",
+      "shelf-b",
+      "shelf-c",
+    ])
+  })
+})
+
+describe("toShelfTitle", () => {
+  it("names a shelf as the app does by default, without oboku's directives", () => {
+    expect(
+      toShelfTitle({
+        metadata: [
+          { type: "link", title: "Dune [oboku~series]" },
+          { type: "user", title: "Dune saga [oboku~series]" },
+        ],
+      }),
+    ).toBe("Dune saga")
+  })
+
+  it("names a shelf without a title", () => {
+    expect(toShelfTitle({ metadata: [] })).toBe("Untitled shelf")
+    expect(toShelfTitle({})).toBe("Untitled shelf")
+  })
+})
+
+describe("toServedShelfBookIds", () => {
+  const servedBookIds = new Set(["book-dune", "book-emma"])
+  const protectedBookIds = new Set(["book-private"])
+
+  it("keeps the shelf's served books once each, in its order", () => {
+    expect(
+      toServedShelfBookIds({
+        shelfBookIds: ["book-emma", "book-dropbox", "book-dune", "book-emma"],
+        servedBookIds,
+        protectedBookIds,
+      }),
+    ).toEqual(["book-emma", "book-dune"])
+  })
+
+  it("lists nothing of a shelf holding a book under a protected tag", () => {
+    expect(
+      toServedShelfBookIds({
+        shelfBookIds: ["book-dune", "book-private"],
+        servedBookIds,
+        protectedBookIds,
+      }),
+    ).toEqual([])
+  })
+})
+
+describe("toCatalogPage", () => {
+  const items = Array.from(
+    { length: CATALOG_PAGE_SIZE + 1 },
+    (_, index) => index,
+  )
+
+  it("cuts a list into pages and says where each stands", () => {
+    expect(toCatalogPage(items, 2)).toEqual({
+      items: [CATALOG_PAGE_SIZE],
+      page: {
+        number: 2,
+        size: CATALOG_PAGE_SIZE,
+        total: CATALOG_PAGE_SIZE + 1,
+      },
+    })
+  })
+
+  it("has a first page for an empty list and no page past the last", () => {
+    expect(toCatalogPage([], 1)?.items).toEqual([])
+    expect(toCatalogPage(items, 3)).toBeUndefined()
   })
 })
