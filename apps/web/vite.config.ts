@@ -2,6 +2,7 @@ import { defineConfig } from "vite"
 import { VitePWA } from "vite-plugin-pwa"
 import react, { reactCompilerPreset } from "@vitejs/plugin-react"
 import babel from "@rolldown/plugin-babel"
+import { lingui } from "@lingui/vite-plugin"
 import svgr from "vite-plugin-svgr"
 import replace from "@rollup/plugin-replace"
 import path from "node:path"
@@ -166,6 +167,10 @@ export default defineConfig(({ mode }) => ({
           enabled: true,
         },
       }),
+    }),
+    lingui({
+      macroTransform: true,
+      configPath: path.resolve(import.meta.dirname, "lingui.config.ts"),
     }),
     react({}),
     babel({ presets: [reactCompilerPreset()] }),

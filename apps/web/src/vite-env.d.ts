@@ -22,6 +22,12 @@ interface ImportMeta {
   readonly env: ImportMetaEnv
 }
 
+declare module "*.po" {
+  import type { Messages } from "@lingui/core"
+
+  export const messages: Messages
+}
+
 declare const __APP_VERSION__: string
 
 declare const __BUILD_ID__: string

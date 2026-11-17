@@ -1,6 +1,9 @@
 import { memo } from "react"
+import type { MessageDescriptor } from "@lingui/core"
+import { msg } from "@lingui/core/macro"
+import { useLingui } from "@lingui/react/macro"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { ListItem, ListItemText } from "@mui/material"
+import { capitalize, ListItem, ListItemText } from "@mui/material"
 import {
   localSettingsSignal,
   useLocalSettings,
@@ -16,10 +19,10 @@ type LocalSettings = ReturnType<typeof useLocalSettings>
 
 const showCollectionWithProtectedContentLabels: Record<
   LocalSettings["showCollectionWithProtectedContent"],
-  string
+  MessageDescriptor
 > = {
-  unlocked: "Only when unlocked (safe)",
-  hasNormalContent: "Yes (unsafe)",
+  unlocked: msg`Only when unlocked (safe)`,
+  hasNormalContent: msg`Yes (unsafe)`,
 }
 
 const showCollectionWithProtectedContentChoices = (
@@ -32,19 +35,28 @@ const showCollectionWithProtectedContentChoices = (
 }))
 
 export const SettingsScreen = memo(function SettingsScreen() {
+  const { t, i18n } = useLingui()
   const localSettings = useLocalSettings()
+  const activeLanguageName = capitalize(
+    new Intl.DisplayNames([i18n.locale], { type: "language" }).of(
+      i18n.locale,
+    ) ?? i18n.locale,
+  )
 
   return (
     <Page>
-      <TopBarNavigation title={"Settings"} />
+      <TopBarNavigation title={t`Settings`} />
       <PageContainer disableGutters>
-        <PageSection title="General">
+        <PageSection title={t`General`}>
           <ListItem>
-            <ListItemText primary="Language" secondary={navigator.language} />
+            <ListItemText
+              primary={t`Language`}
+              secondary={activeLanguageName}
+            />
           </ListItem>
           <ListItemSwitch
-            primary="Automatically hide directives from collection name"
-            secondary={`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
+            primary={t`Automatically hide directives from collection name`}
+            secondary={t`Will display a collection named "My collection [oboku~foo]" as "My collection"`}
             onClick={() => {
               localSettingsSignal.update((old) => ({
                 ...old,
@@ -55,9 +67,9 @@ export const SettingsScreen = memo(function SettingsScreen() {
             checked={localSettings.hideDirectivesFromCollectionName}
           />
         </PageSection>
-        <PageSection title="Privacy & sensitive content">
+        <PageSection title={t`Privacy & sensitive content`}>
           <ListItemSelect
-            primary="Show collections containing protected content"
+            primary={t`Show collections containing protected content`}
             value={localSettings.showCollectionWithProtectedContent}
             choices={showCollectionWithProtectedContentChoices}
             onChange={(value) => {
@@ -68,7 +80,7 @@ export const SettingsScreen = memo(function SettingsScreen() {
             }}
           />
           <ListItemSwitch
-            primary="Unblur cover when protected content is visible"
+            primary={t`Unblur cover when protected content is visible`}
             onClick={() => {
               localSettingsSignal.update((old) => ({
                 ...old,
@@ -78,12 +90,12 @@ export const SettingsScreen = memo(function SettingsScreen() {
             checked={localSettings.unBlurWhenProtectedVisible}
           />
         </PageSection>
-        <PageSection title="Reading">
+        <PageSection title={t`Reading`}>
           <ReadingSettings />
         </PageSection>
-        <PageSection title="Theming">
+        <PageSection title={t`Theming`}>
           <ListItemSelect
-            primary="Color mode"
+            primary={t`Color mode`}
             value={localSettings.themeMode ?? "system"}
             choices={themeOptions}
             onChange={(value) => {

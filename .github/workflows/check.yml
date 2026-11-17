@@ -34,3 +34,5 @@ jobs:
             echo "::error::The API types are out of date. Run pnpm generate:api-types and commit the result."
             exit 1
           fi
+      - name: Check the translation catalogs are up to date
+        run: pnpm run check:messages

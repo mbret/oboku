@@ -122,6 +122,7 @@ export default defineConfig({
             "development/covers-cache",
             "development/authentication",
             "development/api-types",
+            "development/translations",
             "development/preview-environment",
           ],
         },
