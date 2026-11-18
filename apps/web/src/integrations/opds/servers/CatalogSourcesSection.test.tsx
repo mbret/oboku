@@ -145,12 +145,12 @@ describe("CatalogSourcesSection", () => {
     expect(googleDrive.getAttribute("href")).toBe("/integrations/google")
   })
 
-  it("lists Google Drive as waiting to set up while no Google account is connected", async () => {
+  it("lists Google Drive as not set up while no Google account is connected", async () => {
     renderSection({ googleConnection: null })
 
     expect(
       await findSourceLink(
-        /Google Drive Waiting to set up\. Connect your Google account\./,
+        /Google Drive Not set up\. Connect your Google account\./,
       ),
     ).toBeTruthy()
   })
@@ -180,10 +180,10 @@ describe("CatalogSourcesSection", () => {
       /https:\/\/nas\.example\.com\/dav\/ \(reader\) Set up\. Catalogs list its books\./,
     )
     const office = await findSourceLink(
-      /office\.example\.com.*Waiting to set up\. You changed this connector or its password\. Connect it again\./,
+      /office\.example\.com.*Not set up\. You changed this connector or its password\. Connect it again\./,
     )
     const archive = await findSourceLink(
-      /archive\.example\.com.*Waiting to set up\. Connect this connector\./,
+      /archive\.example\.com.*Not set up\. Connect this connector\./,
     )
 
     expect(nas.getAttribute("href")).toBe("/integrations/webdav/connectors/nas")
@@ -200,7 +200,7 @@ describe("CatalogSourcesSection", () => {
     renderSection()
 
     const webdav = await findSourceLink(
-      /WebDAV Waiting to set up\. Add a connector, then connect it\./,
+      /WebDAV Not set up\. Add a connector, then connect it\./,
     )
 
     expect(webdav.getAttribute("href")).toBe(
@@ -246,20 +246,20 @@ describe("CatalogSourcesSection", () => {
     await findSourceLink(/Google Drive Set up/)
 
     expect(screen.queryByRole("link", { name: /WebDAV/ })).toBeNull()
-    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
+    expect(screen.queryByText(/Not set up/)).toBeNull()
   })
 
-  it("says a state is loading rather than calling its source waiting", async () => {
+  it("says a state is loading rather than calling its source not set up", async () => {
     renderSection({ answerGet: () => new Promise(() => {}) })
 
     expect(await findSourceLink(/Google Drive Loading its state…/)).toBeTruthy()
     expect(
       await findSourceLink(/nas\.example\.com.*Loading its state…/),
     ).toBeTruthy()
-    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
+    expect(screen.queryByText(/Not set up/)).toBeNull()
   })
 
-  it("says a state could not load rather than calling its source waiting", async () => {
+  it("says a state could not load rather than calling its source not set up", async () => {
     renderSection({
       answerGet: () => Promise.reject(new Error("API unreachable")),
     })
@@ -274,7 +274,7 @@ describe("CatalogSourcesSection", () => {
         /nas\.example\.com.*Something went wrong while loading its state\./,
       ),
     ).toBeTruthy()
-    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
+    expect(screen.queryByText(/Not set up/)).toBeNull()
   })
 
   it("says a state can't load while the browser is offline", async () => {
@@ -291,6 +291,6 @@ describe("CatalogSourcesSection", () => {
         /nas\.example\.com.*Its state can't be loaded right now\./,
       ),
     ).toBeTruthy()
-    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
+    expect(screen.queryByText(/Not set up/)).toBeNull()
   })
 })

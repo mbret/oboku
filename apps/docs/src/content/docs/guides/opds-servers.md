@@ -16,7 +16,7 @@ Reading apps download them through oboku's server, which reaches each provider w
 The **What catalogs list** section of the **Integrations > OPDS servers** screen shows the sources of these books: Google Drive and each WebDAV connector. Each source shows its state:
 
 * **Set up**: the catalogs list the books of the source.
-* **Waiting to set up**: the catalogs list the books of the source after you connect your Google account or the connector. Tap the source to connect it.
+* **Not set up**: the catalogs list the books of the source after you connect your Google account or the connector. Tap the source to connect it.
 
 The section also names the kinds of sources that catalogs cannot list yet.
 

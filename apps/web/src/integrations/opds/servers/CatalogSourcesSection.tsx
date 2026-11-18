@@ -34,11 +34,11 @@ type SourceState =
 
 const SOURCE_STATES: Record<SourceState, string> = {
   "set-up": "Set up. Catalogs list its books.",
-  "google-not-connected": "Waiting to set up. Connect your Google account.",
-  "connector-not-connected": "Waiting to set up. Connect this connector.",
+  "google-not-connected": "Not set up. Connect your Google account.",
+  "connector-not-connected": "Not set up. Connect this connector.",
   "connector-changed":
-    "Waiting to set up. You changed this connector or its password. Connect it again.",
-  "no-connector": "Waiting to set up. Add a connector, then connect it.",
+    "Not set up. You changed this connector or its password. Connect it again.",
+  "no-connector": "Not set up. Add a connector, then connect it.",
 }
 
 const CONNECTION_STATES: Record<ConnectorConnectionDto["status"], SourceState> =
