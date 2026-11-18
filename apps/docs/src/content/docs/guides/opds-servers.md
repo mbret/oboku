@@ -13,9 +13,11 @@ A catalog lists the books of your library that oboku's server can reach on its o
 
 Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
 
-The **What catalogs list** section of the **Integrations > OPDS servers** screen lists the kinds of sources catalogs serve: Google Drive and WebDAV. Tap one to open its screen, where you connect your Google account or each WebDAV connector.
+The **Integrations > OPDS servers** screen shows these sources in three groups:
 
-The section also names the kinds of sources that catalogs cannot list yet.
+* **Sources set up**: your connected Google account and each connected WebDAV connector. Catalogs list their books.
+* **Sources available**: the kinds of sources catalogs serve, Google Drive and WebDAV. Tap one to connect your Google account, or to add and connect a WebDAV connector.
+* **Sources not available yet**: the kinds of sources that catalogs cannot list yet.
 
 Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 

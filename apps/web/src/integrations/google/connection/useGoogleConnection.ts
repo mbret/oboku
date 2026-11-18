@@ -4,16 +4,21 @@ import { useHttpClientApi } from "../../../http"
 import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { createGoogleConnectionQueryOptions } from "./googleConnectionQueryOptions"
 
-export const useGoogleConnection = () => {
+export const useGoogleConnection = ({
+  enabled = true,
+}: {
+  enabled?: boolean
+} = {}) => {
   const httpClientApi = useHttpClientApi()
   const activeProfileId = useActiveProfileId()
 
   return useQuery(
-    useQueryOptionsWithAuthentication(
-      createGoogleConnectionQueryOptions({
+    useQueryOptionsWithAuthentication({
+      ...createGoogleConnectionQueryOptions({
         httpClientApi,
         profileId: activeProfileId,
       }),
-    ),
+      enabled,
+    }),
   )
 }

@@ -1,6 +1,22 @@
-import { cleanup, render, screen } from "@testing-library/react"
+import type {
+  ConnectorConnectionDto,
+  GoogleConnectionDto,
+  WebdavConnectorDocType,
+} from "@oboku/shared"
+import {
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query"
+import { cleanup, render, screen, within } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { HttpClientApiContext } from "../../../http"
+import type { HttpApiClientWeb } from "../../../http/HttpClientApi.web"
+import {
+  clearActiveProfileId,
+  setActiveProfileId,
+} from "../../../profiles/active/activeProfileId"
 import { CatalogSourcesSection } from "./CatalogSourcesSection"
 
 const mocks = vi.hoisted(function createCatalogSourcesMocks() {
@@ -13,61 +29,227 @@ const mocks = vi.hoisted(function createCatalogSourcesMocks() {
       FEATURE_SERVER_SYNC_ENABLED: true,
       SHOW_DISABLED_PLUGINS: false,
     },
+    useSettings: vi.fn(),
   }
+})
+
+vi.mock("../../../auth/useIsAuthenticated", function mockIsAuthenticated() {
+  return { useIsAuthenticated: () => true }
 })
 
 vi.mock("../../../config/useConfig", function mockConfig() {
   return { useConfig: () => ({ data: mocks.config }) }
 })
 
-const renderSection = () => {
-  render(
-    <MemoryRouter>
-      <CatalogSourcesSection />
-    </MemoryRouter>,
-  )
+vi.mock("../../../settings/useSettings", function mockSettings() {
+  return { useSettings: mocks.useSettings }
+})
+
+const GOOGLE_CONNECTION: GoogleConnectionDto = {
+  accountName: "reader@example.com",
+  connectedAt: "2026-11-16T08:00:00.000Z",
 }
 
-const sourceLinks = () =>
-  screen
-    .getAllByRole<HTMLAnchorElement>("link")
+const toConnector = (id: string, host: string): WebdavConnectorDocType => ({
+  id,
+  type: "webdav",
+  url: `https://${host}/dav/`,
+  username: "reader",
+  passwordAsSecretId: `${id}-password`,
+})
+
+const NAS = toConnector("nas", "nas.example.com")
+const OFFICE = toConnector("office", "office.example.com")
+const ARCHIVE = toConnector("archive", "archive.example.com")
+
+const toConnection = (
+  connectorId: string,
+  status: ConnectorConnectionDto["status"],
+): ConnectorConnectionDto => ({
+  connectorId,
+  status,
+  connectedAt: "2026-11-16T08:00:00.000Z",
+})
+
+const setConnectors = (connectors: WebdavConnectorDocType[]) => {
+  mocks.useSettings.mockReturnValue({
+    data: { _id: "settings", connectors },
+    isSuccess: true,
+  })
+}
+
+const renderSection = ({
+  googleConnection = null,
+  connections = [],
+  answerGet,
+}: {
+  googleConnection?: GoogleConnectionDto | null
+  connections?: ConnectorConnectionDto[]
+  answerGet?: () => Promise<unknown>
+} = {}) => {
+  const get = vi.fn(async function answerByUrl({ url }: { url: string }) {
+    if (answerGet) return answerGet()
+
+    if (url === "/provider-connections/google") {
+      return { data: { connection: googleConnection } }
+    }
+
+    if (url === "/provider-connections/connectors") {
+      return { data: { connections } }
+    }
+
+    throw new Error(`Unexpected request to ${url}`)
+  })
+  // test double: the section only calls the generated client's `get`
+  const client = { sdkClient: { get } } as unknown as HttpApiClientWeb
+  const queryClient = new QueryClient({
+    defaultOptions: { queries: { gcTime: 0, retry: false } },
+  })
+
+  setActiveProfileId("profile")
+  render(
+    <QueryClientProvider client={queryClient}>
+      <HttpClientApiContext.Provider value={client}>
+        <MemoryRouter>
+          <CatalogSourcesSection />
+        </MemoryRouter>
+      </HttpClientApiContext.Provider>
+    </QueryClientProvider>,
+  )
+
+  return { get }
+}
+
+const linksIn = (sectionTitle: string) => {
+  const section = screen.getByText(sectionTitle).nextElementSibling
+
+  if (!(section instanceof HTMLElement)) throw new Error("No section list")
+
+  return within(section)
+    .queryAllByRole<HTMLAnchorElement>("link")
     .map((link) => [link.textContent, link.getAttribute("href")])
+}
 
 describe("CatalogSourcesSection", () => {
   beforeEach(() => {
     mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = true
     mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = true
     mocks.config.FEATURE_DROPBOX_ENABLED = true
+    setConnectors([NAS, OFFICE, ARCHIVE])
   })
 
   afterEach(() => {
     cleanup()
+    clearActiveProfileId()
+    onlineManager.setOnline(true)
   })
 
-  it("lists Google Drive and WebDAV, one row each, opening their own screen", () => {
-    renderSection()
+  it("lists the connected Google account and connected WebDAV connectors as set up, each opening its screen", async () => {
+    renderSection({
+      googleConnection: GOOGLE_CONNECTION,
+      connections: [
+        toConnection(NAS.id, "connected"),
+        toConnection(OFFICE.id, "connector-changed"),
+      ],
+    })
 
-    expect(sourceLinks()).toEqual([
+    await screen.findByRole("link", { name: /reader@example\.com/ })
+
+    expect(linksIn("Sources set up")).toEqual([
+      ["Google Drivereader@example.com", "/integrations/google"],
+      [
+        "WebDAVhttps://nas.example.com/dav/ (reader)",
+        "/integrations/webdav/connectors/nas",
+      ],
+    ])
+  })
+
+  it("lists every kind of source catalogs serve as available, even one already set up", async () => {
+    renderSection({
+      googleConnection: GOOGLE_CONNECTION,
+      connections: [toConnection(NAS.id, "connected")],
+    })
+
+    await screen.findByRole("link", { name: /reader@example\.com/ })
+
+    expect(linksIn("Sources available")).toEqual([
       ["Google Drive", "/integrations/google"],
       ["WebDAV", "/integrations/webdav"],
     ])
   })
 
-  it("names Google Drive with the sources not available when the instance cannot connect a Google account", () => {
-    mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = false
+  it("says when nothing is set up yet", async () => {
     renderSection()
 
-    expect(sourceLinks()).toEqual([["WebDAV", "/integrations/webdav"]])
+    expect(
+      await screen.findByText("Nothing set up yet. Add a source below."),
+    ).toBeTruthy()
+    expect(linksIn("Sources set up")).toEqual([])
+  })
+
+  it("says the sources set up are loading, not that nothing is set up", async () => {
+    renderSection({ answerGet: () => new Promise(() => {}) })
+
+    expect(await screen.findByText("Loading the sources set up…")).toBeTruthy()
+    expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+  })
+
+  it.each([
+    [
+      "they could not load",
+      function failToLoad() {
+        renderSection({
+          answerGet: () => Promise.reject(new Error("API unreachable")),
+        })
+      },
+    ],
+    [
+      "the browser is offline",
+      function renderOffline() {
+        onlineManager.setOnline(false)
+        renderSection()
+      },
+    ],
+  ])(
+    "says the sources set up can't load when %s, not that nothing is set up",
+    async (_, renderUnavailable) => {
+      renderUnavailable()
+
+      expect(
+        await screen.findByText(
+          "The sources set up can't be loaded right now.",
+        ),
+      ).toBeTruthy()
+      expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+    },
+  )
+
+  it("asks nothing of Google, and names it as not available, when the instance cannot connect a Google account", async () => {
+    mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = false
+    const { get } = renderSection({
+      connections: [toConnection(NAS.id, "connected")],
+    })
+
+    await screen.findByRole("link", { name: /nas\.example\.com/ })
+
+    expect(get.mock.calls.map(([{ url }]) => url)).not.toContain(
+      "/provider-connections/google",
+    )
+    expect(linksIn("Sources available")).toEqual([
+      ["WebDAV", "/integrations/webdav"],
+    ])
     expect(screen.getByText(/Google Drive/).textContent).toBe(
       "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
     )
   })
 
-  it("lists Google Drive while this instance can connect a Google account, though it hides the Drive plugin", () => {
+  it("lists Google Drive while this instance can connect a Google account, though it hides the Drive plugin", async () => {
     mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = false
-    renderSection()
+    renderSection({ googleConnection: GOOGLE_CONNECTION })
 
-    expect(sourceLinks()).toEqual([
+    await screen.findByRole("link", { name: /reader@example\.com/ })
+
+    expect(linksIn("Sources available")).toEqual([
       ["Google Drive", "/integrations/google"],
       ["WebDAV", "/integrations/webdav"],
     ])
@@ -76,7 +258,6 @@ describe("CatalogSourcesSection", () => {
   it("names every kind of source the catalogs cannot serve yet on one line", () => {
     renderSection()
 
-    expect(screen.getByText("Not available yet")).toBeTruthy()
     expect(screen.getByText(/Dropbox/).textContent).toBe(
       "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
     )

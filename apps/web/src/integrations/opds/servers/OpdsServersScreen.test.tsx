@@ -84,7 +84,13 @@ const listing = (...serverLists: OpdsServerDto[][]) => {
 
 const renderScreen = (listServers: Mock) => {
   const api = {
-    get: listServers,
+    get: vi.fn(function answerByUrl(options: { url: string }) {
+      if (options.url === "/provider-connections/connectors") {
+        return Promise.resolve({ data: { connections: [] } })
+      }
+
+      return listServers(options)
+    }),
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn().mockResolvedValue({ data: { ok: true } }),
@@ -180,7 +186,7 @@ describe("OpdsServersScreen", () => {
   it("shows what the catalogs list", async () => {
     renderScreen(listing([]))
 
-    expect(await screen.findByText("What catalogs list")).toBeTruthy()
+    expect(await screen.findByText("Sources set up")).toBeTruthy()
   })
 
   it("says when the user has no server yet", async () => {
