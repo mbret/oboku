@@ -29,6 +29,10 @@ export const CONNECTOR_DETAILS: Record<
   },
 }
 
+export const toConnectorLabel = (
+  connector: Pick<SettingsConnectorDocType, "url" | "username">,
+) => `${connector.url} (${connector.username})`
+
 export const isSettingsConnectorType = (
   type: string | undefined,
 ): type is SettingsConnectorType =>

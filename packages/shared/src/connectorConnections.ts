@@ -9,7 +9,7 @@ export type ConnectableConnectorType =
   (typeof CONNECTABLE_CONNECTOR_TYPES)[number]
 
 export const isConnectableConnectorType = (
-  type: string,
+  type: SettingsConnectorType,
 ): type is ConnectableConnectorType =>
   CONNECTABLE_CONNECTOR_TYPES.some(
     (connectableType) => connectableType === type,

@@ -124,6 +124,8 @@ const findSourceLink = (name: RegExp) =>
 describe("CatalogSourcesSection", () => {
   beforeEach(() => {
     mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = true
+    mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = true
+    mocks.config.FEATURE_DROPBOX_ENABLED = true
     setConnectors([NAS])
   })
 
@@ -161,7 +163,7 @@ describe("CatalogSourcesSection", () => {
 
     expect(screen.queryByRole("link", { name: /Google Drive/ })).toBeNull()
     expect(screen.getByText(/Google Drive/).textContent).toBe(
-      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server, Synology Drive, Web link",
+      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
     )
   })
 
@@ -178,7 +180,7 @@ describe("CatalogSourcesSection", () => {
       /https:\/\/nas\.example\.com\/dav\/ \(reader\) Set up\. Catalogs list its books\./,
     )
     const office = await findSourceLink(
-      /office\.example\.com.*Waiting to set up\. You changed this connector, so connect it again\./,
+      /office\.example\.com.*Waiting to set up\. You changed this connector or its password\. Connect it again\./,
     )
     const archive = await findSourceLink(
       /archive\.example\.com.*Waiting to set up\. Connect this connector\./,
@@ -211,8 +213,27 @@ describe("CatalogSourcesSection", () => {
 
     expect(await screen.findByText("Not available yet")).toBeTruthy()
     expect(screen.getByText(/Dropbox/).textContent).toBe(
-      "Dropbox, Local file, OneDrive, OPDS catalog, Server, Synology Drive, Web link",
+      "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
     )
+  })
+
+  it("leaves out the kinds of source this instance hides", async () => {
+    mocks.config.FEATURE_DROPBOX_ENABLED = false
+    renderSection()
+
+    expect(await screen.findByText("Not available yet")).toBeTruthy()
+    expect(screen.getByText(/OneDrive/).textContent).toBe(
+      "Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+    )
+  })
+
+  it("lists no Google Drive row, and does not name it, when this instance hides Google Drive", async () => {
+    mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = false
+    renderSection({ googleConnection: GOOGLE_CONNECTION })
+
+    await findSourceLink(/nas\.example\.com/)
+
+    expect(screen.queryByText(/Google Drive/)).toBeNull()
   })
 
   it("says a state is loading rather than calling its source waiting", async () => {

@@ -83,7 +83,17 @@ const listing = (...serverLists: OpdsServerDto[][]) => {
 
 const renderScreen = (listServers: Mock) => {
   const api = {
-    get: listServers,
+    get: vi.fn(function answerByUrl(options: { url: string }) {
+      if (options.url === "/provider-connections/google") {
+        return Promise.resolve({ data: { connection: null } })
+      }
+
+      if (options.url === "/provider-connections/connectors") {
+        return Promise.resolve({ data: { connections: [] } })
+      }
+
+      return listServers(options)
+    }),
     post: vi.fn(),
     patch: vi.fn(),
     delete: vi.fn().mockResolvedValue({ data: { ok: true } }),

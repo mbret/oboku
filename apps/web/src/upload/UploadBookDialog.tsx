@@ -9,7 +9,6 @@ import type {
   UploadBookToAddPayload,
 } from "../integrations/plugins/types"
 import { signal } from "reactjrx"
-import { capitalize } from "@mui/material"
 import { Logger } from "../debug/logger.shared"
 import { isCancelError } from "../errors/errors.shared"
 
@@ -87,7 +86,7 @@ export const UploadBookDialog = memo(function UploadBookDialog({
     <>
       {dataSource.UploadBookComponent && (
         <dataSource.UploadBookComponent
-          title={`Add a book with plugin ${capitalize(dataSource.name)}`}
+          title={`Add a book with plugin ${dataSource.name}`}
           TagsSelector={TagsSelector}
           onClose={onClose}
           requestPopup={createRequestPopup({ name: dataSource.name })}
