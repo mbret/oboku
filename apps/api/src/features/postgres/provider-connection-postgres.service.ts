@@ -103,12 +103,6 @@ export class ProviderConnectionPostgresService {
     })
   }
 
-  /**
-   * Deletes the connection while its credentials are still the ones written
-   * at `updatedAt`. A connection the user made since stays.
-   *
-   * @returns `false` when it deleted nothing.
-   */
   async deleteIfUnchanged({
     userId,
     provider,

@@ -474,60 +474,60 @@ async function startWebdavServer({
   isLengthStated = true,
 }: {
   refusalStatus?: number
-  beforeRefusal?: () => Promise<unknown>
+  beforeRefusal?: (host: string) => Promise<unknown>
   isSizeStated?: boolean
   isLengthStated?: boolean
 } = {}) {
   const requests: IncomingMessage[] = []
-  const server = createServer(function answerRequest(serverRequest, response) {
-    requests.push(serverRequest)
+  const server = createServer(
+    async function answerRequest(serverRequest, response) {
+      requests.push(serverRequest)
 
-    if (refusalStatus !== undefined) {
-      void (beforeRefusal?.() ?? Promise.resolve()).then(
-        function answerRefusal() {
-          response.writeHead(refusalStatus)
-          response.end()
-        },
-      )
-      return
-    }
+      if (refusalStatus !== undefined) {
+        await beforeRefusal?.(serverRequest.headers.host ?? "")
+        response.writeHead(refusalStatus)
+        response.end()
+        return
+      }
 
-    const isSignedIn = serverRequest.headers.authorization === NAS_AUTHORIZATION
+      const isSignedIn =
+        serverRequest.headers.authorization === NAS_AUTHORIZATION
 
-    if (!isSignedIn) {
-      response.writeHead(401, { "www-authenticate": 'Basic realm="nas"' })
-      response.end()
-      return
-    }
+      if (!isSignedIn) {
+        response.writeHead(401, { "www-authenticate": 'Basic realm="nas"' })
+        response.end()
+        return
+      }
 
-    if (serverRequest.method === "PROPFIND") {
-      response.writeHead(207, {
-        "content-type": "application/xml; charset=utf-8",
+      if (serverRequest.method === "PROPFIND") {
+        response.writeHead(207, {
+          "content-type": "application/xml; charset=utf-8",
+        })
+        response.end(
+          buildMultiStatusXml([
+            {
+              href: serverRequest.url ?? "/",
+              displayName: "Hyperion.epub",
+              isDirectory: false,
+              size: isSizeStated ? BOOK_BYTES.length : 0,
+              lastModified: new Date("2026-01-01T00:00:00.000Z"),
+              mimeType: "application/epub+zip",
+              etag: null,
+            },
+          ]),
+        )
+        return
+      }
+
+      response.writeHead(200, {
+        "content-type": "application/epub+zip",
+        ...(isLengthStated && {
+          "content-length": Buffer.byteLength(BOOK_BYTES),
+        }),
       })
-      response.end(
-        buildMultiStatusXml([
-          {
-            href: serverRequest.url ?? "/",
-            displayName: "Hyperion.epub",
-            isDirectory: false,
-            size: isSizeStated ? BOOK_BYTES.length : 0,
-            lastModified: new Date("2026-01-01T00:00:00.000Z"),
-            mimeType: "application/epub+zip",
-            etag: null,
-          },
-        ]),
-      )
-      return
-    }
-
-    response.writeHead(200, {
-      "content-type": "application/epub+zip",
-      ...(isLengthStated && {
-        "content-length": Buffer.byteLength(BOOK_BYTES),
-      }),
-    })
-    response.end(BOOK_BYTES)
-  }).listen(0, "127.0.0.1")
+      response.end(BOOK_BYTES)
+    },
+  ).listen(0, "127.0.0.1")
 
   onTestFinished(async function closeServer() {
     server.close()
@@ -1774,21 +1774,24 @@ describe("OpdsCatalogController", () => {
       })
       vi.setSystemTime(new Date("2026-11-18T10:00:00.000Z"))
       const reconnectedAt = new Date("2026-11-18T10:05:00.000Z")
-      const connectAgain = vi.fn()
+      const warn = vi.spyOn(Logger.prototype, "warn")
+      const connectAgain = vi.fn(function connectAgainLater(host: string) {
+        vi.setSystemTime(reconnectedAt)
+
+        return connectConnector(toNasConnector(host))
+      })
       const { nasConnector } = await connectNasServer({
         refusalStatus: 401,
         beforeRefusal: connectAgain,
-      })
-      connectAgain.mockImplementation(function connectAgainLater() {
-        vi.setSystemTime(reconnectedAt)
-
-        return connectConnector(nasConnector)
       })
 
       const response = await getBookFile("book-hyperion")
 
       expect(response.status).toBe(404)
       expect(connectAgain).toHaveBeenCalledTimes(1)
+      expect(warn).not.toHaveBeenCalledWith(
+        expect.stringContaining("Disconnected connector"),
+      )
       expect(connectionRows.get(toRowKey(nasConnector.id))?.updated_at).toEqual(
         reconnectedAt,
       )

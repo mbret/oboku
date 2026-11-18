@@ -623,6 +623,51 @@ describe("GoogleConnectionController", () => {
       expect(rows.size).toBe(0)
     })
 
+    it("answers that no account is connected when the user disconnects while Google refuses the refresh token", async () => {
+      await connect({ code: CODE })
+      refreshAccessToken.mockImplementationOnce(
+        async function refuseOnceDisconnected() {
+          await googleConnectionService.disconnect(READER_ID)
+
+          throw createGoogleRefusal({
+            oauthError: "invalid_grant",
+            status: 400,
+            form: REFRESH_FORM,
+          })
+        },
+      )
+
+      const response = await mintAccessToken()
+
+      expect(response.body.errors).toEqual([
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND },
+      ])
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1)
+    })
+
+    it("tries no other connection when the refused one is still the latest but was not deleted", async () => {
+      await connect({ code: CODE })
+      vi.spyOn(
+        providerConnectionsService,
+        "disconnectIfUnchanged",
+      ).mockResolvedValue(false)
+      refreshAccessToken.mockRejectedValue(
+        createGoogleRefusal({
+          oauthError: "invalid_grant",
+          status: 400,
+          form: REFRESH_FORM,
+        }),
+      )
+
+      const response = await mintAccessToken()
+
+      expect(response.body.errors).toEqual([
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST },
+      ])
+      expect(refreshAccessToken).toHaveBeenCalledTimes(1)
+      expect(rows.size).toBe(1)
+    })
+
     describe("when the user connects again while Google refuses the refresh token it replaces", () => {
       const reconnectedAt = new Date("2026-11-18T10:05:00.000Z")
       const refusal = createGoogleRefusal({
