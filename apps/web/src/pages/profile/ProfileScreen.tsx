@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react"
+import { ListItemExternalLink } from "../../common/lists"
 import {
   BarChartRounded,
   DataUsageRounded,
@@ -206,24 +207,21 @@ export const ProfileScreen = () => {
           </ListItemButton>
         </PageSection>
         <PageSection title="Information">
-          <ListItemButton target="_blank" href={links.documentationSupport}>
-            <ListItemIcon>
-              <LaunchRounded />
-            </ListItemIcon>
-            <ListItemText primary={`Support Page`} />
-          </ListItemButton>
-          <ListItemButton target="_blank" href={links.documentation}>
-            <ListItemIcon>
-              <LaunchRounded />
-            </ListItemIcon>
-            <ListItemText primary={`Documentation Page`} />
-          </ListItemButton>
-          <ListItemButton target="_blank" href={links.privacyPolicy}>
-            <ListItemIcon>
-              <GavelRounded />
-            </ListItemIcon>
-            <ListItemText primary="Privacy Policy" />
-          </ListItemButton>
+          <ListItemExternalLink
+            href={links.documentationSupport}
+            icon={<LaunchRounded />}
+            primary="Support Page"
+          />
+          <ListItemExternalLink
+            href={links.documentation}
+            icon={<LaunchRounded />}
+            primary="Documentation Page"
+          />
+          <ListItemExternalLink
+            href={links.privacyPolicy}
+            icon={<GavelRounded />}
+            primary="Privacy Policy"
+          />
           <ListItem>
             <ListItemText primary="App Version" secondary={__APP_VERSION__} />
           </ListItem>
