@@ -1,20 +1,17 @@
 import { BlockRounded } from "@mui/icons-material"
 import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import type { ConnectableConnectorType, DataSourceDocType } from "@oboku/shared"
-import { type UseQueryResult, useQuery } from "@tanstack/react-query"
+import type { UseQueryResult } from "@tanstack/react-query"
 import { generatePath } from "react-router"
-import { useQueryOptionsWithAuthentication } from "../../../auth"
 import { ListItemLink } from "../../../common/lists"
 import { PageSection } from "../../../common/PageSection"
 import { useConfig } from "../../../config/useConfig"
-import { createConnectorConnectionsQueryOptions } from "../../../connectors/connection/connectorConnectionsQueryOptions"
+import { useConnectorConnections } from "../../../connectors/connection/useConnectorConnections"
 import {
   CONNECTOR_DETAILS,
   toConnectorLabel,
 } from "../../../connectors/connectorDetails"
-import { useHttpClientApi } from "../../../http"
 import { ROUTES } from "../../../navigation/routes"
-import { useActiveProfileId } from "../../../profiles/active/activeProfileId"
 import { isQueryUnavailable } from "../../../queries/isQueryUnavailable"
 import { useSettings } from "../../../settings/useSettings"
 import { useGoogleConnection } from "../../google/connection/useGoogleConnection"
@@ -67,19 +64,10 @@ function SetUpSourcesSection({
 }: {
   isGoogleDriveServed: boolean
 }) {
-  const httpClientApi = useHttpClientApi()
-  const activeProfileId = useActiveProfileId()
   const googleConnectionQuery = useGoogleConnection({
     enabled: isGoogleDriveServed,
   })
-  const connectorConnectionsQuery = useQuery(
-    useQueryOptionsWithAuthentication(
-      createConnectorConnectionsQueryOptions({
-        httpClientApi,
-        profileId: activeProfileId,
-      }),
-    ),
-  )
+  const connectorConnectionsQuery = useConnectorConnections()
   const settingsQuery = useSettings()
   const queriesState = toQueriesState(
     isGoogleDriveServed
@@ -96,9 +84,12 @@ function SetUpSourcesSection({
   )
   const connectedConnectors =
     settingsQuery.data?.connectors?.filter(
-      (connector) =>
-        isServedConnectorType(connector.type) &&
-        connectedConnectorIds.has(connector.id),
+      function isConnectedServedConnector(connector) {
+        return (
+          isServedConnectorType(connector.type) &&
+          connectedConnectorIds.has(connector.id)
+        )
+      },
     ) ?? []
   const setUpSources: SetUpSource[] = [
     ...(googleConnection
@@ -138,15 +129,22 @@ function SetUpSourcesSection({
         <NoteItem text="Nothing set up yet. Add a source below." />
       )}
       {queriesState === "loaded" &&
-        setUpSources.map(({ key, to, plugin, detail }) => (
-          <ListItemLink
-            key={key}
-            to={to}
-            icon={<plugin.Icon />}
-            primary={plugin.name}
-            secondary={detail}
-          />
-        ))}
+        setUpSources.map(function toSetUpSourceItem({
+          key,
+          to,
+          plugin,
+          detail,
+        }) {
+          return (
+            <ListItemLink
+              key={key}
+              to={to}
+              icon={<plugin.Icon />}
+              primary={plugin.name}
+              secondary={detail}
+            />
+          )
+        })}
     </PageSection>
   )
 }

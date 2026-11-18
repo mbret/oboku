@@ -224,6 +224,37 @@ describe("CatalogSourcesSection", () => {
     },
   )
 
+  it.each([
+    [
+      "load",
+      { data: undefined, isPending: true, fetchStatus: "fetching" },
+      "Loading the sources set up…",
+    ],
+    [
+      "fail to load",
+      { data: undefined, isPending: false, isError: true, fetchStatus: "idle" },
+      "The sources set up can't be loaded right now.",
+    ],
+  ])(
+    "waits for the settings while they %s, and never says that nothing is set up",
+    async (_, settingsQuery, note) => {
+      mocks.useSettings.mockReturnValue(settingsQuery)
+      const { get } = renderSection({ googleConnection: GOOGLE_CONNECTION })
+
+      await vi.waitFor(async function waitForEveryAnswer() {
+        expect(get).toHaveBeenCalledTimes(2)
+        await Promise.all(get.mock.results.map(({ value }) => value))
+      })
+      await new Promise(function letTheAnswersRender(resolve) {
+        setTimeout(resolve, 100)
+      })
+
+      expect(screen.getByText(note)).toBeTruthy()
+      expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+      expect(linksIn("Sources set up")).toEqual([])
+    },
+  )
+
   it("asks nothing of Google, and names it as not available, when the instance cannot connect a Google account", async () => {
     mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = false
     const { get } = renderSection({
