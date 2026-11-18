@@ -13,10 +13,28 @@ import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { NonPublicAddressError } from "../http/publicAddress.js"
-import { PluginsService } from "../plugins/plugins.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { LinksController } from "./links.controller.js"
 import { LinksService } from "./links.service.js"
+
+const { getFileMetadata, download } = vi.hoisted(
+  function createWebdavOperationSpies() {
+    return { getFileMetadata: vi.fn(), download: vi.fn() }
+  },
+)
+
+vi.mock(
+  "../plugins/webdav/operations.js",
+  async function mockWebdavOperations(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../plugins/webdav/operations.js")
+      >()),
+      getFileMetadataFromWebdav: getFileMetadata,
+      downloadFromWebdav: download,
+    }
+  },
+)
 
 const READER_SESSION = "reader-session"
 
@@ -44,6 +62,15 @@ const URI_LINK = {
 }
 
 const PROVIDER_CREDENTIALS = { password: "koofr-app-password" }
+
+const KOOFR_CONNECTOR = {
+  id: "koofr",
+  type: "webdav",
+  url: "https://app.koofr.net/dav/Koofr",
+  username: "reader@example.com",
+  passwordAsSecretId: "secret-koofr",
+  proxyThroughServer: true,
+}
 const BOOK_BYTES = "epub bytes"
 const WEBDAV_STAT_SIZE = 12
 
@@ -86,6 +113,7 @@ const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
 const createLibraryDb = (
   documents: ReadonlyArray<Record<string, unknown>>,
 ) => ({
+  get: async () => ({ _id: "settings", connectors: [KOOFR_CONNECTOR] }),
   find: async ({ selector }: { selector: Record<string, unknown> }) => ({
     docs: documents.filter(function matchesSelector(doc) {
       return Object.entries(selector).every(
@@ -99,8 +127,6 @@ describe("LinksController", () => {
   let app: INestApplication<App>
 
   const createNanoInstanceForUser = vi.fn()
-  const getFileMetadata = vi.fn()
-  const download = vi.fn()
   const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
@@ -130,7 +156,6 @@ describe("LinksController", () => {
         LinksService,
         ProxiedDownloadQuotaService,
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
-        { provide: PluginsService, useValue: { getFileMetadata, download } },
         {
           provide: ProxiedDownloadUsagePostgresService,
           useValue: { reserveWithinQuotas, adjust },
@@ -181,11 +206,10 @@ describe("LinksController", () => {
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
-    expect(download).toHaveBeenCalledWith({
-      link: expect.objectContaining({ _id: WEBDAV_LINK._id }),
-      providerCredentials: PROVIDER_CREDENTIALS,
-      db: expect.anything(),
-    })
+    expect(download).toHaveBeenCalledWith(
+      expect.anything(),
+      WEBDAV_LINK.data.filePath,
+    )
     expect(reserveWithinQuotas).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: readerTokenPayload.userId,

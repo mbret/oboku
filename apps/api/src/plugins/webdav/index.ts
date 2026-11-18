@@ -50,7 +50,7 @@ async function resolveClientAndPath(params: {
   return { client, filePath }
 }
 
-const createWebdavClient = (connector: {
+export const createWebdavClient = (connector: {
   allowSelfSigned?: boolean
   password: string
   url: string
