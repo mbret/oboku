@@ -1,6 +1,7 @@
 import { Readable } from "node:stream"
 import { isFileSupported } from "@oboku/shared"
 import type { WebDAVClient } from "webdav"
+import { toDecodedContentLength } from "../../http/contentLength.js"
 
 /**
  * Webdav's `lastmod` is an HTTP-date (RFC 1123, e.g.
@@ -138,5 +139,5 @@ export async function downloadFromWebdav(
     )
   }
 
-  return { stream: body }
+  return { stream: body, size: toDecodedContentLength(response.headers) }
 }

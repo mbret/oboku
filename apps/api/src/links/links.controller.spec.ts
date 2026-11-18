@@ -13,10 +13,43 @@ import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { NonPublicAddressError } from "../http/publicAddress.js"
-import { PluginsService } from "../plugins/plugins.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { LinksController } from "./links.controller.js"
 import { LinksService } from "./links.service.js"
+
+const { getFileMetadata, download, createWebdavClient } = vi.hoisted(
+  function createWebdavSpies() {
+    return {
+      getFileMetadata: vi.fn(),
+      download: vi.fn(),
+      createWebdavClient: vi.fn(),
+    }
+  },
+)
+
+vi.mock(
+  "../plugins/webdav/index.js",
+  async function spyOnWebdavClient(importOriginal) {
+    const webdav =
+      await importOriginal<typeof import("../plugins/webdav/index.js")>()
+    createWebdavClient.mockImplementation(webdav.createWebdavClient)
+
+    return { ...webdav, createWebdavClient }
+  },
+)
+
+vi.mock(
+  "../plugins/webdav/operations.js",
+  async function mockWebdavOperations(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../plugins/webdav/operations.js")
+      >()),
+      getFileMetadataFromWebdav: getFileMetadata,
+      downloadFromWebdav: download,
+    }
+  },
+)
 
 const READER_SESSION = "reader-session"
 
@@ -44,6 +77,15 @@ const URI_LINK = {
 }
 
 const PROVIDER_CREDENTIALS = { password: "koofr-app-password" }
+
+const KOOFR_CONNECTOR = {
+  id: "koofr",
+  type: "webdav",
+  url: "https://app.koofr.net/dav/Koofr",
+  username: "reader@example.com",
+  passwordAsSecretId: "secret-koofr",
+  proxyThroughServer: true,
+}
 const BOOK_BYTES = "epub bytes"
 const WEBDAV_STAT_SIZE = 12
 
@@ -85,7 +127,9 @@ const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
 
 const createLibraryDb = (
   documents: ReadonlyArray<Record<string, unknown>>,
+  connectors: ReadonlyArray<Record<string, unknown>> = [KOOFR_CONNECTOR],
 ) => ({
+  get: async () => ({ _id: "settings", connectors }),
   find: async ({ selector }: { selector: Record<string, unknown> }) => ({
     docs: documents.filter(function matchesSelector(doc) {
       return Object.entries(selector).every(
@@ -99,8 +143,6 @@ describe("LinksController", () => {
   let app: INestApplication<App>
 
   const createNanoInstanceForUser = vi.fn()
-  const getFileMetadata = vi.fn()
-  const download = vi.fn()
   const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
@@ -130,7 +172,6 @@ describe("LinksController", () => {
         LinksService,
         ProxiedDownloadQuotaService,
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
-        { provide: PluginsService, useValue: { getFileMetadata, download } },
         {
           provide: ProxiedDownloadUsagePostgresService,
           useValue: { reserveWithinQuotas, adjust },
@@ -181,11 +222,14 @@ describe("LinksController", () => {
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
-    expect(download).toHaveBeenCalledWith({
-      link: expect.objectContaining({ _id: WEBDAV_LINK._id }),
-      providerCredentials: PROVIDER_CREDENTIALS,
-      db: expect.anything(),
+    expect(createWebdavClient).toHaveBeenCalledWith({
+      ...KOOFR_CONNECTOR,
+      password: PROVIDER_CREDENTIALS.password,
     })
+    expect(download).toHaveBeenCalledWith(
+      expect.anything(),
+      WEBDAV_LINK.data.filePath,
+    )
     expect(reserveWithinQuotas).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: readerTokenPayload.userId,
@@ -202,6 +246,21 @@ describe("LinksController", () => {
     )
   })
 
+  it("states the length the server's download states, and reserves it rather than the size its metadata states", async () => {
+    download.mockResolvedValue({
+      stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+      size: BOOK_BYTES.length,
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
+
+    expect(response.status).toBe(200)
+    expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+    expect(reserveWithinQuotas).toHaveBeenCalledWith(
+      expect.objectContaining({ bytes: BOOK_BYTES.length }),
+    )
+  })
+
   it("answers 404 for a link the reader's library does not hold", async () => {
     const response = await downloadLink("link-of-someone-else")
 
@@ -210,6 +269,22 @@ describe("LinksController", () => {
       errors: [{ code: ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND }],
     })
     expect(download).not.toHaveBeenCalled()
+  })
+
+  it("answers 502 for a link whose connector the settings no longer hold, reaching no server", async () => {
+    createNanoInstanceForUser.mockResolvedValue(
+      createLibraryDb([WEBDAV_LINK, URI_LINK], []),
+    )
+
+    const response = await downloadLink(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE },
+      ],
+    })
+    expect(createWebdavClient).not.toHaveBeenCalled()
   })
 
   it("answers 400 for a link that is not a WebDAV link", async () => {

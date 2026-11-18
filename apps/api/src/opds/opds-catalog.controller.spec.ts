@@ -1,8 +1,16 @@
+import { once } from "node:events"
+import { createServer, type IncomingMessage } from "node:http"
+import type { AddressInfo } from "node:net"
 import { Readable } from "node:stream"
 import { type INestApplication, Logger, StreamableFile } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
-import { getBookCoverKey, ObokuErrorCode } from "@oboku/shared"
+import {
+  getBookCoverKey,
+  ObokuErrorCode,
+  type SecretDocType,
+  type WebdavConnectorDocType,
+} from "@oboku/shared"
 import { Test } from "@nestjs/testing"
 import { of } from "rxjs"
 import request from "supertest"
@@ -12,17 +20,28 @@ import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
 import { CouchService, emailToNameHex } from "../couch/couch.service.js"
 import { CoversService } from "../covers/covers.service.js"
+import { AtRestCipher } from "../crypto/at-rest-cipher.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
+  ProviderConnectionPostgresEntity,
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
+import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
+import { setPrivateNetworkAllowedHosts } from "../http/userAddressAgents.js"
 import { PluginsService } from "../plugins/plugins.service.js"
+import { ConnectorConnectionService } from "../provider-connections/connectors/connector-connection.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import {
+  createConnectionStore,
+  toConnectionRowKey,
+} from "../provider-connections/provider-connection-store.fixture.js"
+import { ProviderConnectionsService } from "../provider-connections/provider-connections.service.js"
+import { buildMultiStatusXml } from "../webdav/webdav.xml.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
@@ -147,6 +166,70 @@ const DROPBOX_LINK = {
 
 const PROTECTED_TAG = { _id: "tag-private", rx_model: "tag", isProtected: true }
 
+const NAS_PASSWORD = "nas-password-1234"
+
+const NAS_PASSWORD_SECRET_VALUE = {
+  iv: "password-iv",
+  data: "encrypted-password",
+}
+
+const NAS_PASSWORD_SECRET: SecretDocType = {
+  _id: "secret-nas",
+  _rev: "1-secret",
+  rxdbMeta: { lwt: 0 },
+  rx_model: "secret",
+  name: "NAS password",
+  createdAt: "2026-01-01T00:00:00.000Z",
+  modifiedAt: null,
+  value: NAS_PASSWORD_SECRET_VALUE,
+}
+
+const NAS_USERNAME = "reader"
+
+const toNasConnector = (host: string): WebdavConnectorDocType => ({
+  id: "connector-nas",
+  type: "webdav",
+  url: `http://${host}/dav/`,
+  username: NAS_USERNAME,
+  passwordAsSecretId: NAS_PASSWORD_SECRET._id,
+})
+
+/** The NAS connector at a placeholder address, which `connectNasServer` replaces with its server's. */
+const NAS_CONNECTOR = toNasConnector("nas.example.com")
+
+/** A second connector, not connected unless a test connects it. */
+const OFFICE_CONNECTOR: WebdavConnectorDocType = {
+  ...NAS_CONNECTOR,
+  id: "connector-office",
+  url: "https://office.example.com/dav/",
+}
+
+const NAS_AUTHORIZATION = `Basic ${Buffer.from(`${NAS_USERNAME}:${NAS_PASSWORD}`).toString("base64")}`
+
+const NAS_LINK = {
+  _id: "link-nas",
+  rx_model: "link",
+  type: "webdav",
+  data: { connectorId: NAS_CONNECTOR.id, filePath: "/books/Hyperion.epub" },
+  book: "book-hyperion",
+}
+
+const UNNAMED_CONNECTOR_LINK = {
+  _id: "link-unnamed-connector",
+  rx_model: "link",
+  type: "webdav",
+  data: { filePath: "/books/Ilium.epub" },
+  book: "book-unnamed-connector",
+}
+
+const OFFICE_LINK = {
+  _id: "link-office",
+  rx_model: "link",
+  type: "webdav",
+  data: { connectorId: OFFICE_CONNECTOR.id, filePath: "/reports/Q3.pdf" },
+  book: "book-office",
+}
+
 const DUNE = {
   _id: "book-dune",
   rx_model: "book",
@@ -172,6 +255,27 @@ const LIBRARY = {
     { ...DUNE, _id: "book-dropbox", links: [DROPBOX_LINK._id] },
     { ...DUNE, _id: "book-mixed", links: [DROPBOX_LINK._id, DRIVE_LINK._id] },
     { ...DUNE, _id: "book-unlinked", links: [] },
+    {
+      ...DUNE,
+      _id: "book-hyperion",
+      links: [NAS_LINK._id],
+      createdAt: Date.parse("2026-02-01T08:00:00.000Z"),
+      metadata: [
+        { type: "link", title: "Hyperion.epub" },
+        {
+          type: "file",
+          version: 5,
+          contentType: "application/epub+zip",
+          metadata: { titles: [{ value: "Hyperion" }] },
+        },
+      ],
+    },
+    { ...DUNE, _id: "book-office", links: [OFFICE_LINK._id] },
+    {
+      ...DUNE,
+      _id: "book-unnamed-connector",
+      links: [UNNAMED_CONNECTOR_LINK._id],
+    },
     {
       ...DUNE,
       _id: "book-blame",
@@ -240,7 +344,15 @@ const LIBRARY = {
       metadata: [{ type: "link", title: "Unserved" }],
     },
   ],
-  links: [DRIVE_LINK, DROPBOX_LINK],
+  links: [
+    DRIVE_LINK,
+    DROPBOX_LINK,
+    NAS_LINK,
+    OFFICE_LINK,
+    UNNAMED_CONNECTOR_LINK,
+  ],
+  connectors: [NAS_CONNECTOR, OFFICE_CONNECTOR],
+  secrets: [NAS_PASSWORD_SECRET],
   tags: [
     PROTECTED_TAG,
     { _id: "tag-reading", rx_model: "tag", isProtected: false },
@@ -249,21 +361,30 @@ const LIBRARY = {
 
 type LibraryDocument = { _id: string }
 
-/** Answers CouchDB's `_find` and `_all_docs` as the catalog asks them. */
+/** Answers CouchDB's `_find`, `_all_docs` and the settings' `get` as the catalog asks them. */
 const createLibraryDb = (library: {
   books: ReadonlyArray<LibraryDocument>
   collections: ReadonlyArray<LibraryDocument>
   links: ReadonlyArray<LibraryDocument>
   tags: ReadonlyArray<LibraryDocument>
+  connectors: ReadonlyArray<WebdavConnectorDocType>
+  secrets: ReadonlyArray<SecretDocType>
 }) => {
-  const documents = [
+  const documents: ReadonlyArray<LibraryDocument> = [
     ...library.books,
     ...library.collections,
     ...library.links,
     ...library.tags,
+    ...library.secrets,
   ]
 
   return {
+    get: async (id: string) => {
+      if (id !== "settings")
+        throw Object.assign(new Error("missing"), { statusCode: 404 })
+
+      return { _id: "settings", connectors: library.connectors }
+    },
     find: async ({
       selector,
       fields,
@@ -336,8 +457,97 @@ const createDriveRefusal = (status: number, reason?: string) =>
     },
   })
 
+const isPortAddress = (
+  address: string | AddressInfo | null,
+): address is AddressInfo => typeof address === "object" && address !== null
+
+/**
+ * A WebDAV server holding one book for the NAS connector's credentials. It
+ * answers `refusalStatus` to every request instead, when set. It states no
+ * size for the book unless `isSizeStated`, and sends its download chunked
+ * unless `isLengthStated`.
+ */
+async function startWebdavServer({
+  refusalStatus,
+  isSizeStated = true,
+  isLengthStated = true,
+}: {
+  refusalStatus?: number
+  isSizeStated?: boolean
+  isLengthStated?: boolean
+} = {}) {
+  const requests: IncomingMessage[] = []
+  const server = createServer(function answerRequest(serverRequest, response) {
+    requests.push(serverRequest)
+
+    if (refusalStatus !== undefined) {
+      response.writeHead(refusalStatus)
+      response.end()
+      return
+    }
+
+    const isSignedIn = serverRequest.headers.authorization === NAS_AUTHORIZATION
+
+    if (!isSignedIn) {
+      response.writeHead(401, { "www-authenticate": 'Basic realm="nas"' })
+      response.end()
+      return
+    }
+
+    if (serverRequest.method === "PROPFIND") {
+      response.writeHead(207, {
+        "content-type": "application/xml; charset=utf-8",
+      })
+      response.end(
+        buildMultiStatusXml([
+          {
+            href: serverRequest.url ?? "/",
+            displayName: "Hyperion.epub",
+            isDirectory: false,
+            size: isSizeStated ? BOOK_BYTES.length : 0,
+            lastModified: new Date("2026-01-01T00:00:00.000Z"),
+            mimeType: "application/epub+zip",
+            etag: null,
+          },
+        ]),
+      )
+      return
+    }
+
+    response.writeHead(200, {
+      "content-type": "application/epub+zip",
+      ...(isLengthStated && {
+        "content-length": Buffer.byteLength(BOOK_BYTES),
+      }),
+    })
+    response.end(BOOK_BYTES)
+  }).listen(0, "127.0.0.1")
+
+  onTestFinished(async function closeServer() {
+    server.close()
+    await once(server, "close")
+  })
+  await once(server, "listening")
+
+  const address = server.address()
+
+  if (!isPortAddress(address)) throw new Error("Not listening on a port")
+
+  return {
+    host: `127.0.0.1:${address.port}`,
+    requests,
+    close: async () => {
+      server.close()
+      await once(server, "close")
+    },
+  }
+}
+
 describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
+  let connectionStore: ReturnType<typeof createConnectionStore>
+  let connectionRows: Map<string, ProviderConnectionPostgresEntity>
+  let providerConnectionsService: ProviderConnectionsService
 
   const getCatalog = (path: string, authorization?: string) => {
     const pendingRequest = request(app.getHttpServer())
@@ -389,6 +599,9 @@ describe("OpdsCatalogController", () => {
     })
     adjust.mockResolvedValue(undefined)
 
+    connectionStore = createConnectionStore()
+    connectionRows = connectionStore.rows
+
     const module = await Test.createTestingModule({
       controllers: [OpdsCatalogController, OpdsAuthenticationController],
       providers: [
@@ -399,6 +612,13 @@ describe("OpdsCatalogController", () => {
         {
           provide: GoogleConnectionService,
           useValue: { isConnected, mintAccessToken },
+        },
+        ConnectorConnectionService,
+        ProviderConnectionsService,
+        AtRestCipher,
+        {
+          provide: ProviderConnectionPostgresService,
+          useValue: connectionStore.store,
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
         { provide: CoversService, useValue: { deliverCover } },
@@ -434,11 +654,15 @@ describe("OpdsCatalogController", () => {
         },
         {
           provide: SecretsService,
-          useValue: { getJwtPublicKey: async () => "public key" },
+          useValue: {
+            getJwtPublicKey: async () => "public key",
+            getJwtPrivateKey: async () => "private key",
+          },
         },
       ],
     }).compile()
 
+    providerConnectionsService = module.get(ProviderConnectionsService)
     app = module.createNestApplication({ logger: false })
     await app.init()
   })
@@ -1294,6 +1518,312 @@ describe("OpdsCatalogController", () => {
           expect.objectContaining({ bytes: -DRIVE_METADATA_SIZE }),
         ),
       )
+    })
+  })
+  describe("WebDAV connectors", () => {
+    const toRowKey = (connectorId: string) =>
+      toConnectionRowKey({
+        userId: OWNER.id,
+        provider: "webdav",
+        accountId: connectorId,
+      })
+
+    const connectConnector = (connector: WebdavConnectorDocType) =>
+      providerConnectionsService.connect({
+        userId: OWNER.id,
+        provider: "webdav",
+        credentials: {
+          connector,
+          passwordSecretValue: NAS_PASSWORD_SECRET_VALUE,
+          password: NAS_PASSWORD,
+        },
+        accountId: connector.id,
+        accountName: connector.url,
+        scopes: [],
+      })
+
+    const setConnectors = (connectors: WebdavConnectorDocType[]) => {
+      createNanoInstanceForUser.mockResolvedValue(
+        createLibraryDb({ ...LIBRARY, connectors }),
+      )
+    }
+
+    const connectNasServer = async (
+      options?: Parameters<typeof startWebdavServer>[0],
+    ) => {
+      const nas = await startWebdavServer(options)
+      const nasConnector = toNasConnector(nas.host)
+      setPrivateNetworkAllowedHosts([nas.host])
+      setConnectors([nasConnector, OFFICE_CONNECTOR])
+      await connectConnector(nasConnector)
+
+      return { ...nas, nasConnector }
+    }
+
+    const getBookFile = (bookId: string) =>
+      getCatalog(
+        `/opds/${SERVER.slug}/books/${bookId}/Hyperion.epub`,
+        OWNER_AUTHORIZATION,
+      ).responseType("blob")
+
+    afterEach(() => {
+      setPrivateNetworkAllowedHosts([])
+    })
+
+    it("lists the books of a connected connector with the Drive books, and none of a connector not connected or of a link that names none", async () => {
+      await connectNasServer()
+
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/books",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(response.status).toBe(200)
+      expect(toListedBookIds(response.text)).toEqual([
+        "book-blame",
+        "book-hyperion",
+        "book-dune",
+        "book-arrakis",
+      ])
+    })
+
+    it("lists the books of a connected connector while Google is not connected", async () => {
+      isConnected.mockResolvedValue(false)
+      await connectNasServer()
+
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/books",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(toListedBookIds(response.text)).toEqual(["book-hyperion"])
+    })
+
+    it("lists and serves no book of a connector changed since it was connected, and keeps its connection", async () => {
+      const { nasConnector, requests } = await connectNasServer()
+      setConnectors([{ ...nasConnector, username: "admin" }, OFFICE_CONNECTOR])
+
+      const listing = await getCatalog(
+        "/opds/calm-snails-dream/books",
+        OWNER_AUTHORIZATION,
+      )
+      const download = await getBookFile("book-hyperion")
+
+      expect(toListedBookIds(listing.text)).not.toContain("book-hyperion")
+      expect(download.status).toBe(404)
+      expect(requests).toEqual([])
+      expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(true)
+    })
+
+    it("deletes the connection of a connector the settings no longer hold, once a reading app opens the catalog", async () => {
+      const { nasConnector } = await connectNasServer()
+      setConnectors([OFFICE_CONNECTOR])
+
+      const response = await getCatalog(
+        "/opds/calm-snails-dream/books",
+        OWNER_AUTHORIZATION,
+      )
+
+      expect(toListedBookIds(response.text)).not.toContain("book-hyperion")
+      expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(false)
+    })
+
+    it("streams a book from the connector's server with the kept password, reserving the size the server states", async () => {
+      const { requests } = await connectNasServer()
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe("application/epub+zip")
+      expect(response.headers["content-disposition"]).toBe(
+        "attachment; filename=Hyperion.epub",
+      )
+      expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(
+        requests.map(({ method, url, headers }) => ({
+          method,
+          url,
+          authorization: headers.authorization,
+        })),
+      ).toEqual([
+        {
+          method: "PROPFIND",
+          url: "/dav/books/Hyperion.epub",
+          authorization: NAS_AUTHORIZATION,
+        },
+        {
+          method: "GET",
+          url: "/dav/books/Hyperion.epub",
+          authorization: NAS_AUTHORIZATION,
+        },
+      ])
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({ userId: OWNER.id, bytes: BOOK_BYTES.length }),
+      )
+      expect(mintAccessToken).not.toHaveBeenCalled()
+    })
+
+    it("states no length when the server's download states none, reserving the size its metadata states", async () => {
+      await connectNasServer({ isLengthStated: false })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-length"]).toBeUndefined()
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({ bytes: BOOK_BYTES.length }),
+      )
+    })
+
+    it("sends the password only to the address the connector was connected with, though the settings change right after its checks", async () => {
+      const { host, nasConnector, requests } = await connectNasServer()
+      const otherServer = await startWebdavServer()
+      setPrivateNetworkAllowedHosts([host, otherServer.host])
+      const libraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [nasConnector, OFFICE_CONNECTOR],
+      })
+      const movedLibraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [
+          { ...nasConnector, url: `http://${otherServer.host}/dav/` },
+          OFFICE_CONNECTOR,
+        ],
+      })
+      const readSettings = vi
+        .fn()
+        .mockImplementationOnce(libraryDb.get)
+        .mockImplementationOnce(libraryDb.get)
+        .mockImplementation(movedLibraryDb.get)
+      createNanoInstanceForUser.mockResolvedValue({
+        ...libraryDb,
+        get: readSettings,
+      })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(200)
+      expect(readSettings).toHaveBeenCalledTimes(2)
+      expect(requests).toHaveLength(2)
+      expect(otherServer.requests).toEqual([])
+    })
+
+    it("serves no file when the settings change between the catalog's checks and the download, contacting no server", async () => {
+      const { host, nasConnector, requests } = await connectNasServer()
+      const otherServer = await startWebdavServer()
+      setPrivateNetworkAllowedHosts([host, otherServer.host])
+      const libraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [nasConnector, OFFICE_CONNECTOR],
+      })
+      const movedLibraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [
+          { ...nasConnector, url: `http://${otherServer.host}/dav/` },
+          OFFICE_CONNECTOR,
+        ],
+      })
+      createNanoInstanceForUser.mockResolvedValue({
+        ...libraryDb,
+        get: vi
+          .fn()
+          .mockImplementationOnce(libraryDb.get)
+          .mockImplementation(movedLibraryDb.get),
+      })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(404)
+      expect(requests).toEqual([])
+      expect(otherServer.requests).toEqual([])
+    })
+
+    it("serves no file of a connector the owner did not connect", async () => {
+      await connectNasServer()
+
+      const response = await getBookFile("book-office")
+
+      expect(response.status).toBe(404)
+    })
+
+    it("deletes the connection when the server refuses the password, answering 404, and keeps the owner's other connections", async () => {
+      const warn = vi.spyOn(Logger.prototype, "warn")
+      const { nasConnector } = await connectNasServer({ refusalStatus: 401 })
+      await connectConnector(OFFICE_CONNECTOR)
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(404)
+      expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(false)
+      expect(connectionRows.has(toRowKey(OFFICE_CONNECTOR.id))).toBe(true)
+      expect(JSON.stringify(warn.mock.calls)).not.toContain(NAS_PASSWORD)
+    })
+
+    it("answers 500 and logs the failure when the refused password cannot be forgotten", async () => {
+      const logError = vi.spyOn(Logger.prototype, "error")
+      const deleteFailure = new Error("Postgres is unreachable")
+      await connectNasServer({ refusalStatus: 401 })
+      vi.spyOn(connectionStore.store, "delete").mockRejectedValue(deleteFailure)
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(500)
+      expect(logError).toHaveBeenCalledWith(deleteFailure)
+    })
+
+    it.each([
+      ["a file the account may not read", 403, 404],
+      ["a file the server cannot find", 404, 404],
+      ["too many requests", 429, 503],
+      ["a failing server", 500, 502],
+    ])(
+      "answers %s with %i, keeping the connection",
+      async (_, refusalStatus, status) => {
+        const { nasConnector } = await connectNasServer({ refusalStatus })
+
+        const response = await getBookFile("book-hyperion")
+
+        expect(response.status).toBe(status)
+        expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(true)
+      },
+    )
+
+    it("answers 502 for a server that cannot be reached, keeping the connection", async () => {
+      const { nasConnector, close } = await connectNasServer()
+      await close()
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(502)
+      expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(true)
+    })
+
+    it("answers 502 for a file whose size the server does not state, without downloading it", async () => {
+      const { requests } = await connectNasServer({ isSizeStated: false })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(502)
+      expect(requests.map(({ method }) => method)).toEqual(["PROPFIND"])
+    })
+
+    it("serves the cover of a connected connector's book without asking its server, and none of a connector not connected", async () => {
+      const { requests } = await connectNasServer()
+      const coverOf = (bookId: string) =>
+        getCatalog(
+          `/opds/calm-snails-dream/covers/books/${bookId}?hash=1767254400000`,
+          OWNER_AUTHORIZATION,
+        )
+
+      const servedCover = await coverOf("book-hyperion")
+      const unservedCover = await coverOf("book-office")
+
+      expect(servedCover.status).toBe(200)
+      expect(unservedCover.status).toBe(404)
+      expect(deliverCover).toHaveBeenCalledTimes(1)
+      expect(requests).toEqual([])
     })
   })
 })

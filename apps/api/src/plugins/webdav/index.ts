@@ -21,6 +21,23 @@ import { findConnectorCandidates } from "../helpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
+/** A WebDAV connector, as the user's settings hold it. */
+export const findWebdavConnector = async ({
+  db,
+  connectorId,
+}: {
+  db: Parameters<typeof getConnectorById>[0]
+  connectorId: string | undefined
+}) => {
+  const connector = connectorId
+    ? await getConnectorById(db, connectorId, "webdav")
+    : null
+
+  if (!connector) throw new Error("WebDAV connector not found")
+
+  return connector
+}
+
 async function resolveClientAndPath(params: {
   link: { data: { connectorId?: string; filePath?: string } }
   providerCredentials?: { password: string } | null
@@ -36,12 +53,7 @@ async function resolveClientAndPath(params: {
     )
   }
 
-  const connector = await getConnectorById(db, connectorId, "webdav")
-
-  if (!connector) {
-    throw new Error("WebDAV connector not found")
-  }
-
+  const connector = await findWebdavConnector({ db, connectorId })
   const client = createWebdavClient({
     ...connector,
     password: providerCredentials.password,
@@ -50,7 +62,7 @@ async function resolveClientAndPath(params: {
   return { client, filePath }
 }
 
-const createWebdavClient = (connector: {
+export const createWebdavClient = (connector: {
   allowSelfSigned?: boolean
   password: string
   url: string
@@ -93,6 +105,14 @@ export const isSignInRefused = (error: unknown) => {
     answeredStatus !== null && UNAUTHORIZED_STATUSES.includes(answeredStatus)
   )
 }
+
+/**
+ * Whether the server refused the password itself (401). Unlike
+ * `isSignInRefused`, a 403 does not count: once a connector signed in, a 403
+ * on one file refuses that file, not the password.
+ */
+export const isPasswordRefused = (error: unknown) =>
+  toAnsweredStatus(error) === 401
 
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({
@@ -168,10 +188,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       throw new Error("datasource not found or invalid")
     }
 
-    const connector = await getConnectorById(db, connectorId, "webdav")
-    if (!connector) {
-      throw new Error("WebDAV connector not found")
-    }
+    const connector = await findWebdavConnector({ db, connectorId })
     const client = await createWebdavClient({
       ...connector,
       password: providerCredentials.password,

@@ -1,24 +1,31 @@
-import { pipeline } from "node:stream"
 import {
   BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
 } from "@nestjs/common"
-import { ObokuErrorCode, type WebdavApiCredentials } from "@oboku/shared"
+import {
+  type LinkDocTypeForProvider,
+  ObokuErrorCode,
+  type WebdavApiCredentials,
+} from "@oboku/shared"
+import type createNano from "nano"
 import { CouchService } from "../couch/couch.service.js"
 import { findOne } from "../couch/dbHelpers.js"
-import { toByteCount } from "../http/contentLength.js"
 import {
   createObokuBadRequest,
   toObokuErrorBody,
 } from "../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
-  createByteLimitTransform,
-  PluginsService,
-} from "../plugins/plugins.service.js"
-import { isSignInRefused, toAnsweredStatus } from "../plugins/webdav/index.js"
+  findWebdavConnector,
+  isSignInRefused,
+  toAnsweredStatus,
+} from "../plugins/webdav/index.js"
+import {
+  FileSizeUnstatedError,
+  streamWebdavFile,
+} from "../plugins/webdav/streamWebdavFile.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
 const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
@@ -31,6 +38,12 @@ const createResourceNotFound = () =>
 const toServerFailure = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
+  }
+
+  if (error instanceof FileSizeUnstatedError) {
+    return new BadGatewayException(
+      toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN),
+    )
   }
 
   if (toAnsweredStatus(error) === 404) return createResourceNotFound()
@@ -54,12 +67,30 @@ const throwServerFailure = (error: unknown): never => {
   throw toServerFailure(error)
 }
 
+const streamConnectorFile = async ({
+  db,
+  link,
+  providerCredentials,
+}: {
+  db: createNano.DocumentScope<unknown>
+  link: LinkDocTypeForProvider<"webdav">
+  providerCredentials: WebdavApiCredentials
+}) => {
+  const connector = await findWebdavConnector({
+    db,
+    connectorId: link.data.connectorId,
+  })
+
+  return streamWebdavFile({
+    connector,
+    password: providerCredentials.password,
+    filePath: link.data.filePath,
+  })
+}
+
 @Injectable()
 export class LinksService {
-  constructor(
-    private readonly couchService: CouchService,
-    private readonly pluginsService: PluginsService,
-  ) {}
+  constructor(private readonly couchService: CouchService) {}
 
   /**
    * Streams the file of a WebDAV link in the library of the user `email`
@@ -89,31 +120,17 @@ export class LinksService {
 
     if (!isWebdavLink) throw new BadRequestException()
 
-    const { name, contentType, bookMetadata } = await this.pluginsService
-      .getFileMetadata({ link, providerCredentials, db })
-      .catch(throwServerFailure)
-    const statedSize = toByteCount(bookMetadata?.size)
-    const isSizeStated = statedSize !== undefined && statedSize > 0
-
-    if (!isSizeStated) {
-      throw new BadGatewayException(
-        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN),
+    const { stream, name, contentType, size, expectedSize } =
+      await streamConnectorFile({ db, link, providerCredentials }).catch(
+        throwServerFailure,
       )
-    }
-
-    const { stream } = await this.pluginsService
-      .download({ link, providerCredentials, db })
-      .catch(throwServerFailure)
 
     return {
-      stream: pipeline(
-        stream,
-        createByteLimitTransform(statedSize),
-        function leaveErrorsToTheMeteredStream() {},
-      ),
+      stream,
       name: name ?? link.data.filePath.split("/").pop() ?? link._id,
       contentType: contentType || UNKNOWN_CONTENT_TYPE,
-      expectedSize: statedSize,
+      size,
+      expectedSize,
     }
   }
 }

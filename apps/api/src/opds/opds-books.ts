@@ -8,14 +8,49 @@ import {
   getUrlExtension,
   isBookProtected,
   type LinkDocType,
+  type LinkDocTypeForProvider,
   READER_ACCEPTED_EXTENSIONS,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 
-/** The provider whose books the catalogs serve, through the owner's Google connection. */
-export const SERVED_LINK_TYPE = "DRIVE" satisfies LinkDocType["type"]
+/** The owner's connections the catalogs check. */
+export type ServedConnections = {
+  isGoogleConnected: boolean
+  /** The connectors the owner connected and has not changed since. */
+  connectedConnectorIds: ReadonlySet<string>
+}
+
+export type ServedLink =
+  | LinkDocTypeForProvider<"DRIVE">
+  | (LinkDocTypeForProvider<"webdav"> & { data: { connectorId: string } })
+
+/**
+ * Whether the catalogs serve a link's file: the connection it needs is
+ * usable. Links do not record their Google account yet (#996): every Drive
+ * link needs the owner's one Google connection. A WebDAV link needs the
+ * connection of the connector it names.
+ */
+export const isLinkServed = (
+  link: LinkDocType,
+  connections: ServedConnections,
+): link is ServedLink => {
+  switch (link.type) {
+    case "DRIVE":
+      return connections.isGoogleConnected
+    case "webdav": {
+      const { connectorId } = link.data
+
+      return (
+        connectorId !== undefined &&
+        connections.connectedConnectorIds.has(connectorId)
+      )
+    }
+    default:
+      return false
+  }
+}
 
 /** E-reader apps decode JPEG; not all of them decode the WebP oboku stores. */
 export const SERVED_COVER_TYPE = "image/jpeg"
@@ -73,7 +108,7 @@ export const compareNewestFirst = (
 /**
  * Whether the library shows the book: no protected tag hides it, and the
  * user did not mark it not interested. The catalogs serve the shown books
- * whose first link, the one the app reads them from, is a Google Drive file.
+ * whose first link, the one the app reads them from, passes `isLinkServed`.
  */
 export const isBookShown = ({
   book,
