@@ -1,13 +1,11 @@
 import { useState } from "react"
+import { ListItemExternalLink } from "../../../common/lists"
 import { LaunchRounded } from "@mui/icons-material"
 import {
   Alert,
   Button,
   FormControl,
   Link,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   Stack,
   styled,
   Typography,
@@ -223,18 +221,12 @@ export function OpdsServersScreen() {
         ))}
         <CatalogSourcesSection />
         <PageSection title="Set up a reading app">
-          <ListItemButton
-            target="_blank"
+          <ListItemExternalLink
             href={links.documentationOpdsServersReadingApp}
-          >
-            <ListItemIcon>
-              <LaunchRounded />
-            </ListItemIcon>
-            <ListItemText
-              primary="Read the guide"
-              secondary="Add a catalog to KOReader or another reading app"
-            />
-          </ListItemButton>
+            icon={<LaunchRounded />}
+            primary="Read the guide"
+            secondary="Add a catalog to KOReader or another reading app"
+          />
         </PageSection>
       </PageContainer>
     </Page>

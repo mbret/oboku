@@ -1,4 +1,5 @@
 import {
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -18,9 +19,11 @@ export function ListItemLink({
   "primary" | "secondary"
 >) {
   return (
-    <ListItemButton component={Link} to={to} disabled={disabled}>
-      <ListItemIcon>{icon}</ListItemIcon>
-      <ListItemText primary={primary} secondary={secondary} />
-    </ListItemButton>
+    <ListItem disablePadding>
+      <ListItemButton component={Link} to={to} disabled={disabled}>
+        <ListItemIcon>{icon}</ListItemIcon>
+        <ListItemText primary={primary} secondary={secondary} />
+      </ListItemButton>
+    </ListItem>
   )
 }
