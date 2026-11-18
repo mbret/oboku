@@ -303,23 +303,27 @@ export class GoogleConnectionService {
     if (!tokens) {
       const isRefusedConnectionDeleted =
         await this.providerConnectionsService.disconnectIfUnchanged(connection)
-      const latestConnection = isRefusedConnectionDeleted
-        ? null
-        : await this.findConnection(userId)
+
+      if (isRefusedConnectionDeleted) {
+        throw createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST,
+        )
+      }
+
+      const latestConnection = await this.findConnection(userId)
+
+      if (!latestConnection) {
+        throw createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND,
+        )
+      }
+
       const isConnectedAgainSince =
-        !!latestConnection &&
         latestConnection.updatedAt.getTime() > connection.updatedAt.getTime()
 
       if (isConnectedAgainSince) return this.mintAccessToken(userId)
 
-      const isDisconnectedMeanwhile =
-        !isRefusedConnectionDeleted && !latestConnection
-
-      throw createObokuBadRequest(
-        isDisconnectedMeanwhile
-          ? ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND
-          : ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST,
-      )
+      throw createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST)
     }
 
     const { access_token: accessToken, expiry_date: expiryDate, scope } = tokens
