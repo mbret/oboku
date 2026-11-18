@@ -37,7 +37,12 @@ export const createConnectionStore = () => {
 
   const store: Pick<
     ProviderConnectionPostgresService,
-    "find" | "list" | "save" | "saveAsOnlyAccount" | "delete"
+    | "find"
+    | "list"
+    | "save"
+    | "saveAsOnlyAccount"
+    | "delete"
+    | "deleteIfUnchanged"
   > = {
     find: async (key) => rows.get(toConnectionRowKey(key)) ?? null,
     list: async ({ userId, provider }) =>
@@ -63,6 +68,15 @@ export const createConnectionStore = () => {
     },
     delete: async (key) => {
       rows.delete(toConnectionRowKey(key))
+    },
+    deleteIfUnchanged: async ({ updatedAt, ...key }) => {
+      const rowKey = toConnectionRowKey(key)
+      const isUnchanged =
+        rows.get(rowKey)?.updated_at.getTime() === updatedAt.getTime()
+
+      if (isUnchanged) rows.delete(rowKey)
+
+      return isUnchanged
     },
   }
 

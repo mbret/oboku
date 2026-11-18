@@ -212,6 +212,7 @@ export class ConnectorConnectionService {
         provider,
         accountId: connectorId,
         connectedAt,
+        updatedAt,
       }) {
         const key = { userId, provider, accountId: connectorId }
         const credentials = await providerConnectionsService.getCredentials(key)
@@ -224,7 +225,10 @@ export class ConnectorConnectionService {
         const isPasswordSecretStored = passwordSecretValue !== undefined
 
         if (!credentials || !connector || !isPasswordSecretStored) {
-          await providerConnectionsService.disconnect(key)
+          await providerConnectionsService.disconnectIfUnchanged({
+            ...key,
+            updatedAt,
+          })
 
           return null
         }
@@ -239,7 +243,14 @@ export class ConnectorConnectionService {
           ? "connected"
           : "connector-changed"
 
-        return { connectorId, status, connectedAt, credentials }
+        return {
+          connectorId,
+          provider,
+          status,
+          connectedAt,
+          updatedAt,
+          credentials,
+        }
       }),
     )
 
@@ -311,8 +322,16 @@ export class ConnectorConnectionService {
     try {
       return await streamWebdavFile({ connector, password, filePath })
     } catch (error) {
-      if (isPasswordRefused(error)) {
-        await this.disconnect({ userId, connectorId })
+      const isDisconnected =
+        isPasswordRefused(error) &&
+        (await this.providerConnectionsService.disconnectIfUnchanged({
+          userId,
+          provider: connection.provider,
+          accountId: connectorId,
+          updatedAt: connection.updatedAt,
+        }))
+
+      if (isDisconnected) {
         this.logger.warn(
           `Disconnected connector ${connectorId} of user ${userId}: its WebDAV server refused the password`,
         )

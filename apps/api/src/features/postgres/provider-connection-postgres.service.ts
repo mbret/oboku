@@ -103,6 +103,28 @@ export class ProviderConnectionPostgresService {
     })
   }
 
+  /**
+   * Deletes the connection while its credentials are still the ones written
+   * at `updatedAt`. A connection the user made since stays.
+   *
+   * @returns `false` when it deleted nothing.
+   */
+  async deleteIfUnchanged({
+    userId,
+    provider,
+    accountId,
+    updatedAt,
+  }: ConnectionKey & { updatedAt: Date }) {
+    const { affected } = await this.connectionRepository.delete({
+      user_id: userId,
+      provider,
+      account_id: accountId,
+      updated_at: updatedAt,
+    })
+
+    return Boolean(affected)
+  }
+
   async deleteByUserId(userId: number) {
     await this.connectionRepository.delete({ user_id: userId })
   }

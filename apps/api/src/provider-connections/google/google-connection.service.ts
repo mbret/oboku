@@ -32,6 +32,10 @@ const INVALID_GRANT_ERROR = "invalid_grant"
 
 type GoogleOAuthClientOptions = { clientId: string; clientSecret: string }
 
+type GoogleConnection = Awaited<
+  ReturnType<ProviderConnectionsService["list"]>
+>[number]
+
 /** The OAuth client a code is exchanged with, `null` until the admin sets its id and secret. */
 const toGoogleOAuthClientOptions = ({
   googleClientId,
@@ -274,6 +278,61 @@ export class GoogleConnectionService {
   }
 
   /**
+   * Google's tokens from `connection`, with the connection they come from.
+   * When Google refuses its refresh token, or its credentials no longer
+   * decrypt, deletes it. If the user connected again while Google answered,
+   * the newer connection stays, and gets one try of its own. `null` when no
+   * connection is left to refresh.
+   */
+  private async refreshLiveConnection({
+    userId,
+    clientOptions,
+    connection,
+    isFirstTry,
+  }: {
+    userId: number
+    clientOptions: GoogleOAuthClientOptions
+    connection: GoogleConnection
+    isFirstTry: boolean
+  }): Promise<{
+    tokens: NonNullable<Awaited<ReturnType<typeof refreshAccessToken>>>
+    connection: GoogleConnection
+  } | null> {
+    const credentials = await this.providerConnectionsService.getCredentials({
+      userId,
+      provider: GOOGLE_PROVIDER,
+      accountId: connection.accountId,
+    })
+    const tokens =
+      credentials &&
+      (await refreshAccessToken({
+        clientOptions,
+        refreshToken: credentials.refreshToken,
+      }))
+
+    if (tokens) return { tokens, connection }
+
+    const isDisconnected =
+      await this.providerConnectionsService.disconnectIfUnchanged({
+        userId,
+        provider: GOOGLE_PROVIDER,
+        accountId: connection.accountId,
+        updatedAt: connection.updatedAt,
+      })
+    const newerConnection =
+      isDisconnected || !isFirstTry ? null : await this.findConnection(userId)
+
+    if (!newerConnection) return null
+
+    return this.refreshLiveConnection({
+      userId,
+      clientOptions,
+      connection: newerConnection,
+      isFirstTry: false,
+    })
+  }
+
+  /**
    * Mints an access token from the stored refresh token. A connection whose
    * refresh token Google refuses, or whose credentials no longer decrypt, is
    * lost: it is deleted, and the user connects again.
@@ -297,21 +356,14 @@ export class GoogleConnectionService {
       )
     }
 
-    const credentials = await this.providerConnectionsService.getCredentials({
+    const liveConnection = await this.refreshLiveConnection({
       userId,
-      provider: GOOGLE_PROVIDER,
-      accountId: connection.accountId,
+      clientOptions,
+      connection,
+      isFirstTry: true,
     })
-    const tokensOfLiveConnection =
-      credentials &&
-      (await refreshAccessToken({
-        clientOptions,
-        refreshToken: credentials.refreshToken,
-      }))
 
-    if (!tokensOfLiveConnection) {
-      await this.disconnect(userId)
-
+    if (!liveConnection) {
       throw createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST)
     }
 
@@ -319,7 +371,7 @@ export class GoogleConnectionService {
       access_token: accessToken,
       expiry_date: expiryDate,
       scope,
-    } = tokensOfLiveConnection
+    } = liveConnection.tokens
 
     if (!accessToken || !expiryDate) {
       throw new Error(
@@ -330,7 +382,7 @@ export class GoogleConnectionService {
     return {
       accessToken,
       expiresIn: Math.floor((expiryDate - Date.now()) / 1000),
-      scopes: scope?.split(" ") ?? connection.scopes,
+      scopes: scope?.split(" ") ?? liveConnection.connection.scopes,
     }
   }
 

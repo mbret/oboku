@@ -194,4 +194,15 @@ export class ProviderConnectionsService {
   async disconnect(key: ConnectionKey) {
     await this.connectionPostgresService.delete(key)
   }
+
+  /**
+   * Deletes the connection only while its credentials are the ones written at
+   * `updatedAt`, as `list` returned it. A provider's late refusal of
+   * credentials the user replaced since leaves the new connection alone.
+   *
+   * @returns `false` when it deleted nothing.
+   */
+  disconnectIfUnchanged(key: ConnectionKey & { updatedAt: Date }) {
+    return this.connectionPostgresService.deleteIfUnchanged(key)
+  }
 }

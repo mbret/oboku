@@ -469,10 +469,12 @@ const isPortAddress = (
  */
 async function startWebdavServer({
   refusalStatus,
+  beforeRefusal,
   isSizeStated = true,
   isLengthStated = true,
 }: {
   refusalStatus?: number
+  beforeRefusal?: () => Promise<unknown>
   isSizeStated?: boolean
   isLengthStated?: boolean
 } = {}) {
@@ -481,8 +483,12 @@ async function startWebdavServer({
     requests.push(serverRequest)
 
     if (refusalStatus !== undefined) {
-      response.writeHead(refusalStatus)
-      response.end()
+      void (beforeRefusal?.() ?? Promise.resolve()).then(
+        function answerRefusal() {
+          response.writeHead(refusalStatus)
+          response.end()
+        },
+      )
       return
     }
 
@@ -1761,11 +1767,40 @@ describe("OpdsCatalogController", () => {
       expect(JSON.stringify(warn.mock.calls)).not.toContain(NAS_PASSWORD)
     })
 
+    it("keeps the connection the user made again while the server refused the password it replaced", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] })
+      onTestFinished(function restoreClock() {
+        vi.useRealTimers()
+      })
+      vi.setSystemTime(new Date("2026-11-18T10:00:00.000Z"))
+      const reconnectedAt = new Date("2026-11-18T10:05:00.000Z")
+      const connectAgain = vi.fn()
+      const { nasConnector } = await connectNasServer({
+        refusalStatus: 401,
+        beforeRefusal: connectAgain,
+      })
+      connectAgain.mockImplementation(function connectAgainLater() {
+        vi.setSystemTime(reconnectedAt)
+
+        return connectConnector(nasConnector)
+      })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(404)
+      expect(connectAgain).toHaveBeenCalledTimes(1)
+      expect(connectionRows.get(toRowKey(nasConnector.id))?.updated_at).toEqual(
+        reconnectedAt,
+      )
+    })
+
     it("answers 500 and logs the failure when the refused password cannot be forgotten", async () => {
       const logError = vi.spyOn(Logger.prototype, "error")
       const deleteFailure = new Error("Postgres is unreachable")
       await connectNasServer({ refusalStatus: 401 })
-      vi.spyOn(connectionStore.store, "delete").mockRejectedValue(deleteFailure)
+      vi.spyOn(connectionStore.store, "deleteIfUnchanged").mockRejectedValue(
+        deleteFailure,
+      )
 
       const response = await getBookFile("book-hyperion")
 
