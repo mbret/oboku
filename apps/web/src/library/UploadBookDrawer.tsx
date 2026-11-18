@@ -4,7 +4,6 @@ import {
   ListItemText,
   ListItemIcon,
   ListItemButton,
-  capitalize,
 } from "@mui/material"
 import { plugins } from "../dataSources"
 import { memo } from "react"
@@ -41,7 +40,7 @@ export const UploadBookDrawer = memo(function UploadBookDrawer({
                 <ListItemIcon>
                   <dataSource.Icon />
                 </ListItemIcon>
-                <ListItemText primary={`From ${capitalize(dataSource.name)}`} />
+                <ListItemText primary={`From ${dataSource.name}`} />
               </ListItemButton>
             ))}
         </List>

@@ -6,13 +6,25 @@ An OPDS server turns your oboku library into a catalog that KOReader and other r
 
 ## What a catalog lists
 
-A catalog lists the books of your library that oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection). Reading apps download them through oboku's server, which reaches Drive with that connection. Without it, catalogs are empty.
+A catalog lists the books of your library that oboku's server can reach on its own:
+
+* books oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection);
+* books oboku reads from a WebDAV server, while their [connector is connected](/guides/connectors#connect-a-connector).
+
+Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
+
+The **What catalogs list** section of the **Integrations > OPDS servers** screen shows the sources of these books: Google Drive and each WebDAV connector. Each source shows its state:
+
+* **Set up**: the catalogs list the books of the source.
+* **Not set up**: the catalogs list the books of the source after you connect your Google account or the connector. Tap the source to connect it.
+
+The section also names the kinds of sources that catalogs cannot list yet.
 
 Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 
 * books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
 * books you marked not interested;
-* books oboku reads from another provider, such as Dropbox or WebDAV.
+* books oboku reads from another provider, such as Dropbox or Synology Drive, or from a WebDAV connector that is not connected.
 
 A catalog opens on two entries, each listing 50 items per page:
 
@@ -23,6 +35,9 @@ Some listed books cannot be downloaded yet:
 
 * Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
 * Books added with another Google account than the connected one: oboku reaches Drive with one account only.
+* Books on a WebDAV server that does not state a file's size: oboku's server only downloads a file whose size the server states.
+
+If a WebDAV server refuses the connector's password when a reading app downloads one of its books, oboku's server forgets it, and the connector's books leave the catalog until you connect it again.
 
 ## Monthly download quota
 

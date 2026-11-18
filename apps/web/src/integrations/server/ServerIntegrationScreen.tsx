@@ -6,7 +6,7 @@ import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 export function ServerIntegrationScreen() {
   return (
     <Page bottomGutter={false}>
-      <TopBarNavigation title="Server" showBack />
+      <TopBarNavigation title="Server files" showBack />
       <PageContainer disableGutters>
         <ConnectorInfoSection connectorType="server" maxConnectors={1} />
       </PageContainer>

@@ -1,11 +1,16 @@
 import { isDeepStrictEqual } from "node:util"
-import { BadRequestException, Injectable } from "@nestjs/common"
+import { BadRequestException, Injectable, Logger } from "@nestjs/common"
 import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { isSignInRefused, signInToWebdav } from "../../plugins/webdav/index.js"
+import {
+  isPasswordRefused,
+  isSignInRefused,
+  signInToWebdav,
+} from "../../plugins/webdav/index.js"
+import { streamWebdavFile } from "../../plugins/webdav/streamWebdavFile.js"
 import {
   type EncryptedSecretValue,
   ProviderConnectionsService,
@@ -16,6 +21,13 @@ import type {
 } from "./connector-connection.dto.js"
 
 const SIGN_IN_DEADLINE_MS = 10_000
+
+/** A failure of a connector's server, or of the request to it, as its `cause`. */
+export class ConnectorServerError extends Error {
+  constructor(cause: unknown) {
+    super("The connector's server did not send the file", { cause })
+  }
+}
 
 const toSignInError = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
@@ -70,6 +82,8 @@ const toConnectorConnection = ({
  */
 @Injectable()
 export class ConnectorConnectionService {
+  private readonly logger = new Logger(ConnectorConnectionService.name)
+
   constructor(
     private readonly couchService: CouchService,
     private readonly providerConnectionsService: ProviderConnectionsService,
@@ -169,17 +183,19 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * The user's connector connections. A connection whose connector or
-   * password secret no longer exists, or whose credentials no longer decrypt,
-   * is deleted.
+   * Each of the user's connector connections, with its credentials, and
+   * whether its connector and its password secret's value still match the
+   * copies kept when connecting. Deletes a connection whose connector or
+   * password secret no longer exists, or whose credentials no longer
+   * decrypt, and returns none for it.
    */
-  async list({
+  private async readConnections({
     userId,
     email,
   }: {
     userId: number
     email: string
-  }): Promise<ConnectorConnectionDto[]> {
+  }) {
     const storedConnections = await this.listStoredConnections(userId)
 
     if (storedConnections.length === 0) return []
@@ -219,16 +235,91 @@ export class ConnectorConnectionService {
             credentials.passwordSecretValue,
             passwordSecretValue,
           )
+        const status: ConnectorConnectionStatus = isUnchangedSinceConnected
+          ? "connected"
+          : "connector-changed"
 
-        return toConnectorConnection({
-          connectorId,
-          status: isUnchangedSinceConnected ? "connected" : "connector-changed",
-          connectedAt,
-        })
+        return { connectorId, status, connectedAt, credentials }
       }),
     )
 
     return connections.filter((connection) => connection !== null)
+  }
+
+  /**
+   * The user's connector connections. A connection whose connector or
+   * password secret no longer exists, or whose credentials no longer decrypt,
+   * is deleted.
+   */
+  async list({
+    userId,
+    email,
+  }: {
+    userId: number
+    email: string
+  }): Promise<ConnectorConnectionDto[]> {
+    const connections = await this.readConnections({ userId, email })
+
+    return connections.map(toConnectorConnection)
+  }
+
+  /**
+   * The ids of the connectors the user connected that still match the copies
+   * kept when connecting. Deletes connections as `list` does.
+   */
+  async listConnectedIds({ userId, email }: { userId: number; email: string }) {
+    const connections = await this.readConnections({ userId, email })
+
+    return connections
+      .filter(({ status }) => status === "connected")
+      .map(({ connectorId }) => connectorId)
+  }
+
+  /**
+   * Streams a file from the server of a connector the user connected, with
+   * the password the API keeps. It reaches the server through the connector
+   * as it was when connected, never the settings' connector, so the password
+   * only goes to the address and username it was connected with. None while
+   * the connector is not connected, or changed since. A server that refuses
+   * the password (401) loses its connection, as a lost Google connection
+   * does: the user connects the connector again.
+   *
+   * @throws `ConnectorServerError` for an error of `streamWebdavFile`; the
+   * errors of the reads and writes of connections and settings as they come.
+   */
+  async streamConnectedFile({
+    userId,
+    email,
+    connectorId,
+    filePath,
+  }: {
+    userId: number
+    email: string
+    connectorId: string
+    filePath: string
+  }) {
+    const connections = await this.readConnections({ userId, email })
+    const connection = connections.find(
+      ({ connectorId: id, status }) =>
+        id === connectorId && status === "connected",
+    )
+
+    if (!connection) return null
+
+    const { connector, password } = connection.credentials
+
+    try {
+      return await streamWebdavFile({ connector, password, filePath })
+    } catch (error) {
+      if (isPasswordRefused(error)) {
+        await this.disconnect({ userId, connectorId })
+        this.logger.warn(
+          `Disconnected connector ${connectorId} of user ${userId}: its WebDAV server refused the password`,
+        )
+      }
+
+      throw new ConnectorServerError(error)
+    }
   }
 
   async disconnect({

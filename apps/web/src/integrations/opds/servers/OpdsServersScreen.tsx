@@ -31,6 +31,7 @@ import { useCreateOpdsServer } from "./useCreateOpdsServer"
 import { useRegenerateOpdsServerPassword } from "./useRegenerateOpdsServerPassword"
 import { useDeleteOpdsServer } from "./useDeleteOpdsServer"
 import { RenameOpdsServerDialog } from "./RenameOpdsServerDialog"
+import { CatalogSourcesSection } from "./CatalogSourcesSection"
 
 const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
   theme,
@@ -194,14 +195,6 @@ export function OpdsServersScreen() {
             has its own address and password.
           </Typography>
           <Alert severity="info">
-            Catalogs list your Google Drive books while your{" "}
-            <Link component={RouterLink} to={ROUTES.INTEGRATION_GOOGLE}>
-              Google account
-            </Link>{" "}
-            is connected, except those under a protected tag or marked not
-            interested.
-          </Alert>
-          <Alert severity="info">
             Downloads from your OPDS servers count towards the monthly{" "}
             <Link component={RouterLink} to={ROUTES.QUOTAS}>
               download quota
@@ -232,6 +225,7 @@ export function OpdsServersScreen() {
             createdPassword={createdPasswords.get(server.id)}
           />
         ))}
+        <CatalogSourcesSection />
         <PageSection title="Set up a reading app">
           {SETUP_STEPS.map((step, index) => (
             <ListItem key={step}>

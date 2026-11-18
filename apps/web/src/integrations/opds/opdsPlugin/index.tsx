@@ -11,7 +11,7 @@ import { useSynchronize } from "./useSynchronize"
 
 export const plugin: ObokuPlugin<"opds"> = {
   type: PLUGIN_OPDS_TYPE,
-  name: "OPDS",
+  name: "OPDS catalog",
   canRemoveResource: false,
   canSynchronize: true,
   Icon: RssFeedRounded,
