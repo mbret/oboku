@@ -86,7 +86,7 @@ export function IntegrationsScreen() {
           />
           <IntegrationListItem
             to={ROUTES.INTEGRATION_SERVER}
-            name="Server"
+            name="Server files"
             description="Manage contents from your oboku server"
             Icon={serverPlugin.Icon}
             plugin={serverPlugin}

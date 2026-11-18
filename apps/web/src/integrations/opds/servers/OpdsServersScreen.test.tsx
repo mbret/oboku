@@ -163,15 +163,10 @@ describe("OpdsServersScreen", () => {
     expect(quotaLink.getAttribute("href")).toBe("/profile/quotas")
   })
 
-  it("points to the Google account the catalogs list books through", async () => {
+  it("shows what the catalogs list", async () => {
     renderScreen(listing([]))
 
-    const googleAccountLink = await screen.findByRole<HTMLAnchorElement>(
-      "link",
-      { name: "Google account" },
-    )
-
-    expect(googleAccountLink.getAttribute("href")).toBe("/integrations/google")
+    expect(await screen.findByText("What catalogs list")).toBeTruthy()
   })
 
   it("says when the user has no server yet", async () => {

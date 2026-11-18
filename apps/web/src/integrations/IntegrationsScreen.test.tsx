@@ -36,7 +36,7 @@ const INTEGRATION_HREF_BY_NAME = {
   Google: "/integrations/google",
   OneDrive: "/integrations/one-drive",
   "OPDS catalogs": "/integrations/opds/catalogs",
-  Server: "/integrations/server",
+  "Server files": "/integrations/server",
   "Synology Drive": "/integrations/synology-drive",
   WebDAV: "/integrations/webdav",
 }
@@ -88,7 +88,7 @@ describe("IntegrationsScreen", () => {
     ["Dropbox", "FEATURE_DROPBOX_ENABLED"],
     ["Google", "FEATURE_GOOGLE_DRIVE_ENABLED"],
     ["OneDrive", "FEATURE_ONE_DRIVE_ENABLED"],
-    ["Server", "FEATURE_SERVER_SYNC_ENABLED"],
+    ["Server files", "FEATURE_SERVER_SYNC_ENABLED"],
   ])("hides %s when the instance turns %s off", (name, featureFlag) => {
     renderIntegrationsScreen({
       ...EVERY_PROVIDER_CONFIGURED,

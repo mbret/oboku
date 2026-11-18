@@ -12,7 +12,7 @@ import { useSynchronize } from "./useSynchronize"
 
 export const plugin: ObokuPlugin<"server"> = {
   type: TYPE,
-  name: "Server",
+  name: "Server files",
   canRemoveResource: false,
   canSynchronize: true,
   Icon: DnsRounded,

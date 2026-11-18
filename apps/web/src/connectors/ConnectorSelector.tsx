@@ -4,7 +4,7 @@ import type {
 } from "@oboku/shared"
 import { Alert, MenuItem, TextField, type TextFieldProps } from "@mui/material"
 import { memo } from "react"
-import { CONNECTOR_DETAILS } from "./connectorDetails"
+import { CONNECTOR_DETAILS, toConnectorLabel } from "./connectorDetails"
 import { useConnectors } from "./useConnectors"
 
 export type ConnectorSelectorProps = Omit<
@@ -51,7 +51,7 @@ export const ConnectorSelector = memo(function ConnectorSelector({
     >
       {connectors.map((connector) => (
         <MenuItem key={connector.id} value={connector.id}>
-          {connector.url} ({connector.username})
+          {toConnectorLabel(connector)}
         </MenuItem>
       ))}
     </TextField>
