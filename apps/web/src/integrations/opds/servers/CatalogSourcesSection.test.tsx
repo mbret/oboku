@@ -74,7 +74,7 @@ const toConnection = (
 const setConnectors = (connectors: WebdavConnectorDocType[]) => {
   mocks.useSettings.mockReturnValue({
     data: { _id: "settings", connectors },
-    isPending: false,
+    isSuccess: true,
   })
 }
 
@@ -236,10 +236,27 @@ describe("CatalogSourcesSection", () => {
     expect(screen.queryByText(/Google Drive/)).toBeNull()
   })
 
+  it.each([
+    ["load", { data: undefined, isSuccess: false, isPending: true }],
+    ["fail to load", { data: undefined, isSuccess: false, isError: true }],
+  ])("shows no WebDAV row while the settings %s", async (_, settingsQuery) => {
+    mocks.useSettings.mockReturnValue(settingsQuery)
+    renderSection({ googleConnection: GOOGLE_CONNECTION })
+
+    await findSourceLink(/Google Drive Set up/)
+
+    expect(screen.queryByRole("link", { name: /WebDAV/ })).toBeNull()
+    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
+  })
+
   it("says a state is loading rather than calling its source waiting", async () => {
     renderSection({ answerGet: () => new Promise(() => {}) })
 
     expect(await findSourceLink(/Google Drive Loading its state…/)).toBeTruthy()
+    expect(
+      await findSourceLink(/nas\.example\.com.*Loading its state…/),
+    ).toBeTruthy()
+    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
   })
 
   it("says a state could not load rather than calling its source waiting", async () => {
@@ -252,6 +269,12 @@ describe("CatalogSourcesSection", () => {
         /Google Drive Something went wrong while loading its state\./,
       ),
     ).toBeTruthy()
+    expect(
+      await findSourceLink(
+        /nas\.example\.com.*Something went wrong while loading its state\./,
+      ),
+    ).toBeTruthy()
+    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
   })
 
   it("says a state can't load while the browser is offline", async () => {
@@ -263,5 +286,11 @@ describe("CatalogSourcesSection", () => {
         /Google Drive Its state can't be loaded right now\./,
       ),
     ).toBeTruthy()
+    expect(
+      await findSourceLink(
+        /nas\.example\.com.*Its state can't be loaded right now\./,
+      ),
+    ).toBeTruthy()
+    expect(screen.queryByText(/Waiting to set up/)).toBeNull()
   })
 })

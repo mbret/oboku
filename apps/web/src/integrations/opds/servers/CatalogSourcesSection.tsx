@@ -120,13 +120,13 @@ function ConnectorSourceItem({
 
 function ConnectorSourceItems({ type }: { type: ConnectableConnectorType }) {
   const { Icon, name } = getPluginByType(type)
-  const { data: connectors, isPending } = useConnectors({ type })
+  const { data: connectors, isSuccess } = useConnectors({ type })
 
-  if (isPending) return null
+  if (!isSuccess) return null
 
-  const hasNoConnector = !connectors?.length
+  const hasConnectors = !!connectors?.length
 
-  if (hasNoConnector) {
+  if (!hasConnectors) {
     return (
       <ListItemLink
         to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, { type })}
@@ -147,10 +147,14 @@ function ConnectorSourceItems({ type }: { type: ConnectableConnectorType }) {
   ))
 }
 
-function UnservedSourcesItem({ plugins }: { plugins: Plugin[] }) {
-  if (plugins.length === 0) return null
+function UnservedSourcesItem({
+  unservedPlugins,
+}: {
+  unservedPlugins: Plugin[]
+}) {
+  if (unservedPlugins.length === 0) return null
 
-  const names = plugins
+  const names = unservedPlugins
     .map(({ name }) => name)
     .toSorted((a, b) => a.localeCompare(b, "en"))
     .join(", ")
@@ -188,7 +192,7 @@ export function CatalogSourcesSection() {
       {SERVED_CONNECTOR_TYPES.map((type) => (
         <ConnectorSourceItems key={type} type={type} />
       ))}
-      <UnservedSourcesItem plugins={unservedPlugins} />
+      <UnservedSourcesItem unservedPlugins={unservedPlugins} />
     </PageSection>
   )
 }
