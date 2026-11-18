@@ -1,10 +1,16 @@
-import { BlockRounded } from "@mui/icons-material"
-import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import type {
-  ConnectableConnectorType,
-  ConnectorConnectionDto,
-  DataSourceDocType,
-} from "@oboku/shared"
+import {
+  BlockRounded,
+  CheckCircleRounded,
+  ErrorOutlineRounded,
+  RadioButtonUncheckedRounded,
+} from "@mui/icons-material"
+import {
+  CircularProgress,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+} from "@mui/material"
+import type { ConnectableConnectorType, DataSourceDocType } from "@oboku/shared"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { generatePath } from "react-router"
 import { ListItemLink } from "../../../common/lists"
@@ -25,53 +31,55 @@ const SERVED_CONNECTOR_TYPES = [
   "webdav",
 ] as const satisfies ReadonlyArray<ConnectableConnectorType>
 
-type SourceState =
-  | "set-up"
-  | "google-not-connected"
-  | "connector-not-connected"
-  | "connector-changed"
-  | "no-connector"
+type SourceState = "set-up" | "not-set-up" | "loading" | "unavailable"
 
-const SOURCE_STATES: Record<SourceState, string> = {
-  "set-up": "Set up. Catalogs list its books.",
-  "google-not-connected": "Not set up. Connect your Google account.",
-  "connector-not-connected": "Not set up. Connect this connector.",
-  "connector-changed":
-    "Not set up. You changed this connector or its password. Connect it again.",
-  "no-connector": "Not set up. Add a connector, then connect it.",
+const SOURCE_STATE_LABELS: Record<SourceState, string> = {
+  "set-up": "Set up",
+  "not-set-up": "Not set up",
+  loading: "Loading its state",
+  unavailable: "Its state could not load",
 }
 
-const CONNECTION_STATES: Record<ConnectorConnectionDto["status"], SourceState> =
-  {
-    connected: "set-up",
-    "connector-changed": "connector-changed",
-  }
-
-const describeSourceState = <TData,>({
+const toSourceState = <TData,>({
   query,
-  toState,
+  isSetUp,
 }: {
   query: Pick<
     UseQueryResult<TData>,
     "data" | "isError" | "isPending" | "fetchStatus"
   >
-  toState: (data: TData) => SourceState
-}) => {
-  if (query.data !== undefined) return SOURCE_STATES[toState(query.data)]
+  isSetUp: (data: TData) => boolean
+}): SourceState => {
+  if (query.data !== undefined) {
+    return isSetUp(query.data) ? "set-up" : "not-set-up"
+  }
 
-  if (isQueryUnavailable(query)) return "Its state can't be loaded right now."
+  if (isQueryUnavailable(query) || query.isError) return "unavailable"
 
-  if (query.isError) return "Something went wrong while loading its state."
+  return "loading"
+}
 
-  return "Loading its state…"
+function SourceStateIcon({ state }: { state: SourceState }) {
+  const label = SOURCE_STATE_LABELS[state]
+
+  switch (state) {
+    case "set-up":
+      return <CheckCircleRounded color="success" titleAccess={label} />
+    case "not-set-up":
+      return <RadioButtonUncheckedRounded color="action" titleAccess={label} />
+    case "loading":
+      return <CircularProgress size={20} aria-label={label} />
+    case "unavailable":
+      return <ErrorOutlineRounded color="warning" titleAccess={label} />
+  }
 }
 
 function GoogleDriveSourceItem() {
   const googleConnectionQuery = useGoogleConnection()
-  const state = describeSourceState({
+  const state = toSourceState({
     query: googleConnectionQuery,
-    toState: function toGoogleConnectionState({ connection }) {
-      return connection ? "set-up" : "google-not-connected"
+    isSetUp: function isGoogleAccountConnected({ connection }) {
+      return connection !== null
     },
   })
 
@@ -80,7 +88,7 @@ function GoogleDriveSourceItem() {
       to={ROUTES.INTEGRATION_GOOGLE}
       icon={<googleDrivePlugin.Icon />}
       primary={googleDrivePlugin.name}
-      secondary={state}
+      end={<SourceStateIcon state={state} />}
     />
   )
 }
@@ -96,12 +104,10 @@ function ConnectorSourceItem({
 }) {
   const { Icon } = getPluginByType(type)
   const connectionQuery = useConnectorConnection({ connectorId })
-  const state = describeSourceState({
+  const state = toSourceState({
     query: connectionQuery,
-    toState: function toConnectorConnectionState(connection) {
-      return connection
-        ? CONNECTION_STATES[connection.status]
-        : "connector-not-connected"
+    isSetUp: function isConnectorConnected(connection) {
+      return connection?.status === "connected"
     },
   })
 
@@ -113,7 +119,7 @@ function ConnectorSourceItem({
       })}
       icon={<Icon />}
       primary={label}
-      secondary={state}
+      end={<SourceStateIcon state={state} />}
     />
   )
 }
@@ -132,7 +138,7 @@ function ConnectorSourceItems({ type }: { type: ConnectableConnectorType }) {
         to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, { type })}
         icon={<Icon />}
         primary={name}
-        secondary={SOURCE_STATES["no-connector"]}
+        end={<SourceStateIcon state="not-set-up" />}
       />
     )
   }

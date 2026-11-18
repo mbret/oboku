@@ -1,6 +1,7 @@
-import type {
-  OpdsServerDto,
-  OpdsServerPasswordResponseDto,
+import {
+  links,
+  type OpdsServerDto,
+  type OpdsServerPasswordResponseDto,
 } from "@oboku/shared"
 import {
   onlineManager,
@@ -161,6 +162,19 @@ describe("OpdsServersScreen", () => {
     })
 
     expect(quotaLink.getAttribute("href")).toBe("/profile/quotas")
+  })
+
+  it("links to the guide on setting up a reading app, in a new tab", async () => {
+    renderScreen(listing([]))
+
+    const guideLink = await screen.findByRole<HTMLAnchorElement>("link", {
+      name: /Read the guide/,
+    })
+
+    expect(guideLink.getAttribute("href")).toBe(
+      links.documentationOpdsServersReadingApp,
+    )
+    expect(guideLink.getAttribute("target")).toBe("_blank")
   })
 
   it("shows what the catalogs list", async () => {

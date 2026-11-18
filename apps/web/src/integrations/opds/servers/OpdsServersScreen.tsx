@@ -1,16 +1,18 @@
 import { useState } from "react"
+import { LaunchRounded } from "@mui/icons-material"
 import {
   Alert,
   Button,
   FormControl,
   Link,
-  ListItem,
+  ListItemButton,
+  ListItemIcon,
   ListItemText,
   Stack,
   styled,
   Typography,
 } from "@mui/material"
-import type { OpdsServerDto } from "@oboku/shared"
+import { links, type OpdsServerDto } from "@oboku/shared"
 import { Link as RouterLink } from "react-router"
 import { ROUTES } from "../../../navigation/routes"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
@@ -42,12 +44,6 @@ const ServerActionsStack = styled(Stack)(function styleServerActionsStack({
     gap: theme.spacing(1),
   }
 })
-
-const SETUP_STEPS = [
-  "In KOReader's file browser, open the search menu (the magnifying glass), then OPDS catalog.",
-  "Tap + at the top left, name the catalog, then enter the OPDS 1.2 catalog URL, username and password of a server above.",
-  "Other reading apps ask for the same three values. Give the OPDS 2.0 catalog URL to apps that read OPDS 2.0.",
-]
 
 function OpdsServerSection({
   server,
@@ -227,11 +223,18 @@ export function OpdsServersScreen() {
         ))}
         <CatalogSourcesSection />
         <PageSection title="Set up a reading app">
-          {SETUP_STEPS.map((step, index) => (
-            <ListItem key={step}>
-              <ListItemText primary={`${index + 1}. ${step}`} />
-            </ListItem>
-          ))}
+          <ListItemButton
+            target="_blank"
+            href={links.documentationOpdsServersReadingApp}
+          >
+            <ListItemIcon>
+              <LaunchRounded />
+            </ListItemIcon>
+            <ListItemText
+              primary="Read the guide"
+              secondary="Add a catalog to KOReader or another reading app"
+            />
+          </ListItemButton>
         </PageSection>
       </PageContainer>
     </Page>
