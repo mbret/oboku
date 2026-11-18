@@ -8,7 +8,7 @@ import {
   QueryClient,
   QueryClientProvider,
 } from "@tanstack/react-query"
-import { cleanup, render, screen } from "@testing-library/react"
+import { cleanup, render, screen, within } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { HttpClientApiContext } from "../../../http"
@@ -116,17 +116,26 @@ const renderSection = ({
       </HttpClientApiContext.Provider>
     </QueryClientProvider>,
   )
+
+  return { get }
 }
 
-const findSourceLink = (name: RegExp) =>
-  screen.findByRole<HTMLAnchorElement>("link", { name })
+const linksIn = (sectionTitle: string) => {
+  const section = screen.getByText(sectionTitle).nextElementSibling
+
+  if (!(section instanceof HTMLElement)) throw new Error("No section list")
+
+  return within(section)
+    .queryAllByRole<HTMLAnchorElement>("link")
+    .map((link) => [link.textContent, link.getAttribute("href")])
+}
 
 describe("CatalogSourcesSection", () => {
   beforeEach(() => {
     mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = true
     mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = true
     mocks.config.FEATURE_DROPBOX_ENABLED = true
-    setConnectors([NAS])
+    setConnectors([NAS, OFFICE, ARCHIVE])
   })
 
   afterEach(() => {
@@ -135,95 +144,133 @@ describe("CatalogSourcesSection", () => {
     onlineManager.setOnline(true)
   })
 
-  it("lists Google Drive as set up while the Google account is connected, linking to the Google screen", async () => {
-    renderSection({ googleConnection: GOOGLE_CONNECTION })
-
-    const googleDrive = await findSourceLink(
-      /Google Drive Set up\. Catalogs list its books\./,
-    )
-
-    expect(googleDrive.getAttribute("href")).toBe("/integrations/google")
-  })
-
-  it("lists Google Drive as not set up while no Google account is connected", async () => {
-    renderSection({ googleConnection: null })
-
-    expect(
-      await findSourceLink(
-        /Google Drive Not set up\. Connect your Google account\./,
-      ),
-    ).toBeTruthy()
-  })
-
-  it("names Google Drive with the sources not available when the instance cannot connect a Google account", async () => {
-    mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = false
-    renderSection()
-
-    await findSourceLink(/WebDAV|nas\.example\.com/)
-
-    expect(screen.queryByRole("link", { name: /Google Drive/ })).toBeNull()
-    expect(screen.getByText(/Google Drive/).textContent).toBe(
-      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
-    )
-  })
-
-  it("lists each WebDAV connector by address and username with its state, linking to the connector", async () => {
-    setConnectors([NAS, OFFICE, ARCHIVE])
+  it("lists the connected Google account and connected WebDAV connectors as set up, each opening its screen", async () => {
     renderSection({
+      googleConnection: GOOGLE_CONNECTION,
       connections: [
         toConnection(NAS.id, "connected"),
         toConnection(OFFICE.id, "connector-changed"),
       ],
     })
 
-    const nas = await findSourceLink(
-      /https:\/\/nas\.example\.com\/dav\/ \(reader\) Set up\. Catalogs list its books\./,
-    )
-    const office = await findSourceLink(
-      /office\.example\.com.*Not set up\. You changed this connector or its password\. Connect it again\./,
-    )
-    const archive = await findSourceLink(
-      /archive\.example\.com.*Not set up\. Connect this connector\./,
-    )
+    await screen.findByRole("link", { name: /reader@example\.com/ })
 
-    expect(nas.getAttribute("href")).toBe("/integrations/webdav/connectors/nas")
-    expect(office.getAttribute("href")).toBe(
-      "/integrations/webdav/connectors/office",
-    )
-    expect(archive.getAttribute("href")).toBe(
-      "/integrations/webdav/connectors/archive",
-    )
+    expect(linksIn("Sources set up")).toEqual([
+      ["Google Drivereader@example.com", "/integrations/google"],
+      [
+        "WebDAVhttps://nas.example.com/dav/ (reader)",
+        "/integrations/webdav/connectors/nas",
+      ],
+    ])
   })
 
-  it("offers to add a WebDAV connector when there is none", async () => {
-    setConnectors([])
-    renderSection()
+  it("lists every kind of source catalogs serve as available, even one already set up", async () => {
+    renderSection({
+      googleConnection: GOOGLE_CONNECTION,
+      connections: [toConnection(NAS.id, "connected")],
+    })
 
-    const webdav = await findSourceLink(
-      /WebDAV Not set up\. Add a connector, then connect it\./,
-    )
+    await screen.findByRole("link", { name: /reader@example\.com/ })
 
-    expect(webdav.getAttribute("href")).toBe(
-      "/integrations/webdav/connectors/new",
-    )
+    expect(linksIn("Sources available")).toEqual([
+      ["Google Drive", "/integrations/google"],
+      ["WebDAV", "/integrations/webdav"],
+    ])
   })
 
-  it("names every kind of source the catalogs cannot serve yet on one line", async () => {
+  it("says when nothing is set up yet", async () => {
     renderSection()
 
-    expect(await screen.findByText("Not available yet")).toBeTruthy()
-    expect(screen.getByText(/Dropbox/).textContent).toBe(
-      "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
-    )
+    expect(
+      await screen.findByText("Nothing set up yet. Add a source below."),
+    ).toBeTruthy()
+    expect(linksIn("Sources set up")).toEqual([])
   })
 
-  it("leaves out the kinds of source this instance hides", async () => {
-    mocks.config.FEATURE_DROPBOX_ENABLED = false
-    renderSection()
+  it("says the sources set up are loading, not that nothing is set up", async () => {
+    renderSection({ answerGet: () => new Promise(() => {}) })
 
-    expect(await screen.findByText("Not available yet")).toBeTruthy()
-    expect(screen.getByText(/OneDrive/).textContent).toBe(
-      "Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+    expect(await screen.findByText("Loading the sources set up…")).toBeTruthy()
+    expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+  })
+
+  it.each([
+    [
+      "they could not load",
+      function failToLoad() {
+        renderSection({
+          answerGet: () => Promise.reject(new Error("API unreachable")),
+        })
+      },
+    ],
+    [
+      "the browser is offline",
+      function renderOffline() {
+        onlineManager.setOnline(false)
+        renderSection()
+      },
+    ],
+  ])(
+    "says the sources set up can't load when %s, not that nothing is set up",
+    async (_, renderUnavailable) => {
+      renderUnavailable()
+
+      expect(
+        await screen.findByText(
+          "The sources set up can't be loaded right now.",
+        ),
+      ).toBeTruthy()
+      expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+    },
+  )
+
+  it.each([
+    [
+      "load",
+      { data: undefined, isPending: true, fetchStatus: "fetching" },
+      "Loading the sources set up…",
+    ],
+    [
+      "fail to load",
+      { data: undefined, isPending: false, isError: true, fetchStatus: "idle" },
+      "The sources set up can't be loaded right now.",
+    ],
+  ])(
+    "waits for the settings while they %s, and never says that nothing is set up",
+    async (_, settingsQuery, note) => {
+      mocks.useSettings.mockReturnValue(settingsQuery)
+      const { get } = renderSection({ googleConnection: GOOGLE_CONNECTION })
+
+      await vi.waitFor(async function waitForEveryAnswer() {
+        expect(get).toHaveBeenCalledTimes(2)
+        await Promise.all(get.mock.results.map(({ value }) => value))
+      })
+      await new Promise(function letTheAnswersRender(resolve) {
+        setTimeout(resolve, 100)
+      })
+
+      expect(screen.getByText(note)).toBeTruthy()
+      expect(screen.queryByText(/Nothing set up yet/)).toBeNull()
+      expect(linksIn("Sources set up")).toEqual([])
+    },
+  )
+
+  it("asks nothing of Google, and names it as not available, when the instance cannot connect a Google account", async () => {
+    mocks.config.FEATURE_GOOGLE_CONNECTION_ENABLED = false
+    const { get } = renderSection({
+      connections: [toConnection(NAS.id, "connected")],
+    })
+
+    await screen.findByRole("link", { name: /nas\.example\.com/ })
+
+    expect(get.mock.calls.map(([{ url }]) => url)).not.toContain(
+      "/provider-connections/google",
+    )
+    expect(linksIn("Sources available")).toEqual([
+      ["WebDAV", "/integrations/webdav"],
+    ])
+    expect(screen.getByText(/Google Drive/).textContent).toBe(
+      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
     )
   })
 
@@ -231,66 +278,28 @@ describe("CatalogSourcesSection", () => {
     mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = false
     renderSection({ googleConnection: GOOGLE_CONNECTION })
 
-    expect(
-      await findSourceLink(/Google Drive Set up\. Catalogs list its books\./),
-    ).toBeTruthy()
+    await screen.findByRole("link", { name: /reader@example\.com/ })
+
+    expect(linksIn("Sources available")).toEqual([
+      ["Google Drive", "/integrations/google"],
+      ["WebDAV", "/integrations/webdav"],
+    ])
   })
 
-  it.each([
-    ["load", { data: undefined, isSuccess: false, isPending: true }],
-    ["fail to load", { data: undefined, isSuccess: false, isError: true }],
-  ])("shows no WebDAV row while the settings %s", async (_, settingsQuery) => {
-    mocks.useSettings.mockReturnValue(settingsQuery)
-    renderSection({ googleConnection: GOOGLE_CONNECTION })
-
-    await findSourceLink(/Google Drive Set up/)
-
-    expect(screen.queryByRole("link", { name: /WebDAV/ })).toBeNull()
-    expect(screen.queryByText(/Not set up/)).toBeNull()
-  })
-
-  it("says a state is loading rather than calling its source not set up", async () => {
-    renderSection({ answerGet: () => new Promise(() => {}) })
-
-    expect(await findSourceLink(/Google Drive Loading its state…/)).toBeTruthy()
-    expect(
-      await findSourceLink(/nas\.example\.com.*Loading its state…/),
-    ).toBeTruthy()
-    expect(screen.queryByText(/Not set up/)).toBeNull()
-  })
-
-  it("says a state could not load rather than calling its source not set up", async () => {
-    renderSection({
-      answerGet: () => Promise.reject(new Error("API unreachable")),
-    })
-
-    expect(
-      await findSourceLink(
-        /Google Drive Something went wrong while loading its state\./,
-      ),
-    ).toBeTruthy()
-    expect(
-      await findSourceLink(
-        /nas\.example\.com.*Something went wrong while loading its state\./,
-      ),
-    ).toBeTruthy()
-    expect(screen.queryByText(/Not set up/)).toBeNull()
-  })
-
-  it("says a state can't load while the browser is offline", async () => {
-    onlineManager.setOnline(false)
+  it("names every kind of source the catalogs cannot serve yet on one line", () => {
     renderSection()
 
-    expect(
-      await findSourceLink(
-        /Google Drive Its state can't be loaded right now\./,
-      ),
-    ).toBeTruthy()
-    expect(
-      await findSourceLink(
-        /nas\.example\.com.*Its state can't be loaded right now\./,
-      ),
-    ).toBeTruthy()
-    expect(screen.queryByText(/Not set up/)).toBeNull()
+    expect(screen.getByText(/Dropbox/).textContent).toBe(
+      "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+    )
+  })
+
+  it("leaves out the kinds of source this instance hides", () => {
+    mocks.config.FEATURE_DROPBOX_ENABLED = false
+    renderSection()
+
+    expect(screen.getByText(/OneDrive/).textContent).toBe(
+      "Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+    )
   })
 })
