@@ -8,18 +8,23 @@ import {
   getUrlExtension,
   isBookProtected,
   type LinkDocType,
+  type LinkDocTypeForProvider,
   READER_ACCEPTED_EXTENSIONS,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 
-/** The owner's connections the catalogs check, read once per request. */
+/** The owner's connections the catalogs check. */
 export type ServedConnections = {
   isGoogleConnected: boolean
   /** The connectors the owner connected and has not changed since. */
   connectedConnectorIds: ReadonlySet<string>
 }
+
+export type ServedLink =
+  | LinkDocTypeForProvider<"DRIVE">
+  | (LinkDocTypeForProvider<"webdav"> & { data: { connectorId: string } })
 
 /**
  * Whether the catalogs serve a link's file: the connection it needs is
@@ -27,13 +32,10 @@ export type ServedConnections = {
  * link needs the owner's one Google connection. A WebDAV link needs the
  * connection of the connector it names.
  */
-export const isLinkServed = ({
-  link,
-  connections,
-}: {
-  link: LinkDocType
-  connections: ServedConnections
-}) => {
+export const isLinkServed = (
+  link: LinkDocType,
+  connections: ServedConnections,
+): link is ServedLink => {
   switch (link.type) {
     case "DRIVE":
       return connections.isGoogleConnected

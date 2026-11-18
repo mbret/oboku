@@ -537,6 +537,7 @@ async function startWebdavServer({
 
 describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
+  let connectionStore: ReturnType<typeof createConnectionStore>
   let connectionRows: Map<string, ProviderConnectionPostgresEntity>
   let providerConnectionsService: ProviderConnectionsService
 
@@ -590,7 +591,7 @@ describe("OpdsCatalogController", () => {
     })
     adjust.mockResolvedValue(undefined)
 
-    const connectionStore = createConnectionStore()
+    connectionStore = createConnectionStore()
     connectionRows = connectionStore.rows
 
     const module = await Test.createTestingModule({
@@ -1682,7 +1683,38 @@ describe("OpdsCatalogController", () => {
       const response = await getBookFile("book-hyperion")
 
       expect(response.status).toBe(200)
+      expect(readSettings).toHaveBeenCalledTimes(2)
       expect(requests).toHaveLength(2)
+      expect(otherServer.requests).toEqual([])
+    })
+
+    it("serves no file when the settings change between the catalog's checks and the download, contacting no server", async () => {
+      const { host, nasConnector, requests } = await connectNasServer()
+      const otherServer = await startWebdavServer()
+      setPrivateNetworkAllowedHosts([host, otherServer.host])
+      const libraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [nasConnector, OFFICE_CONNECTOR],
+      })
+      const movedLibraryDb = createLibraryDb({
+        ...LIBRARY,
+        connectors: [
+          { ...nasConnector, url: `http://${otherServer.host}/dav/` },
+          OFFICE_CONNECTOR,
+        ],
+      })
+      createNanoInstanceForUser.mockResolvedValue({
+        ...libraryDb,
+        get: vi
+          .fn()
+          .mockImplementationOnce(libraryDb.get)
+          .mockImplementation(movedLibraryDb.get),
+      })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(404)
+      expect(requests).toEqual([])
       expect(otherServer.requests).toEqual([])
     })
 
@@ -1705,6 +1737,18 @@ describe("OpdsCatalogController", () => {
       expect(connectionRows.has(toRowKey(nasConnector.id))).toBe(false)
       expect(connectionRows.has(toRowKey(OFFICE_CONNECTOR.id))).toBe(true)
       expect(JSON.stringify(warn.mock.calls)).not.toContain(NAS_PASSWORD)
+    })
+
+    it("answers 500 and logs the failure when the refused password cannot be forgotten", async () => {
+      const logError = vi.spyOn(Logger.prototype, "error")
+      const deleteFailure = new Error("Postgres is unreachable")
+      await connectNasServer({ refusalStatus: 401 })
+      vi.spyOn(connectionStore.store, "delete").mockRejectedValue(deleteFailure)
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(500)
+      expect(logError).toHaveBeenCalledWith(deleteFailure)
     })
 
     it.each([

@@ -21,8 +21,8 @@ import { findConnectorCandidates } from "../helpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
-/** The connector a WebDAV link names, as the user's settings hold it. */
-export const findLinkConnector = async ({
+/** A WebDAV connector, as the user's settings hold it. */
+export const findWebdavConnector = async ({
   db,
   connectorId,
 }: {
@@ -53,7 +53,7 @@ async function resolveClientAndPath(params: {
     )
   }
 
-  const connector = await findLinkConnector({ db, connectorId })
+  const connector = await findWebdavConnector({ db, connectorId })
   const client = createWebdavClient({
     ...connector,
     password: providerCredentials.password,
@@ -188,10 +188,7 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
       throw new Error("datasource not found or invalid")
     }
 
-    const connector = await getConnectorById(db, connectorId, "webdav")
-    if (!connector) {
-      throw new Error("WebDAV connector not found")
-    }
+    const connector = await findWebdavConnector({ db, connectorId })
     const client = await createWebdavClient({
       ...connector,
       password: providerCredentials.password,

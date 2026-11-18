@@ -18,7 +18,7 @@ import {
 } from "../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
-  findLinkConnector,
+  findWebdavConnector,
   isSignInRefused,
   toAnsweredStatus,
 } from "../plugins/webdav/index.js"
@@ -76,7 +76,7 @@ const streamConnectorFile = async ({
   link: LinkDocTypeForProvider<"webdav">
   providerCredentials: WebdavApiCredentials
 }) => {
-  const connector = await findLinkConnector({
+  const connector = await findWebdavConnector({
     db,
     connectorId: link.data.connectorId,
   })

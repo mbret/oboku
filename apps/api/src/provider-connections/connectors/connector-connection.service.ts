@@ -1,5 +1,5 @@
 import { isDeepStrictEqual } from "node:util"
-import { BadRequestException, Injectable } from "@nestjs/common"
+import { BadRequestException, Injectable, Logger } from "@nestjs/common"
 import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
@@ -21,6 +21,13 @@ import type {
 } from "./connector-connection.dto.js"
 
 const SIGN_IN_DEADLINE_MS = 10_000
+
+/** A failure of a connector's server, or of the request to it, as its `cause`. */
+export class ConnectorServerError extends Error {
+  constructor(cause: unknown) {
+    super("The connector's server did not send the file", { cause })
+  }
+}
 
 const toSignInError = (error: unknown) => {
   if (isNonPublicAddressError(error)) {
@@ -75,6 +82,8 @@ const toConnectorConnection = ({
  */
 @Injectable()
 export class ConnectorConnectionService {
+  private readonly logger = new Logger(ConnectorConnectionService.name)
+
   constructor(
     private readonly couchService: CouchService,
     private readonly providerConnectionsService: ProviderConnectionsService,
@@ -275,7 +284,8 @@ export class ConnectorConnectionService {
    * the password (401) loses its connection, as a lost Google connection
    * does: the user connects the connector again.
    *
-   * @throws the errors of `streamWebdavFile`.
+   * @throws `ConnectorServerError` for an error of `streamWebdavFile`; the
+   * errors of the reads and writes of connections and settings as they come.
    */
   async streamConnectedFile({
     userId,
@@ -303,9 +313,12 @@ export class ConnectorConnectionService {
     } catch (error) {
       if (isPasswordRefused(error)) {
         await this.disconnect({ userId, connectorId })
+        this.logger.warn(
+          `Disconnected connector ${connectorId} of user ${userId}: its WebDAV server refused the password`,
+        )
       }
 
-      throw error
+      throw new ConnectorServerError(error)
     }
   }
 

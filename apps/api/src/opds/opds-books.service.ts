@@ -22,7 +22,10 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
 import { toAnsweredStatus } from "../plugins/webdav/index.js"
-import { ConnectorConnectionService } from "../provider-connections/connectors/connector-connection.service.js"
+import {
+  ConnectorConnectionService,
+  ConnectorServerError,
+} from "../provider-connections/connectors/connector-connection.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
 import { toByteCount } from "../http/contentLength.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
@@ -34,6 +37,7 @@ import {
   isLinkServed,
   SERVED_COVER_TYPE,
   type ServedConnections,
+  type ServedLink,
   toCatalogPage,
   toServedFile,
   toServedShelfBookIds,
@@ -117,18 +121,23 @@ const readServedLinkIds = async ({
   db: createNano.DocumentScope<unknown>
   connections: ServedConnections
 }) => {
+  const hasConnectedConnectors = connections.connectedConnectorIds.size > 0
   const [driveLinks, webdavLinks] = await Promise.all([
-    find(db, "link", {
-      selector: { type: "DRIVE" },
-      fields: ["_id", "type", "data"],
-    }),
-    find(db, "link", {
-      selector: { type: "webdav" },
-      fields: ["_id", "type", "data"],
-    }),
+    connections.isGoogleConnected
+      ? find(db, "link", {
+          selector: { type: "DRIVE" },
+          fields: ["_id", "type", "data"],
+        })
+      : [],
+    hasConnectedConnectors
+      ? find(db, "link", {
+          selector: { type: "webdav" },
+          fields: ["_id", "type", "data"],
+        })
+      : [],
   ])
   const servedLinks = [...driveLinks, ...webdavLinks].filter((link) =>
-    isLinkServed({ link, connections }),
+    isLinkServed(link, connections),
   )
 
   return new Set(servedLinks.map(({ _id }) => _id))
@@ -367,7 +376,7 @@ export class OpdsBooksService {
           link: firstLink,
         })
       default:
-        throw new NotFoundException()
+        return firstLink satisfies never
     }
   }
 
@@ -425,13 +434,14 @@ export class OpdsBooksService {
     const firstLink = firstLinkId
       ? await findOne("link", { selector: { _id: firstLinkId } }, { db })
       : null
+
+    if (!book || !firstLink) throw new NotFoundException()
+
     const isServed =
-      !!book &&
-      !!firstLink &&
-      isLinkServed({ link: firstLink, connections }) &&
+      isLinkServed(firstLink, connections) &&
       isBookShown({ book, protectedTagIds })
 
-    if (!book || !firstLink || !isServed) throw new NotFoundException()
+    if (!isServed) throw new NotFoundException()
 
     return { couchName, book, firstLink }
   }
@@ -545,12 +555,9 @@ export class OpdsBooksService {
     owner: Pick<UserPostgresEntity, "id">
     couchName: string
     book: Pick<BookDocType, "_id" | "metadata" | "metadataSourcePriority">
-    link: LinkDocTypeForProvider<"webdav">
+    link: Extract<ServedLink, { type: "webdav" }>
   }) {
     const { connectorId, filePath } = link.data
-
-    if (connectorId === undefined) throw new NotFoundException()
-
     const { logger } = this
     const file = await this.connectorConnectionService
       .streamConnectedFile({
@@ -560,11 +567,13 @@ export class OpdsBooksService {
         filePath,
       })
       .catch(function answerWebdavFailure(error: unknown) {
+        if (!(error instanceof ConnectorServerError)) throw error
+
         logger.warn(
-          `Reading book ${book._id} from its WebDAV server failed: status ${toAnsweredStatus(error) ?? "none"}`,
+          `Reading book ${book._id} from its WebDAV server failed: status ${toAnsweredStatus(error.cause) ?? "none"}`,
         )
 
-        throw toWebdavFailure(error)
+        throw toWebdavFailure(error.cause)
       })
 
     if (!file) throw new NotFoundException()
