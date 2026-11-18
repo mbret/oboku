@@ -28,9 +28,9 @@ Some listed books cannot be downloaded yet:
 
 * Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
 * Books added with another Google account than the connected one: oboku reaches Drive with one account only.
-* Books on a WebDAV server that does not state a file's size: oboku's server downloads a file only up to the size the server states.
+* Books on a WebDAV server that does not state a file's size: oboku's server only downloads a file whose size the server states.
 
-If a WebDAV server refuses the connector's password, oboku's server forgets it, and the connector's books leave the catalog until you connect it again.
+If a WebDAV server refuses the connector's password when a reading app downloads one of its books, oboku's server forgets it, and the connector's books leave the catalog until you connect it again.
 
 ## Monthly download quota
 

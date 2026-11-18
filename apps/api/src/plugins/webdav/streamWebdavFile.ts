@@ -5,7 +5,6 @@ import { createByteLimitTransform } from "../plugins.service.js"
 import { createWebdavClient } from "./index.js"
 import { downloadFromWebdav, getFileMetadataFromWebdav } from "./operations.js"
 
-/** The WebDAV server states no size for the file, so nothing caps what it sends. */
 export class FileSizeUnstatedError extends Error {
   constructor() {
     super("The WebDAV server states no size for the file")

@@ -178,10 +178,11 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * A stored connection with its credentials, and whether its connector, and
-   * its password secret's value, still match the copies kept when
-   * connecting. A connection whose connector or password secret no longer
-   * exists, or whose credentials no longer decrypt, is deleted: none.
+   * A stored connection with its credentials, and whether its connector and
+   * its password secret's value still match the copies kept when
+   * connecting. Deletes a connection whose connector or password secret no
+   * longer exists, or whose credentials no longer decrypt, and returns none
+   * for it.
    */
   private async toCurrentConnection({
     userId,
@@ -221,7 +222,6 @@ export class ConnectorConnectionService {
     return { connectorId, status, connectedAt, credentials }
   }
 
-  /** Each of the user's connector connections, as `toCurrentConnection` reads it. */
   private async readConnections({
     userId,
     email,
@@ -283,12 +283,11 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * The copy of the connector kept when connecting, and its password, while
-   * the connector still matches it. Use the copy to reach the server, never
-   * the connector as the settings hold it later: the password only goes to
-   * the address and username it was connected with. None while the connector
-   * is not connected, or changed since. Deletes the connection as `list`
-   * does.
+   * The connector as it was when connected, and its password: none while
+   * the connector is not connected, or changed since. Reach the server with
+   * this copy, never the settings' connector: the password only goes to the
+   * address and username it was connected with. Deletes the connection as
+   * `list` does.
    */
   async findUsableCredentials({
     userId,

@@ -15,7 +15,7 @@ import {
 import { extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 
-/** The connection a link's file needs: its provider, and the account its data names. */
+/** The connection a link's file needs, and what finds the file on it. */
 export type LinkConnection =
   | { provider: "DRIVE"; link: LinkDocTypeForProvider<"DRIVE"> }
   | { provider: "webdav"; connectorId: string; filePath: string }
@@ -42,7 +42,7 @@ export const toLinkConnection = (link: LinkDocType): LinkConnection | null => {
   }
 }
 
-/** The owner's connections the catalog's lists check, read once per request. */
+/** The owner's connections the catalogs' lists check, read once per request. */
 export type ServedConnections = {
   isGoogleConnected: boolean
   /** The connectors the owner connected and has not changed since. */
@@ -124,7 +124,7 @@ export const compareNewestFirst = (
 /**
  * Whether the library shows the book: no protected tag hides it, and the
  * user did not mark it not interested. The catalogs serve the shown books
- * whose first link, the one the app reads them from, `isLinkServed`.
+ * whose first link, the one the app reads them from, passes `isLinkServed`.
  */
 export const isBookShown = ({
   book,

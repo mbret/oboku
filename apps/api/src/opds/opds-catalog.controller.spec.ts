@@ -168,8 +168,10 @@ const PROTECTED_TAG = { _id: "tag-private", rx_model: "tag", isProtected: true }
 
 const NAS_PASSWORD = "nas-password-1234"
 
-/** The password secret's value, as the app encrypts it with the master key. */
-const ENCRYPTED_NAS_PASSWORD = { iv: "password-iv", data: "encrypted-password" }
+const NAS_PASSWORD_SECRET_VALUE = {
+  iv: "password-iv",
+  data: "encrypted-password",
+}
 
 const NAS_PASSWORD_SECRET: SecretDocType = {
   _id: "secret-nas",
@@ -179,7 +181,7 @@ const NAS_PASSWORD_SECRET: SecretDocType = {
   name: "NAS password",
   createdAt: "2026-01-01T00:00:00.000Z",
   modifiedAt: null,
-  value: ENCRYPTED_NAS_PASSWORD,
+  value: NAS_PASSWORD_SECRET_VALUE,
 }
 
 const NAS_USERNAME = "reader"
@@ -192,10 +194,10 @@ const toNasConnector = (host: string): WebdavConnectorDocType => ({
   passwordAsSecretId: NAS_PASSWORD_SECRET._id,
 })
 
-/** The connector the owner connects, until a test starts its server. */
+/** The NAS connector at a placeholder address, which `connectNasServer` replaces with its server's. */
 const NAS_CONNECTOR = toNasConnector("nas.example.com")
 
-/** A connector the owner never connects. */
+/** A second connector, not connected unless a test connects it. */
 const OFFICE_CONNECTOR: WebdavConnectorDocType = {
   ...NAS_CONNECTOR,
   id: "connector-office",
@@ -212,7 +214,6 @@ const NAS_LINK = {
   book: "book-hyperion",
 }
 
-/** A WebDAV link from before links named their connector. */
 const UNNAMED_CONNECTOR_LINK = {
   _id: "link-unnamed-connector",
   rx_model: "link",
@@ -1524,7 +1525,7 @@ describe("OpdsCatalogController", () => {
         provider: "webdav",
         credentials: {
           connector,
-          passwordSecretValue: ENCRYPTED_NAS_PASSWORD,
+          passwordSecretValue: NAS_PASSWORD_SECRET_VALUE,
           password: NAS_PASSWORD,
         },
         accountId: connector.id,
@@ -1532,14 +1533,12 @@ describe("OpdsCatalogController", () => {
         scopes: [],
       })
 
-    /** Gives the owner's settings these connectors. */
     const setConnectors = (connectors: WebdavConnectorDocType[]) => {
       createNanoInstanceForUser.mockResolvedValue(
         createLibraryDb({ ...LIBRARY, connectors }),
       )
     }
 
-    /** Starts a server for the NAS connector, and connects it. */
     const connectNasServer = async (
       options?: Parameters<typeof startWebdavServer>[0],
     ) => {

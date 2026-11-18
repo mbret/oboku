@@ -64,7 +64,6 @@ const throwServerFailure = (error: unknown): never => {
   throw toServerFailure(error)
 }
 
-/** Streams the link's file from the server of the connector it names, as the user's settings hold it now. */
 const streamConnectorFile = async ({
   db,
   link,

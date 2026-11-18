@@ -118,12 +118,11 @@ const toWebdavFailure = (error: unknown) => {
 type UsableConnection =
   | Extract<LinkConnection, { provider: "DRIVE" }>
   | (Extract<LinkConnection, { provider: "webdav" }> & {
-      /** The copy kept when connecting: the password only goes to its address. */
+      /** The connector as connected: the password only goes to its address and username. */
       connector: WebdavConnectorDocType
       password: string
     })
 
-/** The ids of the links whose connection the catalogs can use. */
 const readServedLinkIds = async ({
   db,
   connections,
@@ -438,7 +437,6 @@ export class OpdsBooksService {
     return { couchName, book, connection }
   }
 
-  /** The connection a link needs, while it is usable: none otherwise. */
   private async findUsableConnection({
     owner,
     couchName,
@@ -466,7 +464,6 @@ export class OpdsBooksService {
     return credentials ? { ...linkConnection, ...credentials } : null
   }
 
-  /** The owner's connections the catalog's lists check, read once per request. */
   private async findServedConnections({
     userId,
     couchName,
@@ -563,11 +560,8 @@ export class OpdsBooksService {
   }
 
   /**
-   * Streams a book's file from its WebDAV server, through the connector copy
-   * kept when connecting and the password the owner let the API keep, cut at
-   * the size the server states. A server that refuses the password (401)
-   * loses its connection, as a lost Google connection does: the owner
-   * connects the connector again.
+   * A server that refuses the password (401) loses its connection, as a lost
+   * Google connection does: the owner connects the connector again.
    */
   private async streamWebdavBook({
     owner,
