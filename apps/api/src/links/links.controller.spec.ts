@@ -246,6 +246,21 @@ describe("LinksController", () => {
     )
   })
 
+  it("states the length the server's download states, and reserves it rather than the size its metadata states", async () => {
+    download.mockResolvedValue({
+      stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+      size: BOOK_BYTES.length,
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
+
+    expect(response.status).toBe(200)
+    expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+    expect(reserveWithinQuotas).toHaveBeenCalledWith(
+      expect.objectContaining({ bytes: BOOK_BYTES.length }),
+    )
+  })
+
   it("answers 404 for a link the reader's library does not hold", async () => {
     const response = await downloadLink("link-of-someone-else")
 

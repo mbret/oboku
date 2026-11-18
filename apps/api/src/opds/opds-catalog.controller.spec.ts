@@ -463,15 +463,18 @@ const isPortAddress = (
 
 /**
  * A WebDAV server holding one book for the NAS connector's credentials. It
- * answers `refusalStatus` to every request instead, when set, and states no
- * size for the book unless `isSizeStated`.
+ * answers `refusalStatus` to every request instead, when set. It states no
+ * size for the book unless `isSizeStated`, and sends its download chunked
+ * unless `isLengthStated`.
  */
 async function startWebdavServer({
   refusalStatus,
   isSizeStated = true,
+  isLengthStated = true,
 }: {
   refusalStatus?: number
   isSizeStated?: boolean
+  isLengthStated?: boolean
 } = {}) {
   const requests: IncomingMessage[] = []
   const server = createServer(function answerRequest(serverRequest, response) {
@@ -511,7 +514,12 @@ async function startWebdavServer({
       return
     }
 
-    response.writeHead(200, { "content-type": "application/epub+zip" })
+    response.writeHead(200, {
+      "content-type": "application/epub+zip",
+      ...(isLengthStated && {
+        "content-length": Buffer.byteLength(BOOK_BYTES),
+      }),
+    })
     response.end(BOOK_BYTES)
   }).listen(0, "127.0.0.1")
 
@@ -1630,6 +1638,7 @@ describe("OpdsCatalogController", () => {
       expect(response.headers["content-disposition"]).toBe(
         "attachment; filename=Hyperion.epub",
       )
+      expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
       expect(response.body.toString()).toBe(BOOK_BYTES)
       expect(
         requests.map(({ method, url, headers }) => ({
@@ -1653,6 +1662,19 @@ describe("OpdsCatalogController", () => {
         expect.objectContaining({ userId: OWNER.id, bytes: BOOK_BYTES.length }),
       )
       expect(mintAccessToken).not.toHaveBeenCalled()
+    })
+
+    it("states no length when the server's download states none, reserving the size its metadata states", async () => {
+      await connectNasServer({ isLengthStated: false })
+
+      const response = await getBookFile("book-hyperion")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-length"]).toBeUndefined()
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({ bytes: BOOK_BYTES.length }),
+      )
     })
 
     it("sends the password only to the address the connector was connected with, though the settings change right after its checks", async () => {

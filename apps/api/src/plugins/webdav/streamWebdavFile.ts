@@ -12,9 +12,11 @@ export class FileSizeUnstatedError extends Error {
 }
 
 /**
- * Streams a file from the server `connector` names, with `password`. The
- * stream fails past the size the server states: the server is the user's,
- * and could state less than it sends.
+ * Streams a file from the server `connector` names, with `password`. `size`
+ * is the length the server's download states, when uncompressed. The stream
+ * fails past `expectedSize`, that length or else the size the file's
+ * metadata states: the server is the user's, and could state less than it
+ * sends.
  *
  * @throws the WebDAV client's errors as they come, so each caller answers
  * them by its own rules, and `FileSizeUnstatedError` when the server states
@@ -39,16 +41,18 @@ export const streamWebdavFile = async ({
 
   if (!isSizeStated) throw new FileSizeUnstatedError()
 
-  const { stream } = await downloadFromWebdav(client, filePath)
+  const { stream, size } = await downloadFromWebdav(client, filePath)
+  const expectedSize = size ?? statedSize
 
   return {
     stream: pipeline(
       stream,
-      createByteLimitTransform(statedSize),
+      createByteLimitTransform(expectedSize),
       function leaveErrorsToTheMeteredStream() {},
     ),
     name,
     contentType,
-    statedSize,
+    size,
+    expectedSize,
   }
 }

@@ -581,7 +581,8 @@ export class OpdsBooksService {
     return {
       ...toServedFile(book),
       stream: file.stream,
-      expectedSize: file.statedSize,
+      size: file.size,
+      expectedSize: file.expectedSize,
     }
   }
 

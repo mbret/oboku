@@ -120,15 +120,17 @@ export class LinksService {
 
     if (!isWebdavLink) throw new BadRequestException()
 
-    const { stream, name, contentType, statedSize } = await streamConnectorFile(
-      { db, link, providerCredentials },
-    ).catch(throwServerFailure)
+    const { stream, name, contentType, size, expectedSize } =
+      await streamConnectorFile({ db, link, providerCredentials }).catch(
+        throwServerFailure,
+      )
 
     return {
       stream,
       name: name ?? link.data.filePath.split("/").pop() ?? link._id,
       contentType: contentType || UNKNOWN_CONTENT_TYPE,
-      expectedSize: statedSize,
+      size,
+      expectedSize,
     }
   }
 }
