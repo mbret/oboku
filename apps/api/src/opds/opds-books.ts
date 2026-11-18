@@ -8,14 +8,65 @@ import {
   getUrlExtension,
   isBookProtected,
   type LinkDocType,
+  type LinkDocTypeForProvider,
   READER_ACCEPTED_EXTENSIONS,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 
-/** The provider whose books the catalogs serve, through the owner's Google connection. */
-export const SERVED_LINK_TYPE = "DRIVE" satisfies LinkDocType["type"]
+/** The connection a link's file needs: its provider, and the account its data names. */
+export type LinkConnection =
+  | { provider: "DRIVE"; link: LinkDocTypeForProvider<"DRIVE"> }
+  | { provider: "webdav"; connectorId: string; filePath: string }
+
+/**
+ * The connection a link's file needs, none for a provider the catalogs
+ * cannot reach, or a WebDAV link that names no connector. Links do not
+ * record their Google account yet (#996): every Drive link needs the owner's
+ * one Google connection.
+ */
+export const toLinkConnection = (link: LinkDocType): LinkConnection | null => {
+  switch (link.type) {
+    case "DRIVE":
+      return { provider: link.type, link }
+    case "webdav": {
+      const { connectorId, filePath } = link.data
+
+      return connectorId === undefined
+        ? null
+        : { provider: link.type, connectorId, filePath }
+    }
+    default:
+      return null
+  }
+}
+
+/** The owner's connections the catalog's lists check, read once per request. */
+export type ServedConnections = {
+  isGoogleConnected: boolean
+  /** The connectors the owner connected and has not changed since. */
+  connectedConnectorIds: ReadonlySet<string>
+}
+
+/** Whether the catalogs list a link's file: the connection it needs is usable. */
+export const isLinkServed = ({
+  link,
+  connections,
+}: {
+  link: LinkDocType
+  connections: ServedConnections
+}) => {
+  const linkConnection = toLinkConnection(link)
+
+  if (linkConnection?.provider === "DRIVE") return connections.isGoogleConnected
+
+  if (linkConnection?.provider === "webdav") {
+    return connections.connectedConnectorIds.has(linkConnection.connectorId)
+  }
+
+  return false
+}
 
 /** E-reader apps decode JPEG; not all of them decode the WebP oboku stores. */
 export const SERVED_COVER_TYPE = "image/jpeg"
@@ -73,7 +124,7 @@ export const compareNewestFirst = (
 /**
  * Whether the library shows the book: no protected tag hides it, and the
  * user did not mark it not interested. The catalogs serve the shown books
- * whose first link, the one the app reads them from, is a Google Drive file.
+ * whose first link, the one the app reads them from, `isLinkServed`.
  */
 export const isBookShown = ({
   book,

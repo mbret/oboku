@@ -94,6 +94,14 @@ export const isSignInRefused = (error: unknown) => {
   )
 }
 
+/**
+ * Whether the server refused the password itself (401). Unlike
+ * `isSignInRefused`, a 403 does not count: once a connector signed in, a 403
+ * on one file refuses that file, not the password.
+ */
+export const isPasswordRefused = (error: unknown) =>
+  toAnsweredStatus(error) === 401
+
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({
   connector,
