@@ -13,10 +13,7 @@ A catalog lists the books of your library that oboku's server can reach on its o
 
 Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
 
-The **What catalogs list** section of the **Integrations > OPDS servers** screen shows the sources of these books: Google Drive and each WebDAV connector. An icon at the end of each source shows its state:
-
-* **Set up**, a check mark: the catalogs list the books of the source.
-* **Not set up**, an empty circle: the catalogs list the books of the source after you connect your Google account or the connector. Tap the source to connect it.
+The **What catalogs list** section of the **Integrations > OPDS servers** screen lists the kinds of sources catalogs serve: Google Drive and WebDAV. Tap one to open its screen, where you connect your Google account or each WebDAV connector.
 
 The section also names the kinds of sources that catalogs cannot list yet.
 
@@ -60,7 +57,7 @@ The password is not your oboku password and opens nothing but the server's catal
 
 Each instance caps how many servers an account can have, 10 by default. Its administrator sets the cap from the [admin panel](/self-hosting/admin#opds-servers).
 
-## Set up a reading app
+## Set up a reading app { #set-up-a-reading-app }
 
 In KOReader:
 
