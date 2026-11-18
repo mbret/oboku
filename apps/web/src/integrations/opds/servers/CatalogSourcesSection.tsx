@@ -1,20 +1,19 @@
 import { BlockRounded } from "@mui/icons-material"
 import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import type {
-  ConnectableConnectorType,
-  ConnectorConnectionDto,
-  DataSourceDocType,
-} from "@oboku/shared"
+import type { ConnectableConnectorType, DataSourceDocType } from "@oboku/shared"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { generatePath } from "react-router"
 import { ListItemLink } from "../../../common/lists"
 import { PageSection } from "../../../common/PageSection"
 import { useConfig } from "../../../config/useConfig"
-import { toConnectorLabel } from "../../../connectors/connectorDetails"
-import { useConnectorConnection } from "../../../connectors/connection/useConnectorConnection"
-import { useConnectors } from "../../../connectors/useConnectors"
+import { useConnectorConnections } from "../../../connectors/connection/useConnectorConnections"
+import {
+  CONNECTOR_DETAILS,
+  toConnectorLabel,
+} from "../../../connectors/connectorDetails"
 import { ROUTES } from "../../../navigation/routes"
 import { isQueryUnavailable } from "../../../queries/isQueryUnavailable"
+import { useSettings } from "../../../settings/useSettings"
 import { useGoogleConnection } from "../../google/connection/useGoogleConnection"
 import { plugin as googleDrivePlugin } from "../../google/googleDrivePlugin"
 import { getPluginByType, type Plugin, plugins } from "../../plugins/configure"
@@ -25,129 +24,162 @@ const SERVED_CONNECTOR_TYPES = [
   "webdav",
 ] as const satisfies ReadonlyArray<ConnectableConnectorType>
 
-type SourceState =
-  | "set-up"
-  | "google-not-connected"
-  | "connector-not-connected"
-  | "connector-changed"
-  | "no-connector"
+const isServedConnectorType = (type: string) =>
+  SERVED_CONNECTOR_TYPES.some((servedType) => servedType === type)
 
-const SOURCE_STATES: Record<SourceState, string> = {
-  "set-up": "Set up. Catalogs list its books.",
-  "google-not-connected": "Not set up. Connect your Google account.",
-  "connector-not-connected": "Not set up. Connect this connector.",
-  "connector-changed":
-    "Not set up. You changed this connector or its password. Connect it again.",
-  "no-connector": "Not set up. Add a connector, then connect it.",
+type QueryState = Pick<
+  UseQueryResult,
+  "data" | "isError" | "isPending" | "fetchStatus"
+>
+
+const toQueriesState = (queries: QueryState[]) => {
+  const isEveryQueryLoaded = queries.every((query) => query.data !== undefined)
+
+  if (isEveryQueryLoaded) return "loaded"
+
+  const isAnyQueryUnavailable = queries.some(
+    (query) => query.isError || isQueryUnavailable(query),
+  )
+
+  return isAnyQueryUnavailable ? "unavailable" : "loading"
 }
 
-const CONNECTION_STATES: Record<ConnectorConnectionDto["status"], SourceState> =
-  {
-    connected: "set-up",
-    "connector-changed": "connector-changed",
-  }
-
-const describeSourceState = <TData,>({
-  query,
-  toState,
-}: {
-  query: Pick<
-    UseQueryResult<TData>,
-    "data" | "isError" | "isPending" | "fetchStatus"
-  >
-  toState: (data: TData) => SourceState
-}) => {
-  if (query.data !== undefined) return SOURCE_STATES[toState(query.data)]
-
-  if (isQueryUnavailable(query)) return "Its state can't be loaded right now."
-
-  if (query.isError) return "Something went wrong while loading its state."
-
-  return "Loading its state…"
+type SetUpSource = {
+  key: string
+  to: string
+  plugin: Plugin
+  detail: string
 }
 
-function GoogleDriveSourceItem() {
-  const googleConnectionQuery = useGoogleConnection()
-  const state = describeSourceState({
-    query: googleConnectionQuery,
-    toState: function toGoogleConnectionState({ connection }) {
-      return connection ? "set-up" : "google-not-connected"
-    },
-  })
-
+function NoteItem({ text }: { text: string }) {
   return (
-    <ListItemLink
-      to={ROUTES.INTEGRATION_GOOGLE}
-      icon={<googleDrivePlugin.Icon />}
-      primary={googleDrivePlugin.name}
-      secondary={state}
-    />
+    <ListItem>
+      <ListItemText secondary={text} />
+    </ListItem>
   )
 }
 
-function ConnectorSourceItem({
-  type,
-  connectorId,
-  label,
+function SetUpSourcesSection({
+  isGoogleDriveServed,
 }: {
-  type: ConnectableConnectorType
-  connectorId: string
-  label: string
+  isGoogleDriveServed: boolean
 }) {
-  const { Icon } = getPluginByType(type)
-  const connectionQuery = useConnectorConnection({ connectorId })
-  const state = describeSourceState({
-    query: connectionQuery,
-    toState: function toConnectorConnectionState(connection) {
-      return connection
-        ? CONNECTION_STATES[connection.status]
-        : "connector-not-connected"
-    },
+  const googleConnectionQuery = useGoogleConnection({
+    enabled: isGoogleDriveServed,
   })
+  const connectorConnectionsQuery = useConnectorConnections()
+  const settingsQuery = useSettings()
+  const queriesState = toQueriesState(
+    isGoogleDriveServed
+      ? [googleConnectionQuery, connectorConnectionsQuery, settingsQuery]
+      : [connectorConnectionsQuery, settingsQuery],
+  )
+  const googleConnection = isGoogleDriveServed
+    ? googleConnectionQuery.data?.connection
+    : null
+  const connectedConnectorIds = new Set(
+    connectorConnectionsQuery.data?.connections
+      .filter(({ status }) => status === "connected")
+      .map(({ connectorId }) => connectorId),
+  )
+  const connectedConnectors =
+    settingsQuery.data?.connectors?.filter(
+      function isConnectedServedConnector(connector) {
+        return (
+          isServedConnectorType(connector.type) &&
+          connectedConnectorIds.has(connector.id)
+        )
+      },
+    ) ?? []
+  const setUpSources: SetUpSource[] = [
+    ...(googleConnection
+      ? [
+          {
+            key: "google",
+            to: ROUTES.INTEGRATION_GOOGLE,
+            plugin: googleDrivePlugin,
+            detail: googleConnection.accountName,
+          },
+        ]
+      : []),
+    ...connectedConnectors.map(function toSetUpConnector(connector) {
+      return {
+        key: connector.id,
+        to: generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
+          type: connector.type,
+          id: connector.id,
+        }),
+        plugin: getPluginByType(connector.type),
+        detail: toConnectorLabel(connector),
+      }
+    }),
+  ]
+  const isNothingSetUp = queriesState === "loaded" && setUpSources.length === 0
 
   return (
-    <ListItemLink
-      to={generatePath(ROUTES.INTEGRATION_CONNECTORS_EDIT, {
-        type,
-        id: connectorId,
-      })}
-      icon={<Icon />}
-      primary={label}
-      secondary={state}
-    />
+    <PageSection title="Sources set up">
+      <NoteItem text="Catalogs list the books of these sources. They leave out books under a protected tag or marked not interested." />
+      {queriesState === "loading" && (
+        <NoteItem text="Loading the sources set up…" />
+      )}
+      {queriesState === "unavailable" && (
+        <NoteItem text="The sources set up can't be loaded right now." />
+      )}
+      {isNothingSetUp && (
+        <NoteItem text="Nothing set up yet. Add a source below." />
+      )}
+      {queriesState === "loaded" &&
+        setUpSources.map(function toSetUpSourceItem({
+          key,
+          to,
+          plugin,
+          detail,
+        }) {
+          return (
+            <ListItemLink
+              key={key}
+              to={to}
+              icon={<plugin.Icon />}
+              primary={plugin.name}
+              secondary={detail}
+            />
+          )
+        })}
+    </PageSection>
   )
 }
 
-function ConnectorSourceItems({ type }: { type: ConnectableConnectorType }) {
-  const { Icon, name } = getPluginByType(type)
-  const { data: connectors, isSuccess } = useConnectors({ type })
+function AvailableSourcesSection({
+  isGoogleDriveServed,
+}: {
+  isGoogleDriveServed: boolean
+}) {
+  return (
+    <PageSection title="Sources available">
+      {isGoogleDriveServed && (
+        <ListItemLink
+          to={ROUTES.INTEGRATION_GOOGLE}
+          icon={<googleDrivePlugin.Icon />}
+          primary={googleDrivePlugin.name}
+        />
+      )}
+      {SERVED_CONNECTOR_TYPES.map(function toServedConnectorTypeItem(type) {
+        const { Icon, name } = getPluginByType(type)
 
-  if (!isSuccess) return null
-
-  const hasConnectors = !!connectors?.length
-
-  if (!hasConnectors) {
-    return (
-      <ListItemLink
-        to={generatePath(ROUTES.INTEGRATION_CONNECTORS_NEW, { type })}
-        icon={<Icon />}
-        primary={name}
-        secondary={SOURCE_STATES["no-connector"]}
-      />
-    )
-  }
-
-  return connectors.map((connector) => (
-    <ConnectorSourceItem
-      key={connector.id}
-      type={type}
-      connectorId={connector.id}
-      label={toConnectorLabel(connector)}
-    />
-  ))
+        return (
+          <ListItemLink
+            key={type}
+            to={CONNECTOR_DETAILS[type].integrationRoute}
+            icon={<Icon />}
+            primary={name}
+          />
+        )
+      })}
+    </PageSection>
+  )
 }
 
-function UnservedSourcesItem({
+function UnservedSourcesSection({
   unservedPlugins,
 }: {
   unservedPlugins: Plugin[]
@@ -160,21 +192,21 @@ function UnservedSourcesItem({
     .join(", ")
 
   return (
-    <ListItem>
-      <ListItemIcon>
-        <BlockRounded />
-      </ListItemIcon>
-      <ListItemText primary="Not available yet" secondary={names} />
-    </ListItem>
+    <PageSection title="Sources not available yet">
+      <ListItem>
+        <ListItemIcon>
+          <BlockRounded />
+        </ListItemIcon>
+        <ListItemText primary={names} />
+      </ListItem>
+    </PageSection>
   )
 }
 
 export function CatalogSourcesSection() {
   const { data: config } = useConfig()
   const isPluginVisible = useGetIsPluginVisible()
-  const isGoogleDriveServed =
-    !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED &&
-    isPluginVisible(googleDrivePlugin)
+  const isGoogleDriveServed = !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED
   const servedTypes: ReadonlyArray<DataSourceDocType["type"]> =
     isGoogleDriveServed
       ? [googleDrivePlugin.type, ...SERVED_CONNECTOR_TYPES]
@@ -184,15 +216,10 @@ export function CatalogSourcesSection() {
   )
 
   return (
-    <PageSection title="What catalogs list">
-      <ListItem>
-        <ListItemText secondary="Catalogs list the books of the sources that are set up. They leave out books under a protected tag or marked not interested." />
-      </ListItem>
-      {isGoogleDriveServed && <GoogleDriveSourceItem />}
-      {SERVED_CONNECTOR_TYPES.map((type) => (
-        <ConnectorSourceItems key={type} type={type} />
-      ))}
-      <UnservedSourcesItem unservedPlugins={unservedPlugins} />
-    </PageSection>
+    <>
+      <SetUpSourcesSection isGoogleDriveServed={isGoogleDriveServed} />
+      <AvailableSourcesSection isGoogleDriveServed={isGoogleDriveServed} />
+      <UnservedSourcesSection unservedPlugins={unservedPlugins} />
+    </>
   )
 }

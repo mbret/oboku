@@ -166,12 +166,8 @@ export class GoogleConnectionService {
     })
 
     await Promise.all(
-      connections.map(({ accountId }) =>
-        this.providerConnectionsService.disconnect({
-          userId,
-          provider: GOOGLE_PROVIDER,
-          accountId,
-        }),
+      connections.map((connection) =>
+        this.providerConnectionsService.disconnect(connection),
       ),
     )
   }
@@ -198,11 +194,7 @@ export class GoogleConnectionService {
     )
     const connection = isConfigured ? await this.findConnection(userId) : null
     const credentials = connection
-      ? await this.providerConnectionsService.getCredentials({
-          userId,
-          provider: GOOGLE_PROVIDER,
-          accountId: connection.accountId,
-        })
+      ? await this.providerConnectionsService.getCredentials(connection)
       : null
 
     return credentials !== null
@@ -276,7 +268,9 @@ export class GoogleConnectionService {
   /**
    * Mints an access token from the stored refresh token. A connection whose
    * refresh token Google refuses, or whose credentials no longer decrypt, is
-   * lost: it is deleted, and the user connects again.
+   * lost: it is deleted, and the user connects again. If the user connected
+   * again while Google refused the previous connection, it mints from the
+   * newer one instead.
    */
   async mintAccessToken(userId: number): Promise<GoogleAccessTokenResponseDto> {
     const clientOptions = toGoogleOAuthClientOptions(
@@ -297,29 +291,42 @@ export class GoogleConnectionService {
       )
     }
 
-    const credentials = await this.providerConnectionsService.getCredentials({
-      userId,
-      provider: GOOGLE_PROVIDER,
-      accountId: connection.accountId,
-    })
-    const tokensOfLiveConnection =
+    const credentials =
+      await this.providerConnectionsService.getCredentials(connection)
+    const tokens =
       credentials &&
       (await refreshAccessToken({
         clientOptions,
         refreshToken: credentials.refreshToken,
       }))
 
-    if (!tokensOfLiveConnection) {
-      await this.disconnect(userId)
+    if (!tokens) {
+      const isRefusedConnectionDeleted =
+        await this.providerConnectionsService.disconnectIfUnchanged(connection)
+
+      if (isRefusedConnectionDeleted) {
+        throw createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST,
+        )
+      }
+
+      const latestConnection = await this.findConnection(userId)
+
+      if (!latestConnection) {
+        throw createObokuBadRequest(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND,
+        )
+      }
+
+      const isConnectedAgainSince =
+        latestConnection.updatedAt.getTime() > connection.updatedAt.getTime()
+
+      if (isConnectedAgainSince) return this.mintAccessToken(userId)
 
       throw createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST)
     }
 
-    const {
-      access_token: accessToken,
-      expiry_date: expiryDate,
-      scope,
-    } = tokensOfLiveConnection
+    const { access_token: accessToken, expiry_date: expiryDate, scope } = tokens
 
     if (!accessToken || !expiryDate) {
       throw new Error(

@@ -79,7 +79,7 @@ describe("ProviderConnectionsService", () => {
     )
   })
 
-  it("lists the connections without their credentials", async () => {
+  it("lists the connections with their key, without their credentials", async () => {
     const { service } = await createService()
 
     await service.connect({ userId: READER_ID, ...GOOGLE_CONNECTION })
@@ -91,6 +91,8 @@ describe("ProviderConnectionsService", () => {
 
     expect(connections).toEqual([
       {
+        userId: READER_ID,
+        provider: "google",
         accountId: "google-sub",
         accountName: "reader@gmail.com",
         scopes: ["https://www.googleapis.com/auth/drive.file"],

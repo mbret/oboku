@@ -12,7 +12,11 @@ import {
 } from "@mui/material"
 import { memo } from "react"
 import { generatePath, Link as RouterLink, useNavigate } from "react-router"
-import type { SettingsConnectorType } from "@oboku/shared"
+import {
+  isConnectableConnectorType,
+  type SettingsConnectorType,
+} from "@oboku/shared"
+import { ConnectorConnectionChip } from "./connection/ConnectorConnectionChip"
 import { useConnector } from "./useConnector"
 import { useConnectors } from "./useConnectors"
 import { links } from "@oboku/shared"
@@ -41,6 +45,9 @@ const ConnectorListItem = memo(function ConnectorListItem({
           connector?.url ? `${connector?.username}@********` : "********"
         }
       />
+      {isConnectableConnectorType(connectorType) && (
+        <ConnectorConnectionChip connectorId={id} />
+      )}
     </ListItemButton>
   )
 })
