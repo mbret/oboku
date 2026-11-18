@@ -103,6 +103,22 @@ export class ProviderConnectionPostgresService {
     })
   }
 
+  async deleteIfUnchanged({
+    userId,
+    provider,
+    accountId,
+    updatedAt,
+  }: ConnectionKey & { updatedAt: Date }) {
+    const { affected } = await this.connectionRepository.delete({
+      user_id: userId,
+      provider,
+      account_id: accountId,
+      updated_at: updatedAt,
+    })
+
+    return Boolean(affected)
+  }
+
   async deleteByUserId(userId: number) {
     await this.connectionRepository.delete({ user_id: userId })
   }

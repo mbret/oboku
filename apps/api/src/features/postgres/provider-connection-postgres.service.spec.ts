@@ -136,6 +136,33 @@ describe("ProviderConnectionPostgresService", () => {
     expect(deleteOrder).toBeLessThan(upsertOrder ?? 0)
   })
 
+  it.each([
+    [1, true],
+    [0, false],
+  ])(
+    "deletes by user, provider, account and update time, answering whether %i row matched",
+    async (affected, isDeleted) => {
+      const { repository, service } = await createService()
+      const updatedAt = new Date("2026-11-18T10:00:00.000Z")
+      repository.delete.mockResolvedValue({ affected })
+
+      const answer = await service.deleteIfUnchanged({
+        userId: 1,
+        provider: "webdav",
+        accountId: "nas",
+        updatedAt,
+      })
+
+      expect(repository.delete).toHaveBeenCalledWith({
+        user_id: 1,
+        provider: "webdav",
+        account_id: "nas",
+        updated_at: updatedAt,
+      })
+      expect(answer).toBe(isDeleted)
+    },
+  )
+
   it("deletes every connection of a user", async () => {
     const { repository, service } = await createService()
 

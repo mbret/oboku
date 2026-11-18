@@ -410,7 +410,10 @@ export class ProviderConnectionPostgresEntity {
   @Column({ type: "timestamp with time zone" })
   connected_at!: Date
 
-  /** When the credentials were last written. */
+  /**
+   * When the credentials were last written. Always written from a JS `Date`,
+   * in milliseconds: `deleteIfUnchanged` matches it for equality.
+   */
   @Column({ type: "timestamp with time zone" })
   updated_at!: Date
 }

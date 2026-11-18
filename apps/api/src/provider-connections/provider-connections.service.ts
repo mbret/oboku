@@ -99,9 +99,22 @@ const toAssociatedData = ({ userId, provider, accountId }: ConnectionKey) =>
 const toProviderWideAssociatedData = ({ userId, provider }: ProviderKey) =>
   `${userId}:${provider}`
 
-const toConnectionWithoutCredentials = (
+/** A connection as `list` returns it: its key, without its credentials. */
+export type StoredConnection<
+  P extends ConnectionProvider = ConnectionProvider,
+> = ConnectionKey<P> & {
+  accountName: string
+  scopes: string[]
+  connectedAt: Date
+  updatedAt: Date
+}
+
+const toStoredConnection = <P extends ConnectionProvider>(
+  { userId, provider }: ProviderKey<P>,
   connection: ProviderConnectionPostgresEntity,
-) => ({
+): StoredConnection<P> => ({
+  userId,
+  provider,
   accountId: connection.account_id,
   accountName: connection.account_name,
   scopes: connection.scopes,
@@ -118,10 +131,10 @@ export class ProviderConnectionsService {
   ) {}
 
   /** The user's connections to the provider without their credentials, the latest first. */
-  async list(key: ProviderKey) {
+  async list<P extends ConnectionProvider>(key: ProviderKey<P>) {
     const connections = await this.connectionPostgresService.list(key)
 
-    return connections.map(toConnectionWithoutCredentials)
+    return connections.map((connection) => toStoredConnection(key, connection))
   }
 
   /**
@@ -193,5 +206,25 @@ export class ProviderConnectionsService {
 
   async disconnect(key: ConnectionKey) {
     await this.connectionPostgresService.delete(key)
+  }
+
+  /**
+   * Deletes the connection, as `list` returned it, only while its credentials
+   * are still the ones written at its `updatedAt`.
+   *
+   * @returns `false` when it deleted nothing.
+   */
+  disconnectIfUnchanged({
+    userId,
+    provider,
+    accountId,
+    updatedAt,
+  }: StoredConnection) {
+    return this.connectionPostgresService.deleteIfUnchanged({
+      userId,
+      provider,
+      accountId,
+      updatedAt,
+    })
   }
 }

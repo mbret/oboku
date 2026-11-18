@@ -14,6 +14,7 @@ import { streamWebdavFile } from "../../plugins/webdav/streamWebdavFile.js"
 import {
   type EncryptedSecretValue,
   ProviderConnectionsService,
+  type StoredConnection,
 } from "../provider-connections.service.js"
 import type {
   ConnectorConnectionDto,
@@ -64,15 +65,15 @@ const readSecretValues = async (
 const toConnectorConnection = ({
   connectorId,
   status,
-  connectedAt,
+  storedConnection,
 }: {
   connectorId: string
   status: ConnectorConnectionStatus
-  connectedAt: Date
+  storedConnection: Pick<StoredConnection, "connectedAt">
 }): ConnectorConnectionDto => ({
   connectorId,
   status,
-  connectedAt: connectedAt.toISOString(),
+  connectedAt: storedConnection.connectedAt.toISOString(),
 })
 
 /**
@@ -94,12 +95,7 @@ export class ConnectorConnectionService {
     const connectionsByType = await Promise.all(
       CONNECTABLE_CONNECTOR_TYPES.map(
         async function listConnectionsOfType(provider) {
-          const connections = await providerConnectionsService.list({
-            userId,
-            provider,
-          })
-
-          return connections.map((connection) => ({ ...connection, provider }))
+          return providerConnectionsService.list({ userId, provider })
         },
       ),
     )
@@ -178,7 +174,7 @@ export class ConnectorConnectionService {
     return toConnectorConnection({
       connectorId: connector.id,
       status: "connected",
-      connectedAt: storedConnection.connectedAt,
+      storedConnection,
     })
   }
 
@@ -208,39 +204,40 @@ export class ConnectorConnectionService {
       connectors.map(({ passwordAsSecretId }) => passwordAsSecretId),
     )
     const connections = await Promise.all(
-      storedConnections.map(async function toCurrentConnection({
-        provider,
-        accountId: connectorId,
-        connectedAt,
-      }) {
-        const key = { userId, provider, accountId: connectorId }
-        const credentials = await providerConnectionsService.getCredentials(key)
-        const connector = connectors.find(
-          ({ id, type }) => id === connectorId && type === provider,
-        )
-        const passwordSecretValue = connector
-          ? secretValues.get(connector.passwordAsSecretId)
-          : undefined
-        const isPasswordSecretStored = passwordSecretValue !== undefined
-
-        if (!credentials || !connector || !isPasswordSecretStored) {
-          await providerConnectionsService.disconnect(key)
-
-          return null
-        }
-
-        const isUnchangedSinceConnected =
-          isDeepStrictEqual(credentials.connector, connector) &&
-          isDeepStrictEqual(
-            credentials.passwordSecretValue,
-            passwordSecretValue,
+      storedConnections.map(
+        async function toCurrentConnection(storedConnection) {
+          const { provider, accountId: connectorId } = storedConnection
+          const credentials =
+            await providerConnectionsService.getCredentials(storedConnection)
+          const connector = connectors.find(
+            ({ id, type }) => id === connectorId && type === provider,
           )
-        const status: ConnectorConnectionStatus = isUnchangedSinceConnected
-          ? "connected"
-          : "connector-changed"
+          const passwordSecretValue = connector
+            ? secretValues.get(connector.passwordAsSecretId)
+            : undefined
+          const isPasswordSecretStored = passwordSecretValue !== undefined
 
-        return { connectorId, status, connectedAt, credentials }
-      }),
+          if (!credentials || !connector || !isPasswordSecretStored) {
+            await providerConnectionsService.disconnectIfUnchanged(
+              storedConnection,
+            )
+
+            return null
+          }
+
+          const isUnchangedSinceConnected =
+            isDeepStrictEqual(credentials.connector, connector) &&
+            isDeepStrictEqual(
+              credentials.passwordSecretValue,
+              passwordSecretValue,
+            )
+          const status: ConnectorConnectionStatus = isUnchangedSinceConnected
+            ? "connected"
+            : "connector-changed"
+
+          return { storedConnection, connectorId, status, credentials }
+        },
+      ),
     )
 
     return connections.filter((connection) => connection !== null)
@@ -311,8 +308,13 @@ export class ConnectorConnectionService {
     try {
       return await streamWebdavFile({ connector, password, filePath })
     } catch (error) {
-      if (isPasswordRefused(error)) {
-        await this.disconnect({ userId, connectorId })
+      const isDisconnected =
+        isPasswordRefused(error) &&
+        (await this.providerConnectionsService.disconnectIfUnchanged(
+          connection.storedConnection,
+        ))
+
+      if (isDisconnected) {
         this.logger.warn(
           `Disconnected connector ${connectorId} of user ${userId}: its WebDAV server refused the password`,
         )
