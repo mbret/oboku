@@ -11,7 +11,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
 const plugin: ObokuPlugin<"URI"> = {
   type: TYPE,
-  name: "uri",
+  name: "Web link",
   canRemoveResource: false,
   canSynchronize: false,
   Icon: HttpRounded,

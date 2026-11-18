@@ -15,7 +15,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
 export const plugin: ObokuPlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
-  name: "file",
+  name: "Local file",
   canRemoveResource: false,
   canSynchronize: false,
   UploadBookComponent: UploadBook,

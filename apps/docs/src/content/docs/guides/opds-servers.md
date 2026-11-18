@@ -13,6 +13,8 @@ A catalog lists the books of your library that oboku's server can reach on its o
 
 Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
 
+The **What catalogs list** section of the **Integrations > OPDS servers** screen shows each of these sources with its state. **Set up** means the catalogs list its books. **Waiting to set up** means they could, once you connect it. Tap a source to connect it. The section also names the kinds of sources that catalogs cannot serve yet.
+
 Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 
 * books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
