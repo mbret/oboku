@@ -17,9 +17,24 @@ import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.se
 import { LinksController } from "./links.controller.js"
 import { LinksService } from "./links.service.js"
 
-const { getFileMetadata, download } = vi.hoisted(
-  function createWebdavOperationSpies() {
-    return { getFileMetadata: vi.fn(), download: vi.fn() }
+const { getFileMetadata, download, createWebdavClient } = vi.hoisted(
+  function createWebdavSpies() {
+    return {
+      getFileMetadata: vi.fn(),
+      download: vi.fn(),
+      createWebdavClient: vi.fn(),
+    }
+  },
+)
+
+vi.mock(
+  "../plugins/webdav/index.js",
+  async function spyOnWebdavClient(importOriginal) {
+    const webdav =
+      await importOriginal<typeof import("../plugins/webdav/index.js")>()
+    createWebdavClient.mockImplementation(webdav.createWebdavClient)
+
+    return { ...webdav, createWebdavClient }
   },
 )
 
@@ -112,8 +127,9 @@ const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
 
 const createLibraryDb = (
   documents: ReadonlyArray<Record<string, unknown>>,
+  connectors: ReadonlyArray<Record<string, unknown>> = [KOOFR_CONNECTOR],
 ) => ({
-  get: async () => ({ _id: "settings", connectors: [KOOFR_CONNECTOR] }),
+  get: async () => ({ _id: "settings", connectors }),
   find: async ({ selector }: { selector: Record<string, unknown> }) => ({
     docs: documents.filter(function matchesSelector(doc) {
       return Object.entries(selector).every(
@@ -206,6 +222,10 @@ describe("LinksController", () => {
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
+    expect(createWebdavClient).toHaveBeenCalledWith({
+      ...KOOFR_CONNECTOR,
+      password: PROVIDER_CREDENTIALS.password,
+    })
     expect(download).toHaveBeenCalledWith(
       expect.anything(),
       WEBDAV_LINK.data.filePath,
@@ -234,6 +254,22 @@ describe("LinksController", () => {
       errors: [{ code: ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND }],
     })
     expect(download).not.toHaveBeenCalled()
+  })
+
+  it("answers 502 for a link whose connector the settings no longer hold, reaching no server", async () => {
+    createNanoInstanceForUser.mockResolvedValue(
+      createLibraryDb([WEBDAV_LINK, URI_LINK], []),
+    )
+
+    const response = await downloadLink(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE },
+      ],
+    })
+    expect(createWebdavClient).not.toHaveBeenCalled()
   })
 
   it("answers 400 for a link that is not a WebDAV link", async () => {

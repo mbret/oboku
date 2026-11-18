@@ -24,9 +24,9 @@ import { AtRestCipher } from "../crypto/at-rest-cipher.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
+  ProviderConnectionPostgresEntity,
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
-import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
 import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
@@ -1654,13 +1654,10 @@ describe("OpdsCatalogController", () => {
       expect(mintAccessToken).not.toHaveBeenCalled()
     })
 
-    it("sends the password only to the address the connector was connected with, though the settings change after the check", async () => {
-      const { nasConnector, requests } = await connectNasServer()
+    it("sends the password only to the address the connector was connected with, though the settings change right after its checks", async () => {
+      const { host, nasConnector, requests } = await connectNasServer()
       const otherServer = await startWebdavServer()
-      setPrivateNetworkAllowedHosts([
-        nasConnector.url.split("/")[2] ?? "",
-        otherServer.host,
-      ])
+      setPrivateNetworkAllowedHosts([host, otherServer.host])
       const libraryDb = createLibraryDb({
         ...LIBRARY,
         connectors: [nasConnector, OFFICE_CONNECTOR],
@@ -1674,6 +1671,7 @@ describe("OpdsCatalogController", () => {
       })
       const readSettings = vi
         .fn()
+        .mockImplementationOnce(libraryDb.get)
         .mockImplementationOnce(libraryDb.get)
         .mockImplementation(movedLibraryDb.get)
       createNanoInstanceForUser.mockResolvedValue({

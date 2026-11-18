@@ -5,7 +5,6 @@ import {
   getBookCoverKey,
   isBookProtected,
   type LinkDocTypeForProvider,
-  type WebdavConnectorDocType,
 } from "@oboku/shared"
 import {
   BadGatewayException,
@@ -22,8 +21,7 @@ import { findOne } from "../couch/findOne.js"
 import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
-import { isPasswordRefused, toAnsweredStatus } from "../plugins/webdav/index.js"
-import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
+import { toAnsweredStatus } from "../plugins/webdav/index.js"
 import { ConnectorConnectionService } from "../provider-connections/connectors/connector-connection.service.js"
 import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
 import { toByteCount } from "../http/contentLength.js"
@@ -34,11 +32,9 @@ import {
   compareNewestFirst,
   isBookShown,
   isLinkServed,
-  type LinkConnection,
   SERVED_COVER_TYPE,
   type ServedConnections,
   toCatalogPage,
-  toLinkConnection,
   toServedFile,
   toServedShelfBookIds,
   toServedTitle,
@@ -114,15 +110,6 @@ const toWebdavFailure = (error: unknown) => {
   return toProviderFailure({ isRateLimited, isFileUnreachable })
 }
 
-/** The connection a served book's file needs, with what reaching it takes. */
-type UsableConnection =
-  | Extract<LinkConnection, { provider: "DRIVE" }>
-  | (Extract<LinkConnection, { provider: "webdav" }> & {
-      /** The connector as connected: the password only goes to its address and username. */
-      connector: WebdavConnectorDocType
-      password: string
-    })
-
 const readServedLinkIds = async ({
   db,
   connections,
@@ -130,23 +117,21 @@ const readServedLinkIds = async ({
   db: createNano.DocumentScope<unknown>
   connections: ServedConnections
 }) => {
-  const isAnyConnectorUsable = connections.connectedConnectorIds.size > 0
   const [driveLinks, webdavLinks] = await Promise.all([
-    connections.isGoogleConnected
-      ? find(db, "link", { selector: { type: "DRIVE" }, fields: ["_id"] })
-      : [],
-    isAnyConnectorUsable
-      ? find(db, "link", {
-          selector: { type: "webdav" },
-          fields: ["_id", "type", "data"],
-        })
-      : [],
+    find(db, "link", {
+      selector: { type: "DRIVE" },
+      fields: ["_id", "type", "data"],
+    }),
+    find(db, "link", {
+      selector: { type: "webdav" },
+      fields: ["_id", "type", "data"],
+    }),
   ])
-  const servedWebdavLinks = webdavLinks.filter((link) =>
+  const servedLinks = [...driveLinks, ...webdavLinks].filter((link) =>
     isLinkServed({ link, connections }),
   )
 
-  return new Set([...driveLinks, ...servedWebdavLinks].map(({ _id }) => _id))
+  return new Set(servedLinks.map(({ _id }) => _id))
 }
 
 /**
@@ -366,11 +351,24 @@ export class OpdsBooksService {
     owner: Pick<UserPostgresEntity, "id" | "couchName">
     bookId: string
   }) {
-    const { book, connection } = await this.findServedBook({ owner, bookId })
+    const { couchName, book, firstLink } = await this.findServedBook({
+      owner,
+      bookId,
+    })
 
-    return connection.provider === "webdav"
-      ? this.streamWebdavBook({ owner, book, connection })
-      : this.streamDriveBook({ owner, book, link: connection.link })
+    switch (firstLink.type) {
+      case "DRIVE":
+        return this.streamDriveBook({ owner, book, link: firstLink })
+      case "webdav":
+        return this.streamWebdavBook({
+          owner,
+          couchName,
+          book,
+          link: firstLink,
+        })
+      default:
+        throw new NotFoundException()
+    }
   }
 
   /**
@@ -397,9 +395,9 @@ export class OpdsBooksService {
   }
 
   /**
-   * A book the owner's catalogs serve, with the connection its first link
-   * needs, from the owner's library, whose CouchDB user name also keys the
-   * book's cover.
+   * A book the owner's catalogs serve, with its first link, from the owner's
+   * library, whose CouchDB user name also keys the book's cover. A book is
+   * served exactly when the catalogs list it.
    *
    * @throws `NotFoundException` for an owner without a CouchDB user name, or a
    * book the catalogs do not serve.
@@ -418,50 +416,24 @@ export class OpdsBooksService {
     const db = await this.couchService.createNanoInstanceForUser({
       email: couchName,
     })
-    const [book, protectedTagIds] = await Promise.all([
+    const [book, protectedTagIds, connections] = await Promise.all([
       findOne("book", { selector: { _id: bookId } }, { db }),
       findProtectedTagIds(db),
+      this.findServedConnections({ userId: owner.id, couchName }),
     ])
     const firstLinkId = book?.links[0]
     const firstLink = firstLinkId
       ? await findOne("link", { selector: { _id: firstLinkId } }, { db })
       : null
-    const linkConnection = firstLink ? toLinkConnection(firstLink) : null
-    const connection =
-      book && linkConnection && isBookShown({ book, protectedTagIds })
-        ? await this.findUsableConnection({ owner, couchName, linkConnection })
-        : null
+    const isServed =
+      !!book &&
+      !!firstLink &&
+      isLinkServed({ link: firstLink, connections }) &&
+      isBookShown({ book, protectedTagIds })
 
-    if (!book || !connection) throw new NotFoundException()
+    if (!book || !firstLink || !isServed) throw new NotFoundException()
 
-    return { couchName, book, connection }
-  }
-
-  private async findUsableConnection({
-    owner,
-    couchName,
-    linkConnection,
-  }: {
-    owner: Pick<UserPostgresEntity, "id">
-    couchName: string
-    linkConnection: LinkConnection
-  }): Promise<UsableConnection | null> {
-    if (linkConnection.provider === "DRIVE") {
-      const isGoogleConnected = await this.googleConnectionService.isConnected(
-        owner.id,
-      )
-
-      return isGoogleConnected ? linkConnection : null
-    }
-
-    const credentials =
-      await this.connectorConnectionService.findUsableCredentials({
-        userId: owner.id,
-        email: couchName,
-        connectorId: linkConnection.connectorId,
-      })
-
-    return credentials ? { ...linkConnection, ...credentials } : null
+    return { couchName, book, firstLink }
   }
 
   private async findServedConnections({
@@ -560,44 +532,47 @@ export class OpdsBooksService {
   }
 
   /**
-   * A server that refuses the password (401) loses its connection, as a lost
-   * Google connection does: the owner connects the connector again.
+   * Streams a book's file from the server of its connector, through the
+   * connector's connection: the password never leaves
+   * `ConnectorConnectionService`.
    */
   private async streamWebdavBook({
     owner,
+    couchName,
     book,
-    connection,
+    link,
   }: {
     owner: Pick<UserPostgresEntity, "id">
+    couchName: string
     book: Pick<BookDocType, "_id" | "metadata" | "metadataSourcePriority">
-    connection: Extract<UsableConnection, { provider: "webdav" }>
+    link: LinkDocTypeForProvider<"webdav">
   }) {
-    const { connector, password, filePath, connectorId } = connection
+    const { connectorId, filePath } = link.data
 
-    try {
-      const { stream, statedSize } = await streamWebdavFile({
-        connector,
-        password,
+    if (connectorId === undefined) throw new NotFoundException()
+
+    const { logger } = this
+    const file = await this.connectorConnectionService
+      .streamConnectedFile({
+        userId: owner.id,
+        email: couchName,
+        connectorId,
         filePath,
       })
-
-      return { ...toServedFile(book), stream, expectedSize: statedSize }
-    } catch (error) {
-      this.logger.warn(
-        `Reading book ${book._id} from its WebDAV server failed: status ${toAnsweredStatus(error) ?? "none"}`,
-      )
-
-      if (isPasswordRefused(error)) {
-        this.logger.warn(
-          `Disconnected connector ${connectorId}: its WebDAV server refused the password`,
+      .catch(function answerWebdavFailure(error: unknown) {
+        logger.warn(
+          `Reading book ${book._id} from its WebDAV server failed: status ${toAnsweredStatus(error) ?? "none"}`,
         )
-        await this.connectorConnectionService.disconnect({
-          userId: owner.id,
-          connectorId,
-        })
-      }
 
-      throw toWebdavFailure(error)
+        throw toWebdavFailure(error)
+      })
+
+    if (!file) throw new NotFoundException()
+
+    return {
+      ...toServedFile(book),
+      stream: file.stream,
+      expectedSize: file.statedSize,
     }
   }
 

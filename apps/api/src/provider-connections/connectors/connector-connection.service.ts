@@ -1,16 +1,16 @@
 import { isDeepStrictEqual } from "node:util"
 import { BadRequestException, Injectable } from "@nestjs/common"
-import {
-  CONNECTABLE_CONNECTOR_TYPES,
-  type ConnectableConnectorType,
-  ObokuErrorCode,
-  type SettingsConnectorDocType,
-} from "@oboku/shared"
+import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
-import { isSignInRefused, signInToWebdav } from "../../plugins/webdav/index.js"
+import {
+  isPasswordRefused,
+  isSignInRefused,
+  signInToWebdav,
+} from "../../plugins/webdav/index.js"
+import { streamWebdavFile } from "../../plugins/webdav/streamWebdavFile.js"
 import {
   type EncryptedSecretValue,
   ProviderConnectionsService,
@@ -35,10 +35,6 @@ const toSignInError = (error: unknown) => {
 }
 
 type UserDb = Awaited<ReturnType<CouchService["createNanoInstanceForUser"]>>
-
-type StoredConnection = Awaited<
-  ReturnType<ProviderConnectionsService["list"]>
->[number] & { provider: ConnectableConnectorType }
 
 const readConnectors = async (db: UserDb) => {
   const settings = await getSettings(db)
@@ -178,50 +174,12 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * A stored connection with its credentials, and whether its connector and
-   * its password secret's value still match the copies kept when
-   * connecting. Deletes a connection whose connector or password secret no
-   * longer exists, or whose credentials no longer decrypt, and returns none
-   * for it.
+   * Each of the user's connector connections, with its credentials, and
+   * whether its connector and its password secret's value still match the
+   * copies kept when connecting. Deletes a connection whose connector or
+   * password secret no longer exists, or whose credentials no longer
+   * decrypt, and returns none for it.
    */
-  private async toCurrentConnection({
-    userId,
-    storedConnection: { provider, accountId: connectorId, connectedAt },
-    connectors,
-    secretValues,
-  }: {
-    userId: number
-    storedConnection: StoredConnection
-    connectors: ReadonlyArray<SettingsConnectorDocType>
-    secretValues: ReadonlyMap<string, EncryptedSecretValue | null>
-  }) {
-    const key = { userId, provider, accountId: connectorId }
-    const credentials =
-      await this.providerConnectionsService.getCredentials(key)
-    const connector = connectors.find(
-      ({ id, type }) => id === connectorId && type === provider,
-    )
-    const passwordSecretValue = connector
-      ? secretValues.get(connector.passwordAsSecretId)
-      : undefined
-    const isPasswordSecretStored = passwordSecretValue !== undefined
-
-    if (!credentials || !connector || !isPasswordSecretStored) {
-      await this.providerConnectionsService.disconnect(key)
-
-      return null
-    }
-
-    const isUnchangedSinceConnected =
-      isDeepStrictEqual(credentials.connector, connector) &&
-      isDeepStrictEqual(credentials.passwordSecretValue, passwordSecretValue)
-    const status: ConnectorConnectionStatus = isUnchangedSinceConnected
-      ? "connected"
-      : "connector-changed"
-
-    return { connectorId, status, connectedAt, credentials }
-  }
-
   private async readConnections({
     userId,
     email,
@@ -233,6 +191,7 @@ export class ConnectorConnectionService {
 
     if (storedConnections.length === 0) return []
 
+    const { providerConnectionsService } = this
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const connectors = await readConnectors(db)
     const secretValues = await readSecretValues(
@@ -240,14 +199,39 @@ export class ConnectorConnectionService {
       connectors.map(({ passwordAsSecretId }) => passwordAsSecretId),
     )
     const connections = await Promise.all(
-      storedConnections.map((storedConnection) =>
-        this.toCurrentConnection({
-          userId,
-          storedConnection,
-          connectors,
-          secretValues,
-        }),
-      ),
+      storedConnections.map(async function toCurrentConnection({
+        provider,
+        accountId: connectorId,
+        connectedAt,
+      }) {
+        const key = { userId, provider, accountId: connectorId }
+        const credentials = await providerConnectionsService.getCredentials(key)
+        const connector = connectors.find(
+          ({ id, type }) => id === connectorId && type === provider,
+        )
+        const passwordSecretValue = connector
+          ? secretValues.get(connector.passwordAsSecretId)
+          : undefined
+        const isPasswordSecretStored = passwordSecretValue !== undefined
+
+        if (!credentials || !connector || !isPasswordSecretStored) {
+          await providerConnectionsService.disconnect(key)
+
+          return null
+        }
+
+        const isUnchangedSinceConnected =
+          isDeepStrictEqual(credentials.connector, connector) &&
+          isDeepStrictEqual(
+            credentials.passwordSecretValue,
+            passwordSecretValue,
+          )
+        const status: ConnectorConnectionStatus = isUnchangedSinceConnected
+          ? "connected"
+          : "connector-changed"
+
+        return { connectorId, status, connectedAt, credentials }
+      }),
     )
 
     return connections.filter((connection) => connection !== null)
@@ -283,48 +267,46 @@ export class ConnectorConnectionService {
   }
 
   /**
-   * The connector as it was when connected, and its password: none while
-   * the connector is not connected, or changed since. Reach the server with
-   * this copy, never the settings' connector: the password only goes to the
-   * address and username it was connected with. Deletes the connection as
-   * `list` does.
+   * Streams a file from the server of a connector the user connected, with
+   * the password the API keeps. It reaches the server through the connector
+   * as it was when connected, never the settings' connector, so the password
+   * only goes to the address and username it was connected with. None while
+   * the connector is not connected, or changed since. A server that refuses
+   * the password (401) loses its connection, as a lost Google connection
+   * does: the user connects the connector again.
+   *
+   * @throws the errors of `streamWebdavFile`.
    */
-  async findUsableCredentials({
+  async streamConnectedFile({
     userId,
     email,
     connectorId,
+    filePath,
   }: {
     userId: number
     email: string
     connectorId: string
+    filePath: string
   }) {
-    const storedConnections = await this.listStoredConnections(userId)
-    const storedConnection = storedConnections.find(
-      ({ accountId }) => accountId === connectorId,
+    const connections = await this.readConnections({ userId, email })
+    const connection = connections.find(
+      ({ connectorId: id, status }) =>
+        id === connectorId && status === "connected",
     )
 
-    if (!storedConnection) return null
+    if (!connection) return null
 
-    const db = await this.couchService.createNanoInstanceForUser({ email })
-    const connectors = await readConnectors(db)
-    const connector = connectors.find(({ id }) => id === connectorId)
-    const secretValues = await readSecretValues(
-      db,
-      connector ? [connector.passwordAsSecretId] : [],
-    )
-    const connection = await this.toCurrentConnection({
-      userId,
-      storedConnection,
-      connectors,
-      secretValues,
-    })
-    const isUsable = connection?.status === "connected"
+    const { connector, password } = connection.credentials
 
-    if (!connection || !isUsable) return null
+    try {
+      return await streamWebdavFile({ connector, password, filePath })
+    } catch (error) {
+      if (isPasswordRefused(error)) {
+        await this.disconnect({ userId, connectorId })
+      }
 
-    const { connector: connectedConnector, password } = connection.credentials
-
-    return { connector: connectedConnector, password }
+      throw error
+    }
   }
 
   async disconnect({

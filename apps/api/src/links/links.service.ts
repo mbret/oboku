@@ -17,8 +17,11 @@ import {
   toObokuErrorBody,
 } from "../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../http/publicAddress.js"
-import { getConnectorById } from "../plugins/connectorHelpers.js"
-import { isSignInRefused, toAnsweredStatus } from "../plugins/webdav/index.js"
+import {
+  findLinkConnector,
+  isSignInRefused,
+  toAnsweredStatus,
+} from "../plugins/webdav/index.js"
 import {
   FileSizeUnstatedError,
   streamWebdavFile,
@@ -73,17 +76,15 @@ const streamConnectorFile = async ({
   link: LinkDocTypeForProvider<"webdav">
   providerCredentials: WebdavApiCredentials
 }) => {
-  const { connectorId, filePath } = link.data
-  const connector = connectorId
-    ? await getConnectorById(db, connectorId, "webdav")
-    : null
-
-  if (!connector) throw new Error("WebDAV connector not found")
+  const connector = await findLinkConnector({
+    db,
+    connectorId: link.data.connectorId,
+  })
 
   return streamWebdavFile({
     connector,
     password: providerCredentials.password,
-    filePath,
+    filePath: link.data.filePath,
   })
 }
 
