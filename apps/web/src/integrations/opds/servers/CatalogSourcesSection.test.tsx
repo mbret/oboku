@@ -227,13 +227,13 @@ describe("CatalogSourcesSection", () => {
     )
   })
 
-  it("lists no Google Drive row, and does not name it, when this instance hides Google Drive", async () => {
+  it("lists Google Drive while this instance can connect a Google account, though it hides the Drive plugin", async () => {
     mocks.config.FEATURE_GOOGLE_DRIVE_ENABLED = false
     renderSection({ googleConnection: GOOGLE_CONNECTION })
 
-    await findSourceLink(/nas\.example\.com/)
-
-    expect(screen.queryByText(/Google Drive/)).toBeNull()
+    expect(
+      await findSourceLink(/Google Drive Set up\. Catalogs list its books\./),
+    ).toBeTruthy()
   })
 
   it.each([

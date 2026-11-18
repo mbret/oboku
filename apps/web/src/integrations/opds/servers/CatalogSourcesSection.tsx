@@ -172,9 +172,7 @@ function UnservedSourcesItem({
 export function CatalogSourcesSection() {
   const { data: config } = useConfig()
   const isPluginVisible = useGetIsPluginVisible()
-  const isGoogleDriveServed =
-    !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED &&
-    isPluginVisible(googleDrivePlugin)
+  const isGoogleDriveServed = !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED
   const servedTypes: ReadonlyArray<DataSourceDocType["type"]> =
     isGoogleDriveServed
       ? [googleDrivePlugin.type, ...SERVED_CONNECTOR_TYPES]
