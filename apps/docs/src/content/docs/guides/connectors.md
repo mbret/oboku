@@ -27,7 +27,7 @@ oboku's server signs in to the connector's server with the password first, and k
 
 If you edited the connector or its password since you connected it, the screen says so, and offers **Connect again**.
 
-In the list of connectors on **Integrations > WebDAV**, a connected connector shows **Connected**, and one you changed since shows **Changed**.
+In the list of connectors on **Integrations > WebDAV**, a connected connector shows **Connected**. If you edited the connector or its password after you connected it, the connector shows **Changed**.
 
 ### Disconnect
 

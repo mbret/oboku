@@ -1,14 +1,19 @@
 import type {
-  ConnectorConnectionDto,
   SettingsConnectorDocType,
   SettingsConnectorType,
   SynologyDriveConnectorDocType,
-  WebdavConnectorDocType,
 } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { cleanup, render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { createConnectorConnectionsQueryOptions } from "./connection/connectorConnectionsQueryOptions"
+import {
+  ARCHIVE,
+  NAS,
+  OFFICE,
+  toConnection,
+} from "./connection/connectorConnection.fixture"
 import { HttpClientApiContext } from "../http"
 import type { HttpApiClientWeb } from "../http/HttpClientApi.web"
 import {
@@ -29,20 +34,6 @@ vi.mock("../settings/useSettings", function mockSettings() {
   return { useSettings: mocks.useSettings }
 })
 
-const toWebdavConnector = (
-  id: string,
-  host: string,
-): WebdavConnectorDocType => ({
-  id,
-  type: "webdav",
-  url: `https://${host}/dav/`,
-  username: "reader",
-  passwordAsSecretId: `${id}-password`,
-})
-
-const NAS = toWebdavConnector("nas", "nas.example.com")
-const OFFICE = toWebdavConnector("office", "office.example.com")
-const ARCHIVE = toWebdavConnector("archive", "archive.example.com")
 const SYNOLOGY: SynologyDriveConnectorDocType = {
   id: "synology",
   type: "synology-drive",
@@ -50,15 +41,6 @@ const SYNOLOGY: SynologyDriveConnectorDocType = {
   username: "reader",
   passwordAsSecretId: "synology-password",
 }
-
-const toConnection = (
-  connectorId: string,
-  status: ConnectorConnectionDto["status"],
-): ConnectorConnectionDto => ({
-  connectorId,
-  status,
-  connectedAt: "2026-11-16T08:00:00.000Z",
-})
 
 const renderSection = ({
   connectorType,
@@ -91,7 +73,7 @@ const renderSection = ({
     </QueryClientProvider>,
   )
 
-  return { get }
+  return { get, client, queryClient }
 }
 
 const findConnectorRow = (host: RegExp) =>
@@ -128,18 +110,27 @@ describe("ConnectorInfoSection", () => {
     ).not.toMatch(/Connected|Changed/)
   })
 
-  it("marks no connector when the connections cannot load", async () => {
-    const { get } = renderSection({
+  it("marks no connector while the connections load, nor once they fail", async () => {
+    const answer = Promise.withResolvers<never>()
+    const { client, queryClient } = renderSection({
       connectorType: "webdav",
       connectors: [NAS],
-      answerConnections: () => Promise.reject(new Error("API unreachable")),
+      answerConnections: () => answer.promise,
     })
+    const nas = await findConnectorRow(/nas\.example\.com/)
 
-    await vi.waitFor(() => expect(get).toHaveBeenCalled())
+    expect(nas.textContent).not.toMatch(/Connected|Changed/)
 
-    expect(
-      (await findConnectorRow(/nas\.example\.com/)).textContent,
-    ).not.toMatch(/Connected|Changed/)
+    answer.reject(new Error("API unreachable"))
+    const { queryKey } = createConnectorConnectionsQueryOptions({
+      httpClientApi: client,
+      profileId: "profile",
+    })
+    await expect
+      .poll(() => queryClient.getQueryState(queryKey)?.status)
+      .toBe("error")
+
+    expect(nas.textContent).not.toMatch(/Connected|Changed/)
   })
 
   it("asks for no connection for a connector type that cannot connect", async () => {

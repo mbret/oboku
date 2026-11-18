@@ -1,5 +1,12 @@
-import { Chip } from "@mui/material"
+import { Chip, styled } from "@mui/material"
 import { useConnectorConnection } from "./useConnectorConnection"
+
+const StatusChip = styled(Chip)(function styleStatusChip({ theme }) {
+  return {
+    flexShrink: 0,
+    marginLeft: theme.spacing(1),
+  }
+})
 
 export function ConnectorConnectionChip({
   connectorId,
@@ -10,9 +17,9 @@ export function ConnectorConnectionChip({
 
   switch (connection?.status) {
     case "connected":
-      return <Chip size="small" label="Connected" />
+      return <StatusChip size="small" label="Connected" />
     case "connector-changed":
-      return <Chip size="small" color="warning" label="Changed" />
+      return <StatusChip size="small" color="warning" label="Changed" />
     default:
       return null
   }

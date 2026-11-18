@@ -11,6 +11,12 @@ import {
 import { cleanup, render, screen, within } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  ARCHIVE,
+  NAS,
+  OFFICE,
+  toConnection,
+} from "../../../connectors/connection/connectorConnection.fixture"
 import { HttpClientApiContext } from "../../../http"
 import type { HttpApiClientWeb } from "../../../http/HttpClientApi.web"
 import {
@@ -49,27 +55,6 @@ const GOOGLE_CONNECTION: GoogleConnectionDto = {
   accountName: "reader@example.com",
   connectedAt: "2026-11-16T08:00:00.000Z",
 }
-
-const toConnector = (id: string, host: string): WebdavConnectorDocType => ({
-  id,
-  type: "webdav",
-  url: `https://${host}/dav/`,
-  username: "reader",
-  passwordAsSecretId: `${id}-password`,
-})
-
-const NAS = toConnector("nas", "nas.example.com")
-const OFFICE = toConnector("office", "office.example.com")
-const ARCHIVE = toConnector("archive", "archive.example.com")
-
-const toConnection = (
-  connectorId: string,
-  status: ConnectorConnectionDto["status"],
-): ConnectorConnectionDto => ({
-  connectorId,
-  status,
-  connectedAt: "2026-11-16T08:00:00.000Z",
-})
 
 const setConnectors = (connectors: WebdavConnectorDocType[]) => {
   mocks.useSettings.mockReturnValue({
