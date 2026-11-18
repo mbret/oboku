@@ -1,6 +1,11 @@
 import { isDeepStrictEqual } from "node:util"
 import { BadRequestException, Injectable } from "@nestjs/common"
-import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
+import {
+  CONNECTABLE_CONNECTOR_TYPES,
+  type ConnectableConnectorType,
+  ObokuErrorCode,
+  type SettingsConnectorDocType,
+} from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
@@ -30,6 +35,10 @@ const toSignInError = (error: unknown) => {
 }
 
 type UserDb = Awaited<ReturnType<CouchService["createNanoInstanceForUser"]>>
+
+type StoredConnection = Awaited<
+  ReturnType<ProviderConnectionsService["list"]>
+>[number] & { provider: ConnectableConnectorType }
 
 const readConnectors = async (db: UserDb) => {
   const settings = await getSettings(db)
@@ -169,6 +178,82 @@ export class ConnectorConnectionService {
   }
 
   /**
+   * A stored connection with its credentials, and whether its connector, and
+   * its password secret's value, still match the copies kept when
+   * connecting. A connection whose connector or password secret no longer
+   * exists, or whose credentials no longer decrypt, is deleted: none.
+   */
+  private async toCurrentConnection({
+    userId,
+    storedConnection: { provider, accountId: connectorId, connectedAt },
+    connectors,
+    secretValues,
+  }: {
+    userId: number
+    storedConnection: StoredConnection
+    connectors: ReadonlyArray<SettingsConnectorDocType>
+    secretValues: ReadonlyMap<string, EncryptedSecretValue | null>
+  }) {
+    const key = { userId, provider, accountId: connectorId }
+    const credentials =
+      await this.providerConnectionsService.getCredentials(key)
+    const connector = connectors.find(
+      ({ id, type }) => id === connectorId && type === provider,
+    )
+    const passwordSecretValue = connector
+      ? secretValues.get(connector.passwordAsSecretId)
+      : undefined
+    const isPasswordSecretStored = passwordSecretValue !== undefined
+
+    if (!credentials || !connector || !isPasswordSecretStored) {
+      await this.providerConnectionsService.disconnect(key)
+
+      return null
+    }
+
+    const isUnchangedSinceConnected =
+      isDeepStrictEqual(credentials.connector, connector) &&
+      isDeepStrictEqual(credentials.passwordSecretValue, passwordSecretValue)
+    const status: ConnectorConnectionStatus = isUnchangedSinceConnected
+      ? "connected"
+      : "connector-changed"
+
+    return { connectorId, status, connectedAt, credentials }
+  }
+
+  /** Each of the user's connector connections, as `toCurrentConnection` reads it. */
+  private async readConnections({
+    userId,
+    email,
+  }: {
+    userId: number
+    email: string
+  }) {
+    const storedConnections = await this.listStoredConnections(userId)
+
+    if (storedConnections.length === 0) return []
+
+    const db = await this.couchService.createNanoInstanceForUser({ email })
+    const connectors = await readConnectors(db)
+    const secretValues = await readSecretValues(
+      db,
+      connectors.map(({ passwordAsSecretId }) => passwordAsSecretId),
+    )
+    const connections = await Promise.all(
+      storedConnections.map((storedConnection) =>
+        this.toCurrentConnection({
+          userId,
+          storedConnection,
+          connectors,
+          secretValues,
+        }),
+      ),
+    )
+
+    return connections.filter((connection) => connection !== null)
+  }
+
+  /**
    * The user's connector connections. A connection whose connector or
    * password secret no longer exists, or whose credentials no longer decrypt,
    * is deleted.
@@ -180,55 +265,67 @@ export class ConnectorConnectionService {
     userId: number
     email: string
   }): Promise<ConnectorConnectionDto[]> {
+    const connections = await this.readConnections({ userId, email })
+
+    return connections.map(toConnectorConnection)
+  }
+
+  /**
+   * The ids of the connectors the user connected that still match the copies
+   * kept when connecting. Deletes connections as `list` does.
+   */
+  async listConnectedIds({ userId, email }: { userId: number; email: string }) {
+    const connections = await this.readConnections({ userId, email })
+
+    return connections
+      .filter(({ status }) => status === "connected")
+      .map(({ connectorId }) => connectorId)
+  }
+
+  /**
+   * The copy of the connector kept when connecting, and its password, while
+   * the connector still matches it. Use the copy to reach the server, never
+   * the connector as the settings hold it later: the password only goes to
+   * the address and username it was connected with. None while the connector
+   * is not connected, or changed since. Deletes the connection as `list`
+   * does.
+   */
+  async findUsableCredentials({
+    userId,
+    email,
+    connectorId,
+  }: {
+    userId: number
+    email: string
+    connectorId: string
+  }) {
     const storedConnections = await this.listStoredConnections(userId)
+    const storedConnection = storedConnections.find(
+      ({ accountId }) => accountId === connectorId,
+    )
 
-    if (storedConnections.length === 0) return []
+    if (!storedConnection) return null
 
-    const { providerConnectionsService } = this
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const connectors = await readConnectors(db)
+    const connector = connectors.find(({ id }) => id === connectorId)
     const secretValues = await readSecretValues(
       db,
-      connectors.map(({ passwordAsSecretId }) => passwordAsSecretId),
+      connector ? [connector.passwordAsSecretId] : [],
     )
-    const connections = await Promise.all(
-      storedConnections.map(async function toCurrentConnection({
-        provider,
-        accountId: connectorId,
-        connectedAt,
-      }) {
-        const key = { userId, provider, accountId: connectorId }
-        const credentials = await providerConnectionsService.getCredentials(key)
-        const connector = connectors.find(
-          ({ id, type }) => id === connectorId && type === provider,
-        )
-        const passwordSecretValue = connector
-          ? secretValues.get(connector.passwordAsSecretId)
-          : undefined
-        const isPasswordSecretStored = passwordSecretValue !== undefined
+    const connection = await this.toCurrentConnection({
+      userId,
+      storedConnection,
+      connectors,
+      secretValues,
+    })
+    const isUsable = connection?.status === "connected"
 
-        if (!credentials || !connector || !isPasswordSecretStored) {
-          await providerConnectionsService.disconnect(key)
+    if (!connection || !isUsable) return null
 
-          return null
-        }
+    const { connector: connectedConnector, password } = connection.credentials
 
-        const isUnchangedSinceConnected =
-          isDeepStrictEqual(credentials.connector, connector) &&
-          isDeepStrictEqual(
-            credentials.passwordSecretValue,
-            passwordSecretValue,
-          )
-
-        return toConnectorConnection({
-          connectorId,
-          status: isUnchangedSinceConnected ? "connected" : "connector-changed",
-          connectedAt,
-        })
-      }),
-    )
-
-    return connections.filter((connection) => connection !== null)
+    return { connector: connectedConnector, password }
   }
 
   async disconnect({

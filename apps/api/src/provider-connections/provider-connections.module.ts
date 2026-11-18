@@ -18,6 +18,6 @@ import { ProviderConnectionsService } from "./provider-connections.service.js"
     ConnectorConnectionService,
     AtRestCipher,
   ],
-  exports: [GoogleConnectionService],
+  exports: [GoogleConnectionService, ConnectorConnectionService],
 })
 export class ProviderConnectionsModule {}
