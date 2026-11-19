@@ -1,35 +1,36 @@
 ---
 title: "Welcome"
-description: oboku is a free, open-source ebook and comic reader that syncs your library from Google Drive, Dropbox, OneDrive, WebDAV, Synology or your own server.
+description: oboku is a free, open-source ebook and comic reader that syncs your library from Google Drive, Dropbox, OneDrive, WebDAV, Synology, an OPDS catalog or your own server, and works with KOReader.
 ---
 
 
-## What is oboku ? { #what-is-oboku }
+## What is oboku? { #what-is-oboku }
 
-oboku is both a cloud or a self host-able service that allows you to synchronize your books and collections from various sources and read them. The cloud version is accessible at [https://app.oboku.me/](https://app.oboku.me/)
+oboku is a reading app and a sync service for your books. Use the cloud version at [https://app.oboku.me/](https://app.oboku.me/), or host it yourself.
 
-The core principle of oboku is to let you store your books wherever you want (Google Drive, Synology, Server, etc) and have the app directly access them. This is why you don't have to self host it to use it. As long as your content is accessible through a network you can synchronize it with the cloud version.
+Your books stay where you store them: Google Drive, Dropbox, OneDrive, Synology Drive, a WebDAV server, an OPDS catalog, or the server itself when you self-host oboku. The app reads them from there, so you do not have to self-host oboku to use it. If your books are reachable over the network, the cloud version can sync them.
 
-Because the server does not "own" or organize your books you can easily share any of your collections with anyone. They simply synchronize from it as well. Permissions are not handled by oboku, you are the one providing and sharing credentials with your friends.
+oboku does not own or organize your files, so you can share any of your folders with anyone. They sync from it as well. oboku does not handle permissions: you share the folder, and its credentials if it has some, with your friends.
 
-By self-hosting the service you will be able to synchronize your books directly from the server.
-
-The app also work fully offline and have a heavy focus on accessibility (eg: e-ink devices).
+The app works fully offline and has a strong focus on accessibility, such as e-ink devices.
 
 :::note
-If you are interested but feels like some features are lacking, you are encouraged to requests them. Oboku is driven by its community.
+If a feature you need is missing, request it. oboku is driven by its community.
 :::
 
-## **Key features:**
+## Key features
 
-* Full offline usage
-* Synchronize your books from external sources
-* Manage collections and tags
-* Control sensitive materials
-* Track your book progress
-* Visualize, sort and filter your books
-* Aim to support all known contents types
-* Share your libraries with your friends
+* Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. See the [supported contents](/guides/supported-contents).
+* Sync your books from the [providers](/guides/datasources) you already use, without uploading them to oboku.
+* Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-sources).
+* Track what you read, and search, sort and filter your library.
+* Sync your reading position with KOReader and the other apps that support KOReader sync. oboku can be their [sync server](/guides/koreader-sync-server), and its reader can [sync with them](/guides/koreader-progress-sync).
+* Browse your Google Drive and WebDAV books from KOReader and other reading apps through an [OPDS server](/guides/opds-servers).
+* Hide [sensitive books](/guides/privacy-and-parental-secure-control) until you unlock them, and blur their covers.
+* Compress the images of heavy comics and fix the identifiers of a book, then save it back to its source.
+* Switch to e-ink mode for higher contrast and no animations.
+* [Share a library](/guides/datasources#sharing-is-caring) with your friends: each of them gets a library of their own.
+* [Self-host](/self-hosting/installation) the whole service with Docker.
 
 ## How do we compare to similar / alternative services { #how-do-we-compare-to-similar-alternative-services }
 
@@ -53,8 +54,10 @@ Calibre Web is another similar project that was created many years ago and provi
 
 * No offline support
 * Not e-ink friendly
-* Limited choice of source prodivers (Calibre and Kobo sync)
-* It is a self hosted product and comes with the hassle of maintenance.&#x20;
+* Limited choice of source providers (Calibre and Kobo sync)
+* It is a self hosted product and comes with the hassle of maintenance.
+
+If you already run Calibre-Web, oboku can [sync the books of its OPDS catalog](/sync-providers/opds).
 
 In no way oboku wishes to undermine calibre-web and I want to personally thanks [janeczku](https://github.com/janeczku) and all the contributors for making the calibre-web project.
 
