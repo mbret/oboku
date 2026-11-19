@@ -19,7 +19,7 @@ The host is fixed at build time, so the app opens `app.oboku.me` only. A self-ho
 * **A pull request that changes `apps/android/**` or the workflow.** It builds without signing, so a broken config fails before the merge.
 * **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow**. It builds, signs, and uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
 
-The manual run needs two repository secrets:
+The manual run signs in the `android-release` environment. Create it in the repository settings, under **Environments**. Limit its deployment branches to `master`, so no other branch can read the signing key. Then add two secrets to that environment:
 
 | Secret                      | Value                                  |
 | --------------------------- | -------------------------------------- |
@@ -81,7 +81,13 @@ Google Play raises the [target API level](https://support.google.com/googleplay/
 
 ## Build on your computer
 
-Bubblewrap needs JDK 17 and the Android SDK. It reads their paths from `~/.bubblewrap/config.json`, and asks for them, or offers to download them, when the file is missing. From `apps/android`:
+Bubblewrap needs JDK 17 and the Android SDK. It reads their paths from `~/.bubblewrap/config.json`, and asks for them, or offers to download them, when the file is missing. Bubblewrap 1.27.0 rejects an SDK that has no `bin` or `tools` folder at its root, which is the layout Android Studio installs. Link the folder as the workflow does:
+
+```bash
+ln -s "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
+```
+
+From `apps/android`:
 
 ```bash
 pnpm dlx @bubblewrap/cli@1.27.0 update --skipVersionUpgrade --manifest=twa-manifest.json --directory=dist
