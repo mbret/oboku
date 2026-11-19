@@ -541,7 +541,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: AdminPanelSettingsRounded,
         title: "Admin panel",
         description:
-          "Manage user accounts and configure your instance from a dedicated admin panel.",
+          "Manage users, instance settings, usage and more from a dedicated admin panel.",
       },
       {
         Icon: VolunteerActivismRounded,
