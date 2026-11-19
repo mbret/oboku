@@ -30,7 +30,12 @@
   "fullScopeUrl": "https://app.oboku.me/",
   "minSdkVersion": 21,
   "orientation": "any",
-  "fingerprints": [],
+  "fingerprints": [
+    {
+      "name": "2021 build in the shared Google Drive folder",
+      "value": "23:2D:D3:7B:9B:E7:57:73:BD:F2:B9:68:9E:7F:3D:8F:09:DA:67:F9:88:BA:B1:52:81:EA:29:94:FC:45:D2:36"
+    }
+  ],
   "additionalTrustedOrigins": [],
   "retainedBundles": [],
   "protocolHandlers": [],

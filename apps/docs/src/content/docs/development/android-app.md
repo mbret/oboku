@@ -52,7 +52,7 @@ With Play App Signing, Google signs the store build with its own key. The key in
 Two files list the fingerprints, and they must agree:
 
 * `sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json`. The browser reads this file.
-* `fingerprints` in `apps/android/twa-manifest.json`, as `{ "name": "…", "value": "…" }` entries. Bubblewrap does not put them in the package.
+* `fingerprints` in `apps/android/twa-manifest.json`, as `{ "name": "…", "value": "…" }` entries.
 
 Two keys need a fingerprint:
 

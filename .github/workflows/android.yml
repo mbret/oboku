@@ -29,8 +29,8 @@ jobs:
 
       - name: Configure Bubblewrap
         run: |
-          # Bubblewrap 1.27.0 accepts an SDK only when sdkmanager is in <sdk>/bin
-          # or <sdk>/tools/bin (AndroidSdkTools.validatePath). The runner has it
+          # Bubblewrap 1.27.0 looks for sdkmanager in <sdk>/bin or <sdk>/tools/bin
+          # (AndroidSdkTools.validatePath and installBuildTools). The runner has it
           # in <sdk>/cmdline-tools/latest/bin.
           ln -sfn "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
           mkdir -p ~/.bubblewrap
