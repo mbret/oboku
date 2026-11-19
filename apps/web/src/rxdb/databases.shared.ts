@@ -43,6 +43,10 @@ import {
   koreaderPushCollection,
   type KoreaderPushCollection,
 } from "./collections/koreaderPush"
+import {
+  annotationCollection,
+  type AnnotationCollection,
+} from "./collections/annotation"
 import { RXDB_DATABASE_NAME } from "./constants.shared"
 
 // theses plugins does not get automatically added when building for production
@@ -67,6 +71,7 @@ type MyDatabaseCollections = {
   datasource: DataSourceCollection
   secret: SecretCollection
   koreaderpush: KoreaderPushCollection
+  annotation: AnnotationCollection
 }
 
 export type Database = RxDatabase<MyDatabaseCollections, any, any, unknown>
@@ -164,6 +169,7 @@ export const createDatabase = (
           },
           secret: secretCollection,
           koreaderpush: koreaderPushCollection,
+          annotation: annotationCollection,
         }),
       )
 

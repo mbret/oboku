@@ -59,6 +59,7 @@ export const useBackgroundReplication = () => {
       { collection: database.book, host: config?.API_COUCH_URI },
       { collection: database.datasource, host: config?.API_COUCH_URI_2 },
       { collection: database.tag, host: config?.API_COUCH_URI_2 },
+      { collection: database.annotation, host: config?.API_COUCH_URI_2 },
       { collection: database.link, host: config?.API_COUCH_URI_3 },
       { collection: database.settings, host: config?.API_COUCH_URI_3 },
       { collection: database.obokucollection, host: config?.API_COUCH_URI_4 },
