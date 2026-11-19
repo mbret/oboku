@@ -201,6 +201,52 @@ export type TagsDocType = CommonBase & {
   createdAt: string
 }
 
+/**
+ * A bookmark, a highlight or a note that the user made in a book. prose-reader
+ * calls all three "annotations". One document per annotation. Its `_id` is the
+ * id that prose-reader gives the annotation, a UUID: oboku does not generate
+ * another one. The reading position of a book is not an annotation: it stays
+ * on the book, in its `readingStateCurrentBookmark*` fields.
+ */
+export type AnnotationDocType = CommonBase & {
+  rx_model: "annotation"
+  /** The `_id` of the book the annotation was made in. */
+  bookId: string
+  /**
+   * Where the annotation is in the book, as prose-reader generated it: a range
+   * for a highlight, one place for a page bookmark. The reader locates the
+   * annotation with it and with nothing else.
+   */
+  cfi: string
+  /**
+   * The color of a highlight, as react-reader gives it: a CSS color such as
+   * `rgba(216, 191, 216, 1)`. Missing on a page bookmark.
+   */
+  highlightColor?: string | null
+  /**
+   * The note of the user. react-reader gives `""` for a highlight without a
+   * note.
+   */
+  notes?: string | null
+  /**
+   * The text the highlight covers, copied when the annotation is created. A
+   * list, an export or a search can show it without the book's file. It never
+   * locates the annotation. With koreaderDocument, it makes a repair possible
+   * when the book's file changes and the cfi stops resolving.
+   */
+  text?: string | null
+  /**
+   * The digest of the file the annotation was made in, the same value as
+   * `readingStateCurrentBookmarkKoreaderDocument` on a book. A different digest
+   * tells that the book's file changed since the annotation was made.
+   */
+  koreaderDocument?: string | null
+  /** When the annotation was created, as an ISO date. */
+  createdAt: string
+  /** When the annotation last changed, as an ISO date. `null` until the first change. */
+  modifiedAt: string | null
+}
+
 export type SecretDocType = CommonBase & {
   name: string
   rx_model: "secret"
