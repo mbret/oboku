@@ -68,7 +68,7 @@ export const useRemoveAllContents = () => {
 
                   return from(database.tag.find().incrementalRemove())
                 }),
-                mergeMap(() => {
+                mergeMap(function removeAnnotations() {
                   Logger.info("Removing annotations")
 
                   return from(database.annotation.find().incrementalRemove())
