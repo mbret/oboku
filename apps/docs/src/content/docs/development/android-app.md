@@ -14,12 +14,17 @@ The host is fixed at build time, so the app opens `app.oboku.me` only. A self-ho
 
 ## Workflow
 
-`.github/workflows/android.yml` generates the project with `bubblewrap update`, then builds it with `bubblewrap build`. It runs in two cases:
+`.github/workflows/android.yml` has two jobs:
 
-* **A pull request that changes `apps/android/**` or the workflow.** It builds without signing, so a broken config fails before the merge.
-* **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow**. It builds, signs, and uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
+* **`build`** generates the project with `bubblewrap update`, then builds it unsigned with `bubblewrap build --skipSigning`. It has no access to the signing key.
+* **`sign`** runs on a fresh runner. It signs the APK with `apksigner` from the Android SDK, and the bundle with `jarsigner` from the JDK. No npm package runs in this job, so Bubblewrap's dependencies never see the key.
 
-The manual run signs in the `android-release` environment. Create it in the repository settings, under **Environments**. Limit its deployment branches to `master`, so no other branch can read the signing key. Then add two secrets to that environment:
+The workflow runs in two cases:
+
+* **A pull request that changes `apps/android/**` or the workflow.** Only `build` runs, so a broken config fails before the merge.
+* **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow** on `master`. Both jobs run, and `sign` uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
+
+The `sign` job runs in the `android-release` environment. Create it in the repository settings, under **Environments**. Limit its deployment branches to `master`, so no other branch can read the signing key. Then add two secrets to that environment:
 
 | Secret                      | Value                                  |
 | --------------------------- | -------------------------------------- |
@@ -30,20 +35,19 @@ The manual run signs in the `android-release` environment. Create it in the repo
 
 With Play App Signing, Google signs the store build with its own key. The key in the workflow is the upload key: Google Play accepts a bundle only when this key signed it.
 
-1. Create the keystore with the JDK 17 `keytool`. It asks for a password and for the certificate fields:
+1. Create the keystore with `keytool`, in a private folder outside the repository. It asks for a password of at least 6 characters, then for the certificate fields:
 
    ```bash
    keytool -genkeypair -keystore android.keystore -alias android -keyalg RSA -validity 20000
    ```
 
-2. Use letters and digits only in the password, and at least 6 characters. Bubblewrap 1.27.0 sends the password to `apksigner` and `jarsigner` through a shell, so `$`, `"`, `` ` `` and `\` break the signing step.
-3. Encode the keystore and copy the output into `ANDROID_KEYSTORE_BASE64`. On macOS, use `base64 -i android.keystore`:
+2. Encode the keystore and copy the output into `ANDROID_KEYSTORE_BASE64`. On macOS, use `base64 -i android.keystore`:
 
    ```bash
    base64 -w0 android.keystore
    ```
 
-4. Keep a backup of the keystore and its password outside GitHub. Git ignores `*.keystore` files.
+3. Keep a backup of the keystore and its password outside GitHub.
 
 The workflow uses the keystore password as the key password too. A PKCS12 keystore, the `keytool` default, has no key password of its own.
 
@@ -93,10 +97,10 @@ From `apps/android`:
 pnpm dlx @bubblewrap/cli@1.27.0 update --skipVersionUpgrade --manifest=twa-manifest.json --directory=dist
 ```
 
-Then from `apps/android/dist`, with the upload keystore at `apps/android/android.keystore`:
+Then from `apps/android/dist`:
 
 ```bash
-pnpm dlx @bubblewrap/cli@1.27.0 build --manifest=../twa-manifest.json
+pnpm dlx @bubblewrap/cli@1.27.0 build --skipSigning --manifest=../twa-manifest.json
 ```
 
-Add `--skipSigning` to build without a keystore.
+Signed builds come from the workflow only, so Bubblewrap's dependencies never run next to the upload key.

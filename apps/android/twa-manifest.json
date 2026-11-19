@@ -16,7 +16,6 @@
   "iconUrl": "https://app.oboku.me/icon-512x512.png",
   "maskableIconUrl": "https://app.oboku.me/icon-maskable-512x512.png",
   "splashScreenFadeOutDuration": 300,
-  "signingKey": { "path": "../android.keystore", "alias": "android" },
   "appVersion": "1",
   "appVersionCode": 1,
   "shortcuts": [],

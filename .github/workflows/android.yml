@@ -17,7 +17,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment: ${{ github.event_name == 'workflow_dispatch' && 'android-release' || '' }}
     defaults:
       run:
         working-directory: apps/android
@@ -49,26 +48,55 @@ jobs:
         run: pnpm dlx "$BUBBLEWRAP_CLI" update --skipVersionUpgrade --manifest=twa-manifest.json --directory=dist
 
       - name: Build unsigned
-        if: github.event_name == 'pull_request'
         working-directory: apps/android/dist
         run: pnpm dlx "$BUBBLEWRAP_CLI" build --skipSigning --manifest=../twa-manifest.json
-
-      - name: Build and sign
-        if: github.event_name == 'workflow_dispatch'
-        working-directory: apps/android/dist
-        env:
-          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-        run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ../android.keystore
-          pnpm dlx "$BUBBLEWRAP_CLI" build --manifest=../twa-manifest.json
 
       - uses: actions/upload-artifact@v7
         if: github.event_name == 'workflow_dispatch'
         with:
+          name: android-unsigned
+          path: |
+            apps/android/dist/app-release-unsigned-aligned.apk
+            apps/android/dist/app/build/outputs/bundle/release/app-release.aab
+          retention-days: 1
+          if-no-files-found: error
+
+  sign:
+    if: github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: android-release
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          name: android-unsigned
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Sign
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          keystore="$RUNNER_TEMP/android.keystore"
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > "$keystore"
+          build_tools="$(ls -d "$ANDROID_HOME"/build-tools/*/ | sort -V | tail -n 1)"
+          "${build_tools}apksigner" sign \
+            --ks "$keystore" --ks-key-alias android \
+            --ks-pass env:ANDROID_KEYSTORE_PASSWORD --key-pass env:ANDROID_KEYSTORE_PASSWORD \
+            --out app-release-signed.apk app-release-unsigned-aligned.apk
+          "$JAVA_HOME/bin/jarsigner" -sigalg SHA256withRSA -digestalg SHA-256 \
+            -keystore "$keystore" \
+            -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD \
+            -signedjar app-release-bundle.aab app/build/outputs/bundle/release/app-release.aab android
+
+      - uses: actions/upload-artifact@v7
+        with:
           name: android-release
           path: |
-            apps/android/dist/app-release-bundle.aab
-            apps/android/dist/app-release-signed.apk
+            app-release-bundle.aab
+            app-release-signed.apk
           if-no-files-found: error
