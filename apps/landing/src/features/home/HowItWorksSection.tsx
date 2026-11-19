@@ -1,5 +1,6 @@
 import { AddRounded } from "@mui/icons-material"
 import { Chip, Container, Typography } from "@mui/material"
+import { links } from "@oboku/shared"
 import { BandSection } from "../common/BandSection"
 import { NextLink } from "../common/NextLink"
 import { SectionHeading } from "../common/SectionHeading"
@@ -35,7 +36,11 @@ const steps: Step[] = [
   {
     title: "Read anywhere, even offline",
     description:
-      "Open oboku in any modern browser, or install it like an app on your phone, tablet or computer. Downloaded books open offline, e-ink mode suits e-ink screens, and your progress syncs across devices.",
+      "Open oboku in any modern browser, or install it like an app. Downloaded books open offline, e-ink mode suits e-ink tablets, and your progress syncs across devices. On an e-reader, KOReader syncs its reading position with oboku and downloads books from an OPDS server.",
+    chips: [
+      { label: "KOReader sync", href: links.documentationKoreaderSyncServer },
+      { label: "OPDS server", href: links.documentationOpdsServersReadingApp },
+    ],
   },
 ]
 
