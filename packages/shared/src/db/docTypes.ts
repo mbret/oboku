@@ -202,15 +202,15 @@ export type TagsDocType = CommonBase & {
 }
 
 /**
- * A bookmark, a highlight or a note that the user made in a book. prose-reader
- * calls all three "annotations". One document per annotation. Its `_id` is the
- * id that prose-reader gives the annotation, a UUID: oboku does not generate
- * another one. The reading position of a book is not an annotation: it stays
- * on the book, in its `readingStateCurrentBookmark*` fields.
+ * A page bookmark, a highlight or a note that the user made in a book.
+ * prose-reader calls all three "annotations". Its `_id` is the id that
+ * prose-reader gives the annotation, a UUID: oboku does not generate another
+ * one. The reading position of a book is not an annotation: it is on the book,
+ * in its `readingStateCurrentBookmark*` fields.
  */
 export type AnnotationDocType = CommonBase & {
   rx_model: "annotation"
-  /** The `_id` of the book the annotation was made in. */
+  /** The `_id` of the book the user made the annotation in. */
   bookId: string
   /**
    * Where the annotation is in the book, as prose-reader generated it: a range
@@ -229,16 +229,17 @@ export type AnnotationDocType = CommonBase & {
    */
   notes?: string | null
   /**
-   * The text the highlight covers, copied when the annotation is created. A
+   * The text the highlight covered when the user created the annotation. A
    * list, an export or a search can show it without the book's file. It never
-   * locates the annotation. With koreaderDocument, it makes a repair possible
-   * when the book's file changes and the cfi stops resolving.
+   * locates the annotation. With `koreaderDocument`, it makes a repair possible
+   * when the book's file changes and the `cfi` stops resolving.
    */
   text?: string | null
   /**
-   * The digest of the file the annotation was made in, the same value as
-   * `readingStateCurrentBookmarkKoreaderDocument` on a book. A different digest
-   * tells that the book's file changed since the annotation was made.
+   * The digest of the file the user made the annotation in.
+   * `readingStateCurrentBookmarkKoreaderDocument` on a book holds the same kind
+   * of digest. When the book's current file has another digest, the file
+   * changed after the user made the annotation.
    */
   koreaderDocument?: string | null
   /** When the annotation was created, as an ISO date. */
