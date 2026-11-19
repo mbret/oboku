@@ -16,9 +16,6 @@ const openDatabase = async () => {
   return database
 }
 
-const insertBook = (database: Database) =>
-  database.book.post(createBookDefaults())
-
 const insertAnnotation = (database: Database, bookId: string) =>
   database.annotation.insert({
     _id: crypto.randomUUID(),
@@ -30,7 +27,7 @@ const insertAnnotation = (database: Database, bookId: string) =>
   })
 
 const insertBookWithTwoAnnotations = async (database: Database) => {
-  const book = await insertBook(database)
+  const book = await database.book.post(createBookDefaults())
   await insertAnnotation(database, book._id)
   await insertAnnotation(database, book._id)
 
