@@ -339,7 +339,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "OPDS server",
     title: "Browse your library from your e-reader",
     description:
-      "Turn your library into an OPDS catalog. KOReader and other reading apps browse it and download its books through oboku's server. No server to install: it comes with oboku, in the cloud or self-hosted.",
+      "Serve your Google Drive and WebDAV books as an OPDS catalog. KOReader and other reading apps browse it and download its books through oboku's server. No server to install: it comes with oboku, in the cloud or self-hosted.",
     chips: [
       { label: "KOReader" },
       { label: "OPDS 1.2" },

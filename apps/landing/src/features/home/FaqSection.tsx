@@ -37,7 +37,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "Which devices does oboku work on?",
     answer:
-      "Anything with a modern web browser: phones, tablets, computers and e-ink tablets. Devices without a usable browser, such as Kobo e-readers or the reMarkable, can't run it, but KOReader on them can still browse your library through an OPDS server.",
+      "Anything with a modern web browser: phones, tablets, computers and e-ink tablets. Devices without a usable browser, such as Kobo e-readers or the reMarkable, can't run it. KOReader on them can still browse your Google Drive and WebDAV books through an OPDS server.",
   },
   {
     question: "Does oboku work with KOReader?",
