@@ -541,7 +541,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: AdminPanelSettingsRounded,
         title: "Admin panel",
         description:
-          "Manage users and sign-up links, and set up providers, email and server sync. Set download quotas and access to your local network.",
+          "Manage user accounts and configure your instance from a dedicated admin panel.",
       },
       {
         Icon: VolunteerActivismRounded,
