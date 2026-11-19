@@ -15,8 +15,13 @@ import { i18n } from "@lingui/core"
 import { I18nProvider } from "@lingui/react"
 import { activateLocale } from "./i18n/activateLocale"
 import { pickSupportedLocale } from "./i18n/supportedLocales"
+import { installPrompt$ } from "./common/browser"
 
 void purgeStagedFiles()
+
+// The browser usually offers the install around page load, long before the
+// profile screen that shows the offer mounts.
+installPrompt$.subscribe()
 
 await activateLocale(pickSupportedLocale(navigator.languages))
 

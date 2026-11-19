@@ -7,6 +7,10 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: fr\n"
 
+#: src/pages/profile/InstallAppListItem.tsx
+msgid "Add oboku to your home screen or desktop"
+msgstr "Ajouter oboku à votre écran d'accueil ou à votre bureau"
+
 #: src/settings/ReadingSettings.tsx
 msgid "Always"
 msgstr "Toujours"
@@ -46,6 +50,10 @@ msgstr "E-ink"
 #: src/pages/SettingsScreen.tsx
 msgid "General"
 msgstr "Général"
+
+#: src/pages/profile/InstallAppListItem.tsx
+msgid "Install the app"
+msgstr "Installer l'application"
 
 #: src/settings/ReadingSettings.tsx
 msgid "Keep screen on"

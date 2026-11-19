@@ -10,6 +10,12 @@ Remember that oboku is an **offline first app**. It means that after opening it 
 
 By installing the app to your home screen you will be able to open it the same way as you would open a native app (by tapping its icon) and take benefit of the **fullscreen mode**.
 
+## Install the app
+
+In Chrome, Edge and other Chromium browsers, oboku can start the install itself. Open **Profile** and select **Install the app** in the **Device** section, then confirm in the browser's dialog. The action shows only while the browser offers the install. It is absent once oboku is installed.
+
+In other browsers, such as Safari and Firefox, use the browser's own menu. In Safari on iPhone and iPad, it is **Add to Home Screen** in the share menu.
+
 Depending on your browser, device brand and version **the option to install it to home screen might not be available**. In this case you can use the native app version (see below).
 
 **For more information about device compatibilities please visit the dedicated wiki section.**
