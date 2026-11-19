@@ -5,11 +5,10 @@ import {
   computeCollectionMetadata,
   directives,
   getMetadataFromBook,
-  getUrlExtension,
+  hasReaderAcceptedExtension,
   isBookProtected,
   type LinkDocType,
   type LinkDocTypeForProvider,
-  READER_ACCEPTED_EXTENSIONS,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
@@ -177,9 +176,7 @@ export const toServedFile = (
       .trim() || book._id
   const knownContentType = metadata.contentType || undefined
   const typeExtension = knownContentType && extension(knownContentType)
-  const hasBookExtension = READER_ACCEPTED_EXTENSIONS.includes(
-    `.${getUrlExtension(baseName).toLowerCase()}`,
-  )
+  const hasBookExtension = hasReaderAcceptedExtension(baseName)
   const name =
     hasBookExtension || !typeExtension
       ? baseName
