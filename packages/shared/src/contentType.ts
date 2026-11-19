@@ -1,6 +1,4 @@
-export const getUrlExtension = (url: string) => {
-  return url.split(/[#?]/)[0]?.split(`.`).pop()?.trim() || ``
-}
+import { getUriExtension } from "@prose-reader/shared"
 
 export const getMimeTypeEssence = (mimeType: string) =>
   mimeType.split(";")[0]?.trim().toLowerCase() ?? ""
@@ -65,17 +63,17 @@ export const READER_ACCEPTED_EXTENSIONS = [
   ...new Set(Object.values(READER_ACCEPTED_FILE_TYPES).flat()),
 ]
 
+export const hasReaderAcceptedExtension = (fileName: string) =>
+  READER_ACCEPTED_EXTENSIONS.includes(
+    `.${getUriExtension(fileName).toLowerCase()}`,
+  )
+
 export const isFileSupported = ({
   mimeType,
   name,
 }: {
   name?: string | null
   mimeType?: string | null
-}) => {
-  const extension = `.${getUrlExtension(name || "").toLowerCase()}`
-
-  return (
-    READER_ACCEPTED_EXTENSIONS.includes(extension) ||
-    READER_ACCEPTED_MIME_TYPES.includes(getMimeTypeEssence(mimeType ?? ""))
-  )
-}
+}) =>
+  hasReaderAcceptedExtension(name ?? "") ||
+  READER_ACCEPTED_MIME_TYPES.includes(getMimeTypeEssence(mimeType ?? ""))

@@ -27,6 +27,7 @@
   "dependencies": {
     "@prose-reader/archive-reader": "catalog:prose-reader",
     "@prose-reader/metadata-fetcher": "catalog:prose-reader",
+    "@prose-reader/shared": "catalog:prose-reader",
     "zod": "^4.6.7"
   },
   "devDependencies": {
