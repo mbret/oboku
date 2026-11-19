@@ -9,6 +9,7 @@ import {
   of,
   tap,
 } from "rxjs"
+import { reloadPage } from "../common/browser"
 import { lock } from "../common/locks/utils"
 import { useWithAuthorization } from "../auth/AuthorizeActionDialog"
 import { Logger } from "../debug/logger.shared"
@@ -83,9 +84,7 @@ export const useRemoveAllContents = () => {
             ),
           )
         }),
-        tap(() => {
-          window.location.reload()
-        }),
+        tap(reloadPage),
         catchError((e) => {
           if (e instanceof CancelError) return of(null)
 
