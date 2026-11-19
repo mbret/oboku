@@ -61,6 +61,8 @@ jobs:
           retention-days: 1
           if-no-files-found: error
 
+  # Holds the upload key: no checkout, no npm package, and its own runner,
+  # because npm code in build can rewrite build's world-writable SDK tools.
   sign:
     if: github.event_name == 'workflow_dispatch'
     needs: build
@@ -71,10 +73,6 @@ jobs:
       - uses: actions/download-artifact@v8
         with:
           name: android-unsigned
-      - uses: actions/setup-java@v6
-        with:
-          distribution: temurin
-          java-version: "17"
 
       - name: Sign
         env:
@@ -92,6 +90,7 @@ jobs:
             -keystore "$keystore" \
             -storepass:env ANDROID_KEYSTORE_PASSWORD -keypass:env ANDROID_KEYSTORE_PASSWORD \
             -signedjar app-release-bundle.aab app/build/outputs/bundle/release/app-release.aab android
+          rm "$keystore"
 
       - uses: actions/upload-artifact@v7
         with:

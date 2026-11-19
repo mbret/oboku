@@ -17,7 +17,7 @@ The host is fixed at build time, so the app opens `app.oboku.me` only. A self-ho
 `.github/workflows/android.yml` has two jobs:
 
 * **`build`** generates the project with `bubblewrap update`, then builds it unsigned with `bubblewrap build --skipSigning`. It has no access to the signing key.
-* **`sign`** runs on a fresh runner. It signs the APK with `apksigner` from the Android SDK, and the bundle with `jarsigner` from the JDK. No npm package runs in this job, so Bubblewrap's dependencies never see the key.
+* **`sign`** runs on a fresh runner. It signs the APK with `apksigner` from the Android SDK, and the bundle with `jarsigner` from the JDK. Only GitHub's own actions run in this job, and only the signing step gets the key and its password, so Bubblewrap's dependencies never see them.
 
 The workflow runs in two cases:
 
