@@ -1,20 +1,8 @@
 import { createBookDefaults } from "@oboku/shared"
-import { firstValueFrom } from "rxjs"
-import { describe, expect, it, onTestFinished } from "vitest"
-import { createDatabase, type Database } from "../databases.shared"
+import { describe, expect, it } from "vitest"
+import { openTestDatabase } from "../databases.fixture"
+import type { Database } from "../databases.shared"
 import type { RxdbAnnotationDocType } from "./annotation"
-
-const openDatabase = async () => {
-  const database = await firstValueFrom(
-    createDatabase({ name: `annotation-${crypto.randomUUID()}` }),
-  )
-
-  onTestFinished(async function removeDatabase() {
-    await database.remove()
-  })
-
-  return database
-}
 
 const insertAnnotation = (database: Database, bookId: string) =>
   database.annotation.insert({
@@ -42,7 +30,7 @@ const findAnnotationBookIds = async (database: Database) => {
 
 describe("annotation collection", () => {
   it("stores an annotation and finds the annotations of one book", async () => {
-    const database = await openDatabase()
+    const database = await openTestDatabase()
     const highlight: RxdbAnnotationDocType = {
       _id: crypto.randomUUID(),
       rx_model: "annotation",
@@ -67,7 +55,7 @@ describe("annotation collection", () => {
   })
 
   it("removes the annotations of a removed book only", async () => {
-    const database = await openDatabase()
+    const database = await openTestDatabase()
     const removedBook = await insertBookWithTwoAnnotations(database)
     const keptBook = await insertBookWithTwoAnnotations(database)
 
@@ -80,7 +68,7 @@ describe("annotation collection", () => {
   })
 
   it("removes the annotations of books removed through a query", async () => {
-    const database = await openDatabase()
+    const database = await openTestDatabase()
     await insertBookWithTwoAnnotations(database)
     await insertBookWithTwoAnnotations(database)
 

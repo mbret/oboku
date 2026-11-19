@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
+import { reloadPage } from "../common/browser"
 import { Logger } from "../debug/logger.shared"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
@@ -39,7 +40,7 @@ export const useRegisterServiceWorker = () => {
        * source code is likely changed, therefore we need to fill in the cache
        * with the new assets.
        */
-      window.location.reload()
+      reloadPage()
     }
 
     navigator.serviceWorker.addEventListener(
