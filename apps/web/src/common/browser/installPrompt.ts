@@ -4,7 +4,6 @@ import {
   map,
   merge,
   type Observable,
-  of,
   shareReplay,
   startWith,
   switchMap,
@@ -17,19 +16,22 @@ const beforeInstallPromptEvent$ = fromEvent<BeforeInstallPromptEvent>(
 const appInstalledEvent$ = fromEvent(window, "appinstalled")
 
 const toPromptUntilAnswered = (installPrompt: BeforeInstallPromptEvent) =>
-  merge(of(installPrompt), from(installPrompt.userChoice).pipe(map(() => null)))
+  from(installPrompt.userChoice).pipe(
+    map(() => null),
+    startWith(installPrompt),
+  )
 
 /**
  * The install prompt the browser offers, `null` while it offers none: before
  * its first offer, once the user answered the prompt, which opens only once,
- * and once the app is installed. Only Chromium browsers make an offer.
- *
- * The browser usually makes its offer around page load. A subscriber gets an
- * offer made before it subscribed only when an earlier subscription was
- * already listening.
+ * and once the app is installed.
  */
 export const installPrompt$: Observable<BeforeInstallPromptEvent | null> =
   merge(
     beforeInstallPromptEvent$.pipe(switchMap(toPromptUntilAnswered)),
     appInstalledEvent$.pipe(map(() => null)),
-  ).pipe(startWith(null), shareReplay({ bufferSize: 1, refCount: false }))
+  ).pipe(startWith(null), shareReplay({ bufferSize: 1, refCount: true }))
+
+// The browser usually offers the install around page load, long before the
+// profile screen that shows the offer mounts.
+installPrompt$.subscribe()

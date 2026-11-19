@@ -51,17 +51,7 @@ describe("InstallAppListItem", () => {
     expect(openInstallDialog).toHaveBeenCalledOnce()
   })
 
-  it("hides the action once the user answered the install dialog", async () => {
-    await renderInstallAppListItem()
-    const { answerInstallDialog } = offerInstallPrompt()
-    fireEvent.click(await findInstallAction())
-
-    answerInstallDialog({ outcome: "accepted", platform: "web" })
-
-    await expect.poll(() => screen.queryByRole("button")).toBeNull()
-  })
-
-  it("shows the action again when the browser offers the install after a dismissal", async () => {
+  it("hides the action once the dialog is dismissed, and shows it again on the next offer", async () => {
     await renderInstallAppListItem()
     const { answerInstallDialog } = offerInstallPrompt()
     fireEvent.click(await findInstallAction())

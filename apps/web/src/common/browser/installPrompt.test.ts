@@ -32,8 +32,7 @@ describe("installPrompt$", () => {
     expect(receiveInstallPrompt).toHaveBeenLastCalledWith(installPrompt)
   })
 
-  it("gives a later subscriber the prompt offered before it subscribed", () => {
-    observeInstallPrompt()
+  it("holds a prompt offered before anyone subscribed", () => {
     const { installPrompt } = offerInstallPrompt()
 
     const receiveInstallPrompt = observeInstallPrompt()
