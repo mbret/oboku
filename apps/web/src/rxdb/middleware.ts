@@ -114,6 +114,10 @@ export const applyHooks = (db: Database) => {
      * Remove any link attached to that book
      */
     await db.link.find({ selector: { book: data._id } }).incrementalRemove()
+
+    await db.annotation
+      .find({ selector: { bookId: data._id } })
+      .incrementalRemove()
   }, false)
 
   db.book.postInsert(async (data) => {

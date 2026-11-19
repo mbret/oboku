@@ -1,3 +1,4 @@
+import { getFileNameFromUrl } from "@oboku/shared"
 import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import axios from "axios"
@@ -5,9 +6,7 @@ import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
 
 const URI_TYPE = "URI"
 
-const extractNameFromUrl = (url: string) => {
-  return url.substring(url.lastIndexOf("/") + 1) || "unknown"
-}
+const extractNameFromUrl = (url: string) => getFileNameFromUrl(url) ?? "unknown"
 
 function resolveUrl(link: { data: { url: string } }): string {
   const { url } = link.data

@@ -15,5 +15,6 @@ yarn-error.log
 .dist
 dist
 secrets
+*.keystore
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md

@@ -23,6 +23,11 @@ describe("isFileSupported", () => {
     expect(isFileSupported({ name: "archive.rar" })).toBe(true)
   })
 
+  it("should accept a supported extension after a # or a ? in the name", () => {
+    expect(isFileSupported({ name: "Batman #12.cbz" })).toBe(true)
+    expect(isFileSupported({ name: "Why? Not.epub" })).toBe(true)
+  })
+
   it("should accept supported mime types when the name is not recognized", () => {
     expect(
       isFileSupported({ name: "no-extension", mimeType: "application/pdf" }),
@@ -51,6 +56,7 @@ describe("isFileSupported", () => {
     expect(isFileSupported({ name: "movie.mkv" })).toBe(false)
     expect(isFileSupported({ name: "movie.MKV" })).toBe(false)
     expect(isFileSupported({ name: "no-extension" })).toBe(false)
+    expect(isFileSupported({ name: "epub" })).toBe(false)
     expect(isFileSupported({})).toBe(false)
   })
 })

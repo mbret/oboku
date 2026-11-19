@@ -72,6 +72,10 @@ describe("toServedFile", () => {
     expect(nameOf("Dr. Sleep")).toBe("Dr. Sleep.epub")
   })
 
+  it("keeps the name of a file whose book extension follows a #", () => {
+    expect(nameOf("Dune #1.epub")).toBe("Dune #1.epub")
+  })
+
   it("keeps a name's path separators from cutting it short", () => {
     expect(nameOf("Fate/Zero 01.epub")).toBe("Fate-Zero 01.epub")
   })

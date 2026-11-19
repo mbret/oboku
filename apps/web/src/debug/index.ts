@@ -1,3 +1,4 @@
+import { reloadPage } from "../common/browser"
 import { isDebugEnabled } from "./isDebugEnabled.shared"
 import "./reporting"
 
@@ -11,5 +12,5 @@ export const toggleDebug = () => {
   } else {
     localStorage.setItem("oboku_debug_enabled", "true")
   }
-  window.location.reload()
+  reloadPage()
 }

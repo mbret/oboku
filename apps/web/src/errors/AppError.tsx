@@ -10,6 +10,7 @@ import {
 import { links } from "@oboku/shared"
 import { memo } from "react"
 import { useNetworkState } from "react-use"
+import { reloadPage } from "../common/browser"
 import { theme } from "../theme/theme"
 import { errorToMessage } from "./ErrorMessage"
 
@@ -35,10 +36,6 @@ const DetailTypography = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   wordBreak: "break-word",
 }))
-
-const reloadPage = () => {
-  window.location.reload()
-}
 
 export const AppError = memo(function AppError({ error }: { error?: unknown }) {
   const { online } = useNetworkState()

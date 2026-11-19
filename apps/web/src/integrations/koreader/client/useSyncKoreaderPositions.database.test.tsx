@@ -1,15 +1,7 @@
 import { createBookDefaults, ReadingStateState } from "@oboku/shared"
 import { cleanup, renderHook } from "@testing-library/react"
 import { filter, firstValueFrom, map } from "rxjs"
-import {
-  afterEach,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  onTestFinished,
-  vi,
-} from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import type { Database } from "../../../rxdb/databases.shared"
 import type { usePushKoreaderPosition } from "./usePushKoreaderPosition"
 
@@ -53,7 +45,7 @@ import {
   setActiveProfileId,
 } from "../../../profiles/active/activeProfileId"
 import { dispatchBookmarkMoved } from "../../../reader/events"
-import { createDatabase } from "../../../rxdb/databases.shared"
+import { openTestDatabase } from "../../../rxdb/databases.fixture"
 import { useSyncKoreaderPositions } from "./useSyncKoreaderPositions"
 
 const KOREADER_SYNC_DEBOUNCE_MS = 3000
@@ -71,7 +63,7 @@ const toBookmarkAt = (progress: string, movedAt: string) => ({
 })
 
 const openDatabase = async (name: string) => {
-  const database = await firstValueFrom(createDatabase({ name }))
+  const database = await openTestDatabase(name)
 
   mocks.session.database = database
 
@@ -157,9 +149,6 @@ describe("useSyncKoreaderPositions, with the account's database", () => {
     await database.close()
 
     const reopenedDatabase = await openDatabase(databaseName)
-    onTestFinished(async function removeDatabase() {
-      await reopenedDatabase.remove()
-    })
     setOnLine(true)
     const pushed = nextPush()
     renderSyncKoreaderPositions()
@@ -184,9 +173,6 @@ describe("useSyncKoreaderPositions, with the account's database", () => {
 
   it("pushes the next move of a book once its previous move was pushed and forgotten", async () => {
     const database = await openDatabase(databaseName)
-    onTestFinished(async function removeDatabase() {
-      await database.remove()
-    })
     const book = await database.book.post({
       ...createBookDefaults(),
       ...toBookmarkAt("/body/DocFragment[2]/body/p[1]/text().0", FIRST_MOVE_AT),
