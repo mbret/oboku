@@ -51,7 +51,6 @@ describe("annotation collection", () => {
       highlightColor: "rgba(216, 191, 216, 1)",
       notes: "",
       text: "Call me Ishmael",
-      koreaderDocument: "0123456789abcdef0123456789abcdef",
       createdAt: "2026-11-19T10:00:00.000Z",
       modifiedAt: null,
     }

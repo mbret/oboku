@@ -18,7 +18,6 @@ const schema: RxJsonSchema<RxdbAnnotationDocType> = {
     highlightColor: { type: ["string", "null"] },
     notes: { type: ["string", "null"] },
     text: { type: ["string", "null"] },
-    koreaderDocument: { type: ["string", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
     ...getReplicationProperties(`annotation`),

@@ -231,17 +231,10 @@ export type AnnotationDocType = CommonBase & {
   /**
    * The text the highlight covered when the user created the annotation. A
    * list, an export or a search can show it without the book's file. It never
-   * locates the annotation. With `koreaderDocument`, it makes a repair possible
-   * when the book's file changes and the `cfi` stops resolving.
+   * locates the annotation. If the passage at the `cfi` differs from it, the
+   * book's file changed after the user made the annotation.
    */
   text?: string | null
-  /**
-   * The digest of the file the user made the annotation in.
-   * `readingStateCurrentBookmarkKoreaderDocument` on a book holds the same kind
-   * of digest. When the book's current file has another digest, the file
-   * changed after the user made the annotation.
-   */
-  koreaderDocument?: string | null
   /** When the annotation was created, as an ISO date. */
   createdAt: string
   /** When the annotation last changed, as an ISO date. `null` until the first change. */
