@@ -27,6 +27,7 @@ import {
   LocalOfferRounded,
   LockRounded,
   PasswordRounded,
+  RssFeedRounded,
   SearchRounded,
   ShareRounded,
   ShieldRounded,
@@ -189,6 +190,12 @@ export const featureGroups: FeatureGroup[] = [
         description: "Read straight from Synology Drive or any WebDAV server.",
       },
       {
+        Icon: RssFeedRounded,
+        title: "OPDS catalogs",
+        description:
+          "Sync the books of a Komga, Calibre-Web or Kavita catalog.",
+      },
+      {
         Icon: UploadFileRounded,
         title: "Upload from your device",
         description: "Add books stored on your phone or computer.",
@@ -322,6 +329,58 @@ export const featureGroups: FeatureGroup[] = [
         title: "Storage protection",
         description:
           "Ask the browser to never clear oboku's data on its own to reclaim space.",
+      },
+    ],
+  },
+  {
+    id: "opds",
+    Icon: RssFeedRounded,
+    navLabel: "OPDS",
+    overline: "OPDS server",
+    title: "Browse your library from your e-reader",
+    description:
+      "Serve your Google Drive and WebDAV books as an OPDS catalog. KOReader and other reading apps browse it and download its books through oboku's server. No server to install: it comes with oboku, in the cloud or self-hosted.",
+    chips: [
+      { label: "KOReader" },
+      { label: "OPDS 1.2" },
+      { label: "OPDS 2.0" },
+    ],
+    features: [
+      {
+        Icon: CollectionsBookmarkRounded,
+        title: "All books and shelves",
+        description:
+          "Browse every book, newest first, or your shelves as the app shows them. Each book comes with its cover.",
+      },
+      {
+        Icon: CloudRounded,
+        title: "Google Drive and WebDAV",
+        description:
+          "Catalogs serve the books oboku reads from Google Drive and from connected WebDAV servers. Other sources are not available yet.",
+      },
+      {
+        Icon: RssFeedRounded,
+        title: "OPDS 1.2 and 2.0",
+        description:
+          "Each server has a catalog address for each version, so apps that read either one can connect.",
+      },
+      {
+        Icon: DevicesOtherRounded,
+        title: "One server per device",
+        description:
+          "Create several servers, each with its own address and password. Rename one, replace its password or delete it without touching the others.",
+      },
+      {
+        Icon: PasswordRounded,
+        title: "A password for your devices",
+        description:
+          "Reading apps sign in with a generated password that only opens the catalog, never with your account password.",
+      },
+      {
+        Icon: VisibilityOffRounded,
+        title: "Private books stay out",
+        description:
+          "Books under a protected tag and books marked not interested never show up in a catalog.",
       },
     ],
   },

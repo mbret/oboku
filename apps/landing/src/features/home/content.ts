@@ -13,6 +13,7 @@ export const syncProviders = [
   { label: "OneDrive", href: `${syncProvidersDocumentation}/one-drive` },
   { label: "Synology", href: `${syncProvidersDocumentation}/synology-drive` },
   { label: "WebDAV", href: `${syncProvidersDocumentation}/webdav` },
+  { label: "OPDS", href: `${syncProvidersDocumentation}/opds` },
 ]
 
 export const supportedExtensions = [".epub", ".cbz", ".cbr", ".pdf", ".txt"]
