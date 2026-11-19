@@ -35,4 +35,4 @@ Your [OPDS servers](/guides/opds-servers) can serve the books of a WebDAV connec
 
 ## Sync behavior
 
-When you sync you can prodive a directory as "root" or leave it empty for `/` path. This directory is from where the sync begins and therefore all sub folders will start being detected as collection.
+When you sync you can provide a directory as "root" or leave it empty for `/` path. This directory is from where the sync begins and therefore all sub folders will start being detected as collection.

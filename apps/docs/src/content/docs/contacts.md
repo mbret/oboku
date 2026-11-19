@@ -9,4 +9,4 @@ title: "Contacts"
 * [Github repository](https://github.com/mbret/oboku)
 * General contact **bret.maxime@gmail.com**
 
-**If you have any questions, feedbacks or just feel like discuss about oboku please feel free to join us on** [**reddit**](https://www.reddit.com/r/oboku) **or at the** [Discord community](https://discord.gg/dffDEgwNc5)
+**If you have any questions, feedback or just feel like discuss about oboku please feel free to join us on** [**reddit**](https://www.reddit.com/r/oboku) **or at the** [Discord community](https://discord.gg/dffDEgwNc5)
