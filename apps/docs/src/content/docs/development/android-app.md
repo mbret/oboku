@@ -53,17 +53,12 @@ The workflow uses the keystore password as the key password too. A PKCS12 keysto
 
 ## Fingerprints
 
-Two files list the fingerprints, and they must agree:
-
-* `sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json`. The browser reads this file.
-* `fingerprints` in `apps/android/twa-manifest.json`, as `{ "name": "…", "value": "…" }` entries.
-
-Two keys need a fingerprint:
+`sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json` lists the fingerprints. Two keys need one:
 
 * **The app signing key**, for the app installed from Google Play. Copy its SHA-256 fingerprint from the Play Console, on the **App signing** page of **App integrity**.
 * **The upload key**, for the APK from the workflow installed by hand. Print its fingerprint with `keytool -list -v -keystore android.keystore -alias android`.
 
-To change a fingerprint, edit both files by hand in one pull request. The change reaches phones with the next web release. It needs no Android release.
+A fingerprint change reaches phones with the next web release. It needs no Android release, because the package does not hold the fingerprints.
 
 ## Release a new version
 
