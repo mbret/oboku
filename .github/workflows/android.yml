@@ -1,0 +1,74 @@
+name: Android
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "apps/android/**"
+      - ".github/workflows/android.yml"
+
+permissions:
+  contents: read
+
+env:
+  BUBBLEWRAP_CLI: "@bubblewrap/cli@1.27.0"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: ${{ github.event_name == 'workflow_dispatch' && 'android-release' || '' }}
+    defaults:
+      run:
+        working-directory: apps/android
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+      - uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Configure Bubblewrap
+        run: |
+          # Bubblewrap 1.27.0 requires <sdk>/bin or <sdk>/tools
+          # (AndroidSdkTools.validatePath) and runs sdkmanager from there
+          # (installBuildTools). The runner has sdkmanager in
+          # <sdk>/cmdline-tools/latest/bin.
+          ln -sfn "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
+          mkdir -p ~/.bubblewrap
+          jq -n --arg jdkPath "$JAVA_HOME" --arg androidSdkPath "$ANDROID_HOME" \
+            '{ jdkPath: $jdkPath, androidSdkPath: $androidSdkPath }' > ~/.bubblewrap/config.json
+
+      - name: Generate the Android project
+        run: pnpm dlx "$BUBBLEWRAP_CLI" update --skipVersionUpgrade --manifest=twa-manifest.json --directory=dist
+
+      - name: Build unsigned
+        if: github.event_name == 'pull_request'
+        working-directory: apps/android/dist
+        run: pnpm dlx "$BUBBLEWRAP_CLI" build --skipSigning --manifest=../twa-manifest.json
+
+      - name: Build and sign
+        if: github.event_name == 'workflow_dispatch'
+        working-directory: apps/android/dist
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ../android.keystore
+          pnpm dlx "$BUBBLEWRAP_CLI" build --manifest=../twa-manifest.json
+
+      - uses: actions/upload-artifact@v7
+        if: github.event_name == 'workflow_dispatch'
+        with:
+          name: android-release
+          path: |
+            apps/android/dist/app-release-bundle.aab
+            apps/android/dist/app-release-signed.apk
+          if-no-files-found: error

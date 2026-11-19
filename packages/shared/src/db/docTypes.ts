@@ -201,6 +201,46 @@ export type TagsDocType = CommonBase & {
   createdAt: string
 }
 
+/**
+ * A page bookmark, a highlight or a note that the user made in a book.
+ * prose-reader calls all three "annotations". Its `_id` is the id that
+ * prose-reader gives the annotation, a UUID: oboku does not generate another
+ * one. The reading position of a book is not an annotation: it is on the book,
+ * in its `readingStateCurrentBookmark*` fields.
+ */
+export type AnnotationDocType = CommonBase & {
+  rx_model: "annotation"
+  /** The `_id` of the book the user made the annotation in. */
+  bookId: string
+  /**
+   * Where the annotation is in the book, as prose-reader generated it: a range
+   * for a highlight, one place for a page bookmark. The reader locates the
+   * annotation with it and with nothing else.
+   */
+  cfi: string
+  /**
+   * The color of a highlight, as react-reader gives it: a CSS color such as
+   * `rgba(216, 191, 216, 1)`. Missing on a page bookmark.
+   */
+  highlightColor?: string | null
+  /**
+   * The note of the user. react-reader gives `""` for a highlight without a
+   * note.
+   */
+  notes?: string | null
+  /**
+   * The text the highlight covered when the user created the annotation. A
+   * list, an export or a search can show it without the book's file. It never
+   * locates the annotation. If the passage at the `cfi` differs from it, the
+   * book's file changed after the user made the annotation.
+   */
+  text?: string | null
+  /** When the annotation was created, as an ISO date. */
+  createdAt: string
+  /** When the annotation last changed, as an ISO date. `null` until the first change. */
+  modifiedAt: string | null
+}
+
 export type SecretDocType = CommonBase & {
   name: string
   rx_model: "secret"

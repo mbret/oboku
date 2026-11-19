@@ -124,6 +124,7 @@ export default defineConfig({
             "development/api-types",
             "development/translations",
             "development/preview-environment",
+            "development/android-app",
           ],
         },
       ],

@@ -8,6 +8,7 @@ import {
   ListSubheader,
 } from "@mui/material"
 import { Trans, useLingui } from "@lingui/react/macro"
+import { reloadPage } from "../../common/browser"
 import { ReadingSettings } from "../../settings/ReadingSettings"
 
 export const SettingsList = () => {
@@ -16,7 +17,7 @@ export const SettingsList = () => {
   return (
     <List>
       <ListItem disablePadding>
-        <ListItemButton onClick={() => window.location.reload()}>
+        <ListItemButton onClick={reloadPage}>
           <ListItemIcon>
             <ReplayOutlined />
           </ListItemIcon>

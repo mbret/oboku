@@ -37,7 +37,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "Which devices does oboku work on?",
     answer:
-      "Anything with a modern web browser: phones, tablets, computers and e-ink tablets. Devices without a usable browser, such as Kobo e-readers or the reMarkable, can't run it.",
+      "Anything with a modern web browser: phones, tablets, computers and e-ink tablets. Devices without a usable browser, such as Kobo e-readers or the reMarkable, can't run it. KOReader on them can still browse your Google Drive and WebDAV books through an OPDS server.",
   },
   {
     question: "Does oboku work with KOReader?",
@@ -52,6 +52,22 @@ const questions: { question: string; answer: ReactNode }[] = [
         </Link>
         . Turn on KOReader progress sync in Integrations too, and oboku&apos;s
         own reader syncs with them.
+      </>
+    ),
+  },
+  {
+    question: "Does oboku have an OPDS server?",
+    answer: (
+      <>
+        Yes. Create one from Integrations &gt; OPDS servers and add its catalog
+        to KOReader or any other app that reads OPDS 1.2 or 2.0. The app can
+        then browse your books and shelves, and download them through
+        oboku&apos;s server. Catalogs serve the books oboku reads from Google
+        Drive and connected WebDAV servers. Follow the{" "}
+        <Link href={links.documentationOpdsServersReadingApp} target="_blank">
+          setup guide
+        </Link>
+        .
       </>
     ),
   },
@@ -72,7 +88,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "How is oboku different from Calibre-Web, Kavita or Komga?",
     answer:
-      "Those are servers you run yourself, reading books stored on their own disk. Oboku does not need a server of your own: it reads your books from the storage you already use and keeps working offline. If you prefer to run everything yourself, you can still self-host it.",
+      "Those are servers you run yourself, reading books stored on their own disk. Oboku does not need a server of your own: it reads your books from the storage you already use and keeps working offline. If you prefer to run everything yourself, you can still self-host it. Oboku can also sync the books of their OPDS catalogs.",
   },
 ]
 

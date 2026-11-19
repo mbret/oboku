@@ -1,6 +1,7 @@
 // This optional code is used to register a service worker.
 // register() is not called by default.
 
+import { reloadPage } from "../common/browser"
 import { Logger } from "../debug/logger.shared"
 
 // This lets the app load faster on subsequent visits in production, and gives
@@ -152,9 +153,7 @@ function checkValidServiceWorker(swUrl: string, config?: Config) {
       ) {
         // No service worker found. Probably a different app. Reload the page.
         navigator.serviceWorker.ready.then((registration) => {
-          registration.unregister().then(() => {
-            window.location.reload()
-          })
+          registration.unregister().then(reloadPage)
         })
       } else {
         // Service worker found. Proceed as normal.
