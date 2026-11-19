@@ -51,9 +51,9 @@ jobs:
         env:
           ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
           BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
-          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android.keystore
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > ../android.keystore
           pnpm dlx "$BUBBLEWRAP_CLI" build --manifest=../twa-manifest.json
 
       - uses: actions/upload-artifact@v7

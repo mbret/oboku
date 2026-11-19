@@ -15,7 +15,7 @@ title: "Installation"
 By default, there are strong limitations put in place to reduce memory / CPU usage. This allow the stack to run on cheaper servers. You can change some settings if you have a beefier server. If you plan on intensive usage with lot of books, visit our [Enable features](/self-hosting/configuration/enable-features) section. Some options can help you reduce the costs of hosting.
 
 :::note
-The oboku Android app opens `https://app.oboku.me` only. On an Android phone, open your instance in the browser and install it to the home screen.
+The oboku Android app opens `https://app.oboku.me` only. On an Android phone, open your instance in the browser and [install it as an app](/guides/storage#install-oboku-as-an-app).
 :::
 
 :::caution

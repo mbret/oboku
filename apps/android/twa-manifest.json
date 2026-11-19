@@ -15,7 +15,7 @@
   "startUrl": "/",
   "iconUrl": "https://app.oboku.me/icon-512x512.png",
   "splashScreenFadeOutDuration": 300,
-  "signingKey": { "path": "./android.keystore", "alias": "android" },
+  "signingKey": { "path": "../android.keystore", "alias": "android" },
   "appVersion": "1",
   "appVersionCode": 1,
   "shortcuts": [],

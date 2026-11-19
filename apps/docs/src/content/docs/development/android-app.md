@@ -19,13 +19,12 @@ The host is fixed at build time, so the app opens `app.oboku.me` only. A self-ho
 * **A pull request that changes `apps/android/**` or the workflow.** It builds without signing, so a broken config fails before the merge.
 * **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow**. It builds, signs, and uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
 
-The manual run needs three repository secrets:
+The manual run needs two repository secrets:
 
-| Secret                      | Value                                               |
-| --------------------------- | --------------------------------------------------- |
-| `ANDROID_KEYSTORE_BASE64`   | The upload keystore, encoded in base64              |
-| `ANDROID_KEYSTORE_PASSWORD` | The keystore password                               |
-| `ANDROID_KEY_PASSWORD`      | The key password, the same as the keystore password |
+| Secret                      | Value                                  |
+| --------------------------- | -------------------------------------- |
+| `ANDROID_KEYSTORE_BASE64`   | The upload keystore, encoded in base64 |
+| `ANDROID_KEYSTORE_PASSWORD` | The keystore password                  |
 
 ## Create the upload key
 
@@ -38,14 +37,15 @@ With Play App Signing, Google signs the store build with its own key. The key in
    ```
 
 2. Use letters and digits only in the password, and at least 6 characters. Bubblewrap 1.27.0 sends the password to `apksigner` and `jarsigner` through a shell, so `$`, `"`, `` ` `` and `\` break the signing step.
-3. Use the keystore password for both password secrets. A PKCS12 keystore, the `keytool` default, has no key password of its own.
-4. Encode the keystore and copy the output into `ANDROID_KEYSTORE_BASE64`. On macOS, use `base64 -i android.keystore`:
+3. Encode the keystore and copy the output into `ANDROID_KEYSTORE_BASE64`. On macOS, use `base64 -i android.keystore`:
 
    ```bash
    base64 -w0 android.keystore
    ```
 
-5. Keep a backup of the keystore and its password outside GitHub. Never commit the keystore.
+4. Keep a backup of the keystore and its password outside GitHub. Git ignores `*.keystore` files.
+
+The workflow uses the keystore password as the key password too. A PKCS12 keystore, the `keytool` default, has no key password of its own.
 
 ## Fingerprints
 
@@ -75,7 +75,7 @@ The package keeps the name, the colours and the icons it had at build time. Bubb
 
 Google Play raises the [target API level](https://support.google.com/googleplay/android-developer/answer/11926878) it requires every year, at the end of August. Bubblewrap sets `targetSdkVersion` in the generated project: Bubblewrap 1.27.0 sets API level 36.
 
-1. Change `BUBBLEWRAP_CLI` in the workflow to a Bubblewrap release that targets the new level.
+1. Change the Bubblewrap version to a release that targets the new level: `BUBBLEWRAP_CLI` in the workflow, and the commands in [Build on your computer](#build-on-your-computer).
 2. Check `targetSdkVersion` in the generated `apps/android/dist/app/build.gradle`.
 3. Release a new version.
 
@@ -87,7 +87,7 @@ Bubblewrap needs JDK 17 and the Android SDK. It reads their paths from `~/.bubbl
 pnpm dlx @bubblewrap/cli@1.27.0 update --skipVersionUpgrade --manifest=twa-manifest.json --directory=dist
 ```
 
-Then from `apps/android/dist`, with `android.keystore` in that folder:
+Then from `apps/android/dist`, with the upload keystore at `apps/android/android.keystore`:
 
 ```bash
 pnpm dlx @bubblewrap/cli@1.27.0 build --manifest=../twa-manifest.json
