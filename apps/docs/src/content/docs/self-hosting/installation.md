@@ -14,6 +14,10 @@ title: "Installation"
 
 By default, there are strong limitations put in place to reduce memory / CPU usage. This allow the stack to run on cheaper servers. You can change some settings if you have a beefier server. If you plan on intensive usage with lot of books, visit our [Enable features](/self-hosting/configuration/enable-features) section. Some options can help you reduce the costs of hosting.
 
+:::note
+The oboku Android app opens `https://app.oboku.me` only. On an Android phone, open your instance in the browser and install it to the home screen.
+:::
+
 :::caution
 **Run the API as a single instance.** Do not run multiple API replicas behind a load balancer or scale it horizontally. Refresh-token rotation keeps a short-lived, per-process in-memory key to safely converge concurrent and retried refreshes onto a single token. A second instance cannot share that key, so the same session could end up with two valid tokens and clients may be unexpectedly signed out. Scale vertically (a bigger server) instead. CouchDB and Postgres can be scaled independently.
 :::
