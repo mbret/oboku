@@ -46,6 +46,7 @@ export default function Home() {
           "OneDrive sync",
           "Synology sync",
           "WebDAV sync",
+          "OPDS catalog sync",
           "E-ink support",
           "OPDS server",
           "KOReader sync server",

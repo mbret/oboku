@@ -88,7 +88,7 @@ const questions: { question: string; answer: ReactNode }[] = [
   {
     question: "How is oboku different from Calibre-Web, Kavita or Komga?",
     answer:
-      "Those are servers you run yourself, reading books stored on their own disk. Oboku does not need a server of your own: it reads your books from the storage you already use and keeps working offline. If you prefer to run everything yourself, you can still self-host it.",
+      "Those are servers you run yourself, reading books stored on their own disk. Oboku does not need a server of your own: it reads your books from the storage you already use and keeps working offline. If you prefer to run everything yourself, you can still self-host it. Oboku can also sync the books of their OPDS catalogs.",
   },
 ]
 

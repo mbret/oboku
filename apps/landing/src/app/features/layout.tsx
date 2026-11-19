@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "Features",
   description:
-    "Everything oboku can do: read EPUB, comics, manga and PDF, sync from Google Drive, Dropbox, OneDrive, Synology or WebDAV, read offline on any device, browse your library from reading apps over OPDS, sync your reading position with KOReader, protect private content and self-host it.",
+    "Everything oboku can do: read EPUB, comics, manga and PDF, sync from Google Drive, Dropbox, OneDrive, Synology, WebDAV or OPDS catalogs, read offline on any device, browse your library from reading apps over OPDS, sync your reading position with KOReader, protect private content and self-host it.",
 }
 
 export default function FeaturesLayout({

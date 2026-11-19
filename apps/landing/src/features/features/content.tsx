@@ -190,6 +190,12 @@ export const featureGroups: FeatureGroup[] = [
         description: "Read straight from Synology Drive or any WebDAV server.",
       },
       {
+        Icon: RssFeedRounded,
+        title: "OPDS catalogs",
+        description:
+          "Sync the books of a Komga, Calibre-Web or Kavita catalog.",
+      },
+      {
         Icon: UploadFileRounded,
         title: "Upload from your device",
         description: "Add books stored on your phone or computer.",
