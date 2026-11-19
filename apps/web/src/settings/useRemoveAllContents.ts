@@ -68,6 +68,11 @@ export const useRemoveAllContents = () => {
 
                   return from(database.tag.find().incrementalRemove())
                 }),
+                mergeMap(() => {
+                  Logger.info("Removing annotations")
+
+                  return from(database.annotation.find().incrementalRemove())
+                }),
                 delay(3000), // make sure sync get enough time to finish
                 catchError((e) => {
                   releaseLock()
