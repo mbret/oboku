@@ -43,6 +43,8 @@ This is the single most effective thing you can do. An installed app is treated 
 * **iOS / iPadOS Safari** — Share → *Add to Home Screen*.
 * **Android Chrome** — menu → *Add to Home screen* / *Install app*.
 
+In Chrome and Edge, on a computer or an Android device, oboku can also start the install itself: see [Install the app](/cloud/installation-and-usage#install-the-app).
+
 Once installed, open oboku from its own icon and tap the entry again.
 
 :::note

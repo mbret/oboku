@@ -12,9 +12,9 @@ By installing the app to your home screen you will be able to open it the same w
 
 ## Install the app
 
-In Chrome, Edge and other Chromium browsers, oboku can start the install itself. Open **Profile** and select **Install the app** in the **Device** section, then confirm in the browser's dialog. The action shows only while the browser offers the install. It is absent once oboku is installed.
+In Chrome, Edge and other Chromium browsers, on a computer or an Android device, oboku can start the install itself. Open **Profile** and select **Install the app** in the **Device** section, then confirm in the browser's dialog. The action appears only when the browser can install oboku, and it goes away once oboku is installed.
 
-In other browsers, such as Safari and Firefox, use the browser's own menu. In Safari on iPhone and iPad, it is **Add to Home Screen** in the share menu.
+In other browsers, such as Safari and Firefox, and in every browser on iPhone and iPad, use the browser's own menu. In Safari on iPhone and iPad, it is **Add to Home Screen** in the share menu.
 
 Depending on your browser, device brand and version **the option to install it to home screen might not be available**. In this case you can use the native app version (see below).
 
