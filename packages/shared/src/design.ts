@@ -27,6 +27,7 @@ export const links = {
   app: `https://app.oboku.me`,
   site: `https://oboku.me`,
   privacyPolicy: `https://oboku.me/privacy-policy`,
+  deleteAccount: `https://oboku.me/delete-account`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
   sponsor: `https://github.com/sponsors/mbret`,

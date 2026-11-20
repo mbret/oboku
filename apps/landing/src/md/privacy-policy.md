@@ -35,7 +35,7 @@ You have the following rights with respect to your personal information:
 
 - **The right to access your personal information:** You have the right to request a copy of your personal information that we hold.
 - **The right to correct your personal information:** You have the right to request that we correct any inaccurate or incomplete personal information that we hold about you.
-- **The right to delete your personal information:** You have the right to request that we delete your personal information. This action would result in the deletion of your account.
+- **The right to delete your personal information:** You have the right to request that we delete your personal information. This action would result in the deletion of your account. See [Delete your account](/delete-account) for the steps.
 - **The right to object to the processing of your personal information:** You have the right to object to the processing of your personal information, for example, if you believe that the processing is no longer necessary for the purposes for which it was collected.
 
 ## How Do We Protect Your Personal Information?
