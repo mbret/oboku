@@ -67,4 +67,21 @@ declare global {
   interface Navigator {
     readonly wakeLock: WakeLock
   }
+
+  interface BeforeInstallPromptUserChoice {
+    outcome: "accepted" | "dismissed"
+    platform: string
+  }
+
+  /**
+   * Non-standard and Chromium only, so TypeScript's DOM library leaves it out.
+   *
+   * @see https://developer.mozilla.org/en-US/docs/Web/API/BeforeInstallPromptEvent
+   */
+  interface BeforeInstallPromptEvent extends Event {
+    readonly platforms: string[]
+    readonly userChoice: Promise<BeforeInstallPromptUserChoice>
+    /** Opens the browser's install dialog. An event opens it only once. */
+    prompt(): Promise<BeforeInstallPromptUserChoice>
+  }
 }

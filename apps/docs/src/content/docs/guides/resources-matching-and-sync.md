@@ -4,7 +4,7 @@ title: "Resources Matching and Sync"
 
 oboku's purpose is to synchronize your content from various providers into a cohesive library while fetching metadata for each of your book & folders. This is similar to [https://watch.plex.tv/](https://watch.plex.tv/) or any other software that manage media library.&#x20;
 
-Unlike movies, tv shows or music books are very complexe to fetch metadata for. As an example Batman movie ([https://www.imdb.com/title/tt0372784/?ref\_=nv\_sr\_srsg\_0\_tt\_7\_nm\_1\_in\_0\_q\_batma](https://www.imdb.com/title/tt0372784/?ref_=nv_sr_srsg_0_tt_7_nm_1_in_0_q_batma)) is pretty much the only and unique place you can find the metadata for it, in all languages for its title, cover, etc. There are no such services for books. Each books has a specific identity per country, per language, per edition or even per version. This is expected because every "printed" edition of a book is unique but this makes managing books quite harder than other media.
+Unlike movies, tv shows or music books are very complex to fetch metadata for. As an example Batman movie ([https://www.imdb.com/title/tt0372784/?ref\_=nv\_sr\_srsg\_0\_tt\_7\_nm\_1\_in\_0\_q\_batma](https://www.imdb.com/title/tt0372784/?ref_=nv_sr_srsg_0_tt_7_nm_1_in_0_q_batma)) is pretty much the only and unique place you can find the metadata for it, in all languages for its title, cover, etc. There are no such services for books. Each books has a specific identity per country, per language, per edition or even per version. This is expected because every "printed" edition of a book is unique but this makes managing books quite harder than other media.
 
 ## Books metadata
 
@@ -21,11 +21,11 @@ You can always overwrite metadata yourself but this is strongly encourage to "fi
 
 #### Refine by: ISBN
 
-If you specify an ISBN within the file, directive or user information, we will target the right book. ISBN are uniques so this is by far the most reliable way to get consistent metadata for a book.
+If you specify an ISBN within the file, directive or user information, we will target the right book. ISBN are unique so this is by far the most reliable way to get consistent metadata for a book.
 
 #### Refine by: Naming and Conventions
 
-Similar to plex and other software (eg: [https://support.plex.tv/articles/naming-and-organizing-your-movie-media-files/](https://support.plex.tv/articles/naming-and-organizing-your-movie-media-files/)) you may want to have a consistant and noise free naming convention. This will help our metadata fetcher to retrieve deterministic results.
+Similar to plex and other software (eg: [https://support.plex.tv/articles/naming-and-organizing-your-movie-media-files/](https://support.plex.tv/articles/naming-and-organizing-your-movie-media-files/)) you may want to have a consistent and noise free naming convention. This will help our metadata fetcher to retrieve deterministic results.
 
 ## Series metadata
 

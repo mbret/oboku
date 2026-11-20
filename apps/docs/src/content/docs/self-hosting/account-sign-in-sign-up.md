@@ -18,7 +18,7 @@ This is more of the regular way and does not involves any external providers. Th
 
 ### With email provider setup
 
-If you havev configured an email provider, users will be able to register themsveles through the normal registration flow. They will receive a verification email to allow their account creation. Visit the [Configuration](/self-hosting/configuration) section to learn how to configure your email provider.
+If you have configured an email provider, users will be able to register themselves through the normal registration flow. They will receive a verification email to allow their account creation. Visit the [Configuration](/self-hosting/configuration) section to learn how to configure your email provider.
 
 ### Without email provider setup
 

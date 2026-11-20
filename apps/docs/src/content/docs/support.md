@@ -30,6 +30,6 @@ As a reminder, only EPUB files, comic archives (`.cbz`, `.cbr`, `.zip`, `.rar`) 
 
 This is a known performance issue that cannot be resolved. The flicker will usually appears when you open a heavy book (many pages). You can mitigate the issue by using a fading animation which will prevent the brutal flicker.
 
-### I changed a file or moved seomething in a different location
+### I changed a file or moved something in a different location { #i-changed-a-file-or-moved-seomething-in-a-different-location }
 
 Depending on which provider the book comes from, oboku will try to re-attach the file to the actual book as best we it can. Visit the [Resources Matching and Sync](/guides/resources-matching-and-sync) section to understand more about the expected behavior. Note that changing the actual file content may breaks reading progress or other data such as annotations.

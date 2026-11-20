@@ -1,4 +1,5 @@
 export * from "./createBroadcast"
 export * from "./installationId"
+export * from "./installPrompt"
 export * from "./reloadPage"
 export * from "./useWakeLock"

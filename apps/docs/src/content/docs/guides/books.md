@@ -19,7 +19,7 @@ Due to the important costs it involves we cannot use a bridge or proxy to provid
 :::
 
 :::caution
-Due to the current lack of support of background downloading from some major browsers **it is currently not possible to download books while the app is closed or frozen**. We are working on implementing it for chrome as a progressive update and follow with other browsers once the support is here. You can check the status of the technologie here [https://www.chromestatus.com/feature/5712608971718656](https://www.chromestatus.com/feature/5712608971718656)
+Due to the current lack of support of background downloading from some major browsers **it is currently not possible to download books while the app is closed or frozen**. We are working on implementing it for chrome as a progressive update and follow with other browsers once the support is here. You can check the status of the technology here [https://www.chromestatus.com/feature/5712608971718656](https://www.chromestatus.com/feature/5712608971718656)
 :::
 
 ## Book Link
@@ -34,7 +34,7 @@ Standard and most commonly used format to read book on digital platform. There a
 
 ### `.cbz`, `.cbr` , `.zip`, `.rar` { #cbz-.cbr-.zip-.rar }
 
-Theses are common format used for comic/manga archive. This is basically a zip or a rar file that contains a list of image files in it (.png, .jpg, ...). If you have a list of images and would like to be able to read as a book you can quickly create an archive and use it as it is.&#x20;
+These are common format used for comic/manga archive. This is basically a zip or a rar file that contains a list of image files in it (.png, .jpg, ...). If you have a list of images and would like to be able to read as a book you can quickly create an archive and use it as it is.&#x20;
 
 ### `.txt`
 
@@ -56,7 +56,7 @@ We try to support as many open standard as possible but if your format is not av
 
 ## General limitation per contents
 
-Due to server cost (it's free for you but not for us unfortunately) it is currently recommended that the document size must stay **under 500mb**. In addition to the size limitation and for oboku to be able to retrieve metadata of the said file, the server must be able to download and process it under **15mn** maximu&#x6D;**.** That being said, epubs larger than 200-300mb are quite rares and if you have such books you can use tools like calibre to optimize the images inside in order to reduce the size. The time to process a book varies based on the size of the book and the latency of the data source. Most of the time data source like google, dropbox, etc should be fast enough but it is possible to experience slowdown from time to time and therefore even a small book could end up in timeout. You can try to manually refresh the books that appears to have failed to retrieve metadata.
+Due to server cost (it's free for you but not for us unfortunately) it is currently recommended that the document size must stay **under 500mb**. In addition to the size limitation and for oboku to be able to retrieve metadata of the said file, the server must be able to download and process it under **15mn** maximu&#x6D;**.** That being said, epubs larger than 200-300mb are quite rare and if you have such books you can use tools like calibre to optimize the images inside in order to reduce the size. The time to process a book varies based on the size of the book and the latency of the data source. Most of the time data source like google, dropbox, etc should be fast enough but it is possible to experience slowdown from time to time and therefore even a small book could end up in timeout. You can try to manually refresh the books that appears to have failed to retrieve metadata.
 
 :::note
 Note that nothing blocks you from adding a book that is larger in size. Some of the features will not work properly such as retrieving metadata from your epub or displaying the cover (they require to download and access the file) but you will still be able to see it in your library, download it and potentially read it.

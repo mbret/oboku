@@ -20,6 +20,6 @@ Because you can use whatever provider you want, you can share your libraries wit
 
 You all share the same contents but you all have your own library, reading state, preferences, etc.
 
-## Proviers
+## Providers { #proviers }
 
 Visit the [Sync Providers](/sync-providers/webdav) section to see which services or providers you can use.

@@ -2,7 +2,7 @@
 title: "Server Sync"
 ---
 
-Server sync lets you expose and sync your content from the server directly (eg: same server, NAS on the network). This is the equivalent of what is usually done in other services (komga, kavita, stump, booklibre, etc).
+Server sync lets you expose and sync your content from the server directly (eg: same server, NAS on the network). This is the equivalent of what is usually done in other services (Komga, Kavita, Stump, BookLore, etc).
 
 ## Mental model differences
 

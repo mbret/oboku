@@ -1,6 +1,7 @@
 {
   "short_name": "oboku",
   "name": "oboku",
+  "description": "Ebook and comic reader for your cloud library. Reads EPUB, comics and PDF from Google Drive, Dropbox, OneDrive, WebDAV or Synology, and works offline.",
   "categories": ["books", "library"],
   "icons": [
     {
@@ -28,18 +29,24 @@
   "screenshots": [
     {
       "src": "app.oboku.me_(iPhone 5_SE).png",
-      "sizes": "1280x720",
-      "type": "image/png"
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Home, with the books in progress and the recent ones"
     },
     {
       "src": "app.oboku.me_(iPhone 5_SE) (1).png",
-      "sizes": "1280x720",
-      "type": "image/png"
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Library, with its books, collections and tags"
     },
     {
       "src": "app.oboku.me_(iPhone 5_SE) (2).png",
-      "sizes": "1280x720",
-      "type": "image/png"
+      "sizes": "640x1136",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Reader, open on a book"
     }
   ],
   "start_url": ".",

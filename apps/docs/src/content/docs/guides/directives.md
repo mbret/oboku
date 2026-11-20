@@ -6,14 +6,14 @@ Directives are extra information you put on your data sources contents to help o
 
 ## **Overview**
 
-Let's say you have a `solo leveling Vol.1.cbz` book on yout drive. By default oboku will assume it's a manga (.cbz) and will open it as horizontal scrolling with a reading direction from right to left. This is because there are some default behavior oboku try to assume based on the extension of  your book. Now, because this one happens to be a webtoon you want oboku to display it automatically vertically with a scrolling reading mode. To solve this you can use a directive directly on your file such as: `solo leveling Vol.1 [oboku~webtoon].cbz.`
+Let's say you have a `solo leveling Vol.1.cbz` book on your drive. By default oboku will assume it's a manga (.cbz) and will open it as horizontal scrolling with a reading direction from right to left. This is because there are some default behavior oboku try to assume based on the extension of  your book. Now, because this one happens to be a webtoon you want oboku to display it automatically vertically with a scrolling reading mode. To solve this you can use a directive directly on your file such as: `solo leveling Vol.1 [oboku~webtoon].cbz.`
 
 Directives can be placed on files but also folders (collections). Read the details of each directives to see what they do.
 
 Directives are very similar to plex naming convention as an example [https://support.plex.tv/articles/naming-and-organizing-your-tv-show-files/](https://support.plex.tv/articles/naming-and-organizing-your-tv-show-files/).&#x20;
 
 :::caution
-Due to some current limitation, you may need to re-download a book for some directives to be active. For example if you download a .cbz file which is read from left to right, it will open as rtl since it's the default behavior. To fix it you need to add the ltr directive. However you will need to remove and re-download the local file to make the change effectives.
+Due to some current limitation, you may need to re-download a book for some directives to be active. For example if you download a .cbz file which is read from left to right, it will open as rtl since it's the default behavior. To fix it you need to add the ltr directive. However you will need to remove and re-download the local file to make the change effective.
 :::
 
 ## Limitations
@@ -50,7 +50,7 @@ Files only
 my book [oboku~metadata-ignore-file].epub
 ```
 
-Tells oboku to not use any information from the file itself to build the metadata. It can be useful if for exemple you don't want the cover to be the first image from the file or if the epub file is not good enough for you and contain invalid information.
+Tells oboku to not use any information from the file itself to build the metadata. It can be useful if for example you don't want the cover to be the first image from the file or if the epub file is not good enough for you and contain invalid information.
 
 Remember that the `file` source metadata takes priority over other sources such as the catalog but not the `user` source.
 
@@ -88,7 +88,7 @@ Collections only
 my series [oboku~metadata-comicvine-only]
 ```
 
-Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangedex is more designed towards mangas and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-sources)
+Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-sources)
 
 ## `metadata-title~{value}` { #metadata-title-value }
 
@@ -100,7 +100,7 @@ Collections only
 my series [oboku~metadata-title~More specific title].epub
 ```
 
-Tells oboku to use this title instead of the folder name when looking for metadata. Sometimes it's easier to match some series matadata by using different title. Something you don't necessarily want as folder name but just very specific for metadata (eg: japanese title for manga).
+Tells oboku to use this title instead of the folder name when looking for metadata. Sometimes it's easier to match some series metadata by using different title. Something you don't necessarily want as folder name but just very specific for metadata (eg: japanese title for manga).
 
 ## `no_collection`
 
@@ -108,7 +108,7 @@ Tells oboku to use this title instead of the folder name when looking for metada
 my folder [oboku~no_collection]/
 ```
 
-**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is usefull if you use a data source that contains lot of sub folder and you don't necessarely want to have a collection for each folder (default behavior).
+**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a data source that contains lot of sub folder and you don't necessarily want to have a collection for each folder (default behavior).
 
 When using `no_collection` on a folder, oboku will then use the default behavior for all children which means every folder directly under this folder will be treated as collection. Use this directive again if  you need to ignore deeper folder.
 
