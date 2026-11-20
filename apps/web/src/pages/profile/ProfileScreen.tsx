@@ -45,6 +45,7 @@ import { DeleteAccountDialog } from "../../auth/DeleteAccountDialog"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { useProxiedDownloadQuota } from "../../quotas/useProxiedDownloadQuota"
+import { InstallAppListItem } from "./InstallAppListItem"
 
 export const ProfileScreen = () => {
   const navigate = useNavigate()
@@ -205,6 +206,7 @@ export const ProfileScreen = () => {
               secondary={`${formatBytes(usage)} (${(quotaUsed * 100).toFixed(2)}%) used of ${formatBytes(quota)}`}
             />
           </ListItemButton>
+          <InstallAppListItem />
         </PageSection>
         <PageSection title="Information">
           <ListItemExternalLink

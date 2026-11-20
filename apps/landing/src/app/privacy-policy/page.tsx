@@ -1,6 +1,6 @@
 import { readFile } from "node:fs/promises"
 import path from "node:path"
-import { PageContent } from "./PageContent"
+import { MarkdownPage } from "../../features/common/MarkdownPage"
 
 export default async function Page() {
   const markdown = await readFile(
@@ -14,5 +14,5 @@ export default async function Page() {
     process.env.NEXT_PUBLIC_TRADEMARK ?? "",
   )
 
-  return <PageContent content={content} />
+  return <MarkdownPage content={content} />
 }

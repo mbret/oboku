@@ -14,4 +14,4 @@ oboku's server connects to your NAS for syncs and downloads, and it only reaches
 
 ## Self Signed certificate
 
-If you use self signed certificate, make sure to open your NAS adress at least once on your oboku client device. You also need to configure your connector to allow self-signed certificate.
+If you use self signed certificate, make sure to open your NAS address at least once on your oboku client device. You also need to configure your connector to allow self-signed certificate.
