@@ -1,7 +1,7 @@
 import { Container, Stack } from "@mui/material"
-import { Markdown } from "../../features/common/Markdown"
+import { Markdown } from "./Markdown"
 
-export function PageContent({ content }: { content: string }) {
+export function MarkdownPage({ content }: { content: string }) {
   return (
     <Container maxWidth="md">
       <Stack
