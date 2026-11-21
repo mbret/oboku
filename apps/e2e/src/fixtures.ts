@@ -3,51 +3,42 @@ import { type BrowserContext, test as base } from "@playwright/test"
 import {
   adminGenerateSignUpLink,
   adminSignIn,
-  type ApiClient,
   createApiClient,
 } from "@oboku/shared"
 import { ADMIN_CREDENTIALS, API_URL, isStackUrl } from "./stack"
 
-type NewAccount = {
+type SignUpInvitation = {
   password: string
   signUpLink: string
 }
 
-export const test = base.extend<
-  { newAccount: NewAccount },
-  { adminClient: ApiClient }
->({
-  adminClient: [
-    // biome-ignore lint/correctness/noEmptyPattern: Playwright reads the fixtures a fixture depends on from this destructuring.
-    async function signInAsAdmin({}, use) {
-      const {
-        data: { access_token },
-      } = await adminSignIn({
-        client: createApiClient({ baseUrl: API_URL, throwOnError: true }),
-        body: ADMIN_CREDENTIALS,
-      })
-
-      await use(
-        createApiClient({
-          baseUrl: API_URL,
-          throwOnError: true,
-          headers: { Authorization: `Bearer ${access_token}` },
-        }),
-      )
-    },
-    { scope: "worker" },
-  ],
-  newAccount: async function createSignUpLink({ adminClient }, use) {
-    const email = `reader-${randomUUID()}@oboku.test`
+export const test = base.extend<{ signUpInvitation: SignUpInvitation }>({
+  // biome-ignore lint/correctness/noEmptyPattern: Playwright reads the fixtures a fixture depends on from this destructuring.
+  signUpInvitation: async function inviteNewReader({}, use) {
+    const {
+      data: { access_token },
+    } = await adminSignIn({
+      client: createApiClient({ baseUrl: API_URL, throwOnError: true }),
+      body: ADMIN_CREDENTIALS,
+    })
     const {
       data: { signUpLink },
-    } = await adminGenerateSignUpLink({ client: adminClient, body: { email } })
+    } = await adminGenerateSignUpLink({
+      client: createApiClient({
+        baseUrl: API_URL,
+        throwOnError: true,
+        headers: { Authorization: `Bearer ${access_token}` },
+      }),
+      body: { email: `reader-${randomUUID()}@oboku.test` },
+    })
 
     await use({ password: "e2e-password", signUpLink })
   },
   context: async function prepareContext({ context }, use) {
     await context.route(
-      (url) => !isStackUrl(url),
+      function isOutsideTheStack(url) {
+        return !isStackUrl(url)
+      },
       function abortRequestOutsideTheStack(route) {
         return route.abort("blockedbyclient")
       },
@@ -59,9 +50,8 @@ export const test = base.extend<
 })
 
 /**
- * The web app reloads when a service worker takes control of the page, and a
- * first visit gets one a few seconds in. Pages opened after this load under
- * the installed worker and never reload.
+ * The web app reloads when a service worker first takes control of a page
+ * (a known bug), so a test's pages open after this installs one.
  */
 async function installServiceWorker(context: BrowserContext) {
   const page = await context.newPage()

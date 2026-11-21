@@ -1,15 +1,20 @@
-# The stack the end-to-end tests run against, built from the repository's
-# dockerfile. CouchDB, Postgres and the API sit on a network with no internet
-# access, so no metadata lookup from the API can change what a test sees. A
-# port cannot be published from that network: api-proxy joins both networks to
-# publish the API.
+# CouchDB, Postgres and the API sit on a network with no internet access, so no
+# metadata lookup from the API can change what a test sees.
 name: oboku-e2e
+
+x-repository-build: &repository-build
+  context: ../..
+  dockerfile: dockerfile
+
+x-healthcheck-timing: &healthcheck-timing
+  interval: 2s
+  timeout: 5s
+  retries: 60
 
 services:
   couchdb:
     build:
-      context: ../..
-      dockerfile: dockerfile
+      <<: *repository-build
       target: couchdb
     environment:
       COUCHDB_USER: admin
@@ -19,10 +24,8 @@ services:
     networks:
       - stack
     healthcheck:
+      <<: *healthcheck-timing
       test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
-      interval: 2s
-      timeout: 5s
-      retries: 60
 
   postgres:
     image: postgres:17-trixie
@@ -32,15 +35,12 @@ services:
     networks:
       - stack
     healthcheck:
+      <<: *healthcheck-timing
       test: ["CMD", "pg_isready", "-U", "postgres", "-d", "oboku"]
-      interval: 2s
-      timeout: 5s
-      retries: 60
 
   api:
     build:
-      context: ../..
-      dockerfile: dockerfile
+      <<: *repository-build
       target: api
     depends_on:
       couchdb:
@@ -58,11 +58,11 @@ services:
     networks:
       - stack
     healthcheck:
+      <<: *healthcheck-timing
       test: ["CMD", "curl", "-f", "http://localhost:3000/web/config"]
-      interval: 2s
-      timeout: 5s
-      retries: 60
 
+  # A port cannot be published from the stack network, so api-proxy joins both
+  # networks to publish the API.
   api-proxy:
     image: nginx:alpine
     depends_on:
@@ -77,28 +77,23 @@ services:
       - stack
       - default
     ports:
-      - "4281:5985"
-      - "4282:5986"
-      - "4283:5987"
+      - "127.0.0.1:4281:5985"
+      - "127.0.0.1:4282:5986"
+      - "127.0.0.1:4283:5987"
 
   web:
     build:
-      context: ../..
-      dockerfile: dockerfile
+      <<: *repository-build
       target: web
     environment:
       VITE_API_URL: http://localhost:4281
       VITE_API_URL_2: http://localhost:4282
       VITE_API_URL_3: http://localhost:4283
-    networks:
-      - default
     ports:
-      - "4280:80"
+      - "127.0.0.1:4280:80"
     healthcheck:
+      <<: *healthcheck-timing
       test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
-      interval: 2s
-      timeout: 5s
-      retries: 60
 
 networks:
   stack:

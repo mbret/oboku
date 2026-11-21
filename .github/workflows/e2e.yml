@@ -2,19 +2,13 @@ name: e2e
 
 on:
   pull_request:
-    paths:
-      - "apps/api/**"
-      - "apps/couchdb/**"
-      - "apps/dev-proxy/**"
-      - "apps/e2e/**"
-      - "apps/web/**"
-      - "packages/**"
-      - "scripts/docker/**"
-      - "dockerfile"
-      - "package.json"
-      - "pnpm-lock.yaml"
-      - "pnpm-workspace.yaml"
-      - ".github/workflows/e2e.yml"
+    paths-ignore:
+      - "apps/admin/**"
+      - "apps/android/**"
+      - "apps/docs/**"
+      - "apps/landing/**"
+      - ".agents/**"
+      - "**/*.md"
   workflow_dispatch:
 
 jobs:
@@ -22,8 +16,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - name: Start the stack
-        run: docker compose -f apps/e2e/docker-compose.yml up --build --wait
       - uses: pnpm/action-setup@v6
       - uses: actions/setup-node@v7
         with:
@@ -32,7 +24,9 @@ jobs:
       - name: Install
         run: |
           pnpm install --frozen-lockfile
-          pnpm exec playwright install --with-deps --only-shell chromium
+          pnpm --filter @oboku/e2e exec playwright install --with-deps --only-shell chromium
+      - name: Start the stack
+        run: pnpm --filter @oboku/e2e stack:up
       - name: Type-check
         run: pnpm exec lerna run tsc --scope=@oboku/e2e
       - name: Run the smoke tests
