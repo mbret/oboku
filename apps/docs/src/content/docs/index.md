@@ -19,7 +19,7 @@ If a feature you need is missing, request it. oboku is driven by its community.
 
 ## Key features
 
-- Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. See the [supported contents](/guides/supported-contents).
+- Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. Bookmark pages, highlight passages and take notes, on every device of your account. See the [supported contents](/guides/supported-contents).
 - Sync your books from the [providers](/guides/datasources) you already use, without uploading them to oboku.
 - Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-sources).
 - Track what you read, and search, sort and filter your library.
