@@ -39,7 +39,6 @@ describe("buildConfig", () => {
     expect(config).toMatchObject({
       SEARCH_MAX_PREVIEW_ITEMS: 8,
       COLLECTION_EMPTY_ID: "oboku_dangling_books",
-      CLEANUP_DANGLING_LINKS_INTERVAL: 1000 * 60 * 10,
       MINIMUM_TOKEN_VALIDITY_MS: 1000 * 60 * 5,
     })
     expect(config.MICROSOFT_APPLICATION_AUTHORITY).toBe(

@@ -9,7 +9,7 @@ import { groupBy, type DataSourceType } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
-import { BuildRounded, DeleteForeverRounded } from "@mui/icons-material"
+import { BuildRounded } from "@mui/icons-material"
 import { useFixCollections } from "./useFixCollections"
 import { Alert } from "@mui/material"
 import { useObserve } from "reactjrx"
@@ -22,7 +22,6 @@ import { CollectionDanglingBooks } from "./CollectionDanglingBooks"
 import { useFixableBooks } from "./useFixableBooks"
 import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
-import { useFixableLinks } from "./useFixableLinks"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 
@@ -40,7 +39,6 @@ const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
 
 export const ProblemsScreen = memo(function ProblemsScreen() {
   const fixCollections = useFixCollections()
-  const { danglingLinks } = useFixableLinks()
   const { collectionsWithDanglingBooks } = useFixableCollections()
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
@@ -162,27 +160,6 @@ export const ProblemsScreen = memo(function ProblemsScreen() {
               This means that some of your collections should probably be merged together since they use the same origin.
               It is not recommended to keep duplicates since it could lead to unpredictable sync.
               `}
-                />
-              </ListItemButton>
-            )}
-            {danglingLinks.length > 0 && (
-              <ListItemButton
-                alignItems="flex-start"
-                onClick={() =>
-                  repair({
-                    type: "danglingLinks",
-                    items: danglingLinks,
-                  })
-                }
-              >
-                <ListItemIcon>
-                  <DeleteForeverRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Dangling links"
-                  secondary={`
-            We found ${danglingLinks.length} links not used by any books. They just take space and will not be used anymore. Safe to remove.
-            `}
                 />
               </ListItemButton>
             )}
