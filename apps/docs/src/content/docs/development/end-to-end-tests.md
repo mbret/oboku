@@ -41,7 +41,7 @@ CouchDB, Postgres and the API run on a network with no internet access, so the A
 Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwright/test`. Its fixtures:
 
 - `signUpInvitation`: a sign-up link for a new email address, and the password to complete the sign-up with. The admin API creates the link, so the stack needs no email provider.
-- `context`: aborts every request to a host other than `localhost`, and installs the web app's service worker before the test's page opens. The app has a known bug: it reloads when a service worker first takes control of a page. A page opened before the worker is installed reloads during the test.
+- `context`: aborts every request to a host other than `localhost`.
 
 The books the tests add are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution.
 

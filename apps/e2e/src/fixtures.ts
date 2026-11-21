@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto"
-import { type BrowserContext, test as base } from "@playwright/test"
+import { test as base } from "@playwright/test"
 import {
   adminGenerateSignUpLink,
   adminSignIn,
@@ -34,7 +34,7 @@ export const test = base.extend<{ signUpInvitation: SignUpInvitation }>({
 
     await use({ password: "e2e-password", signUpLink })
   },
-  context: async function prepareContext({ context }, use) {
+  context: async function blockRequestsOutsideTheStack({ context }, use) {
     await context.route(
       function isOutsideTheStack(url) {
         return !isStackUrl(url)
@@ -43,24 +43,9 @@ export const test = base.extend<{ signUpInvitation: SignUpInvitation }>({
         return route.abort("blockedbyclient")
       },
     )
-    await installServiceWorker(context)
 
     await use(context)
   },
 })
-
-/**
- * The web app reloads when a service worker first takes control of a page
- * (a known bug), so a test's pages open after this installs one.
- */
-async function installServiceWorker(context: BrowserContext) {
-  const page = await context.newPage()
-
-  await page.goto("/")
-  await page.waitForFunction(function isControlledByServiceWorker() {
-    return navigator.serviceWorker.controller !== null
-  })
-  await page.close()
-}
 
 export { expect } from "@playwright/test"
