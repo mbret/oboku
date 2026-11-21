@@ -2,10 +2,39 @@ import path from "node:path"
 
 const BOOKS_DIR = path.join(import.meta.dirname, "../fixtures/books")
 
-const theTimeMachineFileName = "h-g-wells_the-time-machine.epub"
+type Book = {
+  fileName: string
+  path: string
+  title: string
+  author: string
+}
+
+function book(fileName: string, title: string, author: string): Book {
+  return { fileName, path: path.join(BOOKS_DIR, fileName), title, author }
+}
 
 export const THE_TIME_MACHINE = {
-  fileName: theTimeMachineFileName,
-  path: path.join(BOOKS_DIR, theTimeMachineFileName),
+  ...book("h-g-wells_the-time-machine.epub", "The Time Machine", "H. G. Wells"),
   titlePageImageName: "The Time Machine, by H. G. Wells",
 }
+
+/** Every book in fixtures/books, which Server Sync serves. */
+export const SERVER_LIBRARY_BOOKS: Book[] = [
+  THE_TIME_MACHINE,
+  book(
+    "jane-austen_pride-and-prejudice.epub",
+    "Pride and Prejudice",
+    "Jane Austen",
+  ),
+  book("mary-shelley_frankenstein.epub", "Frankenstein", "Mary Shelley"),
+  book(
+    "arthur-conan-doyle_the-adventures-of-sherlock-holmes.epub",
+    "The Adventures of Sherlock Holmes",
+    "Arthur Conan Doyle",
+  ),
+  book(
+    "robert-louis-stevenson_treasure-island.epub",
+    "Treasure Island",
+    "Robert Louis Stevenson",
+  ),
+]

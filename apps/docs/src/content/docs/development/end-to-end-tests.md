@@ -36,6 +36,8 @@ pnpm --filter @oboku/e2e stack:down
 
 CouchDB, Postgres and the API run on a network with no internet access, so the API's metadata lookups (Google Books, OpenLibrary and others) always fail. In the browser, the tests abort every request to a host other than `localhost`. What a test sees then depends on the app only.
 
+The API mounts `apps/e2e/fixtures/books` read-only. Before the tests start, `src/globalSetup.ts` turns on [Server Sync](/self-hosting/server-sync) with that folder as its source, through the admin API.
+
 ## Writing a test
 
 Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwright/test`. Its fixtures:
@@ -43,7 +45,12 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 - `signUpInvitation`: a sign-up link for a new email address, and the password to complete the sign-up with. The admin API creates the link, so the stack needs no email provider.
 - `context`: aborts every request to a host other than `localhost`.
 
-The books the tests add are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution.
+`src/steps.ts` holds the steps that several tests take in the app:
+
+- `signUp`: completes the sign-up from a `signUpInvitation`.
+- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync. The books' titles appear once the API has read each file, which can take up to a minute when tests run in parallel.
+
+The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs.
 
 Wait on what the screen shows, never on a fixed delay. A book added from the device is saved on the device after it appears in the library: wait for its **Read** button before opening it.
 

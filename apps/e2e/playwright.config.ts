@@ -4,8 +4,10 @@ import { WEB_URL } from "./src/stack"
 const isCi = !!process.env.CI
 
 export default defineConfig({
+  globalSetup: "./src/globalSetup.ts",
   forbidOnly: isCi,
   fullyParallel: true,
+  expect: { timeout: 15_000 },
   reporter: [[isCi ? "github" : "list"], ["html", { open: "never" }]],
   use: {
     baseURL: WEB_URL,
