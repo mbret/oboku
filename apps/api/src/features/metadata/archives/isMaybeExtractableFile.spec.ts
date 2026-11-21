@@ -40,6 +40,15 @@ describe("isMaybeExtractableFile", () => {
     ).toBe(true)
   })
 
+  it("extracts a CBZ reported with Nextcloud's type", () => {
+    expect(
+      isMaybeExtractableFile({
+        contentType: "application/comicbook+zip",
+        name: undefined,
+      }),
+    ).toBe(true)
+  })
+
   it("extracts a CBR reported with Nextcloud's type", () => {
     expect(
       isMaybeExtractableFile({
@@ -52,7 +61,7 @@ describe("isMaybeExtractableFile", () => {
   it("may extract a file named like an archive whatever type its source gives", () => {
     expect(
       isMaybeExtractableFile({
-        contentType: "application/comicbook+zip",
+        contentType: "binary/octet-stream",
         name: "Batman #12.CBZ",
       }),
     ).toBe(true)

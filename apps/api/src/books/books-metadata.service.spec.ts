@@ -464,7 +464,7 @@ describe("BooksMetadataService.refreshMetadata", () => {
       "Batman #12.cbz",
       undefined,
       undefined,
-      { contentType: "application/comicbook+zip", downloadedFilePath },
+      { contentType: "binary/octet-stream", downloadedFilePath },
     )
 
     expect(downloadLinkToTmp).toHaveBeenCalled()
