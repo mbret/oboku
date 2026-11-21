@@ -1,8 +1,10 @@
 import type { ReactReaderProviderProps } from "@prose-reader/react-reader"
 import { useAnnotations } from "../../annotations/useAnnotations"
-import { useCreateAnnotation } from "../../annotations/useCreateAnnotation"
-import { useRemoveAnnotation } from "../../annotations/useRemoveAnnotation"
-import { useUpdateAnnotation } from "../../annotations/useUpdateAnnotation"
+import {
+  applyAnnotationWrite,
+  usePendingAnnotationWrites,
+  useWriteAnnotation,
+} from "../../annotations/useWriteAnnotation"
 
 type ReaderAnnotations = Pick<
   ReactReaderProviderProps,
@@ -19,19 +21,24 @@ export const useReaderAnnotations = ({
   bookId: string
   enabled: boolean
 }): ReaderAnnotations => {
-  const { data: annotations } = useAnnotations({ bookId, enabled })
-  const { mutate: createAnnotation } = useCreateAnnotation()
-  const { mutate: updateAnnotation } = useUpdateAnnotation()
-  const { mutate: removeAnnotation } = useRemoveAnnotation()
+  const { data: storedAnnotations } = useAnnotations({ bookId, enabled })
+  const pendingWrites = usePendingAnnotationWrites({ bookId })
+  const { mutate: writeAnnotation } = useWriteAnnotation({ bookId })
 
   if (!enabled) return {}
 
   return {
-    annotations,
-    onAnnotationCreate: function storeCreatedAnnotation(annotation) {
-      createAnnotation({ bookId, annotation })
+    annotations:
+      storedAnnotations &&
+      pendingWrites.reduce(applyAnnotationWrite, storedAnnotations),
+    onAnnotationCreate: function writeCreatedAnnotation(annotation) {
+      writeAnnotation({ type: "create", annotation })
     },
-    onAnnotationUpdate: updateAnnotation,
-    onAnnotationDelete: removeAnnotation,
+    onAnnotationUpdate: function writeUpdatedAnnotation(annotation) {
+      writeAnnotation({ type: "update", annotation })
+    },
+    onAnnotationDelete: function writeRemovedAnnotation(id) {
+      writeAnnotation({ type: "remove", id })
+    },
   }
 }

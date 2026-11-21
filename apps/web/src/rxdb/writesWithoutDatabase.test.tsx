@@ -2,9 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, onTestFinished } from "vitest"
-import { useCreateAnnotation } from "../annotations/useCreateAnnotation"
-import { useRemoveAnnotation } from "../annotations/useRemoveAnnotation"
-import { useUpdateAnnotation } from "../annotations/useUpdateAnnotation"
+import { useWriteAnnotation } from "../annotations/useWriteAnnotation"
 import { useAddTagToBook, useRemoveTagFromBook } from "../books/helpers"
 import { useCollectionIncrementalModify } from "../collections/useCollectionIncrementalModify"
 import { useCreateCollection } from "../collections/useCreateCollection"
@@ -12,6 +10,8 @@ import { useRemoveCollection } from "../collections/useRemoveCollection"
 import { useSetCatalogEnabled } from "../integrations/catalogs/useSetCatalogEnabled"
 import { useCreateTag, useUpdateTag } from "../tags/helpers"
 import { useDatabase } from "./RxDbProvider"
+
+const BOOK_ID = "book-1"
 
 const renderWritesWithoutDatabase = () => {
   const queryClient = new QueryClient()
@@ -27,9 +27,7 @@ const renderWritesWithoutDatabase = () => {
         addTagToBook: useAddTagToBook(),
         removeTagFromBook: useRemoveTagFromBook(),
         setCatalogEnabled: useSetCatalogEnabled(),
-        createAnnotation: useCreateAnnotation(),
-        updateAnnotation: useUpdateAnnotation(),
-        removeAnnotation: useRemoveAnnotation(),
+        writeAnnotation: useWriteAnnotation({ bookId: BOOK_ID }),
       }
     },
     {
@@ -51,7 +49,6 @@ describe("database writes", () => {
   it("reject while no database is open", async () => {
     const result = renderWritesWithoutDatabase()
     const writes = result.current
-    const bookId = crypto.randomUUID()
     const tagId = crypto.randomUUID()
     const collectionId = crypto.randomUUID()
     const annotationId = crypto.randomUUID()
@@ -64,18 +61,21 @@ describe("database writes", () => {
       writes.modifyCollection.mutateAsync({ _id: collectionId, name: "New" }),
       writes.createTag.mutateAsync({ name: "Tag" }),
       writes.updateTag.mutateAsync({ _id: tagId, name: "New" }),
-      writes.addTagToBook.mutateAsync({ _id: bookId, tagId }),
-      writes.removeTagFromBook.mutateAsync({ _id: bookId, tagId }),
+      writes.addTagToBook.mutateAsync({ _id: BOOK_ID, tagId }),
+      writes.removeTagFromBook.mutateAsync({ _id: BOOK_ID, tagId }),
       writes.setCatalogEnabled.mutateAsync({
         id: "openLibrary",
         isEnabled: false,
       }),
-      writes.createAnnotation.mutateAsync({
-        bookId,
+      writes.writeAnnotation.mutateAsync({
+        type: "create",
         annotation: { id: annotationId, cfi: "epubcfi(/6/4!/4/2/1:0)" },
       }),
-      writes.updateAnnotation.mutateAsync({ id: annotationId, notes: "" }),
-      writes.removeAnnotation.mutateAsync(annotationId),
+      writes.writeAnnotation.mutateAsync({
+        type: "update",
+        annotation: { id: annotationId, notes: "" },
+      }),
+      writes.writeAnnotation.mutateAsync({ type: "remove", id: annotationId }),
     ])
 
     expect(
