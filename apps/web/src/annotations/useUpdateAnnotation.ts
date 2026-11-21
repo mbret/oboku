@@ -1,6 +1,6 @@
 import type { Annotation } from "@prose-reader/enhancer-annotations"
 import { useMutation } from "@tanstack/react-query"
-import { useDatabase } from "../rxdb"
+import { ensureDatabase, useDatabase } from "../rxdb"
 
 export const useUpdateAnnotation = () => {
   const { db } = useDatabase()
@@ -11,11 +11,13 @@ export const useUpdateAnnotation = () => {
       highlightColor,
       notes,
     }: Pick<Annotation, "id" | "highlightColor" | "notes">) {
-      return db?.annotation.findOne(id).incrementalPatch({
-        highlightColor: highlightColor ?? null,
-        notes: notes ?? null,
-        modifiedAt: new Date().toISOString(),
-      })
+      return ensureDatabase(db)
+        .annotation.findOne(id)
+        .incrementalPatch({
+          highlightColor: highlightColor ?? null,
+          notes: notes ?? null,
+          modifiedAt: new Date().toISOString(),
+        })
     },
   })
 }

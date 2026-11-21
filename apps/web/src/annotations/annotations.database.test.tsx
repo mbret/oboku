@@ -4,7 +4,11 @@ import type { ReactNode } from "react"
 import { firstValueFrom } from "rxjs"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import type { RxdbAnnotationDocType } from "../rxdb/collections/annotation"
-import { getLatestDatabase, useReCreateDb } from "../rxdb/RxDbProvider"
+import {
+  getLatestDatabase,
+  useDatabase,
+  useReCreateDb,
+} from "../rxdb/RxDbProvider"
 import { useAnnotations } from "./useAnnotations"
 import { useCreateAnnotation } from "./useCreateAnnotation"
 import { useRemoveAnnotation } from "./useRemoveAnnotation"
@@ -65,6 +69,49 @@ async function renderAnnotationHooksWithDatabase({
 }
 
 describe("annotation hooks", () => {
+  it("reject a write while no database is open", async () => {
+    const queryClient = new QueryClient()
+    const { result, unmount } = renderHook(
+      function renderWriteHooksWithoutDatabase() {
+        return {
+          database: useDatabase(),
+          createAnnotation: useCreateAnnotation(),
+          updateAnnotation: useUpdateAnnotation(),
+          removeAnnotation: useRemoveAnnotation(),
+        }
+      },
+      {
+        wrapper: function QueryWrapper({ children }: { children: ReactNode }) {
+          return (
+            <QueryClientProvider client={queryClient}>
+              {children}
+            </QueryClientProvider>
+          )
+        },
+      },
+    )
+    onTestFinished(unmount)
+    const annotationId = crypto.randomUUID()
+
+    expect(result.current.database.db).toBeUndefined()
+    await expect(
+      result.current.createAnnotation.mutateAsync({
+        bookId: BOOK_ID,
+        annotation: { id: annotationId, cfi: BOOKMARK_CFI },
+      }),
+    ).rejects.toThrow("The database is not open")
+    await expect(
+      result.current.updateAnnotation.mutateAsync({
+        id: annotationId,
+        highlightColor: YELLOW,
+        notes: "A note",
+      }),
+    ).rejects.toThrow("The database is not open")
+    await expect(
+      result.current.removeAnnotation.mutateAsync(annotationId),
+    ).rejects.toThrow("The database is not open")
+  })
+
   it("give the annotations of their book only, in the order of their creation, as react-reader takes them", async () => {
     const { database, result } = await renderAnnotationHooksWithDatabase()
     const laterHighlight = storedAnnotation({

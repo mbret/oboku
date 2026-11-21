@@ -1,6 +1,6 @@
 import type { Annotation } from "@prose-reader/enhancer-annotations"
 import { useMutation } from "@tanstack/react-query"
-import { useDatabase } from "../rxdb"
+import { ensureDatabase, useDatabase } from "../rxdb"
 
 export const useCreateAnnotation = () => {
   const { db } = useDatabase()
@@ -13,7 +13,7 @@ export const useCreateAnnotation = () => {
       bookId: string
       annotation: Annotation
     }) {
-      return db?.annotation.insert({
+      return ensureDatabase(db).annotation.insert({
         _id: annotation.id,
         rx_model: "annotation",
         bookId,
