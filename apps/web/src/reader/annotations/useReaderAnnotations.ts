@@ -14,11 +14,6 @@ type ReaderAnnotations = Pick<
   | "onAnnotationDelete"
 >
 
-/**
- * The stored annotations of the book, with the writes that have not landed
- * yet applied over them: react-reader sees each action at once, whatever the
- * write takes.
- */
 export const useReaderAnnotations = ({
   bookId,
   enabled,
