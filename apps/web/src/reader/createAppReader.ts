@@ -8,6 +8,11 @@ import { pdfEnhancer } from "@prose-reader/enhancer-pdf"
 import { refitEnhancer } from "@prose-reader/enhancer-refit"
 import { searchEnhancer } from "@prose-reader/enhancer-search"
 
+/**
+ * Creates the reader of a reading session and of a preview alike. An enhancer
+ * that holds reading data, or shows a control for it, follows
+ * `getUsesReadingData` in `./mode`.
+ */
 export const createAppReader = koreaderEnhancer(
   pdfEnhancer(
     audioEnhancer(

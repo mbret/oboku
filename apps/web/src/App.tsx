@@ -19,7 +19,6 @@ import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Logger } from "./debug/logger.shared"
 import { RestoreDownloadState } from "./download/RestoreDownloadState"
-import { useCleanupDanglingLinks } from "./links/useCleanupDanglingLinks"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
@@ -174,7 +173,6 @@ export const AppWithConfig = memo(function AppWithConfig() {
 const OtherEffects = memo(function OtherEffects() {
   const { mutate: loadGsi } = useLoadGsi()
 
-  useCleanupDanglingLinks()
   useRemoveDownloadWhenBookIsNotInterested()
 
   useEffect(() => {

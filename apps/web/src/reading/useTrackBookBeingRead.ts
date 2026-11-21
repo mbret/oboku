@@ -7,7 +7,7 @@ import { SIGNAL_RESET } from "reactjrx"
 
 export const useTrackBookBeingRead = (
   bookId: string | undefined,
-  { enabled = true }: { enabled?: boolean } = {},
+  { enabled }: { enabled: boolean },
 ) => {
   useEffect(() => {
     if (!enabled) return

@@ -9,21 +9,21 @@ catalogs:
   # both move with the prose-reader packages.
   prose-reader:
     "@prose-reader/archive-reader": ^46.0.0
-    "@prose-reader/cbz": ^46.0.0
-    "@prose-reader/core": ^46.0.0
-    "@prose-reader/enhancer-audio": ^46.0.0
-    "@prose-reader/enhancer-gallery": ^46.0.0
-    "@prose-reader/enhancer-gestures": ^46.0.0
-    "@prose-reader/enhancer-koreader": ^46.0.0
-    "@prose-reader/enhancer-pdf": ^46.0.0
-    "@prose-reader/enhancer-refit": ^46.0.0
-    "@prose-reader/enhancer-search": ^46.0.0
+    "@prose-reader/cbz": ^46.1.0
+    "@prose-reader/core": ^46.1.0
+    "@prose-reader/enhancer-audio": ^46.1.0
+    "@prose-reader/enhancer-gallery": ^46.1.0
+    "@prose-reader/enhancer-gestures": ^46.1.0
+    "@prose-reader/enhancer-koreader": ^46.1.0
+    "@prose-reader/enhancer-pdf": ^46.1.0
+    "@prose-reader/enhancer-refit": ^46.1.0
+    "@prose-reader/enhancer-search": ^46.1.0
     "@prose-reader/koreader": ^46.0.0
     "@prose-reader/metadata-fetcher": ^46.0.0
-    "@prose-reader/react-reader": ^46.0.0
+    "@prose-reader/react-reader": ^46.1.0
     "@prose-reader/shared": ^46.0.0
     "@prose-reader/streamer": ^46.0.0
-    gesturx: ^8.0.0
+    gesturx: ^8.0.1
     reactjrx: ^7.0.0
 # apps/web/tsconfig.json redirects @internationalized/* to
 # ../../node_modules/@internationalized/*/dist/types — keep that scope
@@ -42,12 +42,6 @@ allowBuilds:
   nx: true
   protobufjs: false
   sharp: true
-# lerna pins conventional-commits-parser 7.1.2, and the
-# @conventional-changelog/git-client it installs asks for ^7.1.3. The override
-# is keyed on that pin: semantic-release's analyzer still uses parser 6. It
-# goes once lerna pins 7.1.3 or later.
-overrides:
-  conventional-commits-parser@7.1.2: ^7.1.3
 patchedDependencies:
   react-dom@19.3.1: patches/react-dom@19.3.1.patch
   # webdav 5.11.0 bug (mbret/oboku#845): when the client uses Digest auth,

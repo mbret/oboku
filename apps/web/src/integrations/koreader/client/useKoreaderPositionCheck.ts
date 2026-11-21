@@ -25,9 +25,9 @@ export type KoreaderPositionCheck =
  * Asks the account's KOReader sync server, as the book opens, where the
  * book's file was left, and takes that position as the book's bookmark when
  * another device left it there more recently, before letting the book open.
- * The book opens without asking offline, in preview, signed out, when the app
- * knows of no server for the account, or once the user continues without the
- * answer.
+ * The book opens without asking when the check is not enabled, offline, signed
+ * out, when the app knows of no server for the account, or once the user
+ * continues without the answer.
  */
 export const useKoreaderPositionCheck = ({
   bookId,

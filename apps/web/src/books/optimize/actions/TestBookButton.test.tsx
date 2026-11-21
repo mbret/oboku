@@ -1,6 +1,7 @@
 import { cleanup, render, screen } from "@testing-library/react"
 import { MemoryRouter } from "react-router"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { getReaderPreviewRoute } from "../../../reader/mode"
 import { TestBookButton } from "./TestBookButton"
 
 const mocks = vi.hoisted(function createMocks() {
@@ -9,13 +10,6 @@ const mocks = vi.hoisted(function createMocks() {
 
 vi.mock("../apply/useApplyLocally", function mockApplyLocally() {
   return { useIsApplyingLocally: mocks.useIsApplyingLocally }
-})
-
-vi.mock("../../../reader/ReaderScreen", function mockReaderScreen() {
-  return {
-    READER_MODE_PARAM: "mode",
-    READER_PREVIEW_MODE: "preview",
-  }
 })
 
 const renderTestBookButton = (isApplyingLocally: boolean) => {
@@ -34,6 +28,12 @@ describe("TestBookButton", function testTestBookButton() {
   afterEach(function cleanUpTestBookButton() {
     cleanup()
     vi.clearAllMocks()
+  })
+
+  it("opens the book in preview", function openBookInPreview() {
+    const button = renderTestBookButton(false)
+
+    expect(button.getAttribute("href")).toBe(getReaderPreviewRoute("book-id"))
   })
 
   it("is enabled while the book is idle", function enableWhileIdle() {
