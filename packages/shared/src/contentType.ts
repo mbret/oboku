@@ -8,12 +8,16 @@ export const ZIP_MIME_TYPES = [
   "application/x-zip-compressed",
   "application/epub+zip",
   "application/x-cbz",
+  // Nextcloud's type for .cbz files
+  "application/comicbook+zip",
 ]
+
+export const ZIP_EXTENSIONS = [".epub", ".zip", ".cbz"]
 
 const ZIP_FILE_TYPES = Object.fromEntries(
   ZIP_MIME_TYPES.map((mimeType): [string, string[]] => [
     mimeType,
-    [".epub", ".zip", ".cbz"],
+    ZIP_EXTENSIONS,
   ]),
 )
 
@@ -32,10 +36,12 @@ export const CBR_MIME_TYPES = [
   "application/x-cbr",
 ]
 
+export const CBR_EXTENSIONS = [".cbr", ".rar"]
+
 const CBR_FILE_TYPES = Object.fromEntries(
   CBR_MIME_TYPES.map((mimeType): [string, string[]] => [
     mimeType,
-    [".cbr", ".rar"],
+    CBR_EXTENSIONS,
   ]),
 )
 
@@ -56,9 +62,7 @@ export const isPotentialZipFile = ({
   const normalizedName = name?.toLowerCase()
 
   return (
-    normalizedName?.endsWith(".zip") ||
-    normalizedName?.endsWith(".epub") ||
-    normalizedName?.endsWith(".cbz") ||
+    ZIP_EXTENSIONS.some((extension) => normalizedName?.endsWith(extension)) ||
     ZIP_MIME_TYPES.includes(getMimeTypeEssence(mimeType ?? ""))
   )
 }

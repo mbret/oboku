@@ -37,7 +37,10 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import { CoversService } from "../covers/covers.service.js"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
-import { isMaybeExtractableContentType } from "../features/metadata/archives/isMaybeExtractableContentType.js"
+import {
+  isArchiveContentType,
+  isMaybeExtractableFile,
+} from "../features/metadata/archives/isMaybeExtractableFile.js"
 import { openArchive } from "../features/metadata/archives/openArchive.js"
 import { catalogLookupInput } from "../features/metadata/catalogLookupInput.js"
 import { createCatalogProviders } from "../features/metadata/catalogProviders.js"
@@ -190,10 +193,10 @@ export class BooksMetadataService {
     this.logger.error(error)
   }
 
-  private readonly logUntypedFileIsNotAnArchive = (
-    error: unknown,
-  ): undefined => {
-    this.logger.log(`An untyped file is not an archive to extract: ${error}`)
+  private readonly logFileIsNotAnArchive = (error: unknown): undefined => {
+    this.logger.log(
+      `A file without an archive type is not an archive to extract: ${error}`,
+    )
 
     return undefined
   }
@@ -274,7 +277,10 @@ export class BooksMetadataService {
        * Not all plugins return the valid content type so
        * we can only make some assumptions based on what we have
        */
-      const isMaybeExtractAble = isMaybeExtractableContentType(contentType)
+      const isMaybeExtractAble = isMaybeExtractableFile({
+        contentType,
+        name: linkResourceMetadata.name,
+      })
 
       const previousLinkMetadata = ctx.book.metadata?.find(
         (entry): entry is LinkMetadata => entry.type === "link",
@@ -452,13 +458,11 @@ export class BooksMetadataService {
           name: linkResourceMetadata.name,
           encodingFormat: contentType,
         }
-        const isUntypedFile = !contentType
-
-        archive = isUntypedFile
-          ? await openArchive(tmpFilePath, archiveOptions).catch(
-              this.logUntypedFileIsNotAnArchive,
+        archive = isArchiveContentType(contentType)
+          ? await openArchive(tmpFilePath, archiveOptions)
+          : await openArchive(tmpFilePath, archiveOptions).catch(
+              this.logFileIsNotAnArchive,
             )
-          : await openArchive(tmpFilePath, archiveOptions)
       }
 
       const freshFileMetadata = archive
