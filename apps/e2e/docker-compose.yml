@@ -93,7 +93,8 @@ services:
       - "127.0.0.1:4280:80"
     healthcheck:
       <<: *healthcheck-timing
-      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
+      # nginx listens on IPv4 only, and localhost can resolve to ::1 first.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
 
 networks:
   stack:
