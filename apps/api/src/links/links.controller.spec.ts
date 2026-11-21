@@ -271,18 +271,37 @@ describe("LinksController", () => {
     expect(download).not.toHaveBeenCalled()
   })
 
-  it("answers 502 for a link whose connector the settings no longer hold, reaching no server", async () => {
+  it("answers 400 for a link whose connector the settings do not hold, reaching no server", async () => {
     createNanoInstanceForUser.mockResolvedValue(
       createLibraryDb([WEBDAV_LINK, URI_LINK], []),
     )
 
     const response = await downloadLink(WEBDAV_LINK._id)
 
-    expect(response.status).toBe(502)
+    expect(response.status).toBe(400)
     expect(response.body).toEqual({
       errors: [
-        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE },
+        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND },
       ],
+    })
+    expect(createWebdavClient).not.toHaveBeenCalled()
+  })
+
+  it("answers 400 for a link that names no connector, reaching no server", async () => {
+    const linkWithoutConnector = {
+      ...WEBDAV_LINK,
+      _id: "link-without-connector",
+      data: { filePath: WEBDAV_LINK.data.filePath },
+    }
+    createNanoInstanceForUser.mockResolvedValue(
+      createLibraryDb([linkWithoutConnector]),
+    )
+
+    const response = await downloadLink(linkWithoutConnector._id)
+
+    expect(response.status).toBe(400)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED }],
     })
     expect(createWebdavClient).not.toHaveBeenCalled()
   })
