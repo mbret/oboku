@@ -23,7 +23,6 @@ import { useFixableBooks } from "./useFixableBooks"
 import { BookDanglingCollections } from "./BookDanglingCollections"
 import { BookDanglingLinks } from "./BookDanglingLinks"
 import { useFixableLinks } from "./useFixableLinks"
-import { useFixableAnnotations } from "./useFixableAnnotations"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 
@@ -42,7 +41,6 @@ const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
 export const ProblemsScreen = memo(function ProblemsScreen() {
   const fixCollections = useFixCollections()
   const { danglingLinks } = useFixableLinks()
-  const { danglingAnnotations } = useFixableAnnotations()
   const { collectionsWithDanglingBooks } = useFixableCollections()
   const { booksWithDanglingCollections, booksWithDanglingLinks } =
     useFixableBooks()
@@ -184,27 +182,6 @@ export const ProblemsScreen = memo(function ProblemsScreen() {
                   primary="Dangling links"
                   secondary={`
             We found ${danglingLinks.length} links not used by any books. They just take space and will not be used anymore. Safe to remove.
-            `}
-                />
-              </ListItemButton>
-            )}
-            {danglingAnnotations.length > 0 && (
-              <ListItemButton
-                alignItems="flex-start"
-                onClick={() =>
-                  repair({
-                    type: "danglingAnnotations",
-                    items: danglingAnnotations,
-                  })
-                }
-              >
-                <ListItemIcon>
-                  <DeleteForeverRounded />
-                </ListItemIcon>
-                <ListItemText
-                  primary="Annotations left without a book"
-                  secondary={`
-            We found ${danglingAnnotations.length} annotations whose book no longer exists. No book shows them, and they only take space. Safe to remove.
             `}
                 />
               </ListItemButton>

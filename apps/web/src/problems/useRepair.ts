@@ -26,10 +26,6 @@ export const useRepair = () => {
         | {
             type: "danglingLinks"
             items: string[]
-          }
-        | {
-            type: "danglingAnnotations"
-            items: string[]
           },
     ) => {
       const db$ = getLatestDatabase()
@@ -131,21 +127,6 @@ export const useRepair = () => {
 
         return db$.pipe(
           mergeMap((db) => from(db.link.bulkRemove(action.items))),
-          map(() => null),
-        )
-      }
-
-      if (action.type === "danglingAnnotations") {
-        const yes = window.confirm(
-          `
-            This action will remove the annotations left without a book. It will not remove anything else.
-            `.replace(/ {2,}/g, ""),
-        )
-
-        if (!yes) return of(null)
-
-        return db$.pipe(
-          mergeMap((db) => from(db.annotation.bulkRemove(action.items))),
           map(() => null),
         )
       }
