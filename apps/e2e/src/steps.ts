@@ -19,15 +19,20 @@ export async function signUp(
   await page.getByLabel("Password", { exact: true }).fill(invitation.password)
   await page.getByLabel("Confirm password").fill(invitation.password)
   await page.getByRole("button", { name: "Complete sign up" }).click()
-  await expect(
-    page.getByRole("link", { name: "Library", exact: true }),
-  ).toBeVisible()
+  await expect(page.locator('a[href="/library"]').first()).toBeVisible()
 }
 
+/**
+ * Unticks "Remember for 5 minutes", so every protected action asks for the
+ * master password, whatever ran before it.
+ */
 async function authorizeWithMasterPassword(page: Page) {
   const dialog = page.getByRole("dialog", { name: "Authorization required" })
 
   await dialog.getByLabel("Password").fill(MASTER_PASSWORD)
+  await dialog
+    .getByRole("checkbox", { name: "Remember for 5 minutes" })
+    .uncheck()
   await dialog.getByRole("button", { name: "Authorize" }).click()
 }
 
@@ -80,4 +85,24 @@ export async function addServerLibrary(page: Page) {
       name: new RegExp(`^${SERVER_DATA_SOURCE_NAME} Last synced`),
     }),
   ).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
+}
+
+/**
+ * Downloads a book of the server library from its details screen, from a
+ * library that shows it. Returns the address of that screen.
+ */
+export async function downloadServerBook(page: Page, title: string) {
+  await page.getByText(title, { exact: true }).click()
+  await page.getByRole("button", { name: "Go to details" }).click()
+  await page.getByRole("button", { name: "Download" }).click()
+  await authorizeWithMasterPassword(page)
+  await expect(
+    page.getByRole("button", { name: "Read", exact: true }),
+  ).toBeVisible()
+
+  const bookDetailsUrl = page.url()
+
+  await page.goBack()
+
+  return bookDetailsUrl
 }

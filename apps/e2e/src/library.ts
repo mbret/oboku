@@ -18,6 +18,12 @@ export const THE_TIME_MACHINE = {
   titlePageImageName: "The Time Machine, by H. G. Wells",
 }
 
+export const TREASURE_ISLAND = book(
+  "robert-louis-stevenson_treasure-island.epub",
+  "Treasure Island",
+  "Robert Louis Stevenson",
+)
+
 export const LITTLE_NEMO = book(
   "winsor-mccay_little-nemo-in-slumberland.cbz",
   "Little Nemo in Slumberland",
@@ -38,10 +44,6 @@ export const SERVER_LIBRARY_BOOKS: Book[] = [
     "The Adventures of Sherlock Holmes",
     "Arthur Conan Doyle",
   ),
-  book(
-    "robert-louis-stevenson_treasure-island.epub",
-    "Treasure Island",
-    "Robert Louis Stevenson",
-  ),
+  TREASURE_ISLAND,
   LITTLE_NEMO,
 ]
