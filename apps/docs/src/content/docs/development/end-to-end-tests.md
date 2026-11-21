@@ -45,13 +45,16 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 - `signUpInvitation`: a sign-up link for a new email address, and the password to complete the sign-up with. The admin API creates the link, so the stack needs no email provider.
 - `context`: aborts every request to a host other than `localhost`.
 
-`src/steps.ts` holds the steps that several tests take in the app:
+`src/steps.ts` holds the steps the tests take in the app:
 
 - `signUp`: completes the sign-up from a `signUpInvitation`.
-- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync. The books' titles appear once the API has read each file, which can take up to a minute when tests run in parallel.
-- `downloadServerBook`: downloads a book of the server library from its details screen, and returns the address of that screen.
+- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync.
+- `expectServerLibraryBooks`: waits until the library shows each server book's title and author. The API reads them from each file, which can take up to a minute when tests run in parallel.
+- `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
-The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs.
+`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document.
+
+The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs, so list it in `SERVER_LIBRARY_BOOKS` in `src/library.ts` too: the server library test and the screenshots read that list.
 
 Wait on what the screen shows, never on a fixed delay. A book added from the device is saved on the device after it appears in the library: wait for its **Read** button before opening it.
 
@@ -65,24 +68,26 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** home, library, book details, EPUB reader and comic reader, each with the steps that show it.
+- **The scenes:** home, library, book details, EPUB reader and comic reader. Each scene has the steps that show it, and the steps that bring the app back where they found it, so any scene can follow another.
 - **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures and the file each one is saved to.
 
-| Target         | Size                            | Scenes                     | Saved to                                               |
-| -------------- | ------------------------------- | -------------------------- | ------------------------------------------------------ |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | all five                   | `apps/e2e/screenshots/play-phone/en/` (not committed)  |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader | the three images `apps/web/public/manifest.json` lists |
+| Target         | Size                            | Scenes                     | Saved to                                                                                    |
+| -------------- | ------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | all five                   | `apps/e2e/screenshots/play-phone/en/`                                                       |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader | `apps/e2e/screenshots/web-manifest/`, under the names `apps/web/public/manifest.json` lists |
+
+`apps/e2e/screenshots` is not committed. To replace the web manifest images, copy them to `apps/web/public`, as the `screenshots` workflow does.
 
 Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the comic, so Home shows both as books in progress. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
 The images are the same from one run to the next on the same machine:
 
 - The time zone is UTC, and the clock reads 09:41 when each scene starts. The clock keeps running, because the app's timers stall when it stops.
-- Each capture waits for the splash screen to go, the reader page to fade in, and the fonts and images to load.
+- Each capture waits for the splash screen to go, the reader page to fade in, and the fonts, images and book covers to load, in the page and in each reader page.
 - The context reports the storage as persisted, as it is in the installed app. Headless Chromium never grants it, and the app would show an unread notification about it.
 
 ## In CI
 
 The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown, the agent skills, or the admin, Android, docs or landing apps. On a failure, it prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
 
-The `screenshots` workflow runs by hand, from the repository's **Actions** tab. It uploads the Play Store set as the `play-store-screenshots` artifact. When the web manifest images change, it opens a pull request with them. That needs **Allow GitHub Actions to create and approve pull requests** in the repository's **Settings > Actions > General**. GitHub does not run the other workflows on a pull request that a workflow opens.
+The `screenshots` workflow runs by hand, from the repository's **Actions** tab, on a pinned runner image so the system fonts stay the same. It uploads the Play Store set as the `play-store-screenshots` artifact. When the web manifest images change, it opens a pull request with them. That needs **Allow GitHub Actions to create and approve pull requests** in the repository's **Settings > Actions > General**. GitHub does not run the other workflows on a pull request that a workflow opens.

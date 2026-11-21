@@ -7,10 +7,7 @@ import {
 import { signInAsAdmin } from "./admin"
 import { SERVER_LIBRARY } from "./stack"
 
-/**
- * Serves the books in fixtures/books through Server Sync. The instance config
- * is shared by every test, so it is written once, before the workers start.
- */
+/** Serves the books in fixtures/books through Server Sync. */
 export default async function enableServerLibrary() {
   const client = await signInAsAdmin()
 

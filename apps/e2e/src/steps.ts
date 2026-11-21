@@ -1,4 +1,6 @@
-import { expect, type Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
+import { expect, type SignUpInvitation } from "./fixtures"
+import { SERVER_LIBRARY_BOOKS } from "./library"
 import { SERVER_LIBRARY } from "./stack"
 
 const MASTER_PASSWORD = "e2e-master-password"
@@ -9,16 +11,14 @@ const SERVER_DATA_SOURCE_NAME = "Server books"
  * Each book's metadata refresh retries the unreachable catalogs for about 4
  * seconds, and the API runs 3 refreshes at a time for all users together.
  */
-export const LIBRARY_SYNC_TIMEOUT_MS = 60_000
+const LIBRARY_SYNC_TIMEOUT_MS = 60_000
 
-export async function signUp(
-  page: Page,
-  invitation: { signUpLink: string; password: string },
-) {
+export async function signUp(page: Page, invitation: SignUpInvitation) {
   await page.goto(invitation.signUpLink)
   await page.getByLabel("Password", { exact: true }).fill(invitation.password)
   await page.getByLabel("Confirm password").fill(invitation.password)
   await page.getByRole("button", { name: "Complete sign up" }).click()
+  // The phone layout's tab bar links have no accessible name.
   await expect(page.locator('a[href="/library"]').first()).toBeVisible()
 }
 
@@ -37,9 +37,8 @@ async function authorizeWithMasterPassword(page: Page) {
 }
 
 /**
- * Adds the stack's Server Sync folder as a data source, the way a reader does:
- * a master password, a secret holding the server password, a connector, then
- * the data source, whose first sync starts once it is saved.
+ * Adds the stack's Server Sync folder as a data source, the way a reader does,
+ * and waits for its first sync to finish.
  */
 export async function addServerLibrary(page: Page) {
   await page.goto("/profile/security")
@@ -88,21 +87,35 @@ export async function addServerLibrary(page: Page) {
 }
 
 /**
- * Downloads a book of the server library from its details screen, from a
- * library that shows it. Returns the address of that screen.
+ * On the library, waits for every server book to show the title and the author
+ * that the API read from its file.
  */
-export async function downloadServerBook(page: Page, title: string) {
+export async function expectServerLibraryBooks(page: Page) {
+  for (const book of SERVER_LIBRARY_BOOKS) {
+    await expect(page.getByText(book.title, { exact: true })).toBeVisible({
+      timeout: LIBRARY_SYNC_TIMEOUT_MS,
+    })
+    await expect(page.getByText(book.author, { exact: true })).toBeVisible()
+  }
+}
+
+/** From a library that shows the book. */
+export async function openBookDetails(page: Page, title: string) {
   await page.getByText(title, { exact: true }).click()
   await page.getByRole("button", { name: "Go to details" }).click()
+  await page.waitForURL(/\/books\//)
+}
+
+/** Downloads a server book from its details screen. */
+export async function downloadFromDetailsScreen(page: Page) {
   await page.getByRole("button", { name: "Download" }).click()
   await authorizeWithMasterPassword(page)
   await expect(
     page.getByRole("button", { name: "Read", exact: true }),
   ).toBeVisible()
+}
 
-  const bookDetailsUrl = page.url()
-
-  await page.goBack()
-
-  return bookDetailsUrl
+export async function readFromDetailsScreen(page: Page) {
+  await page.getByRole("button", { name: "Read", exact: true }).click()
+  await page.waitForURL(/\/reader\//)
 }

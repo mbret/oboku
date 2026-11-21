@@ -15,7 +15,14 @@ function book(fileName: string, title: string, author: string): Book {
 
 export const THE_TIME_MACHINE = {
   ...book("h-g-wells_the-time-machine.epub", "The Time Machine", "H. G. Wells"),
-  titlePageImageName: "The Time Machine, by H. G. Wells",
+  titlePage: {
+    path: "/epub/text/titlepage.xhtml",
+    imageName: "The Time Machine, by H. G. Wells",
+  },
+  chapterOne: {
+    path: "/epub/text/chapter-1.xhtml",
+    opening: "The Time Traveller (for so it will be convenient",
+  },
 }
 
 export const TREASURE_ISLAND = book(
@@ -30,7 +37,10 @@ export const LITTLE_NEMO = book(
   "Winsor McCay",
 )
 
-/** Every book in fixtures/books, which Server Sync serves. */
+/**
+ * Every book in fixtures/books. The server library test and the screenshot
+ * setup expect each one in a synced library.
+ */
 export const SERVER_LIBRARY_BOOKS: Book[] = [
   THE_TIME_MACHINE,
   book(

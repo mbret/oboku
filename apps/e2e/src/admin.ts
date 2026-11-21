@@ -1,7 +1,6 @@
 import { adminSignIn, type ApiClient, createApiClient } from "@oboku/shared"
 import { ADMIN_CREDENTIALS, API_URL } from "./stack"
 
-/** A client for the generated admin functions, signed in for 15 minutes. */
 export async function signInAsAdmin(): Promise<ApiClient> {
   const {
     data: { access_token },

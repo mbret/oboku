@@ -1,6 +1,7 @@
 import { expect, test } from "../../src/fixtures"
 import { THE_TIME_MACHINE } from "../../src/library"
-import { signUp } from "../../src/steps"
+import { firstReaderPage } from "../../src/reader"
+import { openBookDetails, readFromDetailsScreen, signUp } from "../../src/steps"
 
 test("a new reader signs up, adds an EPUB from the device and reads it", async ({
   page,
@@ -17,15 +18,12 @@ test("a new reader signs up, adds an EPUB from the device and reads it", async (
     .setInputFiles(THE_TIME_MACHINE.path)
   await page.getByRole("button", { name: "Confirm" }).click()
 
-  await page.getByText(THE_TIME_MACHINE.fileName).click()
-  await page.getByRole("button", { name: "Go to details" }).click()
-  await page.getByRole("button", { name: "Read", exact: true }).click()
+  await openBookDetails(page, THE_TIME_MACHINE.fileName)
+  await readFromDetailsScreen(page)
 
   await expect(
-    page
-      .locator("iframe")
-      .first()
+    firstReaderPage(page)
       .contentFrame()
-      .getByRole("img", { name: THE_TIME_MACHINE.titlePageImageName }),
+      .getByRole("img", { name: THE_TIME_MACHINE.titlePage.imageName }),
   ).toBeVisible()
 })

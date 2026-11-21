@@ -24,7 +24,7 @@ export default defineConfig({
     {
       name: "screenshots",
       testDir: "./tests/screenshots",
-      use: { ...devices["Desktop Chrome"] },
+      use: { ...devices["Pixel 7"] },
     },
   ],
 })

@@ -4,7 +4,7 @@ import { adminGenerateSignUpLink } from "@oboku/shared"
 import { signInAsAdmin } from "./admin"
 import { isStackUrl } from "./stack"
 
-type SignUpInvitation = {
+export type SignUpInvitation = {
   password: string
   signUpLink: string
 }

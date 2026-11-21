@@ -1,12 +1,16 @@
 import { expect, test } from "../../src/fixtures"
-import { SERVER_LIBRARY_BOOKS } from "../../src/library"
+import { LITTLE_NEMO } from "../../src/library"
+import { firstReaderPage } from "../../src/reader"
 import {
   addServerLibrary,
-  LIBRARY_SYNC_TIMEOUT_MS,
+  downloadFromDetailsScreen,
+  expectServerLibraryBooks,
+  openBookDetails,
+  readFromDetailsScreen,
   signUp,
 } from "../../src/steps"
 
-test("a reader syncs the server library and sees each book's title and author", async ({
+test("a reader syncs the server library, sees each book's title and author, and reads the comic", async ({
   page,
   signUpInvitation,
 }) => {
@@ -15,11 +19,13 @@ test("a reader syncs the server library and sees each book's title and author", 
   await addServerLibrary(page)
 
   await page.getByRole("link", { name: "Library", exact: true }).click()
+  await expectServerLibraryBooks(page)
 
-  for (const book of SERVER_LIBRARY_BOOKS) {
-    await expect(page.getByText(book.title, { exact: true })).toBeVisible({
-      timeout: LIBRARY_SYNC_TIMEOUT_MS,
-    })
-    await expect(page.getByText(book.author, { exact: true })).toBeVisible()
-  }
+  await openBookDetails(page, LITTLE_NEMO.title)
+  await downloadFromDetailsScreen(page)
+  await readFromDetailsScreen(page)
+
+  await expect(
+    firstReaderPage(page).contentFrame().locator("img"),
+  ).toBeVisible()
 })

@@ -1,5 +1,5 @@
 import path from "node:path"
-import type { Locator, Page } from "@playwright/test"
+import type { Page } from "@playwright/test"
 import { expect, test } from "../../src/fixtures"
 import {
   LITTLE_NEMO,
@@ -8,92 +8,29 @@ import {
   TREASURE_ISLAND,
 } from "../../src/library"
 import {
+  expectReaderPageRevealed,
+  firstReaderPage,
+  readerPage,
+  showReaderMenu,
+} from "../../src/reader"
+import {
   addServerLibrary,
-  downloadServerBook,
-  LIBRARY_SYNC_TIMEOUT_MS,
+  downloadFromDetailsScreen,
+  expectServerLibraryBooks,
+  openBookDetails,
+  readFromDetailsScreen,
   signUp,
 } from "../../src/steps"
 
-type SceneName =
-  | "home"
-  | "library"
-  | "book-details"
-  | "epub-reader"
-  | "comic-reader"
+type BookDetailsUrlsByTitle = ReadonlyMap<string, string>
 
-/** The address of each book's details screen, by title. */
-type BookDetailsUrls = ReadonlyMap<string, string>
-
-type Target = {
-  name: string
-  viewport: { width: number; height: number }
-  deviceScaleFactor: number
-  colorScheme: "light" | "dark"
-  locale: string
-  /** The scenes this target captures, in order, and where each is saved. */
-  captures: { scene: SceneName; outputPath: string }[]
+type Scene = {
+  show: (page: Page, bookDetailsUrls: BookDetailsUrlsByTitle) => Promise<void>
+  /** Brings the app back to where `show` found it, so any scene can follow. */
+  leave?: (page: Page) => Promise<void>
 }
 
-const WEB_PUBLIC_DIR = path.join(import.meta.dirname, "../../../web/public")
-const PLAY_DIR = path.join(import.meta.dirname, "../../screenshots/play-phone")
-
-const TARGETS: Target[] = [
-  {
-    name: "play-phone",
-    viewport: { width: 360, height: 640 },
-    deviceScaleFactor: 3,
-    colorScheme: "light",
-    locale: "en-US",
-    captures: [
-      { scene: "home", outputPath: path.join(PLAY_DIR, "en", "home.png") },
-      {
-        scene: "library",
-        outputPath: path.join(PLAY_DIR, "en", "library.png"),
-      },
-      {
-        scene: "book-details",
-        outputPath: path.join(PLAY_DIR, "en", "book-details.png"),
-      },
-      {
-        scene: "epub-reader",
-        outputPath: path.join(PLAY_DIR, "en", "epub-reader.png"),
-      },
-      {
-        scene: "comic-reader",
-        outputPath: path.join(PLAY_DIR, "en", "comic-reader.png"),
-      },
-    ],
-  },
-  {
-    name: "web-manifest",
-    viewport: { width: 320, height: 568 },
-    deviceScaleFactor: 2,
-    colorScheme: "light",
-    locale: "en-US",
-    captures: [
-      {
-        scene: "home",
-        outputPath: path.join(WEB_PUBLIC_DIR, "app.oboku.me_(iPhone 5_SE).png"),
-      },
-      {
-        scene: "library",
-        outputPath: path.join(
-          WEB_PUBLIC_DIR,
-          "app.oboku.me_(iPhone 5_SE) (1).png",
-        ),
-      },
-      {
-        scene: "epub-reader",
-        outputPath: path.join(
-          WEB_PUBLIC_DIR,
-          "app.oboku.me_(iPhone 5_SE) (2).png",
-        ),
-      },
-    ],
-  },
-]
-
-/** Every library book is on screen at this size, for the setup. */
+/** Shows every library book at once: the library list renders only the books on screen. */
 const SETUP_VIEWPORT = { width: 1280, height: 800 }
 
 /**
@@ -102,78 +39,14 @@ const SETUP_VIEWPORT = { width: 1280, height: 800 }
  */
 const CAPTURE_TIME = new Date("2026-11-02T09:41:00Z")
 
-type PreparedLibrary = {
-  bookDetailsUrls: BookDetailsUrls
-  theTimeMachineReaderUrl: string
-  littleNemoReaderUrl: string
-}
+const TARGET_TIMEOUT_MS = 300_000
 
-function chapterOneFrameOfTheTimeMachine(page: Page) {
-  return page.locator('iframe[src$="/epub/text/chapter-1.xhtml"]')
-}
+const SCREENSHOTS_DIR = path.join(import.meta.dirname, "../../screenshots")
 
-function chapterOneOfTheTimeMachine(page: Page) {
-  return chapterOneFrameOfTheTimeMachine(page)
-    .contentFrame()
-    .getByText("The Time Traveller (for so it will be convenient")
-}
+/** A library card shows 1% for a book at its start. */
+const progressPastTheStart = /^([2-9]|\d{2,})%$/
 
-function firstComicPageFrame(page: Page) {
-  return page.locator("iframe").first()
-}
-
-function firstComicPage(page: Page) {
-  return firstComicPageFrame(page).contentFrame().locator("img")
-}
-
-/** prose-reader fades each page in, whatever the reduced motion setting. */
-async function expectFadedIn(readerPageFrame: Locator) {
-  await expect(readerPageFrame).toHaveCSS("opacity", "1")
-}
-
-const SCENES: Record<
-  SceneName,
-  (page: Page, library: PreparedLibrary) => Promise<void>
-> = {
-  home: async function showHome(page) {
-    await page.goto("/")
-    const continueReadingSection = page
-      .getByRole("heading", { name: "Continue reading" })
-      .locator("..")
-
-    for (const book of [LITTLE_NEMO, THE_TIME_MACHINE]) {
-      await expect(
-        continueReadingSection.getByText(book.title, { exact: true }),
-      ).toBeVisible()
-    }
-  },
-  library: async function showLibrary(page) {
-    await page.goto("/library/books")
-    await expect(
-      page.getByText(LITTLE_NEMO.title, { exact: true }),
-    ).toBeVisible()
-  },
-  "book-details": async function showBookDetails(page, library) {
-    await page.goto(
-      detailsUrlOf(library.bookDetailsUrls, TREASURE_ISLAND.title),
-    )
-    await expect(
-      page.getByRole("button", { name: "Read", exact: true }),
-    ).toBeVisible()
-  },
-  "epub-reader": async function showEpubReader(page, library) {
-    await page.goto(library.theTimeMachineReaderUrl)
-    await expect(chapterOneOfTheTimeMachine(page)).toBeVisible()
-    await expectFadedIn(chapterOneFrameOfTheTimeMachine(page))
-  },
-  "comic-reader": async function showComicReader(page, library) {
-    await page.goto(library.littleNemoReaderUrl)
-    await expect(firstComicPage(page)).toBeVisible()
-    await expectFadedIn(firstComicPageFrame(page))
-  },
-}
-
-function detailsUrlOf(bookDetailsUrls: BookDetailsUrls, title: string) {
+function detailsUrlOf(bookDetailsUrls: BookDetailsUrlsByTitle, title: string) {
   const bookDetailsUrl = bookDetailsUrls.get(title)
 
   if (!bookDetailsUrl) {
@@ -183,56 +56,27 @@ function detailsUrlOf(bookDetailsUrls: BookDetailsUrls, title: string) {
   return bookDetailsUrl
 }
 
-async function downloadServerLibrary(page: Page): Promise<BookDetailsUrls> {
-  await page.goto("/library/books")
-  await expect(page.getByText(LITTLE_NEMO.title, { exact: true })).toBeVisible({
-    timeout: LIBRARY_SYNC_TIMEOUT_MS,
-  })
-
-  const bookDetailsUrls = new Map<string, string>()
-
-  for (const book of SERVER_LIBRARY_BOOKS) {
-    bookDetailsUrls.set(book.title, await downloadServerBook(page, book.title))
-  }
-
-  return bookDetailsUrls
-}
-
-/** Opens the reader from a book's details screen and returns its address. */
-async function readFromDetailsScreen(page: Page) {
-  await page.getByRole("button", { name: "Read", exact: true }).click()
-  await page.waitForURL(/\/reader\//)
-
-  return page.url()
-}
-
-/**
- * Waits, from a second tab, until the library card of the book open in
- * `page` shows `savedProgress`. The reader saves the reading position about
- * once a second, and leaving it sooner can lose the position.
- */
-async function waitForSavedReadingProgress(
+async function openReaderOn(
   page: Page,
+  bookDetailsUrls: BookDetailsUrlsByTitle,
   title: string,
-  savedProgress: RegExp,
 ) {
-  const libraryTab = await page.context().newPage()
-
-  await libraryTab.goto("/library/books")
-  const bookCard = libraryTab
-    .locator("div")
-    .filter({ has: libraryTab.getByText(title, { exact: true }) })
-    .filter({ has: libraryTab.getByText(savedProgress) })
-    .last()
-
-  await expect(bookCard).toBeVisible()
-  await libraryTab.close()
+  await page.goto(detailsUrlOf(bookDetailsUrls, title))
+  await readFromDetailsScreen(page)
 }
 
 /**
- * The first full page load after a book was opened offers to go back to it,
- * over the screen. Declining stops the offer until a book is opened again.
+ * Every full page load outside the reader offers to go back to the book open
+ * in the reader, over the screen. Closing the reader in the app withdraws the
+ * offer.
  */
+async function closeReader(page: Page) {
+  await page.goBack()
+  await expect(
+    page.getByRole("button", { name: "Read", exact: true }),
+  ).toBeVisible()
+}
+
 async function declineBackToReading(page: Page) {
   await page
     .getByRole("dialog", { name: "Take me back to my book" })
@@ -240,51 +84,141 @@ async function declineBackToReading(page: Page) {
     .click()
 }
 
-const anyProgress = /^\d+%$/
-const progressPastTheFirstPercent = /^([2-9]|\d{2,})%$/
+async function expectChapterOneOfTheTimeMachine(page: Page) {
+  const chapterOne = readerPage(page, THE_TIME_MACHINE.chapterOne.path)
 
-/**
- * Puts The Time Machine on its first chapter and opens the comic, so Home
- * shows both as books in progress.
- */
-async function startReading(
-  page: Page,
-  bookDetailsUrls: BookDetailsUrls,
-): Promise<PreparedLibrary> {
-  await page.goto(detailsUrlOf(bookDetailsUrls, THE_TIME_MACHINE.title))
-  const theTimeMachineReaderUrl = await readFromDetailsScreen(page)
   await expect(
-    page
-      .frameLocator('iframe[src$="/epub/text/titlepage.xhtml"]')
-      .getByRole("img", { name: THE_TIME_MACHINE.titlePageImageName }),
+    chapterOne.contentFrame().getByText(THE_TIME_MACHINE.chapterOne.opening),
   ).toBeVisible()
 
-  const viewport = page.viewportSize()
+  return chapterOne
+}
 
-  if (!viewport) {
-    throw new Error("The page has no viewport")
+async function expectFirstPageOfLittleNemo(page: Page) {
+  const firstPage = firstReaderPage(page)
+
+  await expect(firstPage.contentFrame().locator("img")).toBeVisible()
+
+  return firstPage
+}
+
+const SCENES = {
+  home: {
+    show: async function showHome(page) {
+      await page.goto("/")
+      const continueReadingSection = page
+        .getByRole("heading", { name: "Continue reading" })
+        .locator("..")
+
+      for (const book of [LITTLE_NEMO, THE_TIME_MACHINE]) {
+        await expect(
+          continueReadingSection.getByText(book.title, { exact: true }),
+        ).toBeVisible()
+      }
+    },
+  },
+  library: {
+    show: async function showLibrary(page) {
+      await page.goto("/library/books")
+      await expect(
+        page.getByText(LITTLE_NEMO.title, { exact: true }),
+      ).toBeVisible()
+    },
+  },
+  "book-details": {
+    show: async function showBookDetails(page, bookDetailsUrls) {
+      await page.goto(detailsUrlOf(bookDetailsUrls, TREASURE_ISLAND.title))
+      await expect(
+        page.getByRole("button", { name: "Read", exact: true }),
+      ).toBeVisible()
+    },
+  },
+  "epub-reader": {
+    show: async function showEpubReader(page, bookDetailsUrls) {
+      await openReaderOn(page, bookDetailsUrls, THE_TIME_MACHINE.title)
+      await expectReaderPageRevealed(
+        await expectChapterOneOfTheTimeMachine(page),
+      )
+    },
+    leave: closeReader,
+  },
+  "comic-reader": {
+    show: async function showComicReader(page, bookDetailsUrls) {
+      await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
+      await expectReaderPageRevealed(await expectFirstPageOfLittleNemo(page))
+    },
+    leave: closeReader,
+  },
+} satisfies Record<string, Scene>
+
+type SceneName = keyof typeof SCENES
+
+type Target = {
+  name: string
+  viewport: { width: number; height: number }
+  deviceScaleFactor: number
+  colorScheme: "light" | "dark"
+  locale: string
+  outputDir: string
+  /** The scenes this target captures, in order, and the file each is saved to. */
+  captures: { scene: SceneName; fileName: string }[]
+}
+
+function captureNamedAfterScene(scene: SceneName) {
+  return { scene, fileName: `${scene}.png` }
+}
+
+const TARGETS: Target[] = [
+  {
+    name: "play-phone",
+    viewport: { width: 360, height: 640 },
+    deviceScaleFactor: 3,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(SCREENSHOTS_DIR, "play-phone", "en"),
+    captures: (
+      [
+        "home",
+        "library",
+        "book-details",
+        "epub-reader",
+        "comic-reader",
+      ] satisfies SceneName[]
+    ).map(captureNamedAfterScene),
+  },
+  {
+    name: "web-manifest",
+    viewport: { width: 320, height: 568 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    // The file names apps/web/public/manifest.json lists. The screenshots
+    // workflow copies the files there.
+    outputDir: path.join(SCREENSHOTS_DIR, "web-manifest"),
+    captures: [
+      { scene: "home", fileName: "app.oboku.me_(iPhone 5_SE).png" },
+      { scene: "library", fileName: "app.oboku.me_(iPhone 5_SE) (1).png" },
+      { scene: "epub-reader", fileName: "app.oboku.me_(iPhone 5_SE) (2).png" },
+    ],
+  },
+]
+
+async function downloadServerLibrary(
+  page: Page,
+): Promise<BookDetailsUrlsByTitle> {
+  await page.goto("/library/books")
+  await expectServerLibraryBooks(page)
+
+  const bookDetailsUrls = new Map<string, string>()
+
+  for (const book of SERVER_LIBRARY_BOOKS) {
+    await openBookDetails(page, book.title)
+    bookDetailsUrls.set(book.title, page.url())
+    await downloadFromDetailsScreen(page)
+    await page.goBack()
   }
 
-  await page.mouse.click(viewport.width / 2, viewport.height / 2)
-  await page.getByRole("button", { name: "Table of contents" }).click()
-  await page.getByRole("button", { name: "I", exact: true }).click()
-  await expect(chapterOneOfTheTimeMachine(page)).toBeVisible()
-  await waitForSavedReadingProgress(
-    page,
-    THE_TIME_MACHINE.title,
-    progressPastTheFirstPercent,
-  )
-
-  await page.goto(detailsUrlOf(bookDetailsUrls, LITTLE_NEMO.title))
-  await declineBackToReading(page)
-  const littleNemoReaderUrl = await readFromDetailsScreen(page)
-  await expect(firstComicPage(page)).toBeVisible()
-  await waitForSavedReadingProgress(page, LITTLE_NEMO.title, anyProgress)
-
-  await page.goto("/")
-  await declineBackToReading(page)
-
-  return { bookDetailsUrls, theTimeMachineReaderUrl, littleNemoReaderUrl }
+  return bookDetailsUrls
 }
 
 async function markNotificationsAsRead(page: Page) {
@@ -298,18 +232,76 @@ async function markNotificationsAsRead(page: Page) {
 }
 
 /**
- * The splash screen shows the logo, as the headings "o" and "boku", and fades
- * out once the app is ready.
+ * Waits, from a second tab, until the library card of the book open in `page`
+ * shows that the reader saved a position past the start. The reader saves the
+ * position about once a second, and closing it sooner can lose the position.
  */
-async function waitForScreenToSettle(page: Page) {
-  await expect(
-    page.getByRole("heading", { name: "boku", exact: true }),
-  ).toHaveCount(0)
-  await page.waitForFunction(async function areFontsAndImagesLoaded() {
-    await document.fonts.ready
+async function waitForSavedReadingProgress(page: Page, title: string) {
+  const libraryTab = await page.context().newPage()
 
-    return Array.from(document.images).every((image) => image.complete)
+  await libraryTab.setViewportSize(SETUP_VIEWPORT)
+  await libraryTab.goto("/library/books")
+  await declineBackToReading(libraryTab)
+  const bookCard = libraryTab
+    .locator("[data-book-card-container]")
+    .filter({ has: libraryTab.getByText(title, { exact: true }) })
+
+  await expect(bookCard.getByText(progressPastTheStart)).toBeVisible()
+  await libraryTab.close()
+}
+
+/**
+ * Puts The Time Machine on its first chapter and opens the comic, so Home
+ * shows both as books in progress.
+ */
+async function startReading(
+  page: Page,
+  bookDetailsUrls: BookDetailsUrlsByTitle,
+) {
+  await openReaderOn(page, bookDetailsUrls, THE_TIME_MACHINE.title)
+  await expect(
+    readerPage(page, THE_TIME_MACHINE.titlePage.path)
+      .contentFrame()
+      .getByRole("img", { name: THE_TIME_MACHINE.titlePage.imageName }),
+  ).toBeVisible()
+  await showReaderMenu(page)
+  await page.getByRole("button", { name: "Table of contents" }).click()
+  await page.getByRole("button", { name: "I", exact: true }).click()
+  await expectChapterOneOfTheTimeMachine(page)
+  await waitForSavedReadingProgress(page, THE_TIME_MACHINE.title)
+  await closeReader(page)
+
+  await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
+  await expectFirstPageOfLittleNemo(page)
+  await waitForSavedReadingProgress(page, LITTLE_NEMO.title)
+  await closeReader(page)
+}
+
+async function waitForScreenToSettle(page: Page) {
+  // The splash screen's logo reads as the headings "o" and "boku".
+  const splashScreenLogo = page.getByRole("heading", {
+    name: "boku",
+    exact: true,
   })
+
+  await expect(splashScreenLogo).toHaveCount(0)
+
+  for (const frame of page.frames()) {
+    await frame.evaluate(async function waitForFonts() {
+      await document.fonts.ready
+    })
+    // A cover shows a placeholder, and hides its picture, until its image loads.
+    await frame.waitForFunction(function areImagesShown() {
+      const areImagesLoaded = Array.from(document.images).every(
+        (image) => image.complete,
+      )
+      const areCoversShown = Array.from(
+        document.querySelectorAll("picture"),
+      ).every((picture) => getComputedStyle(picture).display !== "none")
+
+      return areImagesLoaded && areCoversShown
+    })
+  }
 }
 
 for (const target of TARGETS) {
@@ -317,8 +309,6 @@ for (const target of TARGETS) {
     test.use({
       viewport: SETUP_VIEWPORT,
       deviceScaleFactor: target.deviceScaleFactor,
-      isMobile: true,
-      hasTouch: true,
       colorScheme: target.colorScheme,
       locale: target.locale,
       timezoneId: "UTC",
@@ -341,7 +331,7 @@ for (const target of TARGETS) {
       page,
       signUpInvitation,
     }) => {
-      test.setTimeout(300_000)
+      test.setTimeout(TARGET_TIMEOUT_MS)
 
       await signUp(page, signUpInvitation)
       await addServerLibrary(page)
@@ -349,13 +339,19 @@ for (const target of TARGETS) {
       await markNotificationsAsRead(page)
 
       await page.setViewportSize(target.viewport)
-      const library = await startReading(page, bookDetailsUrls)
+      await startReading(page, bookDetailsUrls)
 
-      for (const { scene, outputPath } of target.captures) {
+      for (const { scene, fileName } of target.captures) {
+        const sceneToCapture: Scene = SCENES[scene]
+
         await page.clock.setSystemTime(CAPTURE_TIME)
-        await SCENES[scene](page, library)
+        await sceneToCapture.show(page, bookDetailsUrls)
         await waitForScreenToSettle(page)
-        await page.screenshot({ path: outputPath })
+        await page.screenshot({
+          path: path.join(target.outputDir, fileName),
+          animations: "disabled",
+        })
+        await sceneToCapture.leave?.(page)
       }
     })
   })
