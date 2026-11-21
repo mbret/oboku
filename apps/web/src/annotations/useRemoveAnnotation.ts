@@ -1,12 +1,12 @@
-import { useMutation } from "@tanstack/react-query"
-import { ensureDatabase, useDatabase } from "../rxdb"
+import { useAnnotationsWrite } from "./useAnnotationsWrite"
 
-export const useRemoveAnnotation = () => {
-  const { db } = useDatabase()
-
-  return useMutation({
-    mutationFn: async function removeAnnotation(id: string) {
-      return ensureDatabase(db).annotation.findOne(id).incrementalRemove()
+export const useRemoveAnnotation = ({ bookId }: { bookId: string }) =>
+  useAnnotationsWrite({
+    bookId,
+    write: function removeAnnotation(database, id: string) {
+      return database.annotation.findOne(id).incrementalRemove()
+    },
+    changeList: function takeAnnotationOut(annotations, id) {
+      return annotations.filter((annotation) => annotation.id !== id)
     },
   })
-}

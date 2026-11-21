@@ -20,17 +20,15 @@ export const useReaderAnnotations = ({
   enabled: boolean
 }): ReaderAnnotations => {
   const { data: annotations } = useAnnotations({ bookId, enabled })
-  const { mutate: createAnnotation } = useCreateAnnotation()
-  const { mutate: updateAnnotation } = useUpdateAnnotation()
-  const { mutate: removeAnnotation } = useRemoveAnnotation()
+  const { mutate: createAnnotation } = useCreateAnnotation({ bookId })
+  const { mutate: updateAnnotation } = useUpdateAnnotation({ bookId })
+  const { mutate: removeAnnotation } = useRemoveAnnotation({ bookId })
 
   if (!enabled) return {}
 
   return {
     annotations,
-    onAnnotationCreate: function storeCreatedAnnotation(annotation) {
-      createAnnotation({ bookId, annotation })
-    },
+    onAnnotationCreate: createAnnotation,
     onAnnotationUpdate: updateAnnotation,
     onAnnotationDelete: removeAnnotation,
   }

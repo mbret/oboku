@@ -4,11 +4,7 @@ import type { ReactNode } from "react"
 import { firstValueFrom } from "rxjs"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import type { RxdbAnnotationDocType } from "../rxdb/collections/annotation"
-import {
-  getLatestDatabase,
-  useDatabase,
-  useReCreateDb,
-} from "../rxdb/RxDbProvider"
+import { getLatestDatabase, useReCreateDb } from "../rxdb/RxDbProvider"
 import { useAnnotations } from "./useAnnotations"
 import { useCreateAnnotation } from "./useCreateAnnotation"
 import { useRemoveAnnotation } from "./useRemoveAnnotation"
@@ -42,9 +38,9 @@ async function renderAnnotationHooksWithDatabase({
       return {
         reCreateDb: useReCreateDb(),
         annotations: useAnnotations({ bookId: BOOK_ID, enabled }),
-        createAnnotation: useCreateAnnotation(),
-        updateAnnotation: useUpdateAnnotation(),
-        removeAnnotation: useRemoveAnnotation(),
+        createAnnotation: useCreateAnnotation({ bookId: BOOK_ID }),
+        updateAnnotation: useUpdateAnnotation({ bookId: BOOK_ID }),
+        removeAnnotation: useRemoveAnnotation({ bookId: BOOK_ID }),
       }
     },
     {
@@ -69,49 +65,6 @@ async function renderAnnotationHooksWithDatabase({
 }
 
 describe("annotation hooks", () => {
-  it("reject a write while no database is open", async () => {
-    const queryClient = new QueryClient()
-    const { result, unmount } = renderHook(
-      function renderWriteHooksWithoutDatabase() {
-        return {
-          database: useDatabase(),
-          createAnnotation: useCreateAnnotation(),
-          updateAnnotation: useUpdateAnnotation(),
-          removeAnnotation: useRemoveAnnotation(),
-        }
-      },
-      {
-        wrapper: function QueryWrapper({ children }: { children: ReactNode }) {
-          return (
-            <QueryClientProvider client={queryClient}>
-              {children}
-            </QueryClientProvider>
-          )
-        },
-      },
-    )
-    onTestFinished(unmount)
-    const annotationId = crypto.randomUUID()
-
-    expect(result.current.database.db).toBeUndefined()
-    await expect(
-      result.current.createAnnotation.mutateAsync({
-        bookId: BOOK_ID,
-        annotation: { id: annotationId, cfi: BOOKMARK_CFI },
-      }),
-    ).rejects.toThrow("The database is not open")
-    await expect(
-      result.current.updateAnnotation.mutateAsync({
-        id: annotationId,
-        highlightColor: YELLOW,
-        notes: "A note",
-      }),
-    ).rejects.toThrow("The database is not open")
-    await expect(
-      result.current.removeAnnotation.mutateAsync(annotationId),
-    ).rejects.toThrow("The database is not open")
-  })
-
   it("give the annotations of their book only, in the order of their creation, as react-reader takes them", async () => {
     const { database, result } = await renderAnnotationHooksWithDatabase()
     const laterHighlight = storedAnnotation({
@@ -220,18 +173,15 @@ describe("annotation hooks", () => {
     const bookmarkId = crypto.randomUUID()
 
     await result.current.createAnnotation.mutateAsync({
-      bookId: BOOK_ID,
-      annotation: {
-        id: highlightId,
-        cfi: HIGHLIGHT_CFI,
-        highlightedText: "Call me Ishmael",
-        highlightColor: PURPLE,
-        notes: "A note",
-      },
+      id: highlightId,
+      cfi: HIGHLIGHT_CFI,
+      highlightedText: "Call me Ishmael",
+      highlightColor: PURPLE,
+      notes: "A note",
     })
     await result.current.createAnnotation.mutateAsync({
-      bookId: BOOK_ID,
-      annotation: { id: bookmarkId, cfi: BOOKMARK_CFI },
+      id: bookmarkId,
+      cfi: BOOKMARK_CFI,
     })
 
     const highlight = await database.annotation.findOne(highlightId).exec()
@@ -265,14 +215,11 @@ describe("annotation hooks", () => {
     const highlightId = crypto.randomUUID()
 
     await result.current.createAnnotation.mutateAsync({
-      bookId: BOOK_ID,
-      annotation: {
-        id: highlightId,
-        cfi: HIGHLIGHT_CFI,
-        highlightedText: "",
-        highlightColor: PURPLE,
-        notes: "",
-      },
+      id: highlightId,
+      cfi: HIGHLIGHT_CFI,
+      highlightedText: "",
+      highlightColor: PURPLE,
+      notes: "",
     })
 
     const highlight = await database.annotation.findOne(highlightId).exec()
@@ -353,5 +300,109 @@ describe("annotation hooks", () => {
     expect(annotations.map((annotation) => annotation.toJSON())).toStrictEqual([
       kept.toJSON(),
     ])
+  })
+  it("change the list of their book at once, while the write runs", async () => {
+    const { database, result } = await renderAnnotationHooksWithDatabase()
+    await waitFor(function expectEmptyList() {
+      expect(result.current.annotations.data).toEqual([])
+    })
+    const heldInsert = Promise.withResolvers<void>()
+    const insert = database.annotation.insert.bind(database.annotation)
+    vi.spyOn(database.annotation, "insert").mockImplementationOnce(
+      async function insertOnceReleased(document) {
+        await heldInsert.promise
+
+        return insert(document)
+      },
+    )
+    const bookmarkId = crypto.randomUUID()
+
+    const creation = result.current.createAnnotation.mutateAsync({
+      id: bookmarkId,
+      cfi: BOOKMARK_CFI,
+    })
+
+    await waitFor(function expectBookmarkListed() {
+      expect(
+        result.current.annotations.data?.map((annotation) => annotation.id),
+      ).toEqual([bookmarkId])
+    })
+    expect(await database.annotation.findOne(bookmarkId).exec()).toBeNull()
+
+    heldInsert.resolve()
+    await creation
+
+    expect(await database.annotation.findOne(bookmarkId).exec()).not.toBeNull()
+  })
+
+  it("put the previous list back when a write fails", async () => {
+    const { database, result } = await renderAnnotationHooksWithDatabase()
+    const stored = await database.annotation.insert(
+      storedAnnotation({
+        bookId: BOOK_ID,
+        createdAt: "2026-11-19T10:00:00.000Z",
+      }),
+    )
+    const listWithStored = await waitFor(function getListWithStored() {
+      const list = result.current.annotations.data
+
+      expect(list?.map((annotation) => annotation.id)).toEqual([stored._id])
+
+      return list
+    })
+    const heldFailure = Promise.withResolvers<void>()
+    vi.spyOn(database.annotation, "insert").mockImplementationOnce(
+      async function failOnceReleased() {
+        await heldFailure.promise
+
+        throw new Error("The write failed")
+      },
+    )
+    const failedId = crypto.randomUUID()
+
+    const creation = result.current.createAnnotation.mutateAsync({
+      id: failedId,
+      cfi: BOOKMARK_CFI,
+    })
+    await waitFor(function expectFailedAnnotationListed() {
+      expect(
+        result.current.annotations.data?.map((annotation) => annotation.id),
+      ).toEqual([stored._id, failedId])
+    })
+    heldFailure.resolve()
+
+    await expect(creation).rejects.toThrow("The write failed")
+    await waitFor(function expectPreviousList() {
+      expect(result.current.annotations.data).toEqual(listWithStored)
+    })
+  })
+
+  it("run the writes of a book in the order of the calls", async () => {
+    const { database, result } = await renderAnnotationHooksWithDatabase()
+    const heldInsert = Promise.withResolvers<void>()
+    const insert = database.annotation.insert.bind(database.annotation)
+    vi.spyOn(database.annotation, "insert").mockImplementationOnce(
+      async function insertOnceReleased(document) {
+        await heldInsert.promise
+
+        return insert(document)
+      },
+    )
+    const bookmarkId = crypto.randomUUID()
+
+    const creation = result.current.createAnnotation.mutateAsync({
+      id: bookmarkId,
+      cfi: BOOKMARK_CFI,
+    })
+    const removal = result.current.removeAnnotation.mutateAsync(bookmarkId)
+    await waitFor(function expectRemovalWaitingOrDone() {
+      const { isPaused, isSuccess } = result.current.removeAnnotation
+
+      expect(isPaused || isSuccess).toBe(true)
+    })
+    heldInsert.resolve()
+    await Promise.all([creation, removal])
+
+    expect(await database.annotation.findOne(bookmarkId).exec()).toBeNull()
   })
 })

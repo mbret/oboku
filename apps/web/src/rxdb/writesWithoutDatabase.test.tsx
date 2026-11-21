@@ -13,6 +13,8 @@ import { useSetCatalogEnabled } from "../integrations/catalogs/useSetCatalogEnab
 import { useCreateTag, useUpdateTag } from "../tags/helpers"
 import { useDatabase } from "./RxDbProvider"
 
+const BOOK_ID = "book-1"
+
 const renderWritesWithoutDatabase = () => {
   const queryClient = new QueryClient()
   const { result, unmount } = renderHook(
@@ -27,9 +29,9 @@ const renderWritesWithoutDatabase = () => {
         addTagToBook: useAddTagToBook(),
         removeTagFromBook: useRemoveTagFromBook(),
         setCatalogEnabled: useSetCatalogEnabled(),
-        createAnnotation: useCreateAnnotation(),
-        updateAnnotation: useUpdateAnnotation(),
-        removeAnnotation: useRemoveAnnotation(),
+        createAnnotation: useCreateAnnotation({ bookId: BOOK_ID }),
+        updateAnnotation: useUpdateAnnotation({ bookId: BOOK_ID }),
+        removeAnnotation: useRemoveAnnotation({ bookId: BOOK_ID }),
       }
     },
     {
@@ -51,7 +53,6 @@ describe("database writes", () => {
   it("reject while no database is open", async () => {
     const result = renderWritesWithoutDatabase()
     const writes = result.current
-    const bookId = crypto.randomUUID()
     const tagId = crypto.randomUUID()
     const collectionId = crypto.randomUUID()
     const annotationId = crypto.randomUUID()
@@ -64,15 +65,15 @@ describe("database writes", () => {
       writes.modifyCollection.mutateAsync({ _id: collectionId, name: "New" }),
       writes.createTag.mutateAsync({ name: "Tag" }),
       writes.updateTag.mutateAsync({ _id: tagId, name: "New" }),
-      writes.addTagToBook.mutateAsync({ _id: bookId, tagId }),
-      writes.removeTagFromBook.mutateAsync({ _id: bookId, tagId }),
+      writes.addTagToBook.mutateAsync({ _id: BOOK_ID, tagId }),
+      writes.removeTagFromBook.mutateAsync({ _id: BOOK_ID, tagId }),
       writes.setCatalogEnabled.mutateAsync({
         id: "openLibrary",
         isEnabled: false,
       }),
       writes.createAnnotation.mutateAsync({
-        bookId,
-        annotation: { id: annotationId, cfi: "epubcfi(/6/4!/4/2/1:0)" },
+        id: annotationId,
+        cfi: "epubcfi(/6/4!/4/2/1:0)",
       }),
       writes.updateAnnotation.mutateAsync({ id: annotationId, notes: "" }),
       writes.removeAnnotation.mutateAsync(annotationId),
