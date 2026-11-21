@@ -28,8 +28,8 @@ export const createAppReader = koreaderEnhancer(
 
 /**
  * Creates the reader of a reading session: the reader of a preview, with the
- * enhancers that hold reading data or show a control for it. They follow
- * `getUsesReadingData` in `./mode`.
+ * enhancers that hold reading data or show a control for it, as
+ * `getUsesReadingData` in `./mode` defines that data.
  */
 export const createReadingSessionReader = annotationsEnhancer(createAppReader)
 

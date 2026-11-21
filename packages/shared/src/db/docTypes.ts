@@ -220,12 +220,12 @@ export type AnnotationDocType = CommonBase & {
   cfi: string
   /**
    * The color of a highlight, as react-reader gives it: a CSS color such as
-   * `rgba(216, 191, 216, 1)`. Missing on a page bookmark.
+   * `rgba(216, 191, 216, 1)`. `null` on a page bookmark.
    */
   highlightColor?: string | null
   /**
    * The note of the user. react-reader gives `""` for a highlight without a
-   * note.
+   * note. `null` on a page bookmark.
    */
   notes?: string | null
   /**

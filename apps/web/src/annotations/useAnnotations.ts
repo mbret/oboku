@@ -22,9 +22,8 @@ const toAnnotation = (
 })
 
 /**
- * The annotations of a book, as react-reader takes them, in the order the
- * user created them. The list keeps its identity while no annotation of the
- * book changes: react-reader draws the highlights again for each new one.
+ * The list keeps its identity while no annotation of the book changes:
+ * react-reader draws the highlights again for each new one.
  */
 export const useAnnotations = ({
   bookId,
@@ -39,7 +38,7 @@ export const useAnnotations = ({
     enabled,
     queryFn: function observeAnnotationsOfBook() {
       return latestDatabase$.pipe(
-        switchMap((database) => {
+        switchMap(function observeAnnotationsOfBookIn(database) {
           return database.annotation.find({
             selector: { bookId },
             sort: [{ createdAt: "asc" }],

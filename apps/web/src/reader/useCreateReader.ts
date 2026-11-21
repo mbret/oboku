@@ -52,7 +52,6 @@ export const useCreateReader = ({
   koreaderDocument?: string
   /** The book to open at its bookmark, `null` to open at the start. */
   book: DeepReadonly<BookDocType> | null | undefined
-  /** See `getUsesReadingData` in `./mode`. */
   usesReadingData: boolean
 }) =>
   useMemo(

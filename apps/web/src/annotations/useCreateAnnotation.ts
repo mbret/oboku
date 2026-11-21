@@ -3,11 +3,6 @@ import { useMutation$ } from "reactjrx"
 import { from, mergeMap } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 
-/**
- * Stores an annotation that react-reader reports, with the id it gave. An
- * annotation without text, such as a page bookmark, stores `null` as its
- * text.
- */
 export const useCreateAnnotation = () =>
   useMutation$({
     mutationFn: function insertAnnotation({
@@ -18,8 +13,8 @@ export const useCreateAnnotation = () =>
       annotation: Annotation
     }) {
       return getLatestDatabase().pipe(
-        mergeMap((database) =>
-          from(
+        mergeMap(function insertAnnotationIn(database) {
+          return from(
             database.annotation.insert({
               _id: annotation.id,
               rx_model: "annotation",
@@ -31,8 +26,8 @@ export const useCreateAnnotation = () =>
               createdAt: new Date().toISOString(),
               modifiedAt: null,
             }),
-          ),
-        ),
+          )
+        }),
       )
     },
   })
