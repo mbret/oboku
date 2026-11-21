@@ -1,9 +1,31 @@
 import { useEffect, useRef, useState } from "react"
+import { filter, fromEvent, map, pairwise, startWith } from "rxjs"
 import * as serviceWorkerRegistration from "./serviceWorkerRegistration"
 import { reloadPage } from "../common/browser"
 import { Logger } from "../debug/logger.shared"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
+
+type ControllerChange = [
+  earlierController: ServiceWorker | null,
+  controller: ServiceWorker | null,
+]
+
+const hasEarlierController = ([earlierController]: ControllerChange) =>
+  earlierController !== null
+
+/**
+ * Emits when a new service worker replaces the one that controls the page. The
+ * first worker to claim an uncontrolled page replaces none: the page came from
+ * the network and already runs the build that worker serves.
+ */
+const fromControllerReplacement = (container: ServiceWorkerContainer) =>
+  fromEvent(container, "controllerchange").pipe(
+    startWith(null),
+    map(() => container.controller),
+    pairwise(),
+    filter(hasEarlierController),
+  )
 
 export const useRegisterServiceWorker = () => {
   const [waitingWorker, setWaitingWorker] = useState<ServiceWorker | undefined>(
@@ -27,32 +49,21 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  useEffect(function reloadWhenServiceWorkerTakesControl() {
+  useEffect(function reloadWhenNewServiceWorkerReplacesController() {
     if (!("serviceWorker" in navigator)) return
 
-    const controllerchange = () => {
-      Logger.log("New service worker has taken control of the page")
+    const subscription = fromControllerReplacement(
+      navigator.serviceWorker,
+    ).subscribe(function reloadIntoNewVersion() {
+      Logger.log("New service worker has replaced the page controller")
 
       if (import.meta.env.MODE === "development") return
 
-      /**
-       * We reload the page on service worker update because the entire web app
-       * source code is likely changed, therefore we need to fill in the cache
-       * with the new assets.
-       */
       reloadPage()
-    }
+    })
 
-    navigator.serviceWorker.addEventListener(
-      "controllerchange",
-      controllerchange,
-    )
-
-    return function removeControllerChangeListener() {
-      navigator.serviceWorker.removeEventListener(
-        "controllerchange",
-        controllerchange,
-      )
+    return function stopWatchingControllerReplacement() {
+      subscription.unsubscribe()
     }
   }, [])
 
