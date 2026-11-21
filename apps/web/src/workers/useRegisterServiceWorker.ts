@@ -6,25 +6,24 @@ import { Logger } from "../debug/logger.shared"
 import { sendMessageToServiceWorker } from "./communication/communication.web"
 import { skipWaitingMessage } from "./communication/types.shared"
 
-type ControllerChange = [
-  earlierController: ServiceWorker | null,
-  controller: ServiceWorker | null,
-]
-
-const hasEarlierController = ([earlierController]: ControllerChange) =>
-  earlierController !== null
-
 /**
- * Emits when a new service worker replaces the one that controls the page. The
- * first worker to claim an uncontrolled page replaces none: the page came from
- * the network and already runs the build that worker serves.
+ * The first worker to claim an uncontrolled page is not a new version: the
+ * page came from the network and already runs the build that worker serves.
  */
-const fromControllerReplacement = (container: ServiceWorkerContainer) =>
+const fromNewVersionTakingControl = (
+  container: ServiceWorkerContainer,
+  offeredUpdate: ServiceWorker | undefined,
+) =>
   fromEvent(container, "controllerchange").pipe(
     startWith(null),
     map(() => container.controller),
     pairwise(),
-    filter(hasEarlierController),
+    filter(function isNewVersion([earlierController, controller]) {
+      const isReplacingController = earlierController !== null
+      const isOfferedUpdate = controller === offeredUpdate
+
+      return isReplacingController || isOfferedUpdate
+    }),
   )
 
 export const useRegisterServiceWorker = () => {
@@ -49,23 +48,27 @@ export const useRegisterServiceWorker = () => {
     }
   }, [])
 
-  useEffect(function reloadWhenNewServiceWorkerReplacesController() {
-    if (!("serviceWorker" in navigator)) return
+  useEffect(
+    function reloadWhenNewVersionTakesControl() {
+      if (!("serviceWorker" in navigator)) return
 
-    const subscription = fromControllerReplacement(
-      navigator.serviceWorker,
-    ).subscribe(function reloadIntoNewVersion() {
-      Logger.log("New service worker has replaced the page controller")
+      const subscription = fromNewVersionTakingControl(
+        navigator.serviceWorker,
+        waitingWorker,
+      ).subscribe(function reloadIntoNewVersion() {
+        Logger.log("New version of the app has taken control of the page")
 
-      if (import.meta.env.MODE === "development") return
+        if (import.meta.env.MODE === "development") return
 
-      reloadPage()
-    })
+        reloadPage()
+      })
 
-    return function stopWatchingControllerReplacement() {
-      subscription.unsubscribe()
-    }
-  }, [])
+      return function stopWatchingNewVersion() {
+        subscription.unsubscribe()
+      }
+    },
+    [waitingWorker],
+  )
 
   /**
    * During dev, as soon as we detect a new service worker, we skip waiting.
