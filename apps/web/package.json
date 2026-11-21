@@ -23,6 +23,7 @@
     "@prose-reader/archive-reader": "catalog:prose-reader",
     "@prose-reader/cbz": "catalog:prose-reader",
     "@prose-reader/core": "catalog:prose-reader",
+    "@prose-reader/enhancer-annotations": "catalog:prose-reader",
     "@prose-reader/enhancer-audio": "catalog:prose-reader",
     "@prose-reader/enhancer-gallery": "catalog:prose-reader",
     "@prose-reader/enhancer-gestures": "catalog:prose-reader",
