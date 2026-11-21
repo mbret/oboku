@@ -8,33 +8,33 @@ An OPDS server turns your oboku library into a catalog that KOReader and other r
 
 A catalog lists the books of your library that oboku's server can reach on its own:
 
-* books oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection);
-* books oboku reads from a WebDAV server, while their [connector is connected](/guides/connectors#connect-a-connector).
+- books oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection);
+- books oboku reads from a WebDAV server, while their [connector is connected](/guides/connectors#connect-a-connector).
 
 Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
 
 The **Integrations > OPDS servers** screen shows these sources in three groups:
 
-* **Sources set up**: your connected Google account and each connected WebDAV connector. Catalogs list their books.
-* **Sources available**: the kinds of sources catalogs serve, Google Drive and WebDAV. Tap one to connect your Google account, or to add and connect a WebDAV connector.
-* **Sources not available yet**: the kinds of sources that catalogs cannot list yet.
+- **Sources set up**: your connected Google account and each connected WebDAV connector. Catalogs list their books.
+- **Sources available**: the kinds of sources catalogs serve, Google Drive and WebDAV. Tap one to connect your Google account, or to add and connect a WebDAV connector.
+- **Sources not available yet**: the kinds of sources that catalogs cannot list yet.
 
 Each book comes with the cover oboku shows for it. Covers do not count towards the download quota. A catalog leaves out:
 
-* books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
-* books you marked not interested;
-* books oboku reads from another provider, such as Dropbox or Synology Drive, or from a WebDAV connector that is not connected.
+- books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
+- books you marked not interested;
+- books oboku reads from another provider, such as Dropbox or Synology Drive, or from a WebDAV connector that is not connected.
 
 A catalog opens on two entries, each listing 50 items per page:
 
-* **All books**: every book it lists, newest first.
-* **Shelves**: your [shelves](/guides/collections), from A to Z, as in the app's **Shelves** tab, each with its books from A to Z. It leaves out a shelf holding a book under a protected tag, and shelves without a book the catalog lists.
+- **All books**: every book it lists, newest first.
+- **Shelves**: your [shelves](/guides/collections), from A to Z, as in the app's **Shelves** tab, each with its books from A to Z. It leaves out a shelf holding a book under a protected tag, and shelves without a book the catalog lists.
 
 Some listed books cannot be downloaded yet:
 
-* Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
-* Books added with another Google account than the connected one: oboku reaches Drive with one account only.
-* Books on a WebDAV server that does not state a file's size: oboku's server only downloads a file whose size the server states.
+- Books added before August 2025: oboku's server reaches them once you open them in oboku while connected and select them in Google's file picker. See [What it changes](/guides/google-account-connection#what-it-changes).
+- Books added with another Google account than the connected one: oboku reaches Drive with one account only.
+- Books on a WebDAV server that does not state a file's size: oboku's server only downloads a file whose size the server states.
 
 If a WebDAV server refuses the connector's password when a reading app downloads one of its books, oboku's server forgets it, and the connector's books leave the catalog until you connect it again.
 
@@ -48,10 +48,10 @@ Reading apps download books through oboku's server, and so do books from a [WebD
 
 In oboku, open **Integrations > OPDS servers** and tap **Create a server**. oboku names the new server with a few random words, and the screen shows the values a reading app needs:
 
-* **OPDS 1.2 catalog URL**: your oboku API address followed by `/opds/` and the server's words, such as `/opds/calm-snails-dream`. Copy it from the screen rather than typing it from memory.
-* **OPDS 2.0 catalog URL**: the same address followed by `/v2`.
-* **Username**: the email of your oboku account.
-* **Password**: the generated password. It is shown only once: oboku keeps nothing but a hash of it. Lost it? Generate a new one.
+- **OPDS 1.2 catalog URL**: your oboku API address followed by `/opds/` and the server's words, such as `/opds/calm-snails-dream`. Copy it from the screen rather than typing it from memory.
+- **OPDS 2.0 catalog URL**: the same address followed by `/v2`.
+- **Username**: the email of your oboku account.
+- **Password**: the generated password. It is shown only once: oboku keeps nothing but a hash of it. Lost it? Generate a new one.
 
 :::note
 The password is not your oboku password and opens nothing but the server's catalog.
@@ -72,8 +72,8 @@ Other reading apps ask for the same three values: a catalog URL, the username an
 
 Each server on the **Integrations > OPDS servers** screen has three actions:
 
-* **Rename** changes the server's name. The catalog URLs stay the same.
-* **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.
-* **Delete** removes the server. Apps signed in to it can no longer open its catalog.
+- **Rename** changes the server's name. The catalog URLs stay the same.
+- **Generate a new password** replaces the password. Apps signed in with the previous one cannot open the catalog until you sign them in again.
+- **Delete** removes the server. Apps signed in to it can no longer open its catalog.
 
 Deleting your account deletes its servers too.

@@ -85,11 +85,11 @@ pnpm start
 
 `pnpm start` starts CouchDB, Postgres and a dev proxy from [`docker-compose.dev.yml`](docker-compose.dev.yml), builds the API, then runs the web app, the admin panel, the API and the shared packages in watch mode.
 
-| URL | Service |
-| --- | --- |
-| http://localhost:5173 | Web app |
+| URL                   | Service     |
+| --------------------- | ----------- |
+| http://localhost:5173 | Web app     |
 | http://localhost:3003 | Admin panel |
-| http://localhost:3000 | API |
+| http://localhost:3000 | API         |
 
 Ctrl+C stops the apps. The containers keep running until `docker compose -f docker-compose.dev.yml down`.
 
@@ -107,13 +107,13 @@ This setup configures no email provider, so create your account from the admin p
 
 CI runs these commands ([`.github/workflows/check.yml`](.github/workflows/check.yml)). Run them before you open a pull request.
 
-| Command | What it checks |
-| --- | --- |
-| `pnpm lint` | Lint and formatting, with Biome. `pnpm format` fixes the formatting. |
-| `pnpm build` | Builds every package. Each build runs the TypeScript compiler, so this is also the typecheck. |
-| `pnpm test` | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. The web app's tests, and files named `*.browser.test.ts` in the packages, run in headless Chromium through [Vitest browser mode](https://vitest.dev/guide/browser/). |
-| `pnpm check:service-worker` | Registers the web app's built service worker in headless Chromium, after `pnpm build`. Fails when the worker throws while it loads or does not install. |
-| `pnpm generate:api-types` | Regenerates the [API types](apps/docs/src/content/docs/development/api-types.md) from the API's controllers. CI fails when the output differs from the committed files. |
+| Command                     | What it checks                                                                                                                                                                                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `pnpm lint`                 | Lint and formatting, with Biome. `pnpm format` fixes the formatting.                                                                                                                                                                                      |
+| `pnpm build`                | Builds every package. Each build runs the TypeScript compiler, so this is also the typecheck.                                                                                                                                                             |
+| `pnpm test`                 | Every package's Vitest suite. `pnpm --filter @oboku/web test` runs a single package. The web app's tests, and files named `*.browser.test.ts` in the packages, run in headless Chromium through [Vitest browser mode](https://vitest.dev/guide/browser/). |
+| `pnpm check:service-worker` | Registers the web app's built service worker in headless Chromium, after `pnpm build`. Fails when the worker throws while it loads or does not install.                                                                                                   |
+| `pnpm generate:api-types`   | Regenerates the [API types](apps/docs/src/content/docs/development/api-types.md) from the API's controllers. CI fails when the output differs from the committed files.                                                                                   |
 
 A pre-commit hook runs Biome on the staged files and applies its fixes.
 
@@ -139,11 +139,11 @@ docs(self-hosting): say untagged images already run the release
 
 On `master`, [semantic-release](https://github.com/semantic-release/semantic-release) reads the commits to pick the next version and write the release notes:
 
-| Commit | Release |
-| --- | --- |
-| `feat: …` | Minor |
-| `!` after the type (`feat!: …`), or a `BREAKING CHANGE:` footer | Major |
-| Any other type: `fix`, `perf`, `refactor`, `docs`, `chore`… | Patch |
+| Commit                                                          | Release |
+| --------------------------------------------------------------- | ------- |
+| `feat: …`                                                       | Minor   |
+| `!` after the type (`feat!: …`), or a `BREAKING CHANGE:` footer | Major   |
+| Any other type: `fix`, `perf`, `refactor`, `docs`, `chore`…     | Patch   |
 
 Use the format for every commit and for the pull request title, since either can end up on `master`. Pick a type listed in [`release.config.mjs`](release.config.mjs): the release notes leave out any other type.
 

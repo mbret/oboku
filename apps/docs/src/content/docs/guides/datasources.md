@@ -3,7 +3,6 @@ title: "Data Sources"
 description: Data sources & providers
 ---
 
-
 The whole idea of oboku is to synchronize your contents automatically from various data sources (or providers).
 
 Although adding a local file is supported on oboku, this makes the book only available on this specific device. Oboku is more than that, it helps you manage your libraries completely hassle free and make it accessible to all your devices.

@@ -3,7 +3,6 @@ title: "Platform & Tech"
 description: Ever wondered what runs oboku ?
 ---
 
-
 ## Technologies
 
 ### Backend API

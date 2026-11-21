@@ -14,11 +14,11 @@ When oboku needs to read your secrets to perform actions (eg: synchronize a data
 
 When you [connect a connector](/guides/connectors#connect-a-connector), oboku decrypts its password once and sends it to oboku's server, so that your [OPDS servers](/guides/opds-servers) can serve the connector's books. The server keeps the password encrypted, but unlike your other secrets, the server can read it.
 
-* The server sends the password only to the connector's address, for its username.
-* If you edit the connector, or put a new password in its secret, the server stops using the password until you connect the connector again.
-* If you disconnect the connector, the server forgets the password. Deleting the connector or its password secret makes it forget the password too, once the deletion has synced and a reading app browses the books or shelves of one of your OPDS catalogs, or you open a WebDAV connector in oboku: see [Disconnect](/guides/connectors#disconnect).
-* If the connector's server refuses the password when a reading app downloads a book, the server forgets it, and you connect the connector again. A server can refuse a correct password while its own sign-in service is down.
-* Changing or removing your master password does not disconnect the connector.
+- The server sends the password only to the connector's address, for its username.
+- If you edit the connector, or put a new password in its secret, the server stops using the password until you connect the connector again.
+- If you disconnect the connector, the server forgets the password. Deleting the connector or its password secret makes it forget the password too, once the deletion has synced and a reading app browses the books or shelves of one of your OPDS catalogs, or you open a WebDAV connector in oboku: see [Disconnect](/guides/connectors#disconnect).
+- If the connector's server refuses the password when a reading app downloads a book, the server forgets it, and you connect the connector again. A server can refuse a correct password while its own sign-in service is down.
+- Changing or removing your master password does not disconnect the connector.
 
 Connecting is your decision for each connector. A connector you do not connect keeps its password a secret that only you can decrypt.
 
@@ -29,4 +29,3 @@ To manage secrets you need to first setup a master password. This is a password 
 :::caution
 If you lose your master password and want to reset it, keep in minds all your secrets will be unusable and have to be redo again.
 :::
-

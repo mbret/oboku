@@ -14,8 +14,8 @@ To know more about where and how we fetch book metadata you can visit this secti
 
 There are many ways to refine your metadata and have your files matches together but you have two main ways to do it:
 
-* Oboku&#x20;
-* Original source
+- Oboku&#x20;
+- Original source
 
 You can always overwrite metadata yourself but this is strongly encourage to "fix" your books when possible. This will make them compatible with other tools and generally improve them. Unlike movies for example there are "standard" ways to embed metadata into ebooks.
 
@@ -35,8 +35,8 @@ TODO
 
 Having the correct metadata is hard and oboku may often get it wrong. To help oboku refine metadata you can use several methods:
 
-* Have a clear, straightforward, clean name. "Dragon Ball Z" is better than "Dragon Ball Z - series - (1984) - Toriyama"
-* Use [Directives](/guides/directives) to restrict / help oboku refine
+- Have a clear, straightforward, clean name. "Dragon Ball Z" is better than "Dragon Ball Z - series - (1984) - Toriyama"
+- Use [Directives](/guides/directives) to restrict / help oboku refine
 
 Directives usually are enough to fix even the hardest to find series. If everything fail, you can always provide the value yourself. Although oboku is made to be hassle free and auto-magic so try first with the automatic metadata.
 
@@ -80,9 +80,9 @@ Many of our users read fan books or organize their books by collections name tha
 
 Instead of an ISBN, the ID we use is built following some rules proper to each providers.
 
-* A book synced from Google Drive will use its Google ID. which is globally unique.
-* A book synced from Synology Drive will use its Synology ID + host
-* A book synced from filesystem will use the file hash + a `filesystem` flag.
+- A book synced from Google Drive will use its Google ID. which is globally unique.
+- A book synced from Synology Drive will use its Synology ID + host
+- A book synced from filesystem will use the file hash + a `filesystem` flag.
 
 Thanks to that system we are still able to match files and books to some extends. IF you move a file around on your filesystem, it will work. If you move it around in your Google Drive it will work as well.
 
@@ -93,6 +93,3 @@ Because we are using a stricter ID, we are unable to automatically match a file 
 #### Let the user decide when we don't know
 
 If we are unable to match a file with a book for certain, we will create a new book. If the user wants to merge an existing book with it, he can do so manually through the app. This is usually not a common use case and when it happens, nothing is lost.&#x20;
-
-
-

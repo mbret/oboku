@@ -16,15 +16,15 @@ By marking content as protected or assigning a protected tag to certain contents
 
 ### Policy for tags
 
-* Tags marked as protected will be visible to anyone through the app. The tag itself is never hidden
-* Books using a protected tag will be automatically hidden
+- Tags marked as protected will be visible to anyone through the app. The tag itself is never hidden
+- Books using a protected tag will be automatically hidden
 
 ### Policy for books
 
-* A book using a protected tag will be hidden by default
-* A protected book will never fetch metadata by default. This is to ensure no information is leaked to outside APIs. There is an option to allow this.
+- A book using a protected tag will be hidden by default
+- A protected book will never fetch metadata by default. This is to ensure no information is leaked to outside APIs. There is an option to allow this.
 
 ### Policy for collections
 
-* A collection containing at least one protected book will be hidden by default
-* A collection that is a series and contains at least one protected book will not fetch metadata by default. This is to ensure no information is leaked to outside APIs. There is an option to allow this.
+- A collection containing at least one protected book will be hidden by default
+- A collection that is a series and contains at least one protected book will not fetch metadata by default. This is to ensure no information is leaked to outside APIs. There is an option to allow this.

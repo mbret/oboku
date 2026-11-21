@@ -16,13 +16,13 @@ The host is fixed at build time, so the app opens `app.oboku.me` only. A self-ho
 
 `.github/workflows/android.yml` has two jobs:
 
-* **`build`** generates the project with `bubblewrap update`, then builds it unsigned with `bubblewrap build --skipSigning`. It has no access to the signing key.
-* **`sign`** runs on a fresh runner. It signs the APK with `apksigner` from the Android SDK, and the bundle with `jarsigner` from the JDK. Only GitHub's own actions run in this job, and only the signing step gets the key and its password, so Bubblewrap's dependencies never see them.
+- **`build`** generates the project with `bubblewrap update`, then builds it unsigned with `bubblewrap build --skipSigning`. It has no access to the signing key.
+- **`sign`** runs on a fresh runner. It signs the APK with `apksigner` from the Android SDK, and the bundle with `jarsigner` from the JDK. Only GitHub's own actions run in this job, and only the signing step gets the key and its password, so Bubblewrap's dependencies never see them.
 
 The workflow runs in two cases:
 
-* **A pull request that changes `apps/android/**` or the workflow.** Only `build` runs, so a broken config fails before the merge.
-* **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow** on `master`. Both jobs run, and `sign` uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
+- **A pull request that changes `apps/android/**` or the workflow.** Only `build` runs, so a broken config fails before the merge.
+- **A manual run.** In GitHub, open **Actions**, select **Android**, then **Run workflow** on `master`. Both jobs run, and `sign` uploads the `android-release` artifact. The artifact holds `app-release-bundle.aab`, the file to upload to Google Play, and `app-release-signed.apk`, the file to install on a phone by hand.
 
 The `sign` job runs in the `android-release` environment. Create it in the repository settings, under **Environments**. Limit its deployment branches to `master`, so no other branch can read the signing key. Then add two secrets to that environment:
 
@@ -55,8 +55,8 @@ The workflow uses the keystore password as the key password too. A PKCS12 keysto
 
 `sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json` lists the fingerprints. Two keys need one:
 
-* **The app signing key**, for the app installed from Google Play. Copy its SHA-256 fingerprint from the Play Console, on the **App signing** page of **App integrity**.
-* **The upload key**, for the APK from the workflow installed by hand. Print its fingerprint with `keytool -list -v -keystore android.keystore -alias android`.
+- **The app signing key**, for the app installed from Google Play. Copy its SHA-256 fingerprint from the Play Console, on the **App signing** page of **App integrity**.
+- **The upload key**, for the APK from the workflow installed by hand. Print its fingerprint with `keytool -list -v -keystore android.keystore -alias android`.
 
 A fingerprint change reaches phones with the next web release. It needs no Android release, because the package does not hold the fingerprints.
 

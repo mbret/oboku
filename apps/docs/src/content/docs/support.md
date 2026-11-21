@@ -3,7 +3,6 @@ title: "Support & Troubleshoot"
 description: If you find yourself having a problem please check for details on this page
 ---
 
-
 ## Important information
 
 ### Incognito mode / private browsing { #incognito-mode-private-browsing }

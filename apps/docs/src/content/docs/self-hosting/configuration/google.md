@@ -15,8 +15,8 @@ oboku uses one Google Cloud project for Google sign-in, Google Drive and Google 
 
 Create an **API key** in the same project and enable these APIs for it:
 
-* **Google Drive API** and **Google Picker API**, to add, sync and download books from Google Drive
-* **Books API**, to look books up in Google Books
+- **Google Drive API** and **Google Picker API**, to add, sync and download books from Google Drive
+- **Books API**, to look books up in Google Books
 
 :::danger
 The web app sends the API key to every browser, so restrict it to the APIs above.
