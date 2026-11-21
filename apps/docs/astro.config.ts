@@ -123,6 +123,7 @@ export default defineConfig({
             "development/authentication",
             "development/api-types",
             "development/translations",
+            "development/end-to-end-tests",
             "development/preview-environment",
             "development/android-app",
           ],

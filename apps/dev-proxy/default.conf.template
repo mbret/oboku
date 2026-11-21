@@ -1,12 +1,14 @@
-# Dev-only reverse proxy in front of the API.
+# Reverse proxy in front of the API, for local dev and the end-to-end stack in
+# apps/e2e.
 #
 # Production runs the API behind the deployer's own reverse proxy (which gives
 # HTTP/2, so a single origin handles all live replications). Local dev has no
 # such layer, so this exposes extra origins that forward to the API, giving the
 # browser more origins to dodge the per-origin HTTP/1 connection limit when
-# replicating many collections. The primary origin is the API itself (:3000);
-# these ports back VITE_API_URL_2/3/4. Each forwards to the same API, which in
-# turn proxies CouchDB under /couchdb.
+# replicating many collections. In local dev, the primary origin is the API
+# itself (:3000) and these ports back VITE_API_URL_2/3/4. The end-to-end stack
+# sends all its API origins, the primary one included, through these ports.
+# Each forwards to the same API, which in turn proxies CouchDB under /couchdb.
 upstream dev_api {
   # host.docker.internal can resolve to an IPv4 + IPv6 pair (Docker Desktop
   # writes both host-gateway entries) and the IPv6 twin is unreachable from
