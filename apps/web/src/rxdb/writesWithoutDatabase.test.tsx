@@ -2,9 +2,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, onTestFinished } from "vitest"
-import { useCreateAnnotation } from "../annotations/useCreateAnnotation"
-import { useRemoveAnnotation } from "../annotations/useRemoveAnnotation"
-import { useUpdateAnnotation } from "../annotations/useUpdateAnnotation"
+import { useWriteAnnotation } from "../annotations/useWriteAnnotation"
 import { useAddTagToBook, useRemoveTagFromBook } from "../books/helpers"
 import { useCollectionIncrementalModify } from "../collections/useCollectionIncrementalModify"
 import { useCreateCollection } from "../collections/useCreateCollection"
@@ -29,9 +27,7 @@ const renderWritesWithoutDatabase = () => {
         addTagToBook: useAddTagToBook(),
         removeTagFromBook: useRemoveTagFromBook(),
         setCatalogEnabled: useSetCatalogEnabled(),
-        createAnnotation: useCreateAnnotation({ bookId: BOOK_ID }),
-        updateAnnotation: useUpdateAnnotation({ bookId: BOOK_ID }),
-        removeAnnotation: useRemoveAnnotation({ bookId: BOOK_ID }),
+        writeAnnotation: useWriteAnnotation({ bookId: BOOK_ID }),
       }
     },
     {
@@ -71,12 +67,15 @@ describe("database writes", () => {
         id: "openLibrary",
         isEnabled: false,
       }),
-      writes.createAnnotation.mutateAsync({
-        id: annotationId,
-        cfi: "epubcfi(/6/4!/4/2/1:0)",
+      writes.writeAnnotation.mutateAsync({
+        type: "create",
+        annotation: { id: annotationId, cfi: "epubcfi(/6/4!/4/2/1:0)" },
       }),
-      writes.updateAnnotation.mutateAsync({ id: annotationId, notes: "" }),
-      writes.removeAnnotation.mutateAsync(annotationId),
+      writes.writeAnnotation.mutateAsync({
+        type: "update",
+        annotation: { id: annotationId, notes: "" },
+      }),
+      writes.writeAnnotation.mutateAsync({ type: "remove", id: annotationId }),
     ])
 
     expect(
