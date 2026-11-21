@@ -64,7 +64,6 @@ oboku's server connects to your catalog to read its feeds during syncs and to do
 - oboku recognizes a collection by the address of its feed. When that address changes, because your server moves or you get a new Kavita key for instance, the next sync creates new collections and leaves the old ones in place.
 - Each sync refreshes the metadata of the books whose entry has a new update date. A server that dates every entry with the current time makes every sync refresh every book.
 - Kavita dates its entries with the time of the request and no time zone, which oboku ignores: a sync refreshes a Kavita book's metadata only when the book is new or has no cover.
-- Komga gives CBR files a type that oboku does not take yet, `application/x-rar-compressed`, so a sync skips them.
 - A sync that stops early, at one of the limits above, shows no warning in the app yet, and the books it did not reach are missing. A warning is tracked in [#899](https://github.com/mbret/oboku/issues/899).
 - oboku sends your password to the connector's address only. If a sync or a download reports a refused login although your password is right, check that the connector has the address your server uses in its links and redirects: `https://` rather than `http://`, or its public address rather than a local one.
 - A catalog without a login cannot be synced yet.
