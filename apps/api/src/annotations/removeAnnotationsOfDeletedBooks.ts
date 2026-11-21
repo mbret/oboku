@@ -1,5 +1,6 @@
 import type { AnnotationDocType } from "@oboku/shared"
 import type createNano from "nano"
+import { bulkDelete } from "../couch/bulkDelete.js"
 import { findAll, retryFn } from "../couch/dbHelpers.js"
 
 type FetchRow = Awaited<
@@ -44,14 +45,7 @@ export const removeAnnotationsOfDeletedBooks = async (
 
   if (annotationsOfDeletedBooks.length === 0) return 0
 
-  const results = await db.bulk({
-    // The web app validates the deletions it pulls in development, so the
-    // tombstone keeps the annotation's required fields.
-    docs: annotationsOfDeletedBooks.map((annotation) => ({
-      ...annotation,
-      _deleted: true,
-    })),
-  })
+  const deletedIds = await bulkDelete(db, annotationsOfDeletedBooks)
 
-  return results.filter((result) => result.error === undefined).length
+  return deletedIds.length
 }
