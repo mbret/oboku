@@ -1,3 +1,4 @@
+import type { Annotation } from "@prose-reader/enhancer-annotations"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
@@ -27,41 +28,54 @@ const storedAnnotation = (
   ...fields,
 })
 
-/** Holds each of the next `count` inserts until its promise is resolved. */
-const holdInserts = (database: Database, count: number) => {
+/**
+ * Controls the next inserts of the annotation collection, one call per
+ * insert, in order.
+ */
+const controlInserts = (database: Database) => {
   const insert = database.annotation.insert.bind(database.annotation)
   const insertSpy = vi.spyOn(database.annotation, "insert")
 
-  return Array.from({ length: count }, function holdOneInsert() {
-    const heldInsert = Promise.withResolvers<void>()
+  return {
+    holdNext: function holdNextInsert() {
+      const heldInsert = Promise.withResolvers<void>()
 
-    insertSpy.mockImplementationOnce(
-      async function insertOnceReleased(document) {
-        await heldInsert.promise
+      insertSpy.mockImplementationOnce(
+        async function insertOnceReleased(document) {
+          await heldInsert.promise
 
-        return insert(document)
-      },
-    )
+          return insert(document)
+        },
+      )
 
-    return heldInsert
-  })
-}
+      return heldInsert
+    },
+    holdNextResult: function holdNextInsertResult() {
+      const heldResult = Promise.withResolvers<void>()
 
-/** Fails each of the next `count` inserts once its promise is resolved. */
-const failInserts = (database: Database, count: number) => {
-  const insertSpy = vi.spyOn(database.annotation, "insert")
+      insertSpy.mockImplementationOnce(
+        async function insertThenHoldResult(document) {
+          const inserted = await insert(document)
+          await heldResult.promise
 
-  return Array.from({ length: count }, function failOneInsert() {
-    const heldFailure = Promise.withResolvers<void>()
+          return inserted
+        },
+      )
 
-    insertSpy.mockImplementationOnce(async function failOnceReleased() {
-      await heldFailure.promise
+      return heldResult
+    },
+    failNext: function failNextInsert() {
+      const heldFailure = Promise.withResolvers<void>()
 
-      throw new Error("The write failed")
-    })
+      insertSpy.mockImplementationOnce(async function failOnceReleased() {
+        await heldFailure.promise
 
-    return heldFailure
-  })
+        throw new Error("The write failed")
+      })
+
+      return heldFailure
+    },
+  }
 }
 
 const idsOf = (annotations: { id: string }[] | undefined) =>
@@ -69,16 +83,22 @@ const idsOf = (annotations: { id: string }[] | undefined) =>
 
 async function renderAnnotationHooksWithDatabase({
   enabled = true,
+  onReaderAnnotations,
 }: {
   enabled?: boolean
+  onReaderAnnotations?: (annotations: Annotation[] | undefined) => void
 } = {}) {
   const queryClient = new QueryClient()
   const { result, unmount } = renderHook(
     function renderAnnotationHooks() {
+      const reader = useReaderAnnotations({ bookId: BOOK_ID, enabled })
+
+      onReaderAnnotations?.(reader.annotations)
+
       return {
         reCreateDb: useReCreateDb(),
         annotations: useAnnotations({ bookId: BOOK_ID, enabled }),
-        reader: useReaderAnnotations({ bookId: BOOK_ID, enabled }),
+        reader,
         writeAnnotation: useWriteAnnotation({ bookId: BOOK_ID }),
       }
     },
@@ -366,7 +386,7 @@ describe("annotation hooks", () => {
     await waitFor(function expectEmptyList() {
       expect(result.current.reader.annotations).toEqual([])
     })
-    const [heldInsert] = holdInserts(database, 1)
+    const heldInsert = controlInserts(database).holdNext()
     const bookmarkId = crypto.randomUUID()
 
     const creation = result.current.writeAnnotation.mutateAsync({
@@ -379,7 +399,7 @@ describe("annotation hooks", () => {
     })
     expect(await database.annotation.findOne(bookmarkId).exec()).toBeNull()
 
-    heldInsert?.resolve()
+    heldInsert.resolve()
     await creation
 
     await waitFor(function expectStoredListShown() {
@@ -395,16 +415,7 @@ describe("annotation hooks", () => {
     await waitFor(function expectEmptyList() {
       expect(result.current.reader.annotations).toEqual([])
     })
-    const heldResult = Promise.withResolvers<void>()
-    const insert = database.annotation.insert.bind(database.annotation)
-    vi.spyOn(database.annotation, "insert").mockImplementationOnce(
-      async function insertThenHoldResult(document) {
-        const inserted = await insert(document)
-        await heldResult.promise
-
-        return inserted
-      },
-    )
+    const heldResult = controlInserts(database).holdNextResult()
     const bookmarkId = crypto.randomUUID()
 
     const creation = result.current.writeAnnotation.mutateAsync({
@@ -415,7 +426,9 @@ describe("annotation hooks", () => {
       expect(idsOf(result.current.annotations.data)).toEqual([bookmarkId])
     })
 
-    expect(idsOf(result.current.reader.annotations)).toEqual([bookmarkId])
+    expect(result.current.reader.annotations).toBe(
+      result.current.annotations.data,
+    )
 
     heldResult.resolve()
     await creation
@@ -426,7 +439,7 @@ describe("annotation hooks", () => {
     await waitFor(function expectEmptyList() {
       expect(result.current.reader.annotations).toEqual([])
     })
-    const [heldInsert] = holdInserts(database, 1)
+    const heldInsert = controlInserts(database).holdNext()
     const highlightId = crypto.randomUUID()
 
     const creation = result.current.writeAnnotation.mutateAsync({
@@ -449,8 +462,41 @@ describe("annotation hooks", () => {
       ])
     })
 
-    heldInsert?.resolve()
+    heldInsert.resolve()
     await Promise.all([creation, update])
+  })
+
+  it("show a queued update as it will be stored, a missing field cleared", async () => {
+    const { database, result } = await renderAnnotationHooksWithDatabase()
+    await waitFor(function expectEmptyList() {
+      expect(result.current.reader.annotations).toEqual([])
+    })
+    const heldInsert = controlInserts(database).holdNext()
+    const highlightId = crypto.randomUUID()
+
+    const creation = result.current.writeAnnotation.mutateAsync({
+      type: "create",
+      annotation: {
+        id: highlightId,
+        cfi: HIGHLIGHT_CFI,
+        highlightColor: PURPLE,
+      },
+    })
+    const update = result.current.writeAnnotation.mutateAsync({
+      type: "update",
+      annotation: { id: highlightId, notes: "A note" },
+    })
+    await waitFor(function expectUpdateShown() {
+      expect(result.current.reader.annotations).toMatchObject([
+        { id: highlightId, highlightColor: undefined, notes: "A note" },
+      ])
+    })
+
+    heldInsert.resolve()
+    await Promise.all([creation, update])
+
+    const stored = await database.annotation.findOne(highlightId).exec()
+    expect(stored?.highlightColor).toBeNull()
   })
 
   it("keep showing a queued write while an earlier one lands", async () => {
@@ -458,7 +504,9 @@ describe("annotation hooks", () => {
     await waitFor(function expectEmptyList() {
       expect(result.current.reader.annotations).toEqual([])
     })
-    const [firstInsert, secondInsert] = holdInserts(database, 2)
+    const inserts = controlInserts(database)
+    const firstInsert = inserts.holdNext()
+    const secondInsert = inserts.holdNext()
     const firstId = crypto.randomUUID()
     const secondId = crypto.randomUUID()
 
@@ -477,7 +525,7 @@ describe("annotation hooks", () => {
       ])
     })
 
-    firstInsert?.resolve()
+    firstInsert.resolve()
     await firstCreation
     await waitFor(function expectFirstStored() {
       expect(idsOf(result.current.annotations.data)).toEqual([firstId])
@@ -488,7 +536,7 @@ describe("annotation hooks", () => {
       secondId,
     ])
 
-    secondInsert?.resolve()
+    secondInsert.resolve()
     await secondCreation
   })
 
@@ -505,7 +553,9 @@ describe("annotation hooks", () => {
 
       return result.current.annotations.data
     })
-    const [firstFailure, secondFailure] = failInserts(database, 2)
+    const inserts = controlInserts(database)
+    const firstFailure = inserts.failNext()
+    const secondFailure = inserts.failNext()
     const firstId = crypto.randomUUID()
     const secondId = crypto.randomUUID()
 
@@ -525,7 +575,7 @@ describe("annotation hooks", () => {
       ])
     })
 
-    firstFailure?.resolve()
+    firstFailure.resolve()
     await expect(firstCreation).rejects.toThrow("The write failed")
     await waitFor(function expectOnlySecondPending() {
       expect(idsOf(result.current.reader.annotations)).toEqual([
@@ -534,7 +584,7 @@ describe("annotation hooks", () => {
       ])
     })
 
-    secondFailure?.resolve()
+    secondFailure.resolve()
     await expect(secondCreation).rejects.toThrow("The write failed")
     await waitFor(function expectStoredList() {
       expect(result.current.reader.annotations).toBe(storedList)
@@ -546,25 +596,86 @@ describe("annotation hooks", () => {
     await waitFor(function expectEmptyList() {
       expect(result.current.reader.annotations).toEqual([])
     })
-    const [heldInsert] = holdInserts(database, 1)
+    const heldInsert = controlInserts(database).holdNext()
     const bookmarkId = crypto.randomUUID()
 
     const creation = result.current.writeAnnotation.mutateAsync({
       type: "create",
       annotation: { id: bookmarkId, cfi: BOOKMARK_CFI },
     })
+    await waitFor(function expectBookmarkShown() {
+      expect(idsOf(result.current.reader.annotations)).toEqual([bookmarkId])
+    })
     const removal = result.current.writeAnnotation.mutateAsync({
       type: "remove",
       id: bookmarkId,
     })
-    await waitFor(function expectRemovalQueuedBehindInsert() {
-      expect(result.current.writeAnnotation.isPaused).toBe(true)
+    await waitFor(function expectBookmarkGone() {
+      expect(result.current.reader.annotations).toEqual([])
     })
-    expect(result.current.reader.annotations).toEqual([])
 
-    heldInsert?.resolve()
+    heldInsert.resolve()
     await Promise.all([creation, removal])
 
     expect(await database.annotation.findOne(bookmarkId).exec()).toBeNull()
+  })
+
+  it("never show a landed write's annotation in its earlier state", async () => {
+    const onReaderAnnotations =
+      vi.fn<(annotations: Annotation[] | undefined) => void>()
+    const { result } = await renderAnnotationHooksWithDatabase({
+      onReaderAnnotations,
+    })
+    await waitFor(function expectEmptyList() {
+      expect(result.current.reader.annotations).toEqual([])
+    })
+    const highlightId = crypto.randomUUID()
+    const highlightInListsRendered = (from: number, to?: number) =>
+      onReaderAnnotations.mock.calls
+        .slice(from, to)
+        .map(([annotations]) =>
+          annotations?.find((annotation) => annotation.id === highlightId),
+        )
+
+    const beforeCreation = onReaderAnnotations.mock.calls.length
+    await result.current.writeAnnotation.mutateAsync({
+      type: "create",
+      annotation: {
+        id: highlightId,
+        cfi: HIGHLIGHT_CFI,
+        highlightColor: PURPLE,
+        notes: "",
+      },
+    })
+    const beforeUpdate = onReaderAnnotations.mock.calls.length
+    await result.current.writeAnnotation.mutateAsync({
+      type: "update",
+      annotation: { id: highlightId, highlightColor: YELLOW, notes: "" },
+    })
+    const beforeRemoval = onReaderAnnotations.mock.calls.length
+    await result.current.writeAnnotation.mutateAsync({
+      type: "remove",
+      id: highlightId,
+    })
+    await waitFor(function expectRemovalStored() {
+      expect(result.current.annotations.data).toEqual([])
+    })
+
+    const created = highlightInListsRendered(beforeCreation, beforeRemoval)
+    const firstCreated = created.findIndex(Boolean)
+    expect(firstCreated).toBeGreaterThanOrEqual(0)
+    expect(created.slice(firstCreated)).not.toContain(undefined)
+
+    const colors = highlightInListsRendered(beforeUpdate, beforeRemoval).map(
+      (highlight) => highlight?.highlightColor,
+    )
+    const firstYellow = colors.indexOf(YELLOW)
+    expect(firstYellow).toBeGreaterThanOrEqual(0)
+    expect(colors.slice(firstYellow)).not.toContain(PURPLE)
+
+    const removed = highlightInListsRendered(beforeRemoval)
+    const firstRemoved = removed.indexOf(undefined)
+    expect(firstRemoved).toBeGreaterThanOrEqual(0)
+    expect(removed.slice(firstRemoved).filter(Boolean)).toEqual([])
   })
 })

@@ -1,7 +1,7 @@
 import type { Annotation } from "@prose-reader/enhancer-annotations"
 import {
+  type DefaultError,
   type Mutation,
-  matchMutation,
   useMutation,
   useMutationState,
 } from "@tanstack/react-query"
@@ -22,19 +22,6 @@ const getAnnotationWriteMutationKey = (bookId: string) => [
   "write",
   bookId,
 ]
-
-type AnnotationWriteMutation = Mutation & {
-  state: Mutation["state"] & { variables: AnnotationWrite }
-}
-
-const isAnnotationWriteOfBook = (
-  bookId: string,
-  mutation: Mutation,
-): mutation is AnnotationWriteMutation =>
-  matchMutation(
-    { exact: true, mutationKey: getAnnotationWriteMutationKey(bookId) },
-    mutation,
-  )
 
 const writeAnnotation = (
   database: Database,
@@ -84,7 +71,11 @@ export const applyAnnotationWrite = (
     case "update":
       return annotations.map((annotation) =>
         annotation.id === write.annotation.id
-          ? { ...annotation, ...write.annotation }
+          ? {
+              ...annotation,
+              highlightColor: write.annotation.highlightColor,
+              notes: write.annotation.notes,
+            }
           : annotation,
       )
     case "remove":
@@ -117,9 +108,9 @@ export const usePendingAnnotationWrites = ({ bookId }: { bookId: string }) =>
       mutationKey: getAnnotationWriteMutationKey(bookId),
       status: "pending",
     },
-    select: function selectPendingWrite(mutation) {
-      return isAnnotationWriteOfBook(bookId, mutation)
-        ? mutation.state.variables
-        : undefined
+    select: function selectPendingWrite(
+      mutation: Mutation<unknown, DefaultError, AnnotationWrite>,
+    ) {
+      return mutation.state.variables
     },
   }).filter(isDefined)
