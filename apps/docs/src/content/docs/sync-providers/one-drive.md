@@ -10,4 +10,4 @@ Because One drive uses unique ID, moving files around is usually completely safe
 
 ## Limitations
 
-None
+oboku syncs only the folders and files you pick, as with Google Drive. A folder you pick does not add the files inside it, so pick those files too. On a computer, the picker selects many items at once.
