@@ -82,6 +82,7 @@ describe("downloadOpdsBook", () => {
     { type: "application/epub+zip", fileName: "Book 1.epub" },
     { type: "application/zip", fileName: "Book 1.zip" },
     { type: "application/x-cbz", fileName: "Book 1.cbz" },
+    { type: "application/x-rar-compressed", fileName: "Book 1.rar" },
     { type: "application/pdf", fileName: "Book 1.pdf" },
   ])(
     "names an $type file after its title otherwise",
