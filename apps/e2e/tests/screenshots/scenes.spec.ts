@@ -26,7 +26,10 @@ type BookDetailsUrlsByTitle = ReadonlyMap<string, string>
 
 type Scene = {
   show: (page: Page, bookDetailsUrls: BookDetailsUrlsByTitle) => Promise<void>
-  /** Brings the app back to where `show` found it, so any scene can follow. */
+  /**
+   * Undoes what `show` leaves behind that the next scene would show: a reader
+   * left open makes the next full page load offer to go back to it.
+   */
   leave?: (page: Page) => Promise<void>
 }
 
@@ -239,7 +242,6 @@ async function markNotificationsAsRead(page: Page) {
 async function waitForSavedReadingProgress(page: Page, title: string) {
   const libraryTab = await page.context().newPage()
 
-  await libraryTab.setViewportSize(SETUP_VIEWPORT)
   await libraryTab.goto("/library/books")
   await declineBackToReading(libraryTab)
   const bookCard = libraryTab
@@ -285,23 +287,18 @@ async function waitForScreenToSettle(page: Page) {
   })
 
   await expect(splashScreenLogo).toHaveCount(0)
+  await expect(page.getByRole("dialog")).toHaveCount(0)
+  // A cover shows a placeholder, and hides its picture, until its image loads.
+  await page.waitForFunction(function areImagesShown() {
+    const areImagesLoaded = Array.from(document.images).every(
+      (image) => image.complete,
+    )
+    const areCoversShown = Array.from(
+      document.querySelectorAll("picture"),
+    ).every((picture) => getComputedStyle(picture).display !== "none")
 
-  for (const frame of page.frames()) {
-    await frame.evaluate(async function waitForFonts() {
-      await document.fonts.ready
-    })
-    // A cover shows a placeholder, and hides its picture, until its image loads.
-    await frame.waitForFunction(function areImagesShown() {
-      const areImagesLoaded = Array.from(document.images).every(
-        (image) => image.complete,
-      )
-      const areCoversShown = Array.from(
-        document.querySelectorAll("picture"),
-      ).every((picture) => getComputedStyle(picture).display !== "none")
-
-      return areImagesLoaded && areCoversShown
-    })
-  }
+    return areImagesLoaded && areCoversShown
+  })
 }
 
 for (const target of TARGETS) {

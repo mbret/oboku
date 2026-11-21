@@ -10,6 +10,7 @@ export default defineConfig({
   expect: { timeout: 15_000 },
   reporter: [[isCi ? "github" : "list"], ["html", { open: "never" }]],
   use: {
+    actionTimeout: 15_000,
     baseURL: WEB_URL,
     locale: "en-US",
     reducedMotion: "reduce",

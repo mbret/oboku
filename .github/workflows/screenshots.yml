@@ -9,7 +9,8 @@ permissions:
 
 jobs:
   capture:
-    # The reader renders book text with the runner's system fonts.
+    # The reader renders book text with the runner's system fonts, which change
+    # when ubuntu-latest moves to a new Ubuntu release.
     runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v7
@@ -44,7 +45,7 @@ jobs:
             echo "The web manifest images did not change."
             exit 0
           fi
-          branch="screenshots/web-manifest-${GITHUB_RUN_ID}"
+          branch="screenshots/web-manifest-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git switch -c "$branch"

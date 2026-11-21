@@ -10,9 +10,10 @@ export function readerPage(page: Page, documentPath: string) {
 }
 
 /**
- * prose-reader adds the pages in reading order. Some pages load from `blob:`
- * addresses, which name no file of the book: a comic's, and any book's that
- * opens before the service worker controls the page.
+ * The first page prose-reader loaded, which is the book's first page when the
+ * book opens at its start. Some pages load from `blob:` addresses, which name
+ * no file of the book: a comic's, and any book's that opens before the service
+ * worker controls the page.
  */
 export function firstReaderPage(page: Page) {
   return page.locator("iframe").first()

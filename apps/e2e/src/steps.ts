@@ -99,9 +99,12 @@ export async function expectServerLibraryBooks(page: Page) {
   }
 }
 
-/** From a library that shows the book. */
-export async function openBookDetails(page: Page, title: string) {
-  await page.getByText(title, { exact: true }).click()
+/**
+ * From a library that shows the book. A book added from the device shows its
+ * file name until the API reads its title.
+ */
+export async function openBookDetails(page: Page, cardTitle: string) {
+  await page.getByText(cardTitle, { exact: true }).click()
   await page.getByRole("button", { name: "Go to details" }).click()
   await page.waitForURL(/\/books\//)
 }
