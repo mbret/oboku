@@ -13,6 +13,10 @@ describe("isMaybeExtractableContentType", () => {
     ).toBe(true)
   })
 
+  it("extracts a zip archive", () => {
+    expect(isMaybeExtractableContentType("application/x-cbz")).toBe(true)
+  })
+
   it("extracts a CBR reported with Nextcloud's type", () => {
     expect(isMaybeExtractableContentType("application/comicbook+rar")).toBe(
       true,

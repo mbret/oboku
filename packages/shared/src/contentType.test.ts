@@ -1,11 +1,35 @@
 import { describe, expect, it } from "vitest"
-import { getMimeTypeEssence, isFileSupported } from "./contentType"
+import {
+  getMimeTypeEssence,
+  isFileSupported,
+  isPotentialZipFile,
+} from "./contentType"
 
 describe("getMimeTypeEssence", () => {
   it("drops the parameters and lowercases the type", () => {
     expect(getMimeTypeEssence("Application/X-RAR-Compressed; version=4")).toBe(
       "application/x-rar-compressed",
     )
+  })
+})
+
+describe("isPotentialZipFile", () => {
+  it("should recognise a zip type whatever its parameters and case", () => {
+    expect(
+      isPotentialZipFile({
+        name: "no-extension",
+        mimeType: "Application/EPUB+zip; version=3",
+      }),
+    ).toBe(true)
+  })
+
+  it("should not take a RAR type for a zip", () => {
+    expect(
+      isPotentialZipFile({
+        name: "no-extension",
+        mimeType: "application/vnd.rar",
+      }),
+    ).toBe(false)
   })
 })
 
