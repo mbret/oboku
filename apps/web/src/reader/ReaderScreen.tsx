@@ -9,34 +9,32 @@ import { isMenuShownStateSignal } from "./states"
 import { SIGNAL_RESET, SignalContextProvider } from "reactjrx"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import type { ROUTES } from "../navigation/routes"
-
-export const READER_MODE_PARAM = "mode"
-export const READER_PREVIEW_MODE = "preview"
+import { getUsesReadingData } from "./mode"
 
 export const ReaderScreen = memo(function ReaderScreen() {
   const { id: bookId } = useParams<PathParam<typeof ROUTES.READER>>()
   const [searchParams] = useSearchParams()
-  const isPreview = searchParams.get(READER_MODE_PARAM) === READER_PREVIEW_MODE
+  const usesReadingData = getUsesReadingData(searchParams)
 
   return (
     <SignalContextProvider>
-      {bookId && <Reader bookId={bookId} isPreview={isPreview} />}
+      {bookId && <Reader bookId={bookId} usesReadingData={usesReadingData} />}
       <MoreDialog />
-      <Effects bookId={bookId} isPreview={isPreview} />
+      <Effects bookId={bookId} usesReadingData={usesReadingData} />
     </SignalContextProvider>
   )
 })
 
 const Effects = memo(function Effects({
   bookId,
-  isPreview,
+  usesReadingData,
 }: {
   bookId?: string
-  isPreview: boolean
+  usesReadingData: boolean
 }) {
   const isWakeLockEnabled = useLocalSettings("readerWakeLockEnabled")
 
-  useTrackBookBeingRead(bookId, { enabled: !isPreview })
+  useTrackBookBeingRead(bookId, { enabled: usesReadingData })
   useWakeLock({ enabled: isWakeLockEnabled })
   useFullscreenAutoSwitch()
 

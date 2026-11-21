@@ -25,10 +25,10 @@ const logSyncError = (error: unknown) => {
 export const useSyncBookProgress = (
   bookId: string,
   {
-    enabled = true,
+    enabled,
     koreaderDocument,
   }: {
-    enabled?: boolean
+    enabled: boolean
     /** The KOReader document of the book's file, `undefined` until the book is loaded. */
     koreaderDocument: string | undefined
   },

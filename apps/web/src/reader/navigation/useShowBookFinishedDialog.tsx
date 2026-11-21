@@ -20,15 +20,15 @@ type BookFinishedDialogState = {
 export const useShowBookFinishedDialog = ({
   bookId,
   onClose,
-  enabled = true,
+  enabled,
 }: {
   bookId: string
   onClose: () => void
-  enabled?: boolean
+  enabled: boolean
 }) => {
   const reader = useReader()
   const { mutate: removeDownloadFile } = useRemoveDownloadFile()
-  const { data: book } = useBook({ id: bookId })
+  const { data: book } = useBook({ id: enabled ? bookId : undefined })
   const [bookFinishedDialogState, setBookFinishedDialogState] =
     useState<BookFinishedDialogState>()
 
