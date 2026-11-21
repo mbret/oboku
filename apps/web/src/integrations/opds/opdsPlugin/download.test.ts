@@ -81,6 +81,7 @@ describe("downloadOpdsBook", () => {
   it.each([
     { type: "application/epub+zip", fileName: "Book 1.epub" },
     { type: "application/zip", fileName: "Book 1.zip" },
+    { type: "application/x-cbz", fileName: "Book 1.cbz" },
     { type: "application/pdf", fileName: "Book 1.pdf" },
   ])(
     "names an $type file after its title otherwise",

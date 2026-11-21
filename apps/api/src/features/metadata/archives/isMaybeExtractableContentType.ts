@@ -1,12 +1,10 @@
-import { CBR_MIME_TYPES, getMimeTypeEssence } from "@oboku/shared"
+import {
+  CBR_MIME_TYPES,
+  ZIP_MIME_TYPES,
+  getMimeTypeEssence,
+} from "@oboku/shared"
 
-const EXTRACTABLE_CONTENT_TYPES = [
-  "application/x-cbz",
-  "application/epub+zip",
-  "application/zip",
-  "application/x-zip-compressed",
-  ...CBR_MIME_TYPES,
-]
+const EXTRACTABLE_CONTENT_TYPES = [...ZIP_MIME_TYPES, ...CBR_MIME_TYPES]
 
 export const isMaybeExtractableContentType = (
   contentType: string | undefined,
