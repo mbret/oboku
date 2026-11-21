@@ -1,5 +1,10 @@
 import type { AnnotationDocType } from "@oboku/shared"
-import type { RxCollection, RxCollectionCreator, RxJsonSchema } from "rxdb"
+import type {
+  MigrationStrategies,
+  RxCollection,
+  RxCollectionCreator,
+  RxJsonSchema,
+} from "rxdb"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 
 export type RxdbAnnotationDocType = Omit<AnnotationDocType, `_rev` | `rxdbMeta`>
@@ -8,7 +13,7 @@ export type AnnotationCollection = RxCollection<RxdbAnnotationDocType>
 
 const schema: RxJsonSchema<RxdbAnnotationDocType> = {
   title: "annotation",
-  version: 0,
+  version: 1,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -17,7 +22,7 @@ const schema: RxJsonSchema<RxdbAnnotationDocType> = {
     cfi: { type: "string" },
     highlightColor: { type: ["string", "null"] },
     notes: { type: ["string", "null"] },
-    text: { type: ["string", "null"] },
+    highlightedText: { type: ["string", "null"] },
     createdAt: { type: "string" },
     modifiedAt: { type: ["string", "null"] },
     ...getReplicationProperties(`annotation`),
@@ -26,7 +31,12 @@ const schema: RxJsonSchema<RxdbAnnotationDocType> = {
   indexes: ["bookId"],
 }
 
+const migrationStrategies: MigrationStrategies = {
+  1: (oldDoc: Record<string, unknown>) => oldDoc,
+}
+
 export const annotationCollection: RxCollectionCreator<RxdbAnnotationDocType> =
   {
     schema,
+    migrationStrategies,
   }

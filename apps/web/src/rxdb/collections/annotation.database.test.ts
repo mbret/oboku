@@ -1,8 +1,38 @@
 import { createBookDefaults } from "@oboku/shared"
+import { createRxDatabase } from "rxdb"
+import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
+import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { describe, expect, it } from "vitest"
 import { openTestDatabase } from "../databases.fixture"
 import type { Database } from "../databases.shared"
-import type { RxdbAnnotationDocType } from "./annotation"
+import { annotationCollection, type RxdbAnnotationDocType } from "./annotation"
+
+const storeBookmarkOfSchemaVersionZero = async (
+  name: string,
+  bookmark: RxdbAnnotationDocType,
+) => {
+  const database = await createRxDatabase({
+    name,
+    storage: wrappedValidateAjvStorage({ storage: getRxStorageDexie() }),
+  })
+  const { highlightedText: _, ...propertiesKeptFromVersionZero } =
+    annotationCollection.schema.properties
+  const { annotation } = await database.addCollections({
+    annotation: {
+      schema: {
+        ...annotationCollection.schema,
+        version: 0,
+        properties: {
+          ...propertiesKeptFromVersionZero,
+          text: { type: ["string", "null"] },
+        },
+      },
+    },
+  })
+
+  await annotation.insert(bookmark)
+  await database.close()
+}
 
 const insertAnnotation = (database: Database, bookId: string) =>
   database.annotation.insert({
@@ -29,6 +59,26 @@ const findAnnotationBookIds = async (database: Database) => {
 }
 
 describe("annotation collection", () => {
+  it("keeps the annotations stored with the schema before highlightedText", async () => {
+    const name = `annotation-${crypto.randomUUID()}`
+    const bookmark: RxdbAnnotationDocType = {
+      _id: crypto.randomUUID(),
+      rx_model: "annotation",
+      bookId: "book-1",
+      cfi: "epubcfi(/6/4!/4/2/1:0)",
+      createdAt: "2026-11-19T10:00:00.000Z",
+      modifiedAt: null,
+    }
+    await storeBookmarkOfSchemaVersionZero(name, bookmark)
+
+    const database = await openTestDatabase(name)
+    const annotations = await database.annotation.find().exec()
+
+    expect(annotations.map((annotation) => annotation.toJSON())).toMatchObject([
+      bookmark,
+    ])
+  })
+
   it("stores an annotation and finds the annotations of one book", async () => {
     const database = await openTestDatabase()
     const highlight: RxdbAnnotationDocType = {
@@ -38,7 +88,7 @@ describe("annotation collection", () => {
       cfi: "epubcfi(/6/4!/4/2,/1:0,/1:12)",
       highlightColor: "rgba(216, 191, 216, 1)",
       notes: "",
-      text: "Call me Ishmael",
+      highlightedText: "Call me Ishmael",
       createdAt: "2026-11-19T10:00:00.000Z",
       modifiedAt: null,
     }

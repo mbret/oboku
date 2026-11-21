@@ -229,12 +229,13 @@ export type AnnotationDocType = CommonBase & {
    */
   notes?: string | null
   /**
-   * The text the highlight covered when the user created the annotation. A
-   * list, an export or a search can show it without the book's file. It never
-   * locates the annotation. If the passage at the `cfi` differs from it, the
-   * book's file changed after the user made the annotation.
+   * The text the highlight covered when the user created the annotation, as
+   * prose-reader reports it. A list, an export or a search can show it without
+   * the book's file. It never locates the annotation. If the passage at the
+   * `cfi` differs from it, the book's file changed after the user made the
+   * annotation. `""` for a highlight of an image, `null` on a page bookmark.
    */
-  text?: string | null
+  highlightedText?: string | null
   /** When the annotation was created, as an ISO date. */
   createdAt: string
   /** When the annotation last changed, as an ISO date. `null` until the first change. */
