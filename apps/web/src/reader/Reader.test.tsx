@@ -238,7 +238,7 @@ function TestReader() {
       <ThemeProvider>
         <SignalContextProvider>
           <div style={{ width: 600, height: 800 }}>
-            <Reader bookId={BOOK_ID} isPreview={false} />
+            <Reader bookId={BOOK_ID} usesReadingData />
           </div>
         </SignalContextProvider>
       </ThemeProvider>

@@ -1,11 +1,7 @@
 import { MenuBookOutlined } from "@mui/icons-material"
 import { Button } from "@mui/material"
-import { createSearchParams, generatePath, Link } from "react-router"
-import { ROUTES } from "../../../navigation/routes"
-import {
-  READER_MODE_PARAM,
-  READER_PREVIEW_MODE,
-} from "../../../reader/ReaderScreen"
+import { Link } from "react-router"
+import { getReaderPreviewRoute } from "../../../reader/mode"
 import { useIsApplyingLocally } from "../apply/useApplyLocally"
 
 type Props = {
@@ -18,12 +14,7 @@ export function TestBookButton({ bookId }: Props) {
   return (
     <Button
       component={Link}
-      to={{
-        pathname: generatePath(ROUTES.READER, { id: bookId }),
-        search: createSearchParams({
-          [READER_MODE_PARAM]: READER_PREVIEW_MODE,
-        }).toString(),
-      }}
+      to={getReaderPreviewRoute(bookId)}
       color="inherit"
       disabled={isApplyingLocally}
       startIcon={<MenuBookOutlined />}

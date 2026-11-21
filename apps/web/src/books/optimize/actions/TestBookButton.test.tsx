@@ -11,13 +11,6 @@ vi.mock("../apply/useApplyLocally", function mockApplyLocally() {
   return { useIsApplyingLocally: mocks.useIsApplyingLocally }
 })
 
-vi.mock("../../../reader/ReaderScreen", function mockReaderScreen() {
-  return {
-    READER_MODE_PARAM: "mode",
-    READER_PREVIEW_MODE: "preview",
-  }
-})
-
 const renderTestBookButton = (isApplyingLocally: boolean) => {
   mocks.useIsApplyingLocally.mockReturnValue(isApplyingLocally)
 
