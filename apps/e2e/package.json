@@ -1,0 +1,31 @@
+{
+  "name": "@oboku/e2e",
+  "private": true,
+  "type": "module",
+  "license": "GPL-3.0",
+  "scripts": {
+    "stack:up": "docker compose up --build --wait",
+    "stack:down": "docker compose down --volumes",
+    "e2e": "playwright test --project=smoke",
+    "tsc": "tsc"
+  },
+  "devDependencies": {
+    "@oboku/shared": "workspace:*",
+    "@playwright/test": "^1.65.1",
+    "@types/node": "^24.19.2"
+  },
+  "nx": {
+    "targets": {
+      "e2e": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "tsc": {
+        "dependsOn": [
+          "^build"
+        ]
+      }
+    }
+  }
+}

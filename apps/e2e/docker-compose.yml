@@ -1,0 +1,108 @@
+# The stack the end-to-end tests run against, built from the repository's
+# dockerfile. CouchDB, Postgres and the API sit on a network with no internet
+# access, so no metadata lookup from the API can change what a test sees. A
+# port cannot be published from that network: api-proxy joins both networks to
+# publish the API.
+name: oboku-e2e
+
+services:
+  couchdb:
+    build:
+      context: ../..
+      dockerfile: dockerfile
+      target: couchdb
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    volumes:
+      - secrets:/secrets
+    networks:
+      - stack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  postgres:
+    image: postgres:17-trixie
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oboku
+    networks:
+      - stack
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "oboku"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  api:
+    build:
+      context: ../..
+      dockerfile: dockerfile
+      target: api
+    depends_on:
+      couchdb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oboku
+      APP_PUBLIC_URL: http://localhost:4280
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: password
+    volumes:
+      - secrets:/secrets:ro
+    networks:
+      - stack
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000/web/config"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+  api-proxy:
+    image: nginx:alpine
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      DEV_PROXY_UPSTREAM: api:3000
+      NGINX_ENVSUBST_FILTER: DEV_PROXY_UPSTREAM
+    volumes:
+      - ../dev-proxy/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      - stack
+      - default
+    ports:
+      - "4281:5985"
+      - "4282:5986"
+      - "4283:5987"
+
+  web:
+    build:
+      context: ../..
+      dockerfile: dockerfile
+      target: web
+    environment:
+      VITE_API_URL: http://localhost:4281
+      VITE_API_URL_2: http://localhost:4282
+      VITE_API_URL_3: http://localhost:4283
+    networks:
+      - default
+    ports:
+      - "4280:80"
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost/"]
+      interval: 2s
+      timeout: 5s
+      retries: 60
+
+networks:
+  stack:
+    internal: true
+
+volumes:
+  secrets:

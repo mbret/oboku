@@ -26,6 +26,7 @@
     "extract:messages": "lerna run extract:messages --scope=@oboku/web",
     "check:messages": "lerna run check:messages --scope=@oboku/web",
     "test": "lerna run test",
+    "e2e": "lerna run e2e",
     "check:service-worker": "node scripts/check-service-worker.mjs",
     "tsc": "lerna run tsc",
     "format": "biome format --write .",
