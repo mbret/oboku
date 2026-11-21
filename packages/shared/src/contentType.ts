@@ -3,6 +3,24 @@ import { getUriExtension } from "@prose-reader/shared"
 export const getMimeTypeEssence = (mimeType: string) =>
   mimeType.split(";")[0]?.trim().toLowerCase() ?? ""
 
+export const ZIP_MIME_TYPES = [
+  "application/zip",
+  "application/x-zip-compressed",
+  "application/epub+zip",
+  "application/x-cbz",
+  // Nextcloud's type for .cbz files
+  "application/comicbook+zip",
+]
+
+export const ZIP_EXTENSIONS = [".epub", ".zip", ".cbz"]
+
+const ZIP_FILE_TYPES = Object.fromEntries(
+  ZIP_MIME_TYPES.map((mimeType): [string, string[]] => [
+    mimeType,
+    ZIP_EXTENSIONS,
+  ]),
+)
+
 export const RAR_MIME_TYPES = [
   "application/vnd.rar",
   "application/x-rar-compressed",
@@ -14,23 +32,22 @@ export const RAR_MIME_TYPES = [
 
 export const CBR_MIME_TYPES = [
   ...RAR_MIME_TYPES,
-  // Apache's type for .cbr files, which it also gives .cbz files
+  // Apache's type for .cbr, .cba, .cbt, .cbz and .cb7 files
   "application/x-cbr",
 ]
+
+export const CBR_EXTENSIONS = [".cbr", ".rar"]
 
 const CBR_FILE_TYPES = Object.fromEntries(
   CBR_MIME_TYPES.map((mimeType): [string, string[]] => [
     mimeType,
-    [".cbr", ".rar"],
+    CBR_EXTENSIONS,
   ]),
 )
 
 export const READER_ACCEPTED_FILE_TYPES = {
   "text/plain": [".txt"],
-  "application/x-cbz": [".cbz"],
-  "application/zip": [".epub", ".zip"],
-  "application/x-zip-compressed": [".epub", ".zip"],
-  "application/epub+zip": [".epub", ".zip"],
+  ...ZIP_FILE_TYPES,
   ...CBR_FILE_TYPES,
   "application/pdf": [".pdf"],
 }
@@ -45,13 +62,8 @@ export const isPotentialZipFile = ({
   const normalizedName = name?.toLowerCase()
 
   return (
-    normalizedName?.endsWith(".zip") ||
-    normalizedName?.endsWith(".epub") ||
-    normalizedName?.endsWith(".cbz") ||
-    mimeType?.startsWith("application/zip") ||
-    mimeType?.startsWith("application/x-zip-compressed") ||
-    mimeType?.startsWith("application/x-cbz") ||
-    mimeType?.startsWith("application/epub+zip")
+    ZIP_EXTENSIONS.some((extension) => normalizedName?.endsWith(extension)) ||
+    ZIP_MIME_TYPES.includes(getMimeTypeEssence(mimeType ?? ""))
   )
 }
 

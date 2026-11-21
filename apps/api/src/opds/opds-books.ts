@@ -9,6 +9,8 @@ import {
   isBookProtected,
   type LinkDocType,
   type LinkDocTypeForProvider,
+  OPDS_SERVED_CONNECTOR_TYPES,
+  type OpdsServedConnectorType,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
@@ -21,34 +23,40 @@ export type ServedConnections = {
   connectedConnectorIds: ReadonlySet<string>
 }
 
+type ServedConnectorLink = Extract<
+  LinkDocType,
+  { type: OpdsServedConnectorType }
+>
+
 export type ServedLink =
   | LinkDocTypeForProvider<"DRIVE">
-  | (LinkDocTypeForProvider<"webdav"> & { data: { connectorId: string } })
+  | (ServedConnectorLink & { data: { connectorId: string } })
+
+const isServedConnectorLink = (
+  link: LinkDocType,
+): link is ServedConnectorLink =>
+  OPDS_SERVED_CONNECTOR_TYPES.some((type) => type === link.type)
 
 /**
  * Whether the catalogs serve a link's file: the connection it needs is
  * usable. Links do not record their Google account yet (#996): every Drive
- * link needs the owner's one Google connection. A WebDAV link needs the
+ * link needs the owner's one Google connection. A connector's link needs the
  * connection of the connector it names.
  */
 export const isLinkServed = (
   link: LinkDocType,
   connections: ServedConnections,
 ): link is ServedLink => {
-  switch (link.type) {
-    case "DRIVE":
-      return connections.isGoogleConnected
-    case "webdav": {
-      const { connectorId } = link.data
+  if (link.type === "DRIVE") return connections.isGoogleConnected
 
-      return (
-        connectorId !== undefined &&
-        connections.connectedConnectorIds.has(connectorId)
-      )
-    }
-    default:
-      return false
-  }
+  if (!isServedConnectorLink(link)) return false
+
+  const { connectorId } = link.data
+
+  return (
+    connectorId !== undefined &&
+    connections.connectedConnectorIds.has(connectorId)
+  )
 }
 
 /** E-reader apps decode JPEG; not all of them decode the WebP oboku stores. */

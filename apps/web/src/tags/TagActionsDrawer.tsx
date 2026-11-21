@@ -34,7 +34,7 @@ export const TagActionsDrawer = ({
   onClose: () => void
 }) => {
   const { data: tag } = useTag(openWith)
-  const editTag = useUpdateTag()
+  const { mutate: editTag } = useUpdateTag()
   const [isEditTagDialogOpenedWithId, setIsEditTagDialogOpenedWithId] =
     useState<string | undefined>(undefined)
   const { mutate: removeTag } = useRemoveTag()
@@ -138,7 +138,7 @@ const EditTagDialog = ({
   const [name, setName] = useState("")
   const { data: tag } = useTag(id)
   const { name: tagName } = tag ?? {}
-  const editTag = useUpdateTag()
+  const { mutate: editTag } = useUpdateTag()
 
   const onInnerClose = () => {
     setName("")

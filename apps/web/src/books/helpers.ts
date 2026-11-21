@@ -4,7 +4,7 @@ import {
   getReadingStateUpdatedTime,
   sortByTitleComparator,
 } from "@oboku/shared"
-import { useDatabase } from "../rxdb"
+import { ensureDatabase, useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { useMemo } from "react"
 import type { BookQueryResult } from "./states"
@@ -26,8 +26,8 @@ export const useRemoveTagFromBook = (
   return useMutation({
     ...options,
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
-      db?.book
-        .findOne({ selector: { _id } })
+      ensureDatabase(db)
+        .book.findOne({ selector: { _id } })
         .update({ $pullAll: { tags: [tagId] } }),
   })
 }
@@ -38,8 +38,8 @@ export const useAddTagToBook = (options?: Pick<UseMutationOptions, "meta">) => {
   return useMutation({
     ...options,
     mutationFn: async ({ _id, tagId }: { _id: string; tagId: string }) =>
-      db?.book
-        .findOne({ selector: { _id } })
+      ensureDatabase(db)
+        .book.findOne({ selector: { _id } })
         .update({ $push: { tags: tagId } }),
   })
 }

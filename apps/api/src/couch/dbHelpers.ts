@@ -274,7 +274,7 @@ type MangoQueryWithoutPaging = Omit<
  * the previous page's bookmark until CouchDB returns a short page.
  */
 export async function* findPages<D>(
-  db: createNano.DocumentScope<D>,
+  db: Pick<createNano.DocumentScope<D>, "find">,
   query: MangoQueryWithoutPaging,
 ) {
   let bookmark: string | undefined
@@ -293,7 +293,7 @@ export async function* findPages<D>(
 }
 
 export async function findAll<D>(
-  db: createNano.DocumentScope<D>,
+  db: Pick<createNano.DocumentScope<D>, "find">,
   query: MangoQueryWithoutPaging,
 ) {
   const docs: createNano.MangoResponse<D>["docs"] = []

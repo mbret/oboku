@@ -40,11 +40,25 @@ export const deleteDanglingLinks = async (
       `Deleting ${toDelete.length} dangling links for type ${toDelete[0]?.type}`,
     )
 
-    toDelete.forEach((link) => {
-      ctx.syncReport.deleteLink(link._id)
+    const deletedLinkIds = await bulkDelete(
+      ctx.db,
+      toDelete.map(function toLinkDocument({
+        isUsingSameProviderCredentials: _,
+        ...link
+      }) {
+        return link
+      }),
+    )
+
+    deletedLinkIds.forEach((linkId) => {
+      ctx.syncReport.deleteLink(linkId)
     })
 
-    await bulkDelete(ctx.db, toDelete)
+    const failedCount = toDelete.length - deletedLinkIds.length
+
+    if (failedCount > 0) {
+      logger.warn(`CouchDB refused to delete ${failedCount} dangling links`)
+    }
   }
 
   return links.filter((link) => !toDelete.includes(link))

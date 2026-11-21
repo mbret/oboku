@@ -663,6 +663,38 @@ describe("OPDS crawl", () => {
     ])
   })
 
+  it("takes a CBR served with a RAR type and its parameters, as Komga serves one", async () => {
+    const catalog = await startServer({
+      "/opds": {
+        body: feed(
+          bookEntry({
+            id: "urn:book:1",
+            title: "Book 1",
+            href: "/1.cbr",
+            type: "application/x-rar-compressed; version=4",
+          }),
+        ),
+      },
+    })
+    allowServers(catalog)
+
+    const items = await crawlCatalog({
+      feedUrl: `${catalog.origin}/opds`,
+      connectorUrl: catalog.origin,
+    })
+
+    expect(items).toMatchObject([
+      {
+        linkData: {
+          acquisition: {
+            href: `${catalog.origin}/1.cbr`,
+            type: "application/x-rar-compressed",
+          },
+        },
+      },
+    ])
+  })
+
   it("only takes books that are free", async () => {
     const catalog = await startServer({
       "/opds": {

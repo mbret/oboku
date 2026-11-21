@@ -18,7 +18,7 @@ During render, translate through `useLingui()`. Do not use the `i18n` object tha
 
 Outside render, for example in a stream or a mutation callback, use `t` from `@lingui/core/macro`. It reads the language that is active when the code runs.
 
-Lingui makes each message's id from its English text, so the same English text in two places is one message with one translation. If the same English text needs two translations, give each one a context: ``t({ message: "Light", context: "theme" })``.
+Lingui makes each message's id from its English text, so the same English text in two places is one message with one translation. If the same English text needs two translations, give each one a context: `t({ message: "Light", context: "theme" })`.
 
 ## Updating the catalogs
 

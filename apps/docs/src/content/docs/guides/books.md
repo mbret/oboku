@@ -30,7 +30,7 @@ A book is always attached to a link. The link is&#x20;
 
 ### `.epub`
 
-Standard and most commonly used format to read book on digital platform. There are still a lot of work to be done but ultimately you should be able to have all the expected features from oboku (highlights, bookmark, reflow, reading direction and language support, ...). Whenever possible, please try to convert your document into epub format. You can use many tools for it (eg: calibre)
+Standard and most commonly used format to read book on digital platform. The reader supports reflow, reading direction and language, and [bookmarks, highlights and notes](/guides/reader#bookmarks-highlights-and-notes) for it. Whenever possible, please try to convert your document into epub format. You can use many tools for it (eg: calibre)
 
 ### `.cbz`, `.cbr` , `.zip`, `.rar` { #cbz-.cbr-.zip-.rar }
 

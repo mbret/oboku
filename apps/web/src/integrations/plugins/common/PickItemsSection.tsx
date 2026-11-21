@@ -35,6 +35,11 @@ export const PickItemsSection = memo(function PickItemsSection({
       <Typography variant="caption" align="center">
         You have {itemsCount} item(s) registered
       </Typography>
+      <Typography variant="caption" align="center" color="text.secondary">
+        oboku syncs only the folders and files you pick. A folder you pick does
+        not add the files inside it, so pick those files too. On a computer, the
+        picker selects many items at once.
+      </Typography>
       {resolveItemsAccess ? (
         <ResolveItemsAccessAlert
           actionLabel={resolveItemsAccess.actionLabel}

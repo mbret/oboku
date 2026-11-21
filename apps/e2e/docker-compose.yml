@@ -1,0 +1,104 @@
+# CouchDB, Postgres and the API sit on a network with no internet access, so no
+# metadata lookup from the API can change what a test sees.
+name: oboku-e2e
+
+x-repository-build: &repository-build
+  context: ../..
+  dockerfile: dockerfile
+
+x-healthcheck-timing: &healthcheck-timing
+  interval: 2s
+  timeout: 5s
+  retries: 60
+
+services:
+  couchdb:
+    build:
+      <<: *repository-build
+      target: couchdb
+    environment:
+      COUCHDB_USER: admin
+      COUCHDB_PASSWORD: password
+    volumes:
+      - secrets:/secrets
+    networks:
+      - stack
+    healthcheck:
+      <<: *healthcheck-timing
+      test: ["CMD", "curl", "-f", "http://localhost:5984/_up"]
+
+  postgres:
+    image: postgres:17-trixie
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oboku
+    networks:
+      - stack
+    healthcheck:
+      <<: *healthcheck-timing
+      test: ["CMD", "pg_isready", "-U", "postgres", "-d", "oboku"]
+
+  api:
+    build:
+      <<: *repository-build
+      target: api
+    depends_on:
+      couchdb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: oboku
+      APP_PUBLIC_URL: http://localhost:4280
+      ADMIN_LOGIN: admin
+      ADMIN_PASSWORD: password
+    volumes:
+      - secrets:/secrets:ro
+    networks:
+      - stack
+    healthcheck:
+      <<: *healthcheck-timing
+      test: ["CMD", "curl", "-f", "http://localhost:3000/web/config"]
+
+  # A port cannot be published from the stack network, so api-proxy joins both
+  # networks to publish the API.
+  api-proxy:
+    image: nginx:alpine
+    depends_on:
+      api:
+        condition: service_healthy
+    environment:
+      DEV_PROXY_UPSTREAM: api:3000
+      NGINX_ENVSUBST_FILTER: DEV_PROXY_UPSTREAM
+    volumes:
+      - ../dev-proxy/default.conf.template:/etc/nginx/templates/default.conf.template:ro
+    networks:
+      - stack
+      - default
+    ports:
+      - "127.0.0.1:4281:5985"
+      - "127.0.0.1:4282:5986"
+      - "127.0.0.1:4283:5987"
+
+  web:
+    build:
+      <<: *repository-build
+      target: web
+    environment:
+      VITE_API_URL: http://localhost:4281
+      VITE_API_URL_2: http://localhost:4282
+      VITE_API_URL_3: http://localhost:4283
+    ports:
+      - "127.0.0.1:4280:80"
+    healthcheck:
+      <<: *healthcheck-timing
+      # nginx listens on IPv4 only, and localhost can resolve to ::1 first.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1/"]
+
+networks:
+  stack:
+    internal: true
+
+volumes:
+  secrets:

@@ -21,6 +21,18 @@ import { findConnectorCandidates } from "../helpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
 
+export class WebdavConnectorNotConfiguredError extends Error {
+  constructor() {
+    super("No WebDAV connector is configured")
+  }
+}
+
+export class WebdavConnectorNotFoundError extends Error {
+  constructor() {
+    super("WebDAV connector not found")
+  }
+}
+
 /** A WebDAV connector, as the user's settings hold it. */
 export const findWebdavConnector = async ({
   db,
@@ -29,11 +41,11 @@ export const findWebdavConnector = async ({
   db: Parameters<typeof getConnectorById>[0]
   connectorId: string | undefined
 }) => {
-  const connector = connectorId
-    ? await getConnectorById(db, connectorId, "webdav")
-    : null
+  if (!connectorId) throw new WebdavConnectorNotConfiguredError()
 
-  if (!connector) throw new Error("WebDAV connector not found")
+  const connector = await getConnectorById(db, connectorId, "webdav")
+
+  if (!connector) throw new WebdavConnectorNotFoundError()
 
   return connector
 }

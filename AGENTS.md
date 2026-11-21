@@ -12,11 +12,11 @@
 - **Never narrate trivial mechanics** ("seed the form", "fall back to default", "guard for unmount", "cleanup on success", "preserves siblings", etc.). If the function/variable name doesn't already say that, rename instead of commenting.
 - **No "why" boilerplate.** Don't write comments like "we do X so that Y" unless Y is genuinely surprising and not visible from reading the function. A two-word identifier (`safeFallback`, `corsHeaders`, …) usually beats a three-line comment.
 - **Allowed comments** (rare, deliberate):
-    - Workarounds for third-party bugs, with a link or version reference.
-    - Non-obvious invariants or ordering constraints that aren't enforced by the type system.
-    - Explanations *required* by another rule in this file (e.g. the `as` rule, the MUI polymorphic-strip cast rule).
-    - Spec citations when the code implements a non-trivial part of an external spec.
-- **JSDoc on exported APIs is fine** when it documents the *contract* (parameters, return shape, edge cases) — not when it restates the implementation.
+  - Workarounds for third-party bugs, with a link or version reference.
+  - Non-obvious invariants or ordering constraints that aren't enforced by the type system.
+  - Explanations _required_ by another rule in this file (e.g. the `as` rule, the MUI polymorphic-strip cast rule).
+  - Spec citations when the code implements a non-trivial part of an external spec.
+- **JSDoc on exported APIs is fine** when it documents the _contract_ (parameters, return shape, edge cases) — not when it restates the implementation.
 - **Delete stale comments aggressively.** A comment that lies is worse than no comment.
 
 ### Self-explanatory code over comments
@@ -25,15 +25,15 @@
 - **Name boolean conditions and predicates.** Extract a condition into a named variable or small predicate (`isWakeLockSupported()`, `isDocumentVisible()`, `wasUnmountedWhileRequesting`) whenever its purpose is not obvious from the expression, however short that expression is. The trigger is the reader asking "why are we comparing these?", not the size of the comparison: `if (user.couchName !== couchUser.name)` says what is compared, `const isCouchNameRecorded = user.couchName === couchUser.name` says what the comparison decides. Name the state the condition establishes, in the positive form, negate at the branch (`if (!isCouchNameRecorded)`), and declare it right above the branch that uses it.
 - **Name every function expression, including callbacks.** Pass named functions to `useEffect`, its cleanup return, event handlers, timers, and promise callbacks (e.g. `useEffect(function keepScreenAwakeWhileMounted() { ... }, [])`, `return function releaseWakeLockOnUnmount() { ... }`, `onWakeLockReleasedByOs`). Named functions document purpose at the call site and show up by name in stack traces and DevTools. Anonymous arrows are fine for `describe`/`it` bodies in tests (the string argument already names them) and for trivial one-line array callbacks like `.map((tag) => tag._id)`.
 - **Name intermediate values** rather than commenting what a literal or expression means. A descriptive `const` is preferable to an inline value plus a comment.
-- **The goal:** a reader should understand *what* and *why* from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
+- **The goal:** a reader should understand _what_ and _why_ from identifiers and structure alone. Comments remain reserved for the rare cases listed under "Code comments" above (third-party workarounds, non-obvious invariants, spec citations).
 
 ### Values flow through the code, they aren't written aside
 
 - **A value a later step needs reaches it as a value**: returned, mapped, or part of what the stream emits. Never assign an outer variable from one callback for another callback to read, like a `let` set inside an RxDB modifier and read in a `tap` once the write resolves. What it holds then depends on which callbacks ran, how many times and in what order (a retry, a resubscription, RxDB running a modifier again on a conflict), and none of that shows in the code.
 - **Derive state rather than writing it from several places.** In RxJS, rework these rather than extend them:
-    - a variable or holder set mid-stream and read downstream;
-    - a subject used as a state container and updated from `tap`s (`state.next(update(state.getValue()))`);
-    - a `tap` that writes state where a `map`, a `scan`, or an operator that keeps the latest value (`switchMap`, `debounceTime`, `groupBy`) could carry it.
+  - a variable or holder set mid-stream and read downstream;
+  - a subject used as a state container and updated from `tap`s (`state.next(update(state.getValue()))`);
+  - a `tap` that writes state where a `map`, a `scan`, or an operator that keeps the latest value (`switchMap`, `debounceTime`, `groupBy`) could carry it.
 - **When an API hands a value only to its callback, change what flows instead of capturing it.** Decide the input up front and pass it in, or use what the call resolves with. `useSyncBookProgress` gives each save's time to its patches, then finds a bookmark move in the book the write resolves with.
 - **Tests too**: observe a stream or a callback with a `vi.fn()` and assert on its calls, and hold a promise open with `Promise.withResolvers()`.
 - Imperative code is sometimes clearer, and readability counts: a `scan` nobody can follow is no improvement. Derive where you can, and say why when you deliberately don't. The `rxjs-like-a-pro` skill in `.agents/skills/` goes deeper.
@@ -68,9 +68,9 @@
 ### Browser support: no fallbacks, no shims
 
 - **Assume an up-to-date browser.** Keeping the browser current is a product requirement, not something the code compensates for. Write simple, next-gen code.
-- **Do not add fallbacks, shims, polyfills, or graceful degradation** for an API that is baseline across all major browsers (desktop *and* mobile). If such an API is missing at runtime, letting the process crash is the correct behaviour — a fallback path doubles the code, doubles the states to reason about, and is the path least likely to be exercised or tested.
+- **Do not add fallbacks, shims, polyfills, or graceful degradation** for an API that is baseline across all major browsers (desktop _and_ mobile). If such an API is missing at runtime, letting the process crash is the correct behaviour — a fallback path doubles the code, doubles the states to reason about, and is the path least likely to be exercised or tested.
 - **Prefer crashing over silently degrading.** A capability check that quietly switches to a worse implementation hides the failure and makes the resulting bug much harder to find than an exception would have been.
-- **Do flag an API that is *not* baseline everywhere.** If support is genuinely uneven across major desktop/mobile browsers, say so and let the user decide rather than silently working around it.
+- **Do flag an API that is _not_ baseline everywhere.** If support is genuinely uneven across major desktop/mobile browsers, say so and let the user decide rather than silently working around it.
 - **Ask before reaching for a very recent API.** When something is baseline but only recently (roughly within the last year or two), confirm with the user first instead of assuming — and do not silently downgrade to an older API to avoid asking.
 - Rationale: the amount of code that exists purely to serve browsers nobody uses is a permanent tax on readability and correctness. `packages/archive-metadata`'s OPFS staging is the reference example — it requires OPFS and Web Locks outright and has no in-memory fallback path.
 

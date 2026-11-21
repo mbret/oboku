@@ -18,6 +18,8 @@ import {
 } from "../http/obokuBadRequest.js"
 import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
+  WebdavConnectorNotConfiguredError,
+  WebdavConnectorNotFoundError,
   findWebdavConnector,
   isSignInRefused,
   toAnsweredStatus,
@@ -36,6 +38,16 @@ const createResourceNotFound = () =>
   )
 
 const toServerFailure = (error: unknown) => {
+  if (error instanceof WebdavConnectorNotConfiguredError) {
+    return createObokuBadRequest(ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED)
+  }
+
+  if (error instanceof WebdavConnectorNotFoundError) {
+    return createObokuBadRequest(
+      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
+    )
+  }
+
   if (isNonPublicAddressError(error)) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
   }
@@ -97,7 +109,8 @@ export class LinksService {
    * names, from its server. The stream fails past the size the server states:
    * the server is the user's, and could state less than it sends.
    *
-   * @throws a 400 for a link of another type or an address the instance does
+   * @throws a 400 for a link of another type, a link that names no connector
+   * or one the user's settings do not hold, or an address the instance does
    * not reach, a 404 when the library has no such link or the server no such
    * file, and a 502 when the server refuses the password or the file, cannot
    * be reached, or states no size for the file.

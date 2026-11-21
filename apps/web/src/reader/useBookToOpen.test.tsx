@@ -66,10 +66,10 @@ const deliverQueryUpdates = () =>
   })
 
 const renderBookToOpen = ({
-  isPreview = false,
+  usesReadingData = true,
   mayOpen,
 }: {
-  isPreview?: boolean
+  usesReadingData?: boolean
   mayOpen: boolean
 }) => {
   const queryClient = new QueryClient({
@@ -82,7 +82,7 @@ const renderBookToOpen = ({
 
   const rendered = renderHook(
     function renderUseBookToOpen(props: { mayOpen: boolean }) {
-      return useBookToOpen({ bookId: BOOK_ID, isPreview, ...props })
+      return useBookToOpen({ bookId: BOOK_ID, usesReadingData, ...props })
     },
     { wrapper, initialProps: { mayOpen } },
   )
@@ -142,7 +142,10 @@ describe("useBookToOpen", () => {
   })
 
   it("opens at the start in preview, without reading the book", async () => {
-    const { result } = renderBookToOpen({ isPreview: true, mayOpen: true })
+    const { result } = renderBookToOpen({
+      usesReadingData: false,
+      mayOpen: true,
+    })
 
     await deliverQueryUpdates()
 

@@ -5,6 +5,7 @@ import {
   getBookCoverKey,
   isBookProtected,
   type LinkDocTypeForProvider,
+  OPDS_SERVED_CONNECTOR_TYPES,
 } from "@oboku/shared"
 import {
   BadGatewayException,
@@ -122,23 +123,25 @@ const readServedLinkIds = async ({
   connections: ServedConnections
 }) => {
   const hasConnectedConnectors = connections.connectedConnectorIds.size > 0
-  const [driveLinks, webdavLinks] = await Promise.all([
+  const [driveLinks, ...connectorLinksByType] = await Promise.all([
     connections.isGoogleConnected
       ? find(db, "link", {
           selector: { type: "DRIVE" },
           fields: ["_id", "type", "data"],
         })
       : [],
-    hasConnectedConnectors
-      ? find(db, "link", {
-          selector: { type: "webdav" },
-          fields: ["_id", "type", "data"],
-        })
-      : [],
+    ...OPDS_SERVED_CONNECTOR_TYPES.map(function findConnectorLinks(type) {
+      return hasConnectedConnectors
+        ? find(db, "link", {
+            selector: { type },
+            fields: ["_id", "type", "data"],
+          })
+        : []
+    }),
   ])
-  const servedLinks = [...driveLinks, ...webdavLinks].filter((link) =>
-    isLinkServed(link, connections),
-  )
+  const servedLinks = [driveLinks, ...connectorLinksByType]
+    .flat()
+    .filter((link) => isLinkServed(link, connections))
 
   return new Set(servedLinks.map(({ _id }) => _id))
 }

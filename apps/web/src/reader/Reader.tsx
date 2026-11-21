@@ -21,6 +21,7 @@ import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
+import { useReaderAnnotations } from "./annotations/useReaderAnnotations"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 import { webStreamer } from "./streamer/webStreamer"
@@ -34,10 +35,10 @@ declare global {
 
 export const Reader = memo(function Reader({
   bookId,
-  isPreview,
+  usesReadingData,
 }: {
   bookId: string
-  isPreview: boolean
+  usesReadingData: boolean
 }) {
   useEffect(function releaseBookArchivesOnLeave() {
     return function pruneWebStreamer() {
@@ -53,14 +54,14 @@ export const Reader = memo(function Reader({
   const koreaderPositionCheck = useKoreaderPositionCheck({
     bookId,
     koreaderDocument,
-    enabled: !isPreview,
+    enabled: usesReadingData,
   })
   const opening: BookOpening = manifest
     ? koreaderPositionCheck
     : { status: "loadingFile" }
   const bookToOpen = useBookToOpen({
     bookId,
-    isPreview,
+    usesReadingData,
     mayOpen: opening.status === "done",
   })
   const createReader = useCreateReader({
@@ -69,9 +70,14 @@ export const Reader = memo(function Reader({
     manifest,
     koreaderDocument,
     book: bookToOpen,
+    usesReadingData,
   })
   const { readerSettings, defaultReaderSettings, updateReaderSettings } =
     useReaderSettings()
+  const readerAnnotations = useReaderAnnotations({
+    bookId,
+    enabled: usesReadingData,
+  })
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
@@ -83,11 +89,16 @@ export const Reader = memo(function Reader({
       settings={readerSettings}
       defaultSettings={defaultReaderSettings}
       onSettingsChange={updateReaderSettings}
+      {...readerAnnotations}
     >
-      <ReaderView bookId={bookId} isPreview={isPreview} opening={opening} />
+      <ReaderView
+        bookId={bookId}
+        usesReadingData={usesReadingData}
+        opening={opening}
+      />
       <Effects
         bookId={bookId}
-        isPreview={isPreview}
+        usesReadingData={usesReadingData}
         koreaderDocument={koreaderDocument}
       />
     </ReactReaderProvider>
@@ -96,11 +107,11 @@ export const Reader = memo(function Reader({
 
 function ReaderView({
   bookId,
-  isPreview,
+  usesReadingData,
   opening,
 }: {
   bookId: string
-  isPreview: boolean
+  usesReadingData: boolean
   opening: BookOpening
 }) {
   const reader = useReader()
@@ -113,7 +124,7 @@ function ReaderView({
   const { showBookFinishedDialogOnClose } = useShowBookFinishedDialog({
     bookId,
     onClose: goBack,
-    enabled: !isPreview,
+    enabled: usesReadingData,
   })
 
   function onItemClick(
@@ -153,16 +164,16 @@ function ReaderView({
 
 const Effects = memo(function Effects({
   bookId,
-  isPreview,
+  usesReadingData,
   koreaderDocument,
 }: {
   bookId: string
-  isPreview: boolean
+  usesReadingData: boolean
   koreaderDocument?: string
 }) {
   const reader = useReader()
 
-  useSyncBookProgress(bookId, { enabled: !isPreview, koreaderDocument })
+  useSyncBookProgress(bookId, { enabled: usesReadingData, koreaderDocument })
 
   useEffect(
     function exposeReaderOnWindow() {

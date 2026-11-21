@@ -1,3 +1,6 @@
+import { mkdtemp, rm, writeFile } from "node:fs/promises"
+import { tmpdir } from "node:os"
+import { join } from "node:path"
 import { Test } from "@nestjs/testing"
 import {
   type BookDocType,
@@ -16,7 +19,7 @@ import {
   type MetadataMatch,
 } from "@prose-reader/metadata-fetcher"
 import { of } from "rxjs"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { beforeEach, describe, expect, it, onTestFinished, vi } from "vitest"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { CouchService } from "../couch/couch.service.js"
@@ -92,6 +95,10 @@ const refresh = async (
   linkName = "Dune.epub",
   settings: SettingsDocType = { _id: "settings" },
   googleApiKey?: string,
+  {
+    contentType = "application/epub+zip",
+    downloadedFilePath,
+  }: { contentType?: string; downloadedFilePath?: string } = {},
 ) => {
   const insert = vi.fn(async function storeBook(_doc: BookDocType) {
     return { ok: true }
@@ -106,12 +113,12 @@ const refresh = async (
   const pluginsService = {
     getFileMetadata: async () => ({
       name: linkName,
-      contentType: "application/epub+zip",
+      contentType,
       modifiedAt: LINK_MODIFIED_AT,
       canDownload: true,
     }),
-    downloadLinkToTmp: vi.fn(async function downloadNothing() {
-      return { filepath: undefined }
+    downloadLinkToTmp: vi.fn(async function downloadToTmp() {
+      return { filepath: downloadedFilePath }
     }),
   }
 
@@ -442,5 +449,27 @@ describe("BooksMetadataService.refreshMetadata", () => {
       expect(fetchMetadata).not.toHaveBeenCalled()
       expect(storedBook.metadata).not.toContainEqual(legacyCatalogEntry)
     })
+  })
+
+  it("downloads a file named like an archive whatever type its source gives, and moves on when it is not one", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "oboku-metadata-"))
+    onTestFinished(function removeDownloadDirectory() {
+      return rm(directory, { recursive: true, force: true })
+    })
+    const downloadedFilePath = join(directory, "Batman #12.cbz")
+    await writeFile(downloadedFilePath, "not an archive")
+
+    const { storedBook, downloadLinkToTmp } = await refresh(
+      bookWith([]),
+      "Batman #12.cbz",
+      undefined,
+      undefined,
+      { contentType: "binary/octet-stream", downloadedFilePath },
+    )
+
+    expect(downloadLinkToTmp).toHaveBeenCalled()
+    expect(storedBook.metadata).not.toContainEqual(
+      expect.objectContaining({ type: "file" }),
+    )
   })
 })

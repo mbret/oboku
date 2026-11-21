@@ -32,7 +32,7 @@ Will use comic vine API to enrich metadata
 
 You need to provide one more env variable:
 
-* `COMICVINE_API_KEY`: Create a new API key at [https://comicvine.gamespot.com/api/](https://comicvine.gamespot.com/api/)
+- `COMICVINE_API_KEY`: Create a new API key at [https://comicvine.gamespot.com/api/](https://comicvine.gamespot.com/api/)
 
 ## Enable Amazon s3 storage for covers
 
@@ -42,6 +42,6 @@ Let you store and retrieve covers from s3 rather than file system.&#x20;
 
 You need to provide:
 
-* `AWS_ACCESS_KEY_ID`: Create an amazon access key&#x20;
-* `AWS_SECRET_ACCESS_KEY`: Then pass the secret key
-* `COVERS_STORAGE_STRATEGY`: Set this value to `s3`
+- `AWS_ACCESS_KEY_ID`: Create an amazon access key&#x20;
+- `AWS_SECRET_ACCESS_KEY`: Then pass the secret key
+- `COVERS_STORAGE_STRATEGY`: Set this value to `s3`

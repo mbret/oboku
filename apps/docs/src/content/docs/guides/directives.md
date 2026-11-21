@@ -6,7 +6,7 @@ Directives are extra information you put on your data sources contents to help o
 
 ## **Overview**
 
-Let's say you have a `solo leveling Vol.1.cbz` book on your drive. By default oboku will assume it's a manga (.cbz) and will open it as horizontal scrolling with a reading direction from right to left. This is because there are some default behavior oboku try to assume based on the extension of  your book. Now, because this one happens to be a webtoon you want oboku to display it automatically vertically with a scrolling reading mode. To solve this you can use a directive directly on your file such as: `solo leveling Vol.1 [oboku~webtoon].cbz.`
+Let's say you have a `solo leveling Vol.1.cbz` book on your drive. By default oboku will assume it's a manga (.cbz) and will open it as horizontal scrolling with a reading direction from right to left. This is because there are some default behavior oboku try to assume based on the extension of your book. Now, because this one happens to be a webtoon you want oboku to display it automatically vertically with a scrolling reading mode. To solve this you can use a directive directly on your file such as: `solo leveling Vol.1 [oboku~webtoon].cbz.`
 
 Directives can be placed on files but also folders (collections). Read the details of each directives to see what they do.
 
@@ -110,7 +110,7 @@ my folder [oboku~no_collection]/
 
 **Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a data source that contains lot of sub folder and you don't necessarily want to have a collection for each folder (default behavior).
 
-When using `no_collection` on a folder, oboku will then use the default behavior for all children which means every folder directly under this folder will be treated as collection. Use this directive again if  you need to ignore deeper folder.
+When using `no_collection` on a folder, oboku will then use the default behavior for all children which means every folder directly under this folder will be treated as collection. Use this directive again if you need to ignore deeper folder.
 
 ## `ignore`
 
@@ -143,6 +143,6 @@ my book [oboku~isbn~1588989865].epub
 
 **Only usable on files**. Tells oboku to use this isbn to extract metadata. This is a very useful directive if your content does not contains much information for oboku to get metadata from. By using this directive oboku will not look at the file but rather directly get metadata from external API based on the ISBN. This use case is useful if:
 
-* Your `.epub` file is incomplete
-* Your are using simple image archive such as `.cbz`, `.cbr`, ...
-* Your file is above the recommended size of \~500mb
+- Your `.epub` file is incomplete
+- Your are using simple image archive such as `.cbz`, `.cbr`, ...
+- Your file is above the recommended size of \~500mb

@@ -180,7 +180,7 @@ function renderSyncBookProgress({
   koreaderDocument?: string
 } = {}) {
   return renderHook(function renderUseSyncBookProgress() {
-    useSyncBookProgress(book._id, { koreaderDocument })
+    useSyncBookProgress(book._id, { enabled: true, koreaderDocument })
   })
 }
 

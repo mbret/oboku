@@ -6,20 +6,20 @@ import { useEnsureQueryData$ } from "../queries/useEnsureQueryData$"
 /**
  * The book the reader opens at its bookmark, read from the database once the
  * book may open, so its bookmark holds a position the KOReader position check
- * took from the server. `undefined` until then, and `null` in preview, which
- * opens at the start.
+ * took from the server. `undefined` until then. `null` when the reader uses no
+ * reading data, as in preview: the book then opens at the start.
  */
 export const useBookToOpen = ({
   bookId,
-  isPreview,
+  usesReadingData,
   mayOpen,
 }: {
   bookId: string
-  isPreview: boolean
+  usesReadingData: boolean
   mayOpen: boolean
 }): DeepReadonly<BookDocType> | null | undefined => {
   const { queryKey, queryFn } = createBookQueryOptions({
-    id: isPreview || !mayOpen ? undefined : bookId,
+    id: usesReadingData && mayOpen ? bookId : undefined,
   })
   const { data: book } = useEnsureQueryData$({
     // Its own key, so the book is read from the database: the live book
@@ -28,7 +28,7 @@ export const useBookToOpen = ({
     queryFn,
   })
 
-  if (isPreview) return null
+  if (!usesReadingData) return null
 
   const isBookMissing = book === null
 
