@@ -4,6 +4,7 @@ import {
   AutoAwesomeRounded,
   AutoStoriesRounded,
   BlurOnRounded,
+  BorderColorRounded,
   CloudRounded,
   CloudSyncRounded,
   CloudUploadRounded,
@@ -145,6 +146,12 @@ export const featureGroups: FeatureGroup[] = [
         description: "Find a passage or a word anywhere in the book.",
       },
       {
+        Icon: BorderColorRounded,
+        title: "Bookmarks, highlights and notes",
+        description:
+          "Bookmark a page, highlight a passage and add a note to it. They sync to all your devices.",
+      },
+      {
         Icon: FullscreenRounded,
         title: "Distraction-free",
         description:
@@ -165,7 +172,7 @@ export const featureGroups: FeatureGroup[] = [
     overline: "Your storage",
     title: "Your books stay where they already are",
     description:
-      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library and reading progress are synced.",
+      "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library, your reading progress and your annotations are synced.",
     screenshots: {
       primary: {
         src: dataSourcesScreenshot,
@@ -310,7 +317,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: DevicesRounded,
         title: "The same library everywhere",
         description:
-          "Your library and reading progress are synced between all your devices.",
+          "Your library, reading progress and annotations are synced between all your devices.",
       },
       {
         Icon: ContrastRounded,
