@@ -14,10 +14,10 @@ const isDeletedDocumentRow = (row: FetchRow) =>
  * with how many it removed. An annotation whose book CouchDB has never seen
  * stays: that book may still be waiting to sync on a device.
  *
- * A deleted book never comes back: book ids are random UUIDs, and the
- * replication keeps CouchDB's version when a device edits a book that another
- * device deleted. A feature that restores deleted books must stop this
- * cleanup.
+ * This assumes a deleted book is never restored: book ids are never reused,
+ * and the replication keeps CouchDB's deleted version when a device edits a
+ * book that another device deleted. A feature that restores deleted books must
+ * stop this cleanup.
  */
 export const removeAnnotationsOfDeletedBooks = async (
   db: Pick<
