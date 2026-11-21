@@ -22,7 +22,8 @@
       "!packages/shared/src/api-types/generated",
       "!**/*.svg",
       "!**/next-env.d.ts",
-      "!package.json"
+      "!package.json",
+      "!.agents/skills"
     ]
   },
   "formatter": {
@@ -81,8 +82,13 @@
     }
   },
   "markdown": {
+    "parser": {
+      "frontmatter": true,
+      "gfm": true
+    },
     "formatter": {
-      "enabled": false
+      "enabled": true,
+      "formatEmbeds": false
     }
   },
   "javascript": {
