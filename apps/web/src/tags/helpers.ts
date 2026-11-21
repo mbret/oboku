@@ -1,6 +1,5 @@
 import type { TagsDocType } from "@oboku/shared"
-import { useCallback } from "react"
-import { useDatabase } from "../rxdb"
+import { ensureDatabase, useDatabase } from "../rxdb"
 import { map, mergeMap, switchMap } from "rxjs"
 import { type UseLiveQuery$Options, useLiveQuery$ } from "reactjrx"
 import {
@@ -16,7 +15,7 @@ export const useCreateTag = () => {
 
   return useMutation({
     mutationFn: async ({ name }: { name: string }) =>
-      db?.tag.insertSafe({
+      ensureDatabase(db).tag.insertSafe({
         name,
         books: [],
         isProtected: false,
@@ -29,14 +28,13 @@ export const useCreateTag = () => {
 export const useUpdateTag = () => {
   const { db } = useDatabase()
 
-  return useCallback(
-    ({
+  return useMutation({
+    mutationFn: async ({
       _id,
       ...rest
     }: Partial<TagsDocType> & Required<Pick<TagsDocType, "_id">>) =>
-      db?.tag.findOne(_id).incrementalPatch(rest),
-    [db],
-  )
+      ensureDatabase(db).tag.findOne(_id).incrementalPatch(rest),
+  })
 }
 
 const tags$ = latestDatabase$.pipe(

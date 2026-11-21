@@ -1,5 +1,5 @@
 import type { CollectionDocType } from "@oboku/shared"
-import { useDatabase } from "../rxdb"
+import { ensureDatabase, useDatabase } from "../rxdb"
 import { type UseMutationOptions, useMutation } from "@tanstack/react-query"
 
 export const useCollectionIncrementalModify = (
@@ -14,14 +14,16 @@ export const useCollectionIncrementalModify = (
       name,
       ...rest
     }: Partial<CollectionDocType> & { _id: string; name?: string }) =>
-      db?.obokucollection.findOne(_id).incrementalModify((old) => ({
-        ...old,
-        ...rest,
-        metadata: old.metadata?.map((entry) =>
-          entry.type === "user"
-            ? { ...entry, title: name ?? entry.title }
-            : entry,
-        ),
-      })),
+      ensureDatabase(db)
+        .obokucollection.findOne(_id)
+        .incrementalModify((old) => ({
+          ...old,
+          ...rest,
+          metadata: old.metadata?.map((entry) =>
+            entry.type === "user"
+              ? { ...entry, title: name ?? entry.title }
+              : entry,
+          ),
+        })),
   })
 }
