@@ -3,7 +3,6 @@ title: "Adding & Synchronize contents"
 description: Reading time aye?
 ---
 
-
 There are two main distinct ways to add content with oboku. You can either add a book manually or let oboku synchronize your content automatically, also known as **sync**.
 
 :::note

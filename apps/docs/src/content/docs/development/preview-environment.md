@@ -24,12 +24,12 @@ The web app and the API share the `oboku.me` site on purpose. The auth cookies a
 
 The preview stack shares no data, credentials or containers with production. The template below follows these rules; keep them when editing it.
 
-* **Its own secrets volume.** CouchDB generates a new JWT key pair on first start. Never mount production's secrets: the API signs CouchDB admin tokens with that private key, so production's key would give the preview full admin access to production's CouchDB if it could reach it.
-* **Explicit database hosts.** `COUCH_DB_URL` and `POSTGRES_HOST` name the preview containers. The API's defaults, `couchdb` and `postgres`, are generic names that could resolve to production containers if the two stacks ever shared a Docker network.
-* **New passwords, its own network and volumes, no host ports.** Cosmos routes by hostname, and host ports would clash with production's anyway.
-* **No production S3 settings.** Covers stay on the preview's disk, the default `fs` storage. With production's settings they would be written into production's bucket.
-* **No `SENTRY_DSN`.** Preview errors would otherwise land in production's Sentry project.
-* **A memory budget.** The stack runs on the same server as production. Cap the preview containers' memory in Cosmos when headroom is tight, so a busy preview cannot starve production.
+- **Its own secrets volume.** CouchDB generates a new JWT key pair on first start. Never mount production's secrets: the API signs CouchDB admin tokens with that private key, so production's key would give the preview full admin access to production's CouchDB if it could reach it.
+- **Explicit database hosts.** `COUCH_DB_URL` and `POSTGRES_HOST` name the preview containers. The API's defaults, `couchdb` and `postgres`, are generic names that could resolve to production containers if the two stacks ever shared a Docker network.
+- **New passwords, its own network and volumes, no host ports.** Cosmos routes by hostname, and host ports would clash with production's anyway.
+- **No production S3 settings.** Covers stay on the preview's disk, the default `fs` storage. With production's settings they would be written into production's bucket.
+- **No `SENTRY_DSN`.** Preview errors would otherwise land in production's Sentry project.
+- **A memory budget.** The stack runs on the same server as production. Cap the preview containers' memory in Cosmos when headroom is tight, so a busy preview cannot starve production.
 
 ## Setting up the stack in Cosmos
 

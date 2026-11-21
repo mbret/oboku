@@ -30,8 +30,8 @@ oboku's server connects to your WebDAV server for syncs and downloads, and it on
 
 Your [OPDS servers](/guides/opds-servers) can serve the books of a WebDAV connector once you connect it: oboku's server then keeps the connector's password and downloads the books itself. See [Connect a connector](/guides/connectors#connect-a-connector) for how, and [Passwords kept by oboku's server](/guides/secrets#passwords-kept-by-obokus-server) for what the server keeps.
 
-* oboku's server signs in to your WebDAV server when you connect, so the rules of [Servers on your local network](#servers-on-your-local-network) apply. On the cloud version, your server must be reachable from the internet.
-* The password often opens your whole server. If your server allows it, connect with an account that can only read your books, or with an app password.
+- oboku's server signs in to your WebDAV server when you connect, so the rules of [Servers on your local network](#servers-on-your-local-network) apply. On the cloud version, your server must be reachable from the internet.
+- The password often opens your whole server. If your server allows it, connect with an account that can only read your books, or with an app password.
 
 ## Sync behavior
 

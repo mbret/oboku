@@ -14,9 +14,9 @@ This only syncs reading positions, as the KOReader sync server does. It does not
 
 In oboku, open **Integrations > KOReader sync server** and generate a password. The screen then shows the three values a device needs:
 
-* **Server**: your oboku API address followed by `/kosync`. Copy it from the screen rather than typing it from memory.
-* **Username**: the email of your oboku account.
-* **Password**: the generated password. It is shown only once: oboku keeps nothing but a hash of it. Lost it? Generate a new one.
+- **Server**: your oboku API address followed by `/kosync`. Copy it from the screen rather than typing it from memory.
+- **Username**: the email of your oboku account.
+- **Password**: the generated password. It is shown only once: oboku keeps nothing but a hash of it. Lost it? Generate a new one.
 
 :::note
 The password is not your oboku password and gives access to nothing but your synced reading positions. Generating a new one signs out every device that used the previous one.

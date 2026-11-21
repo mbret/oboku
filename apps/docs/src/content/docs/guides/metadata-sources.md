@@ -4,29 +4,29 @@ title: "Metadata Sources"
 
 ## &#x20;Series { #series }
 
-* mangadex
-* mangaupdates
-* biblioreads
-* comicvine
+- mangadex
+- mangaupdates
+- biblioreads
+- comicvine
 
 ### Default order of priority
 
-* user (your own data)
-* mangadex
-* mangaupdates
-* biblioreads
-* source (what the series' provider reports)
-* comicvine
+- user (your own data)
+- mangadex
+- mangaupdates
+- biblioreads
+- source (what the series' provider reports)
+- comicvine
 
 ## Books
 
 #### Sources (by priority order)
 
-* User information
-* Directives
-* File
-* Catalog
-* Source (what the book's provider reports about its file)
+- User information
+- Directives
+- File
+- Catalog
+- Source (what the book's provider reports about its file)
 
 For each detail of a book, such as its title or its authors, oboku shows the value of the highest source that has one. It does not combine the values of several sources.
 
