@@ -286,7 +286,14 @@ describe("annotation hooks", () => {
         createdAt: "2026-11-19T10:00:00.000Z",
       }),
     )
-    const goneId = crypto.randomUUID()
+    const gone = await database.annotation.insert(
+      storedAnnotation({
+        bookId: BOOK_ID,
+        createdAt: "2026-11-19T11:00:00.000Z",
+      }),
+    )
+    const goneId = gone._id
+    await gone.incrementalRemove()
 
     await result.current.updateAnnotation.mutateAsync({
       id: goneId,

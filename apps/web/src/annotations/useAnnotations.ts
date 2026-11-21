@@ -44,7 +44,9 @@ export const useAnnotations = ({
             sort: [{ createdAt: "asc" }],
           }).$
         }),
-        map((documents) => documents.map(toAnnotation)),
+        map(function toAnnotationsOfBook(documents) {
+          return documents.map(toAnnotation)
+        }),
       )
     },
   })

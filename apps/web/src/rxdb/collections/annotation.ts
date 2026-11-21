@@ -32,6 +32,8 @@ const schema: RxJsonSchema<RxdbAnnotationDocType> = {
 }
 
 const migrationStrategies: MigrationStrategies = {
+  // Version 0 named `highlightedText` `text`. No released version stored an
+  // annotation, so no document holds `text`.
   1: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 

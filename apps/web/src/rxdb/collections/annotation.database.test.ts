@@ -9,7 +9,7 @@ import type { RxdbAnnotationDocType } from "./annotation"
 
 const storeBookmarkOfSchemaVersionZero = async (
   name: string,
-  bookmark: RxdbAnnotationDocType,
+  bookmark: Record<string, unknown>,
 ) => {
   const database = await createRxDatabase({
     name,
@@ -76,7 +76,7 @@ const findAnnotationBookIds = async (database: Database) => {
 describe("annotation collection", () => {
   it("keeps the annotations stored with the schema before highlightedText", async () => {
     const name = `annotation-${crypto.randomUUID()}`
-    const bookmark: RxdbAnnotationDocType = {
+    const bookmark = {
       _id: crypto.randomUUID(),
       rx_model: "annotation",
       bookId: "book-1",
@@ -89,7 +89,7 @@ describe("annotation collection", () => {
     const database = await openTestDatabase(name)
     const annotations = await database.annotation.find().exec()
 
-    expect(annotations.map((annotation) => annotation.toJSON())).toMatchObject([
+    expect(annotations.map((annotation) => annotation.toJSON())).toStrictEqual([
       bookmark,
     ])
   })
