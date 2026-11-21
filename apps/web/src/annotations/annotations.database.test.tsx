@@ -7,7 +7,7 @@ import type { RxdbAnnotationDocType } from "../rxdb/collections/annotation"
 import { getLatestDatabase, useReCreateDb } from "../rxdb/RxDbProvider"
 import { useAnnotations } from "./useAnnotations"
 import { useCreateAnnotation } from "./useCreateAnnotation"
-import { useDeleteAnnotation } from "./useDeleteAnnotation"
+import { useRemoveAnnotation } from "./useRemoveAnnotation"
 import { useUpdateAnnotation } from "./useUpdateAnnotation"
 
 const BOOK_ID = "book-1"
@@ -40,7 +40,7 @@ async function renderAnnotationHooksWithDatabase({
         annotations: useAnnotations({ bookId: BOOK_ID, enabled }),
         createAnnotation: useCreateAnnotation(),
         updateAnnotation: useUpdateAnnotation(),
-        deleteAnnotation: useDeleteAnnotation(),
+        removeAnnotation: useRemoveAnnotation(),
       }
     },
     {
@@ -260,21 +260,44 @@ describe("annotation hooks", () => {
     expect(Date.parse(updated?.modifiedAt ?? "")).not.toBeNaN()
   })
 
-  it("remove the document of a deleted annotation", async () => {
+  it("remove the document of a removed annotation", async () => {
     const { database, result } = await renderAnnotationHooksWithDatabase()
     const kept = storedAnnotation({
       bookId: BOOK_ID,
       createdAt: "2026-11-19T10:00:00.000Z",
     })
-    const deleted = storedAnnotation({
+    const removed = storedAnnotation({
       bookId: BOOK_ID,
       createdAt: "2026-11-19T11:00:00.000Z",
     })
-    await database.annotation.bulkInsert([kept, deleted])
+    await database.annotation.bulkInsert([kept, removed])
 
-    await result.current.deleteAnnotation.mutateAsync(deleted._id)
+    await result.current.removeAnnotation.mutateAsync(removed._id)
 
     const annotations = await database.annotation.find().exec()
     expect(annotations.map((annotation) => annotation._id)).toEqual([kept._id])
+  })
+
+  it("change nothing for an annotation that another device already removed", async () => {
+    const { database, result } = await renderAnnotationHooksWithDatabase()
+    const kept = await database.annotation.insert(
+      storedAnnotation({
+        bookId: BOOK_ID,
+        createdAt: "2026-11-19T10:00:00.000Z",
+      }),
+    )
+    const goneId = crypto.randomUUID()
+
+    await result.current.updateAnnotation.mutateAsync({
+      id: goneId,
+      highlightColor: YELLOW,
+      notes: "A note",
+    })
+    await result.current.removeAnnotation.mutateAsync(goneId)
+
+    const annotations = await database.annotation.find().exec()
+    expect(annotations.map((annotation) => annotation.toJSON())).toStrictEqual([
+      kept.toJSON(),
+    ])
   })
 })
