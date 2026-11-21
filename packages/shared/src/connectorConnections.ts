@@ -8,6 +8,14 @@ export const CONNECTABLE_CONNECTOR_TYPES = [
 export type ConnectableConnectorType =
   (typeof CONNECTABLE_CONNECTOR_TYPES)[number]
 
+/** The connector types whose books the OPDS catalogs serve. */
+export const OPDS_SERVED_CONNECTOR_TYPES = [
+  "webdav",
+] as const satisfies ReadonlyArray<ConnectableConnectorType>
+
+export type OpdsServedConnectorType =
+  (typeof OPDS_SERVED_CONNECTOR_TYPES)[number]
+
 export const isConnectableConnectorType = (
   type: SettingsConnectorType,
 ): type is ConnectableConnectorType =>
