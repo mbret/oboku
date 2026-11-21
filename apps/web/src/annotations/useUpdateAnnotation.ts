@@ -1,25 +1,21 @@
 import type { Annotation } from "@prose-reader/enhancer-annotations"
-import { useMutation$ } from "reactjrx"
-import { from, mergeMap } from "rxjs"
+import { useMutation } from "@tanstack/react-query"
+import { firstValueFrom } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 
 export const useUpdateAnnotation = () =>
-  useMutation$({
-    mutationFn: function patchAnnotation({
+  useMutation({
+    mutationFn: async function patchAnnotation({
       id,
       highlightColor,
       notes,
     }: Pick<Annotation, "id" | "highlightColor" | "notes">) {
-      return getLatestDatabase().pipe(
-        mergeMap(function patchAnnotationIn(database) {
-          return from(
-            database.annotation.findOne(id).incrementalPatch({
-              highlightColor: highlightColor ?? null,
-              notes: notes ?? null,
-              modifiedAt: new Date().toISOString(),
-            }),
-          )
-        }),
-      )
+      const database = await firstValueFrom(getLatestDatabase())
+
+      return database.annotation.findOne(id).incrementalPatch({
+        highlightColor: highlightColor ?? null,
+        notes: notes ?? null,
+        modifiedAt: new Date().toISOString(),
+      })
     },
   })
