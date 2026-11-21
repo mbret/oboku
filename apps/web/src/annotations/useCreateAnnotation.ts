@@ -1,10 +1,11 @@
 import type { Annotation } from "@prose-reader/enhancer-annotations"
 import { useMutation } from "@tanstack/react-query"
-import { firstValueFrom } from "rxjs"
-import { getLatestDatabase } from "../rxdb/RxDbProvider"
+import { useDatabase } from "../rxdb"
 
-export const useCreateAnnotation = () =>
-  useMutation({
+export const useCreateAnnotation = () => {
+  const { db } = useDatabase()
+
+  return useMutation({
     mutationFn: async function insertAnnotation({
       bookId,
       annotation,
@@ -12,9 +13,7 @@ export const useCreateAnnotation = () =>
       bookId: string
       annotation: Annotation
     }) {
-      const database = await firstValueFrom(getLatestDatabase())
-
-      return database.annotation.insert({
+      return db?.annotation.insert({
         _id: annotation.id,
         rx_model: "annotation",
         bookId,
@@ -27,3 +26,4 @@ export const useCreateAnnotation = () =>
       })
     },
   })
+}

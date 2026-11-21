@@ -1,12 +1,12 @@
 import { useMutation } from "@tanstack/react-query"
-import { firstValueFrom } from "rxjs"
-import { getLatestDatabase } from "../rxdb/RxDbProvider"
+import { useDatabase } from "../rxdb"
 
-export const useRemoveAnnotation = () =>
-  useMutation({
+export const useRemoveAnnotation = () => {
+  const { db } = useDatabase()
+
+  return useMutation({
     mutationFn: async function removeAnnotation(id: string) {
-      const database = await firstValueFrom(getLatestDatabase())
-
-      return database.annotation.findOne(id).incrementalRemove()
+      return db?.annotation.findOne(id).incrementalRemove()
     },
   })
+}
