@@ -97,6 +97,11 @@ const mocks = vi.hoisted(function createReaderMocks() {
         return { showBookFinishedDialogOnClose: vi.fn() }
       },
     ),
+    useReaderAnnotations: vi.fn(function useNoReaderAnnotations(_options: {
+      enabled: boolean
+    }) {
+      return {}
+    }),
     incrementalBookModify: async function modifyStoredBook({
       mutationFn,
     }: {
@@ -243,6 +248,10 @@ vi.mock(
   },
 )
 
+vi.mock("./annotations/useReaderAnnotations", function mockReaderAnnotations() {
+  return { useReaderAnnotations: mocks.useReaderAnnotations }
+})
+
 import { Reader } from "./Reader"
 
 function TestReader({ usesReadingData = true }: { usesReadingData?: boolean }) {
@@ -300,6 +309,7 @@ describe("Reader", () => {
     mocks.useBookToOpen.mockClear()
     mocks.useKoreaderPositionCheck.mockClear()
     mocks.useShowBookFinishedDialog.mockClear()
+    mocks.useReaderAnnotations.mockClear()
   })
 
   afterEach(function unmountReader() {
@@ -396,6 +406,10 @@ describe("Reader", () => {
     )
     expect(mocks.useShowBookFinishedDialog).toHaveBeenCalled()
     expect(mocks.useShowBookFinishedDialog).not.toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    )
+    expect(mocks.useReaderAnnotations).toHaveBeenCalled()
+    expect(mocks.useReaderAnnotations).not.toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true }),
     )
   })

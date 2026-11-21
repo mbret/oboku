@@ -21,6 +21,7 @@ import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { useOpenMoreDialog } from "./navigation/MoreDialog"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useReaderSettings } from "./settings/useReaderSettings"
+import { useReaderAnnotations } from "./annotations/useReaderAnnotations"
 import { useShowBookFinishedDialog } from "./navigation/useShowBookFinishedDialog"
 import { useKoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
 import { webStreamer } from "./streamer/webStreamer"
@@ -73,6 +74,10 @@ export const Reader = memo(function Reader({
   })
   const { readerSettings, defaultReaderSettings, updateReaderSettings } =
     useReaderSettings()
+  const readerAnnotations = useReaderAnnotations({
+    bookId,
+    enabled: usesReadingData,
+  })
 
   if (isBookError) {
     return <BookError bookId={bookId} manifestError={manifestError} />
@@ -84,6 +89,7 @@ export const Reader = memo(function Reader({
       settings={readerSettings}
       defaultSettings={defaultReaderSettings}
       onSettingsChange={updateReaderSettings}
+      {...readerAnnotations}
     >
       <ReaderView
         bookId={bookId}
