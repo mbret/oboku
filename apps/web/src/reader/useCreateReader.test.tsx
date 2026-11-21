@@ -15,11 +15,19 @@ const mocks = vi.hoisted(function createReaderMocks() {
     }) {
       return {}
     }),
+    createReadingSessionReader: vi.fn(
+      function createFakeReadingSessionReader(_options: { target?: unknown }) {
+        return {}
+      },
+    ),
   }
 })
 
 vi.mock("./createAppReader", function mockCreateAppReader() {
-  return { createAppReader: mocks.createAppReader }
+  return {
+    createAppReader: mocks.createAppReader,
+    createReadingSessionReader: mocks.createReadingSessionReader,
+  }
 })
 
 vi.mock("./streamer/webStreamer", function mockWebStreamer() {
@@ -70,7 +78,10 @@ const BOOK_WITH_ONLY_KOREADER_BOOKMARK: BookDocType = {
   readingStateCurrentBookmarkKoreaderProgress: KOREADER_PROGRESS,
 }
 
-const renderCreateReader = (initialBook: BookDocType | null | undefined) =>
+const renderCreateReader = (
+  initialBook: BookDocType | null | undefined,
+  { usesReadingData = true }: { usesReadingData?: boolean } = {},
+) =>
   renderHook(
     function renderUseCreateReader({
       book,
@@ -83,13 +94,17 @@ const renderCreateReader = (initialBook: BookDocType | null | undefined) =>
         manifest: MANIFEST,
         koreaderDocument: KOREADER_DOCUMENT,
         book,
+        usesReadingData,
       })
     },
     { initialProps: { book: initialBook } },
   )
 
-const createReaderFor = (book: BookDocType | null) => {
-  const { result } = renderCreateReader(book)
+const createReaderFor = (
+  book: BookDocType | null,
+  options?: { usesReadingData?: boolean },
+) => {
+  const { result } = renderCreateReader(book, options)
 
   if (!result.current) throw new Error("Expected createReader")
 
@@ -99,6 +114,7 @@ const createReaderFor = (book: BookDocType | null) => {
 describe("useCreateReader", () => {
   beforeEach(() => {
     mocks.createAppReader.mockClear()
+    mocks.createReadingSessionReader.mockClear()
   })
 
   afterEach(() => {
@@ -113,7 +129,7 @@ describe("useCreateReader", () => {
     rerender({ book: BOOK })
 
     expect(result.current).toBeTypeOf("function")
-    expect(mocks.createAppReader).not.toHaveBeenCalled()
+    expect(mocks.createReadingSessionReader).not.toHaveBeenCalled()
   })
 
   it("keeps its createReader while the book to open stays, and gives a new one when it changes", () => {
@@ -135,13 +151,29 @@ describe("useCreateReader", () => {
     result.current?.()
     result.current?.()
 
-    expect(mocks.createAppReader).toHaveBeenCalledTimes(2)
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledTimes(2)
+  })
+
+  it("creates the reader of a reading session when it uses reading data", () => {
+    createReaderFor(BOOK)
+
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledOnce()
+    expect(mocks.createAppReader).not.toHaveBeenCalled()
+  })
+
+  it("creates the reader without the enhancers of reading data in preview", () => {
+    createReaderFor(null, { usesReadingData: false })
+
+    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+      expect.not.objectContaining({ target: expect.anything() }),
+    )
+    expect(mocks.createReadingSessionReader).not.toHaveBeenCalled()
   })
 
   it("opens at the bookmark's cfi", () => {
     createReaderFor(BOOK)
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         target: { type: "cfi", value: BOOKMARK_CFI },
       }),
@@ -151,7 +183,7 @@ describe("useCreateReader", () => {
   it("opens at the bookmark's KOReader form when it has no cfi", () => {
     createReaderFor(BOOK_WITH_ONLY_KOREADER_BOOKMARK)
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
         target: { type: "koreaderProgress", value: KOREADER_PROGRESS },
       }),
@@ -164,7 +196,7 @@ describe("useCreateReader", () => {
       readingStateCurrentBookmarkKoreaderDocument: "document-of-another-file",
     })
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledExactlyOnceWith(
       expect.not.objectContaining({ target: expect.anything() }),
     )
   })
@@ -172,7 +204,7 @@ describe("useCreateReader", () => {
   it("opens at the start a book that has no bookmark", () => {
     createReaderFor({ ...BOOK, ...emptyBookmark })
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledExactlyOnceWith(
       expect.not.objectContaining({ target: expect.anything() }),
     )
   })
@@ -180,7 +212,7 @@ describe("useCreateReader", () => {
   it("opens at the start without a book to restore", () => {
     createReaderFor(null)
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
+    expect(mocks.createReadingSessionReader).toHaveBeenCalledExactlyOnceWith(
       expect.not.objectContaining({ target: expect.anything() }),
     )
   })

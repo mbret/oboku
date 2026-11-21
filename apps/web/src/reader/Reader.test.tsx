@@ -124,23 +124,29 @@ const mocks = vi.hoisted(function createReaderMocks() {
 
 vi.mock(
   "./createAppReader",
-  async function wrapCreateAppReader(importOriginal) {
+  async function wrapReaderFactories(importOriginal) {
     const actual = await importOriginal<typeof import("./createAppReader")>()
 
-    return {
-      ...actual,
-      createAppReader: function createRecordedAppReader(
-        options: Parameters<typeof actual.createAppReader>[0],
-      ) {
+    const recordReaders = <Options, Reader extends ReaderInstance>(
+      createReader: (options: Options) => Reader,
+    ) =>
+      function createRecordedReader(options: Options) {
         mocks.events.push("create")
-        const reader = actual.createAppReader(options)
+        const reader = createReader(options)
         reader.$.destroy$.subscribe(function recordDestroy() {
           mocks.events.push("destroy")
         })
         mocks.readers.push(reader)
 
         return reader
-      },
+      }
+
+    return {
+      ...actual,
+      createAppReader: recordReaders(actual.createAppReader),
+      createReadingSessionReader: recordReaders(
+        actual.createReadingSessionReader,
+      ),
     }
   },
 )

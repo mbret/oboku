@@ -69,6 +69,7 @@ export const Reader = memo(function Reader({
     manifest,
     koreaderDocument,
     book: bookToOpen,
+    usesReadingData,
   })
   const { readerSettings, defaultReaderSettings, updateReaderSettings } =
     useReaderSettings()
