@@ -17,6 +17,7 @@ import { UsersModule } from "./users/users.module.js"
 import { AuthModule } from "./auth/auth.module.js"
 import { CouchModule } from "./couch/couch.module.js"
 import { CoversModule } from "./covers/covers.module.js"
+import { AnnotationsModule } from "./annotations/annotations.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module.js"
 import { InstanceConfigModule } from "./admin/instance-config/instance-config.module.js"
@@ -113,6 +114,7 @@ import { ProviderConnectionsModule } from "./provider-connections/provider-conne
     UsersModule,
     CouchModule,
     CoversModule,
+    AnnotationsModule,
     AdminModule,
     InstanceConfigModule,
     DataSourceModule,
