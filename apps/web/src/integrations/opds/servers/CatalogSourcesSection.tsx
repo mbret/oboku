@@ -1,6 +1,9 @@
 import { BlockRounded } from "@mui/icons-material"
 import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import type { ConnectableConnectorType, DataSourceDocType } from "@oboku/shared"
+import {
+  type DataSourceDocType,
+  OPDS_SERVED_CONNECTOR_TYPES,
+} from "@oboku/shared"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { generatePath } from "react-router"
 import { ListItemLink } from "../../../common/lists"
@@ -19,13 +22,8 @@ import { plugin as googleDrivePlugin } from "../../google/googleDrivePlugin"
 import { getPluginByType, type Plugin, plugins } from "../../plugins/configure"
 import { useGetIsPluginVisible } from "../../plugins/useIsPluginEnabled"
 
-// The connector types `isLinkServed` (apps/api/src/opds/opds-books.ts) serves.
-const SERVED_CONNECTOR_TYPES = [
-  "webdav",
-] as const satisfies ReadonlyArray<ConnectableConnectorType>
-
 const isServedConnectorType = (type: string) =>
-  SERVED_CONNECTOR_TYPES.some((servedType) => servedType === type)
+  OPDS_SERVED_CONNECTOR_TYPES.some((servedType) => servedType === type)
 
 type QueryState = Pick<
   UseQueryResult,
@@ -163,18 +161,20 @@ function AvailableSourcesSection({
           primary={googleDrivePlugin.name}
         />
       )}
-      {SERVED_CONNECTOR_TYPES.map(function toServedConnectorTypeItem(type) {
-        const { Icon, name } = getPluginByType(type)
+      {OPDS_SERVED_CONNECTOR_TYPES.map(
+        function toServedConnectorTypeItem(type) {
+          const { Icon, name } = getPluginByType(type)
 
-        return (
-          <ListItemLink
-            key={type}
-            to={CONNECTOR_DETAILS[type].integrationRoute}
-            icon={<Icon />}
-            primary={name}
-          />
-        )
-      })}
+          return (
+            <ListItemLink
+              key={type}
+              to={CONNECTOR_DETAILS[type].integrationRoute}
+              icon={<Icon />}
+              primary={name}
+            />
+          )
+        },
+      )}
     </PageSection>
   )
 }
@@ -209,8 +209,8 @@ export function CatalogSourcesSection() {
   const isGoogleDriveServed = !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED
   const servedTypes: ReadonlyArray<DataSourceDocType["type"]> =
     isGoogleDriveServed
-      ? [googleDrivePlugin.type, ...SERVED_CONNECTOR_TYPES]
-      : SERVED_CONNECTOR_TYPES
+      ? [googleDrivePlugin.type, ...OPDS_SERVED_CONNECTOR_TYPES]
+      : OPDS_SERVED_CONNECTOR_TYPES
   const unservedPlugins = plugins.filter(
     (plugin) => isPluginVisible(plugin) && !servedTypes.includes(plugin.type),
   )
