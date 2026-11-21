@@ -5,7 +5,7 @@ import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { describe, expect, it } from "vitest"
 import { openTestDatabase } from "../databases.fixture"
 import type { Database } from "../databases.shared"
-import { annotationCollection, type RxdbAnnotationDocType } from "./annotation"
+import type { RxdbAnnotationDocType } from "./annotation"
 
 const storeBookmarkOfSchemaVersionZero = async (
   name: string,
@@ -15,17 +15,32 @@ const storeBookmarkOfSchemaVersionZero = async (
     name,
     storage: wrappedValidateAjvStorage({ storage: getRxStorageDexie() }),
   })
-  const { highlightedText: _, ...propertiesKeptFromVersionZero } =
-    annotationCollection.schema.properties
   const { annotation } = await database.addCollections({
     annotation: {
       schema: {
-        ...annotationCollection.schema,
+        title: "annotation",
         version: 0,
+        type: "object",
+        primaryKey: "_id",
         properties: {
-          ...propertiesKeptFromVersionZero,
+          _id: { type: "string", maxLength: 100 },
+          bookId: { type: "string", maxLength: 100 },
+          cfi: { type: "string" },
+          highlightColor: { type: ["string", "null"] },
+          notes: { type: ["string", "null"] },
           text: { type: ["string", "null"] },
+          createdAt: { type: "string" },
+          modifiedAt: { type: ["string", "null"] },
+          rx_model: {
+            type: "string",
+            enum: ["annotation"],
+            default: "annotation",
+            final: true,
+          },
+          rxdbMeta: { type: "object" },
         },
+        required: ["bookId", "cfi", "createdAt"],
+        indexes: ["bookId"],
       },
     },
   })

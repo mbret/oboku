@@ -24,9 +24,14 @@ type ReadingSessionReader = ReturnType<typeof createReadingSessionReader>
 
 const CHAPTER_TEXT =
   "Call me Ishmael. Some years ago, never mind how long precisely, having little money in my purse."
+const PARAGRAPHS_AFTER_THE_FIRST_PAGE =
+  "<p>Whenever I find myself growing grim about the mouth, I account it high time to get to sea as soon as I can.</p>".repeat(
+    40,
+  )
 const FIRST_SENTENCE = "Call me Ishmael."
 const SECOND_SENTENCE = "Some years ago"
 const DEFAULT_HIGHLIGHT_COLOR = "rgba(216, 191, 216, 1)"
+const YELLOW_HIGHLIGHT_COLOR = "rgba(255, 225, 125, 1)"
 
 const MANIFEST: Manifest = {
   filename: "book.epub",
@@ -62,7 +67,7 @@ vi.mock("./streamer/webStreamer", function mockWebStreamer() {
       },
       fetchResource: async function fetchChapter() {
         return new Response(
-          `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter</title></head><body><p>${CHAPTER_TEXT}</p></body></html>`,
+          `<html xmlns="http://www.w3.org/1999/xhtml"><head><title>Chapter</title></head><body><p>${CHAPTER_TEXT}</p>${PARAGRAPHS_AFTER_THE_FIRST_PAGE}</body></html>`,
           { headers: { "content-type": "application/xhtml+xml" } },
         )
       },
@@ -203,7 +208,7 @@ const waitForReadingSessionReader = async () => {
   return { reader, ...chapter }
 }
 
-/** Selects `text` in the chapter, then releases the pointer, as a user does. */
+/** The reader reports a selection once the pointer that made it is released. */
 const selectText = (
   {
     chapterDocument,
@@ -223,7 +228,6 @@ const selectText = (
   chapterDocument.dispatchEvent(new chapterWindow.PointerEvent("pointerup"))
 }
 
-/** The cfi the reader gives to a selection of `text`, as a highlight stores it. */
 const createHighlightCfi = (
   openedReader: Awaited<ReturnType<typeof waitForReadingSessionReader>>,
   text: string,
@@ -260,6 +264,27 @@ const insertHighlight = (
     modifiedAt: null,
   })
 
+const waitForStoredAnnotation = (database: Database) =>
+  waitFor(async function getStoredAnnotation() {
+    const [stored] = await database.annotation.find().exec()
+
+    if (!stored) throw new Error("No annotation is stored")
+
+    return stored.toJSON()
+  })
+
+const findHighlightColorCircle = (color: string) =>
+  waitFor(function getHighlightColorCircle() {
+    const rgbColor = color.replace("rgba", "rgb").replace(", 1)", ")")
+    const circle = Array.from(
+      document.querySelectorAll("[role=dialog] div"),
+    ).find((element) => getComputedStyle(element).backgroundColor === rgbColor)
+
+    if (!circle) throw new Error(`The drawer has no ${color} circle`)
+
+    return circle
+  })
+
 const findHighlightRects = (annotationId: string) =>
   document.querySelectorAll(`[data-highlight-rect="${annotationId}"]`)
 
@@ -291,13 +316,41 @@ const waitForCornerTapToBookmark = async (reader: ReadingSessionReader) => {
   await act(async function commitLocatedBookmarks() {})
 }
 
-/** Taps the top right corner of the page, with the mouse. */
-const tapTopRightCorner = (reader: ReaderInstance) => {
+const waitForBookmarkLocated = (
+  reader: ReadingSessionReader,
+  bookmarkId: string,
+) =>
+  firstValueFrom(
+    reader.annotations.annotationsByItemPage$.pipe(
+      filter(function isBookmarkOnAPage(annotationsByItemPage) {
+        return Array.from(annotationsByItemPage.values()).some(
+          function hasBookmarkOnAPageOfItem(annotationsByPage) {
+            return Array.from(annotationsByPage.values()).some(
+              function hasBookmarkOnPage(annotations) {
+                return annotations.some(
+                  (annotation) => annotation.id === bookmarkId,
+                )
+              },
+            )
+          },
+        )
+      }),
+    ),
+  )
+
+const tapPage = (
+  reader: ReaderInstance,
+  place: "topRightCorner" | "middle",
+) => {
   const rootElement = reader.context.value.rootElement
 
   if (!rootElement) throw new Error("The reader is not mounted")
 
-  const { right, top } = rootElement.getBoundingClientRect()
+  const { left, right, top, bottom } = rootElement.getBoundingClientRect()
+  const position =
+    place === "topRightCorner"
+      ? { clientX: right - 1, clientY: top + 1 }
+      : { clientX: (left + right) / 2, clientY: (top + bottom) / 2 }
 
   for (const type of ["pointerdown", "pointerup"] as const) {
     rootElement.dispatchEvent(
@@ -307,8 +360,7 @@ const tapTopRightCorner = (reader: ReaderInstance) => {
         pointerType: "mouse",
         button: 0,
         buttons: type === "pointerup" ? 0 : 1,
-        clientX: right - 1,
-        clientY: top + 1,
+        ...position,
         bubbles: true,
         cancelable: true,
       }),
@@ -353,13 +405,7 @@ describe("Reader annotations", () => {
       await screen.findByRole("button", { name: "Highlight" }),
     )
 
-    const highlight = await waitFor(async function getStoredHighlight() {
-      const [stored] = await database.annotation.find().exec()
-
-      if (!stored) throw new Error("No annotation is stored")
-
-      return stored.toJSON()
-    })
+    const highlight = await waitForStoredAnnotation(database)
     expect(highlight).toMatchObject({
       bookId,
       highlightColor: DEFAULT_HIGHLIGHT_COLOR,
@@ -371,6 +417,33 @@ describe("Reader annotations", () => {
       isCfiRange: true,
     })
     await waitForHighlightDrawn(highlight._id)
+  })
+
+  it("stores the color and the note that Update in the drawer gives", async () => {
+    const { database, bookId } = await createDatabaseWithBook()
+    renderReader({ bookId })
+    const openedReader = await waitForReadingSessionReader()
+    const highlight = await insertHighlight(database, {
+      bookId,
+      cfi: createHighlightCfi(openedReader, FIRST_SENTENCE),
+    })
+
+    await userEvent.click(await waitForHighlightDrawn(highlight._id))
+    await userEvent.click(
+      await findHighlightColorCircle(YELLOW_HIGHLIGHT_COLOR),
+    )
+    await userEvent.type(await screen.findByRole("textbox"), "A note")
+    await userEvent.click(await screen.findByRole("button", { name: "Update" }))
+
+    await waitFor(async function expectHighlightUpdated() {
+      const updated = await database.annotation.findOne(highlight._id).exec()
+
+      expect(updated?.toJSON()).toMatchObject({
+        highlightColor: YELLOW_HIGHLIGHT_COLOR,
+        notes: "A note",
+        modifiedAt: expect.any(String),
+      })
+    })
   })
 
   it("removes the document and the drawn highlight with Remove in the drawer", async () => {
@@ -391,21 +464,15 @@ describe("Reader annotations", () => {
     })
   })
 
-  it("stores a page bookmark on a tap in the top right corner of the page", async () => {
+  it("stores a page bookmark on a tap in the top right corner of the page, and removes it on a second tap", async () => {
     const { database, bookId } = await createDatabaseWithBook()
     renderReader({ bookId })
     const { reader } = await waitForReadingSessionReader()
     await waitForCornerTapToBookmark(reader)
 
-    tapTopRightCorner(reader)
+    tapPage(reader, "topRightCorner")
 
-    const bookmark = await waitFor(async function getStoredBookmark() {
-      const [stored] = await database.annotation.find().exec()
-
-      if (!stored) throw new Error("No bookmark is stored")
-
-      return stored.toJSON()
-    })
+    const bookmark = await waitForStoredAnnotation(database)
     expect(bookmark).toMatchObject({
       bookId,
       highlightColor: null,
@@ -413,6 +480,14 @@ describe("Reader annotations", () => {
       highlightedText: null,
     })
     expect(reader.cfi.parseCfi(bookmark.cfi).isCfiRange).toBe(false)
+
+    await waitForBookmarkLocated(reader, bookmark._id)
+    await act(async function commitLocatedBookmark() {})
+    tapPage(reader, "topRightCorner")
+
+    await waitFor(async function expectBookmarkRemoved() {
+      expect(await database.annotation.find().exec()).toEqual([])
+    })
   })
 
   it("in preview, has no annotations API, shows no annotation control and writes nothing", async () => {
@@ -420,18 +495,30 @@ describe("Reader annotations", () => {
     renderReader({ bookId, usesReadingData: false })
     const openedReader = await waitForOpenedReader()
 
-    selectText(openedReader, FIRST_SENTENCE)
-    tapTopRightCorner(openedReader.reader)
+    const { reader } = openedReader
 
-    await screen.findByRole("button", { name: "Layout", hidden: true })
-    expect(hasAnnotationsApi(openedReader.reader)).toBe(false)
+    tapPage(reader, "topRightCorner")
+    await waitFor(function expectCornerTapToTurnThePage() {
+      expect(reader.pagination.state.begin.pageIndexInSpineItem).toBe(1)
+    })
+    expect(await database.annotation.find().exec()).toEqual([])
+
+    expect(screen.queryByRole("button", { name: "Layout" })).toBeNull()
+    tapPage(reader, "middle")
+    await screen.findByRole("button", { name: "Layout" })
+    expect(hasAnnotationsApi(reader)).toBe(false)
     expect(
       screen.queryByRole("button", { name: "Annotations", hidden: true }),
     ).toBeNull()
     expect(
       screen.queryByRole("button", { name: "Bookmarks", hidden: true }),
     ).toBeNull()
+
+    selectText(openedReader, FIRST_SENTENCE)
+    await waitFor(function expectSelectionReported() {
+      expect(reader.selection.getSelection()?.type).toBe("over")
+    })
+    await act(async function commitReportedSelection() {})
     expect(screen.queryByRole("button", { name: "Annotate" })).toBeNull()
-    expect(await database.annotation.find().exec()).toEqual([])
   })
 })

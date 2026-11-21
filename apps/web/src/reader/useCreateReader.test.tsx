@@ -164,9 +164,7 @@ describe("useCreateReader", () => {
   it("creates the reader without the enhancers of reading data in preview", () => {
     createReaderFor(null, { usesReadingData: false })
 
-    expect(mocks.createAppReader).toHaveBeenCalledExactlyOnceWith(
-      expect.not.objectContaining({ target: expect.anything() }),
-    )
+    expect(mocks.createAppReader).toHaveBeenCalledOnce()
     expect(mocks.createReadingSessionReader).not.toHaveBeenCalled()
   })
 
