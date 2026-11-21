@@ -22,10 +22,6 @@ export const useRepair = () => {
             type: "bookDanglingLinks"
             doc: DeepReadonlyObject<BookDocType>
             danglingItems: string[]
-          }
-        | {
-            type: "danglingLinks"
-            items: string[]
           },
     ) => {
       const db$ = getLatestDatabase()
@@ -112,21 +108,6 @@ export const useRepair = () => {
               }),
             ),
           ),
-          map(() => null),
-        )
-      }
-
-      if (action.type === "danglingLinks") {
-        const yes = window.confirm(
-          `
-            This action will remove the non used links. It will not remove anything else.
-            `.replace(/ {2,}/g, ""),
-        )
-
-        if (!yes) return of(null)
-
-        return db$.pipe(
-          mergeMap((db) => from(db.link.bulkRemove(action.items))),
           map(() => null),
         )
       }
