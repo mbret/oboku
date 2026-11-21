@@ -18,6 +18,12 @@ export const THE_TIME_MACHINE = {
   titlePageImageName: "The Time Machine, by H. G. Wells",
 }
 
+export const LITTLE_NEMO = book(
+  "winsor-mccay_little-nemo-in-slumberland.cbz",
+  "Little Nemo in Slumberland",
+  "Winsor McCay",
+)
+
 /** Every book in fixtures/books, which Server Sync serves. */
 export const SERVER_LIBRARY_BOOKS: Book[] = [
   THE_TIME_MACHINE,
@@ -37,4 +43,5 @@ export const SERVER_LIBRARY_BOOKS: Book[] = [
     "Treasure Island",
     "Robert Louis Stevenson",
   ),
+  LITTLE_NEMO,
 ]

@@ -31,3 +31,20 @@ bc41e616c102d33c4c37b91baaa0c87af9c73838f32d4c75c600939b1c7ea587  jane-austen_pr
 e4db4d3abb36819041efa2ab774cd365493d9d80ecc8f09cd69c578eeb469df5  arthur-conan-doyle_the-adventures-of-sherlock-holmes.epub
 c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-stevenson_treasure-island.epub
 ```
+
+## winsor-mccay_little-nemo-in-slumberland.cbz
+
+- **Comic:** _Little Nemo in Slumberland_, Winsor McCay, the Sunday pages of
+  15, 22 and 29 October 1905 in the _New York Herald_.
+- **Source:** the Wikimedia Commons scans
+  [Little Nemo 1905-10-15.jpg](https://commons.wikimedia.org/wiki/File:Little_Nemo_1905-10-15.jpg),
+  [Little Nemo in Slumberland (1905-10-22).jpeg](<https://commons.wikimedia.org/wiki/File:Little_Nemo_in_Slumberland_(1905-10-22).jpeg>)
+  and
+  [Little Nemo 1905-10-29.jpg](https://commons.wikimedia.org/wiki/File:Little_Nemo_1905-10-29.jpg),
+  from their 1280 px thumbnails.
+- **Licence:** public domain. The pages were published in the United States in
+  1905, and Winsor McCay died in 1934. Commons marks them PD-US and PD-old.
+- **Build:** each page resized to 1080 px wide and saved as JPEG at quality 80,
+  in the order of publication, with a `ComicInfo.xml` that gives the title,
+  the author and the date.
+- **SHA-256:** `f318103048098619afa9e3fafc0d024990e0ae922623c4f1da72d83f41de1462`
