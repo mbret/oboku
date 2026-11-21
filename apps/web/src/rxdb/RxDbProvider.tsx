@@ -59,6 +59,16 @@ export const useDatabase = () => {
   return { db }
 }
 
+/**
+ * The `db` of `useDatabase`, for a write that cannot run without it. Throws
+ * while no database is open.
+ */
+export const ensureDatabase = (db: Database | undefined) => {
+  if (!db) throw new Error("The database is not open")
+
+  return db
+}
+
 export const RxDbProvider = memo(function RxDbProvider() {
   const { mutate: createDb } = useReCreateDb()
 

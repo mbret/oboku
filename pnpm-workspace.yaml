@@ -11,6 +11,7 @@ catalogs:
     "@prose-reader/archive-reader": ^46.0.0
     "@prose-reader/cbz": ^46.1.0
     "@prose-reader/core": ^46.1.0
+    "@prose-reader/enhancer-annotations": ^46.1.0
     "@prose-reader/enhancer-audio": ^46.1.0
     "@prose-reader/enhancer-gallery": ^46.1.0
     "@prose-reader/enhancer-gestures": ^46.1.0

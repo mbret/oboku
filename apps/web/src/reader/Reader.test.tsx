@@ -97,6 +97,11 @@ const mocks = vi.hoisted(function createReaderMocks() {
         return { showBookFinishedDialogOnClose: vi.fn() }
       },
     ),
+    useReaderAnnotations: vi.fn(function useNoReaderAnnotations(_options: {
+      enabled: boolean
+    }) {
+      return {}
+    }),
     incrementalBookModify: async function modifyStoredBook({
       mutationFn,
     }: {
@@ -124,23 +129,29 @@ const mocks = vi.hoisted(function createReaderMocks() {
 
 vi.mock(
   "./createAppReader",
-  async function wrapCreateAppReader(importOriginal) {
+  async function wrapReaderFactories(importOriginal) {
     const actual = await importOriginal<typeof import("./createAppReader")>()
 
-    return {
-      ...actual,
-      createAppReader: function createRecordedAppReader(
-        options: Parameters<typeof actual.createAppReader>[0],
-      ) {
+    const recordReaders = <Options, Reader extends ReaderInstance>(
+      createReader: (options: Options) => Reader,
+    ) =>
+      function createRecordedReader(options: Options) {
         mocks.events.push("create")
-        const reader = actual.createAppReader(options)
+        const reader = createReader(options)
         reader.$.destroy$.subscribe(function recordDestroy() {
           mocks.events.push("destroy")
         })
         mocks.readers.push(reader)
 
         return reader
-      },
+      }
+
+    return {
+      ...actual,
+      createAppReader: recordReaders(actual.createAppReader),
+      createReadingSessionReader: recordReaders(
+        actual.createReadingSessionReader,
+      ),
     }
   },
 )
@@ -237,6 +248,10 @@ vi.mock(
   },
 )
 
+vi.mock("./annotations/useReaderAnnotations", function mockReaderAnnotations() {
+  return { useReaderAnnotations: mocks.useReaderAnnotations }
+})
+
 import { Reader } from "./Reader"
 
 function TestReader({ usesReadingData = true }: { usesReadingData?: boolean }) {
@@ -294,6 +309,7 @@ describe("Reader", () => {
     mocks.useBookToOpen.mockClear()
     mocks.useKoreaderPositionCheck.mockClear()
     mocks.useShowBookFinishedDialog.mockClear()
+    mocks.useReaderAnnotations.mockClear()
   })
 
   afterEach(function unmountReader() {
@@ -390,6 +406,10 @@ describe("Reader", () => {
     )
     expect(mocks.useShowBookFinishedDialog).toHaveBeenCalled()
     expect(mocks.useShowBookFinishedDialog).not.toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    )
+    expect(mocks.useReaderAnnotations).toHaveBeenCalled()
+    expect(mocks.useReaderAnnotations).not.toHaveBeenCalledWith(
       expect.objectContaining({ enabled: true }),
     )
   })

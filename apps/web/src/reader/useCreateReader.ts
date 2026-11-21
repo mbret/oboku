@@ -1,6 +1,6 @@
 import { useMemo } from "react"
 import type { Manifest } from "@prose-reader/shared"
-import { createAppReader } from "./createAppReader"
+import { createAppReader, createReadingSessionReader } from "./createAppReader"
 import { localSettingsSignal } from "../settings/useLocalSettings"
 import { getResourcePathFromUrl } from "./manifest/getResourcePathFromUrl.shared"
 import { webStreamer } from "./streamer/webStreamer"
@@ -44,6 +44,7 @@ export const useCreateReader = ({
   manifest,
   koreaderDocument,
   book,
+  usesReadingData,
 }: {
   isUsingWebStreamer?: boolean
   bookId: string
@@ -51,6 +52,7 @@ export const useCreateReader = ({
   koreaderDocument?: string
   /** The book to open at its bookmark, `null` to open at the start. */
   book: DeepReadonly<BookDocType> | null | undefined
+  usesReadingData: boolean
 }) =>
   useMemo(
     function getCreateReaderOnceInputsAreKnown() {
@@ -68,8 +70,11 @@ export const useCreateReader = ({
           ? getOpeningTarget({ book, koreaderDocument })
           : undefined
         const isEInkMode = localSettingsSignal.getValue().themeMode === "e-ink"
+        const createReader = usesReadingData
+          ? createReadingSessionReader
+          : createAppReader
 
-        return createAppReader({
+        return createReader({
           manifest,
           target,
           ...(isEInkMode && {
@@ -101,5 +106,12 @@ export const useCreateReader = ({
         })
       }
     },
-    [manifest, isUsingWebStreamer, bookId, book, koreaderDocument],
+    [
+      manifest,
+      isUsingWebStreamer,
+      bookId,
+      book,
+      koreaderDocument,
+      usesReadingData,
+    ],
   )

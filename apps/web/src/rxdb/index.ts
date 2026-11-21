@@ -1,2 +1,2 @@
 export * from "./databases.shared"
-export { useReCreateDb, useDatabase } from "./RxDbProvider"
+export { useReCreateDb, useDatabase, ensureDatabase } from "./RxDbProvider"

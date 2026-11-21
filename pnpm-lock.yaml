@@ -22,6 +22,9 @@ catalogs:
     '@prose-reader/core':
       specifier: ^46.1.0
       version: 46.1.0
+    '@prose-reader/enhancer-annotations':
+      specifier: ^46.1.0
+      version: 46.1.0
     '@prose-reader/enhancer-audio':
       specifier: ^46.1.0
       version: 46.1.0
@@ -564,6 +567,9 @@ importers:
       '@prose-reader/core':
         specifier: catalog:prose-reader
         version: 46.1.0(rxjs@7.8.2)
+      '@prose-reader/enhancer-annotations':
+        specifier: catalog:prose-reader
+        version: 46.1.0(@prose-reader/core@46.1.0(rxjs@7.8.2))(@prose-reader/shared@46.0.0)(rxjs@7.8.2)
       '@prose-reader/enhancer-audio':
         specifier: catalog:prose-reader
         version: 46.1.0(@prose-reader/core@46.1.0(rxjs@7.8.2))(rxjs@7.8.2)
