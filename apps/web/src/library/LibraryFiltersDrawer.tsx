@@ -19,6 +19,7 @@ import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./books/states"
 import { Checkbox } from "../common/Checkbox"
+import { formatList } from "../books/details/metadataSource/formatters"
 
 export const LibraryFiltersDrawer = ({
   open,
@@ -62,11 +63,9 @@ export const LibraryFiltersDrawer = ({
               <ListItemText
                 primary="Reading state"
                 secondary={
-                  library.readingStates.length > 0
-                    ? library.readingStates
-                        .map((s) => getDisplayableReadingState(s))
-                        .join(", ")
-                    : "Any"
+                  formatList(
+                    library.readingStates.map(getDisplayableReadingState),
+                  ) ?? "Any"
                 }
               />
               <ListItemIcon>
