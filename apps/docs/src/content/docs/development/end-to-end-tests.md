@@ -32,7 +32,7 @@ pnpm --filter @oboku/e2e stack:down
 
 ## The stack
 
-`apps/e2e/docker-compose.yml` publishes the web app on `http://localhost:4280` and the API on ports 4281 to 4283 of the loopback interface, through the `apps/dev-proxy` configuration. The ports differ from the development stack's, so both can run at the same time.
+`apps/e2e/docker-compose.yml` publishes its ports on the loopback interface only: the web app on `http://localhost:4280`, and the API on ports 4281 to 4283 through the `apps/dev-proxy` configuration. The ports differ from the development stack's, so both can run at the same time.
 
 CouchDB, Postgres and the API run on a network with no internet access, so the API's metadata lookups (Google Books, OpenLibrary and others) always fail. In the browser, the tests abort every request to a host other than `localhost`. What a test sees then depends on the app only.
 
@@ -49,4 +49,4 @@ Wait on what the screen shows, never on a fixed delay. A book added from the dev
 
 ## In CI
 
-The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown or the admin, Android, docs or landing apps. On a failure, it prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
+The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown, the agent skills, or the admin, Android, docs or landing apps. On a failure, it prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
