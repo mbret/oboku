@@ -86,6 +86,17 @@ const mocks = vi.hoisted(function createReaderMocks() {
     accountSettings,
     state,
     opening,
+    useBookToOpen: vi.fn(),
+    useKoreaderPositionCheck: vi.fn(
+      function useDoneKoreaderPositionCheck(_options: { enabled: boolean }) {
+        return { status: "done" }
+      },
+    ),
+    useShowBookFinishedDialog: vi.fn(
+      function useNoBookFinishedDialog(_options: { enabled: boolean }) {
+        return { showBookFinishedDialogOnClose: vi.fn() }
+      },
+    ),
     incrementalBookModify: async function modifyStoredBook({
       mutationFn,
     }: {
@@ -181,7 +192,11 @@ vi.mock("./useBookToOpen", async function mockBookToOpen() {
   const { useSyncExternalStore } = await import("react")
 
   return {
-    useBookToOpen: function useMockBookToOpen() {
+    useBookToOpen: function useMockBookToOpen(options: {
+      usesReadingData: boolean
+    }) {
+      mocks.useBookToOpen(options)
+
       return useSyncExternalStore(
         mocks.subscribeToOpening,
         function readBookToOpen() {
@@ -195,11 +210,7 @@ vi.mock("./useBookToOpen", async function mockBookToOpen() {
 vi.mock(
   "../integrations/koreader/client/useKoreaderPositionCheck",
   function mockKoreaderPositionCheck() {
-    return {
-      useKoreaderPositionCheck: function useDoneKoreaderPositionCheck() {
-        return { status: "done" }
-      },
-    }
+    return { useKoreaderPositionCheck: mocks.useKoreaderPositionCheck }
   },
 )
 
@@ -222,23 +233,19 @@ vi.mock("../books", function mockBooks() {
 vi.mock(
   "./navigation/useShowBookFinishedDialog",
   function mockBookFinishedDialog() {
-    return {
-      useShowBookFinishedDialog: function useNoBookFinishedDialog() {
-        return { showBookFinishedDialogOnClose: vi.fn() }
-      },
-    }
+    return { useShowBookFinishedDialog: mocks.useShowBookFinishedDialog }
   },
 )
 
 import { Reader } from "./Reader"
 
-function TestReader() {
+function TestReader({ usesReadingData = true }: { usesReadingData?: boolean }) {
   return (
     <MemoryRouter>
       <ThemeProvider>
         <SignalContextProvider>
           <div style={{ width: 600, height: 800 }}>
-            <Reader bookId={BOOK_ID} usesReadingData />
+            <Reader bookId={BOOK_ID} usesReadingData={usesReadingData} />
           </div>
         </SignalContextProvider>
       </ThemeProvider>
@@ -284,6 +291,9 @@ describe("Reader", () => {
     mocks.opening.bookToOpen = undefined
     mocks.accountSettings = {}
     mocks.state.book = STORED_BOOK
+    mocks.useBookToOpen.mockClear()
+    mocks.useKoreaderPositionCheck.mockClear()
+    mocks.useShowBookFinishedDialog.mockClear()
   })
 
   afterEach(function unmountReader() {
@@ -357,6 +367,31 @@ describe("Reader", () => {
         secondChapterPosition.cfi,
       )
     })
+  })
+
+  it("in preview, writes nothing to the book and turns off every feature that uses reading data", async () => {
+    mocks.opening.bookToOpen = null
+    const { unmount } = render(<TestReader usesReadingData={false} />)
+    const reader = await waitForFirstReader()
+    await waitForFoundPositionInSpineItem(reader, 0)
+
+    reader.navigation.goToSpineItem({ indexOrId: 1 })
+    await waitForFoundPositionInSpineItem(reader, 1)
+    unmount()
+
+    expect(mocks.state.book).toEqual(STORED_BOOK)
+    expect(mocks.useBookToOpen).toHaveBeenCalled()
+    expect(mocks.useBookToOpen).not.toHaveBeenCalledWith(
+      expect.objectContaining({ usesReadingData: true }),
+    )
+    expect(mocks.useKoreaderPositionCheck).toHaveBeenCalled()
+    expect(mocks.useKoreaderPositionCheck).not.toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    )
+    expect(mocks.useShowBookFinishedDialog).toHaveBeenCalled()
+    expect(mocks.useShowBookFinishedDialog).not.toHaveBeenCalledWith(
+      expect.objectContaining({ enabled: true }),
+    )
   })
 
   it("exposes the reader on window while it is open, and removes it on leave", async () => {
