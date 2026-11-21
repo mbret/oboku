@@ -7,8 +7,10 @@ const mocks = vi.hoisted(function createUseSetCatalogEnabledMocks() {
   return { useDatabase: vi.fn() }
 })
 
-vi.mock("../../rxdb", function mockRxdb() {
-  return { useDatabase: mocks.useDatabase }
+vi.mock("../../rxdb", async function mockRxdb() {
+  const { ensureDatabase } = await import("../../rxdb/RxDbProvider")
+
+  return { useDatabase: mocks.useDatabase, ensureDatabase }
 })
 
 import { openTestDatabase } from "../../rxdb/databases.fixture"

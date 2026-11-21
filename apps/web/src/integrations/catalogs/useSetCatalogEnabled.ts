@@ -1,6 +1,6 @@
 import type { SettingsCatalogDocType } from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
-import { useDatabase } from "../../rxdb"
+import { ensureDatabase, useDatabase } from "../../rxdb"
 
 const withCatalogEnabled = (
   catalogs: SettingsCatalogDocType[] | undefined,
@@ -27,7 +27,9 @@ export const useSetCatalogEnabled = () => {
       id: string
       isEnabled: boolean
     }) => {
-      const settings = await db?.settings.findOne("settings").exec()
+      const settings = await ensureDatabase(db)
+        .settings.findOne("settings")
+        .exec()
 
       return settings?.incrementalModify((doc) => ({
         ...doc,
