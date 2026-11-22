@@ -47,6 +47,7 @@ import { Link } from "@mui/material"
 import type { ReactNode } from "react"
 import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
 import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.png"
+import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.png"
 import bookDetailsScreenshot from "../common/app-screenshots/book-details.png"
 import dataSourcesScreenshot from "../common/app-screenshots/data-sources.png"
 import epubReaderScreenshot from "../common/app-screenshots/epub-reader.png"
@@ -97,8 +98,8 @@ export const featureGroups: FeatureGroup[] = [
     title: "One reader for every kind of book",
     description: (
       <>
-        Novels reflow to your screen, manga turns right to left, webtoons
-        scroll. The reader is built on{" "}
+        Novels reflow to your screen, manga turns right to left, webtoons scroll
+        and audiobooks play. The reader is built on{" "}
         <Link href="https://prose-reader.com/" target="_blank" rel="noreferrer">
           Prose
         </Link>
@@ -113,6 +114,10 @@ export const featureGroups: FeatureGroup[] = [
       secondary: {
         src: mangaReaderScreenshot,
         alt: "Black and white manga page open in the oboku reader",
+      },
+      tertiary: {
+        src: audiobookReaderScreenshot,
+        alt: "An audiobook track open in the oboku reader, shown as a sound wave",
       },
     },
     chips: supportedExtensions.map((extension) => ({ label: extension })),

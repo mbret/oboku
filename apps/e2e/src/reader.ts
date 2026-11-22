@@ -20,11 +20,38 @@ export function firstReaderPage(page: Page) {
 }
 
 /**
- * prose-reader keeps a page at opacity 0 until it is ready, then fades it in
- * over 800 ms, whatever the reduced motion setting.
+ * The wave the reader draws for the first audio track, which is on screen when
+ * the book opens at its start.
  */
-export async function expectReaderPageRevealed(readerPageFrame: Locator) {
-  await expect(readerPageFrame).toHaveCSS("opacity", "1")
+export function firstAudioTrackWave(page: Page) {
+  return page.locator("canvas").first()
+}
+
+/**
+ * prose-reader keeps a page's container at opacity 0 until the page is ready,
+ * then fades it in over 800 ms, whatever the reduced motion setting
+ * (mbret/prose-reader#892). The container is the iframe of a document page,
+ * and a parent of the wave of an audio track.
+ */
+export async function expectReaderPageRevealed(readerPageContent: Locator) {
+  await expect(readerPageContent).toBeVisible()
+  await expect
+    .poll(() =>
+      readerPageContent.evaluate(function shownOpacity(element) {
+        let opacity = 1
+
+        for (
+          let ancestor: Element | null = element;
+          ancestor;
+          ancestor = ancestor.parentElement
+        ) {
+          opacity *= Number(getComputedStyle(ancestor).opacity)
+        }
+
+        return opacity
+      }),
+    )
+    .toBe(1)
 }
 
 /** A tap in the middle of the page shows the reader's menu. */

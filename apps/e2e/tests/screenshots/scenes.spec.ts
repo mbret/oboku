@@ -2,12 +2,15 @@ import path from "node:path"
 import type { Page } from "@playwright/test"
 import { expect, test } from "../../src/fixtures"
 import {
+  HITO_NO_ISSHO,
   LITTLE_NEMO,
   SERVER_LIBRARY_BOOKS,
   THE_TIME_MACHINE,
+  THE_TIME_MACHINE_AUDIOBOOK,
   TREASURE_ISLAND,
 } from "../../src/library"
 import {
+  firstAudioTrackWave,
   expectReaderPageRevealed,
   firstReaderPage,
   readerPage,
@@ -121,7 +124,7 @@ async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
   ).toBeVisible()
 }
 
-async function expectFirstPageOfLittleNemo(page: Page) {
+async function expectFirstImagePage(page: Page) {
   const firstPage = firstReaderPage(page)
 
   await expect(firstPage.contentFrame().locator("img")).toBeVisible()
@@ -177,6 +180,24 @@ const SCENES = {
     },
     leave: closeReader,
   },
+  "manga-reader": {
+    show: async function showMangaReader(page, bookDetailsUrls) {
+      await openReaderOn(page, bookDetailsUrls, HITO_NO_ISSHO.title)
+      await expectReaderPageRevealed(await expectFirstImagePage(page))
+    },
+    leave: closeReader,
+  },
+  "audiobook-reader": {
+    show: async function showAudiobookReader(page, bookDetailsUrls) {
+      await openReaderOn(
+        page,
+        bookDetailsUrls,
+        THE_TIME_MACHINE_AUDIOBOOK.title,
+      )
+      await expectReaderPageRevealed(firstAudioTrackWave(page))
+    },
+    leave: closeReader,
+  },
   "manage-storage": {
     show: async function showManageStorage(page) {
       await page.goto("/profile/manage-storage")
@@ -229,7 +250,14 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
-    scenes: ["home", "library", "book-details", "epub-reader"],
+    scenes: [
+      "home",
+      "library",
+      "book-details",
+      "epub-reader",
+      "manga-reader",
+      "audiobook-reader",
+    ],
   },
   {
     name: "web-manifest",
@@ -255,6 +283,8 @@ const TARGETS: Target[] = [
       "library",
       "book-details",
       "epub-reader",
+      "manga-reader",
+      "audiobook-reader",
       "manage-storage",
       "data-sources",
       "add-data-source",
@@ -332,7 +362,7 @@ async function startReading(
   await closeReader(page)
 
   await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
-  await expectFirstPageOfLittleNemo(page)
+  await expectFirstImagePage(page)
   await waitForSavedReadingProgress(page, LITTLE_NEMO.title)
   await closeReader(page)
 }
@@ -376,6 +406,11 @@ for (const target of TARGETS) {
      */
     test.beforeEach(async function simulateInstalledAppStorage({ context }) {
       await context.addInitScript(function reportStorageAsPersisted() {
+        // Sandboxed frames, such as the reader's, have no storage.
+        const isAppFrame = window === window.top
+
+        if (!isAppFrame) return
+
         navigator.storage.persisted = async function persisted() {
           return true
         }

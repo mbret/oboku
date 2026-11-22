@@ -55,7 +55,7 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 - `expectServerLibraryBooks`: waits until the library shows each server book's title and author. The API reads them from each file, which can take up to a minute when tests run in parallel.
 - `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
-`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document.
+`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document. An audiobook's track has no document: the reader draws a wave for it.
 
 The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs, so list it in `SERVER_LIBRARY_BOOKS` in `src/library.ts` too: the server library test and the screenshots read that list.
 
@@ -71,18 +71,18 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen.
+- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manga-reader`, `audiobook-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen.
 - **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures. It saves each scene as `<scene>.png`, in a folder named after where the images go.
 
-| Target         | Size                            | Scenes                                   | Saved to                                            |
-| -------------- | ------------------------------- | ---------------------------------------- | --------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, EPUB reader | `apps/e2e/screenshots/play-phone/en/`               |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader               | `apps/web/public/manifest-screenshots/`             |
-| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                              | `apps/landing/src/features/common/app-screenshots/` |
+| Target         | Size                            | Scenes                                         | Saved to                                            |
+| -------------- | ------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | `apps/e2e/screenshots/play-phone/en/`               |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | `apps/web/public/manifest-screenshots/`             |
+| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | `apps/landing/src/features/common/app-screenshots/` |
 
 No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 
-Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the comic, so Home shows both as books in progress. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
+Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 
