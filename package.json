@@ -27,6 +27,7 @@
     "check:messages": "lerna run check:messages --scope=@oboku/web",
     "test": "lerna run test",
     "e2e": "lerna run e2e",
+    "screenshots": "lerna run screenshots",
     "check:service-worker": "node scripts/check-service-worker.mjs",
     "tsc": "lerna run tsc",
     "format": "biome format --write .",

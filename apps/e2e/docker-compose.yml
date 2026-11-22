@@ -55,6 +55,7 @@ services:
       ADMIN_PASSWORD: password
     volumes:
       - secrets:/secrets:ro
+      - ./fixtures/books:/var/lib/oboku/library:ro
     networks:
       - stack
     healthcheck:
