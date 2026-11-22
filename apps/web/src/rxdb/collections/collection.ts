@@ -3,10 +3,7 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import type { CollectionDocType } from "@oboku/shared"
 import { generateId, migrateResourceIdToData } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type CollectionDocMethods = {}
-
-type CollectionDocument = RxDocument<CollectionDocType, CollectionDocMethods>
+type CollectionDocument = RxDocument<CollectionDocType>
 
 type CollectionCollectionMethods = {
   post: (
@@ -16,7 +13,7 @@ type CollectionCollectionMethods = {
 
 export type CollectionCollection = RxCollection<
   CollectionDocType,
-  CollectionDocMethods,
+  object,
   CollectionCollectionMethods
 >
 

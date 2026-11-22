@@ -21,7 +21,6 @@ import { getRxStorageDexie } from "rxdb/plugins/storage-dexie"
 import {
   type BookCollection,
   bookCollectionMethods,
-  bookDocMethods,
   bookSchema,
   bookSchemaMigrationStrategies,
 } from "./collections/book"
@@ -146,7 +145,6 @@ export const createDatabase = (
         db.addCollections({
           book: {
             schema: bookSchema,
-            methods: bookDocMethods,
             statics: bookCollectionMethods,
             migrationStrategies: bookSchemaMigrationStrategies,
           },

@@ -22,8 +22,7 @@ type SettingsCollectionMethods = {
 
 export type SettingsCollection = RxCollection<
   SettingsDocType,
-  // biome-ignore lint/complexity/noBannedTypes: TODO
-  {},
+  object,
   SettingsCollectionMethods
 >
 

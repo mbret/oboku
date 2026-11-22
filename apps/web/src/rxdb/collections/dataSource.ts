@@ -8,10 +8,7 @@ import type { DataSourceDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type DataSourceDocMethods = {}
-
-type DataSourceDocument = RxDocument<DataSourceDocType, DataSourceDocMethods>
+type DataSourceDocument = RxDocument<DataSourceDocType>
 
 type DataSourceCollectionMethods = {
   post: (
@@ -21,7 +18,7 @@ type DataSourceCollectionMethods = {
 
 export type DataSourceCollection = RxCollection<
   DataSourceDocType,
-  DataSourceDocMethods,
+  object,
   DataSourceCollectionMethods
 >
 
