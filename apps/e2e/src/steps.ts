@@ -75,7 +75,7 @@ export async function addServerLibrary(page: Page) {
   await page.getByLabel("Name").fill(SERVER_DATA_SOURCE_NAME)
   await page.getByRole("combobox", { name: "Connector" }).click()
   await page
-    .getByRole("option", { name: new RegExp(SERVER_LIBRARY.username) })
+    .getByRole("option", { name: SERVER_LIBRARY.username, exact: true })
     .click()
   await page.getByRole("button", { name: "Confirm" }).click()
   await authorizeWithMasterPassword(page)
