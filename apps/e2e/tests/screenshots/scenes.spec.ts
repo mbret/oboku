@@ -45,6 +45,7 @@ const CAPTURE_TIME = new Date("2026-11-02T09:41:00Z")
 const TARGET_TIMEOUT_MS = 300_000
 
 const SCREENSHOTS_DIR = path.join(import.meta.dirname, "../../screenshots")
+const WEB_PUBLIC_DIR = path.join(import.meta.dirname, "../../../web/public")
 
 /** A library card shows 1% for a book at its start. */
 const progressPastTheStart = /^([2-9]|\d{2,})%$/
@@ -195,9 +196,8 @@ const TARGETS: Target[] = [
     deviceScaleFactor: 2,
     colorScheme: "light",
     locale: "en-US",
-    // The file names apps/web/public/manifest.json lists. The screenshots
-    // workflow copies the files there.
-    outputDir: path.join(SCREENSHOTS_DIR, "web-manifest"),
+    // The file names apps/web/public/manifest.json lists.
+    outputDir: WEB_PUBLIC_DIR,
     captures: [
       { scene: "home", fileName: "app.oboku.me_(iPhone 5_SE).png" },
       { scene: "library", fileName: "app.oboku.me_(iPhone 5_SE) (1).png" },

@@ -71,12 +71,12 @@ pnpm screenshots
 - **The scenes:** home, library, book details, EPUB reader and comic reader. Each scene has the steps that show it. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen.
 - **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures and the file each one is saved to.
 
-| Target         | Size                            | Scenes                     | Saved to                                                                                    |
-| -------------- | ------------------------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | all five                   | `apps/e2e/screenshots/play-phone/en/`                                                       |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader | `apps/e2e/screenshots/web-manifest/`, under the names `apps/web/public/manifest.json` lists |
+| Target         | Size                            | Scenes                     | Saved to                                                        |
+| -------------- | ------------------------------- | -------------------------- | --------------------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | all five                   | `apps/e2e/screenshots/play-phone/en/`                           |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader | `apps/web/public/`, in place of the files `manifest.json` lists |
 
-`apps/e2e/screenshots` is not committed. To replace the web manifest images, copy them to `apps/web/public`, as the `screenshots` workflow does.
+No workflow captures the screenshots. To update them, start the stack and run `pnpm screenshots`, then commit the changed web manifest images. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 
 Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the comic, so Home shows both as books in progress. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
@@ -89,5 +89,3 @@ The images are the same from one run to the next on the same machine:
 ## In CI
 
 The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown, the agent skills, or the admin, Android, docs or landing apps. On a failure, it prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
-
-The `screenshots` workflow runs by hand, from the repository's **Actions** tab, on Ubuntu 24.04, so the system fonts do not change when `ubuntu-latest` moves to a new release. It uploads the Play Store set as the `play-store-screenshots` artifact. When the web manifest images change, it opens a pull request with them. That needs **Allow GitHub Actions to create and approve pull requests** in the repository's **Settings > Actions > General**. GitHub does not run the other workflows on a pull request that a workflow opens.
