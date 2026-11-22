@@ -80,9 +80,12 @@ async function closeReader(page: Page) {
   ).toBeVisible()
 }
 
+function backToReadingDialog(page: Page) {
+  return page.getByRole("dialog", { name: "Take me back to my book" })
+}
+
 async function declineBackToReading(page: Page) {
-  await page
-    .getByRole("dialog", { name: "Take me back to my book" })
+  await backToReadingDialog(page)
     .getByRole("button", { name: "Cancel" })
     .click()
 }
@@ -100,6 +103,13 @@ async function expectChapterOneOfTheTimeMachine(page: Page) {
 async function showLibrary(page: Page) {
   await page.goto("/library/books")
   await expect(page.getByText(LITTLE_NEMO.title, { exact: true })).toBeVisible()
+}
+
+/** For a list that renders only the books on screen, in no fixed order. */
+function anyServerLibraryBookTitle(page: Page) {
+  return SERVER_LIBRARY_BOOKS.map((book) =>
+    page.getByText(book.title, { exact: true }),
+  ).reduce((titles, title) => titles.or(title))
 }
 
 async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
@@ -171,9 +181,7 @@ const SCENES = {
     show: async function showManageStorage(page) {
       await page.goto("/profile/manage-storage")
       await expect(page.getByText(/ used of /)).toBeVisible()
-      await expect(
-        page.getByText(LITTLE_NEMO.title, { exact: true }),
-      ).toBeVisible()
+      await expect(anyServerLibraryBookTitle(page).first()).toBeVisible()
     },
   },
   "data-sources": {
@@ -194,7 +202,7 @@ const SCENES = {
   profile: {
     show: async function showProfile(page) {
       await page.goto("/profile")
-      await expect(page.getByText(/ used of /)).toBeVisible()
+      await expect(page.getByText("Sign out", { exact: true })).toBeVisible()
     },
   },
 } satisfies Record<string, Scene>
@@ -337,7 +345,7 @@ async function waitForScreenToSettle(page: Page) {
   })
 
   await expect(splashScreenLogo).toHaveCount(0)
-  await expect(page.getByRole("dialog")).toHaveCount(0)
+  await expect(backToReadingDialog(page)).toHaveCount(0)
   // A cover shows a placeholder, and hides its picture, until its image loads.
   await page.waitForFunction(function areImagesShown() {
     const areImagesLoaded = Array.from(document.images).every(

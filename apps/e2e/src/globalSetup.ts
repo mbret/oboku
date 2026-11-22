@@ -1,16 +1,38 @@
 import {
+  type ApiClient,
   adminCreateServerSource,
   adminListServerSources,
   adminSetWebDavCredentials,
   adminUpdateServerSync,
+  adminUpdateSettings,
 } from "@oboku/shared"
 import { signInAsAdmin } from "./admin"
 import { SERVER_LIBRARY } from "./stack"
 
-/** Serves the books in fixtures/books through Server Sync. */
-export default async function enableServerLibrary() {
+export default async function configureStack() {
   const client = await signInAsAdmin()
 
+  await enableServerLibrary(client)
+  await offerCloudProviders(client)
+}
+
+/**
+ * The app offers Google Drive and OneDrive, as the hosted app does. The stack
+ * cannot reach them, so their ids are placeholders and signing in fails.
+ */
+async function offerCloudProviders(client: ApiClient) {
+  await adminUpdateSettings({
+    client,
+    body: {
+      googleClientId: "e2e-placeholder.apps.googleusercontent.com",
+      googleApiKey: "e2e-placeholder",
+      microsoftApplicationClientId: "e2e-placeholder",
+    },
+  })
+}
+
+/** Serves the books in fixtures/books through Server Sync. */
+async function enableServerLibrary(client: ApiClient) {
   await adminUpdateServerSync({ client, body: { enabled: true } })
   await adminSetWebDavCredentials({
     client,
