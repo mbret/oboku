@@ -39,7 +39,7 @@
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Library, with its books, collections and tags"
+      "label": "Library, with its books, shelves and tags"
     },
     {
       "src": "manifest-screenshots/epub-reader.png",

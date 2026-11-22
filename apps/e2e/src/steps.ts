@@ -86,6 +86,7 @@ export async function addServerLibrary(page: Page) {
   ).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
 }
 
+/** The library card that shows exactly `title`. */
 export function libraryBookCard(page: Page, title: string) {
   return page
     .locator("[data-book-card-container]")
@@ -94,7 +95,8 @@ export function libraryBookCard(page: Page, title: string) {
 
 /**
  * On the library, waits for every server book to show the title and the author
- * that the API read from its file.
+ * that the API read from its file. A book whose file names neither shows its
+ * file name and "Unknown" before the API reads it too.
  */
 export async function expectServerLibraryBooks(page: Page) {
   for (const book of SERVER_LIBRARY_BOOKS) {

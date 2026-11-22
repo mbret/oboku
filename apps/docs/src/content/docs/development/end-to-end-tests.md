@@ -52,10 +52,10 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 
 - `signUp`: completes the sign-up from a `signUpInvitation`.
 - `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync.
-- `expectServerLibraryBooks`: waits until the library shows each server book's title and author. The API reads them from each file, which can take up to a minute when tests run in parallel.
+- `expectServerLibraryBooks`: waits until the library shows each server book's title and author, each in its card, which `libraryBookCard` finds by its title. The API reads them from each file, which can take up to a minute when tests run in parallel.
 - `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
-`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document. An audiobook's track has no document: `firstAudioTrackWave` finds the wave the reader draws for it.
+`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page, and `expectReaderPageRevealed` waits for the page to fade in. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document. An audiobook's track has no document: `firstAudioTrackWave` finds the wave the reader draws for it.
 
 The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs, so list it in `SERVER_LIBRARY_BOOKS` in `src/library.ts` too: the server library test and the screenshots read that list.
 
