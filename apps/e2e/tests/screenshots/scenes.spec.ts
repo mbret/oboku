@@ -1,3 +1,4 @@
+import { readdir } from "node:fs/promises"
 import path from "node:path"
 import type { Page } from "@playwright/test"
 import { expect, test } from "../../src/fixtures"
@@ -10,9 +11,9 @@ import {
   TREASURE_ISLAND,
 } from "../../src/library"
 import {
-  firstAudioTrackWave,
+  expectFirstImagePage,
   expectReaderPageRevealed,
-  firstReaderPage,
+  firstAudioTrackWave,
   readerPage,
   showReaderMenu,
 } from "../../src/reader"
@@ -20,6 +21,7 @@ import {
   addServerLibrary,
   downloadFromDetailsScreen,
   expectServerLibraryBooks,
+  libraryBookCard,
   openBookDetails,
   readFromDetailsScreen,
   signUp,
@@ -29,9 +31,12 @@ type BookDetailsUrlsByTitle = ReadonlyMap<string, string>
 
 type Scene = {
   show: (page: Page, bookDetailsUrls: BookDetailsUrlsByTitle) => Promise<void>
+  /** A drawer is a dialog. Any other dialog over the screen fails the capture. */
+  showsDialog?: true
   /**
-   * Undoes what `show` leaves behind that the next scene would show: a reader
-   * left open makes the next full page load offer to go back to it.
+   * Undoes what `show` leaves behind over the next scene: a reader left open
+   * makes the next full page load offer to go back to it. A reader scene still
+   * leaves its book in progress.
    */
   leave?: (page: Page) => Promise<void>
 }
@@ -83,12 +88,9 @@ async function closeReader(page: Page) {
   ).toBeVisible()
 }
 
-function backToReadingDialog(page: Page) {
-  return page.getByRole("dialog", { name: "Take me back to my book" })
-}
-
 async function declineBackToReading(page: Page) {
-  await backToReadingDialog(page)
+  await page
+    .getByRole("dialog", { name: "Take me back to my book" })
     .getByRole("button", { name: "Cancel" })
     .click()
 }
@@ -124,12 +126,9 @@ async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
   ).toBeVisible()
 }
 
-async function expectFirstImagePage(page: Page) {
-  const firstPage = firstReaderPage(page)
-
-  await expect(firstPage.contentFrame().locator("img")).toBeVisible()
-
-  return firstPage
+async function showDataSources(page: Page) {
+  await page.goto("/sync/datasources")
+  await expect(page.getByText(/^Last synced at /)).toBeVisible()
 }
 
 const SCENES = {
@@ -206,19 +205,18 @@ const SCENES = {
     },
   },
   "data-sources": {
-    show: async function showDataSources(page) {
-      await page.goto("/sync/datasources")
-      await expect(page.getByText(/^Last synced at /)).toBeVisible()
-    },
+    show: showDataSources,
   },
   "add-data-source": {
     show: async function showAddDataSource(page) {
-      await page.goto("/sync/datasources")
+      await showDataSources(page)
       await page.getByRole("button", { name: "Add a new source" }).click()
-      await expect(
-        page.getByRole("button", { name: "Server files" }),
-      ).toBeVisible()
+
+      for (const provider of ["Google Drive", "Dropbox", "OneDrive"]) {
+        await expect(page.getByRole("button", { name: provider })).toBeEnabled()
+      }
     },
+    showsDialog: true,
   },
   profile: {
     show: async function showProfile(page) {
@@ -236,9 +234,11 @@ type Target = {
   deviceScaleFactor: number
   colorScheme: "light" | "dark"
   locale: string
-  /** Each scene is saved there as `<scene>.png`. */
   outputDir: string
-  /** The scenes this target captures, in order. */
+  /**
+   * In capture order. A reader scene leaves its book in progress, so it comes
+   * after the scenes that show reading progress.
+   */
   scenes: SceneName[]
 }
 
@@ -281,15 +281,15 @@ const TARGETS: Target[] = [
     scenes: [
       "home",
       "library",
+      "library-e-ink",
       "book-details",
-      "epub-reader",
-      "manga-reader",
-      "audiobook-reader",
       "manage-storage",
       "data-sources",
       "add-data-source",
       "profile",
-      "library-e-ink",
+      "epub-reader",
+      "manga-reader",
+      "audiobook-reader",
     ],
   },
 ]
@@ -332,16 +332,14 @@ async function waitForSavedReadingProgress(page: Page, title: string) {
 
   await libraryTab.goto("/library/books")
   await declineBackToReading(libraryTab)
-  const bookCard = libraryTab
-    .locator("[data-book-card-container]")
-    .filter({ has: libraryTab.getByText(title, { exact: true }) })
-
-  await expect(bookCard.getByText(progressPastTheStart)).toBeVisible()
+  await expect(
+    libraryBookCard(libraryTab, title).getByText(progressPastTheStart),
+  ).toBeVisible()
   await libraryTab.close()
 }
 
 /**
- * Puts The Time Machine on its first chapter and opens the comic, so Home
+ * Puts The Time Machine on its first chapter and opens Little Nemo, so Home
  * shows both as books in progress.
  */
 async function startReading(
@@ -367,7 +365,7 @@ async function startReading(
   await closeReader(page)
 }
 
-async function waitForScreenToSettle(page: Page) {
+async function waitForScreenToSettle(page: Page, scene: Scene) {
   // The splash screen's logo reads as the headings "o" and "boku".
   const splashScreenLogo = page.getByRole("heading", {
     name: "boku",
@@ -375,7 +373,7 @@ async function waitForScreenToSettle(page: Page) {
   })
 
   await expect(splashScreenLogo).toHaveCount(0)
-  await expect(backToReadingDialog(page)).toHaveCount(0)
+  await expect(page.getByRole("dialog")).toHaveCount(scene.showsDialog ? 1 : 0)
   // A cover shows a placeholder, and hides its picture, until its image loads.
   await page.waitForFunction(function areImagesShown() {
     const areImagesLoaded = Array.from(document.images).every(
@@ -400,16 +398,14 @@ for (const target of TARGETS) {
     })
 
     /**
-     * Store screenshots show the installed app, whose storage the browser
-     * keeps. Headless Chromium never keeps it, and the app would then show an
-     * unread notification about it.
+     * The screenshots show the installed app, whose storage the browser keeps.
+     * Headless Chromium never keeps it, and the app would then show an unread
+     * notification about it.
      */
     test.beforeEach(async function simulateInstalledAppStorage({ context }) {
       await context.addInitScript(function reportStorageAsPersisted() {
-        // Sandboxed frames, such as the reader's, have no storage.
-        const isAppFrame = window === window.top
-
-        if (!isAppFrame) return
+        // A new tab starts on a blank page, which has no storage.
+        if (!window.isSecureContext) return
 
         navigator.storage.persisted = async function persisted() {
           return true
@@ -436,13 +432,21 @@ for (const target of TARGETS) {
 
         await page.clock.setSystemTime(CAPTURE_TIME)
         await sceneToCapture.show(page, bookDetailsUrls)
-        await waitForScreenToSettle(page)
+        await waitForScreenToSettle(page, sceneToCapture)
         await page.screenshot({
           path: path.join(target.outputDir, `${scene}.png`),
           animations: "disabled",
         })
         await sceneToCapture.leave?.(page)
       }
+
+      const savedImages = await readdir(target.outputDir)
+      const sceneImages = target.scenes.map((scene) => `${scene}.png`)
+
+      expect(
+        savedImages.filter((image) => image.endsWith(".png")).sort(),
+        `${target.outputDir} holds only the images of the target's scenes`,
+      ).toEqual(sceneImages.sort())
     })
   })
 }

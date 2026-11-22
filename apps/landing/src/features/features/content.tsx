@@ -176,7 +176,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: dataSourcesScreenshot,
-        alt: "oboku data sources screen with a Google Drive library being synchronized",
+        alt: "oboku data sources screen with a server library and the day of its last sync",
       },
       secondary: {
         src: addDataSourceScreenshot,
@@ -232,7 +232,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: libraryScreenshot,
-        alt: "oboku library grid with books, collections and tags tabs",
+        alt: "oboku library grid with books, shelves and tags tabs",
       },
       secondary: {
         src: bookDetailsScreenshot,
@@ -448,7 +448,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: profileScreenshot,
-        alt: "oboku profile screen with the app password and hidden protected contents",
+        alt: "oboku profile screen with the account and hidden protected contents",
       },
     },
     features: [

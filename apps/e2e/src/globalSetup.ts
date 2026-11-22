@@ -17,8 +17,10 @@ export default async function configureStack() {
 }
 
 /**
- * The app offers Google Drive and OneDrive, as the hosted app does. The stack
- * cannot reach them, so their ids are placeholders and signing in fails.
+ * Placeholder ids that make the app offer Google Drive and OneDrive, as the
+ * hosted app does, and Google sign-in and Google Books lookups with them. The
+ * tests reach no outside host, so all of these fail. Dropbox has no instance
+ * setting: docker-compose.yml gives it its placeholder.
  */
 async function offerCloudProviders(client: ApiClient) {
   await adminUpdateSettings({

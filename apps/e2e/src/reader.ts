@@ -20,8 +20,8 @@ export function firstReaderPage(page: Page) {
 }
 
 /**
- * The wave the reader draws for the first audio track, which is on screen when
- * the book opens at its start.
+ * The wave of the first track prose-reader loaded, which is the book's first
+ * track when the book opens at its start.
  */
 export function firstAudioTrackWave(page: Page) {
   return page.locator("canvas").first()
@@ -31,8 +31,17 @@ export function firstAudioTrackWave(page: Page) {
  * prose-reader keeps a page's container at opacity 0 until the page is ready,
  * then fades it in over 800 ms, whatever the reduced motion setting
  * (mbret/prose-reader#892). The container is the iframe of a document page,
- * and a parent of the wave of an audio track.
+ * and an ancestor of the wave of an audio track.
  */
+/** The first page of a comic or a manga that opens at its start. */
+export async function expectFirstImagePage(page: Page) {
+  const firstPage = firstReaderPage(page)
+
+  await expect(firstPage.contentFrame().locator("img")).toBeVisible()
+
+  return firstPage
+}
+
 export async function expectReaderPageRevealed(readerPageContent: Locator) {
   await expect(readerPageContent).toBeVisible()
   await expect

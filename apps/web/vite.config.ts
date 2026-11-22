@@ -157,6 +157,8 @@ export default defineConfig(({ mode }) => ({
           // Exclude source maps from precache (not needed offline; main bundle map is ~21 MB)
           "**/*.js.map",
           "**/*.css.map",
+          // The browser fetches them from the network to show an install dialog
+          "**/manifest-screenshots/**",
         ],
         maximumFileSizeToCacheInBytes: 4 * 1024 * 1024, // 4 MiB; includes the AVIF encoder WASM
       },
