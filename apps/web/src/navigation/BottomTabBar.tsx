@@ -37,9 +37,10 @@ export const BottomTabBar = memo(function BottomTabBar({
       {children}
       <OfflineIcon />
       <BottomNavigation value={activeRoute}>
-        {navItems.map(({ icon: Icon, route }) => (
+        {navItems.map(({ icon: Icon, label, route }) => (
           <BottomNavigationAction
             key={route}
+            aria-label={label}
             icon={
               route === ROUTES.PROFILE ? (
                 <Badge badgeContent={unreadCount} color="error">

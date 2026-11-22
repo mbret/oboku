@@ -18,8 +18,7 @@ export async function signUp(page: Page, invitation: SignUpInvitation) {
   await page.getByLabel("Password", { exact: true }).fill(invitation.password)
   await page.getByLabel("Confirm password").fill(invitation.password)
   await page.getByRole("button", { name: "Complete sign up" }).click()
-  // The phone layout's tab bar links have no accessible name.
-  await expect(page.locator('a[href="/library"]').first()).toBeVisible()
+  await expect(page.getByRole("link", { name: "Library" })).toBeVisible()
 }
 
 /**

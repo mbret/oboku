@@ -6,6 +6,7 @@ import { useBook } from "./states"
 import { useBlurredTagIds } from "../tags/helpers"
 import { useLocalSettings } from "../settings/useLocalSettings"
 import { useBookCover } from "./useBookCover"
+import { getMetadataFromBook } from "./metadata"
 
 const useBookCoverState = ({ bookId }: { bookId: string }) => {
   const blurredTags = useBlurredTagIds().data ?? []
@@ -21,6 +22,7 @@ const useBookCoverState = ({ bookId }: { bookId: string }) => {
   return {
     _id,
     lastMetadataUpdatedAt,
+    title: getMetadataFromBook(enrichedBook).title?.toString() ?? "",
     isBlurred: enrichedBook.tags.some((bookTagId) =>
       blurredTags.includes(bookTagId),
     ),
@@ -63,6 +65,7 @@ export const Cover = memo(function Cover({
   withShadow = false,
   rounded = true,
   blurIfNeeded = true,
+  decorative = false,
   className,
   sx,
   ...rest
@@ -74,6 +77,8 @@ export const Cover = memo(function Cover({
   withShadow?: boolean
   rounded?: boolean
   blurIfNeeded?: boolean
+  /** Hides the cover from assistive technologies, for a cover shown beside its book's title. */
+  decorative?: boolean
 } & Pick<BoxProps, "sx">) {
   const book = useBookCoverState({
     bookId,
@@ -84,12 +89,13 @@ export const Cover = memo(function Cover({
     book?.isBlurred && blurIfNeeded && !localSettings.unBlurWhenProtectedVisible
 
   const { coverSrc, coverSrcJpg, onError } = useBookCover({ bookId })
+  const alt = decorative ? "" : (book?.title ?? "")
 
   return (
     <CoverRootBox className={className} style={style} sx={sx}>
       {isLoading && (
         <CoverImg
-          alt="img"
+          alt={alt}
           src={placeholder}
           fullWidth={fullWidth}
           rounded={rounded}
@@ -113,7 +119,7 @@ export const Cover = memo(function Cover({
         <source srcSet={coverSrc} type="image/webp" />
         <source srcSet={coverSrcJpg} type="image/jpeg" />
         <CoverImg
-          alt="img"
+          alt={alt}
           src={coverSrc}
           fullWidth={fullWidth}
           rounded={rounded}
