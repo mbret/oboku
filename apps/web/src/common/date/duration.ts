@@ -1,11 +1,11 @@
-export const createDurationFromSeconds = (
-  totalSeconds: number,
-): Intl.DurationInput => {
+type Duration = Partial<Record<Intl.DurationFormatUnit, number>>
+
+export const createDurationFromSeconds = (totalSeconds: number): Duration => {
   const normalizedTotalSeconds = Math.max(0, Math.trunc(totalSeconds))
   const hours = Math.floor(normalizedTotalSeconds / 3600)
   const minutes = Math.floor((normalizedTotalSeconds % 3600) / 60)
   const seconds = normalizedTotalSeconds % 60
-  const duration: Intl.DurationInput = {}
+  const duration: Duration = {}
 
   if (hours > 0) {
     duration.hours = hours
