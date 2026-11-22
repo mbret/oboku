@@ -14,5 +14,5 @@ const BookDetailsCover = styled(Cover)(({ theme }) => ({
 export const CoverPane = ({ bookId }: { bookId?: string }) => {
   if (!bookId) return null
 
-  return <BookDetailsCover bookId={bookId} blurIfNeeded={false} />
+  return <BookDetailsCover bookId={bookId} blurIfNeeded={false} decorative />
 }

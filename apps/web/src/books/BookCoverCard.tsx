@@ -89,7 +89,7 @@ export const BookCoverCard = memo(function BookCoverCard({
       elevation={0}
       {...rest}
     >
-      {item && <Cover bookId={item?._id} />}
+      {item && <Cover bookId={item?._id} decorative />}
       {bookDownloadState?.downloadState !== DownloadState.Downloaded && (
         <Box
           style={{

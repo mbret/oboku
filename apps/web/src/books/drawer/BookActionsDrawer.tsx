@@ -147,7 +147,7 @@ export const BookActionsDrawer = memo(function BookActionsDrawer() {
                 flexShrink: 0,
               }}
             >
-              <Cover bookId={book._id} />
+              <Cover bookId={book._id} decorative />
             </div>
             <div
               style={{
