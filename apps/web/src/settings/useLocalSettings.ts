@@ -3,7 +3,6 @@
  */
 import { signal, useSignalValue } from "reactjrx"
 import { isShallowEqual } from "@oboku/shared"
-import { useCallback, type DependencyList } from "react"
 import type { CoreInputSettings, Theme } from "@prose-reader/core"
 
 import type { ThemeProviderProps } from "@mui/material"
@@ -50,44 +49,68 @@ export const localSettingsSignal = signal<LocalSettings>({
   default: localSettingsDefaultValues,
 })
 
-export function useLocalSettings<Key extends keyof LocalSettings>(
+type LocalSettingsKey = keyof LocalSettings
+
+type LocalSettingsSelector = (settings: LocalSettings) => unknown
+
+function selectAllLocalSettings(settings: LocalSettings) {
+  return settings
+}
+
+function readLocalSetting(settings: LocalSettings, key: LocalSettingsKey) {
+  return settings[key] ?? localSettingsDefaultValues[key]
+}
+
+const selectorsBySelection = new Map<string, LocalSettingsSelector>()
+
+function createLocalSettingsSelector(
+  keyOrKeys: LocalSettingsKey | readonly LocalSettingsKey[],
+): LocalSettingsSelector {
+  if (typeof keyOrKeys === "string") {
+    return function selectLocalSetting(settings) {
+      return readLocalSetting(settings, keyOrKeys)
+    }
+  }
+
+  const keys = [...keyOrKeys]
+
+  return function selectLocalSettings(settings) {
+    return Object.fromEntries(
+      keys.map((key) => [key, readLocalSetting(settings, key)] as const),
+    )
+  }
+}
+
+function getLocalSettingsSelector(
+  keyOrKeys?: LocalSettingsKey | readonly LocalSettingsKey[],
+): LocalSettingsSelector {
+  if (keyOrKeys === undefined) return selectAllLocalSettings
+
+  const selection = JSON.stringify(keyOrKeys)
+  const cachedSelector = selectorsBySelection.get(selection)
+
+  if (cachedSelector) return cachedSelector
+
+  const selector = createLocalSettingsSelector(keyOrKeys)
+
+  selectorsBySelection.set(selection, selector)
+
+  return selector
+}
+
+export function useLocalSettings<Key extends LocalSettingsKey>(
   key: Key,
 ): Required<LocalSettings>[Key]
-export function useLocalSettings<Key extends keyof LocalSettings>(
+export function useLocalSettings<Key extends LocalSettingsKey>(
   keys: readonly Key[],
 ): Pick<Required<LocalSettings>, Key>
 export function useLocalSettings(): LocalSettings
 export function useLocalSettings(
-  keyOrKeys?: keyof LocalSettings | readonly (keyof LocalSettings)[],
+  keyOrKeys?: LocalSettingsKey | readonly LocalSettingsKey[],
 ) {
-  // useCallback receives a dependency list that is not an array literal.
-  // TODO: inline the dependency array literal, then drop this opt-out.
-  "use no memo"
-
-  const keys: DependencyList =
-    typeof keyOrKeys === "string" ? [keyOrKeys] : (keyOrKeys ?? [])
-
-  const select = useCallback(
-    (settings: LocalSettings) => {
-      if (keyOrKeys === undefined) return settings
-
-      if (typeof keyOrKeys === "string") {
-        return settings[keyOrKeys] ?? localSettingsDefaultValues[keyOrKeys]
-      }
-
-      return Object.fromEntries(
-        keyOrKeys.map(
-          (key) =>
-            [key, settings[key] ?? localSettingsDefaultValues[key]] as const,
-        ),
-      )
-    },
-    // The key list is itself the dependency array: React compares its elements,
-    // so the selector stays stable without memoizing the array reference. Biome
-    // only accepts a literal dependency array, hence the suppression.
-    // biome-ignore lint/correctness/useExhaustiveDependencies: keys is the dependency list
-    keys,
+  return useSignalValue(
+    localSettingsSignal,
+    getLocalSettingsSelector(keyOrKeys),
+    isShallowEqual,
   )
-
-  return useSignalValue(localSettingsSignal, select, isShallowEqual)
 }
