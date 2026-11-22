@@ -58,6 +58,15 @@ describe("isFileSupported", () => {
     ).toBe(true)
   })
 
+  it("should accept a CBZ reported with its registered type when the name is not recognized", () => {
+    expect(
+      isFileSupported({
+        name: "no-extension",
+        mimeType: "application/vnd.comicbook+zip",
+      }),
+    ).toBe(true)
+  })
+
   it("should accept a CBZ reported with Nextcloud's type when the name is not recognized", () => {
     expect(
       isFileSupported({

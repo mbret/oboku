@@ -8,6 +8,7 @@ export const ZIP_MIME_TYPES = [
   "application/x-zip-compressed",
   "application/epub+zip",
   "application/x-cbz",
+  "application/vnd.comicbook+zip",
   // Nextcloud's type for .cbz files
   "application/comicbook+zip",
 ]
