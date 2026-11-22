@@ -40,6 +40,23 @@ describe("useIsCollectionMetadataRefreshing", () => {
     expect(result.current).toBe(false)
   })
 
+  it("is refreshing from the first render while the lock is active", () => {
+    const onRender = vi.fn()
+
+    renderHook(() => {
+      const isRefreshing = useIsCollectionMetadataRefreshing({
+        metadataUpdateStatus: "fetching",
+        lastMetadataStartedAt: new Date().toISOString(),
+      })
+
+      onRender(isRefreshing)
+
+      return isRefreshing
+    })
+
+    expect(onRender).toHaveBeenNthCalledWith(1, true)
+  })
+
   it("is not refreshing when the lock has already expired", () => {
     const startedAt = new Date(Date.now() - LOCK_IN_MILLISECONDS)
     const { result } = renderHook(() =>

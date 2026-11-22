@@ -29,12 +29,12 @@ export const useIsCollectionMetadataRefreshing = (
         COLLECTION_METADATA_LOCK_MN * SECONDS_IN_MINUTE,
       ).getTime()
     : undefined
+  const hasLock = lockExpiresAt !== undefined
 
   const { data: isRefreshing } = useObserve(
     function observeIsLockActive() {
       return defer(function emitUntilLockExpires() {
-        const isLockActive =
-          lockExpiresAt !== undefined && Date.now() < lockExpiresAt
+        const isLockActive = hasLock && Date.now() < lockExpiresAt
 
         if (!isLockActive) return of(false)
 
@@ -48,5 +48,7 @@ export const useIsCollectionMetadataRefreshing = (
     [lockExpiresAt],
   )
 
-  return isRefreshing ?? false
+  // `useObserve` has no value until its effect subscribes. Treating a present
+  // lock as active until then keeps the refresh action disabled meanwhile.
+  return isRefreshing ?? hasLock
 }
