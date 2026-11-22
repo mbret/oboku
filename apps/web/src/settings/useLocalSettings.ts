@@ -81,11 +81,6 @@ function createLocalSettingsSelector(
   }
 }
 
-/**
- * Returns the same selector for every call with the same key or keys, so a
- * caller passing an inline array literal does not hand `useSignalValue` a new
- * selector on each render.
- */
 function getLocalSettingsSelector(
   keyOrKeys?: LocalSettingsKey | readonly LocalSettingsKey[],
 ): LocalSettingsSelector {
