@@ -12,6 +12,11 @@ const COMIC_BOOK_INFO_CBZ = path.join(
   "fixtures",
   "comicbookinfo-comment.cbz",
 )
+const ONE_PAGE_TRAILING_NEWLINE_ZIP = path.join(
+  import.meta.dirname,
+  "fixtures",
+  "one-page-trailing-newline.zip",
+)
 const NESTED_ZIP_AND_COMMENT_ZIP = path.join(
   import.meta.dirname,
   "fixtures",
@@ -59,6 +64,12 @@ describe("openArchive", () => {
       "page-1.txt",
       "nested.zip",
     ])
+  })
+
+  it("opens a zip followed by trailing bytes", async () => {
+    const archive = await openArchive(ONE_PAGE_TRAILING_NEWLINE_ZIP)
+
+    expect(archive.records.map((record) => record.uri)).toEqual(["page-1.txt"])
   })
 
   it("rejects a file that is neither a RAR nor a zip archive", async () => {
