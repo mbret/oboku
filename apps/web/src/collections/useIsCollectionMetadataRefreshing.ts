@@ -2,8 +2,7 @@ import {
   COLLECTION_METADATA_LOCK_MN,
   type CollectionDocType,
 } from "@oboku/shared"
-import { useObserve } from "reactjrx"
-import { concat, defer, map, of, timer } from "rxjs"
+import { useEffect, useState } from "react"
 import { addSeconds } from "../common/date/addSeconds"
 
 const SECONDS_IN_MINUTE = 60
@@ -29,26 +28,22 @@ export const useIsCollectionMetadataRefreshing = (
         COLLECTION_METADATA_LOCK_MN * SECONDS_IN_MINUTE,
       ).getTime()
     : undefined
-  const hasLock = lockExpiresAt !== undefined
+  const [now, setNow] = useState(() => Date.now())
 
-  const { data: isRefreshing } = useObserve(
-    function observeIsLockActive() {
-      return defer(function emitUntilLockExpires() {
-        const isLockActive = hasLock && Date.now() < lockExpiresAt
+  useEffect(
+    function rerenderWhenLockExpires() {
+      if (lockExpiresAt === undefined) return
 
-        if (!isLockActive) return of(false)
+      const timeout = setTimeout(function onLockExpired() {
+        setNow(Date.now())
+      }, lockExpiresAt - Date.now())
 
-        const lockExpired$ = timer(new Date(lockExpiresAt)).pipe(
-          map(() => false),
-        )
-
-        return concat(of(true), lockExpired$)
-      })
+      return function clearLockExpiryTimeout() {
+        clearTimeout(timeout)
+      }
     },
     [lockExpiresAt],
   )
 
-  // `useObserve` has no value until its effect subscribes. Treating a present
-  // lock as active until then keeps the refresh action disabled meanwhile.
-  return isRefreshing ?? hasLock
+  return lockExpiresAt !== undefined && now < lockExpiresAt
 }
