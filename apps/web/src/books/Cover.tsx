@@ -22,7 +22,7 @@ const useBookCoverState = ({ bookId }: { bookId: string }) => {
   return {
     _id,
     lastMetadataUpdatedAt,
-    title: getMetadataFromBook(enrichedBook).title,
+    title: getMetadataFromBook(enrichedBook).title?.toString() ?? "",
     isBlurred: enrichedBook.tags.some((bookTagId) =>
       blurredTags.includes(bookTagId),
     ),
