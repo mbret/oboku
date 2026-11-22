@@ -87,5 +87,6 @@ c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-s
 - **Build:** each chapter cut to its first 30 seconds and encoded as mono MP3
   at 64 kbps with ID3 tags for the chapter, the author, the book and the track
   number, stored in a zip. The zip holds no cover: prose-reader reads an image
-  in an audio-only zip as a page after the tracks.
+  in an audio-only zip as a page after the tracks
+  ([mbret/prose-reader#897](https://github.com/mbret/prose-reader/issues/897)).
 - **SHA-256:** `4df267126355cfefa33388e09db38d80c73a625451d5ba2c113c68cbc05a0f20`

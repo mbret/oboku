@@ -43,7 +43,10 @@ export const HITO_NO_ISSHO = book(
   "岡本一平",
 )
 
-/** The file has no title or author that the API reads. */
+/**
+ * prose-reader does not read the tags of the tracks, so the library shows the
+ * file name (mbret/prose-reader#898).
+ */
 export const THE_TIME_MACHINE_AUDIOBOOK = book(
   "h-g-wells_the-time-machine_librivox.zip",
   "h-g-wells_the-time-machine_librivox.zip",
