@@ -1,4 +1,8 @@
-import { type CollectionDocType, getCollectionCoverKey } from "@oboku/shared"
+import {
+  type CollectionDocType,
+  getCollectionCoverKey,
+  parseLegacyResourceIdForMigration,
+} from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
@@ -118,14 +122,6 @@ const toCanonicalWebdavResourceId = (resourceId: string) => {
   return generateCanonicalWebdavResourceIdForMigration(filePath)
 }
 
-function safeDecodeURIComponent(value: string): string {
-  try {
-    return decodeURIComponent(value)
-  } catch {
-    return value
-  }
-}
-
 /**
  * Older CouchDB installs may store `data` / `linkData` as a JSON-encoded
  * string rather than an object. This normalises either representation into
@@ -157,72 +153,20 @@ function normalizeDataField(value: unknown): Record<string, unknown> | null {
 }
 
 /**
- * Parses a legacy resourceId / linkResourceId string and returns the identity
- * fields to merge into data / linkData for the given provider type.
- * Returns null if there is nothing to migrate.
+ * Returns the data of a link or collection with the identity fields of its
+ * legacy `resourceId` / `linkResourceId` merged in, or null when the type
+ * encodes none, so the document is left untouched.
  */
-function migrateResourceIdToData(
+function mergeLegacyResourceIdIntoData(
   type: string,
   resourceId: string,
-  existingData: Record<string, unknown> | null,
+  data: unknown,
 ): Record<string, unknown> | null {
-  const base = existingData ?? {}
+  const identityFields = parseLegacyResourceIdForMigration(type, resourceId)
 
-  switch (type) {
-    case "DRIVE": {
-      const fileId = resourceId.startsWith("drive-")
-        ? resourceId.substring("drive-".length)
-        : resourceId
-      return { ...base, fileId }
-    }
+  if (!identityFields) return null
 
-    case "dropbox": {
-      const fileId = resourceId.startsWith("dropbox-")
-        ? resourceId.substring("dropbox-".length)
-        : resourceId
-      return { ...base, fileId }
-    }
-
-    case "webdav": {
-      const withoutPrefix = resourceId.startsWith("webdav://")
-        ? resourceId.substring("webdav://".length)
-        : resourceId
-      // Strip the host portion from the legacy "webdav://host:encodedPath"
-      // format. Must stay in sync with the client-side migration in
-      // apps/web/src/rxdb/collections/utils.ts.
-      const encodedFilePath = withoutPrefix.includes(":")
-        ? withoutPrefix.substring(withoutPrefix.lastIndexOf(":") + 1)
-        : withoutPrefix
-      return { ...base, filePath: safeDecodeURIComponent(encodedFilePath) }
-    }
-
-    case "synology-drive": {
-      const withoutPrefix = resourceId.startsWith("synology-drive://")
-        ? resourceId.substring("synology-drive://".length)
-        : resourceId
-      return { ...base, fileId: safeDecodeURIComponent(withoutPrefix) }
-    }
-
-    case "server": {
-      const withoutPrefix = resourceId.startsWith("server://")
-        ? resourceId.substring("server://".length)
-        : resourceId
-      return { ...base, filePath: safeDecodeURIComponent(withoutPrefix) }
-    }
-
-    case "URI": {
-      const url = resourceId.startsWith("oboku-link-")
-        ? resourceId.substring("oboku-link-".length)
-        : resourceId
-      return { ...base, url }
-    }
-
-    case "file":
-      return null
-
-    default:
-      return null
-  }
+  return { ...normalizeDataField(data), ...identityFields }
 }
 
 /**
@@ -622,10 +566,10 @@ export class MigrationService {
             continue
           }
 
-          const newData = migrateResourceIdToData(
+          const newData = mergeLegacyResourceIdIntoData(
             String(link.type ?? ""),
             link.resourceId,
-            normalizeDataField(link.data),
+            link.data,
           )
 
           if (!newData) continue
@@ -651,10 +595,10 @@ export class MigrationService {
             continue
           }
 
-          const newLinkData = migrateResourceIdToData(
+          const newLinkData = mergeLegacyResourceIdIntoData(
             String(collection.linkType ?? ""),
             collection.linkResourceId,
-            normalizeDataField(collection.linkData),
+            collection.linkData,
           )
 
           if (!newLinkData) continue
