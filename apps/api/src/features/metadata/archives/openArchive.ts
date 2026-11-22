@@ -1,6 +1,6 @@
 import fs from "node:fs"
 import type { Archive } from "@prose-reader/archive-reader"
-import { createUnzipperArchiveSource } from "./unzipperArchive.js"
+import { getZipArchive } from "./zipArchive.js"
 import { getRarArchive } from "./getRarArchive.js"
 
 /**
@@ -30,4 +30,4 @@ export const openArchive = async (
 ): Promise<Archive> =>
   (await startsWithRarSignature(filePath))
     ? getRarArchive(filePath, options)
-    : createUnzipperArchiveSource(filePath, options)
+    : getZipArchive(filePath, options)
