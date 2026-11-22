@@ -46,17 +46,16 @@ import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
 import type { ReactNode } from "react"
 import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
-import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
-import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
-import epubReaderScreenshot from "../home/assets/image1.png"
-import bookDetailsScreenshot from "../home/assets/image2.png"
-import storageScreenshot from "../home/assets/image3.png"
-import dataSourcesScreenshot from "../home/assets/image4.png"
-import mangaReaderScreenshot from "../home/assets/image5.png"
-import homeScreenshot from "../home/assets/image6.png"
-import profileScreenshot from "../home/assets/image7.png"
-import addDataSourceScreenshot from "../home/assets/image8.png"
-import einkScreenshot from "../home/assets/image9.png"
+import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.png"
+import bookDetailsScreenshot from "../common/app-screenshots/book-details.png"
+import dataSourcesScreenshot from "../common/app-screenshots/data-sources.png"
+import epubReaderScreenshot from "../common/app-screenshots/epub-reader.png"
+import homeScreenshot from "../common/app-screenshots/home.png"
+import libraryScreenshot from "../common/app-screenshots/library.png"
+import libraryEInkScreenshot from "../common/app-screenshots/library-e-ink.png"
+import manageStorageScreenshot from "../common/app-screenshots/manage-storage.png"
+import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.png"
+import profileScreenshot from "../common/app-screenshots/profile.png"
 import { supportedExtensions, syncProviders } from "../home/content"
 
 type Feature = {
@@ -108,14 +107,10 @@ export const featureGroups: FeatureGroup[] = [
     ),
     screenshots: {
       primary: {
-        src: comicReaderScreenshot,
-        alt: "A comic page open in the oboku reader with the progress bar",
+        src: epubReaderScreenshot,
+        alt: "oboku reader displaying a chapter of an EPUB novel, with its menu and progress bar",
       },
       secondary: {
-        src: epubReaderScreenshot,
-        alt: "oboku reader displaying a chapter of an EPUB novel",
-      },
-      tertiary: {
         src: mangaReaderScreenshot,
         alt: "Black and white manga page open in the oboku reader",
       },
@@ -292,11 +287,11 @@ export const featureGroups: FeatureGroup[] = [
       "oboku is a progressive web app: anything with a modern browser runs it, and it keeps working when the connection drops.",
     screenshots: {
       primary: {
-        src: storageScreenshot,
+        src: manageStorageScreenshot,
         alt: "oboku storage screen listing books downloaded for offline reading",
       },
       secondary: {
-        src: einkScreenshot,
+        src: libraryEInkScreenshot,
         alt: "oboku library in e-ink mode, with a high-contrast monochrome interface",
       },
     },

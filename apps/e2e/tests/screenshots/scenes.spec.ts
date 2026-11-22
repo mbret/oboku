@@ -44,8 +44,7 @@ const CAPTURE_TIME = new Date("2026-11-02T09:41:00Z")
 
 const TARGET_TIMEOUT_MS = 300_000
 
-const SCREENSHOTS_DIR = path.join(import.meta.dirname, "../../screenshots")
-const WEB_PUBLIC_DIR = path.join(import.meta.dirname, "../../../web/public")
+const APPS_DIR = path.join(import.meta.dirname, "../../..")
 
 /** A library card shows 1% for a book at its start. */
 const progressPastTheStart = /^([2-9]|\d{2,})%$/
@@ -98,6 +97,20 @@ async function expectChapterOneOfTheTimeMachine(page: Page) {
   return chapterOne
 }
 
+async function showLibrary(page: Page) {
+  await page.goto("/library/books")
+  await expect(page.getByText(LITTLE_NEMO.title, { exact: true })).toBeVisible()
+}
+
+async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
+  await page.goto("/profile/settings")
+  await page.getByRole("button", { name: /^Color mode/ }).click()
+  await page.getByRole("button", { name: colorMode, exact: true }).click()
+  await expect(
+    page.getByRole("button", { name: `Color mode ${colorMode}` }),
+  ).toBeVisible()
+}
+
 async function expectFirstPageOfLittleNemo(page: Page) {
   const firstPage = firstReaderPage(page)
 
@@ -122,11 +135,15 @@ const SCENES = {
     },
   },
   library: {
-    show: async function showLibrary(page) {
-      await page.goto("/library/books")
-      await expect(
-        page.getByText(LITTLE_NEMO.title, { exact: true }),
-      ).toBeVisible()
+    show: showLibrary,
+  },
+  "library-e-ink": {
+    show: async function showLibraryInEInk(page) {
+      await setColorMode(page, "E-ink")
+      await showLibrary(page)
+    },
+    leave: async function restoreColorMode(page) {
+      await setColorMode(page, "System")
     },
   },
   "book-details": {
@@ -138,20 +155,47 @@ const SCENES = {
     },
   },
   "epub-reader": {
-    show: async function showEpubReader(page, bookDetailsUrls) {
+    show: async function showEpubReaderWithItsMenu(page, bookDetailsUrls) {
       await openReaderOn(page, bookDetailsUrls, THE_TIME_MACHINE.title)
       await expectReaderPageRevealed(
         await expectChapterOneOfTheTimeMachine(page),
       )
+      await showReaderMenu(page)
+      await expect(
+        page.getByRole("button", { name: "Table of contents" }),
+      ).toBeVisible()
     },
     leave: closeReader,
   },
-  "comic-reader": {
-    show: async function showComicReader(page, bookDetailsUrls) {
-      await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
-      await expectReaderPageRevealed(await expectFirstPageOfLittleNemo(page))
+  "manage-storage": {
+    show: async function showManageStorage(page) {
+      await page.goto("/profile/manage-storage")
+      await expect(page.getByText(/ used of /)).toBeVisible()
+      await expect(
+        page.getByText(LITTLE_NEMO.title, { exact: true }),
+      ).toBeVisible()
     },
-    leave: closeReader,
+  },
+  "data-sources": {
+    show: async function showDataSources(page) {
+      await page.goto("/sync/datasources")
+      await expect(page.getByText(/^Last synced at /)).toBeVisible()
+    },
+  },
+  "add-data-source": {
+    show: async function showAddDataSource(page) {
+      await page.goto("/sync/datasources")
+      await page.getByRole("button", { name: "Add a new source" }).click()
+      await expect(
+        page.getByRole("button", { name: "Server files" }),
+      ).toBeVisible()
+    },
+  },
+  profile: {
+    show: async function showProfile(page) {
+      await page.goto("/profile")
+      await expect(page.getByText(/ used of /)).toBeVisible()
+    },
   },
 } satisfies Record<string, Scene>
 
@@ -163,13 +207,10 @@ type Target = {
   deviceScaleFactor: number
   colorScheme: "light" | "dark"
   locale: string
+  /** Each scene is saved there as `<scene>.png`. */
   outputDir: string
-  /** The scenes this target captures, in order, and the file each is saved to. */
-  captures: { scene: SceneName; fileName: string }[]
-}
-
-function captureNamedAfterScene(scene: SceneName) {
-  return { scene, fileName: `${scene}.png` }
+  /** The scenes this target captures, in order. */
+  scenes: SceneName[]
 }
 
 const TARGETS: Target[] = [
@@ -179,16 +220,8 @@ const TARGETS: Target[] = [
     deviceScaleFactor: 3,
     colorScheme: "light",
     locale: "en-US",
-    outputDir: path.join(SCREENSHOTS_DIR, "play-phone", "en"),
-    captures: (
-      [
-        "home",
-        "library",
-        "book-details",
-        "epub-reader",
-        "comic-reader",
-      ] satisfies SceneName[]
-    ).map(captureNamedAfterScene),
+    outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
+    scenes: ["home", "library", "book-details", "epub-reader"],
   },
   {
     name: "web-manifest",
@@ -196,12 +229,29 @@ const TARGETS: Target[] = [
     deviceScaleFactor: 2,
     colorScheme: "light",
     locale: "en-US",
-    // The file names apps/web/public/manifest.json lists.
-    outputDir: WEB_PUBLIC_DIR,
-    captures: [
-      { scene: "home", fileName: "app.oboku.me_(iPhone 5_SE).png" },
-      { scene: "library", fileName: "app.oboku.me_(iPhone 5_SE) (1).png" },
-      { scene: "epub-reader", fileName: "app.oboku.me_(iPhone 5_SE) (2).png" },
+    outputDir: path.join(APPS_DIR, "web/public/manifest-screenshots"),
+    scenes: ["home", "library", "epub-reader"],
+  },
+  {
+    name: "landing",
+    viewport: { width: 375, height: 667 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(
+      APPS_DIR,
+      "landing/src/features/common/app-screenshots",
+    ),
+    scenes: [
+      "home",
+      "library",
+      "book-details",
+      "epub-reader",
+      "manage-storage",
+      "data-sources",
+      "add-data-source",
+      "profile",
+      "library-e-ink",
     ],
   },
 ]
@@ -338,14 +388,14 @@ for (const target of TARGETS) {
       await page.setViewportSize(target.viewport)
       await startReading(page, bookDetailsUrls)
 
-      for (const { scene, fileName } of target.captures) {
+      for (const scene of target.scenes) {
         const sceneToCapture: Scene = SCENES[scene]
 
         await page.clock.setSystemTime(CAPTURE_TIME)
         await sceneToCapture.show(page, bookDetailsUrls)
         await waitForScreenToSettle(page)
         await page.screenshot({
-          path: path.join(target.outputDir, fileName),
+          path: path.join(target.outputDir, `${scene}.png`),
           animations: "disabled",
         })
         await sceneToCapture.leave?.(page)
