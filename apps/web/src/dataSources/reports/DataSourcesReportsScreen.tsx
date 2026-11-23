@@ -9,6 +9,7 @@ import {
 } from "@mui/material"
 import { Fragment } from "react/jsx-runtime"
 import { EmptyAlert } from "../../common/alerts/EmptyAlert"
+import { ErrorAlert } from "../../errors/ErrorMessage"
 import {
   formatReportDateTime,
   getRxModelLabelFromValue,
@@ -91,6 +92,9 @@ export const DataSourcesReportsScreen = memo(
                       pl: 1,
                     }}
                   >
+                    {entry.report.error_code && (
+                      <ErrorAlert error={entry.report.error_code} />
+                    )}
                     {entry.report.has_different_provider_credentials && (
                       <Alert severity="info">
                         Some books or collections were synced but could not have
