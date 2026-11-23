@@ -3,7 +3,7 @@
 import { Box, Stack, styled } from "@mui/material"
 import { BandSection } from "../common/BandSection"
 
-const sectionScrollMargin = 140
+export const sectionScrollMargin = 140
 
 export const FeatureGroupBandSection = styled(BandSection)({
   scrollMarginTop: sectionScrollMargin,
@@ -14,7 +14,7 @@ export const LayoutBox = styled(Box)(function styleLayoutBox({ theme }) {
     display: "grid",
     gap: theme.spacing(6),
     alignItems: "center",
-    gridTemplateAreas: '"text" "screenshots"',
+    gridTemplateAreas: '"text" "illustration"',
     "&[data-layout=text-only]": {
       gridTemplateAreas: '"text"',
     },
@@ -22,11 +22,11 @@ export const LayoutBox = styled(Box)(function styleLayoutBox({ theme }) {
       gap: theme.spacing(10),
       "&[data-layout=text-first]": {
         gridTemplateColumns: "7fr 5fr",
-        gridTemplateAreas: '"text screenshots"',
+        gridTemplateAreas: '"text illustration"',
       },
-      "&[data-layout=screenshots-first]": {
+      "&[data-layout=illustration-first]": {
         gridTemplateColumns: "5fr 7fr",
-        gridTemplateAreas: '"screenshots text"',
+        gridTemplateAreas: '"illustration text"',
       },
     },
   }
@@ -39,8 +39,8 @@ export const TextStack = styled(Stack)(function styleTextStack({ theme }) {
   }
 })
 
-export const ScreenshotsAreaBox = styled(Box)({
-  gridArea: "screenshots",
+export const IllustrationAreaBox = styled(Box)({
+  gridArea: "illustration",
 })
 
 export const FeatureGridBox = styled(Box)(function styleFeatureGridBox({

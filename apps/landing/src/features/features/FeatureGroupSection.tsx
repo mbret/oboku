@@ -1,19 +1,18 @@
 import { Box, Chip, Container, Stack, Typography } from "@mui/material"
 import { FeatureIconBox } from "../common/FeatureIconBox"
-import { PhoneScreenshots } from "../common/PhoneScreenshots"
 import { SectionHeading } from "../common/SectionHeading"
 import type { FeatureGroup } from "./content"
 import {
   FeatureGridBox,
   FeatureGroupBandSection,
+  IllustrationAreaBox,
   LayoutBox,
-  ScreenshotsAreaBox,
   TextStack,
   WideFeatureGridBox,
 } from "./FeatureGroupSection.styled"
 
 function FeatureList({ group }: { group: FeatureGroup }) {
-  const FeatureGrid = group.screenshots ? FeatureGridBox : WideFeatureGridBox
+  const FeatureGrid = group.illustration ? FeatureGridBox : WideFeatureGridBox
 
   return (
     <FeatureGrid>
@@ -49,8 +48,8 @@ export function FeatureGroupSection({
   group: FeatureGroup
   isAlternate: boolean
 }) {
-  const screenshotsLayout = isAlternate ? "screenshots-first" : "text-first"
-  const layout = group.screenshots ? screenshotsLayout : "text-only"
+  const illustrationLayout = isAlternate ? "illustration-first" : "text-first"
+  const layout = group.illustration ? illustrationLayout : "text-only"
   const titleId = `${group.id}-title`
 
   return (
@@ -97,10 +96,8 @@ export function FeatureGroupSection({
               <FeatureList group={group} />
             </Box>
           </TextStack>
-          {group.screenshots && (
-            <ScreenshotsAreaBox>
-              <PhoneScreenshots {...group.screenshots} />
-            </ScreenshotsAreaBox>
+          {group.illustration && (
+            <IllustrationAreaBox>{group.illustration}</IllustrationAreaBox>
           )}
         </LayoutBox>
       </Container>

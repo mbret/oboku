@@ -22,7 +22,6 @@ import {
   addServerLibrary,
   downloadFromDetailsScreen,
   expectServerLibraryBooks,
-  libraryBookCard,
   openBookDetails,
   readFromDetailsScreen,
   signUp,
@@ -55,9 +54,6 @@ const TARGET_TIMEOUT_MS = 300_000
 
 const APPS_DIR = path.join(import.meta.dirname, "../../..")
 
-/** A library card shows 1% for a book at its start. */
-const progressPastTheStart = /^([2-9]|\d{2,})%$/
-
 function detailsUrlOf(bookDetailsUrls: BookDetailsUrlsByTitle, title: string) {
   const bookDetailsUrl = bookDetailsUrls.get(title)
 
@@ -89,13 +85,6 @@ async function closeReader(page: Page) {
   ).toBeVisible()
 }
 
-async function declineBackToReading(page: Page) {
-  await page
-    .getByRole("dialog", { name: "Take me back to my book" })
-    .getByRole("button", { name: "Cancel" })
-    .click()
-}
-
 async function expectChapterOneOfTheTimeMachine(page: Page) {
   const chapterOne = readerPage(page, THE_TIME_MACHINE.chapterOne.path)
 
@@ -125,6 +114,8 @@ async function showDataSources(page: Page) {
 /**
  * In capture order, for every target. A reader scene leaves its book in
  * progress, so it comes after the scenes that show reading progress.
+ * `koreader-progress-sync` offers the sync server that `koreader-sync-server`
+ * turns on, so a target that captures it captures both.
  * `library-e-ink` leaves the app in e-ink, so it comes last, after the reader
  * scenes: where their books are in view, it shows them in progress.
  */
@@ -182,6 +173,57 @@ const SCENES = {
     show: async function showProfile(page) {
       await page.goto("/profile")
       await expect(page.getByText("Sign out", { exact: true })).toBeVisible()
+    },
+  },
+  "optimize-content": {
+    show: async function showComicImageCompression(page, bookDetailsUrls) {
+      await page.goto(detailsUrlOf(bookDetailsUrls, LITTLE_NEMO.title))
+      await page.getByRole("link", { name: /^Optimize your book/ }).click()
+      await expect(page.getByText("Content report")).toBeVisible()
+      await page.getByRole("checkbox", { name: "Compress images" }).check()
+      await page.getByRole("radio", { name: "Convert to WebP" }).check()
+      await page
+        .getByText("Compress images", { exact: true })
+        .locator("..")
+        .evaluate(function alignCompressionOptionToTop(option) {
+          option.scrollIntoView({ block: "start" })
+        })
+    },
+  },
+  "optimize-metadata": {
+    show: async function showEpubIdentifiers(page, bookDetailsUrls) {
+      await page.goto(detailsUrlOf(bookDetailsUrls, TREASURE_ISLAND.title))
+      await page.getByRole("tab", { name: "Metadata" }).click()
+      await page.getByRole("link", { name: /^Fix metadata in file/ }).click()
+      await expect(page.getByText("Metadata report")).toBeVisible()
+      // The stack's data source cannot upload a book back, and an alert above
+      // the tabs says so.
+      await page.getByRole("tablist").evaluate(function alignTabsToTop(tabs) {
+        tabs.scrollIntoView({ block: "start" })
+      })
+    },
+  },
+  "koreader-sync-server": {
+    show: async function showKoreaderSyncServerCredentials(page) {
+      await page.goto("/integrations/koreader/sync-server")
+      await page.getByRole("button", { name: "Generate a password" }).click()
+      await expect(
+        page.getByRole("textbox", { name: "Password", exact: true }),
+      ).not.toHaveValue("")
+      // Clicking the button leaves the screen scrolled down to it.
+      await page
+        .getByText("KOReader sync server", { exact: true })
+        .scrollIntoViewIfNeeded()
+    },
+  },
+  "koreader-progress-sync": {
+    show: async function showProgressSyncThroughObokuServer(page) {
+      await page.goto("/integrations/koreader/progress-sync")
+      await page.getByRole("button", { name: "Use it" }).click()
+      const passwordField = page.getByLabel("Password", { exact: true })
+      await passwordField.fill("abcd-efgh-ijkl-mnop")
+      await passwordField.blur()
+      await expect(page.getByRole("button", { name: "Turn on" })).toBeEnabled()
     },
   },
   "epub-reader": {
@@ -356,22 +398,6 @@ async function markNotificationsAsRead(page: Page) {
 }
 
 /**
- * Waits, from a second tab, until the library card of the book open in `page`
- * shows that the reader saved a position past the start. The reader saves the
- * position about once a second, and closing it sooner can lose the position.
- */
-async function waitForSavedReadingProgress(page: Page, title: string) {
-  const libraryTab = await page.context().newPage()
-
-  await libraryTab.goto("/library/books")
-  await declineBackToReading(libraryTab)
-  await expect(
-    libraryBookCard(libraryTab, title).getByText(progressPastTheStart),
-  ).toBeVisible()
-  await libraryTab.close()
-}
-
-/**
  * Puts The Time Machine on its first chapter and opens Little Nemo, so Home
  * shows both as books in progress.
  */
@@ -388,13 +414,11 @@ async function startReading(
   await showReaderMenu(page)
   await page.getByRole("button", { name: "Table of contents" }).click()
   await page.getByRole("button", { name: "I", exact: true }).click()
-  await expectChapterOneOfTheTimeMachine(page)
-  await waitForSavedReadingProgress(page, THE_TIME_MACHINE.title)
+  await expectReaderPageRevealed(await expectChapterOneOfTheTimeMachine(page))
   await closeReader(page)
 
   await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
-  await expectFirstImagePage(page)
-  await waitForSavedReadingProgress(page, LITTLE_NEMO.title)
+  await expectReaderPageRevealed(await expectFirstImagePage(page))
   await closeReader(page)
 }
 

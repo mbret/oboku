@@ -25,6 +25,7 @@ export const LibraryTopTabNavigator = () => {
   const TopBarNavigationRightComponent = useMemo(
     () => (
       <IconButton
+        aria-label="Sync library"
         disabled={activeSyncs > 0}
         onClick={() => {
           triggerReplication()

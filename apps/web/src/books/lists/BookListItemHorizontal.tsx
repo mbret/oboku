@@ -230,6 +230,7 @@ export const BookListItemHorizontal = memo(function BookListItemHorizontal({
       secondaryAction={
         withDrawerActions ? (
           <IconButton
+            aria-label="More actions"
             edge="end"
             size="large"
             onClick={(event) => {

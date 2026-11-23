@@ -124,6 +124,7 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
                       <LockRounded color="disabled" />
                     )}
                     <IconButton
+                      aria-label="More actions"
                       edge="end"
                       disableTouchRipple
                       onClick={(e) => {
