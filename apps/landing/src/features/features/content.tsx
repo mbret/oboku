@@ -45,7 +45,7 @@ import {
 import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
 import type { ReactNode } from "react"
-import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
+import { PhoneScreenshots } from "../common/PhoneScreenshots"
 import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.webp"
 import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.webp"
 import bookDetailsScreenshot from "../common/app-screenshots/book-details.webp"
@@ -83,8 +83,7 @@ export type FeatureGroup = {
   title: string
   description: ReactNode
   features: Feature[]
-  screenshots?: PhoneScreenshotSet
-  diagram?: ReactNode
+  illustration?: ReactNode
   chips?: FeatureChip[]
 }
 
@@ -112,20 +111,22 @@ export const featureGroups: FeatureGroup[] = [
         , an engine designed to open any kind of content.
       </>
     ),
-    screenshots: {
-      primary: {
-        src: epubReaderScreenshot,
-        alt: "oboku reader displaying a chapter of an EPUB novel, with its menu and progress bar",
-      },
-      secondary: {
-        src: mangaReaderScreenshot,
-        alt: "Black and white manga page open in the oboku reader",
-      },
-      tertiary: {
-        src: audiobookReaderScreenshot,
-        alt: "An audiobook open in the oboku reader, with its sound wave and playback controls",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: epubReaderScreenshot,
+          alt: "oboku reader displaying a chapter of an EPUB novel, with its menu and progress bar",
+        }}
+        secondary={{
+          src: mangaReaderScreenshot,
+          alt: "Black and white manga page open in the oboku reader",
+        }}
+        tertiary={{
+          src: audiobookReaderScreenshot,
+          alt: "An audiobook open in the oboku reader, with its sound wave and playback controls",
+        }}
+      />
+    ),
     chips: supportedExtensions.map((extension) => ({ label: extension })),
     features: [
       {
@@ -179,16 +180,18 @@ export const featureGroups: FeatureGroup[] = [
     title: "Your books stay where they already are",
     description:
       "Connect the storage you already use and oboku builds your library from it. Book files are never stored on oboku's servers: only your library, your reading progress and your annotations are synced.",
-    screenshots: {
-      primary: {
-        src: dataSourcesScreenshot,
-        alt: "oboku data sources screen with a server library and the day of its last sync",
-      },
-      secondary: {
-        src: addDataSourceScreenshot,
-        alt: "Adding an oboku data source from Dropbox or Google Drive",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: dataSourcesScreenshot,
+          alt: "oboku data sources screen with a server library and the day of its last sync",
+        }}
+        secondary={{
+          src: addDataSourceScreenshot,
+          alt: "Adding an oboku data source from Dropbox or Google Drive",
+        }}
+      />
+    ),
     chips: syncProviders,
     features: [
       {
@@ -235,20 +238,22 @@ export const featureGroups: FeatureGroup[] = [
     title: "A library that organizes itself",
     description:
       "Covers, titles, authors and series details are filled in for you. Organize the rest with shelves, tags and filters.",
-    screenshots: {
-      primary: {
-        src: libraryScreenshot,
-        alt: "oboku library grid with books, shelves and tags tabs",
-      },
-      secondary: {
-        src: bookDetailsScreenshot,
-        alt: "oboku book details page with cover, authors and download button",
-      },
-      tertiary: {
-        src: homeScreenshot,
-        alt: "oboku home screen with continue reading and recently added books",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: libraryScreenshot,
+          alt: "oboku library grid with books, shelves and tags tabs",
+        }}
+        secondary={{
+          src: bookDetailsScreenshot,
+          alt: "oboku book details page with cover, authors and download button",
+        }}
+        tertiary={{
+          src: homeScreenshot,
+          alt: "oboku home screen with continue reading and recently added books",
+        }}
+      />
+    ),
     features: [
       {
         Icon: AutoAwesomeRounded,
@@ -296,16 +301,18 @@ export const featureGroups: FeatureGroup[] = [
     title: "Offline-first, on every device",
     description:
       "oboku is a progressive web app: anything with a modern browser runs it, and it keeps working when the connection drops.",
-    screenshots: {
-      primary: {
-        src: manageStorageScreenshot,
-        alt: "oboku storage screen listing books downloaded for offline reading",
-      },
-      secondary: {
-        src: libraryEInkScreenshot,
-        alt: "oboku library in e-ink mode, with a high-contrast monochrome interface",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: manageStorageScreenshot,
+          alt: "oboku storage screen listing books downloaded for offline reading",
+        }}
+        secondary={{
+          src: libraryEInkScreenshot,
+          alt: "oboku library in e-ink mode, with a high-contrast monochrome interface",
+        }}
+      />
+    ),
     features: [
       {
         Icon: WifiOffRounded,
@@ -358,7 +365,7 @@ export const featureGroups: FeatureGroup[] = [
       { label: "OPDS 1.2" },
       { label: "OPDS 2.0" },
     ],
-    diagram: <OpdsDiagram />,
+    illustration: <OpdsDiagram />,
     features: [
       {
         Icon: CollectionsBookmarkRounded,
@@ -411,16 +418,18 @@ export const featureGroups: FeatureGroup[] = [
       { label: "Readest" },
       { label: "CrossPoint" },
     ],
-    screenshots: {
-      primary: {
-        src: koreaderSyncServerScreenshot,
-        alt: "oboku KOReader sync server screen with the server, username and generated password to enter in KOReader",
-      },
-      secondary: {
-        src: koreaderProgressSyncScreenshot,
-        alt: "oboku KOReader progress sync screen filled in with oboku's own sync server",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: koreaderSyncServerScreenshot,
+          alt: "oboku KOReader sync server screen with the server, username and generated password to enter in KOReader",
+        }}
+        secondary={{
+          src: koreaderProgressSyncScreenshot,
+          alt: "oboku KOReader progress sync screen filled in with oboku's own sync server",
+        }}
+      />
+    ),
     features: [
       {
         Icon: SyncRounded,
@@ -462,12 +471,14 @@ export const featureGroups: FeatureGroup[] = [
     title: "Private by design, safe to share",
     description:
       "Share an account with your family without sharing everything in it. Sensitive content stays hidden, and your credentials stay yours.",
-    screenshots: {
-      primary: {
-        src: profileScreenshot,
-        alt: "oboku profile screen with the account and hidden protected contents",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: profileScreenshot,
+          alt: "oboku profile screen with the account and hidden protected contents",
+        }}
+      />
+    ),
     features: [
       {
         Icon: LockRounded,
@@ -502,16 +513,18 @@ export const featureGroups: FeatureGroup[] = [
     title: "Make your books lighter and cleaner",
     description:
       "Inspect any book, shrink oversized comics, fix its identifiers, and save the result back to where it came from.",
-    screenshots: {
-      primary: {
-        src: optimizeContentScreenshot,
-        alt: "oboku Optimize screen for a comic, with image compression on and WebP chosen as the output format",
-      },
-      secondary: {
-        src: optimizeMetadataScreenshot,
-        alt: "oboku Optimize screen for an EPUB, with its metadata report and its identifiers",
-      },
-    },
+    illustration: (
+      <PhoneScreenshots
+        primary={{
+          src: optimizeContentScreenshot,
+          alt: "oboku Optimize screen for a comic, with image compression on and WebP chosen as the output format",
+        }}
+        secondary={{
+          src: optimizeMetadataScreenshot,
+          alt: "oboku Optimize screen for an EPUB, with its metadata report and its identifiers",
+        }}
+      />
+    ),
     features: [
       {
         Icon: CompressRounded,

@@ -1,6 +1,8 @@
 "use client"
 
+import { ArrowForwardRounded } from "@mui/icons-material"
 import { Box, Stack, styled } from "@mui/material"
+import { outlinedCardStyles } from "../common/outlinedCardStyles"
 
 export const DiagramFigure = styled("figure")({
   margin: "0 auto",
@@ -21,7 +23,9 @@ export const DiagramGridBox = styled(Box)(function styleDiagramGridBox({
   }
 })
 
-export const NodesStack = styled(Stack)(function styleNodesStack({ theme }) {
+export const NodeColumnStack = styled(Stack)(function styleNodeColumnStack({
+  theme,
+}) {
   return {
     gap: theme.spacing(1.5),
   }
@@ -29,13 +33,11 @@ export const NodesStack = styled(Stack)(function styleNodesStack({ theme }) {
 
 export const NodeStack = styled(Stack)(function styleNodeStack({ theme }) {
   return {
+    ...outlinedCardStyles(theme),
     alignItems: "center",
     gap: theme.spacing(0.75),
     padding: theme.spacing(1.5, 1),
     textAlign: "center",
-    borderRadius: theme.spacing(1.5),
-    border: `1px solid ${theme.vars.palette.divider}`,
-    backgroundColor: theme.vars.palette.background.paper,
   }
 })
 
@@ -50,9 +52,10 @@ export const ObokuNodeStack = styled(NodeStack)(function styleObokuNodeStack({
   }
 })
 
-export const ArrowStack = styled(Stack)(function styleArrowStack({ theme }) {
-  return {
-    alignItems: "center",
-    color: theme.vars.palette.text.secondary,
-  }
-})
+export const FlowArrowIcon = styled(ArrowForwardRounded)(
+  function styleFlowArrowIcon({ theme }) {
+    return {
+      color: theme.vars.palette.text.secondary,
+    }
+  },
+)

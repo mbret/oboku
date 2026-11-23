@@ -1,5 +1,4 @@
 import {
-  ArrowForwardRounded,
   CloudRounded,
   DevicesRounded,
   DnsRounded,
@@ -10,11 +9,11 @@ import { Typography } from "@mui/material"
 import { FeatureIconBox } from "../common/FeatureIconBox"
 import { ObokuLogoIcon } from "../common/ObokuLogoIcon"
 import {
-  ArrowStack,
   DiagramFigure,
   DiagramGridBox,
+  FlowArrowIcon,
+  NodeColumnStack,
   NodeStack,
-  NodesStack,
   ObokuNodeStack,
 } from "./OpdsDiagram.styled"
 
@@ -36,7 +35,7 @@ const readingApps: DiagramNode[] = [
 
 function DiagramNodes({ nodes }: { nodes: DiagramNode[] }) {
   return (
-    <NodesStack>
+    <NodeColumnStack>
       {nodes.map(function renderNode({ Icon, label, detail }) {
         return (
           <NodeStack key={label}>
@@ -54,15 +53,7 @@ function DiagramNodes({ nodes }: { nodes: DiagramNode[] }) {
           </NodeStack>
         )
       })}
-    </NodesStack>
-  )
-}
-
-function FlowArrow() {
-  return (
-    <ArrowStack aria-hidden="true">
-      <ArrowForwardRounded />
-    </ArrowStack>
+    </NodeColumnStack>
   )
 }
 
@@ -71,7 +62,7 @@ export function OpdsDiagram() {
     <DiagramFigure aria-label="Books from Google Drive and WebDAV reach KOReader and other reading apps through oboku's OPDS server">
       <DiagramGridBox>
         <DiagramNodes nodes={sources} />
-        <FlowArrow />
+        <FlowArrowIcon />
         <ObokuNodeStack>
           <ObokuLogoIcon width={32} height={36} />
           <Typography
@@ -85,7 +76,7 @@ export function OpdsDiagram() {
             OPDS server
           </Typography>
         </ObokuNodeStack>
-        <FlowArrow />
+        <FlowArrowIcon />
         <DiagramNodes nodes={readingApps} />
       </DiagramGridBox>
     </DiagramFigure>
