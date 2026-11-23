@@ -7,12 +7,14 @@
     "stack:up": "docker compose up --build --wait",
     "stack:down": "docker compose down --volumes",
     "e2e": "playwright test --project=smoke",
+    "screenshots": "playwright test --project=screenshots",
     "tsc": "tsc"
   },
   "devDependencies": {
     "@oboku/shared": "workspace:*",
     "@playwright/test": "^1.65.1",
-    "@types/node": "^24.19.2"
+    "@types/node": "^24.19.2",
+    "sharp": "^0.35.5"
   },
   "nx": {
     "targets": {
@@ -22,6 +24,11 @@
         ]
       },
       "tsc": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "screenshots": {
         "dependsOn": [
           "^build"
         ]

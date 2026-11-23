@@ -105,8 +105,7 @@ export const extractDirectivesFromName = (
 
     if (directive.startsWith("tags~")) {
       const newTags: string[] | undefined = directive
-        // biome-ignore lint/complexity/noUselessEscapeInRegex: TODO
-        .replace(/tags\~/, "")
+        .replace(/tags~/, "")
         .split(",")
       tags = [...tags, ...(newTags || [])]
     }

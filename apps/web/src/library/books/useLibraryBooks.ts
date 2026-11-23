@@ -1,5 +1,4 @@
 import { isShallowEqual } from "@oboku/shared"
-import { useMemo, useRef } from "react"
 import { sortBooksBy } from "../../books/helpers"
 import { useBooks } from "../../books/states"
 import {
@@ -16,14 +15,13 @@ const selectDownloadedBookIds = (bookDownloadState: BooksDownloadState) =>
       bookDownloadState[bookId]?.downloadState === DownloadState.Downloaded,
   )
 
+/**
+ * The ids of the books the library shows, filtered and sorted by the library
+ * state. The array keeps its reference while the ids stay the same, through
+ * react-query's structural sharing of the `select` result.
+ */
 export const useLibraryBooks = () => {
-  // Reads/writes a ref during render, which React Compiler refuses to memoize.
-  // TODO: rework so no ref is touched during render, then drop this opt-out.
-  "use no memo"
-
-  const results = useRef<string[]>([])
   const library = useSignalValue(libraryStateSignal)
-  const { data: unsortedBooks } = useBooks()
   const downloadedBookIds = useSignalValue(
     booksDownloadStateSignal,
     selectDownloadedBookIds,
@@ -39,61 +37,40 @@ export const useLibraryBooks = () => {
   const downloadedBookIdsFilter =
     downloadState === DownloadState.Downloaded ? downloadedBookIds : undefined
 
-  const bookIds = useMemo(
-    function computeVisibleBookIds() {
+  const { data: bookIds } = useBooks({
+    select: function selectVisibleBookIds(books) {
       const downloadedBookIdSet =
         downloadedBookIdsFilter && new Set(downloadedBookIdsFilter)
 
-      const filteredBooks = (unsortedBooks ?? []).filter(
-        function matchesLibraryFilters(book) {
-          if (downloadedBookIdSet && !downloadedBookIdSet.has(book._id)) {
-            return false
-          }
+      const filteredBooks = books.filter(function matchesLibraryFilters(book) {
+        if (downloadedBookIdSet && !downloadedBookIdSet.has(book._id)) {
+          return false
+        }
 
-          if (
-            filteredTags?.length &&
-            !book?.tags?.some((tagId) => filteredTags.includes(tagId))
-          ) {
-            return false
-          }
+        if (
+          filteredTags?.length &&
+          !book?.tags?.some((tagId) => filteredTags.includes(tagId))
+        ) {
+          return false
+        }
 
-          if (
-            readingStates.length &&
-            !readingStates.includes(book.readingStateCurrentState)
-          ) {
-            return false
-          }
+        if (
+          readingStates.length &&
+          !readingStates.includes(book.readingStateCurrentState)
+        ) {
+          return false
+        }
 
-          if (isNotInterested !== "only" && book.isNotInterested) return false
+        if (isNotInterested !== "only" && book.isNotInterested) return false
 
-          if (isNotInterested === "only" && !book.isNotInterested) return false
+        if (isNotInterested === "only" && !book.isNotInterested) return false
 
-          return true
-        },
-      )
+        return true
+      })
 
       return sortBooksBy(filteredBooks, sorting).map((book) => book._id)
     },
-    [
-      downloadedBookIdsFilter,
-      filteredTags,
-      isNotInterested,
-      readingStates,
-      sorting,
-      unsortedBooks,
-    ],
-  )
+  })
 
-  if (bookIds.length !== results.current.length) {
-    results.current = bookIds
-  } else {
-    for (let i = 0; i < bookIds.length; i++) {
-      if (bookIds[i] !== results.current[i]) {
-        results.current = bookIds
-        break
-      }
-    }
-  }
-
-  return results.current
+  return bookIds ?? []
 }

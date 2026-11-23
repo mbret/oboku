@@ -9,8 +9,7 @@ export type DriveFileGetResponse = Awaited<
 
 type DriveResponseError = {
   body?: string
-  // biome-ignore lint/complexity/noBannedTypes: TODO
-  headers?: {}
+  headers?: DriveFileGetResponse["headers"]
   result?: {
     error?: {
       code?: number

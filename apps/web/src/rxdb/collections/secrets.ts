@@ -10,9 +10,6 @@ import { getReplicationProperties } from "../replication/getReplicationPropertie
 import { from, type Observable, switchMap } from "rxjs"
 import { throwIfNotDefined } from "../../common/rxjs/operators"
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type DocMethods = {}
-
 export type RxdbSecretDocType = Omit<
   SecretDocType,
   `_rev` | `rxdbMeta` | `rxdbMeta`
@@ -30,7 +27,7 @@ type CollectionMethods = {
 
 export type SecretCollection = RxCollection<
   RxdbSecretDocType,
-  DocMethods,
+  object,
   CollectionMethods
 >
 
@@ -56,8 +53,6 @@ const schema: RxJsonSchema<RxdbSecretDocType> = {
   },
   required: ["name", "value"],
 }
-
-const docMethods: DocMethods = {}
 
 const statics: CollectionMethods = {
   incrementalRemoveDocument: function (this: SecretCollection, id: string) {
@@ -86,7 +81,6 @@ const migrationStrategies: MigrationStrategies = {}
 
 export const secretCollection: RxCollectionCreator<RxdbSecretDocType> = {
   schema: schema,
-  methods: docMethods,
   statics,
   migrationStrategies: migrationStrategies,
 }

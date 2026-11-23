@@ -23,24 +23,19 @@ import {
   collectionActionDrawerState,
 } from "./useCollectionActionsDrawer"
 import { RenameCollectionDialog } from "./RenameCollectionDialog"
-import { COLLECTION_METADATA_LOCK_MN } from "@oboku/shared"
 import { useDismissibleOverlay } from "../../navigation/modalHistory"
 import { ROUTES } from "../../navigation/routes"
 import { useRefreshCollectionMetadata } from "../useRefreshCollectionMetadata"
+import { useIsCollectionMetadataRefreshing } from "../useIsCollectionMetadataRefreshing"
 import { useRemoveCollection } from "../useRemoveCollection"
 import { useUpdateCollectionBooks } from "../useUpdateCollectionBooks"
 import { useCollection } from "../useCollection"
 import { useConfig } from "../../config/useConfig"
 import { useCollectionReadingProgress } from "../useCollectionReadingProgress"
 import { useMarkBooksAsFinished } from "../../books/useMarkBookAs"
-import { differenceInMinutes } from "../../common/date/differenceInMinutes"
 import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 
 export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
-  // Reads the clock during render, which React Compiler would cache until the collection changes.
-  // TODO: move the Date.now() read out of render, then drop this opt-out.
-  "use no memo"
-
   const { openedWith, lastId: collectionId } = useSignalValue(
     collectionActionDrawerState,
   )
@@ -86,12 +81,7 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
     id && removeCollection({ _id: id })
   }
 
-  const isRefreshingMetadata = !!(
-    collection?.metadataUpdateStatus === "fetching" &&
-    collection.lastMetadataStartedAt &&
-    differenceInMinutes(Date.now(), collection.lastMetadataStartedAt) <
-      COLLECTION_METADATA_LOCK_MN
-  )
+  const isRefreshingMetadata = useIsCollectionMetadataRefreshing(collection)
 
   const isCollectionFromDataSource = !!collection?.linkType
   const canRemoveCollection = !!collection && !isCollectionFromDataSource

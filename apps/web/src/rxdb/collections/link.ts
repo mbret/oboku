@@ -5,14 +5,11 @@ import { generateId, migrateResourceIdToData } from "./utils"
 
 export type LinkCollection = RxCollection<
   LinkDocType,
-  LinkDocMethods,
+  object,
   LinkCollectionMethods
 >
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type LinkDocMethods = {}
-
-type LinkDocument = RxDocument<LinkDocType, LinkDocMethods>
+type LinkDocument = RxDocument<LinkDocType>
 
 type LinkCollectionMethods = {
   safeInsert: (
@@ -65,8 +62,6 @@ const linkSchemaMigrationStrategies = {
   },
 }
 
-const linkDocMethods: LinkDocMethods = {}
-
 const linkCollectionMethods: LinkCollectionMethods = {
   safeInsert: async function (this: LinkCollection, json) {
     return this.insert({ _id: generateId(), ...json } as LinkDocType)
@@ -76,6 +71,5 @@ const linkCollectionMethods: LinkCollectionMethods = {
 export const link = {
   schema: linkSchema,
   statics: linkCollectionMethods,
-  methods: linkDocMethods,
   migrationStrategies: linkSchemaMigrationStrategies,
 }

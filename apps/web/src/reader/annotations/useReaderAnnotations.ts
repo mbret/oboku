@@ -5,6 +5,7 @@ import {
   usePendingAnnotationWrites,
   useWriteAnnotation,
 } from "../../annotations/useWriteAnnotation"
+import { generateId } from "../../rxdb/collections/utils"
 
 type ReaderAnnotations = Pick<
   ReactReaderProviderProps,
@@ -32,7 +33,10 @@ export const useReaderAnnotations = ({
       storedAnnotations &&
       pendingWrites.reduce(applyAnnotationWrite, storedAnnotations),
     onAnnotationCreate: function writeCreatedAnnotation(annotation) {
-      writeAnnotation({ type: "create", annotation })
+      writeAnnotation({
+        type: "create",
+        annotation: { ...annotation, id: generateId() },
+      })
     },
     onAnnotationUpdate: function writeUpdatedAnnotation(annotation) {
       writeAnnotation({ type: "update", annotation })

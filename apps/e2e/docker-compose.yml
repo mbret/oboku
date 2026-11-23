@@ -53,8 +53,11 @@ services:
       APP_PUBLIC_URL: http://localhost:4280
       ADMIN_LOGIN: admin
       ADMIN_PASSWORD: password
+      # A placeholder, so the app offers Dropbox, as the hosted app does.
+      DROPBOX_CLIENT_ID: e2e-placeholder
     volumes:
       - secrets:/secrets:ro
+      - ./fixtures/books:/var/lib/oboku/library:ro
     networks:
       - stack
     healthcheck:
