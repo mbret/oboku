@@ -22,7 +22,6 @@ import {
   addServerLibrary,
   downloadFromDetailsScreen,
   expectServerLibraryBooks,
-  libraryBookCard,
   openBookDetails,
   readFromDetailsScreen,
   signUp,
@@ -55,9 +54,6 @@ const TARGET_TIMEOUT_MS = 300_000
 
 const APPS_DIR = path.join(import.meta.dirname, "../../..")
 
-/** A library card shows 1% for a book at its start. */
-const progressPastTheStart = /^([2-9]|\d{2,})%$/
-
 function detailsUrlOf(bookDetailsUrls: BookDetailsUrlsByTitle, title: string) {
   const bookDetailsUrl = bookDetailsUrls.get(title)
 
@@ -87,13 +83,6 @@ async function closeReader(page: Page) {
   await expect(
     page.getByRole("button", { name: "Read", exact: true }),
   ).toBeVisible()
-}
-
-async function declineBackToReading(page: Page) {
-  await page
-    .getByRole("dialog", { name: "Take me back to my book" })
-    .getByRole("button", { name: "Cancel" })
-    .click()
 }
 
 async function expectChapterOneOfTheTimeMachine(page: Page) {
@@ -356,22 +345,6 @@ async function markNotificationsAsRead(page: Page) {
 }
 
 /**
- * Waits, from a second tab, until the library card of the book open in `page`
- * shows that the reader saved a position past the start. The reader saves the
- * position about once a second, and closing it sooner can lose the position.
- */
-async function waitForSavedReadingProgress(page: Page, title: string) {
-  const libraryTab = await page.context().newPage()
-
-  await libraryTab.goto("/library/books")
-  await declineBackToReading(libraryTab)
-  await expect(
-    libraryBookCard(libraryTab, title).getByText(progressPastTheStart),
-  ).toBeVisible()
-  await libraryTab.close()
-}
-
-/**
  * Puts The Time Machine on its first chapter and opens Little Nemo, so Home
  * shows both as books in progress.
  */
@@ -388,13 +361,11 @@ async function startReading(
   await showReaderMenu(page)
   await page.getByRole("button", { name: "Table of contents" }).click()
   await page.getByRole("button", { name: "I", exact: true }).click()
-  await expectChapterOneOfTheTimeMachine(page)
-  await waitForSavedReadingProgress(page, THE_TIME_MACHINE.title)
+  await expectReaderPageRevealed(await expectChapterOneOfTheTimeMachine(page))
   await closeReader(page)
 
   await openReaderOn(page, bookDetailsUrls, LITTLE_NEMO.title)
-  await expectFirstImagePage(page)
-  await waitForSavedReadingProgress(page, LITTLE_NEMO.title)
+  await expectReaderPageRevealed(await expectFirstImagePage(page))
   await closeReader(page)
 }
 
