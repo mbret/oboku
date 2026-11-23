@@ -36,7 +36,10 @@ pnpm --filter @oboku/e2e stack:down
 
 CouchDB, Postgres and the API run on a network with no internet access, so the API's metadata lookups (Google Books, OpenLibrary and others) always fail. In the browser, the tests abort every request to a host other than `localhost`. What a test sees then depends on the app only.
 
-The API mounts `apps/e2e/fixtures/books` read-only. Before the tests start, `src/globalSetup.ts` turns on [Server Sync](/self-hosting/server-sync) with that folder as its source, through the admin API.
+The API mounts `apps/e2e/fixtures/books` read-only. The stack is configured for the tests:
+
+- Before the tests start, `src/globalSetup.ts` turns on [Server Sync](/self-hosting/server-sync) with that folder as its source, through the admin API.
+- Google Drive and OneDrive get placeholder ids from `src/globalSetup.ts`, and Dropbox gets one from the compose file, so the app offers them as the hosted app does. The Google ids also turn on Google sign-in and the Google Books lookups. All of them fail, because the tests reach no outside host.
 
 ## Writing a test
 
@@ -49,10 +52,10 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 
 - `signUp`: completes the sign-up from a `signUpInvitation`.
 - `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync.
-- `expectServerLibraryBooks`: waits until the library shows each server book's title and author. The API reads them from each file, which can take up to a minute when tests run in parallel.
+- `expectServerLibraryBooks`: waits until the library shows each server book's title and author, each in its card, which `libraryBookCard` finds by its title. The API reads them from each file, which can take up to a minute when tests run in parallel.
 - `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
-`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document.
+`src/reader.ts` finds a page in the reader: by the path of the book document it shows, or the first page, and `expectReaderPageRevealed` waits for the page to fade in. A comic's pages, and the pages of a book opened before the service worker controls the page, have `blob:` addresses that name no document. An audiobook's track has no document: `firstAudioTrackWave` finds the wave the reader draws for it.
 
 The books are in `apps/e2e/fixtures/books`, with their source and licence in `SOURCES.md`. Add only books whose licence allows redistribution. A book added there also appears in every library that `addServerLibrary` syncs, so list it in `SERVER_LIBRARY_BOOKS` in `src/library.ts` too: the server library test and the screenshots read that list.
 
@@ -60,7 +63,7 @@ Wait on what the screen shows, never on a fixed delay. A book added from the dev
 
 ## Screenshots
 
-The `screenshots` Playwright project captures the app's store and web manifest images from the same stack:
+The `screenshots` Playwright project captures every screenshot of the app from the same stack: the Play Store set, the web manifest images and the landing images.
 
 ```bash
 pnpm screenshots
@@ -68,22 +71,29 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** home, library, book details, EPUB reader and comic reader. Each scene has the steps that show it. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen.
-- **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures and the file each one is saved to.
+- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manga-reader`, `audiobook-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It leaves its book in progress, so a target lists the reader scenes after the scenes that show reading progress.
+- **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures. It saves each scene as `<scene>.png` in its own folder, listed in the table below, and the run fails if the folder holds another image.
 
-| Target         | Size                            | Scenes                     | Saved to                                                        |
-| -------------- | ------------------------------- | -------------------------- | --------------------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | all five                   | `apps/e2e/screenshots/play-phone/en/`                           |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader | `apps/web/public/`, in place of the files `manifest.json` lists |
+| Target         | Size                            | Scenes                                         | Saved to                                            |
+| -------------- | ------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | `apps/e2e/screenshots/play-phone/en/`               |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | `apps/web/public/manifest-screenshots/`             |
+| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | `apps/landing/src/features/common/app-screenshots/` |
 
-No workflow captures the screenshots. To update them, start the stack and run `pnpm screenshots`, then commit the changed web manifest images. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
+No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. Leave out an image whose only change is one of those listed below. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 
-Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the comic, so Home shows both as books in progress. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
+Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
-The images are the same from one run to the next on the same machine:
+On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
+
+- The profile shows the email of the account, which each run creates with a new address.
+- The data sources screen shows the day of the last sync, which the API records.
+- The storage screen shows the browser's estimate of the space the machine has, and lists the books in no fixed order.
+
+To keep the rest the same:
 
 - The time zone is UTC, and the clock reads 09:41 when each scene starts. The clock keeps running, because the app's timers stall when it stops.
-- Each capture waits for the splash screen to go, no dialog to show, the reader page to fade in, and the images and book covers to load. The screenshot itself waits for the fonts.
+- Each capture waits for the splash screen to go, every dialog to close except the drawer a scene opens, the reader page to fade in, and the images and book covers to load. The screenshot itself waits for the fonts.
 - The context reports the storage as persisted, as it is in the installed app. Headless Chromium never grants it, and the app would show an unread notification about it.
 
 ## In CI

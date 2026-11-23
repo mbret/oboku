@@ -1,6 +1,6 @@
 import { Box, Container, Typography } from "@mui/material"
-import comicReaderScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
-import libraryScreenshot from "./assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
+import epubReaderScreenshot from "../common/app-screenshots/epub-reader.png"
+import libraryScreenshot from "../common/app-screenshots/library.png"
 import { GetStartedActions } from "../common/GetStartedActions"
 import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
@@ -56,7 +56,7 @@ export function HomeContent() {
                 alt: "oboku library view showing a collection of books on mobile",
               }}
               secondary={{
-                src: comicReaderScreenshot,
+                src: epubReaderScreenshot,
                 alt: "oboku book reader interface on mobile",
               }}
               preload

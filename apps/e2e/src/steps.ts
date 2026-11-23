@@ -85,16 +85,24 @@ export async function addServerLibrary(page: Page) {
   ).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
 }
 
+/** The library card that shows exactly `title`. */
+export function libraryBookCard(page: Page, title: string) {
+  return page
+    .locator("[data-book-card-container]")
+    .filter({ has: page.getByText(title, { exact: true }) })
+}
+
 /**
  * On the library, waits for every server book to show the title and the author
- * that the API read from its file.
+ * that the API read from its file. A book whose file names neither shows its
+ * file name and "Unknown" before the API reads it too.
  */
 export async function expectServerLibraryBooks(page: Page) {
   for (const book of SERVER_LIBRARY_BOOKS) {
-    await expect(page.getByText(book.title, { exact: true })).toBeVisible({
-      timeout: LIBRARY_SYNC_TIMEOUT_MS,
-    })
-    await expect(page.getByText(book.author, { exact: true })).toBeVisible()
+    const bookCard = libraryBookCard(page, book.title)
+
+    await expect(bookCard).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
+    await expect(bookCard.getByText(book.author, { exact: true })).toBeVisible()
   }
 }
 

@@ -195,8 +195,9 @@
 ### Screenshots of the app come from the e2e harness
 
 - **Make every screenshot of the app with the `screenshots` Playwright project** in `apps/e2e`: the web manifest images, the landing images and the Play Store set. Never take one by hand or edit a captured one.
-- **To update the screenshots, start the stack and run `pnpm screenshots`**, then commit the images it changes. The targets write the committed images in place. The Play Store set goes to `apps/e2e/screenshots`, which is not committed.
+- **To update the screenshots, start the stack and run `pnpm screenshots`**, then commit the images it changes, except those whose only change is one the docs list as different on every run. The targets write the committed images in place. The Play Store set goes to `apps/e2e/screenshots`, which is not committed.
 - **A screenshot that no target captures gets a scene and a target** in `apps/e2e/tests/screenshots/scenes.spec.ts`.
+- **Name a scene after what its screenshot shows** (`epub-reader`, `manage-storage`, `library-e-ink`). Each target saves a scene as `<scene>.png` in its own folder (`apps/web/public/manifest-screenshots/`, `apps/landing/src/features/common/app-screenshots/`), and whatever uses an image refers to it by that name.
 - **Keep the scenes working.** CI runs only the smoke tests, so nothing else shows that a scene broke. When a change alters a screen or a flow that a scene goes through, run `pnpm screenshots` and fix the scene in the same change.
 - `apps/docs/src/content/docs/development/end-to-end-tests.md` describes the scenes, the targets, and what keeps the images the same from one run to the next.
 

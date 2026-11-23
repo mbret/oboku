@@ -37,6 +37,22 @@ export const LITTLE_NEMO = book(
   "Winsor McCay",
 )
 
+export const HITO_NO_ISSHO = book(
+  "ippei-okamoto_hito-no-issho.cbz",
+  "人の一生",
+  "岡本一平",
+)
+
+/**
+ * prose-reader does not read the tags of the tracks, so the library shows the
+ * file name (mbret/prose-reader#898).
+ */
+export const THE_TIME_MACHINE_AUDIOBOOK = book(
+  "h-g-wells_the-time-machine_librivox.zip",
+  "h-g-wells_the-time-machine_librivox.zip",
+  "Unknown",
+)
+
 /**
  * Every book in fixtures/books. The server library test and the screenshot
  * setup expect each one in a synced library.
@@ -56,4 +72,6 @@ export const SERVER_LIBRARY_BOOKS: Book[] = [
   ),
   TREASURE_ISLAND,
   LITTLE_NEMO,
+  HITO_NO_ISSHO,
+  THE_TIME_MACHINE_AUDIOBOOK,
 ]
