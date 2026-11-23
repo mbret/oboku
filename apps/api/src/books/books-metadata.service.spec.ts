@@ -160,6 +160,17 @@ const refresh = async (
   return { storedBook, downloadLinkToTmp: pluginsService.downloadLinkToTmp }
 }
 
+const writeFileThatIsNotAnArchive = async (name: string) => {
+  const directory = await mkdtemp(join(tmpdir(), "oboku-metadata-"))
+  onTestFinished(function removeDownloadDirectory() {
+    return rm(directory, { recursive: true, force: true })
+  })
+  const downloadedFilePath = join(directory, name)
+  await writeFile(downloadedFilePath, "not an archive")
+
+  return downloadedFilePath
+}
+
 const COVER_LINK = "OEBPS/cover.jpg"
 const FILE_ISBN = "9780441013593"
 const FILE_GOOGLE_VOLUME_ID = "zyTCAlFPjgYC"
@@ -452,12 +463,8 @@ describe("BooksMetadataService.refreshMetadata", () => {
   })
 
   it("downloads a file named like an archive whatever type its source gives, and moves on when it is not one", async () => {
-    const directory = await mkdtemp(join(tmpdir(), "oboku-metadata-"))
-    onTestFinished(function removeDownloadDirectory() {
-      return rm(directory, { recursive: true, force: true })
-    })
-    const downloadedFilePath = join(directory, "Batman #12.cbz")
-    await writeFile(downloadedFilePath, "not an archive")
+    const downloadedFilePath =
+      await writeFileThatIsNotAnArchive("Batman #12.cbz")
 
     const { storedBook, downloadLinkToTmp } = await refresh(
       bookWith([]),
@@ -471,5 +478,33 @@ describe("BooksMetadataService.refreshMetadata", () => {
     expect(storedBook.metadata).not.toContainEqual(
       expect.objectContaining({ type: "file" }),
     )
+  })
+
+  it("saves the link metadata and looks the book up when a file typed as an archive does not open", async () => {
+    const downloadedFilePath = await writeFileThatIsNotAnArchive("Dune.cbz")
+
+    const { storedBook } = await refresh(
+      bookWith([]),
+      "Dune.cbz",
+      undefined,
+      undefined,
+      { contentType: "application/x-cbz", downloadedFilePath },
+    )
+
+    expect(fetchMetadata).toHaveBeenCalledWith(
+      { title: "Dune" },
+      expect.anything(),
+    )
+    expect(storedBook).toMatchObject({
+      metadata: [
+        {
+          type: "link",
+          title: "Dune.cbz",
+          contentType: "application/x-cbz",
+        },
+        { type: "catalog", ...acceptedMatch },
+      ],
+      lastMetadataUpdateError: null,
+    })
   })
 })
