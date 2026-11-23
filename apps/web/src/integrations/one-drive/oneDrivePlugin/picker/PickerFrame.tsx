@@ -105,6 +105,7 @@ export const PickerFrame = memo(function PickerFrame({
         }}
       >
         <IconButton
+          aria-label="Close"
           onClick={closeWithoutSelection}
           size="small"
           sx={{

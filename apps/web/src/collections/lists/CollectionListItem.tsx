@@ -89,6 +89,7 @@ export const CollectionListItem = memo(function CollectionListItem({
 
           {id !== config?.COLLECTION_EMPTY_ID && (
             <IconButton
+              aria-label="More actions"
               disableFocusRipple
               disableRipple
               disableTouchRipple
@@ -99,6 +100,7 @@ export const CollectionListItem = memo(function CollectionListItem({
           )}
           {id === config?.COLLECTION_EMPTY_ID && (
             <IconButton
+              aria-label="No actions for this shelf"
               disableFocusRipple
               disableRipple
               disableTouchRipple

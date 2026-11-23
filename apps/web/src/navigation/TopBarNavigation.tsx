@@ -80,6 +80,7 @@ export const TopBarNavigation = memo(function TopBarNavigation({
       <Toolbar>
         {showBack && (
           <IconButton
+            aria-label="Back"
             edge="start"
             onClick={() => goBack(goBackDefaultTo)}
             size="large"
@@ -153,13 +154,23 @@ export const TopBarNavigation = memo(function TopBarNavigation({
           }}
         >
           {hasLockLibrary && isLibraryUnlocked && (
-            <IconButton onClick={lockLibrary} size="large" color="inherit">
+            <IconButton
+              aria-label="Lock library"
+              onClick={lockLibrary}
+              size="large"
+              color="inherit"
+            >
               <LockOpenRounded />
             </IconButton>
           )}
           {rightComponent}
           {!rightComponent && !!onMoreClick && (
-            <IconButton onClick={onMoreClick} size="large" color="inherit">
+            <IconButton
+              aria-label="More actions"
+              onClick={onMoreClick}
+              size="large"
+              color="inherit"
+            >
               <MoreVertRounded />
             </IconButton>
           )}
