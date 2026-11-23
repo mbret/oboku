@@ -28,21 +28,21 @@
   ],
   "screenshots": [
     {
-      "src": "app.oboku.me_(iPhone 5_SE).png",
+      "src": "manifest-screenshots/home.png",
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",
       "label": "Home, with the books in progress and the recent ones"
     },
     {
-      "src": "app.oboku.me_(iPhone 5_SE) (1).png",
+      "src": "manifest-screenshots/library.png",
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",
-      "label": "Library, with its books, collections and tags"
+      "label": "Library, with its books, shelves and tags"
     },
     {
-      "src": "app.oboku.me_(iPhone 5_SE) (2).png",
+      "src": "manifest-screenshots/epub-reader.png",
       "sizes": "640x1136",
       "type": "image/png",
       "form_factor": "narrow",

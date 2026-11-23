@@ -18,8 +18,7 @@ export async function signUp(page: Page, invitation: SignUpInvitation) {
   await page.getByLabel("Password", { exact: true }).fill(invitation.password)
   await page.getByLabel("Confirm password").fill(invitation.password)
   await page.getByRole("button", { name: "Complete sign up" }).click()
-  // The phone layout's tab bar links have no accessible name.
-  await expect(page.locator('a[href="/library"]').first()).toBeVisible()
+  await expect(page.getByRole("link", { name: "Library" })).toBeVisible()
 }
 
 /**
@@ -75,7 +74,7 @@ export async function addServerLibrary(page: Page) {
   await page.getByLabel("Name").fill(SERVER_DATA_SOURCE_NAME)
   await page.getByRole("combobox", { name: "Connector" }).click()
   await page
-    .getByRole("option", { name: new RegExp(SERVER_LIBRARY.username) })
+    .getByRole("option", { name: SERVER_LIBRARY.username, exact: true })
     .click()
   await page.getByRole("button", { name: "Confirm" }).click()
   await authorizeWithMasterPassword(page)
@@ -86,16 +85,24 @@ export async function addServerLibrary(page: Page) {
   ).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
 }
 
+/** The library card that shows exactly `title`. */
+export function libraryBookCard(page: Page, title: string) {
+  return page
+    .locator("[data-book-card-container]")
+    .filter({ has: page.getByText(title, { exact: true }) })
+}
+
 /**
  * On the library, waits for every server book to show the title and the author
- * that the API read from its file.
+ * that the API read from its file. A book whose file names neither shows its
+ * file name and "Unknown" before the API reads it too.
  */
 export async function expectServerLibraryBooks(page: Page) {
   for (const book of SERVER_LIBRARY_BOOKS) {
-    await expect(page.getByText(book.title, { exact: true })).toBeVisible({
-      timeout: LIBRARY_SYNC_TIMEOUT_MS,
-    })
-    await expect(page.getByText(book.author, { exact: true })).toBeVisible()
+    const bookCard = libraryBookCard(page, book.title)
+
+    await expect(bookCard).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
+    await expect(bookCard.getByText(book.author, { exact: true })).toBeVisible()
   }
 }
 

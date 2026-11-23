@@ -48,3 +48,45 @@ c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-s
   in the order of publication, with a `ComicInfo.xml` that gives the title,
   the author and the date.
 - **SHA-256:** `f318103048098619afa9e3fafc0d024990e0ae922623c4f1da72d83f41de1462`
+
+## ippei-okamoto_hito-no-issho.cbz
+
+- **Manga:** _人の一生_ (_Hito no Isshō_), Okamoto Ippei, a manga novel
+  published by Dai Nippon Yūbenkai Kōdansha on 25 February 1927: book pages
+  4 to 6, the start of the chapter 出生前後, read right to left.
+- **Source:** the National Diet Library Digital Collections scan of the
+  twentieth printing (25 February 1929),
+  [info:ndljp/pid/1225618](https://dl.ndl.go.jp/pid/1225618): frame 11 for
+  pages 4 and 5 and frame 12 for page 6, at full resolution from the IIIF
+  Image API.
+- **Licence:** public domain. The book was published in Japan in 1927, and
+  Okamoto Ippei died in 1948. The NDL marks the scan public domain, which "may
+  be reused freely", and asks to be credited as the source.
+- **Build:** each page cut from its spread around its panel frame,
+  straightened, turned to greyscale with the paper levelled to white, resized
+  to 1080 px wide and saved as JPEG at quality 80, in reading order, with a
+  `ComicInfo.xml` that gives the title, the author, the date of the first
+  printing and the right-to-left manga flag.
+- **SHA-256:** `23c9a405df0ea3abb1db1bd597a2e541def3ff65a85bd0a3da9e71593cb88a11`
+
+## h-g-wells_the-time-machine_librivox.zip
+
+- **Audiobook:** _The Time Machine_, H. G. Wells, the LibriVox recording
+  _The Time Machine (Version 2)_ read by Mark F. Smith, 2011: the first 30
+  seconds of chapters 1 and 2.
+- **Source:** the Internet Archive item
+  [time_machine_ms_librivox](https://archive.org/details/time_machine_ms_librivox),
+  [timemachine_01_wells.mp3](https://archive.org/download/time_machine_ms_librivox/timemachine_01_wells.mp3)
+  and
+  [timemachine_02_wells.mp3](https://archive.org/download/time_machine_ms_librivox/timemachine_02_wells.mp3),
+  listed on the
+  [LibriVox catalog page](https://librivox.org/the-time-machine-version-2-by-h-g-wells/).
+- **Licence:** public domain. The item is marked CC0 1.0, and the recording's
+  CD insert states that "this recording is in the public domain and may be
+  reproduced, distributed, or modified without permission".
+- **Build:** each chapter cut to its first 30 seconds and encoded as mono MP3
+  at 64 kbps with ID3 tags for the chapter, the author, the book and the track
+  number, stored in a zip. The zip holds no cover: prose-reader reads an image
+  in an audio-only zip as a page after the tracks
+  ([mbret/prose-reader#897](https://github.com/mbret/prose-reader/issues/897)).
+- **SHA-256:** `4df267126355cfefa33388e09db38d80c73a625451d5ba2c113c68cbc05a0f20`

@@ -20,7 +20,7 @@
     "test:e2e": "vitest run --config ./vitest.config.e2e.ts"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.1173.0",
+    "@aws-sdk/client-s3": "^3.1175.0",
     "@nestjs/common": "^12.6.0",
     "@nestjs/config": "^12.1.1",
     "@nestjs/core": "^12.6.0",

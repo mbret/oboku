@@ -179,6 +179,7 @@ export const BookDetailsScreen = memo(function BookDetailsScreen() {
             </ActionButton>
           )}
           <IconButton
+            aria-label="More actions"
             onClick={() => {
               openBookActionDrawer({
                 openedWith: book?._id,

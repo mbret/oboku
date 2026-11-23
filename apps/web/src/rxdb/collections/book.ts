@@ -12,10 +12,7 @@ import type {
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type BookDocMethods = {}
-
-type BookDocument = RxDocument<BookDocType, BookDocMethods>
+type BookDocument = RxDocument<BookDocType>
 
 type BookCollectionMethods = {
   post: (
@@ -25,11 +22,9 @@ type BookCollectionMethods = {
 
 export type BookCollection = RxCollection<
   BookDocType,
-  BookDocMethods,
+  object,
   BookCollectionMethods
 >
-
-export const bookDocMethods: BookDocMethods = {}
 
 export const bookCollectionMethods: BookCollectionMethods = {
   post: async function (this: BookCollection, json) {

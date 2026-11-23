@@ -8,22 +8,15 @@ import type {
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-// biome-ignore lint/complexity/noBannedTypes: TODO
-type DocMethods = {}
-
 type CollectionMethods = {
   insertSafe: (
     json: Omit<TagsDocType, `_id` | "rx_model" | "_rev" | `rxdbMeta`>,
   ) => Promise<TagsDocument>
 }
 
-type TagsDocument = RxDocument<TagsDocType, DocMethods>
+type TagsDocument = RxDocument<TagsDocType>
 
-export type TagCollection = RxCollection<
-  TagsDocType,
-  DocMethods,
-  CollectionMethods
->
+export type TagCollection = RxCollection<TagsDocType, object, CollectionMethods>
 
 const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   title: "tag",
@@ -43,8 +36,6 @@ const schema: RxJsonSchema<Omit<TagsDocType, `_rev` | `rxdbMeta`>> = {
   required: ["isProtected", "name", "books"],
 }
 
-const docMethods: DocMethods = {}
-
 const collectionMethods: CollectionMethods = {
   insertSafe: async function (this: TagCollection, json) {
     return this.insert({ _id: generateId(), ...json } as TagsDocType)
@@ -55,7 +46,6 @@ const migrationStrategies: MigrationStrategies = {}
 
 export const tag = {
   schema: schema,
-  methods: docMethods,
   statics: collectionMethods,
   migrationStrategies: migrationStrategies,
 }

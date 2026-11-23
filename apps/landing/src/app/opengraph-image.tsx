@@ -14,10 +14,7 @@ const screenshotWidth = Math.round((screenshotHeight * 750) / 1334)
 
 export default async function OpenGraphImage() {
   const libraryScreenshot = await readFile(
-    path.join(
-      process.cwd(),
-      "src/features/home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png",
-    ),
+    path.join(process.cwd(), "src/features/common/app-screenshots/library.png"),
   )
 
   return new ImageResponse(
