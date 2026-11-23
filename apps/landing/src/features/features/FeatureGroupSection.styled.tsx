@@ -3,7 +3,7 @@
 import { Box, Stack, styled } from "@mui/material"
 import { BandSection } from "../common/BandSection"
 
-const sectionScrollMargin = 140
+export const sectionScrollMargin = 140
 
 export const FeatureGroupBandSection = styled(BandSection)({
   scrollMarginTop: sectionScrollMargin,

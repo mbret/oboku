@@ -2,6 +2,8 @@
 
 import { Chip, Container, Stack, styled } from "@mui/material"
 import { useEffect, useState } from "react"
+import type { FeatureGroup } from "./content"
+import { sectionScrollMargin } from "./FeatureGroupSection.styled"
 
 const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
   return {
@@ -32,25 +34,20 @@ const SectionNavStack = styled(Stack)(function styleSectionNavStack({ theme }) {
   }
 })
 
-type FeatureSectionLink = {
-  id: string
-  navLabel: string
-}
+type FeatureSectionLink = Pick<FeatureGroup, "id" | "navLabel">
 
-/** A section is the current one while it crosses a line 40% down the viewport. */
-const CURRENT_SECTION_LINE_ROOT_MARGIN = "-40% 0px -60% 0px"
+/**
+ * From just below where a chip scrolls its section to, so the section above
+ * stays out, down to 60% of the viewport.
+ */
+const ON_SCREEN_BAND_ROOT_MARGIN = `-${sectionScrollMargin + 1}px 0px -40% 0px`
 
-function scrollChipToNavCenter(chip: HTMLElement | null) {
-  const navStack = chip?.parentElement
-
-  if (!chip || !navStack) return
-
-  const chipRect = chip.getBoundingClientRect()
-  const navStackRect = navStack.getBoundingClientRect()
-  const chipCenter = chipRect.left + chipRect.width / 2
-  const navStackCenter = navStackRect.left + navStackRect.width / 2
-
-  navStack.scrollBy({ left: chipCenter - navStackCenter, behavior: "smooth" })
+function centerChipInNav(chip: HTMLElement | null) {
+  chip?.scrollIntoView({
+    block: "nearest",
+    inline: "center",
+    behavior: "smooth",
+  })
 }
 
 export function FeatureSectionNav({
@@ -58,32 +55,32 @@ export function FeatureSectionNav({
 }: {
   sections: FeatureSectionLink[]
 }) {
-  const [sectionIdsOnLine, setSectionIdsOnLine] = useState<ReadonlySet<string>>(
+  const [sectionIdsInBand, setSectionIdsInBand] = useState<ReadonlySet<string>>(
     new Set(),
   )
   const currentSectionId = sections.find(({ id }) =>
-    sectionIdsOnLine.has(id),
+    sectionIdsInBand.has(id),
   )?.id
 
   useEffect(
-    function trackSectionsOnCurrentSectionLine() {
+    function trackSectionsInOnScreenBand() {
       const observer = new IntersectionObserver(
-        function recordSectionsCrossingLine(entries) {
-          setSectionIdsOnLine(function applyCrossings(idsOnLine) {
-            const nextIdsOnLine = new Set(idsOnLine)
+        function recordSectionsCrossingBand(entries) {
+          setSectionIdsInBand(function applyCrossings(idsInBand) {
+            const nextIdsInBand = new Set(idsInBand)
 
             for (const { isIntersecting, target } of entries) {
               if (isIntersecting) {
-                nextIdsOnLine.add(target.id)
+                nextIdsInBand.add(target.id)
               } else {
-                nextIdsOnLine.delete(target.id)
+                nextIdsInBand.delete(target.id)
               }
             }
 
-            return nextIdsOnLine
+            return nextIdsInBand
           })
         },
-        { rootMargin: CURRENT_SECTION_LINE_ROOT_MARGIN },
+        { rootMargin: ON_SCREEN_BAND_ROOT_MARGIN },
       )
 
       for (const { id } of sections) {
@@ -113,7 +110,7 @@ export function FeatureSectionNav({
             return (
               <Chip
                 key={id}
-                ref={isCurrent ? scrollChipToNavCenter : undefined}
+                ref={isCurrent ? centerChipInNav : undefined}
                 label={navLabel}
                 component="a"
                 href={`#${id}`}
