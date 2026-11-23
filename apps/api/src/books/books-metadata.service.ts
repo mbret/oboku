@@ -37,11 +37,8 @@ import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
 import { CoversService } from "../covers/covers.service.js"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
 import { getMetadataFromArchive } from "../features/metadata/archives/getMetadataFromArchive.js"
-import {
-  isArchiveContentType,
-  isMaybeExtractableFile,
-} from "../features/metadata/archives/isMaybeExtractableFile.js"
-import { openArchive } from "../features/metadata/archives/openArchive.js"
+import { isMaybeExtractableFile } from "../features/metadata/archives/isMaybeExtractableFile.js"
+import { openDownloadedArchive } from "../features/metadata/archives/openDownloadedArchive.js"
 import { catalogLookupInput } from "../features/metadata/catalogLookupInput.js"
 import { createCatalogProviders } from "../features/metadata/catalogProviders.js"
 import { toFileMetadata } from "../features/metadata/legacy/toFileMetadata.js"
@@ -191,14 +188,6 @@ export class BooksMetadataService {
 
   private readonly logArchiveCloseFailure = (error: unknown) => {
     this.logger.error(error)
-  }
-
-  private readonly logFileIsNotAnArchive = (error: unknown): undefined => {
-    this.logger.log(
-      `A file without an archive type is not an archive to extract: ${error}`,
-    )
-
-    return undefined
   }
 
   private async retrieveMetadataAndSaveCover(ctx: RefreshContext) {
@@ -454,15 +443,10 @@ export class BooksMetadataService {
         tmpFilePath &&
         !ignoreMetadataFile
       ) {
-        const archiveOptions = {
+        archive = await openDownloadedArchive(tmpFilePath, {
           name: linkResourceMetadata.name,
-          encodingFormat: contentType,
-        }
-        archive = isArchiveContentType(contentType)
-          ? await openArchive(tmpFilePath, archiveOptions)
-          : await openArchive(tmpFilePath, archiveOptions).catch(
-              this.logFileIsNotAnArchive,
-            )
+          contentType,
+        })
       }
 
       const freshFileMetadata = archive

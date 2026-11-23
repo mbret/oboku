@@ -46,17 +46,17 @@ import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
 import type { ReactNode } from "react"
 import type { PhoneScreenshotSet } from "../common/PhoneScreenshots"
-import comicReaderScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE) (1).png"
-import libraryScreenshot from "../home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png"
-import epubReaderScreenshot from "../home/assets/image1.png"
-import bookDetailsScreenshot from "../home/assets/image2.png"
-import storageScreenshot from "../home/assets/image3.png"
-import dataSourcesScreenshot from "../home/assets/image4.png"
-import mangaReaderScreenshot from "../home/assets/image5.png"
-import homeScreenshot from "../home/assets/image6.png"
-import profileScreenshot from "../home/assets/image7.png"
-import addDataSourceScreenshot from "../home/assets/image8.png"
-import einkScreenshot from "../home/assets/image9.png"
+import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.webp"
+import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.webp"
+import bookDetailsScreenshot from "../common/app-screenshots/book-details.webp"
+import dataSourcesScreenshot from "../common/app-screenshots/data-sources.webp"
+import epubReaderScreenshot from "../common/app-screenshots/epub-reader.webp"
+import homeScreenshot from "../common/app-screenshots/home.webp"
+import libraryScreenshot from "../common/app-screenshots/library.webp"
+import libraryEInkScreenshot from "../common/app-screenshots/library-e-ink.webp"
+import manageStorageScreenshot from "../common/app-screenshots/manage-storage.webp"
+import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
+import profileScreenshot from "../common/app-screenshots/profile.webp"
 import { supportedExtensions, syncProviders } from "../home/content"
 
 type Feature = {
@@ -98,8 +98,8 @@ export const featureGroups: FeatureGroup[] = [
     title: "One reader for every kind of book",
     description: (
       <>
-        Novels reflow to your screen, manga turns right to left, webtoons
-        scroll. The reader is built on{" "}
+        Novels reflow to your screen, manga turns right to left, webtoons scroll
+        and audiobooks play. The reader is built on{" "}
         <Link href="https://prose-reader.com/" target="_blank" rel="noreferrer">
           Prose
         </Link>
@@ -108,16 +108,16 @@ export const featureGroups: FeatureGroup[] = [
     ),
     screenshots: {
       primary: {
-        src: comicReaderScreenshot,
-        alt: "A comic page open in the oboku reader with the progress bar",
+        src: epubReaderScreenshot,
+        alt: "oboku reader displaying a chapter of an EPUB novel, with its menu and progress bar",
       },
       secondary: {
-        src: epubReaderScreenshot,
-        alt: "oboku reader displaying a chapter of an EPUB novel",
-      },
-      tertiary: {
         src: mangaReaderScreenshot,
         alt: "Black and white manga page open in the oboku reader",
+      },
+      tertiary: {
+        src: audiobookReaderScreenshot,
+        alt: "An audiobook open in the oboku reader, with its sound wave and playback controls",
       },
     },
     chips: supportedExtensions.map((extension) => ({ label: extension })),
@@ -176,7 +176,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: dataSourcesScreenshot,
-        alt: "oboku data sources screen with a Google Drive library being synchronized",
+        alt: "oboku data sources screen with a server library and the day of its last sync",
       },
       secondary: {
         src: addDataSourceScreenshot,
@@ -232,7 +232,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: libraryScreenshot,
-        alt: "oboku library grid with books, collections and tags tabs",
+        alt: "oboku library grid with books, shelves and tags tabs",
       },
       secondary: {
         src: bookDetailsScreenshot,
@@ -292,11 +292,11 @@ export const featureGroups: FeatureGroup[] = [
       "oboku is a progressive web app: anything with a modern browser runs it, and it keeps working when the connection drops.",
     screenshots: {
       primary: {
-        src: storageScreenshot,
+        src: manageStorageScreenshot,
         alt: "oboku storage screen listing books downloaded for offline reading",
       },
       secondary: {
-        src: einkScreenshot,
+        src: libraryEInkScreenshot,
         alt: "oboku library in e-ink mode, with a high-contrast monochrome interface",
       },
     },
@@ -448,7 +448,7 @@ export const featureGroups: FeatureGroup[] = [
     screenshots: {
       primary: {
         src: profileScreenshot,
-        alt: "oboku profile screen with the app password and hidden protected contents",
+        alt: "oboku profile screen with the account and hidden protected contents",
       },
     },
     features: [

@@ -1,6 +1,6 @@
-import { readFile } from "node:fs/promises"
 import path from "node:path"
 import { ImageResponse } from "next/og"
+import sharp from "sharp"
 import { design } from "@oboku/shared"
 import { ObokuLogoIcon } from "../features/common/ObokuLogoIcon"
 import { landingTagline } from "../features/home/content"
@@ -10,15 +10,18 @@ export const size = { width: 1200, height: 630 }
 export const contentType = "image/png"
 
 const screenshotHeight = 540
-const screenshotWidth = Math.round((screenshotHeight * 750) / 1334)
 
 export default async function OpenGraphImage() {
-  const libraryScreenshot = await readFile(
+  const libraryScreenshot = sharp(
     path.join(
       process.cwd(),
-      "src/features/home/assets/oboku-git-develop-mbret.vercel.app_library_books(iPhone SE).png",
+      "src/features/common/app-screenshots/library.webp",
     ),
   )
+  const { width, height } = await libraryScreenshot.metadata()
+  const screenshotWidth = Math.round((screenshotHeight * width) / height)
+  // next/og 16.4 draws no WebP image: the phone would stay empty.
+  const libraryScreenshotPng = await libraryScreenshot.png().toBuffer()
 
   return new ImageResponse(
     <div
@@ -70,7 +73,7 @@ export default async function OpenGraphImage() {
         {/* biome-ignore lint/performance/noImgElement: ImageResponse renders plain HTML, next/image does not apply */}
         <img
           alt=""
-          src={`data:image/png;base64,${libraryScreenshot.toString("base64")}`}
+          src={`data:image/png;base64,${libraryScreenshotPng.toString("base64")}`}
           width={screenshotWidth}
           height={screenshotHeight}
           style={{ borderRadius: 24, border: "8px solid #1f1f1f" }}

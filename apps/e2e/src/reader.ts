@@ -20,11 +20,47 @@ export function firstReaderPage(page: Page) {
 }
 
 /**
- * prose-reader keeps a page at opacity 0 until it is ready, then fades it in
- * over 800 ms, whatever the reduced motion setting.
+ * The wave of the first track prose-reader loaded, which is the book's first
+ * track when the book opens at its start.
  */
-export async function expectReaderPageRevealed(readerPageFrame: Locator) {
-  await expect(readerPageFrame).toHaveCSS("opacity", "1")
+export function firstAudioTrackWave(page: Page) {
+  return page.locator("canvas").first()
+}
+
+/** The first page of a comic or a manga that opens at its start. */
+export async function expectFirstImagePage(page: Page) {
+  const firstPage = firstReaderPage(page)
+
+  await expect(firstPage.contentFrame().locator("img")).toBeVisible()
+
+  return firstPage
+}
+
+/**
+ * prose-reader keeps a page's container at opacity 0 until the page is ready,
+ * then fades it in over 800 ms, whatever the reduced motion setting
+ * (mbret/prose-reader#892). The container is the iframe of a document page,
+ * and an ancestor of the wave of an audio track.
+ */
+export async function expectReaderPageRevealed(readerPageContent: Locator) {
+  await expect(readerPageContent).toBeVisible()
+  await expect
+    .poll(() =>
+      readerPageContent.evaluate(function shownOpacity(element) {
+        let opacity = 1
+
+        for (
+          let ancestor: Element | null = element;
+          ancestor;
+          ancestor = ancestor.parentElement
+        ) {
+          opacity *= Number(getComputedStyle(ancestor).opacity)
+        }
+
+        return opacity
+      }),
+    )
+    .toBe(1)
 }
 
 /** A tap in the middle of the page shows the reader's menu. */
@@ -36,4 +72,7 @@ export async function showReaderMenu(page: Page) {
   }
 
   await page.mouse.click(viewport.width / 2, viewport.height / 2)
+  await expect(
+    page.getByRole("button", { name: "Table of contents" }),
+  ).toBeVisible()
 }

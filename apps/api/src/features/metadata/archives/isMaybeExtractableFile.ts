@@ -12,7 +12,7 @@ const ARCHIVE_EXTENSIONS = [...ZIP_EXTENSIONS, ...CBR_EXTENSIONS]
 
 const UNSTATED_CONTENT_TYPES = ["", "application/octet-stream"]
 
-export const isArchiveContentType = (contentType: string | undefined) =>
+const isArchiveContentType = (contentType: string | undefined) =>
   ARCHIVE_CONTENT_TYPES.includes(getMimeTypeEssence(contentType ?? ""))
 
 /**

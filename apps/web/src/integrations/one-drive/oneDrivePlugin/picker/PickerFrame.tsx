@@ -1,7 +1,7 @@
 import { Dialog, IconButton, Stack } from "@mui/material"
 import { CloseRounded } from "@mui/icons-material"
 import { useMutation } from "@tanstack/react-query"
-import { memo, useEffect, useState } from "react"
+import { memo, useEffect, useEffectEvent, useState } from "react"
 import { LockScreen } from "../../../../common/locks/LockScreen"
 import { pickOneDriveItemsWithPicker, type OneDrivePickerItem } from "./picker"
 
@@ -71,11 +71,9 @@ export const PickerFrame = memo(function PickerFrame({
 
       return validSelections
     },
-    onSuccess: function closeWithSelections(selections) {
-      onClose(selections)
-    },
-    onError: closeWithoutSelection,
   })
+
+  const closeWithPickerOutcome = useEffectEvent(onClose)
 
   useEffect(
     function startPickerOnceIframeMounts() {
@@ -85,7 +83,19 @@ export const PickerFrame = memo(function PickerFrame({
 
       const abortController = new AbortController()
 
-      mutate({ iframe, signal: abortController.signal })
+      // react-query runs these callbacks only while this component is mounted,
+      // so the abort in `abortPicker` does not call `onClose`.
+      mutate(
+        { iframe, signal: abortController.signal },
+        {
+          onSuccess: function closeWithSelections(selections) {
+            closeWithPickerOutcome(selections)
+          },
+          onError: function closeOnPickerError() {
+            closeWithPickerOutcome()
+          },
+        },
+      )
 
       return function abortPicker() {
         abortController.abort()

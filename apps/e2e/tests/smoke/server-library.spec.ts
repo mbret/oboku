@@ -1,6 +1,6 @@
-import { expect, test } from "../../src/fixtures"
+import { test } from "../../src/fixtures"
 import { LITTLE_NEMO } from "../../src/library"
-import { firstReaderPage } from "../../src/reader"
+import { expectFirstImagePage } from "../../src/reader"
 import {
   addServerLibrary,
   downloadFromDetailsScreen,
@@ -25,7 +25,5 @@ test("a reader syncs the server library, sees each book's title and author, and 
   await downloadFromDetailsScreen(page)
   await readFromDetailsScreen(page)
 
-  await expect(
-    firstReaderPage(page).contentFrame().locator("img"),
-  ).toBeVisible()
+  await expectFirstImagePage(page)
 })
