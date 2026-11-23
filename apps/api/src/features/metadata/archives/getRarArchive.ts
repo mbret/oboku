@@ -7,8 +7,7 @@ import { createExtractorFromData } from "node-unrar-js"
  * but Node reads a small file into its shared Buffer pool, where the file can
  * start further in.
  */
-const readFileAsArrayBuffer = (path: string | URL): ArrayBuffer => {
-  const file = fs.readFileSync(path)
+const toArrayBuffer = (file: NonSharedBuffer): ArrayBuffer => {
   const spansWholeArrayBuffer =
     file.byteOffset === 0 && file.byteLength === file.buffer.byteLength
 
@@ -17,8 +16,10 @@ const readFileAsArrayBuffer = (path: string | URL): ArrayBuffer => {
     : file.buffer.slice(file.byteOffset, file.byteOffset + file.byteLength)
 }
 
-const wasmBinary = readFileAsArrayBuffer(
-  new URL(import.meta.resolve("node-unrar-js/esm/js/unrar.wasm")),
+const wasmBinary = toArrayBuffer(
+  fs.readFileSync(
+    new URL(import.meta.resolve("node-unrar-js/esm/js/unrar.wasm")),
+  ),
 )
 
 export const getRarArchive = async (
@@ -26,7 +27,7 @@ export const getRarArchive = async (
   options: { name?: string; encodingFormat?: string } = {},
 ) => {
   const extractor = await createExtractorFromData({
-    data: readFileAsArrayBuffer(filePath),
+    data: toArrayBuffer(await fs.promises.readFile(filePath)),
     wasmBinary,
   })
 
