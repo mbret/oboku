@@ -1237,7 +1237,7 @@ describe("OpdsCatalogController", () => {
       expect(createNanoInstanceForUser).toHaveBeenCalledWith({
         email: OWNER.couchName,
       })
-      expect(mintAccessToken).toHaveBeenCalledWith(OWNER.id)
+      expect(mintAccessToken).toHaveBeenCalledWith(OWNER.id, {})
       expect(download).toHaveBeenCalledWith({
         link: expect.objectContaining({ _id: DRIVE_LINK._id }),
         providerCredentials: { access_token: DRIVE_ACCESS_TOKEN },
@@ -1359,6 +1359,75 @@ describe("OpdsCatalogController", () => {
         )
       },
     )
+
+    describe("when Drive refuses the access token", () => {
+      const REPLACEMENT_ACCESS_TOKEN = "ya29.replacement-access-token"
+
+      beforeEach(() => {
+        getFileMetadata.mockRejectedValueOnce(
+          createDriveRefusal(401, "authError"),
+        )
+        mintAccessToken.mockImplementation(
+          async function mintReplacingRefusedToken(
+            _userId: number,
+            { refusedAccessToken }: { refusedAccessToken?: string },
+          ) {
+            return {
+              accessToken: refusedAccessToken
+                ? REPLACEMENT_ACCESS_TOKEN
+                : DRIVE_ACCESS_TOKEN,
+              expiresIn: 3599,
+              scopes: ["https://www.googleapis.com/auth/drive.file"],
+            }
+          },
+        )
+      })
+
+      it("mints another once and streams the file with it", async () => {
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(200)
+        expect(response.body.toString()).toBe(BOOK_BYTES)
+        expect(mintAccessToken.mock.calls).toEqual([
+          [OWNER.id, {}],
+          [OWNER.id, { refusedAccessToken: DRIVE_ACCESS_TOKEN }],
+        ])
+        expect(download).toHaveBeenCalledWith({
+          link: expect.objectContaining({ _id: DRIVE_LINK._id }),
+          providerCredentials: { access_token: REPLACEMENT_ACCESS_TOKEN },
+        })
+      })
+
+      it("answers 502 when Drive refuses the new one too, minting no third", async () => {
+        getFileMetadata.mockRejectedValueOnce(
+          createDriveRefusal(401, "authError"),
+        )
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(502)
+        expect(mintAccessToken).toHaveBeenCalledTimes(2)
+        expect(getFileMetadata).toHaveBeenCalledTimes(2)
+        expect(download).not.toHaveBeenCalled()
+      })
+
+      it("answers 404 when the new mint finds the connection lost", async () => {
+        mintAccessToken.mockResolvedValueOnce({
+          accessToken: DRIVE_ACCESS_TOKEN,
+          expiresIn: 3599,
+          scopes: ["https://www.googleapis.com/auth/drive.file"],
+        })
+        mintAccessToken.mockRejectedValueOnce(
+          createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST),
+        )
+
+        const response = await getBookFile("book-dune")
+
+        expect(response.status).toBe(404)
+        expect(getFileMetadata).toHaveBeenCalledTimes(1)
+        expect(download).not.toHaveBeenCalled()
+      })
+    })
 
     it.each([
       ["a download limit once the file's metadata came", 503, 403],

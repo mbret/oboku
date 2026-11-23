@@ -30,7 +30,30 @@ const POPUP_REDIRECT_URI = "postmessage"
  */
 const INVALID_GRANT_ERROR = "invalid_grant"
 
+/**
+ * A minted access token is answered again until this long before it expires:
+ * longer than the web app's `MINIMUM_TOKEN_VALIDITY_MS`, the 5 minutes it
+ * wants left on the token it is given.
+ */
+const ACCESS_TOKEN_REUSE_MARGIN_MS = 10 * 60 * 1000
+
 type GoogleOAuthClientOptions = { clientId: string; clientSecret: string }
+
+type MintedAccessToken = {
+  accessToken: string
+  expiryDate: number
+  scopes: string[]
+}
+
+const toAccessTokenResponse = ({
+  accessToken,
+  expiryDate,
+  scopes,
+}: MintedAccessToken): GoogleAccessTokenResponseDto => ({
+  accessToken,
+  expiresIn: Math.floor((expiryDate - Date.now()) / 1000),
+  scopes,
+})
 
 /** The OAuth client a code is exchanged with, `null` until the admin sets its id and secret. */
 const toGoogleOAuthClientOptions = ({
@@ -144,6 +167,13 @@ const verifyAccount = async ({
 /** The Google account whose Drive files the API reaches for a user. */
 @Injectable()
 export class GoogleConnectionService {
+  /**
+   * Each user's latest access token, or its mint in flight, in this process's
+   * memory only. Connecting and disconnecting forget it once the stored
+   * connection changed: a mint that starts before then reads the previous one.
+   */
+  private readonly accessTokens = new Map<number, Promise<MintedAccessToken>>()
+
   constructor(
     private readonly instanceConfigService: InstanceConfigService,
     private readonly providerConnectionsService: ProviderConnectionsService,
@@ -261,8 +291,70 @@ export class GoogleConnectionService {
       scopes,
       replacesOtherAccounts: true,
     })
+    this.accessTokens.delete(userId)
 
     return this.find(userId)
+  }
+
+  /**
+   * An access token for the user's Drive: the latest one minted until shortly
+   * before it expires, else a new one. Calls made while a token is minted
+   * share it, or its failure. A `refusedAccessToken`, which Google refused, is
+   * never answered again.
+   */
+  async mintAccessToken(
+    userId: number,
+    { refusedAccessToken }: { refusedAccessToken?: string } = {},
+  ): Promise<GoogleAccessTokenResponseDto> {
+    const token = await this.findOrMintAccessToken({
+      userId,
+      refusedAccessToken,
+    })
+
+    return toAccessTokenResponse(token)
+  }
+
+  private async findOrMintAccessToken({
+    userId,
+    refusedAccessToken,
+  }: {
+    userId: number
+    refusedAccessToken: string | undefined
+  }): Promise<MintedAccessToken> {
+    const keptToken = this.accessTokens.get(userId)
+
+    if (!keptToken) return this.startAccessTokenMint(userId)
+
+    const token = await keptToken
+    const isTokenReusable =
+      token.accessToken !== refusedAccessToken &&
+      token.expiryDate - ACCESS_TOKEN_REUSE_MARGIN_MS > Date.now()
+
+    if (isTokenReusable) return token
+
+    this.forgetAccessToken(userId, keptToken)
+
+    return this.findOrMintAccessToken({ userId, refusedAccessToken })
+  }
+
+  private startAccessTokenMint(userId: number) {
+    const forgetFailedMint = (error: unknown) => {
+      this.forgetAccessToken(userId, mint)
+
+      throw error
+    }
+    const mint = this.mintFromStoredRefreshToken(userId).catch(forgetFailedMint)
+
+    this.accessTokens.set(userId, mint)
+
+    return mint
+  }
+
+  /** Forgets the user's kept token, unless another one replaced it since. */
+  private forgetAccessToken(userId: number, token: Promise<MintedAccessToken>) {
+    const isTokenStillKept = this.accessTokens.get(userId) === token
+
+    if (isTokenStillKept) this.accessTokens.delete(userId)
   }
 
   /**
@@ -272,7 +364,9 @@ export class GoogleConnectionService {
    * again while Google refused the previous connection, it mints from the
    * newer one instead.
    */
-  async mintAccessToken(userId: number): Promise<GoogleAccessTokenResponseDto> {
+  private async mintFromStoredRefreshToken(
+    userId: number,
+  ): Promise<MintedAccessToken> {
     const clientOptions = toGoogleOAuthClientOptions(
       this.instanceConfigService.getConfig().value,
     )
@@ -321,7 +415,7 @@ export class GoogleConnectionService {
       const isConnectedAgainSince =
         latestConnection.updatedAt.getTime() > connection.updatedAt.getTime()
 
-      if (isConnectedAgainSince) return this.mintAccessToken(userId)
+      if (isConnectedAgainSince) return this.mintFromStoredRefreshToken(userId)
 
       throw createObokuBadRequest(ObokuErrorCode.ERROR_PROVIDER_CONNECTION_LOST)
     }
@@ -336,7 +430,7 @@ export class GoogleConnectionService {
 
     return {
       accessToken,
-      expiresIn: Math.floor((expiryDate - Date.now()) / 1000),
+      expiryDate,
       scopes: scope?.split(" ") ?? connection.scopes,
     }
   }
@@ -345,7 +439,8 @@ export class GoogleConnectionService {
    * Deletes the stored refresh token. Google keeps oboku's grant, so the
    * browser's sign-in and the user's picked files keep working.
    */
-  disconnect(userId: number) {
-    return this.disconnectEveryAccount(userId)
+  async disconnect(userId: number) {
+    await this.disconnectEveryAccount(userId)
+    this.accessTokens.delete(userId)
   }
 }
