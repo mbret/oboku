@@ -299,8 +299,8 @@ export class GoogleConnectionService {
   /**
    * An access token for the user's Drive: the latest one minted until shortly
    * before it expires, else a new one. Calls made while a token is minted
-   * share it, or its failure. A `refusedAccessToken`, which Google refused, is
-   * never answered again.
+   * share it, or its failure. A kept token that is the `refusedAccessToken`,
+   * which Google refused, is replaced by a new mint.
    */
   async mintAccessToken(
     userId: number,

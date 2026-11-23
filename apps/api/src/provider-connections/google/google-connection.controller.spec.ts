@@ -959,6 +959,19 @@ describe("GoogleConnectionController", () => {
         expect(refreshAccessToken).toHaveBeenCalledTimes(2)
       })
 
+      it("mints once when Google answers the refused token again", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+
+        const replacement = await googleConnectionService.mintAccessToken(
+          READER_ID,
+          { refusedAccessToken: FRESH_ACCESS_TOKEN },
+        )
+
+        expect(replacement.accessToken).toBe(FRESH_ACCESS_TOKEN)
+        expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+      })
+
       it("mints one replacement for the calls that report the same refused token", async () => {
         await connect({ code: CODE })
         await mintAccessToken()
