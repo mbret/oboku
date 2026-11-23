@@ -21,7 +21,7 @@ vi.mock("../../settings/useSettings", function mockSettings() {
   }
 })
 
-import { useReaderSettings } from "./useReaderSettings"
+import { useReaderSettings, useReaderTheme } from "./useReaderSettings"
 
 describe("useReaderSettings", () => {
   beforeEach(function resetDeviceAndAccountSettings() {
@@ -82,10 +82,15 @@ describe("useReaderSettings", () => {
     })
   })
 
-  it("leaves the theme to the reader until the device picks one", () => {
-    const { result } = renderHook(useReaderSettings)
+  it("gives the reader, until the device picks a theme, the default theme the loading screen shows", () => {
+    const { result } = renderHook(function useReaderSettingsAndTheme() {
+      return { ...useReaderSettings(), readerTheme: useReaderTheme() }
+    })
 
     expect(result.current.readerSettings.theme).toBeUndefined()
+    expect(result.current.defaultReaderSettings.theme).toBe(
+      result.current.readerTheme,
+    )
   })
 
   it("saves the theme on the device, keeping its other reader settings", () => {

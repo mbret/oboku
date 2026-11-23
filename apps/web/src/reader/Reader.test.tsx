@@ -1,3 +1,4 @@
+import { getContrastRatio } from "@mui/material/styles"
 import { type BookDocType, createBookDefaults } from "@oboku/shared"
 import type { Manifest } from "@prose-reader/shared"
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react"
@@ -13,6 +14,7 @@ import { ThemeProvider } from "../theme/ThemeProvider"
 import type { ReaderInstance } from "./states"
 
 const BOOK_ID = "book-1"
+const WCAG_AA_TEXT_CONTRAST_RATIO = 4.5
 
 const createManifest = (): Manifest => ({
   filename: "book.epub",
@@ -282,6 +284,15 @@ const waitForFirstReader = () =>
     return reader
   })
 
+const getBackgroundColorBehind = (element: Element): string => {
+  const backgroundColor = getComputedStyle(element).backgroundColor
+  const isTransparent = backgroundColor === "rgba(0, 0, 0, 0)"
+
+  if (!isTransparent || !element.parentElement) return backgroundColor
+
+  return getBackgroundColorBehind(element.parentElement)
+}
+
 const waitForFoundPositionInSpineItem = (
   reader: ReaderInstance,
   spineItemIndex: number,
@@ -342,6 +353,46 @@ describe("Reader", () => {
       fontScale: 1.4,
     })
   })
+
+  it.each<Pick<LocalSettings, "themeMode" | "readerTheme">>([
+    { themeMode: "dark", readerTheme: null },
+    { themeMode: "light", readerTheme: "night" },
+  ])(
+    "paints the loading screen in $themeMode mode with the background the reader opens on, with $readerTheme as the device's theme, and keeps its text readable",
+    async ({ themeMode, readerTheme }) => {
+      localSettingsSignal.update(
+        function withThemeModeAndReaderTheme(settings): LocalSettings {
+          return { ...settings, themeMode, readerTheme }
+        },
+      )
+
+      render(<TestReader />)
+
+      const loadingText = screen.getByText("Your book is loading...")
+      const loadingScreenBackgroundColor = getBackgroundColorBehind(loadingText)
+
+      expect(
+        getContrastRatio(
+          getComputedStyle(loadingText).color,
+          loadingScreenBackgroundColor,
+        ),
+      ).toBeGreaterThanOrEqual(WCAG_AA_TEXT_CONTRAST_RATIO)
+
+      act(function openBookAtStart() {
+        mocks.updateOpening({ bookToOpen: null })
+      })
+
+      const reader = await waitForFirstReader()
+
+      await waitFor(function expectReaderPaintedLikeLoadingScreen() {
+        const { rootElement } = reader.context.value
+        const readerBackgroundColor =
+          rootElement && getComputedStyle(rootElement).backgroundColor
+
+        expect(readerBackgroundColor).toBe(loadingScreenBackgroundColor)
+      })
+    },
+  )
 
   it("keeps the archive while it recreates the reader, and prunes it once on leave", async () => {
     mocks.opening.bookToOpen = null

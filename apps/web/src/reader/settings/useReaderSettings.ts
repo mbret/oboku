@@ -1,3 +1,4 @@
+import type { Theme } from "@prose-reader/core"
 import type { ReactReaderSettings } from "@prose-reader/react-reader"
 import {
   type LocalSettings,
@@ -5,6 +6,13 @@ import {
   useLocalSettings,
 } from "../../settings/useLocalSettings"
 import { useSettings } from "../../settings/useSettings"
+
+/**
+ * The default theme of @prose-reader/core 47, which it does not export. The
+ * reader gets it as its default, so the theme `useReaderTheme` gives before the
+ * reader exists is the one the reader opens on.
+ */
+const DEFAULT_READER_THEME: Theme = "bright"
 
 function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
   localSettingsSignal.update(
@@ -27,7 +35,8 @@ function saveReaderSettingsOnDevice(changes: ReactReaderSettings) {
  * The reader settings the user changes in react-reader's menus, the font scale,
  * the spread mode and the theme, as this device keeps them. The default font
  * scale is the account-wide `readerGlobalFontScale`, which older versions of
- * the app save. `updateReaderSettings` saves only the settings it is given, as
+ * the app save. The default theme is the one `useReaderTheme` falls back to.
+ * `updateReaderSettings` saves only the settings it is given, as
  * react-reader reports them: a setting reported as `undefined` goes back to
  * its default on this device.
  *
@@ -52,6 +61,7 @@ export function useReaderSettings() {
   }
   const defaultReaderSettings: ReactReaderSettings = {
     fontScale: accountSettings?.readerGlobalFontScale ?? undefined,
+    theme: DEFAULT_READER_THEME,
   }
 
   return {
@@ -59,4 +69,12 @@ export function useReaderSettings() {
     defaultReaderSettings,
     updateReaderSettings: saveReaderSettingsOnDevice,
   }
+}
+
+/**
+ * The theme the reader opens on, known before the reader exists: this
+ * device's, else the reader's default.
+ */
+export function useReaderTheme() {
+  return useLocalSettings("readerTheme") ?? DEFAULT_READER_THEME
 }

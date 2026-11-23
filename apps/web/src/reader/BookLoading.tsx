@@ -6,12 +6,14 @@ import {
   styled,
   Typography,
 } from "@mui/material"
+import { getThemeBackgroundColor, type Theme } from "@prose-reader/core"
 import { memo } from "react"
 import { useNavigate } from "react-router"
 import { useHasElapsed } from "../common/useHasElapsed"
 import { useSafeGoBack } from "../navigation/useSafeGoBack"
 import { ROUTES } from "../navigation/routes"
 import type { KoreaderPositionCheck } from "../integrations/koreader/client/useKoreaderPositionCheck"
+import { useReaderTheme } from "./settings/useReaderSettings"
 
 const SLOW_CHECK_THRESHOLD_MS = 3000
 
@@ -21,7 +23,11 @@ const SLOW_CHECK_THRESHOLD_MS = 3000
  */
 export type BookOpening = { status: "loadingFile" } | KoreaderPositionCheck
 
-const LoadingStack = styled(Stack)(function styleLoadingStack({ theme }) {
+const LoadingStack = styled(Stack, {
+  shouldForwardProp: (prop) => prop !== "readerTheme",
+})<{ readerTheme: Theme }>(function styleLoadingStack({ theme, readerTheme }) {
+  const isReaderBackgroundDark = readerTheme === "night"
+
   return {
     position: "absolute",
     top: 0,
@@ -32,6 +38,10 @@ const LoadingStack = styled(Stack)(function styleLoadingStack({ theme }) {
     alignItems: "center",
     gap: theme.spacing(4),
     padding: theme.spacing(2),
+    backgroundColor: getThemeBackgroundColor(readerTheme),
+    color: isReaderBackgroundDark
+      ? theme.palette.common.white
+      : theme.palette.common.black,
   }
 })
 
@@ -102,13 +112,14 @@ export const BookLoading = memo(function BookLoading({
   opening: BookOpening
 }) {
   const { goBack } = useSafeGoBack()
+  const readerTheme = useReaderTheme()
   const isCheckingKoreaderPosition =
     opening.status === "checking" ||
     opening.status === "failed" ||
     opening.status === "refused"
 
   return (
-    <LoadingStack>
+    <LoadingStack readerTheme={readerTheme}>
       {isCheckingKoreaderPosition ? (
         <KoreaderPositionCheckStep check={opening} />
       ) : (
