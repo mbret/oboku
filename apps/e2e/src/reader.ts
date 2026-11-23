@@ -72,4 +72,7 @@ export async function showReaderMenu(page: Page) {
   }
 
   await page.mouse.click(viewport.width / 2, viewport.height / 2)
+  await expect(
+    page.getByRole("button", { name: "Table of contents" }),
+  ).toBeVisible()
 }

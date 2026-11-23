@@ -117,7 +117,7 @@ export const featureGroups: FeatureGroup[] = [
       },
       tertiary: {
         src: audiobookReaderScreenshot,
-        alt: "An audiobook track open in the oboku reader, shown as a sound wave",
+        alt: "An audiobook open in the oboku reader, with its sound wave and playback controls",
       },
     },
     chips: supportedExtensions.map((extension) => ({ label: extension })),

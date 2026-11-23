@@ -92,8 +92,9 @@ c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-s
   at 64 kbps with ID3 tags for the chapter, the author, the book and the track
   number. The zip also holds the cover and a package document, `package.opf`,
   that gives the title, the author, the narrator, the cover and the order of
-  the tracks. Without one, prose-reader reads no title or author from the
+  the tracks. prose-reader reads no title or author from the tags of the
   tracks ([mbret/prose-reader#898](https://github.com/mbret/prose-reader/issues/898)),
-  and reads the cover as a page after them
+  and without a package document it reads the cover as a page after them
   ([mbret/prose-reader#897](https://github.com/mbret/prose-reader/issues/897)).
+  No fixture covers an audiobook zip without a package document.
 - **SHA-256:** `bda1de6e46a0f674376ee1a7d7803d7a947491c08002d2714f3859c4187dcb87`
