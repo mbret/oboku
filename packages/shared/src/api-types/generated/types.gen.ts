@@ -423,6 +423,10 @@ export type SyncReportDto = {
     created_at: string;
     ended_at: string;
     state: 'error' | 'success';
+    /**
+     * Why the sync failed. `null` when it succeeded, and for reports saved before the code was stored.
+     */
+    error_code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001' | null;
     report: Array<SyncReportEntryDto>;
     datasource_id: string;
     user_name: string;
