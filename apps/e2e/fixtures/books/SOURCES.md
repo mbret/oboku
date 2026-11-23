@@ -73,7 +73,8 @@ c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-s
 
 - **Audiobook:** _The Time Machine_, H. G. Wells, the LibriVox recording
   _The Time Machine (Version 2)_ read by Mark F. Smith, 2011: the first 30
-  seconds of chapters 1 and 2.
+  seconds of chapters 1 and 2. Its package document titles it _The Time
+  Machine (LibriVox)_, so that its title differs from the EPUB's.
 - **Source:** the Internet Archive item
   [time_machine_ms_librivox](https://archive.org/details/time_machine_ms_librivox),
   [timemachine_01_wells.mp3](https://archive.org/download/time_machine_ms_librivox/timemachine_01_wells.mp3)

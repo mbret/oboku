@@ -125,7 +125,8 @@ async function showDataSources(page: Page) {
 /**
  * In capture order, for every target. A reader scene leaves its book in
  * progress, so it comes after the scenes that show reading progress.
- * `library-e-ink` leaves the app in e-ink, so it comes last.
+ * `library-e-ink` leaves the app in e-ink, so it comes last, after the reader
+ * scenes: where their books are in view, it shows them in progress.
  */
 const SCENES = {
   home: {
@@ -223,14 +224,14 @@ const SCENES = {
   "library-e-ink": {
     show: async function showLibraryInEInk(page) {
       await page.goto("/profile")
-      await page.getByText("Device settings", { exact: true }).click()
+      await page.getByRole("button", { name: "Device settings" }).click()
       await page.getByRole("button", { name: /^Color mode/ }).click()
       await page.getByRole("button", { name: "E-ink", exact: true }).click()
       await expect(
         page.getByRole("button", { name: "Color mode E-ink" }),
       ).toBeVisible()
       await page.goBack()
-      await page.getByRole("link", { name: "Library" }).click()
+      await page.getByRole("link", { name: "Library", exact: true }).click()
       await expectLibraryShown(page)
     },
   },
@@ -239,7 +240,7 @@ const SCENES = {
 type SceneName = keyof typeof SCENES
 
 function isSceneName(name: string): name is SceneName {
-  return name in SCENES
+  return Object.hasOwn(SCENES, name)
 }
 
 const SCENES_IN_CAPTURE_ORDER = Object.keys(SCENES).filter(isSceneName)
