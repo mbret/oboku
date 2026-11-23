@@ -1,4 +1,9 @@
-import type { BookDocType, CollectionDocType, TagsDocType } from "@oboku/shared"
+import type {
+  BookDocType,
+  CollectionDocType,
+  ObokuErrorCode,
+  TagsDocType,
+} from "@oboku/shared"
 import type { SyncReportDto, SyncReportEntryDto } from "./sync-report.dto.js"
 
 export class SyncReport {
@@ -14,7 +19,7 @@ export class SyncReport {
 
   protected readonly references: Record<string, string> = {}
 
-  protected state: SyncReportDto["state"] = "success"
+  protected errorCode: ObokuErrorCode | null = null
 
   protected hasDifferentProviderCredentials = false
 
@@ -27,8 +32,8 @@ export class SyncReport {
     this.report.ended_at = new Date().toISOString()
   }
 
-  fail() {
-    this.state = "error"
+  fail(errorCode: ObokuErrorCode) {
+    this.errorCode = errorCode
   }
 
   protected hasEntry(rx_model: SyncReportEntryDto["rx_model"], id: string) {
@@ -336,6 +341,9 @@ export class SyncReport {
   }
 
   prepare() {
+    const state: SyncReportDto["state"] =
+      this.errorCode === null ? "success" : "error"
+
     return {
       created_at: this.report.created_at,
       ended_at: this.report.ended_at,
@@ -345,7 +353,8 @@ export class SyncReport {
       })),
       datasource_id: this.datasourceId,
       user_name: this.userName,
-      state: this.state,
+      state,
+      error_code: this.errorCode,
       has_different_provider_credentials: this.hasDifferentProviderCredentials,
     }
   }
