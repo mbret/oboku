@@ -6,18 +6,24 @@ import type { FeatureGroup } from "./content"
 import {
   FeatureGridBox,
   FeatureGroupBandSection,
+  IllustrationAreaBox,
   LayoutBox,
-  ScreenshotsAreaBox,
   TextStack,
   WideFeatureGridBox,
 } from "./FeatureGroupSection.styled"
 
-function FeatureList({ group }: { group: FeatureGroup }) {
-  const FeatureGrid = group.screenshots ? FeatureGridBox : WideFeatureGridBox
+function FeatureList({
+  features,
+  isBesideIllustration,
+}: {
+  features: FeatureGroup["features"]
+  isBesideIllustration: boolean
+}) {
+  const FeatureGrid = isBesideIllustration ? FeatureGridBox : WideFeatureGridBox
 
   return (
     <FeatureGrid>
-      {group.features.map(function renderFeature({ Icon, title, description }) {
+      {features.map(function renderFeature({ Icon, title, description }) {
         return (
           <Stack key={title} direction="row" sx={{ gap: 2 }}>
             <FeatureIconBox>
@@ -49,8 +55,13 @@ export function FeatureGroupSection({
   group: FeatureGroup
   isAlternate: boolean
 }) {
-  const screenshotsLayout = isAlternate ? "screenshots-first" : "text-first"
-  const layout = group.screenshots ? screenshotsLayout : "text-only"
+  const illustration = group.screenshots ? (
+    <PhoneScreenshots {...group.screenshots} />
+  ) : (
+    group.diagram
+  )
+  const illustrationLayout = isAlternate ? "illustration-first" : "text-first"
+  const layout = illustration ? illustrationLayout : "text-only"
   const titleId = `${group.id}-title`
 
   return (
@@ -94,13 +105,14 @@ export function FeatureGroupSection({
               </Stack>
             )}
             <Box sx={{ mt: 1 }}>
-              <FeatureList group={group} />
+              <FeatureList
+                features={group.features}
+                isBesideIllustration={!!illustration}
+              />
             </Box>
           </TextStack>
-          {group.screenshots && (
-            <ScreenshotsAreaBox>
-              <PhoneScreenshots {...group.screenshots} />
-            </ScreenshotsAreaBox>
+          {illustration && (
+            <IllustrationAreaBox>{illustration}</IllustrationAreaBox>
           )}
         </LayoutBox>
       </Container>

@@ -58,6 +58,7 @@ import manageStorageScreenshot from "../common/app-screenshots/manage-storage.we
 import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
 import profileScreenshot from "../common/app-screenshots/profile.webp"
 import { supportedExtensions, syncProviders } from "../home/content"
+import { OpdsDiagram } from "./OpdsDiagram"
 
 type Feature = {
   title: string
@@ -79,6 +80,7 @@ export type FeatureGroup = {
   description: ReactNode
   features: Feature[]
   screenshots?: PhoneScreenshotSet
+  diagram?: ReactNode
   chips?: FeatureChip[]
 }
 
@@ -352,6 +354,7 @@ export const featureGroups: FeatureGroup[] = [
       { label: "OPDS 1.2" },
       { label: "OPDS 2.0" },
     ],
+    diagram: <OpdsDiagram />,
     features: [
       {
         Icon: CollectionsBookmarkRounded,
