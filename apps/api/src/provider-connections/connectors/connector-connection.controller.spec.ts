@@ -462,6 +462,32 @@ describe("ConnectorConnectionController", () => {
     })
   })
 
+  it("keeps a connection connected when the user only turns the proxy on or off", async () => {
+    const { host } = await startServer({ isWebdav: true })
+    const connector = toWebdavConnector(host)
+    setPrivateNetworkAllowedHosts([host])
+    setReaderConnectors([connector])
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
+
+    setReaderConnectors([{ ...connector, proxyThroughServer: true }])
+
+    expect((await listConnections()).body.connections).toEqual([
+      expect.objectContaining({ status: "connected" }),
+    ])
+
+    setReaderConnectors([
+      {
+        ...connector,
+        proxyThroughServer: true,
+        url: `http://${host}/other-dav/`,
+      },
+    ])
+
+    expect((await listConnections()).body.connections).toEqual([
+      expect.objectContaining({ status: "connector-changed" }),
+    ])
+  })
+
   it("lists a connection whose password changed as such, and one whose secret was only renamed as connected", async () => {
     const { host } = await startServer({ isWebdav: true })
     const connector = toWebdavConnector(host)
