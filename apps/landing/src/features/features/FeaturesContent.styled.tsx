@@ -27,34 +27,3 @@ export const HighlightStack = styled(Stack)(function styleHighlightStack({
     textAlign: "center",
   }
 })
-
-export const SectionNav = styled("nav")(function styleSectionNav({ theme }) {
-  return {
-    position: "sticky",
-    top: 56,
-    zIndex: theme.zIndex.appBar - 1,
-    backgroundColor: theme.alpha(theme.vars.palette.background.paper, 0.9),
-    backdropFilter: "blur(8px)",
-    borderTop: `1px solid ${theme.vars.palette.divider}`,
-    borderBottom: `1px solid ${theme.vars.palette.divider}`,
-    [theme.breakpoints.up("sm")]: {
-      top: 64,
-    },
-  }
-})
-
-export const SectionNavStack = styled(Stack)(function styleSectionNavStack({
-  theme,
-}) {
-  return {
-    flexDirection: "row",
-    gap: theme.spacing(1),
-    paddingTop: theme.spacing(1.5),
-    paddingBottom: theme.spacing(1.5),
-    overflowX: "auto",
-    scrollbarWidth: "none",
-    [theme.breakpoints.up("md")]: {
-      justifyContent: "center",
-    },
-  }
-})
