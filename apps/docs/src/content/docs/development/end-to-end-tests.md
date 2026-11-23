@@ -92,7 +92,7 @@ Each target signs up a new account, syncs and downloads the server library, read
 
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 
-- The profile shows the email of the account, which each run creates with a new address.
+- The profile and both KOReader screens show the email of the account, which each run creates with a new address.
 - The data sources screen shows the day of the last sync, which the API records.
 - The KOReader sync server screen shows the password the API generates.
 - The storage screen shows the browser's estimate of the space the machine has, and lists the books in no fixed order.

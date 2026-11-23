@@ -10,8 +10,8 @@ export type SignUpInvitation = {
 }
 
 /**
- * Unique among the accounts of one stack, and short enough for the profile
- * screenshot to show it on one line.
+ * Unique among the accounts of one stack, and short enough to fit on one line
+ * in the screenshots that show it.
  */
 function newReaderEmail() {
   return `reader-${randomBytes(4).toString("hex")}@oboku.test`

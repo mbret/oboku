@@ -193,6 +193,12 @@ const SCENES = {
       await expect(page.getByText("Content report")).toBeVisible()
       await page.getByRole("checkbox", { name: "Compress images" }).check()
       await page.getByRole("radio", { name: "Convert to WebP" }).check()
+      await page
+        .getByText("Compress images", { exact: true })
+        .locator("..")
+        .evaluate(function alignCompressionOptionToTop(option) {
+          option.scrollIntoView({ block: "start" })
+        })
     },
   },
   "optimize-metadata": {
@@ -201,6 +207,11 @@ const SCENES = {
       await page.getByRole("tab", { name: "Metadata" }).click()
       await page.getByRole("link", { name: /^Fix metadata in file/ }).click()
       await expect(page.getByText("Metadata report")).toBeVisible()
+      // The stack's data source cannot upload a book back, and an alert above
+      // the tabs says so.
+      await page.getByRole("tablist").evaluate(function alignTabsToTop(tabs) {
+        tabs.scrollIntoView({ block: "start" })
+      })
     },
   },
   "koreader-sync-server": {
