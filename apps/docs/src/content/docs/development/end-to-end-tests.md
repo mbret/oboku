@@ -71,18 +71,24 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manga-reader`, `audiobook-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It leaves its book in progress, so a target lists the reader scenes after the scenes that show reading progress.
-- **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures. It saves each scene as `<scene>.png` in its own folder, listed in the table below, and the run fails if the folder holds another image.
+- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manga-reader`, `audiobook-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It leaves its book in progress, so a target lists the reader scenes after the scenes that show reading progress. The `library-e-ink` scene leaves the app in e-ink, so a target lists it last.
+- **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures. It saves each scene as `<scene>` and the extension of its format, in its own folder, listed in the table below. The run fails if the folder holds another file.
 
-| Target         | Size                            | Scenes                                         | Saved to                                            |
-| -------------- | ------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | `apps/e2e/screenshots/play-phone/en/`               |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | `apps/web/public/manifest-screenshots/`             |
-| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | `apps/landing/src/features/common/app-screenshots/` |
+| Target         | Size                            | Scenes                                         | Format           | Saved to                                            |
+| -------------- | ------------------------------- | ---------------------------------------------- | ---------------- | --------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | PNG              | `apps/e2e/screenshots/play-phone/en/`               |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | JPEG, quality 85 | `apps/web/public/manifest-screenshots/`             |
+| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | WebP, quality 90 | `apps/landing/src/features/common/app-screenshots/` |
+
+Each format is the smallest the image's destination takes:
+
+- Google Play takes JPEG or 24-bit PNG. The Play Store set is not committed, so it stays lossless.
+- The install dialog shows PNG and JPEG screenshots only.
+- The landing serves its images through `next/image`, which re-encodes them for each screen size.
 
 No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. Leave out an image whose only change is one of those listed below. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 
-Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
+Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. Its zip holds a package document, which gives it its title, author and cover. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 

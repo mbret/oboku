@@ -14,7 +14,10 @@ const screenshotWidth = Math.round((screenshotHeight * 750) / 1334)
 
 export default async function OpenGraphImage() {
   const libraryScreenshot = await readFile(
-    path.join(process.cwd(), "src/features/common/app-screenshots/library.png"),
+    path.join(
+      process.cwd(),
+      "src/features/common/app-screenshots/library.webp",
+    ),
   )
 
   return new ImageResponse(

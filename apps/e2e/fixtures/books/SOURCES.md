@@ -81,12 +81,19 @@ c50f763b0619c545f2aff871a5a386e90b7d83f3a5722a1dbb5441213cd79026  robert-louis-s
   [timemachine_02_wells.mp3](https://archive.org/download/time_machine_ms_librivox/timemachine_02_wells.mp3),
   listed on the
   [LibriVox catalog page](https://librivox.org/the-time-machine-version-2-by-h-g-wells/).
-- **Licence:** public domain. The item is marked CC0 1.0, and the recording's
-  CD insert states that "this recording is in the public domain and may be
-  reproduced, distributed, or modified without permission".
+  The cover is the front of the recording's CD insert,
+  [Time_Machine_V2_1205.pdf](https://archive.org/download/time_machine_ms_librivox/Time_Machine_V2_1205.pdf),
+  at its embedded size of 712 px.
+- **Licence:** public domain. The item is marked CC0 1.0, and the CD insert
+  states that "this recording is in the public domain and may be reproduced,
+  distributed, or modified without permission". It credits the cover image to
+  Leonardo da Vinci and states that the cover design is in the public domain.
 - **Build:** each chapter cut to its first 30 seconds and encoded as mono MP3
   at 64 kbps with ID3 tags for the chapter, the author, the book and the track
-  number, stored in a zip. The zip holds no cover: prose-reader reads an image
-  in an audio-only zip as a page after the tracks
+  number. The zip also holds the cover and a package document, `package.opf`,
+  that gives the title, the author, the narrator, the cover and the order of
+  the tracks. Without one, prose-reader reads no title or author from the
+  tracks ([mbret/prose-reader#898](https://github.com/mbret/prose-reader/issues/898)),
+  and reads the cover as a page after them
   ([mbret/prose-reader#897](https://github.com/mbret/prose-reader/issues/897)).
-- **SHA-256:** `4df267126355cfefa33388e09db38d80c73a625451d5ba2c113c68cbc05a0f20`
+- **SHA-256:** `bda1de6e46a0f674376ee1a7d7803d7a947491c08002d2714f3859c4187dcb87`

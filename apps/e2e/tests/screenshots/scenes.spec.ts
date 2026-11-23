@@ -1,6 +1,7 @@
-import { readdir } from "node:fs/promises"
+import { mkdir, readdir } from "node:fs/promises"
 import path from "node:path"
 import type { Page } from "@playwright/test"
+import sharp, { type Sharp } from "sharp"
 import { expect, test } from "../../src/fixtures"
 import {
   HITO_NO_ISSHO,
@@ -117,12 +118,12 @@ function anyServerLibraryBookTitle(page: Page) {
   ).reduce((titles, title) => titles.or(title))
 }
 
-async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
+async function switchToEInk(page: Page) {
   await page.goto("/profile/settings")
   await page.getByRole("button", { name: /^Color mode/ }).click()
-  await page.getByRole("button", { name: colorMode, exact: true }).click()
+  await page.getByRole("button", { name: "E-ink", exact: true }).click()
   await expect(
-    page.getByRole("button", { name: `Color mode ${colorMode}` }),
+    page.getByRole("button", { name: "Color mode E-ink" }),
   ).toBeVisible()
 }
 
@@ -149,13 +150,18 @@ const SCENES = {
   library: {
     show: showLibrary,
   },
+  /**
+   * Leaves the app in e-ink, so a target captures it last. The app saves the
+   * setting up to 500 ms later, and a page load before that loses it, so the
+   * scene reaches the library through the tab bar.
+   */
   "library-e-ink": {
     show: async function showLibraryInEInk(page) {
-      await setColorMode(page, "E-ink")
-      await showLibrary(page)
-    },
-    leave: async function restoreColorMode(page) {
-      await setColorMode(page, "System")
+      await switchToEInk(page)
+      await page.getByRole("link", { name: "Library" }).click()
+      await expect(
+        page.getByText(LITTLE_NEMO.title, { exact: true }),
+      ).toBeVisible()
     },
   },
   "book-details": {
@@ -194,6 +200,10 @@ const SCENES = {
         THE_TIME_MACHINE_AUDIOBOOK.title,
       )
       await expectReaderPageRevealed(firstAudioTrackWave(page))
+      await showReaderMenu(page)
+      await expect(
+        page.getByRole("button", { name: "Play audio" }),
+      ).toBeVisible()
     },
     leave: closeReader,
   },
@@ -228,6 +238,18 @@ const SCENES = {
 
 type SceneName = keyof typeof SCENES
 
+const IMAGE_FORMATS = {
+  png: { extension: "png", encode: (image: Sharp) => image.png() },
+  jpeg: {
+    extension: "jpg",
+    encode: (image: Sharp) => image.jpeg({ quality: 85, mozjpeg: true }),
+  },
+  webp: {
+    extension: "webp",
+    encode: (image: Sharp) => image.webp({ quality: 90 }),
+  },
+}
+
 type Target = {
   name: string
   viewport: { width: number; height: number }
@@ -235,6 +257,7 @@ type Target = {
   colorScheme: "light" | "dark"
   locale: string
   outputDir: string
+  imageFormat: keyof typeof IMAGE_FORMATS
   /**
    * In capture order. A reader scene leaves its book in progress, so it comes
    * after the scenes that show reading progress.
@@ -250,6 +273,8 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
+    // Google Play takes JPEG or 24-bit PNG.
+    imageFormat: "png",
     scenes: [
       "home",
       "library",
@@ -266,6 +291,8 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "web/public/manifest-screenshots"),
+    // The install dialog shows PNG and JPEG screenshots only.
+    imageFormat: "jpeg",
     scenes: ["home", "library", "epub-reader"],
   },
   {
@@ -278,10 +305,10 @@ const TARGETS: Target[] = [
       APPS_DIR,
       "landing/src/features/common/app-screenshots",
     ),
+    imageFormat: "webp",
     scenes: [
       "home",
       "library",
-      "library-e-ink",
       "book-details",
       "manage-storage",
       "data-sources",
@@ -290,6 +317,7 @@ const TARGETS: Target[] = [
       "epub-reader",
       "manga-reader",
       "audiobook-reader",
+      "library-e-ink",
     ],
   },
 ]
@@ -427,26 +455,31 @@ for (const target of TARGETS) {
       await page.setViewportSize(target.viewport)
       await startReading(page, bookDetailsUrls)
 
+      const imageFormat = IMAGE_FORMATS[target.imageFormat]
+      const sceneImage = (scene: SceneName) =>
+        `${scene}.${imageFormat.extension}`
+
+      await mkdir(target.outputDir, { recursive: true })
+
       for (const scene of target.scenes) {
         const sceneToCapture: Scene = SCENES[scene]
 
         await page.clock.setSystemTime(CAPTURE_TIME)
         await sceneToCapture.show(page, bookDetailsUrls)
         await waitForScreenToSettle(page, sceneToCapture)
-        await page.screenshot({
-          path: path.join(target.outputDir, `${scene}.png`),
-          animations: "disabled",
-        })
+        const screenshot = await page.screenshot({ animations: "disabled" })
+        await imageFormat
+          .encode(sharp(screenshot))
+          .toFile(path.join(target.outputDir, sceneImage(scene)))
         await sceneToCapture.leave?.(page)
       }
 
       const savedImages = await readdir(target.outputDir)
-      const sceneImages = target.scenes.map((scene) => `${scene}.png`)
 
       expect(
-        savedImages.filter((image) => image.endsWith(".png")).sort(),
+        savedImages.sort(),
         `${target.outputDir} holds only the images of the target's scenes`,
-      ).toEqual(sceneImages.sort())
+      ).toEqual(target.scenes.map(sceneImage).sort())
     })
   })
 }
