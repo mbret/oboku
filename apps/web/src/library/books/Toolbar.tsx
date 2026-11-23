@@ -1,12 +1,9 @@
-import { TuneRounded, SortRounded, CloseRounded } from "@mui/icons-material"
+import { SortRounded, CloseRounded } from "@mui/icons-material"
+import { Button, Toolbar as MuiToolbar, Stack } from "@mui/material"
 import {
-  Badge,
-  Button,
-  IconButton,
-  Toolbar as MuiToolbar,
-  Stack,
-} from "@mui/material"
-import { ViewModeIconButton } from "../../common/lists/ListActionsToolbar"
+  FiltersIconButton,
+  ViewModeIconButton,
+} from "../../common/lists/ListActionsToolbar"
 import { libraryStateSignal } from "./states"
 import { useSignalValue } from "reactjrx"
 
@@ -25,20 +22,10 @@ export const Toolbar = ({
 
   return (
     <MuiToolbar>
-      <IconButton
-        edge="start"
+      <FiltersIconButton
+        numberOfFiltersApplied={numberOfFiltersApplied}
         onClick={onFilterClick}
-        size="large"
-        color="primary"
-      >
-        {numberOfFiltersApplied > 0 ? (
-          <Badge badgeContent={numberOfFiltersApplied}>
-            <TuneRounded />
-          </Badge>
-        ) : (
-          <TuneRounded />
-        )}
-      </IconButton>
+      />
       <Stack
         sx={{
           flexGrow: 1,

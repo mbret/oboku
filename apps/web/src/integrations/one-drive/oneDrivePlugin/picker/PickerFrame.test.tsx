@@ -120,7 +120,7 @@ describe("PickerFrame", () => {
     await waitFor(function waitForPickerToStart() {
       expect(pickOneDriveItemsWithPicker).toHaveBeenCalled()
     })
-    fireEvent.click(screen.getByRole("button"))
+    fireEvent.click(screen.getByRole("button", { name: "Close" }))
     await waitFor(function waitForAbortedPickerToSettle() {
       expect(onMutationSettled).toHaveBeenCalled()
     })

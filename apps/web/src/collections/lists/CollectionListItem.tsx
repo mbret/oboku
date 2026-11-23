@@ -22,6 +22,17 @@ const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2),
 }))
 
+const LockIconSpan = styled("span")(({ theme }) => ({
+  display: "inline-flex",
+  alignItems: "center",
+  justifyContent: "center",
+  flex: "0 0 auto",
+  boxSizing: "border-box",
+  verticalAlign: "middle",
+  padding: 12,
+  color: theme.palette.action.active,
+}))
+
 export const CollectionListItem = memo(function CollectionListItem({
   id,
   showType,
@@ -38,6 +49,7 @@ export const CollectionListItem = memo(function CollectionListItem({
   const metadata = getCollectionComputedMetadata(item)
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const title = useCollectionDisplayTitle(metadata.title)
+  const isEmptyCollection = id === config?.COLLECTION_EMPTY_ID
 
   return (
     <ListItem
@@ -63,7 +75,7 @@ export const CollectionListItem = memo(function CollectionListItem({
         <Stack
           direction="row"
           onClick={(e) => {
-            if (id !== config?.COLLECTION_EMPTY_ID) {
+            if (!isEmptyCollection) {
               e.stopPropagation()
               openActionDrawer()
             }
@@ -87,24 +99,19 @@ export const CollectionListItem = memo(function CollectionListItem({
             }}
           />
 
-          {id !== config?.COLLECTION_EMPTY_ID && (
+          {isEmptyCollection ? (
+            <LockIconSpan role="img" aria-label="This shelf cannot be edited">
+              <LockRounded />
+            </LockIconSpan>
+          ) : (
             <IconButton
+              aria-label="More actions"
               disableFocusRipple
               disableRipple
               disableTouchRipple
               size="large"
             >
               <MoreVert />
-            </IconButton>
-          )}
-          {id === config?.COLLECTION_EMPTY_ID && (
-            <IconButton
-              disableFocusRipple
-              disableRipple
-              disableTouchRipple
-              size="large"
-            >
-              <LockRounded />
             </IconButton>
           )}
         </Stack>

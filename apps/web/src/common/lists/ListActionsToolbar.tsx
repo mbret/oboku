@@ -19,6 +19,12 @@ import { SortByDialog } from "../../books/lists"
 export type ListActionSorting = ComponentProps<typeof SortByDialog>["value"]
 export type ListActionViewMode = "grid" | "list" | "compact" | "horizontal"
 
+const switchToViewModeLabels = {
+  grid: "Show as grid",
+  list: "Show as list",
+  compact: "Show as compact list",
+}
+
 export const ViewModeIconButton = ({
   viewMode,
   onViewModeChange,
@@ -26,18 +32,15 @@ export const ViewModeIconButton = ({
   viewMode: ListActionViewMode
   onViewModeChange?: (viewMode: ListActionViewMode) => void
 }) => {
+  const nextViewMode =
+    viewMode === "compact" ? "grid" : viewMode === "list" ? "compact" : "list"
+
   return (
     <IconButton
+      aria-label={switchToViewModeLabels[nextViewMode]}
       color="primary"
-      onClick={() => {
-        const newViewMode =
-          viewMode === "compact"
-            ? "grid"
-            : viewMode === "list"
-              ? "compact"
-              : "list"
-
-        onViewModeChange?.(newViewMode)
+      onClick={function switchToNextViewMode() {
+        onViewModeChange?.(nextViewMode)
       }}
       size="large"
     >
@@ -47,6 +50,38 @@ export const ViewModeIconButton = ({
         <FormatListBulletedRounded />
       ) : (
         <ListRounded />
+      )}
+    </IconButton>
+  )
+}
+
+export const FiltersIconButton = ({
+  numberOfFiltersApplied,
+  onClick,
+}: {
+  numberOfFiltersApplied: number
+  onClick: () => void
+}) => {
+  const hasFiltersApplied = numberOfFiltersApplied > 0
+
+  return (
+    <IconButton
+      aria-label={
+        hasFiltersApplied
+          ? `Show filters, ${numberOfFiltersApplied} applied`
+          : "Show filters"
+      }
+      edge="start"
+      onClick={onClick}
+      size="large"
+      color="primary"
+    >
+      {hasFiltersApplied ? (
+        <Badge badgeContent={numberOfFiltersApplied}>
+          <TuneRounded />
+        </Badge>
+      ) : (
+        <TuneRounded />
       )}
     </IconButton>
   )
@@ -84,20 +119,10 @@ export const ListActionsToolbar = memo(function ListActionsToolbar({
           }}
         >
           {!!onFilterClick && (
-            <IconButton
-              edge="start"
-              onClick={() => onFilterClick?.()}
-              size="large"
-              color="primary"
-            >
-              {numberOfFiltersApplied > 0 ? (
-                <Badge badgeContent={numberOfFiltersApplied}>
-                  <TuneRounded />
-                </Badge>
-              ) : (
-                <TuneRounded />
-              )}
-            </IconButton>
+            <FiltersIconButton
+              numberOfFiltersApplied={numberOfFiltersApplied}
+              onClick={onFilterClick}
+            />
           )}
           {!!sorting && (
             <div
