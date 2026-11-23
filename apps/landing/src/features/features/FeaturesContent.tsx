@@ -4,12 +4,8 @@ import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
 import { featureGroups, featureHighlights } from "./content"
 import { FeatureGroupSection } from "./FeatureGroupSection"
-import {
-  HighlightsBox,
-  HighlightStack,
-  SectionNav,
-  SectionNavStack,
-} from "./FeaturesContent.styled"
+import { FeatureSectionNav } from "./FeatureSectionNav"
+import { HighlightsBox, HighlightStack } from "./FeaturesContent.styled"
 
 export function FeaturesContent() {
   return (
@@ -62,24 +58,9 @@ export function FeaturesContent() {
           </HighlightsBox>
         </Container>
       </GlowHeroSection>
-      <SectionNav aria-label="Feature categories">
-        <Container>
-          <SectionNavStack>
-            {featureGroups.map(function renderSectionLink({ id, navLabel }) {
-              return (
-                <Chip
-                  key={id}
-                  label={navLabel}
-                  component="a"
-                  href={`#${id}`}
-                  clickable
-                  variant="outlined"
-                />
-              )
-            })}
-          </SectionNavStack>
-        </Container>
-      </SectionNav>
+      <FeatureSectionNav
+        sections={featureGroups.map(({ id, navLabel }) => ({ id, navLabel }))}
+      />
       {featureGroups.map(function renderFeatureGroup(group, index) {
         return (
           <FeatureGroupSection

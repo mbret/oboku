@@ -1,4 +1,4 @@
-import { randomUUID } from "node:crypto"
+import { randomBytes } from "node:crypto"
 import { test as base } from "@playwright/test"
 import { adminGenerateSignUpLink } from "@oboku/shared"
 import { signInAsAdmin } from "./admin"
@@ -9,6 +9,14 @@ export type SignUpInvitation = {
   signUpLink: string
 }
 
+/**
+ * Unique among the accounts of one stack, and short enough to fit on one line
+ * in the screenshots that show it.
+ */
+function newReaderEmail() {
+  return `reader-${randomBytes(4).toString("hex")}@oboku.test`
+}
+
 export const test = base.extend<{ signUpInvitation: SignUpInvitation }>({
   // biome-ignore lint/correctness/noEmptyPattern: Playwright reads the fixtures a fixture depends on from this destructuring.
   signUpInvitation: async function inviteNewReader({}, use) {
@@ -16,7 +24,7 @@ export const test = base.extend<{ signUpInvitation: SignUpInvitation }>({
       data: { signUpLink },
     } = await adminGenerateSignUpLink({
       client: await signInAsAdmin(),
-      body: { email: `reader-${randomUUID()}@oboku.test` },
+      body: { email: newReaderEmail() },
     })
 
     await use({ password: "e2e-password", signUpLink })
