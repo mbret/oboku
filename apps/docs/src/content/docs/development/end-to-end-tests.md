@@ -71,14 +71,20 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** each has the steps that show one screen, and is named after it: `home`, `library`, `library-e-ink`, `book-details`, `epub-reader`, `manga-reader`, `audiobook-reader`, `manage-storage`, `data-sources`, `add-data-source` and `profile`. The `epub-reader` scene shows the reader's menu: use it wherever one image shows the reader. A reader scene also closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It leaves its book in progress, so a target lists the reader scenes after the scenes that show reading progress.
-- **The targets:** each sets a viewport, a scale, a theme and a locale, and lists the scenes it captures. It saves each scene as `<scene>.png` in its own folder, listed in the table below, and the run fails if the folder holds another image.
+- **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `data-sources`, `add-data-source`, `profile`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader.
+- **The targets:** each sets a viewport, a scale, a theme, a locale and an image format, and lists the scenes it captures. It saves each scene as `<scene>` and the extension of its format, in its own folder, listed in the table below. The run fails if the folder holds another file, other than a hidden one.
 
-| Target         | Size                            | Scenes                                         | Saved to                                            |
-| -------------- | ------------------------------- | ---------------------------------------------- | --------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | `apps/e2e/screenshots/play-phone/en/`               |
-| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | `apps/web/public/manifest-screenshots/`             |
-| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | `apps/landing/src/features/common/app-screenshots/` |
+| Target         | Size                            | Scenes                                         | Format                                       | Saved to                                            |
+| -------------- | ------------------------------- | ---------------------------------------------- | -------------------------------------------- | --------------------------------------------------- |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | PNG                                          | `apps/e2e/screenshots/play-phone/en/`               |
+| `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | JPEG, quality 85                             | `apps/web/public/manifest-screenshots/`             |
+| `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | WebP, the smaller of lossless and quality 90 | `apps/landing/src/features/common/app-screenshots/` |
+
+Each committed image is in the smallest format its destination takes, and the uncommitted Play Store set stays lossless:
+
+- Google Play takes JPEG or 24-bit PNG.
+- Chrome's install dialog takes PNG and JPEG screenshots only.
+- The landing serves its images through `next/image`, which takes WebP and re-encodes each image for each screen size. Its Open Graph image converts the library screenshot to PNG, because `next/og` draws no WebP image.
 
 No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. Leave out an image whose only change is one of those listed below. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 

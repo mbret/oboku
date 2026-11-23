@@ -1,6 +1,7 @@
-import { readdir } from "node:fs/promises"
+import { mkdir, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 import type { Page } from "@playwright/test"
+import sharp, { type Sharp } from "sharp"
 import { expect, test } from "../../src/fixtures"
 import {
   HITO_NO_ISSHO,
@@ -105,8 +106,7 @@ async function expectChapterOneOfTheTimeMachine(page: Page) {
   return chapterOne
 }
 
-async function showLibrary(page: Page) {
-  await page.goto("/library/books")
+async function expectLibraryShown(page: Page) {
   await expect(page.getByText(LITTLE_NEMO.title, { exact: true })).toBeVisible()
 }
 
@@ -117,20 +117,17 @@ function anyServerLibraryBookTitle(page: Page) {
   ).reduce((titles, title) => titles.or(title))
 }
 
-async function setColorMode(page: Page, colorMode: "E-ink" | "System") {
-  await page.goto("/profile/settings")
-  await page.getByRole("button", { name: /^Color mode/ }).click()
-  await page.getByRole("button", { name: colorMode, exact: true }).click()
-  await expect(
-    page.getByRole("button", { name: `Color mode ${colorMode}` }),
-  ).toBeVisible()
-}
-
 async function showDataSources(page: Page) {
   await page.goto("/sync/datasources")
   await expect(page.getByText(/^Last synced at /)).toBeVisible()
 }
 
+/**
+ * In capture order, for every target. A reader scene leaves its book in
+ * progress, so it comes after the scenes that show reading progress.
+ * `library-e-ink` leaves the app in e-ink, so it comes last, after the reader
+ * scenes: where their books are in view, it shows them in progress.
+ */
 const SCENES = {
   home: {
     show: async function showHome(page) {
@@ -147,15 +144,9 @@ const SCENES = {
     },
   },
   library: {
-    show: showLibrary,
-  },
-  "library-e-ink": {
-    show: async function showLibraryInEInk(page) {
-      await setColorMode(page, "E-ink")
-      await showLibrary(page)
-    },
-    leave: async function restoreColorMode(page) {
-      await setColorMode(page, "System")
+    show: async function showLibrary(page) {
+      await page.goto("/library/books")
+      await expectLibraryShown(page)
     },
   },
   "book-details": {
@@ -165,37 +156,6 @@ const SCENES = {
         page.getByRole("button", { name: "Read", exact: true }),
       ).toBeVisible()
     },
-  },
-  "epub-reader": {
-    show: async function showEpubReaderWithItsMenu(page, bookDetailsUrls) {
-      await openReaderOn(page, bookDetailsUrls, THE_TIME_MACHINE.title)
-      await expectReaderPageRevealed(
-        await expectChapterOneOfTheTimeMachine(page),
-      )
-      await showReaderMenu(page)
-      await expect(
-        page.getByRole("button", { name: "Table of contents" }),
-      ).toBeVisible()
-    },
-    leave: closeReader,
-  },
-  "manga-reader": {
-    show: async function showMangaReader(page, bookDetailsUrls) {
-      await openReaderOn(page, bookDetailsUrls, HITO_NO_ISSHO.title)
-      await expectReaderPageRevealed(await expectFirstImagePage(page))
-    },
-    leave: closeReader,
-  },
-  "audiobook-reader": {
-    show: async function showAudiobookReader(page, bookDetailsUrls) {
-      await openReaderOn(
-        page,
-        bookDetailsUrls,
-        THE_TIME_MACHINE_AUDIOBOOK.title,
-      )
-      await expectReaderPageRevealed(firstAudioTrackWave(page))
-    },
-    leave: closeReader,
   },
   "manage-storage": {
     show: async function showManageStorage(page) {
@@ -224,9 +184,90 @@ const SCENES = {
       await expect(page.getByText("Sign out", { exact: true })).toBeVisible()
     },
   },
+  "epub-reader": {
+    show: async function showEpubReaderWithItsMenu(page, bookDetailsUrls) {
+      await openReaderOn(page, bookDetailsUrls, THE_TIME_MACHINE.title)
+      await expectReaderPageRevealed(
+        await expectChapterOneOfTheTimeMachine(page),
+      )
+      await showReaderMenu(page)
+    },
+    leave: closeReader,
+  },
+  "manga-reader": {
+    show: async function showMangaReader(page, bookDetailsUrls) {
+      await openReaderOn(page, bookDetailsUrls, HITO_NO_ISSHO.title)
+      await expectReaderPageRevealed(await expectFirstImagePage(page))
+    },
+    leave: closeReader,
+  },
+  "audiobook-reader": {
+    show: async function showAudiobookReaderWithItsMenu(page, bookDetailsUrls) {
+      await openReaderOn(
+        page,
+        bookDetailsUrls,
+        THE_TIME_MACHINE_AUDIOBOOK.title,
+      )
+      await expectReaderPageRevealed(firstAudioTrackWave(page))
+      await showReaderMenu(page)
+      await expect(
+        page.getByRole("button", { name: "Play audio" }),
+      ).toBeVisible()
+    },
+    leave: closeReader,
+  },
+  /**
+   * The app saves the colour mode up to 500 ms after a change (reactjrx
+   * `usePersistSignals`), and a page load before that loses it, so the scene
+   * reaches the library without one.
+   */
+  "library-e-ink": {
+    show: async function showLibraryInEInk(page) {
+      await page.goto("/profile")
+      await page.getByRole("button", { name: "Device settings" }).click()
+      await page.getByRole("button", { name: /^Color mode/ }).click()
+      await page.getByRole("button", { name: "E-ink", exact: true }).click()
+      await expect(
+        page.getByRole("button", { name: "Color mode E-ink" }),
+      ).toBeVisible()
+      await page.goBack()
+      await page.getByRole("link", { name: "Library", exact: true }).click()
+      await expectLibraryShown(page)
+    },
+  },
 } satisfies Record<string, Scene>
 
 type SceneName = keyof typeof SCENES
+
+function isSceneName(name: string): name is SceneName {
+  return Object.hasOwn(SCENES, name)
+}
+
+const SCENES_IN_CAPTURE_ORDER = Object.keys(SCENES).filter(isSceneName)
+
+/**
+ * Lossless is smaller for a screen of text and flat colours, lossy for one
+ * with pictures.
+ */
+async function encodeSmallerWebp(image: Sharp) {
+  const [lossy, lossless] = await Promise.all([
+    image.clone().webp({ quality: 90 }).toBuffer(),
+    image.clone().webp({ lossless: true }).toBuffer(),
+  ])
+  const isLosslessSmaller = lossless.length < lossy.length
+
+  return isLosslessSmaller ? lossless : lossy
+}
+
+const IMAGE_FORMATS = {
+  png: { extension: "png", encode: (image: Sharp) => image.png().toBuffer() },
+  jpeg: {
+    extension: "jpg",
+    encode: (image: Sharp) =>
+      image.jpeg({ quality: 85, mozjpeg: true }).toBuffer(),
+  },
+  webp: { extension: "webp", encode: encodeSmallerWebp },
+}
 
 type Target = {
   name: string
@@ -235,10 +276,8 @@ type Target = {
   colorScheme: "light" | "dark"
   locale: string
   outputDir: string
-  /**
-   * In capture order. A reader scene leaves its book in progress, so it comes
-   * after the scenes that show reading progress.
-   */
+  imageFormat: keyof typeof IMAGE_FORMATS
+  /** Captured in the order of `SCENES`. */
   scenes: SceneName[]
 }
 
@@ -250,6 +289,8 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
+    // Not committed, so lossless. Google Play takes 24-bit PNG.
+    imageFormat: "png",
     scenes: [
       "home",
       "library",
@@ -266,6 +307,9 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "web/public/manifest-screenshots"),
+    // Chrome's install dialog takes JPEG and PNG screenshots only:
+    // https://web.dev/articles/web-apps/richer-install-ui
+    imageFormat: "jpeg",
     scenes: ["home", "library", "epub-reader"],
   },
   {
@@ -278,19 +322,8 @@ const TARGETS: Target[] = [
       APPS_DIR,
       "landing/src/features/common/app-screenshots",
     ),
-    scenes: [
-      "home",
-      "library",
-      "library-e-ink",
-      "book-details",
-      "manage-storage",
-      "data-sources",
-      "add-data-source",
-      "profile",
-      "epub-reader",
-      "manga-reader",
-      "audiobook-reader",
-    ],
+    imageFormat: "webp",
+    scenes: SCENES_IN_CAPTURE_ORDER,
   },
 ]
 
@@ -427,26 +460,39 @@ for (const target of TARGETS) {
       await page.setViewportSize(target.viewport)
       await startReading(page, bookDetailsUrls)
 
-      for (const scene of target.scenes) {
+      const imageFormat = IMAGE_FORMATS[target.imageFormat]
+      const sceneImage = (scene: SceneName) =>
+        `${scene}.${imageFormat.extension}`
+
+      await mkdir(target.outputDir, { recursive: true })
+
+      const scenesToCapture = SCENES_IN_CAPTURE_ORDER.filter((scene) =>
+        target.scenes.includes(scene),
+      )
+
+      for (const scene of scenesToCapture) {
         const sceneToCapture: Scene = SCENES[scene]
 
         await page.clock.setSystemTime(CAPTURE_TIME)
         await sceneToCapture.show(page, bookDetailsUrls)
         await waitForScreenToSettle(page, sceneToCapture)
-        await page.screenshot({
-          path: path.join(target.outputDir, `${scene}.png`),
-          animations: "disabled",
-        })
+        const screenshot = await page.screenshot({ animations: "disabled" })
+        await writeFile(
+          path.join(target.outputDir, sceneImage(scene)),
+          await imageFormat.encode(sharp(screenshot)),
+        )
         await sceneToCapture.leave?.(page)
       }
 
-      const savedImages = await readdir(target.outputDir)
-      const sceneImages = target.scenes.map((scene) => `${scene}.png`)
+      const isHiddenFile = (fileName: string) => fileName.startsWith(".")
+      const savedImages = (await readdir(target.outputDir)).filter(
+        (fileName) => !isHiddenFile(fileName),
+      )
 
       expect(
-        savedImages.filter((image) => image.endsWith(".png")).sort(),
+        savedImages.sort(),
         `${target.outputDir} holds only the images of the target's scenes`,
-      ).toEqual(sceneImages.sort())
+      ).toEqual(target.scenes.map(sceneImage).sort())
     })
   })
 }

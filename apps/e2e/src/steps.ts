@@ -94,8 +94,7 @@ export function libraryBookCard(page: Page, title: string) {
 
 /**
  * On the library, waits for every server book to show the title and the author
- * that the API read from its file. A book whose file names neither shows its
- * file name and "Unknown" before the API reads it too.
+ * that the API read from its file.
  */
 export async function expectServerLibraryBooks(page: Page) {
   for (const book of SERVER_LIBRARY_BOOKS) {

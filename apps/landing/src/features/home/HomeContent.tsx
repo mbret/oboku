@@ -1,6 +1,6 @@
 import { Box, Container, Typography } from "@mui/material"
-import epubReaderScreenshot from "../common/app-screenshots/epub-reader.png"
-import libraryScreenshot from "../common/app-screenshots/library.png"
+import epubReaderScreenshot from "../common/app-screenshots/epub-reader.webp"
+import libraryScreenshot from "../common/app-screenshots/library.webp"
 import { GetStartedActions } from "../common/GetStartedActions"
 import { GetStartedBanner } from "../common/GetStartedBanner"
 import { GlowHeroSection } from "../common/GlowHeroSection"
