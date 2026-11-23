@@ -1,6 +1,10 @@
 import { isDeepStrictEqual } from "node:util"
 import { BadRequestException, Injectable, Logger } from "@nestjs/common"
-import { CONNECTABLE_CONNECTOR_TYPES, ObokuErrorCode } from "@oboku/shared"
+import {
+  CONNECTABLE_CONNECTOR_TYPES,
+  ObokuErrorCode,
+  type SettingsConnectorDocType,
+} from "@oboku/shared"
 import { CouchService } from "../../couch/couch.service.js"
 import { fetchByIds, getSettings } from "../../couch/dbHelpers.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
@@ -60,6 +64,14 @@ const readSecretValues = async (
   return new Map<string, EncryptedSecretValue | null>(
     secrets.map((secret) => [secret._id, secret.value ?? null]),
   )
+}
+
+const withoutProxyThroughServer = (connector: SettingsConnectorDocType) => {
+  if (connector.type !== "webdav") return connector
+
+  const { proxyThroughServer: _proxyThroughServer, ...rest } = connector
+
+  return rest
 }
 
 const toConnectorConnection = ({
@@ -226,7 +238,10 @@ export class ConnectorConnectionService {
           }
 
           const isUnchangedSinceConnected =
-            isDeepStrictEqual(credentials.connector, connector) &&
+            isDeepStrictEqual(
+              withoutProxyThroughServer(credentials.connector),
+              withoutProxyThroughServer(connector),
+            ) &&
             isDeepStrictEqual(
               credentials.passwordSecretValue,
               passwordSecretValue,
