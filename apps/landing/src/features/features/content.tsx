@@ -52,10 +52,14 @@ import bookDetailsScreenshot from "../common/app-screenshots/book-details.webp"
 import dataSourcesScreenshot from "../common/app-screenshots/data-sources.webp"
 import epubReaderScreenshot from "../common/app-screenshots/epub-reader.webp"
 import homeScreenshot from "../common/app-screenshots/home.webp"
+import koreaderProgressSyncScreenshot from "../common/app-screenshots/koreader-progress-sync.webp"
+import koreaderSyncServerScreenshot from "../common/app-screenshots/koreader-sync-server.webp"
 import libraryScreenshot from "../common/app-screenshots/library.webp"
 import libraryEInkScreenshot from "../common/app-screenshots/library-e-ink.webp"
 import manageStorageScreenshot from "../common/app-screenshots/manage-storage.webp"
 import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
+import optimizeContentScreenshot from "../common/app-screenshots/optimize-content.webp"
+import optimizeMetadataScreenshot from "../common/app-screenshots/optimize-metadata.webp"
 import profileScreenshot from "../common/app-screenshots/profile.webp"
 import { supportedExtensions, syncProviders } from "../home/content"
 import { OpdsDiagram } from "./OpdsDiagram"
@@ -407,6 +411,16 @@ export const featureGroups: FeatureGroup[] = [
       { label: "Readest" },
       { label: "CrossPoint" },
     ],
+    screenshots: {
+      primary: {
+        src: koreaderSyncServerScreenshot,
+        alt: "oboku KOReader sync server screen with the server, username and generated password to enter in KOReader",
+      },
+      secondary: {
+        src: koreaderProgressSyncScreenshot,
+        alt: "oboku KOReader progress sync screen filled in with oboku's own sync server",
+      },
+    },
     features: [
       {
         Icon: SyncRounded,
@@ -488,6 +502,16 @@ export const featureGroups: FeatureGroup[] = [
     title: "Make your books lighter and cleaner",
     description:
       "Inspect any book, shrink oversized comics, fix its identifiers, and save the result back to where it came from.",
+    screenshots: {
+      primary: {
+        src: optimizeContentScreenshot,
+        alt: "oboku Optimize screen for a comic, with image compression on and WebP chosen as the output format",
+      },
+      secondary: {
+        src: optimizeMetadataScreenshot,
+        alt: "oboku Optimize screen for an EPUB, with its metadata report and its identifiers",
+      },
+    },
     features: [
       {
         Icon: CompressRounded,

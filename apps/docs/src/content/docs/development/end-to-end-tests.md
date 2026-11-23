@@ -71,7 +71,7 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `data-sources`, `add-data-source`, `profile`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader.
+- **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `data-sources`, `add-data-source`, `profile`, `optimize-content`, `optimize-metadata`, `koreader-sync-server`, `koreader-progress-sync`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader. `koreader-sync-server` turns on the KOReader sync server, and `koreader-progress-sync` offers it to oboku's reader, so a target that captures `koreader-progress-sync` captures both.
 - **The targets:** each sets a viewport, a scale, a theme, a locale and an image format, and lists the scenes it captures. It saves each scene as `<scene>` and the extension of its format, in its own folder, listed in the table below. The run fails if the folder holds another file, other than a hidden one.
 
 | Target         | Size                            | Scenes                                         | Format                                       | Saved to                                            |
@@ -88,12 +88,13 @@ Each committed image is in the smallest format its destination takes, and the un
 
 No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. Leave out an image whose only change is one of those listed below. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
 
-Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
+Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The Optimize screen shows the image compression of _Little Nemo_ and the identifiers of _Treasure Island_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 
 - The profile shows the email of the account, which each run creates with a new address.
 - The data sources screen shows the day of the last sync, which the API records.
+- The KOReader sync server screen shows the password the API generates.
 - The storage screen shows the browser's estimate of the space the machine has, and lists the books in no fixed order.
 
 To keep the rest the same:
