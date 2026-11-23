@@ -1,7 +1,7 @@
 import { Dialog, IconButton, Stack } from "@mui/material"
 import { CloseRounded } from "@mui/icons-material"
 import { useMutation } from "@tanstack/react-query"
-import { memo, useEffect, useRef, useState } from "react"
+import { memo, useEffect, useState } from "react"
 import { LockScreen } from "../../../../common/locks/LockScreen"
 import { pickOneDriveItemsWithPicker, type OneDrivePickerItem } from "./picker"
 
@@ -38,22 +38,24 @@ export const PickerFrame = memo(function PickerFrame({
   selectionMode?: "files" | "folders" | "all"
   selectionPersistence?: boolean
 }) {
-  // Reads/writes a ref during render, which React Compiler refuses to memoize.
-  // TODO: rework so no ref is touched during render, then drop this opt-out.
-  "use no memo"
-
-  const iframeNameRef = useRef(`one-drive-picker-${crypto.randomUUID()}`)
+  const [iframeName] = useState(function createIframeName() {
+    return `one-drive-picker-${crypto.randomUUID()}`
+  })
   const [iframe, setIframe] = useState<HTMLIFrameElement | null>(null)
   const [isPageLoaded, setIsPageLoaded] = useState(false)
 
+  function closeWithoutSelection() {
+    onClose()
+  }
+
   const { mutate } = useMutation({
-    mutationFn: async ({
+    mutationFn: async function pickSelectionsInIframe({
       iframe: iframeEl,
       signal,
     }: {
       iframe: HTMLIFrameElement
       signal: AbortSignal
-    }) => {
+    }) {
       const selectedItems = await pickOneDriveItemsWithPicker({
         baseUrl: pickerBaseUrl,
         fileFilters,
@@ -69,24 +71,31 @@ export const PickerFrame = memo(function PickerFrame({
 
       return validSelections
     },
-    onSuccess: (selections) => onClose(selections),
-    onError: () => onClose(),
+    onSuccess: function closeWithSelections(selections) {
+      onClose(selections)
+    },
+    onError: closeWithoutSelection,
   })
 
-  useEffect(() => {
-    if (!iframe) {
-      return
-    }
+  useEffect(
+    function startPickerOnceIframeMounts() {
+      if (!iframe) {
+        return
+      }
 
-    const abortController = new AbortController()
+      const abortController = new AbortController()
 
-    mutate({ iframe, signal: abortController.signal })
+      mutate({ iframe, signal: abortController.signal })
 
-    return () => abortController.abort()
-  }, [iframe, mutate])
+      return function abortPicker() {
+        abortController.abort()
+      }
+    },
+    [iframe, mutate],
+  )
 
   return (
-    <Dialog fullScreen onClose={() => onClose()} open>
+    <Dialog fullScreen onClose={closeWithoutSelection} open>
       {!isPageLoaded && <LockScreen />}
       <Stack
         sx={{
@@ -96,7 +105,7 @@ export const PickerFrame = memo(function PickerFrame({
         }}
       >
         <IconButton
-          onClick={() => onClose()}
+          onClick={closeWithoutSelection}
           size="small"
           sx={{
             bgcolor: "background.paper",
@@ -111,8 +120,10 @@ export const PickerFrame = memo(function PickerFrame({
         </IconButton>
         <iframe
           ref={setIframe}
-          name={iframeNameRef.current}
-          onLoad={() => setIsPageLoaded(true)}
+          name={iframeName}
+          onLoad={function markPageAsLoaded() {
+            setIsPageLoaded(true)
+          }}
           style={{
             border: 0,
             display: "block",
