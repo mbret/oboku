@@ -1,4 +1,4 @@
-import { mkdir, readdir } from "node:fs/promises"
+import { mkdir, readdir, writeFile } from "node:fs/promises"
 import path from "node:path"
 import type { Page } from "@playwright/test"
 import sharp, { type Sharp } from "sharp"
@@ -245,16 +245,28 @@ function isSceneName(name: string): name is SceneName {
 
 const SCENES_IN_CAPTURE_ORDER = Object.keys(SCENES).filter(isSceneName)
 
+/**
+ * Lossless is smaller for a screen of text and flat colours, lossy for one
+ * with pictures.
+ */
+async function encodeSmallerWebp(image: Sharp) {
+  const [lossy, lossless] = await Promise.all([
+    image.clone().webp({ quality: 90 }).toBuffer(),
+    image.clone().webp({ lossless: true }).toBuffer(),
+  ])
+  const isLosslessSmaller = lossless.length < lossy.length
+
+  return isLosslessSmaller ? lossless : lossy
+}
+
 const IMAGE_FORMATS = {
-  png: { extension: "png", encode: (image: Sharp) => image.png() },
+  png: { extension: "png", encode: (image: Sharp) => image.png().toBuffer() },
   jpeg: {
     extension: "jpg",
-    encode: (image: Sharp) => image.jpeg({ quality: 85, mozjpeg: true }),
+    encode: (image: Sharp) =>
+      image.jpeg({ quality: 85, mozjpeg: true }).toBuffer(),
   },
-  webp: {
-    extension: "webp",
-    encode: (image: Sharp) => image.webp({ quality: 90 }),
-  },
+  webp: { extension: "webp", encode: encodeSmallerWebp },
 }
 
 type Target = {
@@ -465,9 +477,10 @@ for (const target of TARGETS) {
         await sceneToCapture.show(page, bookDetailsUrls)
         await waitForScreenToSettle(page, sceneToCapture)
         const screenshot = await page.screenshot({ animations: "disabled" })
-        await imageFormat
-          .encode(sharp(screenshot))
-          .toFile(path.join(target.outputDir, sceneImage(scene)))
+        await writeFile(
+          path.join(target.outputDir, sceneImage(scene)),
+          await imageFormat.encode(sharp(screenshot)),
+        )
         await sceneToCapture.leave?.(page)
       }
 
