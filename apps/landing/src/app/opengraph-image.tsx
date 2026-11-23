@@ -16,7 +16,7 @@ export default async function OpenGraphImage() {
   const libraryScreenshot = await readFile(
     path.join(
       process.cwd(),
-      "src/features/common/app-screenshots/library.webp",
+      "src/features/common/open-graph-screenshots/library.jpg",
     ),
   )
 
@@ -70,7 +70,7 @@ export default async function OpenGraphImage() {
         {/* biome-ignore lint/performance/noImgElement: ImageResponse renders plain HTML, next/image does not apply */}
         <img
           alt=""
-          src={`data:image/png;base64,${libraryScreenshot.toString("base64")}`}
+          src={`data:image/jpeg;base64,${libraryScreenshot.toString("base64")}`}
           width={screenshotWidth}
           height={screenshotHeight}
           style={{ borderRadius: 24, border: "8px solid #1f1f1f" }}

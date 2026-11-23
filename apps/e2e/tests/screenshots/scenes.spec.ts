@@ -119,7 +119,8 @@ function anyServerLibraryBookTitle(page: Page) {
 }
 
 async function switchToEInk(page: Page) {
-  await page.goto("/profile/settings")
+  await page.goto("/profile")
+  await page.getByText("Device settings", { exact: true }).click()
   await page.getByRole("button", { name: /^Color mode/ }).click()
   await page.getByRole("button", { name: "E-ink", exact: true }).click()
   await expect(
@@ -153,11 +154,12 @@ const SCENES = {
   /**
    * Leaves the app in e-ink, so a target captures it last. The app saves the
    * setting up to 500 ms later, and a page load before that loses it, so the
-   * scene reaches the library through the tab bar.
+   * scene goes from the profile to the library without one.
    */
   "library-e-ink": {
     show: async function showLibraryInEInk(page) {
       await switchToEInk(page)
+      await page.goBack()
       await page.getByRole("link", { name: "Library" }).click()
       await expect(
         page.getByText(LITTLE_NEMO.title, { exact: true }),
@@ -319,6 +321,20 @@ const TARGETS: Target[] = [
       "audiobook-reader",
       "library-e-ink",
     ],
+  },
+  {
+    name: "open-graph",
+    viewport: { width: 375, height: 667 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(
+      APPS_DIR,
+      "landing/src/features/common/open-graph-screenshots",
+    ),
+    // next/og draws no WebP image: the phone in the Open Graph image stays empty.
+    imageFormat: "jpeg",
+    scenes: ["library"],
   },
 ]
 
