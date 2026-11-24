@@ -1,13 +1,13 @@
-import { useQuery } from "@tanstack/react-query"
+import { queryOptions, useQuery } from "@tanstack/react-query"
 import { dexieDb } from "../rxdb/dexie"
 
-export const useDownloadedFilesInfo = () =>
-  useQuery({
-    queryKey: ["download", "files"],
-    networkMode: "always",
-    queryFn: async () => {
-      const resposne = await dexieDb.downloads.toArray()
+export const downloadedFilesQueryOptions = queryOptions({
+  queryKey: ["download", "files"] as const,
+  networkMode: "always",
+  queryFn: async function listDownloadedFiles() {
+    return dexieDb.downloads.toArray()
+  },
+})
 
-      return resposne
-    },
-  })
+export const useDownloadedFilesInfo = () =>
+  useQuery(downloadedFilesQueryOptions)
