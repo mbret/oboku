@@ -18,13 +18,13 @@ You can configure a reverse proxy in front of your WebDAV server and intercept O
 
 Some WebDAV servers refuse requests from the browser, and you cannot change their CORS or OPTIONS answers. Koofr (`https://app.koofr.net/dav/Koofr`, with an app password) is one of them. For such a server, check **Use oboku's server as a proxy** on the connector.
 
-oboku's server then downloads your books from the WebDAV server and passes them on to you. It only downloads a file whose size the WebDAV server states, and stops at that size. Add the server as a data source: adding a single book still lists the server's folders from the browser, which fails. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month. The connector and data source forms hide their connection test, which runs from the browser.
+oboku's server then lists the server's folders when you add a book, and downloads your books from the WebDAV server and passes them on to you. It only downloads a file whose size the WebDAV server states, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month. The connector and data source forms hide their connection test, which runs from the browser.
 
 Without the setting, your browser downloads books from the WebDAV server, and they do not count towards the quota.
 
 ## Servers on your local network
 
-oboku's server connects to your WebDAV server for syncs and downloads, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
+oboku's server connects to your WebDAV server for syncs and downloads, and to list your folders when it is the connector's proxy. It only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
 
 ## Connect for OPDS servers
 
