@@ -2,23 +2,23 @@ import { createApiClient } from "@oboku/shared"
 import { cleanup, renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
-import { HttpClientApiContext, type HttpApiClientWeb } from "../../../../http"
+import { HttpClientApiContext, type HttpApiClientWeb } from "../../../http"
 
 const mocks = vi.hoisted(function createWebdavTestMocks() {
   return { createWebdavClient: vi.fn() }
 })
 
 vi.mock(
-  "../auth/connect",
+  "./auth/connect",
   async function mockCreateWebdavClient(importOriginal) {
     return {
-      ...(await importOriginal<typeof import("../auth/connect")>()),
+      ...(await importOriginal<typeof import("./auth/connect")>()),
       createWebdavClient: mocks.createWebdavClient,
     }
   },
 )
 
-import { useTestWebdavConnection } from "./ConnectorForm"
+import { useTestWebdavConnection } from "./useTestWebdavConnection"
 
 const API_URL = "https://api.oboku.test"
 

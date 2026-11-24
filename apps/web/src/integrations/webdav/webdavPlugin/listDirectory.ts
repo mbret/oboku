@@ -3,15 +3,9 @@ import {
   type WebdavDirectoryItemDto,
 } from "@oboku/shared"
 import type { FileStat, WebDAVClient } from "webdav"
+import type { ConnectionParams } from "../../../connectors/TestConnection"
 import type { HttpApiClientWeb } from "../../../http"
 import { createWebdavClient } from "./auth/connect"
-
-export type WebdavConnection = {
-  url: string
-  username: string
-  password: string
-  allowSelfSigned?: boolean
-}
 
 const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
   filename: item.filename,
@@ -27,7 +21,7 @@ const listDirectoryThroughServerProxy = async ({
   path,
 }: {
   httpClientApi: HttpApiClientWeb
-  connection: WebdavConnection
+  connection: ConnectionParams
   path: string
 }) => {
   const { data } = await connectorsListWebdavDirectory({
@@ -59,14 +53,12 @@ const listDirectoryFromWebdavServer = async ({
 /** The browser lists every folder with one client, which remembers how the server signs in. */
 export const createWebdavDirectoryLister = ({
   connection,
-  isProxiedThroughServer,
   httpClientApi,
 }: {
-  connection: WebdavConnection
-  isProxiedThroughServer: boolean
+  connection: ConnectionParams
   httpClientApi: HttpApiClientWeb
 }) => {
-  if (isProxiedThroughServer) {
+  if (connection.proxyThroughServer) {
     return function listDirectoryThroughServer(path: string) {
       return listDirectoryThroughServerProxy({
         httpClientApi,

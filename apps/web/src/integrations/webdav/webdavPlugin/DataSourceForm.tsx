@@ -7,7 +7,7 @@ import type { WebDAVDataSourceDocType } from "@oboku/shared"
 import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
-import { useTestWebdavConnection } from "./connectors/ConnectorForm"
+import { useTestWebdavConnection } from "./useTestWebdavConnection"
 import { WebdavRequirementsAlert } from "./WebdavRequirementsAlert"
 import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {

@@ -45,8 +45,8 @@ export const ConnectorSelectionStep = memo(function ConnectorSelectionStep({
         username: data.username,
         password: data.password,
         allowSelfSigned: data.allowSelfSigned,
+        proxyThroughServer: isProxiedThroughServer(data),
       },
-      isProxiedThroughServer: isProxiedThroughServer(data),
       httpClientApi,
     })
 
