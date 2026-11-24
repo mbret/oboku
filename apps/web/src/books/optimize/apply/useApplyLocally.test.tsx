@@ -3,42 +3,72 @@ import { renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-const { putDownload } = vi.hoisted(() => ({
-  putDownload:
-    vi.fn<
-      (download: {
-        id: string
-        data: Blob
-        filename: string
-      }) => Promise<string>
-    >(),
-}))
+const { putDownload } = vi.hoisted(function createDexieMocks() {
+  return {
+    putDownload:
+      vi.fn<
+        (download: {
+          id: string
+          data: Blob
+          filename: string
+        }) => Promise<string>
+      >(),
+  }
+})
 
-vi.mock("../../../rxdb/dexie", () => ({
-  dexieDb: { downloads: { put: putDownload } },
-}))
+vi.mock("../../../rxdb/dexie", function mockDexie() {
+  return { dexieDb: { downloads: { put: putDownload } } }
+})
 
-vi.mock("../../../download/getBookFile.shared", () => ({
-  getBookFile: async () => ({ data: new File(["book"], "book.epub") }),
-  restoreCachedBookFile: ({ file }: { file: File }) => file,
-}))
+vi.mock("../../../download/getBookFile.shared", function mockBookFile() {
+  return {
+    getBookFile: async function getCachedBookFile() {
+      return { data: new File(["book"], "book.epub") }
+    },
+    restoreCachedBookFile: function restoreCachedBookFile({
+      file,
+    }: {
+      file: File
+    }) {
+      return file
+    },
+  }
+})
 
-vi.mock("@prose-reader/archive-reader/archives/createArchiveFromZipJs", () => ({
-  createArchiveFromZipJs: async () => ({ close: async () => {} }),
-}))
+vi.mock(
+  "@prose-reader/archive-reader/archives/createArchiveFromZipJs",
+  function mockArchiveCreation() {
+    return {
+      createArchiveFromZipJs: async function createArchive() {
+        return { close: async function closeArchive() {} }
+      },
+    }
+  },
+)
 
-vi.mock("@oboku/archive-metadata/web", async (importOriginal) => ({
-  ...(await importOriginal<typeof import("@oboku/archive-metadata/web")>()),
-  updateArchive: async () => ({
-    blob: new Blob(["optimized book"]),
-    mimeType: "application/epub+zip",
-    dispose: async () => {},
-  }),
-}))
+vi.mock(
+  "@oboku/archive-metadata/web",
+  async function mockArchiveUpdate(importOriginal) {
+    return {
+      ...(await importOriginal<typeof import("@oboku/archive-metadata/web")>()),
+      updateArchive: async function updateArchive() {
+        return {
+          blob: new Blob(["optimized book"]),
+          mimeType: "application/epub+zip",
+          dispose: async function disposeUpdatedArchive() {},
+        }
+      },
+    }
+  },
+)
 
-vi.mock("./confirmApplyLocalUpdate", () => ({
-  confirmApplyLocalUpdate: async () => true,
-}))
+vi.mock("./confirmApplyLocalUpdate", function mockConfirmation() {
+  return {
+    confirmApplyLocalUpdate: async function confirmApplyLocalUpdate() {
+      return true
+    },
+  }
+})
 
 import { downloadsBroadcast } from "../../../download/downloadsBroadcast"
 import { useApplyLocally } from "./useApplyLocally"
@@ -70,7 +100,7 @@ describe("useApplyLocally", () => {
       actions: [],
     })
 
-    await waitFor(() => {
+    await waitFor(function waitForStore() {
       expect(putDownload).toHaveBeenCalledWith(
         expect.objectContaining({ id: "book-a" }),
       )

@@ -1,20 +1,22 @@
 import { render, waitFor } from "@testing-library/react"
 import { describe, expect, it, vi } from "vitest"
 
-const { addDownload } = vi.hoisted(() => ({
-  addDownload:
-    vi.fn<
-      (download: {
-        id: string
-        data: Blob
-        filename: string
-      }) => Promise<string>
-    >(),
-}))
+const { addDownload } = vi.hoisted(function createDexieMocks() {
+  return {
+    addDownload:
+      vi.fn<
+        (download: {
+          id: string
+          data: Blob
+          filename: string
+        }) => Promise<string>
+      >(),
+  }
+})
 
-vi.mock("../../rxdb/dexie", () => ({
-  dexieDb: { downloads: { add: addDownload } },
-}))
+vi.mock("../../rxdb/dexie", function mockDexie() {
+  return { dexieDb: { downloads: { add: addDownload } } }
+})
 
 import { downloadsBroadcast } from "../downloadsBroadcast"
 import { DownloadFlowRequestItem } from "./DownloadFlowRequestItem"
@@ -41,7 +43,7 @@ describe("DownloadFlowRequestItem", () => {
       />,
     )
 
-    await waitFor(() => {
+    await waitFor(function waitForStore() {
       expect(addDownload).toHaveBeenCalledWith(
         expect.objectContaining({ id: "book-a" }),
       )
@@ -50,7 +52,7 @@ describe("DownloadFlowRequestItem", () => {
 
     pendingAdd.resolve("book-a")
 
-    await waitFor(() => {
+    await waitFor(function waitForDownloadResolved() {
       expect(resolve).toHaveBeenCalled()
     })
     expect(broadcast).toHaveBeenCalledWith("downloads-changed")

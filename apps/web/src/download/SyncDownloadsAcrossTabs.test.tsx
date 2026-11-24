@@ -5,17 +5,21 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 type StoredDownload = { id: string; data: Blob; filename: string }
 
-const { downloadsStore } = vi.hoisted(() => ({
-  downloadsStore: new Map<string, StoredDownload>(),
-}))
+const { downloadsStore } = vi.hoisted(function createDownloadsStore() {
+  return { downloadsStore: new Map<string, StoredDownload>() }
+})
 
-vi.mock("../rxdb/dexie", () => ({
-  dexieDb: {
-    downloads: {
-      toArray: async () => [...downloadsStore.values()],
+vi.mock("../rxdb/dexie", function mockDexie() {
+  return {
+    dexieDb: {
+      downloads: {
+        toArray: async function listStoredDownloads() {
+          return [...downloadsStore.values()]
+        },
+      },
     },
-  },
-}))
+  }
+})
 
 import { DOWNLOADS_BROADCAST_CHANNEL } from "./downloadsBroadcast"
 import {
@@ -26,7 +30,7 @@ import {
 import { SyncDownloadsAcrossTabs } from "./SyncDownloadsAcrossTabs"
 import { useDownloadedFilesInfo } from "./useDownloadedFilesInfo"
 
-const storeDownload = (bookId: string, content = "book") => {
+function storeDownload(bookId: string, content = "book") {
   downloadsStore.set(bookId, {
     id: bookId,
     data: new Blob([content]),
@@ -36,13 +40,13 @@ const storeDownload = (bookId: string, content = "book") => {
 
 let otherTab: BroadcastChannel | undefined
 
-const notifyDownloadsChangedFromAnotherTab = () => {
+function notifyDownloadsChangedFromAnotherTab() {
   otherTab ??= new BroadcastChannel(DOWNLOADS_BROADCAST_CHANNEL)
   otherTab.postMessage("downloads-changed")
 }
 
-const renderTab = (queryClient = new QueryClient()) =>
-  renderHook(
+function renderTab(queryClient = new QueryClient()) {
+  return renderHook(
     function useRenderedDownloads() {
       return {
         bookA: useBookDownloadState("book-a"),
@@ -61,9 +65,10 @@ const renderTab = (queryClient = new QueryClient()) =>
       },
     },
   )
+}
 
 describe("SyncDownloadsAcrossTabs", () => {
-  afterEach(() => {
+  afterEach(function resetTabs() {
     cleanup()
     otherTab?.close()
     otherTab = undefined
@@ -80,7 +85,7 @@ describe("SyncDownloadsAcrossTabs", () => {
 
     notifyDownloadsChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForBookADownloaded() {
       expect(result.current.bookA?.isDownloaded).toBe(true)
     })
     expect(result.current.bookA).toMatchObject({
@@ -107,7 +112,7 @@ describe("SyncDownloadsAcrossTabs", () => {
 
     notifyDownloadsChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForBookANotDownloaded() {
       expect(result.current.bookA?.isDownloaded).toBe(false)
     })
   })
@@ -126,7 +131,7 @@ describe("SyncDownloadsAcrossTabs", () => {
 
     notifyDownloadsChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForBookADownloaded() {
       expect(result.current.bookA?.isDownloaded).toBe(true)
     })
     expect(result.current.bookB).toMatchObject({
@@ -150,7 +155,7 @@ describe("SyncDownloadsAcrossTabs", () => {
 
     notifyDownloadsChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForBookADownloaded() {
       expect(result.current.bookA?.isDownloaded).toBe(true)
     })
     expect(result.current.bookB).toMatchObject({
@@ -162,7 +167,7 @@ describe("SyncDownloadsAcrossTabs", () => {
   it("refreshes the list of downloaded files after another tab changes it", async () => {
     const { result } = renderTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForEmptyFilesList() {
       expect(result.current.downloadedFiles.data).toEqual([])
     })
 
@@ -170,7 +175,7 @@ describe("SyncDownloadsAcrossTabs", () => {
 
     notifyDownloadsChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function waitForBookAInFilesList() {
       expect(result.current.downloadedFiles.data).toEqual([
         expect.objectContaining({ id: "book-a" }),
       ])

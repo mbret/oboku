@@ -3,13 +3,13 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { describe, expect, it, vi } from "vitest"
 
-const { deleteDownload } = vi.hoisted(() => ({
-  deleteDownload: vi.fn<(bookId: string) => Promise<void>>(),
-}))
+const { deleteDownload } = vi.hoisted(function createDexieMocks() {
+  return { deleteDownload: vi.fn<(bookId: string) => Promise<void>>() }
+})
 
-vi.mock("../rxdb/dexie", () => ({
-  dexieDb: { downloads: { delete: deleteDownload } },
-}))
+vi.mock("../rxdb/dexie", function mockDexie() {
+  return { dexieDb: { downloads: { delete: deleteDownload } } }
+})
 
 import { downloadsBroadcast } from "./downloadsBroadcast"
 import { useRemoveDownloadFile } from "./useRemoveDownloadFile"
@@ -36,18 +36,18 @@ describe("useRemoveDownloadFile", () => {
       },
     )
 
-    act(() => {
+    act(function startRemoval() {
       result.current.mutate({ bookId: "book-a" })
     })
 
-    await waitFor(() => {
+    await waitFor(function waitForDelete() {
       expect(deleteDownload).toHaveBeenCalledWith("book-a")
     })
     expect(broadcast).not.toHaveBeenCalled()
 
     pendingDelete.resolve()
 
-    await waitFor(() => {
+    await waitFor(function waitForBroadcast() {
       expect(broadcast).toHaveBeenCalledWith("downloads-changed")
     })
   })
