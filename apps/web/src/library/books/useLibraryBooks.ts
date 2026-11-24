@@ -1,19 +1,12 @@
-import { isShallowEqual } from "@oboku/shared"
 import { sortBooksBy } from "../../books/helpers"
 import { useBooks } from "../../books/states"
+import { DownloadState } from "../../download/states"
 import {
-  type BooksDownloadState,
-  DownloadState,
-  booksDownloadStateSignal,
-} from "../../download/states"
+  selectStoredBookIds,
+  useStoredDownloads,
+} from "../../download/useStoredDownloads"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./states"
-
-const selectDownloadedBookIds = (bookDownloadState: BooksDownloadState) =>
-  Object.keys(bookDownloadState).filter(
-    (bookId) =>
-      bookDownloadState[bookId]?.downloadState === DownloadState.Downloaded,
-  )
 
 /**
  * The ids of the books the library shows, filtered and sorted by the library
@@ -22,11 +15,8 @@ const selectDownloadedBookIds = (bookDownloadState: BooksDownloadState) =>
  */
 export const useLibraryBooks = () => {
   const library = useSignalValue(libraryStateSignal)
-  const downloadedBookIds = useSignalValue(
-    booksDownloadStateSignal,
-    selectDownloadedBookIds,
-    isShallowEqual,
-  )
+  const { data: downloadedBookIds = [] } =
+    useStoredDownloads(selectStoredBookIds)
   const {
     downloadState,
     isNotInterested,

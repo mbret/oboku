@@ -1,6 +1,7 @@
 import type {
   NotificationKind,
   NotificationSeverity,
+  ObokuErrorCode,
   SyncFinishedNotificationData,
 } from "@oboku/shared"
 import type {
@@ -39,6 +40,9 @@ export class SyncReportPostgresEntity {
 
   @Column({ type: "text" })
   state!: SyncReportDto["state"]
+
+  @Column({ type: "text", nullable: true })
+  error_code!: ObokuErrorCode | null
 
   @Column({ type: "boolean", nullable: true })
   has_different_provider_credentials!: boolean | null

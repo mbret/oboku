@@ -27,6 +27,18 @@ import type {
 import { SyncReport } from "./sync/SyncReport.js"
 import { synchronizeFromDataSource } from "./sync/synchronizeFromDataSource.js"
 
+function toSyncErrorCode(error: unknown) {
+  if (isNonPublicAddressError(error)) {
+    return ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED
+  }
+
+  if (error instanceof ObokuSharedError) {
+    return error.code
+  }
+
+  return ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
+}
+
 @Injectable()
 export class DataSourceService {
   private readonly logger = new Logger(DataSourceService.name)
@@ -157,14 +169,9 @@ export class DataSourceService {
 
       this.logger.log(`sync for ${dataSourceId} completed successfully`)
     } catch (e) {
-      syncReport.fail()
+      const lastSyncErrorCode = toSyncErrorCode(e)
 
-      let lastSyncErrorCode = ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
-      if (isNonPublicAddressError(e)) {
-        lastSyncErrorCode = ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED
-      } else if (e instanceof ObokuSharedError) {
-        lastSyncErrorCode = e.code
-      }
+      syncReport.fail(lastSyncErrorCode)
 
       await atomicUpdate(db, "datasource", dataSourceId, (old) => ({
         ...old,

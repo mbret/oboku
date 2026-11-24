@@ -439,6 +439,41 @@ export const zSyncReportDto = z.object({
     created_at: z.iso.datetime(),
     ended_at: z.iso.datetime(),
     state: z.enum(['error', 'success']),
+    error_code: z.enum([
+        '0',
+        '2000',
+        '3000',
+        '3001',
+        '3002',
+        '3003',
+        '3004',
+        '3005',
+        '3006',
+        '4000',
+        '4001',
+        '4002',
+        '4003',
+        '4004',
+        '5000',
+        '6000',
+        '6001',
+        '7000',
+        '8000',
+        '8001',
+        '9000',
+        '10000',
+        '11000',
+        '11001',
+        '11002',
+        '11003',
+        '11004',
+        '11005',
+        '11006',
+        '11007',
+        '11008',
+        '12000',
+        '12001'
+    ]).nullable(),
     report: z.array(zSyncReportEntryDto),
     datasource_id: z.string(),
     user_name: z.string(),
@@ -463,6 +498,26 @@ export const zWebdavCredentialsDto = z.object({
 export const zDownloadLinkDto = z.object({
     linkId: z.string(),
     providerCredentials: zWebdavCredentialsDto
+});
+
+export const zListWebdavDirectoryDto = z.object({
+    url: z.string().regex(/^https?:\/\//),
+    username: z.string(),
+    providerCredentials: zWebdavCredentialsDto,
+    allowSelfSigned: z.boolean().optional(),
+    path: z.string()
+});
+
+export const zWebdavDirectoryItemDto = z.object({
+    type: z.enum(['file', 'directory']),
+    filename: z.string(),
+    basename: z.string(),
+    mime: z.string().optional(),
+    etag: z.string().optional()
+});
+
+export const zWebdavDirectoryResponseDto = z.object({
+    items: z.array(zWebdavDirectoryItemDto)
 });
 
 export const zRefreshCollectionMetadataDto = z.object({
@@ -749,6 +804,10 @@ export const zBooksRefreshMetadataResponse = zEmptyResponseDto;
 export const zLinksDownloadBody = zDownloadLinkDto;
 
 export const zLinksDownloadResponse = z.string();
+
+export const zConnectorsListWebdavDirectoryBody = zListWebdavDirectoryDto;
+
+export const zConnectorsListWebdavDirectoryResponse = zWebdavDirectoryResponseDto;
 
 export const zCollectionsRefreshMetadataBody = zRefreshCollectionMetadataDto;
 

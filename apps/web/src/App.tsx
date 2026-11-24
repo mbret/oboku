@@ -18,7 +18,7 @@ import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Logger } from "./debug/logger.shared"
-import { RestoreDownloadState } from "./download/RestoreDownloadState"
+import { useHasReadStoredDownloads } from "./download/useStoredDownloads"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
@@ -56,7 +56,7 @@ const App = memo(function App({
   onReadyChange: (isAppReady: boolean) => void
 }) {
   const [isPreloadingQueries, setIsPreloadingQueries] = useState(true)
-  const [isDownloadsHydrated, setIsDownloadsHydrated] = useState(false)
+  const isDownloadsHydrated = useHasReadStoredDownloads()
   const { waitingWorker } = useRegisterServiceWorker()
   const profileSignalStorageAdapter = useProfileStorage()
 
@@ -122,11 +122,6 @@ const App = memo(function App({
       <PreloadQueries
         onReady={() => {
           setIsPreloadingQueries(false)
-        }}
-      />
-      <RestoreDownloadState
-        onReady={() => {
-          setIsDownloadsHydrated(true)
         }}
       />
       <Toasts />

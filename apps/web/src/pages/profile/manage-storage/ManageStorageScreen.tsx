@@ -18,7 +18,7 @@ import {
 import { useStorageUse } from "../../../settings/useStorageUse"
 import { BookList } from "../../../books/lists"
 import { bookActionDrawerSignal } from "../../../books/drawer/BookActionsDrawer"
-import { useDownloadedFilesInfo } from "../../../download/useDownloadedFilesInfo"
+import { useStoredDownloads } from "../../../download/useStoredDownloads"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
 import { difference, formatBytes } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
@@ -47,8 +47,7 @@ export const ManageStorageScreen = () => {
     useStorageUse()
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const { data: downloadedBooks = [], refetch: refetchDownloadedFilesInfo } =
-    useDownloadedFilesInfo()
+  const { data: downloadedBooks = [] } = useStoredDownloads()
   const downloadedBookIds = downloadedBooks.map(({ id }) => id)
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()
@@ -56,20 +55,14 @@ export const ManageStorageScreen = () => {
     () => bookIds.filter((id) => visibleBookIds?.includes(id)),
     [bookIds, visibleBookIds],
   )
-  const { mutate: removeAllDownloads } = useRemoveAllDownloads({
-    onSuccess: () => {
-      refetchDownloadedFilesInfo()
-    },
-  })
+  const { mutate: removeAllDownloads } = useRemoveAllDownloads()
   const [scrollerEl, setScrollerEl] = useState<HTMLDivElement | null>(null)
 
   const removeExtraBooks = useCallback(() => {
     Promise.all(
       extraDownloadFilesIds.map((id) => removeDownloadFile({ bookId: id })),
-    )
-      .then(() => refetchDownloadedFilesInfo())
-      .catch(Logger.error)
-  }, [refetchDownloadedFilesInfo, extraDownloadFilesIds, removeDownloadFile])
+    ).catch(Logger.error)
+  }, [extraDownloadFilesIds, removeDownloadFile])
 
   const onItemClick = useCallback(
     (id: string) =>
@@ -84,8 +77,7 @@ export const ManageStorageScreen = () => {
     void books
 
     refreshStorageEstimate()
-    refetchDownloadedFilesInfo()
-  }, [books, refreshStorageEstimate, refetchDownloadedFilesInfo])
+  }, [books, refreshStorageEstimate])
 
   return (
     <Page ref={setScrollerEl} bottomGutter={false}>

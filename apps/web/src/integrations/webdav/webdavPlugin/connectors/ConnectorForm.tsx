@@ -1,34 +1,9 @@
 import { Button } from "@mui/material"
 import { memo } from "react"
-import type {
-  ConnectionParams,
-  TestConnectionFn,
-} from "../../../../connectors/TestConnection"
 import { ConnectorForm as GenericConnectorForm } from "../../../../connectors/ConnectorForm"
 import { useUnlockMasterKey } from "../../../../secrets/useUnlockMasterKey"
-import { connectWebdav } from "../auth/connect"
+import { useTestWebdavConnection } from "../useTestWebdavConnection"
 import { WebdavRequirementsAlert } from "../WebdavRequirementsAlert"
-
-export type WebdavConnectionParams = ConnectionParams & { directory?: string }
-
-const toPath = (params: WebdavConnectionParams) =>
-  `/${params.directory ?? ""}`.replace(/\/+/g, "/") || "/"
-
-export const testConnection: TestConnectionFn<WebdavConnectionParams> = async (
-  params,
-) => {
-  try {
-    await connectWebdav({
-      url: params.url,
-      username: params.username,
-      password: params.password,
-      path: toPath(params),
-    })
-    return true
-  } catch {
-    return false
-  }
-}
 
 export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
@@ -40,6 +15,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   connectorId?: string
 }) {
   const { masterKey, unlockMasterKey } = useUnlockMasterKey()
+  const testConnection = useTestWebdavConnection()
 
   return (
     <GenericConnectorForm

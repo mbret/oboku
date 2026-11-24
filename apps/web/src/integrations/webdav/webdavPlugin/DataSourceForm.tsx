@@ -7,7 +7,7 @@ import type { WebDAVDataSourceDocType } from "@oboku/shared"
 import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
-import { testConnection } from "./connectors/ConnectorForm"
+import { useTestWebdavConnection } from "./useTestWebdavConnection"
 import { WebdavRequirementsAlert } from "./WebdavRequirementsAlert"
 import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
 import {
@@ -47,7 +47,7 @@ export const DataSourceForm = memo(function DataSourceForm({
     id: connectorId || undefined,
     type: "webdav",
   })
-  const canTestFromBrowser = !isProxiedThroughServer(connector)
+  const testConnection = useTestWebdavConnection()
 
   return (
     <DataSourceFormLayout
@@ -81,18 +81,18 @@ export const DataSourceForm = memo(function DataSourceForm({
         rules={{ required: true }}
         connectorType="webdav"
       />
-      {canTestFromBrowser && (
-        <TestConnection
-          connectionData={{
-            url: connector?.url ?? "",
-            username: connector?.username ?? "",
-            passwordAsSecretId: connector?.passwordAsSecretId ?? "",
-            directory: directory || undefined,
-          }}
-          connectorType="webdav"
-          testConnection={testConnection}
-        />
-      )}
+      <TestConnection
+        connectionData={{
+          url: connector?.url ?? "",
+          username: connector?.username ?? "",
+          passwordAsSecretId: connector?.passwordAsSecretId ?? "",
+          allowSelfSigned: connector?.allowSelfSigned,
+          proxyThroughServer: isProxiedThroughServer(connector),
+          directory: directory || undefined,
+        }}
+        connectorType="webdav"
+        testConnection={testConnection}
+      />
     </DataSourceFormLayout>
   )
 })

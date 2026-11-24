@@ -4,7 +4,9 @@ import { act, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { SIGNAL_RESET } from "reactjrx"
 import { BehaviorSubject } from "rxjs"
-import { beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { DownloadState } from "../../download/states"
+import { dexieDb } from "../../rxdb/dexie"
 import { libraryStateSignal } from "./states"
 import { useLibraryBooks } from "./useLibraryBooks"
 
@@ -56,6 +58,14 @@ const newerBook: FakeBook = {
   tags: [],
 }
 
+function storeDownload(bookId: string) {
+  return dexieDb.downloads.put({
+    id: bookId,
+    data: new Blob(["book"]),
+    filename: `${bookId}.epub`,
+  })
+}
+
 function QueryClientWrapper({ children }: { children: ReactNode }) {
   return (
     <QueryClientProvider client={new QueryClient()}>
@@ -74,6 +84,10 @@ describe("useLibraryBooks", () => {
       createBookEntry(newerBook),
     ])
     observeBookEntries.mockReturnValue(bookEntries$)
+  })
+
+  afterEach(async function clearStoredDownloads() {
+    await dexieDb.downloads.clear()
   })
 
   it("lists the book ids sorted by the library sorting", async () => {
@@ -151,5 +165,35 @@ describe("useLibraryBooks", () => {
     })
 
     expect(result.current).toBe(firstBookIds)
+  })
+
+  it("lists the stored books under the downloaded filter", async () => {
+    libraryStateSignal.update(function filterDownloadedBooks(state) {
+      return { ...state, downloadState: DownloadState.Downloaded }
+    })
+    await storeDownload("older")
+
+    const { result } = renderHook(
+      function useRenderedLibraryBooks() {
+        return useLibraryBooks()
+      },
+      { wrapper: QueryClientWrapper },
+    )
+
+    await waitFor(function waitForOlderBook() {
+      expect(result.current).toEqual(["older"])
+    })
+
+    await storeDownload("newer")
+
+    await waitFor(function waitForBothBooks() {
+      expect(result.current).toEqual(["newer", "older"])
+    })
+
+    await dexieDb.downloads.delete("older")
+
+    await waitFor(function waitForNewerBook() {
+      expect(result.current).toEqual(["newer"])
+    })
   })
 })

@@ -1,3 +1,5 @@
+import type { ObokuErrorCode } from "@oboku/shared"
+
 type RxModel = "link" | "datasource" | "obokucollection" | "tag" | "book"
 
 export class SyncReportRelationDto {
@@ -27,6 +29,8 @@ export class SyncReportDto {
   created_at!: Date
   ended_at!: Date
   state!: "success" | "error"
+  /** Why the sync failed. `null` when it succeeded, and for reports saved before the code was stored. */
+  error_code!: ObokuErrorCode | null
   report!: SyncReportEntryDto[]
   datasource_id!: string
   user_name!: string
