@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
 import { IsObject, IsString, ValidateNested } from "class-validator"
-import { WebdavCredentialsDto } from "../links/links.dto.js"
+import { WebdavCredentialsDto } from "../plugins/webdav/webdav-credentials.dto.js"
 
 export const WEBDAV_DIRECTORY_ITEM_TYPES = ["file", "directory"] as const
 

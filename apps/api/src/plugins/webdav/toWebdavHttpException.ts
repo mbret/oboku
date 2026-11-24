@@ -13,7 +13,7 @@ import {
 } from "./index.js"
 import { FileSizeUnstatedError } from "./streamWebdavFile.js"
 
-export const toWebdavHttpException = (error: unknown) => {
+const toWebdavHttpException = (error: unknown) => {
   if (error instanceof WebdavConnectorNotConfiguredError) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED)
   }
