@@ -56,11 +56,7 @@ const listDirectoryFromWebdavServer = async ({
   return items.map(toWebdavDirectoryItem)
 }
 
-/**
- * Lists the folders of `connection` through oboku's API when the connector
- * uses it as a proxy, else from the browser. The browser lists every folder
- * with one client, which remembers how the server signs in.
- */
+/** The browser lists every folder with one client, which remembers how the server signs in. */
 export const createWebdavDirectoryLister = ({
   connection,
   isProxiedThroughServer,

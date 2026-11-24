@@ -105,7 +105,7 @@ describe("useTestWebdavConnection", () => {
     expect(isConnected).toBe(false)
   })
 
-  it("lists the directory from the WebDAV server without the setting", async () => {
+  it("lists the directory from the browser without the proxy setting", async () => {
     const getDirectoryContents = vi.fn(async function listBooks() {
       return []
     })

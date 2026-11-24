@@ -77,14 +77,14 @@ describe("DataSourceForm (WebDAV)", () => {
   })
 
   it.each([
-    ["from the browser", koofrConnector, false],
+    ["without the proxy setting", koofrConnector, false],
     [
-      "through oboku's server for a connector that uses it as a proxy",
+      "that uses oboku's server as a proxy",
       { ...koofrConnector, proxyThroughServer: true, allowSelfSigned: true },
       true,
     ],
   ])(
-    "tests the connection %s",
+    "gives the connection test the connector %s",
     async (_, connector, isProxiedThroughServer) => {
       mocks.connector.mockReturnValue(connector)
 

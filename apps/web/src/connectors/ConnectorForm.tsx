@@ -265,7 +265,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 control={control}
                 name="proxyThroughServer"
                 label="Use oboku's server as a proxy"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection, and downloads your books from it and passes them on to you. The downloads count towards your monthly download quota."
+                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection and downloads your books, then passes them on to you. The downloads count towards your monthly download quota."
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}

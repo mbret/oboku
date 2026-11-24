@@ -91,7 +91,6 @@ function getConnectionExtraParams<D extends ConnectionParams>(
   return extra as unknown as ConnectionExtraParams<D>
 }
 
-/** Input data: url, username, secret id, + optional extra (e.g. directory). */
 export type ConnectionData<D extends ConnectionParams = ConnectionParams> =
   Pick<ConnectionParams, "url" | "username" | "allowSelfSigned"> & {
     passwordAsSecretId: string

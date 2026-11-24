@@ -15,7 +15,6 @@ export const WEBDAV_DIRECTORY_ITEM_TYPES = ["file", "directory"] as const
 export type WebdavDirectoryItemType =
   (typeof WEBDAV_DIRECTORY_ITEM_TYPES)[number]
 
-/** A WebDAV connector's connection, as the app holds it, and a folder to list. */
 export class ListWebdavDirectoryDto {
   @IsUrl({
     require_tld: false,
@@ -36,7 +35,7 @@ export class ListWebdavDirectoryDto {
   @IsBoolean()
   allowSelfSigned?: boolean
 
-  /** From the connector's URL, like `/Books`. */
+  /** Relative to `url`, like `/Books`. */
   @IsString()
   path!: string
 }

@@ -471,7 +471,7 @@ export type ListWebdavDirectoryDto = {
     providerCredentials: WebdavCredentialsDto;
     allowSelfSigned?: boolean;
     /**
-     * From the connector's URL, like `/Books`.
+     * Relative to `url`, like `/Books`.
      */
     path: string;
 };

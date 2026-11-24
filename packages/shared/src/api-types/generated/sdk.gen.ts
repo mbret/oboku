@@ -287,8 +287,7 @@ export const linksDownload = <ThrowOnError extends boolean = true>(options: Opti
 
 /**
  * The items of a folder on a WebDAV server, read by the API, for a server
- * that refuses requests from the browser. The app lists folders and tests a
- * connection with it.
+ * that refuses requests from the browser.
  */
 export const connectorsListWebdavDirectory = <ThrowOnError extends boolean = true>(options: Options<ConnectorsListWebdavDirectoryData, ThrowOnError>): RequestResult<ConnectorsListWebdavDirectoryResponses, ConnectorsListWebdavDirectoryErrors, ThrowOnError> => options.client.post<ConnectorsListWebdavDirectoryResponses, ConnectorsListWebdavDirectoryErrors, ThrowOnError>({
     url: '/connectors/webdav/directory',

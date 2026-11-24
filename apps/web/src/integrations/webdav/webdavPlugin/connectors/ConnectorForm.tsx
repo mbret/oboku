@@ -18,7 +18,6 @@ export type WebdavConnectionParams = ConnectionParams & {
 const toPath = (params: WebdavConnectionParams) =>
   `/${params.directory ?? ""}`.replace(/\/+/g, "/") || "/"
 
-/** Lists the connection's directory, through oboku's API when it is the proxy. */
 export const useTestWebdavConnection =
   (): TestConnectionFn<WebdavConnectionParams> => {
     const httpClientApi = useHttpClientApi()

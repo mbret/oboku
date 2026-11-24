@@ -14,8 +14,7 @@ export class ConnectorsController {
 
   /**
    * The items of a folder on a WebDAV server, read by the API, for a server
-   * that refuses requests from the browser. The app lists folders and tests a
-   * connection with it.
+   * that refuses requests from the browser.
    */
   @Post("webdav/directory")
   @HttpCode(HttpStatus.OK)
