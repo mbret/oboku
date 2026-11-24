@@ -13,7 +13,7 @@ import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
@@ -25,7 +25,7 @@ const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"DRIVE"> = {
+export const plugin: SourcePlugin<"DRIVE"> = {
   type: `DRIVE`,
   name: PLUGIN_NAME,
   canRemoveResource: false,

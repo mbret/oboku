@@ -12,7 +12,7 @@ export const createConnectorSynchronize = <T extends SettingsConnectorType>(
     })
 
     return useMutation({
-      mutationFn: async function extractProviderCredentials(
+      mutationFn: async function extractSourceCredentials(
         dataSource: DataSourceDocTypeFor<T>,
       ) {
         const connectorDataSource: DataSourceDocTypeFor<SettingsConnectorType> =

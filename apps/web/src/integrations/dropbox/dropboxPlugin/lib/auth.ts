@@ -169,7 +169,7 @@ export const authUser = ({ requestPopup, clientId }: DropboxAuthRequest) => {
   })
 }
 
-export async function requestDropboxProviderCredentials(
+export async function requestDropboxSourceCredentials(
   options: DropboxAuthRequest,
 ): Promise<DropboxApiCredentials> {
   const auth = await authUser(options)

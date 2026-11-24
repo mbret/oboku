@@ -1,7 +1,7 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import OneDriveAsset from "../../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { clearOneDriveSession } from "./auth/auth"
 import { DataSourceForm } from "./sync/DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
@@ -20,7 +20,7 @@ const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"one-drive"> = {
+export const plugin: SourcePlugin<"one-drive"> = {
   canSynchronize: true,
   canUpsertFile: true,
   canRemoveResource: false,

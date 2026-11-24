@@ -1,9 +1,9 @@
 import {
-  type DataSourceType,
+  type SourceType,
   ObokuErrorCode,
   ObokuSharedError,
-  type ProviderApiCredentials,
-  parseProviderApiCredentials,
+  type SourceApiCredentials,
+  parseSourceApiCredentials,
 } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
@@ -57,13 +57,13 @@ export class DataSourceService {
     user,
   }: {
     dataSourceId: string
-    providerCredentials: ProviderApiCredentials<DataSourceType>
+    providerCredentials: SourceApiCredentials<SourceType>
     user: AuthUser
   }) {
     const { email } = user
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const syncReport = new SyncReport(dataSourceId, email)
-    let parsedProviderCredentials = providerCredentials
+    let parsedSourceCredentials = providerCredentials
 
     this.logger.log(`started sync for ${dataSourceId} with user ${email}`)
 
@@ -76,7 +76,7 @@ export class DataSourceService {
         Events.BOOKS_METADATA_REFRESH,
         new BooksMetadataRefreshEvent({
           bookId,
-          providerCredentials: parsedProviderCredentials,
+          providerCredentials: parsedSourceCredentials,
           email,
         }),
       )
@@ -92,7 +92,7 @@ export class DataSourceService {
       if (!dataSource) throw new Error("Data source not found")
 
       const { type } = dataSource
-      parsedProviderCredentials = parseProviderApiCredentials(
+      parsedSourceCredentials = parseSourceApiCredentials(
         type,
         providerCredentials,
       )
@@ -109,7 +109,7 @@ export class DataSourceService {
       const syncOptions = {
         dataSourceId,
         userName: email,
-        providerCredentials: parsedProviderCredentials,
+        providerCredentials: parsedSourceCredentials,
         dataSourceType: type,
         dataSource,
         db,
@@ -151,7 +151,7 @@ export class DataSourceService {
           Events.COLLECTION_METADATA_REFRESH,
           new CollectionMetadataRefreshEvent({
             collectionId,
-            providerCredentials: parsedProviderCredentials,
+            providerCredentials: parsedSourceCredentials,
             soft: true,
             email,
           }),

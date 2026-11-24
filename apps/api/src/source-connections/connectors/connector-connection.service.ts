@@ -17,9 +17,9 @@ import {
 import { streamWebdavFile } from "../../plugins/webdav/streamWebdavFile.js"
 import {
   type EncryptedSecretValue,
-  ProviderConnectionsService,
+  SourceConnectionsService,
   type StoredConnection,
-} from "../provider-connections.service.js"
+} from "../source-connections.service.js"
 import type {
   ConnectorConnectionDto,
   ConnectorConnectionStatus,
@@ -99,15 +99,15 @@ export class ConnectorConnectionService {
 
   constructor(
     private readonly couchService: CouchService,
-    private readonly providerConnectionsService: ProviderConnectionsService,
+    private readonly sourceConnectionsService: SourceConnectionsService,
   ) {}
 
   private async listStoredConnections(userId: number) {
-    const { providerConnectionsService } = this
+    const { sourceConnectionsService } = this
     const connectionsByType = await Promise.all(
       CONNECTABLE_CONNECTOR_TYPES.map(
         async function listConnectionsOfType(provider) {
-          return providerConnectionsService.list({ userId, provider })
+          return sourceConnectionsService.list({ userId, provider })
         },
       ),
     )
@@ -165,7 +165,7 @@ export class ConnectorConnectionService {
       throw toSignInError(error)
     }
 
-    await this.providerConnectionsService.connect({
+    await this.sourceConnectionsService.connect({
       userId,
       provider: connector.type,
       credentials: { connector, passwordSecretValue, password },
@@ -208,7 +208,7 @@ export class ConnectorConnectionService {
 
     if (storedConnections.length === 0) return []
 
-    const { providerConnectionsService } = this
+    const { sourceConnectionsService } = this
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const connectors = await readConnectors(db)
     const secretValues = await readSecretValues(
@@ -220,7 +220,7 @@ export class ConnectorConnectionService {
         async function toCurrentConnection(storedConnection) {
           const { provider, accountId: connectorId } = storedConnection
           const credentials =
-            await providerConnectionsService.getCredentials(storedConnection)
+            await sourceConnectionsService.getCredentials(storedConnection)
           const connector = connectors.find(
             ({ id, type }) => id === connectorId && type === provider,
           )
@@ -230,7 +230,7 @@ export class ConnectorConnectionService {
           const isPasswordSecretStored = passwordSecretValue !== undefined
 
           if (!credentials || !connector || !isPasswordSecretStored) {
-            await providerConnectionsService.disconnectIfUnchanged(
+            await sourceConnectionsService.disconnectIfUnchanged(
               storedConnection,
             )
 
@@ -325,7 +325,7 @@ export class ConnectorConnectionService {
     } catch (error) {
       const isDisconnected =
         isPasswordRefused(error) &&
-        (await this.providerConnectionsService.disconnectIfUnchanged(
+        (await this.sourceConnectionsService.disconnectIfUnchanged(
           connection.storedConnection,
         ))
 
@@ -348,7 +348,7 @@ export class ConnectorConnectionService {
   }) {
     await Promise.all(
       CONNECTABLE_CONNECTOR_TYPES.map((provider) =>
-        this.providerConnectionsService.disconnect({
+        this.sourceConnectionsService.disconnect({
           userId,
           provider,
           accountId: connectorId,

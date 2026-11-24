@@ -11,8 +11,8 @@ import { processRefreshMetadata } from "./metadata/processRefreshMetadata.js"
 import { CouchService, emailToNameHex } from "../../couch/couch.service.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { CoversService } from "../../covers/covers.service.js"
-import { ProviderApiCredentials } from "@oboku/shared"
-import { DataSourceType } from "@oboku/shared"
+import { SourceApiCredentials } from "@oboku/shared"
+import { SourceType } from "@oboku/shared"
 import { PluginsService } from "../../plugins/plugins.service.js"
 
 @Injectable()
@@ -33,7 +33,7 @@ export class CollectionMetadataService {
     email,
   }: {
     collectionId: string
-    providerCredentials: ProviderApiCredentials<DataSourceType>
+    providerCredentials: SourceApiCredentials<SourceType>
     soft?: boolean
     email: string
   }) {

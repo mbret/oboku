@@ -2,7 +2,7 @@
 title: "Server Files (self host)"
 ---
 
-Whenever server sync is enabled on an oboku instance you will be able to synchronize your content directly through the `server` provider. Visit the [Server Sync](/self-hosting/server-sync) section for its configuration.
+Whenever server sync is enabled on an oboku instance you will be able to synchronize your content directly through the `server` source. Visit the [Server Sync](/self-hosting/server-sync) section for its configuration.
 
 ## Sync behavior
 

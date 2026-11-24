@@ -2,9 +2,9 @@ import {
   type CollectionDocType,
   type CollectionMetadata,
   computeCollectionMetadata,
-  DataSourceType,
+  SourceType,
   directives,
-  ProviderApiCredentials,
+  SourceApiCredentials,
   resolveMetadataFetchEnabled,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata.js"
@@ -30,7 +30,7 @@ export const processRefreshMetadata = async (
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-    providerCredentials: ProviderApiCredentials<DataSourceType>
+    providerCredentials: SourceApiCredentials<SourceType>
     soft?: boolean
     comicVineApiKey?: string
     userNameHex: string

@@ -38,8 +38,7 @@ export const synchronizeBookWithParentCollections = async (
 
   for (const { collections } of collectionResults) {
     const best =
-      collections.find((c) => c.isUsingSameProviderCredentials) ??
-      collections[0]
+      collections.find((c) => c.isUsingSameSourceCredentials) ?? collections[0]
 
     if (best) collectionById.set(best._id, best)
   }

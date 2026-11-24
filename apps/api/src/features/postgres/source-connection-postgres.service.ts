@@ -2,13 +2,13 @@ import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Not, type Repository } from "typeorm"
 import {
-  ProviderConnectionPostgresEntity,
+  SourceConnectionPostgresEntity,
   UserPostgresEntity,
 } from "./entities.js"
 
-type ProviderKey = { userId: number; provider: string }
+type SourceKey = { userId: number; provider: string }
 
-type ConnectionKey = ProviderKey & { accountId: string }
+type ConnectionKey = SourceKey & { accountId: string }
 
 type SavedConnection = ConnectionKey & {
   encryptedCredentials: string
@@ -41,10 +41,10 @@ const toConnectionRow = ({
 }
 
 @Injectable()
-export class ProviderConnectionPostgresService {
+export class SourceConnectionPostgresService {
   constructor(
-    @InjectRepository(ProviderConnectionPostgresEntity)
-    private readonly connectionRepository: Repository<ProviderConnectionPostgresEntity>,
+    @InjectRepository(SourceConnectionPostgresEntity)
+    private readonly connectionRepository: Repository<SourceConnectionPostgresEntity>,
   ) {}
 
   find({ userId, provider, accountId }: ConnectionKey) {
@@ -53,8 +53,8 @@ export class ProviderConnectionPostgresService {
     })
   }
 
-  /** The user's connections to the provider, the latest first. */
-  list({ userId, provider }: ProviderKey) {
+  /** The user's connections to the source, the latest first. */
+  list({ userId, provider }: SourceKey) {
     return this.connectionRepository.find({
       where: { user_id: userId, provider },
       order: { connected_at: "DESC", id: "DESC" },
@@ -70,7 +70,7 @@ export class ProviderConnectionPostgresService {
   }
 
   /**
-   * Saves the connection as the user's only one to the provider, deleting
+   * Saves the connection as the user's only one to the source, deleting
    * those to other accounts. A lock on the user's row makes concurrent saves
    * for one user wait for each other, so the last one is kept.
    */
@@ -81,13 +81,13 @@ export class ProviderConnectionPostgresService {
           where: { id: connection.userId },
           lock: { mode: "pessimistic_write" },
         })
-        await manager.delete(ProviderConnectionPostgresEntity, {
+        await manager.delete(SourceConnectionPostgresEntity, {
           user_id: connection.userId,
           provider: connection.provider,
           account_id: Not(connection.accountId),
         })
         await manager.upsert(
-          ProviderConnectionPostgresEntity,
+          SourceConnectionPostgresEntity,
           toConnectionRow(connection),
           CONNECTION_KEY_COLUMNS,
         )

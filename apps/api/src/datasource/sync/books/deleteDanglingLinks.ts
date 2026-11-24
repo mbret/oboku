@@ -43,7 +43,7 @@ export const deleteDanglingLinks = async (
     const deletedLinkIds = await bulkDelete(
       ctx.db,
       toDelete.map(function toLinkDocument({
-        isUsingSameProviderCredentials: _,
+        isUsingSameSourceCredentials: _,
         ...link
       }) {
         return link

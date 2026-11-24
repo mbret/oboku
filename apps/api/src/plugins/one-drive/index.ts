@@ -1,10 +1,10 @@
 import { getDataFromDataSource, PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
 import { findCandidates } from "../helpers.js"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { downloadOneDriveDriveItem, getOneDriveDriveItem } from "./graph.js"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 
-export const dataSource: DataSourcePlugin<"one-drive"> = {
+export const dataSource: SourcePlugin<"one-drive"> = {
   type: PLUGIN_ONE_DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

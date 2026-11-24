@@ -1,10 +1,10 @@
 import { READER_ACCEPTED_EXTENSIONS } from "@oboku/shared"
 import { memo } from "react"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { Picker } from "./picker"
 
-export const UploadBook: ObokuPlugin<"one-drive">["UploadBookComponent"] = memo(
-  function UploadBook({ onClose }) {
+export const UploadBook: SourcePlugin<"one-drive">["UploadBookComponent"] =
+  memo(function UploadBook({ onClose }) {
     return (
       <Picker
         fileFilters={READER_ACCEPTED_EXTENSIONS}
@@ -26,5 +26,4 @@ export const UploadBook: ObokuPlugin<"one-drive">["UploadBookComponent"] = memo(
         }
       />
     )
-  },
-)
+  })

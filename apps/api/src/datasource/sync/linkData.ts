@@ -22,9 +22,9 @@ export const updateLinkData = async (
   if (!isLinkDataOutdated(link.data, syncedLinkData)) return
 
   await atomicUpdate(db, "link", link._id, function withSyncedLinkData(old) {
-    // The sync matched the item to the link through its provider's
-    // identity, so both hold that provider's link data. TypeScript sees the
-    // link's provider and the item's as two unrelated unions.
+    // The sync matched the item to the link through its source's
+    // identity, so both hold that source's link data. TypeScript sees the
+    // link's source and the item's as two unrelated unions.
     return {
       ...old,
       data: { ...old.data, ...syncedLinkData },

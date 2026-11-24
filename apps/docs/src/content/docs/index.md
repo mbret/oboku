@@ -20,7 +20,7 @@ If a feature you need is missing, request it. oboku is driven by its community.
 ## Key features
 
 - Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. Bookmark pages, highlight passages and take notes, on every device of your account. See the [supported contents](/guides/supported-contents).
-- Sync your books from the [providers](/guides/datasources) you already use, without uploading them to oboku.
+- Sync your books from the [sources](/guides/datasources) you already use, without uploading them to oboku.
 - Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-sources).
 - Track what you read, and search, sort and filter your library.
 - Sync your reading position with KOReader and the other apps that support KOReader sync. oboku can be their [sync server](/guides/koreader-sync-server), and its reader can [sync with them](/guides/koreader-progress-sync).
@@ -53,10 +53,10 @@ Calibre Web is another similar project that was created many years ago and provi
 
 - No offline support
 - Not e-ink friendly
-- Limited choice of source providers (Calibre and Kobo sync)
+- Limited choice of sources (Calibre and Kobo sync)
 - It is a self hosted product and comes with the hassle of maintenance.
 
-If you already run Calibre-Web, oboku can [sync the books of its OPDS catalog](/sync-providers/opds).
+If you already run Calibre-Web, oboku can [sync the books of its OPDS catalog](/sources/opds).
 
 In no way oboku wishes to undermine calibre-web and I want to personally thanks [janeczku](https://github.com/janeczku) and all the contributors for making the calibre-web project.
 

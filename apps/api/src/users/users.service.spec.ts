@@ -7,7 +7,7 @@ import { RefreshTokensService } from "../features/postgres/refreshTokens.service
 import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
-import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "../features/postgres/source-connection-postgres.service.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { UsersService } from "./users.service.js"
@@ -36,7 +36,7 @@ describe("UsersService", () => {
   let koreaderSyncPostgresService: { deleteByUserId: Mock }
   let koreaderSyncConnectionPostgresService: { deleteByUserId: Mock }
   let opdsServerPostgresService: { deleteByUserId: Mock }
-  let providerConnectionPostgresService: { deleteByUserId: Mock }
+  let sourceConnectionPostgresService: { deleteByUserId: Mock }
 
   beforeEach(async () => {
     userPostgresService = {
@@ -53,7 +53,7 @@ describe("UsersService", () => {
     koreaderSyncPostgresService = { deleteByUserId: vi.fn() }
     koreaderSyncConnectionPostgresService = { deleteByUserId: vi.fn() }
     opdsServerPostgresService = { deleteByUserId: vi.fn() }
-    providerConnectionPostgresService = { deleteByUserId: vi.fn() }
+    sourceConnectionPostgresService = { deleteByUserId: vi.fn() }
 
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,8 +86,8 @@ describe("UsersService", () => {
           useValue: opdsServerPostgresService,
         },
         {
-          provide: ProviderConnectionPostgresService,
-          useValue: providerConnectionPostgresService,
+          provide: SourceConnectionPostgresService,
+          useValue: sourceConnectionPostgresService,
         },
       ],
     }).compile()
@@ -152,9 +152,9 @@ describe("UsersService", () => {
       koreaderSyncConnectionPostgresService.deleteByUserId,
     ).toHaveBeenCalledWith(1)
     expect(opdsServerPostgresService.deleteByUserId).toHaveBeenCalledWith(1)
-    expect(
-      providerConnectionPostgresService.deleteByUserId,
-    ).toHaveBeenCalledWith(1)
+    expect(sourceConnectionPostgresService.deleteByUserId).toHaveBeenCalledWith(
+      1,
+    )
     expect(userPostgresService.deleteById).toHaveBeenCalledWith(1)
   })
 })

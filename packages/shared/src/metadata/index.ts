@@ -41,7 +41,7 @@ export type BookMetadataFields = {
   pageCount?: number
   contentType?: string
   date?: { year?: number; month?: number; day?: number }
-  /** Stored as a string because some providers already expose byte size as text. */
+  /** Stored as a string because some sources already expose byte size as text. */
   size?: string
   languages?: string[]
   subjects?: string[]
@@ -50,11 +50,11 @@ export type BookMetadataFields = {
   rights?: string | undefined
   googleVolumeId?: string | undefined
   /**
-   * Provider-reported file modification timestamp (ISO 8601). Only the
+   * Source-reported file modification timestamp (ISO 8601). Only the
    * `link` source can advertise it — it describes the linked resource on
-   * the storage provider, not the merged book. Used as a cheap fingerprint
+   * the source, not the merged book. Used as a cheap fingerprint
    * to skip re-downloading the file when its metadata is still valid.
-   * Plugins MUST return the provider's real timestamp here, or omit the
+   * Plugins MUST return the source's real timestamp here, or omit the
    * field entirely; never substitute a synthetic `Date.now()` value, which
    * would defeat the cache.
    */

@@ -7,17 +7,17 @@ import { ConnectorConnectionController } from "./connectors/connector-connection
 import { ConnectorConnectionService } from "./connectors/connector-connection.service.js"
 import { GoogleConnectionController } from "./google/google-connection.controller.js"
 import { GoogleConnectionService } from "./google/google-connection.service.js"
-import { ProviderConnectionsService } from "./provider-connections.service.js"
+import { SourceConnectionsService } from "./source-connections.service.js"
 
 @Module({
   imports: [PostgresModule, InstanceConfigModule, CouchModule],
   controllers: [GoogleConnectionController, ConnectorConnectionController],
   providers: [
-    ProviderConnectionsService,
+    SourceConnectionsService,
     GoogleConnectionService,
     ConnectorConnectionService,
     AtRestCipher,
   ],
   exports: [GoogleConnectionService, ConnectorConnectionService],
 })
-export class ProviderConnectionsModule {}
+export class SourceConnectionsModule {}

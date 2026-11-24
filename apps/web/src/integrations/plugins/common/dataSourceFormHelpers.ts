@@ -15,7 +15,7 @@ type FormDefaultsSource = {
 /**
  * Shared base of `defaultValues` for every plugin's data source form (name,
  * tags, metadata-policy override). Plugins spread the result alongside their
- * own provider-specific fields, e.g.
+ * own source-specific fields, e.g.
  *
  * ```ts
  * defaultValues: {
@@ -37,7 +37,7 @@ export const getDataSourceFormBaseDefaults = (
 })
 
 /**
- * Assembles the submit payload from a plugin form's `data` and provider
+ * Assembles the submit payload from a plugin form's `data` and source
  * specific `data_v2`. Lets each plugin focus on its own `data_v2` shape and
  * keeps the shared base fields in one place.
  */

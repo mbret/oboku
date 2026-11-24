@@ -1,16 +1,16 @@
 import { Logger } from "@nestjs/common"
 import {
   CollectionDocType,
-  DataSourceType,
+  SourceType,
   directives,
-  LinkDataForProvider,
+  LinkDataForSource,
 } from "@oboku/shared"
 import type { Context } from "../types.js"
 import { insert } from "../../../couch/dbHelpers.js"
 
 const logger = new Logger("sync/addNewCollection")
 
-export const addNewCollection = async <T extends DataSourceType>({
+export const addNewCollection = async <T extends SourceType>({
   name,
   linkData,
   linkType,
@@ -18,7 +18,7 @@ export const addNewCollection = async <T extends DataSourceType>({
 }: {
   ctx: Context
   name: string
-  linkData: LinkDataForProvider<T>
+  linkData: LinkDataForSource<T>
   linkType: T
 }) => {
   const directiveValues = directives.extractDirectivesFromName(name)

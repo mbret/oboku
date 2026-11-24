@@ -5,14 +5,14 @@
 import { authorize } from "./helpers.js"
 import { google } from "googleapis"
 import { getDataFromDataSource } from "@oboku/shared"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
 import { toDecodedContentLength } from "../../http/contentLength.js"
 
 const DRIVE_TYPE = "DRIVE"
 
-export const dataSource: DataSourcePlugin<"DRIVE"> = {
+export const dataSource: SourcePlugin<"DRIVE"> = {
   type: DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

@@ -1,7 +1,7 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import type { DataSourcePlugin } from "../types.js"
+import type { SourcePlugin } from "../types.js"
 import {
   getDataFromDataSource,
   type WebDAVDataSourceDocType,
@@ -148,7 +148,7 @@ export const signInToWebdav = async ({
   await listWebdavDirectory({ ...connector, password, path: "/", signal })
 }
 
-export const dataSource: DataSourcePlugin<"webdav"> = {
+export const dataSource: SourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findConnectorCandidates(ctx, "link", {

@@ -15,7 +15,7 @@ title: "Metadata Sources"
 - mangadex
 - mangaupdates
 - biblioreads
-- source (what the series' provider reports)
+- source (what the series' source reports)
 - comicvine
 
 ## Books
@@ -26,7 +26,7 @@ title: "Metadata Sources"
 - Directives
 - File
 - Catalog
-- Source (what the book's provider reports about its file)
+- Source (what the book's source reports about its file)
 
 For each detail of a book, such as its title or its authors, oboku shows the value of the highest source that has one. It does not combine the values of several sources.
 

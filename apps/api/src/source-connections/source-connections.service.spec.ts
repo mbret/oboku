@@ -4,12 +4,12 @@ import {
   AtRestCipher,
   PROVIDER_CONNECTION_CREDENTIALS_PURPOSE,
 } from "../crypto/at-rest-cipher.js"
-import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "../features/postgres/source-connection-postgres.service.js"
 import {
   createConnectionStore,
   toConnectionRowKey,
-} from "./provider-connection-store.fixture.js"
-import { ProviderConnectionsService } from "./provider-connections.service.js"
+} from "./source-connection-store.fixture.js"
+import { SourceConnectionsService } from "./source-connections.service.js"
 
 const READER_ID = 1
 const OTHER_READER_ID = 2
@@ -48,9 +48,9 @@ const createService = async () => {
   const { rows, store } = createConnectionStore()
   const module = await Test.createTestingModule({
     providers: [
-      ProviderConnectionsService,
+      SourceConnectionsService,
       AtRestCipher,
-      { provide: ProviderConnectionPostgresService, useValue: store },
+      { provide: SourceConnectionPostgresService, useValue: store },
       {
         provide: SecretsService,
         useValue: { getJwtPrivateKey: async () => "jwt-private-key" },
@@ -60,12 +60,12 @@ const createService = async () => {
 
   return {
     rows,
-    service: module.get(ProviderConnectionsService),
+    service: module.get(SourceConnectionsService),
     atRestCipher: module.get(AtRestCipher),
   }
 }
 
-describe("ProviderConnectionsService", () => {
+describe("SourceConnectionsService", () => {
   it("gives back the credentials it kept, encrypted", async () => {
     const { rows, service } = await createService()
 

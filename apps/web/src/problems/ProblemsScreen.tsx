@@ -5,7 +5,7 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@mui/material"
-import { groupBy, type DataSourceType } from "@oboku/shared"
+import { groupBy, type SourceType } from "@oboku/shared"
 import { Fragment, memo, useMemo } from "react"
 import { Logger } from "../debug/logger.shared"
 import { TopBarNavigation } from "../navigation/TopBarNavigation"
@@ -25,7 +25,7 @@ import { BookDanglingLinks } from "./BookDanglingLinks"
 import { PageContainer } from "../common/PageContainer"
 import { PageSection } from "../common/PageSection"
 
-const COLLECTION_IDENTITY_FIELDS: Record<DataSourceType, readonly string[]> = {
+const COLLECTION_IDENTITY_FIELDS: Record<SourceType, readonly string[]> = {
   DRIVE: ["fileId"],
   dropbox: ["fileId"],
   "one-drive": ["driveId", "fileId"],

@@ -49,13 +49,13 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_MAGIC_LINK_MISSING_TOKEN:
       return "This magic link is missing a token. Please request a new one."
     case ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED:
-      return "We could not connect to the storage provider. If the problem persists, try to reload the app."
+      return "We could not connect to the source. If the problem persists, try to reload the app."
     case ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED:
       return "Your data source seems to have exceeded its allowed access limit."
     case ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE:
       return "Our server seems unreachable, make sure you are online to start the synchronization."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
-      return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book using a cloud provider."
+      return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book from a cloud source."
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
       return "No connector is configured for this link. Please set one up first."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED:

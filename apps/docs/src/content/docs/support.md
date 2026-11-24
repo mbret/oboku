@@ -7,7 +7,7 @@ description: If you find yourself having a problem please check for details on t
 
 ### Incognito mode / private browsing { #incognito-mode-private-browsing }
 
-Using incognito mode, private browsing or some plugins that heavily restrict the use of cookies **may not work well with oboku**. Some third party providers we use for data sources requires the use of cookies to authenticate you. You might not be able to use Google Drive if your browser is blocking cookies for example. It is recommended to use normal mode and eventually accept popups opening for oboku to have full access to all the features.
+Using incognito mode, private browsing or some plugins that heavily restrict the use of cookies **may not work well with oboku**. Some third-party sources we use for data sources requires the use of cookies to authenticate you. You might not be able to use Google Drive if your browser is blocking cookies for example. It is recommended to use normal mode and eventually accept popups opening for oboku to have full access to all the features.
 
 ## Troubleshoot
 
@@ -31,4 +31,4 @@ This is a known performance issue that cannot be resolved. The flicker will usua
 
 ### I changed a file or moved something in a different location { #i-changed-a-file-or-moved-seomething-in-a-different-location }
 
-Depending on which provider the book comes from, oboku will try to re-attach the file to the actual book as best we it can. Visit the [Resources Matching and Sync](/guides/resources-matching-and-sync) section to understand more about the expected behavior. Note that changing the actual file content may breaks reading progress or other data such as annotations.
+Depending on which source the book comes from, oboku will try to re-attach the file to the actual book as best we it can. Visit the [Resources Matching and Sync](/guides/resources-matching-and-sync) section to understand more about the expected behavior. Note that changing the actual file content may breaks reading progress or other data such as annotations.

@@ -19,7 +19,7 @@ const isLinkOfType =
 
 /**
  * Calls each plugin's `useRemoveResource` by name. Plugin members named `use*` are
- * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * hooks on purpose (see `SourcePlugin`), and hooks cannot run in a loop, so a
  * new plugin adds its line here.
  */
 export const usePluginRemoveResource = () => {

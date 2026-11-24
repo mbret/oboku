@@ -1,8 +1,8 @@
-import { parseProviderApiCredentials } from "@oboku/shared"
+import { parseSourceApiCredentials } from "@oboku/shared"
 import { DropboxAuth } from "dropbox"
 import { SIGNAL_RESET } from "reactjrx"
 import { describe, expect, it, onTestFinished } from "vitest"
-import { dropboxAuthSignal, requestDropboxProviderCredentials } from "./auth"
+import { dropboxAuthSignal, requestDropboxSourceCredentials } from "./auth"
 
 function signInToDropbox({ refreshToken }: { refreshToken?: string } = {}) {
   const accessTokenExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 2)
@@ -25,14 +25,14 @@ async function declinePopup() {
   return false
 }
 
-describe("requestDropboxProviderCredentials", function testRequestDropboxProviderCredentials() {
+describe("requestDropboxSourceCredentials", function testRequestDropboxSourceCredentials() {
   it("maps the session's Dropbox auth to provider credentials", async function mapSessionAuth() {
     const { accessTokenExpiresAt } = signInToDropbox({
       refreshToken: "refresh-token",
     })
 
     await expect(
-      requestDropboxProviderCredentials({
+      requestDropboxSourceCredentials({
         clientId: "dropbox-client-id",
         requestPopup: declinePopup,
       }),
@@ -48,7 +48,7 @@ describe("requestDropboxProviderCredentials", function testRequestDropboxProvide
   it("maps an online sign-in, which has no refresh token, to credentials the API accepts", async function mapOnlineSignIn() {
     const { accessTokenExpiresAt } = signInToDropbox()
 
-    const credentials = await requestDropboxProviderCredentials({
+    const credentials = await requestDropboxSourceCredentials({
       clientId: "dropbox-client-id",
       requestPopup: declinePopup,
     })
@@ -59,7 +59,7 @@ describe("requestDropboxProviderCredentials", function testRequestDropboxProvide
       clientId: "dropbox-client-id",
       codeVerifier: "code-verifier",
     })
-    expect(parseProviderApiCredentials("dropbox", credentials)).toEqual(
+    expect(parseSourceApiCredentials("dropbox", credentials)).toEqual(
       credentials,
     )
   })

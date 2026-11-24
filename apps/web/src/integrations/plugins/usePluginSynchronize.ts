@@ -1,19 +1,19 @@
 import {
   assertNever,
   type DataSourceDocType,
-  type ProviderApiCredentials,
+  type SourceApiCredentials,
 } from "@oboku/shared"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { pluginsByType } from "./configure"
 
 type SynchronizeResult = {
-  providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
+  providerCredentials: SourceApiCredentials<DataSourceDocType["type"]>
 }
 
 /**
  * Calls each plugin's `useSynchronize` by name. Plugin members named `use*` are
- * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * hooks on purpose (see `SourcePlugin`), and hooks cannot run in a loop, so a
  * new plugin adds its line here.
  */
 export const usePluginSynchronize = () => {

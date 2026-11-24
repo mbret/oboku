@@ -17,15 +17,15 @@ import { AuthGuard, type TokenPayload } from "../../auth/auth.guard.js"
 import { SecretsService } from "../../config/SecretsService.js"
 import { CouchService } from "../../couch/couch.service.js"
 import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
-import type { ProviderConnectionPostgresEntity } from "../../features/postgres/entities.js"
-import { ProviderConnectionPostgresService } from "../../features/postgres/provider-connection-postgres.service.js"
+import type { SourceConnectionPostgresEntity } from "../../features/postgres/entities.js"
+import { SourceConnectionPostgresService } from "../../features/postgres/source-connection-postgres.service.js"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
 import { buildMultiStatusXml } from "../../webdav/webdav.xml.js"
 import {
   createConnectionStore,
   toConnectionRowKey,
-} from "../provider-connection-store.fixture.js"
-import { ProviderConnectionsService } from "../provider-connections.service.js"
+} from "../source-connection-store.fixture.js"
+import { SourceConnectionsService } from "../source-connections.service.js"
 import { ConnectorConnectionController } from "./connector-connection.controller.js"
 import { ConnectorConnectionService } from "./connector-connection.service.js"
 
@@ -139,11 +139,11 @@ const toWebdavConnector = (
 
 describe("ConnectorConnectionController", () => {
   let app: INestApplication<App>
-  let rows: Map<string, ProviderConnectionPostgresEntity>
+  let rows: Map<string, SourceConnectionPostgresEntity>
   let connectorsByEmail: Map<string, SettingsConnectorDocType[]>
   let secretsById: Map<string, SecretDocType>
   let createNanoInstanceForUser: ReturnType<typeof vi.fn>
-  let providerConnectionsService: ProviderConnectionsService
+  let sourceConnectionsService: SourceConnectionsService
 
   const listConnections = (session = READER_SESSION) =>
     request(app.getHttpServer())
@@ -207,10 +207,10 @@ describe("ConnectorConnectionController", () => {
       controllers: [ConnectorConnectionController],
       providers: [
         ConnectorConnectionService,
-        ProviderConnectionsService,
+        SourceConnectionsService,
         AtRestCipher,
         {
-          provide: ProviderConnectionPostgresService,
+          provide: SourceConnectionPostgresService,
           useValue: connectionStore.store,
         },
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
@@ -241,7 +241,7 @@ describe("ConnectorConnectionController", () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    providerConnectionsService = module.get(ProviderConnectionsService)
+    sourceConnectionsService = module.get(SourceConnectionsService)
   })
 
   afterEach(async () => {
@@ -281,7 +281,7 @@ describe("ConnectorConnectionController", () => {
       WEBDAV_PASSWORD,
     )
     await expect(
-      providerConnectionsService.getCredentials({
+      sourceConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "webdav",
         accountId: connector.id,
@@ -450,7 +450,7 @@ describe("ConnectorConnectionController", () => {
       expect.objectContaining({ status: "connected" }),
     ])
     await expect(
-      providerConnectionsService.getCredentials({
+      sourceConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "webdav",
         accountId: connector.id,
