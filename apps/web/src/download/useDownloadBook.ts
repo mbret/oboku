@@ -38,6 +38,7 @@ export const useDownloadBook = (
 ) => {
   const { mutate, mutateAsync, ...mutation } = useMutation({
     ...options,
+    meta: { ...options?.meta, survivesSessionReset: true },
     mutationKey: downloadBookMutationKey,
     mutationFn: function awaitDownloadSettlement({
       settlement,

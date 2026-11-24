@@ -22,6 +22,7 @@ vi.mock("./DownloadFlowRequestItem", function mockDownloadFlowRequestItem() {
   }
 })
 
+import { resetSessionQueries } from "../../queries/resetSessionQueries"
 import { findPendingBookDownload } from "../downloadBookMutation"
 import { useDownloadBook } from "../useDownloadBook"
 import {
@@ -72,6 +73,24 @@ describe("PluginDownloadFlowHost", () => {
     await waitFor(function waitForItemRemoved() {
       expect(screen.queryByText("book-a")).toBeNull()
     })
+  })
+
+  it("keeps a download in progress through a session reset", async () => {
+    const queryClient = new QueryClient()
+    const { result } = renderDownloadFlow(queryClient)
+
+    act(function startDownload() {
+      result.current.mutate({ _id: "book-a", links: [] })
+    })
+
+    await screen.findByText("book-a")
+
+    await act(async function switchAccount() {
+      await resetSessionQueries(queryClient)
+    })
+
+    expect(screen.getByText("book-a")).toBeDefined()
+    expect(findPendingBookDownload(queryClient, "book-a")).toBeDefined()
   })
 
   it("cancels the download of the given book only", async () => {
