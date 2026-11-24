@@ -18,5 +18,5 @@ export const useLibrarySyncLabel = (
     return librarySyncName
   }
 
-  return pluginLabel ?? "Source"
+  return pluginLabel ?? "Sync"
 }

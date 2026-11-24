@@ -1,4 +1,4 @@
-import type { LibrarySyncDocType } from "@oboku/shared"
+import type { SourceType } from "@oboku/shared"
 import type { SourcePlugin } from "./types"
 import { plugin as dropbox } from "../dropbox/dropboxPlugin"
 import { plugin as google } from "../google/googleDrivePlugin"
@@ -11,7 +11,7 @@ import uri from "./uri"
 import webdav from "../webdav/webdavPlugin"
 
 type PluginsByType = {
-  [K in LibrarySyncDocType["type"]]: SourcePlugin<K>
+  [K in SourceType]: SourcePlugin<K>
 }
 
 export const pluginsByType: PluginsByType = {
@@ -30,12 +30,10 @@ export type Plugin = (typeof pluginsByType)[keyof typeof pluginsByType]
 
 export const plugins = Object.values(pluginsByType)
 
-export function getPluginByType<T extends LibrarySyncDocType["type"]>(type: T) {
+export function getPluginByType<T extends SourceType>(type: T) {
   return pluginsByType[type]
 }
 
-export function isPluginType(
-  type: string | undefined,
-): type is LibrarySyncDocType["type"] {
+export function isPluginType(type: string | undefined): type is SourceType {
   return type !== undefined && Object.hasOwn(pluginsByType, type)
 }

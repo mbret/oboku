@@ -46,10 +46,10 @@ import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
 import type { ReactNode } from "react"
 import { PhoneScreenshots } from "../common/PhoneScreenshots"
-import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.webp"
+import addLibrarySyncScreenshot from "../common/app-screenshots/add-library-sync.webp"
 import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.webp"
 import bookDetailsScreenshot from "../common/app-screenshots/book-details.webp"
-import dataSourcesScreenshot from "../common/app-screenshots/data-sources.webp"
+import librarySyncsScreenshot from "../common/app-screenshots/library-syncs.webp"
 import epubReaderScreenshot from "../common/app-screenshots/epub-reader.webp"
 import homeScreenshot from "../common/app-screenshots/home.webp"
 import koreaderProgressSyncScreenshot from "../common/app-screenshots/koreader-progress-sync.webp"
@@ -183,11 +183,11 @@ export const featureGroups: FeatureGroup[] = [
     illustration: (
       <PhoneScreenshots
         primary={{
-          src: dataSourcesScreenshot,
+          src: librarySyncsScreenshot,
           alt: "oboku Syncs screen with a server library and the day of its last sync",
         }}
         secondary={{
-          src: addDataSourceScreenshot,
+          src: addLibrarySyncScreenshot,
           alt: "Adding an oboku library sync from Dropbox or Google Drive",
         }}
       />

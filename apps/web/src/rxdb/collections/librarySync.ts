@@ -27,7 +27,7 @@ export const librarySyncSchema: RxJsonSchema<
     data?: string
   }
 > = {
-  title: "librarySyncSchema",
+  title: "dataSourceSchema",
   version: 1,
   type: "object",
   primaryKey: `_id`,

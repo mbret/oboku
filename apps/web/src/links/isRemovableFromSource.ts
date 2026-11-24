@@ -1,5 +1,5 @@
 import type { LinkDocType } from "@oboku/shared"
-import { plugins } from "../librarySyncs"
+import { plugins } from "../integrations/plugins/configure"
 
 export const isRemovableFromSource = ({
   link,
