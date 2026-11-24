@@ -10,7 +10,6 @@ import { getLinkStateAsync } from "../../links/states"
 import { dexieDb } from "../../rxdb/dexie"
 import { bytesToMb } from "../../common/utils"
 import { DownloadState, booksDownloadStateSignal } from "../states"
-import { downloadsBroadcast } from "../downloadsBroadcast"
 import { Logger } from "../../debug/logger.shared"
 import type { DownloadFlowRequest } from "./types"
 
@@ -105,8 +104,6 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
         data: cachedData,
         filename,
       })
-
-      downloadsBroadcast.broadcast("downloads-changed")
     },
     [bookId],
   )

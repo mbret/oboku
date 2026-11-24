@@ -18,8 +18,7 @@ import { useRegisterServiceWorker } from "./workers/useRegisterServiceWorker"
 import { Archive as LibArchive } from "libarchive.js"
 import { RxDbProvider } from "./rxdb/RxDbProvider"
 import { Logger } from "./debug/logger.shared"
-import { RestoreDownloadState } from "./download/RestoreDownloadState"
-import { SyncDownloadsAcrossTabs } from "./download/SyncDownloadsAcrossTabs"
+import { MirrorStoredDownloads } from "./download/MirrorStoredDownloads"
 import { useRemoveDownloadWhenBookIsNotInterested } from "./download/useRemoveDownloadWhenBookIsNotInterested"
 import { QueryClientProvider } from "./queries/QueryClientProvider"
 import { HttpClientApiProvider } from "./http/HttpClientApiProvider"
@@ -125,7 +124,7 @@ const App = memo(function App({
           setIsPreloadingQueries(false)
         }}
       />
-      <RestoreDownloadState
+      <MirrorStoredDownloads
         onReady={() => {
           setIsDownloadsHydrated(true)
         }}
@@ -154,7 +153,6 @@ export const AppWithConfig = memo(function AppWithConfig() {
                 <LegacyAuthMigration>
                   <RevokeLoggedOutProfiles />
                   <SyncProfilesAcrossTabs />
-                  <SyncDownloadsAcrossTabs />
                   <SyncSentryUser />
                   <LoadConfiguration>
                     <App onReadyChange={setIsAppReady} />

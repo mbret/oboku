@@ -1,7 +1,6 @@
 import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
 import { dexieDb } from "../rxdb/dexie"
-import { downloadsBroadcast } from "./downloadsBroadcast"
 import { DownloadState, booksDownloadStateSignal } from "./states"
 import { from, tap } from "rxjs"
 
@@ -27,9 +26,6 @@ export const useRemoveDownloadFile = (
               },
             }
           })
-        }),
-        tap(function notifyOtherTabs() {
-          downloadsBroadcast.broadcast("downloads-changed")
         }),
       )
     },
