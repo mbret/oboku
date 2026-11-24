@@ -4,6 +4,24 @@
 
 - When implementing changes in this codebase, prioritize consistency and consolidation over novelty.
 
+### Vocabulary
+
+Use one word for each concept, in code, in the UI and in the docs. Stored names keep their old words: CouchDB collections and fields, Postgres tables and columns, request fields such as `providerCredentials` and `linkId`, and API HTTP paths.
+
+| Word              | Meaning                                                                                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| integration       | Anything oboku connects to: the sources, KOReader progress sync, and the catalogs oboku serves to reading apps.                                                            |
+| source            | A kind of place books come from: Google Drive, Dropbox, OneDrive, WebDAV, Synology Drive, an OPDS catalog, oboku's server, a web address or the device.                    |
+| source plugin     | The code of one source, behind the contract every source implements. Only code uses this word.                                                                             |
+| connector         | A saved server login: a URL, a username and an encrypted password.                                                                                                         |
+| library sync      | One source, one or more of its locations, and options, which oboku keeps in sync with the library. Inside the Sync screen, "sync" alone is enough. Stored as `datasource`. |
+| location          | One place that a library sync covers: a folder, a whole account or server, or a catalog.                                                                                   |
+| source connection | The credentials oboku's server keeps for a source: a Google Drive refresh token, or a connector's password.                                                                |
+| book file         | A book's reference to its file at its source. Stored as `link`.                                                                                                            |
+| metadata provider | Where a book's metadata comes from: the book's file, its source, or a service such as Google Books.                                                                        |
+
+"Provider" only means a sign-in provider (OAuth), a metadata provider or a React context provider. "Plugin" never appears in the UI.
+
 ### Code comments
 
 - **Default to no comments.** Code, names, and types are the documentation. Add a comment only when a future reader cannot recover the intent from the code itself.
