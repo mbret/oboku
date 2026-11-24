@@ -468,7 +468,7 @@ export type DownloadLinkDto = {
 export type ListWebdavDirectoryDto = {
     connectorId: string;
     /**
-     * The directory to list, from the root of the connector's server.
+     * From the connector's URL, like `/Books`.
      */
     path: string;
     providerCredentials: WebdavCredentialsDto;
@@ -477,7 +477,7 @@ export type ListWebdavDirectoryDto = {
 export type WebdavDirectoryItemDto = {
     type: 'file' | 'directory';
     /**
-     * The item's path from the root of the server.
+     * The item's path from the connector's URL.
      */
     filename: string;
     basename: string;

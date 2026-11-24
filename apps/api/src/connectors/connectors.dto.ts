@@ -12,7 +12,7 @@ export class ListWebdavDirectoryDto {
   @IsString()
   connectorId!: string
 
-  /** The directory to list, from the root of the connector's server. */
+  /** From the connector's URL, like `/Books`. */
   @IsString()
   path!: string
 
@@ -22,9 +22,8 @@ export class ListWebdavDirectoryDto {
   providerCredentials!: WebdavCredentialsDto
 }
 
-/** A file or a directory, as the WebDAV server describes it. */
 export class WebdavDirectoryItemDto {
-  /** The item's path from the root of the server. */
+  /** The item's path from the connector's URL. */
   filename!: string
   basename!: string
   @ApiProperty({ enum: WEBDAV_DIRECTORY_ITEM_TYPES })

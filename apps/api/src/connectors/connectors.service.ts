@@ -20,12 +20,6 @@ const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
 export class ConnectorsService {
   constructor(private readonly couchService: CouchService) {}
 
-  /**
-   * The items of the directory at `path` on the server of the WebDAV
-   * connector `connectorId`, read with `password`.
-   *
-   * @throws the answers `toWebdavHttpException` documents.
-   */
   async listWebdavDirectory({
     email,
     connectorId,

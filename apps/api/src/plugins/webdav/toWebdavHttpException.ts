@@ -13,13 +13,6 @@ import {
 } from "./index.js"
 import { FileSizeUnstatedError } from "./streamWebdavFile.js"
 
-/**
- * The answer to a request the API made to a WebDAV server for the user: a 400
- * for a connector the user's settings do not hold or an address the instance
- * does not reach, a 404 for a path the server does not have, and a 502 when
- * the server refuses the password, states no size for a file, or cannot be
- * reached.
- */
 export const toWebdavHttpException = (error: unknown) => {
   if (error instanceof WebdavConnectorNotConfiguredError) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED)

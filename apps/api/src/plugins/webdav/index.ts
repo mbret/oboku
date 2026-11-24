@@ -126,7 +126,6 @@ export const isSignInRefused = (error: unknown) => {
 export const isPasswordRefused = (error: unknown) =>
   toAnsweredStatus(error) === 401
 
-/** The items of the directory at `path` on the connector's server. */
 export const listWebdavDirectory = ({
   connector,
   password,

@@ -14,7 +14,6 @@ const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
   etag: item.etag ?? undefined,
 })
 
-/** Lists a directory through oboku's API, which reads it from the WebDAV server. */
 export const listDirectoryThroughServerProxy = async ({
   httpClientApi,
   connectorId,
