@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 const mocks = vi.hoisted(function createDataSourceFormMocks() {
-  return { connector: vi.fn() }
+  return { connector: vi.fn(), testConnectionProps: vi.fn() }
 })
 
 vi.mock("../../../connectors/useConnector", function mockConnector() {
@@ -17,8 +17,19 @@ vi.mock("../../../connectors/useConnector", function mockConnector() {
 
 vi.mock("../../../connectors/TestConnection", function mockTestConnection() {
   return {
-    TestConnection: function FakeTestConnection() {
+    TestConnection: function FakeTestConnection(props: unknown) {
+      mocks.testConnectionProps(props)
+
       return <p>Connection test</p>
+    },
+  }
+})
+
+vi.mock("../../../http", async function mockHttpClientApi(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("../../../http")>()),
+    useHttpClientApi: function useHttpClientApi() {
+      return {}
     },
   }
 })
@@ -65,23 +76,32 @@ describe("DataSourceForm (WebDAV)", () => {
     vi.clearAllMocks()
   })
 
-  it("tests the connection from the browser", async () => {
-    mocks.connector.mockReturnValue(koofrConnector)
+  it.each([
+    ["without the proxy setting", koofrConnector, false],
+    [
+      "that uses oboku's server as a proxy",
+      { ...koofrConnector, proxyThroughServer: true, allowSelfSigned: true },
+      true,
+    ],
+  ])(
+    "gives the connection test the connector %s",
+    async (_, connector, isProxiedThroughServer) => {
+      mocks.connector.mockReturnValue(connector)
 
-    render(<DataSourceForm onSubmit={vi.fn()} submitLabel="Save" />)
+      render(<DataSourceForm onSubmit={vi.fn()} submitLabel="Save" />)
 
-    expect(await screen.findByText("Connection test")).toBeDefined()
-  })
-
-  it("leaves the connection test out for a connector that uses oboku's server as a proxy", async () => {
-    mocks.connector.mockReturnValue({
-      ...koofrConnector,
-      proxyThroughServer: true,
-    })
-
-    render(<DataSourceForm onSubmit={vi.fn()} submitLabel="Save" />)
-
-    await screen.findByLabelText("Directory")
-    expect(screen.queryByText("Connection test")).toBeNull()
-  })
+      expect(await screen.findByText("Connection test")).toBeDefined()
+      expect(mocks.testConnectionProps).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          connectionData: {
+            url: connector.url,
+            username: connector.username,
+            passwordAsSecretId: connector.passwordAsSecretId,
+            allowSelfSigned: connector.allowSelfSigned,
+            proxyThroughServer: isProxiedThroughServer,
+          },
+        }),
+      )
+    },
+  )
 })

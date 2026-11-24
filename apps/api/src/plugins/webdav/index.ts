@@ -127,19 +127,13 @@ export const isPasswordRefused = (error: unknown) =>
   toAnsweredStatus(error) === 401
 
 export const listWebdavDirectory = ({
-  connector,
-  password,
   path,
   signal,
-}: {
-  connector: WebdavConnectorDocType
-  password: string
+  ...connection
+}: Parameters<typeof createWebdavClient>[0] & {
   path: string
   signal: AbortSignal
-}) =>
-  createWebdavClient({ ...connector, password }).getDirectoryContents(path, {
-    signal,
-  })
+}) => createWebdavClient(connection).getDirectoryContents(path, { signal })
 
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({
@@ -151,7 +145,7 @@ export const signInToWebdav = async ({
   password: string
   signal: AbortSignal
 }) => {
-  await listWebdavDirectory({ connector, password, path: "/", signal })
+  await listWebdavDirectory({ ...connector, password, path: "/", signal })
 }
 
 export const dataSource: DataSourcePlugin<"webdav"> = {

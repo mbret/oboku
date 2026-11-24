@@ -374,9 +374,10 @@ describe("WebDAV upload", function testWebdavUpload() {
         method: "POST",
         url: `${API_URL}/connectors/webdav/directory`,
         body: {
-          connectorId: "webdav-connector",
-          path,
+          url: "https://dav.example.test/books",
+          username: "reader",
           providerCredentials: { password: "password" },
+          path,
         },
       })),
     )

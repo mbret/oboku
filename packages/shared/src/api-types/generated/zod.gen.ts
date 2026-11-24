@@ -501,9 +501,11 @@ export const zDownloadLinkDto = z.object({
 });
 
 export const zListWebdavDirectoryDto = z.object({
-    connectorId: z.string(),
-    path: z.string(),
-    providerCredentials: zWebdavCredentialsDto
+    url: z.string().regex(/^https?:\/\//),
+    username: z.string(),
+    providerCredentials: zWebdavCredentialsDto,
+    allowSelfSigned: z.boolean().optional(),
+    path: z.string()
 });
 
 export const zWebdavDirectoryItemDto = z.object({
