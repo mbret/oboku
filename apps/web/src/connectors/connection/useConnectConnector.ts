@@ -8,9 +8,12 @@ import {
   type ConnectableConnectorType,
   type ConnectorConnectionConnectResponse,
   connectorConnectionConnect,
+  ObokuErrorCode,
+  ObokuSharedError,
 } from "@oboku/shared"
 import { useHttpClientApi } from "../../http"
 import { cancelUnlessProfileIsActive } from "../../profiles/active/activeProfileId"
+import { awaitDocumentsPushed } from "../../rxdb/replication/awaitDocumentsPushed"
 import { useExtractConnectorData } from "../useExtractConnectorData"
 import { createConnectorConnectionsQueryOptions } from "./connectorConnectionsQueryOptions"
 
@@ -21,8 +24,9 @@ type ConnectConnectorRequest = {
 }
 
 /**
- * Asks for the master password, decrypts the connector's password, and sends
- * it to oboku's server, which keeps it.
+ * Asks for the master password, decrypts the connector's password, waits
+ * until the connector and its password secret have reached oboku's server,
+ * and sends the password to the server, which keeps it.
  */
 export const useConnectConnector = (
   { type }: { type: ConnectableConnectorType },
@@ -52,7 +56,19 @@ export const useConnectConnector = (
 
       const {
         data: { password },
+        documents,
       } = await extractConnectorData({ connectorId })
+
+      cancelUnlessProfileIsActive(profileId)
+
+      await awaitDocumentsPushed(documents).catch(function failAsNotOnServer(
+        error: unknown,
+      ) {
+        throw new ObokuSharedError(
+          ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
+          error,
+        )
+      })
 
       cancelUnlessProfileIsActive(profileId)
 

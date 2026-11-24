@@ -17,7 +17,6 @@ type SettingsCollectionMethods = {
     id: string,
     json: Partial<Omit<SettingsConnectorDocType, "id">>,
   ) => Promise<SettingsDocType>
-  getConnector: (id: string) => Promise<SettingsConnectorDocType | null>
 }
 
 export type SettingsCollection = RxCollection<
@@ -165,19 +164,6 @@ export const settingsCollectionMethods: SettingsCollectionMethods = {
 
       return doc
     })
-  },
-  getConnector: async function (this: SettingsCollection, id) {
-    const settings = await this.findOne("settings").exec()
-
-    if (!settings) {
-      throw new Error("Settings not found")
-    }
-
-    const connector = settings.connectors?.find(
-      (connector) => connector.id === id,
-    )
-
-    return connector ?? null
   },
 }
 
