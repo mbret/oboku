@@ -3,6 +3,7 @@ import { liveQuery } from "dexie"
 import { memo, useEffect, useEffectEvent } from "react"
 import { catchError, EMPTY, filter, from, tap } from "rxjs"
 import { reportErrors } from "../common/rxjs/operators"
+import { notifyError } from "../notifications/toasts"
 import { dexieDb } from "../rxdb/dexie"
 import {
   type BooksDownloadState,
@@ -95,7 +96,9 @@ export const MirrorStoredDownloads = memo(function MirrorStoredDownloads({
             reportReady()
           }),
           reportErrors,
-          catchError(function stopMirroring() {
+          catchError(function notifyAndStopMirroring(error) {
+            notifyError(error)
+
             return EMPTY
           }),
         )
