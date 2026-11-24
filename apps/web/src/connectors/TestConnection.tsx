@@ -93,7 +93,7 @@ function getConnectionExtraParams<D extends ConnectionParams>(
 
 /** Input data: url, username, secret id, + optional extra (e.g. directory). */
 export type ConnectionData<D extends ConnectionParams = ConnectionParams> =
-  Pick<ConnectionParams, "url" | "username"> & {
+  Pick<ConnectionParams, "url" | "username" | "allowSelfSigned"> & {
     passwordAsSecretId: string
   } & ConnectionExtraParams<D>
 
@@ -137,7 +137,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
     ...extra,
   }
   const canTest = !!params.url && !!params.username && !!params.password
-  const extraDependencyKey = JSON.stringify(extra)
+  const debouncedExtraKey = useDebouncedValue(JSON.stringify(extra), 500)
 
   const {
     mutate,
@@ -153,7 +153,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   useEffect(
     function triggerTestConnection() {
       void connectorType
-      void extraDependencyKey
+      void debouncedExtraKey
       void secret
       void testConnection
       void debouncedUrl
@@ -171,7 +171,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
       connectorType,
       debouncedUrl,
       debouncedUsername,
-      extraDependencyKey,
+      debouncedExtraKey,
       mutate,
       reset,
       secret,

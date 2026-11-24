@@ -10,6 +10,7 @@ import { userEvent } from "vitest/browser"
 const mocks = vi.hoisted(function createConnectorFormMocks() {
   return {
     connector: vi.fn(),
+    testConnectionProps: vi.fn(),
     updateConnector: vi.fn(),
   }
 })
@@ -48,7 +49,9 @@ vi.mock("../secrets/useSecrets", function mockSecrets() {
 
 vi.mock("./TestConnection", function mockTestConnection() {
   return {
-    TestConnection: function FakeTestConnection() {
+    TestConnection: function FakeTestConnection(props: unknown) {
+      mocks.testConnectionProps(props)
+
       return <p>Connection test</p>
     },
   }
@@ -97,7 +100,7 @@ describe("ConnectorForm", () => {
     vi.clearAllMocks()
   })
 
-  it("saves 'Use oboku's server as a proxy' once unchecked, and tests the connection from the browser only without it", async () => {
+  it("tests the connection with the proxy setting, and saves the setting once unchecked", async () => {
     mocks.connector.mockReturnValue(koofrConnector)
     mocks.updateConnector.mockResolvedValue(undefined)
     renderConnectorForm({
@@ -109,12 +112,23 @@ describe("ConnectorForm", () => {
     })
 
     await expect.element(proxyCheckbox).toBeChecked()
-    expect(screen.queryByText("Connection test")).toBeNull()
+    expect(screen.getByText("Connection test")).toBeDefined()
+    expect(mocks.testConnectionProps).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        connectionData: {
+          url: koofrConnector.url,
+          username: koofrConnector.username,
+          passwordAsSecretId: koofrConnector.passwordAsSecretId,
+          allowSelfSigned: false,
+          proxyThroughServer: true,
+        },
+      }),
+    )
 
     await userEvent.click(proxyCheckbox)
     await expect
-      .poll(() => screen.queryByText("Connection test"))
-      .not.toBeNull()
+      .poll(() => mocks.testConnectionProps.mock.lastCall?.[0])
+      .toMatchObject({ connectionData: { proxyThroughServer: false } })
     await userEvent.click(screen.getByRole("button", { name: "Confirm" }))
 
     await expect

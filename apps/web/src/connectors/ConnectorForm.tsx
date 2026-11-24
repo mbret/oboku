@@ -185,6 +185,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     },
   })
   const data = watch()
+  const { urlValue, ...connectionValues } = data
   const { mutateAsync: addConnector } = useAddConnector({
     type: connectorType,
   })
@@ -214,8 +215,6 @@ export const ConnectorForm = memo(function ConnectorForm({
       onSubmitSuccess()
     },
   })
-
-  const canTestFromBrowser = !data.proxyThroughServer
 
   return (
     <>
@@ -266,13 +265,13 @@ export const ConnectorForm = memo(function ConnectorForm({
                 control={control}
                 name="proxyThroughServer"
                 label="Use oboku's server as a proxy"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server downloads your books from it and passes them on to you. They count towards your monthly download quota. The connection test runs from the browser, so the form hides it."
+                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection, and downloads your books from it and passes them on to you. The downloads count towards your monthly download quota."
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}
-            {testConnection && canTestFromBrowser && (
+            {testConnection && (
               <TestConnection
-                connectionData={{ ...data, url: data.urlValue }}
+                connectionData={{ ...connectionValues, url: urlValue }}
                 connectorType={connectorType}
                 testConnection={testConnection}
               />
