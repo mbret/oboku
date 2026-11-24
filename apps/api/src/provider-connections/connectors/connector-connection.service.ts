@@ -74,29 +74,6 @@ const withoutProxyThroughServer = (connector: SettingsConnectorDocType) => {
   return rest
 }
 
-/**
- * A connector and the value of its password secret: what the app decrypts
- * the connector's password from.
- */
-type PasswordSource = {
-  connector: SettingsConnectorDocType
-  passwordSecretValue: EncryptedSecretValue | null
-}
-
-/**
- * Whether two copies of a connector and of its password secret's value are
- * the same. Turning `proxyThroughServer` on or off keeps them the same.
- */
-const isSamePasswordSource = (
-  source: PasswordSource,
-  otherSource: PasswordSource,
-) =>
-  isDeepStrictEqual(
-    withoutProxyThroughServer(source.connector),
-    withoutProxyThroughServer(otherSource.connector),
-  ) &&
-  isDeepStrictEqual(source.passwordSecretValue, otherSource.passwordSecretValue)
-
 const toConnectorConnection = ({
   connectorId,
   status,
@@ -142,24 +119,17 @@ export class ConnectorConnectionService {
    * Signs in to the connector's server with `password`, then keeps a copy of
    * the connector and of its password secret's encrypted value, with the
    * password, encrypted. Replaces the connector's previous connection.
-   *
-   * Answers 11006, without signing in, unless the user's database holds
-   * `decryptedFrom`, the connector and secret value the app decrypted
-   * `password` from. It compares them as `list` compares a connection with
-   * its connector.
    */
   async connect({
     userId,
     email,
     connectorId,
     password,
-    decryptedFrom,
   }: {
     userId: number
     email: string
     connectorId: string
     password: string
-    decryptedFrom: PasswordSource
   }): Promise<ConnectorConnectionDto> {
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const connectors = await readConnectors(db)
@@ -172,12 +142,8 @@ export class ConnectorConnectionService {
       ? secretValues.get(connector.passwordAsSecretId)
       : undefined
     const isPasswordSecretStored = passwordSecretValue !== undefined
-    const isDecryptedFromStoredCopy =
-      connector !== undefined &&
-      isPasswordSecretStored &&
-      isSamePasswordSource(decryptedFrom, { connector, passwordSecretValue })
 
-    if (!isDecryptedFromStoredCopy) {
+    if (!connector || !isPasswordSecretStored) {
       throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
       )
@@ -271,10 +237,15 @@ export class ConnectorConnectionService {
             return null
           }
 
-          const isUnchangedSinceConnected = isSamePasswordSource(credentials, {
-            connector,
-            passwordSecretValue,
-          })
+          const isUnchangedSinceConnected =
+            isDeepStrictEqual(
+              withoutProxyThroughServer(credentials.connector),
+              withoutProxyThroughServer(connector),
+            ) &&
+            isDeepStrictEqual(
+              credentials.passwordSecretValue,
+              passwordSecretValue,
+            )
           const status: ConnectorConnectionStatus = isUnchangedSinceConnected
             ? "connected"
             : "connector-changed"

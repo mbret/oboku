@@ -615,29 +615,8 @@ export const zConnectorConnectionsResponseDto = z.object({
     connections: z.array(zConnectorConnectionDto)
 });
 
-export const zWebdavConnectorDto = z.object({
-    id: z.string(),
-    type: z.enum(['webdav']),
-    url: z.string(),
-    username: z.string(),
-    passwordAsSecretId: z.string(),
-    allowSelfSigned: z.boolean().optional(),
-    proxyThroughServer: z.boolean().optional()
-});
-
-export const zEncryptedSecretValueDto = z.object({
-    iv: z.string(),
-    data: z.string()
-});
-
-export const zPasswordSourceDto = z.object({
-    connector: zWebdavConnectorDto,
-    passwordSecretValue: zEncryptedSecretValueDto
-});
-
 export const zConnectConnectorDto = z.object({
-    password: z.string().min(1),
-    decryptedFrom: zPasswordSourceDto
+    password: z.string().min(1)
 });
 
 export const zConnectorConnectionResponseDto = z.object({

@@ -25,10 +25,7 @@ import {
   createConnectionStore,
   toConnectionRowKey,
 } from "../provider-connection-store.fixture.js"
-import {
-  type EncryptedSecretValue,
-  ProviderConnectionsService,
-} from "../provider-connections.service.js"
+import { ProviderConnectionsService } from "../provider-connections.service.js"
 import { ConnectorConnectionController } from "./connector-connection.controller.js"
 import { ConnectorConnectionService } from "./connector-connection.service.js"
 
@@ -153,27 +150,11 @@ describe("ConnectorConnectionController", () => {
       .get("/provider-connections/connectors")
       .set("Authorization", `Bearer ${session}`)
 
-  const putConnection = (connectorId: string, body: Record<string, unknown>) =>
+  const connect = (connectorId: string, body: Record<string, unknown>) =>
     request(app.getHttpServer())
       .put(`/provider-connections/connectors/${connectorId}`)
       .set("Authorization", `Bearer ${READER_SESSION}`)
       .send(body)
-
-  /**
-   * Connects as the app does: with the password it decrypted, and the
-   * connector and the secret value it decrypted it from.
-   */
-  const connect = (
-    connector: SettingsConnectorDocType,
-    {
-      password = WEBDAV_PASSWORD,
-      passwordSecretValue = ENCRYPTED_PASSWORD,
-    }: { password?: string; passwordSecretValue?: EncryptedSecretValue } = {},
-  ) =>
-    putConnection(connector.id, {
-      password,
-      decryptedFrom: { connector, passwordSecretValue },
-    })
 
   const disconnect = (connectorId: string) =>
     request(app.getHttpServer())
@@ -282,7 +263,7 @@ describe("ConnectorConnectionController", () => {
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
 
-    const response = await connect(connector)
+    const response = await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({
@@ -322,8 +303,8 @@ describe("ConnectorConnectionController", () => {
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([nas, backupNas])
 
-    await connect(nas)
-    await connect(backupNas)
+    await connect(nas.id, { password: WEBDAV_PASSWORD })
+    await connect(backupNas.id, { password: WEBDAV_PASSWORD })
 
     const { body } = await listConnections()
 
@@ -356,7 +337,7 @@ describe("ConnectorConnectionController", () => {
       setPrivateNetworkAllowedHosts([host])
       setReaderConnectors([connector])
 
-      const response = await connect(connector, { password })
+      const response = await connect(connector.id, { password })
 
       expect(response.status).toBe(400)
       expect(response.body.errors).toEqual([{ code }])
@@ -367,11 +348,12 @@ describe("ConnectorConnectionController", () => {
   it("refuses a server that cannot be reached", async () => {
     const { host } = await startServer({ isWebdav: true })
     const closedHost = "127.0.0.1:9"
-    const connector = toWebdavConnector(closedHost)
     setPrivateNetworkAllowedHosts([host, closedHost])
-    setReaderConnectors([connector])
+    setReaderConnectors([toWebdavConnector(closedHost)])
 
-    const response = await connect(connector)
+    const response = await connect("nas-connector", {
+      password: WEBDAV_PASSWORD,
+    })
 
     expect(response.body.errors).toEqual([
       { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE },
@@ -381,10 +363,11 @@ describe("ConnectorConnectionController", () => {
 
   it("refuses a server on a private network the instance does not allow", async () => {
     const { host, requests } = await startServer({ isWebdav: true })
-    const connector = toWebdavConnector(host)
-    setReaderConnectors([connector])
+    setReaderConnectors([toWebdavConnector(host)])
 
-    const response = await connect(connector)
+    const response = await connect("nas-connector", {
+      password: WEBDAV_PASSWORD,
+    })
 
     expect(response.body.errors).toEqual([
       { code: ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED },
@@ -394,7 +377,9 @@ describe("ConnectorConnectionController", () => {
   })
 
   it("refuses a connector the user's settings do not hold", async () => {
-    const response = await connect(toWebdavConnector("nas.example.com"))
+    const response = await connect("missing-connector", {
+      password: WEBDAV_PASSWORD,
+    })
 
     expect(response.status).toBe(400)
     expect(response.body.errors).toEqual([
@@ -409,7 +394,7 @@ describe("ConnectorConnectionController", () => {
     setReaderConnectors([connector])
     secretsById.delete(connector.passwordAsSecretId)
 
-    const response = await connect(connector)
+    const response = await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     expect(response.body.errors).toEqual([
       { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND },
@@ -418,95 +403,27 @@ describe("ConnectorConnectionController", () => {
     expect(rows.size).toBe(0)
   })
 
-  it.each<{
-    edit: string
-    connectorEdit?: Partial<WebdavConnectorDocType>
-    passwordSecretValue?: EncryptedSecretValue
-  }>([
-    {
-      edit: "address",
-      connectorEdit: { url: "https://new-nas.example.com/dav/" },
-    },
-    { edit: "username", connectorEdit: { username: "new-reader" } },
-    {
-      edit: "password secret",
-      connectorEdit: { passwordAsSecretId: "new-nas-password-secret" },
-    },
-    { edit: "self-signed setting", connectorEdit: { allowSelfSigned: true } },
-    {
-      edit: "password",
-      passwordSecretValue: {
-        iv: "new-password-iv",
-        data: "encrypted-new-password",
-      },
-    },
-  ])(
-    "refuses a connector whose edited $edit has not reached the user's database, without contacting its server",
-    async ({ connectorEdit, passwordSecretValue }) => {
-      const { host, requests } = await startServer({ isWebdav: true })
-      const connector = toWebdavConnector(host)
-      setPrivateNetworkAllowedHosts([host])
-      setReaderConnectors([connector])
-
-      const response = await connect(
-        { ...connector, ...connectorEdit },
-        { passwordSecretValue },
-      )
-
-      expect(response.body.errors).toEqual([
-        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND },
-      ])
-      expect(requests).toEqual([])
-      expect(rows.size).toBe(0)
-    },
-  )
-
-  it("connects a connector whose edited proxy option has not reached the user's database", async () => {
-    const { host, requests } = await startServer({ isWebdav: true })
-    const connector = toWebdavConnector(host)
-    setPrivateNetworkAllowedHosts([host])
-    setReaderConnectors([connector])
-
-    const response = await connect({ ...connector, proxyThroughServer: true })
-
-    expect(response.body.connection).toEqual(
-      expect.objectContaining({ status: "connected" }),
-    )
-    expect(requests.some(isSignedIn)).toBe(true)
-  })
-
   it("refuses a connector type it cannot sign in to", async () => {
-    const connector: SettingsConnectorDocType = {
-      id: "synology-connector",
-      type: "synology-drive",
-      url: "https://nas.example.com",
-      username: WEBDAV_USERNAME,
-      passwordAsSecretId: "synology-password-secret",
-    }
-    setReaderConnectors([connector])
+    setReaderConnectors([
+      {
+        id: "synology-connector",
+        type: "synology-drive",
+        url: "https://nas.example.com",
+        username: WEBDAV_USERNAME,
+        passwordAsSecretId: "synology-password-secret",
+      },
+    ])
 
-    const response = await connect(connector)
+    const response = await connect("synology-connector", {
+      password: WEBDAV_PASSWORD,
+    })
 
     expect(response.status).toBe(400)
     expect(rows.size).toBe(0)
   })
 
-  it.each([
-    {
-      missing: "a password",
-      body: {
-        decryptedFrom: {
-          connector: toWebdavConnector("nas.example.com"),
-          passwordSecretValue: ENCRYPTED_PASSWORD,
-        },
-      },
-    },
-    {
-      missing: "what the password was decrypted from",
-      body: { password: WEBDAV_PASSWORD },
-    },
-  ])("asks for $missing", async ({ body }) => {
-    const response = await putConnection("nas-connector", body)
+  it("asks for a password", async () => {
+    const response = await connect("nas-connector", {})
 
     expect(response.status).toBe(400)
     expect(createNanoInstanceForUser).not.toHaveBeenCalled()
@@ -517,7 +434,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     const editedConnector = { ...connector, url: `http://${host}/other-dav/` }
     setReaderConnectors([editedConnector])
@@ -527,7 +444,7 @@ describe("ConnectorConnectionController", () => {
     ])
     expect(rows.size).toBe(1)
 
-    await connect(editedConnector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     expect((await listConnections()).body.connections).toEqual([
       expect.objectContaining({ status: "connected" }),
@@ -550,7 +467,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     setReaderConnectors([{ ...connector, proxyThroughServer: true }])
 
@@ -576,7 +493,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     secretsById.set(connector.passwordAsSecretId, {
       ...toPasswordSecret(connector.passwordAsSecretId),
@@ -606,7 +523,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     secretsById.delete(connector.passwordAsSecretId)
 
@@ -619,7 +536,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     setReaderConnectors([])
 
@@ -632,7 +549,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     const readerRow = rows.get(readerRowKey())
 
@@ -649,7 +566,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     const response = await disconnect(connector.id)
 
@@ -663,7 +580,7 @@ describe("ConnectorConnectionController", () => {
     const connector = toWebdavConnector(host)
     setPrivateNetworkAllowedHosts([host])
     setReaderConnectors([connector])
-    await connect(connector)
+    await connect(connector.id, { password: WEBDAV_PASSWORD })
 
     expect((await listConnections(OTHER_READER_SESSION)).body).toEqual({
       connections: [],

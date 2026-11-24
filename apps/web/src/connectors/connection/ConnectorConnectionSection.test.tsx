@@ -1,8 +1,4 @@
-import {
-  type ConnectorConnectionDto,
-  ObokuErrorCode,
-  type PasswordSourceDto,
-} from "@oboku/shared"
+import { type ConnectorConnectionDto, ObokuErrorCode } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import {
   cleanup,
@@ -46,20 +42,6 @@ vi.mock("../useExtractConnectorData", function mockExtractConnectorData() {
 
 const CONNECTOR_ID = "webdav-connector"
 const PASSWORD = "dav-password"
-const DECRYPTED_FROM = {
-  connector: {
-    id: CONNECTOR_ID,
-    type: "webdav",
-    url: "https://nas.example.com/dav/",
-    username: "reader",
-    passwordAsSecretId: "dav-password-secret",
-  },
-  passwordSecretValue: { iv: "password-iv", data: "encrypted-password" },
-} satisfies PasswordSourceDto
-const EXTRACTED_CONNECTOR_DATA = {
-  data: { password: PASSWORD },
-  decryptedFrom: DECRYPTED_FROM,
-}
 const CONNECTION: ConnectorConnectionDto = {
   connectorId: CONNECTOR_ID,
   status: "connected",
@@ -138,7 +120,7 @@ const clickConnectThenConsent = async () => {
 describe("ConnectorConnectionSection", () => {
   beforeEach(() => {
     setActiveProfileId("profile")
-    extractConnectorData.mockResolvedValue(EXTRACTED_CONNECTOR_DATA)
+    extractConnectorData.mockResolvedValue({ data: { password: PASSWORD } })
   })
 
   afterEach(() => {
@@ -148,7 +130,7 @@ describe("ConnectorConnectionSection", () => {
     vi.clearAllMocks()
   })
 
-  it("sends the decrypted password, with what it was decrypted from, to oboku's server once the user consents, then shows the connection", async () => {
+  it("sends the decrypted password to oboku's server once the user consents, then shows the connection", async () => {
     const api = renderSection({ connections: [] })
     await screen.findByRole("button", { name: "Connect" })
     api.get.mockResolvedValue({ data: { connections: [CONNECTION] } })
@@ -163,7 +145,7 @@ describe("ConnectorConnectionSection", () => {
       expect.objectContaining({
         url: CONNECTOR_URL,
         path: { connectorId: CONNECTOR_ID },
-        body: { password: PASSWORD, decryptedFrom: DECRYPTED_FROM },
+        body: { password: PASSWORD },
       }),
     )
     expect(
@@ -247,7 +229,7 @@ describe("ConnectorConnectionSection", () => {
 
   it("drops the password when another tab switches profiles while the master password is asked", async () => {
     const { promise: masterPasswordEntered, resolve: enterMasterPassword } =
-      Promise.withResolvers<typeof EXTRACTED_CONNECTOR_DATA>()
+      Promise.withResolvers<{ data: { password: string } }>()
     extractConnectorData.mockReturnValue(masterPasswordEntered)
     const api = renderSection({ connections: [] })
 
@@ -257,7 +239,7 @@ describe("ConnectorConnectionSection", () => {
     })
 
     setActiveProfileId("other-profile")
-    enterMasterPassword(EXTRACTED_CONNECTOR_DATA)
+    enterMasterPassword({ data: { password: PASSWORD } })
 
     await waitFor(() => {
       expect(

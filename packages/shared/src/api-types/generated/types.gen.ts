@@ -672,37 +672,11 @@ export type ConnectorConnectionsResponseDto = {
     connections: Array<ConnectorConnectionDto>;
 };
 
-export type WebdavConnectorDto = {
-    id: string;
-    type: 'webdav';
-    url: string;
-    username: string;
-    passwordAsSecretId: string;
-    allowSelfSigned?: boolean;
-    proxyThroughServer?: boolean;
-};
-
-export type EncryptedSecretValueDto = {
-    iv: string;
-    data: string;
-};
-
-export type PasswordSourceDto = {
-    connector: WebdavConnectorDto;
-    passwordSecretValue: EncryptedSecretValueDto;
-};
-
 export type ConnectConnectorDto = {
     /**
      * The connector's password, which the app decrypts from its secret.
      */
     password: string;
-    /**
-     * What the app decrypted `password` from. The API answers 11006, without
-     * signing in, unless its own copies are the same, `proxyThroughServer`
-     * aside.
-     */
-    decryptedFrom: PasswordSourceDto;
 };
 
 export type ConnectorConnectionResponseDto = {
