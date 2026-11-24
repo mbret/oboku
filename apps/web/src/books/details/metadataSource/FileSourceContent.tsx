@@ -1,8 +1,12 @@
 import type { FileMetadata, LegacyFileMetadata } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
-import { getBookMetadataEntryFields } from "../../metadata/fields"
+import {
+  getBookMetadataEntryFields,
+  getBookMetadataEntryIdentifiers,
+} from "../../metadata/fields"
 import { MetadataFieldRow } from "./MetadataFieldRow"
+import { MetadataIdentifierRows } from "./MetadataIdentifierRows"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import {
   formatBookMetadataDate,
@@ -16,6 +20,7 @@ type Props = {
 
 export const FileSourceContent = ({ entry }: Props) => {
   const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+  const identifiers = entry ? getBookMetadataEntryIdentifiers(entry) : []
 
   return (
     <PageSection title="Fields" dense>
@@ -48,11 +53,7 @@ export const FileSourceContent = ({ entry }: Props) => {
         }
       />
       <MetadataFieldRow label={L.contentType} value={fields?.contentType} />
-      <MetadataFieldRow label={L.isbn} value={fields?.isbn} />
-      <MetadataFieldRow
-        label={L.googleVolumeId}
-        value={fields?.googleVolumeId}
-      />
+      <MetadataIdentifierRows identifiers={identifiers} />
     </PageSection>
   )
 }

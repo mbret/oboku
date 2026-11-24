@@ -36,4 +36,6 @@ The catalog entry is the best match oboku finds for the book in Google Books (wh
 
 On the book's Catalog source screen, the catalog name links to the book's page on that catalog's site. An entry stored before oboku used these three catalogs has no link until you use Refresh metadata on the book.
 
+The File and Catalog source screens show every identifier the source gives, one row each, under the name of its scheme, such as ISBN, DOI or Open Library. A scheme oboku does not know shows under the name the source gives it. A file entry stored before oboku kept every identifier shows only its ISBN and its Google Books id, and a catalog entry from that time shows none, until you use Refresh metadata on the book.
+
 To stop asking a catalog for your books, turn it off in Integrations, under Catalogs. Google Books is listed there only when the server has a Google API key.

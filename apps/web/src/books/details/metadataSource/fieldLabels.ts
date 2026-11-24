@@ -16,8 +16,6 @@ export const BOOK_METADATA_FIELD_LABELS = {
   size: "Size",
   languages: "Languages",
   subjects: "Subjects",
-  isbn: "ISBN",
-  googleVolumeId: "Google Books id",
   publisher: "Publisher",
   rights: "Rights",
   modifiedAt: "Modified at",

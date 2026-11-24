@@ -1,6 +1,7 @@
 import {
   identifierValue,
   mainTitle,
+  type MetadataIdentifier,
   type ResolvedMetadata,
 } from "@prose-reader/archive-reader"
 import type { BookMetadata, BookMetadataFields } from "./index"
@@ -91,5 +92,39 @@ export const getBookMetadataFields = (
       return getResolvedMetadataFields(entry.metadata)
     default:
       return withoutType(entry)
+  }
+}
+
+/**
+ * The identifiers a flat entry states. `isbn` and `googleVolumeId` are the
+ * only ones a flat entry keeps.
+ */
+export const getFlatEntryIdentifiers = ({
+  isbn,
+  googleVolumeId,
+}: Pick<
+  ReadonlyBookMetadataFields,
+  "isbn" | "googleVolumeId"
+>): MetadataIdentifier[] => [
+  ...(isbn ? [{ scheme: "ISBN", value: isbn }] : []),
+  ...(googleVolumeId ? [{ scheme: "GoogleBooks", value: googleVolumeId }] : []),
+]
+
+/**
+ * Every identifier an entry of `book.metadata` states, in the order and the
+ * schemes the source states them, whatever shape the entry is stored in.
+ */
+export const getBookMetadataIdentifiers = (
+  entry: DeepReadonly<BookMetadata>,
+): ReadonlyArray<MetadataIdentifier> => {
+  switch (entry.type) {
+    case "file":
+      return entry.metadata === undefined
+        ? getFlatEntryIdentifiers(entry)
+        : (entry.metadata.identifiers ?? [])
+    case "catalog":
+      return entry.metadata.identifiers ?? []
+    default:
+      return getFlatEntryIdentifiers(entry)
   }
 }

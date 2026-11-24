@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest"
-import { getBookMetadataFields } from "./fields"
+import { getBookMetadataFields, getBookMetadataIdentifiers } from "./fields"
 
 describe("getBookMetadataFields, for a file entry holding archive-reader's metadata", () => {
   const fields = getBookMetadataFields({
@@ -105,5 +105,59 @@ describe("getBookMetadataFields, for flat entries", () => {
     expect(getBookMetadataFields({ type: "user", isbn: "123" })).toEqual({
       isbn: "123",
     })
+  })
+})
+
+describe("getBookMetadataIdentifiers", () => {
+  const identifiers = [
+    { scheme: "ISBN", value: "9780765311788" },
+    { scheme: "DOI", value: "10.1000/182" },
+    { scheme: "AcmeCatalog", value: "42" },
+  ]
+
+  it("reads every identifier of a file entry, in the schemes the file states", () => {
+    expect(
+      getBookMetadataIdentifiers({
+        type: "file",
+        version: 5,
+        metadata: { identifiers },
+      }),
+    ).toEqual(identifiers)
+  })
+
+  it("reads every identifier of a catalog match", () => {
+    expect(
+      getBookMetadataIdentifiers({
+        type: "catalog",
+        version: 1,
+        providerId: "openLibrary",
+        score: 1,
+        accepted: true,
+        signals: [],
+        metadata: { identifiers },
+      }),
+    ).toEqual(identifiers)
+  })
+
+  it("reads the ISBN and the Google Books id of a legacy file entry", () => {
+    expect(
+      getBookMetadataIdentifiers({
+        type: "file",
+        isbn: "9780765311788",
+        googleVolumeId: "zyTCAlFPjgYC",
+      }),
+    ).toEqual([
+      { scheme: "ISBN", value: "9780765311788" },
+      { scheme: "GoogleBooks", value: "zyTCAlFPjgYC" },
+    ])
+  })
+
+  it("reads none from an entry that states none", () => {
+    expect(
+      getBookMetadataIdentifiers({ type: "file", version: 5, metadata: {} }),
+    ).toEqual([])
+    expect(
+      getBookMetadataIdentifiers({ type: "googleBookApi", title: "Mistborn" }),
+    ).toEqual([])
   })
 })
