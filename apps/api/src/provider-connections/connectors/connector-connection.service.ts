@@ -74,6 +74,29 @@ const withoutProxyThroughServer = (connector: SettingsConnectorDocType) => {
   return rest
 }
 
+/**
+ * A connector and the value of its password secret: what the app decrypts
+ * the connector's password from.
+ */
+type PasswordSource = {
+  connector: SettingsConnectorDocType
+  passwordSecretValue: EncryptedSecretValue | null
+}
+
+/**
+ * Whether two copies of a connector and of its password secret's value are
+ * the same. Turning `proxyThroughServer` on or off keeps them the same.
+ */
+const isSamePasswordSource = (
+  source: PasswordSource,
+  otherSource: PasswordSource,
+) =>
+  isDeepStrictEqual(
+    withoutProxyThroughServer(source.connector),
+    withoutProxyThroughServer(otherSource.connector),
+  ) &&
+  isDeepStrictEqual(source.passwordSecretValue, otherSource.passwordSecretValue)
+
 const toConnectorConnection = ({
   connectorId,
   status,
@@ -237,15 +260,10 @@ export class ConnectorConnectionService {
             return null
           }
 
-          const isUnchangedSinceConnected =
-            isDeepStrictEqual(
-              withoutProxyThroughServer(credentials.connector),
-              withoutProxyThroughServer(connector),
-            ) &&
-            isDeepStrictEqual(
-              credentials.passwordSecretValue,
-              passwordSecretValue,
-            )
+          const isUnchangedSinceConnected = isSamePasswordSource(credentials, {
+            connector,
+            passwordSecretValue,
+          })
           const status: ConnectorConnectionStatus = isUnchangedSinceConnected
             ? "connected"
             : "connector-changed"
