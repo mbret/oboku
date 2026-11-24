@@ -1,8 +1,10 @@
-import { useCallback } from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { cancelPluginDownloadFlow } from "./flow/PluginDownloadFlowHost"
 
 export const useCancelBookDownload = () => {
-  return useCallback((bookId: string) => {
-    cancelPluginDownloadFlow(bookId)
-  }, [])
+  const queryClient = useQueryClient()
+
+  return function cancelBookDownload(bookId: string) {
+    cancelPluginDownloadFlow({ bookId, queryClient })
+  }
 }
