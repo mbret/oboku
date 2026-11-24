@@ -1,8 +1,13 @@
-const getItemCountLabel = (itemsCount: number) =>
-  itemsCount === 1 ? "1 item" : `${itemsCount} items`
+const getLocationCountLabel = (locationsCount: number) =>
+  locationsCount === 1 ? "1 location" : `${locationsCount} locations`
 
-export const getLabelWithItemCount = (label: string, itemsCount: number) =>
-  itemsCount > 0 ? `${label} (${getItemCountLabel(itemsCount)})` : label
+export const getLabelWithLocationCount = (
+  label: string,
+  locationsCount: number,
+) =>
+  locationsCount > 0
+    ? `${label} (${getLocationCountLabel(locationsCount)})`
+    : label
 
 const parseHostname = (urlValue: string) => {
   try {

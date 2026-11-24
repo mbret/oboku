@@ -121,7 +121,7 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
           }}
         >
           <PickItemsSection
-            itemsCount={items.length}
+            locationsCount={items.length}
             onAction={() => setIsPickerOpen(true)}
             resolveItemsAccess={
               hasItemResolutionErrors

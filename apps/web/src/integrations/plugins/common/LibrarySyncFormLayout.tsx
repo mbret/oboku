@@ -81,7 +81,7 @@ export function LibrarySyncFormLayout<
               id: tag._id ?? "",
             })) ?? []
           }
-          helperText="Applied to all items during synchronization"
+          helperText="Applied to every book this sync adds"
         />
       </PageSection>
       <Controller

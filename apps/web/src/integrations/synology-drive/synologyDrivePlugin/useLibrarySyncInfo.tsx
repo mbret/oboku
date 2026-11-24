@@ -2,7 +2,7 @@ import type { UseLibrarySyncInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 import {
   getHostname,
-  getLabelWithItemCount,
+  getLabelWithLocationCount,
 } from "../../plugins/common/librarySyncLabel"
 
 export const useLibrarySyncInfo: UseLibrarySyncInfo<"synology-drive"> = ({
@@ -21,11 +21,11 @@ export const useLibrarySyncInfo: UseLibrarySyncInfo<"synology-drive"> = ({
     }
   }
 
-  const itemsCount = librarySync.data_v2?.items?.length ?? 0
+  const locationsCount = librarySync.data_v2?.items?.length ?? 0
 
   if (!connector) {
     return {
-      name: getLabelWithItemCount("Synology Drive", itemsCount),
+      name: getLabelWithLocationCount("Synology Drive", locationsCount),
     }
   }
 
@@ -33,13 +33,13 @@ export const useLibrarySyncInfo: UseLibrarySyncInfo<"synology-drive"> = ({
 
   if (!hostname) {
     return {
-      name: getLabelWithItemCount("Synology Drive", itemsCount),
+      name: getLabelWithLocationCount("Synology Drive", locationsCount),
     }
   }
 
   const baseLabel = `synology://${connector.username}@${hostname}`
 
   return {
-    name: getLabelWithItemCount(baseLabel, itemsCount),
+    name: getLabelWithLocationCount(baseLabel, locationsCount),
   }
 }

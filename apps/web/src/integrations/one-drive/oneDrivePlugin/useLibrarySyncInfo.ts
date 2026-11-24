@@ -1,5 +1,5 @@
 import type { UseLibrarySyncInfo } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/librarySyncLabel"
+import { getLabelWithLocationCount } from "../../plugins/common/librarySyncLabel"
 import { ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
 export const useLibrarySyncInfo: UseLibrarySyncInfo<"one-drive"> = ({
@@ -12,9 +12,9 @@ export const useLibrarySyncInfo: UseLibrarySyncInfo<"one-drive"> = ({
     }
   }
 
-  const itemsCount = librarySync?.data_v2?.items?.length ?? 0
+  const locationsCount = librarySync?.data_v2?.items?.length ?? 0
 
   return {
-    name: getLabelWithItemCount(ONE_DRIVE_PLUGIN_NAME, itemsCount),
+    name: getLabelWithLocationCount(ONE_DRIVE_PLUGIN_NAME, locationsCount),
   }
 }
