@@ -21,7 +21,7 @@ export const BookDanglingLinks = ({
       <ListItemText
         primary={`Non existing link(s)`}
         secondary={`
-        Book "${getMetadataFromBook(doc).title}" has ${danglingBooks.length} link(s) that does not exist anymore. This can mean that a book was linked to a datasource that has been removed. In this case the book cannot be retrieved since the link is not valid. You can safely repair it.
+        Book "${getMetadataFromBook(doc).title}" has ${danglingBooks.length} file reference(s) that no longer exist. This can mean that the book came from a library sync that was removed. Its file then cannot be downloaded. You can safely repair it.
       `}
       />
     </ListItemButton>
