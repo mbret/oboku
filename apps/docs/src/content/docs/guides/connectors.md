@@ -25,6 +25,8 @@ When you connect a connector, oboku decrypts its password once and sends it to o
 
 oboku's server signs in to the connector's server with the password first, and keeps nothing if it cannot. The screen then shows **Connected** and when you connected it.
 
+If you added or edited the connector or its password and the change has not synced to oboku's server yet, the server does not sign in. Try again once your settings have synced.
+
 If you edited the connector or its password since you connected it, the screen says so, and offers **Connect again**. Turning **Use oboku's server as a proxy** on or off does not change the connection.
 
 In the list of connectors on **Integrations > WebDAV**, a connected connector shows **Connected**. If you edited the connector or its password after you connected it, the connector shows **Changed**.
