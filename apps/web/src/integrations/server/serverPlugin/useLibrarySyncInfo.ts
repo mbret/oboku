@@ -1,17 +1,17 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"server"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"server"> = ({
+  librarySync,
   enabled,
 }) => {
   const { data: connector } = useConnector({
-    id: dataSource?.data_v2?.connectorId,
+    id: librarySync?.data_v2?.connectorId,
     enabled,
     type: "server",
   })
 
-  if (!dataSource || !connector) {
+  if (!librarySync || !connector) {
     return { name: undefined }
   }
 

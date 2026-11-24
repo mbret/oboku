@@ -30,7 +30,7 @@ export const getRxModelLabelFromValue = (
     case "tag":
       return "tag"
     case "datasource":
-      return "datasource"
+      return "library sync"
     case "link":
       return "link"
     default:

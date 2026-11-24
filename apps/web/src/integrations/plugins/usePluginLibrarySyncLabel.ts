@@ -8,56 +8,56 @@ import { pluginsByType } from "./configure"
 
 // TypeScript cannot narrow a generic discriminated-union parameter via
 // control flow, so the runtime guard + assertion is the only safe option.
-const syncSourceArgs = <T extends LibrarySyncDocType["type"]>(
-  dataSource: DeepReadonly<LibrarySyncDocType> | null | undefined,
+const librarySyncArgs = <T extends LibrarySyncDocType["type"]>(
+  librarySync: DeepReadonly<LibrarySyncDocType> | null | undefined,
   type: T,
 ) => {
-  const narrowed = (dataSource?.type === type ? dataSource : undefined) as
+  const narrowed = (librarySync?.type === type ? librarySync : undefined) as
     | DeepReadonly<LibrarySyncDocTypeFor<T>>
     | undefined
 
-  return { enabled: !!narrowed, dataSource: narrowed }
+  return { enabled: !!narrowed, librarySync: narrowed }
 }
 
 /**
- * Calls each plugin's `useSyncSourceInfo` by name. Plugin members named `use*` are
+ * Calls each plugin's `useLibrarySyncInfo` by name. Plugin members named `use*` are
  * hooks on purpose (see `SourcePlugin`), and hooks cannot run in a loop, so a
  * new plugin adds its line here.
  */
-export const usePluginDataSourceLabel = (
-  dataSource?: DeepReadonly<LibrarySyncDocType> | null,
+export const usePluginLibrarySyncLabel = (
+  librarySync?: DeepReadonly<LibrarySyncDocType> | null,
 ) => {
-  const drive = pluginsByType.DRIVE.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "DRIVE"),
+  const drive = pluginsByType.DRIVE.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "DRIVE"),
   )
-  const dropbox = pluginsByType.dropbox.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "dropbox"),
+  const dropbox = pluginsByType.dropbox.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "dropbox"),
   )
-  const oneDrive = pluginsByType["one-drive"].useSyncSourceInfo(
-    syncSourceArgs(dataSource, "one-drive"),
+  const oneDrive = pluginsByType["one-drive"].useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "one-drive"),
   )
-  const file = pluginsByType.file.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "file"),
+  const file = pluginsByType.file.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "file"),
   )
-  const synologyDrive = pluginsByType["synology-drive"].useSyncSourceInfo(
-    syncSourceArgs(dataSource, "synology-drive"),
+  const synologyDrive = pluginsByType["synology-drive"].useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "synology-drive"),
   )
-  const uri = pluginsByType.URI.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "URI"),
+  const uri = pluginsByType.URI.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "URI"),
   )
-  const webdav = pluginsByType.webdav.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "webdav"),
+  const webdav = pluginsByType.webdav.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "webdav"),
   )
-  const server = pluginsByType.server.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "server"),
+  const server = pluginsByType.server.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "server"),
   )
-  const opds = pluginsByType.opds.useSyncSourceInfo(
-    syncSourceArgs(dataSource, "opds"),
+  const opds = pluginsByType.opds.useLibrarySyncInfo(
+    librarySyncArgs(librarySync, "opds"),
   )
 
-  const dataSourceType = dataSource?.type
+  const librarySyncType = librarySync?.type
 
-  switch (dataSourceType) {
+  switch (librarySyncType) {
     case "DRIVE":
       return drive?.name
     case "dropbox":
@@ -79,6 +79,6 @@ export const usePluginDataSourceLabel = (
     case undefined:
       return undefined
     default:
-      return assertNever(dataSourceType)
+      return assertNever(librarySyncType)
   }
 }

@@ -2,28 +2,28 @@ import { READER_ACCEPTED_EXTENSIONS, getOneDriveItemKey } from "@oboku/shared"
 import { Stack } from "@mui/material"
 import { memo, useCallback, useState } from "react"
 import { useController, useForm } from "react-hook-form"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../../plugins/common/librarySyncFormHelpers"
 import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
 import type {
   OneDriveLibrarySyncDocType,
   OneDriveLinkData,
 } from "@oboku/shared"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../../plugins/types"
 import { ONE_DRIVE_PLUGIN_NAME } from "../constants"
 import { Picker, type OneDrivePickerSelection } from "../picker"
 import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
 import { OneDriveTreeView } from "./OneDriveTreeView"
-import { useDataSourceItems } from "./useDataSourceItems"
+import { useLibrarySyncItems } from "./useLibrarySyncItems"
 import { useRequestItemsAccess } from "./useRequestItemsAccess"
 
-type OneDriveFormData = DataSourceFormData<{
+type OneDriveFormData = LibrarySyncFormData<{
   items: OneDriveLinkData[]
 }>
 
@@ -49,11 +49,11 @@ function appendUniqueOneDriveItems(
   ]
 }
 
-export const DataSourceForm = memo(function DataSourceForm({
-  dataSource,
+export const LibrarySyncForm = memo(function LibrarySyncForm({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<OneDriveLibrarySyncDocType>) {
+}: LibrarySyncFormInternalProps<OneDriveLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -61,8 +61,8 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit } = useForm<OneDriveFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      items: [...(dataSource?.data_v2?.items ?? [])],
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      items: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const {
@@ -78,7 +78,7 @@ export const DataSourceForm = memo(function DataSourceForm({
     useRequestItemsAccess({
       requestPopup,
     })
-  const { driveItems, hasItemResolutionErrors } = useDataSourceItems({
+  const { driveItems, hasItemResolutionErrors } = useLibrarySyncItems({
     items,
   })
 
@@ -107,10 +107,10 @@ export const DataSourceForm = memo(function DataSourceForm({
 
   return (
     <>
-      <DataSourceFormLayout
+      <LibrarySyncFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit(buildDataSourceSubmitPayload(data, { items: data.items })),
+          onSubmit(buildLibrarySyncSubmitPayload(data, { items: data.items })),
         )}
         submitLabel={submitLabel}
       >
@@ -141,7 +141,7 @@ export const DataSourceForm = memo(function DataSourceForm({
             onItemsChange={setItems}
           />
         </Stack>
-      </DataSourceFormLayout>
+      </LibrarySyncFormLayout>
       {isPickerOpen && (
         <Picker
           fileFilters={READER_ACCEPTED_EXTENSIONS}

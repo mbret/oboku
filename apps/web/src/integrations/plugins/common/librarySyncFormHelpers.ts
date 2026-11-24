@@ -1,10 +1,10 @@
 import type { MetadataFileDownloadOverride } from "@oboku/shared"
-import type { DataSourceSubmitPayload } from "../types"
+import type { LibrarySyncSubmitPayload } from "../types"
 
 /**
- * Minimal subset of a data source document needed to seed a plugin form. All
+ * Minimal subset of a library sync document needed to seed a plugin form. All
  * fields are optional so the same helper works for both create (no
- * `dataSource`) and edit flows.
+ * `librarySync`) and edit flows.
  */
 type FormDefaultsSource = {
   readonly name?: string | null
@@ -13,27 +13,27 @@ type FormDefaultsSource = {
 }
 
 /**
- * Shared base of `defaultValues` for every plugin's data source form (name,
+ * Shared base of `defaultValues` for every plugin's library sync form (name,
  * tags, metadata-policy override). Plugins spread the result alongside their
  * own source-specific fields, e.g.
  *
  * ```ts
  * defaultValues: {
- *   ...getDataSourceFormBaseDefaults(dataSource),
- *   folderId: dataSource?.data_v2?.folderId ?? "",
+ *   ...getLibrarySyncFormBaseDefaults(librarySync),
+ *   folderId: librarySync?.data_v2?.folderId ?? "",
  * }
  * ```
  */
-export const getDataSourceFormBaseDefaults = (
-  dataSource?: FormDefaultsSource,
+export const getLibrarySyncFormBaseDefaults = (
+  librarySync?: FormDefaultsSource,
 ): {
   name: string
   tags: string[]
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 } => ({
-  name: dataSource?.name ?? "",
-  tags: [...(dataSource?.tags ?? [])],
-  metadataFileDownloadEnabled: dataSource?.metadataFileDownloadEnabled ?? null,
+  name: librarySync?.name ?? "",
+  tags: [...(librarySync?.tags ?? [])],
+  metadataFileDownloadEnabled: librarySync?.metadataFileDownloadEnabled ?? null,
 })
 
 /**
@@ -41,10 +41,10 @@ export const getDataSourceFormBaseDefaults = (
  * specific `data_v2`. Lets each plugin focus on its own `data_v2` shape and
  * keeps the shared base fields in one place.
  */
-export const buildDataSourceSubmitPayload = (
-  data: ReturnType<typeof getDataSourceFormBaseDefaults>,
+export const buildLibrarySyncSubmitPayload = (
+  data: ReturnType<typeof getLibrarySyncFormBaseDefaults>,
   data_v2: Record<string, unknown>,
-): DataSourceSubmitPayload => ({
+): LibrarySyncSubmitPayload => ({
   name: data.name,
   tags: data.tags,
   metadataFileDownloadEnabled: data.metadataFileDownloadEnabled,

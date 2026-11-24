@@ -10,26 +10,26 @@ import {
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { useConnectors } from "../../../connectors/useConnectors"
-import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../plugins/common/librarySyncFormHelpers"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../plugins/types"
 
-type OpdsFormData = DataSourceFormData<{
+type OpdsFormData = LibrarySyncFormData<{
   connectorId: string
   feedUrl: string
 }>
 
-export const DataSourceForm = memo(function DataSourceForm({
-  dataSource,
+export const LibrarySyncForm = memo(function LibrarySyncForm({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<OpdsLibrarySyncDocType>) {
+}: LibrarySyncFormInternalProps<OpdsLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -38,9 +38,9 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit } = useForm<OpdsFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      connectorId: dataSource?.data_v2?.connectorId ?? "",
-      feedUrl: dataSource?.data_v2?.feedUrl ?? "",
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      connectorId: librarySync?.data_v2?.connectorId ?? "",
+      feedUrl: librarySync?.data_v2?.feedUrl ?? "",
     },
   })
 
@@ -65,11 +65,11 @@ export const DataSourceForm = memo(function DataSourceForm({
   }
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
-      onSubmit={handleSubmit(function submitDataSource(data) {
+      onSubmit={handleSubmit(function submitLibrarySync(data) {
         onSubmit(
-          buildDataSourceSubmitPayload(data, {
+          buildLibrarySyncSubmitPayload(data, {
             connectorId: data.connectorId,
             feedUrl: data.feedUrl.trim(),
           }),
@@ -99,6 +99,6 @@ export const DataSourceForm = memo(function DataSourceForm({
         fullWidth
         helperText="Pick a feed rather than the root of the catalog, like its list of series. Each of its sections becomes a collection."
       />
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 })

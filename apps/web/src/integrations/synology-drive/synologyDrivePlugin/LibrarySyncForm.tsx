@@ -22,26 +22,26 @@ import {
   type SynologyTreeNode,
 } from "./browsing/tree"
 import { useSelectionTreeData } from "./browsing/useSelectionTreeData"
-import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../plugins/common/librarySyncFormHelpers"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../plugins/types"
 
-type SynologyDriveFormData = DataSourceFormData<{
+type SynologyDriveFormData = LibrarySyncFormData<{
   connectorId: string
   items: string[]
 }>
 
-export const DataSourceForm = memo(function DataSourceForm({
-  dataSource,
+export const LibrarySyncForm = memo(function LibrarySyncForm({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<SynologyDriveLibrarySyncDocType>) {
+}: LibrarySyncFormInternalProps<SynologyDriveLibrarySyncDocType>) {
   // React Compiler cannot lower this function yet, so it bails out here.
   // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
   "use no memo"
@@ -49,9 +49,9 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit } = useForm<SynologyDriveFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      connectorId: dataSource?.data_v2?.connectorId ?? "",
-      items: [...(dataSource?.data_v2?.items ?? [])],
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      connectorId: librarySync?.data_v2?.connectorId ?? "",
+      items: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const requestSynologyDriveSession = useRequestSynologyDriveSession()
@@ -156,11 +156,11 @@ export const DataSourceForm = memo(function DataSourceForm({
   }, [])
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
         onSubmit(
-          buildDataSourceSubmitPayload(data, {
+          buildLibrarySyncSubmitPayload(data, {
             connectorId: data.connectorId,
             items: data.items,
           }),
@@ -179,7 +179,7 @@ export const DataSourceForm = memo(function DataSourceForm({
         }
         error={connectorFieldState.invalid}
       />
-      <Typography variant="subtitle2">Items to synchronize</Typography>
+      <Typography variant="subtitle2">Locations to sync</Typography>
       <Button
         disabled={!connectorId}
         loading={isConnecting}
@@ -236,6 +236,6 @@ export const DataSourceForm = memo(function DataSourceForm({
           {errorToHelperText(connectorFieldState.error)}
         </Typography>
       )}
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 })

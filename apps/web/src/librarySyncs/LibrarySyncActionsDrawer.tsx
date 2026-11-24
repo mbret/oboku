@@ -12,34 +12,34 @@ import {
   DeleteForeverRounded,
   InfoOutlineRounded,
 } from "@mui/icons-material"
-import { useDataSource } from "./useDataSource"
+import { useLibrarySync } from "./useLibrarySync"
 import { useSignalValue } from "reactjrx"
 import {
   libraryStateSignal,
   selectIsLibraryUnlocked,
 } from "../library/books/states"
-import { useRemoveDataSource } from "./useRemoveDataSource"
-import { useDataSourceIncrementalModify } from "./useDataSourceIncrementalModify"
-import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
+import { useRemoveLibrarySync } from "./useRemoveLibrarySync"
+import { useLibrarySyncIncrementalModify } from "./useLibrarySyncIncrementalModify"
+import { useSynchronizeLibrarySync } from "./useSynchronizeLibrarySync"
 import { generatePath, Link } from "react-router"
 import { ROUTES } from "../navigation/routes"
 import { Checkbox } from "../common/Checkbox"
 
-export const DataSourceActionsDrawer = memo(function DataSourceActionsDrawer({
+export const LibrarySyncActionsDrawer = memo(function LibrarySyncActionsDrawer({
   openWith,
   onClose,
 }: {
   openWith?: string
   onClose: () => void
 }) {
-  const { mutate: syncDataSource } = useSynchronizeDataSource()
-  const { mutate: removeDataSource } = useRemoveDataSource()
-  const { data: dataSource } = useDataSource(openWith)
+  const { mutate: syncLibrarySync } = useSynchronizeLibrarySync()
+  const { mutate: removeLibrarySync } = useRemoveLibrarySync()
+  const { data: librarySync } = useLibrarySync(openWith)
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
   )
-  const { mutate: modifyDataSource } = useDataSourceIncrementalModify()
+  const { mutate: modifyLibrarySync } = useLibrarySyncIncrementalModify()
 
   return (
     <Drawer anchor="bottom" open={!!openWith} onClose={onClose}>
@@ -47,7 +47,7 @@ export const DataSourceActionsDrawer = memo(function DataSourceActionsDrawer({
         <List>
           <ListItemButton
             component={Link}
-            to={generatePath(ROUTES.DATASOURCE_DETAILS, { id: openWith })}
+            to={generatePath(ROUTES.LIBRARY_SYNC_DETAILS, { id: openWith })}
             onClick={() => {
               onClose()
             }}
@@ -59,25 +59,25 @@ export const DataSourceActionsDrawer = memo(function DataSourceActionsDrawer({
           </ListItemButton>
           <ListItemButton
             onClick={() => {
-              syncDataSource(openWith)
+              syncLibrarySync(openWith)
               onClose()
             }}
           >
             <ListItemIcon>
               <SyncRounded />
             </ListItemIcon>
-            <ListItemText primary="Synchronize" />
+            <ListItemText primary="Sync now" />
           </ListItemButton>
           <ListItemButton
             onClick={() => {
-              const datasourceWillBeHidden =
-                !dataSource?.isProtected && !isLibraryUnlocked
+              const librarySyncWillBeHidden =
+                !librarySync?.isProtected && !isLibraryUnlocked
 
-              if (datasourceWillBeHidden) {
+              if (librarySyncWillBeHidden) {
                 onClose()
               }
 
-              modifyDataSource({
+              modifyLibrarySync({
                 id: openWith,
                 mutationFunction: (old) => ({
                   ...old,
@@ -87,7 +87,7 @@ export const DataSourceActionsDrawer = memo(function DataSourceActionsDrawer({
             }}
           >
             <ListItemIcon>
-              <Checkbox selected={!!dataSource?.isProtected} />
+              <Checkbox selected={!!librarySync?.isProtected} />
             </ListItemIcon>
             <ListItemText
               primary="Mark as protected"
@@ -98,13 +98,13 @@ export const DataSourceActionsDrawer = memo(function DataSourceActionsDrawer({
           <ListItemButton
             onClick={() => {
               onClose()
-              removeDataSource({ id: openWith })
+              removeLibrarySync({ id: openWith })
             }}
           >
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>
-            <ListItemText primary="Remove the data source" />
+            <ListItemText primary="Remove the library sync" />
           </ListItemButton>
         </List>
       )}

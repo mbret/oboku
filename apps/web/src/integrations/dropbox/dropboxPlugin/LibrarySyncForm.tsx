@@ -1,26 +1,26 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { useController, useForm } from "react-hook-form"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
-import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../plugins/common/librarySyncFormHelpers"
 import type { DropboxLibrarySyncDocType } from "@oboku/shared"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../plugins/types"
 
-type DropboxFormData = DataSourceFormData<{
+type DropboxFormData = LibrarySyncFormData<{
   folderId: string
 }>
 
-export const DataSourceForm = ({
-  dataSource,
+export const LibrarySyncForm = ({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<DropboxLibrarySyncDocType>) => {
+}: LibrarySyncFormInternalProps<DropboxLibrarySyncDocType>) => {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -28,8 +28,8 @@ export const DataSourceForm = ({
   const { control, handleSubmit } = useForm<DropboxFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      folderId: dataSource?.data_v2?.folderId ?? "",
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      folderId: librarySync?.data_v2?.folderId ?? "",
     },
   })
   const {
@@ -48,11 +48,11 @@ export const DataSourceForm = ({
   })
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
         onSubmit(
-          buildDataSourceSubmitPayload(data, { folderId: data.folderId }),
+          buildLibrarySyncSubmitPayload(data, { folderId: data.folderId }),
         ),
       )}
       submitLabel={submitLabel}
@@ -71,6 +71,6 @@ export const DataSourceForm = ({
         </Button>
         <Typography noWrap>Selected: {folderId || "None"}</Typography>
       </Stack>
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 }

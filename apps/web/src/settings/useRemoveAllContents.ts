@@ -36,7 +36,7 @@ export const useRemoveAllContents = () => {
         mergeMap(([database, bookCount, collectionCount, tagCount]) => {
           const confirmed$ = fromCreateDialog({
             title: "Account reset",
-            message: `This action will remove all of your content (except data sources). Here is a breakdown of everything that will be removed:\n 
+            message: `This action will remove all of your content (except library syncs). Here is a breakdown of everything that will be removed:\n 
             ${bookCount} books, ${collectionCount} collections, ${tagCount} tags. \n\nThis operation can take a long time and you NEED to be connected to internet`,
             dismissible: true,
             cancellable: true,

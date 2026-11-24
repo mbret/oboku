@@ -5,20 +5,20 @@ import { requestMicrosoftAccessToken } from "../auth/auth"
 import { ONE_DRIVE_GRAPH_SCOPES } from "../constants"
 import { getOneDriveItemSummary, type OneDriveDriveItemSummary } from "../graph"
 
-export const oneDriveDatasourceItemQueryKey = [
+export const oneDriveLibrarySyncItemQueryKey = [
   "one-drive",
-  "datasource-item",
+  "library-sync-item",
 ] as const
 
-export const getOneDriveDatasourceItemQueryKey = ({
+export const getOneDriveLibrarySyncItemQueryKey = ({
   driveId,
   fileId,
 }: {
   driveId: string
   fileId: string
-}) => [...oneDriveDatasourceItemQueryKey, driveId, fileId] as const
+}) => [...oneDriveLibrarySyncItemQueryKey, driveId, fileId] as const
 
-export type ResolvedOneDriveDataSourceItem = {
+export type ResolvedOneDriveLibrarySyncItem = {
   treeItemId: string
   metadata: OneDriveDriveItemSummary
   parentTreeItemId?: string
@@ -39,9 +39,9 @@ function getCanonicalTreeItemId({
   })
 }
 
-export async function resolveOneDriveDataSourceItem(
+export async function resolveOneDriveLibrarySyncItem(
   item: OneDriveLinkData,
-): Promise<ResolvedOneDriveDataSourceItem> {
+): Promise<ResolvedOneDriveLibrarySyncItem> {
   const authResult = await requestMicrosoftAccessToken({
     interaction: "silent-only",
     scopes: ONE_DRIVE_GRAPH_SCOPES,
@@ -74,20 +74,20 @@ export async function resolveOneDriveDataSourceItem(
   }
 }
 
-export const useCreateDataSourceItemQuery = () => {
+export const useCreateLibrarySyncItemQuery = () => {
   return useCallback(
     (
       item: OneDriveLinkData,
     ): UseQueryOptions<
-      ResolvedOneDriveDataSourceItem,
+      ResolvedOneDriveLibrarySyncItem,
       unknown,
-      ResolvedOneDriveDataSourceItem
+      ResolvedOneDriveLibrarySyncItem
     > => ({
-      queryKey: getOneDriveDatasourceItemQueryKey({
+      queryKey: getOneDriveLibrarySyncItemQueryKey({
         driveId: item.driveId,
         fileId: item.fileId,
       }),
-      queryFn: () => resolveOneDriveDataSourceItem(item),
+      queryFn: () => resolveOneDriveLibrarySyncItem(item),
       retry: false,
     }),
     [],

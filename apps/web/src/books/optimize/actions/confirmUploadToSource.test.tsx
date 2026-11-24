@@ -2,7 +2,7 @@ import { act, cleanup, fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it } from "vitest"
 import { DialogProvider } from "../../../common/dialogs/DialogProvider"
 import { dialogSignal } from "../../../common/dialogs/state"
-import { confirmUploadToDataSource } from "./confirmUploadToDataSource"
+import { confirmUploadToSource } from "./confirmUploadToSource"
 
 function renderDialogProvider() {
   render(
@@ -16,7 +16,7 @@ function openConfirmation(prunesVersionHistory: boolean): Promise<boolean> {
   let confirmation: Promise<boolean> | undefined
 
   act(function showUploadConfirmation() {
-    confirmation = confirmUploadToDataSource({
+    confirmation = confirmUploadToSource({
       providerName: "Google Drive",
       prunesVersionHistory,
     })
@@ -29,7 +29,7 @@ function openConfirmation(prunesVersionHistory: boolean): Promise<boolean> {
   return confirmation
 }
 
-describe("confirmUploadToDataSource", function testConfirmUploadToDataSource() {
+describe("confirmUploadToSource", function testConfirmUploadToSource() {
   beforeEach(function resetDialogs() {
     dialogSignal.update([])
   })
@@ -47,7 +47,7 @@ describe("confirmUploadToDataSource", function testConfirmUploadToDataSource() {
     expect(await screen.findByRole("dialog")).not.toBeNull()
     expect(
       screen.getByText(
-        "This will overwrite the file on the remote data source with the current local file.",
+        "This will overwrite the file at its source with the current local file.",
       ),
     ).not.toBeNull()
 

@@ -12,31 +12,31 @@ import {
   Stack,
 } from "@mui/material"
 import { Alert } from "@mui/material"
-import { DataSourcesAddDrawer } from "../../dataSources/DataSourcesAddDrawer"
-import { DataSourceActionsDrawer } from "../../dataSources/DataSourceActionsDrawer"
+import { LibrarySyncsAddDrawer } from "../../librarySyncs/LibrarySyncsAddDrawer"
+import { LibrarySyncActionsDrawer } from "../../librarySyncs/LibrarySyncActionsDrawer"
 import {
   Error as ErrorIcon,
   LockRounded,
   MoreVertOutlined,
 } from "@mui/icons-material"
 import { type LibrarySyncDocType, links } from "@oboku/shared"
-import { plugins as dataSourcePlugins } from "../../integrations/plugins/configure"
+import { plugins } from "../../integrations/plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
-import { useDataSources } from "../../dataSources/useDataSources"
+import { useLibrarySyncs } from "../../librarySyncs/useLibrarySyncs"
 import { generatePath, useNavigate, Link as RouterLink } from "react-router"
 import { ROUTES } from "../../navigation/routes"
 import type { DeepReadonly } from "rxdb"
-import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
+import { useLibrarySyncLabel } from "../../librarySyncs/useLibrarySyncLabel"
 import { PageContainer } from "../../common/PageContainer"
 import { PageSection } from "../../common/PageSection"
 import { Page } from "../../common/Page"
 
-export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
+export const LibrarySyncsListScreen = memo(function LibrarySyncsListScreen() {
   const [isDrawerOpened, setIsDrawerOpened] = useState(false)
   const [isActionsDrawerOpenWith, setIsActionsDrawerOpenWith] = useState<
     string | undefined
   >(undefined)
-  const { data: syncSources } = useDataSources()
+  const { data: librarySyncs } = useLibrarySyncs()
   const theme = useTheme()
   const navigate = useNavigate()
 
@@ -51,8 +51,8 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
             }}
           >
             <Alert severity="info">
-              Automatically synchronize books from an external source (eg:
-              Google Drive shared folder).{" "}
+              Keep your library up to date with the books of a source, such as a
+              shared Google Drive folder.{" "}
               <Link href={links.documentation} target="_blank">
                 Learn more
               </Link>
@@ -62,36 +62,36 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
               color="primary"
               onClick={() => setIsDrawerOpened(true)}
             >
-              Add a new source
+              Add a sync
             </Button>
           </Stack>
         </PageContainer>
         <PageContainer disableGutters>
           <PageSection>
-            {syncSources?.map((syncSource) => {
-              const dataSource = dataSourcePlugins.find(
-                (dataSource) => dataSource.type === syncSource.type,
+            {librarySyncs?.map((librarySync) => {
+              const plugin = plugins.find(
+                (plugin) => plugin.type === librarySync.type,
               )
 
               return (
                 <ListItemButton
-                  key={syncSource._id}
+                  key={librarySync._id}
                   component={RouterLink}
-                  to={generatePath(ROUTES.DATASOURCE_DETAILS, {
-                    id: syncSource._id,
+                  to={generatePath(ROUTES.LIBRARY_SYNC_DETAILS, {
+                    id: librarySync._id,
                   })}
                 >
-                  {dataSource && (
+                  {plugin && (
                     <ListItemIcon>
-                      <dataSource.Icon />
+                      <plugin.Icon />
                     </ListItemIcon>
                   )}
                   <ListItemText
-                    primary={<SyncSourceLabel syncSource={syncSource} />}
+                    primary={<LibrarySyncLabel librarySync={librarySync} />}
                     secondary={
-                      syncSource?.syncStatus === "fetching" ? (
+                      librarySync?.syncStatus === "fetching" ? (
                         "Syncing..."
-                      ) : syncSource?.lastSyncErrorCode ? (
+                      ) : librarySync?.lastSyncErrorCode ? (
                         <Box
                           component="span"
                           style={{ flexDirection: "row", display: "flex" }}
@@ -101,12 +101,12 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
                             style={{ marginRight: theme.spacing(1) }}
                           />
                           <Typography variant="body2" component="span">
-                            {`Sync did not succeed. ${errorToMessage(syncSource.lastSyncErrorCode)}`}
+                            {`Sync did not succeed. ${errorToMessage(librarySync.lastSyncErrorCode)}`}
                           </Typography>
                         </Box>
-                      ) : syncSource?.lastSyncedAt ? (
+                      ) : librarySync?.lastSyncedAt ? (
                         `Last synced at ${new Date(
-                          syncSource?.lastSyncedAt,
+                          librarySync?.lastSyncedAt,
                         ).toDateString()}`
                       ) : (
                         "Not synced yet"
@@ -120,7 +120,7 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
                       alignItems: "center",
                     }}
                   >
-                    {syncSource?.isProtected && (
+                    {librarySync?.isProtected && (
                       <LockRounded color="disabled" />
                     )}
                     <IconButton
@@ -130,7 +130,7 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
                       onClick={(e) => {
                         e.preventDefault()
                         e.stopPropagation()
-                        setIsActionsDrawerOpenWith(syncSource._id)
+                        setIsActionsDrawerOpenWith(librarySync._id)
                       }}
                     >
                       <MoreVertOutlined />
@@ -142,24 +142,22 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
           </PageSection>
         </PageContainer>
       </Page>
-      <DataSourcesAddDrawer
+      <LibrarySyncsAddDrawer
         open={isDrawerOpened}
         onClose={(type) => {
           setIsDrawerOpened(false)
-          const dataSource = dataSourcePlugins.find(
-            (dataSource) => type === dataSource.type,
-          )
+          const plugin = plugins.find((plugin) => type === plugin.type)
 
-          if (dataSource) {
+          if (plugin) {
             navigate(
-              generatePath(ROUTES.SYNC_NEW_DATASOURCES, {
-                type: dataSource.type,
+              generatePath(ROUTES.SYNC_NEW_LIBRARY_SYNC, {
+                type: plugin.type,
               }),
             )
           }
         }}
       />
-      <DataSourceActionsDrawer
+      <LibrarySyncActionsDrawer
         openWith={isActionsDrawerOpenWith}
         onClose={() => setIsActionsDrawerOpenWith(undefined)}
       />
@@ -167,12 +165,12 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
   )
 })
 
-const SyncSourceLabel = ({
-  syncSource,
+const LibrarySyncLabel = ({
+  librarySync,
 }: {
-  syncSource: DeepReadonly<LibrarySyncDocType>
+  librarySync: DeepReadonly<LibrarySyncDocType>
 }) => {
-  const label = useDataSourceLabel(syncSource)
+  const label = useLibrarySyncLabel(librarySync)
 
   return <Typography noWrap>{label}</Typography>
 }

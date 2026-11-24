@@ -15,7 +15,7 @@ export const useSyncReports = () => {
 
   return useQuery(
     useQueryOptionsWithAuthentication({
-      queryKey: ["api/datasourceReport"],
+      queryKey: ["api/librarySyncReport"],
       queryFn: async function fetchSyncReports() {
         const { data } = await librarySyncsListSyncReports({
           client: httpClientApi.sdkClient,

@@ -8,7 +8,7 @@ import {
 } from "../../../../common/FileTreeView"
 import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { OneDriveDriveItemSummary } from "../graph"
-import type { ResolvedOneDriveDataSourceItem } from "./useDataSourceItem"
+import type { ResolvedOneDriveLibrarySyncItem } from "./useLibrarySyncItem"
 
 function isFolder(item: OneDriveDriveItemSummary | undefined) {
   return !!item?.folder || !!item?.package
@@ -19,7 +19,7 @@ function getOneDriveTreeStateItemId({
   driveItem,
 }: {
   item: OneDriveLinkData
-  driveItem: ResolvedOneDriveDataSourceItem | undefined
+  driveItem: ResolvedOneDriveLibrarySyncItem | undefined
 }) {
   return driveItem?.treeItemId ?? getOneDriveItemKey(item)
 }
@@ -29,7 +29,7 @@ function buildOneDriveTreeState({
   driveItems,
 }: {
   items: readonly OneDriveLinkData[]
-  driveItems: ReadonlyArray<ResolvedOneDriveDataSourceItem | undefined>
+  driveItems: ReadonlyArray<ResolvedOneDriveLibrarySyncItem | undefined>
 }) {
   const treeItemIds = items.map(function mapItemToTreeItemId(item, index) {
     return getOneDriveTreeStateItemId({
@@ -99,7 +99,7 @@ export const OneDriveTreeView = memo(function OneDriveTreeView({
   onItemsChange,
 }: {
   items: readonly OneDriveLinkData[]
-  driveItems: ReadonlyArray<ResolvedOneDriveDataSourceItem | undefined>
+  driveItems: ReadonlyArray<ResolvedOneDriveLibrarySyncItem | undefined>
   onItemsChange: (items: OneDriveLinkData[]) => void
 }) {
   const [selectedTreeItemIds, setSelectedTreeItemIds] = useState<string[]>([])

@@ -41,8 +41,7 @@ function UploadMessage({
   return (
     <Stack spacing={2}>
       <Typography variant="body2" color="text.secondary">
-        This will overwrite the file on the remote data source with the current
-        local file.
+        This will overwrite the file at its source with the current local file.
       </Typography>
       {prunesVersionHistory && (
         <VersionHistoryOption providerName={providerName} />
@@ -51,7 +50,7 @@ function UploadMessage({
   )
 }
 
-export async function confirmUploadToDataSource({
+export async function confirmUploadToSource({
   providerName,
   prunesVersionHistory,
 }: {

@@ -1,7 +1,7 @@
 import { isBookProtected } from "@oboku/shared"
 import { useProtectedTagIds } from "../tags/helpers"
 import { createLinkQueryOptions, useLink } from "../links/states"
-import { isRemovableFromDataSource } from "../links/isRemovableFromDataSource"
+import { isRemovableFromSource } from "../links/isRemovableFromSource"
 import { map, type Observable, switchMap } from "rxjs"
 import { plugin as localPlugin } from "../integrations/plugins/local"
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
@@ -147,9 +147,7 @@ export const useIsBookLocal = ({ id }: { id?: string }) => {
 const combineBooksRemovableFromSource = (
   results: ReturnType<typeof useLink>[],
 ) => ({
-  data: results.some((result) =>
-    isRemovableFromDataSource({ link: result.data }),
-  ),
+  data: results.some((result) => isRemovableFromSource({ link: result.data })),
 })
 
 export const useHasBooksRemovableFromSource = ({

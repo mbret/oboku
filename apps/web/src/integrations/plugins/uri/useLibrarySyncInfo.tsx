@@ -1,17 +1,17 @@
-import type { UseSyncSourceInfo } from "../types"
+import type { UseLibrarySyncInfo } from "../types"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"URI"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"URI"> = ({
+  librarySync,
   enabled,
 }) => {
-  if (!dataSource || !enabled) {
+  if (!librarySync || !enabled) {
     return {
       name: undefined,
     }
   }
 
   return {
-    name: dataSource.data_v2?.allowSelfSigned
+    name: librarySync.data_v2?.allowSelfSigned
       ? "URL (self-signed allowed)"
       : "URL",
   }

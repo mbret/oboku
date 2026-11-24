@@ -51,9 +51,9 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED:
       return "We could not connect to the source. If the problem persists, try to reload the app."
     case ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED:
-      return "Your data source seems to have exceeded its allowed access limit."
+      return "Your source seems to have exceeded its allowed access limit."
     case ObokuErrorCode.ERROR_DATASOURCE_NETWORK_UNREACHABLE:
-      return "Our server seems unreachable, make sure you are online to start the synchronization."
+      return "Our server seems unreachable, make sure you are online to start the sync."
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book from a cloud source."
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:

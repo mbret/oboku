@@ -1,28 +1,28 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Navigate, type PathParam, useParams } from "react-router"
-import { plugins } from "../../dataSources"
+import { plugins } from "../../librarySyncs"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
-import { useCreateDataSource } from "../../dataSources/useCreateDataSource"
+import { useCreateLibrarySync } from "../../librarySyncs/useCreateLibrarySync"
 import { notify } from "../../notifications/toasts"
-import type { DataSourceSubmitPayload } from "../../integrations/plugins/types"
+import type { LibrarySyncSubmitPayload } from "../../integrations/plugins/types"
 import { Page } from "../../common/Page"
 import { PageContainer } from "../../common/PageContainer"
 
-export const NewDataSourceScreen = memo(function NewDataSourceScreen() {
-  const { type } = useParams<PathParam<typeof ROUTES.SYNC_NEW_DATASOURCES>>()
+export const NewLibrarySyncScreen = memo(function NewLibrarySyncScreen() {
+  const { type } = useParams<PathParam<typeof ROUTES.SYNC_NEW_LIBRARY_SYNC>>()
   const { goBack } = useSafeGoBack()
   const plugin = plugins.find(
     (p) => p.type.toLowerCase() === type?.toLowerCase(),
   )
-  const PluginForm = plugin?.DataSourceForm
-  const { mutate: createDataSource } = useCreateDataSource()
+  const PluginForm = plugin?.LibrarySyncForm
+  const { mutate: createLibrarySync } = useCreateLibrarySync()
 
-  const handleSubmit = (payload: DataSourceSubmitPayload) => {
+  const handleSubmit = (payload: LibrarySyncSubmitPayload) => {
     if (!plugin?.type) return
 
-    createDataSource(
+    createLibrarySync(
       {
         type: plugin.type,
         data_v2: payload.data_v2,
@@ -33,19 +33,19 @@ export const NewDataSourceScreen = memo(function NewDataSourceScreen() {
       {
         onSuccess: () => {
           notify("actionSuccess")
-          goBack(ROUTES.SYNC_DATASOURCES)
+          goBack(ROUTES.SYNC_LIBRARY_SYNCS)
         },
       },
     )
   }
 
   if (!plugin) {
-    return <Navigate to={ROUTES.SYNC_DATASOURCES} replace />
+    return <Navigate to={ROUTES.SYNC_LIBRARY_SYNCS} replace />
   }
 
   return (
     <Page>
-      <TopBarNavigation title={`New ${plugin.name} data source`} />
+      <TopBarNavigation title={`New ${plugin.name} library sync`} />
       <PageContainer disableGutters>
         {PluginForm && (
           <PluginForm onSubmit={handleSubmit} submitLabel="Confirm" />

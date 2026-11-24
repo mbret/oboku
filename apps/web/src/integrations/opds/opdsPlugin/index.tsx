@@ -2,11 +2,11 @@ import { RssFeedRounded } from "@mui/icons-material"
 import { PLUGIN_OPDS_TYPE } from "@oboku/shared"
 import type { SourcePlugin } from "../../plugins/types"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 import { DownloadBook } from "./DownloadBook"
 import { useLinkInfo } from "./useLinkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { useSynchronize } from "./useSynchronize"
 
 export const plugin: SourcePlugin<"opds"> = {
@@ -15,10 +15,10 @@ export const plugin: SourcePlugin<"opds"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: RssFeedRounded,
-  DataSourceForm,
+  LibrarySyncForm,
   DownloadBookComponent: DownloadBook,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,

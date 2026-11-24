@@ -10,7 +10,7 @@ import {
   selectIsLibraryUnlocked,
 } from "../library/books/states"
 
-export const useDataSources = () => {
+export const useLibrarySyncs = () => {
   const isLibraryUnlocked = useSignalValue(
     libraryStateSignal,
     selectIsLibraryUnlocked,
@@ -18,7 +18,7 @@ export const useDataSources = () => {
 
   return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "dataSources", { isLibraryUnlocked }],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "librarySyncs", { isLibraryUnlocked }],
     queryFn: () =>
       latestDatabase$.pipe(
         filter(isDefined),

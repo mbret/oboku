@@ -1,18 +1,18 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
+import { getLabelWithItemCount } from "../../plugins/common/librarySyncLabel"
 import { ONE_DRIVE_PLUGIN_NAME } from "./constants"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"one-drive"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"one-drive"> = ({
+  librarySync,
   enabled,
 }) => {
-  if (!dataSource || !enabled) {
+  if (!librarySync || !enabled) {
     return {
       name: undefined,
     }
   }
 
-  const itemsCount = dataSource?.data_v2?.items?.length ?? 0
+  const itemsCount = librarySync?.data_v2?.items?.length ?? 0
 
   return {
     name: getLabelWithItemCount(ONE_DRIVE_PLUGIN_NAME, itemsCount),

@@ -1,13 +1,13 @@
 import { useQueries } from "@tanstack/react-query"
 import type { OneDriveLinkData } from "@oboku/shared"
-import { useCreateDataSourceItemQuery } from "./useDataSourceItem"
+import { useCreateLibrarySyncItemQuery } from "./useLibrarySyncItem"
 
-export function useDataSourceItems({
+export function useLibrarySyncItems({
   items,
 }: {
   items: readonly OneDriveLinkData[]
 }) {
-  const createQuery = useCreateDataSourceItemQuery()
+  const createQuery = useCreateLibrarySyncItemQuery()
 
   const itemQueries = useQueries({
     queries: items.map((item) => createQuery(item)),

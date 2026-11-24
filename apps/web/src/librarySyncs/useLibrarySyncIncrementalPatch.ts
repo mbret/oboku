@@ -3,7 +3,7 @@ import { switchMap, from } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { useMutation$ } from "reactjrx"
 
-export const useDataSourceIncrementalPatch = () => {
+export const useLibrarySyncIncrementalPatch = () => {
   return useMutation$({
     mutationFn: ({
       id,

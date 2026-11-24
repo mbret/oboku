@@ -1,23 +1,23 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"opds"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"opds"> = ({
+  librarySync,
   enabled,
 }) => {
   const { data: connector } = useConnector({
-    id: dataSource?.data_v2?.connectorId,
+    id: librarySync?.data_v2?.connectorId,
     enabled,
     type: "opds",
   })
 
-  if (!dataSource) {
+  if (!librarySync) {
     return {
       name: undefined,
     }
   }
 
-  const feedUrl = dataSource.data_v2?.feedUrl ?? ""
+  const feedUrl = librarySync.data_v2?.feedUrl ?? ""
 
   if (!connector || !URL.canParse(feedUrl)) {
     return {

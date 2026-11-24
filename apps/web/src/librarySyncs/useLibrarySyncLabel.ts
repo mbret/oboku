@@ -1,21 +1,21 @@
 import type { LibrarySyncDocType } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
-import { usePluginDataSourceLabel } from "../integrations/plugins/usePluginDataSourceLabel"
-import { useDataSource } from "./useDataSource"
+import { usePluginLibrarySyncLabel } from "../integrations/plugins/usePluginLibrarySyncLabel"
+import { useLibrarySync } from "./useLibrarySync"
 
 /**
  * By priority
  * `name` -> `plugin.infer` -> `plugin.name`
  */
-export const useDataSourceLabel = (
-  dataSource?: DeepReadonly<LibrarySyncDocType> | null,
+export const useLibrarySyncLabel = (
+  librarySync?: DeepReadonly<LibrarySyncDocType> | null,
 ) => {
-  const { data } = useDataSource(dataSource?._id)
-  const pluginLabel = usePluginDataSourceLabel(dataSource)
-  const dataSourceName = typeof data?.name === "string" ? data.name.trim() : ""
+  const { data } = useLibrarySync(librarySync?._id)
+  const pluginLabel = usePluginLibrarySyncLabel(librarySync)
+  const librarySyncName = typeof data?.name === "string" ? data.name.trim() : ""
 
-  if (dataSourceName.length > 0) {
-    return dataSourceName
+  if (librarySyncName.length > 0) {
+    return librarySyncName
   }
 
   return pluginLabel ?? "Source"

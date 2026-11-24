@@ -27,8 +27,8 @@ const ReportListItem = styled(ListItem)({
   alignItems: "stretch",
 })
 
-export const DataSourcesReportsScreen = memo(
-  function DataSourcesReportsScreen() {
+export const LibrarySyncsReportsScreen = memo(
+  function LibrarySyncsReportsScreen() {
     const { data, isLoading } = useSyncReports()
 
     return (
@@ -99,7 +99,7 @@ export const DataSourcesReportsScreen = memo(
                       <Alert severity="info">
                         Some books or collections were synced but could not have
                         their metadata refreshed because they use a different
-                        link or connector than this datasource.
+                        link or connector than this library sync.
                       </Alert>
                     )}
                     <ReportSummary entry={entry} />

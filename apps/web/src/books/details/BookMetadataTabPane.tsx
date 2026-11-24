@@ -15,7 +15,7 @@ import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetad
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 import { MetadataSourcePane } from "./MetadataSourcePane"
 import { BookMetadataPolicyPane } from "../metadata/BookMetadataPolicyPane"
-import { DataSourceSection } from "./DataSourceSection"
+import { BookSourceSection } from "./BookSourceSection"
 import { BOOK_OPTIMIZE_TABS, getBookOptimizeRoute } from "../optimize/tabs"
 import { useRefreshBookMetadata } from "../useRefreshBookMetadata"
 
@@ -91,7 +91,7 @@ export const BookMetadataTabPane = memo(function BookMetadataTabPane({
         forceRefreshDisabled={book?.metadataUpdateStatus === "fetching"}
         lastRefreshedAt={book?.lastMetadataUpdatedAt ?? null}
       />
-      <DataSourceSection bookId={bookId} />
+      <BookSourceSection bookId={bookId} />
     </TabStack>
   )
 })

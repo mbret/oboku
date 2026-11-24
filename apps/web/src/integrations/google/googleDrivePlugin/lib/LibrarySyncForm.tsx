@@ -15,28 +15,28 @@ import { isFolder } from "./utils"
 import { useMemo, useState } from "react"
 import { buildTree } from "../../../../common/FileTreeView"
 import { useUnmountSubject } from "../../../../common/rxjs/useUnmountSubject"
-import { DataSourceFormLayout } from "../../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../../plugins/common/librarySyncFormHelpers"
 import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
 import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { GoogleDriveLibrarySyncDocType } from "@oboku/shared"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../../plugins/types"
 
-type GoogleDriveFormData = DataSourceFormData<{
+type GoogleDriveFormData = LibrarySyncFormData<{
   items: string[]
 }>
 
-export const DataSourceForm = ({
-  dataSource,
+export const LibrarySyncForm = ({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<GoogleDriveLibrarySyncDocType>) => {
+}: LibrarySyncFormInternalProps<GoogleDriveLibrarySyncDocType>) => {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -45,8 +45,8 @@ export const DataSourceForm = ({
   const { control, handleSubmit } = useForm<GoogleDriveFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      items: [...(dataSource?.data_v2?.items ?? [])],
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      items: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const {
@@ -94,10 +94,10 @@ export const DataSourceForm = ({
   }, [queries])
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
-        onSubmit(buildDataSourceSubmitPayload(data, { items: data.items })),
+        onSubmit(buildLibrarySyncSubmitPayload(data, { items: data.items })),
       )}
       submitLabel={submitLabel}
     >
@@ -170,6 +170,6 @@ export const DataSourceForm = ({
           />
         </TreeActionsSection>
       </Stack>
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 }

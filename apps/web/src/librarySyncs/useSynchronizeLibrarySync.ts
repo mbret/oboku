@@ -7,16 +7,16 @@ import { createOfflineDialogOptions } from "../common/dialogs/presets"
 import { useHttpClientApi } from "../http"
 import { usePluginSynchronize } from "../integrations/plugins/usePluginSynchronize"
 import { useDatabase } from "../rxdb"
-import { useDataSourceIncrementalPatch } from "./useDataSourceIncrementalPatch"
+import { useLibrarySyncIncrementalPatch } from "./useLibrarySyncIncrementalPatch"
 import { Logger } from "../debug/logger.shared"
 import { isCancelError } from "../errors/errors.shared"
 
-export const useSynchronizeDataSource = () => {
+export const useSynchronizeLibrarySync = () => {
   const httpClientApi = useHttpClientApi()
   const { db: database } = useDatabase()
-  const { mutateAsync: atomicUpdateDataSource } =
-    useDataSourceIncrementalPatch()
-  const synchronizeDataSource = usePluginSynchronize()
+  const { mutateAsync: atomicUpdateLibrarySync } =
+    useLibrarySyncIncrementalPatch()
+  const synchronizeLibrarySync = usePluginSynchronize()
   const network = useNetworkState()
 
   return useMutation$({
@@ -35,10 +35,10 @@ export const useSynchronizeDataSource = () => {
 
       return datasource$.pipe(
         filter(isDefined),
-        switchMap((dataSource) => from(synchronizeDataSource(dataSource))),
+        switchMap((librarySync) => from(synchronizeLibrarySync(librarySync))),
         switchMap((data) => {
           return from(
-            atomicUpdateDataSource({
+            atomicUpdateLibrarySync({
               id: _id,
               patch: {
                 syncStatus: "fetching",
@@ -59,7 +59,7 @@ export const useSynchronizeDataSource = () => {
             ),
             catchError((e) => {
               return from(
-                atomicUpdateDataSource({
+                atomicUpdateLibrarySync({
                   id: _id,
                   patch: {
                     syncStatus: null,

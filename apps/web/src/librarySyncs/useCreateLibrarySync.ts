@@ -1,16 +1,16 @@
 import type { LibrarySyncDocType } from "@oboku/shared"
 import { useNetworkState } from "react-use"
-import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
+import { useSynchronizeLibrarySync } from "./useSynchronizeLibrarySync"
 import { useMutation$ } from "reactjrx"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, switchMap } from "rxjs"
 
-export const useCreateDataSource = () => {
+export const useCreateLibrarySync = () => {
   type Payload = Omit<
     LibrarySyncDocType,
     "_id" | "rx_model" | "_rev" | `rxdbMeta`
   >
-  const { mutateAsync: synchronize } = useSynchronizeDataSource()
+  const { mutateAsync: synchronize } = useSynchronizeLibrarySync()
   const network = useNetworkState()
 
   return useMutation$({
@@ -22,7 +22,7 @@ export const useCreateDataSource = () => {
     ) =>
       getLatestDatabase().pipe(
         switchMap((db) => {
-          const dataSource$ = from(
+          const librarySync$ = from(
             db.datasource.post({
               ...data,
               lastSyncedAt: null,
@@ -32,12 +32,12 @@ export const useCreateDataSource = () => {
             }),
           )
 
-          return dataSource$
+          return librarySync$
         }),
       ),
-    onSuccess: (dataSource) => {
-      if (dataSource && network.online) {
-        synchronize(dataSource._id)
+    onSuccess: (librarySync) => {
+      if (librarySync && network.online) {
+        synchronize(librarySync._id)
       }
     },
   })

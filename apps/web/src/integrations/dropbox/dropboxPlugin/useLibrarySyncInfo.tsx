@@ -1,17 +1,17 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"dropbox"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"dropbox"> = ({
+  librarySync,
   enabled,
 }) => {
-  if (!dataSource || !enabled) {
+  if (!librarySync || !enabled) {
     return {
       name: undefined,
     }
   }
 
-  const folderName = dataSource.data_v2?.folderName?.trim()
-  const folderId = dataSource.data_v2?.folderId?.trim()
+  const folderName = librarySync.data_v2?.folderName?.trim()
+  const folderId = librarySync.data_v2?.folderId?.trim()
 
   if (folderName) {
     return {

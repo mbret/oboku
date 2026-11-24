@@ -11,7 +11,7 @@ import { ControlledTextField } from "../../../common/forms/ControlledTextField"
 import { ControlledSelect } from "../../../common/forms/ControlledSelect"
 import { PageSection } from "../../../common/PageSection"
 import { useTags } from "../../../tags/helpers"
-import { DataSourceMetadataPolicyPane } from "../../../dataSources/metadata/DataSourceMetadataPolicyPane"
+import { LibrarySyncMetadataPolicyPane } from "../../../librarySyncs/metadata/LibrarySyncMetadataPolicyPane"
 
 const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
   theme,
@@ -21,14 +21,14 @@ const SubmitButtonStack = styled(Stack)(function styleSubmitButtonStack({
   }
 })
 
-type DataSourceFormBase = {
+type LibrarySyncFormBase = {
   name: string
   tags: string[]
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
 /**
- * Shared form shell for all data source create / edit forms.
+ * Shared form shell for all library sync create / edit forms.
  *
  * Renders the `<form>` element, the common name + tags + metadata policy
  * fields, plugin-specific children, and the submit button. Each plugin only
@@ -37,10 +37,10 @@ type DataSourceFormBase = {
  *
  * The `as FieldPath<T>` casts below are required because TypeScript cannot
  * resolve concrete paths from a generic type parameter, even though the
- * `DataSourceFormBase` constraint guarantees those fields exist on `T`.
+ * `LibrarySyncFormBase` constraint guarantees those fields exist on `T`.
  */
-export function DataSourceFormLayout<
-  T extends FieldValues & DataSourceFormBase,
+export function LibrarySyncFormLayout<
+  T extends FieldValues & LibrarySyncFormBase,
 >({
   control,
   onSubmit,
@@ -88,9 +88,9 @@ export function DataSourceFormLayout<
         control={control}
         name={"metadataFileDownloadEnabled" as FieldPath<T>}
         render={({ field }) => (
-          <DataSourceMetadataPolicyPane
+          <LibrarySyncMetadataPolicyPane
             // The cast is needed because the generic FieldPath<T> erases the
-            // concrete value type even though DataSourceFormBase guarantees it
+            // concrete value type even though LibrarySyncFormBase guarantees it
             // is a MetadataFileDownloadOverride.
             fileDownloadOverride={field.value as MetadataFileDownloadOverride}
             onFileDownloadChange={field.onChange}

@@ -1,10 +1,10 @@
-import type { UseSyncSourceInfo } from "../types"
+import type { UseLibrarySyncInfo } from "../types"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"file"> = ({
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"file"> = ({
   enabled,
-  dataSource,
+  librarySync,
 }) => {
   return {
-    name: enabled && dataSource ? "On device" : undefined,
+    name: enabled && librarySync ? "On device" : undefined,
   }
 }

@@ -28,7 +28,7 @@ export const useSelectionTreeData = ({
   const rootItemsQuery = useQuery({
     queryKey: [
       "synology-drive",
-      "datasource-root-items",
+      "library-sync-root-items",
       connectorId,
       session?.sid,
     ],
@@ -53,7 +53,7 @@ export const useSelectionTreeData = ({
   const prefetchedSelectionTreeQuery = useQuery({
     queryKey: [
       "synology-drive",
-      "datasource-selected-items-tree",
+      "library-sync-selected-items-tree",
       connectorId,
       session?.sid,
       ...prefetchedSelectedItemIds,

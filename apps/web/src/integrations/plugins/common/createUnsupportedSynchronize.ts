@@ -9,7 +9,7 @@ export const createUnsupportedSynchronize = <
   function useSynchronize() {
     return useMutation({
       mutationFn: async function rejectSynchronize() {
-        throw new UnsupportedMethodError("This data source cannot synchronize")
+        throw new UnsupportedMethodError("This source cannot sync")
       },
     })
   }

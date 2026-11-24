@@ -1,27 +1,27 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
 import {
   getHostname,
   getLabelWithItemCount,
-} from "../../plugins/common/syncSourceLabel"
+} from "../../plugins/common/librarySyncLabel"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"synology-drive"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"synology-drive"> = ({
+  librarySync,
   enabled,
 }) => {
   const { data: connector } = useConnector({
-    id: dataSource?.data_v2?.connectorId,
+    id: librarySync?.data_v2?.connectorId,
     type: "synology-drive",
     enabled,
   })
 
-  if (!dataSource) {
+  if (!librarySync) {
     return {
       name: undefined,
     }
   }
 
-  const itemsCount = dataSource.data_v2?.items?.length ?? 0
+  const itemsCount = librarySync.data_v2?.items?.length ?? 0
 
   if (!connector) {
     return {

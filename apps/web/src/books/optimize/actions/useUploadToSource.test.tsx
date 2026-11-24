@@ -99,7 +99,7 @@ vi.mock(
 )
 
 import { book, link } from "../bookLink.fixture"
-import { useUploadToDataSource } from "./useUploadToDataSource"
+import { useUploadToSource } from "./useUploadToSource"
 
 function createWrapper(onMutationError: (error: Error) => void) {
   const queryClient = new QueryClient({
@@ -117,7 +117,7 @@ function createWrapper(onMutationError: (error: Error) => void) {
   }
 }
 
-describe("useUploadToDataSource", function testUseUploadToDataSource() {
+describe("useUploadToSource", function testUseUploadToSource() {
   beforeEach(function resetMocks() {
     vi.clearAllMocks()
     getBookFile.mockResolvedValue({
@@ -134,14 +134,14 @@ describe("useUploadToDataSource", function testUseUploadToDataSource() {
     ) {})
     upsertFile.mockRejectedValueOnce(error)
     const { result } = renderHook(
-      function renderUseUploadToDataSource() {
-        return useUploadToDataSource({ book, link, enabled: true })
+      function renderUseUploadToSource() {
+        return useUploadToSource({ book, link, enabled: true })
       },
       { wrapper: createWrapper(onMutationError) },
     )
 
     await act(async function startUpload() {
-      await result.current.uploadToDataSource()
+      await result.current.uploadToSource()
     })
 
     await waitFor(function waitForUploadFailure() {
@@ -156,16 +156,16 @@ describe("useUploadToDataSource", function testUseUploadToDataSource() {
     expect(refreshBookMetadata).not.toHaveBeenCalled()
   })
 
-  it("refreshes the book metadata once the new file is on the data source", async function refreshMetadataAfterUpload() {
+  it("refreshes the book metadata once the new file is at its source", async function refreshMetadataAfterUpload() {
     const { result } = renderHook(
-      function renderUseUploadToDataSource() {
-        return useUploadToDataSource({ book, link, enabled: true })
+      function renderUseUploadToSource() {
+        return useUploadToSource({ book, link, enabled: true })
       },
       { wrapper: createWrapper(vi.fn()) },
     )
 
     await act(async function startUpload() {
-      await result.current.uploadToDataSource()
+      await result.current.uploadToSource()
     })
 
     await waitFor(function waitForMetadataRefresh() {

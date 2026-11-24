@@ -8,26 +8,26 @@ import type { LibrarySyncDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-type DataSourceDocument = RxDocument<LibrarySyncDocType>
+type LibrarySyncDocument = RxDocument<LibrarySyncDocType>
 
-type DataSourceCollectionMethods = {
+type LibrarySyncCollectionMethods = {
   post: (
     json: Omit<LibrarySyncDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>,
-  ) => Promise<DataSourceDocument>
+  ) => Promise<LibrarySyncDocument>
 }
 
-export type DataSourceCollection = RxCollection<
+export type LibrarySyncCollection = RxCollection<
   LibrarySyncDocType,
   object,
-  DataSourceCollectionMethods
+  LibrarySyncCollectionMethods
 >
 
-export const dataSourceSchema: RxJsonSchema<
+export const librarySyncSchema: RxJsonSchema<
   Omit<LibrarySyncDocType, "rx_model" | "_rev" | `rxdbMeta`> & {
     data?: string
   }
 > = {
-  title: "dataSourceSchema",
+  title: "librarySyncSchema",
   version: 1,
   type: "object",
   primaryKey: `_id`,
@@ -55,8 +55,8 @@ export const migrationStrategies: MigrationStrategies = {
   1: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
-export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
-  post: async function (this: DataSourceCollection, json) {
+export const librarySyncCollectionMethods: LibrarySyncCollectionMethods = {
+  post: async function (this: LibrarySyncCollection, json) {
     return this.insert({ _id: generateId(), ...json } as LibrarySyncDocType)
   },
 }

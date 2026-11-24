@@ -12,7 +12,7 @@ vi.mock("../graph", () => ({
   getOneDriveItemSummary,
 }))
 
-describe("resolveOneDriveDataSourceItem", () => {
+describe("resolveOneDriveLibrarySyncItem", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
@@ -37,14 +37,14 @@ describe("resolveOneDriveDataSourceItem", () => {
         },
       })
 
-    const { resolveOneDriveDataSourceItem } = await import(
-      "./useDataSourceItem"
+    const { resolveOneDriveLibrarySyncItem } = await import(
+      "./useLibrarySyncItem"
     )
 
-    await expect(resolveOneDriveDataSourceItem(item)).rejects.toThrow(
+    await expect(resolveOneDriveLibrarySyncItem(item)).rejects.toThrow(
       "temporary failure",
     )
-    await expect(resolveOneDriveDataSourceItem(item)).resolves.toEqual({
+    await expect(resolveOneDriveLibrarySyncItem(item)).resolves.toEqual({
       treeItemId: getOneDriveItemKey({
         driveId: "drive-id",
         fileId: "file-id",

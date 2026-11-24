@@ -154,11 +154,11 @@ type UpsertFileCapability<
       UpsertFileComponent?: undefined
     }
 
-export type UseSyncSourceInfo<
+export type UseLibrarySyncInfo<
   T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = (data: {
   enabled: boolean
-  dataSource?: DeepReadonly<LibrarySyncDocTypeFor<T>> | undefined
+  librarySync?: DeepReadonly<LibrarySyncDocTypeFor<T>> | undefined
 }) => {
   name?: string
 }
@@ -174,21 +174,22 @@ export type UseLinkInfo = (data: {
     | undefined
 }
 
-export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
-  name: string
-  tags: string[]
-  metadataFileDownloadEnabled: MetadataFileDownloadOverride
-} & PluginFields
+export type LibrarySyncFormData<PluginFields extends Record<string, unknown>> =
+  {
+    name: string
+    tags: string[]
+    metadataFileDownloadEnabled: MetadataFileDownloadOverride
+  } & PluginFields
 
-export type DataSourceFormInternalProps<
+export type LibrarySyncFormInternalProps<
   T extends LibrarySyncDocType = LibrarySyncDocType,
 > = {
-  dataSource?: DeepReadonly<T>
-  onSubmit: (payload: DataSourceSubmitPayload) => void
+  librarySync?: DeepReadonly<T>
+  onSubmit: (payload: LibrarySyncSubmitPayload) => void
   submitLabel: string
 }
 
-export type DataSourceSubmitPayload = {
+export type LibrarySyncSubmitPayload = {
   name: string
   tags: string[]
   data_v2: Record<string, unknown>
@@ -207,8 +208,8 @@ type ObokuPluginBase<
   type: T
   Icon: ComponentType<SvgIconProps>
   UploadBookComponent?: ComponentType<UploadBookComponentProps<T>>
-  DataSourceForm?: ComponentType<
-    DataSourceFormInternalProps<LibrarySyncDocTypeFor<T>>
+  LibrarySyncForm?: ComponentType<
+    LibrarySyncFormInternalProps<LibrarySyncDocTypeFor<T>>
   >
   SelectItemComponent?: ComponentType<{
     open: boolean
@@ -229,7 +230,7 @@ type ObokuPluginBase<
   useSynchronize: UseSynchronizeHook<T>
   useRemoveResource: UseRemoveResource<T>
   useLinkInfo: UseLinkInfo
-  useSyncSourceInfo: UseSyncSourceInfo<T>
+  useLibrarySyncInfo: UseLibrarySyncInfo<T>
   useSignOut: () => () => void
 }
 

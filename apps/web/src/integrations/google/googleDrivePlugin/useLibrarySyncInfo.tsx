@@ -1,17 +1,17 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/syncSourceLabel"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
+import { getLabelWithItemCount } from "../../plugins/common/librarySyncLabel"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"DRIVE"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"DRIVE"> = ({
+  librarySync,
   enabled,
 }) => {
-  if (!dataSource || !enabled) {
+  if (!librarySync || !enabled) {
     return {
       name: undefined,
     }
   }
 
-  const itemsCount = dataSource.data_v2?.items?.length ?? 0
+  const itemsCount = librarySync.data_v2?.items?.length ?? 0
 
   return {
     name: getLabelWithItemCount("Google Drive", itemsCount),

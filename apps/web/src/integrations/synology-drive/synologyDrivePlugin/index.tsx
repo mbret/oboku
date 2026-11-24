@@ -5,11 +5,11 @@ import type { SourcePlugin } from "../../plugins/types"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 import { useSynchronize } from "./useSynchronize"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import iconSynologyDrive from "../../../assets/icon_synology_drive_01.png"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { clearSynologyDriveSession } from "./auth/auth"
 
 const SynologyDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
@@ -26,9 +26,9 @@ export const plugin: SourcePlugin<"synology-drive"> = {
   Icon: SynologyDriveIcon,
   UploadBookComponent: UploadBook,
   DownloadBookComponent: DownloadBook,
-  DataSourceForm,
+  LibrarySyncForm,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,

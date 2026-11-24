@@ -1,24 +1,24 @@
-import type { UseSyncSourceInfo } from "../../plugins/types"
+import type { UseLibrarySyncInfo } from "../../plugins/types"
 import { useConnector } from "../../../connectors/useConnector"
-import { getHostname } from "../../plugins/common/syncSourceLabel"
+import { getHostname } from "../../plugins/common/librarySyncLabel"
 
-export const useSyncSourceInfo: UseSyncSourceInfo<"webdav"> = ({
-  dataSource,
+export const useLibrarySyncInfo: UseLibrarySyncInfo<"webdav"> = ({
+  librarySync,
   enabled,
 }) => {
   const { data: connector } = useConnector({
-    id: dataSource?.data_v2?.connectorId,
+    id: librarySync?.data_v2?.connectorId,
     enabled,
     type: "webdav",
   })
 
-  if (!dataSource) {
+  if (!librarySync) {
     return {
       name: undefined,
     }
   }
 
-  const directory = dataSource.data_v2?.directory ?? "/"
+  const directory = librarySync.data_v2?.directory ?? "/"
 
   if (!connector) {
     return {

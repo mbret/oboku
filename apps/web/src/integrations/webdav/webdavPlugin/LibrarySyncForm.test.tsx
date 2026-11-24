@@ -3,7 +3,7 @@ import { cleanup, render, screen } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-const mocks = vi.hoisted(function createDataSourceFormMocks() {
+const mocks = vi.hoisted(function createLibrarySyncFormMocks() {
   return { connector: vi.fn(), testConnectionProps: vi.fn() }
 })
 
@@ -46,10 +46,10 @@ vi.mock(
 )
 
 vi.mock(
-  "../../plugins/common/DataSourceFormLayout",
-  function mockDataSourceFormLayout() {
+  "../../plugins/common/LibrarySyncFormLayout",
+  function mockLibrarySyncFormLayout() {
     return {
-      DataSourceFormLayout: function FakeDataSourceFormLayout({
+      LibrarySyncFormLayout: function FakeLibrarySyncFormLayout({
         children,
       }: {
         children: ReactNode
@@ -60,7 +60,7 @@ vi.mock(
   },
 )
 
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 
 const koofrConnector: WebdavConnectorDocType = {
   id: "koofr",
@@ -70,7 +70,7 @@ const koofrConnector: WebdavConnectorDocType = {
   passwordAsSecretId: "koofr-secret",
 }
 
-describe("DataSourceForm (WebDAV)", () => {
+describe("LibrarySyncForm (WebDAV)", () => {
   afterEach(() => {
     cleanup()
     vi.clearAllMocks()
@@ -88,7 +88,7 @@ describe("DataSourceForm (WebDAV)", () => {
     async (_, connector, isProxiedThroughServer) => {
       mocks.connector.mockReturnValue(connector)
 
-      render(<DataSourceForm onSubmit={vi.fn()} submitLabel="Save" />)
+      render(<LibrarySyncForm onSubmit={vi.fn()} submitLabel="Save" />)
 
       expect(await screen.findByText("Connection test")).toBeDefined()
       expect(mocks.testConnectionProps).toHaveBeenLastCalledWith(

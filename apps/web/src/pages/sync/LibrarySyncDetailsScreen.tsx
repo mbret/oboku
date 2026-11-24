@@ -11,16 +11,16 @@ import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import type { ROUTES } from "../../navigation/routes"
 import { type PathParam, useParams } from "react-router"
-import { useDataSource } from "../../dataSources/useDataSource"
+import { useLibrarySync } from "../../librarySyncs/useLibrarySync"
 import { notify } from "../../notifications/toasts"
-import { useDataSourceIncrementalModify } from "../../dataSources/useDataSourceIncrementalModify"
-import { useDataSourceLabel } from "../../dataSources/useDataSourceLabel"
+import { useLibrarySyncIncrementalModify } from "../../librarySyncs/useLibrarySyncIncrementalModify"
+import { useLibrarySyncLabel } from "../../librarySyncs/useLibrarySyncLabel"
 import type {
-  DataSourceFormInternalProps,
-  DataSourceSubmitPayload,
+  LibrarySyncFormInternalProps,
+  LibrarySyncSubmitPayload,
 } from "../../integrations/plugins/types"
-import { useSynchronizeDataSource } from "../../dataSources/useSynchronizeDataSource"
-import { useRemoveDataSource } from "../../dataSources/useRemoveDataSource"
+import { useSynchronizeLibrarySync } from "../../librarySyncs/useSynchronizeLibrarySync"
+import { useRemoveLibrarySync } from "../../librarySyncs/useRemoveLibrarySync"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { Page } from "../../common/Page"
@@ -42,85 +42,90 @@ const SynchronizeButtonStack = styled(Stack)(
   },
 )
 
-function renderDataSourceForm<T extends LibrarySyncDocType["type"]>({
-  dataSource,
+function renderLibrarySyncForm<T extends LibrarySyncDocType["type"]>({
+  librarySync,
   ...props
-}: DataSourceFormInternalProps<LibrarySyncDocTypeFor<T>> & {
-  dataSource: { readonly type: T }
+}: LibrarySyncFormInternalProps<LibrarySyncDocTypeFor<T>> & {
+  librarySync: { readonly type: T }
 }) {
-  const PluginForm = getPluginByType<T>(dataSource.type).DataSourceForm
+  const PluginForm = getPluginByType<T>(librarySync.type).LibrarySyncForm
 
-  return PluginForm ? <PluginForm {...props} dataSource={dataSource} /> : null
+  return PluginForm ? <PluginForm {...props} librarySync={librarySync} /> : null
 }
 
-export const DataSourceDetailsScreen = memo(function DataSourceDetailsScreen() {
-  const { id } = useParams<PathParam<typeof ROUTES.DATASOURCE_DETAILS>>()
-  const { data: dataSource } = useDataSource(id)
-  const { goBack } = useSafeGoBack()
-  const { mutateAsync: modifyDataSource } = useDataSourceIncrementalModify()
-  const label = useDataSourceLabel(dataSource)
-  const { mutate: syncDataSource } = useSynchronizeDataSource()
-  const { mutate: removeDataSource } = useRemoveDataSource()
+export const LibrarySyncDetailsScreen = memo(
+  function LibrarySyncDetailsScreen() {
+    const { id } = useParams<PathParam<typeof ROUTES.LIBRARY_SYNC_DETAILS>>()
+    const { data: librarySync } = useLibrarySync(id)
+    const { goBack } = useSafeGoBack()
+    const { mutateAsync: modifyLibrarySync } = useLibrarySyncIncrementalModify()
+    const label = useLibrarySyncLabel(librarySync)
+    const { mutate: syncLibrarySync } = useSynchronizeLibrarySync()
+    const { mutate: removeLibrarySync } = useRemoveLibrarySync()
 
-  const handleSubmit = (payload: DataSourceSubmitPayload) => {
-    modifyDataSource(
-      {
-        id: dataSource?._id ?? "",
-        mutationFunction: (doc) =>
-          ({
-            ...doc,
-            name: payload.name,
-            tags: payload.tags,
-            data_v2: payload.data_v2,
-            metadataFileDownloadEnabled: payload.metadataFileDownloadEnabled,
-          }) as typeof doc,
-      },
-      {
-        onSuccess: () => notify("actionSuccess"),
-      },
+    const handleSubmit = (payload: LibrarySyncSubmitPayload) => {
+      modifyLibrarySync(
+        {
+          id: librarySync?._id ?? "",
+          mutationFunction: (doc) =>
+            ({
+              ...doc,
+              name: payload.name,
+              tags: payload.tags,
+              data_v2: payload.data_v2,
+              metadataFileDownloadEnabled: payload.metadataFileDownloadEnabled,
+            }) as typeof doc,
+        },
+        {
+          onSuccess: () => notify("actionSuccess"),
+        },
+      )
+    }
+
+    const removeLibrarySyncThenGoBack = () => {
+      if (!id) return
+
+      removeLibrarySync({ id }, { onSuccess: () => goBack() })
+    }
+
+    if (librarySync === null) return <NotFoundPage />
+
+    return (
+      <Page>
+        <TopBarNavigation title={`${label}`} />
+        <PageContainer>
+          <SyncStatusAlert
+            severity={librarySync?.lastSyncErrorCode ? "error" : "info"}
+          >
+            {librarySync?.syncStatus === "fetching"
+              ? "Synchronizing"
+              : librarySync?.lastSyncErrorCode
+                ? `Last sync did not succeed`
+                : `Last synced on ${new Date(librarySync?.lastSyncedAt ?? 0).toLocaleString()}`}
+          </SyncStatusAlert>
+        </PageContainer>
+        <PageContainer disableGutters>
+          {librarySync &&
+            renderLibrarySyncForm({
+              librarySync,
+              onSubmit: handleSubmit,
+              submitLabel: "Save",
+            })}
+          <SynchronizeButtonStack>
+            <Button
+              variant="outlined"
+              onClick={() => id && syncLibrarySync(id)}
+            >
+              Synchronize
+            </Button>
+          </SynchronizeButtonStack>
+          <PageSection title="Danger zone" tone="danger">
+            <ListItemButton onClick={removeLibrarySyncThenGoBack}>
+              <ListItemText primary="Delete this library sync" />
+            </ListItemButton>
+          </PageSection>
+        </PageContainer>
+      </Page>
     )
-  }
-
-  const removeDataSourceThenGoBack = () => {
-    if (!id) return
-
-    removeDataSource({ id }, { onSuccess: () => goBack() })
-  }
-
-  if (dataSource === null) return <NotFoundPage />
-
-  return (
-    <Page>
-      <TopBarNavigation title={`${label}`} />
-      <PageContainer>
-        <SyncStatusAlert
-          severity={dataSource?.lastSyncErrorCode ? "error" : "info"}
-        >
-          {dataSource?.syncStatus === "fetching"
-            ? "Synchronizing"
-            : dataSource?.lastSyncErrorCode
-              ? `Last sync did not succeed`
-              : `Last synced on ${new Date(dataSource?.lastSyncedAt ?? 0).toLocaleString()}`}
-        </SyncStatusAlert>
-      </PageContainer>
-      <PageContainer disableGutters>
-        {dataSource &&
-          renderDataSourceForm({
-            dataSource,
-            onSubmit: handleSubmit,
-            submitLabel: "Save",
-          })}
-        <SynchronizeButtonStack>
-          <Button variant="outlined" onClick={() => id && syncDataSource(id)}>
-            Synchronize
-          </Button>
-        </SynchronizeButtonStack>
-        <PageSection title="Danger zone" tone="danger">
-          <ListItemButton onClick={removeDataSourceThenGoBack}>
-            <ListItemText primary="Delete this data source" />
-          </ListItemButton>
-        </PageSection>
-      </PageContainer>
-    </Page>
-  )
-})
+  },
+)

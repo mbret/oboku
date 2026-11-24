@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 import { requestMicrosoftAccessToken } from "../auth/auth"
 import { ONE_DRIVE_GRAPH_SCOPES } from "../constants"
-import { oneDriveDatasourceItemQueryKey } from "./useDataSourceItem"
+import { oneDriveLibrarySyncItemQueryKey } from "./useLibrarySyncItem"
 
 export function useRequestItemsAccess({
   requestPopup,
@@ -20,7 +20,7 @@ export function useRequestItemsAccess({
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
-        queryKey: oneDriveDatasourceItemQueryKey,
+        queryKey: oneDriveLibrarySyncItemQueryKey,
       })
     },
   })

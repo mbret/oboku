@@ -1,9 +1,9 @@
 import type { SourcePlugin } from "../../plugins/types"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 import { useSynchronize } from "./useSynchronize"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
@@ -23,10 +23,10 @@ const plugin: SourcePlugin<"webdav"> = {
   canRemoveResource: false,
   canSynchronize: true,
   Icon: WebDAVIcon,
-  DataSourceForm,
+  LibrarySyncForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useLinkInfo,
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,

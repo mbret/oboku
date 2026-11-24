@@ -7,11 +7,11 @@ import {
 } from "./collections/collection"
 import { applyHooks } from "./middleware"
 import {
-  dataSourceSchema,
-  dataSourceCollectionMethods,
-  type DataSourceCollection,
-  migrationStrategies as dataSourceMigrationStrategies,
-} from "./collections/dataSource"
+  librarySyncSchema,
+  librarySyncCollectionMethods,
+  type LibrarySyncCollection,
+  migrationStrategies as librarySyncMigrationStrategies,
+} from "./collections/librarySync"
 import { RxDBQueryBuilderPlugin } from "rxdb/plugins/query-builder"
 import { wrappedValidateAjvStorage } from "rxdb/plugins/validate-ajv"
 import { RxDBUpdatePlugin } from "rxdb/plugins/update"
@@ -67,7 +67,7 @@ type MyDatabaseCollections = {
   link: LinkCollection
   settings: SettingsCollection
   obokucollection: CollectionCollection
-  datasource: DataSourceCollection
+  datasource: LibrarySyncCollection
   secret: SecretCollection
   koreaderpush: KoreaderPushCollection
   annotation: AnnotationCollection
@@ -161,9 +161,9 @@ export const createDatabase = (
             migrationStrategies: collectionMigrationStrategies,
           },
           datasource: {
-            schema: dataSourceSchema,
-            statics: dataSourceCollectionMethods,
-            migrationStrategies: dataSourceMigrationStrategies,
+            schema: librarySyncSchema,
+            statics: librarySyncCollectionMethods,
+            migrationStrategies: librarySyncMigrationStrategies,
           },
           secret: secretCollection,
           koreaderpush: koreaderPushCollection,

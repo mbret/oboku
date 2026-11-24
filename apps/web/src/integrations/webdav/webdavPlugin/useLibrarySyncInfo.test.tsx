@@ -13,9 +13,9 @@ vi.mock("../../../connectors/useConnector", function mockConnector() {
   return { useConnector }
 })
 
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 
-const dataSource: LibrarySyncDocTypeFor<"webdav"> = {
+const librarySync: LibrarySyncDocTypeFor<"webdav"> = {
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },
@@ -35,7 +35,7 @@ const connectorWithoutUrl: Omit<WebdavConnectorDocType, "url"> = {
   passwordAsSecretId: "secret",
 }
 
-describe("useSyncSourceInfo", () => {
+describe("useLibrarySyncInfo", () => {
   it.each([
     {
       form: "has a scheme",
@@ -58,7 +58,7 @@ describe("useSyncSourceInfo", () => {
       useConnector.mockReturnValue({ data: { ...connectorWithoutUrl, url } })
 
       const { result } = renderHook(function renderWebdavSourceInfo() {
-        return useSyncSourceInfo({ dataSource, enabled: true })
+        return useLibrarySyncInfo({ librarySync, enabled: true })
       })
 
       expect(result.current.name).toBe(label)

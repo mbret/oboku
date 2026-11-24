@@ -6,10 +6,10 @@ import {
   RXDB_QUERY_KEY_PREFIX,
 } from "../queries/queryClient"
 
-export const useDataSource = (id?: string) =>
+export const useLibrarySync = (id?: string) =>
   useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "dataSource", id ?? "-1"],
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "librarySync", id ?? "-1"],
     enabled: !!id,
     queryFn: () =>
       latestDatabase$.pipe(

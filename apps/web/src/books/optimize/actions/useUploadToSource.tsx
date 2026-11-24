@@ -7,9 +7,9 @@ import { usePluginUpsertFile } from "../../../integrations/plugins/usePluginUpse
 import { pluginsByType } from "../../../integrations/plugins/configure"
 import { notify } from "../../../notifications/toasts"
 import { useRefreshBookMetadata } from "../../useRefreshBookMetadata"
-import { confirmUploadToDataSource } from "./confirmUploadToDataSource"
+import { confirmUploadToSource } from "./confirmUploadToSource"
 
-export const useUploadToDataSource = ({
+export const useUploadToSource = ({
   book,
   link,
   enabled,
@@ -57,10 +57,10 @@ export const useUploadToDataSource = ({
 
   const canUpload = enabled && !isUploading
 
-  const uploadToDataSource = useCallback(async () => {
+  const uploadToSource = useCallback(async () => {
     if (!canUpload) return
 
-    const isConfirmed = await confirmUploadToDataSource({
+    const isConfirmed = await confirmUploadToSource({
       providerName: plugin.name,
       prunesVersionHistory: plugin.upsertPrunesVersionHistory ?? false,
     })
@@ -72,12 +72,12 @@ export const useUploadToDataSource = ({
         notify({
           title: "Upload complete",
           description:
-            "The file was uploaded to the data source. Its metadata is being refreshed.",
+            "The file was uploaded to its source. Its metadata is being refreshed.",
           severity: "success",
         })
       },
     })
   }, [canUpload, plugin, uploadFile])
 
-  return { uploadToDataSource, isUploading, canUpload, slot, uploadProgress$ }
+  return { uploadToSource, isUploading, canUpload, slot, uploadProgress$ }
 }

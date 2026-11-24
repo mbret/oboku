@@ -1,26 +1,26 @@
 import { memo } from "react"
 import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
-import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../plugins/common/librarySyncFormHelpers"
 import type { ServerLibrarySyncDocType } from "@oboku/shared"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../plugins/types"
 
-type ServerFormData = DataSourceFormData<{
+type ServerFormData = LibrarySyncFormData<{
   connectorId: string
 }>
 
-export const DataSourceForm = memo(function DataSourceForm({
-  dataSource,
+export const LibrarySyncForm = memo(function LibrarySyncForm({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<ServerLibrarySyncDocType>) {
+}: LibrarySyncFormInternalProps<ServerLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -28,17 +28,17 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit } = useForm<ServerFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      connectorId: dataSource?.data_v2?.connectorId ?? "",
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      connectorId: librarySync?.data_v2?.connectorId ?? "",
     },
   })
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
         onSubmit(
-          buildDataSourceSubmitPayload(data, {
+          buildLibrarySyncSubmitPayload(data, {
             connectorId: data.connectorId,
           }),
         ),
@@ -51,6 +51,6 @@ export const DataSourceForm = memo(function DataSourceForm({
         rules={{ required: true }}
         connectorType="server"
       />
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 })

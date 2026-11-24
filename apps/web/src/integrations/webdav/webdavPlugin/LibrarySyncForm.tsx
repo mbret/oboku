@@ -9,26 +9,26 @@ import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
 import { useTestWebdavConnection } from "./useTestWebdavConnection"
 import { WebdavRequirementsAlert } from "./WebdavRequirementsAlert"
-import { DataSourceFormLayout } from "../../plugins/common/DataSourceFormLayout"
+import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
-  buildDataSourceSubmitPayload,
-  getDataSourceFormBaseDefaults,
-} from "../../plugins/common/dataSourceFormHelpers"
+  buildLibrarySyncSubmitPayload,
+  getLibrarySyncFormBaseDefaults,
+} from "../../plugins/common/librarySyncFormHelpers"
 import type {
-  DataSourceFormData,
-  DataSourceFormInternalProps,
+  LibrarySyncFormData,
+  LibrarySyncFormInternalProps,
 } from "../../plugins/types"
 
-type WebDAVFormData = DataSourceFormData<{
+type WebDAVFormData = LibrarySyncFormData<{
   connectorId: string
   directory: string
 }>
 
-export const DataSourceForm = memo(function DataSourceForm({
-  dataSource,
+export const LibrarySyncForm = memo(function LibrarySyncForm({
+  librarySync,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<WebDAVLibrarySyncDocType>) {
+}: LibrarySyncFormInternalProps<WebDAVLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"
@@ -36,9 +36,9 @@ export const DataSourceForm = memo(function DataSourceForm({
   const { control, handleSubmit, watch } = useForm<WebDAVFormData>({
     mode: "onChange",
     defaultValues: {
-      ...getDataSourceFormBaseDefaults(dataSource),
-      connectorId: dataSource?.data_v2?.connectorId ?? "",
-      directory: dataSource?.data_v2?.directory ?? "",
+      ...getLibrarySyncFormBaseDefaults(librarySync),
+      connectorId: librarySync?.data_v2?.connectorId ?? "",
+      directory: librarySync?.data_v2?.directory ?? "",
     },
   })
   const connectorId = watch("connectorId")
@@ -50,11 +50,11 @@ export const DataSourceForm = memo(function DataSourceForm({
   const testConnection = useTestWebdavConnection()
 
   return (
-    <DataSourceFormLayout
+    <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
         onSubmit(
-          buildDataSourceSubmitPayload(data, {
+          buildLibrarySyncSubmitPayload(data, {
             connectorId: data.connectorId,
             directory: data.directory,
           }),
@@ -93,6 +93,6 @@ export const DataSourceForm = memo(function DataSourceForm({
         connectorType="webdav"
         testConnection={testConnection}
       />
-    </DataSourceFormLayout>
+    </LibrarySyncFormLayout>
   )
 })

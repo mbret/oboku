@@ -11,7 +11,7 @@ import {
   useGetIsPluginVisible,
 } from "../integrations/plugins/useIsPluginEnabled"
 
-export const DataSourcesAddDrawer = ({
+export const LibrarySyncsAddDrawer = ({
   open,
   onClose,
 }: {
@@ -20,7 +20,7 @@ export const DataSourcesAddDrawer = ({
 }) => {
   const isPluginVisible = useGetIsPluginVisible()
   const isPluginEnabled = useGetIsPluginEnabled()
-  const dataSourcesPlugins = plugins.filter(
+  const syncablePlugins = plugins.filter(
     (plugin) => plugin.canSynchronize && isPluginVisible(plugin),
   )
 
@@ -28,16 +28,16 @@ export const DataSourcesAddDrawer = ({
     <Drawer anchor="bottom" open={open} onClose={() => onClose()}>
       <div role="presentation">
         <List>
-          {dataSourcesPlugins.map((dataSource) => (
+          {syncablePlugins.map((plugin) => (
             <ListItemButton
-              onClick={() => onClose(dataSource.type)}
-              key={dataSource.type}
-              disabled={!isPluginEnabled(dataSource)}
+              onClick={() => onClose(plugin.type)}
+              key={plugin.type}
+              disabled={!isPluginEnabled(plugin)}
             >
               <ListItemIcon>
-                <dataSource.Icon />
+                <plugin.Icon />
               </ListItemIcon>
-              <ListItemText primary={`${dataSource.name}`} />
+              <ListItemText primary={`${plugin.name}`} />
             </ListItemButton>
           ))}
         </List>

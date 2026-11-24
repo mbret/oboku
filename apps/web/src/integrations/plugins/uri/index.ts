@@ -7,7 +7,7 @@ import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 
 const plugin: SourcePlugin<"URI"> = {
   type: TYPE,
@@ -18,7 +18,7 @@ const plugin: SourcePlugin<"URI"> = {
   UploadBookComponent,
   DownloadBookComponent: DownloadBook,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,

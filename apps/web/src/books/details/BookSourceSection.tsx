@@ -9,7 +9,7 @@ import {
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
-import { useDataSourcePlugin } from "../../dataSources/helpers"
+import { useSourcePlugin } from "../../librarySyncs/helpers"
 import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../integrations/plugins/useCreateRequestPopupDialog"
@@ -26,7 +26,7 @@ const TrailingIconStack = styled(Stack)({
   flexShrink: 0,
 })
 
-export const DataSourceSection = memo(function DataSourceSection({
+export const BookSourceSection = memo(function BookSourceSection({
   bookId,
 }: {
   bookId: string
@@ -34,7 +34,7 @@ export const DataSourceSection = memo(function DataSourceSection({
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const { data: linkInfo } = useLinkInfo(bookId)
-  const dataSourcePlugin = useDataSourcePlugin(link?.type)
+  const sourcePlugin = useSourcePlugin(link?.type)
   const [isSelectItemOpened, setIsSelectItemOpened] = useState(false)
   const createRequestPopupDialog = useCreateRequestPopupDialog()
   const refreshMetadata = useRefreshBookMetadata()
@@ -51,11 +51,11 @@ export const DataSourceSection = memo(function DataSourceSection({
         dense
         subheader={<ListSubheader>Source</ListSubheader>}
       >
-        {!!link && !!dataSourcePlugin && (
+        {!!link && !!sourcePlugin && (
           <ListItemButton
             key={link?._id}
             onClick={() => {
-              if (!dataSourcePlugin?.SelectItemComponent) {
+              if (!sourcePlugin?.SelectItemComponent) {
                 showDialog(createNotImplementedDialogOptions())
               } else {
                 setIsSelectItemOpened(true)
@@ -63,10 +63,10 @@ export const DataSourceSection = memo(function DataSourceSection({
             }}
           >
             <ListItemIcon>
-              <dataSourcePlugin.Icon />
+              <sourcePlugin.Icon />
             </ListItemIcon>
             <ListItemText
-              primary={`${dataSourcePlugin?.name}`}
+              primary={`${sourcePlugin?.name}`}
               secondary={linkInfo?.label}
               slotProps={{
                 primary: {
@@ -85,11 +85,11 @@ export const DataSourceSection = memo(function DataSourceSection({
           </ListItemButton>
         )}
       </List>
-      {dataSourcePlugin?.SelectItemComponent && (
-        <dataSourcePlugin.SelectItemComponent
+      {sourcePlugin?.SelectItemComponent && (
+        <sourcePlugin.SelectItemComponent
           open={isSelectItemOpened}
           requestPopup={createRequestPopupDialog({
-            name: dataSourcePlugin.name,
+            name: sourcePlugin.name,
           })}
           onClose={(error, item) => {
             setIsSelectItemOpened(false)
@@ -101,7 +101,7 @@ export const DataSourceSection = memo(function DataSourceSection({
                 upsertBookLink({
                   bookId,
                   data: item.data,
-                  type: dataSourcePlugin.type,
+                  type: sourcePlugin.type,
                 })
               }
             }

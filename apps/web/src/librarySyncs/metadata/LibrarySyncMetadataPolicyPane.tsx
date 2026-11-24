@@ -10,15 +10,15 @@ type Props = {
 }
 
 /**
- * Datasource-only pane that controls the default `metadataFileDownloadEnabled`
+ * Library-sync-only pane that controls the default `metadataFileDownloadEnabled`
  * policy applied to NEW books detected during sync.
  *
  * Semantics: only "Disabled" actually overrides — the override is applied at
  * book creation time when the switch is off, otherwise newly-detected books
  * keep the system default. Existing books are never touched.
  */
-export const DataSourceMetadataPolicyPane = memo(
-  function DataSourceMetadataPolicyPane({
+export const LibrarySyncMetadataPolicyPane = memo(
+  function LibrarySyncMetadataPolicyPane({
     fileDownloadOverride,
     onFileDownloadChange,
   }: Props) {
