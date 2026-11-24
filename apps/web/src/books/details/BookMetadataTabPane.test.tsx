@@ -3,47 +3,59 @@ import { MemoryRouter } from "react-router"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { BookMetadataTabPane } from "./BookMetadataTabPane"
 
-const { useBook } = vi.hoisted(() => ({ useBook: vi.fn() }))
+const { useBook } = vi.hoisted(function createBookMock() {
+  return { useBook: vi.fn() }
+})
 
-vi.mock("../states", () => ({ useBook }))
+vi.mock("../states", function mockBookStates() {
+  return { useBook }
+})
 vi.mock(
   "../../metadata/useResolvedMetadataFetchEnabled",
-  async (importOriginal) => ({
-    ...(await importOriginal<
-      typeof import("../../metadata/useResolvedMetadataFetchEnabled")
-    >()),
-    useResolvedMetadataFetchEnabled:
-      function useResolvedMetadataFetchEnabled() {
-        return { override: null, isProtected: false, resolved: true }
-      },
-  }),
+  async function mockResolvedMetadataFetchEnabled(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../metadata/useResolvedMetadataFetchEnabled")
+      >()),
+      useResolvedMetadataFetchEnabled:
+        function useResolvedMetadataFetchEnabled() {
+          return { override: null, isProtected: false, resolved: true }
+        },
+    }
+  },
 )
-vi.mock("../useIncrementalBookPatch", () => ({
-  useIncrementalBookPatch: function useIncrementalBookPatch() {
-    return { mutate: vi.fn() }
-  },
-}))
-vi.mock("../useRefreshBookMetadata", () => ({
-  useRefreshBookMetadata: function useRefreshBookMetadata() {
-    return vi.fn()
-  },
-}))
-vi.mock("./MetadataSourcePane", () => ({
-  MetadataSourcePane: function MetadataSourcePane() {
-    return null
-  },
-}))
-vi.mock("./DataSourceSection", () => ({
-  DataSourceSection: function DataSourceSection() {
-    return null
-  },
-}))
+vi.mock("../useIncrementalBookPatch", function mockIncrementalBookPatch() {
+  return {
+    useIncrementalBookPatch: function useIncrementalBookPatch() {
+      return { mutate: vi.fn() }
+    },
+  }
+})
+vi.mock("../useRefreshBookMetadata", function mockRefreshBookMetadata() {
+  return {
+    useRefreshBookMetadata: function useRefreshBookMetadata() {
+      return vi.fn()
+    },
+  }
+})
+vi.mock("./MetadataSourcePane", function mockMetadataSourcePane() {
+  return {
+    MetadataSourcePane: function MetadataSourcePane() {
+      return null
+    },
+  }
+})
+vi.mock("./DataSourceSection", function mockDataSourceSection() {
+  return {
+    DataSourceSection: function DataSourceSection() {
+      return null
+    },
+  }
+})
 
 afterEach(cleanup)
 
-const renderTabPaneForBookRefreshedAt = (
-  lastMetadataUpdatedAt: number | null,
-) => {
+function renderTabPaneForBookRefreshedAt(lastMetadataUpdatedAt: number | null) {
   useBook.mockReturnValue({
     data: { _id: "book-1", lastMetadataUpdatedAt, metadata: [] },
   })
