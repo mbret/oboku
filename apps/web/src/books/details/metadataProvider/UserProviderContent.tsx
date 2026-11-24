@@ -48,7 +48,7 @@ const SaveActionStack = styled(Stack)(({ theme }) => ({
  * staged in a form so the user must explicitly hit "Save" — `isDirty`
  * gates the button so unchanged values can't be submitted.
  */
-export const UserSourceContent = ({ bookId, metadata }: Props) => {
+export const UserProviderContent = ({ bookId, metadata }: Props) => {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

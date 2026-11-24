@@ -21,7 +21,7 @@ import { generatePath, Link } from "react-router"
 import {
   BOOK_METADATA_FIELDS_BY_SOURCE,
   directives,
-  getBookMetadataSource,
+  getBookMetadataProvider,
 } from "@oboku/shared"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
@@ -29,18 +29,18 @@ import { pluginsByType } from "../../integrations/plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import { getBookMetadataEntryFields } from "../metadata/fields"
 import {
-  type BookMetadataSource,
-  getBookMetadataSourceIcon,
-  getBookMetadataSourceLabel,
+  type BookMetadataProvider,
+  getBookMetadataProviderIcon,
+  getBookMetadataProviderLabel,
   getCatalogProviderName,
-  getOrderedBookMetadataSources,
-} from "../metadata/sources"
+  getOrderedBookMetadataProviders,
+} from "../metadata/providers"
 import {
-  isReorderableBookMetadataSource,
-  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
-  type ReorderableBookMetadataSource,
+  isReorderableBookMetadataProvider,
+  DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS,
+  type ReorderableBookMetadataProvider,
 } from "@oboku/shared"
-import { formatBookMetadataField } from "./metadataSource/formatters"
+import { formatBookMetadataField } from "./metadataProvider/formatters"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
 // Cast preserves Typography's polymorphic `component` prop, which MUI's
@@ -120,7 +120,7 @@ const ReorderIconButton = styled(IconButton)({
 const SAMPLE_PREVIEW_LIMIT = 2
 
 /**
- * Shared "secondary" rendering for every row in the metadata sources
+ * Shared "secondary" rendering for every row in the metadata providers
  * list. Behaves identically across sources and the synthetic directives
  * row — only the empty-state copy is per-row.
  *
@@ -166,7 +166,7 @@ function SourceRowSecondary({
 const SECONDARY_SLOT_PROPS = { secondary: { component: "div" } } as const
 
 /**
- * Shared row shell for every entry in the metadata sources list. Owns
+ * Shared row shell for every entry in the metadata providers list. Owns
  * the `<ListItem><RowListItemButton/></ListItem>` shape, the chevron,
  * and the count/preview rendering — call sites only supply the
  * source-specific bits (icon, label, link target, preview values).
@@ -219,11 +219,11 @@ function SourceRow({
   )
 }
 
-const buildSourceRoute = (bookId: string, source: string) =>
-  generatePath(ROUTES.BOOK_METADATA_SOURCE, { id: bookId, source })
+const buildProviderRoute = (bookId: string, provider: string) =>
+  generatePath(ROUTES.BOOK_METADATA_PROVIDER, { id: bookId, provider })
 
 /**
- * Synthetic row in the metadata sources list. Directives are not a real
+ * Synthetic row in the metadata providers list. Directives are not a real
  * metadata variant — they live inside the link's filename and are parsed
  * on the fly. This row exists so the user can discover them and see they
  * sit just below "user" in the merge priority. Clicking jumps to the
@@ -249,7 +249,7 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
 
   return (
     <SourceRow
-      to={buildSourceRoute(bookId, "link")}
+      to={buildProviderRoute(bookId, "link")}
       icon={<LocalOfferOutlined />}
       primary="Directives"
       count={detectedValues.length}
@@ -270,9 +270,9 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
  * cursor is inside the `ListItemButton`'s bounding box.
  */
 type SourceReorderActionsProps = {
-  source: ReorderableBookMetadataSource
-  middle: ReadonlyArray<ReorderableBookMetadataSource>
-  onChange: (next: ReorderableBookMetadataSource[]) => void
+  source: ReorderableBookMetadataProvider
+  middle: ReadonlyArray<ReorderableBookMetadataProvider>
+  onChange: (next: ReorderableBookMetadataProvider[]) => void
 }
 
 function SourceReorderActions({
@@ -306,7 +306,7 @@ function SourceReorderActions({
         size="small"
         disabled={!canMoveUp}
         onClick={() => swap(index, index - 1)}
-        aria-label={`Move ${getBookMetadataSourceLabel(source)} up`}
+        aria-label={`Move ${getBookMetadataProviderLabel(source)} up`}
       >
         <KeyboardArrowUpRounded fontSize="small" />
       </ReorderIconButton>
@@ -315,7 +315,7 @@ function SourceReorderActions({
         size="small"
         disabled={!canMoveDown}
         onClick={() => swap(index, index + 1)}
-        aria-label={`Move ${getBookMetadataSourceLabel(source)} down`}
+        aria-label={`Move ${getBookMetadataProviderLabel(source)} down`}
       >
         <KeyboardArrowDownRounded fontSize="small" />
       </ReorderIconButton>
@@ -323,34 +323,34 @@ function SourceReorderActions({
   )
 }
 
-export function MetadataSourcePane({ bookId }: { bookId: string }) {
+export function MetadataProviderPane({ bookId }: { bookId: string }) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = link?.type ? pluginsByType[link?.type] : undefined
   const linkTitle = book?.metadata?.find((item) => item.type === "link")?.title
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
 
-  const orderedSources: BookMetadataSource[] = useMemo(
-    () => getOrderedBookMetadataSources(book?.metadataSourcePriority),
+  const orderedSources: BookMetadataProvider[] = useMemo(
+    () => getOrderedBookMetadataProviders(book?.metadataSourcePriority),
     [book?.metadataSourcePriority],
   )
 
   // Sanitized middle subset, used by the reorder controls so they always
   // operate on a known-good list (matches what the merge actually uses).
   const middle = useMemo(
-    () => orderedSources.filter(isReorderableBookMetadataSource),
+    () => orderedSources.filter(isReorderableBookMetadataProvider),
     [orderedSources],
   )
 
-  const handleReorder = (next: ReorderableBookMetadataSource[]) => {
+  const handleReorder = (next: ReorderableBookMetadataProvider[]) => {
     if (!bookId) return
 
     // Drop the patch when it matches the default — keeps the document
     // free of redundant fields and lets the default ever evolve without
     // existing books overriding it.
     const matchesDefault =
-      next.length === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES.length &&
-      next.every((s, i) => s === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES[i])
+      next.length === DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS.length &&
+      next.every((s, i) => s === DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS[i])
 
     incrementalBookPatch({
       doc: bookId,
@@ -361,7 +361,7 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
   return (
     <List
       dense
-      subheader={<ListSubheader>Metadata Sources</ListSubheader>}
+      subheader={<ListSubheader>Metadata providers</ListSubheader>}
       disablePadding
     >
       <ListItem>
@@ -369,7 +369,7 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
       </ListItem>
       {orderedSources.map((source) => {
         const entry = book?.metadata?.find(
-          (item) => getBookMetadataSource(item) === source,
+          (item) => getBookMetadataProvider(item) === source,
         )
         const fields = entry ? getBookMetadataEntryFields(entry) : undefined
         const providerName = entry ? getCatalogProviderName(entry) : undefined
@@ -386,16 +386,16 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
           (field) => formatBookMetadataField(fields, field),
         )
 
-        const reorderable = isReorderableBookMetadataSource(source)
+        const reorderable = isReorderableBookMetadataProvider(source)
 
         return (
           <Fragment key={source}>
             <SourceRow
-              to={buildSourceRoute(bookId, source)}
-              icon={getBookMetadataSourceIcon(source)}
+              to={buildProviderRoute(bookId, source)}
+              icon={getBookMetadataProviderIcon(source)}
               primary={
                 <Typography>
-                  {getBookMetadataSourceLabel(source)}
+                  {getBookMetadataProviderLabel(source)}
                   {source === "link" && (
                     <SourceOriginTypography component="span" variant="body2">
                       ({plugin?.name})

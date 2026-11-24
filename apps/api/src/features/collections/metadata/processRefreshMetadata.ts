@@ -118,11 +118,11 @@ export const processRefreshMetadata = async (
 
   const year = directivesFromLink.year ?? userStartYear
 
-  const metadataSourceOnly = directivesFromLink.metadataSourceOnly as
+  const metadataProviderOnly = directivesFromLink.metadataProviderOnly as
     | CollectionMetadata["type"]
     | undefined
-  const medatadataSources: CollectionMetadata["type"][] = metadataSourceOnly
-    ? [metadataSourceOnly]
+  const metadataProviders: CollectionMetadata["type"][] = metadataProviderOnly
+    ? [metadataProviderOnly]
     : ["biblioreads", "comicvine", "mangaupdates", "mangadex"]
 
   /**
@@ -143,7 +143,7 @@ export const processRefreshMetadata = async (
           { title, year: year ? String(year) : undefined },
           {
             comicVineApiKey,
-            sources: medatadataSources,
+            sources: metadataProviders,
           },
         )
       : []

@@ -83,7 +83,7 @@ export default defineConfig({
           items: [
             "guides/adding-a-book",
             "guides/resources-matching-and-sync",
-            "guides/metadata-sources",
+            "guides/metadata-providers",
             "guides/privacy-and-parental-secure-control",
             "guides/directives",
             "guides/secrets",

@@ -28,7 +28,7 @@ export const formatBookMetadataDate = (
 }
 
 /**
- * Union of every field name advertised by at least one metadata source
+ * Union of every field name advertised by at least one metadata provider
  * variant. Derived from {@link BOOK_METADATA_FIELDS_BY_SOURCE} so the two
  * cannot drift.
  */

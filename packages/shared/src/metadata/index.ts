@@ -4,7 +4,7 @@ import {
   LEGACY_CATALOG_SOURCE_NAME,
   type LegacyFileMetadata,
   type LegacyGoogleBookApiMetadata,
-  toCurrentBookMetadataSourceName,
+  toCurrentBookMetadataProviderName,
 } from "./legacy"
 
 export * from "./catalogs"
@@ -125,51 +125,51 @@ export type BookMetadata =
   | LegacyGoogleBookApiMetadata
 
 /**
- * Canonical set of metadata sources whose relative priority can be
+ * Canonical set of metadata providers whose relative priority can be
  * reordered by the user. `user` is pinned to the highest priority and
  * `link` to the lowest, so they are intentionally excluded.
  *
  * Single source of truth for the reorderable subset:
- *  - {@link ReorderableBookMetadataSource} is derived from this list
+ *  - {@link ReorderableBookMetadataProvider} is derived from this list
  *  - {@link BookDocType.metadataSourcePriority} references that type
- *  - {@link DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES} aliases this
+ *  - {@link DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS} aliases this
  *    constant for the default fill order
  *
  * Adding a new reorderable source therefore requires editing exactly
  * this array — type, persistence shape, and runtime checks all follow.
  */
-export const REORDERABLE_BOOK_METADATA_SOURCES = ["file", "catalog"] as const
+export const REORDERABLE_BOOK_METADATA_PROVIDERS = ["file", "catalog"] as const
 
-export type ReorderableBookMetadataSource =
-  (typeof REORDERABLE_BOOK_METADATA_SOURCES)[number]
+export type ReorderableBookMetadataProvider =
+  (typeof REORDERABLE_BOOK_METADATA_PROVIDERS)[number]
 
 /**
  * Default merge/display order for the reorderable middle of the
  * priority list, used when the user has not customized it. Identical
- * to {@link REORDERABLE_BOOK_METADATA_SOURCES} on purpose: declaration
+ * to {@link REORDERABLE_BOOK_METADATA_PROVIDERS} on purpose: declaration
  * order doubles as the default order.
  */
-export const DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES: ReadonlyArray<ReorderableBookMetadataSource> =
-  REORDERABLE_BOOK_METADATA_SOURCES
+export const DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS: ReadonlyArray<ReorderableBookMetadataProvider> =
+  REORDERABLE_BOOK_METADATA_PROVIDERS
 
-export const isReorderableBookMetadataSource = (
+export const isReorderableBookMetadataProvider = (
   value: string,
-): value is ReorderableBookMetadataSource =>
-  (REORDERABLE_BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
+): value is ReorderableBookMetadataProvider =>
+  (REORDERABLE_BOOK_METADATA_PROVIDERS as ReadonlyArray<string>).includes(value)
 
 /**
  * Every source a book's metadata can come from — also the rows of the
  * user-facing priority pane. Each entry of `book.metadata` belongs to one:
- * see {@link getBookMetadataSource}.
+ * see {@link getBookMetadataProvider}.
  */
-export type BookMetadataSource = Exclude<
+export type BookMetadataProvider = Exclude<
   BookMetadata["type"],
   typeof LEGACY_CATALOG_SOURCE_NAME
 >
 
-export const getBookMetadataSource = ({
+export const getBookMetadataProvider = ({
   type,
-}: Pick<BookMetadata, "type">): BookMetadataSource =>
+}: Pick<BookMetadata, "type">): BookMetadataProvider =>
   type === LEGACY_CATALOG_SOURCE_NAME ? "catalog" : type
 
 /** A catalog entry, in either stored shape. */
@@ -177,7 +177,7 @@ export const isCatalogEntry = (entry: BookMetadata) =>
   entry.type === "catalog" || entry.type === LEGACY_CATALOG_SOURCE_NAME
 
 /**
- * Builds the full, ordered list of metadata sources from the user-defined
+ * Builds the full, ordered list of metadata providers from the user-defined
  * middle. Returned highest → lowest priority — i.e. both the order
  * rendered in the UI and the order from which the merge / cover-pick
  * derives its precedence.
@@ -194,32 +194,32 @@ export const isCatalogEntry = (entry: BookMetadata) =>
  * `user` is pinned at the highest priority and `link` at the lowest, so
  * only the reorderable middle is configurable by the user.
  */
-export const getOrderedBookMetadataSources = (
+export const getOrderedBookMetadataProviders = (
   middle: ReadonlyArray<string> | undefined,
-): BookMetadataSource[] => {
-  const ordered = new Set<ReorderableBookMetadataSource>(
+): BookMetadataProvider[] => {
+  const ordered = new Set<ReorderableBookMetadataProvider>(
     (middle ?? [])
-      .map(toCurrentBookMetadataSourceName)
-      .filter(isReorderableBookMetadataSource),
+      .map(toCurrentBookMetadataProviderName)
+      .filter(isReorderableBookMetadataProvider),
   )
-  for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES) {
+  for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS) {
     ordered.add(source)
   }
 
   return ["user", ...ordered, "link"]
 }
 
-export const BOOK_METADATA_SOURCES: BookMetadataSource[] =
-  getOrderedBookMetadataSources(undefined)
+export const BOOK_METADATA_PROVIDERS: BookMetadataProvider[] =
+  getOrderedBookMetadataProviders(undefined)
 
-export const isBookMetadataSource = (
+export const isBookMetadataProvider = (
   value: string | undefined,
-): value is BookMetadataSource =>
+): value is BookMetadataProvider =>
   // Widen the array element type to `string` rather than narrowing `value`
-  // to `BookMetadataSource`, so the runtime guard does the type narrowing
+  // to `BookMetadataProvider`, so the runtime guard does the type narrowing
   // and we don't lie about the input type.
   value !== undefined &&
-  (BOOK_METADATA_SOURCES as ReadonlyArray<string>).includes(value)
+  (BOOK_METADATA_PROVIDERS as ReadonlyArray<string>).includes(value)
 
 /**
  * The display fields each source can show, in the order the sources pane
@@ -253,7 +253,7 @@ export const BOOK_METADATA_FIELDS_BY_SOURCE = {
   ],
   link: ["title", "contentType", "size", "modifiedAt"],
   user: ["isbn"],
-} as const satisfies Record<BookMetadataSource, readonly BookMetadataField[]>
+} as const satisfies Record<BookMetadataProvider, readonly BookMetadataField[]>
 
 export type CollectionMetadata = {
   title?:

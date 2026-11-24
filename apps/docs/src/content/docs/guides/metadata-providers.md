@@ -1,5 +1,5 @@
 ---
-title: "Metadata Sources"
+title: "Metadata Providers"
 ---
 
 ## &#x20;Series { #series }
@@ -30,7 +30,7 @@ title: "Metadata Sources"
 
 For each detail of a book, such as its title or its authors, oboku shows the value of the highest source that has one. It does not combine the values of several sources.
 
-You can swap File and Catalog on a book's metadata sources screen.
+You can swap File and Catalog on a book's metadata providers screen.
 
 The catalog entry is the best match oboku finds for the book in Google Books (when the server has a Google API key), Open Library and Project Gutenberg. Project Gutenberg is only asked about books that carry a Project Gutenberg identifier.
 

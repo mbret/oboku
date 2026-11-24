@@ -3,8 +3,8 @@ import {
   type BookMetadata,
   directives,
   getBookMetadataFields,
-  getBookMetadataSource,
-  getOrderedBookMetadataSources,
+  getBookMetadataProvider,
+  getOrderedBookMetadataProviders,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 import { identifierValue } from "@prose-reader/archive-reader"
@@ -87,7 +87,7 @@ export const pickCoverMetadata = (
 
   const namedGoogleVolumeId = getNamedGoogleVolumeId(metadataList)
 
-  const orderedSources = getOrderedBookMetadataSources(priority)
+  const orderedSources = getOrderedBookMetadataProviders(priority)
 
   const highestPriorityCover = (
     isEligible: (metadata: BookMetadata) => boolean,
@@ -95,7 +95,7 @@ export const pickCoverMetadata = (
     for (const source of orderedSources) {
       const match = metadataList.find(
         (metadata) =>
-          getBookMetadataSource(metadata) === source && isEligible(metadata),
+          getBookMetadataProvider(metadata) === source && isEligible(metadata),
       )
 
       if (match) return match

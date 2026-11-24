@@ -88,7 +88,7 @@ Collections only
 my series [oboku~metadata-comicvine-only]
 ```
 
-Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-sources)
+Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-providers)
 
 ## `metadata-title~{value}` { #metadata-title-value }
 

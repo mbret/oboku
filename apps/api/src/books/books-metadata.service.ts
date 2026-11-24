@@ -14,7 +14,7 @@ import {
   directives,
   getBookCoverKey,
   getBookMetadataFields,
-  getBookMetadataSource,
+  getBookMetadataProvider,
   getMetadataFromBook,
   isCatalogEnabled,
   isBookProtected,
@@ -237,7 +237,7 @@ export class BooksMetadataService {
       const {
         isbn,
         ignoreMetadataFile,
-        ignoreMetadataSources,
+        ignoreMetadataProviders,
         googleVolumeId: directiveGoogleVolumeId,
       } = directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
@@ -279,7 +279,7 @@ export class BooksMetadataService {
       )
       const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
       const isCatalogLookupAllowed =
-        !ignoreMetadataSources &&
+        !ignoreMetadataProviders &&
         externalFetchEnabled &&
         catalogProviders.length > 0
       const previousUserMetadata = ctx.book.metadata?.find(
@@ -571,7 +571,7 @@ export class BooksMetadataService {
 
     const isCatalogCover =
       metadataForCover !== undefined &&
-      getBookMetadataSource(metadataForCover) === "catalog"
+      getBookMetadataProvider(metadataForCover) === "catalog"
 
     if (isCatalogCover && coverLink) {
       const saved = await this.coversService.saveCoverFromUrl(

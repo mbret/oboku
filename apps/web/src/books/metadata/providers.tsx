@@ -6,7 +6,7 @@ import {
 } from "@mui/icons-material"
 import {
   type BookMetadata,
-  type BookMetadataSource,
+  type BookMetadataProvider,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 import {
@@ -18,13 +18,13 @@ import type { ReactNode } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 
 export {
-  type BookMetadataSource,
-  getOrderedBookMetadataSources,
-  isBookMetadataSource,
+  type BookMetadataProvider,
+  getOrderedBookMetadataProviders,
+  isBookMetadataProvider,
 } from "@oboku/shared"
 
-export const getBookMetadataSourceLabel = (
-  source: BookMetadataSource,
+export const getBookMetadataProviderLabel = (
+  source: BookMetadataProvider,
 ): string => {
   switch (source) {
     case "file":
@@ -38,8 +38,8 @@ export const getBookMetadataSourceLabel = (
   }
 }
 
-export const getBookMetadataSourceIcon = (
-  source: BookMetadataSource,
+export const getBookMetadataProviderIcon = (
+  source: BookMetadataProvider,
 ): ReactNode => {
   switch (source) {
     case "file":

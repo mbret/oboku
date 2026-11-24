@@ -14,7 +14,7 @@ type Props = {
   entry: DeepReadonlyObject<FileMetadata | LegacyFileMetadata> | undefined
 }
 
-export const FileSourceContent = ({ entry }: Props) => {
+export const FileProviderContent = ({ entry }: Props) => {
   const fields = entry ? getBookMetadataEntryFields(entry) : undefined
 
   return (

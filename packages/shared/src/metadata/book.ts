@@ -7,10 +7,10 @@ import {
 } from "./fields"
 import {
   type BookMetadata,
-  type BookMetadataSource,
+  type BookMetadataProvider,
   type CatalogMetadata,
-  getBookMetadataSource,
-  getOrderedBookMetadataSources,
+  getBookMetadataProvider,
+  getOrderedBookMetadataProviders,
 } from "./index"
 
 /** What the app shows of a book: its metadata entries merged by priority. */
@@ -32,7 +32,7 @@ export type BookTitleFormat = {
  * from its link's filename, which rank just below the user.
  */
 type MergeLayer = {
-  source: BookMetadataSource | "directive"
+  source: BookMetadataProvider | "directive"
   fields: ReadonlyBookMetadataFields
 }
 
@@ -122,7 +122,7 @@ export const getMetadataFromBook = (
       : undefined
 
   const priorityLowestFirst: MergeLayer["source"][] = [
-    ...getOrderedBookMetadataSources(book?.metadataSourcePriority)
+    ...getOrderedBookMetadataProviders(book?.metadataSourcePriority)
       .filter((source) => source !== "user")
       .toReversed(),
     "directive",
@@ -132,7 +132,7 @@ export const getMetadataFromBook = (
   const orderedLayers = [
     ...list.map(
       (entry): MergeLayer => ({
-        source: getBookMetadataSource(entry),
+        source: getBookMetadataProvider(entry),
         fields: getBookMetadataEntryFields(entry, format),
       }),
     ),

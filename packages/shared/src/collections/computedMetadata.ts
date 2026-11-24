@@ -21,7 +21,7 @@ const UNKNOWN_SOURCE_PRIORITY = -1
  * `CollectionMetadata` as read from a document: array fields are widened to
  * `readonly` so deeply-frozen documents (rxdb) can be passed without copying.
  */
-export type CollectionMetadataSource = Omit<
+export type CollectionMetadataProvider = Omit<
   CollectionMetadata,
   "aliases" | "authors"
 > & {
@@ -30,7 +30,7 @@ export type CollectionMetadataSource = Omit<
 }
 
 export type CollectionComputedMetadata = Omit<
-  CollectionMetadataSource,
+  CollectionMetadataProvider,
   "type" | "title"
 > & {
   title?: string | undefined
@@ -40,12 +40,12 @@ const getSourcePriority = (type: CollectionMetadata["type"]) =>
   COLLECTION_METADATA_PRIORITY[type] ?? UNKNOWN_SOURCE_PRIORITY
 
 /**
- * Flattens every metadata source of a collection into a single view, letting
+ * Flattens every metadata provider of a collection into a single view, letting
  * higher priority sources override lower ones. `undefined` and `null` values
  * never override an already resolved one.
  */
 export const computeCollectionMetadata = (
-  metadata: readonly (CollectionMetadataSource | undefined)[],
+  metadata: readonly (CollectionMetadataProvider | undefined)[],
 ): CollectionComputedMetadata =>
   metadata
     .filter(function isDefinedSource(entry) {
