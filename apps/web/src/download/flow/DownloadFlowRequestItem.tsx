@@ -1,5 +1,6 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import { memo, useCallback, useEffect, useRef, useState } from "react"
+import { useQueryClient } from "@tanstack/react-query"
+import { memo, useCallback, useEffect, useState } from "react"
 import { firstValueFrom } from "rxjs"
 import { isPluginType } from "../../integrations/plugins/configure"
 import { PluginDownloadBook } from "../../integrations/plugins/PluginDownloadBook"
@@ -9,80 +10,42 @@ import { getLatestDatabase } from "../../rxdb/RxDbProvider"
 import { getLinkStateAsync } from "../../links/states"
 import { dexieDb } from "../../rxdb/dexie"
 import { bytesToMb } from "../../common/utils"
-import { DownloadState, booksDownloadStateSignal } from "../states"
 import { Logger } from "../../debug/logger.shared"
-import type { DownloadFlowRequest } from "./types"
+import type { DownloadBookVariables } from "../downloadBookMutation"
+import { storedDownloadsQueryOptions } from "../useStoredDownloads"
 
 type DownloadLink = NonNullable<Awaited<ReturnType<typeof getLinkStateAsync>>>
 
-const setDownloadData = (
-  bookId: string,
-  data: ReturnType<typeof booksDownloadStateSignal.getValue>[number],
-) => {
-  booksDownloadStateSignal.update((prev) => ({
-    ...prev,
-    [bookId]: {
-      ...prev[bookId],
-      ...data,
-    },
-  }))
-}
-
 export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
-  onSettled,
   request,
 }: {
-  onSettled: () => void
-  request: DownloadFlowRequest
+  request: DownloadBookVariables
 }) {
   // React Compiler cannot lower this function yet, so it bails out here.
   // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
   "use no memo"
 
+  const queryClient = useQueryClient()
   const [link, setLink] = useState<DownloadLink | null>(null)
   const [isPreparing, setIsPreparing] = useState(!request.file)
-  const { abortController, bookId, file, links, reject, resolve } = request
-  const isSettledRef = useRef(false)
+  const {
+    abortController,
+    _id: bookId,
+    file,
+    links,
+    progress,
+    settlement,
+  } = request
 
-  const setProgress = useCallback(
-    (progress: number) => {
-      setDownloadData(bookId, {
-        downloadProgress: Math.round(progress * 100),
-      })
+  const reportProgress = useCallback(
+    function reportProgress(ratio: number) {
+      progress.update(Math.round(ratio * 100))
     },
-    [bookId],
-  )
-
-  const settle = useCallback(
-    ({ error, success = false }: { error?: unknown; success?: boolean }) => {
-      if (isSettledRef.current) {
-        return
-      }
-
-      isSettledRef.current = true
-      onSettled()
-
-      if (success) {
-        setDownloadData(bookId, {
-          downloadProgress: 100,
-          downloadState: DownloadState.Downloaded,
-        })
-        resolve()
-
-        return
-      }
-
-      setDownloadData(bookId, {
-        downloadState: DownloadState.None,
-      })
-
-      reject(error)
-    },
-    [bookId, onSettled, reject, resolve],
+    [progress],
   )
 
   const persistDownloadResult = useCallback(
-    async (result: DownloadBookResult) => {
+    async function persistDownloadResult(result: DownloadBookResult) {
       const data = result.data
       const filename = result.fileName.trim()
 
@@ -104,63 +67,46 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
         data: cachedData,
         filename,
       })
+
+      await queryClient.refetchQueries({
+        queryKey: storedDownloadsQueryOptions.queryKey,
+      })
     },
-    [bookId],
+    [bookId, queryClient],
   )
 
   const onResolve = useCallback(
-    (result: DownloadBookResult) => {
-      void persistDownloadResult(result)
-        .then(() => {
-          settle({ success: true })
-        })
-        .catch((error) => {
-          settle({ error })
-        })
+    function onResolve(result: DownloadBookResult) {
+      persistDownloadResult(result).then(settlement.resolve, settlement.reject)
     },
-    [persistDownloadResult, settle],
+    [persistDownloadResult, settlement],
   )
 
-  const onError = useCallback(
-    (error: unknown) => {
-      settle({ error })
+  useEffect(
+    function cancelOnAbort() {
+      function rejectAsCancelled() {
+        settlement.reject(new CancelError())
+      }
+
+      abortController.signal.addEventListener("abort", rejectAsCancelled, {
+        once: true,
+      })
+
+      return function stopListeningToAbort() {
+        abortController.signal.removeEventListener("abort", rejectAsCancelled)
+      }
     },
-    [settle],
+    [abortController, settlement],
   )
-
-  // User cancel: signal abort is handled here; provider also receives signal and may call onError(CancelError); settle guard makes duplicate no-op.
-  useEffect(() => {
-    const handleAbort = () => {
-      onError(new CancelError())
-    }
-
-    abortController.signal.addEventListener("abort", handleAbort, {
-      once: true,
-    })
-
-    return () => {
-      abortController.signal.removeEventListener("abort", handleAbort)
-    }
-  }, [abortController, onError])
 
   useEffect(
     function prepareRemoteDownload() {
-      ;(async () => {
-        setDownloadData(bookId, {
-          downloadProgress: 0,
-          downloadState: DownloadState.Downloading,
-        })
-
+      ;(async function startDownload() {
         if (file) {
-          try {
-            await persistDownloadResult({
-              data: file,
-              fileName: file.name,
-            })
-            settle({ success: true })
-          } catch (error) {
-            onError(error)
-          }
+          await persistDownloadResult({
+            data: file,
+            fileName: file.name,
+          }).then(settlement.resolve, settlement.reject)
 
           return
         }
@@ -184,7 +130,7 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
           })
 
           if (fileExist) {
-            settle({ success: true })
+            settlement.resolve()
 
             return
           }
@@ -196,11 +142,11 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
           setLink(resolvedLink)
           setIsPreparing(false)
         } catch (error) {
-          onError(error)
+          settlement.reject(error)
         }
       })()
     },
-    [bookId, file, links, onError, persistDownloadResult, settle],
+    [bookId, file, links, persistDownloadResult, settlement],
   )
 
   if (file || isPreparing || !link) {
@@ -208,8 +154,8 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
   }
 
   const downloadProps = {
-    onDownloadProgress: setProgress,
-    onError,
+    onDownloadProgress: reportProgress,
+    onError: settlement.reject,
     onResolve,
     signal: abortController.signal,
   }

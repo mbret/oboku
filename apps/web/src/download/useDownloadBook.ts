@@ -1,16 +1,34 @@
 import {
   type DefaultError,
+  type MutateOptions,
   type UseMutationOptions,
   useMutation,
 } from "@tanstack/react-query"
-import type { BookQueryResult } from "../books/states"
-import { downloadFlowRequestsSignal } from "./flow/states"
+import { signal } from "reactjrx"
+import {
+  type DownloadBookInput,
+  type DownloadBookVariables,
+  downloadBookMutationKey,
+} from "./downloadBookMutation"
 
-let requestId = 0
+type DownloadBookMutateOptions = MutateOptions<
+  void,
+  DefaultError,
+  DownloadBookVariables
+>
 
-type DownloadBookVariables = Pick<BookQueryResult, `_id` | `links`> & {
-  file?: File
-}
+const createDownloadVariables = ({
+  _id,
+  links,
+  file,
+}: DownloadBookInput): DownloadBookVariables => ({
+  _id,
+  links,
+  file,
+  abortController: new AbortController(),
+  progress: signal({ default: 0 }),
+  settlement: Promise.withResolvers<void>(),
+})
 
 export const useDownloadBook = (
   options?: Pick<
@@ -18,31 +36,29 @@ export const useDownloadBook = (
     "meta"
   >,
 ) => {
-  return useMutation({
+  const { mutate, mutateAsync, ...mutation } = useMutation({
     ...options,
-    mutationFn: function enqueueBookDownload({
-      _id: bookId,
-      links,
-      file,
+    mutationKey: downloadBookMutationKey,
+    mutationFn: function awaitDownloadSettlement({
+      settlement,
     }: DownloadBookVariables) {
-      return new Promise<void>(function appendDownloadRequest(resolve, reject) {
-        requestId += 1
-
-        downloadFlowRequestsSignal.update(function appendRequest(requests) {
-          return [
-            ...requests,
-            {
-              abortController: new AbortController(),
-              bookId,
-              file,
-              id: requestId.toString(),
-              links,
-              reject,
-              resolve,
-            },
-          ]
-        })
-      })
+      return settlement.promise
     },
   })
+
+  return {
+    ...mutation,
+    mutate: function downloadBook(
+      book: DownloadBookInput,
+      mutateOptions?: DownloadBookMutateOptions,
+    ) {
+      mutate(createDownloadVariables(book), mutateOptions)
+    },
+    mutateAsync: function downloadBookAsync(
+      book: DownloadBookInput,
+      mutateOptions?: DownloadBookMutateOptions,
+    ) {
+      return mutateAsync(createDownloadVariables(book), mutateOptions)
+    },
+  }
 }

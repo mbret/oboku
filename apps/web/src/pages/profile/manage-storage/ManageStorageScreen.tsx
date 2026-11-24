@@ -18,7 +18,7 @@ import {
 import { useStorageUse } from "../../../settings/useStorageUse"
 import { BookList } from "../../../books/lists"
 import { bookActionDrawerSignal } from "../../../books/drawer/BookActionsDrawer"
-import { useDownloadedFilesInfo } from "../../../download/useDownloadedFilesInfo"
+import { useStoredDownloads } from "../../../download/useStoredDownloads"
 import { useRemoveDownloadFile } from "../../../download/useRemoveDownloadFile"
 import { difference, formatBytes } from "@oboku/shared"
 import Alert from "@mui/material/Alert"
@@ -47,7 +47,7 @@ export const ManageStorageScreen = () => {
     useStorageUse()
   const { mutate: removeCoversInCache } = useRemoveCoversInCache()
   const { mutateAsync: removeDownloadFile } = useRemoveDownloadFile()
-  const { data: downloadedBooks = [] } = useDownloadedFilesInfo()
+  const { data: downloadedBooks = [] } = useStoredDownloads()
   const downloadedBookIds = downloadedBooks.map(({ id }) => id)
   const extraDownloadFilesIds = difference(downloadedBookIds, bookIds)
   const theme = useTheme()

@@ -1,18 +1,12 @@
-import { useMemo } from "react"
-import { useSignalValue } from "reactjrx"
 import { useBooks } from "../books/states"
-import { booksDownloadStateSignal, DownloadState } from "./states"
+import { selectStoredBookIds, useStoredDownloads } from "./useStoredDownloads"
 
 export const useDownloadedBooks = () => {
-  const downloadState = useSignalValue(booksDownloadStateSignal)
+  const { data: storedBookIds } = useStoredDownloads(selectStoredBookIds)
   const { data: books } = useBooks()
+  const storedBookIdSet = new Set(storedBookIds)
 
-  return useMemo(
-    () =>
-      books?.filter(
-        (book) =>
-          downloadState[book._id]?.downloadState === DownloadState.Downloaded,
-      ),
-    [downloadState, books],
-  )
+  return books?.filter(function isStored(book) {
+    return storedBookIdSet.has(book._id)
+  })
 }
