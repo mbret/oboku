@@ -29,11 +29,11 @@ export const useSynchronizeLibrarySync = () => {
         throw new Error("No database")
       }
 
-      const datasource$ = from(
+      const librarySync$ = from(
         database.datasource.findOne({ selector: { _id } }).exec(),
       )
 
-      return datasource$.pipe(
+      return librarySync$.pipe(
         filter(isDefined),
         switchMap((librarySync) => from(synchronizeLibrarySync(librarySync))),
         switchMap((data) => {

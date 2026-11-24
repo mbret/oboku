@@ -9,7 +9,7 @@ import {
 } from "@mui/material"
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
-import { useSourcePlugin } from "../../librarySyncs/helpers"
+import { useSourcePlugin } from "../../integrations/plugins/useSourcePlugin"
 import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../integrations/plugins/useCreateRequestPopupDialog"

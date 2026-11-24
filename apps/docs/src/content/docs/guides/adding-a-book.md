@@ -6,7 +6,7 @@ description: Reading time aye?
 There are two main distinct ways to add content with oboku. You can either add a book manually or let oboku synchronize your content automatically, also known as **sync**.
 
 :::note
-We recommend setting up library syncs as it is the most convenient way to manage big libraries
+We recommend setting up library syncs: they are the most convenient way to manage big libraries
 :::
 
 ## Add content manually

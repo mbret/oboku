@@ -116,12 +116,12 @@ export const LibrarySyncDetailsScreen = memo(
               variant="outlined"
               onClick={() => id && syncLibrarySync(id)}
             >
-              Synchronize
+              Sync now
             </Button>
           </SynchronizeButtonStack>
           <PageSection title="Danger zone" tone="danger">
             <ListItemButton onClick={removeLibrarySyncThenGoBack}>
-              <ListItemText primary="Delete this library sync" />
+              <ListItemText primary="Delete this sync" />
             </ListItemButton>
           </PageSection>
         </PageContainer>

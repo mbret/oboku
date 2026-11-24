@@ -98,8 +98,8 @@ export const LibrarySyncsReportsScreen = memo(
                     {entry.report.has_different_provider_credentials && (
                       <Alert severity="info">
                         Some books or collections were synced but could not have
-                        their metadata refreshed because they use a different
-                        link or connector than this library sync.
+                        their metadata refreshed because their files use a
+                        different connector or account than this sync.
                       </Alert>
                     )}
                     <ReportSummary entry={entry} />
@@ -213,9 +213,9 @@ export const LibrarySyncsReportsScreen = memo(
                                         variant="caption"
                                         component="span"
                                       >
-                                        Book <b>{label ?? id}</b> uses a
-                                        different link or connector than this
-                                        datasource. Metadata refresh skipped.
+                                        Book <b>{label ?? id}</b> has its file
+                                        on a different connector or account than
+                                        this sync. Metadata refresh skipped.
                                       </Typography>
                                     </Box>
                                   )}
@@ -265,9 +265,10 @@ export const LibrarySyncsReportsScreen = memo(
                                         variant="caption"
                                         component="span"
                                       >
-                                        Collection <b>{label ?? id}</b> uses a
-                                        different link or connector than this
-                                        datasource. Metadata refresh skipped.
+                                        Collection <b>{label ?? id}</b> has its
+                                        folder on a different connector or
+                                        account than this sync. Metadata refresh
+                                        skipped.
                                       </Typography>
                                     </Box>
                                   )}

@@ -7,7 +7,7 @@ description: If you find yourself having a problem please check for details on t
 
 ### Incognito mode / private browsing { #incognito-mode-private-browsing }
 
-Using incognito mode, private browsing or some plugins that heavily restrict the use of cookies **may not work well with oboku**. Some third-party sources we use for library syncs require the use of cookies to authenticate you. You might not be able to use Google Drive if your browser is blocking cookies for example. It is recommended to use normal mode and eventually accept popups opening for oboku to have full access to all the features.
+Using incognito mode, private browsing or some plugins that heavily restrict the use of cookies **may not work well with oboku**. Some sources, such as Google Drive, need cookies to authenticate you. You might not be able to use Google Drive if your browser is blocking cookies for example. It is recommended to use normal mode and eventually accept popups opening for oboku to have full access to all the features.
 
 ## Troubleshoot
 
@@ -23,7 +23,7 @@ When synchronizing your content with library syncs there could be several reason
 
 ### The metadata are not synchronized and/or in error. { #the-metadata-are-not-synchronized-and-or-in-error }
 
-As a reminder, only EPUB files, comic archives (`.cbz`, `.cbr`, `.zip`, `.rar`) and files with the `isbn` directive are parsed for metadata. Any other format will only have the title filled. However it is still possible for the metadata extraction to fail completely. One of the possible reason for oboku to not parse metadata is if the file is too big. If your file is around 500mb or above there is a high chance we will not be able to extract it. If that is the case the best workaround is to use the `isbn` directive. Visit the [library syncs](/guides/library-syncs) section for more info. If you are under this size and still get troubles getting the metadata please contact the support for further assistance.
+As a reminder, only EPUB files, comic archives (`.cbz`, `.cbr`, `.zip`, `.rar`) and files with the `isbn` directive are parsed for metadata. Any other format will only have the title filled. However it is still possible for the metadata extraction to fail completely. One of the possible reason for oboku to not parse metadata is if the file is too big. If your file is around 500mb or above there is a high chance we will not be able to extract it. If that is the case the best workaround is to use the `isbn` directive. Visit the [directives](/guides/directives) section for more info. If you are under this size and still get troubles getting the metadata please contact the support for further assistance.
 
 ### I have some flickers when turning pages for comics / manga on safari { #i-have-some-flickers-when-turning-pages-for-comics-manga-on-safari }
 

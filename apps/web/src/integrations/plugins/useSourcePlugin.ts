@@ -1,4 +1,4 @@
-import { plugins } from "../integrations/plugins/configure"
+import { plugins } from "./configure"
 import { useMemo } from "react"
 
 export const useSourcePlugin = (type?: string) =>
