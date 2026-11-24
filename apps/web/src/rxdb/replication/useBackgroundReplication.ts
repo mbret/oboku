@@ -1,16 +1,18 @@
 import { useCallback, useEffect, useState } from "react"
 import { combineLatest, tap } from "rxjs"
-import { syncSignal } from "./states"
+import {
+  type ReplicationState,
+  runningReplicationsSignal,
+  syncSignal,
+} from "./states"
 import { triggerReplication$ } from "./triggerReplication"
 import { useReplicateCollection } from "./useReplicateCollection"
-import { useSubscribe } from "reactjrx"
+import { SIGNAL_RESET, useSubscribe } from "reactjrx"
 import { useActiveProfile } from "../../profiles"
 import { useIsAuthenticated } from "../../auth/useIsAuthenticated"
 import { useDatabase } from "../RxDbProvider"
 import { useNetworkState } from "react-use"
 import { useConfig } from "../../config/useConfig"
-
-type ReplicationState = ReturnType<ReturnType<typeof useReplicateCollection>>
 
 export const useBackgroundReplication = () => {
   const { data: config } = useConfig()
@@ -79,17 +81,26 @@ export const useBackgroundReplication = () => {
     }
   }, [database, replicate, dbName, config])
 
-  useEffect(() => {
-    if (!online || !isAuthenticated) return
+  useEffect(
+    function runReplicationsWhileOnlineAndSignedIn() {
+      if (!online || !isAuthenticated) return
 
-    replicationStates.forEach((state) => {
-      state.start()
-    })
-
-    return () => {
       replicationStates.forEach((state) => {
-        state.pause()
+        state.start()
       })
-    }
-  }, [online, isAuthenticated, replicationStates])
+      runningReplicationsSignal.update(
+        new Map(
+          replicationStates.map((state) => [state.collection.name, state]),
+        ),
+      )
+
+      return function pauseReplications() {
+        replicationStates.forEach((state) => {
+          state.pause()
+        })
+        runningReplicationsSignal.update(SIGNAL_RESET)
+      }
+    },
+    [online, isAuthenticated, replicationStates],
+  )
 }
