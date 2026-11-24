@@ -1,7 +1,9 @@
-import type {
-  ServerConnectorDocType,
-  SettingsConnectorDocType,
-  WebdavConnectorDocType,
+import {
+  createApiClient,
+  type ServerConnectorDocType,
+  type SettingsConnectorDocType,
+  type WebdavConnectorDocType,
+  type WebdavDirectoryItemDto,
 } from "@oboku/shared"
 import {
   MutationCache,
@@ -20,11 +22,13 @@ import type { ReactElement } from "react"
 import { MemoryRouter } from "react-router"
 import type { FileStat } from "webdav"
 import { afterEach, describe, expect, it, vi } from "vitest"
+import { HttpClientApiContext, type HttpApiClientWeb } from "../../../http"
 
 const mocks = vi.hoisted(function createUploadMocks() {
   return {
-    connectWebdav: vi.fn(),
+    createWebdavClient: vi.fn(),
     extractConnectorData: vi.fn(),
+    notifyError: vi.fn(),
     useConfig: vi.fn(),
     useConnectors: vi.fn(),
   }
@@ -49,17 +53,33 @@ vi.mock(
   },
 )
 
-vi.mock("./auth/connect", async function mockConnectWebdav(importOriginal) {
-  return {
-    ...(await importOriginal<typeof import("./auth/connect")>()),
-    connectWebdav: mocks.connectWebdav,
-  }
-})
+vi.mock(
+  "./auth/connect",
+  async function mockCreateWebdavClient(importOriginal) {
+    return {
+      ...(await importOriginal<typeof import("./auth/connect")>()),
+      createWebdavClient: mocks.createWebdavClient,
+    }
+  },
+)
+
+vi.mock(
+  "../../../notifications/toasts",
+  async function spyOnNotifyError(importOriginal) {
+    return {
+      ...(await importOriginal<
+        typeof import("../../../notifications/toasts")
+      >()),
+      notifyError: mocks.notifyError,
+    }
+  },
+)
 
 import { UploadBook as ServerPluginUploadBook } from "../../server/serverPlugin/UploadBook"
 import { UploadBook as WebdavPluginUploadBook } from "./UploadBook"
 
-const API_WEBDAV_URL = "https://api.oboku.test/webdav"
+const API_URL = "https://api.oboku.test"
+const API_WEBDAV_URL = `${API_URL}/webdav`
 
 const serverConnector: ServerConnectorDocType = {
   id: "server-connector",
@@ -86,6 +106,20 @@ const bookFileStat: FileStat = {
   mime: "application/epub+zip",
 }
 
+const booksDirectoryItem: WebdavDirectoryItemDto = {
+  filename: "/Books",
+  basename: "Books",
+  type: "directory",
+}
+
+const duneItem: WebdavDirectoryItemDto = {
+  filename: "/Books/Dune.epub",
+  basename: "Dune.epub",
+  type: "file",
+  mime: "application/epub+zip",
+  etag: "dune-etag",
+}
+
 async function grantPopup() {
   return true
 }
@@ -99,28 +133,62 @@ const givenConnector = (connector: SettingsConnectorDocType) => {
   mocks.extractConnectorData.mockResolvedValue({
     data: { ...connector, password: "password" },
   })
-  mocks.connectWebdav.mockResolvedValue({
-    client: { getDirectoryContents: vi.fn() },
-    items: [bookFileStat],
+  mocks.createWebdavClient.mockReturnValue({
+    getDirectoryContents: vi.fn(async function listBookFile() {
+      return [bookFileStat]
+    }),
   })
 }
 
-const renderUploadBook = (uploadBook: ReactElement) => {
+const renderUploadBook = (
+  uploadBook: ReactElement,
+  api = vi.fn<typeof fetch>(),
+) => {
   const onMutationError = vi.fn(function reportGlobalMutationError(
     _error: Error,
   ) {})
   const queryClient = new QueryClient({
     mutationCache: new MutationCache({ onError: onMutationError }),
   })
+  // The upload only calls the API through `sdkClient`; the double cast lets
+  // a client on a stubbed fetch stand in for the full client.
+  const httpClientApi = {
+    sdkClient: createApiClient({
+      baseUrl: API_URL,
+      throwOnError: true,
+      fetch: api,
+    }),
+  } as unknown as HttpApiClientWeb
 
   render(
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>{uploadBook}</MemoryRouter>
+      <HttpClientApiContext.Provider value={httpClientApi}>
+        <MemoryRouter>{uploadBook}</MemoryRouter>
+      </HttpClientApiContext.Provider>
     </QueryClientProvider>,
   )
 
   return { onMutationError }
 }
+
+const toDirectoryRequest = async (input: RequestInfo | URL) => {
+  if (!(input instanceof Request)) throw new Error("Expected a Request")
+
+  return {
+    method: input.method,
+    url: input.url,
+    body: await input.clone().json(),
+  }
+}
+
+const serveDirectories = (
+  serveDirectory: (path: string) => Promise<Response>,
+) =>
+  vi.fn<typeof fetch>(async function serveDirectoryOfRequest(input) {
+    const { body } = await toDirectoryRequest(input)
+
+    return serveDirectory(body.path)
+  })
 
 const addTheBookFile = async () => {
   const bookItem = await screen.findByRole("treeitem", { name: /book\.epub/ })
@@ -151,11 +219,10 @@ describe("WebDAV upload", function testWebdavUpload() {
     fireEvent.click(screen.getByRole("button", { name: "Connect" }))
 
     expect(await screen.findByText("Connected to oboku server")).toBeTruthy()
-    expect(mocks.connectWebdav).toHaveBeenCalledWith({
+    expect(mocks.createWebdavClient).toHaveBeenCalledWith({
       url: API_WEBDAV_URL,
       username: "reader",
       password: "password",
-      path: "/",
     })
 
     await addTheBookFile()
@@ -196,7 +263,7 @@ describe("WebDAV upload", function testWebdavUpload() {
     expect(onMutationError.mock.calls[0]?.[0]?.message).toBe(
       "No WebDAV URL available",
     )
-    expect(mocks.connectWebdav).not.toHaveBeenCalled()
+    expect(mocks.createWebdavClient).not.toHaveBeenCalled()
   })
 
   it("offers no new server connector once one exists", function hideNewServerConnector() {
@@ -235,11 +302,10 @@ describe("WebDAV upload", function testWebdavUpload() {
         "Connected with connector https://dav.example.test/books",
       ),
     ).toBeTruthy()
-    expect(mocks.connectWebdav).toHaveBeenCalledWith({
+    expect(mocks.createWebdavClient).toHaveBeenCalledWith({
       url: "https://dav.example.test/books",
       username: "reader",
       password: "password",
-      path: "/",
     })
 
     await addTheBookFile()
@@ -257,6 +323,90 @@ describe("WebDAV upload", function testWebdavUpload() {
         },
       },
     ])
+  })
+
+  it("lists the folders through oboku's server when the connector uses it as a proxy", async function listThroughServerProxy() {
+    givenConnector({ ...webdavConnector, proxyThroughServer: true })
+    const api = serveDirectories(async function serveBooksFolder(path) {
+      return Response.json({
+        items: path === "/" ? [booksDirectoryItem] : [duneItem],
+      })
+    })
+    const onClose = vi.fn()
+    renderUploadBook(
+      <WebdavPluginUploadBook
+        onClose={onClose}
+        requestPopup={grantPopup}
+        TagsSelector={NoTagsSelector}
+        title="Add a book"
+      />,
+      api,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }))
+    fireEvent.click(await screen.findByText("Books"))
+    const duneTreeItem = await screen.findByRole("treeitem", {
+      name: /^Dune\.epub/,
+    })
+    fireEvent.click(
+      within(duneTreeItem).getByRole("checkbox", { hidden: true }),
+    )
+    fireEvent.click(screen.getByRole("button", { name: "Add 1 book" }))
+
+    expect(onClose).toHaveBeenCalledWith([
+      {
+        book: { metadata: [{ title: "Dune.epub", type: "link" }] },
+        link: {
+          type: "webdav",
+          data: {
+            connectorId: "webdav-connector",
+            filePath: "/Books/Dune.epub",
+            etag: "dune-etag",
+          },
+        },
+      },
+    ])
+    const directoryRequests = await Promise.all(
+      api.mock.calls.map(([input]) => toDirectoryRequest(input)),
+    )
+    expect(directoryRequests).toEqual(
+      ["/", "/Books"].map((path) => ({
+        method: "POST",
+        url: `${API_URL}/connectors/webdav/directory`,
+        body: {
+          connectorId: "webdav-connector",
+          path,
+          providerCredentials: { password: "password" },
+        },
+      })),
+    )
+    expect(mocks.createWebdavClient).not.toHaveBeenCalled()
+  })
+
+  it("shows why oboku's server could not list a folder", async function notifyFolderListingError() {
+    givenConnector({ ...webdavConnector, proxyThroughServer: true })
+    const listingError = new Error("The server refused the folder")
+    const api = serveDirectories(async function refuseBooksFolder(path) {
+      if (path !== "/") throw listingError
+
+      return Response.json({ items: [booksDirectoryItem] })
+    })
+    renderUploadBook(
+      <WebdavPluginUploadBook
+        onClose={vi.fn()}
+        requestPopup={grantPopup}
+        TagsSelector={NoTagsSelector}
+        title="Add a book"
+      />,
+      api,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }))
+    fireEvent.click(await screen.findByText("Books"))
+
+    await expect
+      .poll(() => mocks.notifyError.mock.calls)
+      .toEqual([[listingError]])
   })
 
   it("closes without books from either step", async function cancelFromEitherStep() {
