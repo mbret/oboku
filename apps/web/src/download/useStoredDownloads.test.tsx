@@ -3,7 +3,7 @@ import { cleanup, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { dexieDb } from "../rxdb/dexie"
-import { useHasReadStoredDownloads } from "./useHasReadStoredDownloads"
+import { useHasReadStoredDownloads } from "./useStoredDownloads"
 
 describe("useHasReadStoredDownloads", () => {
   afterEach(async function clearStoredDownloads() {

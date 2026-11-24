@@ -22,7 +22,7 @@ export const storedDownloadsQueryOptions = queryOptions$({
   queryKey: ["download", "stored"] as const,
   queryFn: observeStoredDownloads,
   networkMode: "always",
-  meta: { survivesSessionReset: true },
+  meta: { survivesSessionReset: true, notifyErrors: true },
 })
 
 export const selectStoredBookIds = (storedDownloads: StoredDownload[]) =>
@@ -38,3 +38,14 @@ export function useStoredDownloads<TData = StoredDownload[]>(
 ) {
   return useLiveQuery$({ ...storedDownloadsQueryOptions, select })
 }
+
+function hasReadStoredDownloads() {
+  return true
+}
+
+/**
+ * Whether the stored downloads have been read once. It stays true when a
+ * later read fails, since the query keeps its data then.
+ */
+export const useHasReadStoredDownloads = () =>
+  useStoredDownloads(hasReadStoredDownloads).data ?? false
