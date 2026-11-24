@@ -1,9 +1,4 @@
-import {
-  AuthType,
-  createClient,
-  type FileStat,
-  type WebDAVClient,
-} from "webdav"
+import { AuthType, createClient } from "webdav"
 
 export const resolveWebdavUrl = ({
   connectorUrl,
@@ -35,19 +30,3 @@ export const createWebdavClient = ({
     password,
     authType: AuthType.Auto,
   })
-
-export const connectWebdav = async ({
-  password,
-  path = "/",
-  url,
-  username,
-}: {
-  password: string
-  path?: string
-  url: string
-  username: string
-}): Promise<{ client: WebDAVClient; items: FileStat[] }> => {
-  const client = createWebdavClient({ url, username, password })
-  const items = await client.getDirectoryContents(path)
-  return { client, items }
-}

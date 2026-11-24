@@ -6,7 +6,8 @@ import type {
 } from "../../../../connectors/TestConnection"
 import { ConnectorForm as GenericConnectorForm } from "../../../../connectors/ConnectorForm"
 import { useUnlockMasterKey } from "../../../../secrets/useUnlockMasterKey"
-import { connectWebdav } from "../auth/connect"
+import { createWebdavClient } from "../auth/connect"
+import { listDirectoryFromWebdavServer } from "../listDirectory"
 import { WebdavRequirementsAlert } from "../WebdavRequirementsAlert"
 
 export type WebdavConnectionParams = ConnectionParams & { directory?: string }
@@ -18,10 +19,12 @@ export const testConnection: TestConnectionFn<WebdavConnectionParams> = async (
   params,
 ) => {
   try {
-    await connectWebdav({
-      url: params.url,
-      username: params.username,
-      password: params.password,
+    await listDirectoryFromWebdavServer({
+      client: createWebdavClient({
+        url: params.url,
+        username: params.username,
+        password: params.password,
+      }),
       path: toPath(params),
     })
     return true

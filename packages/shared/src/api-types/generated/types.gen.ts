@@ -465,6 +465,30 @@ export type DownloadLinkDto = {
     providerCredentials: WebdavCredentialsDto;
 };
 
+export type ListWebdavDirectoryDto = {
+    connectorId: string;
+    /**
+     * From the connector's URL, like `/Books`.
+     */
+    path: string;
+    providerCredentials: WebdavCredentialsDto;
+};
+
+export type WebdavDirectoryItemDto = {
+    type: 'file' | 'directory';
+    /**
+     * The item's path from the connector's URL.
+     */
+    filename: string;
+    basename: string;
+    mime?: string;
+    etag?: string;
+};
+
+export type WebdavDirectoryResponseDto = {
+    items: Array<WebdavDirectoryItemDto>;
+};
+
 export type RefreshCollectionMetadataDto = {
     collectionId: string;
     soft?: boolean;
@@ -1814,6 +1838,31 @@ export type LinksDownloadResponses = {
 };
 
 export type LinksDownloadResponse = LinksDownloadResponses[keyof LinksDownloadResponses];
+
+export type ConnectorsListWebdavDirectoryData = {
+    body: ListWebdavDirectoryDto;
+    path?: never;
+    query?: never;
+    url: '/connectors/webdav/directory';
+};
+
+export type ConnectorsListWebdavDirectoryErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryError = ConnectorsListWebdavDirectoryErrors[keyof ConnectorsListWebdavDirectoryErrors];
+
+export type ConnectorsListWebdavDirectoryResponses = {
+    200: WebdavDirectoryResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryResponse = ConnectorsListWebdavDirectoryResponses[keyof ConnectorsListWebdavDirectoryResponses];
 
 export type CollectionsRefreshMetadataData = {
     body: RefreshCollectionMetadataDto;

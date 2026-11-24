@@ -1,5 +1,4 @@
 import {
-  BadGatewayException,
   BadRequestException,
   Injectable,
   NotFoundException,
@@ -12,22 +11,10 @@ import {
 import type createNano from "nano"
 import { CouchService } from "../couch/couch.service.js"
 import { findOne } from "../couch/dbHelpers.js"
-import {
-  createObokuBadRequest,
-  toObokuErrorBody,
-} from "../http/obokuBadRequest.js"
-import { isNonPublicAddressError } from "../http/publicAddress.js"
-import {
-  WebdavConnectorNotConfiguredError,
-  WebdavConnectorNotFoundError,
-  findWebdavConnector,
-  isSignInRefused,
-  toAnsweredStatus,
-} from "../plugins/webdav/index.js"
-import {
-  FileSizeUnstatedError,
-  streamWebdavFile,
-} from "../plugins/webdav/streamWebdavFile.js"
+import { toObokuErrorBody } from "../http/obokuBadRequest.js"
+import { findWebdavConnector } from "../plugins/webdav/index.js"
+import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
+import { throwWebdavHttpException } from "../plugins/webdav/toWebdavHttpException.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
 const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
@@ -36,48 +23,6 @@ const createResourceNotFound = () =>
   new NotFoundException(
     toObokuErrorBody(ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND),
   )
-
-const toServerFailure = (error: unknown) => {
-  if (error instanceof WebdavConnectorNotConfiguredError) {
-    return createObokuBadRequest(ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED)
-  }
-
-  if (error instanceof WebdavConnectorNotFoundError) {
-    return createObokuBadRequest(
-      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
-    )
-  }
-
-  if (isNonPublicAddressError(error)) {
-    return createObokuBadRequest(ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED)
-  }
-
-  if (error instanceof FileSizeUnstatedError) {
-    return new BadGatewayException(
-      toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN),
-    )
-  }
-
-  if (toAnsweredStatus(error) === 404) return createResourceNotFound()
-
-  if (isSignInRefused(error)) {
-    return new BadGatewayException(
-      toObokuErrorBody(
-        ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED,
-      ),
-    )
-  }
-
-  return new BadGatewayException(
-    toObokuErrorBody(
-      ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
-    ),
-  )
-}
-
-const throwServerFailure = (error: unknown): never => {
-  throw toServerFailure(error)
-}
 
 const streamConnectorFile = async ({
   db,
@@ -135,7 +80,7 @@ export class LinksService {
 
     const { stream, name, contentType, size, expectedSize } =
       await streamConnectorFile({ db, link, providerCredentials }).catch(
-        throwServerFailure,
+        throwWebdavHttpException,
       )
 
     return {

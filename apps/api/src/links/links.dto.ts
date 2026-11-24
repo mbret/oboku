@@ -1,11 +1,6 @@
 import { Type } from "class-transformer"
-import { IsNotEmpty, IsObject, IsString, ValidateNested } from "class-validator"
-
-export class WebdavCredentialsDto {
-  @IsString()
-  @IsNotEmpty()
-  password!: string
-}
+import { IsObject, IsString, ValidateNested } from "class-validator"
+import { WebdavCredentialsDto } from "../plugins/webdav/webdav-credentials.dto.js"
 
 export class DownloadLinkDto {
   @IsString()

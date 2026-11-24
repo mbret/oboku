@@ -1,9 +1,8 @@
 import {
   isFileSupported,
-  ObokuErrorCode,
+  type WebdavDirectoryItemDto,
   type WebdavLinkData,
 } from "@oboku/shared"
-import type { FileStat } from "webdav"
 import { useCallback, useMemo } from "react"
 import type { TreeNode } from "../../../../common/FileTreeView"
 import { notifyError } from "../../../../notifications/toasts"
@@ -12,7 +11,7 @@ import type { WebdavAuthResult } from "./ConnectorSelectionStep"
 import type { UploadBookToAddPayload } from "../../../plugins/types"
 import { AddBookFileBrowseStep } from "../../../../upload/AddBookFileBrowseStep"
 
-export const sortItems = (items: FileStat[]) =>
+export const sortItems = (items: ReadonlyArray<WebdavDirectoryItemDto>) =>
   [...items].sort((left, right) => {
     if (left.type !== right.type) {
       return left.type === "directory" ? -1 : 1
@@ -20,7 +19,9 @@ export const sortItems = (items: FileStat[]) =>
     return left.basename.localeCompare(right.basename)
   })
 
-export function toTreeNodeList(items: FileStat[]): TreeNode[] {
+export function toTreeNodeList(
+  items: ReadonlyArray<WebdavDirectoryItemDto>,
+): TreeNode[] {
   return sortItems(items)
     .filter(
       (item) =>
@@ -32,7 +33,7 @@ export function toTreeNodeList(items: FileStat[]): TreeNode[] {
       label: item.basename,
       type: item.type === "directory" ? "folder" : "file",
       fileType: item.mime,
-      etag: item.etag ?? undefined,
+      etag: item.etag,
       children: [],
     }))
 }
@@ -57,7 +58,7 @@ export function FileBrowseStep<T extends WebdavBackedType>({
   onClose: (booksToAdd: ReadonlyArray<WebdavUploadBookToAddPayload<T>>) => void
   onGoBack: () => void
 }) {
-  const { client, connectorId } = authResult
+  const { connectorId, listDirectory } = authResult
 
   const initialItems = useMemo(
     function buildInitialItems() {
@@ -69,14 +70,14 @@ export function FileBrowseStep<T extends WebdavBackedType>({
   const onLoadChildren = useCallback(
     async function loadDirectoryChildren(nodeId: string) {
       try {
-        const items = await client.getDirectoryContents(nodeId)
+        const items = await listDirectory(nodeId)
         return toTreeNodeList(items)
-      } catch (_e) {
-        notifyError(ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN)
+      } catch (error) {
+        notifyError(error)
         return []
       }
     },
-    [client],
+    [listDirectory],
   )
 
   const handleAddBooks = (selectedFiles: TreeNode[]) => {
