@@ -162,7 +162,7 @@ describe("getFromCatalog", () => {
     })
   })
 
-  it("reports a catalog refusing the login as an unauthorized data source", async () => {
+  it("reports a catalog refusing the login as an unauthorized source", async () => {
     const catalog = await startServer({
       "/opds": { status: 401, headers: { "www-authenticate": "Basic" } },
     })

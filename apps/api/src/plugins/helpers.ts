@@ -59,7 +59,7 @@ const candidateSelectors: {
 /**
  * Finds the links or collections whose stored identity is `identity`.
  *
- * `isUsingSameSourceCredentials` defaults to true: a library sync that syncs
+ * `isUsingSameSourceCredentials` defaults to true: a library sync that reaches
  * a resource has credentials for it.
  */
 export const findCandidates = async <Model extends CandidateModel>(
@@ -85,7 +85,7 @@ export const findCandidates = async <Model extends CandidateModel>(
  * of its own connector.
  *
  * Matching is strict on purpose:
- * - A library sync is a sync scope, not an owner: it syncs what it can see.
+ * - A library sync is a scope, not an owner: it covers what it can see.
  * - The same resource can be reachable through several library syncs or
  *   connectors, each with valid credentials.
  * - Connectors to the same normalized server URL are still different

@@ -2,13 +2,14 @@ import {
   assertNever,
   type LibrarySyncDocType,
   type LibrarySyncDocTypeFor,
+  type SourceType,
 } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { pluginsByType } from "./configure"
 
 // TypeScript cannot narrow a generic discriminated-union parameter via
 // control flow, so the runtime guard + assertion is the only safe option.
-const librarySyncArgs = <T extends LibrarySyncDocType["type"]>(
+const librarySyncArgs = <T extends SourceType>(
   librarySync: DeepReadonly<LibrarySyncDocType> | null | undefined,
   type: T,
 ) => {

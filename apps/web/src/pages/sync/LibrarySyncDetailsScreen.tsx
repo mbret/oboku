@@ -1,4 +1,4 @@
-import type { LibrarySyncDocType, LibrarySyncDocTypeFor } from "@oboku/shared"
+import type { LibrarySyncDocTypeFor, SourceType } from "@oboku/shared"
 import {
   Alert,
   Button,
@@ -42,7 +42,7 @@ const SynchronizeButtonStack = styled(Stack)(
   },
 )
 
-function renderLibrarySyncForm<T extends LibrarySyncDocType["type"]>({
+function renderLibrarySyncForm<T extends SourceType>({
   librarySync,
   ...props
 }: LibrarySyncFormInternalProps<LibrarySyncDocTypeFor<T>> & {
@@ -116,12 +116,12 @@ export const LibrarySyncDetailsScreen = memo(
               variant="outlined"
               onClick={() => id && syncLibrarySync(id)}
             >
-              Synchronize
+              Sync now
             </Button>
           </SynchronizeButtonStack>
           <PageSection title="Danger zone" tone="danger">
             <ListItemButton onClick={removeLibrarySyncThenGoBack}>
-              <ListItemText primary="Delete this library sync" />
+              <ListItemText primary="Delete this sync" />
             </ListItemButton>
           </PageSection>
         </PageContainer>

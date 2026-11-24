@@ -91,7 +91,7 @@ export const MODIFIED_AT_UNSUPPORTED: unique symbol = Symbol(
 export type SourceModifiedAt = string | typeof MODIFIED_AT_UNSUPPORTED
 
 /**
- * Library sync plugin, generic in the source type. Each method receives
+ * Source plugin, generic in the source type. Each method receives
  * strongly-typed params for that source (e.g. DRIVE plugin gets
  * LinkWithCredentials<"DRIVE"> and DriveApiCredentials).
  */

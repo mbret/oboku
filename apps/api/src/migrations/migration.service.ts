@@ -242,8 +242,8 @@ export class MigrationService {
      * - `passwordAsSecretId`
      *
      * Why preserving the id matters:
-     * - Datasources and links reference connectors by id.
-     * - Reusing the same id means existing datasource/link references continue
+     * - Library syncs and book files reference connectors by id.
+     * - Reusing the same id means existing library sync and book file references continue
      *   to point to the migrated connector after the rewrite.
      *
      * Explicit skip / no-op behavior:

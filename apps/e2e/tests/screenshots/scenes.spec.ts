@@ -155,16 +155,16 @@ const SCENES = {
       await expect(anyServerLibraryBookTitle(page).first()).toBeVisible()
     },
   },
-  "data-sources": {
+  "library-syncs": {
     show: showLibrarySyncs,
   },
-  "add-data-source": {
+  "add-library-sync": {
     show: async function showAddLibrarySync(page) {
       await showLibrarySyncs(page)
       await page.getByRole("button", { name: "Add a sync" }).click()
 
-      for (const provider of ["Google Drive", "Dropbox", "OneDrive"]) {
-        await expect(page.getByRole("button", { name: provider })).toBeEnabled()
+      for (const source of ["Google Drive", "Dropbox", "OneDrive"]) {
+        await expect(page.getByRole("button", { name: source })).toBeEnabled()
       }
     },
     showsDialog: true,

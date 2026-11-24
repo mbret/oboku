@@ -1,7 +1,7 @@
 import { memo } from "react"
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import { Navigate, type PathParam, useParams } from "react-router"
-import { plugins } from "../../librarySyncs"
+import { plugins } from "../../integrations/plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import { useSafeGoBack } from "../../navigation/useSafeGoBack"
 import { useCreateLibrarySync } from "../../librarySyncs/useCreateLibrarySync"
