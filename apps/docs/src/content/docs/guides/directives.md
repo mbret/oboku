@@ -20,7 +20,7 @@ Due to some current limitation, you may need to re-download a book for some dire
 
 When you are using a source which does not use IDs for its resources (such as webdav) renaming the files or folders will prevent oboku from knowing the resource has been renamed and thus will end up duplicating the contents. This limitation is directly tight to the limitation of the protocol of the sources. Using Google Drive or Dropbox for example does not have this problem and you can rename your contents whenever you want.
 
-If you rename or move around contents you can always update the link on oboku manually.
+If you rename or move around contents you can always update the book's file in oboku manually.
 
 ## `tags`
 

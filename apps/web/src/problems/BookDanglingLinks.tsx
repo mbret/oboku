@@ -19,7 +19,7 @@ export const BookDanglingLinks = ({
         <LinkOffRounded />
       </ListItemIcon>
       <ListItemText
-        primary={`Non existing link(s)`}
+        primary={`Missing book file(s)`}
         secondary={`
         Book "${getMetadataFromBook(doc).title}" has ${danglingBooks.length} file reference(s) that no longer exist. This can mean that the book came from a library sync that was removed. Its file then cannot be downloaded. You can safely repair it.
       `}
