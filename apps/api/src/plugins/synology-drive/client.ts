@@ -421,7 +421,7 @@ const toSynchronizeAbleItem = async ({
   }
 }
 
-export const getSynchronizeAbleDataSourceFromItems = async ({
+export const getSynchronizeAbleLibrarySyncFromItems = async ({
   connectorId,
   items,
   session,

@@ -20,7 +20,7 @@ import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module.js"
 import { InstanceConfigModule } from "./admin/instance-config/instance-config.module.js"
-import { DataSourceModule } from "./datasource/datasource.module.js"
+import { LibrarySyncModule } from "./library-sync/library-sync.module.js"
 import { StorageModule } from "./storage/storage.module.js"
 import { WebDavModule } from "./webdav/webdav.module.js"
 import { NotificationsModule } from "./notifications/notifications.module.js"
@@ -116,7 +116,7 @@ import { SourceConnectionsModule } from "./source-connections/source-connections
     CoversModule,
     AdminModule,
     InstanceConfigModule,
-    DataSourceModule,
+    LibrarySyncModule,
     NotificationsModule,
     WebDavModule,
     BooksModule,

@@ -35,7 +35,7 @@ export const addNewCollection = async <T extends SourceType>({
   /**
    * Otherwise we just create a new collection with this resource id
    * Note that there could be another collection with same name. But since it
-   * does not come from the same datasource it should still be treated as different
+   * does not come from the same library sync it should still be treated as different
    */
   const collectionToAdd: Omit<
     CollectionDocType<T>,

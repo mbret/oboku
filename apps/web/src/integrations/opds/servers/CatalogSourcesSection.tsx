@@ -1,7 +1,7 @@
 import { BlockRounded } from "@mui/icons-material"
 import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
 import {
-  type DataSourceDocType,
+  type LibrarySyncDocType,
   OPDS_SERVED_CONNECTOR_TYPES,
 } from "@oboku/shared"
 import type { UseQueryResult } from "@tanstack/react-query"
@@ -207,7 +207,7 @@ export function CatalogSourcesSection() {
   const { data: config } = useConfig()
   const isPluginVisible = useGetIsPluginVisible()
   const isGoogleDriveServed = !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED
-  const servedTypes: ReadonlyArray<DataSourceDocType["type"]> =
+  const servedTypes: ReadonlyArray<LibrarySyncDocType["type"]> =
     isGoogleDriveServed
       ? [googleDrivePlugin.type, ...OPDS_SERVED_CONNECTOR_TYPES]
       : OPDS_SERVED_CONNECTOR_TYPES

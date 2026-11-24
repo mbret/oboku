@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react"
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 const { PLUGIN_TYPES, pluginsByType, createRequestPopupDialog } = vi.hoisted(
@@ -14,7 +14,7 @@ const { PLUGIN_TYPES, pluginsByType, createRequestPopupDialog } = vi.hoisted(
       "URI",
       "server",
       "opds",
-    ] as const satisfies ReadonlyArray<DataSourceDocType["type"]>
+    ] as const satisfies ReadonlyArray<LibrarySyncDocType["type"]>
 
     return {
       PLUGIN_TYPES,

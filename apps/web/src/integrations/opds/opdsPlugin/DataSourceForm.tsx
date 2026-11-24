@@ -5,7 +5,7 @@ import {
   getOpdsUrlOrigin,
   isOpdsConnectorOrigin,
   links,
-  type OpdsDataSourceDocType,
+  type OpdsLibrarySyncDocType,
 } from "@oboku/shared"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
@@ -29,7 +29,7 @@ export const DataSourceForm = memo(function DataSourceForm({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<OpdsDataSourceDocType>) {
+}: DataSourceFormInternalProps<OpdsLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

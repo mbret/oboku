@@ -11,7 +11,7 @@ import { LazyTreeView, type TreeNode } from "../../../common/FileTreeView"
 import { errorToHelperText } from "../../../common/forms/errorToHelperText"
 import { ConnectorSelector } from "../../../connectors/ConnectorSelector"
 import { isCancelError } from "../../../errors/errors.shared"
-import type { SynologyDriveDataSourceDocType } from "@oboku/shared"
+import type { SynologyDriveLibrarySyncDocType } from "@oboku/shared"
 import type { SynologyDriveSession } from "./client"
 import { useRequestSynologyDriveSession } from "./auth/auth"
 import {
@@ -41,7 +41,7 @@ export const DataSourceForm = memo(function DataSourceForm({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<SynologyDriveDataSourceDocType>) {
+}: DataSourceFormInternalProps<SynologyDriveLibrarySyncDocType>) {
   // React Compiler cannot lower this function yet, so it bails out here.
   // TODO: re-check on a newer React Compiler; drop this opt-out once it compiles.
   "use no memo"

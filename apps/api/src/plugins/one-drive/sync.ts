@@ -108,7 +108,7 @@ function toSynchronizeAbleItem(
   }
 }
 
-export async function getSynchronizeAbleDataSourceFromItems({
+export async function getSynchronizeAbleLibrarySyncFromItems({
   accessToken,
   items,
 }: {

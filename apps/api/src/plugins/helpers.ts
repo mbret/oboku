@@ -59,7 +59,7 @@ const candidateSelectors: {
 /**
  * Finds the links or collections whose stored identity is `identity`.
  *
- * `isUsingSameSourceCredentials` defaults to true: a data source that syncs
+ * `isUsingSameSourceCredentials` defaults to true: a library sync that syncs
  * a resource has credentials for it.
  */
 export const findCandidates = async <Model extends CandidateModel>(
@@ -81,19 +81,19 @@ export const findCandidates = async <Model extends CandidateModel>(
 /**
  * {@link findCandidates} for the sources whose links go through a
  * connector, which is part of their identity. Without a `connectorId` it
- * finds nothing, and the data source's credentials only reach the candidates
+ * finds nothing, and the library sync's credentials only reach the candidates
  * of its own connector.
  *
  * Matching is strict on purpose:
- * - A data source is a sync scope, not an owner: it syncs what it can see.
- * - The same resource can be reachable through several data sources or
+ * - A library sync is a sync scope, not an owner: it syncs what it can see.
+ * - The same resource can be reachable through several library syncs or
  *   connectors, each with valid credentials.
  * - Connectors to the same normalized server URL are still different
  *   identities. "Same server" may serve other flows, but sync only reuses an
  *   exact match, which keeps it non-destructive.
  */
 export const findConnectorCandidates = async <Model extends CandidateModel>(
-  ctx: Pick<SyncContext<SettingsConnectorType>, "db" | "dataSource">,
+  ctx: Pick<SyncContext<SettingsConnectorType>, "db" | "librarySync">,
   model: Model,
   identity: LinkIdentity<SettingsConnectorType>,
 ) => {
@@ -102,7 +102,7 @@ export const findConnectorCandidates = async <Model extends CandidateModel>(
   if (!connectorId) return []
 
   const isUsingSameSourceCredentials =
-    connectorId === ctx.dataSource.data_v2?.connectorId
+    connectorId === ctx.librarySync.data_v2?.connectorId
 
   return findCandidates(ctx, model, identity, isUsingSameSourceCredentials)
 }

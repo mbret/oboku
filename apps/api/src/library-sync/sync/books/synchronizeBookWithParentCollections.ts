@@ -11,7 +11,7 @@ const logger = new Logger("synchronizeBookWithParentCollections")
 
 /**
  * For every parent of the book we look up collections that match each parent (same resource / link data)
- * via getCollectionCandidatesForItem, pick the one that uses the current datasource's credentials,
+ * via getCollectionCandidatesForItem, pick the one that uses the current library sync's credentials,
  * then attach the book and those collections together.
  */
 export const synchronizeBookWithParentCollections = async (

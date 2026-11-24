@@ -1,9 +1,9 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 export const PLUGIN_FILE_TYPE = "file"
 
-export type FileDataSourceDocType = BaseDataSourceDocType & {
+export type FileLibrarySyncDocType = BaseLibrarySyncDocType & {
   type: "file"
   data_v2?: undefined
 }

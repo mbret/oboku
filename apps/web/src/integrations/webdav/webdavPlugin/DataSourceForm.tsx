@@ -3,7 +3,7 @@ import { InputAdornment } from "@mui/material"
 import { useForm } from "react-hook-form"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import type { WebDAVDataSourceDocType } from "@oboku/shared"
+import type { WebDAVLibrarySyncDocType } from "@oboku/shared"
 import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { TestConnection } from "../../../connectors/TestConnection"
 import { useConnector } from "../../../connectors/useConnector"
@@ -28,7 +28,7 @@ export const DataSourceForm = memo(function DataSourceForm({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<WebDAVDataSourceDocType>) {
+}: DataSourceFormInternalProps<WebDAVLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

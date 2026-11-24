@@ -1,23 +1,23 @@
 import {
   type CollectionDocType,
   type LinkMetadata,
-  type DataSourceDocTypeFor,
+  type LibrarySyncDocTypeFor,
   type SourceType,
   type LinkDocType,
   type LinkDocTypeForSource,
   type LinkWithCredentials,
   type SourceApiCredentials,
-  type SynchronizeAbleDataSource,
+  type SynchronizeAbleLibrarySync,
   type SynchronizeAbleItem,
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "../datasource/sync/SyncReport.js"
+import { SyncReport } from "../library-sync/sync/SyncReport.js"
 
-/** Re-export from shared so sync item/data source types are single source of truth. */
+/** Re-export from shared so sync item/library sync types are single source of truth. */
 export type {
   SynchronizeAbleItem,
-  SynchronizeAbleDataSource,
+  SynchronizeAbleLibrarySync,
 } from "@oboku/shared"
 
 /** Sync context; generic so `providerCredentials` is the typed API credentials for the source. */
@@ -26,8 +26,8 @@ export type SyncContext<T extends SourceType = SourceType> = {
   dataSourceId: string
   /** Resolved at runtime (e.g. from secrets). Typed per source (WebdavApiCredentials, DriveApiCredentials, etc.). */
   providerCredentials: SourceApiCredentials<T>
-  dataSourceType: T
-  dataSource: DataSourceDocTypeFor<T>
+  sourceType: T
+  librarySync: LibrarySyncDocTypeFor<T>
   syncReport: SyncReport
   db: createNano.DocumentScope<unknown>
 }
@@ -60,7 +60,7 @@ export type CollectionCandidate = CollectionDocType & {
 /**
  * Find all collections that match this sync item (same resource / link data).
  * Each includes isUsingSameSourceCredentials so the caller can pick the one
- * that matches the current datasource (e.g. for metadata refresh).
+ * that matches the current library sync (e.g. for metadata refresh).
  */
 export type GetCollectionCandidatesForItem<
   TSourceType extends SourceType = SourceType,
@@ -91,7 +91,7 @@ export const MODIFIED_AT_UNSUPPORTED: unique symbol = Symbol(
 export type SourceModifiedAt = string | typeof MODIFIED_AT_UNSUPPORTED
 
 /**
- * Data source plugin, generic in the source type. Each method receives
+ * Library sync plugin, generic in the source type. Each method receives
  * strongly-typed params for that source (e.g. DRIVE plugin gets
  * LinkWithCredentials<"DRIVE"> and DriveApiCredentials).
  */
@@ -131,5 +131,5 @@ export type SourcePlugin<TSourceType extends SourceType = SourceType> = {
   getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TSourceType>
   sync: (
     options: SyncContext<TSourceType>,
-  ) => Promise<SynchronizeAbleDataSource<TSourceType>>
+  ) => Promise<SynchronizeAbleLibrarySync<TSourceType>>
 }

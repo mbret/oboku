@@ -7,8 +7,8 @@ import type { AuthUser } from "../auth/auth.guard.js"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
-import { DataSourcesController } from "./datasource.controller.js"
-import { DataSourceService } from "./datasource.service.js"
+import { LibrarySyncsController } from "./library-sync.controller.js"
+import { LibrarySyncService } from "./library-sync.service.js"
 
 const READER: AuthUser = {
   name: "reader@example.com",
@@ -18,7 +18,7 @@ const READER: AuthUser = {
   "couchdb.roles": [],
 }
 
-describe("DataSourcesController", () => {
+describe("LibrarySyncsController", () => {
   let app: INestApplication<App>
   const taskQueueService = { createQueue: vi.fn(), enqueue: vi.fn() }
   const syncReportPostgresService = { getAllSyncReportsByUser: vi.fn() }
@@ -27,14 +27,14 @@ describe("DataSourcesController", () => {
     taskQueueService.enqueue.mockClear()
 
     const module = await Test.createTestingModule({
-      controllers: [DataSourcesController],
+      controllers: [LibrarySyncsController],
       providers: [
         { provide: InMemoryTaskQueueService, useValue: taskQueueService },
         {
           provide: SyncReportPostgresService,
           useValue: syncReportPostgresService,
         },
-        { provide: DataSourceService, useValue: {} },
+        { provide: LibrarySyncService, useValue: {} },
         {
           provide: AppConfigService,
           useValue: { QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT: 1 },
@@ -73,7 +73,7 @@ describe("DataSourcesController", () => {
   })
 
   it.each([
-    ["without a data source id", { providerCredentials: {} }],
+    ["without a library sync id", { providerCredentials: {} }],
     ["without provider credentials", { dataSourceId: "data-source-1" }],
   ])("rejects a sync request %s", async (_case, body) => {
     await request(app.getHttpServer())

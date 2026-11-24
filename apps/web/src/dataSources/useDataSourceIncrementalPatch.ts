@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import { switchMap, from } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { useMutation$ } from "reactjrx"
@@ -10,7 +10,7 @@ export const useDataSourceIncrementalPatch = () => {
       patch,
     }: {
       id: string
-      patch: Partial<DataSourceDocType>
+      patch: Partial<LibrarySyncDocType>
     }) =>
       getLatestDatabase().pipe(
         switchMap((db) =>

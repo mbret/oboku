@@ -1,4 +1,4 @@
-import { compareDesc, dataSourcesListSyncReports } from "@oboku/shared"
+import { compareDesc, librarySyncsListSyncReports } from "@oboku/shared"
 import { useQuery } from "@tanstack/react-query"
 import { useHttpClientApi } from "../../http"
 import { useQueryOptionsWithAuthentication } from "../../auth"
@@ -17,7 +17,7 @@ export const useSyncReports = () => {
     useQueryOptionsWithAuthentication({
       queryKey: ["api/datasourceReport"],
       queryFn: async function fetchSyncReports() {
-        const { data } = await dataSourcesListSyncReports({
+        const { data } = await librarySyncsListSyncReports({
           client: httpClientApi.sdkClient,
         })
 

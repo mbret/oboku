@@ -19,7 +19,7 @@ export type SynchronizeAbleItem<TSourceType extends SourceType = SourceType> = {
 /**
  * Result of a plugin sync; generic in the provider type.
  */
-export type SynchronizeAbleDataSource<
+export type SynchronizeAbleLibrarySync<
   TSourceType extends SourceType = SourceType,
 > = {
   items: SynchronizeAbleItem<TSourceType>[]

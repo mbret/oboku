@@ -6,7 +6,7 @@ export * from "./db/docTypes"
 export * from "./db/books"
 
 export * from "./covers"
-export * from "./dataSources"
+export * from "./librarySyncs"
 export * from "./sorting"
 
 export { ObokuErrorCode, ObokuSharedError } from "./errors"

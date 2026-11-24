@@ -24,7 +24,7 @@ export class SyncReport {
   protected hasDifferentProviderCredentials = false
 
   constructor(
-    protected datasourceId: string,
+    protected librarySyncId: string,
     protected userName: string,
   ) {}
 
@@ -351,7 +351,7 @@ export class SyncReport {
         ...entry,
         label: entry.label ?? this.references[entry.id] ?? entry.id,
       })),
-      datasource_id: this.datasourceId,
+      datasource_id: this.librarySyncId,
       user_name: this.userName,
       state,
       error_code: this.errorCode,

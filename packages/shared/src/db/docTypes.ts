@@ -1,35 +1,35 @@
 import type { CollectionMetadata } from "../metadata"
 import type {
-  DropboxDataSourceDocType,
+  DropboxLibrarySyncDocType,
   DropboxLinkData,
 } from "../plugins/dropbox"
-import type { FileDataSourceDocType, FileLinkData } from "../plugins/file"
+import type { FileLibrarySyncDocType, FileLinkData } from "../plugins/file"
 import type {
-  GoogleDriveDataSourceDocType,
+  GoogleDriveLibrarySyncDocType,
   GoogleDriveLinkData,
 } from "../plugins/google"
 import type {
-  OneDriveDataSourceDocType,
+  OneDriveLibrarySyncDocType,
   OneDriveLinkData,
 } from "../plugins/oneDrive"
 import type {
   OpdsConnectorDocType,
-  OpdsDataSourceDocType,
+  OpdsLibrarySyncDocType,
   OpdsLinkData,
 } from "../plugins/opds"
 import type {
   ServerConnectorDocType,
-  ServerDataSourceDocType,
+  ServerLibrarySyncDocType,
   ServerLinkData,
 } from "../plugins/server"
 import type {
   SynologyDriveConnectorDocType,
-  SynologyDriveDataSourceDocType,
+  SynologyDriveLibrarySyncDocType,
   SynologyDriveLinkData,
 } from "../plugins/synologyDrive"
-import type { URIDataSourceDocType, UriLinkData } from "../plugins/uri"
+import type { URILibrarySyncDocType, UriLinkData } from "../plugins/uri"
 import type {
-  WebDAVDataSourceDocType,
+  WebDAVLibrarySyncDocType,
   WebdavConnectorDocType,
   WebdavLinkData,
 } from "../plugins/webdav"
@@ -55,7 +55,7 @@ type CommonBase = CouchDBMeta & RxDbMeta
  * fields (e.g. fileId, filePath) and access/metadata fields (e.g. connectorId, etag).
  * Used for link.data, collection.linkData, sync items, and plugin API calls.
  */
-export type LinkDataForSource<T extends DataSourceDocType["type"]> =
+export type LinkDataForSource<T extends LibrarySyncDocType["type"]> =
   T extends "DRIVE"
     ? GoogleDriveLinkData
     : T extends "one-drive"
@@ -80,7 +80,7 @@ export type LinkDataForSource<T extends DataSourceDocType["type"]> =
  * Link document for a specific source; `data` is correctly typed as that source's
  * link data (LinkDataForSource<T>).
  */
-export type LinkDocTypeForSource<T extends DataSourceDocType["type"]> =
+export type LinkDocTypeForSource<T extends LibrarySyncDocType["type"]> =
   CommonBase & {
     type: T
     data: LinkDataForSource<T>
@@ -107,12 +107,12 @@ export type LinkDocType =
  * refreshing book or collection. Carries the same source-specific credentials (data)
  * whether the source is a link, a collection, or a datasource.
  */
-export type LinkWithCredentials<T extends DataSourceDocType["type"]> = Pick<
+export type LinkWithCredentials<T extends LibrarySyncDocType["type"]> = Pick<
   LinkDocTypeForSource<T>,
   "type" | "data"
 >
 
-export type BaseDataSourceDocType = CommonBase & {
+export type BaseLibrarySyncDocType = CommonBase & {
   lastSyncedAt: number | null
   syncStatus: null | "fetching"
   lastSyncErrorCode?: string | null
@@ -124,7 +124,7 @@ export type BaseDataSourceDocType = CommonBase & {
   name?: string | null
   data_v2?: Record<string, unknown>
   /**
-   * Selection of tags to apply to all books in this datasource
+   * Selection of tags to apply to all books in this library sync
    * @important
    * The tag reference may be invalid eventually.
    */
@@ -132,40 +132,40 @@ export type BaseDataSourceDocType = CommonBase & {
   /**
    * Default `metadataFileDownloadEnabled` policy applied to NEW books detected
    * during sync. Mirrors the per-book override but only takes effect when set
-   * to `false` (i.e. user explicitly opted out at the datasource level): in
+   * to `false` (i.e. user explicitly opted out at the library sync level): in
    * that case any newly-detected book will be created with
    * `metadataFileDownloadEnabled = false`. When `undefined` / `null` / `true`
-   * the datasource uses the default behaviour (file download allowed) and
+   * the library sync uses the default behaviour (file download allowed) and
    * never overrides the per-book value. Existing books are never modified.
    */
   metadataFileDownloadEnabled?: boolean | null
 }
 
-export type DataSourceDocType =
-  | GoogleDriveDataSourceDocType
-  | OneDriveDataSourceDocType
-  | DropboxDataSourceDocType
-  | WebDAVDataSourceDocType
-  | SynologyDriveDataSourceDocType
-  | FileDataSourceDocType
-  | URIDataSourceDocType
-  | ServerDataSourceDocType
-  | OpdsDataSourceDocType
+export type LibrarySyncDocType =
+  | GoogleDriveLibrarySyncDocType
+  | OneDriveLibrarySyncDocType
+  | DropboxLibrarySyncDocType
+  | WebDAVLibrarySyncDocType
+  | SynologyDriveLibrarySyncDocType
+  | FileLibrarySyncDocType
+  | URILibrarySyncDocType
+  | ServerLibrarySyncDocType
+  | OpdsLibrarySyncDocType
 
-/** Data source / source type (e.g. "webdav", "file", "dropbox"). */
-export type SourceType = DataSourceDocType["type"]
+/** Library sync / source type (e.g. "webdav", "file", "dropbox"). */
+export type SourceType = LibrarySyncDocType["type"]
 
-export type DataSourceDocTypeFor<T extends SourceType> = Extract<
-  DataSourceDocType,
+export type LibrarySyncDocTypeFor<T extends SourceType> = Extract<
+  LibrarySyncDocType,
   { type: T }
 >
 
 /**
- * Datasource data_v2 shape for a given source. Same credentials concept as
+ * Library sync data_v2 shape for a given source. Same credentials concept as
  * LinkDataForSource where applicable (e.g. webdav data_v2 extends WebdavLinkData).
  */
-export type DataSourceDataForSource<T extends SourceType> = Extract<
-  DataSourceDocType,
+export type LibrarySyncDataForSource<T extends SourceType> = Extract<
+  LibrarySyncDocType,
   { type: T }
 >["data_v2"]
 
@@ -280,7 +280,7 @@ export type CollectionDocType<T extends SourceType = SourceType> =
      * - `false`: never fetch external metadata
      *
      * Use {@link resolveMetadataFetchEnabled} to collapse this to a boolean.
-     * Only gates calls to third-party providers; user data sources keep syncing.
+     * Only gates calls to third-party providers; user library syncs keep syncing.
      */
     metadataFetchEnabled?: boolean | null
   }
@@ -386,7 +386,7 @@ export type SafeMangoQuery<RxDocType = any> = MangoQuery<RxDocType>
 export type DocType =
   | BookDocType
   | TagsDocType
-  | DataSourceDocType
+  | LibrarySyncDocType
   | LinkDocType
   | CollectionDocType
 

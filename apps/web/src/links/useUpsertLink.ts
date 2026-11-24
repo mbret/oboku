@@ -3,12 +3,12 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { from, of, switchMap } from "rxjs"
 import type { RxDocument } from "rxdb"
 import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
-import type { BookDocType, DataSourceDocType, LinkData } from "@oboku/shared"
+import type { BookDocType, LibrarySyncDocType, LinkData } from "@oboku/shared"
 
 type UpsertLinkVariables = {
   bookId: string
   data: LinkData
-  type: DataSourceDocType["type"]
+  type: LibrarySyncDocType["type"]
 }
 
 export const useUpsertLink = (

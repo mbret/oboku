@@ -1,11 +1,11 @@
 import { text } from "node:stream/consumers"
 import type {
-  DataSourceDocTypeFor,
+  LibrarySyncDocTypeFor,
   LinkDocTypeForSource,
   OpdsLinkData,
 } from "@oboku/shared"
 import type createNano from "nano"
-import { SyncReport } from "../../datasource/sync/SyncReport.js"
+import { SyncReport } from "../../library-sync/sync/SyncReport.js"
 import { MODIFIED_AT_UNSUPPORTED, type SyncContext } from "../types.js"
 import {
   allowServers,
@@ -17,7 +17,7 @@ import {
   password,
   startServer,
 } from "./catalog.fixture.js"
-import { dataSource as opdsDataSource } from "./index.js"
+import { sourcePlugin as opdsSourcePlugin } from "./index.js"
 
 const bookLinkData = {
   connectorId: "connector",
@@ -36,9 +36,9 @@ const folderLinkData = {
   title: "Series 1",
 } satisfies OpdsLinkData
 
-const dataSourceFor = (
-  data_v2: DataSourceDocTypeFor<"opds">["data_v2"],
-): DataSourceDocTypeFor<"opds"> => ({
+const librarySyncFor = (
+  data_v2: LibrarySyncDocTypeFor<"opds">["data_v2"],
+): LibrarySyncDocTypeFor<"opds"> => ({
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },
@@ -51,7 +51,7 @@ const dataSourceFor = (
   data_v2,
 })
 
-const dataSource = dataSourceFor({
+const librarySync = librarySyncFor({
   connectorId: "connector",
   feedUrl: "https://catalog.example.com/opds",
 })
@@ -72,14 +72,14 @@ const syncDataSource = ({
   data_v2,
   connectorUrl,
 }: {
-  data_v2: DataSourceDocTypeFor<"opds">["data_v2"]
+  data_v2: LibrarySyncDocTypeFor<"opds">["data_v2"]
   connectorUrl: string
 }) =>
-  opdsDataSource.sync({
+  opdsSourcePlugin.sync({
     userName: "user",
     dataSourceId: "data-source",
-    dataSourceType: "opds",
-    dataSource: dataSourceFor(data_v2),
+    sourceType: "opds",
+    librarySync: librarySyncFor(data_v2),
     providerCredentials: { password },
     syncReport: new SyncReport("data-source", "user"),
     db: createUserDbWithConnector(connectorUrl),
@@ -94,8 +94,8 @@ function createSyncContext() {
   const ctx: SyncContext<"opds"> = {
     userName: "user",
     dataSourceId: "data-source",
-    dataSourceType: "opds",
-    dataSource,
+    sourceType: "opds",
+    librarySync,
     providerCredentials: { password },
     syncReport: new SyncReport("data-source", "user"),
     // Partial fake: candidates are found through `find` only.
@@ -147,7 +147,7 @@ describe("OPDS data source", () => {
         data_v2: { connectorId: "connector" },
         connectorUrl: "https://catalog.example.com",
       }),
-    ).rejects.toThrow("datasource not found or invalid")
+    ).rejects.toThrow("library sync not found or invalid")
   })
 
   it("downloads a book with the credentials of its connector", async () => {
@@ -156,7 +156,7 @@ describe("OPDS data source", () => {
     })
     allowServers(catalog)
 
-    const { stream } = await opdsDataSource.download(
+    const { stream } = await opdsSourcePlugin.download(
       linkTo({
         ...bookLinkData,
         acquisition: {
@@ -177,7 +177,7 @@ describe("OPDS data source", () => {
   it("finds a book's links by its connector and entry id", async () => {
     const { ctx, find } = createSyncContext()
 
-    await opdsDataSource.getLinkCandidatesForItem(fileItem(bookLinkData), ctx)
+    await opdsSourcePlugin.getLinkCandidatesForItem(fileItem(bookLinkData), ctx)
 
     expect(find).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -193,7 +193,7 @@ describe("OPDS data source", () => {
   it("finds a folder's collections by its connector and feed", async () => {
     const { ctx, find } = createSyncContext()
 
-    await opdsDataSource.getCollectionCandidatesForItem(
+    await opdsSourcePlugin.getCollectionCandidatesForItem(
       folderItem(folderLinkData),
       ctx,
     )
@@ -216,15 +216,15 @@ describe("OPDS data source", () => {
     const { ctx } = createSyncContext()
 
     await expect(
-      opdsDataSource.getLinkCandidatesForItem(fileItem(folderLinkData), ctx),
+      opdsSourcePlugin.getLinkCandidatesForItem(fileItem(folderLinkData), ctx),
     ).rejects.toThrow("Not the link data of an OPDS book")
     await expect(
-      opdsDataSource.download(linkTo(folderLinkData), { password }, ctx.db),
+      opdsSourcePlugin.download(linkTo(folderLinkData), { password }, ctx.db),
     ).rejects.toThrow("Not the link data of an OPDS book")
   })
 
   it("answers file metadata from what the last sync saw", async () => {
-    const metadata = await opdsDataSource.getFileMetadata({
+    const metadata = await opdsSourcePlugin.getFileMetadata({
       link: { type: "opds", data: bookLinkData },
       providerCredentials: { password },
     })
@@ -239,7 +239,7 @@ describe("OPDS data source", () => {
   })
 
   it("names a folder after its title", async () => {
-    const metadata = await opdsDataSource.getFolderMetadata({
+    const metadata = await opdsSourcePlugin.getFolderMetadata({
       link: { type: "opds", data: folderLinkData },
       providerCredentials: { password },
     })

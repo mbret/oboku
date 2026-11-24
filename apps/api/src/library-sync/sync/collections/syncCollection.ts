@@ -4,7 +4,7 @@ import { addNewCollection } from "./addNewCollection.js"
 import { updateCollection } from "./updateCollection.js"
 import type { SynchronizeAbleItem } from "../../../plugins/types.js"
 import { Logger } from "@nestjs/common"
-import type { CollectionRefreshQueue } from "../synchronizeFromDataSource.js"
+import type { CollectionRefreshQueue } from "../synchronizeFromLibrarySync.js"
 
 const logger = new Logger("sync/registerOrUpdateCollection")
 
@@ -19,7 +19,7 @@ export const syncCollection = async ({
 }) => {
   /**
    * Try to get existing collection by same resource id and link data.
-   * Prefer the one that uses the current datasource's credentials so metadata
+   * Prefer the one that uses the current library sync's credentials so metadata
    * refresh can run correctly.
    */
   const { collections } = await ctx.plugin.getCollectionCandidatesForItem(
@@ -48,7 +48,7 @@ export const syncCollection = async ({
       ctx,
       name: item.name,
       linkData: item.linkData,
-      linkType: ctx.dataSourceType,
+      linkType: ctx.sourceType,
     })
   }
 
@@ -59,9 +59,9 @@ export const syncCollection = async ({
 
   /**
    * Only queue a metadata refresh when the collection uses the same
-   * connector/credentials as the current datasource; otherwise record it in the
+   * connector/credentials as the current library sync; otherwise record it in the
    * report like we do for books. The actual emission happens at the end of the
-   * sync (see `DataSourceService.sync`) so that protection-aware logic can
+   * sync (see `LibrarySyncService.sync`) so that protection-aware logic can
    * read the up-to-date books and tags.
    */
   const usesSameCredentials =

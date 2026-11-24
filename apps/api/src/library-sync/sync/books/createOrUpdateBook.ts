@@ -1,6 +1,6 @@
 import { type BookDocType, directives, getBookCoverKey } from "@oboku/shared"
 import type {
-  SynchronizeAbleDataSource,
+  SynchronizeAbleLibrarySync,
   SynchronizeAbleItem,
 } from "../../../plugins/types.js"
 import { updateTagsForBook } from "./updateTagsForBook.js"
@@ -23,7 +23,7 @@ import type { LinkCandidate } from "../../../plugins/types.js"
 
 /**
  * Picks the best link for the current sync from candidates that have a valid
- * book. Prefers the one using the same connector/credentials as the datasource
+ * book. Prefers the one using the same connector/credentials as the library sync
  * so metadata refresh can run.
  */
 function getBestLinkCandidate(links: LinkCandidate[]): LinkCandidate | null {
@@ -32,7 +32,7 @@ function getBestLinkCandidate(links: LinkCandidate[]): LinkCandidate | null {
 }
 
 function isFolder(
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+  item: SynchronizeAbleLibrarySync | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
   return (item as SynchronizeAbleItem).type === "folder"
 }
@@ -55,7 +55,7 @@ export const createOrUpdateBook = async ({
   item: SynchronizeAbleItem
   coversService: CoversService
 }) => {
-  const { dataSourceType, syncReport, db } = ctx
+  const { sourceType, syncReport, db } = ctx
 
   try {
     logger.log(`createOrUpdateBook "${item.name}"`)
@@ -136,14 +136,14 @@ export const createOrUpdateBook = async ({
         )
 
         /**
-         * Datasource-level default for `metadataFileDownloadEnabled`. We only
+         * Library sync-level default for `metadataFileDownloadEnabled`. We only
          * apply it to brand-new books, and only when the user explicitly
-         * opted out at the datasource level (`false`). Any other value
+         * opted out at the library sync level (`false`). Any other value
          * (`undefined`, `null`, `true`) is treated as "no override" so the
          * book keeps the system default.
          */
-        const dataSourceFileDownloadOverride =
-          ctx.dataSource.metadataFileDownloadEnabled === false
+        const librarySyncFileDownloadOverride =
+          ctx.librarySync.metadataFileDownloadEnabled === false
             ? { metadataFileDownloadEnabled: false as const }
             : {}
 
@@ -155,7 +155,7 @@ export const createOrUpdateBook = async ({
               type: "link",
             },
           ],
-          ...dataSourceFileDownloadOverride,
+          ...librarySyncFileDownloadOverride,
         })
         bookId = insertedBook.id
 
@@ -177,7 +177,7 @@ export const createOrUpdateBook = async ({
         syncReport.updateLink(linkMatchingItem._id)
       } else {
         const newlyCreatedLink = await insert(db, "link", {
-          type: dataSourceType,
+          type: sourceType,
           book: bookId,
           data: item.linkData,
           createdAt: new Date().toISOString(),
@@ -226,7 +226,7 @@ export const createOrUpdateBook = async ({
       /**
        * Because it's a new book, we start a metadata refresh. When we matched an
        * existing link, only refresh if it uses the same connector/credentials as
-       * the current datasource; when we created a new link we can always refresh.
+       * the current library sync; when we created a new link we can always refresh.
        */
       const canRefreshMetadata = linkMatchingItem
         ? linkMatchingItem.isUsingSameSourceCredentials
@@ -240,7 +240,7 @@ export const createOrUpdateBook = async ({
       }
     } else {
       /**
-       * We already have a link that exist for this datasource with this book.
+       * We already have a link that exist for this library sync with this book.
        * We will try to retrieve the book and update it if needed.
        */
       // We check the last updated date of the book

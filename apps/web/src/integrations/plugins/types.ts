@@ -1,7 +1,7 @@
 import type {
-  DataSourceDocType,
+  LibrarySyncDocType,
   LinkMetadata,
-  DataSourceDocTypeFor,
+  LibrarySyncDocTypeFor,
   LinkData,
   LinkDataForSource,
   LinkDocTypeForSource,
@@ -17,8 +17,9 @@ import type {
 } from "@tanstack/react-query"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
-type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
-  Pick<LinkDocTypeForSource<T>, "type" | "data">
+type PostLink<
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
+> = Pick<LinkDocTypeForSource<T>, "type" | "data">
 
 /** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
 type PostBook = {
@@ -27,7 +28,7 @@ type PostBook = {
 }
 
 export type UploadBookToAddPayload<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   book: PostBook
   link: PostLink<T>
@@ -41,7 +42,7 @@ type SelectionError = {
 }
 
 export type UploadBookComponentProps<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
   requestPopup: () => Promise<boolean>
@@ -57,7 +58,7 @@ export type DownloadBookResult = {
 }
 
 export type DownloadBookComponentProps<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   link: LinkDocTypeForSource<T>
   onDownloadProgress: (progress: number) => void
@@ -67,7 +68,7 @@ export type DownloadBookComponentProps<
 }
 
 export type UseRefreshMetadataVariables<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   linkId?: string
   linkType: T
@@ -76,11 +77,11 @@ export type UseRefreshMetadataVariables<
 
 /** Params for usePluginRefreshMetadata(); discriminated union on linkType. */
 export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
-  DataSourceDocType["type"]
+  LibrarySyncDocType["type"]
 >
 
 export type UseRefreshMetadataHook<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = (
   options: {
     requestPopup: () => Promise<boolean>
@@ -94,17 +95,17 @@ export type UseRefreshMetadataHook<
 >
 
 export type UseSynchronizeHook<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
   {
     providerCredentials: SourceApiCredentials<T>
   },
   Error | null,
-  Extract<DataSourceDocType, { type: T }>
+  Extract<LibrarySyncDocType, { type: T }>
 >
 
 export type RemoveResourceResult<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > =
   | {
       providerCredentials: SourceApiCredentials<T>
@@ -116,13 +117,13 @@ export type RemoveResourceResult<
     }
 
 type UseRemoveResource<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = () => (
   links: readonly LinkDocTypeForSource<T>[],
 ) => Promise<RemoveResourceResult<T>>
 
 export type UpsertFileComponentProps<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   link: LinkDocTypeForSource<T>
   file: Blob | File
@@ -135,11 +136,11 @@ export type UpsertFileComponentProps<
 }
 
 export type UpsertFileComponent<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = ComponentType<UpsertFileComponentProps<T>>
 
 type UpsertFileCapability<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > =
   | {
       canUpsertFile: true
@@ -154,10 +155,10 @@ type UpsertFileCapability<
     }
 
 export type UseSyncSourceInfo<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = (data: {
   enabled: boolean
-  dataSource?: DeepReadonly<DataSourceDocTypeFor<T>> | undefined
+  dataSource?: DeepReadonly<LibrarySyncDocTypeFor<T>> | undefined
 }) => {
   name?: string
 }
@@ -180,7 +181,7 @@ export type DataSourceFormData<PluginFields extends Record<string, unknown>> = {
 } & PluginFields
 
 export type DataSourceFormInternalProps<
-  T extends DataSourceDocType = DataSourceDocType,
+  T extends LibrarySyncDocType = LibrarySyncDocType,
 > = {
   dataSource?: DeepReadonly<T>
   onSubmit: (payload: DataSourceSubmitPayload) => void
@@ -195,7 +196,7 @@ export type DataSourceSubmitPayload = {
 }
 
 type ObokuPluginBase<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = {
   name: string
   canSynchronize?: boolean
@@ -207,7 +208,7 @@ type ObokuPluginBase<
   Icon: ComponentType<SvgIconProps>
   UploadBookComponent?: ComponentType<UploadBookComponentProps<T>>
   DataSourceForm?: ComponentType<
-    DataSourceFormInternalProps<DataSourceDocTypeFor<T>>
+    DataSourceFormInternalProps<LibrarySyncDocTypeFor<T>>
   >
   SelectItemComponent?: ComponentType<{
     open: boolean
@@ -233,5 +234,5 @@ type ObokuPluginBase<
 }
 
 export type SourcePlugin<
-  T extends DataSourceDocType["type"] = DataSourceDocType["type"],
+  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
 > = ObokuPluginBase<T> & UpsertFileCapability<T>

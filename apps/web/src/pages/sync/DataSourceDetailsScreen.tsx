@@ -1,4 +1,4 @@
-import type { DataSourceDocType, DataSourceDocTypeFor } from "@oboku/shared"
+import type { LibrarySyncDocType, LibrarySyncDocTypeFor } from "@oboku/shared"
 import {
   Alert,
   Button,
@@ -42,10 +42,10 @@ const SynchronizeButtonStack = styled(Stack)(
   },
 )
 
-function renderDataSourceForm<T extends DataSourceDocType["type"]>({
+function renderDataSourceForm<T extends LibrarySyncDocType["type"]>({
   dataSource,
   ...props
-}: DataSourceFormInternalProps<DataSourceDocTypeFor<T>> & {
+}: DataSourceFormInternalProps<LibrarySyncDocTypeFor<T>> & {
   dataSource: { readonly type: T }
 }) {
   const PluginForm = getPluginByType<T>(dataSource.type).DataSourceForm

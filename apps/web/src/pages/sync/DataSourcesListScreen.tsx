@@ -19,7 +19,7 @@ import {
   LockRounded,
   MoreVertOutlined,
 } from "@mui/icons-material"
-import { type DataSourceDocType, links } from "@oboku/shared"
+import { type LibrarySyncDocType, links } from "@oboku/shared"
 import { plugins as dataSourcePlugins } from "../../integrations/plugins/configure"
 import { errorToMessage } from "../../errors/ErrorMessage"
 import { useDataSources } from "../../dataSources/useDataSources"
@@ -170,7 +170,7 @@ export const DataSourcesListScreen = memo(function DataSourcesListScreen() {
 const SyncSourceLabel = ({
   syncSource,
 }: {
-  syncSource: DeepReadonly<DataSourceDocType>
+  syncSource: DeepReadonly<LibrarySyncDocType>
 }) => {
   const label = useDataSourceLabel(syncSource)
 

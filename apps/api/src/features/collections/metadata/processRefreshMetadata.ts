@@ -128,7 +128,7 @@ export const processRefreshMetadata = async (
   /**
    * Privacy gate: skip third-party metadata providers when the collection holds
    * protected books (unless the user explicitly opted in via
-   * `metadataFetchEnabled`). The user's data source (link metadata above) is
+   * `metadataFetchEnabled`). The user's library sync (link metadata above) is
    * still checked as it is their own data.
    */
   const collectionIsProtected = await isCollectionProtected(db, collection)

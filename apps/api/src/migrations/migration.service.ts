@@ -307,7 +307,7 @@ export class MigrationService {
         }
 
         // Step 4: Build new connector entries from webdavConnectors that have an id (skip
-        // entries without id—they can't be linked from datasources/books). Reuse the same ID
+        // entries without id—they can't be linked from library syncs/books). Reuse the same ID
         // so existing references keep working. Skip any webdav entry whose ID already exists
         // in connectors (idempotent re-run).
         const existingConnectorIds = new Set(
@@ -388,7 +388,7 @@ export class MigrationService {
      *
      * Important scope note:
      * - This migration only rewrites WebDAV ids.
-     * - It does not touch connector definitions, secrets, datasource connector ids,
+     * - It does not touch connector definitions, secrets, library sync connector ids,
      *   book ids, or non-WebDAV links/collections.
      *
      * Explicit skip / no-op behavior:

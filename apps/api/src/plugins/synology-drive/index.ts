@@ -1,5 +1,5 @@
 import {
-  getDataFromDataSource,
+  getDataFromLibrarySync,
   type LinkWithCredentials,
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
   type SourceApiCredentials,
@@ -11,7 +11,7 @@ import { findConnectorCandidates } from "../helpers.js"
 import { getConnectorById } from "../connectorHelpers.js"
 import {
   downloadSynologyDriveStream,
-  getSynchronizeAbleDataSourceFromItems,
+  getSynchronizeAbleLibrarySyncFromItems,
   getSynologyDriveItemMetadata,
   getSynologyDriveSession,
 } from "./client.js"
@@ -49,7 +49,7 @@ const openSynologyDriveSessionForLink = async ({
   return { session, fileId: link.data.fileId }
 }
 
-export const dataSource: SourcePlugin<"synology-drive"> = {
+export const sourcePlugin: SourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findConnectorCandidates(ctx, "link", {
@@ -118,16 +118,16 @@ export const dataSource: SourcePlugin<"synology-drive"> = {
       session,
     })
   },
-  sync: async ({ dataSource, dataSourceId, db, providerCredentials }) => {
+  sync: async ({ librarySync, dataSourceId, db, providerCredentials }) => {
     const { connectorId, items = [] } =
-      getDataFromDataSource<"synology-drive">(dataSource) ?? {}
+      getDataFromLibrarySync<"synology-drive">(librarySync) ?? {}
 
     if (!connectorId || items.length === 0 || !providerCredentials) {
-      throw new Error("datasource not found or invalid")
+      throw new Error("library sync not found or invalid")
     }
 
     logger.log(
-      `Starting Synology Drive sync for datasource ${dataSourceId} with ${items.length} selected item(s)`,
+      `Starting Synology Drive sync for library sync ${dataSourceId} with ${items.length} selected item(s)`,
     )
 
     const connector = await getConnectorById(db, connectorId, "synology-drive")
@@ -146,7 +146,7 @@ export const dataSource: SourcePlugin<"synology-drive"> = {
 
     logger.log("Synology Drive session created")
 
-    return getSynchronizeAbleDataSourceFromItems({
+    return getSynchronizeAbleLibrarySyncFromItems({
       connectorId,
       items,
       session,

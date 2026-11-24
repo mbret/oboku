@@ -21,11 +21,11 @@ import { isNonPublicAddressError } from "../http/publicAddress.js"
 import { NotificationsService } from "../notifications/notifications.service.js"
 import { getPlugin } from "../plugins/plugins.js"
 import type {
-  SynchronizeAbleDataSource,
+  SynchronizeAbleLibrarySync,
   SynchronizeAbleItem,
 } from "../plugins/types.js"
 import { SyncReport } from "./sync/SyncReport.js"
-import { synchronizeFromDataSource } from "./sync/synchronizeFromDataSource.js"
+import { synchronizeFromLibrarySync } from "./sync/synchronizeFromLibrarySync.js"
 
 function toSyncErrorCode(error: unknown) {
   if (isNonPublicAddressError(error)) {
@@ -40,8 +40,8 @@ function toSyncErrorCode(error: unknown) {
 }
 
 @Injectable()
-export class DataSourceService {
-  private readonly logger = new Logger(DataSourceService.name)
+export class LibrarySyncService {
+  private readonly logger = new Logger(LibrarySyncService.name)
 
   constructor(
     private readonly coversService: CoversService,
@@ -83,21 +83,21 @@ export class DataSourceService {
     }
 
     try {
-      const dataSource = await findOne(
+      const librarySync = await findOne(
         "datasource",
         { selector: { _id: dataSourceId } },
         { db },
       )
 
-      if (!dataSource) throw new Error("Data source not found")
+      if (!librarySync) throw new Error("Library sync not found")
 
-      const { type } = dataSource
+      const { type } = librarySync
       parsedSourceCredentials = parseSourceApiCredentials(
         type,
         providerCredentials,
       )
 
-      // we create the date now on purpose so that if something change on the datasource
+      // we create the date now on purpose so that if something change on the library sync
       // during the process (which can take time), user will not be misled to believe its
       // latest changes have been synced
       const lastSyncedAt = Date.now()
@@ -110,8 +110,8 @@ export class DataSourceService {
         dataSourceId,
         userName: email,
         providerCredentials: parsedSourceCredentials,
-        dataSourceType: type,
-        dataSource,
+        sourceType: type,
+        librarySync,
         db,
         syncReport,
       }
@@ -126,22 +126,22 @@ export class DataSourceService {
 
       const applyTags = <T extends SynchronizeAbleItem>(item: T): T => ({
         ...item,
-        tags: dataSource.tags,
+        tags: librarySync.tags,
         items: item.items?.map(applyTags),
       })
 
-      const synchronizeAbleDataSource = await plugin.sync(syncOptions)
-      const synchronizeAbleDataSourceWithTags: SynchronizeAbleDataSource = {
-        ...synchronizeAbleDataSource,
-        items: synchronizeAbleDataSource.items.map(applyTags),
+      const synchronizeAbleLibrarySync = await plugin.sync(syncOptions)
+      const synchronizeAbleLibrarySyncWithTags: SynchronizeAbleLibrarySync = {
+        ...synchronizeAbleLibrarySync,
+        items: synchronizeAbleLibrarySync.items.map(applyTags),
       }
 
       this.logger.log(
-        `Execute sync process with ${plugin.type} plugin for ${synchronizeAbleDataSourceWithTags.items.length} items`,
+        `Execute sync process with ${plugin.type} plugin for ${synchronizeAbleLibrarySyncWithTags.items.length} items`,
       )
 
-      const collectionIdsToRefresh = await synchronizeFromDataSource(
-        synchronizeAbleDataSourceWithTags,
+      const collectionIdsToRefresh = await synchronizeFromLibrarySync(
+        synchronizeAbleLibrarySyncWithTags,
         ctx,
         this.coversService,
       )
@@ -158,7 +158,7 @@ export class DataSourceService {
         )
       }
 
-      this.logger.log(`Update datasource with sync success flag`)
+      this.logger.log(`Update the library sync with its sync success flag`)
 
       await atomicUpdate(db, "datasource", dataSourceId, (old) => ({
         ...old,

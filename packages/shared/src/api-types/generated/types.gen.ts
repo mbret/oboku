@@ -436,7 +436,7 @@ export type SyncReportDto = {
     has_different_provider_credentials: boolean | null;
 };
 
-export type SyncDataSourceDto = {
+export type RunLibrarySyncDto = {
     dataSourceId: string;
     providerCredentials: {
         [key: string]: unknown;
@@ -1752,49 +1752,49 @@ export type QuotasGetProxiedDownloadQuotaResponses = {
 
 export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];
 
-export type DataSourcesListSyncReportsData = {
+export type LibrarySyncsListSyncReportsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/datasources/sync-reports';
 };
 
-export type DataSourcesListSyncReportsErrors = {
+export type LibrarySyncsListSyncReportsErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesListSyncReportsError = DataSourcesListSyncReportsErrors[keyof DataSourcesListSyncReportsErrors];
+export type LibrarySyncsListSyncReportsError = LibrarySyncsListSyncReportsErrors[keyof LibrarySyncsListSyncReportsErrors];
 
-export type DataSourcesListSyncReportsResponses = {
+export type LibrarySyncsListSyncReportsResponses = {
     200: Array<SyncReportDto>;
 };
 
-export type DataSourcesListSyncReportsResponse = DataSourcesListSyncReportsResponses[keyof DataSourcesListSyncReportsResponses];
+export type LibrarySyncsListSyncReportsResponse = LibrarySyncsListSyncReportsResponses[keyof LibrarySyncsListSyncReportsResponses];
 
-export type DataSourcesSyncData = {
-    body: SyncDataSourceDto;
+export type LibrarySyncsSyncData = {
+    body: RunLibrarySyncDto;
     path?: never;
     query?: never;
     url: '/datasources/sync';
 };
 
-export type DataSourcesSyncErrors = {
+export type LibrarySyncsSyncErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesSyncError = DataSourcesSyncErrors[keyof DataSourcesSyncErrors];
+export type LibrarySyncsSyncError = LibrarySyncsSyncErrors[keyof LibrarySyncsSyncErrors];
 
-export type DataSourcesSyncResponses = {
+export type LibrarySyncsSyncResponses = {
     201: EmptyResponseDto;
 };
 
-export type DataSourcesSyncResponse = DataSourcesSyncResponses[keyof DataSourcesSyncResponses];
+export type LibrarySyncsSyncResponse = LibrarySyncsSyncResponses[keyof LibrarySyncsSyncResponses];
 
 export type BooksRefreshMetadataData = {
     body: RefreshBookMetadataDto;
