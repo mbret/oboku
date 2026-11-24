@@ -5,7 +5,7 @@ import {
   IsObject,
   IsOptional,
   IsString,
-  IsUrl,
+  Matches,
   ValidateNested,
 } from "class-validator"
 import { WebdavCredentialsDto } from "../plugins/webdav/webdav-credentials.dto.js"
@@ -16,11 +16,9 @@ export type WebdavDirectoryItemType =
   (typeof WEBDAV_DIRECTORY_ITEM_TYPES)[number]
 
 export class ListWebdavDirectoryDto {
-  @IsUrl({
-    require_tld: false,
-    require_protocol: true,
-    protocols: ["http", "https"],
-  })
+  /** An http or https URL. */
+  @IsString()
+  @Matches(/^https?:\/\//i)
   url!: string
 
   @IsString()

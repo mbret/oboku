@@ -154,12 +154,10 @@ describe("ConnectorsController", () => {
       ],
     })
     expect(listWebdavDirectory).toHaveBeenCalledWith({
-      connector: {
-        url: KOOFR_CONNECTION.url,
-        username: KOOFR_CONNECTION.username,
-        allowSelfSigned: false,
-      },
+      url: KOOFR_CONNECTION.url,
+      username: KOOFR_CONNECTION.username,
       password: PASSWORD,
+      allowSelfSigned: false,
       path: "/Books",
       signal: expect.any(AbortSignal),
     })
@@ -183,6 +181,22 @@ describe("ConnectorsController", () => {
 
     expect(response.status).toBe(400)
     expect(listWebdavDirectory).not.toHaveBeenCalled()
+  })
+
+  it.each([
+    "http://webdav_server:8080/dav",
+    "https://cloud.example.com/remote.php/dav/files/Jane Doe",
+  ])("accepts %s as a server address", async (url) => {
+    const response = await listDirectory({
+      ...KOOFR_CONNECTION,
+      url,
+      path: "/Books",
+    })
+
+    expect(response.status).toBe(200)
+    expect(listWebdavDirectory).toHaveBeenCalledWith(
+      expect.objectContaining({ url }),
+    )
   })
 
   it.each(["not a url", "ftp://dav.example.com", "dav.example.com"])(

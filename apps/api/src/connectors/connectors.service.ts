@@ -27,8 +27,10 @@ export class ConnectorsService {
     path,
   }: ListWebdavDirectoryDto): Promise<WebdavDirectoryItemDto[]> {
     const items = await listWebdavDirectory({
-      connector: { url, username, allowSelfSigned },
+      url,
+      username,
       password: providerCredentials.password,
+      allowSelfSigned,
       path,
       signal: AbortSignal.timeout(LIST_DIRECTORY_DEADLINE_MS),
     }).catch(throwWebdavHttpException)

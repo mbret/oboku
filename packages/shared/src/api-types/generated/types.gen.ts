@@ -466,6 +466,9 @@ export type DownloadLinkDto = {
 };
 
 export type ListWebdavDirectoryDto = {
+    /**
+     * An http or https URL.
+     */
     url: string;
     username: string;
     providerCredentials: WebdavCredentialsDto;
