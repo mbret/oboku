@@ -2,7 +2,7 @@
 title: "OPDS"
 ---
 
-oboku can sync the free books of an OPDS catalog, the protocol that self-hosted library servers such as Komga, Calibre-Web and Kavita share. A sync reads one feed of the catalog and creates books and collections from it, like the other sync providers.
+oboku can sync the free books of an OPDS catalog, the protocol that self-hosted library servers such as Komga, Calibre-Web and Kavita share. A sync reads one feed of the catalog and creates books and collections from it, like the other sources.
 
 To let reading apps browse your oboku library through OPDS instead, see [OPDS Servers](/guides/opds-servers).
 
@@ -12,7 +12,7 @@ To let reading apps browse your oboku library through OPDS instead, see [OPDS Se
 - Free books only: the ones the catalog offers to download as a whole, without buying, borrowing or subscribing. Samples are skipped too.
 - The formats oboku can read, going by the type the catalog gives each file. When a book comes in several formats, oboku takes the first one it can read.
 - Reading only: oboku never uploads books to the catalog or deletes them from it.
-- Like with other providers, books get their metadata and cover from their file.
+- Like with other sources, books get their metadata and cover from their file.
 
 ## Connector
 

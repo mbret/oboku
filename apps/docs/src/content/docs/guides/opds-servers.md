@@ -11,7 +11,7 @@ A catalog lists the books of your library that oboku's server can reach on its o
 - books oboku reads from Google Drive, while your [Google account is connected](/guides/google-account-connection);
 - books oboku reads from a WebDAV server, while their [connector is connected](/guides/connectors#connect-a-connector).
 
-Reading apps download them through oboku's server, which reaches each provider with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
+Reading apps download them through oboku's server, which reaches each source with its connection. Without a connection, catalogs are empty. A connector you edit, or whose password you change, stops serving its books until you connect it again.
 
 The **Integrations > OPDS servers** screen shows these sources in three groups:
 
@@ -23,7 +23,7 @@ Each book comes with the cover oboku shows for it. Covers do not count towards t
 
 - books under a [protected tag](/guides/privacy-and-parental-secure-control#protected-contents), even while your library is unlocked;
 - books you marked not interested;
-- books oboku reads from another provider, such as Dropbox or Synology Drive, or from a WebDAV connector that is not connected.
+- books oboku reads from another source, such as Dropbox or Synology Drive, or from a WebDAV connector that is not connected.
 
 A catalog opens on two entries, each listing 50 items per page:
 
@@ -40,7 +40,7 @@ If a WebDAV server refuses the connector's password when a reading app downloads
 
 ## Monthly download quota
 
-Reading apps download books through oboku's server, and so do books from a [WebDAV connector that uses it as a proxy](/sync-providers/webdav#use-obokus-server-as-a-proxy). Each instance has a monthly quota on what its server sends, for all users together. Each user also has their own quota, 5% of it by default. A download that would pass either quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
+Reading apps download books through oboku's server, and so do books from a [WebDAV connector that uses it as a proxy](/sources/webdav#use-obokus-server-as-a-proxy). Each instance has a monthly quota on what its server sends, for all users together. Each user also has their own quota, 5% of it by default. A download that would pass either quota fails with "too many requests" until the next month (UTC). Browsing the catalog still works.
 
 **Profile > Quotas** shows how much of your quota and of the quota of all users is used this month, and when both start over. The **OPDS servers** screen links to it. The instance's administrator sets both from the [admin panel](/self-hosting/admin#proxied-download-quota): 500 GB a month by default, 5% of it per user.
 

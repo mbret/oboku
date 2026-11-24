@@ -61,7 +61,7 @@ import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
 import optimizeContentScreenshot from "../common/app-screenshots/optimize-content.webp"
 import optimizeMetadataScreenshot from "../common/app-screenshots/optimize-metadata.webp"
 import profileScreenshot from "../common/app-screenshots/profile.webp"
-import { supportedExtensions, syncProviders } from "../home/content"
+import { supportedExtensions, sources } from "../home/content"
 import { OpdsDiagram } from "./OpdsDiagram"
 
 type Feature = {
@@ -192,7 +192,7 @@ export const featureGroups: FeatureGroup[] = [
         }}
       />
     ),
-    chips: syncProviders,
+    chips: sources,
     features: [
       {
         Icon: CloudRounded,

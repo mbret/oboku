@@ -4,16 +4,16 @@ title: "Books"
 
 ## Download
 
-To download a book you can simply click on its cover. The download will then proceed with the provider you added the book from.
+To download a book you can simply click on its cover. The download will then proceed with the source you added the book from.
 
-Since books can come from various providers and data sources the download process may differ for some steps. For example if you want to download a book linked to dropbox and you are not already authenticated with the provider, you will be prompted with a consent screen from dropbox before the download can proceed.
+Since books can come from various sources, the download process may differ for some steps. For example if you want to download a book linked to dropbox and you are not already authenticated with the source, you will be prompted with a consent screen from dropbox before the download can proceed.
 
 Once your books are downloaded you can click again on the cover to read them.
 
 You can manage your downloaded books in the settings.
 
 :::note
-Some providers may or may not provide a way to track download progress. When this is the case you will not be able to see the current download progress until it is completely done.&#x20;
+Some sources may or may not provide a way to track download progress. When this is the case you will not be able to see the current download progress until it is completely done.&#x20;
 
 Due to the important costs it involves we cannot use a bridge or proxy to provide the feature yet.
 :::

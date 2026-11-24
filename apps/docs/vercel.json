@@ -31,7 +31,7 @@
     },
     {
       "source": "/dropbox",
-      "destination": "/sync-providers/dropbox",
+      "destination": "/sources/dropbox",
       "permanent": true
     },
     {
@@ -41,7 +41,7 @@
     },
     {
       "source": "/guides/webdav",
-      "destination": "/sync-providers/webdav",
+      "destination": "/sources/webdav",
       "permanent": true
     },
     {
@@ -66,7 +66,17 @@
     },
     {
       "source": "/sync-providers",
-      "destination": "/sync-providers/webdav",
+      "destination": "/sources/webdav",
+      "permanent": true
+    },
+    {
+      "source": "/sync-providers/:page",
+      "destination": "/sources/:page",
+      "permanent": true
+    },
+    {
+      "source": "/sources",
+      "destination": "/sources/webdav",
       "permanent": true
     },
     {
