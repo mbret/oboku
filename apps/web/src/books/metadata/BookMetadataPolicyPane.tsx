@@ -15,6 +15,10 @@ import type {
 } from "@oboku/shared"
 import { MetadataFetchPolicyListItem } from "../../metadata/MetadataFetchPolicyListItem"
 
+const lastRefreshedDateFormatter = new Intl.DateTimeFormat(undefined, {
+  dateStyle: "medium",
+})
+
 type Props = {
   override: MetadataFetchOverride
   isProtected: boolean | undefined
@@ -24,6 +28,7 @@ type Props = {
   onFileDownloadChange: (next: MetadataFileDownloadOverride) => void
   onForceRefresh: () => void
   forceRefreshDisabled: boolean
+  lastRefreshedAt: number | null
 }
 
 /**
@@ -43,6 +48,7 @@ export const BookMetadataPolicyPane = memo(function BookMetadataPolicyPane({
   onFileDownloadChange,
   onForceRefresh,
   forceRefreshDisabled,
+  lastRefreshedAt,
 }: Props) {
   const fileDownloadEnabled = fileDownloadOverride !== false
 
@@ -95,6 +101,14 @@ export const BookMetadataPolicyPane = memo(function BookMetadataPolicyPane({
           />
         </ListItemButton>
       </ListItem>
+      {lastRefreshedAt !== null && (
+        <ListItem>
+          <ListItemText
+            inset
+            secondary={`Last refreshed on ${lastRefreshedDateFormatter.format(lastRefreshedAt)}`}
+          />
+        </ListItem>
+      )}
     </List>
   )
 })
