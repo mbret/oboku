@@ -40,11 +40,6 @@
       "permanent": true
     },
     {
-      "source": "/guides/datasources",
-      "destination": "/guides/library-syncs",
-      "permanent": true
-    },
-    {
       "source": "/guides/webdav",
       "destination": "/sources/webdav",
       "permanent": true
