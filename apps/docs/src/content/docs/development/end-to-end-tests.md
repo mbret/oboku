@@ -51,7 +51,7 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 `src/steps.ts` holds the steps the tests take in the app:
 
 - `signUp`: completes the sign-up from a `signUpInvitation`.
-- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync.
+- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server library sync, and waits for its first sync.
 - `expectServerLibraryBooks`: waits until the library shows each server book's title and author, each in its card, which `libraryBookCard` finds by its title. The API reads them from each file, which can take up to a minute when tests run in parallel.
 - `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
@@ -93,7 +93,7 @@ Each target signs up a new account, syncs and downloads the server library, read
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 
 - The profile and both KOReader screens show the email of the account, which each run creates with a new address.
-- The data sources screen shows the day of the last sync, which the API records.
+- The Syncs screen shows the day of the last sync, which the API records.
 - The KOReader sync server screen shows the password the API generates.
 - The storage screen shows the browser's estimate of the space the machine has, and lists the books in no fixed order.
 

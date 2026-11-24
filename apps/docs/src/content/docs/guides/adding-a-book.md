@@ -6,18 +6,18 @@ description: Reading time aye?
 There are two main distinct ways to add content with oboku. You can either add a book manually or let oboku synchronize your content automatically, also known as **sync**.
 
 :::note
-We recommend setting up data sources as its the most convenient way to manage big libraries
+We recommend setting up library syncs as it is the most convenient way to manage big libraries
 :::
 
 ## Add content manually
 
 You are free to drop in or upload any content directly from the app using various sources. The easiest way is to add something from your device directly but you can also import content from available sources.
 
-## Synchronize & Data Sources { #synchronize-and-data-sources }
+## Library syncs { #synchronize-and-data-sources }
 
-Instead of adding your content one by one and creating your collections manually you can create a data source from the available sources. By doing so oboku will be able to synchronize everything it can find automatically for you.
+Instead of adding your content one by one and creating your collections manually you can create a library sync from one of your sources. By doing so oboku will be able to synchronize everything it can find automatically for you.
 
-Visit [Data Sources](/guides/datasources) for more information
+Visit [Library Syncs](/guides/library-syncs) for more information
 
 ## Where is my content stored?
 

@@ -184,11 +184,11 @@ export const featureGroups: FeatureGroup[] = [
       <PhoneScreenshots
         primary={{
           src: dataSourcesScreenshot,
-          alt: "oboku data sources screen with a server library and the day of its last sync",
+          alt: "oboku Syncs screen with a server library and the day of its last sync",
         }}
         secondary={{
           src: addDataSourceScreenshot,
-          alt: "Adding an oboku data source from Dropbox or Google Drive",
+          alt: "Adding an oboku library sync from Dropbox or Google Drive",
         }}
       />
     ),
@@ -220,7 +220,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: SyncRounded,
         title: "Synchronize in one tap",
         description:
-          "New books and folders in your data sources are picked up on every sync.",
+          "New books and folders in your library syncs are picked up on every sync.",
       },
       {
         Icon: ShareRounded,
@@ -501,7 +501,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: KeyRounded,
         title: "Encrypted secrets",
         description:
-          "Credentials for your data sources are encrypted with a master password only you know.",
+          "Credentials for your sources are encrypted with a master password only you know.",
       },
     ],
   },
@@ -553,7 +553,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: CloudUploadRounded,
         title: "Save back to the source",
         description:
-          "Upload the optimized book back to its data source, or download it to your device.",
+          "Upload the optimized book back to its source, or download it to your device.",
       },
     ],
   },
@@ -582,7 +582,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: FolderSharedRounded,
         title: "Server sync",
         description:
-          "A self-hosted instance can expose books stored on the server or your NAS as a data source.",
+          "A self-hosted instance can expose books stored on the server or your NAS as a source.",
       },
       {
         Icon: AdminPanelSettingsRounded,

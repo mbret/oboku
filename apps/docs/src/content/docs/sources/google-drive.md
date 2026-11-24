@@ -4,7 +4,7 @@ title: "Google Drive"
 
 Google Drive is fully supported
 
-When creating a data source for google drive, you will need to first build the tree structure by picking files and folders. This process is needed only once and every-time you want to add or remove items to be synced.
+When creating a library sync for Google Drive, you will need to first build the tree structure by picking files and folders. This process is needed only once and every-time you want to add or remove items to be synced.
 
 You will be able to visualize your sync structure and then synchronize.
 

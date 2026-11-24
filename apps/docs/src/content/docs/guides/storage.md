@@ -12,7 +12,7 @@ Most of what oboku stores is also on the server, so if it is deleted it comes ba
 
 Two things do not come back:
 
-- **Books you uploaded directly from your device.** oboku is the only place those files exist — there is no datasource to fetch them from again, so they are lost for good.
+- **Books you uploaded directly from your device.** oboku is the only place those files exist — there is no source to fetch them from again, so they are lost for good.
 - **Anything you changed while offline** that had not synchronized yet.
 
 Everything else — downloaded books from Google Drive, Dropbox, Synology, your own server — can be downloaded again, but you may be re-fetching several gigabytes over a connection you were not planning to use.

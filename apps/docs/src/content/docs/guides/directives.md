@@ -2,7 +2,7 @@
 title: "Directives"
 ---
 
-Directives are extra information you put on your data sources contents to help oboku understand better what they are. Ideally they should not be required and have some limitations but they can come handy in some situation.
+Directives are extra information you put on the contents of your library syncs to help oboku understand better what they are. Ideally they should not be required and have some limitations but they can come handy in some situation.
 
 ## **Overview**
 
@@ -18,7 +18,7 @@ Due to some current limitation, you may need to re-download a book for some dire
 
 ## Limitations
 
-When you are using a data sources which does not use ID for its resources (such as webdav) renaming the files or folders will prevent oboku from knowing the resource has been renamed and thus will end up duplicating the contents. This limitation is directly tight to the limitation of the protocol of the data sources. Using Google Drive or Dropbox for example does not have this problem and you can rename your contents whenever you want.
+When you are using a source which does not use IDs for its resources (such as webdav) renaming the files or folders will prevent oboku from knowing the resource has been renamed and thus will end up duplicating the contents. This limitation is directly tight to the limitation of the protocol of the sources. Using Google Drive or Dropbox for example does not have this problem and you can rename your contents whenever you want.
 
 If you rename or move around contents you can always update the link on oboku manually.
 
@@ -108,7 +108,7 @@ Tells oboku to use this title instead of the folder name when looking for metada
 my folder [oboku~no_collection]/
 ```
 
-**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a data source that contains lot of sub folder and you don't necessarily want to have a collection for each folder (default behavior).
+**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a library sync that contains a lot of sub folders and you don't necessarily want to have a collection for each folder (default behavior).
 
 When using `no_collection` on a folder, oboku will then use the default behavior for all children which means every folder directly under this folder will be treated as collection. Use this directive again if you need to ignore deeper folder.
 
