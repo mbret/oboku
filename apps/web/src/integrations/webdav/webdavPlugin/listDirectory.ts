@@ -3,7 +3,9 @@ import {
   type WebdavDirectoryItemDto,
 } from "@oboku/shared"
 import type { FileStat, WebDAVClient } from "webdav"
+import type { ConnectionParams } from "../../../connectors/TestConnection"
 import type { HttpApiClientWeb } from "../../../http"
+import { createWebdavClient } from "./auth/connect"
 
 const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
   filename: item.filename,
@@ -13,26 +15,30 @@ const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
   etag: item.etag ?? undefined,
 })
 
-export const listDirectoryThroughServerProxy = async ({
+const listDirectoryThroughServerProxy = async ({
   httpClientApi,
-  connectorId,
-  password,
+  connection: { url, username, password, allowSelfSigned },
   path,
 }: {
   httpClientApi: HttpApiClientWeb
-  connectorId: string
-  password: string
+  connection: ConnectionParams
   path: string
 }) => {
   const { data } = await connectorsListWebdavDirectory({
     client: httpClientApi.sdkClient,
-    body: { connectorId, path, providerCredentials: { password } },
+    body: {
+      url,
+      username,
+      providerCredentials: { password },
+      allowSelfSigned,
+      path,
+    },
   })
 
   return data.items
 }
 
-export const listDirectoryFromWebdavServer = async ({
+const listDirectoryFromWebdavServer = async ({
   client,
   path,
 }: {
@@ -42,4 +48,33 @@ export const listDirectoryFromWebdavServer = async ({
   const items = await client.getDirectoryContents(path)
 
   return items.map(toWebdavDirectoryItem)
+}
+
+/** The browser lists every folder with one client, which remembers how the server signs in. */
+export const createWebdavDirectoryLister = ({
+  connection,
+  httpClientApi,
+}: {
+  connection: ConnectionParams
+  httpClientApi: HttpApiClientWeb
+}) => {
+  if (connection.proxyThroughServer) {
+    return function listDirectoryThroughServer(path: string) {
+      return listDirectoryThroughServerProxy({
+        httpClientApi,
+        connection,
+        path,
+      })
+    }
+  }
+
+  const client = createWebdavClient({
+    url: connection.url,
+    username: connection.username,
+    password: connection.password,
+  })
+
+  return function listDirectoryFromServer(path: string) {
+    return listDirectoryFromWebdavServer({ client, path })
+  }
 }
