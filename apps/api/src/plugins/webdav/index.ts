@@ -135,7 +135,7 @@ export const listWebdavDirectory = ({
   connector: WebdavConnectorDocType
   password: string
   path: string
-  signal?: AbortSignal
+  signal: AbortSignal
 }) =>
   createWebdavClient({ ...connector, password }).getDirectoryContents(path, {
     signal,

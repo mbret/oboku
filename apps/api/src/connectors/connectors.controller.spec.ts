@@ -177,6 +177,7 @@ describe("ConnectorsController", () => {
       connector: KOOFR_CONNECTOR,
       password: PASSWORD,
       path: "/Books",
+      signal: expect.any(AbortSignal),
     })
   })
 
