@@ -2,13 +2,14 @@ import {
   assertNever,
   type LibrarySyncDocType,
   type SourceApiCredentials,
+  type SourceType,
 } from "@oboku/shared"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { pluginsByType } from "./configure"
 
 type SynchronizeResult = {
-  providerCredentials: SourceApiCredentials<LibrarySyncDocType["type"]>
+  providerCredentials: SourceApiCredentials<SourceType>
 }
 
 /**

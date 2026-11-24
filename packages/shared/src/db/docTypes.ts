@@ -55,40 +55,38 @@ type CommonBase = CouchDBMeta & RxDbMeta
  * fields (e.g. fileId, filePath) and access/metadata fields (e.g. connectorId, etag).
  * Used for link.data, collection.linkData, sync items, and plugin API calls.
  */
-export type LinkDataForSource<T extends LibrarySyncDocType["type"]> =
-  T extends "DRIVE"
-    ? GoogleDriveLinkData
-    : T extends "one-drive"
-      ? OneDriveLinkData
-      : T extends "dropbox"
-        ? DropboxLinkData
-        : T extends "webdav"
-          ? WebdavLinkData
-          : T extends "synology-drive"
-            ? SynologyDriveLinkData
-            : T extends "server"
-              ? ServerLinkData
-              : T extends "URI"
-                ? UriLinkData
-                : T extends "file"
-                  ? FileLinkData
-                  : T extends "opds"
-                    ? OpdsLinkData
-                    : never
+export type LinkDataForSource<T extends SourceType> = T extends "DRIVE"
+  ? GoogleDriveLinkData
+  : T extends "one-drive"
+    ? OneDriveLinkData
+    : T extends "dropbox"
+      ? DropboxLinkData
+      : T extends "webdav"
+        ? WebdavLinkData
+        : T extends "synology-drive"
+          ? SynologyDriveLinkData
+          : T extends "server"
+            ? ServerLinkData
+            : T extends "URI"
+              ? UriLinkData
+              : T extends "file"
+                ? FileLinkData
+                : T extends "opds"
+                  ? OpdsLinkData
+                  : never
 
 /**
  * Link document for a specific source; `data` is correctly typed as that source's
  * link data (LinkDataForSource<T>).
  */
-export type LinkDocTypeForSource<T extends LibrarySyncDocType["type"]> =
-  CommonBase & {
-    type: T
-    data: LinkDataForSource<T>
-    book: string | null
-    rx_model: "link"
-    modifiedAt: string | null
-    createdAt: string
-  }
+export type LinkDocTypeForSource<T extends SourceType> = CommonBase & {
+  type: T
+  data: LinkDataForSource<T>
+  book: string | null
+  rx_model: "link"
+  modifiedAt: string | null
+  createdAt: string
+}
 
 /** Link document; discriminated union so narrowing link.type narrows link.data per source. */
 export type LinkDocType =
@@ -107,7 +105,7 @@ export type LinkDocType =
  * refreshing book or collection. Carries the same source-specific credentials (data)
  * whether the source is a link, a collection, or a datasource.
  */
-export type LinkWithCredentials<T extends LibrarySyncDocType["type"]> = Pick<
+export type LinkWithCredentials<T extends SourceType> = Pick<
   LinkDocTypeForSource<T>,
   "type" | "data"
 >
@@ -152,7 +150,7 @@ export type LibrarySyncDocType =
   | ServerLibrarySyncDocType
   | OpdsLibrarySyncDocType
 
-/** Library sync / source type (e.g. "webdav", "file", "dropbox"). */
+/** The type of a source (e.g. "webdav", "file", "dropbox"). */
 export type SourceType = LibrarySyncDocType["type"]
 
 export type LibrarySyncDocTypeFor<T extends SourceType> = Extract<

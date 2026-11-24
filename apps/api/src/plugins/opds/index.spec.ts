@@ -68,7 +68,7 @@ const linkTo = (data: OpdsLinkData): LinkDocTypeForSource<"opds"> => ({
   data,
 })
 
-const syncDataSource = ({
+const syncLibrarySync = ({
   data_v2,
   connectorUrl,
 }: {
@@ -117,10 +117,10 @@ const folderItem = (linkData: OpdsLinkData) => ({
   type: "folder" as const,
 })
 
-describe("OPDS data source", () => {
+describe("OPDS source plugin", () => {
   afterEach(forgetAllowedServers)
 
-  it("syncs the feed of its data source with the credentials of its connector", async () => {
+  it("syncs the feed of its library sync with the credentials of its connector", async () => {
     const catalog = await startServer({
       "/opds": {
         body: feed(
@@ -130,7 +130,7 @@ describe("OPDS data source", () => {
     })
     allowServers(catalog)
 
-    const { items } = await syncDataSource({
+    const { items } = await syncLibrarySync({
       data_v2: { connectorId: "connector", feedUrl: `${catalog.origin}/opds` },
       connectorUrl: catalog.origin,
     })
@@ -141,9 +141,9 @@ describe("OPDS data source", () => {
     ])
   })
 
-  it("refuses a data source without a feed URL", async () => {
+  it("refuses a library sync without a feed URL", async () => {
     await expect(
-      syncDataSource({
+      syncLibrarySync({
         data_v2: { connectorId: "connector" },
         connectorUrl: "https://catalog.example.com",
       }),

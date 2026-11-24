@@ -1,6 +1,7 @@
+import type { SourceType } from "@oboku/shared"
 import type { LibrarySyncDocType } from "../db/docTypes"
 
-export const getDataFromLibrarySync = <T extends LibrarySyncDocType["type"]>(
+export const getDataFromLibrarySync = <T extends SourceType>(
   librarySync: Pick<Extract<LibrarySyncDocType, { type: T }>, "data_v2">,
 ): Extract<LibrarySyncDocType, { type: T }>["data_v2"] | undefined => {
   // compat with old library syncs

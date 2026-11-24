@@ -7,6 +7,7 @@ import type {
   LinkDocTypeForSource,
   MetadataFileDownloadOverride,
   SourceApiCredentials,
+  SourceType,
 } from "@oboku/shared"
 import type { ComponentType, DOMAttributes, ReactNode } from "react"
 import type { SvgIconProps } from "@mui/material"
@@ -17,9 +18,10 @@ import type {
 } from "@tanstack/react-query"
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
-type PostLink<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = Pick<LinkDocTypeForSource<T>, "type" | "data">
+type PostLink<T extends SourceType = SourceType> = Pick<
+  LinkDocTypeForSource<T>,
+  "type" | "data"
+>
 
 /** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
 type PostBook = {
@@ -27,9 +29,7 @@ type PostBook = {
   title?: string
 }
 
-export type UploadBookToAddPayload<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+export type UploadBookToAddPayload<T extends SourceType = SourceType> = {
   book: PostBook
   link: PostLink<T>
   /** When set (e.g. local file upload), dialog will trigger download after add */
@@ -41,9 +41,7 @@ type SelectionError = {
   originalError?: any
 }
 
-export type UploadBookComponentProps<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+export type UploadBookComponentProps<T extends SourceType = SourceType> = {
   onClose: (booksToAdd?: ReadonlyArray<UploadBookToAddPayload<T>>) => void
   requestPopup: () => Promise<boolean>
   TagsSelector: ComponentType<{
@@ -57,9 +55,7 @@ export type DownloadBookResult = {
   fileName: string
 }
 
-export type DownloadBookComponentProps<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+export type DownloadBookComponentProps<T extends SourceType = SourceType> = {
   link: LinkDocTypeForSource<T>
   onDownloadProgress: (progress: number) => void
   onError: (error: unknown) => void
@@ -67,22 +63,16 @@ export type DownloadBookComponentProps<
   signal: AbortSignal
 }
 
-export type UseRefreshMetadataVariables<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+export type UseRefreshMetadataVariables<T extends SourceType = SourceType> = {
   linkId?: string
   linkType: T
   linkData?: LinkDataForSource<T> | null
 }
 
 /** Params for usePluginRefreshMetadata(); discriminated union on linkType. */
-export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<
-  LibrarySyncDocType["type"]
->
+export type UseRefreshMetadataRequest = UseRefreshMetadataVariables<SourceType>
 
-export type UseRefreshMetadataHook<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = (
+export type UseRefreshMetadataHook<T extends SourceType = SourceType> = (
   options: {
     requestPopup: () => Promise<boolean>
   } & Pick<UseMutationOptions, "meta">,
@@ -94,9 +84,9 @@ export type UseRefreshMetadataHook<
   UseRefreshMetadataVariables<T>
 >
 
-export type UseSynchronizeHook<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
+export type UseSynchronizeHook<T extends SourceType = SourceType> = (options: {
+  requestPopup: () => Promise<boolean>
+}) => UseMutationResult<
   {
     providerCredentials: SourceApiCredentials<T>
   },
@@ -104,9 +94,7 @@ export type UseSynchronizeHook<
   Extract<LibrarySyncDocType, { type: T }>
 >
 
-export type RemoveResourceResult<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> =
+export type RemoveResourceResult<T extends SourceType = SourceType> =
   | {
       providerCredentials: SourceApiCredentials<T>
     }
@@ -116,15 +104,11 @@ export type RemoveResourceResult<
       reason: `unknown`
     }
 
-type UseRemoveResource<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = () => (
+type UseRemoveResource<T extends SourceType = SourceType> = () => (
   links: readonly LinkDocTypeForSource<T>[],
 ) => Promise<RemoveResourceResult<T>>
 
-export type UpsertFileComponentProps<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+export type UpsertFileComponentProps<T extends SourceType = SourceType> = {
   link: LinkDocTypeForSource<T>
   file: Blob | File
   fileName: string
@@ -135,13 +119,10 @@ export type UpsertFileComponentProps<
   signal: AbortSignal
 }
 
-export type UpsertFileComponent<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = ComponentType<UpsertFileComponentProps<T>>
+export type UpsertFileComponent<T extends SourceType = SourceType> =
+  ComponentType<UpsertFileComponentProps<T>>
 
-type UpsertFileCapability<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> =
+type UpsertFileCapability<T extends SourceType = SourceType> =
   | {
       canUpsertFile: true
       /** Whether upserting a file deletes the versions the source kept for it */
@@ -154,9 +135,7 @@ type UpsertFileCapability<
       UpsertFileComponent?: undefined
     }
 
-export type UseSyncSourceInfo<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = (data: {
+export type UseSyncSourceInfo<T extends SourceType = SourceType> = (data: {
   enabled: boolean
   dataSource?: DeepReadonly<LibrarySyncDocTypeFor<T>> | undefined
 }) => {
@@ -195,9 +174,7 @@ export type DataSourceSubmitPayload = {
   metadataFileDownloadEnabled: MetadataFileDownloadOverride
 }
 
-type ObokuPluginBase<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = {
+type ObokuPluginBase<T extends SourceType = SourceType> = {
   name: string
   canSynchronize?: boolean
   canRemoveResource: boolean
@@ -233,6 +210,5 @@ type ObokuPluginBase<
   useSignOut: () => () => void
 }
 
-export type SourcePlugin<
-  T extends LibrarySyncDocType["type"] = LibrarySyncDocType["type"],
-> = ObokuPluginBase<T> & UpsertFileCapability<T>
+export type SourcePlugin<T extends SourceType = SourceType> =
+  ObokuPluginBase<T> & UpsertFileCapability<T>
