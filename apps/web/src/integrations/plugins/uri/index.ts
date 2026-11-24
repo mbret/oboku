@@ -1,7 +1,7 @@
 import { HttpRounded } from "@mui/icons-material"
 import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
-import type { ObokuPlugin } from "../types"
+import type { SourcePlugin } from "../types"
 import { UploadBookComponent } from "./UploadBookComponent"
 import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
@@ -9,7 +9,7 @@ import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
-const plugin: ObokuPlugin<"URI"> = {
+const plugin: SourcePlugin<"URI"> = {
   type: TYPE,
   name: "Web link",
   canRemoveResource: false,

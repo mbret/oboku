@@ -28,7 +28,7 @@ import type { LinkCandidate } from "../../../plugins/types.js"
  */
 function getBestLinkCandidate(links: LinkCandidate[]): LinkCandidate | null {
   if (links.length === 0) return null
-  return links.find((l) => l.isUsingSameProviderCredentials) ?? links[0] ?? null
+  return links.find((l) => l.isUsingSameSourceCredentials) ?? links[0] ?? null
 }
 
 function isFolder(
@@ -229,7 +229,7 @@ export const createOrUpdateBook = async ({
        * the current datasource; when we created a new link we can always refresh.
        */
       const canRefreshMetadata = linkMatchingItem
-        ? linkMatchingItem.isUsingSameProviderCredentials
+        ? linkMatchingItem.isUsingSameSourceCredentials
         : true
       if (canRefreshMetadata) {
         await ctx
@@ -259,7 +259,7 @@ export const createOrUpdateBook = async ({
         metadataAreOlderThanModifiedDate || !coverExists
 
       const shouldRefreshMetadata =
-        linkMatchingItem.isUsingSameProviderCredentials && metadataRefreshNeeded
+        linkMatchingItem.isUsingSameSourceCredentials && metadataRefreshNeeded
 
       if (shouldRefreshMetadata) {
         await ctx
@@ -275,7 +275,7 @@ export const createOrUpdateBook = async ({
         )
       } else if (
         metadataRefreshNeeded &&
-        !linkMatchingItem.isUsingSameProviderCredentials
+        !linkMatchingItem.isUsingSameSourceCredentials
       ) {
         syncReport.bookHasDifferentLink(existingBook._id)
       }

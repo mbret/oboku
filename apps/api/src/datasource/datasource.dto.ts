@@ -1,4 +1,4 @@
-import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
+import type { SourceType, SourceApiCredentials } from "@oboku/shared"
 import { IsObject, IsString } from "class-validator"
 
 export class SyncDataSourceDto {
@@ -6,5 +6,5 @@ export class SyncDataSourceDto {
   dataSourceId!: string
 
   @IsObject()
-  providerCredentials!: ProviderApiCredentials<DataSourceType>
+  providerCredentials!: SourceApiCredentials<SourceType>
 }

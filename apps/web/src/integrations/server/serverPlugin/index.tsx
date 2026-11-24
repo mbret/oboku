@@ -1,6 +1,6 @@
 import { DnsRounded } from "@mui/icons-material"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
 import { DownloadBook } from "./DownloadBook"
@@ -10,7 +10,7 @@ import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 import { useSynchronize } from "./useSynchronize"
 
-export const plugin: ObokuPlugin<"server"> = {
+export const plugin: SourcePlugin<"server"> = {
   type: TYPE,
   name: "Server files",
   canRemoveResource: false,

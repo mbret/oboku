@@ -31,7 +31,7 @@ export function AdminQuotasSection() {
   return (
     <InstanceSettingsSection
       title="Quotas"
-      description="Proxied downloads are files the server fetches from a provider and passes on to users, such as the books reading apps download from an OPDS server. Their quota caps what the server sends for all users together each month. Keep it below the monthly outbound traffic your host includes, with a margin for the server's other traffic. Each user may use at most a share of it. Shares are caps, not reservations: together they can add up to more than the quota."
+      description="Proxied downloads are files the server fetches from a source and passes on to users, such as the books reading apps download from an OPDS server. Their quota caps what the server sends for all users together each month. Keep it below the monthly outbound traffic your host includes, with a margin for the server's other traffic. Each user may use at most a share of it. Shares are caps, not reservations: together they can add up to more than the quota."
       renderSettings={function renderQuotaForms(settings) {
         return (
           <>

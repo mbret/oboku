@@ -1,7 +1,7 @@
 import { text } from "node:stream/consumers"
 import type {
   DataSourceDocTypeFor,
-  LinkDocTypeForProvider,
+  LinkDocTypeForSource,
   OpdsLinkData,
 } from "@oboku/shared"
 import type createNano from "nano"
@@ -56,7 +56,7 @@ const dataSource = dataSourceFor({
   feedUrl: "https://catalog.example.com/opds",
 })
 
-const linkTo = (data: OpdsLinkData): LinkDocTypeForProvider<"opds"> => ({
+const linkTo = (data: OpdsLinkData): LinkDocTypeForSource<"opds"> => ({
   _id: "link",
   _rev: "1-link",
   rxdbMeta: { lwt: 0 },

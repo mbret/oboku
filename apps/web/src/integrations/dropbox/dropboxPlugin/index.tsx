@@ -7,7 +7,7 @@ import DropboxIconAsset from "../../../assets/dropbox.svg?react"
 import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
@@ -20,7 +20,7 @@ const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"dropbox"> = {
+export const plugin: SourcePlugin<"dropbox"> = {
   type: `dropbox`,
   name: PLUGIN_NAME,
   canRemoveResource: false,

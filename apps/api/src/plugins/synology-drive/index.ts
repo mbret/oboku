@@ -2,11 +2,11 @@ import {
   getDataFromDataSource,
   type LinkWithCredentials,
   PLUGIN_SYNOLOGY_DRIVE_TYPE,
-  type ProviderApiCredentials,
+  type SourceApiCredentials,
 } from "@oboku/shared"
 import { Logger } from "@nestjs/common"
 import type createNano from "nano"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findConnectorCandidates } from "../helpers.js"
 import { getConnectorById } from "../connectorHelpers.js"
 import {
@@ -24,7 +24,7 @@ const openSynologyDriveSessionForLink = async ({
   db,
 }: {
   link: LinkWithCredentials<"synology-drive">
-  providerCredentials: ProviderApiCredentials<"synology-drive">
+  providerCredentials: SourceApiCredentials<"synology-drive">
   db?: createNano.DocumentScope<unknown>
 }) => {
   const connectorId = link.data?.connectorId
@@ -49,7 +49,7 @@ const openSynologyDriveSessionForLink = async ({
   return { session, fileId: link.data.fileId }
 }
 
-export const dataSource: DataSourcePlugin<"synology-drive"> = {
+export const dataSource: SourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findConnectorCandidates(ctx, "link", {

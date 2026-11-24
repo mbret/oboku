@@ -9,15 +9,15 @@ import { toGoogleApiFailure } from "../../http/googleApiFailure.js"
 import { isRecord } from "../../http/isRecord.js"
 import { createObokuBadRequest } from "../../http/obokuBadRequest.js"
 import {
-  type ConnectionProvider,
-  ProviderConnectionsService,
-} from "../provider-connections.service.js"
+  type ConnectionSource,
+  SourceConnectionsService,
+} from "../source-connections.service.js"
 import type {
   GoogleAccessTokenResponseDto,
   GoogleConnectionDto,
 } from "./google-connection.dto.js"
 
-const GOOGLE_PROVIDER = "google" satisfies ConnectionProvider
+const GOOGLE_PROVIDER = "google" satisfies ConnectionSource
 
 /** The redirect URI of a code from Google Identity Services' popup code flow. */
 const POPUP_REDIRECT_URI = "postmessage"
@@ -146,12 +146,12 @@ const verifyAccount = async ({
 export class GoogleConnectionService {
   constructor(
     private readonly instanceConfigService: InstanceConfigService,
-    private readonly providerConnectionsService: ProviderConnectionsService,
+    private readonly sourceConnectionsService: SourceConnectionsService,
   ) {}
 
   /** A user connects one Google account for now; several are #996. */
   private async findConnection(userId: number) {
-    const [latestConnection] = await this.providerConnectionsService.list({
+    const [latestConnection] = await this.sourceConnectionsService.list({
       userId,
       provider: GOOGLE_PROVIDER,
     })
@@ -160,14 +160,14 @@ export class GoogleConnectionService {
   }
 
   private async disconnectEveryAccount(userId: number) {
-    const connections = await this.providerConnectionsService.list({
+    const connections = await this.sourceConnectionsService.list({
       userId,
       provider: GOOGLE_PROVIDER,
     })
 
     await Promise.all(
       connections.map((connection) =>
-        this.providerConnectionsService.disconnect(connection),
+        this.sourceConnectionsService.disconnect(connection),
       ),
     )
   }
@@ -194,7 +194,7 @@ export class GoogleConnectionService {
     )
     const connection = isConfigured ? await this.findConnection(userId) : null
     const credentials = connection
-      ? await this.providerConnectionsService.getCredentials(connection)
+      ? await this.sourceConnectionsService.getCredentials(connection)
       : null
 
     return credentials !== null
@@ -252,7 +252,7 @@ export class GoogleConnectionService {
       )
     }
 
-    await this.providerConnectionsService.connect({
+    await this.sourceConnectionsService.connect({
       userId,
       provider: GOOGLE_PROVIDER,
       credentials: { refreshToken: tokens.refresh_token },
@@ -292,7 +292,7 @@ export class GoogleConnectionService {
     }
 
     const credentials =
-      await this.providerConnectionsService.getCredentials(connection)
+      await this.sourceConnectionsService.getCredentials(connection)
     const tokens =
       credentials &&
       (await refreshAccessToken({
@@ -302,7 +302,7 @@ export class GoogleConnectionService {
 
     if (!tokens) {
       const isRefusedConnectionDeleted =
-        await this.providerConnectionsService.disconnectIfUnchanged(connection)
+        await this.sourceConnectionsService.disconnectIfUnchanged(connection)
 
       if (isRefusedConnectionDeleted) {
         throw createObokuBadRequest(

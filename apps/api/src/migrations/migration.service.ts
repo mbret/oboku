@@ -517,7 +517,7 @@ export class MigrationService {
      *            `linkResourceId` -> `linkData` identity fields on collections.
      *
      * Why this exists:
-     * - Previously, each link encoded its provider-specific identity (fileId,
+     * - Previously, each link encoded its source-specific identity (fileId,
      *   filePath, url) into a single `resourceId` string using a prefix scheme
      *   (e.g. "drive-{fileId}", "webdav://{encodedPath}").
      * - The code now stores identity fields directly in `link.data` (e.g.

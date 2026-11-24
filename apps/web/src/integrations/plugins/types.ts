@@ -3,10 +3,10 @@ import type {
   LinkMetadata,
   DataSourceDocTypeFor,
   LinkData,
-  LinkDataForProvider,
-  LinkDocTypeForProvider,
+  LinkDataForSource,
+  LinkDocTypeForSource,
   MetadataFileDownloadOverride,
-  ProviderApiCredentials,
+  SourceApiCredentials,
 } from "@oboku/shared"
 import type { ComponentType, DOMAttributes, ReactNode } from "react"
 import type { SvgIconProps } from "@mui/material"
@@ -18,7 +18,7 @@ import type {
 
 /** Link fields that upload payloads can provide (dialog fills book, normalizes data, createdAt, modifiedAt) */
 type PostLink<T extends DataSourceDocType["type"] = DataSourceDocType["type"]> =
-  Pick<LinkDocTypeForProvider<T>, "type" | "data">
+  Pick<LinkDocTypeForSource<T>, "type" | "data">
 
 /** Minimal book fields that upload payloads can provide (dialog merges with tags, etc.) */
 type PostBook = {
@@ -59,7 +59,7 @@ export type DownloadBookResult = {
 export type DownloadBookComponentProps<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
-  link: LinkDocTypeForProvider<T>
+  link: LinkDocTypeForSource<T>
   onDownloadProgress: (progress: number) => void
   onError: (error: unknown) => void
   onResolve: (result: DownloadBookResult) => void
@@ -71,7 +71,7 @@ export type UseRefreshMetadataVariables<
 > = {
   linkId?: string
   linkType: T
-  linkData?: LinkDataForProvider<T> | null
+  linkData?: LinkDataForSource<T> | null
 }
 
 /** Params for usePluginRefreshMetadata(); discriminated union on linkType. */
@@ -87,7 +87,7 @@ export type UseRefreshMetadataHook<
   } & Pick<UseMutationOptions, "meta">,
 ) => UseMutationResult<
   {
-    providerCredentials: ProviderApiCredentials<T>
+    providerCredentials: SourceApiCredentials<T>
   },
   Error | null,
   UseRefreshMetadataVariables<T>
@@ -97,7 +97,7 @@ export type UseSynchronizeHook<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = (options: { requestPopup: () => Promise<boolean> }) => UseMutationResult<
   {
-    providerCredentials: ProviderApiCredentials<T>
+    providerCredentials: SourceApiCredentials<T>
   },
   Error | null,
   Extract<DataSourceDocType, { type: T }>
@@ -107,7 +107,7 @@ export type RemoveResourceResult<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > =
   | {
-      providerCredentials: ProviderApiCredentials<T>
+      providerCredentials: SourceApiCredentials<T>
     }
   | {
       isError: true
@@ -118,13 +118,13 @@ export type RemoveResourceResult<
 type UseRemoveResource<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = () => (
-  links: readonly LinkDocTypeForProvider<T>[],
+  links: readonly LinkDocTypeForSource<T>[],
 ) => Promise<RemoveResourceResult<T>>
 
 export type UpsertFileComponentProps<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = {
-  link: LinkDocTypeForProvider<T>
+  link: LinkDocTypeForSource<T>
   file: Blob | File
   fileName: string
   contentType?: string
@@ -143,7 +143,7 @@ type UpsertFileCapability<
 > =
   | {
       canUpsertFile: true
-      /** Whether upserting a file deletes the versions the provider kept for it */
+      /** Whether upserting a file deletes the versions the source kept for it */
       upsertPrunesVersionHistory?: boolean
       UpsertFileComponent: UpsertFileComponent<T>
     }
@@ -232,6 +232,6 @@ type ObokuPluginBase<
   useSignOut: () => () => void
 }
 
-export type ObokuPlugin<
+export type SourcePlugin<
   T extends DataSourceDocType["type"] = DataSourceDocType["type"],
 > = ObokuPluginBase<T> & UpsertFileCapability<T>

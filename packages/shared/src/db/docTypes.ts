@@ -51,11 +51,11 @@ export type LinkData =
 type CommonBase = CouchDBMeta & RxDbMeta
 
 /**
- * Plugin-specific link data shape for a given provider. Contains both identity
+ * Plugin-specific link data shape for a given source. Contains both identity
  * fields (e.g. fileId, filePath) and access/metadata fields (e.g. connectorId, etag).
  * Used for link.data, collection.linkData, sync items, and plugin API calls.
  */
-export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
+export type LinkDataForSource<T extends DataSourceDocType["type"]> =
   T extends "DRIVE"
     ? GoogleDriveLinkData
     : T extends "one-drive"
@@ -77,38 +77,38 @@ export type LinkDataForProvider<T extends DataSourceDocType["type"]> =
                     : never
 
 /**
- * Link document for a specific provider; `data` is correctly typed as that provider's
- * link data (LinkDataForProvider<T>).
+ * Link document for a specific source; `data` is correctly typed as that source's
+ * link data (LinkDataForSource<T>).
  */
-export type LinkDocTypeForProvider<T extends DataSourceDocType["type"]> =
+export type LinkDocTypeForSource<T extends DataSourceDocType["type"]> =
   CommonBase & {
     type: T
-    data: LinkDataForProvider<T>
+    data: LinkDataForSource<T>
     book: string | null
     rx_model: "link"
     modifiedAt: string | null
     createdAt: string
   }
 
-/** Link document; discriminated union so narrowing link.type narrows link.data per provider. */
+/** Link document; discriminated union so narrowing link.type narrows link.data per source. */
 export type LinkDocType =
-  | LinkDocTypeForProvider<"webdav">
-  | LinkDocTypeForProvider<"synology-drive">
-  | LinkDocTypeForProvider<"file">
-  | LinkDocTypeForProvider<"DRIVE">
-  | LinkDocTypeForProvider<"one-drive">
-  | LinkDocTypeForProvider<"dropbox">
-  | LinkDocTypeForProvider<"URI">
-  | LinkDocTypeForProvider<"server">
-  | LinkDocTypeForProvider<"opds">
+  | LinkDocTypeForSource<"webdav">
+  | LinkDocTypeForSource<"synology-drive">
+  | LinkDocTypeForSource<"file">
+  | LinkDocTypeForSource<"DRIVE">
+  | LinkDocTypeForSource<"one-drive">
+  | LinkDocTypeForSource<"dropbox">
+  | LinkDocTypeForSource<"URI">
+  | LinkDocTypeForSource<"server">
+  | LinkDocTypeForSource<"opds">
 
 /**
  * Minimal link shape passed to plugin getFileMetadata/getFolderMetadata and used when
- * refreshing book or collection. Carries the same provider-specific credentials (data)
+ * refreshing book or collection. Carries the same source-specific credentials (data)
  * whether the source is a link, a collection, or a datasource.
  */
 export type LinkWithCredentials<T extends DataSourceDocType["type"]> = Pick<
-  LinkDocTypeForProvider<T>,
+  LinkDocTypeForSource<T>,
   "type" | "data"
 >
 
@@ -152,19 +152,19 @@ export type DataSourceDocType =
   | ServerDataSourceDocType
   | OpdsDataSourceDocType
 
-/** Data source / provider type (e.g. "webdav", "file", "dropbox"). */
-export type DataSourceType = DataSourceDocType["type"]
+/** Data source / source type (e.g. "webdav", "file", "dropbox"). */
+export type SourceType = DataSourceDocType["type"]
 
-export type DataSourceDocTypeFor<T extends DataSourceType> = Extract<
+export type DataSourceDocTypeFor<T extends SourceType> = Extract<
   DataSourceDocType,
   { type: T }
 >
 
 /**
- * Datasource data_v2 shape for a given provider. Same credentials concept as
- * LinkDataForProvider where applicable (e.g. webdav data_v2 extends WebdavLinkData).
+ * Datasource data_v2 shape for a given source. Same credentials concept as
+ * LinkDataForSource where applicable (e.g. webdav data_v2 extends WebdavLinkData).
  */
-export type DataSourceDataForProvider<T extends DataSourceType> = Extract<
+export type DataSourceDataForSource<T extends SourceType> = Extract<
   DataSourceDocType,
   { type: T }
 >["data_v2"]
@@ -253,11 +253,11 @@ export type SecretDocType = CommonBase & {
   } | null
 }
 
-export type CollectionDocType<T extends DataSourceType = DataSourceType> =
+export type CollectionDocType<T extends SourceType = SourceType> =
   CommonBase & {
     books: string[]
     linkType?: T
-    linkData?: LinkDataForProvider<T>
+    linkData?: LinkDataForSource<T>
     rx_model: "obokucollection"
     modifiedAt: string | null
     /**

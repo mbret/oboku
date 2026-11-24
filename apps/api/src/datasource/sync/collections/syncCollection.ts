@@ -27,7 +27,7 @@ export const syncCollection = async ({
     ctx,
   )
   const bestCandidate =
-    collections.find((c) => c.isUsingSameProviderCredentials) ?? collections[0]
+    collections.find((c) => c.isUsingSameSourceCredentials) ?? collections[0]
 
   if (bestCandidate) {
     logger.log(
@@ -65,7 +65,7 @@ export const syncCollection = async ({
    * read the up-to-date books and tags.
    */
   const usesSameCredentials =
-    !bestCandidate || bestCandidate.isUsingSameProviderCredentials
+    !bestCandidate || bestCandidate.isUsingSameSourceCredentials
   if (usesSameCredentials) {
     collectionRefreshQueue.add(collectionId)
   } else {

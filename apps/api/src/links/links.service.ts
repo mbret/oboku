@@ -4,7 +4,7 @@ import {
   NotFoundException,
 } from "@nestjs/common"
 import {
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   ObokuErrorCode,
   type WebdavApiCredentials,
 } from "@oboku/shared"
@@ -30,7 +30,7 @@ const streamConnectorFile = async ({
   providerCredentials,
 }: {
   db: createNano.DocumentScope<unknown>
-  link: LinkDocTypeForProvider<"webdav">
+  link: LinkDocTypeForSource<"webdav">
   providerCredentials: WebdavApiCredentials
 }) => {
   const connector = await findWebdavConnector({

@@ -4,7 +4,7 @@ import { CouchModule } from "../couch/couch.module.js"
 import { CoversModule } from "../covers/covers.module.js"
 import { PostgresModule } from "../features/postgres/postgres.module.js"
 import { PluginsModule } from "../plugins/plugins.module.js"
-import { ProviderConnectionsModule } from "../provider-connections/provider-connections.module.js"
+import { SourceConnectionsModule } from "../source-connections/source-connections.module.js"
 import { QuotasModule } from "../quotas/quotas.module.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
 import { OpdsBasicAuthGuard } from "./opds-basic-auth.guard.js"
@@ -21,7 +21,7 @@ import { OpdsServersService } from "./opds-servers.service.js"
     CouchModule,
     CoversModule,
     PluginsModule,
-    ProviderConnectionsModule,
+    SourceConnectionsModule,
     QuotasModule,
   ],
   controllers: [

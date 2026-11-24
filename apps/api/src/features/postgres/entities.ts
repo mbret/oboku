@@ -379,28 +379,28 @@ export class OpdsServerPostgresEntity {
 }
 
 /**
- * A user's long-lived permission at an account provider, one per user,
- * provider and account. `encrypted_credentials` holds what the provider grants,
+ * A user's long-lived permission at a source, one per user,
+ * source and account. `encrypted_credentials` holds what the source grants,
  * such as a refresh token, encrypted at rest and bound to the row's user,
- * provider and account.
+ * source and account.
  */
 @Entity({ name: "provider_connections" })
 @Index(["user_id", "provider", "account_id"], { unique: true })
-export class ProviderConnectionPostgresEntity {
+export class SourceConnectionPostgresEntity {
   @PrimaryGeneratedColumn("identity")
   id!: number
 
   @Column({ type: "integer" })
   user_id!: number
 
-  /** The account provider, such as `google`. */
+  /** The source, such as `google`. */
   @Column({ type: "text" })
   provider!: string
 
   @Column({ type: "text" })
   encrypted_credentials!: string
 
-  /** The provider's stable id for the account, such as Google's `sub` or a connector's id. */
+  /** The source's stable id for the account, such as Google's `sub` or a connector's id. */
   @Column({ type: "text" })
   account_id!: string
 

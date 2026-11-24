@@ -1,9 +1,9 @@
-import type { CollectionDocType, LinkDocTypeForProvider } from "@oboku/shared"
+import type { CollectionDocType, LinkDocTypeForSource } from "@oboku/shared"
 import type createNano from "nano"
 import { SyncReport } from "./SyncReport.js"
 import { updateCollectionLinkData, updateLinkData } from "./linkData.js"
 
-const storedLink: LinkDocTypeForProvider<"webdav"> = {
+const storedLink: LinkDocTypeForSource<"webdav"> = {
   _id: "link-1",
   _rev: "1",
   rxdbMeta: { lwt: 0 },
@@ -15,7 +15,7 @@ const storedLink: LinkDocTypeForProvider<"webdav"> = {
   modifiedAt: null,
 }
 
-const storedOpdsLink: LinkDocTypeForProvider<"opds"> = {
+const storedOpdsLink: LinkDocTypeForSource<"opds"> = {
   _id: "link-2",
   _rev: "1",
   rxdbMeta: { lwt: 0 },

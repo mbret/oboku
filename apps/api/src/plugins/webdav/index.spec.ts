@@ -7,7 +7,7 @@ import { finished } from "node:stream/promises"
 import { buffer } from "node:stream/consumers"
 import type {
   DataSourceDocTypeFor,
-  LinkDocTypeForProvider,
+  LinkDocTypeForSource,
   WebdavConnectorDocType,
 } from "@oboku/shared"
 import type createNano from "nano"
@@ -194,7 +194,7 @@ const createUserDbWithConnector = (url: string) => {
   } as unknown as createNano.DocumentScope<unknown>
 }
 
-const bookLink: LinkDocTypeForProvider<"webdav"> = {
+const bookLink: LinkDocTypeForSource<"webdav"> = {
   _id: "link",
   _rev: "1-link",
   rxdbMeta: { lwt: 0 },

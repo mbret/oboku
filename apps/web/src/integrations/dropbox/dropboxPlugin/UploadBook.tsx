@@ -4,11 +4,11 @@
  */
 import { memo } from "react"
 import { LockScreen } from "../../../common/locks/LockScreen"
-import type { ObokuPlugin, UploadBookToAddPayload } from "../../plugins/types"
+import type { SourcePlugin, UploadBookToAddPayload } from "../../plugins/types"
 import { useDropboxChoose } from "./lib/useDropboxChoose"
 import { useMountOnce } from "../../../common/useMountOnce"
 
-export const UploadBook: ObokuPlugin<"dropbox">["UploadBookComponent"] = memo(
+export const UploadBook: SourcePlugin<"dropbox">["UploadBookComponent"] = memo(
   function UploadBook({ onClose }) {
     const { choose } = useDropboxChoose({
       onCancel: () => onClose(),

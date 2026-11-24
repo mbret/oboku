@@ -8,7 +8,7 @@ import {
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
 import {
-  type DataSourcePlugin,
+  type SourcePlugin,
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
 } from "../types.js"
@@ -17,7 +17,7 @@ import { createError, findCandidates } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 
-export const dataSource: DataSourcePlugin<"dropbox"> = {
+export const dataSource: SourcePlugin<"dropbox"> = {
   type: DROPBOX_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

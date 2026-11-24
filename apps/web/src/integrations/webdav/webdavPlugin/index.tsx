@@ -1,4 +1,4 @@
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
 import { DataSourceForm } from "./DataSourceForm"
@@ -17,7 +17,7 @@ const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const plugin: ObokuPlugin<"webdav"> = {
+const plugin: SourcePlugin<"webdav"> = {
   type: TYPE,
   name: "WebDAV",
   canRemoveResource: false,

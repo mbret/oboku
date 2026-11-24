@@ -18,7 +18,7 @@ export const getDataFromDataSource = <T extends DataSourceDocType["type"]>(
   } else if (dataSource.data_v2) {
     // TS distributes `Extract<DataSourceDocType, { type: T }>` over the union
     // and intersects the per-member `data_v2` shapes, which collapses to
-    // `never` for non-matching providers. The input type already constrains
+    // `never` for non-matching sources. The input type already constrains
     // `data_v2` to the matching member, so this is sound at runtime; `any` is
     // the only escape hatch from the distribution.
     return dataSource.data_v2 as any

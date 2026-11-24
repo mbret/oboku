@@ -10,7 +10,7 @@ import {
 import type createNano from "nano"
 import { getConnectorById } from "../connectorHelpers.js"
 import { findConnectorCandidates } from "../helpers.js"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { getFromCatalog, type OpdsConnector } from "./client.js"
 import { crawlOpdsFeed } from "./feed.js"
 
@@ -54,7 +54,7 @@ async function resolveConnector({
   return { ...connectorFields, password }
 }
 
-export const dataSource: DataSourcePlugin<"opds"> = {
+export const dataSource: SourcePlugin<"opds"> = {
   type: PLUGIN_OPDS_TYPE,
   getLinkCandidatesForItem: async ({ linkData }, ctx) => {
     const { connectorId, entryId } = toBookLinkData(linkData)

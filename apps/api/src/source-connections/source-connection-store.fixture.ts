@@ -1,5 +1,5 @@
-import type { ProviderConnectionPostgresEntity } from "../features/postgres/entities.js"
-import type { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import type { SourceConnectionPostgresEntity } from "../features/postgres/entities.js"
+import type { SourceConnectionPostgresService } from "../features/postgres/source-connection-postgres.service.js"
 
 export const toConnectionRowKey = ({
   userId,
@@ -11,14 +11,12 @@ export const toConnectionRowKey = ({
   accountId: string
 }) => `${userId}:${provider}:${accountId}`
 
-/** Keeps rows in memory, keyed by user, provider and account like the table's unique index. */
+/** Keeps rows in memory, keyed by user, source and account like the table's unique index. */
 export const createConnectionStore = () => {
-  const rows = new Map<string, ProviderConnectionPostgresEntity>()
+  const rows = new Map<string, SourceConnectionPostgresEntity>()
   let lastRowId = 0
 
-  const save: ProviderConnectionPostgresService["save"] = async (
-    connection,
-  ) => {
+  const save: SourceConnectionPostgresService["save"] = async (connection) => {
     const connectedAt = new Date()
 
     lastRowId += 1
@@ -36,7 +34,7 @@ export const createConnectionStore = () => {
   }
 
   const store: Pick<
-    ProviderConnectionPostgresService,
+    SourceConnectionPostgresService,
     | "find"
     | "list"
     | "save"
@@ -56,12 +54,12 @@ export const createConnectionStore = () => {
     save,
     saveAsOnlyAccount: async (connection) => {
       for (const [key, row] of rows) {
-        const isOtherAccountOfProvider =
+        const isOtherAccountOfSource =
           row.user_id === connection.userId &&
           row.provider === connection.provider &&
           row.account_id !== connection.accountId
 
-        if (isOtherAccountOfProvider) rows.delete(key)
+        if (isOtherAccountOfSource) rows.delete(key)
       }
 
       await save(connection)

@@ -14,13 +14,13 @@ import {
 import { AuthGuard, type TokenPayload } from "../../auth/auth.guard.js"
 import { SecretsService } from "../../config/SecretsService.js"
 import { AtRestCipher } from "../../crypto/at-rest-cipher.js"
-import type { ProviderConnectionPostgresEntity } from "../../features/postgres/entities.js"
-import { ProviderConnectionPostgresService } from "../../features/postgres/provider-connection-postgres.service.js"
+import type { SourceConnectionPostgresEntity } from "../../features/postgres/entities.js"
+import { SourceConnectionPostgresService } from "../../features/postgres/source-connection-postgres.service.js"
 import {
   createConnectionStore,
   toConnectionRowKey,
-} from "../provider-connection-store.fixture.js"
-import { ProviderConnectionsService } from "../provider-connections.service.js"
+} from "../source-connection-store.fixture.js"
+import { SourceConnectionsService } from "../source-connections.service.js"
 import { GoogleConnectionController } from "./google-connection.controller.js"
 import { GoogleConnectionService } from "./google-connection.service.js"
 
@@ -135,9 +135,9 @@ const createGoogleRefusal = ({
 
 describe("GoogleConnectionController", () => {
   let app: INestApplication<App>
-  let rows: Map<string, ProviderConnectionPostgresEntity>
+  let rows: Map<string, SourceConnectionPostgresEntity>
   let instanceConfig: BehaviorSubject<InstanceConfig>
-  let providerConnectionsService: ProviderConnectionsService
+  let sourceConnectionsService: SourceConnectionsService
   let googleConnectionService: GoogleConnectionService
 
   const getConnection = (session = READER_SESSION) =>
@@ -192,10 +192,10 @@ describe("GoogleConnectionController", () => {
       controllers: [GoogleConnectionController],
       providers: [
         GoogleConnectionService,
-        ProviderConnectionsService,
+        SourceConnectionsService,
         AtRestCipher,
         {
-          provide: ProviderConnectionPostgresService,
+          provide: SourceConnectionPostgresService,
           useValue: connectionStore.store,
         },
         {
@@ -229,7 +229,7 @@ describe("GoogleConnectionController", () => {
     app.useGlobalPipes(new ValidationPipe())
     await app.init()
 
-    providerConnectionsService = module.get(ProviderConnectionsService)
+    sourceConnectionsService = module.get(SourceConnectionsService)
     googleConnectionService = module.get(GoogleConnectionService)
   })
 
@@ -274,7 +274,7 @@ describe("GoogleConnectionController", () => {
     })
     expect(JSON.stringify(stored)).not.toContain(REFRESH_TOKEN)
     await expect(
-      providerConnectionsService.getCredentials({
+      sourceConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "google",
         accountId: GOOGLE_ACCOUNT.sub,
@@ -416,7 +416,7 @@ describe("GoogleConnectionController", () => {
       { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NO_REFRESH_TOKEN },
     ])
     await expect(
-      providerConnectionsService.getCredentials({
+      sourceConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "google",
         accountId: GOOGLE_ACCOUNT.sub,
@@ -482,7 +482,7 @@ describe("GoogleConnectionController", () => {
       accountName: workAccount.email,
     })
     await expect(
-      providerConnectionsService.getCredentials({
+      sourceConnectionsService.getCredentials({
         userId: READER_ID,
         provider: "google",
         accountId: workAccount.sub,
@@ -648,7 +648,7 @@ describe("GoogleConnectionController", () => {
     it("tries no other connection when the refused one is still the latest but was not deleted", async () => {
       await connect({ code: CODE })
       vi.spyOn(
-        providerConnectionsService,
+        sourceConnectionsService,
         "disconnectIfUnchanged",
       ).mockResolvedValue(false)
       refreshAccessToken.mockRejectedValue(

@@ -5,19 +5,19 @@ import { pipeline, Transform } from "node:stream"
 import type createNano from "nano"
 import {
   type BookDocType,
-  type DataSourceType,
+  type SourceType,
   type LinkDocType,
-  type LinkDocTypeForProvider,
-  type ProviderApiCredentials,
-  parseProviderApiCredentials,
+  type LinkDocTypeForSource,
+  type SourceApiCredentials,
+  parseSourceApiCredentials,
 } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { getPlugin } from "./plugins.js"
 import type { PluginMetadataParams } from "./types.js"
 
-type DownloadParams<T extends DataSourceType = DataSourceType> = {
-  link: LinkDocTypeForProvider<T>
-  providerCredentials: ProviderApiCredentials<T>
+type DownloadParams<T extends SourceType = SourceType> = {
+  link: LinkDocTypeForSource<T>
+  providerCredentials: SourceApiCredentials<T>
   db?: createNano.DocumentScope<unknown>
 }
 
@@ -47,7 +47,7 @@ export const createByteLimitTransform = (maxSizeBytes: number) => {
   })
 }
 
-const getRequiredPlugin = <T extends DataSourceType>(type: T) => {
+const getRequiredPlugin = <T extends SourceType>(type: T) => {
   const plugin = getPlugin(type)
 
   if (!plugin) {
@@ -64,30 +64,30 @@ export class PluginsService {
     private readonly appConfigService: Pick<AppConfigService, "TMP_DIR_BOOKS">,
   ) {}
 
-  getFolderMetadata<T extends DataSourceType>(params: PluginMetadataParams<T>) {
+  getFolderMetadata<T extends SourceType>(params: PluginMetadataParams<T>) {
     return getRequiredPlugin(params.link.type).getFolderMetadata({
       ...params,
-      providerCredentials: parseProviderApiCredentials(
+      providerCredentials: parseSourceApiCredentials(
         params.link.type,
         params.providerCredentials,
       ),
     })
   }
 
-  getFileMetadata<T extends DataSourceType>(params: PluginMetadataParams<T>) {
+  getFileMetadata<T extends SourceType>(params: PluginMetadataParams<T>) {
     return getRequiredPlugin(params.link.type).getFileMetadata({
       ...params,
-      providerCredentials: parseProviderApiCredentials(
+      providerCredentials: parseSourceApiCredentials(
         params.link.type,
         params.providerCredentials,
       ),
     })
   }
 
-  download<T extends DataSourceType>(params: DownloadParams<T>) {
+  download<T extends SourceType>(params: DownloadParams<T>) {
     return getRequiredPlugin(params.link.type).download(
       params.link,
-      parseProviderApiCredentials(params.link.type, params.providerCredentials),
+      parseSourceApiCredentials(params.link.type, params.providerCredentials),
       params.db,
     )
   }
@@ -101,7 +101,7 @@ export class PluginsService {
   }: {
     book: BookDocType
     link: LinkDocType
-    providerCredentials: ProviderApiCredentials<DataSourceType>
+    providerCredentials: SourceApiCredentials<SourceType>
     db?: createNano.DocumentScope<unknown>
     maxSizeBytes: number
   }) {

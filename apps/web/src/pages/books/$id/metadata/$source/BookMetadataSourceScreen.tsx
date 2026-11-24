@@ -41,7 +41,7 @@ const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
 })
 
 const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
-  link: "Information exposed on the storage provider link.",
+  link: "Information from the book's file at its source.",
   file: "Information embedded inside the file itself.",
   catalog: "Information an online catalog holds about the book.",
   user: "Information you entered manually.",

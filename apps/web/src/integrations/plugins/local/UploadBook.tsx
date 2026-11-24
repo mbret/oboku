@@ -15,11 +15,11 @@ import {
   PLUGIN_FILE_TYPE,
   READER_ACCEPTED_FILE_TYPES,
 } from "@oboku/shared"
-import type { ObokuPlugin, UploadBookToAddPayload } from "../types"
+import type { SourcePlugin, UploadBookToAddPayload } from "../types"
 import { type DragEventHandler, useRef } from "react"
 import { CancelButton } from "../../../common/forms/CancelButton"
 
-export const UploadBook: ObokuPlugin<"file">["UploadBookComponent"] & {
+export const UploadBook: SourcePlugin<"file">["UploadBookComponent"] & {
   openFrom?: string
 } = ({ onClose, onDragLeave }) => {
   const { acceptedFiles, getRootProps, getInputProps } = useDropzone({

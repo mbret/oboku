@@ -1,7 +1,7 @@
 import { SvgIcon } from "@mui/material"
 import { PLUGIN_SYNOLOGY_DRIVE_TYPE } from "@oboku/shared"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { UploadBook } from "./UploadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
@@ -18,7 +18,7 @@ const SynologyDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"synology-drive"> = {
+export const plugin: SourcePlugin<"synology-drive"> = {
   type: PLUGIN_SYNOLOGY_DRIVE_TYPE,
   name: "Synology Drive",
   canRemoveResource: false,

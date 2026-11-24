@@ -2,10 +2,10 @@ import { Test } from "@nestjs/testing"
 import { getRepositoryToken } from "@nestjs/typeorm"
 import { Not } from "typeorm"
 import {
-  ProviderConnectionPostgresEntity,
+  SourceConnectionPostgresEntity,
   UserPostgresEntity,
 } from "./entities.js"
-import { ProviderConnectionPostgresService } from "./provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "./source-connection-postgres.service.js"
 
 const createService = async () => {
   const transactionManager = {
@@ -27,9 +27,9 @@ const createService = async () => {
   }
   const module = await Test.createTestingModule({
     providers: [
-      ProviderConnectionPostgresService,
+      SourceConnectionPostgresService,
       {
-        provide: getRepositoryToken(ProviderConnectionPostgresEntity),
+        provide: getRepositoryToken(SourceConnectionPostgresEntity),
         useValue: repository,
       },
     ],
@@ -38,11 +38,11 @@ const createService = async () => {
   return {
     repository,
     transactionManager,
-    service: module.get(ProviderConnectionPostgresService),
+    service: module.get(SourceConnectionPostgresService),
   }
 }
 
-describe("ProviderConnectionPostgresService", () => {
+describe("SourceConnectionPostgresService", () => {
   it("replaces the user's connection to the same account, with fresh dates", async () => {
     const { repository, service } = await createService()
 
@@ -115,11 +115,11 @@ describe("ProviderConnectionPostgresService", () => {
       { where: { id: 1 }, lock: { mode: "pessimistic_write" } },
     )
     expect(transactionManager.delete).toHaveBeenCalledWith(
-      ProviderConnectionPostgresEntity,
+      SourceConnectionPostgresEntity,
       { user_id: 1, provider: "google", account_id: Not("work-sub") },
     )
     expect(transactionManager.upsert).toHaveBeenCalledWith(
-      ProviderConnectionPostgresEntity,
+      SourceConnectionPostgresEntity,
       expect.objectContaining({
         user_id: 1,
         provider: "google",

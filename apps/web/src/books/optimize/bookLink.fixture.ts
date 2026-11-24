@@ -1,6 +1,6 @@
 import {
   type BookDocType,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   ReadingStateState,
 } from "@oboku/shared"
 
@@ -24,7 +24,7 @@ export const book: BookDocType = {
   tags: [],
 }
 
-export const link: LinkDocTypeForProvider<"URI"> = {
+export const link: LinkDocTypeForSource<"URI"> = {
   _id: "link-1",
   _rev: "1-link",
   book: book._id,

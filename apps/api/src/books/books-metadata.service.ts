@@ -3,12 +3,12 @@ import { Injectable, Logger } from "@nestjs/common"
 import {
   type BookDocType,
   type BookMetadata,
-  type DataSourceType,
+  type SourceType,
   type FileMetadata,
   type LegacyFileMetadata,
   type LinkDocType,
   type LinkMetadata,
-  type ProviderApiCredentials,
+  type SourceApiCredentials,
   type UserMetadata,
   buildBookBucketCoverKey,
   directives,
@@ -50,7 +50,7 @@ import { MODIFIED_AT_UNSUPPORTED } from "../plugins/types.js"
 type Context = {
   userName: string
   userNameHex: string
-  providerCredentials: ProviderApiCredentials<DataSourceType>
+  providerCredentials: SourceApiCredentials<SourceType>
   book: BookDocType
   link: LinkDocType
 }
@@ -78,22 +78,22 @@ type UpdateCoverResult = {
  * previous run, so we can reuse the cached `type:"file"` metadata entry
  * instead of re-downloading.
  *
- * The primary fingerprint is the provider-reported `modifiedAt` on the
+ * The primary fingerprint is the source-reported `modifiedAt` on the
  * `link` source — both sides MUST report it, otherwise we refuse to
- * reuse. (Providers that don't expose `modifiedAt` — currently `file`,
+ * reuse. (Sources that don't expose `modifiedAt` — currently `file`,
  * `uri` and `opds` — therefore never participate in this cache, by design.)
  *
  * `size` is then used as an opportunistic secondary check against
- * providers that fail to bump `modifiedAt` on a content change. It is
+ * sources that fail to bump `modifiedAt` on a content change. It is
  * only meaningful when at least one side reports a value:
  *  - both defined + equal     ⇒ stronger confidence, reuse
  *  - both defined + different ⇒ invalidate
- *  - exactly one defined      ⇒ invalidate (provider went from
+ *  - exactly one defined      ⇒ invalidate (source went from
  *                                reporting size to not, or vice
  *                                versa — treat as suspicious)
  *  - both undefined           ⇒ no signal, fall back to `modifiedAt`
  *                                alone (intentional; this is the only
- *                                path some providers can take)
+ *                                path some sources can take)
  */
 const isCachedFileMetadataReusable = (
   previousLink: LinkMetadata | undefined,
@@ -127,7 +127,7 @@ export class BooksMetadataService {
 
   public refreshMetadata = async (
     body: { bookId: string; force?: boolean },
-    providerCredentials: ProviderApiCredentials<DataSourceType>,
+    providerCredentials: SourceApiCredentials<SourceType>,
     userEmail: string,
   ) => {
     const { bookId, force } = body
@@ -250,8 +250,8 @@ export class BooksMetadataService {
       /**
        * The filename (with directives still embedded) IS the canonical title:
        * directives like `[oboku~isbn~…]` are parsed on demand at consumption
-       * sites, so renaming the file in the provider remains the single source
-       * of truth — no stale ISBN/volumeId stored alongside.
+       * sites, so the file's name at its source stays the only place that
+       * holds them — no stale ISBN/volumeId stored alongside.
        */
       const linkMetadata: LinkMetadata = {
         type: "link",

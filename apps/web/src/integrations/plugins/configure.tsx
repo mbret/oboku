@@ -1,5 +1,5 @@
 import type { DataSourceDocType } from "@oboku/shared"
-import type { ObokuPlugin } from "./types"
+import type { SourcePlugin } from "./types"
 import { plugin as dropbox } from "../dropbox/dropboxPlugin"
 import { plugin as google } from "../google/googleDrivePlugin"
 import { plugin as file } from "./local"
@@ -11,7 +11,7 @@ import uri from "./uri"
 import webdav from "../webdav/webdavPlugin"
 
 type PluginsByType = {
-  [K in DataSourceDocType["type"]]: ObokuPlugin<K>
+  [K in DataSourceDocType["type"]]: SourcePlugin<K>
 }
 
 export const pluginsByType: PluginsByType = {

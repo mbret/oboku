@@ -66,7 +66,7 @@ const DirectivesSection = ({
         <ListItemText
           secondary={
             rows.length
-              ? "Values parsed from directives embedded in the filename. Edit the filename in your storage provider to change them."
+              ? "Values parsed from directives embedded in the filename. Edit the file's name at its source to change them."
               : "No directives detected. Add directives like [oboku~isbn~123] to the filename to override or enrich metadata."
           }
         />
