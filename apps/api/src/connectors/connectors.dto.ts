@@ -1,6 +1,13 @@
 import { ApiProperty } from "@nestjs/swagger"
 import { Type } from "class-transformer"
-import { IsObject, IsString, ValidateNested } from "class-validator"
+import {
+  IsBoolean,
+  IsObject,
+  IsOptional,
+  IsString,
+  IsUrl,
+  ValidateNested,
+} from "class-validator"
 import { WebdavCredentialsDto } from "../plugins/webdav/webdav-credentials.dto.js"
 
 export const WEBDAV_DIRECTORY_ITEM_TYPES = ["file", "directory"] as const
@@ -8,18 +15,30 @@ export const WEBDAV_DIRECTORY_ITEM_TYPES = ["file", "directory"] as const
 export type WebdavDirectoryItemType =
   (typeof WEBDAV_DIRECTORY_ITEM_TYPES)[number]
 
+/** A WebDAV connector's connection, as the app holds it, and a folder to list. */
 export class ListWebdavDirectoryDto {
-  @IsString()
-  connectorId!: string
+  @IsUrl({
+    require_tld: false,
+    require_protocol: true,
+    protocols: ["http", "https"],
+  })
+  url!: string
 
-  /** From the connector's URL, like `/Books`. */
   @IsString()
-  path!: string
+  username!: string
 
   @IsObject()
   @ValidateNested()
   @Type(() => WebdavCredentialsDto)
   providerCredentials!: WebdavCredentialsDto
+
+  @IsOptional()
+  @IsBoolean()
+  allowSelfSigned?: boolean
+
+  /** From the connector's URL, like `/Books`. */
+  @IsString()
+  path!: string
 }
 
 export class WebdavDirectoryItemDto {

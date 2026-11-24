@@ -132,7 +132,10 @@ export const listWebdavDirectory = ({
   path,
   signal,
 }: {
-  connector: WebdavConnectorDocType
+  connector: Pick<
+    WebdavConnectorDocType,
+    "url" | "username" | "allowSelfSigned"
+  >
   password: string
   path: string
   signal: AbortSignal

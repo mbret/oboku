@@ -466,12 +466,14 @@ export type DownloadLinkDto = {
 };
 
 export type ListWebdavDirectoryDto = {
-    connectorId: string;
+    url: string;
+    username: string;
+    providerCredentials: WebdavCredentialsDto;
+    allowSelfSigned?: boolean;
     /**
      * From the connector's URL, like `/Books`.
      */
     path: string;
-    providerCredentials: WebdavCredentialsDto;
 };
 
 export type WebdavDirectoryItemDto = {

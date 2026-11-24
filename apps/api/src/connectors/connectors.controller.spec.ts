@@ -9,7 +9,6 @@ import type { FileStat } from "webdav"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { AuthGuard, type TokenPayload } from "../auth/auth.guard.js"
 import { SecretsService } from "../config/SecretsService.js"
-import { CouchService } from "../couch/couch.service.js"
 import { NonPublicAddressError } from "../http/publicAddress.js"
 import { ConnectorsController } from "./connectors.controller.js"
 import { ConnectorsService } from "./connectors.service.js"
@@ -39,13 +38,11 @@ const readerTokenPayload: TokenPayload = {
 
 const PASSWORD = "koofr-app-password"
 
-const KOOFR_CONNECTOR = {
-  id: "koofr",
-  type: "webdav",
+const KOOFR_CONNECTION = {
   url: "https://app.koofr.net/dav/Koofr",
   username: "reader@example.com",
-  passwordAsSecretId: "secret-koofr",
-  proxyThroughServer: true,
+  providerCredentials: { password: PASSWORD },
+  allowSelfSigned: false,
 }
 
 const BOOKS_DIRECTORY: FileStat = {
@@ -89,16 +86,8 @@ const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
     ],
   ]
 
-const createSettingsDb = (
-  connectors: ReadonlyArray<Record<string, unknown>> = [KOOFR_CONNECTOR],
-) => ({
-  get: async () => ({ _id: "settings", connectors }),
-})
-
 describe("ConnectorsController", () => {
   let app: INestApplication<App>
-
-  const createNanoInstanceForUser = vi.fn()
 
   const listDirectory = (body: Record<string, unknown>) =>
     request(app.getHttpServer())
@@ -107,21 +96,15 @@ describe("ConnectorsController", () => {
       .send(body)
 
   const listBooksDirectory = () =>
-    listDirectory({
-      connectorId: KOOFR_CONNECTOR.id,
-      path: "/Books",
-      providerCredentials: { password: PASSWORD },
-    })
+    listDirectory({ ...KOOFR_CONNECTION, path: "/Books" })
 
   beforeEach(async () => {
-    createNanoInstanceForUser.mockResolvedValue(createSettingsDb())
     listWebdavDirectory.mockResolvedValue([BOOKS_DIRECTORY, DUNE_FILE])
 
     const module = await Test.createTestingModule({
       controllers: [ConnectorsController],
       providers: [
         ConnectorsService,
-        { provide: CouchService, useValue: { createNanoInstanceForUser } },
         { provide: APP_GUARD, useClass: AuthGuard },
         {
           provide: JwtService,
@@ -150,7 +133,7 @@ describe("ConnectorsController", () => {
     vi.clearAllMocks()
   })
 
-  it("lists the directory from the server of the reader's connector, with the password the app sends", async () => {
+  it("lists the directory from the WebDAV server of the connection the app sends", async () => {
     const response = await listBooksDirectory()
 
     expect(response.status).toBe(200)
@@ -170,42 +153,51 @@ describe("ConnectorsController", () => {
         },
       ],
     })
-    expect(createNanoInstanceForUser).toHaveBeenCalledWith({
-      email: readerTokenPayload.name,
-    })
     expect(listWebdavDirectory).toHaveBeenCalledWith({
-      connector: KOOFR_CONNECTOR,
+      connector: {
+        url: KOOFR_CONNECTION.url,
+        username: KOOFR_CONNECTION.username,
+        allowSelfSigned: false,
+      },
       password: PASSWORD,
       path: "/Books",
       signal: expect.any(AbortSignal),
     })
   })
 
-  it("answers 400 for a connector the settings do not hold, reaching no server", async () => {
-    createNanoInstanceForUser.mockResolvedValue(createSettingsDb([]))
+  it("answers 401 without a session, reaching no server", async () => {
+    const response = await request(app.getHttpServer())
+      .post("/connectors/webdav/directory")
+      .send({ ...KOOFR_CONNECTION, path: "/Books" })
 
-    const response = await listBooksDirectory()
-
-    expect(response.status).toBe(400)
-    expect(response.body).toEqual({
-      errors: [
-        { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND },
-      ],
-    })
+    expect(response.status).toBe(401)
     expect(listWebdavDirectory).not.toHaveBeenCalled()
   })
 
   it("answers 400 without a password, reaching no server", async () => {
     const response = await listDirectory({
-      connectorId: KOOFR_CONNECTOR.id,
+      ...KOOFR_CONNECTION,
       path: "/Books",
       providerCredentials: {},
     })
 
     expect(response.status).toBe(400)
-    expect(createNanoInstanceForUser).not.toHaveBeenCalled()
     expect(listWebdavDirectory).not.toHaveBeenCalled()
   })
+
+  it.each(["not a url", "ftp://dav.example.com", "dav.example.com"])(
+    "refuses %s as a server address, reaching no server",
+    async (url) => {
+      const response = await listDirectory({
+        ...KOOFR_CONNECTION,
+        url,
+        path: "/Books",
+      })
+
+      expect(response.status).toBe(400)
+      expect(listWebdavDirectory).not.toHaveBeenCalled()
+    },
+  )
 
   it.each(SERVER_FAILURES)(
     "answers %s when the WebDAV server lists the directory",
