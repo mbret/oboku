@@ -24,9 +24,9 @@ export {
 } from "@oboku/shared"
 
 export const getBookMetadataProviderLabel = (
-  source: BookMetadataProvider,
+  provider: BookMetadataProvider,
 ): string => {
-  switch (source) {
+  switch (provider) {
     case "file":
       return "File"
     case "catalog":
@@ -39,9 +39,9 @@ export const getBookMetadataProviderLabel = (
 }
 
 export const getBookMetadataProviderIcon = (
-  source: BookMetadataProvider,
+  provider: BookMetadataProvider,
 ): ReactNode => {
-  switch (source) {
+  switch (provider) {
     case "file":
       return <PlagiarismOutlined />
     case "catalog":
@@ -73,7 +73,7 @@ export const getCatalogProviderNameById = (providerId: string): string => {
   }
 }
 
-/** The catalog an entry was matched in, or `undefined` for other sources. */
+/** The catalog an entry was matched in, or `undefined` for other providers. */
 export const getCatalogProviderName = (
   entry: DeepReadonlyObject<BookMetadata>,
 ): string | undefined => {

@@ -40,7 +40,7 @@ const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
   }
 })
 
-const SOURCE_DESCRIPTIONS: Record<BookMetadataProvider, string> = {
+const PROVIDER_DESCRIPTIONS: Record<BookMetadataProvider, string> = {
   link: "Information from the book's file at its source.",
   file: "Information embedded inside the file itself.",
   catalog: "Information an online catalog holds about the book.",
@@ -48,13 +48,13 @@ const SOURCE_DESCRIPTIONS: Record<BookMetadataProvider, string> = {
 }
 
 /**
- * The entry of `book.metadata` the requested source holds, or `undefined`
+ * The entry of `book.metadata` the requested provider holds, or `undefined`
  * when the book has none yet.
  */
 const findProviderEntry = (
   metadata: DeepReadonlyArray<BookMetadata> | undefined,
-  source: BookMetadataProvider,
-) => metadata?.find((entry) => getBookMetadataProvider(entry) === source)
+  provider: BookMetadataProvider,
+) => metadata?.find((entry) => getBookMetadataProvider(entry) === provider)
 
 export const BookMetadataProviderScreen = memo(
   function BookMetadataProviderScreen() {
@@ -89,7 +89,7 @@ export const BookMetadataProviderScreen = memo(
               Metadata provider
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {SOURCE_DESCRIPTIONS[validProvider]}
+              {PROVIDER_DESCRIPTIONS[validProvider]}
             </Typography>
           </SourceIntroStack>
           {validProvider === "link" && (

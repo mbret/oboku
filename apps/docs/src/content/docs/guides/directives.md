@@ -52,7 +52,7 @@ my book [oboku~metadata-ignore-file].epub
 
 Tells oboku to not use any information from the file itself to build the metadata. It can be useful if for example you don't want the cover to be the first image from the file or if the epub file is not good enough for you and contain invalid information.
 
-Remember that the `file` source metadata takes priority over other sources such as the catalog but not the `user` source.
+Remember that the `file` provider takes priority over other providers such as the catalog, but not the `user` provider.
 
 ## `google-volume-id~{id}` { #google-volume-id-id }
 
@@ -76,7 +76,7 @@ Files only
 my book [oboku~metadata-ignore-sources].epub
 ```
 
-Tells oboku to not fetch any metadata from external sources. Basically only using metadata from links and files. You can use it when the external metadata are wrong and you want to stay as close to your file.
+Tells oboku to not fetch any metadata from external metadata providers. It only uses metadata from the book's source and file. You can use it when the external metadata are wrong and you want to stay as close to your file.
 
 ## `metadata-source-{source}-only`
 
@@ -88,7 +88,7 @@ Collections only
 my series [oboku~metadata-comicvine-only]
 ```
 
-Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-providers)
+Tells oboku to not fetch any metadata from providers other than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [providers here](/guides/metadata-providers)
 
 ## `metadata-title~{value}` { #metadata-title-value }
 

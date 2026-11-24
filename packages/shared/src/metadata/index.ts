@@ -225,7 +225,7 @@ export const isBookMetadataProvider = (
  * The display fields each source can show, in the order the sources pane
  * previews them.
  */
-export const BOOK_METADATA_FIELDS_BY_SOURCE = {
+export const BOOK_METADATA_FIELDS_BY_PROVIDER = {
   catalog: [
     "title",
     "authors",

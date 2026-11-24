@@ -1,6 +1,6 @@
 import {
   type BookMetadataFields,
-  type BOOK_METADATA_FIELDS_BY_SOURCE,
+  type BOOK_METADATA_FIELDS_BY_PROVIDER,
   type ReadonlyBookMetadataFields,
   assertNever,
   formatBytes,
@@ -29,11 +29,11 @@ export const formatBookMetadataDate = (
 
 /**
  * Union of every field name advertised by at least one metadata provider
- * variant. Derived from {@link BOOK_METADATA_FIELDS_BY_SOURCE} so the two
+ * variant. Derived from {@link BOOK_METADATA_FIELDS_BY_PROVIDER} so the two
  * cannot drift.
  */
 export type BookMetadataFieldKey =
-  (typeof BOOK_METADATA_FIELDS_BY_SOURCE)[keyof typeof BOOK_METADATA_FIELDS_BY_SOURCE][number]
+  (typeof BOOK_METADATA_FIELDS_BY_PROVIDER)[keyof typeof BOOK_METADATA_FIELDS_BY_PROVIDER][number]
 
 const formatScalar = (
   value: string | number | undefined,
@@ -96,7 +96,7 @@ export const formatBookMetadataField = (
     case "modifiedAt":
       return formatScalar(fields[field])
     default:
-      // Adding a field to BOOK_METADATA_FIELDS_BY_SOURCE without a branch
+      // Adding a field to BOOK_METADATA_FIELDS_BY_PROVIDER without a branch
       // here will fail compilation rather than silently render blanks.
       return assertNever(field)
   }

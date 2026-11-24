@@ -24,7 +24,7 @@ export const getMetadataFromArchive = async (
 
   if (unreadableSources.length > 0) {
     logger.warn(
-      `Archive carries metadata providers it cannot parse: ${unreadableSources.join(", ")}`,
+      `Archive carries metadata files it cannot parse: ${unreadableSources.join(", ")}`,
     )
   }
 
