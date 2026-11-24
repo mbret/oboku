@@ -51,7 +51,7 @@ export class LibrarySyncsController implements OnModuleInit {
     @Body() { dataSourceId, providerCredentials }: RunLibrarySyncDto,
     @WithAuthUser() user: AuthUser,
   ): Promise<EmptyResponseDto> {
-    this.logger.log(`syncDataSource ${dataSourceId}`)
+    this.logger.log(`Library sync ${dataSourceId}`)
 
     this.taskQueueService.enqueue(
       this.SYNC_QUEUE_NAME,
