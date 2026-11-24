@@ -54,7 +54,7 @@ export const synchronizeFromLibrarySync = async (
   coversService: CoversService,
 ): Promise<string[]> => {
   logger.log(
-    `Library sync run for user ${ctx.userName} with library sync ${ctx.dataSourceId}`,
+    `Sync run for user ${ctx.userName} with library sync ${ctx.dataSourceId}`,
   )
 
   for (const item of synchronizeAble.items) {

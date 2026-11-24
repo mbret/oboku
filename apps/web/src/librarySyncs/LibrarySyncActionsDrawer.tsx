@@ -104,7 +104,7 @@ export const LibrarySyncActionsDrawer = memo(function LibrarySyncActionsDrawer({
             <ListItemIcon>
               <DeleteForeverRounded />
             </ListItemIcon>
-            <ListItemText primary="Remove the library sync" />
+            <ListItemText primary="Remove this sync" />
           </ListItemButton>
         </List>
       )}

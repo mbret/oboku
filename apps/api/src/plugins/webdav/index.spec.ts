@@ -242,7 +242,7 @@ const readBookMetadataFrom = (
     db: createUserDbWithConnector(`http://${host}`),
   })
 
-describe("WebDAV data source", () => {
+describe("WebDAV source plugin", () => {
   afterEach(function forgetAllowedHosts() {
     setPrivateNetworkAllowedHosts([])
   })

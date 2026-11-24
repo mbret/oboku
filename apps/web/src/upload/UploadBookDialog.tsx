@@ -1,7 +1,7 @@
 import { type DOMAttributes, memo, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
-import { useSourcePlugin } from "../librarySyncs/helpers"
+import { useSourcePlugin } from "../integrations/plugins/useSourcePlugin"
 import { TagsSelector } from "../tags/TagsSelector"
 import { useCreateRequestPopupDialog } from "../integrations/plugins/useCreateRequestPopupDialog"
 import type {
@@ -28,14 +28,14 @@ export const UploadBookDialog = memo(function UploadBookDialog({
 
   const [addBook] = useAddBook()
   const { mutateAsync: downloadFile } = useDownloadBook()
-  const librarySync = useSourcePlugin(openWith)
+  const sourcePlugin = useSourcePlugin(openWith)
   const createRequestPopup = useCreateRequestPopupDialog()
 
   const onClose: UploadBookComponentProps[`onClose`] = useCallback(
     (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => {
       onFinalClose()
 
-      if (!librarySync || !booksToAdd?.length) {
+      if (!sourcePlugin || !booksToAdd?.length) {
         return
       }
 
@@ -77,19 +77,19 @@ export const UploadBookDialog = memo(function UploadBookDialog({
 
       void addBooksInBackground()
     },
-    [onFinalClose, addBook, downloadFile, librarySync],
+    [onFinalClose, addBook, downloadFile, sourcePlugin],
   )
 
-  if (!librarySync) return null
+  if (!sourcePlugin) return null
 
   return (
     <>
-      {librarySync.UploadBookComponent && (
-        <librarySync.UploadBookComponent
-          title={`Add a book with plugin ${librarySync.name}`}
+      {sourcePlugin.UploadBookComponent && (
+        <sourcePlugin.UploadBookComponent
+          title={`Add a book from ${sourcePlugin.name}`}
           TagsSelector={TagsSelector}
           onClose={onClose}
-          requestPopup={createRequestPopup({ name: librarySync.name })}
+          requestPopup={createRequestPopup({ name: sourcePlugin.name })}
           {...rest}
         />
       )}

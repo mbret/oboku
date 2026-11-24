@@ -5,7 +5,7 @@ import {
   ListItemIcon,
   ListItemButton,
 } from "@mui/material"
-import { plugins } from "../librarySyncs"
+import { plugins } from "../integrations/plugins/configure"
 import { memo } from "react"
 import {
   useGetIsPluginEnabled,
