@@ -16,6 +16,7 @@ import { BlobReader, ZipReader } from "@zip.js/zip.js"
 import { useCallback } from "react"
 import { BehaviorSubject } from "rxjs"
 import { Logger } from "../../../debug/logger.shared"
+import { downloadsBroadcast } from "../../../download/downloadsBroadcast"
 import { getBookFile } from "../../../download/getBookFile.shared"
 import { notify } from "../../../notifications/toasts"
 import { dexieDb } from "../../../rxdb/dexie"
@@ -100,6 +101,8 @@ const saveDownloadedFile = async (bookId: string, file: File) => {
     data: file,
     filename: file.name,
   })
+
+  downloadsBroadcast.broadcast("downloads-changed")
 }
 
 export function useApplyLocally(options?: ApplyLocallyOptions) {
