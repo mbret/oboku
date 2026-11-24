@@ -142,17 +142,24 @@ export class ConnectorConnectionService {
    * Signs in to the connector's server with `password`, then keeps a copy of
    * the connector and of its password secret's encrypted value, with the
    * password, encrypted. Replaces the connector's previous connection.
+   *
+   * Answers 11006, without signing in, unless the user's database holds
+   * `decryptedFrom`, the connector and secret value the app decrypted
+   * `password` from. It compares them as `list` compares a connection with
+   * its connector.
    */
   async connect({
     userId,
     email,
     connectorId,
     password,
+    decryptedFrom,
   }: {
     userId: number
     email: string
     connectorId: string
     password: string
+    decryptedFrom: PasswordSource
   }): Promise<ConnectorConnectionDto> {
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const connectors = await readConnectors(db)
@@ -165,8 +172,12 @@ export class ConnectorConnectionService {
       ? secretValues.get(connector.passwordAsSecretId)
       : undefined
     const isPasswordSecretStored = passwordSecretValue !== undefined
+    const isDecryptedFromStoredCopy =
+      connector !== undefined &&
+      isPasswordSecretStored &&
+      isSamePasswordSource(decryptedFrom, { connector, passwordSecretValue })
 
-    if (!connector || !isPasswordSecretStored) {
+    if (!isDecryptedFromStoredCopy) {
       throw createObokuBadRequest(
         ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
       )

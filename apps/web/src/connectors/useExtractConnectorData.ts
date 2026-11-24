@@ -6,10 +6,20 @@ import { getLatestDatabase } from "../rxdb/RxDbProvider"
 import { throwIfNotDefined } from "../common/rxjs/operators"
 import { decryptSecret } from "../secrets/secretsUtils"
 import type {
+  SecretDocType,
   SettingsConnectorDocType,
   SettingsResolvedConnectorData,
 } from "@oboku/shared"
 import { isConnectorOfType } from "../rxdb/collections/settings"
+
+type ExtractedConnectorData<T extends SettingsConnectorDocType["type"]> = {
+  data: SettingsResolvedConnectorData<T>
+  /** What `data.password` was decrypted from, as the database holds it. */
+  decryptedFrom: {
+    connector: Extract<SettingsConnectorDocType, { type: T }>
+    passwordSecretValue: NonNullable<SecretDocType["value"]>
+  }
+}
 
 export const useExtractConnectorData = <
   T extends SettingsConnectorDocType["type"],
@@ -17,7 +27,7 @@ export const useExtractConnectorData = <
   { type }: { type: T },
   options?: Omit<
     UseMutation$Options<
-      { data: SettingsResolvedConnectorData<T> },
+      ExtractedConnectorData<T>,
       DefaultError,
       { connectorId: string }
     >,
@@ -55,15 +65,17 @@ export const useExtractConnectorData = <
                   ).pipe(
                     map((secret) => secret?.value),
                     throwIfNotDefined,
-                    switchMap((secret) =>
-                      from(decryptSecret(secret, masterKey)),
+                    switchMap((passwordSecretValue) =>
+                      from(decryptSecret(passwordSecretValue, masterKey)).pipe(
+                        map((password) => ({
+                          data: {
+                            ...connector,
+                            password,
+                          } satisfies SettingsResolvedConnectorData<T>,
+                          decryptedFrom: { connector, passwordSecretValue },
+                        })),
+                      ),
                     ),
-                    map((password) => ({
-                      data: {
-                        ...connector,
-                        password,
-                      } satisfies SettingsResolvedConnectorData<T>,
-                    })),
                   ),
                 ),
               ),

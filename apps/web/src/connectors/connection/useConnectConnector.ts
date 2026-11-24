@@ -22,7 +22,8 @@ type ConnectConnectorRequest = {
 
 /**
  * Asks for the master password, decrypts the connector's password, and sends
- * it to oboku's server, which keeps it.
+ * it to oboku's server with the connector and the secret value it decrypted
+ * it from. The server keeps the password.
  */
 export const useConnectConnector = (
   { type }: { type: ConnectableConnectorType },
@@ -52,6 +53,7 @@ export const useConnectConnector = (
 
       const {
         data: { password },
+        decryptedFrom,
       } = await extractConnectorData({ connectorId })
 
       cancelUnlessProfileIsActive(profileId)
@@ -59,7 +61,7 @@ export const useConnectConnector = (
       const { data } = await connectorConnectionConnect({
         client: httpClientApi.sdkClient,
         path: { connectorId },
-        body: { password },
+        body: { password, decryptedFrom },
       })
 
       return data

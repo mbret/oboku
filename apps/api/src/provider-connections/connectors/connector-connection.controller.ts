@@ -41,6 +41,7 @@ export class ConnectorConnectionController {
         email: user.email,
         connectorId,
         password: body.password,
+        decryptedFrom: body.decryptedFrom,
       }),
     }
   }
