@@ -89,6 +89,7 @@ export const BookMetadataTabPane = memo(function BookMetadataTabPane({
           refreshMetadata(bookId, { force: true })
         }}
         forceRefreshDisabled={book?.metadataUpdateStatus === "fetching"}
+        lastRefreshedAt={book?.lastMetadataUpdatedAt ?? null}
       />
       <DataSourceSection bookId={bookId} />
     </TabStack>

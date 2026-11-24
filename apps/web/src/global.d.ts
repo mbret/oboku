@@ -4,6 +4,11 @@ declare module "@tanstack/react-query" {
   interface Register {
     mutationMeta: {
       suppressGlobalErrorToast?: boolean
+      /**
+       * The mutation is not tied to the signed-in session (device-level work
+       * like a book download), so sign-out and account switch keep it.
+       */
+      survivesSessionReset?: boolean
     }
   }
 }

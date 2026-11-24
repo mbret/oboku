@@ -65,8 +65,8 @@ catalogs:
       specifier: ^8.0.1
       version: 8.0.1
     reactjrx:
-      specifier: ^7.0.0
-      version: 7.0.0
+      specifier: ^7.1.0
+      version: 7.1.0
 
 patchedDependencies:
   react-dom@19.3.1: 38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6
@@ -178,7 +178,7 @@ importers:
         version: 19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1)
       reactjrx:
         specifier: catalog:prose-reader
-        version: 7.0.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
+        version: 7.1.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
       rxjs:
         specifier: ^7.8.2
         version: 7.8.2
@@ -602,7 +602,7 @@ importers:
         version: 47.0.0(@zip.js/zip.js@2.25.0)(buffer@6.0.3)(libarchive.js@2.0.2)(node-unrar-js@2.0.2)(unzipper@0.12.5)
       '@prose-reader/react-reader':
         specifier: catalog:prose-reader
-        version: 47.0.1(145a3c9014f7dbac21724d4fed9f23a7)
+        version: 47.0.1(08e5dfb7c71e3698bf5394da9e414ada)
       '@prose-reader/shared':
         specifier: catalog:prose-reader
         version: 47.0.0
@@ -680,7 +680,7 @@ importers:
         version: 4.18.24(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)
       reactjrx:
         specifier: catalog:prose-reader
-        version: 7.0.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
+        version: 7.1.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
       rxdb:
         specifier: ^17.6.0
         version: 17.6.0(crossws@0.3.5)(firebase@13.4.0(@types/react@19.3.0)(next@16.4.6(@babel/core@8.1.3)(@opentelemetry/api@1.10.0)(@playwright/test@1.65.1)(@types/node@24.19.2)(babel-plugin-macros@3.1.0)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1))(react@19.3.1)(supports-color@10.2.2))(react@19.3.1)(rxjs@7.8.2)(supports-color@10.2.2)(typescript@6.0.3)
@@ -11835,8 +11835,8 @@ packages:
     resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
     engines: {node: '>=0.10.0'}
 
-  reactjrx@7.0.0:
-    resolution: {integrity: sha512-e7Bsx2dcYuf2TvnuzSAni3U62Rsc5ahYQMqTnfgAHpoIHGyHClFT7IYbfJLw1eYbRVVEfDcIfbmLHo1XKBpfUw==}
+  reactjrx@7.1.0:
+    resolution: {integrity: sha512-oe4RKSFxaaOa1czKPnr35gnwEl8fPfd2S8HlzhdP/8IVw8YQyDUvLqvC0e+nERnpLRAxbqwkuS3C+nVHW508GQ==}
     peerDependencies:
       '@tanstack/react-query': ^5.85.1
       react: 19.x
@@ -18303,7 +18303,7 @@ snapshots:
       - node-unrar-js
       - unzipper
 
-  '@prose-reader/react-reader@47.0.1(145a3c9014f7dbac21724d4fed9f23a7)':
+  '@prose-reader/react-reader@47.0.1(08e5dfb7c71e3698bf5394da9e414ada)':
     dependencies:
       '@chakra-ui/react': 3.38.0(@emotion/react@11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)
       '@emotion/react': 11.14.0(@types/react@19.3.0)(react@19.3.1)(supports-color@10.2.2)
@@ -18320,7 +18320,7 @@ snapshots:
       react: 19.3.1
       react-dom: 19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1)
       react-icons: 5.7.0(react@19.3.1)
-      reactjrx: 7.0.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
+      reactjrx: 7.1.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2)
       rxjs: 7.8.2
       screenfull: 6.0.2
 
@@ -26576,7 +26576,7 @@ snapshots:
 
   react@19.3.1: {}
 
-  reactjrx@7.0.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2):
+  reactjrx@7.1.0(@tanstack/react-query@5.108.2(@types/react@19.3.0)(react@19.3.1))(react-dom@19.3.1(patch_hash=38a2e5e69cb633fef9885c16f1ffd4884ef3e43087c990950b8d0490a850cfc6)(react@19.3.1))(react@19.3.1)(rxjs@7.8.2):
     dependencies:
       '@tanstack/react-query': 5.108.2(@types/react@19.3.0)(react@19.3.1)
       react: 19.3.1
