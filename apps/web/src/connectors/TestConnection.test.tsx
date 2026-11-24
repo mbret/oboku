@@ -13,10 +13,15 @@ vi.mock("../secrets/useUnlockMasterKey", function mockMasterKey() {
   }
 })
 
+const SECRETS: Record<string, string> = {
+  "koofr-secret": "koofr-app-password",
+  "nas-secret": "nas-password",
+}
+
 vi.mock("../secrets/useDecryptedSecret", function mockDecryptedSecret() {
   return {
-    useDecryptedSecret: function useDecryptedSecret() {
-      return { data: "koofr-app-password" }
+    useDecryptedSecret: function useDecryptedSecret({ id }: { id?: string }) {
+      return { data: id ? SECRETS[id] : undefined }
     },
   }
 })
@@ -33,6 +38,12 @@ const KOOFR_CONNECTION = {
   url: "https://app.koofr.net/dav/Koofr",
   username: "reader@example.com",
   passwordAsSecretId: "koofr-secret",
+}
+
+const NAS_CONNECTION = {
+  url: "https://nas.example.com/dav",
+  username: "reader",
+  passwordAsSecretId: "nas-secret",
 }
 
 describe("TestConnection", () => {
@@ -65,5 +76,35 @@ describe("TestConnection", () => {
 
     await expect.poll(() => testConnection.mock.calls).toHaveLength(2)
     expect(testConnection.mock.lastCall?.[0].directory).toBe("Books")
+  })
+
+  it("tests a connector's password only against that connector's URL", async () => {
+    const testConnection = vi.fn<TestConnectionFn>(async function connect() {
+      return true
+    })
+    const queryClient = new QueryClient()
+    const renderConnection = (connectionData: typeof KOOFR_CONNECTION) => (
+      <QueryClientProvider client={queryClient}>
+        <TestConnection
+          connectionData={connectionData}
+          connectorType="webdav"
+          testConnection={testConnection}
+        />
+      </QueryClientProvider>
+    )
+    const { rerender } = render(renderConnection(KOOFR_CONNECTION))
+
+    rerender(renderConnection(NAS_CONNECTION))
+
+    const passwordsByUrl: Record<string, string> = {
+      [KOOFR_CONNECTION.url]: "koofr-app-password",
+      [NAS_CONNECTION.url]: "nas-password",
+    }
+    await expect
+      .poll(() => testConnection.mock.lastCall?.[0].url)
+      .toBe(NAS_CONNECTION.url)
+    for (const [{ url, password }] of testConnection.mock.calls) {
+      expect(password).toBe(passwordsByUrl[url])
+    }
   })
 })

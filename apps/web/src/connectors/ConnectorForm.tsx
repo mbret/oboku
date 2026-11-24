@@ -185,7 +185,6 @@ export const ConnectorForm = memo(function ConnectorForm({
     },
   })
   const data = watch()
-  const { urlValue, ...connectionValues } = data
   const { mutateAsync: addConnector } = useAddConnector({
     type: connectorType,
   })
@@ -271,7 +270,13 @@ export const ConnectorForm = memo(function ConnectorForm({
             {!!errors.root && <ErrorAlert error={errors.root.message} />}
             {testConnection && (
               <TestConnection
-                connectionData={{ ...connectionValues, url: urlValue }}
+                connectionData={{
+                  url: data.urlValue,
+                  username: data.username,
+                  passwordAsSecretId: data.passwordAsSecretId,
+                  allowSelfSigned: data.allowSelfSigned,
+                  proxyThroughServer: data.proxyThroughServer,
+                }}
                 connectorType={connectorType}
                 testConnection={testConnection}
               />

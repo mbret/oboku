@@ -69,6 +69,7 @@ export type ConnectionParams = {
   username: string
   password: string
   allowSelfSigned?: boolean
+  proxyThroughServer?: boolean
 }
 
 type ConnectionExtraParams<D extends ConnectionParams = ConnectionParams> =
@@ -84,6 +85,8 @@ function getConnectionExtraParams<D extends ConnectionParams>(
     url: _url,
     username: _username,
     passwordAsSecretId: _passwordAsSecretId,
+    allowSelfSigned: _allowSelfSigned,
+    proxyThroughServer: _proxyThroughServer,
     ...extra
   } = connectionData
 
@@ -92,7 +95,10 @@ function getConnectionExtraParams<D extends ConnectionParams>(
 }
 
 export type ConnectionData<D extends ConnectionParams = ConnectionParams> =
-  Pick<ConnectionParams, "url" | "username" | "allowSelfSigned"> & {
+  Pick<
+    ConnectionParams,
+    "url" | "username" | "allowSelfSigned" | "proxyThroughServer"
+  > & {
     passwordAsSecretId: string
   } & ConnectionExtraParams<D>
 
@@ -118,10 +124,16 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   testConnection,
 }: TestConnectionProps<D>) {
   const { masterKey, unlockMasterKey } = useUnlockMasterKey()
-  const { url, username, passwordAsSecretId } = connectionData
+  const {
+    url,
+    username,
+    passwordAsSecretId,
+    allowSelfSigned,
+    proxyThroughServer,
+  } = connectionData
   const extra = getConnectionExtraParams(connectionData)
-  const debouncedUrl = useDebouncedValue(url, 500)
-  const debouncedUsername = useDebouncedValue(username, 500)
+  const connectionKey = JSON.stringify(connectionData)
+  const isSettled = useDebouncedValue(connectionKey, 500) === connectionKey
   const { data: unlockedMasterKey } = useUnlockedMasterKey()
   const { data: secret } = useDecryptedSecret({
     id: passwordAsSecretId,
@@ -130,13 +142,14 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   })
 
   const params: ResolvedConnectionParams<D> = {
-    url: debouncedUrl ?? "",
-    username: debouncedUsername ?? "",
+    url,
+    username,
     password: secret ?? "",
+    allowSelfSigned,
+    proxyThroughServer,
     ...extra,
   }
-  const canTest = !!params.url && !!params.username && !!params.password
-  const debouncedExtraKey = useDebouncedValue(JSON.stringify(extra), 500)
+  const hasCredentials = !!params.url && !!params.username && !!params.password
 
   const {
     mutate,
@@ -150,15 +163,14 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   })
 
   useEffect(
-    function triggerTestConnection() {
+    function testSettledConnection() {
       void connectorType
-      void debouncedExtraKey
       void secret
       void testConnection
-      void debouncedUrl
-      void debouncedUsername
 
-      if (!canTest) {
+      if (!isSettled) return
+
+      if (!hasCredentials) {
         reset()
         return
       }
@@ -166,11 +178,9 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
       mutate()
     },
     [
-      canTest,
       connectorType,
-      debouncedUrl,
-      debouncedUsername,
-      debouncedExtraKey,
+      hasCredentials,
+      isSettled,
       mutate,
       reset,
       secret,
@@ -179,7 +189,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   )
 
   const connectionStatus: ConnectionStatusQueryResult["status"] =
-    !canTest || status === "idle" || status === "pending"
+    !hasCredentials || status === "idle" || status === "pending"
       ? "pending"
       : status === "error" || success === false
         ? "error"
