@@ -1,16 +1,13 @@
-import { useQueryClient } from "@tanstack/react-query"
-import { liveQuery } from "dexie"
 import { memo, useEffect, useEffectEvent } from "react"
-import { catchError, EMPTY, filter, from, tap } from "rxjs"
+import { catchError, EMPTY, filter, tap } from "rxjs"
 import { reportErrors } from "../common/rxjs/operators"
 import { notifyError } from "../notifications/toasts"
-import { dexieDb } from "../rxdb/dexie"
+import { observeStoredDownloads } from "./observeStoredDownloads"
 import {
   type BooksDownloadState,
   booksDownloadStateSignal,
   DownloadState,
 } from "./states"
-import { downloadedFilesQueryOptions } from "./useDownloadedFilesInfo"
 
 type StoredDownload = { id: string; data: Blob }
 
@@ -57,59 +54,46 @@ const reconcileDownloadState = (
 }
 
 /**
- * Keeps the download state and the downloaded files query in line with the
- * stored downloads, including the writes of other tabs. A download in
- * progress in this tab keeps its state. `onReady` runs once, after the first
- * read.
+ * Keeps the download state in line with the stored downloads, including the
+ * writes of other tabs. A download in progress in this tab keeps its state.
+ * `onReady` runs once, after the first read.
  */
 export const MirrorStoredDownloads = memo(function MirrorStoredDownloads({
   onReady,
 }: {
   onReady: () => void
 }) {
-  const queryClient = useQueryClient()
   const reportReady = useEffectEvent(onReady)
 
-  useEffect(
-    function mirrorStoredDownloadsWhileMounted() {
-      const subscription = from(
-        liveQuery(function listStoredDownloads() {
-          return dexieDb.downloads.toArray()
+  useEffect(function mirrorStoredDownloadsWhileMounted() {
+    const subscription = observeStoredDownloads()
+      .pipe(
+        tap(function mirrorStoredDownloads(storedDownloads) {
+          booksDownloadStateSignal.update(
+            function reconcileWithStoredDownloads(state) {
+              return reconcileDownloadState(state, storedDownloads)
+            },
+          )
+        }),
+        filter(function isFirstRead(_storedDownloads, index) {
+          return index === 0
+        }),
+        tap(function reportFirstReadMirrored() {
+          reportReady()
+        }),
+        reportErrors,
+        catchError(function notifyAndStopMirroring(error) {
+          notifyError(error)
+
+          return EMPTY
         }),
       )
-        .pipe(
-          tap(function mirrorStoredDownloads(storedDownloads) {
-            booksDownloadStateSignal.update(
-              function reconcileWithStoredDownloads(state) {
-                return reconcileDownloadState(state, storedDownloads)
-              },
-            )
-            queryClient.setQueryData(
-              downloadedFilesQueryOptions.queryKey,
-              storedDownloads,
-            )
-          }),
-          filter(function isFirstRead(_storedDownloads, index) {
-            return index === 0
-          }),
-          tap(function reportFirstReadMirrored() {
-            reportReady()
-          }),
-          reportErrors,
-          catchError(function notifyAndStopMirroring(error) {
-            notifyError(error)
+      .subscribe()
 
-            return EMPTY
-          }),
-        )
-        .subscribe()
-
-      return function stopMirroringOnUnmount() {
-        subscription.unsubscribe()
-      }
-    },
-    [queryClient],
-  )
+    return function stopMirroringOnUnmount() {
+      subscription.unsubscribe()
+    }
+  }, [])
 
   return null
 })

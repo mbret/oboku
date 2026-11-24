@@ -1,4 +1,3 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { cleanup, renderHook, waitFor } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -10,7 +9,6 @@ import {
   getBookDownloadsState,
   useBookDownloadState,
 } from "./states"
-import { useDownloadedFilesInfo } from "./useDownloadedFilesInfo"
 
 function storeDownload(bookId: string, content = "book") {
   return dexieDb.downloads.put({
@@ -21,23 +19,20 @@ function storeDownload(bookId: string, content = "book") {
 }
 
 function renderTab(onReady = vi.fn()) {
-  const queryClient = new QueryClient()
-
   return renderHook(
     function useRenderedDownloads() {
       return {
         bookA: useBookDownloadState("book-a"),
         bookB: useBookDownloadState("book-b"),
-        downloadedFiles: useDownloadedFilesInfo(),
       }
     },
     {
       wrapper: function Wrapper({ children }: { children: ReactNode }) {
         return (
-          <QueryClientProvider client={queryClient}>
+          <>
             <MirrorStoredDownloads onReady={onReady} />
             {children}
-          </QueryClientProvider>
+          </>
         )
       },
     },
@@ -143,28 +138,6 @@ describe("MirrorStoredDownloads", () => {
     expect(result.current.bookB).toMatchObject({
       isDownloading: true,
       downloadProgress: 40,
-    })
-  })
-
-  it("gives the downloaded files query the stored downloads", async () => {
-    const { result } = renderTab()
-
-    await waitFor(function waitForNoDownloadedFiles() {
-      expect(result.current.downloadedFiles.data).toEqual([])
-    })
-
-    await storeDownload("book-a")
-
-    await waitFor(function waitForBookAInDownloadedFiles() {
-      expect(result.current.downloadedFiles.data).toEqual([
-        expect.objectContaining({ id: "book-a" }),
-      ])
-    })
-
-    await dexieDb.downloads.delete("book-a")
-
-    await waitFor(function waitForBookARemovedFromDownloadedFiles() {
-      expect(result.current.downloadedFiles.data).toEqual([])
     })
   })
 })
