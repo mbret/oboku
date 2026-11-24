@@ -1,6 +1,6 @@
 import { memo } from "react"
 import type { WebdavDirectoryItemDto } from "@oboku/shared"
-import { resolveWebdavUrl } from "../auth/connect"
+import { createWebdavClient, resolveWebdavUrl } from "../auth/connect"
 import type { WebdavBackedType } from "../constants"
 import {
   listDirectoryFromWebdavServer,
@@ -41,23 +41,33 @@ export const ConnectorSelectionStep = memo(function ConnectorSelectionStep({
   ): Promise<WebdavAuthResult> => {
     const { data } = await extractConnectorData({ connectorId })
     const url = resolveWebdavUrl({ connectorUrl: data.url, webdavUrl })
-    const listDirectory = isProxiedThroughServer(data)
-      ? function listDirectoryThroughServer(path: string) {
-          return listDirectoryThroughServerProxy({
-            httpClientApi,
-            connectorId,
-            password: data.password,
-            path,
-          })
-        }
-      : function listDirectoryFromServer(path: string) {
-          return listDirectoryFromWebdavServer({
-            url,
-            username: data.username,
-            password: data.password,
-            path,
-          })
-        }
+
+    if (isProxiedThroughServer(data)) {
+      const listDirectory = function listDirectoryThroughServer(path: string) {
+        return listDirectoryThroughServerProxy({
+          httpClientApi,
+          connectorId,
+          password: data.password,
+          path,
+        })
+      }
+
+      return {
+        connectorId,
+        items: await listDirectory("/"),
+        listDirectory,
+        url,
+      }
+    }
+
+    const client = createWebdavClient({
+      url,
+      username: data.username,
+      password: data.password,
+    })
+    const listDirectory = function listDirectoryFromServer(path: string) {
+      return listDirectoryFromWebdavServer({ client, path })
+    }
 
     return { connectorId, items: await listDirectory("/"), listDirectory, url }
   }

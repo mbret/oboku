@@ -383,7 +383,7 @@ describe("WebDAV upload", function testWebdavUpload() {
     expect(mocks.createWebdavClient).not.toHaveBeenCalled()
   })
 
-  it("shows why oboku's server could not list a folder", async function notifyFolderListingError() {
+  it("hands the error of a folder listing through oboku's server to the error toast", async function notifyProxiedListingError() {
     givenConnector({ ...webdavConnector, proxyThroughServer: true })
     const listingError = new Error("The server refused the folder")
     const api = serveDirectories(async function refuseBooksFolder(path) {
@@ -407,6 +407,36 @@ describe("WebDAV upload", function testWebdavUpload() {
     await expect
       .poll(() => mocks.notifyError.mock.calls)
       .toEqual([[listingError]])
+  })
+
+  it("hands the error of a folder listing from the WebDAV server to the error toast", async function notifyDirectListingError() {
+    givenConnector(webdavConnector)
+    const listingError = Object.assign(new Error("Invalid response: 403"), {
+      status: 403,
+    })
+    mocks.createWebdavClient.mockReturnValue({
+      getDirectoryContents: vi.fn(async function refuseBooksFolder(path) {
+        if (path !== "/") throw listingError
+
+        return [{ ...bookFileStat, ...booksDirectoryItem, etag: null }]
+      }),
+    })
+    renderUploadBook(
+      <WebdavPluginUploadBook
+        onClose={vi.fn()}
+        requestPopup={grantPopup}
+        TagsSelector={NoTagsSelector}
+        title="Add a book"
+      />,
+    )
+
+    fireEvent.click(screen.getByRole("button", { name: "Connect" }))
+    fireEvent.click(await screen.findByText("Books"))
+
+    await expect
+      .poll(() => mocks.notifyError.mock.calls)
+      .toEqual([[listingError]])
+    expect(mocks.createWebdavClient).toHaveBeenCalledTimes(1)
   })
 
   it("closes without books from either step", async function cancelFromEitherStep() {

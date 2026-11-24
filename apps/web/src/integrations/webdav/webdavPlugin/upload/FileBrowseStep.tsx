@@ -33,7 +33,7 @@ export function toTreeNodeList(
       label: item.basename,
       type: item.type === "directory" ? "folder" : "file",
       fileType: item.mime,
-      etag: item.etag ?? undefined,
+      etag: item.etag,
       children: [],
     }))
 }

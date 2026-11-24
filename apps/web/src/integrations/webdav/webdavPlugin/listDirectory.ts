@@ -2,9 +2,8 @@ import {
   connectorsListWebdavDirectory,
   type WebdavDirectoryItemDto,
 } from "@oboku/shared"
-import type { FileStat } from "webdav"
+import type { FileStat, WebDAVClient } from "webdav"
 import type { HttpApiClientWeb } from "../../../http"
-import { createWebdavClient } from "./auth/connect"
 
 const toWebdavDirectoryItem = (item: FileStat): WebdavDirectoryItemDto => ({
   filename: item.filename,
@@ -34,17 +33,12 @@ export const listDirectoryThroughServerProxy = async ({
 }
 
 export const listDirectoryFromWebdavServer = async ({
-  url,
-  username,
-  password,
+  client,
   path,
 }: {
-  url: string
-  username: string
-  password: string
+  client: WebDAVClient
   path: string
 }) => {
-  const client = createWebdavClient({ url, username, password })
   const items = await client.getDirectoryContents(path)
 
   return items.map(toWebdavDirectoryItem)

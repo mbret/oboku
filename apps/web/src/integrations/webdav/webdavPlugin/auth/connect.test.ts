@@ -7,7 +7,8 @@ const mocks = vi.hoisted(function stubFetchBeforeWebdavBindsIt() {
   return { fetch }
 })
 
-import { connectWebdav, createWebdavClient } from "./connect"
+import { listDirectoryFromWebdavServer } from "../listDirectory"
+import { createWebdavClient } from "./connect"
 
 const DAV_URL = "https://dav.example.test/books"
 const USERNAME = "reader"
@@ -93,10 +94,13 @@ describe.each([basicServer, digestServer])(
     it("lists a folder when the server accepts the password", async () => {
       answerAsServerThatAcceptsThePassword(server)
 
-      const { items } = await connectWebdav({
-        url: DAV_URL,
-        username: USERNAME,
-        password: PASSWORD,
+      const items = await listDirectoryFromWebdavServer({
+        client: createWebdavClient({
+          url: DAV_URL,
+          username: USERNAME,
+          password: PASSWORD,
+        }),
+        path: "/",
       })
 
       expect(items).toEqual([
@@ -108,10 +112,13 @@ describe.each([basicServer, digestServer])(
       answerAsServerThatRefusesThePassword(server)
 
       await expect(
-        connectWebdav({
-          url: DAV_URL,
-          username: USERNAME,
-          password: WRONG_PASSWORD,
+        listDirectoryFromWebdavServer({
+          client: createWebdavClient({
+            url: DAV_URL,
+            username: USERNAME,
+            password: WRONG_PASSWORD,
+          }),
+          path: "/",
         }),
       ).rejects.toMatchObject({ status: 401 })
     })
