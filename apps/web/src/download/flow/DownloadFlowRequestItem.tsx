@@ -62,7 +62,7 @@ export const DownloadFlowRequestItem = memo(function DownloadFlowRequestItem({
         `Saving ${bookId} into storage for a size of ${bytesToMb(data.size)} mb`,
       )
 
-      await dexieDb.downloads.add({
+      await dexieDb.downloads.put({
         id: bookId,
         data: cachedData,
         filename,

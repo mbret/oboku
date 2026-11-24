@@ -147,6 +147,26 @@ describe("download state", () => {
     expect(result.current.bookA?.downloadState).toBe(DownloadState.Downloaded)
   })
 
+  it("ends a download as a success when another tab stored the same book meanwhile", async () => {
+    const { result } = renderBookA({ withDownloadFlow: true })
+
+    await storeDownload("book-a")
+
+    act(function startDownload() {
+      result.current.downloadBook.mutate({
+        _id: "book-a",
+        links: [],
+        file: new File(["book"], "book-a.epub"),
+      })
+    })
+
+    await waitFor(function waitForDownloadSettled() {
+      expect(["success", "error"]).toContain(result.current.downloadBook.status)
+    })
+    expect(result.current.downloadBook.status).toBe("success")
+    expect(result.current.bookA?.downloadState).toBe(DownloadState.Downloaded)
+  })
+
   it("answers synchronously from the stored downloads and the pending downloads", async () => {
     await storeDownload("book-a", "12345")
     const queryClient = new QueryClient()
