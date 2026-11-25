@@ -32,7 +32,7 @@ const MetadataProviderPageContainer = styled(PageContainer)({
   minHeight: 0,
 })
 
-const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
+const ProviderIntroStack = styled(Stack)(function styleProviderIntroStack({
   theme,
 }) {
   return {
@@ -84,14 +84,14 @@ export const BookMetadataProviderScreen = memo(
           showBack
         />
         <MetadataProviderPageContainer disableGutters>
-          <SourceIntroStack>
+          <ProviderIntroStack>
             <Typography variant="overline" color="text.secondary">
               Metadata provider
             </Typography>
             <Typography variant="body2" color="text.secondary">
               {PROVIDER_DESCRIPTIONS[validProvider]}
             </Typography>
-          </SourceIntroStack>
+          </ProviderIntroStack>
           {validProvider === "link" && (
             <LinkProviderContent
               metadata={entry?.type === "link" ? entry : undefined}

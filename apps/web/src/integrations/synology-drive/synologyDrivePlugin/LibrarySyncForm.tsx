@@ -34,7 +34,7 @@ import type {
 
 type SynologyDriveFormData = LibrarySyncFormData<{
   connectorId: string
-  items: string[]
+  locations: string[]
 }>
 
 export const LibrarySyncForm = memo(function LibrarySyncForm({
@@ -51,16 +51,16 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     defaultValues: {
       ...getLibrarySyncFormBaseDefaults(librarySync),
       connectorId: librarySync?.data_v2?.connectorId ?? "",
-      items: [...(librarySync?.data_v2?.items ?? [])],
+      locations: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const requestSynologyDriveSession = useRequestSynologyDriveSession()
   const [session, setSession] = useState<SynologyDriveSession | undefined>(
     undefined,
   )
-  const [selectionPrefetchItemIds, setSelectionPrefetchItemIds] = useState<
-    string[]
-  >([])
+  const [prefetchedLocationIds, setPrefetchedLocationIds] = useState<string[]>(
+    [],
+  )
   const [connectError, setConnectError] = useState<Error | undefined>(undefined)
   const [isConnecting, setIsConnecting] = useState(false)
   const [tree, setTree] = useState<SynologyTreeNode[]>([])
@@ -70,20 +70,20 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
       name: "connectorId",
       rules: { required: true },
     })
-  const { field: itemsField } = useController({
+  const { field: locationsField } = useController({
     control,
-    name: "items",
+    name: "locations",
     rules: { required: false },
   })
 
   const connectorId = connectorField.value
-  const selectedItemIds = useMemo(
-    () => itemsField.value ?? [],
-    [itemsField.value],
+  const locationIds = useMemo(
+    () => locationsField.value ?? [],
+    [locationsField.value],
   )
   const selectedTreeItemIds = useMemo(
-    () => toSelectedTreeItemIds(selectedItemIds),
-    [selectedItemIds],
+    () => toSelectedTreeItemIds(locationIds),
+    [locationIds],
   )
   const selectedNodes = useMemo(
     () => collectSelectedNodes(tree, new Set(selectedTreeItemIds)),
@@ -95,14 +95,14 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
   )
   const {
     initialExpandedItems,
-    isSelectedItemsPrefetchLoading,
+    isLocationsPrefetchLoading,
     isTreeLoading,
     onLoadChildren,
     treeError,
     treeItems,
   } = useSelectionTreeData({
     connectorId,
-    prefetchedSelectedItemIds: selectionPrefetchItemIds,
+    prefetchedLocationIds,
     session,
   })
 
@@ -110,9 +110,9 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     value: Parameters<NonNullable<typeof connectorField.onChange>>[0],
   ) => {
     setSession(undefined)
-    setSelectionPrefetchItemIds([])
+    setPrefetchedLocationIds([])
     setConnectError(undefined)
-    itemsField.onChange([])
+    locationsField.onChange([])
     setTree([])
     connectorField.onChange(value)
   }
@@ -126,7 +126,7 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     setConnectError(undefined)
 
     try {
-      setSelectionPrefetchItemIds(selectedItemIds)
+      setPrefetchedLocationIds(locationIds)
       const nextSession = await requestSynologyDriveSession({
         connectorId,
         forceRefresh: !!session,
@@ -135,7 +135,7 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
       setSession(nextSession)
     } catch (error) {
       setSession(undefined)
-      setSelectionPrefetchItemIds([])
+      setPrefetchedLocationIds([])
       if (!isCancelError(error)) {
         setConnectError(
           error instanceof Error ? error : new Error(String(error)),
@@ -162,7 +162,7 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
         onSubmit(
           buildLibrarySyncSubmitPayload(data, {
             connectorId: data.connectorId,
-            items: data.items,
+            items: data.locations,
           }),
         ),
       )}
@@ -198,11 +198,11 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
       >
         {selectedNodes.length > 0
           ? `${selectedCounts.folders} folders, ${selectedCounts.files} files selected`
-          : `${selectedItemIds.length} selected`}
+          : `${locationIds.length} selected`}
       </Typography>
       {browserError ? (
         <Alert severity="error">{String(browserError)}</Alert>
-      ) : session && (isTreeLoading || isSelectedItemsPrefetchLoading) ? (
+      ) : session && (isTreeLoading || isLocationsPrefetchLoading) ? (
         <Stack
           sx={{
             alignItems: "center",
@@ -221,7 +221,7 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
           }
           onLoadChildren={onLoadChildren}
           onSelectedItemsChange={(_event, itemIds) => {
-            itemsField.onChange(
+            locationsField.onChange(
               collectSelectedNodes(tree, new Set(itemIds))
                 .map((node) => node.fileId)
                 .filter((value): value is string => typeof value === "string"),

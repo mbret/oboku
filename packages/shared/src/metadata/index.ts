@@ -12,11 +12,11 @@ export * from "./fields"
 export * from "./legacy"
 
 /**
- * Every property a book's metadata can show, whichever source it comes
+ * Every property a book's metadata can show, whichever provider it comes
  * from: what {@link getBookMetadataFields} reads out of any entry, and the
  * shape of the **merged** view consumers build from those by priority (e.g.
  * `getMetadataFromBook`), where any field may be present regardless of the
- * source that supplied it.
+ * provider that supplied it.
  *
  * The flat variants ({@link LinkMetadata}, {@link UserMetadata}) store these
  * fields directly, each picking the subset it can advertise. Fields a
@@ -33,7 +33,7 @@ export type BookMetadataFields = {
   /**
    * How {@link coverLink} was determined, in archive-reader's vocabulary:
    * `derived` when the container names the image as its cover, `assumed`
-   * when it names none and this is its first page. Only the `file` source
+   * when it names none and this is its first page. Only the `file` provider
    * can answer it, and only for a cover it actually reports; absent means
    * "not known", never "not derived".
    */
@@ -51,7 +51,7 @@ export type BookMetadataFields = {
   googleVolumeId?: string | undefined
   /**
    * Source-reported file modification timestamp (ISO 8601). Only the
-   * `link` source can advertise it — it describes the linked resource on
+   * `link` provider can advertise it — it describes the linked resource on
    * the source, not the merged book. Used as a cheap fingerprint
    * to skip re-downloading the file when its metadata is still valid.
    * Plugins MUST return the source's real timestamp here, or omit the
@@ -135,7 +135,7 @@ export type BookMetadata =
  *  - {@link DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS} aliases this
  *    constant for the default fill order
  *
- * Adding a new reorderable source therefore requires editing exactly
+ * Adding a new reorderable provider therefore requires editing exactly
  * this array — type, persistence shape, and runtime checks all follow.
  */
 export const REORDERABLE_BOOK_METADATA_PROVIDERS = ["file", "catalog"] as const
@@ -158,7 +158,7 @@ export const isReorderableBookMetadataProvider = (
   (REORDERABLE_BOOK_METADATA_PROVIDERS as ReadonlyArray<string>).includes(value)
 
 /**
- * Every source a book's metadata can come from — also the rows of the
+ * Every provider a book's metadata can come from — also the rows of the
  * user-facing priority pane. Each entry of `book.metadata` belongs to one:
  * see {@link getBookMetadataProvider}.
  */
@@ -183,12 +183,12 @@ export const isCatalogEntry = (entry: BookMetadata) =>
  * derives its precedence.
  *
  * Defends against malformed persisted values by:
- *  - stripping anything that isn't a reorderable source (no `user`/`link`
+ *  - stripping anything that isn't a reorderable provider (no `user`/`link`
  *    sneaking into the middle)
  *  - de-duplicating the input while preserving first occurrence, so a
- *    persisted `['file','file']` doesn't surface the same source twice
- *  - re-adding any reorderable source missing from the input, preserving
- *    the default relative order, so the result always covers every source
+ *    persisted `['file','file']` doesn't surface the same provider twice
+ *  - re-adding any reorderable provider missing from the input, preserving
+ *    the default relative order, so the result always covers every provider
  *    exactly once.
  *
  * `user` is pinned at the highest priority and `link` at the lowest, so
@@ -202,8 +202,8 @@ export const getOrderedBookMetadataProviders = (
       .map(toCurrentBookMetadataProviderName)
       .filter(isReorderableBookMetadataProvider),
   )
-  for (const source of DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS) {
-    ordered.add(source)
+  for (const provider of DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS) {
+    ordered.add(provider)
   }
 
   return ["user", ...ordered, "link"]
@@ -222,7 +222,7 @@ export const isBookMetadataProvider = (
   (BOOK_METADATA_PROVIDERS as ReadonlyArray<string>).includes(value)
 
 /**
- * The display fields each source can show, in the order the sources pane
+ * The display fields each provider can show, in the order the providers pane
  * previews them.
  */
 export const BOOK_METADATA_FIELDS_BY_PROVIDER = {
@@ -282,7 +282,7 @@ export type CollectionMetadata = {
    * link: metadata scrapped from the current link
    * user: metadata from user
    *
-   * See `COLLECTION_METADATA_PRIORITY` for how sources override each other.
+   * See `COLLECTION_METADATA_PRIORITY` for how providers override each other.
    */
   type:
     | "googleBookApi"

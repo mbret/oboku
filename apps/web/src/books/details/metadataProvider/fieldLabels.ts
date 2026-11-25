@@ -1,5 +1,5 @@
 /**
- * Universal labels for {@link BookMetadata} fields. Shared across source
+ * Universal labels for {@link BookMetadata} fields. Shared across provider
  * content components since "Title" / "Authors" / etc. mean the same thing
  * regardless of which provider produced the value.
  */

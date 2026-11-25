@@ -45,7 +45,7 @@ import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
 // Cast preserves Typography's polymorphic `component` prop, which MUI's
 // `styled` otherwise erases.
-const SourceOriginTypography = styled(Typography)(({ theme }) => ({
+const ProviderOriginTypography = styled(Typography)(({ theme }) => ({
   marginLeft: theme.spacing(1),
 })) as typeof Typography
 
@@ -130,17 +130,17 @@ const SAMPLE_PREVIEW_LIMIT = 2
  * pass a deep fallback list (e.g. `[title, authors, isbn, publisher]`)
  * without worrying about which fields are populated.
  */
-type SourceRowSecondaryProps = {
+type ProviderRowSecondaryProps = {
   count: number
   sampleValues: ReadonlyArray<string | number | undefined>
   emptyMessage: string
 }
 
-function SourceRowSecondary({
+function ProviderRowSecondary({
   count,
   sampleValues,
   emptyMessage,
-}: SourceRowSecondaryProps) {
+}: ProviderRowSecondaryProps) {
   if (count === 0) {
     return <WarningTypography variant="body2">{emptyMessage}</WarningTypography>
   }
@@ -176,7 +176,7 @@ const SECONDARY_SLOT_PROPS = { secondary: { component: "div" } } as const
  * without nesting interactive elements). Used for the reorder controls
  * on swappable rows.
  */
-type SourceRowProps = {
+type ProviderRowProps = {
   to: string
   icon: ReactNode
   primary: ReactNode
@@ -194,7 +194,7 @@ function ProviderRow({
   sampleValues,
   emptyMessage,
   overlay,
-}: SourceRowProps) {
+}: ProviderRowProps) {
   return (
     <ListItem disablePadding>
       <RowListItemButton component={Link} to={to}>
@@ -202,7 +202,7 @@ function ProviderRow({
         <ListItemText
           primary={primary}
           secondary={
-            <SourceRowSecondary
+            <ProviderRowSecondary
               count={count}
               sampleValues={sampleValues}
               emptyMessage={emptyMessage}
@@ -269,17 +269,17 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
  * still paints behind the buttons because `:hover` fires whenever the
  * cursor is inside the `ListItemButton`'s bounding box.
  */
-type SourceReorderActionsProps = {
+type ProviderReorderActionsProps = {
   provider: ReorderableBookMetadataProvider
   middle: ReadonlyArray<ReorderableBookMetadataProvider>
   onChange: (next: ReorderableBookMetadataProvider[]) => void
 }
 
-function SourceReorderActions({
+function ProviderReorderActions({
   provider,
   middle,
   onChange,
-}: SourceReorderActionsProps) {
+}: ProviderReorderActionsProps) {
   const index = middle.indexOf(provider)
   const canMoveUp = index > 0
   const canMoveDown = index >= 0 && index < middle.length - 1
@@ -397,14 +397,14 @@ export function MetadataProviderPane({ bookId }: { bookId: string }) {
                 <Typography>
                   {getBookMetadataProviderLabel(provider)}
                   {provider === "link" && (
-                    <SourceOriginTypography component="span" variant="body2">
+                    <ProviderOriginTypography component="span" variant="body2">
                       ({plugin?.name})
-                    </SourceOriginTypography>
+                    </ProviderOriginTypography>
                   )}
                   {providerName && (
-                    <SourceOriginTypography component="span" variant="body2">
+                    <ProviderOriginTypography component="span" variant="body2">
                       ({providerName})
-                    </SourceOriginTypography>
+                    </ProviderOriginTypography>
                   )}
                 </Typography>
               }
@@ -417,7 +417,7 @@ export function MetadataProviderPane({ bookId }: { bookId: string }) {
               }
               overlay={
                 reorderable ? (
-                  <SourceReorderActions
+                  <ProviderReorderActions
                     provider={provider}
                     middle={middle}
                     onChange={handleReorder}
