@@ -1,8 +1,11 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
-/** WebDAV datasource config: connector reference plus optional sync directory. */
-export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+/** WebDAV library sync config: connector reference plus optional sync directory. */
+export type WebDAVLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
+  "data_v2"
+> & {
   type: "webdav"
   data_v2?: { connectorId?: string; directory?: string }
 }

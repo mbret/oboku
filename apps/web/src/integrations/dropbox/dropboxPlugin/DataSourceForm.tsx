@@ -6,7 +6,7 @@ import {
   buildDataSourceSubmitPayload,
   getDataSourceFormBaseDefaults,
 } from "../../plugins/common/dataSourceFormHelpers"
-import type { DropboxDataSourceDocType } from "@oboku/shared"
+import type { DropboxLibrarySyncDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
@@ -20,7 +20,7 @@ export const DataSourceForm = ({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<DropboxDataSourceDocType>) => {
+}: DataSourceFormInternalProps<DropboxLibrarySyncDocType>) => {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

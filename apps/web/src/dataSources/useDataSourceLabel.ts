@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { usePluginDataSourceLabel } from "../integrations/plugins/usePluginDataSourceLabel"
 import { useDataSource } from "./useDataSource"
@@ -8,7 +8,7 @@ import { useDataSource } from "./useDataSource"
  * `name` -> `plugin.infer` -> `plugin.name`
  */
 export const useDataSourceLabel = (
-  dataSource?: DeepReadonly<DataSourceDocType> | null,
+  dataSource?: DeepReadonly<LibrarySyncDocType> | null,
 ) => {
   const { data } = useDataSource(dataSource?._id)
   const pluginLabel = usePluginDataSourceLabel(dataSource)

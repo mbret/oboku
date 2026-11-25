@@ -51,7 +51,7 @@ const getRequiredPlugin = <T extends SourceType>(type: T) => {
   const plugin = getPlugin(type)
 
   if (!plugin) {
-    throw new Error("No dataSource found for action")
+    throw new Error("No source plugin found for action")
   }
 
   return plugin

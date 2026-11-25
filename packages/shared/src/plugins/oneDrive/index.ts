@@ -1,5 +1,5 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 export const PLUGIN_ONE_DRIVE_TYPE = "one-drive"
 
@@ -18,8 +18,8 @@ export function getOneDriveItemKey({
   return `${encodeURIComponent(driveId)}:${encodeURIComponent(fileId)}`
 }
 
-export type OneDriveDataSourceDocType = Omit<
-  BaseDataSourceDocType,
+export type OneDriveLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
   "data_v2"
 > & {
   type: "one-drive"

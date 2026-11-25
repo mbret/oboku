@@ -22,7 +22,7 @@ import {
 } from "../../../plugins/common/dataSourceFormHelpers"
 import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
 import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
-import type { GoogleDriveDataSourceDocType } from "@oboku/shared"
+import type { GoogleDriveLibrarySyncDocType } from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
@@ -36,7 +36,7 @@ export const DataSourceForm = ({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<GoogleDriveDataSourceDocType>) => {
+}: DataSourceFormInternalProps<GoogleDriveLibrarySyncDocType>) => {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

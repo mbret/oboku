@@ -3,7 +3,7 @@ import { syncCollection } from "./collections/syncCollection.js"
 import { createOrUpdateBook } from "./books/createOrUpdateBook.js"
 import type { Context } from "./types.js"
 import type {
-  SynchronizeAbleDataSource,
+  SynchronizeAbleLibrarySync,
   SynchronizeAbleItem,
 } from "../../plugins/types.js"
 import { getOrCreateTagFromName } from "../../couch/dbHelpers.js"
@@ -33,13 +33,13 @@ const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
 }
 
 function isFolder(
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+  item: SynchronizeAbleLibrarySync | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
   return (item as SynchronizeAbleItem).type === "folder"
 }
 
 function isFile(
-  item: SynchronizeAbleDataSource | SynchronizeAbleItem,
+  item: SynchronizeAbleLibrarySync | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
   return (item as SynchronizeAbleItem).type === "file"
 }
@@ -48,13 +48,13 @@ function isFile(
  * @returns the ids of the collections whose metadata refresh the caller must
  * emit now that every book is persisted with its tags.
  */
-export const synchronizeFromDataSource = async (
-  synchronizeAble: SynchronizeAbleDataSource,
+export const synchronizeFromLibrarySync = async (
+  synchronizeAble: SynchronizeAbleLibrarySync,
   ctx: Context,
   coversService: CoversService,
 ): Promise<string[]> => {
   logger.log(
-    `dataSourcesSync run for user ${ctx.userName} with dataSource ${ctx.dataSourceId}`,
+    `Sync run for user ${ctx.userName} with library sync ${ctx.dataSourceId}`,
   )
 
   for (const item of synchronizeAble.items) {

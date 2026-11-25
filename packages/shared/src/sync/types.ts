@@ -4,7 +4,7 @@ type NameWithMetadata = string
 type ISOString = string
 
 /**
- * Sync item; generic in the provider type so linkData is correctly typed per provider.
+ * Sync item; generic in the source type so linkData is typed per source.
  * linkData carries the plugin-specific identity and access fields for this item.
  */
 export type SynchronizeAbleItem<TSourceType extends SourceType = SourceType> = {
@@ -17,9 +17,9 @@ export type SynchronizeAbleItem<TSourceType extends SourceType = SourceType> = {
 }
 
 /**
- * Result of a plugin sync; generic in the provider type.
+ * Result of a source plugin's sync; generic in the source type.
  */
-export type SynchronizeAbleDataSource<
+export type SynchronizeAbleLibrarySync<
   TSourceType extends SourceType = SourceType,
 > = {
   items: SynchronizeAbleItem<TSourceType>[]

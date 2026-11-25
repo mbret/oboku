@@ -4,26 +4,26 @@ import type {
   RxCollection,
   MigrationStrategies,
 } from "rxdb"
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import { getReplicationProperties } from "../replication/getReplicationProperties"
 import { generateId } from "./utils"
 
-type DataSourceDocument = RxDocument<DataSourceDocType>
+type DataSourceDocument = RxDocument<LibrarySyncDocType>
 
 type DataSourceCollectionMethods = {
   post: (
-    json: Omit<DataSourceDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>,
+    json: Omit<LibrarySyncDocType, "_id" | "rx_model" | "_rev" | `rxdbMeta`>,
   ) => Promise<DataSourceDocument>
 }
 
 export type DataSourceCollection = RxCollection<
-  DataSourceDocType,
+  LibrarySyncDocType,
   object,
   DataSourceCollectionMethods
 >
 
 export const dataSourceSchema: RxJsonSchema<
-  Omit<DataSourceDocType, "rx_model" | "_rev" | `rxdbMeta`> & {
+  Omit<LibrarySyncDocType, "rx_model" | "_rev" | `rxdbMeta`> & {
     data?: string
   }
 > = {
@@ -57,6 +57,6 @@ export const migrationStrategies: MigrationStrategies = {
 
 export const dataSourceCollectionMethods: DataSourceCollectionMethods = {
   post: async function (this: DataSourceCollection, json) {
-    return this.insert({ _id: generateId(), ...json } as DataSourceDocType)
+    return this.insert({ _id: generateId(), ...json } as LibrarySyncDocType)
   },
 }

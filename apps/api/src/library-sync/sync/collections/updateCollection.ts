@@ -39,7 +39,7 @@ export const updateCollection = async ({
       return {
         ...old,
         syncAt: new Date().toISOString(),
-        linkType: ctx.dataSourceType,
+        linkType: ctx.sourceType,
         type: directiveValues.series
           ? ("series" as const)
           : ("shelve" as const),

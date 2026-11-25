@@ -18,7 +18,7 @@ function resolveUrl(link: { data: { url: string } }): string {
   return url
 }
 
-export const dataSource: SourcePlugin<"URI"> = {
+export const sourcePlugin: SourcePlugin<"URI"> = {
   type: URI_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

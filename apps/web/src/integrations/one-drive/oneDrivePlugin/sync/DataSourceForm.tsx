@@ -8,7 +8,10 @@ import {
   getDataSourceFormBaseDefaults,
 } from "../../../plugins/common/dataSourceFormHelpers"
 import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
-import type { OneDriveDataSourceDocType, OneDriveLinkData } from "@oboku/shared"
+import type {
+  OneDriveLibrarySyncDocType,
+  OneDriveLinkData,
+} from "@oboku/shared"
 import type {
   DataSourceFormData,
   DataSourceFormInternalProps,
@@ -50,7 +53,7 @@ export const DataSourceForm = memo(function DataSourceForm({
   dataSource,
   onSubmit,
   submitLabel,
-}: DataSourceFormInternalProps<OneDriveDataSourceDocType>) {
+}: DataSourceFormInternalProps<OneDriveLibrarySyncDocType>) {
   // react-hook-form is on React Compiler's incompatible-library list.
   // TODO: drop this opt-out once React Compiler handles react-hook-form, and verify the form still tracks state correctly.
   "use no memo"

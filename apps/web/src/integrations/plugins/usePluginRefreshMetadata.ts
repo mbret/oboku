@@ -1,7 +1,7 @@
 import {
   assertNever,
-  type DataSourceDocType,
   type SourceApiCredentials,
+  type SourceType,
 } from "@oboku/shared"
 import type { UseMutationOptions } from "@tanstack/react-query"
 import { useCallback } from "react"
@@ -13,7 +13,7 @@ import type {
 import { pluginsByType } from "./configure"
 
 type RefreshMetadataResult = {
-  providerCredentials: SourceApiCredentials<DataSourceDocType["type"]>
+  providerCredentials: SourceApiCredentials<SourceType>
 }
 
 /**

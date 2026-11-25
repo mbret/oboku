@@ -7,7 +7,7 @@ import type {
 import type {
   SyncReportDto,
   SyncReportEntryDto,
-} from "../../datasource/sync/sync-report.dto.js"
+} from "../../library-sync/sync/sync-report.dto.js"
 import {
   Column,
   CreateDateColumn,

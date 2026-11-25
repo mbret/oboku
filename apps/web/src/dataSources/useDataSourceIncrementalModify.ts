@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import type { ModifyFunction } from "rxdb"
 import { switchMap, from } from "rxjs"
 import { getLatestDatabase } from "../rxdb/RxDbProvider"
@@ -11,7 +11,7 @@ export const useDataSourceIncrementalModify = () => {
       mutationFunction,
     }: {
       id: string
-      mutationFunction: ModifyFunction<DataSourceDocType>
+      mutationFunction: ModifyFunction<LibrarySyncDocType>
     }) =>
       getLatestDatabase().pipe(
         switchMap((db) =>

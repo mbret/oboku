@@ -1,14 +1,15 @@
 import {
   assertNever,
-  type DataSourceDocType,
+  type LibrarySyncDocType,
   type SourceApiCredentials,
+  type SourceType,
 } from "@oboku/shared"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { pluginsByType } from "./configure"
 
 type SynchronizeResult = {
-  providerCredentials: SourceApiCredentials<DataSourceDocType["type"]>
+  providerCredentials: SourceApiCredentials<SourceType>
 }
 
 /**
@@ -64,7 +65,7 @@ export const usePluginSynchronize = () => {
   })
 
   return useCallback(
-    async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
+    async (dataSource: LibrarySyncDocType): Promise<SynchronizeResult> => {
       switch (dataSource.type) {
         case "webdav":
           return synchronizeWebdav(dataSource)

@@ -1,4 +1,4 @@
-import type { DataSourceDocType } from "@oboku/shared"
+import type { LibrarySyncDocType } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useSynchronizeDataSource } from "./useSynchronizeDataSource"
 import { useMutation$ } from "reactjrx"
@@ -7,7 +7,7 @@ import { from, switchMap } from "rxjs"
 
 export const useCreateDataSource = () => {
   type Payload = Omit<
-    DataSourceDocType,
+    LibrarySyncDocType,
     "_id" | "rx_model" | "_rev" | `rxdbMeta`
   >
   const { mutateAsync: synchronize } = useSynchronizeDataSource()

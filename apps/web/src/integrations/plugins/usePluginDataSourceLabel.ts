@@ -1,19 +1,20 @@
 import {
   assertNever,
-  type DataSourceDocType,
-  type DataSourceDocTypeFor,
+  type LibrarySyncDocType,
+  type LibrarySyncDocTypeFor,
+  type SourceType,
 } from "@oboku/shared"
 import type { DeepReadonly } from "rxdb"
 import { pluginsByType } from "./configure"
 
 // TypeScript cannot narrow a generic discriminated-union parameter via
 // control flow, so the runtime guard + assertion is the only safe option.
-const syncSourceArgs = <T extends DataSourceDocType["type"]>(
-  dataSource: DeepReadonly<DataSourceDocType> | null | undefined,
+const syncSourceArgs = <T extends SourceType>(
+  dataSource: DeepReadonly<LibrarySyncDocType> | null | undefined,
   type: T,
 ) => {
   const narrowed = (dataSource?.type === type ? dataSource : undefined) as
-    | DeepReadonly<DataSourceDocTypeFor<T>>
+    | DeepReadonly<LibrarySyncDocTypeFor<T>>
     | undefined
 
   return { enabled: !!narrowed, dataSource: narrowed }
@@ -25,7 +26,7 @@ const syncSourceArgs = <T extends DataSourceDocType["type"]>(
  * new plugin adds its line here.
  */
 export const usePluginDataSourceLabel = (
-  dataSource?: DeepReadonly<DataSourceDocType> | null,
+  dataSource?: DeepReadonly<LibrarySyncDocType> | null,
 ) => {
   const drive = pluginsByType.DRIVE.useSyncSourceInfo(
     syncSourceArgs(dataSource, "DRIVE"),

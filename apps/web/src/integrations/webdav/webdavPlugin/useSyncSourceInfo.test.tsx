@@ -1,6 +1,6 @@
 import { renderHook } from "@testing-library/react"
 import type {
-  DataSourceDocTypeFor,
+  LibrarySyncDocTypeFor,
   WebdavConnectorDocType,
 } from "@oboku/shared"
 import { describe, expect, it, vi } from "vitest"
@@ -15,7 +15,7 @@ vi.mock("../../../connectors/useConnector", function mockConnector() {
 
 import { useSyncSourceInfo } from "./useSyncSourceInfo"
 
-const dataSource: DataSourceDocTypeFor<"webdav"> = {
+const dataSource: LibrarySyncDocTypeFor<"webdav"> = {
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },

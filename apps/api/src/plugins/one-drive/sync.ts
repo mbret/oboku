@@ -108,7 +108,7 @@ function toSynchronizeAbleItem(
   }
 }
 
-export async function getSynchronizeAbleDataSourceFromItems({
+export async function getSynchronizeAbleLibrarySyncFromItems({
   accessToken,
   items,
 }: {
@@ -119,7 +119,7 @@ export async function getSynchronizeAbleDataSourceFromItems({
    * OneDrive sync uses an explicit whitelist, not recursive folder expansion.
    *
    * We only fetch metadata for items that were explicitly granted and saved in
-   * the datasource. A selected folder contributes its own node to the tree, but
+   * the library sync. A selected folder contributes its own node to the tree, but
    * its descendants only appear when those descendants are also present in
    * `items`.
    *

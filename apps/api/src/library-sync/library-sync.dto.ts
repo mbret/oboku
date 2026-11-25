@@ -1,7 +1,7 @@
 import type { SourceType, SourceApiCredentials } from "@oboku/shared"
 import { IsObject, IsString } from "class-validator"
 
-export class SyncDataSourceDto {
+export class RunLibrarySyncDto {
   @IsString()
   dataSourceId!: string
 

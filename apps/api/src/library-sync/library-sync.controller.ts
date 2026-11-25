@@ -11,20 +11,20 @@ import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.
 import { AppConfigService } from "../config/AppConfigService.js"
 import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgresService.js"
 import { type AuthUser, WithAuthUser } from "../auth/auth.guard.js"
-import { DataSourceService } from "./datasource.service.js"
+import { LibrarySyncService } from "./library-sync.service.js"
 import { EmptyResponseDto } from "../openapi/empty-response.dto.js"
 import { SyncReportDto } from "./sync/sync-report.dto.js"
-import { SyncDataSourceDto } from "./datasource.dto.js"
+import { RunLibrarySyncDto } from "./library-sync.dto.js"
 
 @Controller("datasources")
-export class DataSourcesController implements OnModuleInit {
-  private logger = new Logger(DataSourcesController.name)
+export class LibrarySyncsController implements OnModuleInit {
+  private logger = new Logger(LibrarySyncsController.name)
   private SYNC_QUEUE_NAME = "datasources.sync"
 
   constructor(
     private readonly taskQueueService: InMemoryTaskQueueService,
     private readonly syncReportPostgresService: SyncReportPostgresService,
-    private readonly datasourceService: DataSourceService,
+    private readonly librarySyncService: LibrarySyncService,
     private readonly appConfig: AppConfigService,
   ) {}
 
@@ -48,16 +48,16 @@ export class DataSourcesController implements OnModuleInit {
 
   @Post("sync")
   async sync(
-    @Body() { dataSourceId, providerCredentials }: SyncDataSourceDto,
+    @Body() { dataSourceId, providerCredentials }: RunLibrarySyncDto,
     @WithAuthUser() user: AuthUser,
   ): Promise<EmptyResponseDto> {
-    this.logger.log(`syncDataSource ${dataSourceId}`)
+    this.logger.log(`Library sync ${dataSourceId}`)
 
     this.taskQueueService.enqueue(
       this.SYNC_QUEUE_NAME,
       () =>
         from(
-          this.datasourceService.sync({
+          this.librarySyncService.sync({
             dataSourceId,
             providerCredentials,
             user,
