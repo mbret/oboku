@@ -3,8 +3,8 @@ import {
   type SafeMangoQuery,
   ObokuErrorCode,
   ObokuSharedError,
-  type DataSourceType,
-  type LinkDataForProvider,
+  type SourceType,
+  type LinkDataForSource,
   type ModelOf,
   type SettingsConnectorType,
 } from "@oboku/shared"
@@ -36,17 +36,16 @@ export const createError = (
 type CandidateModel = "link" | "obokucollection"
 
 /**
- * A sync item's identity in a link's shape: its provider `type` and the
+ * A sync item's identity in a link's shape: its source `type` and the
  * `data` fields that identify its resource. Mango matches every field given,
  * so `data` holds the identity fields only.
  *
- * Distributive over `T`, so each provider's identity is checked against its
+ * Distributive over `T`, so each source's identity is checked against its
  * own selector.
  */
-type LinkIdentity<T extends DataSourceType = DataSourceType> =
-  T extends DataSourceType
-    ? { type: T; data: Partial<LinkDataForProvider<T>> }
-    : never
+type LinkIdentity<T extends SourceType = SourceType> = T extends SourceType
+  ? { type: T; data: Partial<LinkDataForSource<T>> }
+  : never
 
 const candidateSelectors: {
   [Model in CandidateModel]: (
@@ -60,14 +59,14 @@ const candidateSelectors: {
 /**
  * Finds the links or collections whose stored identity is `identity`.
  *
- * `isUsingSameProviderCredentials` defaults to true: a data source that syncs
+ * `isUsingSameSourceCredentials` defaults to true: a library sync that reaches
  * a resource has credentials for it.
  */
 export const findCandidates = async <Model extends CandidateModel>(
   ctx: Pick<SyncContext, "db">,
   model: Model,
   identity: LinkIdentity,
-  isUsingSameProviderCredentials = true,
+  isUsingSameSourceCredentials = true,
 ) => {
   const candidates = await find(ctx.db, model, {
     selector: candidateSelectors[model](identity),
@@ -75,26 +74,26 @@ export const findCandidates = async <Model extends CandidateModel>(
 
   return candidates.map((candidate) => ({
     ...candidate,
-    isUsingSameProviderCredentials,
+    isUsingSameSourceCredentials,
   }))
 }
 
 /**
- * {@link findCandidates} for the providers whose links go through a
+ * {@link findCandidates} for the sources whose links go through a
  * connector, which is part of their identity. Without a `connectorId` it
- * finds nothing, and the data source's credentials only reach the candidates
+ * finds nothing, and the library sync's credentials only reach the candidates
  * of its own connector.
  *
  * Matching is strict on purpose:
- * - A data source is a sync scope, not an owner: it syncs what it can see.
- * - The same resource can be reachable through several data sources or
+ * - A library sync is a scope, not an owner: it covers what it can see.
+ * - The same resource can be reachable through several library syncs or
  *   connectors, each with valid credentials.
  * - Connectors to the same normalized server URL are still different
  *   identities. "Same server" may serve other flows, but sync only reuses an
  *   exact match, which keeps it non-destructive.
  */
 export const findConnectorCandidates = async <Model extends CandidateModel>(
-  ctx: Pick<SyncContext<SettingsConnectorType>, "db" | "dataSource">,
+  ctx: Pick<SyncContext<SettingsConnectorType>, "db" | "librarySync">,
   model: Model,
   identity: LinkIdentity<SettingsConnectorType>,
 ) => {
@@ -102,8 +101,8 @@ export const findConnectorCandidates = async <Model extends CandidateModel>(
 
   if (!connectorId) return []
 
-  const isUsingSameProviderCredentials =
-    connectorId === ctx.dataSource.data_v2?.connectorId
+  const isUsingSameSourceCredentials =
+    connectorId === ctx.librarySync.data_v2?.connectorId
 
-  return findCandidates(ctx, model, identity, isUsingSameProviderCredentials)
+  return findCandidates(ctx, model, identity, isUsingSameSourceCredentials)
 }

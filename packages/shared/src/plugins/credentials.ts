@@ -1,4 +1,4 @@
-import type { DataSourceType } from "../db/docTypes"
+import type { SourceType } from "../db/docTypes"
 import { z } from "zod"
 import { dropboxApiCredentialsSchema } from "./dropbox"
 import { driveApiCredentialsSchema } from "./google"
@@ -13,13 +13,13 @@ import { webdavApiCredentialsSchema } from "./webdav"
  * We still model them as an explicit empty object so request payloads can
  * satisfy DTO validation consistently across the stack.
  */
-export const noProviderApiCredentialsSchema = z.object({})
+export const noSourceApiCredentialsSchema = z.object({})
 
-export type NoProviderApiCredentials = z.infer<
-  typeof noProviderApiCredentialsSchema
+export type NoSourceApiCredentials = z.infer<
+  typeof noSourceApiCredentialsSchema
 >
 
-export const providerApiCredentialsSchemas = {
+export const sourceApiCredentialsSchemas = {
   webdav: webdavApiCredentialsSchema,
   "synology-drive": synologyDriveApiCredentialsSchema,
   DRIVE: driveApiCredentialsSchema,
@@ -27,33 +27,31 @@ export const providerApiCredentialsSchemas = {
   dropbox: dropboxApiCredentialsSchema,
   server: serverApiCredentialsSchema,
   opds: opdsApiCredentialsSchema,
-  file: noProviderApiCredentialsSchema,
-  URI: noProviderApiCredentialsSchema,
+  file: noSourceApiCredentialsSchema,
+  URI: noSourceApiCredentialsSchema,
 } satisfies {
-  [K in DataSourceType]: z.ZodTypeAny
+  [K in SourceType]: z.ZodTypeAny
 }
 
-type ProviderApiCredentialsSchemaMap = typeof providerApiCredentialsSchemas
+type SourceApiCredentialsSchemaMap = typeof sourceApiCredentialsSchemas
 
 /**
  * Dynamic credentials passed when calling a provider's API (sync, getFileMetadata,
  * getFolderMetadata, download). Resolved at runtime (e.g. from secrets, request body).
  * Not stored in RxDB — only link/data_v2 (link credentials) are persisted.
  */
-export type ProviderApiCredentials<T extends DataSourceType> = z.infer<
-  ProviderApiCredentialsSchemaMap[T]
+export type SourceApiCredentials<T extends SourceType> = z.infer<
+  SourceApiCredentialsSchemaMap[T]
 >
 
-const formatProviderCredentialsIssue = (issue: z.ZodIssue) => {
+const formatSourceCredentialsIssue = (issue: z.ZodIssue) => {
   const path = issue.path.length > 0 ? `${issue.path.join(".")}: ` : ""
 
   return `${path}${issue.message}`
 }
 
-const providerApiCredentialsParsers: {
-  [K in DataSourceType]: (
-    providerCredentials: unknown,
-  ) => ProviderApiCredentials<K>
+const sourceApiCredentialsParsers: {
+  [K in SourceType]: (providerCredentials: unknown) => SourceApiCredentials<K>
 } = {
   webdav: (providerCredentials) =>
     webdavApiCredentialsSchema.parse(providerCredentials),
@@ -70,26 +68,26 @@ const providerApiCredentialsParsers: {
   opds: (providerCredentials) =>
     opdsApiCredentialsSchema.parse(providerCredentials),
   file: (providerCredentials) =>
-    noProviderApiCredentialsSchema.parse(providerCredentials),
+    noSourceApiCredentialsSchema.parse(providerCredentials),
   URI: (providerCredentials) =>
-    noProviderApiCredentialsSchema.parse(providerCredentials),
+    noSourceApiCredentialsSchema.parse(providerCredentials),
 }
 
-export function parseProviderApiCredentials<T extends DataSourceType>(
+export function parseSourceApiCredentials<T extends SourceType>(
   type: T,
   providerCredentials: unknown,
-): ProviderApiCredentials<T> {
-  const schema = providerApiCredentialsSchemas[type]
-  const normalizedProviderCredentials = providerCredentials ?? {}
-  const result = schema.safeParse(normalizedProviderCredentials)
+): SourceApiCredentials<T> {
+  const schema = sourceApiCredentialsSchemas[type]
+  const normalizedSourceCredentials = providerCredentials ?? {}
+  const result = schema.safeParse(normalizedSourceCredentials)
 
   if (!result.success) {
     throw new Error(
       `Invalid ${type} provider credentials: ${result.error.issues
-        .map(formatProviderCredentialsIssue)
+        .map(formatSourceCredentialsIssue)
         .join(", ")}`,
     )
   }
 
-  return providerApiCredentialsParsers[type](normalizedProviderCredentials)
+  return sourceApiCredentialsParsers[type](normalizedSourceCredentials)
 }

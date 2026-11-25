@@ -49,7 +49,7 @@ const createProfile = (id: string): Profile => ({
   sessionId: `session-${id}`,
 })
 
-const syncReportsQueryKey = () => ["api/datasourceReport"]
+const syncReportsQueryKey = () => ["api/librarySyncReport"]
 
 const renderQueryOfActiveProfile = ({
   queryClient,

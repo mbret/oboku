@@ -6,16 +6,16 @@ import { Readable } from "node:stream"
 import { finished } from "node:stream/promises"
 import { buffer } from "node:stream/consumers"
 import type {
-  DataSourceDocTypeFor,
-  LinkDocTypeForProvider,
+  LibrarySyncDocTypeFor,
+  LinkDocTypeForSource,
   WebdavConnectorDocType,
 } from "@oboku/shared"
 import type createNano from "nano"
 import { isNonPublicAddressError } from "../../http/publicAddress.js"
 import { setPrivateNetworkAllowedHosts } from "../../http/userAddressAgents.js"
-import { SyncReport } from "../../datasource/sync/SyncReport.js"
+import { SyncReport } from "../../library-sync/sync/SyncReport.js"
 import { buildMultiStatusXml } from "../../webdav/webdav.xml.js"
-import { isSignInRefused, dataSource as webdavDataSource } from "./index.js"
+import { isSignInRefused, sourcePlugin as webdavSourcePlugin } from "./index.js"
 
 const username = "reader"
 const password = "webdav-password-1234"
@@ -24,7 +24,7 @@ const realm = "nas"
 const nonce = "5ccc069c403ebaf9f0171e9517f40e41"
 const lastModified = new Date("2026-01-01T00:00:00.000Z")
 
-const dataSource: DataSourceDocTypeFor<"webdav"> = {
+const librarySync: LibrarySyncDocTypeFor<"webdav"> = {
   _id: "data-source",
   _rev: "1-data-source",
   rxdbMeta: { lwt: 0 },
@@ -194,7 +194,7 @@ const createUserDbWithConnector = (url: string) => {
   } as unknown as createNano.DocumentScope<unknown>
 }
 
-const bookLink: LinkDocTypeForProvider<"webdav"> = {
+const bookLink: LinkDocTypeForSource<"webdav"> = {
   _id: "link",
   _rev: "1-link",
   rxdbMeta: { lwt: 0 },
@@ -210,7 +210,7 @@ const downloadBookFrom = async (
   host: string,
   providerCredentials = { password },
 ) => {
-  const { stream } = await webdavDataSource.download(
+  const { stream } = await webdavSourcePlugin.download(
     bookLink,
     providerCredentials,
     createUserDbWithConnector(`http://${host}`),
@@ -222,13 +222,13 @@ const downloadBookFrom = async (
 }
 
 const syncBooksFrom = (host: string, providerCredentials = { password }) =>
-  webdavDataSource.sync({
+  webdavSourcePlugin.sync({
     userName: "user",
-    dataSourceId: dataSource._id,
-    dataSourceType: "webdav",
-    dataSource,
+    dataSourceId: librarySync._id,
+    sourceType: "webdav",
+    librarySync,
     providerCredentials,
-    syncReport: new SyncReport(dataSource._id, "user"),
+    syncReport: new SyncReport(librarySync._id, "user"),
     db: createUserDbWithConnector(`http://${host}`),
   })
 
@@ -236,13 +236,13 @@ const readBookMetadataFrom = (
   host: string,
   providerCredentials = { password },
 ) =>
-  webdavDataSource.getFileMetadata({
+  webdavSourcePlugin.getFileMetadata({
     link: bookLink,
     providerCredentials,
     db: createUserDbWithConnector(`http://${host}`),
   })
 
-describe("WebDAV data source", () => {
+describe("WebDAV source plugin", () => {
   afterEach(function forgetAllowedHosts() {
     setPrivateNetworkAllowedHosts([])
   })

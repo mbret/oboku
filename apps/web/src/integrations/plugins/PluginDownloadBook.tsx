@@ -1,8 +1,8 @@
-import type { DataSourceType } from "@oboku/shared"
+import type { SourceType } from "@oboku/shared"
 import { getPluginByType } from "./configure"
 import type { DownloadBookComponentProps } from "./types"
 
-export function PluginDownloadBook<T extends DataSourceType>({
+export function PluginDownloadBook<T extends SourceType>({
   link,
   ...props
 }: DownloadBookComponentProps<T>) {

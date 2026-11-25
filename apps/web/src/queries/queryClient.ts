@@ -15,6 +15,12 @@ declare module "@tanstack/react-query" {
        */
       survivesSessionReset?: boolean
       /**
+       * Show the error toast when the query fails. Queries show none by
+       * default, unlike mutations: most of them back a screen that shows
+       * its own error.
+       */
+      notifyErrors?: boolean
+      /**
        * Opt this query into the shared react-query offline snapshot. The
        * snapshot is busted on every release, so it is a warm-start nicety, not
        * durable storage — queries that own their durability elsewhere (rxdb,

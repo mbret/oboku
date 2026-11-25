@@ -5,12 +5,12 @@ import { useConfirmation } from "../../../common/useConfirmation"
 
 export const TreeActionsSection = memo(function TreeActionsSection({
   children,
-  onDeleteSelectedItems,
-  selectedItemsCount,
+  onRemoveSelectedLocations,
+  selectedLocationsCount,
 }: {
   children?: ReactNode
-  onDeleteSelectedItems: () => void
-  selectedItemsCount: number
+  onRemoveSelectedLocations: () => void
+  selectedLocationsCount: number
 }) {
   const confirmation = useConfirmation()
 
@@ -29,17 +29,17 @@ export const TreeActionsSection = memo(function TreeActionsSection({
         }}
       >
         <Typography variant="caption">
-          Item(s) actions: {selectedItemsCount}
+          Selected locations: {selectedLocationsCount}
         </Typography>
         <IconButton
-          aria-label="Delete selected items"
-          disabled={selectedItemsCount === 0}
+          aria-label="Remove the selected locations"
+          disabled={selectedLocationsCount === 0}
           onClick={() => {
             if (!confirmation()) {
               return
             }
 
-            onDeleteSelectedItems()
+            onRemoveSelectedLocations()
           }}
         >
           <DeleteRounded />

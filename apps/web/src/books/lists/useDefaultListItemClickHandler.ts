@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query"
 import { generatePath, useNavigate } from "react-router"
 import { useCancelBookDownload, useDownloadBook } from "../../download"
 import { getBookDownloadsState } from "../../download/states"
@@ -11,13 +12,14 @@ export const useDefaultListItemClickHandler = () => {
   const cancelDownload = useCancelBookDownload()
   const navigate = useNavigate()
   const { db } = useDatabase()
+  const queryClient = useQueryClient()
 
   return useCallback(
     async (id: string) => {
       if (!db) return
 
       const book = await getBookById({ database: db, id })
-      const downloadState = getBookDownloadsState({ bookId: id })
+      const downloadState = getBookDownloadsState({ bookId: id, queryClient })
 
       if (!book) return
 
@@ -33,6 +35,6 @@ export const useDefaultListItemClickHandler = () => {
         navigate(generatePath(ROUTES.READER, { id: book._id }))
       }
     },
-    [db, downloadFile, navigate, cancelDownload],
+    [db, downloadFile, navigate, cancelDownload, queryClient],
   )
 }

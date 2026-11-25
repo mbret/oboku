@@ -1,28 +1,26 @@
-import type { DataSourceType, LinkDataForProvider } from "../db/docTypes"
+import type { SourceType, LinkDataForSource } from "../db/docTypes"
 
 type NameWithMetadata = string
 type ISOString = string
 
 /**
- * Sync item; generic in the provider type so linkData is correctly typed per provider.
+ * Sync item; generic in the source type so linkData is typed per source.
  * linkData carries the plugin-specific identity and access fields for this item.
  */
-export type SynchronizeAbleItem<
-  TProvider extends DataSourceType = DataSourceType,
-> = {
+export type SynchronizeAbleItem<TSourceType extends SourceType = SourceType> = {
   type: `file` | `folder`
   name: NameWithMetadata
-  items?: SynchronizeAbleItem<TProvider>[]
+  items?: SynchronizeAbleItem<TSourceType>[]
   modifiedAt: ISOString
   tags?: string[]
-  linkData: LinkDataForProvider<TProvider>
+  linkData: LinkDataForSource<TSourceType>
 }
 
 /**
- * Result of a plugin sync; generic in the provider type.
+ * Result of a source plugin's sync; generic in the source type.
  */
-export type SynchronizeAbleDataSource<
-  TProvider extends DataSourceType = DataSourceType,
+export type SynchronizeAbleLibrarySync<
+  TSourceType extends SourceType = SourceType,
 > = {
-  items: SynchronizeAbleItem<TProvider>[]
+  items: SynchronizeAbleItem<TSourceType>[]
 }

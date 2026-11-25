@@ -2,7 +2,7 @@
 title: "Connectors"
 ---
 
-Connectors are a group of settings that can be created and reused for a given provider. This allows you to store your webdav or synology credentials and be able to re-use them later for example.
+Connectors are a group of settings that can be created and reused for a given source. This allows you to store your webdav or synology credentials and be able to re-use them later for example.
 
 Unlike secrets, they are not encrypted. They are generally used for username, urls, etc.
 
@@ -24,6 +24,8 @@ When you connect a connector, oboku decrypts its password once and sends it to o
 4. Enter your master password.
 
 oboku's server signs in to the connector's server with the password first, and keeps nothing if it cannot. The screen then shows **Connected** and when you connected it.
+
+Connecting waits until your latest edits to the connector and its password reach oboku's server. If they do not reach it in time, for example while you are offline, try again later.
 
 If you edited the connector or its password since you connected it, the screen says so, and offers **Connect again**. Turning **Use oboku's server as a proxy** on or off does not change the connection.
 

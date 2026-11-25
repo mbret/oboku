@@ -30,7 +30,7 @@ let clientPromise: Promise<PublicClientApplication> | undefined
 let oneDriveClientConfig: OneDriveClientConfig | undefined
 
 const MULTIPLE_MICROSOFT_ACCOUNTS_ERROR =
-  "Multiple Microsoft accounts were found. Please clear the OneDrive session from the plugin settings and sign in again."
+  "Multiple Microsoft accounts were found. Please clear the OneDrive session from the OneDrive integration page and sign in again."
 
 function hasAmbiguousAccounts(client: PublicClientApplication) {
   return client.getAllAccounts().length > 1
@@ -262,7 +262,7 @@ export async function requestMicrosoftAccessToken({
   }
 }
 
-export async function requestOneDriveProviderCredentials(
+export async function requestOneDriveSourceCredentials(
   options: Omit<MicrosoftAccessTokenRequest, "authority" | "scopes"> = {},
 ): Promise<OneDriveApiCredentials> {
   const authResult = await requestMicrosoftAccessToken({

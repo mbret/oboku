@@ -112,7 +112,7 @@ export const getFlatEntryIdentifiers = ({
 
 /**
  * Every identifier an entry of `book.metadata` states, in the order and the
- * schemes the source states them, whatever shape the entry is stored in.
+ * schemes the provider states them, whatever shape the entry is stored in.
  */
 export const getBookMetadataIdentifiers = (
   entry: DeepReadonly<BookMetadata>,

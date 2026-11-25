@@ -1,0 +1,123 @@
+import { ListItem, ListItemText } from "@mui/material"
+import { type LinkMetadata, directives, formatBytes } from "@oboku/shared"
+import { useMemo } from "react"
+import type { DeepReadonlyObject } from "rxdb"
+import { PageSection } from "../../../common/PageSection"
+import { MetadataFieldRow } from "./MetadataFieldRow"
+import { BOOK_METADATA_FIELD_LABELS } from "./fieldLabels"
+
+type Props = {
+  metadata: DeepReadonlyObject<LinkMetadata> | undefined
+}
+
+type ParsedDirectives = ReturnType<typeof directives.extractDirectivesFromName>
+
+/**
+ * Directives that map onto a {@link BookMetadata} property. Behavior
+ * directives (`metadataProviderOnly`, `ignoreMetadataFile`, `isWebtoon`,
+ * etc.) are intentionally excluded — they belong on a dedicated
+ * filename-directives screen, not on a metadata provider detail.
+ */
+type MetadataDirectiveKey = Extract<
+  keyof ParsedDirectives,
+  "isbn" | "googleVolumeId"
+>
+
+type DirectiveRow = {
+  key: MetadataDirectiveKey
+  label: string
+  value: string
+}
+
+const buildDirectiveRows = (
+  parsed: ParsedDirectives | undefined,
+): DirectiveRow[] => {
+  if (!parsed) return []
+
+  const rows: DirectiveRow[] = []
+  if (parsed.isbn) rows.push({ key: "isbn", label: "ISBN", value: parsed.isbn })
+  if (parsed.googleVolumeId)
+    rows.push({
+      key: "googleVolumeId",
+      label: "Google volume ID",
+      value: parsed.googleVolumeId,
+    })
+
+  return rows
+}
+
+const DirectivesSection = ({
+  title,
+}: {
+  title: string | number | undefined
+}) => {
+  const parsed = useMemo(
+    () =>
+      title
+        ? directives.extractDirectivesFromName(title.toString())
+        : undefined,
+    [title],
+  )
+  const rows = useMemo(() => buildDirectiveRows(parsed), [parsed])
+
+  return (
+    <PageSection title="Inferred from directives" dense>
+      <ListItem>
+        <ListItemText
+          secondary={
+            rows.length
+              ? "Values parsed from directives embedded in the filename. Edit the file's name at its source to change them."
+              : "No directives detected. Add directives like [oboku~isbn~123] to the filename to override or enrich metadata."
+          }
+        />
+      </ListItem>
+      {rows.map((row) => (
+        <ListItem key={row.key}>
+          <ListItemText primary={row.label} secondary={row.value} />
+        </ListItem>
+      ))}
+    </PageSection>
+  )
+}
+
+/**
+ * Link provider detail. Title is shown in two forms — raw (filename
+ * verbatim, directives included) and cleaned — so the user sees what is
+ * canonical vs. what other consumers display. Size is humanized.
+ * Directive-derived metadata fields are exposed in their own section.
+ */
+export const LinkProviderContent = ({ metadata }: Props) => {
+  const rawTitle = metadata?.title
+  const cleanTitle = rawTitle
+    ? directives.removeDirectiveFromString(rawTitle)
+    : undefined
+
+  return (
+    <>
+      <PageSection title="Fields" dense>
+        <MetadataFieldRow label="Title (raw)" value={rawTitle} />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.title}
+          value={cleanTitle}
+        />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.contentType}
+          value={metadata?.contentType}
+        />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.size}
+          value={formatBytes(metadata?.size) ?? metadata?.size}
+        />
+        <MetadataFieldRow
+          label={BOOK_METADATA_FIELD_LABELS.modifiedAt}
+          value={
+            metadata?.modifiedAt
+              ? new Date(metadata?.modifiedAt).toLocaleString()
+              : undefined
+          }
+        />
+      </PageSection>
+      <DirectivesSection title={metadata?.title} />
+    </>
+  )
+}

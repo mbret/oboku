@@ -2,13 +2,13 @@
 title: "Resources Matching and Sync"
 ---
 
-oboku's purpose is to synchronize your content from various providers into a cohesive library while fetching metadata for each of your book & folders. This is similar to [https://watch.plex.tv/](https://watch.plex.tv/) or any other software that manage media library.&#x20;
+oboku's purpose is to synchronize your content from various sources into a cohesive library while fetching metadata for each of your book & folders. This is similar to [https://watch.plex.tv/](https://watch.plex.tv/) or any other software that manage media library.&#x20;
 
 Unlike movies, tv shows or music books are very complex to fetch metadata for. As an example Batman movie ([https://www.imdb.com/title/tt0372784/?ref\_=nv\_sr\_srsg\_0\_tt\_7\_nm\_1\_in\_0\_q\_batma](https://www.imdb.com/title/tt0372784/?ref_=nv_sr_srsg_0_tt_7_nm_1_in_0_q_batma)) is pretty much the only and unique place you can find the metadata for it, in all languages for its title, cover, etc. There are no such services for books. Each books has a specific identity per country, per language, per edition or even per version. This is expected because every "printed" edition of a book is unique but this makes managing books quite harder than other media.
 
 ## Books metadata
 
-To know more about where and how we fetch book metadata you can visit this section [Metadata Sources](/guides/metadata-sources)
+To know more about where and how we fetch book metadata you can visit this section [Metadata Providers](/guides/metadata-providers)
 
 ### Refine metadata
 
@@ -76,9 +76,9 @@ Many of our users read fan books or organize their books by collections name tha
 
 ### What we use
 
-#### Identifier based on resource and provider
+#### Identifier based on resource and source
 
-Instead of an ISBN, the ID we use is built following some rules proper to each providers.
+Instead of an ISBN, the ID we use is built following some rules proper to each source.
 
 - A book synced from Google Drive will use its Google ID. which is globally unique.
 - A book synced from Synology Drive will use its Synology ID + host

@@ -2,9 +2,9 @@ import {
   type CollectionDocType,
   type CollectionMetadata,
   computeCollectionMetadata,
-  DataSourceType,
+  SourceType,
   directives,
-  ProviderApiCredentials,
+  SourceApiCredentials,
   resolveMetadataFetchEnabled,
 } from "@oboku/shared"
 import { fetchMetadata } from "./fetchMetadata.js"
@@ -30,7 +30,7 @@ export const processRefreshMetadata = async (
   }: {
     googleApiKey?: string
     db: nano.DocumentScope<unknown>
-    providerCredentials: ProviderApiCredentials<DataSourceType>
+    providerCredentials: SourceApiCredentials<SourceType>
     soft?: boolean
     comicVineApiKey?: string
     userNameHex: string
@@ -118,18 +118,18 @@ export const processRefreshMetadata = async (
 
   const year = directivesFromLink.year ?? userStartYear
 
-  const metadataSourceOnly = directivesFromLink.metadataSourceOnly as
+  const metadataProviderOnly = directivesFromLink.metadataProviderOnly as
     | CollectionMetadata["type"]
     | undefined
-  const medatadataSources: CollectionMetadata["type"][] = metadataSourceOnly
-    ? [metadataSourceOnly]
+  const metadataProviders: CollectionMetadata["type"][] = metadataProviderOnly
+    ? [metadataProviderOnly]
     : ["biblioreads", "comicvine", "mangaupdates", "mangadex"]
 
   /**
    * Privacy gate: skip third-party metadata providers when the collection holds
    * protected books (unless the user explicitly opted in via
-   * `metadataFetchEnabled`). The user's data source (link metadata above) is
-   * still checked as it is their own data.
+   * `metadataFetchEnabled`). Metadata from the collection's source (link metadata
+   * above) is still read, as it is the user's own data.
    */
   const collectionIsProtected = await isCollectionProtected(db, collection)
   const externalFetchEnabled = resolveMetadataFetchEnabled(
@@ -143,7 +143,7 @@ export const processRefreshMetadata = async (
           { title, year: year ? String(year) : undefined },
           {
             comicVineApiKey,
-            sources: medatadataSources,
+            providers: metadataProviders,
           },
         )
       : []

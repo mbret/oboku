@@ -58,7 +58,7 @@ export const AdminServerSourcesSection = () => {
         <Text size="sm" c="dimmed">
           Server sync works by exposing a lightweight WebDAV server. This is
           transparent for the end user and will be available through the "From
-          Server" option when configuring a provider in the client app.
+          Server" option in the app.
         </Text>
       </div>
 
@@ -214,8 +214,8 @@ export const AdminServerSourcesSection = () => {
                 Registered sources
               </Text>
               <Text size="sm" c="dimmed">
-                These are the server paths currently available for future sync
-                providers.
+                These are the server paths currently available for future
+                library syncs.
               </Text>
             </div>
             <Button

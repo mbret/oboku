@@ -67,8 +67,8 @@ function RemoveBooksDialogContent({
               : "Permanently delete the original files from their sources"}
           </AlertTitle>
           <Typography variant="body2" color="error">
-            This only applies to items linked to remote providers and may remove
-            the original files permanently.
+            This only applies to books from a remote source and may remove the
+            original files permanently.
           </Typography>
         </Alert>
       )}

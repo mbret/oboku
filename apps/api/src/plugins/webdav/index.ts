@@ -1,10 +1,10 @@
 /**
  * @see https://github.com/dropbox/dropbox-sdk-js/tree/main/examples/javascript/download
  */
-import type { DataSourcePlugin } from "../types.js"
+import type { SourcePlugin } from "../types.js"
 import {
-  getDataFromDataSource,
-  type WebDAVDataSourceDocType,
+  getDataFromLibrarySync,
+  type WebDAVLibrarySyncDocType,
   type WebdavConnectorDocType,
 } from "@oboku/shared"
 import { AuthType, createClient } from "webdav"
@@ -19,7 +19,7 @@ import {
 } from "./operations.js"
 import { findConnectorCandidates } from "../helpers.js"
 
-const WEBDAV_TYPE = "webdav" satisfies WebDAVDataSourceDocType["type"]
+const WEBDAV_TYPE = "webdav" satisfies WebDAVLibrarySyncDocType["type"]
 
 export class WebdavConnectorNotConfiguredError extends Error {
   constructor() {
@@ -126,6 +126,15 @@ export const isSignInRefused = (error: unknown) => {
 export const isPasswordRefused = (error: unknown) =>
   toAnsweredStatus(error) === 401
 
+export const listWebdavDirectory = ({
+  path,
+  signal,
+  ...connection
+}: Parameters<typeof createWebdavClient>[0] & {
+  path: string
+  signal: AbortSignal
+}) => createWebdavClient(connection).getDirectoryContents(path, { signal })
+
 /** Lists the connector's root, as the app's connection test does. */
 export const signInToWebdav = async ({
   connector,
@@ -136,13 +145,10 @@ export const signInToWebdav = async ({
   password: string
   signal: AbortSignal
 }) => {
-  await createWebdavClient({ ...connector, password }).getDirectoryContents(
-    "/",
-    { signal },
-  )
+  await listWebdavDirectory({ ...connector, password, path: "/", signal })
 }
 
-export const dataSource: DataSourcePlugin<"webdav"> = {
+export const sourcePlugin: SourcePlugin<"webdav"> = {
   type: WEBDAV_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findConnectorCandidates(ctx, "link", {
@@ -190,14 +196,14 @@ export const dataSource: DataSourcePlugin<"webdav"> = {
     return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
-    const { providerCredentials, dataSource, db } = options
+    const { providerCredentials, librarySync, db } = options
     const { connectorId, directory } =
-      getDataFromDataSource<"webdav">(dataSource) ?? {}
+      getDataFromLibrarySync<"webdav">(librarySync) ?? {}
 
     const rootDirectory = `/${directory ?? ""}`
 
     if (!connectorId || !providerCredentials?.password) {
-      throw new Error("datasource not found or invalid")
+      throw new Error("library sync not found or invalid")
     }
 
     const connector = await findWebdavConnector({ db, connectorId })

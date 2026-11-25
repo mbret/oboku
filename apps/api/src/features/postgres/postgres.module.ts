@@ -10,7 +10,7 @@ import {
   NotificationDeliveryPostgresEntity,
   NotificationPostgresEntity,
   OpdsServerPostgresEntity,
-  ProviderConnectionPostgresEntity,
+  SourceConnectionPostgresEntity,
   RefreshTokenPostgresEntity,
   SyncReportPostgresEntity,
   UserPostgresEntity,
@@ -22,7 +22,7 @@ import { JwtService } from "@nestjs/jwt"
 import { KoreaderSyncPostgresService } from "./koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "./koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "./opds-server-postgres.service.js"
-import { ProviderConnectionPostgresService } from "./provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "./source-connection-postgres.service.js"
 import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-postgres.service.js"
 
 @Module({
@@ -37,7 +37,7 @@ import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-po
       KoreaderSyncProgressPostgresEntity,
       KoreaderSyncConnectionPostgresEntity,
       OpdsServerPostgresEntity,
-      ProviderConnectionPostgresEntity,
+      SourceConnectionPostgresEntity,
       UserProxiedDownloadUsagePostgresEntity,
     ]),
   ],
@@ -50,7 +50,7 @@ import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-po
     KoreaderSyncPostgresService,
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
-    ProviderConnectionPostgresService,
+    SourceConnectionPostgresService,
     ProxiedDownloadUsagePostgresService,
     JwtService,
   ],
@@ -63,7 +63,7 @@ import { ProxiedDownloadUsagePostgresService } from "./proxied-download-usage-po
     KoreaderSyncPostgresService,
     KoreaderSyncConnectionPostgresService,
     OpdsServerPostgresService,
-    ProviderConnectionPostgresService,
+    SourceConnectionPostgresService,
     ProxiedDownloadUsagePostgresService,
   ],
 })

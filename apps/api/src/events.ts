@@ -1,4 +1,4 @@
-import { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
+import { SourceType, SourceApiCredentials } from "@oboku/shared"
 
 export enum Events {
   BOOKS_METADATA_REFRESH = "books.metadata.refresh",
@@ -9,7 +9,7 @@ export class BooksMetadataRefreshEvent {
   constructor(
     public data: {
       bookId: string
-      providerCredentials: ProviderApiCredentials<DataSourceType>
+      providerCredentials: SourceApiCredentials<SourceType>
       email: string
     },
   ) {}
@@ -19,7 +19,7 @@ export class CollectionMetadataRefreshEvent {
   constructor(
     public data: {
       collectionId: string
-      providerCredentials: ProviderApiCredentials<DataSourceType>
+      providerCredentials: SourceApiCredentials<SourceType>
       soft: boolean
       email: string
     },

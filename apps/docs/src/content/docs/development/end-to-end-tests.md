@@ -51,7 +51,7 @@ Import `test` and `expect` from `apps/e2e/src/fixtures.ts`, not from `@playwrigh
 `src/steps.ts` holds the steps the tests take in the app:
 
 - `signUp`: completes the sign-up from a `signUpInvitation`.
-- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server data source, and waits for its first sync.
+- `addServerLibrary`: sets a master password, saves the Server Sync password as a secret, adds a connector and a server library sync, and waits for its first sync.
 - `expectServerLibraryBooks`: waits until the library shows each server book's title and author, each in its card, which `libraryBookCard` finds by its title. The API reads them from each file, which can take up to a minute when tests run in parallel.
 - `openBookDetails`, `downloadFromDetailsScreen` and `readFromDetailsScreen`: open a book's details from the library, download the book, and open it in the reader.
 
@@ -71,7 +71,7 @@ pnpm screenshots
 
 `tests/screenshots/scenes.spec.ts` holds two tables:
 
-- **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `data-sources`, `add-data-source`, `profile`, `optimize-content`, `optimize-metadata`, `koreader-sync-server`, `koreader-progress-sync`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader. `koreader-sync-server` turns on the KOReader sync server, and `koreader-progress-sync` offers it to oboku's reader, so a target that captures `koreader-progress-sync` captures both.
+- **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `library-syncs`, `add-library-sync`, `profile`, `optimize-content`, `optimize-metadata`, `koreader-sync-server`, `koreader-progress-sync`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader. `koreader-sync-server` turns on the KOReader sync server, and `koreader-progress-sync` offers it to oboku's reader, so a target that captures `koreader-progress-sync` captures both.
 - **The targets:** each sets a viewport, a scale, a theme, a locale and an image format, and lists the scenes it captures. It saves each scene as `<scene>` and the extension of its format, in its own folder, listed in the table below. The run fails if the folder holds another file, other than a hidden one.
 
 | Target         | Size                            | Scenes                                         | Format                                       | Saved to                                            |
@@ -93,7 +93,7 @@ Each target signs up a new account, syncs and downloads the server library, read
 On the same machine, a run gives the same images as the run before, except for what the stack cannot fix:
 
 - The profile and both KOReader screens show the email of the account, which each run creates with a new address.
-- The data sources screen shows the day of the last sync, which the API records.
+- The Syncs screen shows the day of the last sync, which the API records.
 - The KOReader sync server screen shows the password the API generates.
 - The storage screen shows the browser's estimate of the space the machine has, and lists the books in no fixed order.
 

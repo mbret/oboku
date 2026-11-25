@@ -4,7 +4,7 @@ import { GOOGLE_BOOKS_PROVIDER_ID } from "@prose-reader/metadata-fetcher"
 import {
   CATALOG_PROVIDER_IDS,
   getCatalogProviderNameById,
-} from "../../books/metadata/sources"
+} from "../../books/metadata/providers"
 import { PageSection } from "../../common/PageSection"
 import { useConfig } from "../../config/useConfig"
 import { useSettings } from "../../settings/useSettings"

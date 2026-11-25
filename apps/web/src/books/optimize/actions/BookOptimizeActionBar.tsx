@@ -100,7 +100,7 @@ export function BookOptimizeActionBar() {
     isDirty,
     isValid,
     isUploading,
-    uploadToDataSource,
+    uploadToSource,
     revertLocalChanges,
     canRevert,
     isReverting,
@@ -174,10 +174,10 @@ export function BookOptimizeActionBar() {
         disabled={!canUpload}
         startIcon={<CloudUploadOutlined />}
         onClick={() => {
-          void uploadToDataSource()
+          void uploadToSource()
         }}
       >
-        {isUploading ? "Uploading…" : "Upload to data source"}
+        {isUploading ? "Uploading…" : "Upload to its source"}
       </Button>
       {canRevert && (
         <Button

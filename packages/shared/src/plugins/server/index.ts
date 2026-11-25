@@ -1,9 +1,12 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 export const PLUGIN_SERVER_TYPE = "server"
 
-export type ServerDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+export type ServerLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
+  "data_v2"
+> & {
   type: "server"
   data_v2?: { connectorId?: string }
 }

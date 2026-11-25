@@ -18,17 +18,17 @@ import { useLoadChildren } from "./useLoadChildren"
 
 export const useSelectionTreeData = ({
   connectorId,
-  prefetchedSelectedItemIds,
+  prefetchedLocationIds,
   session,
 }: {
   connectorId: string
-  prefetchedSelectedItemIds: string[]
+  prefetchedLocationIds: string[]
   session: SynologyDriveSession | undefined
 }) => {
   const rootItemsQuery = useQuery({
     queryKey: [
       "synology-drive",
-      "datasource-root-items",
+      "library-sync-root-items",
       connectorId,
       session?.sid,
     ],
@@ -53,10 +53,10 @@ export const useSelectionTreeData = ({
   const prefetchedSelectionTreeQuery = useQuery({
     queryKey: [
       "synology-drive",
-      "datasource-selected-items-tree",
+      "library-sync-locations-tree",
       connectorId,
       session?.sid,
-      ...prefetchedSelectedItemIds,
+      ...prefetchedLocationIds,
     ],
     queryFn: async () => {
       if (!session) {
@@ -89,7 +89,7 @@ export const useSelectionTreeData = ({
       }
 
       const selectedItems = await Promise.all(
-        prefetchedSelectedItemIds.map((fileId) =>
+        prefetchedLocationIds.map((fileId) =>
           getSynologyDriveBrowseItem({
             fileId,
             session,
@@ -133,9 +133,7 @@ export const useSelectionTreeData = ({
       }
     },
     enabled:
-      !!session &&
-      initialItems.length > 0 &&
-      prefetchedSelectedItemIds.length > 0,
+      !!session && initialItems.length > 0 && prefetchedLocationIds.length > 0,
     retry: false,
   })
 
@@ -156,9 +154,9 @@ export const useSelectionTreeData = ({
 
   const isTreeLoading =
     !!session && (rootItemsQuery.isPending || rootItemsQuery.isFetching)
-  const isSelectedItemsPrefetchLoading =
+  const isLocationsPrefetchLoading =
     !!session &&
-    prefetchedSelectedItemIds.length > 0 &&
+    prefetchedLocationIds.length > 0 &&
     prefetchedSelectionTreeQuery.isPending
   const treeError =
     rootItemsQuery.error instanceof Error
@@ -169,7 +167,7 @@ export const useSelectionTreeData = ({
 
   return {
     initialExpandedItems,
-    isSelectedItemsPrefetchLoading,
+    isLocationsPrefetchLoading,
     isTreeLoading,
     onLoadChildren,
     treeError,

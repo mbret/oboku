@@ -133,12 +133,12 @@ export const updateTreeNodeChildren = (
     }
   })
 
-export const toSelectedTreeItemIds = (selectedItemIds: readonly string[]) =>
+export const toSelectedTreeItemIds = (locationIds: readonly string[]) =>
   Array.from(
     new Set(
-      selectedItemIds.flatMap((itemId) => [
-        `file:${itemId}`,
-        `folder:${itemId}`,
+      locationIds.flatMap((locationId) => [
+        `file:${locationId}`,
+        `folder:${locationId}`,
       ]),
     ),
   )

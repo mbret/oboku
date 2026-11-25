@@ -1,5 +1,8 @@
 import { ObokuErrorCode, ObokuSharedError } from "@oboku/shared"
-import type { DataSourceDocTypeFor, SettingsConnectorType } from "@oboku/shared"
+import type {
+  LibrarySyncDocTypeFor,
+  SettingsConnectorType,
+} from "@oboku/shared"
 import { useMutation } from "@tanstack/react-query"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 
@@ -12,12 +15,12 @@ export const createConnectorSynchronize = <T extends SettingsConnectorType>(
     })
 
     return useMutation({
-      mutationFn: async function extractProviderCredentials(
-        dataSource: DataSourceDocTypeFor<T>,
+      mutationFn: async function extractSourceCredentials(
+        librarySync: LibrarySyncDocTypeFor<T>,
       ) {
-        const connectorDataSource: DataSourceDocTypeFor<SettingsConnectorType> =
-          dataSource
-        const connectorId = connectorDataSource.data_v2?.connectorId
+        const connectorLibrarySync: LibrarySyncDocTypeFor<SettingsConnectorType> =
+          librarySync
+        const connectorId = connectorLibrarySync.data_v2?.connectorId
 
         if (!connectorId) {
           throw new ObokuSharedError(

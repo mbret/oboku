@@ -1,8 +1,7 @@
 import type { DefaultError, UseMutationOptions } from "@tanstack/react-query"
 import { useMutation$ } from "reactjrx"
+import { from } from "rxjs"
 import { dexieDb } from "../rxdb/dexie"
-import { DownloadState, booksDownloadStateSignal } from "./states"
-import { from, tap } from "rxjs"
 
 type RemoveDownloadFileVariables = { bookId: string }
 
@@ -15,19 +14,7 @@ export const useRemoveDownloadFile = (
   return useMutation$<void, DefaultError, RemoveDownloadFileVariables>({
     ...options,
     mutationFn: function removeDownloadFile({ bookId }) {
-      return from(dexieDb.downloads.delete(bookId)).pipe(
-        tap(function clearDownloadState() {
-          booksDownloadStateSignal.update(function markAsNotDownloaded(prev) {
-            return {
-              ...prev,
-              [bookId]: {
-                ...prev[bookId],
-                downloadState: DownloadState.None,
-              },
-            }
-          })
-        }),
-      )
+      return from(dexieDb.downloads.delete(bookId))
     },
   })
 }

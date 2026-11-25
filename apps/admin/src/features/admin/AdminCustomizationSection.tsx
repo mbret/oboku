@@ -23,8 +23,8 @@ export const AdminCustomizationSection = () => {
       )}
       {data && (
         <Checkbox
-          label="Show non-configured providers"
-          description="When enabled, providers that are not yet configured appear as disabled in the user interface"
+          label="Show non-configured sources"
+          description="When enabled, sources that are not yet configured appear as disabled in the user interface"
           checked={data.showDisabledPlugins}
           disabled={isPending}
           onChange={(event) =>

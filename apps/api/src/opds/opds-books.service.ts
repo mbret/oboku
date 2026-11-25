@@ -4,7 +4,7 @@ import {
   type BookDocType,
   getBookCoverKey,
   isBookProtected,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   OPDS_SERVED_CONNECTOR_TYPES,
 } from "@oboku/shared"
 import {
@@ -26,8 +26,8 @@ import { toAnsweredStatus } from "../plugins/webdav/index.js"
 import {
   ConnectorConnectionService,
   ConnectorServerError,
-} from "../provider-connections/connectors/connector-connection.service.js"
-import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+} from "../source-connections/connectors/connector-connection.service.js"
+import { GoogleConnectionService } from "../source-connections/google/google-connection.service.js"
 import { toByteCount } from "../http/contentLength.js"
 import { toGoogleApiFailure } from "../http/googleApiFailure.js"
 import { isRecord } from "../http/isRecord.js"
@@ -64,11 +64,11 @@ const toDriveRefusal = (error: unknown) => {
 }
 
 /**
- * What a reading app gets for a file its provider would not send. A 401
- * would read as wrong catalog credentials, so a provider's refusals never
+ * What a reading app gets for a file its source would not send. A 401
+ * would read as wrong catalog credentials, so a source's refusals never
  * answer one.
  */
-const toProviderFailure = ({
+const toSourceFailure = ({
   isRateLimited,
   isFileUnreachable,
 }: {
@@ -102,7 +102,7 @@ const toDriveFailure = ({
     status === 429 || (status === 403 && (isFileReadable || isRateLimitReason))
   const isFileUnreachable = status === 404 || status === 403
 
-  return toProviderFailure({ isRateLimited, isFileUnreachable })
+  return toSourceFailure({ isRateLimited, isFileUnreachable })
 }
 
 /** What a reading app gets for a file its WebDAV server would not send. */
@@ -112,7 +112,7 @@ const toWebdavFailure = (error: unknown) => {
   const isFileUnreachable =
     answeredStatus === 401 || answeredStatus === 403 || answeredStatus === 404
 
-  return toProviderFailure({ isRateLimited, isFileUnreachable })
+  return toSourceFailure({ isRateLimited, isFileUnreachable })
 }
 
 const readServedLinkIds = async ({
@@ -349,12 +349,12 @@ export class OpdsBooksService {
   }
 
   /**
-   * Streams the file of a book the owner's catalogs serve, from its provider.
+   * Streams the file of a book the owner's catalogs serve, from its source.
    *
    * @throws `NotFoundException` for a book the catalogs do not serve, a
-   * connection that is not usable, or a file the provider refuses;
-   * `ServiceUnavailableException` while the provider rate-limits;
-   * `BadGatewayException` for any other failure of the provider.
+   * connection that is not usable, or a file the source refuses;
+   * `ServiceUnavailableException` while the source rate-limits;
+   * `BadGatewayException` for any other failure of the source.
    */
   async streamServedBook({
     owner,
@@ -511,7 +511,7 @@ export class OpdsBooksService {
   }: {
     owner: Pick<UserPostgresEntity, "id">
     book: Pick<BookDocType, "_id" | "metadata" | "metadataSourcePriority">
-    link: LinkDocTypeForProvider<"DRIVE">
+    link: LinkDocTypeForSource<"DRIVE">
   }) {
     const bookId = book._id
     const providerCredentials = {

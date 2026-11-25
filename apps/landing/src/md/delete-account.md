@@ -15,7 +15,7 @@ The deletion happens at once and cannot be undone. It removes:
 
 - your account and its email address;
 - your library: books, collections, tags and reading progress;
-- your data sources, and the connections to Google Drive, Dropbox, OneDrive and other services;
+- your library syncs, and the connections to Google Drive, Dropbox, OneDrive and other services;
 - your OPDS servers and your KOReader sync data;
 - the covers stored for your books and collections.
 

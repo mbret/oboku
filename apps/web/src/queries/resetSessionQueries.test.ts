@@ -125,6 +125,23 @@ describe("resetSessionQueries", () => {
     expect(persisted?.clientState.queries).toHaveLength(0)
   })
 
+  it("removes the session's mutations and keeps the session-surviving ones", () => {
+    const queryClient = new QueryClient()
+    const mutationCache = queryClient.getMutationCache()
+    const sessionMutation = mutationCache.build(queryClient, {
+      mutationKey: ["api", "tags", "add"],
+    })
+    const survivorMutation = mutationCache.build(queryClient, {
+      mutationKey: ["download", "book"],
+      meta: { survivesSessionReset: true },
+    })
+
+    resetSessionQueries(queryClient)
+
+    expect(mutationCache.getAll()).toEqual([survivorMutation])
+    expect(mutationCache.getAll()).not.toContain(sessionMutation)
+  })
+
   it("leaves session-surviving queries untouched on sign-out", async () => {
     setActiveProfileId("reader")
     const queryClient = new QueryClient()

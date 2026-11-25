@@ -4,7 +4,7 @@ import { links } from "@oboku/shared"
 import { BandSection } from "../common/BandSection"
 import { NextLink } from "../common/NextLink"
 import { SectionHeading } from "../common/SectionHeading"
-import { syncProviders } from "./content"
+import { sources } from "./content"
 import {
   ChipsStack,
   StepDescriptionTypography,
@@ -25,7 +25,7 @@ const steps: Step[] = [
     title: "Connect where your books already live",
     description:
       "Link folders from your cloud drive, NAS or WebDAV server, or add files from your device. Sharing a folder shares its books: friends who connect it get a library of their own.",
-    chips: syncProviders,
+    chips: sources,
     moreChipHref: "/features#sources",
   },
   {

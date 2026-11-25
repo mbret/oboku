@@ -480,7 +480,7 @@ export const zSyncReportDto = z.object({
     has_different_provider_credentials: z.boolean().nullable()
 });
 
-export const zSyncDataSourceDto = z.object({
+export const zRunLibrarySyncDto = z.object({
     dataSourceId: z.string(),
     providerCredentials: z.record(z.string(), z.unknown())
 });
@@ -498,6 +498,26 @@ export const zWebdavCredentialsDto = z.object({
 export const zDownloadLinkDto = z.object({
     linkId: z.string(),
     providerCredentials: zWebdavCredentialsDto
+});
+
+export const zListWebdavDirectoryDto = z.object({
+    url: z.string().regex(/^https?:\/\//),
+    username: z.string(),
+    providerCredentials: zWebdavCredentialsDto,
+    allowSelfSigned: z.boolean().optional(),
+    path: z.string()
+});
+
+export const zWebdavDirectoryItemDto = z.object({
+    type: z.enum(['file', 'directory']),
+    filename: z.string(),
+    basename: z.string(),
+    mime: z.string().optional(),
+    etag: z.string().optional()
+});
+
+export const zWebdavDirectoryResponseDto = z.object({
+    items: z.array(zWebdavDirectoryItemDto)
 });
 
 export const zRefreshCollectionMetadataDto = z.object({
@@ -771,11 +791,11 @@ export const zNotificationsArchiveResponse = zOkResponseDto;
 
 export const zQuotasGetProxiedDownloadQuotaResponse = zUserProxiedDownloadQuotaResponseDto;
 
-export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
+export const zLibrarySyncsListSyncReportsResponse = z.array(zSyncReportDto);
 
-export const zDataSourcesSyncBody = zSyncDataSourceDto;
+export const zLibrarySyncsSyncBody = zRunLibrarySyncDto;
 
-export const zDataSourcesSyncResponse = zEmptyResponseDto;
+export const zLibrarySyncsSyncResponse = zEmptyResponseDto;
 
 export const zBooksRefreshMetadataBody = zRefreshBookMetadataDto;
 
@@ -784,6 +804,10 @@ export const zBooksRefreshMetadataResponse = zEmptyResponseDto;
 export const zLinksDownloadBody = zDownloadLinkDto;
 
 export const zLinksDownloadResponse = z.string();
+
+export const zConnectorsListWebdavDirectoryBody = zListWebdavDirectoryDto;
+
+export const zConnectorsListWebdavDirectoryResponse = zWebdavDirectoryResponseDto;
 
 export const zCollectionsRefreshMetadataBody = zRefreshCollectionMetadataDto;
 

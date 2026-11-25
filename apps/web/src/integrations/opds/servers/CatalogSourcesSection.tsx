@@ -1,9 +1,6 @@
 import { BlockRounded } from "@mui/icons-material"
 import { ListItem, ListItemIcon, ListItemText } from "@mui/material"
-import {
-  type DataSourceDocType,
-  OPDS_SERVED_CONNECTOR_TYPES,
-} from "@oboku/shared"
+import { OPDS_SERVED_CONNECTOR_TYPES, type SourceType } from "@oboku/shared"
 import type { UseQueryResult } from "@tanstack/react-query"
 import { generatePath } from "react-router"
 import { ListItemLink } from "../../../common/lists"
@@ -207,10 +204,9 @@ export function CatalogSourcesSection() {
   const { data: config } = useConfig()
   const isPluginVisible = useGetIsPluginVisible()
   const isGoogleDriveServed = !!config?.FEATURE_GOOGLE_CONNECTION_ENABLED
-  const servedTypes: ReadonlyArray<DataSourceDocType["type"]> =
-    isGoogleDriveServed
-      ? [googleDrivePlugin.type, ...OPDS_SERVED_CONNECTOR_TYPES]
-      : OPDS_SERVED_CONNECTOR_TYPES
+  const servedTypes: ReadonlyArray<SourceType> = isGoogleDriveServed
+    ? [googleDrivePlugin.type, ...OPDS_SERVED_CONNECTOR_TYPES]
+    : OPDS_SERVED_CONNECTOR_TYPES
   const unservedPlugins = plugins.filter(
     (plugin) => isPluginVisible(plugin) && !servedTypes.includes(plugin.type),
   )

@@ -8,7 +8,7 @@ import {
   hasReaderAcceptedExtension,
   isBookProtected,
   type LinkDocType,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   OPDS_SERVED_CONNECTOR_TYPES,
   type OpdsServedConnectorType,
   sortByTitleComparator,
@@ -29,7 +29,7 @@ type ServedConnectorLink = Extract<
 >
 
 export type ServedLink =
-  | LinkDocTypeForProvider<"DRIVE">
+  | LinkDocTypeForSource<"DRIVE">
   | (ServedConnectorLink & { data: { connectorId: string } })
 
 const isServedConnectorLink = (
@@ -166,7 +166,7 @@ export const toServedTitle = (
 
 /**
  * The name and media type a reading app saves the book's file under: the
- * file's name on its provider without oboku's directives, else the book's
+ * file's name on its source without oboku's directives, else the book's
  * title, else its id, given the extension of a known media type when it has
  * none.
  */

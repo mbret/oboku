@@ -255,7 +255,7 @@ describe("CatalogSourcesSection", () => {
       ["WebDAV", "/integrations/webdav"],
     ])
     expect(screen.getByText(/Google Drive/).textContent).toBe(
-      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+      "Dropbox, Google Drive, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web address",
     )
   })
 
@@ -275,7 +275,7 @@ describe("CatalogSourcesSection", () => {
     renderSection()
 
     expect(screen.getByText(/Dropbox/).textContent).toBe(
-      "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+      "Dropbox, Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web address",
     )
   })
 
@@ -284,7 +284,7 @@ describe("CatalogSourcesSection", () => {
     renderSection()
 
     expect(screen.getByText(/OneDrive/).textContent).toBe(
-      "Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web link",
+      "Local file, OneDrive, OPDS catalog, Server files, Synology Drive, Web address",
     )
   })
 })

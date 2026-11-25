@@ -436,7 +436,7 @@ export type SyncReportDto = {
     has_different_provider_credentials: boolean | null;
 };
 
-export type SyncDataSourceDto = {
+export type RunLibrarySyncDto = {
     dataSourceId: string;
     providerCredentials: {
         [key: string]: unknown;
@@ -463,6 +463,35 @@ export type WebdavCredentialsDto = {
 export type DownloadLinkDto = {
     linkId: string;
     providerCredentials: WebdavCredentialsDto;
+};
+
+export type ListWebdavDirectoryDto = {
+    /**
+     * An http or https URL.
+     */
+    url: string;
+    username: string;
+    providerCredentials: WebdavCredentialsDto;
+    allowSelfSigned?: boolean;
+    /**
+     * Relative to `url`, like `/Books`.
+     */
+    path: string;
+};
+
+export type WebdavDirectoryItemDto = {
+    type: 'file' | 'directory';
+    /**
+     * The item's path from the connector's URL.
+     */
+    filename: string;
+    basename: string;
+    mime?: string;
+    etag?: string;
+};
+
+export type WebdavDirectoryResponseDto = {
+    items: Array<WebdavDirectoryItemDto>;
 };
 
 export type RefreshCollectionMetadataDto = {
@@ -1723,49 +1752,49 @@ export type QuotasGetProxiedDownloadQuotaResponses = {
 
 export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];
 
-export type DataSourcesListSyncReportsData = {
+export type LibrarySyncsListSyncReportsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/datasources/sync-reports';
 };
 
-export type DataSourcesListSyncReportsErrors = {
+export type LibrarySyncsListSyncReportsErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesListSyncReportsError = DataSourcesListSyncReportsErrors[keyof DataSourcesListSyncReportsErrors];
+export type LibrarySyncsListSyncReportsError = LibrarySyncsListSyncReportsErrors[keyof LibrarySyncsListSyncReportsErrors];
 
-export type DataSourcesListSyncReportsResponses = {
+export type LibrarySyncsListSyncReportsResponses = {
     200: Array<SyncReportDto>;
 };
 
-export type DataSourcesListSyncReportsResponse = DataSourcesListSyncReportsResponses[keyof DataSourcesListSyncReportsResponses];
+export type LibrarySyncsListSyncReportsResponse = LibrarySyncsListSyncReportsResponses[keyof LibrarySyncsListSyncReportsResponses];
 
-export type DataSourcesSyncData = {
-    body: SyncDataSourceDto;
+export type LibrarySyncsSyncData = {
+    body: RunLibrarySyncDto;
     path?: never;
     query?: never;
     url: '/datasources/sync';
 };
 
-export type DataSourcesSyncErrors = {
+export type LibrarySyncsSyncErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesSyncError = DataSourcesSyncErrors[keyof DataSourcesSyncErrors];
+export type LibrarySyncsSyncError = LibrarySyncsSyncErrors[keyof LibrarySyncsSyncErrors];
 
-export type DataSourcesSyncResponses = {
+export type LibrarySyncsSyncResponses = {
     201: EmptyResponseDto;
 };
 
-export type DataSourcesSyncResponse = DataSourcesSyncResponses[keyof DataSourcesSyncResponses];
+export type LibrarySyncsSyncResponse = LibrarySyncsSyncResponses[keyof LibrarySyncsSyncResponses];
 
 export type BooksRefreshMetadataData = {
     body: RefreshBookMetadataDto;
@@ -1814,6 +1843,31 @@ export type LinksDownloadResponses = {
 };
 
 export type LinksDownloadResponse = LinksDownloadResponses[keyof LinksDownloadResponses];
+
+export type ConnectorsListWebdavDirectoryData = {
+    body: ListWebdavDirectoryDto;
+    path?: never;
+    query?: never;
+    url: '/connectors/webdav/directory';
+};
+
+export type ConnectorsListWebdavDirectoryErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryError = ConnectorsListWebdavDirectoryErrors[keyof ConnectorsListWebdavDirectoryErrors];
+
+export type ConnectorsListWebdavDirectoryResponses = {
+    200: WebdavDirectoryResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryResponse = ConnectorsListWebdavDirectoryResponses[keyof ConnectorsListWebdavDirectoryResponses];
 
 export type CollectionsRefreshMetadataData = {
     body: RefreshCollectionMetadataDto;

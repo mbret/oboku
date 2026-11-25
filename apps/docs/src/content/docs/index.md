@@ -20,15 +20,15 @@ If a feature you need is missing, request it. oboku is driven by its community.
 ## Key features
 
 - Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. Bookmark pages, highlight passages and take notes, on every device of your account. See the [supported contents](/guides/supported-contents).
-- Sync your books from the [providers](/guides/datasources) you already use, without uploading them to oboku.
-- Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-sources).
+- Sync your books from the [sources](/guides/library-syncs) you already use, without uploading them to oboku.
+- Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-providers).
 - Track what you read, and search, sort and filter your library.
 - Sync your reading position with KOReader and the other apps that support KOReader sync. oboku can be their [sync server](/guides/koreader-sync-server), and its reader can [sync with them](/guides/koreader-progress-sync).
 - Browse your Google Drive and WebDAV books from KOReader and other reading apps through an [OPDS server](/guides/opds-servers).
 - Hide [sensitive books](/guides/privacy-and-parental-secure-control) until you unlock them, and blur their covers.
 - Compress the images of heavy comics and fix the identifiers of a book, then save it back to its source.
 - Switch to e-ink mode for higher contrast and no animations.
-- [Share a library](/guides/datasources#sharing-is-caring) with your friends: each of them gets a library of their own.
+- [Share a library](/guides/library-syncs#sharing-is-caring) with your friends: each of them gets a library of their own.
 - [Self-host](/self-hosting/installation) the whole service with Docker.
 
 ## How do we compare to similar / alternative services { #how-do-we-compare-to-similar-alternative-services }
@@ -53,10 +53,10 @@ Calibre Web is another similar project that was created many years ago and provi
 
 - No offline support
 - Not e-ink friendly
-- Limited choice of source providers (Calibre and Kobo sync)
+- Limited choice of sources (Calibre and Kobo sync)
 - It is a self hosted product and comes with the hassle of maintenance.
 
-If you already run Calibre-Web, oboku can [sync the books of its OPDS catalog](/sync-providers/opds).
+If you already run Calibre-Web, oboku can [sync the books of its OPDS catalog](/sources/opds).
 
 In no way oboku wishes to undermine calibre-web and I want to personally thanks [janeczku](https://github.com/janeczku) and all the contributors for making the calibre-web project.
 

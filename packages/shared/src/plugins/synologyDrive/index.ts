@@ -1,11 +1,11 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 export const PLUGIN_SYNOLOGY_DRIVE_TYPE = "synology-drive"
 
-/** Synology Drive datasource config: connector reference plus selected file/folder ids. */
-export type SynologyDriveDataSourceDocType = Omit<
-  BaseDataSourceDocType,
+/** Synology Drive library sync config: connector reference plus selected file/folder ids. */
+export type SynologyDriveLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
   "data_v2"
 > & {
   type: "synology-drive"

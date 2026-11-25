@@ -8,9 +8,9 @@ import { toDecodedContentLength } from "../../http/contentLength.js"
  * "Wed, 21 Oct 2015 07:28:00 GMT") while the rest of the codebase — and
  * `LinkMetadata.modifiedAt` in particular — expects ISO 8601. Normalize
  * here so downstream consumers (cache fingerprinting, UI formatting)
- * see a single, comparable shape across providers. Falls back to the
+ * see a single, comparable shape across sources. Falls back to the
  * raw value if the string can't be parsed, to preserve the
- * "stable provider-supplied timestamp" cache property rather than
+ * "stable source-supplied timestamp" cache property rather than
  * synthesizing a `Date.now()`.
  */
 const normalizeLastmod = (lastmod: string): string => {

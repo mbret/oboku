@@ -52,11 +52,11 @@ vi.mock("./actions/BookOptimizeActionBar", async function mockActionBar() {
   }
 })
 
-vi.mock("./actions/useUploadToDataSource", function mockUploadToDataSource() {
+vi.mock("./actions/useUploadToSource", function mockUploadToSource() {
   return {
-    useUploadToDataSource: function useNoUpload() {
+    useUploadToSource: function useNoUpload() {
       return {
-        uploadToDataSource: vi.fn(),
+        uploadToSource: vi.fn(),
         isUploading: false,
         canUpload: false,
         slot: null,
@@ -111,7 +111,7 @@ function TestOptimizeStep({
       <OptimizeStep
         book={bookToOptimize}
         link={link}
-        canUploadToDataSource={false}
+        canUploadToSource={false}
       />
     </MemoryRouter>
   )

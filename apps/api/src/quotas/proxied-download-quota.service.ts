@@ -74,7 +74,7 @@ export type ProxiedFile = {
   name: string
   /** The media type the answer gives, which replaces the one of the name. */
   contentType: string
-  /** The number of bytes `stream` yields, when the provider states it. */
+  /** The number of bytes `stream` yields, when the source states it. */
   size?: number
   /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
   expectedSize?: number
@@ -222,7 +222,7 @@ export class ProxiedDownloadQuotaService {
    * and `ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED`, when the download would pass
    * either quota.
    * @returns a file that answers 502 with
-   * `ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE` when the provider's stream
+   * `ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE` when the source's stream
    * fails before its first byte.
    */
   async deliver({
@@ -264,7 +264,7 @@ export class ProxiedDownloadQuotaService {
     const handleStreamFailure = streamableFile.errorHandler
 
     // Nest answers 400 for a stream that fails before its first byte; the
-    // provider failed, not the request.
+    // source failed, not the request.
     return streamableFile.setErrorHandler(
       function answerBadGatewayBeforeFirstByte(error, streamResponse) {
         const isAnswerStarted =

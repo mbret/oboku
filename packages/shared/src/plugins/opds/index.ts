@@ -1,10 +1,10 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 export const PLUGIN_OPDS_TYPE = "opds"
 
-/** OPDS datasource config: connector reference plus the absolute URL of the feed to sync. */
-export type OpdsDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+/** OPDS library sync config: connector reference plus the absolute URL of the feed to sync. */
+export type OpdsLibrarySyncDocType = Omit<BaseLibrarySyncDocType, "data_v2"> & {
   type: "opds"
   data_v2?: { connectorId?: string; feedUrl?: string }
 }

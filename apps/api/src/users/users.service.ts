@@ -15,7 +15,7 @@ import { RefreshTokensService } from "../features/postgres/refreshTokens.service
 import { KoreaderSyncPostgresService } from "../features/postgres/koreader-sync-postgres.service.js"
 import { KoreaderSyncConnectionPostgresService } from "../features/postgres/koreader-sync-connection-postgres.service.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
-import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "../features/postgres/source-connection-postgres.service.js"
 
 @Injectable()
 export class UsersService {
@@ -31,7 +31,7 @@ export class UsersService {
     private koreaderSyncPostgresService: KoreaderSyncPostgresService,
     private koreaderSyncConnectionPostgresService: KoreaderSyncConnectionPostgresService,
     private opdsServerPostgresService: OpdsServerPostgresService,
-    private providerConnectionPostgresService: ProviderConnectionPostgresService,
+    private sourceConnectionPostgresService: SourceConnectionPostgresService,
   ) {}
 
   async findUserByEmail(email: string) {
@@ -102,7 +102,7 @@ export class UsersService {
     await this.koreaderSyncPostgresService.deleteByUserId(userId)
     await this.koreaderSyncConnectionPostgresService.deleteByUserId(userId)
     await this.opdsServerPostgresService.deleteByUserId(userId)
-    await this.providerConnectionPostgresService.deleteByUserId(userId)
+    await this.sourceConnectionPostgresService.deleteByUserId(userId)
     await this.userPostgresService.deleteById(userId)
 
     if (coverKeys.length > 0) {
