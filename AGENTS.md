@@ -17,7 +17,7 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 | library sync      | One source, one or more of its locations, and options, which oboku keeps in sync with the library. Inside the Sync screen, "sync" alone is enough. Stored as `datasource`. |
 | location          | One place that a library sync covers: a folder, a whole account or server, or a catalog.                                                                                   |
 | source connection | The credentials oboku's server keeps for a source: a Google Drive refresh token, or a connector's password.                                                                |
-| book file         | A book's reference to its file at its source. Stored as `link`.                                                                                                            |
+| book file         | A book's reference to its file at its source. The code and the stored data call it `link`.                                                                                 |
 | metadata provider | Where a book's metadata comes from: the book's file, its source, or a service such as Google Books.                                                                        |
 
 "Provider" only means a sign-in provider (OAuth), a metadata provider, an email provider or a React context provider. "Plugin" never appears in the UI.
@@ -110,6 +110,7 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 - `ROUTES` in `apps/web/src/navigation/routes.ts` holds the pattern of every route the web app defines. A new route gets its entry there.
 - Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
 - Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
+- A route whose path changes gets no redirect from its old path.
 
 ### Web source plugins: members named `use*` are hooks
 
@@ -244,8 +245,7 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 - The user, self-hosting and development docs are the Markdown in `apps/docs/src/content/docs/`, built with Starlight and published to docs.oboku.me. Update them in the same change as the behaviour they document.
 - A page's title is its `title` frontmatter, and the body starts at `##`. A new page needs an entry in the `sidebar` of `apps/docs/astro.config.ts`.
 - Link another page by its path on the site (`/guides/directives`), not by its file. The build fails on a broken internal link or anchor.
-- A heading that ends in `{ #id }` keeps the anchor the GitBook site gave it, which published links point to. Keep the `{ #id }` when you reword the heading.
-- A published URL stays valid: when a page moves or is renamed, add a permanent redirect from its old path to `redirects` in `apps/docs/vercel.json`.
+- A page that moves or is renamed gets no redirect from its old path, and a reworded heading needs no `{ #id }` to keep its old anchor. oboku is free, so readers update their own bookmarks.
 
 ### React components: do not use `FC`
 
