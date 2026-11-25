@@ -19,9 +19,9 @@ import {
 import { Fragment, type ReactNode, useMemo } from "react"
 import { generatePath, Link } from "react-router"
 import {
-  BOOK_METADATA_FIELDS_BY_SOURCE,
+  BOOK_METADATA_FIELDS_BY_PROVIDER,
   directives,
-  getBookMetadataSource,
+  getBookMetadataProvider,
 } from "@oboku/shared"
 import { useBook } from "../states"
 import { useLink } from "../../links/states"
@@ -29,23 +29,23 @@ import { pluginsByType } from "../../integrations/plugins/configure"
 import { ROUTES } from "../../navigation/routes"
 import { getBookMetadataEntryFields } from "../metadata/fields"
 import {
-  type BookMetadataSource,
-  getBookMetadataSourceIcon,
-  getBookMetadataSourceLabel,
+  type BookMetadataProvider,
+  getBookMetadataProviderIcon,
+  getBookMetadataProviderLabel,
   getCatalogProviderName,
-  getOrderedBookMetadataSources,
-} from "../metadata/sources"
+  getOrderedBookMetadataProviders,
+} from "../metadata/providers"
 import {
-  isReorderableBookMetadataSource,
-  DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES,
-  type ReorderableBookMetadataSource,
+  isReorderableBookMetadataProvider,
+  DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS,
+  type ReorderableBookMetadataProvider,
 } from "@oboku/shared"
-import { formatBookMetadataField } from "./metadataSource/formatters"
+import { formatBookMetadataField } from "./metadataProvider/formatters"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
 
 // Cast preserves Typography's polymorphic `component` prop, which MUI's
 // `styled` otherwise erases.
-const SourceOriginTypography = styled(Typography)(({ theme }) => ({
+const ProviderOriginTypography = styled(Typography)(({ theme }) => ({
   marginLeft: theme.spacing(1),
 })) as typeof Typography
 
@@ -61,7 +61,7 @@ const TrailingIconStack = styled(Stack)({
 
 /**
  * Width of the leading column reserved for the reorder buttons. Applied
- * as left padding on every {@link ListItemButton} so source icons and
+ * as left padding on every {@link ListItemButton} so provider icons and
  * labels line up across rows whether or not the row is reorderable.
  */
 const LEADING_COLUMN_WIDTH = 36
@@ -120,8 +120,8 @@ const ReorderIconButton = styled(IconButton)({
 const SAMPLE_PREVIEW_LIMIT = 2
 
 /**
- * Shared "secondary" rendering for every row in the metadata sources
- * list. Behaves identically across sources and the synthetic directives
+ * Shared "secondary" rendering for every row in the metadata providers
+ * list. Behaves identically across providers and the synthetic directives
  * row — only the empty-state copy is per-row.
  *
  * `sampleValues` is treated as a preference-ordered list: empties are
@@ -130,17 +130,17 @@ const SAMPLE_PREVIEW_LIMIT = 2
  * pass a deep fallback list (e.g. `[title, authors, isbn, publisher]`)
  * without worrying about which fields are populated.
  */
-type SourceRowSecondaryProps = {
+type ProviderRowSecondaryProps = {
   count: number
   sampleValues: ReadonlyArray<string | number | undefined>
   emptyMessage: string
 }
 
-function SourceRowSecondary({
+function ProviderRowSecondary({
   count,
   sampleValues,
   emptyMessage,
-}: SourceRowSecondaryProps) {
+}: ProviderRowSecondaryProps) {
   if (count === 0) {
     return <WarningTypography variant="body2">{emptyMessage}</WarningTypography>
   }
@@ -166,17 +166,17 @@ function SourceRowSecondary({
 const SECONDARY_SLOT_PROPS = { secondary: { component: "div" } } as const
 
 /**
- * Shared row shell for every entry in the metadata sources list. Owns
+ * Shared row shell for every entry in the metadata providers list. Owns
  * the `<ListItem><RowListItemButton/></ListItem>` shape, the chevron,
  * and the count/preview rendering — call sites only supply the
- * source-specific bits (icon, label, link target, preview values).
+ * provider-specific bits (icon, label, link target, preview values).
  *
  * Optional `overlay` children are rendered as siblings of the
  * `RowListItemButton` (so they can be absolutely positioned on top
  * without nesting interactive elements). Used for the reorder controls
  * on swappable rows.
  */
-type SourceRowProps = {
+type ProviderRowProps = {
   to: string
   icon: ReactNode
   primary: ReactNode
@@ -186,7 +186,7 @@ type SourceRowProps = {
   overlay?: ReactNode
 }
 
-function SourceRow({
+function ProviderRow({
   to,
   icon,
   primary,
@@ -194,7 +194,7 @@ function SourceRow({
   sampleValues,
   emptyMessage,
   overlay,
-}: SourceRowProps) {
+}: ProviderRowProps) {
   return (
     <ListItem disablePadding>
       <RowListItemButton component={Link} to={to}>
@@ -202,7 +202,7 @@ function SourceRow({
         <ListItemText
           primary={primary}
           secondary={
-            <SourceRowSecondary
+            <ProviderRowSecondary
               count={count}
               sampleValues={sampleValues}
               emptyMessage={emptyMessage}
@@ -219,15 +219,15 @@ function SourceRow({
   )
 }
 
-const buildSourceRoute = (bookId: string, source: string) =>
-  generatePath(ROUTES.BOOK_METADATA_SOURCE, { id: bookId, source })
+const buildProviderRoute = (bookId: string, provider: string) =>
+  generatePath(ROUTES.BOOK_METADATA_PROVIDER, { id: bookId, provider })
 
 /**
- * Synthetic row in the metadata sources list. Directives are not a real
+ * Synthetic row in the metadata providers list. Directives are not a real
  * metadata variant — they live inside the link's filename and are parsed
  * on the fly. This row exists so the user can discover them and see they
  * sit just below "user" in the merge priority. Clicking jumps to the
- * link source detail screen, where directives are surfaced.
+ * link provider detail screen, where directives are surfaced.
  */
 type DirectivesRowProps = {
   bookId: string
@@ -248,8 +248,8 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
   )
 
   return (
-    <SourceRow
-      to={buildSourceRoute(bookId, "link")}
+    <ProviderRow
+      to={buildProviderRoute(bookId, "link")}
       icon={<LocalOfferOutlined />}
       primary="Directives"
       count={detectedValues.length}
@@ -260,7 +260,7 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
 }
 
 /**
- * Reorder controls for a swappable source row. Rendered as an absolute
+ * Reorder controls for a swappable provider row. Rendered as an absolute
  * overlay on top of the row's {@link RowListItemButton} (which extends
  * under the leading column thanks to its left padding). The icon
  * buttons are siblings of the underlying anchor in the DOM — never
@@ -269,18 +269,18 @@ function DirectivesRow({ bookId, linkTitle }: DirectivesRowProps) {
  * still paints behind the buttons because `:hover` fires whenever the
  * cursor is inside the `ListItemButton`'s bounding box.
  */
-type SourceReorderActionsProps = {
-  source: ReorderableBookMetadataSource
-  middle: ReadonlyArray<ReorderableBookMetadataSource>
-  onChange: (next: ReorderableBookMetadataSource[]) => void
+type ProviderReorderActionsProps = {
+  provider: ReorderableBookMetadataProvider
+  middle: ReadonlyArray<ReorderableBookMetadataProvider>
+  onChange: (next: ReorderableBookMetadataProvider[]) => void
 }
 
-function SourceReorderActions({
-  source,
+function ProviderReorderActions({
+  provider,
   middle,
   onChange,
-}: SourceReorderActionsProps) {
-  const index = middle.indexOf(source)
+}: ProviderReorderActionsProps) {
+  const index = middle.indexOf(provider)
   const canMoveUp = index > 0
   const canMoveDown = index >= 0 && index < middle.length - 1
 
@@ -289,11 +289,11 @@ function SourceReorderActions({
     const bValue = middle[b]
     if (aValue === undefined || bValue === undefined) return
 
-    const next = middle.map((source, i) => {
+    const next = middle.map((provider, i) => {
       if (i === a) return bValue
       if (i === b) return aValue
 
-      return source
+      return provider
     })
 
     onChange(next)
@@ -306,7 +306,7 @@ function SourceReorderActions({
         size="small"
         disabled={!canMoveUp}
         onClick={() => swap(index, index - 1)}
-        aria-label={`Move ${getBookMetadataSourceLabel(source)} up`}
+        aria-label={`Move ${getBookMetadataProviderLabel(provider)} up`}
       >
         <KeyboardArrowUpRounded fontSize="small" />
       </ReorderIconButton>
@@ -315,7 +315,7 @@ function SourceReorderActions({
         size="small"
         disabled={!canMoveDown}
         onClick={() => swap(index, index + 1)}
-        aria-label={`Move ${getBookMetadataSourceLabel(source)} down`}
+        aria-label={`Move ${getBookMetadataProviderLabel(provider)} down`}
       >
         <KeyboardArrowDownRounded fontSize="small" />
       </ReorderIconButton>
@@ -323,34 +323,34 @@ function SourceReorderActions({
   )
 }
 
-export function MetadataSourcePane({ bookId }: { bookId: string }) {
+export function MetadataProviderPane({ bookId }: { bookId: string }) {
   const { data: book } = useBook({ id: bookId })
   const { data: link } = useLink({ id: book?.links[0] })
   const plugin = link?.type ? pluginsByType[link?.type] : undefined
   const linkTitle = book?.metadata?.find((item) => item.type === "link")?.title
   const { mutate: incrementalBookPatch } = useIncrementalBookPatch()
 
-  const orderedSources: BookMetadataSource[] = useMemo(
-    () => getOrderedBookMetadataSources(book?.metadataSourcePriority),
+  const orderedProviders: BookMetadataProvider[] = useMemo(
+    () => getOrderedBookMetadataProviders(book?.metadataSourcePriority),
     [book?.metadataSourcePriority],
   )
 
   // Sanitized middle subset, used by the reorder controls so they always
   // operate on a known-good list (matches what the merge actually uses).
   const middle = useMemo(
-    () => orderedSources.filter(isReorderableBookMetadataSource),
-    [orderedSources],
+    () => orderedProviders.filter(isReorderableBookMetadataProvider),
+    [orderedProviders],
   )
 
-  const handleReorder = (next: ReorderableBookMetadataSource[]) => {
+  const handleReorder = (next: ReorderableBookMetadataProvider[]) => {
     if (!bookId) return
 
     // Drop the patch when it matches the default — keeps the document
     // free of redundant fields and lets the default ever evolve without
     // existing books overriding it.
     const matchesDefault =
-      next.length === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES.length &&
-      next.every((s, i) => s === DEFAULT_REORDERABLE_BOOK_METADATA_SOURCES[i])
+      next.length === DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS.length &&
+      next.every((s, i) => s === DEFAULT_REORDERABLE_BOOK_METADATA_PROVIDERS[i])
 
     incrementalBookPatch({
       doc: bookId,
@@ -361,15 +361,15 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
   return (
     <List
       dense
-      subheader={<ListSubheader>Metadata Sources</ListSubheader>}
+      subheader={<ListSubheader>Metadata providers</ListSubheader>}
       disablePadding
     >
       <ListItem>
         <ListItemText secondary="Ordered by display priority. Use the arrows to swap File and Catalog." />
       </ListItem>
-      {orderedSources.map((source) => {
+      {orderedProviders.map((provider) => {
         const entry = book?.metadata?.find(
-          (item) => getBookMetadataSource(item) === source,
+          (item) => getBookMetadataProvider(item) === provider,
         )
         const fields = entry ? getBookMetadataEntryFields(entry) : undefined
         const providerName = entry ? getCatalogProviderName(entry) : undefined
@@ -378,52 +378,54 @@ export function MetadataSourcePane({ bookId }: { bookId: string }) {
           ? Object.values(fields).filter((value) => value !== undefined).length
           : 0
 
-        // Drive the preview from the source's declared field list so the
+        // Drive the preview from the provider's declared field list so the
         // caption can never go blank while `numberOfProperties` is non-zero
         // (which would happen if every populated field sat outside a
         // hard-coded preview list).
-        const sampleValues = BOOK_METADATA_FIELDS_BY_SOURCE[source].map(
+        const sampleValues = BOOK_METADATA_FIELDS_BY_PROVIDER[provider].map(
           (field) => formatBookMetadataField(fields, field),
         )
 
-        const reorderable = isReorderableBookMetadataSource(source)
+        const reorderable = isReorderableBookMetadataProvider(provider)
 
         return (
-          <Fragment key={source}>
-            <SourceRow
-              to={buildSourceRoute(bookId, source)}
-              icon={getBookMetadataSourceIcon(source)}
+          <Fragment key={provider}>
+            <ProviderRow
+              to={buildProviderRoute(bookId, provider)}
+              icon={getBookMetadataProviderIcon(provider)}
               primary={
                 <Typography>
-                  {getBookMetadataSourceLabel(source)}
-                  {source === "link" && (
-                    <SourceOriginTypography component="span" variant="body2">
+                  {getBookMetadataProviderLabel(provider)}
+                  {provider === "link" && (
+                    <ProviderOriginTypography component="span" variant="body2">
                       ({plugin?.name})
-                    </SourceOriginTypography>
+                    </ProviderOriginTypography>
                   )}
                   {providerName && (
-                    <SourceOriginTypography component="span" variant="body2">
+                    <ProviderOriginTypography component="span" variant="body2">
                       ({providerName})
-                    </SourceOriginTypography>
+                    </ProviderOriginTypography>
                   )}
                 </Typography>
               }
               count={numberOfProperties}
               sampleValues={sampleValues}
               emptyMessage={
-                source === "user" ? "No information entered yet" : "No data yet"
+                provider === "user"
+                  ? "No information entered yet"
+                  : "No data yet"
               }
               overlay={
                 reorderable ? (
-                  <SourceReorderActions
-                    source={source}
+                  <ProviderReorderActions
+                    provider={provider}
                     middle={middle}
                     onChange={handleReorder}
                   />
                 ) : undefined
               }
             />
-            {source === "user" && (
+            {provider === "user" && (
               <DirectivesRow bookId={bookId} linkTitle={linkTitle} />
             )}
           </Fragment>

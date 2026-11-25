@@ -5,20 +5,20 @@ import { requestMicrosoftAccessToken } from "../auth/auth"
 import { ONE_DRIVE_GRAPH_SCOPES } from "../constants"
 import { getOneDriveItemSummary, type OneDriveDriveItemSummary } from "../graph"
 
-export const oneDriveLibrarySyncItemQueryKey = [
+export const oneDriveLibrarySyncLocationQueryKey = [
   "one-drive",
-  "library-sync-item",
+  "library-sync-location",
 ] as const
 
-export const getOneDriveLibrarySyncItemQueryKey = ({
+export const getOneDriveLibrarySyncLocationQueryKey = ({
   driveId,
   fileId,
 }: {
   driveId: string
   fileId: string
-}) => [...oneDriveLibrarySyncItemQueryKey, driveId, fileId] as const
+}) => [...oneDriveLibrarySyncLocationQueryKey, driveId, fileId] as const
 
-export type ResolvedOneDriveLibrarySyncItem = {
+export type ResolvedOneDriveLibrarySyncLocation = {
   treeItemId: string
   metadata: OneDriveDriveItemSummary
   parentTreeItemId?: string
@@ -39,9 +39,9 @@ function getCanonicalTreeItemId({
   })
 }
 
-export async function resolveOneDriveLibrarySyncItem(
-  item: OneDriveLinkData,
-): Promise<ResolvedOneDriveLibrarySyncItem> {
+export async function resolveOneDriveLibrarySyncLocation(
+  location: OneDriveLinkData,
+): Promise<ResolvedOneDriveLibrarySyncLocation> {
   const authResult = await requestMicrosoftAccessToken({
     interaction: "silent-only",
     scopes: ONE_DRIVE_GRAPH_SCOPES,
@@ -49,12 +49,12 @@ export async function resolveOneDriveLibrarySyncItem(
 
   const metadata = await getOneDriveItemSummary({
     accessToken: authResult.accessToken,
-    driveId: item.driveId,
-    fileId: item.fileId,
+    driveId: location.driveId,
+    fileId: location.fileId,
   })
   const treeItemId = getCanonicalTreeItemId({
-    fallbackDriveId: item.driveId,
-    fallbackFileId: item.fileId,
+    fallbackDriveId: location.driveId,
+    fallbackFileId: location.fileId,
     metadata,
   })
   const parentTreeItemId =
@@ -74,20 +74,20 @@ export async function resolveOneDriveLibrarySyncItem(
   }
 }
 
-export const useCreateLibrarySyncItemQuery = () => {
+export const useCreateLibrarySyncLocationQuery = () => {
   return useCallback(
     (
-      item: OneDriveLinkData,
+      location: OneDriveLinkData,
     ): UseQueryOptions<
-      ResolvedOneDriveLibrarySyncItem,
+      ResolvedOneDriveLibrarySyncLocation,
       unknown,
-      ResolvedOneDriveLibrarySyncItem
+      ResolvedOneDriveLibrarySyncLocation
     > => ({
-      queryKey: getOneDriveLibrarySyncItemQueryKey({
-        driveId: item.driveId,
-        fileId: item.fileId,
+      queryKey: getOneDriveLibrarySyncLocationQueryKey({
+        driveId: location.driveId,
+        fileId: location.fileId,
       }),
-      queryFn: () => resolveOneDriveLibrarySyncItem(item),
+      queryFn: () => resolveOneDriveLibrarySyncLocation(location),
       retry: false,
     }),
     [],

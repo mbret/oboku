@@ -6,7 +6,7 @@ import type {
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
 import { getBookMetadataEntryFields } from "../../metadata/fields"
-import { getCatalogProviderName } from "../../metadata/sources"
+import { getCatalogProviderName } from "../../metadata/providers"
 import { MetadataFieldRow } from "./MetadataFieldRow"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import { formatBookMetadataDate, formatList } from "./formatters"
@@ -18,7 +18,7 @@ type Props = {
 }
 
 /** Read-only content of the catalog record matched to the book. */
-export const CatalogSourceContent = ({ entry }: Props) => {
+export const CatalogProviderContent = ({ entry }: Props) => {
   const fields = entry ? getBookMetadataEntryFields(entry) : undefined
   const catalogName = entry ? getCatalogProviderName(entry) : undefined
   const recordUrl = entry?.type === "catalog" ? entry.url : undefined

@@ -21,7 +21,7 @@ If a feature you need is missing, request it. oboku is driven by its community.
 
 - Read EPUB, comics, manga, PDF and plain text in one [reader](/guides/reader), offline once a book is downloaded. Bookmark pages, highlight passages and take notes, on every device of your account. See the [supported contents](/guides/supported-contents).
 - Sync your books from the [sources](/guides/library-syncs) you already use, without uploading them to oboku.
-- Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-sources).
+- Organize your library with [collections and series](/guides/collections) and [tags](/guides/tags). oboku fills in the covers and the [metadata](/guides/metadata-providers).
 - Track what you read, and search, sort and filter your library.
 - Sync your reading position with KOReader and the other apps that support KOReader sync. oboku can be their [sync server](/guides/koreader-sync-server), and its reader can [sync with them](/guides/koreader-progress-sync).
 - Browse your Google Drive and WebDAV books from KOReader and other reading apps through an [OPDS server](/guides/opds-servers).

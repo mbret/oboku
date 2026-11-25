@@ -5,7 +5,10 @@ import { DescriptionRow } from "./DescriptionRow"
 import { MetadataItemList } from "./MetadataItemList"
 import { useBook } from "../states"
 import { getMetadataFromBook } from "../metadata"
-import { formatBookMetadataDate, formatList } from "./metadataSource/formatters"
+import {
+  formatBookMetadataDate,
+  formatList,
+} from "./metadataProvider/formatters"
 
 export const MetadataPane = ({ bookId }: { bookId?: string }) => {
   const { data: book } = useBook({ id: bookId })

@@ -1,7 +1,7 @@
 import type { CatalogMetadata } from "@oboku/shared"
 import { cleanup, render, screen } from "@testing-library/react"
 import { afterEach, describe, expect, it } from "vitest"
-import { CatalogSourceContent } from "./CatalogSourceContent"
+import { CatalogProviderContent } from "./CatalogProviderContent"
 
 const COVER_URL =
   "https://books.google.com/books/publisher/content?id=Ebb6DQAAQBAJ&printsec=frontcover&img=1&zoom=0&source=gbs_api"
@@ -20,10 +20,10 @@ const OPEN_LIBRARY_MATCH = {
 
 afterEach(cleanup)
 
-describe("CatalogSourceContent, the cover link it renders", () => {
+describe("CatalogProviderContent, the cover link it renders", () => {
   it("opens the cover in a new tab without leaking the referrer", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{ type: "googleBookApi", coverLink: COVER_URL }}
       />,
     )
@@ -37,7 +37,7 @@ describe("CatalogSourceContent, the cover link it renders", () => {
 
   it("keeps the url out of the label and reachable on hover", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{ type: "googleBookApi", coverLink: COVER_URL }}
       />,
     )
@@ -50,7 +50,7 @@ describe("CatalogSourceContent, the cover link it renders", () => {
 
   it("renders no link when the volume advertises no cover", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{ type: "googleBookApi", title: "BLAME! Vol 1" }}
       />,
     )
@@ -59,10 +59,10 @@ describe("CatalogSourceContent, the cover link it renders", () => {
   })
 })
 
-describe("CatalogSourceContent, for a catalog match", () => {
+describe("CatalogProviderContent, for a catalog match", () => {
   it("names the catalog and shows the record's fields", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{
           ...OPEN_LIBRARY_MATCH,
           metadata: {
@@ -82,7 +82,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
 
   it("links the catalog name to the matched record, in a new tab", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{ ...OPEN_LIBRARY_MATCH, url: RECORD_URL }}
       />,
     )
@@ -96,7 +96,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
   })
 
   it("names the catalog without a link when the match has no url", () => {
-    render(<CatalogSourceContent entry={OPEN_LIBRARY_MATCH} />)
+    render(<CatalogProviderContent entry={OPEN_LIBRARY_MATCH} />)
 
     expect(screen.getByText("Open Library")).toBeTruthy()
     expect(screen.queryByRole("link")).toBeNull()
@@ -104,7 +104,7 @@ describe("CatalogSourceContent, for a catalog match", () => {
 
   it("names Google Books for an entry stored before catalog matches", () => {
     render(
-      <CatalogSourceContent
+      <CatalogProviderContent
         entry={{ type: "googleBookApi", title: "BLAME! Vol 1" }}
       />,
     )

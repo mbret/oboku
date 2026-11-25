@@ -7,7 +7,7 @@ import {
   buildLibrarySyncSubmitPayload,
   getLibrarySyncFormBaseDefaults,
 } from "../../../plugins/common/librarySyncFormHelpers"
-import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
+import { PickLocationsSection } from "../../../plugins/common/PickLocationsSection"
 import type {
   OneDriveLibrarySyncDocType,
   OneDriveLinkData,
@@ -20,23 +20,23 @@ import { ONE_DRIVE_PLUGIN_NAME } from "../constants"
 import { Picker, type OneDrivePickerSelection } from "../picker"
 import { useRequestPopupDialog } from "../../../plugins/useRequestPopupDialog"
 import { OneDriveTreeView } from "./OneDriveTreeView"
-import { useLibrarySyncItems } from "./useLibrarySyncItems"
-import { useRequestItemsAccess } from "./useRequestItemsAccess"
+import { useLibrarySyncLocations } from "./useLibrarySyncLocations"
+import { useRequestLocationsAccess } from "./useRequestLocationsAccess"
 
 type OneDriveFormData = LibrarySyncFormData<{
-  items: OneDriveLinkData[]
+  locations: OneDriveLinkData[]
 }>
 
-function appendUniqueOneDriveItems(
-  currentItems: readonly OneDriveLinkData[],
-  nextItems: readonly OneDriveLinkData[],
+function appendUniqueLocations(
+  currentLocations: readonly OneDriveLinkData[],
+  nextLocations: readonly OneDriveLinkData[],
 ) {
-  const seen = new Set(currentItems.map(getOneDriveItemKey))
+  const seen = new Set(currentLocations.map(getOneDriveItemKey))
 
   return [
-    ...currentItems,
-    ...nextItems.filter(function isNewOneDriveItem(item) {
-      const key = getOneDriveItemKey(item)
+    ...currentLocations,
+    ...nextLocations.filter(function isNewLocation(location) {
+      const key = getOneDriveItemKey(location)
 
       if (seen.has(key)) {
         return false
@@ -62,24 +62,26 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     mode: "onChange",
     defaultValues: {
       ...getLibrarySyncFormBaseDefaults(librarySync),
-      items: [...(librarySync?.data_v2?.items ?? [])],
+      locations: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const {
-    field: { onChange: setItems, value: items = [] },
+    field: { onChange: setLocations, value: locations = [] },
   } = useController({
     control,
-    name: "items",
+    name: "locations",
     rules: { required: false },
   })
   const requestPopup = useRequestPopupDialog(ONE_DRIVE_PLUGIN_NAME)
   const [isPickerOpen, setIsPickerOpen] = useState(false)
-  const { mutate: requestItemsAccess, isPending: isRequestingItemsAccess } =
-    useRequestItemsAccess({
-      requestPopup,
-    })
-  const { driveItems, hasItemResolutionErrors } = useLibrarySyncItems({
-    items,
+  const {
+    mutate: requestLocationsAccess,
+    isPending: isRequestingLocationsAccess,
+  } = useRequestLocationsAccess({
+    requestPopup,
+  })
+  const { driveItems, hasLocationResolutionErrors } = useLibrarySyncLocations({
+    locations,
   })
 
   const handlePickerClose = useCallback(
@@ -90,19 +92,19 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
         return
       }
 
-      setItems(
-        appendUniqueOneDriveItems(
-          items,
+      setLocations(
+        appendUniqueLocations(
+          locations,
           selections.map(
-            (item): OneDriveLinkData => ({
-              driveId: item.parentReference.driveId,
-              fileId: item.id,
+            (selection): OneDriveLinkData => ({
+              driveId: selection.parentReference.driveId,
+              fileId: selection.id,
             }),
           ),
         ),
       )
     },
-    [items, setItems],
+    [locations, setLocations],
   )
 
   return (
@@ -110,7 +112,9 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
       <LibrarySyncFormLayout
         control={control}
         onSubmit={handleSubmit((data) =>
-          onSubmit(buildLibrarySyncSubmitPayload(data, { items: data.items })),
+          onSubmit(
+            buildLibrarySyncSubmitPayload(data, { items: data.locations }),
+          ),
         )}
         submitLabel={submitLabel}
       >
@@ -120,15 +124,15 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
             overflow: "auto",
           }}
         >
-          <PickItemsSection
-            locationsCount={items.length}
+          <PickLocationsSection
+            locationsCount={locations.length}
             onAction={() => setIsPickerOpen(true)}
-            resolveItemsAccess={
-              hasItemResolutionErrors
+            resolveLocationsAccess={
+              hasLocationResolutionErrors
                 ? {
-                    isLoading: isRequestingItemsAccess,
+                    isLoading: isRequestingLocationsAccess,
                     onAction: () => {
-                      requestItemsAccess()
+                      requestLocationsAccess()
                     },
                   }
                 : undefined
@@ -136,9 +140,9 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
             variant="outlined"
           />
           <OneDriveTreeView
-            items={items}
+            locations={locations}
             driveItems={driveItems}
-            onItemsChange={setItems}
+            onLocationsChange={setLocations}
           />
         </Stack>
       </LibrarySyncFormLayout>

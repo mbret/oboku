@@ -3,7 +3,7 @@ import { type PathParam, useParams } from "react-router"
 import { Stack, Typography, styled } from "@mui/material"
 import {
   type BookMetadata,
-  getBookMetadataSource,
+  getBookMetadataProvider,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 import type { DeepReadonlyArray } from "rxdb"
@@ -12,27 +12,27 @@ import { Page } from "../../../../../common/Page"
 import { TopBarNavigation } from "../../../../../navigation/TopBarNavigation"
 import { useBook } from "../../../../../books/states"
 import {
-  type BookMetadataSource,
-  getBookMetadataSourceLabel,
-  isBookMetadataSource,
-} from "../../../../../books/metadata/sources"
+  type BookMetadataProvider,
+  getBookMetadataProviderLabel,
+  isBookMetadataProvider,
+} from "../../../../../books/metadata/providers"
 import {
-  CatalogSourceContent,
-  FileSourceContent,
-  LinkSourceContent,
-  UserSourceContent,
-} from "../../../../../books/details/metadataSource"
+  CatalogProviderContent,
+  FileProviderContent,
+  LinkProviderContent,
+  UserProviderContent,
+} from "../../../../../books/details/metadataProvider"
 import { PageContainer } from "../../../../../common/PageContainer"
 import type { ROUTES } from "../../../../../navigation/routes"
 
-const MetadataSourcePageContainer = styled(PageContainer)({
+const MetadataProviderPageContainer = styled(PageContainer)({
   display: "flex",
   flexDirection: "column",
   flex: 1,
   minHeight: 0,
 })
 
-const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
+const ProviderIntroStack = styled(Stack)(function styleProviderIntroStack({
   theme,
 }) {
   return {
@@ -40,7 +40,7 @@ const SourceIntroStack = styled(Stack)(function styleSourceIntroStack({
   }
 })
 
-const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
+const PROVIDER_DESCRIPTIONS: Record<BookMetadataProvider, string> = {
   link: "Information from the book's file at its source.",
   file: "Information embedded inside the file itself.",
   catalog: "Information an online catalog holds about the book.",
@@ -48,58 +48,62 @@ const SOURCE_DESCRIPTIONS: Record<BookMetadataSource, string> = {
 }
 
 /**
- * The entry of `book.metadata` the requested source holds, or `undefined`
+ * The entry of `book.metadata` the requested provider holds, or `undefined`
  * when the book has none yet.
  */
-const findSourceEntry = (
+const findProviderEntry = (
   metadata: DeepReadonlyArray<BookMetadata> | undefined,
-  source: BookMetadataSource,
-) => metadata?.find((entry) => getBookMetadataSource(entry) === source)
+  provider: BookMetadataProvider,
+) => metadata?.find((entry) => getBookMetadataProvider(entry) === provider)
 
-export const BookMetadataSourceScreen = memo(
-  function BookMetadataSourceScreen() {
-    const { id: bookId, source } =
-      useParams<PathParam<typeof ROUTES.BOOK_METADATA_SOURCE>>()
+export const BookMetadataProviderScreen = memo(
+  function BookMetadataProviderScreen() {
+    const { id: bookId, provider } =
+      useParams<PathParam<typeof ROUTES.BOOK_METADATA_PROVIDER>>()
     const { data: book } = useBook({ id: bookId })
 
-    const validSource = isBookMetadataSource(source) ? source : undefined
+    const validProvider = isBookMetadataProvider(provider)
+      ? provider
+      : undefined
     const entry = useMemo(
       () =>
-        validSource ? findSourceEntry(book?.metadata, validSource) : undefined,
-      [book?.metadata, validSource],
+        validProvider
+          ? findProviderEntry(book?.metadata, validProvider)
+          : undefined,
+      [book?.metadata, validProvider],
     )
 
-    if (!bookId || !validSource || book === null) {
+    if (!bookId || !validProvider || book === null) {
       return <NotFoundPage />
     }
 
     return (
       <Page bottomGutter={false}>
         <TopBarNavigation
-          title={getBookMetadataSourceLabel(validSource)}
+          title={getBookMetadataProviderLabel(validProvider)}
           showBack
         />
-        <MetadataSourcePageContainer disableGutters>
-          <SourceIntroStack>
+        <MetadataProviderPageContainer disableGutters>
+          <ProviderIntroStack>
             <Typography variant="overline" color="text.secondary">
-              Metadata source
+              Metadata provider
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              {SOURCE_DESCRIPTIONS[validSource]}
+              {PROVIDER_DESCRIPTIONS[validProvider]}
             </Typography>
-          </SourceIntroStack>
-          {validSource === "link" && (
-            <LinkSourceContent
+          </ProviderIntroStack>
+          {validProvider === "link" && (
+            <LinkProviderContent
               metadata={entry?.type === "link" ? entry : undefined}
             />
           )}
-          {validSource === "file" && (
-            <FileSourceContent
+          {validProvider === "file" && (
+            <FileProviderContent
               entry={entry?.type === "file" ? entry : undefined}
             />
           )}
-          {validSource === "catalog" && (
-            <CatalogSourceContent
+          {validProvider === "catalog" && (
+            <CatalogProviderContent
               entry={
                 entry?.type === "catalog" ||
                 entry?.type === LEGACY_CATALOG_SOURCE_NAME
@@ -108,13 +112,13 @@ export const BookMetadataSourceScreen = memo(
               }
             />
           )}
-          {validSource === "user" && (
-            <UserSourceContent
+          {validProvider === "user" && (
+            <UserProviderContent
               bookId={bookId}
               metadata={entry?.type === "user" ? entry : undefined}
             />
           )}
-        </MetadataSourcePageContainer>
+        </MetadataProviderPageContainer>
       </Page>
     )
   },

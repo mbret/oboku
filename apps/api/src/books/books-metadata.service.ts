@@ -14,7 +14,7 @@ import {
   directives,
   getBookCoverKey,
   getBookMetadataFields,
-  getBookMetadataSource,
+  getBookMetadataProvider,
   getMetadataFromBook,
   isCatalogEnabled,
   isBookProtected,
@@ -79,7 +79,7 @@ type UpdateCoverResult = {
  * instead of re-downloading.
  *
  * The primary fingerprint is the source-reported `modifiedAt` on the
- * `link` source — both sides MUST report it, otherwise we refuse to
+ * `link` provider — both sides MUST report it, otherwise we refuse to
  * reuse. (Sources that don't expose `modifiedAt` — currently `file`,
  * `uri` and `opds` — therefore never participate in this cache, by design.)
  *
@@ -237,7 +237,7 @@ export class BooksMetadataService {
       const {
         isbn,
         ignoreMetadataFile,
-        ignoreMetadataSources,
+        ignoreMetadataProviders,
         googleVolumeId: directiveGoogleVolumeId,
       } = directives.extractDirectivesFromName(linkResourceMetadata.name ?? "")
 
@@ -279,7 +279,7 @@ export class BooksMetadataService {
       )
       const previousCatalogMetadata = ctx.book.metadata?.find(isCatalogEntry)
       const isCatalogLookupAllowed =
-        !ignoreMetadataSources &&
+        !ignoreMetadataProviders &&
         externalFetchEnabled &&
         catalogProviders.length > 0
       const previousUserMetadata = ctx.book.metadata?.find(
@@ -524,7 +524,7 @@ export class BooksMetadataService {
     archive?: Archive
     /**
      * Hard refresh: regenerate the cover even when the bucket key
-     * already matches the picked source and the blob exists.
+     * already matches the picked provider and the blob exists.
      */
     force?: boolean
   }): Promise<UpdateCoverResult> {
@@ -551,7 +551,7 @@ export class BooksMetadataService {
       (await firstValueFrom(this.coversService.isCoverExist(coverObjectKey)))
     ) {
       this.logger.log(
-        `Skipping cover update for ${book._id} since the bucket cover already matches the picked source`,
+        `Skipping cover update for ${book._id} since the bucket cover already matches the picked provider`,
       )
 
       return {}
@@ -571,7 +571,7 @@ export class BooksMetadataService {
 
     const isCatalogCover =
       metadataForCover !== undefined &&
-      getBookMetadataSource(metadataForCover) === "catalog"
+      getBookMetadataProvider(metadataForCover) === "catalog"
 
     if (isCatalogCover && coverLink) {
       const saved = await this.coversService.saveCoverFromUrl(

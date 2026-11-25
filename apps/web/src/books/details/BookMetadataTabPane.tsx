@@ -13,7 +13,7 @@ import { Link } from "react-router"
 import { useBook } from "../states"
 import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
 import { useIncrementalBookPatch } from "../useIncrementalBookPatch"
-import { MetadataSourcePane } from "./MetadataSourcePane"
+import { MetadataProviderPane } from "./MetadataProviderPane"
 import { BookMetadataPolicyPane } from "../metadata/BookMetadataPolicyPane"
 import { BookSourceSection } from "./BookSourceSection"
 import { BOOK_OPTIMIZE_TABS, getBookOptimizeRoute } from "../optimize/tabs"
@@ -65,7 +65,7 @@ export const BookMetadataTabPane = memo(function BookMetadataTabPane({
           </ActionListItemButton>
         </ListItem>
       </List>
-      <MetadataSourcePane bookId={bookId} />
+      <MetadataProviderPane bookId={bookId} />
       <BookMetadataPolicyPane
         override={metadataFetchOverride}
         isProtected={metadataFetchIsProtected}

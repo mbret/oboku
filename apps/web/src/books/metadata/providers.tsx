@@ -6,7 +6,7 @@ import {
 } from "@mui/icons-material"
 import {
   type BookMetadata,
-  type BookMetadataSource,
+  type BookMetadataProvider,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 import {
@@ -18,15 +18,15 @@ import type { ReactNode } from "react"
 import type { DeepReadonlyObject } from "rxdb"
 
 export {
-  type BookMetadataSource,
-  getOrderedBookMetadataSources,
-  isBookMetadataSource,
+  type BookMetadataProvider,
+  getOrderedBookMetadataProviders,
+  isBookMetadataProvider,
 } from "@oboku/shared"
 
-export const getBookMetadataSourceLabel = (
-  source: BookMetadataSource,
+export const getBookMetadataProviderLabel = (
+  provider: BookMetadataProvider,
 ): string => {
-  switch (source) {
+  switch (provider) {
     case "file":
       return "File"
     case "catalog":
@@ -38,10 +38,10 @@ export const getBookMetadataSourceLabel = (
   }
 }
 
-export const getBookMetadataSourceIcon = (
-  source: BookMetadataSource,
+export const getBookMetadataProviderIcon = (
+  provider: BookMetadataProvider,
 ): ReactNode => {
-  switch (source) {
+  switch (provider) {
     case "file":
       return <PlagiarismOutlined />
     case "catalog":
@@ -73,7 +73,7 @@ export const getCatalogProviderNameById = (providerId: string): string => {
   }
 }
 
-/** The catalog an entry was matched in, or `undefined` for other sources. */
+/** The catalog an entry was matched in, or `undefined` for other providers. */
 export const getCatalogProviderName = (
   entry: DeepReadonlyObject<BookMetadata>,
 ): string | undefined => {

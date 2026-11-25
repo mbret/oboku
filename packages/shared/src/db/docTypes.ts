@@ -309,7 +309,7 @@ export type SettingsResolvedConnectorData<
 }
 
 /**
- * A catalog's settings for the account, under its metadata-fetcher provider
+ * A catalog's settings for the account, under its metadata provider
  * id. A catalog with no entry keeps its defaults, so it is enabled.
  */
 export type SettingsCatalogDocType = {

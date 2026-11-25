@@ -8,7 +8,7 @@ Unlike movies, tv shows or music books are very complex to fetch metadata for. A
 
 ## Books metadata
 
-To know more about where and how we fetch book metadata you can visit this section [Metadata Sources](/guides/metadata-sources)
+To know more about where and how we fetch book metadata you can visit this section [Metadata Providers](/guides/metadata-providers)
 
 ### Refine metadata
 

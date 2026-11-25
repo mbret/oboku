@@ -14,9 +14,9 @@ type ParsedDirectives = ReturnType<typeof directives.extractDirectivesFromName>
 
 /**
  * Directives that map onto a {@link BookMetadata} property. Behavior
- * directives (`metadataSourceOnly`, `ignoreMetadataFile`, `isWebtoon`,
+ * directives (`metadataProviderOnly`, `ignoreMetadataFile`, `isWebtoon`,
  * etc.) are intentionally excluded — they belong on a dedicated
- * filename-directives screen, not on a metadata source detail.
+ * filename-directives screen, not on a metadata provider detail.
  */
 type MetadataDirectiveKey = Extract<
   keyof ParsedDirectives,
@@ -81,12 +81,12 @@ const DirectivesSection = ({
 }
 
 /**
- * Link source detail. Title is shown in two forms — raw (filename
+ * Link provider detail. Title is shown in two forms — raw (filename
  * verbatim, directives included) and cleaned — so the user sees what is
  * canonical vs. what other consumers display. Size is humanized.
  * Directive-derived metadata fields are exposed in their own section.
  */
-export const LinkSourceContent = ({ metadata }: Props) => {
+export const LinkProviderContent = ({ metadata }: Props) => {
   const rawTitle = metadata?.title
   const cleanTitle = rawTitle
     ? directives.removeDirectiveFromString(rawTitle)
