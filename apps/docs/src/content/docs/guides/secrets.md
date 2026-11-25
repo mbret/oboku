@@ -4,11 +4,11 @@ title: "Secrets"
 
 Secrets are how you keep your confidential information safe.
 
-Some configuration such as adding a datasource or configuring extra features will requires you to provide confidential information only you should know. Although oboku will need to use them at some points, they are encrypted in your own database and can be decrypted only by you. The one exception is the password of a connector you connect: see [Passwords kept by oboku's server](#passwords-kept-by-obokus-server).
+Some configuration such as adding a library sync or configuring extra features will requires you to provide confidential information only you should know. Although oboku will need to use them at some points, they are encrypted in your own database and can be decrypted only by you. The one exception is the password of a connector you connect: see [Passwords kept by oboku's server](#passwords-kept-by-obokus-server).
 
 This means that if oboku were compromised, an attacker would have no way to read your secrets, except the passwords of connected connectors.
 
-When oboku needs to read your secrets to perform actions (eg: synchronize a datasource) it will prompt you for your passport and use the decrypted secrets only for that process lifetime. They will be kept in memory and discarded as soon as the process is done.
+When oboku needs to read your secrets to perform actions (eg: run a library sync) it will prompt you for your passport and use the decrypted secrets only for that process lifetime. They will be kept in memory and discarded as soon as the process is done.
 
 ## Passwords kept by oboku's server
 

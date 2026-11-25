@@ -95,7 +95,7 @@ export default defineConfig({
             "guides/collections",
             "guides/tags",
             "guides/books",
-            "guides/datasources",
+            "guides/library-syncs",
             "guides/reader",
             "guides/storage",
             "guides/supported-contents",

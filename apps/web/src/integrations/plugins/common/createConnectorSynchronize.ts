@@ -16,11 +16,11 @@ export const createConnectorSynchronize = <T extends SettingsConnectorType>(
 
     return useMutation({
       mutationFn: async function extractSourceCredentials(
-        dataSource: LibrarySyncDocTypeFor<T>,
+        librarySync: LibrarySyncDocTypeFor<T>,
       ) {
-        const connectorDataSource: LibrarySyncDocTypeFor<SettingsConnectorType> =
-          dataSource
-        const connectorId = connectorDataSource.data_v2?.connectorId
+        const connectorLibrarySync: LibrarySyncDocTypeFor<SettingsConnectorType> =
+          librarySync
+        const connectorId = connectorLibrarySync.data_v2?.connectorId
 
         if (!connectorId) {
           throw new ObokuSharedError(

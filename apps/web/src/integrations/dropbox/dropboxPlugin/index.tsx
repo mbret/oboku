@@ -2,7 +2,7 @@
 import { UploadBook } from "./UploadBook"
 import { SvgIcon } from "@mui/material"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 import DropboxIconAsset from "../../../assets/dropbox.svg?react"
 import { PLUGIN_NAME } from "./constants"
 import { useRefreshMetadata } from "./useRefreshMetadata"
@@ -11,7 +11,7 @@ import type { SourcePlugin } from "../../plugins/types"
 import { useSignOut } from "./useSignOut"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { UpsertFile } from "./UpsertFile"
 
 const DropboxIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
@@ -27,12 +27,12 @@ export const plugin: SourcePlugin<"dropbox"> = {
   canUpsertFile: true,
   Icon: DropboxIcon,
   UploadBookComponent: UploadBook,
-  DataSourceForm,
+  LibrarySyncForm,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
   useRemoveResource: useUnsupportedRemoveResource,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   canSynchronize: true,

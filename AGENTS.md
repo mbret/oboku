@@ -113,7 +113,7 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 
 ### Web source plugins: members named `use*` are hooks
 
-- A member named `use*` of `SourcePlugin` in `apps/web/src/integrations/plugins/types.ts` (`useLinkInfo`, `useSyncSourceInfo`, `useRemoveResource`, `useSignOut`, `useSynchronize`, `useRefreshMetadata`) is a hook on purpose, even when no plugin calls a React hook in it and it returns a plain value. A hook can use any React context, so the plugin API stays open to a future plugin.
+- A member named `use*` of `SourcePlugin` in `apps/web/src/integrations/plugins/types.ts` (`useLinkInfo`, `useLibrarySyncInfo`, `useRemoveResource`, `useSignOut`, `useSynchronize`, `useRefreshMetadata`) is a hook on purpose, even when no plugin calls a React hook in it and it returns a plain value. A hook can use any React context, so the plugin API stays open to a future plugin.
 - Never turn such a member into a plain function. Hooks cannot run in a loop, so generic code calls each plugin's hook by name, or runs it in a component made for the plugin's type.
 
 ### Data migrations: RxDB is local, CouchDB is the data

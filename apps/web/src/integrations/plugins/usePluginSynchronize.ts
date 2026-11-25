@@ -65,28 +65,28 @@ export const usePluginSynchronize = () => {
   })
 
   return useCallback(
-    async (dataSource: LibrarySyncDocType): Promise<SynchronizeResult> => {
-      switch (dataSource.type) {
+    async (librarySync: LibrarySyncDocType): Promise<SynchronizeResult> => {
+      switch (librarySync.type) {
         case "webdav":
-          return synchronizeWebdav(dataSource)
+          return synchronizeWebdav(librarySync)
         case "dropbox":
-          return synchronizeDropbox(dataSource)
+          return synchronizeDropbox(librarySync)
         case "synology-drive":
-          return synchronizeSynologyDrive(dataSource)
+          return synchronizeSynologyDrive(librarySync)
         case "DRIVE":
-          return synchronizeDrive(dataSource)
+          return synchronizeDrive(librarySync)
         case "one-drive":
-          return synchronizeOneDrive(dataSource)
+          return synchronizeOneDrive(librarySync)
         case "file":
-          return synchronizeFile(dataSource)
+          return synchronizeFile(librarySync)
         case "URI":
-          return synchronizeUri(dataSource)
+          return synchronizeUri(librarySync)
         case "server":
-          return synchronizeServer(dataSource)
+          return synchronizeServer(librarySync)
         case "opds":
-          return synchronizeOpds(dataSource)
+          return synchronizeOpds(librarySync)
         default:
-          return assertNever(dataSource)
+          return assertNever(librarySync)
       }
     },
     [

@@ -75,8 +75,8 @@ export const UploadBookComponent: SourcePlugin<"URI">["UploadBookComponent"] =
                 fontWeight: "bold",
               }}
             >
-              We recommend you to add books from datasource or a drive plugin
-              (Google Drive, Dropbox, etc)
+              We recommend you add books with a library sync, or from a source
+              such as Google Drive or Dropbox
             </Typography>
             <Typography component="p">
               Here are some examples of valid URIs:

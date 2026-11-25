@@ -6,7 +6,7 @@ Server sync lets you expose and sync your content from the server directly (eg: 
 
 ## Mental model differences
 
-oboku is quite different from your usual services and that makes it unique, powerful and flexible. Each users build their own libraries themselves. There is no unique library scanner running on the "server". Instead, users configure what they want, where and how. The Server Sync feature is literally just giving an additional data source option to your users.
+oboku is quite different from your usual services and that makes it unique, powerful and flexible. Each users build their own libraries themselves. There is no unique library scanner running on the "server". Instead, users configure what they want, where and how. The Server Sync feature is literally just giving an additional source option to your users.
 
 ## Configuration
 

@@ -11,7 +11,7 @@ import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveReso
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 
 export const plugin: SourcePlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
@@ -21,7 +21,7 @@ export const plugin: SourcePlugin<"file"> = {
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,

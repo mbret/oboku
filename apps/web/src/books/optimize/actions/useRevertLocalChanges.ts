@@ -32,7 +32,7 @@ export const useRevertLocalChanges = ({
     },
     [book.links],
   )
-  // Local-only books have no data source to re-download from, so reverting
+  // Local-only books have no source to re-download from, so reverting
   // (which deletes the local file) would lose it permanently.
   const canRevert = link.type !== PLUGIN_FILE_TYPE
 
@@ -68,7 +68,7 @@ export const useRevertLocalChanges = ({
 
       const isConfirmed = await showConfirmDialog({
         message:
-          "This will discard your local changes and re-download the original file from the data source.",
+          "This will discard your local changes and re-download the original file from its source.",
       })
 
       if (!isConfirmed) return

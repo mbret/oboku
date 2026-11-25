@@ -9,8 +9,8 @@ export function GetStartedBanner() {
         Your library is waiting
       </Typography>
       <Typography sx={{ maxWidth: 520 }}>
-        Sign in, connect a data source and start reading in minutes. No
-        installation, no credit card.
+        Sign in, connect a source and start reading in minutes. No installation,
+        no credit card.
       </Typography>
       <Stack
         sx={{

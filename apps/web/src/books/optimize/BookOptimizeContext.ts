@@ -20,7 +20,7 @@ export type BookOptimizeContextValue = {
   reset: UseFormReset<BookOptimizeFormValues>
   trigger: UseFormTrigger<BookOptimizeFormValues>
   canUpload: boolean
-  uploadToDataSource: () => Promise<void>
+  uploadToSource: () => Promise<void>
   revertLocalChanges: () => Promise<void>
   canRevert: boolean
   isReverting: boolean

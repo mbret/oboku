@@ -106,8 +106,8 @@ function anyServerLibraryBookTitle(page: Page) {
   ).reduce((titles, title) => titles.or(title))
 }
 
-async function showDataSources(page: Page) {
-  await page.goto("/sync/datasources")
+async function showLibrarySyncs(page: Page) {
+  await page.goto("/sync/library-syncs")
   await expect(page.getByText(/^Last synced at /)).toBeVisible()
 }
 
@@ -155,16 +155,16 @@ const SCENES = {
       await expect(anyServerLibraryBookTitle(page).first()).toBeVisible()
     },
   },
-  "data-sources": {
-    show: showDataSources,
+  "library-syncs": {
+    show: showLibrarySyncs,
   },
-  "add-data-source": {
-    show: async function showAddDataSource(page) {
-      await showDataSources(page)
-      await page.getByRole("button", { name: "Add a new source" }).click()
+  "add-library-sync": {
+    show: async function showAddLibrarySync(page) {
+      await showLibrarySyncs(page)
+      await page.getByRole("button", { name: "Add a sync" }).click()
 
-      for (const provider of ["Google Drive", "Dropbox", "OneDrive"]) {
-        await expect(page.getByRole("button", { name: provider })).toBeEnabled()
+      for (const source of ["Google Drive", "Dropbox", "OneDrive"]) {
+        await expect(page.getByRole("button", { name: source })).toBeEnabled()
       }
     },
     showsDialog: true,
@@ -196,7 +196,7 @@ const SCENES = {
       await page.getByRole("tab", { name: "Metadata" }).click()
       await page.getByRole("link", { name: /^Fix metadata in file/ }).click()
       await expect(page.getByText("Metadata report")).toBeVisible()
-      // The stack's data source cannot upload a book back, and an alert above
+      // The stack's source cannot upload a book back, and an alert above
       // the tabs says so.
       await page.getByRole("tablist").evaluate(function alignTabsToTop(tabs) {
         tabs.scrollIntoView({ block: "start" })

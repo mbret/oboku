@@ -1,7 +1,7 @@
 import { type DOMAttributes, memo, useCallback } from "react"
 import { useAddBook } from "../books/helpers"
 import { useDownloadBook } from "../download/useDownloadBook"
-import { useDataSourcePlugin } from "../dataSources/helpers"
+import { useSourcePlugin } from "../integrations/plugins/useSourcePlugin"
 import { TagsSelector } from "../tags/TagsSelector"
 import { useCreateRequestPopupDialog } from "../integrations/plugins/useCreateRequestPopupDialog"
 import type {
@@ -28,14 +28,14 @@ export const UploadBookDialog = memo(function UploadBookDialog({
 
   const [addBook] = useAddBook()
   const { mutateAsync: downloadFile } = useDownloadBook()
-  const dataSource = useDataSourcePlugin(openWith)
+  const sourcePlugin = useSourcePlugin(openWith)
   const createRequestPopup = useCreateRequestPopupDialog()
 
   const onClose: UploadBookComponentProps[`onClose`] = useCallback(
     (booksToAdd?: ReadonlyArray<UploadBookToAddPayload>) => {
       onFinalClose()
 
-      if (!dataSource || !booksToAdd?.length) {
+      if (!sourcePlugin || !booksToAdd?.length) {
         return
       }
 
@@ -77,19 +77,19 @@ export const UploadBookDialog = memo(function UploadBookDialog({
 
       void addBooksInBackground()
     },
-    [onFinalClose, addBook, downloadFile, dataSource],
+    [onFinalClose, addBook, downloadFile, sourcePlugin],
   )
 
-  if (!dataSource) return null
+  if (!sourcePlugin) return null
 
   return (
     <>
-      {dataSource.UploadBookComponent && (
-        <dataSource.UploadBookComponent
-          title={`Add a book with plugin ${dataSource.name}`}
+      {sourcePlugin.UploadBookComponent && (
+        <sourcePlugin.UploadBookComponent
+          title={`Add a book from ${sourcePlugin.name}`}
           TagsSelector={TagsSelector}
           onClose={onClose}
-          requestPopup={createRequestPopup({ name: dataSource.name })}
+          requestPopup={createRequestPopup({ name: sourcePlugin.name })}
           {...rest}
         />
       )}

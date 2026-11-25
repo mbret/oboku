@@ -122,9 +122,9 @@ export const ProblemsScreen = memo(function ProblemsScreen() {
             <p>
               <b>
                 Before doing anything here make sure to have been connected to
-                the internet and synced. In addition, make sure to to have sync
-                your data source recently. Make sure to have sync all your
-                devices if needed. THIS IS IMPORTANT.
+                the internet and synced. In addition, make sure to have run your
+                library syncs recently. Make sure to have sync all your devices
+                if needed. THIS IS IMPORTANT.
               </b>
             </p>
           </Alert>

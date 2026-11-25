@@ -96,7 +96,7 @@
     },
     {
       "source": "/wiki/datasources",
-      "destination": "/guides/datasources",
+      "destination": "/guides/library-syncs",
       "permanent": true
     },
     {
