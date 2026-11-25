@@ -133,7 +133,7 @@ export type BookDocType = CouchDBMeta &
      */
     metadataFileDownloadEnabled?: boolean | null
     /**
-     * User-defined priority for the swappable middle of the metadata-source
+     * User-defined priority for the swappable middle of the metadata-provider
      * merge order. The full effective priority is:
      * `["user", ...metadataSourcePriority, "link"]` (highest → lowest).
      *

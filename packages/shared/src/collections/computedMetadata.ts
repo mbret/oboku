@@ -48,13 +48,13 @@ export const computeCollectionMetadata = (
   metadata: readonly (CollectionMetadataEntry | undefined)[],
 ): CollectionComputedMetadata =>
   metadata
-    .filter(function isDefinedSource(entry) {
+    .filter(function isDefinedEntry(entry) {
       return entry !== undefined
     })
     .sort(function byAscendingPriority(a, b) {
       return getProviderPriority(a.type) - getProviderPriority(b.type)
     })
-    .reduce<CollectionComputedMetadata>(function mergeSourceIntoView(
+    .reduce<CollectionComputedMetadata>(function mergeEntryIntoView(
       acc,
       { type, ...entry },
     ) {

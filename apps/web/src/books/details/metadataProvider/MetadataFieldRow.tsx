@@ -13,7 +13,7 @@ const EmptyValue = () => (
 
 /**
  * One read-only row in the metadata provider detail screen: label on top,
- * value (or em-dash fallback) below. Source content components compose
+ * value (or em-dash fallback) below. Provider content components compose
  * these to express what each metadata provider advertises.
  */
 export const MetadataFieldRow = ({

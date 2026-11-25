@@ -79,7 +79,7 @@ type UpdateCoverResult = {
  * instead of re-downloading.
  *
  * The primary fingerprint is the source-reported `modifiedAt` on the
- * `link` source — both sides MUST report it, otherwise we refuse to
+ * `link` provider — both sides MUST report it, otherwise we refuse to
  * reuse. (Sources that don't expose `modifiedAt` — currently `file`,
  * `uri` and `opds` — therefore never participate in this cache, by design.)
  *
@@ -524,7 +524,7 @@ export class BooksMetadataService {
     archive?: Archive
     /**
      * Hard refresh: regenerate the cover even when the bucket key
-     * already matches the picked source and the blob exists.
+     * already matches the picked provider and the blob exists.
      */
     force?: boolean
   }): Promise<UpdateCoverResult> {
@@ -551,7 +551,7 @@ export class BooksMetadataService {
       (await firstValueFrom(this.coversService.isCoverExist(coverObjectKey)))
     ) {
       this.logger.log(
-        `Skipping cover update for ${book._id} since the bucket cover already matches the picked source`,
+        `Skipping cover update for ${book._id} since the bucket cover already matches the picked provider`,
       )
 
       return {}

@@ -43,7 +43,7 @@ const SaveActionStack = styled(Stack)(({ theme }) => ({
 }))
 
 /**
- * User source detail. Currently exposes ISBN as the only editable field
+ * User provider detail. Currently exposes ISBN as the only editable field
  * (additional editable fields can be added here as new rows). Edits are
  * staged in a form so the user must explicitly hit "Save" — `isDirty`
  * gates the button so unchanged values can't be submitted.

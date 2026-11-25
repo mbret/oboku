@@ -143,7 +143,7 @@ export const processRefreshMetadata = async (
           { title, year: year ? String(year) : undefined },
           {
             comicVineApiKey,
-            sources: metadataProviders,
+            providers: metadataProviders,
           },
         )
       : []

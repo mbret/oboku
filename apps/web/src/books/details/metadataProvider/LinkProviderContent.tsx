@@ -81,7 +81,7 @@ const DirectivesSection = ({
 }
 
 /**
- * Link source detail. Title is shown in two forms — raw (filename
+ * Link provider detail. Title is shown in two forms — raw (filename
  * verbatim, directives included) and cleaned — so the user sees what is
  * canonical vs. what other consumers display. Size is humanized.
  * Directive-derived metadata fields are exposed in their own section.
