@@ -32,7 +32,7 @@ export const getRxModelLabelFromValue = (
     case "datasource":
       return "library sync"
     case "link":
-      return "link"
+      return "book file"
     default:
       return "book"
   }

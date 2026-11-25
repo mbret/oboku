@@ -33,7 +33,7 @@ const ERROR_RESOURCE_NOT_REACHABLE_MESSAGE =
 const fromObokuErrorCode = (error: ObokuErrorCode) => {
   switch (error) {
     case ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND:
-      return "The resource does not seem to exist. Please, verify the link and try again."
+      return "The file or folder does not seem to exist. Check it at its source, then try again."
     case ObokuErrorCode.ERROR_LINK_INVALID:
       return ERROR_LINK_INVALID_MESSAGE
     case ObokuErrorCode.ERROR_NO_LINK:
@@ -57,7 +57,7 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_DATASOURCE_DOWNLOAD_DIFFERENT_DEVICE:
       return "You cannot download this book since it has been added on a different device. Please use your other device to read or synchronize your book from a cloud source."
     case ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED:
-      return "No connector is configured for this link. Please set one up first."
+      return "No connector is configured. Please set one up first."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNAUTHORIZED:
       return "The sync server did not accept this username and password."
     case ObokuErrorCode.ERROR_KOREADER_SYNC_SERVER_UNREACHABLE:

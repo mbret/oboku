@@ -11,7 +11,7 @@ import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 
 const plugin: SourcePlugin<"URI"> = {
   type: TYPE,
-  name: "Web link",
+  name: "Web address",
   canRemoveResource: false,
   canSynchronize: false,
   Icon: HttpRounded,

@@ -8,7 +8,7 @@ export const BOOK_METADATA_FIELD_LABELS = {
   authors: "Authors",
   description: "Description",
   rating: "Rating",
-  coverLink: "Cover link",
+  coverLink: "Cover address",
   coverConfidence: "Cover origin",
   pageCount: "Page count",
   contentType: "Content type",

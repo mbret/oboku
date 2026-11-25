@@ -22,9 +22,9 @@ Due to the important costs it involves we cannot use a bridge or proxy to provid
 Due to the current lack of support of background downloading from some major browsers **it is currently not possible to download books while the app is closed or frozen**. We are working on implementing it for chrome as a progressive update and follow with other browsers once the support is here. You can check the status of the technology here [https://www.chromestatus.com/feature/5712608971718656](https://www.chromestatus.com/feature/5712608971718656)
 :::
 
-## Book Link
+## Book file
 
-A book is always attached to a link. The link is&#x20;
+A book is always attached to its file at its source. oboku downloads the book from there.
 
 ## Supported formats
 

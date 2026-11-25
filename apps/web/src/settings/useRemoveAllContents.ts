@@ -60,7 +60,7 @@ export const useRemoveAllContents = () => {
                   )
                 }),
                 mergeMap(() => {
-                  Logger.info("Removing links")
+                  Logger.info("Removing book files")
 
                   return from(database.link.find().incrementalRemove())
                 }),
