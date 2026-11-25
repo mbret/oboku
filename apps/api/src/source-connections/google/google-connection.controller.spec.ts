@@ -853,6 +853,33 @@ describe("GoogleConnectionController", () => {
         })
       })
 
+      it("forgets a minted token once its reuse window ends, without another call", async () => {
+        const mintedAt = new Date("2026-11-18T10:00:00.000Z").getTime()
+        const expiresAt = mintedAt + FRESH_TOKEN_LIFETIME_SECONDS * 1000
+        const reuseMarginMs = 10 * 60 * 1000
+        await connect({ code: CODE })
+        vi.useFakeTimers({ toFake: ["Date", "setTimeout"] })
+        vi.setSystemTime(mintedAt)
+        refreshAccessToken.mockResolvedValue({
+          credentials: {
+            access_token: FRESH_ACCESS_TOKEN,
+            expiry_date: expiresAt,
+            scope: GRANTED_SCOPE,
+          },
+          res: null,
+        })
+        await googleConnectionService.mintAccessToken(READER_ID)
+
+        await vi.advanceTimersByTimeAsync(expiresAt - reuseMarginMs - mintedAt)
+        vi.setSystemTime(mintedAt)
+        grantNextAccessToken()
+        const { accessToken } =
+          await googleConnectionService.mintAccessToken(READER_ID)
+        vi.useRealTimers()
+
+        expect(accessToken).toBe(NEXT_ACCESS_TOKEN)
+      })
+
       it("shares one mint between the calls made while it runs", async () => {
         await connect({ code: CODE })
         const onMintedDuringRefresh = vi.fn()

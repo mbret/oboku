@@ -344,8 +344,19 @@ export class GoogleConnectionService {
       throw error
     }
     const mint = this.mintFromStoredRefreshToken(userId).catch(forgetFailedMint)
+    const forgetMint = () => this.forgetAccessToken(userId, mint)
+    const forgetMintWhenNoLongerReusable = ({
+      expiryDate,
+    }: MintedAccessToken) => {
+      const reuseWindowLeftMs =
+        expiryDate - ACCESS_TOKEN_REUSE_MARGIN_MS - Date.now()
+
+      setTimeout(forgetMint, Math.max(0, reuseWindowLeftMs)).unref()
+    }
+    const ignoreFailedMint = () => {}
 
     this.accessTokens.set(userId, mint)
+    mint.then(forgetMintWhenNoLongerReusable, ignoreFailedMint)
 
     return mint
   }
