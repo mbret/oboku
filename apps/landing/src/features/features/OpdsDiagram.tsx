@@ -1,13 +1,11 @@
-import {
-  CloudRounded,
-  DevicesRounded,
-  DnsRounded,
-  TabletAndroidRounded,
-} from "@mui/icons-material"
-import type { SvgIconComponent } from "@mui/icons-material"
+import { DevicesRounded, TabletAndroidRounded } from "@mui/icons-material"
 import { Typography } from "@mui/material"
+import type { ReactElement } from "react"
 import { FeatureIconBox } from "../common/FeatureIconBox"
 import { ObokuLogoIcon } from "../common/ObokuLogoIcon"
+import googleDriveLogo from "../common/source-logos/google-drive.svg"
+import { SourceLogoImage } from "../common/SourceLogoImage"
+import { WebDavIcon } from "../common/WebDavIcon"
 import {
   DiagramFigure,
   DiagramGridBox,
@@ -17,31 +15,42 @@ import {
   ObokuNodeStack,
 } from "./OpdsDiagram.styled"
 
+const smallIconSize = 20
+
 type DiagramNode = {
-  Icon: SvgIconComponent
+  icon: ReactElement
   label: string
   detail?: string
 }
 
 const sources: DiagramNode[] = [
-  { Icon: CloudRounded, label: "Google Drive" },
-  { Icon: DnsRounded, label: "WebDAV" },
+  {
+    icon: <SourceLogoImage src={googleDriveLogo} size={smallIconSize} />,
+    label: "Google Drive",
+  },
+  { icon: <WebDavIcon fontSize="small" />, label: "WebDAV" },
 ]
 
 const readingApps: DiagramNode[] = [
-  { Icon: TabletAndroidRounded, label: "KOReader", detail: "E-readers" },
-  { Icon: DevicesRounded, label: "OPDS apps", detail: "Phones, computers" },
+  {
+    icon: <TabletAndroidRounded fontSize="small" />,
+    label: "KOReader",
+    detail: "E-readers",
+  },
+  {
+    icon: <DevicesRounded fontSize="small" />,
+    label: "OPDS apps",
+    detail: "Phones, computers",
+  },
 ]
 
 function DiagramNodes({ nodes }: { nodes: DiagramNode[] }) {
   return (
     <NodeColumnStack>
-      {nodes.map(function renderNode({ Icon, label, detail }) {
+      {nodes.map(function renderNode({ icon, label, detail }) {
         return (
           <NodeStack key={label}>
-            <FeatureIconBox>
-              <Icon fontSize="small" />
-            </FeatureIconBox>
+            <FeatureIconBox>{icon}</FeatureIconBox>
             <Typography variant="subtitle2" component="p">
               {label}
             </Typography>

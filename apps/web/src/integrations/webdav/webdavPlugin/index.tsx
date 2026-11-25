@@ -1,9 +1,9 @@
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
-import { DataSourceForm } from "./DataSourceForm"
+import { LibrarySyncForm } from "./LibrarySyncForm"
 import { useSynchronize } from "./useSynchronize"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { DownloadBook } from "./DownloadBook"
 import { UploadBook } from "./UploadBook"
@@ -17,16 +17,16 @@ const WebDAVIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-const plugin: ObokuPlugin<"webdav"> = {
+const plugin: SourcePlugin<"webdav"> = {
   type: TYPE,
   name: "WebDAV",
   canRemoveResource: false,
   canSynchronize: true,
   Icon: WebDAVIcon,
-  DataSourceForm,
+  LibrarySyncForm,
   UploadBookComponent: UploadBook,
   useSynchronize,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useLinkInfo,
   useRefreshMetadata,
   useRemoveResource: useUnsupportedRemoveResource,

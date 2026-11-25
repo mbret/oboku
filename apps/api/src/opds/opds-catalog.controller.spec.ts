@@ -24,23 +24,23 @@ import { AtRestCipher } from "../crypto/at-rest-cipher.js"
 import { hashSecret } from "../crypto/secretHash.js"
 import type {
   OpdsServerPostgresEntity,
-  ProviderConnectionPostgresEntity,
+  SourceConnectionPostgresEntity,
   UserPostgresEntity,
 } from "../features/postgres/entities.js"
 import { OpdsServerPostgresService } from "../features/postgres/opds-server-postgres.service.js"
-import { ProviderConnectionPostgresService } from "../features/postgres/provider-connection-postgres.service.js"
+import { SourceConnectionPostgresService } from "../features/postgres/source-connection-postgres.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { UserPostgresService } from "../features/postgres/user-postgres.service.js"
 import { createObokuBadRequest } from "../http/obokuBadRequest.js"
 import { setPrivateNetworkAllowedHosts } from "../http/userAddressAgents.js"
 import { PluginsService } from "../plugins/plugins.service.js"
-import { ConnectorConnectionService } from "../provider-connections/connectors/connector-connection.service.js"
-import { GoogleConnectionService } from "../provider-connections/google/google-connection.service.js"
+import { ConnectorConnectionService } from "../source-connections/connectors/connector-connection.service.js"
+import { GoogleConnectionService } from "../source-connections/google/google-connection.service.js"
 import {
   createConnectionStore,
   toConnectionRowKey,
-} from "../provider-connections/provider-connection-store.fixture.js"
-import { ProviderConnectionsService } from "../provider-connections/provider-connections.service.js"
+} from "../source-connections/source-connection-store.fixture.js"
+import { SourceConnectionsService } from "../source-connections/source-connections.service.js"
 import { buildMultiStatusXml } from "../webdav/webdav.xml.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { OpdsAuthenticationController } from "./opds-authentication.controller.js"
@@ -552,8 +552,8 @@ async function startWebdavServer({
 describe("OpdsCatalogController", () => {
   let app: INestApplication<App>
   let connectionStore: ReturnType<typeof createConnectionStore>
-  let connectionRows: Map<string, ProviderConnectionPostgresEntity>
-  let providerConnectionsService: ProviderConnectionsService
+  let connectionRows: Map<string, SourceConnectionPostgresEntity>
+  let sourceConnectionsService: SourceConnectionsService
 
   const getCatalog = (path: string, authorization?: string) => {
     const pendingRequest = request(app.getHttpServer())
@@ -620,10 +620,10 @@ describe("OpdsCatalogController", () => {
           useValue: { isConnected, mintAccessToken },
         },
         ConnectorConnectionService,
-        ProviderConnectionsService,
+        SourceConnectionsService,
         AtRestCipher,
         {
-          provide: ProviderConnectionPostgresService,
+          provide: SourceConnectionPostgresService,
           useValue: connectionStore.store,
         },
         { provide: PluginsService, useValue: { getFileMetadata, download } },
@@ -668,7 +668,7 @@ describe("OpdsCatalogController", () => {
       ],
     }).compile()
 
-    providerConnectionsService = module.get(ProviderConnectionsService)
+    sourceConnectionsService = module.get(SourceConnectionsService)
     app = module.createNestApplication({ logger: false })
     await app.init()
   })
@@ -1535,7 +1535,7 @@ describe("OpdsCatalogController", () => {
       })
 
     const connectConnector = (connector: WebdavConnectorDocType) =>
-      providerConnectionsService.connect({
+      sourceConnectionsService.connect({
         userId: OWNER.id,
         provider: "webdav",
         credentials: {

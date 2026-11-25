@@ -18,7 +18,7 @@ export const links = {
   documentationConnectors: `https://docs.oboku.me/guides/connectors`,
   documentationGoogle: `https://docs.oboku.me/self-hosting/configuration/google`,
   documentationKoreaderSyncServer: `https://docs.oboku.me/guides/koreader-sync-server`,
-  documentationOpds: `https://docs.oboku.me/sync-providers/opds`,
+  documentationOpds: `https://docs.oboku.me/sources/opds`,
   documentationOpdsServersReadingApp: `https://docs.oboku.me/guides/opds-servers#set-up-a-reading-app`,
   documentationSecrets: `https://docs.oboku.me/guides/secrets`,
   documentationStorage: `https://docs.oboku.me/guides/storage`,

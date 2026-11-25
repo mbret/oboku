@@ -2,8 +2,8 @@ import type { CollectionMetadata } from "../metadata"
 import { mergeWith } from "../utils/mergeWith"
 
 /**
- * Higher wins. A source absent from this map (a document written by a newer
- * client) is merged first so known sources always take precedence over it.
+ * Higher wins. A provider absent from this map (a document written by a newer
+ * client) is merged first so known providers always take precedence over it.
  */
 export const COLLECTION_METADATA_PRIORITY = {
   user: 6,
@@ -15,13 +15,13 @@ export const COLLECTION_METADATA_PRIORITY = {
   comicvine: 0,
 } as const satisfies Record<CollectionMetadata["type"], number>
 
-const UNKNOWN_SOURCE_PRIORITY = -1
+const UNKNOWN_PROVIDER_PRIORITY = -1
 
 /**
  * `CollectionMetadata` as read from a document: array fields are widened to
  * `readonly` so deeply-frozen documents (rxdb) can be passed without copying.
  */
-export type CollectionMetadataSource = Omit<
+export type CollectionMetadataEntry = Omit<
   CollectionMetadata,
   "aliases" | "authors"
 > & {
@@ -30,31 +30,31 @@ export type CollectionMetadataSource = Omit<
 }
 
 export type CollectionComputedMetadata = Omit<
-  CollectionMetadataSource,
+  CollectionMetadataEntry,
   "type" | "title"
 > & {
   title?: string | undefined
 }
 
-const getSourcePriority = (type: CollectionMetadata["type"]) =>
-  COLLECTION_METADATA_PRIORITY[type] ?? UNKNOWN_SOURCE_PRIORITY
+const getProviderPriority = (type: CollectionMetadata["type"]) =>
+  COLLECTION_METADATA_PRIORITY[type] ?? UNKNOWN_PROVIDER_PRIORITY
 
 /**
- * Flattens every metadata source of a collection into a single view, letting
- * higher priority sources override lower ones. `undefined` and `null` values
+ * Flattens every metadata entry of a collection into a single view, letting
+ * higher priority providers override lower ones. `undefined` and `null` values
  * never override an already resolved one.
  */
 export const computeCollectionMetadata = (
-  metadata: readonly (CollectionMetadataSource | undefined)[],
+  metadata: readonly (CollectionMetadataEntry | undefined)[],
 ): CollectionComputedMetadata =>
   metadata
-    .filter(function isDefinedSource(entry) {
+    .filter(function isDefinedEntry(entry) {
       return entry !== undefined
     })
     .sort(function byAscendingPriority(a, b) {
-      return getSourcePriority(a.type) - getSourcePriority(b.type)
+      return getProviderPriority(a.type) - getProviderPriority(b.type)
     })
-    .reduce<CollectionComputedMetadata>(function mergeSourceIntoView(
+    .reduce<CollectionComputedMetadata>(function mergeEntryIntoView(
       acc,
       { type, ...entry },
     ) {

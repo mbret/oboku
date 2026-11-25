@@ -22,6 +22,7 @@ import {
   FolderSharedRounded,
   FullscreenRounded,
   HistoryRounded,
+  HttpRounded,
   ImageRounded,
   InstallMobileRounded,
   KeyRounded,
@@ -44,12 +45,12 @@ import {
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
-import type { ReactNode } from "react"
+import type { ReactElement, ReactNode } from "react"
 import { PhoneScreenshots } from "../common/PhoneScreenshots"
-import addDataSourceScreenshot from "../common/app-screenshots/add-data-source.webp"
+import addLibrarySyncScreenshot from "../common/app-screenshots/add-library-sync.webp"
 import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.webp"
 import bookDetailsScreenshot from "../common/app-screenshots/book-details.webp"
-import dataSourcesScreenshot from "../common/app-screenshots/data-sources.webp"
+import librarySyncsScreenshot from "../common/app-screenshots/library-syncs.webp"
 import epubReaderScreenshot from "../common/app-screenshots/epub-reader.webp"
 import homeScreenshot from "../common/app-screenshots/home.webp"
 import koreaderProgressSyncScreenshot from "../common/app-screenshots/koreader-progress-sync.webp"
@@ -61,7 +62,8 @@ import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
 import optimizeContentScreenshot from "../common/app-screenshots/optimize-content.webp"
 import optimizeMetadataScreenshot from "../common/app-screenshots/optimize-metadata.webp"
 import profileScreenshot from "../common/app-screenshots/profile.webp"
-import { supportedExtensions, syncProviders } from "../home/content"
+import { sources } from "../common/sources"
+import { supportedExtensions } from "../home/content"
 import { OpdsDiagram } from "./OpdsDiagram"
 
 type Feature = {
@@ -73,6 +75,7 @@ type Feature = {
 type FeatureChip = {
   label: string
   href?: string
+  icon?: ReactElement
 }
 
 export type FeatureGroup = {
@@ -183,16 +186,16 @@ export const featureGroups: FeatureGroup[] = [
     illustration: (
       <PhoneScreenshots
         primary={{
-          src: dataSourcesScreenshot,
-          alt: "oboku data sources screen with a server library and the day of its last sync",
+          src: librarySyncsScreenshot,
+          alt: "oboku Syncs screen with a server library and the day of its last sync",
         }}
         secondary={{
-          src: addDataSourceScreenshot,
-          alt: "Adding an oboku data source from Dropbox or Google Drive",
+          src: addLibrarySyncScreenshot,
+          alt: "Adding an oboku library sync from Dropbox or Google Drive",
         }}
       />
     ),
-    chips: syncProviders,
+    chips: sources,
     features: [
       {
         Icon: CloudRounded,
@@ -212,15 +215,26 @@ export const featureGroups: FeatureGroup[] = [
           "Sync the books of a Komga, Calibre-Web or Kavita catalog.",
       },
       {
+        Icon: DnsRounded,
+        title: "Your own server",
+        description:
+          "A self-hosted instance syncs the books stored on its server or your NAS.",
+      },
+      {
         Icon: UploadFileRounded,
         title: "Upload from your device",
         description: "Add books stored on your phone or computer.",
       },
       {
+        Icon: HttpRounded,
+        title: "Add from a web address",
+        description: "Add a book from the link to its file.",
+      },
+      {
         Icon: SyncRounded,
         title: "Synchronize in one tap",
         description:
-          "New books and folders in your data sources are picked up on every sync.",
+          "New books and folders in your library syncs are picked up on every sync.",
       },
       {
         Icon: ShareRounded,
@@ -501,7 +515,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: KeyRounded,
         title: "Encrypted secrets",
         description:
-          "Credentials for your data sources are encrypted with a master password only you know.",
+          "Credentials for your sources are encrypted with a master password only you know.",
       },
     ],
   },
@@ -553,7 +567,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: CloudUploadRounded,
         title: "Save back to the source",
         description:
-          "Upload the optimized book back to its data source, or download it to your device.",
+          "Upload the optimized book back to its source, or download it to your device.",
       },
     ],
   },
@@ -582,7 +596,7 @@ export const featureGroups: FeatureGroup[] = [
         Icon: FolderSharedRounded,
         title: "Server sync",
         description:
-          "A self-hosted instance can expose books stored on the server or your NAS as a data source.",
+          "A self-hosted instance can expose books stored on the server or your NAS as a source.",
       },
       {
         Icon: AdminPanelSettingsRounded,

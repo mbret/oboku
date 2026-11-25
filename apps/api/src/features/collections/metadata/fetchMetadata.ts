@@ -7,29 +7,29 @@ import { getSeriesMetadata as getMangaUpdatesSeriesMetadata } from "../../metada
 export const fetchMetadata = async (
   metadata: { title: string; year?: string },
   {
-    sources,
+    providers,
     comicVineApiKey,
   }: {
     comicVineApiKey: undefined | string
-    sources: CollectionMetadata["type"][]
+    providers: CollectionMetadata["type"][]
   },
 ): Promise<CollectionMetadata[]> => {
   const list = []
 
-  const biblioreadsPromise = sources.includes("biblioreads")
+  const biblioreadsPromise = providers.includes("biblioreads")
     ? getSeriesMetadata(metadata)
     : Promise.resolve(undefined)
   const comicVinePromise =
-    !comicVineApiKey || !sources.includes("comicvine")
+    !comicVineApiKey || !providers.includes("comicvine")
       ? Promise.resolve(undefined)
       : getComicVineSeriesMetadata({
           ...metadata,
           comicVineApiKey,
         })
-  const mangaupdatesPromise = sources.includes("mangaupdates")
+  const mangaupdatesPromise = providers.includes("mangaupdates")
     ? getMangaUpdatesSeriesMetadata(metadata)
     : Promise.resolve(undefined)
-  const mangadexPromise = sources.includes("mangadex")
+  const mangadexPromise = providers.includes("mangadex")
     ? getMangadexSeriesMetadata(metadata)
     : Promise.resolve(undefined)
 

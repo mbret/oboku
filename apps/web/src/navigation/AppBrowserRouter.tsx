@@ -10,7 +10,7 @@ import { QuotasScreen } from "../quotas/QuotasScreen"
 import { LibraryTopTabNavigator } from "../library/LibraryTopTabNavigator"
 import { BookDetailsScreen } from "../books/details/BookDetailsScreen"
 import { CollectionDetailsScreen } from "../pages/collections/CollectionDetailsScreen/CollectionDetailsScreen"
-import { DataSourcesListScreen } from "../pages/sync/DataSourcesListScreen"
+import { LibrarySyncsListScreen } from "../pages/sync/LibrarySyncsListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
 import { StatisticsScreen } from "../pages/StatisticsScreen"
@@ -22,14 +22,14 @@ import { TagBooksScreen } from "../pages/library/tags/$id/books/TagBooksScreen"
 import { CollectionBooksScreen } from "../pages/collections/$id/books/CollectionBooksScreen"
 import { BookTagsScreen } from "../pages/books/$id/tags/BookTagsScreen"
 import { BookCollectionsScreen } from "../pages/books/$id/collections/BookCollectionsScreen"
-import { BookMetadataSourceScreen } from "../pages/books/$id/metadata/$source/BookMetadataSourceScreen"
+import { BookMetadataProviderScreen } from "../pages/books/$id/metadata/$provider/BookMetadataProviderScreen"
 import { BookOptimizeScreen } from "../pages/books/$id/optimize/BookOptimizeScreen"
 import type { ReactNode } from "react"
 import { useMediaQuery, useTheme } from "@mui/material"
 import { SearchScreenExpanded } from "../search/SearchScreenExpanded"
 import { useActiveProfile } from "../profiles"
-import { DataSourcesTabNavigator } from "../dataSources/DataSourcesTabNavigator"
-import { DataSourcesReportsScreen } from "../dataSources/reports/DataSourcesReportsScreen"
+import { LibrarySyncsTabNavigator } from "../librarySyncs/LibrarySyncsTabNavigator"
+import { LibrarySyncsReportsScreen } from "../librarySyncs/reports/LibrarySyncsReportsScreen"
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
 import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
@@ -45,11 +45,11 @@ import { WebdavIntegrationScreen } from "../integrations/webdav/WebdavIntegratio
 import { ROUTES } from "./routes"
 import { SignUpScreen } from "../pages/SignUpScreen"
 import { SecretsScreen } from "../pages/profile/SecretsScreen"
-import { NewDataSourceScreen } from "../pages/sync/NewDataSourceScreen"
-import { DataSourceDetailsScreen } from "../pages/sync/DataSourceDetailsScreen"
+import { NewLibrarySyncScreen } from "../pages/sync/NewLibrarySyncScreen"
+import { LibrarySyncDetailsScreen } from "../pages/sync/LibrarySyncDetailsScreen"
 import { AddConnectorScreen } from "../connectors/AddConnectorScreen"
 import { EditConnectorScreen } from "../connectors/EditConnectorScreen"
-import { plugins } from "../dataSources"
+import { plugins } from "../integrations/plugins/configure"
 import { SignUpCompleteScreen } from "../pages/SignUpCompleteScreen"
 import { MagicLinkCompleteScreen } from "../pages/MagicLinkCompleteScreen"
 import { NotificationsScreen } from "../notifications/inbox/NotificationsScreen"
@@ -129,8 +129,8 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<BookOptimizeScreen />}
               />
               <Route
-                path={ROUTES.BOOK_METADATA_SOURCE.slice(1)}
-                element={<BookMetadataSourceScreen />}
+                path={ROUTES.BOOK_METADATA_PROVIDER.slice(1)}
+                element={<BookMetadataProviderScreen />}
               />
               <Route
                 path={ROUTES.COLLECTION_DETAILS.slice(1)}
@@ -229,12 +229,12 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                 element={<EditConnectorScreen />}
               />
               <Route
-                path={ROUTES.SYNC_NEW_DATASOURCES.slice(1)}
-                element={<NewDataSourceScreen />}
+                path={ROUTES.SYNC_NEW_LIBRARY_SYNC.slice(1)}
+                element={<NewLibrarySyncScreen />}
               />
               <Route
-                path={ROUTES.DATASOURCE_DETAILS.slice(1)}
-                element={<DataSourceDetailsScreen />}
+                path={ROUTES.LIBRARY_SYNC_DETAILS.slice(1)}
+                element={<LibrarySyncDetailsScreen />}
               />
               <Route path="*" element={<MobileTabBarRouteWrapper />}>
                 <Route index element={<HomeScreen />} />
@@ -250,22 +250,24 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
                   <Route path="tags" element={<LibraryTagsScreen />} />
                   <Route path="*" element={<Navigate to="/" replace />} />
                 </Route>
-                <Route path="sync" element={<DataSourcesTabNavigator />}>
+                <Route path="sync" element={<LibrarySyncsTabNavigator />}>
                   <Route
                     index
-                    element={<Navigate to="datasources" replace />}
+                    element={<Navigate to="library-syncs" replace />}
                   />
                   <Route
-                    path="datasources"
-                    element={<DataSourcesListScreen />}
+                    path="library-syncs"
+                    element={<LibrarySyncsListScreen />}
                   />
                   <Route
                     path="reports"
-                    element={<DataSourcesReportsScreen />}
+                    element={<LibrarySyncsReportsScreen />}
                   />
                   <Route
                     path="*"
-                    element={<Navigate to={ROUTES.SYNC_DATASOURCES} replace />}
+                    element={
+                      <Navigate to={ROUTES.SYNC_LIBRARY_SYNCS} replace />
+                    }
                   />
                 </Route>
                 <Route path="*" element={<Navigate to="/" replace />} />

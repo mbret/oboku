@@ -1,5 +1,5 @@
 import { SdStorageRounded } from "@mui/icons-material"
-import type { ObokuPlugin } from "../types"
+import type { SourcePlugin } from "../types"
 import { UploadBook } from "./UploadBook"
 import {
   ObokuErrorCode,
@@ -11,9 +11,9 @@ import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveReso
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
 import { useLinkInfo } from "./useLinkInfo"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 
-export const plugin: ObokuPlugin<"file"> = {
+export const plugin: SourcePlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
   name: "Local file",
   canRemoveResource: false,
@@ -21,7 +21,7 @@ export const plugin: ObokuPlugin<"file"> = {
   UploadBookComponent: UploadBook,
   Icon: SdStorageRounded,
   useLinkInfo,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useRefreshMetadata,
   useSynchronize,
   useRemoveResource: useUnsupportedRemoveResource,

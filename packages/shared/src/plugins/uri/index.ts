@@ -1,7 +1,7 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
-export type URIDataSourceDocType = BaseDataSourceDocType & {
+export type URILibrarySyncDocType = BaseLibrarySyncDocType & {
   type: "URI"
   data_v2?: UriLinkData
 }

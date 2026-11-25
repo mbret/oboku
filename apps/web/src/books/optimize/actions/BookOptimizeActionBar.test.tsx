@@ -92,7 +92,7 @@ const renderProgress = (
     reset: mocks.reset,
     revertLocalChanges: vi.fn(),
     uploadProgress$: undefined,
-    uploadToDataSource: vi.fn(),
+    uploadToSource: vi.fn(),
   })
   mocks.useApplyLocally.mockReturnValue({ applyLocally: mocks.applyLocally })
   mocks.useApplyLocallyProgress.mockReturnValue(new BehaviorSubject(progress))

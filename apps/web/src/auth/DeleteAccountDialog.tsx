@@ -53,7 +53,7 @@ export const DeleteAccountDialog = memo(function DeleteAccountDialog({
       </DialogTitle>
       <DialogContent>
         <DialogContentText sx={{ color: "error.main" }}>
-          {`This will permanently delete your account (${email}) and all associated data including books, collections, tags, reading progress, and data source configurations. This action cannot be undone.`}
+          {`This will permanently delete your account (${email}) and all associated data including books, collections, tags, reading progress, and library syncs. This action cannot be undone.`}
         </DialogContentText>
         <DialogContentText
           sx={{

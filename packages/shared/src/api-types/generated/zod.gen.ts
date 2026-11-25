@@ -480,7 +480,7 @@ export const zSyncReportDto = z.object({
     has_different_provider_credentials: z.boolean().nullable()
 });
 
-export const zSyncDataSourceDto = z.object({
+export const zRunLibrarySyncDto = z.object({
     dataSourceId: z.string(),
     providerCredentials: z.record(z.string(), z.unknown())
 });
@@ -791,11 +791,11 @@ export const zNotificationsArchiveResponse = zOkResponseDto;
 
 export const zQuotasGetProxiedDownloadQuotaResponse = zUserProxiedDownloadQuotaResponseDto;
 
-export const zDataSourcesListSyncReportsResponse = z.array(zSyncReportDto);
+export const zLibrarySyncsListSyncReportsResponse = z.array(zSyncReportDto);
 
-export const zDataSourcesSyncBody = zSyncDataSourceDto;
+export const zLibrarySyncsSyncBody = zRunLibrarySyncDto;
 
-export const zDataSourcesSyncResponse = zEmptyResponseDto;
+export const zLibrarySyncsSyncResponse = zEmptyResponseDto;
 
 export const zBooksRefreshMetadataBody = zRefreshBookMetadataDto;
 

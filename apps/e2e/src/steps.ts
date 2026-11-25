@@ -5,7 +5,7 @@ import { SERVER_LIBRARY } from "./stack"
 
 const MASTER_PASSWORD = "e2e-master-password"
 const SERVER_PASSWORD_SECRET_NAME = "Server library password"
-const SERVER_DATA_SOURCE_NAME = "Server books"
+const SERVER_LIBRARY_SYNC_NAME = "Server books"
 
 /**
  * Each book's metadata refresh retries the unreachable catalogs for about 4
@@ -36,7 +36,7 @@ async function authorizeWithMasterPassword(page: Page) {
 }
 
 /**
- * Adds the stack's Server Sync folder as a data source, the way a reader does,
+ * Adds the stack's Server Sync folder as a library sync, the way a reader does,
  * and waits for its first sync to finish.
  */
 export async function addServerLibrary(page: Page) {
@@ -70,8 +70,8 @@ export async function addServerLibrary(page: Page) {
     page.getByRole("button", { name: new RegExp(SERVER_LIBRARY.username) }),
   ).toBeVisible()
 
-  await page.goto("/sync/new-datasources/server")
-  await page.getByLabel("Name").fill(SERVER_DATA_SOURCE_NAME)
+  await page.goto("/sync/new-library-sync/server")
+  await page.getByLabel("Name").fill(SERVER_LIBRARY_SYNC_NAME)
   await page.getByRole("combobox", { name: "Connector" }).click()
   await page
     .getByRole("option", { name: SERVER_LIBRARY.username, exact: true })
@@ -80,7 +80,7 @@ export async function addServerLibrary(page: Page) {
   await authorizeWithMasterPassword(page)
   await expect(
     page.getByRole("link", {
-      name: new RegExp(`^${SERVER_DATA_SOURCE_NAME} Last synced`),
+      name: new RegExp(`^${SERVER_LIBRARY_SYNC_NAME} Last synced`),
     }),
   ).toBeVisible({ timeout: LIBRARY_SYNC_TIMEOUT_MS })
 }

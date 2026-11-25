@@ -1,5 +1,5 @@
 import { getFileNameFromUrl } from "@oboku/shared"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import axios from "axios"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
@@ -18,7 +18,7 @@ function resolveUrl(link: { data: { url: string } }): string {
   return url
 }
 
-export const dataSource: DataSourcePlugin<"URI"> = {
+export const sourcePlugin: SourcePlugin<"URI"> = {
   type: URI_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

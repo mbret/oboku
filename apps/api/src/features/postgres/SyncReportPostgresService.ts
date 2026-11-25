@@ -2,7 +2,7 @@ import type { ObokuErrorCode } from "@oboku/shared"
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import type { SyncReportEntryDto } from "../../datasource/sync/sync-report.dto.js"
+import type { SyncReportEntryDto } from "../../library-sync/sync/sync-report.dto.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { SyncReportPostgresEntity } from "./entities.js"
 

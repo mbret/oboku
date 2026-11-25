@@ -14,10 +14,10 @@ import { useFileInspection } from "./useFileInspection"
 type Props = {
   book: DeepReadonlyObject<BookDocType>
   link: DeepReadonlyObject<LinkDocType>
-  canUploadToDataSource: boolean
+  canUploadToSource: boolean
 }
 
-export function OptimizeStep({ book, link, canUploadToDataSource }: Props) {
+export function OptimizeStep({ book, link, canUploadToSource }: Props) {
   const { data: inspection, isError } = useFileInspection(book._id)
   const { tab } = useBookOptimizeTab()
 
@@ -43,7 +43,7 @@ export function OptimizeStep({ book, link, canUploadToDataSource }: Props) {
       key={book._id}
       book={book}
       link={link}
-      canUploadToDataSource={canUploadToDataSource}
+      canUploadToSource={canUploadToSource}
       inspection={inspection}
     >
       <BookOptimizeTabs />

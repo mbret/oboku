@@ -8,35 +8,37 @@ import {
 } from "../../../../common/FileTreeView"
 import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { OneDriveDriveItemSummary } from "../graph"
-import type { ResolvedOneDriveDataSourceItem } from "./useDataSourceItem"
+import type { ResolvedOneDriveLibrarySyncLocation } from "./useLibrarySyncLocation"
 
 function isFolder(item: OneDriveDriveItemSummary | undefined) {
   return !!item?.folder || !!item?.package
 }
 
 function getOneDriveTreeStateItemId({
-  item,
+  location,
   driveItem,
 }: {
-  item: OneDriveLinkData
-  driveItem: ResolvedOneDriveDataSourceItem | undefined
+  location: OneDriveLinkData
+  driveItem: ResolvedOneDriveLibrarySyncLocation | undefined
 }) {
-  return driveItem?.treeItemId ?? getOneDriveItemKey(item)
+  return driveItem?.treeItemId ?? getOneDriveItemKey(location)
 }
 
 function buildOneDriveTreeState({
-  items,
+  locations,
   driveItems,
 }: {
-  items: readonly OneDriveLinkData[]
-  driveItems: ReadonlyArray<ResolvedOneDriveDataSourceItem | undefined>
+  locations: readonly OneDriveLinkData[]
+  driveItems: ReadonlyArray<ResolvedOneDriveLibrarySyncLocation | undefined>
 }) {
-  const treeItemIds = items.map(function mapItemToTreeItemId(item, index) {
-    return getOneDriveTreeStateItemId({
-      item,
-      driveItem: driveItems[index],
-    })
-  })
+  const treeItemIds = locations.map(
+    function mapLocationToTreeItemId(location, index) {
+      return getOneDriveTreeStateItemId({
+        location,
+        driveItem: driveItems[index],
+      })
+    },
+  )
   const availableTreeItemIds = new Set(treeItemIds)
   const nodesById = new Map<string, TreeItem>()
 
@@ -44,7 +46,7 @@ function buildOneDriveTreeState({
     nodesById.set(treeItem.id, treeItem)
   }
 
-  items.forEach(function addUnresolvedTreeItem(item, index) {
+  locations.forEach(function addUnresolvedTreeItem(location, index) {
     const driveItem = driveItems[index]
 
     if (driveItem) {
@@ -52,14 +54,14 @@ function buildOneDriveTreeState({
     }
 
     upsertTreeItem({
-      id: treeItemIds[index] ?? getOneDriveItemKey(item),
-      label: `${item.driveId}/${item.fileId}`,
+      id: treeItemIds[index] ?? getOneDriveItemKey(location),
+      label: `${location.driveId}/${location.fileId}`,
       type: "file",
       canSelect: true,
     })
   })
 
-  items.forEach(function addResolvedTreeItem(item, index) {
+  locations.forEach(function addResolvedTreeItem(location, index) {
     const driveItem = driveItems[index]
 
     if (!driveItem) {
@@ -74,7 +76,8 @@ function buildOneDriveTreeState({
           ? driveItem.parentTreeItemId
           : undefined,
       type: isFolder(driveItem.metadata) ? "folder" : "file",
-      label: driveItem.metadata.name || `${item.driveId}/${item.fileId}`,
+      label:
+        driveItem.metadata.name || `${location.driveId}/${location.fileId}`,
       fileType: driveItem.metadata.file?.mimeType,
       canSelect: true,
     })
@@ -94,36 +97,36 @@ function buildOneDriveTreeState({
 }
 
 export const OneDriveTreeView = memo(function OneDriveTreeView({
-  items,
+  locations,
   driveItems,
-  onItemsChange,
+  onLocationsChange,
 }: {
-  items: readonly OneDriveLinkData[]
-  driveItems: ReadonlyArray<ResolvedOneDriveDataSourceItem | undefined>
-  onItemsChange: (items: OneDriveLinkData[]) => void
+  locations: readonly OneDriveLinkData[]
+  driveItems: ReadonlyArray<ResolvedOneDriveLibrarySyncLocation | undefined>
+  onLocationsChange: (locations: OneDriveLinkData[]) => void
 }) {
   const [selectedTreeItemIds, setSelectedTreeItemIds] = useState<string[]>([])
   const { treeItemIds, treeViewItems } = useMemo(
     () =>
       buildOneDriveTreeState({
-        items,
+        locations,
         driveItems,
       }),
-    [driveItems, items],
+    [driveItems, locations],
   )
-  const handleDeleteSelectedItems = useCallback(() => {
+  const handleRemoveSelectedLocations = useCallback(() => {
     setSelectedTreeItemIds([])
-    onItemsChange(
-      items.filter(function isUnselectedTreeItem(_item, index) {
+    onLocationsChange(
+      locations.filter(function isUnselectedLocation(_location, index) {
         return !selectedTreeItemIds.includes(treeItemIds[index] ?? "")
       }),
     )
-  }, [items, onItemsChange, selectedTreeItemIds, treeItemIds])
+  }, [locations, onLocationsChange, selectedTreeItemIds, treeItemIds])
 
   return (
     <TreeActionsSection
-      onDeleteSelectedItems={handleDeleteSelectedItems}
-      selectedItemsCount={selectedTreeItemIds.length}
+      onRemoveSelectedLocations={handleRemoveSelectedLocations}
+      selectedLocationsCount={selectedTreeItemIds.length}
     >
       <FileTreeView
         checkboxSelection

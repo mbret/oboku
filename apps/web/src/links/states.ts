@@ -7,7 +7,7 @@ import {
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 import { map, switchMap } from "rxjs"
 import type { Database } from "../rxdb"
-import { isRemovableFromDataSource } from "./isRemovableFromDataSource"
+import { isRemovableFromSource } from "./isRemovableFromSource"
 
 export const useLinks = () => {
   return useLiveQuery$({
@@ -68,6 +68,6 @@ export const getLinkStateAsync = async ({
   return {
     ...jsonLink,
     isSynchronizable: !!linkPlugin?.canSynchronize,
-    isRemovableFromDataSource: isRemovableFromDataSource({ link: jsonLink }),
+    isRemovableFromSource: isRemovableFromSource({ link: jsonLink }),
   }
 }

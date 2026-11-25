@@ -3,7 +3,7 @@ import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { Public } from "../auth/auth.guard.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
-import { isGoogleConnectionConfigured } from "../provider-connections/google/google-connection.service.js"
+import { isGoogleConnectionConfigured } from "../source-connections/google/google-connection.service.js"
 import { PublicServerSourceDto, WebConfigResponseDto } from "./web.dto.js"
 
 @Controller("web")

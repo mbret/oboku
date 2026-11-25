@@ -19,7 +19,7 @@ import { TagsSelectionDialog } from "../tags/TagsSelectionDialog"
 import { useSignalValue } from "reactjrx"
 import { libraryStateSignal } from "./books/states"
 import { Checkbox } from "../common/Checkbox"
-import { formatList } from "../books/details/metadataSource/formatters"
+import { formatList } from "../books/details/metadataProvider/formatters"
 
 export const LibraryFiltersDrawer = ({
   open,

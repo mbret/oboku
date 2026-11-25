@@ -27,7 +27,7 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
   const { data: link } = useLink({ id: book?.links[0] })
 
   const plugin = link?.type ? pluginsByType[link.type] : undefined
-  const canUploadToDataSource = plugin?.canUpsertFile ?? false
+  const canUploadToSource = plugin?.canUpsertFile ?? false
 
   const downloadState = useBookDownloadState(bookId)
   const isDownloaded = downloadState?.downloadState === "downloaded"
@@ -61,9 +61,9 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
           ) : undefined
         }
       />
-      {isReadyToOptimize && !canUploadToDataSource && (
+      {isReadyToOptimize && !canUploadToSource && (
         <Alert severity="info">
-          This data source can&apos;t upload files back yet. Changes can only be
+          This source can&apos;t upload files back yet. Changes can only be
           applied locally.
         </Alert>
       )}
@@ -71,7 +71,7 @@ export const BookOptimizeScreen = memo(function BookOptimizeScreen() {
         <OptimizeStep
           book={book}
           link={link}
-          canUploadToDataSource={canUploadToDataSource}
+          canUploadToSource={canUploadToSource}
         />
       ) : (
         <OptimizePageContainer>

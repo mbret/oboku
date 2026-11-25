@@ -1,7 +1,7 @@
 import type {
   BookMetadata,
   LEGACY_CATALOG_SOURCE_NAME,
-  ReorderableBookMetadataSource,
+  ReorderableBookMetadataProvider,
 } from "../metadata"
 import type { CouchDBMeta } from "./couchdb"
 import type { DeprecatedBookDocType, InsertAbleBookDocType } from "./docTypes"
@@ -133,7 +133,7 @@ export type BookDocType = CouchDBMeta &
      */
     metadataFileDownloadEnabled?: boolean | null
     /**
-     * User-defined priority for the swappable middle of the metadata-source
+     * User-defined priority for the swappable middle of the metadata-provider
      * merge order. The full effective priority is:
      * `["user", ...metadataSourcePriority, "link"]` (highest → lowest).
      *
@@ -141,10 +141,10 @@ export type BookDocType = CouchDBMeta &
      * reorderable subset is persisted here. When omitted, the default order
      * `["file", "catalog"]` is used. Older versions of the app write the
      * catalog as {@link LEGACY_CATALOG_SOURCE_NAME}: read it through
-     * {@link getOrderedBookMetadataSources}.
+     * {@link getOrderedBookMetadataProviders}.
      */
     metadataSourcePriority?: (
-      | ReorderableBookMetadataSource
+      | ReorderableBookMetadataProvider
       | typeof LEGACY_CATALOG_SOURCE_NAME
     )[]
     /**

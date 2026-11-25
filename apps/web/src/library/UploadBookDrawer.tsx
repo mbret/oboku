@@ -5,7 +5,7 @@ import {
   ListItemIcon,
   ListItemButton,
 } from "@mui/material"
-import { plugins } from "../dataSources"
+import { plugins } from "../integrations/plugins/configure"
 import { memo } from "react"
 import {
   useGetIsPluginEnabled,
@@ -31,16 +31,16 @@ export const UploadBookDrawer = memo(function UploadBookDrawer({
               (plugin) =>
                 !!plugin.UploadBookComponent && isPluginVisible(plugin),
             )
-            .map((dataSource) => (
+            .map((plugin) => (
               <ListItemButton
-                onClick={() => onClose(dataSource.type)}
-                key={dataSource.type}
-                disabled={!isPluginEnabled(dataSource)}
+                onClick={() => onClose(plugin.type)}
+                key={plugin.type}
+                disabled={!isPluginEnabled(plugin)}
               >
                 <ListItemIcon>
-                  <dataSource.Icon />
+                  <plugin.Icon />
                 </ListItemIcon>
-                <ListItemText primary={`From ${dataSource.name}`} />
+                <ListItemText primary={`From ${plugin.name}`} />
               </ListItemButton>
             ))}
         </List>

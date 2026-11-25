@@ -38,16 +38,16 @@ vi.mock("../useRefreshBookMetadata", function mockRefreshBookMetadata() {
     },
   }
 })
-vi.mock("./MetadataSourcePane", function mockMetadataSourcePane() {
+vi.mock("./MetadataProviderPane", function mockMetadataProviderPane() {
   return {
-    MetadataSourcePane: function MetadataSourcePane() {
+    MetadataProviderPane: function MetadataProviderPane() {
       return null
     },
   }
 })
-vi.mock("./DataSourceSection", function mockDataSourceSection() {
+vi.mock("./BookSourceSection", function mockBookSourceSection() {
   return {
-    DataSourceSection: function DataSourceSection() {
+    BookSourceSection: function BookSourceSection() {
       return null
     },
   }

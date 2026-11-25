@@ -1,9 +1,9 @@
 import type { LinkWithCredentials } from "@oboku/shared"
-import { dataSource } from "./index.js"
+import { sourcePlugin } from "./index.js"
 
 const getFileName = async (url: string) => {
   const link: LinkWithCredentials<"URI"> = { type: "URI", data: { url } }
-  const metadata = await dataSource.getFileMetadata({
+  const metadata = await sourcePlugin.getFileMetadata({
     link,
     providerCredentials: {},
   })

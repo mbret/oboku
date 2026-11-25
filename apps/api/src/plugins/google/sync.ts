@@ -61,7 +61,7 @@ function buildTree(
   return roots
 }
 
-export const getSynchronizeAbleDataSourceFromItems = async ({
+export const getSynchronizeAbleLibrarySyncFromItems = async ({
   items,
   drive,
 }: {

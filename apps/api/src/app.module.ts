@@ -20,7 +20,7 @@ import { CoversModule } from "./covers/covers.module.js"
 import { ScheduleModule } from "@nestjs/schedule"
 import { AdminModule } from "./admin/admin.module.js"
 import { InstanceConfigModule } from "./admin/instance-config/instance-config.module.js"
-import { DataSourceModule } from "./datasource/datasource.module.js"
+import { LibrarySyncModule } from "./library-sync/library-sync.module.js"
 import { StorageModule } from "./storage/storage.module.js"
 import { WebDavModule } from "./webdav/webdav.module.js"
 import { NotificationsModule } from "./notifications/notifications.module.js"
@@ -31,7 +31,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
 import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
 import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 import { OpdsModule } from "./opds/opds.module.js"
-import { ProviderConnectionsModule } from "./provider-connections/provider-connections.module.js"
+import { SourceConnectionsModule } from "./source-connections/source-connections.module.js"
 
 @Module({
   imports: [
@@ -116,7 +116,7 @@ import { ProviderConnectionsModule } from "./provider-connections/provider-conne
     CoversModule,
     AdminModule,
     InstanceConfigModule,
-    DataSourceModule,
+    LibrarySyncModule,
     NotificationsModule,
     WebDavModule,
     BooksModule,
@@ -127,7 +127,7 @@ import { ProviderConnectionsModule } from "./provider-connections/provider-conne
     KoreaderSyncServerModule,
     KoreaderSyncConnectionModule,
     OpdsModule,
-    ProviderConnectionsModule,
+    SourceConnectionsModule,
   ],
   providers: [AppService, SyncReportPostgresService],
   controllers: [AppController, WebController],

@@ -2,12 +2,12 @@ import { cleanup, render } from "@testing-library/react"
 import {
   ObokuErrorCode,
   ObokuSharedError,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
 } from "@oboku/shared"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import { PluginDownloadBook } from "./PluginDownloadBook"
 
-const fileLink: LinkDocTypeForProvider<"file"> = {
+const fileLink: LinkDocTypeForSource<"file"> = {
   _id: "link-1",
   _rev: "1",
   rxdbMeta: { lwt: 0 },

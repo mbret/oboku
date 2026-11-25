@@ -4,11 +4,11 @@
 import { Dropbox, type files } from "dropbox"
 import { Readable } from "node:stream"
 import {
-  getDataFromDataSource,
+  getDataFromLibrarySync,
   READER_ACCEPTED_EXTENSIONS,
 } from "@oboku/shared"
 import {
-  type DataSourcePlugin,
+  type SourcePlugin,
   type SynchronizeAbleItem,
   MODIFIED_AT_UNSUPPORTED,
 } from "../types.js"
@@ -17,7 +17,7 @@ import { createError, findCandidates } from "../helpers.js"
 
 const DROPBOX_TYPE = "dropbox"
 
-export const dataSource: DataSourcePlugin<"dropbox"> = {
+export const sourcePlugin: SourcePlugin<"dropbox"> = {
   type: DROPBOX_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {
@@ -114,7 +114,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       stream,
     }
   },
-  sync: async ({ providerCredentials, dataSource }) => {
+  sync: async ({ providerCredentials, librarySync }) => {
     const throttle = createThrottler(50)
 
     const token = providerCredentials.accessToken
@@ -122,7 +122,7 @@ export const dataSource: DataSourcePlugin<"dropbox"> = {
       accessToken: token ?? undefined,
     })
 
-    const { folderId } = getDataFromDataSource<"dropbox">(dataSource) ?? {}
+    const { folderId } = getDataFromLibrarySync<"dropbox">(librarySync) ?? {}
 
     if (!folderId) {
       throw createError("unknown")

@@ -19,11 +19,11 @@ export const extractDirectivesFromName = (
   series: boolean | undefined
   year?: string | undefined
   ignoreMetadataFile: boolean
-  ignoreMetadataSources: boolean
+  ignoreMetadataProviders: boolean
   isWebtoon: boolean
   metadataTitle?: string | undefined
   googleVolumeId?: string | undefined
-  metadataSourceOnly?: string | undefined
+  metadataProviderOnly?: string | undefined
 } => {
   let isNotACollection = false
   let tags: string[] = []
@@ -33,11 +33,11 @@ export const extractDirectivesFromName = (
   let isbn: string | undefined
   let series: boolean | undefined
   let ignoreMetadataFile = false
-  let ignoreMetadataSources = false
+  let ignoreMetadataProviders = false
   let metadataTitle: string | undefined
   let isWebtoon = false
   let googleVolumeId: string | undefined
-  let metadataSourceOnly: string | undefined
+  let metadataProviderOnly: string | undefined
 
   const directives = name
     .match(/(\[oboku~[^\]]*\])+/gi)
@@ -62,7 +62,7 @@ export const extractDirectivesFromName = (
     }
 
     if (directive.startsWith("metadata-ignore-sources")) {
-      ignoreMetadataSources = true
+      ignoreMetadataProviders = true
     }
 
     if (directive.startsWith("metadata-title~")) {
@@ -74,7 +74,7 @@ export const extractDirectivesFromName = (
       // Extract the pattern metadata-source-{foo}-only
       const match = directive.match(/^metadata-source-(.+)-only$/)
       if (match) {
-        metadataSourceOnly = match[1] // This captures the dynamic 'foo' part
+        metadataProviderOnly = match[1] // This captures the dynamic 'foo' part
       }
     }
 
@@ -120,11 +120,11 @@ export const extractDirectivesFromName = (
     isbn,
     year,
     ignoreMetadataFile,
-    ignoreMetadataSources,
+    ignoreMetadataProviders,
     isWebtoon,
     metadataTitle,
     googleVolumeId,
-    metadataSourceOnly,
+    metadataProviderOnly,
   }
 }
 

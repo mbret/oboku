@@ -1,0 +1,38 @@
+import { Box, ListItem, ListItemText } from "@mui/material"
+import type { ReactNode } from "react"
+
+/**
+ * Visible glyph for "no value", paired with a screen-reader-friendly
+ * label so assistive tech doesn't announce "em dash" (or skip it).
+ */
+const EmptyValue = () => (
+  <Box component="span" aria-label="No value">
+    —
+  </Box>
+)
+
+/**
+ * One read-only row in the metadata provider detail screen: label on top,
+ * value (or em-dash fallback) below. Provider content components compose
+ * these to express what each metadata provider advertises.
+ */
+export const MetadataFieldRow = ({
+  label,
+  value,
+}: {
+  label: ReactNode
+  value: ReactNode
+}) => (
+  <ListItem>
+    <ListItemText
+      primary={label}
+      secondary={
+        value === undefined || value === null || value === "" ? (
+          <EmptyValue />
+        ) : (
+          value
+        )
+      }
+    />
+  </ListItem>
+)

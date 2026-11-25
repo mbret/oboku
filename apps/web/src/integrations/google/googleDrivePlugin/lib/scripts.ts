@@ -19,7 +19,7 @@ export const useGoogleScripts = (
           showDialog({
             title: "Script error",
             message:
-              "One or several required Google scripts has not been loaded yet. If the problem persist visit the plugin settings page to try reloading them.",
+              "One or several required Google scripts has not been loaded yet. If the problem persist visit the Google Drive integration page to try reloading them.",
           })
 
           loadGapi()

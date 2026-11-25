@@ -1,6 +1,6 @@
 import type { Mock } from "vitest"
 import { buildDriveItemUrl } from "@oboku/shared"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
+import { getSynchronizeAbleLibrarySyncFromItems } from "./sync.js"
 
 describe("OneDrive sync", () => {
   const originalFetch = global.fetch
@@ -49,7 +49,7 @@ describe("OneDrive sync", () => {
       )
 
     await expect(
-      getSynchronizeAbleDataSourceFromItems({
+      getSynchronizeAbleLibrarySyncFromItems({
         accessToken: "graph-token",
         items: [
           { driveId: "drive-id", fileId: "folder-id" },

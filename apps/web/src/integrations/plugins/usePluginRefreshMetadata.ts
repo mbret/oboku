@@ -1,7 +1,7 @@
 import {
   assertNever,
-  type DataSourceDocType,
-  type ProviderApiCredentials,
+  type SourceApiCredentials,
+  type SourceType,
 } from "@oboku/shared"
 import type { UseMutationOptions } from "@tanstack/react-query"
 import { useCallback } from "react"
@@ -13,12 +13,12 @@ import type {
 import { pluginsByType } from "./configure"
 
 type RefreshMetadataResult = {
-  providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
+  providerCredentials: SourceApiCredentials<SourceType>
 }
 
 /**
  * Calls each plugin's `useRefreshMetadata` by name. Plugin members named `use*` are
- * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * hooks on purpose (see `SourcePlugin`), and hooks cannot run in a loop, so a
  * new plugin adds its line here.
  */
 export const usePluginRefreshMetadata = (
@@ -96,7 +96,7 @@ export const usePluginRefreshMetadata = (
       switch (params.linkType) {
         case "webdav":
           // The switch routes by linkType first, so this narrows the broader
-          // request shape back to the provider-specific hook input.
+          // request shape back to the source-specific hook input.
           return refreshWebdavMetadata(
             params as UseRefreshMetadataVariables<"webdav">,
           )

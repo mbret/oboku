@@ -1,22 +1,25 @@
 import { describe, expect, it } from "vitest"
-import { getBookMetadataSource, getOrderedBookMetadataSources } from "./index"
+import {
+  getBookMetadataProvider,
+  getOrderedBookMetadataProviders,
+} from "./index"
 
-describe("getBookMetadataSource", () => {
+describe("getBookMetadataProvider", () => {
   it("files a legacy googleBookApi entry under the catalog", () => {
-    expect(getBookMetadataSource({ type: "googleBookApi" })).toBe("catalog")
+    expect(getBookMetadataProvider({ type: "googleBookApi" })).toBe("catalog")
   })
 
   it("files every other entry under its own type", () => {
-    expect(getBookMetadataSource({ type: "catalog" })).toBe("catalog")
-    expect(getBookMetadataSource({ type: "file" })).toBe("file")
-    expect(getBookMetadataSource({ type: "link" })).toBe("link")
-    expect(getBookMetadataSource({ type: "user" })).toBe("user")
+    expect(getBookMetadataProvider({ type: "catalog" })).toBe("catalog")
+    expect(getBookMetadataProvider({ type: "file" })).toBe("file")
+    expect(getBookMetadataProvider({ type: "link" })).toBe("link")
+    expect(getBookMetadataProvider({ type: "user" })).toBe("user")
   })
 })
 
-describe("getOrderedBookMetadataSources", () => {
+describe("getOrderedBookMetadataProviders", () => {
   it("puts the file above the catalog by default", () => {
-    expect(getOrderedBookMetadataSources(undefined)).toEqual([
+    expect(getOrderedBookMetadataProviders(undefined)).toEqual([
       "user",
       "file",
       "catalog",
@@ -25,7 +28,7 @@ describe("getOrderedBookMetadataSources", () => {
   })
 
   it("honors a reordered middle", () => {
-    expect(getOrderedBookMetadataSources(["catalog", "file"])).toEqual([
+    expect(getOrderedBookMetadataProviders(["catalog", "file"])).toEqual([
       "user",
       "catalog",
       "file",
@@ -34,7 +37,7 @@ describe("getOrderedBookMetadataSources", () => {
   })
 
   it("reads the catalog's legacy name, as older versions of the app write it", () => {
-    expect(getOrderedBookMetadataSources(["googleBookApi", "file"])).toEqual([
+    expect(getOrderedBookMetadataProviders(["googleBookApi", "file"])).toEqual([
       "user",
       "catalog",
       "file",
@@ -43,8 +46,8 @@ describe("getOrderedBookMetadataSources", () => {
   })
 
   it("keeps the first of the legacy and current names when both are stored", () => {
-    expect(getOrderedBookMetadataSources(["googleBookApi", "catalog"])).toEqual(
-      ["user", "catalog", "file", "link"],
-    )
+    expect(
+      getOrderedBookMetadataProviders(["googleBookApi", "catalog"]),
+    ).toEqual(["user", "catalog", "file", "link"])
   })
 })

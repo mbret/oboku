@@ -1,10 +1,10 @@
 import { Dialog, DialogTitle } from "@mui/material"
 import { memo, useState } from "react"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { ConnectorSelectionStep } from "./upload/ConnectorSelectionStep"
 import { UploadFileBrowseStep } from "./upload/UploadFileBrowseStep"
 
-export const UploadBook: ObokuPlugin<"synology-drive">["UploadBookComponent"] =
+export const UploadBook: SourcePlugin<"synology-drive">["UploadBookComponent"] =
   memo(function UploadBook({ onClose, title }) {
     const [authResult, setAuthResult] = useState<
       import("./upload/ConnectorSelectionStep").SynologyAuthResult | undefined
