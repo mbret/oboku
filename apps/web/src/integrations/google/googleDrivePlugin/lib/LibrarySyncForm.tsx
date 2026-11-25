@@ -20,7 +20,7 @@ import {
   buildLibrarySyncSubmitPayload,
   getLibrarySyncFormBaseDefaults,
 } from "../../../plugins/common/librarySyncFormHelpers"
-import { PickItemsSection } from "../../../plugins/common/PickItemsSection"
+import { PickLocationsSection } from "../../../plugins/common/PickLocationsSection"
 import { TreeActionsSection } from "../../../plugins/common/TreeActionsSection"
 import type { GoogleDriveLibrarySyncDocType } from "@oboku/shared"
 import type {
@@ -29,7 +29,7 @@ import type {
 } from "../../../plugins/types"
 
 type GoogleDriveFormData = LibrarySyncFormData<{
-  items: string[]
+  locations: string[]
 }>
 
 export const LibrarySyncForm = ({
@@ -46,15 +46,15 @@ export const LibrarySyncForm = ({
     mode: "onChange",
     defaultValues: {
       ...getLibrarySyncFormBaseDefaults(librarySync),
-      items: [...(librarySync?.data_v2?.items ?? [])],
+      locations: [...(librarySync?.data_v2?.items ?? [])],
     },
   })
   const {
-    field: { onChange: setItems, value: items },
+    field: { onChange: setLocations, value: locations },
   } = useController({
     control,
     rules: { required: false },
-    name: "items",
+    name: "locations",
   })
   const requestPopup = useRequestPopupDialog(PLUGIN_NAME)
   const requestFilesAccess = useRequestFilesAccess({ requestPopup })
@@ -62,16 +62,16 @@ export const LibrarySyncForm = ({
   const { mutate: requestFilesAccessMutation } = useMutation$({
     mutationFn: () =>
       getGoogleScripts().pipe(
-        switchMap(({ gapi }) => requestFilesAccess(gapi, items)),
+        switchMap(({ gapi }) => requestFilesAccess(gapi, locations)),
       ),
   })
   const createQuery = useCreateDriveFileQuery()
   const { pick } = useDrivePicker({
     requestPopup,
   })
-  const [selectedItems, setSelectedItems] = useState<string[]>([])
+  const [selectedLocationIds, setSelectedLocationIds] = useState<string[]>([])
   const queries = useQueries({
-    queries: items.map((id) => createQuery(id)),
+    queries: locations.map((id) => createQuery(id)),
   })
   const hasMissingPermissions = queries.some(
     (query) => isDriveResponseError(query.error) && query.error.status === 404,
@@ -97,7 +97,9 @@ export const LibrarySyncForm = ({
     <LibrarySyncFormLayout
       control={control}
       onSubmit={handleSubmit((data) =>
-        onSubmit(buildLibrarySyncSubmitPayload(data, { items: data.items })),
+        onSubmit(
+          buildLibrarySyncSubmitPayload(data, { items: data.locations }),
+        ),
       )}
       submitLabel={submitLabel}
     >
@@ -107,33 +109,33 @@ export const LibrarySyncForm = ({
           overflow: "auto",
         }}
       >
-        <PickItemsSection
-          locationsCount={items.length}
+        <PickLocationsSection
+          locationsCount={locations.length}
           onAction={() => {
             pick({ select: "folder", multiSelect: true })
               .pipe(
                 tap((data) => {
                   if (data.action === google.picker.Action.PICKED) {
                     const newData = [
-                      ...items,
+                      ...locations,
                       ...(data.docs?.map((i) => i.id) ?? []),
                     ]
 
-                    const newItems = newData.reduce(
+                    const newLocations = newData.reduce(
                       function reduceWithoutDuplicates(
                         acc: typeof newData,
-                        itemId,
+                        locationId,
                       ) {
-                        if (acc.find((entry) => entry === itemId)) {
+                        if (acc.find((entry) => entry === locationId)) {
                           return acc
                         }
 
-                        return [...acc, itemId]
+                        return [...acc, locationId]
                       },
                       [],
                     )
 
-                    setItems(newItems)
+                    setLocations(newLocations)
                   }
                 }),
                 takeUntil(unmountSubject),
@@ -145,8 +147,8 @@ export const LibrarySyncForm = ({
               )
               .subscribe()
           }}
-          resolveItemsAccess={
-            items.length > 0 && hasMissingPermissions
+          resolveLocationsAccess={
+            locations.length > 0 && hasMissingPermissions
               ? {
                   onAction: () => {
                     requestFilesAccessMutation()
@@ -156,17 +158,23 @@ export const LibrarySyncForm = ({
           }
         />
         <TreeActionsSection
-          onDeleteSelectedItems={() => {
-            setSelectedItems([])
-            setItems(items.filter((item) => !selectedItems.includes(item)))
+          onRemoveSelectedLocations={() => {
+            setSelectedLocationIds([])
+            setLocations(
+              locations.filter(
+                (location) => !selectedLocationIds.includes(location),
+              ),
+            )
           }}
-          selectedItemsCount={selectedItems.length}
+          selectedLocationsCount={selectedLocationIds.length}
         >
           <TreeView
             items={treeViewItems}
-            selectedItems={selectedItems}
+            selectedItems={selectedLocationIds}
             checkboxSelection
-            onSelectedItemsChange={(_, items) => setSelectedItems(items)}
+            onSelectedItemsChange={(_, itemIds) =>
+              setSelectedLocationIds(itemIds)
+            }
           />
         </TreeActionsSection>
       </Stack>

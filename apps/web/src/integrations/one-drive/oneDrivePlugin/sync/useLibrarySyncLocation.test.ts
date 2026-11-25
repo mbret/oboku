@@ -12,13 +12,13 @@ vi.mock("../graph", () => ({
   getOneDriveItemSummary,
 }))
 
-describe("resolveOneDriveLibrarySyncItem", () => {
+describe("resolveOneDriveLibrarySyncLocation", () => {
   beforeEach(() => {
     vi.clearAllMocks()
   })
 
   it("requests fresh metadata again after a previous failure", async () => {
-    const item: OneDriveLinkData = {
+    const location: OneDriveLinkData = {
       driveId: "drive-id",
       fileId: "file-id",
     }
@@ -37,31 +37,33 @@ describe("resolveOneDriveLibrarySyncItem", () => {
         },
       })
 
-    const { resolveOneDriveLibrarySyncItem } = await import(
-      "./useLibrarySyncItem"
+    const { resolveOneDriveLibrarySyncLocation } = await import(
+      "./useLibrarySyncLocation"
     )
 
-    await expect(resolveOneDriveLibrarySyncItem(item)).rejects.toThrow(
+    await expect(resolveOneDriveLibrarySyncLocation(location)).rejects.toThrow(
       "temporary failure",
     )
-    await expect(resolveOneDriveLibrarySyncItem(item)).resolves.toEqual({
-      treeItemId: getOneDriveItemKey({
-        driveId: "drive-id",
-        fileId: "file-id",
-      }),
-      metadata: {
-        id: "file-id",
-        name: "Book.epub",
-        parentReference: {
+    await expect(resolveOneDriveLibrarySyncLocation(location)).resolves.toEqual(
+      {
+        treeItemId: getOneDriveItemKey({
           driveId: "drive-id",
-          id: "folder-id",
+          fileId: "file-id",
+        }),
+        metadata: {
+          id: "file-id",
+          name: "Book.epub",
+          parentReference: {
+            driveId: "drive-id",
+            id: "folder-id",
+          },
         },
+        parentTreeItemId: getOneDriveItemKey({
+          driveId: "drive-id",
+          fileId: "folder-id",
+        }),
       },
-      parentTreeItemId: getOneDriveItemKey({
-        driveId: "drive-id",
-        fileId: "folder-id",
-      }),
-    })
+    )
 
     expect(requestMicrosoftAccessToken).toHaveBeenCalledTimes(2)
     expect(getOneDriveItemSummary).toHaveBeenCalledTimes(2)

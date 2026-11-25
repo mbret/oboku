@@ -1,26 +1,26 @@
 import { Button, Stack, Typography } from "@mui/material"
 import { memo } from "react"
-import { ResolveItemsAccessAlert } from "./ResolveItemsAccessAlert"
+import { ResolveLocationsAccessAlert } from "./ResolveLocationsAccessAlert"
 
-type ResolveItemsAccess = {
+type ResolveLocationsAccess = {
   actionLabel?: string
   isLoading?: boolean
   onAction: () => void
 }
 
-export const PickItemsSection = memo(function PickItemsSection({
+export const PickLocationsSection = memo(function PickLocationsSection({
   actionLabel = "Add folders/files",
   isLoading = false,
   locationsCount,
   onAction,
-  resolveItemsAccess,
+  resolveLocationsAccess,
   variant = "outlined",
 }: {
   actionLabel?: string
   isLoading?: boolean
   locationsCount: number
   onAction: () => void
-  resolveItemsAccess?: ResolveItemsAccess
+  resolveLocationsAccess?: ResolveLocationsAccess
   variant?: "contained" | "outlined" | "text"
 }) {
   return (
@@ -40,11 +40,11 @@ export const PickItemsSection = memo(function PickItemsSection({
         not add the files inside it, so pick those files too. On a computer, the
         picker selects many items at once.
       </Typography>
-      {resolveItemsAccess ? (
-        <ResolveItemsAccessAlert
-          actionLabel={resolveItemsAccess.actionLabel}
-          isLoading={resolveItemsAccess.isLoading}
-          onAction={resolveItemsAccess.onAction}
+      {resolveLocationsAccess ? (
+        <ResolveLocationsAccessAlert
+          actionLabel={resolveLocationsAccess.actionLabel}
+          isLoading={resolveLocationsAccess.isLoading}
+          onAction={resolveLocationsAccess.onAction}
         />
       ) : null}
     </Stack>
