@@ -112,6 +112,8 @@ export default defineConfig({
             "sources/synology-drive",
             "sources/server-files-self-host",
             "sources/opds",
+            "sources/web-address",
+            "sources/device",
           ],
         },
         {

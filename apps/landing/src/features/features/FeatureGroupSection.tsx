@@ -69,10 +69,11 @@ export function FeatureGroupSection({
             />
             {group.chips && (
               <Stack direction="row" sx={{ gap: 1, flexWrap: "wrap" }}>
-                {group.chips.map(function renderChip({ label, href }) {
+                {group.chips.map(function renderChip({ label, href, icon }) {
                   return href ? (
                     <Chip
                       key={label}
+                      icon={icon}
                       label={label}
                       size="small"
                       variant="outlined"
@@ -84,6 +85,7 @@ export function FeatureGroupSection({
                   ) : (
                     <Chip
                       key={label}
+                      icon={icon}
                       label={label}
                       size="small"
                       variant="outlined"

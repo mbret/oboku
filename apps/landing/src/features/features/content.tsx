@@ -22,6 +22,7 @@ import {
   FolderSharedRounded,
   FullscreenRounded,
   HistoryRounded,
+  HttpRounded,
   ImageRounded,
   InstallMobileRounded,
   KeyRounded,
@@ -44,7 +45,7 @@ import {
 } from "@mui/icons-material"
 import type { SvgIconComponent } from "@mui/icons-material"
 import { Link } from "@mui/material"
-import type { ReactNode } from "react"
+import type { ReactElement, ReactNode } from "react"
 import { PhoneScreenshots } from "../common/PhoneScreenshots"
 import addLibrarySyncScreenshot from "../common/app-screenshots/add-library-sync.webp"
 import audiobookReaderScreenshot from "../common/app-screenshots/audiobook-reader.webp"
@@ -61,7 +62,8 @@ import mangaReaderScreenshot from "../common/app-screenshots/manga-reader.webp"
 import optimizeContentScreenshot from "../common/app-screenshots/optimize-content.webp"
 import optimizeMetadataScreenshot from "../common/app-screenshots/optimize-metadata.webp"
 import profileScreenshot from "../common/app-screenshots/profile.webp"
-import { supportedExtensions, sources } from "../home/content"
+import { sources } from "../common/sources"
+import { supportedExtensions } from "../home/content"
 import { OpdsDiagram } from "./OpdsDiagram"
 
 type Feature = {
@@ -73,6 +75,7 @@ type Feature = {
 type FeatureChip = {
   label: string
   href?: string
+  icon?: ReactElement
 }
 
 export type FeatureGroup = {
@@ -212,9 +215,20 @@ export const featureGroups: FeatureGroup[] = [
           "Sync the books of a Komga, Calibre-Web or Kavita catalog.",
       },
       {
+        Icon: DnsRounded,
+        title: "Your own server",
+        description:
+          "A self-hosted instance syncs the books stored on its server or your NAS.",
+      },
+      {
         Icon: UploadFileRounded,
         title: "Upload from your device",
         description: "Add books stored on your phone or computer.",
+      },
+      {
+        Icon: HttpRounded,
+        title: "Add from a web address",
+        description: "Add a book from the link to its file.",
       },
       {
         Icon: SyncRounded,

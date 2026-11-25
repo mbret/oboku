@@ -1,10 +1,11 @@
 import { AddRounded } from "@mui/icons-material"
 import { Chip, Container, Typography } from "@mui/material"
 import { links } from "@oboku/shared"
+import type { ReactElement } from "react"
 import { BandSection } from "../common/BandSection"
 import { NextLink } from "../common/NextLink"
 import { SectionHeading } from "../common/SectionHeading"
-import { sources } from "./content"
+import { sources } from "../common/sources"
 import {
   ChipsStack,
   StepDescriptionTypography,
@@ -16,7 +17,7 @@ import {
 type Step = {
   title: string
   description: string
-  chips?: { label: string; href: string }[]
+  chips?: { label: string; href: string; icon?: ReactElement }[]
   moreChipHref?: string
 }
 
@@ -70,10 +71,11 @@ export function HowItWorksSection() {
                 </StepDescriptionTypography>
                 {chips && (
                   <ChipsStack>
-                    {chips.map(function renderChip({ label, href }) {
+                    {chips.map(function renderChip({ label, href, icon }) {
                       return (
                         <Chip
                           key={label}
+                          icon={icon}
                           label={label}
                           size="small"
                           variant="outlined"
