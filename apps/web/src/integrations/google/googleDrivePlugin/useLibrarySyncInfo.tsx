@@ -1,5 +1,5 @@
 import type { UseLibrarySyncInfo } from "../../plugins/types"
-import { getLabelWithItemCount } from "../../plugins/common/librarySyncLabel"
+import { getLabelWithLocationCount } from "../../plugins/common/librarySyncLabel"
 
 export const useLibrarySyncInfo: UseLibrarySyncInfo<"DRIVE"> = ({
   librarySync,
@@ -11,9 +11,9 @@ export const useLibrarySyncInfo: UseLibrarySyncInfo<"DRIVE"> = ({
     }
   }
 
-  const itemsCount = librarySync.data_v2?.items?.length ?? 0
+  const locationsCount = librarySync.data_v2?.items?.length ?? 0
 
   return {
-    name: getLabelWithItemCount("Google Drive", itemsCount),
+    name: getLabelWithLocationCount("Google Drive", locationsCount),
   }
 }

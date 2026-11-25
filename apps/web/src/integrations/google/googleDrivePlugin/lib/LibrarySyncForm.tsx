@@ -108,7 +108,7 @@ export const LibrarySyncForm = ({
         }}
       >
         <PickItemsSection
-          itemsCount={items.length}
+          locationsCount={items.length}
           onAction={() => {
             pick({ select: "folder", multiSelect: true })
               .pipe(

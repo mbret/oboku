@@ -11,14 +11,14 @@ type ResolveItemsAccess = {
 export const PickItemsSection = memo(function PickItemsSection({
   actionLabel = "Add folders/files",
   isLoading = false,
-  itemsCount,
+  locationsCount,
   onAction,
   resolveItemsAccess,
   variant = "outlined",
 }: {
   actionLabel?: string
   isLoading?: boolean
-  itemsCount: number
+  locationsCount: number
   onAction: () => void
   resolveItemsAccess?: ResolveItemsAccess
   variant?: "contained" | "outlined" | "text"
@@ -33,7 +33,7 @@ export const PickItemsSection = memo(function PickItemsSection({
         {actionLabel}
       </Button>
       <Typography variant="caption" align="center">
-        You have {itemsCount} item(s) registered
+        You picked {locationsCount} location(s)
       </Typography>
       <Typography variant="caption" align="center" color="text.secondary">
         oboku syncs only the folders and files you pick. A folder you pick does

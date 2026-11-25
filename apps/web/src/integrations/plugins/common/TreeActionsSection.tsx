@@ -29,10 +29,10 @@ export const TreeActionsSection = memo(function TreeActionsSection({
         }}
       >
         <Typography variant="caption">
-          Item(s) actions: {selectedItemsCount}
+          Selected locations: {selectedItemsCount}
         </Typography>
         <IconButton
-          aria-label="Delete selected items"
+          aria-label="Remove the selected locations"
           disabled={selectedItemsCount === 0}
           onClick={() => {
             if (!confirmation()) {
