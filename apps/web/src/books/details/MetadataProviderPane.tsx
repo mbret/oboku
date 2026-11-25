@@ -27,7 +27,10 @@ import { useBook } from "../states"
 import { useLink } from "../../links/states"
 import { pluginsByType } from "../../integrations/plugins/configure"
 import { ROUTES } from "../../navigation/routes"
-import { getBookMetadataEntryFields } from "../metadata/fields"
+import {
+  getBookMetadataEntryFields,
+  getBookMetadataEntryIdentifiers,
+} from "../metadata/fields"
 import {
   type BookMetadataProvider,
   getBookMetadataProviderIcon,
@@ -118,6 +121,22 @@ const ReorderIconButton = styled(IconButton)({
  * two are shown — anything below is "..." territory.
  */
 const SAMPLE_PREVIEW_LIMIT = 2
+
+const IDENTIFIER_FIELDS: ReadonlySet<string> = new Set([
+  "isbn",
+  "googleVolumeId",
+])
+
+function countNonIdentifierFields(fields: object | undefined) {
+  return fields
+    ? Object.entries(fields).filter(function isDefinedNonIdentifierField([
+        field,
+        value,
+      ]) {
+        return value !== undefined && !IDENTIFIER_FIELDS.has(field)
+      }).length
+    : 0
+}
 
 /**
  * Shared "secondary" rendering for every row in the metadata providers
@@ -372,19 +391,24 @@ export function MetadataProviderPane({ bookId }: { bookId: string }) {
           (item) => getBookMetadataProvider(item) === provider,
         )
         const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+        const identifiers = entry ? getBookMetadataEntryIdentifiers(entry) : []
         const providerName = entry ? getCatalogProviderName(entry) : undefined
 
-        const numberOfProperties = fields
-          ? Object.values(fields).filter((value) => value !== undefined).length
-          : 0
+        const numberOfProperties =
+          countNonIdentifierFields(fields) + identifiers.length
 
-        // Drive the preview from the provider's declared field list so the
-        // caption can never go blank while `numberOfProperties` is non-zero
-        // (which would happen if every populated field sat outside a
-        // hard-coded preview list).
-        const sampleValues = BOOK_METADATA_FIELDS_BY_PROVIDER[provider].map(
-          (field) => formatBookMetadataField(fields, field),
-        )
+        // Drive the preview from the provider's declared field list, then its
+        // identifiers, so the caption can never go blank while
+        // `numberOfProperties` is non-zero (which would happen if every
+        // populated field sat outside a hard-coded preview list).
+        const sampleValues = [
+          ...new Set([
+            ...BOOK_METADATA_FIELDS_BY_PROVIDER[provider].map((field) =>
+              formatBookMetadataField(fields, field),
+            ),
+            ...identifiers.map(({ value }) => value),
+          ]),
+        ]
 
         const reorderable = isReorderableBookMetadataProvider(provider)
 
