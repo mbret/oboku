@@ -7,10 +7,10 @@ import {
 } from "./fields"
 import {
   type BookMetadata,
-  type BookMetadataSource,
+  type BookMetadataProvider,
   type CatalogMetadata,
-  getBookMetadataSource,
-  getOrderedBookMetadataSources,
+  getBookMetadataProvider,
+  getOrderedBookMetadataProviders,
 } from "./index"
 
 /** What the app shows of a book: its metadata entries merged by priority. */
@@ -32,7 +32,7 @@ export type BookTitleFormat = {
  * from its link's filename, which rank just below the user.
  */
 type MergeLayer = {
-  source: BookMetadataSource | "directive"
+  provider: BookMetadataProvider | "directive"
   fields: ReadonlyBookMetadataFields
 }
 
@@ -92,7 +92,7 @@ const withStatedFieldsOnly = (
   ) as ReadonlyBookMetadataFields
 
 /**
- * The book's display metadata: each field from the highest priority source
+ * The book's display metadata: each field from the highest priority provider
  * that states it, the user's edits winning. An empty list or date states
  * nothing, and the title loses its directives.
  */
@@ -113,7 +113,7 @@ export const getMetadataFromBook = (
     linkDirectives?.isbn !== undefined ||
     linkDirectives?.googleVolumeId !== undefined
       ? {
-          source: "directive",
+          provider: "directive",
           fields: {
             isbn: linkDirectives?.isbn,
             googleVolumeId: linkDirectives?.googleVolumeId,
@@ -121,9 +121,9 @@ export const getMetadataFromBook = (
         }
       : undefined
 
-  const priorityLowestFirst: MergeLayer["source"][] = [
-    ...getOrderedBookMetadataSources(book?.metadataSourcePriority)
-      .filter((source) => source !== "user")
+  const priorityLowestFirst: MergeLayer["provider"][] = [
+    ...getOrderedBookMetadataProviders(book?.metadataSourcePriority)
+      .filter((provider) => provider !== "user")
       .toReversed(),
     "directive",
     "user",
@@ -132,15 +132,15 @@ export const getMetadataFromBook = (
   const orderedLayers = [
     ...list.map(
       (entry): MergeLayer => ({
-        source: getBookMetadataSource(entry),
+        provider: getBookMetadataProvider(entry),
         fields: getBookMetadataEntryFields(entry, format),
       }),
     ),
     ...(directiveLayer ? [directiveLayer] : []),
   ].toSorted(
     (a, b) =>
-      priorityLowestFirst.indexOf(a.source) -
-      priorityLowestFirst.indexOf(b.source),
+      priorityLowestFirst.indexOf(a.provider) -
+      priorityLowestFirst.indexOf(b.provider),
   )
 
   const reducedMetadata = orderedLayers.reduce<ReadonlyBookMetadataFields>(

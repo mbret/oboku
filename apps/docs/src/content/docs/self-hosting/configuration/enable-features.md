@@ -9,7 +9,7 @@ Set the Google client ID in the admin panel. See [Google](/self-hosting/configur
 ## Enable Google Drive support
 
 :::tip
-Let you add books and datasources from google drive
+Lets you add books and library syncs from Google Drive
 :::
 
 Set the Google client ID and API key in the admin panel, with the Google Picker API enabled for the key. See [Google](/self-hosting/configuration/google).

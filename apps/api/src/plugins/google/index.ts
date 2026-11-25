@@ -4,15 +4,15 @@
  */
 import { authorize } from "./helpers.js"
 import { google } from "googleapis"
-import { getDataFromDataSource } from "@oboku/shared"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { getDataFromLibrarySync } from "@oboku/shared"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
-import { getSynchronizeAbleDataSourceFromItems } from "./sync.js"
+import { getSynchronizeAbleLibrarySyncFromItems } from "./sync.js"
 import { toDecodedContentLength } from "../../http/contentLength.js"
 
 const DRIVE_TYPE = "DRIVE"
 
-export const dataSource: DataSourcePlugin<"DRIVE"> = {
+export const sourcePlugin: SourcePlugin<"DRIVE"> = {
   type: DRIVE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {
@@ -98,7 +98,8 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
     }
   },
   sync: async (ctx) => {
-    const { items = [] } = getDataFromDataSource<"DRIVE">(ctx.dataSource) ?? {}
+    const { items = [] } =
+      getDataFromLibrarySync<"DRIVE">(ctx.librarySync) ?? {}
 
     const auth = await authorize({
       credentials: ctx.providerCredentials,
@@ -109,7 +110,7 @@ export const dataSource: DataSourcePlugin<"DRIVE"> = {
       auth,
     })
 
-    return getSynchronizeAbleDataSourceFromItems({
+    return getSynchronizeAbleLibrarySyncFromItems({
       items,
       drive,
     })

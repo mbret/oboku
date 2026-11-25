@@ -37,7 +37,7 @@ import { Page } from "../../common/Page"
 import { NotFoundPage } from "../../common/NotFoundPage"
 import { BookDetailsTabPane } from "./BookDetailsTabPane"
 import { BookMetadataTabPane } from "./BookMetadataTabPane"
-import { formatList } from "./metadataSource/formatters"
+import { formatList } from "./metadataProvider/formatters"
 
 const TAB_PARAM = "tab"
 const TABS = ["details", "metadata"] as const

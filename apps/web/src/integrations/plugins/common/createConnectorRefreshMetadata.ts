@@ -15,7 +15,7 @@ export const createConnectorRefreshMetadata = <T extends SettingsConnectorType>(
 
     return useMutation({
       meta,
-      mutationFn: async function extractProviderCredentials({
+      mutationFn: async function extractSourceCredentials({
         linkData,
       }: UseRefreshMetadataVariables<T>) {
         const connectorId = linkData?.connectorId

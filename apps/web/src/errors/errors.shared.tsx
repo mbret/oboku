@@ -55,10 +55,10 @@ export class CriticalError extends Error {
 export const isCancelError = (error: unknown) => error instanceof CancelError
 
 export const ERROR_LINK_INVALID_MESSAGE =
-  "Book link is invalid, verify it on book detail screen."
+  "The book's file is invalid. Check it on the book details screen."
 
 export const ERROR_NO_LINK_MESSAGE =
-  "Your book does not have a valid link to download the file. Please add one before proceeding."
+  "Your book has no file to download. Add one before you continue."
 
 export const isApiError = (error: unknown): error is HttpApiError =>
   error instanceof HttpClientError &&

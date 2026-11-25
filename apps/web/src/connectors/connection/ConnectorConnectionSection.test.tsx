@@ -8,6 +8,7 @@ import {
   waitFor,
   within,
 } from "@testing-library/react"
+import { SIGNAL_RESET } from "reactjrx"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 import { DialogProvider } from "../../common/dialogs/DialogProvider"
 import { dialogSignal } from "../../common/dialogs/state"
@@ -19,6 +20,12 @@ import {
   clearActiveProfileId,
   setActiveProfileId,
 } from "../../profiles/active/activeProfileId"
+import { openTestDatabase } from "../../rxdb/databases.fixture"
+import { DOCUMENTS_PUSH_TIMEOUT_MS } from "../../rxdb/replication/awaitDocumentsPushed"
+import {
+  type ReplicationState,
+  runningReplicationsSignal,
+} from "../../rxdb/replication/states"
 import {
   ConnectorConnectionSection,
   DisconnectConnectorListItem,
@@ -101,6 +108,42 @@ const renderSection = ({
   return api
 }
 
+/** The settings and password secret documents the app reads the connector from. */
+const openConnectorDocuments = async () => {
+  const database = await openTestDatabase()
+  const settings = await database.settings.findOne("settings").exec()
+
+  if (!settings) throw new Error("The database has no settings")
+
+  const secret = await database.secret.insert({
+    _id: "dav-password-secret",
+    rx_model: "secret",
+    name: "NAS password",
+    createdAt: "2026-11-16T08:00:00.000Z",
+    modifiedAt: null,
+    value: { iv: "password-iv", data: "encrypted-password" },
+  })
+
+  return [settings, secret]
+}
+
+const runReplications = (
+  awaitDocumentPushed: ReplicationState["awaitDocumentPushed"],
+) => {
+  // test double: connecting only asks a replication whether a document was pushed
+  const replication = { awaitDocumentPushed } as unknown as ReplicationState
+
+  runningReplicationsSignal.update(
+    new Map([
+      ["settings", replication],
+      ["secret", replication],
+    ]),
+  )
+}
+
+const runPendingPromiseCallbacks = () =>
+  new Promise((resolve) => setTimeout(resolve))
+
 const clickConnectThenConsent = async () => {
   fireEvent.click(await screen.findByRole("button", { name: "Connect" }))
 
@@ -120,13 +163,18 @@ const clickConnectThenConsent = async () => {
 describe("ConnectorConnectionSection", () => {
   beforeEach(() => {
     setActiveProfileId("profile")
-    extractConnectorData.mockResolvedValue({ data: { password: PASSWORD } })
+    extractConnectorData.mockResolvedValue({
+      data: { password: PASSWORD },
+      documents: [],
+    })
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     cleanup()
     dialogSignal.update([])
     clearActiveProfileId()
+    runningReplicationsSignal.update(SIGNAL_RESET)
     vi.clearAllMocks()
   })
 
@@ -151,6 +199,94 @@ describe("ConnectorConnectionSection", () => {
     expect(
       screen.getByRole("button", { name: /Disconnect this connector/ }),
     ).toBeTruthy()
+  })
+
+  it("sends the password only once the connector and its password secret have reached oboku's server", async () => {
+    const documents = await openConnectorDocuments()
+    extractConnectorData.mockResolvedValue({
+      data: { password: PASSWORD },
+      documents,
+    })
+    const { promise: pushed, resolve: completePushes } =
+      Promise.withResolvers<void>()
+    const awaitDocumentPushed = vi.fn(() => pushed)
+    runReplications(awaitDocumentPushed)
+    const api = renderSection({ connections: [] })
+    await screen.findByRole("button", { name: "Connect" })
+    api.get.mockResolvedValue({ data: { connections: [CONNECTION] } })
+
+    await clickConnectThenConsent()
+    await waitFor(() => {
+      expect(awaitDocumentPushed).toHaveBeenCalledTimes(documents.length)
+    })
+    await runPendingPromiseCallbacks()
+
+    for (const document of documents) {
+      expect(awaitDocumentPushed).toHaveBeenCalledWith(document)
+    }
+    expect(api.put).not.toHaveBeenCalled()
+
+    completePushes()
+
+    expect(await screen.findByText("Connected")).toBeTruthy()
+    expect(api.put).toHaveBeenCalledWith(
+      expect.objectContaining({ body: { password: PASSWORD } }),
+    )
+  })
+
+  it("drops the password when another tab switches profiles while the edits reach oboku's server", async () => {
+    extractConnectorData.mockResolvedValue({
+      data: { password: PASSWORD },
+      documents: await openConnectorDocuments(),
+    })
+    const { promise: pushed, resolve: completePushes } =
+      Promise.withResolvers<void>()
+    const awaitDocumentPushed = vi.fn(() => pushed)
+    runReplications(awaitDocumentPushed)
+    const api = renderSection({ connections: [] })
+
+    await clickConnectThenConsent()
+    await waitFor(() => {
+      expect(awaitDocumentPushed).toHaveBeenCalled()
+    })
+
+    setActiveProfileId("other-profile")
+    completePushes()
+
+    await waitFor(() => {
+      expect(
+        screen
+          .getByRole("button", { name: "Connect" })
+          .hasAttribute("disabled"),
+      ).toBe(false)
+    })
+    expect(api.put).not.toHaveBeenCalled()
+  })
+
+  it("explains, without calling oboku's server, a connector whose edits do not reach the server in time", async () => {
+    extractConnectorData.mockResolvedValue({
+      data: { password: PASSWORD },
+      documents: await openConnectorDocuments(),
+    })
+    runReplications(() => new Promise<void>(() => {}))
+    const api = renderSection({ connections: [] })
+
+    fireEvent.click(await screen.findByRole("button", { name: "Connect" }))
+    const consentDialog = await screen.findByRole("dialog")
+    vi.useFakeTimers()
+    fireEvent.click(
+      within(consentDialog).getByRole("button", { name: "Connect" }),
+    )
+    await vi.advanceTimersByTimeAsync(DOCUMENTS_PUSH_TIMEOUT_MS)
+
+    await vi.waitFor(() => {
+      expect(
+        screen.getByText(
+          /This connector or its password has not reached oboku's server yet/,
+        ),
+      ).toBeTruthy()
+    })
+    expect(api.put).not.toHaveBeenCalled()
   })
 
   it("keeps Connect loading until the refreshed connections arrive", async () => {

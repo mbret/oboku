@@ -83,8 +83,8 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
 
   const isRefreshingMetadata = useIsCollectionMetadataRefreshing(collection)
 
-  const isCollectionFromDataSource = !!collection?.linkType
-  const canRemoveCollection = !!collection && !isCollectionFromDataSource
+  const isCollectionFromLibrarySync = !!collection?.linkType
+  const canRemoveCollection = !!collection && !isCollectionFromLibrarySync
 
   return (
     <>
@@ -214,8 +214,8 @@ export const CollectionActionsDrawer = memo(function CollectionActionsDrawer() {
             <ListItemText
               primary="Remove"
               secondary={
-                isCollectionFromDataSource
-                  ? "Managed by its data source"
+                isCollectionFromLibrarySync
+                  ? "Managed by its library sync"
                   : undefined
               }
             />

@@ -1,5 +1,5 @@
-import { getDataFromDataSource, PLUGIN_SERVER_TYPE } from "@oboku/shared"
-import type { DataSourcePlugin, PluginMetadataParams } from "../types.js"
+import { getDataFromLibrarySync, PLUGIN_SERVER_TYPE } from "@oboku/shared"
+import type { SourcePlugin, PluginMetadataParams } from "../types.js"
 import { createClient, type WebDAVClient } from "webdav"
 import { getConnectorById } from "../connectorHelpers.js"
 import {
@@ -55,7 +55,7 @@ async function resolveClientAndPath(
   return { client, filePath }
 }
 
-export const dataSource: DataSourcePlugin<"server"> = {
+export const sourcePlugin: SourcePlugin<"server"> = {
   type: PLUGIN_SERVER_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findConnectorCandidates(ctx, "link", {
@@ -95,11 +95,11 @@ export const dataSource: DataSourcePlugin<"server"> = {
     return downloadFromWebdav(client, filePath)
   },
   sync: async (options) => {
-    const { providerCredentials, dataSource, db } = options
-    const { connectorId } = getDataFromDataSource<"server">(dataSource) ?? {}
+    const { providerCredentials, librarySync, db } = options
+    const { connectorId } = getDataFromLibrarySync<"server">(librarySync) ?? {}
 
     if (!connectorId || !providerCredentials?.password) {
-      throw new Error("datasource not found or invalid")
+      throw new Error("library sync not found or invalid")
     }
 
     const client = await createServerWebdavClient(

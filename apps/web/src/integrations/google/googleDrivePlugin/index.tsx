@@ -7,13 +7,13 @@ import { PLUGIN_NAME } from "./lib/constants"
 import GoogleDriveAsset from "../../../assets/google-drive.svg?react"
 import { SvgIcon } from "@mui/material"
 import { UploadBook } from "./UploadBook"
-import { DataSourceForm } from "./lib/DataSourceForm"
+import { LibrarySyncForm } from "./lib/LibrarySyncForm"
 import { SelectItem as SelectItemComponent } from "./SelectItem"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { Provider } from "./Provider"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { DownloadBook } from "./DownloadBook"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { UpsertFile } from "./UpsertFile"
@@ -25,7 +25,7 @@ const GoogleDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"DRIVE"> = {
+export const plugin: SourcePlugin<"DRIVE"> = {
   type: `DRIVE`,
   name: PLUGIN_NAME,
   canRemoveResource: false,
@@ -36,9 +36,9 @@ export const plugin: ObokuPlugin<"DRIVE"> = {
   canSynchronize: true,
   DownloadBookComponent: DownloadBook,
   UpsertFileComponent: UpsertFile,
-  DataSourceForm,
+  LibrarySyncForm,
   SelectItemComponent,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
   useLinkInfo,
   useRefreshMetadata,
   useSynchronize,

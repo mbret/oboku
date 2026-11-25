@@ -1,12 +1,12 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
 /** The scope that reaches only the Drive files the user picked or opened with oboku. */
 export const GOOGLE_DRIVE_FILE_SCOPE =
   "https://www.googleapis.com/auth/drive.file"
 
-export type GoogleDriveDataSourceDocType = Omit<
-  BaseDataSourceDocType,
+export type GoogleDriveLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
   "data_v2"
 > & {
   type: "DRIVE"

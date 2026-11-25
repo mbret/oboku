@@ -423,6 +423,10 @@ export type SyncReportDto = {
     created_at: string;
     ended_at: string;
     state: 'error' | 'success';
+    /**
+     * Why the sync failed. `null` when it succeeded, and for reports saved before the code was stored.
+     */
+    error_code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001' | null;
     report: Array<SyncReportEntryDto>;
     datasource_id: string;
     user_name: string;
@@ -432,7 +436,7 @@ export type SyncReportDto = {
     has_different_provider_credentials: boolean | null;
 };
 
-export type SyncDataSourceDto = {
+export type RunLibrarySyncDto = {
     dataSourceId: string;
     providerCredentials: {
         [key: string]: unknown;
@@ -459,6 +463,35 @@ export type WebdavCredentialsDto = {
 export type DownloadLinkDto = {
     linkId: string;
     providerCredentials: WebdavCredentialsDto;
+};
+
+export type ListWebdavDirectoryDto = {
+    /**
+     * An http or https URL.
+     */
+    url: string;
+    username: string;
+    providerCredentials: WebdavCredentialsDto;
+    allowSelfSigned?: boolean;
+    /**
+     * Relative to `url`, like `/Books`.
+     */
+    path: string;
+};
+
+export type WebdavDirectoryItemDto = {
+    type: 'file' | 'directory';
+    /**
+     * The item's path from the connector's URL.
+     */
+    filename: string;
+    basename: string;
+    mime?: string;
+    etag?: string;
+};
+
+export type WebdavDirectoryResponseDto = {
+    items: Array<WebdavDirectoryItemDto>;
 };
 
 export type RefreshCollectionMetadataDto = {
@@ -629,7 +662,8 @@ export type ConnectorConnectionDto = {
     /**
      * `connector-changed` once the connector, or its password secret's value,
      * differs from the one the user connected: the API no longer uses the
-     * password until the user connects the connector again.
+     * password until the user connects the connector again. Turning
+     * `proxyThroughServer` on or off keeps the status.
      */
     status: 'connected' | 'connector-changed';
     connectorId: string;
@@ -1718,49 +1752,49 @@ export type QuotasGetProxiedDownloadQuotaResponses = {
 
 export type QuotasGetProxiedDownloadQuotaResponse = QuotasGetProxiedDownloadQuotaResponses[keyof QuotasGetProxiedDownloadQuotaResponses];
 
-export type DataSourcesListSyncReportsData = {
+export type LibrarySyncsListSyncReportsData = {
     body?: never;
     path?: never;
     query?: never;
     url: '/datasources/sync-reports';
 };
 
-export type DataSourcesListSyncReportsErrors = {
+export type LibrarySyncsListSyncReportsErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesListSyncReportsError = DataSourcesListSyncReportsErrors[keyof DataSourcesListSyncReportsErrors];
+export type LibrarySyncsListSyncReportsError = LibrarySyncsListSyncReportsErrors[keyof LibrarySyncsListSyncReportsErrors];
 
-export type DataSourcesListSyncReportsResponses = {
+export type LibrarySyncsListSyncReportsResponses = {
     200: Array<SyncReportDto>;
 };
 
-export type DataSourcesListSyncReportsResponse = DataSourcesListSyncReportsResponses[keyof DataSourcesListSyncReportsResponses];
+export type LibrarySyncsListSyncReportsResponse = LibrarySyncsListSyncReportsResponses[keyof LibrarySyncsListSyncReportsResponses];
 
-export type DataSourcesSyncData = {
-    body: SyncDataSourceDto;
+export type LibrarySyncsSyncData = {
+    body: RunLibrarySyncDto;
     path?: never;
     query?: never;
     url: '/datasources/sync';
 };
 
-export type DataSourcesSyncErrors = {
+export type LibrarySyncsSyncErrors = {
     /**
      * The request failed
      */
     default: HttpErrorResponseDto;
 };
 
-export type DataSourcesSyncError = DataSourcesSyncErrors[keyof DataSourcesSyncErrors];
+export type LibrarySyncsSyncError = LibrarySyncsSyncErrors[keyof LibrarySyncsSyncErrors];
 
-export type DataSourcesSyncResponses = {
+export type LibrarySyncsSyncResponses = {
     201: EmptyResponseDto;
 };
 
-export type DataSourcesSyncResponse = DataSourcesSyncResponses[keyof DataSourcesSyncResponses];
+export type LibrarySyncsSyncResponse = LibrarySyncsSyncResponses[keyof LibrarySyncsSyncResponses];
 
 export type BooksRefreshMetadataData = {
     body: RefreshBookMetadataDto;
@@ -1809,6 +1843,31 @@ export type LinksDownloadResponses = {
 };
 
 export type LinksDownloadResponse = LinksDownloadResponses[keyof LinksDownloadResponses];
+
+export type ConnectorsListWebdavDirectoryData = {
+    body: ListWebdavDirectoryDto;
+    path?: never;
+    query?: never;
+    url: '/connectors/webdav/directory';
+};
+
+export type ConnectorsListWebdavDirectoryErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryError = ConnectorsListWebdavDirectoryErrors[keyof ConnectorsListWebdavDirectoryErrors];
+
+export type ConnectorsListWebdavDirectoryResponses = {
+    200: WebdavDirectoryResponseDto;
+};
+
+export type ConnectorsListWebdavDirectoryResponse = ConnectorsListWebdavDirectoryResponses[keyof ConnectorsListWebdavDirectoryResponses];
 
 export type CollectionsRefreshMetadataData = {
     body: RefreshCollectionMetadataDto;

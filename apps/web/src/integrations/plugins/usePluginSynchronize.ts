@@ -1,19 +1,20 @@
 import {
   assertNever,
-  type DataSourceDocType,
-  type ProviderApiCredentials,
+  type LibrarySyncDocType,
+  type SourceApiCredentials,
+  type SourceType,
 } from "@oboku/shared"
 import { useCallback } from "react"
 import { useCreateRequestPopupDialog } from "./useCreateRequestPopupDialog"
 import { pluginsByType } from "./configure"
 
 type SynchronizeResult = {
-  providerCredentials: ProviderApiCredentials<DataSourceDocType["type"]>
+  providerCredentials: SourceApiCredentials<SourceType>
 }
 
 /**
  * Calls each plugin's `useSynchronize` by name. Plugin members named `use*` are
- * hooks on purpose (see `ObokuPlugin`), and hooks cannot run in a loop, so a
+ * hooks on purpose (see `SourcePlugin`), and hooks cannot run in a loop, so a
  * new plugin adds its line here.
  */
 export const usePluginSynchronize = () => {
@@ -64,28 +65,28 @@ export const usePluginSynchronize = () => {
   })
 
   return useCallback(
-    async (dataSource: DataSourceDocType): Promise<SynchronizeResult> => {
-      switch (dataSource.type) {
+    async (librarySync: LibrarySyncDocType): Promise<SynchronizeResult> => {
+      switch (librarySync.type) {
         case "webdav":
-          return synchronizeWebdav(dataSource)
+          return synchronizeWebdav(librarySync)
         case "dropbox":
-          return synchronizeDropbox(dataSource)
+          return synchronizeDropbox(librarySync)
         case "synology-drive":
-          return synchronizeSynologyDrive(dataSource)
+          return synchronizeSynologyDrive(librarySync)
         case "DRIVE":
-          return synchronizeDrive(dataSource)
+          return synchronizeDrive(librarySync)
         case "one-drive":
-          return synchronizeOneDrive(dataSource)
+          return synchronizeOneDrive(librarySync)
         case "file":
-          return synchronizeFile(dataSource)
+          return synchronizeFile(librarySync)
         case "URI":
-          return synchronizeUri(dataSource)
+          return synchronizeUri(librarySync)
         case "server":
-          return synchronizeServer(dataSource)
+          return synchronizeServer(librarySync)
         case "opds":
-          return synchronizeOpds(dataSource)
+          return synchronizeOpds(librarySync)
         default:
-          return assertNever(dataSource)
+          return assertNever(librarySync)
       }
     },
     [

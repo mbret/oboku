@@ -4,6 +4,24 @@
 
 - When implementing changes in this codebase, prioritize consistency and consolidation over novelty.
 
+### Vocabulary
+
+Use one word for each concept, in code, in the UI and in the docs. Stored names keep their old words: CouchDB collections and fields, Postgres tables and columns, request fields such as `providerCredentials` and `linkId`, and API HTTP paths.
+
+| Word              | Meaning                                                                                                                                                                    |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| integration       | Anything oboku connects to: the sources, KOReader progress sync, and the catalogs oboku serves to reading apps.                                                            |
+| source            | A kind of place books come from: Google Drive, Dropbox, OneDrive, WebDAV, Synology Drive, an OPDS catalog, oboku's server, a web address or the device.                    |
+| source plugin     | The code of one source, behind the contract every source implements. Only code uses this word.                                                                             |
+| connector         | A saved server login: a URL, a username and an encrypted password.                                                                                                         |
+| library sync      | One source, one or more of its locations, and options, which oboku keeps in sync with the library. Inside the Sync screen, "sync" alone is enough. Stored as `datasource`. |
+| location          | One place that a library sync covers: a folder, a whole account or server, or a catalog.                                                                                   |
+| source connection | The credentials oboku's server keeps for a source: a Google Drive refresh token, or a connector's password.                                                                |
+| book file         | A book's reference to its file at its source. Stored as `link`.                                                                                                            |
+| metadata provider | Where a book's metadata comes from: the book's file, its source, or a service such as Google Books.                                                                        |
+
+"Provider" only means a sign-in provider (OAuth), a metadata provider, an email provider or a React context provider. "Plugin" never appears in the UI.
+
 ### Code comments
 
 - **Default to no comments.** Code, names, and types are the documentation. Add a comment only when a future reader cannot recover the intent from the code itself.
@@ -93,9 +111,9 @@
 - Build a URL with react-router's `generatePath(ROUTES.BOOK_DETAILS, { id })`: it types the params from the pattern, encodes their values and throws when one is missing. A screen reads its params with `useParams<PathParam<typeof ROUTES.BOOK_DETAILS>>()`.
 - Never fill a pattern with `.replace` or a template string, and never hand-write a params type: both drift from the pattern without a type error.
 
-### Web plugins: members named `use*` are hooks
+### Web source plugins: members named `use*` are hooks
 
-- A plugin member named `use*` in `apps/web/src/integrations/plugins/types.ts` (`useLinkInfo`, `useSyncSourceInfo`, `useRemoveResource`, `useSignOut`, `useSynchronize`, `useRefreshMetadata`) is a hook on purpose, even when no plugin calls a React hook in it and it returns a plain value. A hook can use any React context, so the plugin API stays open to a future plugin.
+- A member named `use*` of `SourcePlugin` in `apps/web/src/integrations/plugins/types.ts` (`useLinkInfo`, `useLibrarySyncInfo`, `useRemoveResource`, `useSignOut`, `useSynchronize`, `useRefreshMetadata`) is a hook on purpose, even when no plugin calls a React hook in it and it returns a plain value. A hook can use any React context, so the plugin API stays open to a future plugin.
 - Never turn such a member into a plain function. Hooks cannot run in a loop, so generic code calls each plugin's hook by name, or runs it in a component made for the plugin's type.
 
 ### Data migrations: RxDB is local, CouchDB is the data

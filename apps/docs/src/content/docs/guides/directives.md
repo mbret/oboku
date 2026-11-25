@@ -2,7 +2,7 @@
 title: "Directives"
 ---
 
-Directives are extra information you put on your data sources contents to help oboku understand better what they are. Ideally they should not be required and have some limitations but they can come handy in some situation.
+Directives are extra information you put on the contents of your library syncs to help oboku understand better what they are. Ideally they should not be required and have some limitations but they can come handy in some situation.
 
 ## **Overview**
 
@@ -18,9 +18,9 @@ Due to some current limitation, you may need to re-download a book for some dire
 
 ## Limitations
 
-When you are using a data sources which does not use ID for its resources (such as webdav) renaming the files or folders will prevent oboku from knowing the resource has been renamed and thus will end up duplicating the contents. This limitation is directly tight to the limitation of the protocol of the data sources. Using Google Drive or Dropbox for example does not have this problem and you can rename your contents whenever you want.
+When you are using a source which does not use IDs for its resources (such as webdav) renaming the files or folders will prevent oboku from knowing the resource has been renamed and thus will end up duplicating the contents. This limitation is directly tight to the limitation of the protocol of the sources. Using Google Drive or Dropbox for example does not have this problem and you can rename your contents whenever you want.
 
-If you rename or move around contents you can always update the link on oboku manually.
+If you rename or move around contents you can always update the book's file in oboku manually.
 
 ## `tags`
 
@@ -52,7 +52,7 @@ my book [oboku~metadata-ignore-file].epub
 
 Tells oboku to not use any information from the file itself to build the metadata. It can be useful if for example you don't want the cover to be the first image from the file or if the epub file is not good enough for you and contain invalid information.
 
-Remember that the `file` source metadata takes priority over other sources such as the catalog but not the `user` source.
+Remember that the `file` provider takes priority over other providers such as the catalog, but not the `user` provider.
 
 ## `google-volume-id~{id}` { #google-volume-id-id }
 
@@ -76,7 +76,7 @@ Files only
 my book [oboku~metadata-ignore-sources].epub
 ```
 
-Tells oboku to not fetch any metadata from external sources. Basically only using metadata from links and files. You can use it when the external metadata are wrong and you want to stay as close to your file.
+Tells oboku to not fetch any metadata from external metadata providers. It only uses metadata from the book's source and file. You can use it when the external metadata are wrong and you want to stay as close to your file.
 
 ## `metadata-source-{source}-only`
 
@@ -88,7 +88,7 @@ Collections only
 my series [oboku~metadata-comicvine-only]
 ```
 
-Tells oboku to not fetch any metadata from other sources than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [sources here](/guides/metadata-sources)
+Tells oboku to not fetch any metadata from providers other than the given one. Can be helpful depending of the type of series. For example mangadex is more designed towards manga and might give false positive if your series is a comic that could match some results on mangadex. You can see the list of supported [providers here](/guides/metadata-providers)
 
 ## `metadata-title~{value}` { #metadata-title-value }
 
@@ -108,7 +108,7 @@ Tells oboku to use this title instead of the folder name when looking for metada
 my folder [oboku~no_collection]/
 ```
 
-**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a data source that contains lot of sub folder and you don't necessarily want to have a collection for each folder (default behavior).
+**Only usable on folders**. Use this directive if you want to prevent the folder to be treated as collection. This is useful if you use a library sync that contains a lot of sub folders and you don't necessarily want to have a collection for each folder (default behavior).
 
 When using `no_collection` on a folder, oboku will then use the default behavior for all children which means every folder directly under this folder will be treated as collection. Use this directive again if you need to ignore deeper folder.
 

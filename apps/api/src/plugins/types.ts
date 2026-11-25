@@ -1,84 +1,84 @@
 import {
   type CollectionDocType,
   type LinkMetadata,
-  type DataSourceDocTypeFor,
-  type DataSourceType,
+  type LibrarySyncDocTypeFor,
+  type SourceType,
   type LinkDocType,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   type LinkWithCredentials,
-  type ProviderApiCredentials,
-  type SynchronizeAbleDataSource,
+  type SourceApiCredentials,
+  type SynchronizeAbleLibrarySync,
   type SynchronizeAbleItem,
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { IncomingMessage } from "node:http"
-import { SyncReport } from "../datasource/sync/SyncReport.js"
+import { SyncReport } from "../library-sync/sync/SyncReport.js"
 
-/** Re-export from shared so sync item/data source types are single source of truth. */
+/** Re-export from shared so sync item/library sync types are single source of truth. */
 export type {
   SynchronizeAbleItem,
-  SynchronizeAbleDataSource,
+  SynchronizeAbleLibrarySync,
 } from "@oboku/shared"
 
-/** Sync context; generic so `providerCredentials` is the typed API credentials for the provider. */
-export type SyncContext<T extends DataSourceType = DataSourceType> = {
+/** Sync context; generic so `providerCredentials` is the typed API credentials for the source. */
+export type SyncContext<T extends SourceType = SourceType> = {
   userName: string
   dataSourceId: string
-  /** Resolved at runtime (e.g. from secrets). Typed per provider (WebdavApiCredentials, DriveApiCredentials, etc.). */
-  providerCredentials: ProviderApiCredentials<T>
-  dataSourceType: T
-  dataSource: DataSourceDocTypeFor<T>
+  /** Resolved at runtime (e.g. from secrets). Typed per source (WebdavApiCredentials, DriveApiCredentials, etc.). */
+  providerCredentials: SourceApiCredentials<T>
+  sourceType: T
+  librarySync: LibrarySyncDocTypeFor<T>
   syncReport: SyncReport
   db: createNano.DocumentScope<unknown>
 }
 
 /** Link candidate returned by getLinkCandidatesForItem; includes whether current sync credentials apply. */
 export type LinkCandidate = LinkDocType & {
-  isUsingSameProviderCredentials: boolean
+  isUsingSameSourceCredentials: boolean
 }
 
 /**
  * Find all links that match this sync item (same resource). Caller will
  * clean/merge (keep one with valid book, delete dangling duplicates) then
  * use the single link to resolve the book. Each link includes
- * isUsingSameProviderCredentials so the sync can decide whether to refresh metadata.
+ * isUsingSameSourceCredentials so the sync can decide whether to refresh metadata.
  */
 export type GetLinkCandidatesForItem<
-  TProvider extends DataSourceType = DataSourceType,
+  TSourceType extends SourceType = SourceType,
 > = (
-  item: SynchronizeAbleItem<TProvider>,
-  ctx: SyncContext<TProvider>,
+  item: SynchronizeAbleItem<TSourceType>,
+  ctx: SyncContext<TSourceType>,
 ) => Promise<{ links: LinkCandidate[] }>
 
 /** Collection candidate with same-credentials flag for sync and metadata refresh. */
 export type CollectionCandidate = CollectionDocType & {
   _id: string
   _rev: string
-  isUsingSameProviderCredentials: boolean
+  isUsingSameSourceCredentials: boolean
 }
 
 /**
  * Find all collections that match this sync item (same resource / link data).
- * Each includes isUsingSameProviderCredentials so the caller can pick the one
- * that matches the current datasource (e.g. for metadata refresh).
+ * Each includes isUsingSameSourceCredentials so the caller can pick the one
+ * that matches the current library sync (e.g. for metadata refresh).
  */
 export type GetCollectionCandidatesForItem<
-  TProvider extends DataSourceType = DataSourceType,
+  TSourceType extends SourceType = SourceType,
 > = (
-  item: SynchronizeAbleItem<TProvider>,
-  ctx: SyncContext<TProvider>,
+  item: SynchronizeAbleItem<TSourceType>,
+  ctx: SyncContext<TSourceType>,
 ) => Promise<{ collections: CollectionCandidate[] }>
 
-/** Per-provider params for getFolderMetadata / getFileMetadata. */
-export type PluginMetadataParams<T extends DataSourceType = DataSourceType> = {
+/** Per-source params for getFolderMetadata / getFileMetadata. */
+export type PluginMetadataParams<T extends SourceType = SourceType> = {
   link: LinkWithCredentials<T>
-  providerCredentials: ProviderApiCredentials<T>
+  providerCredentials: SourceApiCredentials<T>
   db?: createNano.DocumentScope<unknown>
 }
 
 /**
  * Sentinel a plugin MUST return from `getFileMetadata` when the
- * provider has no usable "last modified" for this resource. Using a
+ * source has no usable "last modified" for this resource. Using a
  * `unique symbol` (instead of `string | undefined` or a string literal)
  * keeps the union from collapsing to `string`, so the consumer is
  * forced to narrow via `=== MODIFIED_AT_UNSUPPORTED` before the value
@@ -88,50 +88,48 @@ export const MODIFIED_AT_UNSUPPORTED: unique symbol = Symbol(
   "oboku.modifiedAt.unsupported",
 )
 
-export type ProviderModifiedAt = string | typeof MODIFIED_AT_UNSUPPORTED
+export type SourceModifiedAt = string | typeof MODIFIED_AT_UNSUPPORTED
 
 /**
- * Data source plugin, generic in the provider type. Each method receives
- * strongly-typed params for that provider (e.g. DRIVE plugin gets
+ * Source plugin, generic in the source type. Each method receives
+ * strongly-typed params for that source (e.g. DRIVE plugin gets
  * LinkWithCredentials<"DRIVE"> and DriveApiCredentials).
  */
-export type DataSourcePlugin<
-  TProvider extends DataSourceType = DataSourceType,
-> = {
+export type SourcePlugin<TSourceType extends SourceType = SourceType> = {
   type: string
   getFolderMetadata: (
-    data: PluginMetadataParams<TProvider>,
+    data: PluginMetadataParams<TSourceType>,
   ) => Promise<{ name?: string; modifiedAt?: string }>
-  getFileMetadata: (data: PluginMetadataParams<TProvider>) => Promise<{
+  getFileMetadata: (data: PluginMetadataParams<TSourceType>) => Promise<{
     name?: string
-    /** Provider timestamp (ISO 8601 preferred) or {@link MODIFIED_AT_UNSUPPORTED}. */
-    modifiedAt: ProviderModifiedAt
+    /** Source timestamp (ISO 8601 preferred) or {@link MODIFIED_AT_UNSUPPORTED}. */
+    modifiedAt: SourceModifiedAt
     canDownload?: boolean
     contentType?: string
     /**
      * Restricted to {@link LinkMetadata}'s advertised fields on purpose:
-     * provider-specific identifiers like `isbn` / `googleVolumeId` are
+     * source-specific identifiers like `isbn` / `googleVolumeId` are
      * NOT accepted here — they belong in the filename as oboku
-     * directives (e.g. `[oboku~isbn~…]`), so the storage provider
+     * directives (e.g. `[oboku~isbn~…]`), so the source
      * stays the single source of truth and we never persist a stale
      * duplicate.
      */
     bookMetadata?: Partial<Omit<LinkMetadata, "type">>
   }>
   download: (
-    link: LinkDocTypeForProvider<TProvider>,
-    providerCredentials: ProviderApiCredentials<TProvider>,
+    link: LinkDocTypeForSource<TSourceType>,
+    providerCredentials: SourceApiCredentials<TSourceType>,
     db?: createNano.DocumentScope<unknown>,
   ) => Promise<{
     stream: NodeJS.ReadableStream | IncomingMessage
-    /** The number of bytes `stream` yields, when the provider's answer states it. */
+    /** The number of bytes `stream` yields, when the source's answer states it. */
     size?: number
   }>
   /** Find all links that match this item (same resource). Caller cleans/merges and uses one. */
-  getLinkCandidatesForItem: GetLinkCandidatesForItem<TProvider>
+  getLinkCandidatesForItem: GetLinkCandidatesForItem<TSourceType>
   /** Find all collections that match this item (same resource / link data). Caller picks one or creates. */
-  getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TProvider>
+  getCollectionCandidatesForItem: GetCollectionCandidatesForItem<TSourceType>
   sync: (
-    options: SyncContext<TProvider>,
-  ) => Promise<SynchronizeAbleDataSource<TProvider>>
+    options: SyncContext<TSourceType>,
+  ) => Promise<SynchronizeAbleLibrarySync<TSourceType>>
 }

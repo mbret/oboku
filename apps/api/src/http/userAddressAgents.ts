@@ -139,7 +139,7 @@ type UserAddressRequestOptions = {
 }
 
 /**
- * The options for a request to an address a user entered: a data source, a
+ * The options for a request to an address a user entered: a library sync, a
  * connector, a link. Unless private networks are allowed, every connection
  * the request opens, redirects included, has to reach the public internet or
  * a host the instance allows. It then bypasses the proxy from

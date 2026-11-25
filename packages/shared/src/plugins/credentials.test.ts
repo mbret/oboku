@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest"
-import { parseProviderApiCredentials } from "./credentials"
+import { parseSourceApiCredentials } from "./credentials"
 
-describe("providerApiCredentialsSchemas", () => {
+describe("sourceApiCredentialsSchemas", () => {
   it("parses valid OneDrive credentials", () => {
     expect(
-      parseProviderApiCredentials("one-drive", {
+      parseSourceApiCredentials("one-drive", {
         accessToken: "token",
         expiresAt: 123,
       }),
@@ -15,18 +15,18 @@ describe("providerApiCredentialsSchemas", () => {
   })
 
   it("rejects OneDrive credentials without an access token", () => {
-    expect(() => parseProviderApiCredentials("one-drive", {})).toThrow(
+    expect(() => parseSourceApiCredentials("one-drive", {})).toThrow(
       /accessToken/i,
     )
   })
 
   it("accepts empty credentials for URI providers", () => {
-    expect(parseProviderApiCredentials("URI", undefined)).toEqual({})
+    expect(parseSourceApiCredentials("URI", undefined)).toEqual({})
   })
 
   it("accepts the Google token payload shape we currently send from the web", () => {
     expect(
-      parseProviderApiCredentials("DRIVE", {
+      parseSourceApiCredentials("DRIVE", {
         access_token: "token",
         token_type: "Bearer",
         expires_in: "3600",
@@ -49,7 +49,7 @@ describe("providerApiCredentialsSchemas", () => {
     }
 
     expect(
-      parseProviderApiCredentials("dropbox", onlineSignInCredentials),
+      parseSourceApiCredentials("dropbox", onlineSignInCredentials),
     ).toEqual(onlineSignInCredentials)
   })
 })

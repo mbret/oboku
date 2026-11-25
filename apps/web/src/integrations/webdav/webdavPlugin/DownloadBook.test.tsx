@@ -1,6 +1,6 @@
 import {
   createApiClient,
-  type LinkDocTypeForProvider,
+  type LinkDocTypeForSource,
   type WebdavConnectorDocType,
 } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
@@ -49,7 +49,7 @@ const koofrConnector: WebdavConnectorDocType = {
   passwordAsSecretId: "koofr-secret",
 }
 
-const duneLink: LinkDocTypeForProvider<"webdav"> = {
+const duneLink: LinkDocTypeForSource<"webdav"> = {
   _id: "link-dune",
   _rev: "1",
   rxdbMeta: { lwt: 0 },

@@ -1,9 +1,9 @@
 import { PLUGIN_ONE_DRIVE_TYPE } from "@oboku/shared"
 import { useUnsupportedRemoveResource } from "../../plugins/common/useUnsupportedRemoveResource"
 import OneDriveAsset from "../../../assets/Microsoft_OneDrive_Icon_2025_-_present.svg?react"
-import type { ObokuPlugin } from "../../plugins/types"
+import type { SourcePlugin } from "../../plugins/types"
 import { clearOneDriveSession } from "./auth/auth"
-import { DataSourceForm } from "./sync/DataSourceForm"
+import { LibrarySyncForm } from "./sync/LibrarySyncForm"
 import { DownloadBook } from "./DownloadBook"
 import { Provider } from "./Provider"
 import { UploadBook } from "./UploadBook"
@@ -11,7 +11,7 @@ import { UpsertFile } from "./UpsertFile"
 import { useFileIdLinkInfo as useLinkInfo } from "../../plugins/common/linkInfo"
 import { useRefreshMetadata } from "./useRefreshMetadata"
 import { useSynchronize } from "./useSynchronize"
-import { useSyncSourceInfo } from "./useSyncSourceInfo"
+import { useLibrarySyncInfo } from "./useLibrarySyncInfo"
 import { SvgIcon } from "@mui/material"
 
 const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
@@ -20,11 +20,11 @@ const OneDriveIcon = (props: React.ComponentProps<typeof SvgIcon>) => (
   </SvgIcon>
 )
 
-export const plugin: ObokuPlugin<"one-drive"> = {
+export const plugin: SourcePlugin<"one-drive"> = {
   canSynchronize: true,
   canUpsertFile: true,
   canRemoveResource: false,
-  DataSourceForm,
+  LibrarySyncForm,
   DownloadBookComponent: DownloadBook,
   Icon: OneDriveIcon,
   name: "OneDrive",
@@ -39,5 +39,5 @@ export const plugin: ObokuPlugin<"one-drive"> = {
     void clearOneDriveSession()
   },
   useSynchronize,
-  useSyncSourceInfo,
+  useLibrarySyncInfo,
 }

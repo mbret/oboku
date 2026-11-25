@@ -1,7 +1,8 @@
+import type { ObokuErrorCode } from "@oboku/shared"
 import { Injectable } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
-import type { SyncReportEntryDto } from "../../datasource/sync/sync-report.dto.js"
+import type { SyncReportEntryDto } from "../../library-sync/sync/sync-report.dto.js"
 import { AppConfigService } from "../../config/AppConfigService.js"
 import { SyncReportPostgresEntity } from "./entities.js"
 
@@ -17,6 +18,7 @@ export class SyncReportPostgresService {
     created_at: string
     ended_at: string
     state: "success" | "error"
+    error_code: ObokuErrorCode | null
     report: SyncReportEntryDto[]
     datasource_id: string
     user_name: string

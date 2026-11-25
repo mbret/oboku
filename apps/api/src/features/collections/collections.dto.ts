@@ -1,4 +1,4 @@
-import type { DataSourceType, ProviderApiCredentials } from "@oboku/shared"
+import type { SourceType, SourceApiCredentials } from "@oboku/shared"
 import { IsBoolean, IsObject, IsOptional, IsString } from "class-validator"
 
 export class RefreshCollectionMetadataDto {
@@ -10,5 +10,5 @@ export class RefreshCollectionMetadataDto {
   soft?: boolean
 
   @IsObject()
-  providerCredentials!: ProviderApiCredentials<DataSourceType>
+  providerCredentials!: SourceApiCredentials<SourceType>
 }

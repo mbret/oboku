@@ -83,8 +83,8 @@ export const AdminMicrosoftSection = () => {
             Documentation
           </Text>
           <Text size="sm" c="dimmed">
-            Learn more about setting up Microsoft sign-in and OneDrive sync
-            providers in the documentation site.
+            Learn more about setting up Microsoft sign-in and the OneDrive
+            source in the documentation site.
           </Text>
           <Group mt="sm">
             <Button

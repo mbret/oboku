@@ -78,10 +78,14 @@ const createClients = (
       },
     }),
     queryCache: new QueryCache({
-      onError: (error) => {
+      onError: (error, query) => {
         if (error instanceof CancelError) return
 
         console.error(error)
+
+        if (query.meta?.notifyErrors) {
+          notifyError(error)
+        }
       },
     }),
     defaultOptions: {

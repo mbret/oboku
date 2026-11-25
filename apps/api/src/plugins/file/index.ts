@@ -1,8 +1,8 @@
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
 import { getFileLinkData, PLUGIN_FILE_TYPE } from "@oboku/shared"
 
-export const plugin: DataSourcePlugin<"file"> = {
+export const sourcePlugin: SourcePlugin<"file"> = {
   type: PLUGIN_FILE_TYPE,
   getLinkCandidatesForItem: async (item, ctx) => ({
     links: await findCandidates(ctx, "link", {

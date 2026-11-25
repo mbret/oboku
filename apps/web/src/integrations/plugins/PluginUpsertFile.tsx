@@ -1,8 +1,8 @@
-import type { DataSourceType } from "@oboku/shared"
+import type { SourceType } from "@oboku/shared"
 import { getPluginByType } from "./configure"
 import type { UpsertFileComponentProps } from "./types"
 
-export function PluginUpsertFile<T extends DataSourceType>({
+export function PluginUpsertFile<T extends SourceType>({
   link,
   ...props
 }: UpsertFileComponentProps<T>) {

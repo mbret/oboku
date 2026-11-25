@@ -34,7 +34,7 @@ import {
   clearOneDriveSession,
   initializeOneDriveSession,
   requestMicrosoftAccessToken,
-  requestOneDriveProviderCredentials,
+  requestOneDriveSourceCredentials,
 } from "./auth"
 
 const CLIENT_ID = "reader-client-id"
@@ -190,7 +190,7 @@ describe("OneDrive auth", () => {
 
     await initializeConfiguredSession()
 
-    await expect(requestOneDriveProviderCredentials()).resolves.toEqual({
+    await expect(requestOneDriveSourceCredentials()).resolves.toEqual({
       accessToken: "graph-token",
       expiresAt: expiresOn.getTime(),
     })
@@ -375,7 +375,7 @@ describe("OneDrive auth", () => {
         scopes: ["Files.Read"],
       }),
     ).rejects.toThrow(
-      "Multiple Microsoft accounts were found. Please clear the OneDrive session from the plugin settings and sign in again.",
+      "Multiple Microsoft accounts were found. Please clear the OneDrive session from the OneDrive integration page and sign in again.",
     )
 
     expect(ctx.client.acquireTokenSilent).not.toHaveBeenCalled()

@@ -1,8 +1,8 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
-export type DropboxDataSourceDocType = Omit<
-  BaseDataSourceDocType,
+export type DropboxLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
   "data_v2"
 > & {
   type: "dropbox"

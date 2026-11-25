@@ -242,8 +242,8 @@ export class MigrationService {
      * - `passwordAsSecretId`
      *
      * Why preserving the id matters:
-     * - Datasources and links reference connectors by id.
-     * - Reusing the same id means existing datasource/link references continue
+     * - Library syncs and book files reference connectors by id.
+     * - Reusing the same id means existing library sync and book file references continue
      *   to point to the migrated connector after the rewrite.
      *
      * Explicit skip / no-op behavior:
@@ -307,7 +307,7 @@ export class MigrationService {
         }
 
         // Step 4: Build new connector entries from webdavConnectors that have an id (skip
-        // entries without id—they can't be linked from datasources/books). Reuse the same ID
+        // entries without id—they can't be linked from library syncs/books). Reuse the same ID
         // so existing references keep working. Skip any webdav entry whose ID already exists
         // in connectors (idempotent re-run).
         const existingConnectorIds = new Set(
@@ -388,7 +388,7 @@ export class MigrationService {
      *
      * Important scope note:
      * - This migration only rewrites WebDAV ids.
-     * - It does not touch connector definitions, secrets, datasource connector ids,
+     * - It does not touch connector definitions, secrets, library sync connector ids,
      *   book ids, or non-WebDAV links/collections.
      *
      * Explicit skip / no-op behavior:
@@ -517,7 +517,7 @@ export class MigrationService {
      *            `linkResourceId` -> `linkData` identity fields on collections.
      *
      * Why this exists:
-     * - Previously, each link encoded its provider-specific identity (fileId,
+     * - Previously, each link encoded its source-specific identity (fileId,
      *   filePath, url) into a single `resourceId` string using a prefix scheme
      *   (e.g. "drive-{fileId}", "webdav://{encodedPath}").
      * - The code now stores identity fields directly in `link.data` (e.g.

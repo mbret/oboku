@@ -87,7 +87,7 @@ export const useRepair = () => {
       if (action.type === "bookDanglingLinks") {
         const yes = window.confirm(
           `
-            This action will remove the invalid link references from the book. It will not remove anything else.
+            This action will remove the references to files that no longer exist from the book. It will not remove anything else.
             `.replace(/ {2,}/g, ""),
         )
 

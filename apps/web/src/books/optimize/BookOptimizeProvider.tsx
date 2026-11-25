@@ -3,7 +3,7 @@ import { useForm } from "react-hook-form"
 import type { BookDocType, LinkDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import type { FileInspection } from "./useFileInspection"
-import { useUploadToDataSource } from "./actions/useUploadToDataSource"
+import { useUploadToSource } from "./actions/useUploadToSource"
 import { useRevertLocalChanges } from "./actions/useRevertLocalChanges"
 import {
   BookOptimizeContext,
@@ -19,7 +19,7 @@ export { useBookOptimize } from "./BookOptimizeContext"
 type Props = {
   book: DeepReadonlyObject<BookDocType>
   link: DeepReadonlyObject<LinkDocType>
-  canUploadToDataSource: boolean
+  canUploadToSource: boolean
   inspection: FileInspection
   children: ReactNode
 }
@@ -27,7 +27,7 @@ type Props = {
 export function BookOptimizeProvider({
   book,
   link,
-  canUploadToDataSource,
+  canUploadToSource,
   inspection,
   children,
 }: Props) {
@@ -62,11 +62,11 @@ export function BookOptimizeProvider({
 
   // Upload pushes the current local file as-is; pending (un-applied) edits must
   // be applied locally first so the remote matches what the form describes.
-  const { uploadToDataSource, isUploading, canUpload, slot, uploadProgress$ } =
-    useUploadToDataSource({
+  const { uploadToSource, isUploading, canUpload, slot, uploadProgress$ } =
+    useUploadToSource({
       book,
       link,
-      enabled: canUploadToDataSource && !isDirty,
+      enabled: canUploadToSource && !isDirty,
     })
 
   const value = useMemo<BookOptimizeContextValue>(
@@ -81,7 +81,7 @@ export function BookOptimizeProvider({
       reset,
       trigger,
       canUpload,
-      uploadToDataSource,
+      uploadToSource,
       revertLocalChanges,
       canRevert,
       isReverting,
@@ -98,7 +98,7 @@ export function BookOptimizeProvider({
       reset,
       trigger,
       canUpload,
-      uploadToDataSource,
+      uploadToSource,
       revertLocalChanges,
       canRevert,
       isReverting,

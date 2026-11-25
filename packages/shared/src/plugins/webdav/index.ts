@@ -1,8 +1,11 @@
 import { z } from "zod"
-import type { BaseDataSourceDocType } from "../../db/docTypes"
+import type { BaseLibrarySyncDocType } from "../../db/docTypes"
 
-/** WebDAV datasource config: connector reference plus optional sync directory. */
-export type WebDAVDataSourceDocType = Omit<BaseDataSourceDocType, "data_v2"> & {
+/** WebDAV library sync config: connector reference plus optional sync directory. */
+export type WebDAVLibrarySyncDocType = Omit<
+  BaseLibrarySyncDocType,
+  "data_v2"
+> & {
   type: "webdav"
   data_v2?: { connectorId?: string; directory?: string }
 }
@@ -14,8 +17,8 @@ export type WebdavConnectorDocType = {
   passwordAsSecretId: string
   allowSelfSigned?: boolean
   /**
-   * oboku's server proxies the connector's book downloads, for a server that
-   * refuses requests from the browser (CORS).
+   * oboku's server lists the folders, tests the connection and downloads the
+   * books, for a server that refuses requests from the browser (CORS).
    */
   proxyThroughServer?: boolean
   type: "webdav"

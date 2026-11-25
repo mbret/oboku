@@ -3,8 +3,8 @@ import {
   type BookMetadata,
   directives,
   getBookMetadataFields,
-  getBookMetadataSource,
-  getOrderedBookMetadataSources,
+  getBookMetadataProvider,
+  getOrderedBookMetadataProviders,
   LEGACY_CATALOG_SOURCE_NAME,
 } from "@oboku/shared"
 import { identifierValue } from "@prose-reader/archive-reader"
@@ -22,17 +22,17 @@ const getNamedGoogleVolumeId = (metadataList: ReadonlyArray<BookMetadata>) => {
 }
 
 /**
- * Whether the source is certain this image is *this book's* cover. Two
- * independent questions both have to answer yes, and each source can only
+ * Whether the provider is certain this image is *this book's* cover. Two
+ * independent questions both have to answer yes, and each provider can only
  * answer one of them for free:
  *
- *  - does the source describe this book? An archive *is* the book; a catalog
+ *  - does the provider describe this book? An archive *is* the book; a catalog
  *    is only as sure as its identity match.
- *  - does the source name this image as the cover? An archive answers with
+ *  - does the provider name this image as the cover? An archive answers with
  *    `coverConfidence`, `assumed` being the first page of a container that
  *    names none. A catalog's cover is always its own declaration.
  *
- * Certainty must be asserted, so a source that does not answer is not
+ * Certainty must be asserted, so a provider that does not answer is not
  * certain.
  */
 const isCertainCover = (
@@ -69,10 +69,10 @@ const hasCover = (metadata: BookMetadata): boolean =>
 /**
  * Picks the metadata entry that should provide the cover.
  *
- * Certainty outranks priority, and the user-defined source priority
- * persisted on the book (`metadataSourcePriority`) orders the sources
- * within each tier: a cover the source is certain about wins, and only
- * when no source is certain does the highest-priority guess apply.
+ * Certainty outranks priority, and the user-defined provider priority
+ * persisted on the book (`metadataSourcePriority`) orders the providers
+ * within each tier: a cover the provider is certain about wins, and only
+ * when no provider is certain does the highest-priority guess apply.
  *
  * The priority itself is never reordered, so this stays consistent with
  * the merge precedence used on the web in {@link getMetadataFromBook} —
@@ -87,15 +87,16 @@ export const pickCoverMetadata = (
 
   const namedGoogleVolumeId = getNamedGoogleVolumeId(metadataList)
 
-  const orderedSources = getOrderedBookMetadataSources(priority)
+  const orderedProviders = getOrderedBookMetadataProviders(priority)
 
   const highestPriorityCover = (
     isEligible: (metadata: BookMetadata) => boolean,
   ) => {
-    for (const source of orderedSources) {
+    for (const provider of orderedProviders) {
       const match = metadataList.find(
         (metadata) =>
-          getBookMetadataSource(metadata) === source && isEligible(metadata),
+          getBookMetadataProvider(metadata) === provider &&
+          isEligible(metadata),
       )
 
       if (match) return match

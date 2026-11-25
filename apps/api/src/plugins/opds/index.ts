@@ -1,5 +1,5 @@
 import {
-  getDataFromDataSource,
+  getDataFromLibrarySync,
   isOpdsBookLinkData,
   isOpdsFolderLinkData,
   type OpdsBookLinkData,
@@ -10,7 +10,7 @@ import {
 import type createNano from "nano"
 import { getConnectorById } from "../connectorHelpers.js"
 import { findConnectorCandidates } from "../helpers.js"
-import { type DataSourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
+import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { getFromCatalog, type OpdsConnector } from "./client.js"
 import { crawlOpdsFeed } from "./feed.js"
 
@@ -54,7 +54,7 @@ async function resolveConnector({
   return { ...connectorFields, password }
 }
 
-export const dataSource: DataSourcePlugin<"opds"> = {
+export const sourcePlugin: SourcePlugin<"opds"> = {
   type: PLUGIN_OPDS_TYPE,
   getLinkCandidatesForItem: async ({ linkData }, ctx) => {
     const { connectorId, entryId } = toBookLinkData(linkData)
@@ -107,12 +107,12 @@ export const dataSource: DataSourcePlugin<"opds"> = {
 
     return { stream }
   },
-  sync: async ({ dataSource, db, providerCredentials }) => {
+  sync: async ({ librarySync, db, providerCredentials }) => {
     const { connectorId, feedUrl } =
-      getDataFromDataSource<"opds">(dataSource) ?? {}
+      getDataFromLibrarySync<"opds">(librarySync) ?? {}
 
     if (!feedUrl || !URL.canParse(feedUrl)) {
-      throw new Error("datasource not found or invalid")
+      throw new Error("library sync not found or invalid")
     }
 
     const connector = await resolveConnector({
