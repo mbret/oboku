@@ -5,21 +5,13 @@ import {
   SdStorageRounded,
 } from "@mui/icons-material"
 import { links } from "@oboku/shared"
-import Image, { type StaticImageData } from "next/image"
 import type { ReactElement } from "react"
 import dropboxLogo from "./source-logos/dropbox.svg"
 import googleDriveLogo from "./source-logos/google-drive.svg"
 import oneDriveLogo from "./source-logos/one-drive.svg"
 import synologyDriveLogo from "./source-logos/synology-drive.png"
+import { SourceLogoImage } from "./SourceLogoImage"
 import { WebDavIcon } from "./WebDavIcon"
-
-const sourceLogoSize = 18
-
-function SourceLogoImage({ src }: { src: StaticImageData }) {
-  return (
-    <Image src={src} alt="" width={sourceLogoSize} height={sourceLogoSize} />
-  )
-}
 
 type SourceChip = {
   label: string
