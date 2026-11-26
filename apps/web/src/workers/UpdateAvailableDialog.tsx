@@ -28,7 +28,7 @@ export const UpdateAvailableDialog = ({
         <DialogContentText>
           A new version of the app is available. (
           <b>This action is mandatory right now until release</b>). See the full{" "}
-          <Link href={`${links.github}/releases`} target="_blank">
+          <Link href={links.changelog} target="_blank">
             changelog here.
           </Link>
         </DialogContentText>

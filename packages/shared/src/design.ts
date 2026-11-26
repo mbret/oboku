@@ -30,6 +30,7 @@ export const links = {
   deleteAccount: `https://oboku.me/delete-account`,
   linkedin: `https://www.linkedin.com/in/maxime-bret`,
   github: `https://github.com/mbret/oboku`,
+  changelog: `https://github.com/mbret/oboku/releases`,
   sponsor: `https://github.com/sponsors/mbret`,
   discord: `https://discord.gg/eB6MrMmmPN`,
   reddit: `https://www.reddit.com/r/oboku/`,

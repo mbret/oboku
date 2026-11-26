@@ -3,6 +3,11 @@ title: "Support & Troubleshoot"
 description: If you find yourself having a problem please check for details on this page
 ---
 
+## Get help
+
+- For the fastest help, ask on the [Discord community](https://discord.gg/eB6MrMmmPN).
+- For a direct answer, use the [contact page](https://oboku.me/contact).
+
 ## Important information
 
 ### Incognito mode / private browsing { #incognito-mode-private-browsing }
