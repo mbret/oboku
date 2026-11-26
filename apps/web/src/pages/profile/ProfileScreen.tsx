@@ -69,21 +69,23 @@ export const ProfileScreen = () => {
         ? await countLocalOnlyDownloadedBooks(db)
         : 0
 
-      if (localOnlyBookCount > 0) {
-        const lostBooks =
-          localOnlyBookCount === 1
-            ? "1 book you added directly from this device has"
-            : `${localOnlyBookCount} books you added directly from this device have`
+      const lostBooks =
+        localOnlyBookCount === 1
+          ? "1 book you added directly from this device has"
+          : `${localOnlyBookCount} books you added directly from this device have`
+      const lostBooksWarning =
+        localOnlyBookCount > 0
+          ? ` ${lostBooks} no cloud copy and will be permanently lost.`
+          : ""
 
-        const confirmed = await showConfirmDialog({
-          title: "Sign out?",
-          message: `Signing out erases everything downloaded on this device. ${lostBooks} no cloud copy and will be permanently lost.`,
-          cancelTitle: "Cancel",
-          actions: [{ title: "Sign out", variant: "contained" }],
-        })
+      const confirmed = await showConfirmDialog({
+        title: "Sign out?",
+        message: `Signing out erases everything downloaded on this device.${lostBooksWarning}`,
+        cancelTitle: "Cancel",
+        actions: [{ title: "Sign out", variant: "contained" }],
+      })
 
-        if (!confirmed) return
-      }
+      if (!confirmed) return
 
       signOut()
     },
