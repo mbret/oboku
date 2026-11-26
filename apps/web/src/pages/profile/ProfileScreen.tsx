@@ -8,6 +8,7 @@ import {
   LaunchRounded,
   LockOpenRounded,
   LockRounded,
+  NewReleasesRounded,
   NotificationsRounded,
   SecurityRounded,
   SettingsRounded,
@@ -16,7 +17,6 @@ import {
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   Badge,
-  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
@@ -224,9 +224,12 @@ export const ProfileScreen = () => {
             icon={<GavelRounded />}
             primary="Privacy Policy"
           />
-          <ListItem>
-            <ListItemText primary="App Version" secondary={__APP_VERSION__} />
-          </ListItem>
+          <ListItemExternalLink
+            href={links.changelog}
+            icon={<NewReleasesRounded />}
+            primary="App Version"
+            secondary={__APP_VERSION__}
+          />
         </PageSection>
         <PageSection title="Developer options">
           <ListItemButton onClick={toggleDebug}>
