@@ -40,6 +40,7 @@ type WebdavDownloadBookProps = DownloadBookComponentProps & {
  */
 export const WebdavDownloadBook = memo(function WebdavDownloadBook({
   link,
+  onDownloadProgress,
   onError,
   onResolve,
   signal,
@@ -70,6 +71,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
                   httpClientApi,
                   linkId: link._id,
                   password: data.password,
+                  onDownloadProgress,
                   signal: downloadSignal,
                 })
               : downloadFromWebdavServer({

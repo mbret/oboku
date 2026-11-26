@@ -20,6 +20,13 @@ const StyledRoot = styled(Stack)(({ theme }) => ({
   paddingRight: theme.spacing(2),
 }))
 
+const VersionTypography = styled(Typography)(({ theme }) => ({
+  position: "fixed",
+  right: `calc(${theme.spacing(1)} + env(safe-area-inset-right))`,
+  bottom: `calc(${theme.spacing(1)} + env(safe-area-inset-bottom))`,
+  color: theme.palette.text.secondary,
+}))
+
 export const AuthPage = ({
   children,
   ...props
@@ -56,6 +63,9 @@ export const AuthPage = ({
           {new Date().getFullYear()}{" "}
         </Typography>
       </Stack>
+      <VersionTypography variant="caption">
+        v{__APP_VERSION__}
+      </VersionTypography>
     </StyledRoot>
   )
 }

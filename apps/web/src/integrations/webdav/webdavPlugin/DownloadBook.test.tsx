@@ -49,6 +49,12 @@ const koofrConnector: WebdavConnectorDocType = {
   passwordAsSecretId: "koofr-secret",
 }
 
+const proxiedKoofrConnectorData = {
+  ...koofrConnector,
+  proxyThroughServer: true,
+  password: PASSWORD,
+}
+
 const duneLink: LinkDocTypeForSource<"webdav"> = {
   _id: "link-dune",
   _rev: "1",
@@ -71,6 +77,7 @@ const renderDownloadBook = (api: typeof fetch) => {
       fetch: api,
     }),
   } as unknown as HttpApiClientWeb
+  const onDownloadProgress = vi.fn()
   const onError = vi.fn()
   const onResolve = vi.fn()
 
@@ -79,7 +86,7 @@ const renderDownloadBook = (api: typeof fetch) => {
       <HttpClientApiContext.Provider value={httpClientApi}>
         <DownloadBook
           link={duneLink}
-          onDownloadProgress={vi.fn()}
+          onDownloadProgress={onDownloadProgress}
           onError={onError}
           onResolve={onResolve}
           signal={new AbortController().signal}
@@ -88,7 +95,7 @@ const renderDownloadBook = (api: typeof fetch) => {
     </QueryClientProvider>,
   )
 
-  return { onError, onResolve, unmount }
+  return { onDownloadProgress, onError, onResolve, unmount }
 }
 
 describe("DownloadBook (WebDAV)", () => {
@@ -99,11 +106,7 @@ describe("DownloadBook (WebDAV)", () => {
 
   it("downloads the book through oboku's server when the connector uses it as a proxy", async () => {
     mocks.extractConnectorData.mockResolvedValue({
-      data: {
-        ...koofrConnector,
-        proxyThroughServer: true,
-        password: PASSWORD,
-      },
+      data: proxiedKoofrConnectorData,
     })
     const api = vi.fn<typeof fetch>(async function serveBookFile() {
       return new Response(BOOK_BYTES, {
@@ -130,13 +133,56 @@ describe("DownloadBook (WebDAV)", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
+  it("reports the progress of a download through oboku's server", async () => {
+    mocks.extractConnectorData.mockResolvedValue({
+      data: proxiedKoofrConnectorData,
+    })
+    const api = vi.fn<typeof fetch>(async function serveBookFileInTwoChunks() {
+      const body = new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("epub "))
+          controller.enqueue(new TextEncoder().encode("bytes"))
+          controller.close()
+        },
+      })
+
+      return new Response(body, {
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "Content-Length": String(BOOK_BYTES.length),
+        },
+      })
+    })
+
+    const { onDownloadProgress, onResolve } = renderDownloadBook(api)
+
+    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
+    expect(onDownloadProgress.mock.calls).toEqual([[0.5], [1]])
+    expect(await onResolve.mock.lastCall?.[0]?.data.text()).toBe(BOOK_BYTES)
+  })
+
+  it("reports no progress when oboku's server states no size", async () => {
+    mocks.extractConnectorData.mockResolvedValue({
+      data: proxiedKoofrConnectorData,
+    })
+    const api = vi.fn<typeof fetch>(
+      async function serveBookFileOfUnknownSize() {
+        return new Response(BOOK_BYTES, {
+          headers: { "Content-Type": "application/octet-stream" },
+        })
+      },
+    )
+
+    const { onDownloadProgress, onResolve } = renderDownloadBook(api)
+
+    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
+    expect(onDownloadProgress).not.toHaveBeenCalled()
+    expect(await onResolve.mock.lastCall?.[0]?.data.text()).toBe(BOOK_BYTES)
+  })
+
   it("aborts the request to oboku's server once unmounted", async () => {
     mocks.extractConnectorData.mockResolvedValue({
-      data: {
-        ...koofrConnector,
-        proxyThroughServer: true,
-        password: PASSWORD,
-      },
+      data: proxiedKoofrConnectorData,
     })
     const api = vi.fn<typeof fetch>(function holdBookFileUntilAborted(input) {
       return new Promise(function rejectOnAbort(_, reject) {

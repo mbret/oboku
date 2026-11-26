@@ -8,6 +8,7 @@ import {
   LaunchRounded,
   LockOpenRounded,
   LockRounded,
+  NewReleasesRounded,
   NotificationsRounded,
   SecurityRounded,
   SettingsRounded,
@@ -16,7 +17,6 @@ import {
 import { TopBarNavigation } from "../../navigation/TopBarNavigation"
 import {
   Badge,
-  ListItem,
   ListItemIcon,
   ListItemText,
   ListItemButton,
@@ -69,21 +69,23 @@ export const ProfileScreen = () => {
         ? await countLocalOnlyDownloadedBooks(db)
         : 0
 
-      if (localOnlyBookCount > 0) {
-        const lostBooks =
-          localOnlyBookCount === 1
-            ? "1 book you added directly from this device has"
-            : `${localOnlyBookCount} books you added directly from this device have`
+      const lostBooks =
+        localOnlyBookCount === 1
+          ? "1 book you added directly from this device has"
+          : `${localOnlyBookCount} books you added directly from this device have`
+      const lostBooksWarning =
+        localOnlyBookCount > 0
+          ? ` ${lostBooks} no cloud copy and will be permanently lost.`
+          : ""
 
-        const confirmed = await showConfirmDialog({
-          title: "Sign out?",
-          message: `Signing out erases everything downloaded on this device. ${lostBooks} no cloud copy and will be permanently lost.`,
-          cancelTitle: "Cancel",
-          actions: [{ title: "Sign out", variant: "contained" }],
-        })
+      const confirmed = await showConfirmDialog({
+        title: "Sign out?",
+        message: `Signing out erases everything downloaded on this device.${lostBooksWarning}`,
+        cancelTitle: "Cancel",
+        actions: [{ title: "Sign out", variant: "contained" }],
+      })
 
-        if (!confirmed) return
-      }
+      if (!confirmed) return
 
       signOut()
     },
@@ -212,21 +214,24 @@ export const ProfileScreen = () => {
           <ListItemExternalLink
             href={links.documentationSupport}
             icon={<LaunchRounded />}
-            primary="Support Page"
+            primary="Support"
           />
           <ListItemExternalLink
             href={links.documentation}
             icon={<LaunchRounded />}
-            primary="Documentation Page"
+            primary="Documentation"
           />
           <ListItemExternalLink
             href={links.privacyPolicy}
             icon={<GavelRounded />}
             primary="Privacy Policy"
           />
-          <ListItem>
-            <ListItemText primary="App Version" secondary={__APP_VERSION__} />
-          </ListItem>
+          <ListItemExternalLink
+            href={links.changelog}
+            icon={<NewReleasesRounded />}
+            primary="App Version"
+            secondary={__APP_VERSION__}
+          />
         </PageSection>
         <PageSection title="Developer options">
           <ListItemButton onClick={toggleDebug}>
