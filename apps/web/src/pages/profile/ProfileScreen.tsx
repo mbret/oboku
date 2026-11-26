@@ -212,12 +212,12 @@ export const ProfileScreen = () => {
           <ListItemExternalLink
             href={links.documentationSupport}
             icon={<LaunchRounded />}
-            primary="Support Page"
+            primary="Support"
           />
           <ListItemExternalLink
             href={links.documentation}
             icon={<LaunchRounded />}
-            primary="Documentation Page"
+            primary="Documentation"
           />
           <ListItemExternalLink
             href={links.privacyPolicy}
