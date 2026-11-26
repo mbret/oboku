@@ -69,23 +69,25 @@ export const downloadFromWebdavServer = async ({
   username,
   password,
   filePath,
+  onDownloadProgress,
   signal,
 }: {
   url: string
   username: string
   password: string
   filePath: string
+  onDownloadProgress: (progress: number) => void
   signal: AbortSignal
 }) => {
   const client = createWebdavClient({ url, username, password })
-  const content = await client.getFileContents(filePath, {
-    format: "binary",
+  const response = await client.customRequest(filePath, {
+    method: "GET",
     signal,
   })
 
-  if (!(content instanceof ArrayBuffer)) {
-    throw new Error("Unknown data type")
+  if (!(response instanceof Response)) {
+    throw new Error("webdav did not return a fetch response")
   }
 
-  return new Blob([content])
+  return readBlobReportingProgress({ response, onDownloadProgress })
 }

@@ -79,6 +79,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
                   username: data.username,
                   password: data.password,
                   filePath,
+                  onDownloadProgress,
                   signal: downloadSignal,
                 })
           })

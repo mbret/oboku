@@ -67,6 +67,23 @@ const duneLink: LinkDocTypeForSource<"webdav"> = {
   createdAt: "2026-11-16T00:00:00.000Z",
 }
 
+const createBookResponseInTwoChunks = () => {
+  const body = new ReadableStream<Uint8Array>({
+    start(controller) {
+      controller.enqueue(new TextEncoder().encode("epub "))
+      controller.enqueue(new TextEncoder().encode("bytes"))
+      controller.close()
+    },
+  })
+
+  return new Response(body, {
+    headers: {
+      "Content-Type": "application/octet-stream",
+      "Content-Length": String(BOOK_BYTES.length),
+    },
+  })
+}
+
 const renderDownloadBook = (api: typeof fetch) => {
   // DownloadBook only calls the API through `sdkClient`; the double cast lets
   // a client on a stubbed fetch stand in for the full client.
@@ -138,20 +155,7 @@ describe("DownloadBook (WebDAV)", () => {
       data: proxiedKoofrConnectorData,
     })
     const api = vi.fn<typeof fetch>(async function serveBookFileInTwoChunks() {
-      const body = new ReadableStream<Uint8Array>({
-        start(controller) {
-          controller.enqueue(new TextEncoder().encode("epub "))
-          controller.enqueue(new TextEncoder().encode("bytes"))
-          controller.close()
-        },
-      })
-
-      return new Response(body, {
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "Content-Length": String(BOOK_BYTES.length),
-        },
-      })
+      return createBookResponseInTwoChunks()
     })
 
     const { onDownloadProgress, onResolve } = renderDownloadBook(api)
@@ -208,20 +212,36 @@ describe("DownloadBook (WebDAV)", () => {
     mocks.extractConnectorData.mockResolvedValue({
       data: { ...koofrConnector, password: PASSWORD },
     })
-    const getFileContents = vi.fn(async function readBookFile() {
-      return new TextEncoder().encode(BOOK_BYTES).buffer
+    const customRequest = vi.fn(async function serveBookFile() {
+      return new Response(BOOK_BYTES)
     })
-    mocks.createWebdavClient.mockReturnValue({ getFileContents })
+    mocks.createWebdavClient.mockReturnValue({ customRequest })
     const api = vi.fn<typeof fetch>()
 
     const { onResolve } = renderDownloadBook(api)
 
     await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
     expect(await onResolve.mock.lastCall?.[0]?.data.text()).toBe(BOOK_BYTES)
-    expect(getFileContents).toHaveBeenCalledWith("/Books/Dune.epub", {
-      format: "binary",
+    expect(customRequest).toHaveBeenCalledWith("/Books/Dune.epub", {
+      method: "GET",
       signal: expect.any(AbortSignal),
     })
     expect(api).not.toHaveBeenCalled()
+  })
+
+  it("reports the progress of a download from the WebDAV server", async () => {
+    mocks.extractConnectorData.mockResolvedValue({
+      data: { ...koofrConnector, password: PASSWORD },
+    })
+    const customRequest = vi.fn(async function serveBookFileInTwoChunks() {
+      return createBookResponseInTwoChunks()
+    })
+    mocks.createWebdavClient.mockReturnValue({ customRequest })
+
+    const { onDownloadProgress, onResolve } = renderDownloadBook(vi.fn())
+
+    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
+    expect(onDownloadProgress.mock.calls).toEqual([[0.5], [1]])
+    expect(await onResolve.mock.lastCall?.[0]?.data.text()).toBe(BOOK_BYTES)
   })
 })
