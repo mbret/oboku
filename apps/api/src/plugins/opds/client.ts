@@ -75,7 +75,7 @@ const requestFromCatalog = (
  * the connector's origin carry its credentials and accept its self-signed
  * certificate.
  *
- * @returns the answer's body, the URL that answered it, and its headers.
+ * @returns `url`, the address that answered after the redirects.
  * @throws an error with the `status` the catalog answered with when it
  * answered neither a success nor a redirect: an `ObokuSharedError` with
  * `ERROR_DATASOURCE_UNAUTHORIZED` for a 401.

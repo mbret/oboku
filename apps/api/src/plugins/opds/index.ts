@@ -30,11 +30,7 @@ const toFolderLinkData = (linkData: OpdsLinkData): OpdsFolderLinkData => {
   return linkData
 }
 
-/**
- * The connector `connectorId` names, with its password.
- *
- * @throws the errors of `findConnector`.
- */
+/** @throws the errors of `findConnector`, and an `Error` without `password` or `db`. */
 export async function resolveOpdsConnector({
   connectorId,
   password,

@@ -273,9 +273,8 @@ export const booksRefreshMetadata = <ThrowOnError extends boolean = true>(option
 /**
  * The file of a WebDAV link or of an OPDS book, read from its connector's
  * server by the API, for a server that refuses requests from the browser.
- * It counts towards the monthly
- * proxied download quotas, and answers 429 until the next month once it
- * would pass one.
+ * It counts towards the monthly proxied download quotas, and answers 429
+ * until the next month once it would pass one.
  */
 export const linksDownload = <ThrowOnError extends boolean = true>(options: Options<LinksDownloadData, ThrowOnError>): RequestResult<LinksDownloadResponses, LinksDownloadErrors, ThrowOnError> => options.client.post<LinksDownloadResponses, LinksDownloadErrors, ThrowOnError>({
     url: '/links/download',

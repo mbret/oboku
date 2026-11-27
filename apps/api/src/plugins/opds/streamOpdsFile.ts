@@ -22,8 +22,9 @@ const toHeaderText = (value: unknown) =>
  * past `expectedSize`, that length or else the one the feed states for the
  * file: the catalog is the user's, and could state less than it sends.
  *
- * @throws the errors of `getFromCatalog`, and `FileSizeUnstatedError`, the
- * answer closed, when neither the answer nor the feed states a size.
+ * @throws the errors of `getFromCatalog`, and `FileSizeUnstatedError`, with
+ * the answer closed, when the answer states a length of 0, or neither the
+ * answer nor the feed states one.
  */
 export const streamOpdsFile = async ({
   connector,

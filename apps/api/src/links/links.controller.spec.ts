@@ -352,7 +352,7 @@ describe("LinksController", () => {
     expect(createWebdavClient).not.toHaveBeenCalled()
   })
 
-  it("answers 400 for a link that is not a WebDAV link", async () => {
+  it("answers 400 for a link of a source the route does not serve", async () => {
     const response = await downloadLink(URI_LINK._id)
 
     expect(response.status).toBe(400)
@@ -552,6 +552,7 @@ describe("LinksController", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(response.headers["content-length"]).toBeUndefined()
       expect(reserveWithinQuotas).toHaveBeenCalledWith(
         expect.objectContaining({ bytes: BOOK_BYTES.length }),
       )

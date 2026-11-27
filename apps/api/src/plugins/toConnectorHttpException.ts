@@ -54,7 +54,6 @@ const toConnectorHttpException = (error: unknown) => {
   )
 }
 
-/** Answers the failure of a request to a connector's server. */
 export const throwConnectorHttpException = (error: unknown): never => {
   throw toConnectorHttpException(error)
 }

@@ -43,9 +43,6 @@ export async function getConnectorById<T extends SettingsConnectorType>(
 }
 
 /**
- * The connector of type `type` that `connectorId` names in the user's
- * settings.
- *
  * @throws `ConnectorNotConfiguredError` without `connectorId`, and
  * `ConnectorNotFoundError` when the settings hold no such connector.
  */

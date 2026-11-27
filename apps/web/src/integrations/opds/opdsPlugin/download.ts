@@ -71,11 +71,7 @@ export const downloadOpdsBook = async ({
   }
 }
 
-/**
- * Downloads an OPDS book through oboku's server. The file is named after the
- * book's title: the browser cannot read the `Content-Disposition` of oboku's
- * answer.
- */
+/** Names the file after the book's title: CORS keeps the browser from reading the `Content-Disposition` of oboku's answer. */
 export const downloadOpdsBookThroughServer = async ({
   httpClientApi,
   linkId,

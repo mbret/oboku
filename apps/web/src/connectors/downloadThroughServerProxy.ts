@@ -40,7 +40,6 @@ const readBlobReportingProgress = ({
   return new Response(body).blob()
 }
 
-/** Downloads a link's file through oboku's API, which reads it from the connector's server. */
 export const downloadThroughServerProxy = async ({
   httpClientApi,
   linkId,
