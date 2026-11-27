@@ -110,6 +110,10 @@ export const useCollections = ({
           return combineLatest([protectedBooks$, visibleBooks$]).pipe(
             switchMap(([protectedBooks, visibleBooks]) => {
               const protectedBookIds = protectedBooks.map(({ _id }) => _id)
+              const heldBookIds = new Set([
+                ...protectedBookIds,
+                ...visibleBooks.map(({ _id }) => _id),
+              ])
               const notInterestedBookIds = visibleBooks
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
@@ -169,7 +173,9 @@ export const useCollections = ({
                      */
                     .filter((collection) =>
                       collectionPassesNotInterestedFilter({
-                        collectionBooks: collection.books,
+                        collectionBooks: collection.books.filter((id) =>
+                          heldBookIds.has(id),
+                        ),
                         isNotInterested,
                         notInterestedBookIds,
                       }),
