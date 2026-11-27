@@ -1,8 +1,5 @@
 import { pipeline, type Readable } from "node:stream"
-import {
-  getFileNameFromContentDisposition,
-  isFileSupported,
-} from "@oboku/shared"
+import { getFileNameFromContentDisposition } from "@oboku/shared"
 import { toByteCount } from "../http/contentLength.js"
 import { type AnswerHeaders, toHeaderText } from "../http/userAddressRequest.js"
 import { createByteLimitTransform } from "./plugins.service.js"
@@ -54,8 +51,7 @@ export const limitToExpectedSize = ({
 /**
  * The file an answer holds, failing past the length it states or else
  * `statedSize`. Named as its `Content-Disposition` names it, else
- * `fallbackName`, and typed with its type, else `fallbackType` when the
- * reader cannot open its type.
+ * `fallbackName`, and typed with its type, else `fallbackType`.
  *
  * @throws the errors of `limitToExpectedSize`.
  */
@@ -72,9 +68,6 @@ export const toAnswerFile = ({
   fallbackName: string
   fallbackType?: string
 }) => {
-  const answeredType = toHeaderText(headers["content-type"])
-  const isAnsweredTypeReadable = isFileSupported({ mimeType: answeredType })
-
   return {
     ...limitToExpectedSize({
       stream,
@@ -85,8 +78,6 @@ export const toAnswerFile = ({
       getFileNameFromContentDisposition(
         toHeaderText(headers["content-disposition"]),
       ) ?? fallbackName,
-    contentType: isAnsweredTypeReadable
-      ? answeredType
-      : (fallbackType ?? answeredType),
+    contentType: toHeaderText(headers["content-type"]) || fallbackType,
   }
 }

@@ -274,9 +274,6 @@ describe("LinksController", () => {
         response.headers["content-disposition"],
       ),
     ).toBe("Dune.epub")
-    expect(response.headers["access-control-expose-headers"]).toBe(
-      "Content-Disposition",
-    )
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
@@ -540,7 +537,7 @@ describe("LinksController", () => {
         getFileNameFromContentDisposition(
           response.headers["content-disposition"],
         ),
-      ).toBe("Dune.epub")
+      ).toBe("Dune")
       expect(catalog.onRequest.mock.calls).toEqual([
         [{ path: OPDS_FILE_PATH, authorization: basicAuthorization }],
       ])
@@ -681,31 +678,6 @@ describe("LinksController", () => {
       })
       expect(catalog.onRequest).not.toHaveBeenCalled()
     })
-
-    it.each(["application/octet-stream", "application/force-download"])(
-      "names the file with the feed's type when the catalog answers %s",
-      async (catalogType) => {
-        const { link } = await serveCatalog({
-          fileRoute: {
-            headers: { "content-type": catalogType },
-            body: BOOK_BYTES,
-          },
-          length: BOOK_BYTES.length,
-        })
-
-        const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
-
-        expect(response.status).toBe(200)
-        expect(
-          getFileNameFromContentDisposition(
-            response.headers["content-disposition"],
-          ),
-        ).toBe("Dune.epub")
-        expect(response.headers["access-control-expose-headers"]).toBe(
-          "Content-Disposition",
-        )
-      },
-    )
 
     it("names the file as the catalog's Content-Disposition does", async () => {
       const { link } = await serveCatalog({

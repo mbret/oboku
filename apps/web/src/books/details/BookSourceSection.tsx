@@ -10,7 +10,6 @@ import {
 import { MoreVertRounded } from "@mui/icons-material"
 import { memo, useState } from "react"
 import { useSourcePlugin } from "../../integrations/plugins/useSourcePlugin"
-import { PluginSelectItem } from "../../integrations/plugins/PluginSelectItem"
 import { Logger } from "../../debug/logger.shared"
 import { useBook } from "../states"
 import { useCreateRequestPopupDialog } from "../../integrations/plugins/useCreateRequestPopupDialog"
@@ -86,9 +85,8 @@ export const BookSourceSection = memo(function BookSourceSection({
           </ListItemButton>
         )}
       </List>
-      {sourcePlugin && !!link && (
-        <PluginSelectItem
-          link={link}
+      {sourcePlugin?.SelectItemComponent && (
+        <sourcePlugin.SelectItemComponent
           open={isSelectItemOpened}
           requestPopup={createRequestPopupDialog({
             name: sourcePlugin.name,

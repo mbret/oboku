@@ -2,10 +2,36 @@ import {
   getFileNameFromContentDisposition,
   getOpdsCredentialHeaders,
   type OpdsBookLinkData,
+  READER_ACCEPTED_FILE_TYPES,
   type SettingsResolvedConnectorData,
-  withReaderFileExtension,
 } from "@oboku/shared"
+import { downloadThroughServerProxy } from "../../../connectors/downloadThroughServerProxy"
+import type { HttpApiClientWeb } from "../../../http"
 import type { Download } from "../../../http/useDownload"
+
+type ReaderAcceptedType = keyof typeof READER_ACCEPTED_FILE_TYPES
+
+const isReaderAcceptedType = (type: string): type is ReaderAcceptedType =>
+  Object.hasOwn(READER_ACCEPTED_FILE_TYPES, type)
+
+/** The extension named in the type (`.epub` for application/epub+zip), or else its first. */
+const toFileExtension = (type: string) => {
+  if (!isReaderAcceptedType(type)) return ""
+
+  const extensions = READER_ACCEPTED_FILE_TYPES[type]
+
+  return (
+    extensions.find((extension) => type.includes(extension.slice(1))) ??
+    extensions[0] ??
+    ""
+  )
+}
+
+const toTitleFileName = ({
+  title,
+  acquisition,
+}: Pick<OpdsBookLinkData, "title" | "acquisition">) =>
+  `${title}${toFileExtension(acquisition.type)}`
 
 export const downloadOpdsBook = async ({
   acquisition,
@@ -41,6 +67,34 @@ export const downloadOpdsBook = async ({
     fileName:
       getFileNameFromContentDisposition(
         response.headers["content-disposition"],
-      ) ?? withReaderFileExtension(title, acquisition.type),
+      ) ?? toTitleFileName({ title, acquisition }),
   }
 }
+
+/** Names the file after the book's title: CORS keeps the browser from reading the `Content-Disposition` of oboku's answer. */
+export const downloadOpdsBookThroughServer = async ({
+  httpClientApi,
+  linkId,
+  password,
+  acquisition,
+  title,
+  onDownloadProgress,
+  signal,
+}: {
+  httpClientApi: HttpApiClientWeb
+  linkId: string
+  password: string
+  acquisition: OpdsBookLinkData["acquisition"]
+  title: string
+  onDownloadProgress: (progress: number) => void
+  signal: AbortSignal
+}) => ({
+  data: await downloadThroughServerProxy({
+    httpClientApi,
+    linkId,
+    password,
+    onDownloadProgress,
+    signal,
+  }),
+  fileName: toTitleFileName({ title, acquisition }),
+})
