@@ -1,4 +1,5 @@
 import { AuthType, createClient } from "webdav"
+import { isHttpUrl } from "../../../../common/network/isHttpUrl"
 
 export const resolveWebdavUrl = ({
   connectorUrl,
@@ -24,9 +25,14 @@ export const createWebdavClient = ({
   password: string
   url: string
   username: string
-}) =>
-  createClient(url, {
+}) => {
+  if (!isHttpUrl(url)) {
+    throw new Error("The WebDAV address has to start with http:// or https://")
+  }
+
+  return createClient(url, {
     username,
     password,
     authType: AuthType.Auto,
   })
+}
