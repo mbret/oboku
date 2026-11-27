@@ -19,7 +19,13 @@ The oboku Android app opens `https://app.oboku.me` only. On an Android phone, op
 :::
 
 :::caution
-**Run the API as a single instance.** Do not run multiple API replicas behind a load balancer or scale it horizontally. Refresh-token rotation keeps a short-lived, per-process in-memory key to safely converge concurrent and retried refreshes onto a single token. A second instance cannot share that key, so the same session could end up with two valid tokens and clients may be unexpectedly signed out. Scale vertically (a bigger server) instead. CouchDB and Postgres can be scaled independently.
+**Run the API as a single instance.** Do not run multiple API replicas behind a load balancer or scale it horizontally. The API keeps part of its state in the memory of its one process, and a second instance cannot share it:
+
+- Refresh-token rotation keeps a short-lived in-memory key to converge concurrent and retried refreshes onto a single token. With two instances, the same session could end up with two valid tokens and clients may be unexpectedly signed out.
+- The API remembers each refresh proof it accepts, so that a captured proof cannot be used again. A second instance would accept a proof the first one already used.
+- Library syncs, metadata refreshes and cover deliveries run in in-memory queues that limit how many run at once. Each instance would apply its own limit.
+
+Scale vertically (a bigger server) instead. CouchDB and Postgres can be scaled independently.
 :::
 
 ## Installation with docker compose (recommended)
