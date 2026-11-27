@@ -6,6 +6,8 @@ Connectors are a group of settings that can be created and reused for a given so
 
 Unlike secrets, they are not encrypted. They are generally used for username, urls, etc.
 
+A connector's URL is the full address of its server, starting with `http://` or `https://`, such as `https://nas.local:5006/dav`.
+
 ## Connect a connector
 
 Connecting a connector lets oboku's server keep its password, so that your [OPDS servers](/guides/opds-servers) can serve its books without your browser. Only WebDAV connectors can be connected for now.
