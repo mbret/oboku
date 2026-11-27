@@ -3,6 +3,7 @@ import { Alert, Link } from "@mui/material"
 import { useForm } from "react-hook-form"
 import {
   getOpdsUrlOrigin,
+  isHttpUrl,
   isOpdsConnectorOrigin,
   links,
   type OpdsLibrarySyncDocType,
@@ -49,10 +50,9 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     { connectorId }: Pick<OpdsFormData, "connectorId">,
   ) => {
     const trimmedFeedUrl = feedUrl.trim()
-    const isHttpUrl = getOpdsUrlOrigin(trimmedFeedUrl) !== undefined
     const connectorUrl = connectors?.find(({ id }) => id === connectorId)?.url
 
-    if (!isHttpUrl) {
+    if (!isHttpUrl(trimmedFeedUrl)) {
       return "Enter the full address of the feed, starting with http:// or https://"
     }
 
@@ -79,7 +79,8 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     >
       <Alert severity="warning">
         Books download from your browser, straight from your catalog, which has
-        to allow it. Make sure to{" "}
+        to allow it, unless its connector uses oboku's server as a proxy. Make
+        sure to{" "}
         <Link href={links.documentationOpds} target="_blank">
           read this
         </Link>{" "}

@@ -94,7 +94,7 @@ Sessions live in Postgres (`refresh_tokens`): one row per issued token, hashed (
 
 - `token_hash` — the only lookup key.
 - `public_key` — JSON-serialized public JWK bound to the session at sign-in (null for sessions issued before sender constraining shipped; those are rejected on their next refresh and must re-authenticate — no graceful migration).
-- `superseded_at` / `successor_token` — rotation bookkeeping; the encrypted successor converges concurrent refreshes and is why the API must run as a **single instance**.
+- `superseded_at` / `successor_token` — rotation bookkeeping; the encrypted successor converges concurrent refreshes. Its key lives in the API's memory, which is one reason the API must run as a [single instance](/self-hosting/installation).
 
 Individual tokens expire after ~6 months (`created_at` anchored); a daily cron deletes expired and long-superseded rows.
 

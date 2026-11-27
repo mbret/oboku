@@ -1,7 +1,7 @@
 import { PassThrough, type Readable } from "node:stream"
 import {
   getOpdsCredentialHeaders,
-  getOpdsUrlOrigin,
+  isHttpUrl,
   isOpdsConnectorOrigin,
   ObokuErrorCode,
   ObokuSharedError,
@@ -74,16 +74,21 @@ const requestFromCatalog = (
  * Redirects are followed here rather than by axios, so that only requests to
  * the connector's origin carry its credentials and accept its self-signed
  * certificate.
+ *
+ * @returns `url`, the address that answered after the redirects.
+ * @throws an error with the `status` the catalog answered with when it
+ * answered neither a success nor a redirect: an `ObokuSharedError` with
+ * `ERROR_DATASOURCE_UNAUTHORIZED` for a 401.
  */
 export async function getFromCatalog(
   connector: OpdsConnector,
   requestedUrl: URL,
   options: CatalogRequestOptions = {},
-): Promise<{ stream: Readable; url: URL }> {
+) {
   let url = requestedUrl
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    if (getOpdsUrlOrigin(url.href) === undefined) {
+    if (!isHttpUrl(url.href)) {
       throw new Error(`OPDS URLs must be http(s), not ${url.protocol}`)
     }
 
@@ -91,13 +96,22 @@ export async function getFromCatalog(
     const isSuccess = response.status >= 200 && response.status < 300
 
     if (isSuccess) {
-      return { stream: withCatalogRequestFailures(url, response.data), url }
+      return {
+        stream: withCatalogRequestFailures(url, response.data),
+        url,
+        headers: response.headers,
+      }
     }
 
     response.data.destroy()
 
+    const answeredStatus = { status: response.status }
+
     if (response.status === 401) {
-      throw new ObokuSharedError(ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED)
+      throw Object.assign(
+        new ObokuSharedError(ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED),
+        answeredStatus,
+      )
     }
 
     const { location } = response.headers
@@ -106,8 +120,11 @@ export async function getFromCatalog(
       typeof location === "string"
 
     if (!isRedirect) {
-      throw new Error(
-        `OPDS request to ${url.origin} failed with status ${response.status}`,
+      throw Object.assign(
+        new Error(
+          `OPDS request to ${url.origin} failed with status ${response.status}`,
+        ),
+        answeredStatus,
       )
     }
 

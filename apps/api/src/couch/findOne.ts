@@ -3,7 +3,7 @@ import type { SafeMangoQuery, DocType, ModelOf } from "@oboku/shared"
 import { retryFn } from "./dbHelpers.js"
 
 type FindOneOptionsBase = {
-  db: createNano.DocumentScope<unknown>
+  db: Pick<createNano.DocumentScope<unknown>, "find">
 }
 
 type FindOneOptionsWithThrow = FindOneOptionsBase & {

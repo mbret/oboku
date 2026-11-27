@@ -557,29 +557,31 @@ describe("GoogleConnectionController", () => {
       expect(rows.size).toBe(1)
     })
 
-    it("answers the scopes Google gives the access token, else the granted ones", async () => {
+    it.each([
+      {
+        answered: "the scopes Google gives the access token",
+        scope: DRIVE_FILE_SCOPE,
+        scopes: [DRIVE_FILE_SCOPE],
+      },
+      {
+        answered: "the granted scopes when Google states none",
+        scope: undefined,
+        scopes: GRANTED_SCOPE.split(" "),
+      },
+    ])("answers $answered", async ({ scope, scopes }) => {
       await connect({ code: CODE })
       refreshAccessToken.mockResolvedValueOnce({
         credentials: {
           access_token: FRESH_ACCESS_TOKEN,
           expiry_date: createFreshTokenExpiry(),
-          scope: DRIVE_FILE_SCOPE,
-        },
-        res: null,
-      })
-      refreshAccessToken.mockResolvedValueOnce({
-        credentials: {
-          access_token: FRESH_ACCESS_TOKEN,
-          expiry_date: createFreshTokenExpiry(),
+          scope,
         },
         res: null,
       })
 
-      const narrowed = await mintAccessToken()
-      const unstated = await mintAccessToken()
+      const response = await mintAccessToken()
 
-      expect(narrowed.body.scopes).toEqual([DRIVE_FILE_SCOPE])
-      expect(unstated.body.scopes).toEqual(GRANTED_SCOPE.split(" "))
+      expect(response.body.scopes).toEqual(scopes)
     })
 
     it("mints only from the signed-in user's own connection", async () => {
@@ -785,6 +787,238 @@ describe("GoogleConnectionController", () => {
 
       expect(response.status).toBe(401)
       expect(refreshAccessToken).not.toHaveBeenCalled()
+    })
+
+    describe("reuse", () => {
+      const NEXT_ACCESS_TOKEN = "ya29.next-access-token"
+
+      const grantNextAccessToken = () => {
+        refreshAccessToken.mockResolvedValue({
+          credentials: {
+            access_token: NEXT_ACCESS_TOKEN,
+            expiry_date: createFreshTokenExpiry(),
+            scope: GRANTED_SCOPE,
+          },
+          res: null,
+        })
+      }
+
+      describe("until shortly before the token expires", () => {
+        const mintedAt = new Date("2026-11-18T10:00:00.000Z").getTime()
+        const expiresAt = mintedAt + FRESH_TOKEN_LIFETIME_SECONDS * 1000
+        const reuseMarginMs = 10 * 60 * 1000
+
+        beforeEach(async () => {
+          vi.useFakeTimers({ toFake: ["Date"] })
+          vi.setSystemTime(mintedAt)
+          refreshAccessToken.mockResolvedValue({
+            credentials: {
+              access_token: FRESH_ACCESS_TOKEN,
+              expiry_date: expiresAt,
+              scope: GRANTED_SCOPE,
+            },
+            res: null,
+          })
+          await connect({ code: CODE })
+          await mintAccessToken()
+        })
+
+        afterEach(() => {
+          vi.useRealTimers()
+        })
+
+        it("answers the token it minted again without asking Google", async () => {
+          vi.setSystemTime(expiresAt - reuseMarginMs - 1000)
+          grantNextAccessToken()
+
+          const response = await mintAccessToken()
+
+          expect(response.status).toBe(201)
+          expect(response.body).toEqual({
+            accessToken: FRESH_ACCESS_TOKEN,
+            expiresIn: reuseMarginMs / 1000 + 1,
+            scopes: GRANTED_SCOPE.split(" "),
+          })
+          expect(refreshAccessToken).toHaveBeenCalledTimes(1)
+        })
+
+        it("mints another once 10 minutes are left", async () => {
+          vi.setSystemTime(expiresAt - reuseMarginMs)
+          grantNextAccessToken()
+
+          const response = await mintAccessToken()
+
+          expect(response.body.accessToken).toBe(NEXT_ACCESS_TOKEN)
+          expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+        })
+      })
+
+      it("forgets a minted token once its reuse window ends, without another call", async () => {
+        const mintedAt = new Date("2026-11-18T10:00:00.000Z").getTime()
+        const expiresAt = mintedAt + FRESH_TOKEN_LIFETIME_SECONDS * 1000
+        const reuseMarginMs = 10 * 60 * 1000
+        await connect({ code: CODE })
+        vi.useFakeTimers({ toFake: ["Date", "setTimeout"] })
+        vi.setSystemTime(mintedAt)
+        refreshAccessToken.mockResolvedValue({
+          credentials: {
+            access_token: FRESH_ACCESS_TOKEN,
+            expiry_date: expiresAt,
+            scope: GRANTED_SCOPE,
+          },
+          res: null,
+        })
+        await googleConnectionService.mintAccessToken(READER_ID)
+
+        await vi.advanceTimersByTimeAsync(expiresAt - reuseMarginMs - mintedAt)
+        vi.setSystemTime(mintedAt)
+        grantNextAccessToken()
+        const { accessToken } =
+          await googleConnectionService.mintAccessToken(READER_ID)
+        vi.useRealTimers()
+
+        expect(accessToken).toBe(NEXT_ACCESS_TOKEN)
+      })
+
+      it("shares one mint between the calls made while it runs", async () => {
+        await connect({ code: CODE })
+        const onMintedDuringRefresh = vi.fn()
+        refreshAccessToken.mockImplementationOnce(
+          async function mintAgainWhileRefreshing() {
+            googleConnectionService
+              .mintAccessToken(READER_ID)
+              .then(onMintedDuringRefresh)
+
+            return {
+              credentials: {
+                access_token: FRESH_ACCESS_TOKEN,
+                expiry_date: createFreshTokenExpiry(),
+                scope: GRANTED_SCOPE,
+              },
+              res: null,
+            }
+          },
+        )
+
+        const response = await mintAccessToken()
+
+        await vi.waitFor(() =>
+          expect(onMintedDuringRefresh).toHaveBeenCalledWith(
+            expect.objectContaining({ accessToken: FRESH_ACCESS_TOKEN }),
+          ),
+        )
+        expect(response.body.accessToken).toBe(FRESH_ACCESS_TOKEN)
+        expect(refreshAccessToken).toHaveBeenCalledTimes(1)
+      })
+
+      it("keeps no token from a mint that failed", async () => {
+        await connect({ code: CODE })
+        refreshAccessToken.mockRejectedValueOnce(new Error("socket hang up"))
+
+        const failed = await mintAccessToken()
+        const retried = await mintAccessToken()
+
+        expect(failed.status).toBe(500)
+        expect(retried.status).toBe(201)
+        expect(retried.body.accessToken).toBe(FRESH_ACCESS_TOKEN)
+        expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+      })
+
+      it("keeps each user's token to themselves", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+
+        const response = await mintAccessToken(OTHER_READER_SESSION)
+
+        expect(response.body.errors).toEqual([
+          { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND },
+        ])
+      })
+
+      it("forgets the token when the user disconnects", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+        await disconnect()
+
+        const response = await mintAccessToken()
+
+        expect(response.body.errors).toEqual([
+          { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_NOT_FOUND },
+        ])
+      })
+
+      it("forgets the token when the user connects another account", async () => {
+        const workRefreshToken = "1//work-refresh-token"
+        await connect({ code: CODE })
+        await mintAccessToken()
+        grantTokens({
+          refresh_token: workRefreshToken,
+          id_token: ID_TOKEN,
+          scope: GRANTED_SCOPE,
+        })
+        verifyIdToken.mockResolvedValue({
+          getPayload: () => ({ sub: "work-sub", email: "reader@work.example" }),
+        })
+        await connect({ code: "4/work-code" })
+        grantNextAccessToken()
+
+        const response = await mintAccessToken()
+
+        expect(response.body.accessToken).toBe(NEXT_ACCESS_TOKEN)
+        expect(setCredentials).toHaveBeenLastCalledWith({
+          refresh_token: workRefreshToken,
+        })
+      })
+
+      it("mints another instead of a token Google refused, and keeps it", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+        grantNextAccessToken()
+
+        const replacement = await googleConnectionService.mintAccessToken(
+          READER_ID,
+          { refusedAccessToken: FRESH_ACCESS_TOKEN },
+        )
+        const kept = await mintAccessToken()
+
+        expect(replacement.accessToken).toBe(NEXT_ACCESS_TOKEN)
+        expect(kept.body.accessToken).toBe(NEXT_ACCESS_TOKEN)
+        expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+      })
+
+      it("mints once when Google answers the refused token again", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+
+        const replacement = await googleConnectionService.mintAccessToken(
+          READER_ID,
+          { refusedAccessToken: FRESH_ACCESS_TOKEN },
+        )
+
+        expect(replacement.accessToken).toBe(FRESH_ACCESS_TOKEN)
+        expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+      })
+
+      it("mints one replacement for the calls that report the same refused token", async () => {
+        await connect({ code: CODE })
+        await mintAccessToken()
+        grantNextAccessToken()
+
+        const replacements = await Promise.all([
+          googleConnectionService.mintAccessToken(READER_ID, {
+            refusedAccessToken: FRESH_ACCESS_TOKEN,
+          }),
+          googleConnectionService.mintAccessToken(READER_ID, {
+            refusedAccessToken: FRESH_ACCESS_TOKEN,
+          }),
+        ])
+
+        expect(replacements.map(({ accessToken }) => accessToken)).toEqual([
+          NEXT_ACCESS_TOKEN,
+          NEXT_ACCESS_TOKEN,
+        ])
+        expect(refreshAccessToken).toHaveBeenCalledTimes(2)
+      })
     })
   })
 

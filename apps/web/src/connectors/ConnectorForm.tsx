@@ -18,9 +18,10 @@ import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { notify } from "../notifications/toasts"
-import type {
-  SettingsConnectorDocType,
-  SettingsConnectorType,
+import {
+  isHttpUrl,
+  type SettingsConnectorDocType,
+  type SettingsConnectorType,
 } from "@oboku/shared"
 import { TestConnection, type TestConnectionFn } from "./TestConnection"
 import { useAddConnector } from "./useAddConnector"
@@ -75,6 +76,9 @@ const URL_PATTERN = {
   message: "Invalid URL",
 }
 
+const validateHttpScheme = (url: string) =>
+  isHttpUrl(url) || "Enter the full address, starting with http:// or https://"
+
 export type FormData = {
   urlValue: string
   username: string
@@ -127,10 +131,8 @@ export type ConnectorFormConfig = {
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
-  /** Shows the "Use oboku's server as a proxy" checkbox and saves its value. */
-  showProxyThroughServer?: boolean
-  /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
-  validateUrl?: (url: string) => true | string
+  /** Shows the "Use oboku's server as a proxy" checkbox with this caption, and saves its value. */
+  proxyThroughServerCaption?: string
   urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
@@ -145,8 +147,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
   children,
   showUrl = true,
-  showProxyThroughServer = false,
-  validateUrl,
+  proxyThroughServerCaption,
   urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
@@ -162,6 +163,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     type: connectorType,
   })
   const isEditing = !!connectorId
+  const isProxyThroughServerShown = proxyThroughServerCaption !== undefined
   const {
     control,
     formState: { isValid, disabled, errors },
@@ -200,7 +202,7 @@ export const ConnectorForm = memo(function ConnectorForm({
           url: data.urlValue,
           allowSelfSigned: data.allowSelfSigned,
         }),
-        ...(showProxyThroughServer && {
+        ...(isProxyThroughServerShown && {
           proxyThroughServer: data.proxyThroughServer,
         }),
       }
@@ -233,7 +235,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 rules={{
                   required: true,
                   pattern: URL_PATTERN,
-                  validate: validateUrl,
+                  validate: validateHttpScheme,
                 }}
               />
             )}
@@ -259,12 +261,12 @@ export const ConnectorForm = memo(function ConnectorForm({
                 caption="Used by API sync, metadata, and download requests. Browser connection tests may still require trusting the certificate in your browser."
               />
             )}
-            {showProxyThroughServer && (
+            {isProxyThroughServerShown && (
               <ControlledCheckboxField
                 control={control}
                 name="proxyThroughServer"
                 label="Use oboku's server as a proxy"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection and downloads your books, then passes them on to you. The downloads count towards your monthly download quota."
+                caption={proxyThroughServerCaption}
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}

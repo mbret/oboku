@@ -49,7 +49,7 @@ describe("errorToMessage", () => {
     )
   })
 
-  it("says the WebDAV server refused the connector's password", () => {
+  it("says the connector's server refused the connector's password", () => {
     const error = createApiError(502, {
       errors: [
         { code: ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED },

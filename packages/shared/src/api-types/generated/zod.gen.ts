@@ -144,6 +144,11 @@ export const zWebdavConnectorsMigrationResponseDto = z.object({
     connectorsCreated: z.number()
 });
 
+export const zConnectorUrlSchemesMigrationResponseDto = z.object({
+    usersMigrated: z.number(),
+    connectorsUpdated: z.number()
+});
+
 export const zResourceIdMigrationResponseDto = z.object({
     usersMigrated: z.number(),
     linksUpdated: z.number(),
@@ -491,19 +496,19 @@ export const zRefreshBookMetadataDto = z.object({
     providerCredentials: z.record(z.string(), z.unknown())
 });
 
-export const zWebdavCredentialsDto = z.object({
+export const zConnectorCredentialsDto = z.object({
     password: z.string()
 });
 
 export const zDownloadLinkDto = z.object({
     linkId: z.string(),
-    providerCredentials: zWebdavCredentialsDto
+    providerCredentials: zConnectorCredentialsDto
 });
 
 export const zListWebdavDirectoryDto = z.object({
     url: z.string().regex(/^https?:\/\//),
     username: z.string(),
-    providerCredentials: zWebdavCredentialsDto,
+    providerCredentials: zConnectorCredentialsDto,
     allowSelfSigned: z.boolean().optional(),
     path: z.string()
 });
@@ -696,6 +701,8 @@ export const zAdminRefreshTokenBody = zAdminRefreshTokenDto;
 export const zAdminRefreshTokenResponse = zAdminTokensResponseDto;
 
 export const zAdminMigrateWebdavConnectorsResponse = zWebdavConnectorsMigrationResponseDto;
+
+export const zAdminMigrateConnectorUrlSchemesResponse = zConnectorUrlSchemesMigrationResponseDto;
 
 export const zAdminMigrateWebdavResourceIdsResponse = zResourceIdMigrationResponseDto;
 

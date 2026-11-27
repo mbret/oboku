@@ -1,11 +1,13 @@
 import { Stack } from "@mantine/core"
 import {
   adminMigrateCollectionCoverKeys,
+  adminMigrateConnectorUrlSchemes,
   adminMigrateResourceIdToLinkData,
   adminMigrateWebdavConnectors,
   adminMigrateWebdavResourceIds,
   adminResetRefreshTokenCreatedAt,
   type CollectionCoverKeysMigrationResponseDto,
+  type ConnectorUrlSchemesMigrationResponseDto,
   type RefreshTokenCreatedAtResetResponseDto,
   type ResourceIdMigrationResponseDto,
   type WebdavConnectorsMigrationResponseDto,
@@ -22,6 +24,11 @@ const describeWebdavConnectorsMigration = (
   result: WebdavConnectorsMigrationResponseDto,
 ) =>
   `${result.usersMigrated} user(s) migrated, ${result.connectorsCreated} connector(s) created`
+
+const describeConnectorUrlSchemesMigration = (
+  result: ConnectorUrlSchemesMigrationResponseDto,
+) =>
+  `${result.usersMigrated} user(s) migrated, ${result.connectorsUpdated} connector URL(s) updated`
 
 const describeResourceIdMigration = (result: ResourceIdMigrationResponseDto) =>
   `${result.usersMigrated} user(s) migrated, ${result.linksUpdated} link(s) updated, ${result.collectionsUpdated} collection(s) updated`
@@ -64,6 +71,13 @@ export const AdminMigrationSection = () => (
       confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
       run={adminMigrateCollectionCoverKeys}
       describeResult={describeCollectionCoverKeysMigration}
+    />
+    <MigrationPanel
+      title="Connector URL scheme migration"
+      label="add https:// to connector URLs without a scheme"
+      confirmMessage={DANGEROUS_ACTION_CONFIRMATION_MESSAGE}
+      run={adminMigrateConnectorUrlSchemes}
+      describeResult={describeConnectorUrlSchemesMigration}
     />
     <MigrationPanel
       title="Refresh-token created_at reset (run once)"

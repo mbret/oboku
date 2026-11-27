@@ -12,6 +12,7 @@ import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../../plugins/types"
 import { ObokuErrorCode } from "@oboku/shared"
 import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
+import { downloadThroughServerProxy } from "../../../connectors/downloadThroughServerProxy"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
@@ -20,10 +21,7 @@ import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
 import { resolveWebdavUrl } from "./auth/connect"
-import {
-  downloadFromWebdavServer,
-  downloadThroughServerProxy,
-} from "./download"
+import { downloadFromWebdavServer } from "./download"
 import type { WebdavBackedType } from "./constants"
 
 type WebdavDownloadBookProps = DownloadBookComponentProps & {

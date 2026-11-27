@@ -5,9 +5,13 @@ import type {
 } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { PageSection } from "../../../common/PageSection"
-import { getBookMetadataEntryFields } from "../../metadata/fields"
+import {
+  getBookMetadataEntryFields,
+  getBookMetadataEntryIdentifiers,
+} from "../../metadata/fields"
 import { getCatalogProviderName } from "../../metadata/providers"
 import { MetadataFieldRow } from "./MetadataFieldRow"
+import { MetadataIdentifierRows } from "./MetadataIdentifierRows"
 import { BOOK_METADATA_FIELD_LABELS as L } from "./fieldLabels"
 import { formatBookMetadataDate, formatList } from "./formatters"
 
@@ -20,6 +24,7 @@ type Props = {
 /** Read-only content of the catalog record matched to the book. */
 export const CatalogProviderContent = ({ entry }: Props) => {
   const fields = entry ? getBookMetadataEntryFields(entry) : undefined
+  const identifiers = entry ? getBookMetadataEntryIdentifiers(entry) : []
   const catalogName = entry ? getCatalogProviderName(entry) : undefined
   const recordUrl = entry?.type === "catalog" ? entry.url : undefined
 
@@ -83,6 +88,7 @@ export const CatalogProviderContent = ({ entry }: Props) => {
         label={L.subjects}
         value={formatList(fields?.subjects)}
       />
+      <MetadataIdentifierRows identifiers={identifiers} />
     </PageSection>
   )
 }

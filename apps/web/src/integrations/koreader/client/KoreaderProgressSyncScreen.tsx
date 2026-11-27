@@ -10,7 +10,7 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import type { KoreaderSyncConnectionDto } from "@oboku/shared"
+import { isHttpUrl, type KoreaderSyncConnectionDto } from "@oboku/shared"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink } from "react-router"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
@@ -40,9 +40,6 @@ type ConnectionFormValues = {
   username: string
   password: string
 }
-
-const isHttpUrl = (value: string) =>
-  URL.canParse(value) && ["http:", "https:"].includes(new URL(value).protocol)
 
 const ObokuSyncServerShortcut = memo(function ObokuSyncServerShortcut({
   onUse,

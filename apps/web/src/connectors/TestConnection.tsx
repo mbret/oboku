@@ -7,7 +7,7 @@ import {
   useUnlockMasterKey,
 } from "../secrets/useUnlockMasterKey"
 import { useDebouncedValue } from "../common/useDebouncedValue"
-import type { SettingsConnectorType } from "@oboku/shared"
+import { isHttpUrl, type SettingsConnectorType } from "@oboku/shared"
 import { Alert, AlertTitle } from "@mui/material"
 
 export type ConnectionStatusQueryResult = {
@@ -22,7 +22,7 @@ export type ConnectionStatusProps = ConnectionStatusQueryResult & {
 }
 
 const MESSAGE_TESTING = "Testing connection..."
-const MESSAGE_WAITING = "Waiting for valid credentials..."
+const MESSAGE_WAITING = "Waiting for a valid address and credentials..."
 const MESSAGE_SUCCESS = "Connection successful"
 const MESSAGE_ERROR = "Unable to connect"
 
@@ -149,7 +149,8 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
     proxyThroughServer,
     ...extra,
   }
-  const hasCredentials = !!params.url && !!params.username && !!params.password
+  const isTestable =
+    isHttpUrl(params.url) && !!params.username && !!params.password
 
   const {
     mutate,
@@ -170,7 +171,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
 
       if (!isSettled) return
 
-      if (!hasCredentials) {
+      if (!isTestable) {
         reset()
         return
       }
@@ -179,7 +180,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
     },
     [
       connectorType,
-      hasCredentials,
+      isTestable,
       isSettled,
       mutate,
       reset,
@@ -189,7 +190,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   )
 
   const connectionStatus: ConnectionStatusQueryResult["status"] =
-    !hasCredentials || status === "idle" || status === "pending"
+    !isTestable || status === "idle" || status === "pending"
       ? "pending"
       : status === "error" || success === false
         ? "error"

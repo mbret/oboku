@@ -16,8 +16,9 @@ The deletion happens at once and cannot be undone. It removes:
 - your account and its email address;
 - your library: books, collections, tags and reading progress;
 - your library syncs, and the connections to Google Drive, Dropbox, OneDrive and other services;
-- your OPDS servers and your KOReader sync data;
-- the covers stored for your books and collections.
+- your OPDS servers and your KOReader sync data.
+
+Right after, oboku starts deleting the covers stored for your books and collections.
 
 oboku does not delete the book files in your own storage, such as Google Drive or Dropbox: they stay yours.
 

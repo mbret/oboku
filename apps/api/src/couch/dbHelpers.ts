@@ -201,7 +201,7 @@ export async function atomicUpdate<
   M extends DocType["rx_model"],
   K extends ModelOf<M>,
 >(
-  db: createNano.DocumentScope<unknown>,
+  db: Pick<createNano.DocumentScope<unknown>, "get" | "insert">,
   rxModel: M,
   id: string,
   cb: (oldData: createNano.DocumentGetResponse & K) => Partial<K>,
@@ -306,7 +306,7 @@ export async function findAll<D>(
 }
 
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
-  db: createNano.DocumentScope<unknown>,
+  db: Pick<createNano.DocumentScope<unknown>, "find">,
   rxModel: M,
   query: SafeMangoQuery<D>,
 ) => {

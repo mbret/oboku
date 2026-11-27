@@ -26,6 +26,7 @@ import { SecretsService } from "../config/SecretsService.js"
 import { MigrationService } from "../migrations/migration.service.js"
 import {
   CollectionCoverKeysMigrationResponseDto,
+  ConnectorUrlSchemesMigrationResponseDto,
   RefreshTokenCreatedAtResetResponseDto,
   ResourceIdMigrationResponseDto,
   WebdavConnectorsMigrationResponseDto,
@@ -174,6 +175,11 @@ export class AdminController {
   @Post("migrate-webdav-connectors")
   async migrateWebdavConnectors(): Promise<WebdavConnectorsMigrationResponseDto> {
     return this.migrationService.migrateWebdavConnectorsToConnectors()
+  }
+
+  @Post("migrate-connector-url-schemes")
+  async migrateConnectorUrlSchemes(): Promise<ConnectorUrlSchemesMigrationResponseDto> {
+    return this.migrationService.migrateConnectorUrlSchemes()
   }
 
   @Post("migrate-webdav-resource-ids")

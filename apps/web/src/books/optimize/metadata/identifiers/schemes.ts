@@ -7,6 +7,7 @@ import {
   normalizeIsbn,
   parseUrn,
 } from "@prose-reader/archive-reader"
+import { isHttpUrl } from "@oboku/shared"
 
 export const CUSTOM_SCHEME_OPTION = "custom"
 
@@ -25,16 +26,6 @@ type IdentifierSchemeTemplate = {
  */
 const isCatalogAddressable = (scheme: string, value: string): boolean =>
   catalogUrlFromIdentifier({ scheme, value }) !== undefined
-
-const isHttpUrl = (value: string): boolean => {
-  try {
-    const { protocol, hostname } = new URL(value)
-
-    return (protocol === "http:" || protocol === "https:") && hostname !== ""
-  } catch {
-    return false
-  }
-}
 
 /**
  * Keyed by the reader's scheme union so a scheme added upstream fails to

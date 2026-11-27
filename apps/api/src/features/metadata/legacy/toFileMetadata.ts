@@ -1,12 +1,10 @@
 import {
   type FileMetadata,
+  getFlatEntryIdentifiers,
   isLegacyFileMetadata,
   type LegacyFileMetadata,
 } from "@oboku/shared"
-import type {
-  ResolvedMetadata,
-  ResolvedMetadataIdentifier,
-} from "@prose-reader/archive-reader"
+import type { ResolvedMetadata } from "@prose-reader/archive-reader"
 
 /**
  * The flat entry kept the edition's publisher and date. An entry older than
@@ -16,12 +14,7 @@ import type {
 const fileMetadataFromLegacy = (
   entry: LegacyFileMetadata,
 ): Omit<FileMetadata, "version"> => {
-  const identifiers: ResolvedMetadataIdentifier[] = [
-    ...(entry.isbn ? [{ value: entry.isbn, scheme: "ISBN" }] : []),
-    ...(entry.googleVolumeId
-      ? [{ value: entry.googleVolumeId, scheme: "GoogleBooks" }]
-      : []),
-  ]
+  const identifiers = getFlatEntryIdentifiers(entry)
   const hasPublication =
     entry.publisher !== undefined || entry.date !== undefined
 
