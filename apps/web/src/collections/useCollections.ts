@@ -49,7 +49,6 @@ export const useCollections = ({
   ids,
   isNotInterested,
   readingState = "any",
-  includeProtected: _includeProtected,
   ...options
 }: {
   queryObj?: MangoQuery<CollectionDocType>
@@ -63,7 +62,6 @@ export const useCollections = ({
   isNotInterested?: "with" | "none" | "only" | undefined
   readingState?: CollectionReadingState | "any"
   ids?: DeepReadonlyArray<string>
-  includeProtected?: boolean
 } = {}) => {
   const serializedBookIds = JSON.stringify(bookIds)
   const serializedIds = JSON.stringify(ids)
@@ -72,7 +70,7 @@ export const useCollections = ({
     selectIsLibraryUnlocked,
   )
   const { showCollectionWithProtectedContent } = useLocalSettings()
-  const includeProtected = _includeProtected || isLibraryUnlocked
+  const includeProtected = isLibraryUnlocked
 
   return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
