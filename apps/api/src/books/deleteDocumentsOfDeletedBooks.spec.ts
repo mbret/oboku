@@ -33,7 +33,7 @@ const createUserDb = <Doc>(docs: Doc[]) => ({
   find: vi.fn(async function findDocuments() {
     return { docs, bookmark: "last-page" }
   }),
-  fetch: vi.fn(async function fetchBooks() {
+  fetchRevs: vi.fn(async function fetchBookRevisions() {
     return {
       offset: 0,
       total_rows: 3,
@@ -108,7 +108,7 @@ describe("deleteDocumentsOfDeletedBooks", () => {
     })
 
     expect(deletedCount).toBe(1)
-    expect(db.fetch).toHaveBeenCalledExactlyOnceWith({
+    expect(db.fetchRevs).toHaveBeenCalledExactlyOnceWith({
       keys: [DELETED_BOOK_ID, UNSYNCED_BOOK_ID],
     })
     expect(db.bulk).toHaveBeenCalledExactlyOnceWith({
