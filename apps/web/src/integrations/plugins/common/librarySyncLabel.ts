@@ -24,10 +24,5 @@ export const getHostname = (urlValue: string) => {
     return undefined
   }
 
-  // ConnectorForm accepts URLs without a scheme. `new URL` reads the host of
-  // `nas.local:5005/dav` as its scheme and leaves the hostname empty.
-  return (
-    parseHostname(trimmedUrlValue) ??
-    parseHostname(`https://${trimmedUrlValue}`)
-  )
+  return parseHostname(trimmedUrlValue)
 }

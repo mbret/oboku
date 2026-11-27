@@ -45,15 +45,15 @@ describe("useLibrarySyncInfo", () => {
     {
       form: "has no scheme",
       url: "192.168.1.10/dav",
-      label: "webdav://reader@192.168.1.10/books",
+      label: "webdav://?",
     },
     {
       form: "is a host and port",
       url: "nas.local:5005/dav",
-      label: "webdav://reader@nas.local/books",
+      label: "webdav://?",
     },
   ])(
-    "labels a source whose connector URL $form with its host",
+    "labels a source whose connector URL $form as $label",
     ({ url, label }) => {
       useConnector.mockReturnValue({ data: { ...connectorWithoutUrl, url } })
 
