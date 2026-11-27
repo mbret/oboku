@@ -23,7 +23,7 @@ export type ConnectionStatusProps = ConnectionStatusQueryResult & {
 }
 
 const MESSAGE_TESTING = "Testing connection..."
-const MESSAGE_WAITING = "Waiting for valid credentials..."
+const MESSAGE_WAITING = "Waiting for a valid address and credentials..."
 const MESSAGE_SUCCESS = "Connection successful"
 const MESSAGE_ERROR = "Unable to connect"
 
