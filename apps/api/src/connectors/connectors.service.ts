@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common"
 import type { FileStat } from "webdav"
 import { listWebdavDirectory } from "../plugins/webdav/index.js"
-import { throwWebdavHttpException } from "../plugins/webdav/toWebdavHttpException.js"
+import { throwConnectorHttpException } from "../plugins/toConnectorHttpException.js"
 import type {
   ListWebdavDirectoryDto,
   WebdavDirectoryItemDto,
@@ -33,7 +33,7 @@ export class ConnectorsService {
       allowSelfSigned,
       path,
       signal: AbortSignal.timeout(LIST_DIRECTORY_DEADLINE_MS),
-    }).catch(throwWebdavHttpException)
+    }).catch(throwConnectorHttpException)
 
     return items.map(toWebdavDirectoryItem)
   }

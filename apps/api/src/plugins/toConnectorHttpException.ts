@@ -1,24 +1,23 @@
 import { BadGatewayException, NotFoundException } from "@nestjs/common"
 import { ObokuErrorCode } from "@oboku/shared"
+import { isSignInRefused, toAnsweredStatus } from "../http/answeredStatus.js"
 import {
   createObokuBadRequest,
   toObokuErrorBody,
-} from "../../http/obokuBadRequest.js"
-import { isNonPublicAddressError } from "../../http/publicAddress.js"
+} from "../http/obokuBadRequest.js"
+import { isNonPublicAddressError } from "../http/publicAddress.js"
 import {
-  WebdavConnectorNotConfiguredError,
-  WebdavConnectorNotFoundError,
-  isSignInRefused,
-  toAnsweredStatus,
-} from "./index.js"
-import { FileSizeUnstatedError } from "./streamWebdavFile.js"
+  ConnectorNotConfiguredError,
+  ConnectorNotFoundError,
+} from "./connectorHelpers.js"
+import { FileSizeUnstatedError } from "./plugins.service.js"
 
-const toWebdavHttpException = (error: unknown) => {
-  if (error instanceof WebdavConnectorNotConfiguredError) {
+const toConnectorHttpException = (error: unknown) => {
+  if (error instanceof ConnectorNotConfiguredError) {
     return createObokuBadRequest(ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED)
   }
 
-  if (error instanceof WebdavConnectorNotFoundError) {
+  if (error instanceof ConnectorNotFoundError) {
     return createObokuBadRequest(
       ObokuErrorCode.ERROR_PROVIDER_CONNECTION_CONNECTOR_NOT_FOUND,
     )
@@ -55,6 +54,7 @@ const toWebdavHttpException = (error: unknown) => {
   )
 }
 
-export const throwWebdavHttpException = (error: unknown): never => {
-  throw toWebdavHttpException(error)
+/** Answers the failure of a request to a connector's server. */
+export const throwConnectorHttpException = (error: unknown): never => {
+  throw toConnectorHttpException(error)
 }

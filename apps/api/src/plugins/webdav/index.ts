@@ -10,7 +10,7 @@ import {
 import { AuthType, createClient } from "webdav"
 import { isRecord } from "../../http/isRecord.js"
 import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
-import { getConnectorById } from "../connectorHelpers.js"
+import { findConnector, type getConnectorById } from "../connectorHelpers.js"
 import {
   getFileMetadataFromWebdav,
   getFolderMetadataFromWebdav,
@@ -20,35 +20,6 @@ import {
 import { findConnectorCandidates } from "../helpers.js"
 
 const WEBDAV_TYPE = "webdav" satisfies WebDAVLibrarySyncDocType["type"]
-
-export class WebdavConnectorNotConfiguredError extends Error {
-  constructor() {
-    super("No WebDAV connector is configured")
-  }
-}
-
-export class WebdavConnectorNotFoundError extends Error {
-  constructor() {
-    super("WebDAV connector not found")
-  }
-}
-
-/** A WebDAV connector, as the user's settings hold it. */
-export const findWebdavConnector = async ({
-  db,
-  connectorId,
-}: {
-  db: Parameters<typeof getConnectorById>[0]
-  connectorId: string | undefined
-}) => {
-  if (!connectorId) throw new WebdavConnectorNotConfiguredError()
-
-  const connector = await getConnectorById(db, connectorId, "webdav")
-
-  if (!connector) throw new WebdavConnectorNotFoundError()
-
-  return connector
-}
 
 async function resolveClientAndPath(params: {
   link: { data: { connectorId?: string; filePath?: string } }
@@ -65,7 +36,7 @@ async function resolveClientAndPath(params: {
     )
   }
 
-  const connector = await findWebdavConnector({ db, connectorId })
+  const connector = await findConnector({ db, connectorId, type: WEBDAV_TYPE })
   const client = createWebdavClient({
     ...connector,
     password: providerCredentials.password,
@@ -102,29 +73,6 @@ export const isWebdavConnector = (
     typeof value.allowSelfSigned === "boolean") &&
   (value.proxyThroughServer === undefined ||
     typeof value.proxyThroughServer === "boolean")
-
-/** The status a server answered with, which WebDAV client errors carry. */
-export const toAnsweredStatus = (error: unknown) =>
-  isRecord(error) && typeof error.status === "number" ? error.status : null
-
-const UNAUTHORIZED_STATUSES = [401, 403]
-
-/** Whether the server refused the connector's username and password. */
-export const isSignInRefused = (error: unknown) => {
-  const answeredStatus = toAnsweredStatus(error)
-
-  return (
-    answeredStatus !== null && UNAUTHORIZED_STATUSES.includes(answeredStatus)
-  )
-}
-
-/**
- * Whether the server refused the password itself (401). Unlike
- * `isSignInRefused`, a 403 does not count: once a connector signed in, a 403
- * on one file refuses that file, not the password.
- */
-export const isPasswordRefused = (error: unknown) =>
-  toAnsweredStatus(error) === 401
 
 export const listWebdavDirectory = ({
   path,
@@ -206,7 +154,11 @@ export const sourcePlugin: SourcePlugin<"webdav"> = {
       throw new Error("library sync not found or invalid")
     }
 
-    const connector = await findWebdavConnector({ db, connectorId })
+    const connector = await findConnector({
+      db,
+      connectorId,
+      type: WEBDAV_TYPE,
+    })
     const client = await createWebdavClient({
       ...connector,
       password: providerCredentials.password,

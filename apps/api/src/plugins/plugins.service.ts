@@ -29,6 +29,12 @@ export class FileDownloadSizeLimitExceededError extends Error {
   }
 }
 
+export class FileSizeUnstatedError extends Error {
+  constructor() {
+    super("The server states no size for the file")
+  }
+}
+
 /** Passes on at most `maxSizeBytes`, and fails the stream past them. */
 export const createByteLimitTransform = (maxSizeBytes: number) => {
   let downloadedBytes = 0

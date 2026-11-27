@@ -1,15 +1,12 @@
 import { pipeline } from "node:stream"
 import type { WebdavConnectorDocType } from "@oboku/shared"
 import { toByteCount } from "../../http/contentLength.js"
-import { createByteLimitTransform } from "../plugins.service.js"
+import {
+  createByteLimitTransform,
+  FileSizeUnstatedError,
+} from "../plugins.service.js"
 import { createWebdavClient } from "./index.js"
 import { downloadFromWebdav, getFileMetadataFromWebdav } from "./operations.js"
-
-export class FileSizeUnstatedError extends Error {
-  constructor() {
-    super("The WebDAV server states no size for the file")
-  }
-}
 
 /**
  * Streams a file from the server `connector` names, with `password`. `size`

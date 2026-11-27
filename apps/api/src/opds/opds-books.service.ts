@@ -20,9 +20,9 @@ import { CoversService } from "../covers/covers.service.js"
 import { fetchByIds, find } from "../couch/dbHelpers.js"
 import { findOne } from "../couch/findOne.js"
 import { findProtectedTagIds } from "../couch/findProtectedTagIds.js"
+import { toAnsweredStatus } from "../http/answeredStatus.js"
 import type { UserPostgresEntity } from "../features/postgres/entities.js"
 import { PluginsService } from "../plugins/plugins.service.js"
-import { toAnsweredStatus } from "../plugins/webdav/index.js"
 import {
   ConnectorConnectionService,
   ConnectorServerError,

@@ -12,9 +12,9 @@ import type createNano from "nano"
 import { CouchService } from "../couch/couch.service.js"
 import { findOne } from "../couch/dbHelpers.js"
 import { toObokuErrorBody } from "../http/obokuBadRequest.js"
-import { findWebdavConnector } from "../plugins/webdav/index.js"
+import { findConnector } from "../plugins/connectorHelpers.js"
+import { throwConnectorHttpException } from "../plugins/toConnectorHttpException.js"
 import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
-import { throwWebdavHttpException } from "../plugins/webdav/toWebdavHttpException.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
 const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
@@ -33,9 +33,10 @@ const streamConnectorFile = async ({
   link: LinkDocTypeForSource<"webdav">
   providerCredentials: WebdavApiCredentials
 }) => {
-  const connector = await findWebdavConnector({
+  const connector = await findConnector({
     db,
     connectorId: link.data.connectorId,
+    type: "webdav",
   })
 
   return streamWebdavFile({
@@ -80,7 +81,7 @@ export class LinksService {
 
     const { stream, name, contentType, size, expectedSize } =
       await streamConnectorFile({ db, link, providerCredentials }).catch(
-        throwWebdavHttpException,
+        throwConnectorHttpException,
       )
 
     return {
