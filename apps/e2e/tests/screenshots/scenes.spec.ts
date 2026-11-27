@@ -322,6 +322,15 @@ type Target = {
   scenes: SceneName[]
 }
 
+const PLAY_STORE_SCENES: SceneName[] = [
+  "home",
+  "library",
+  "book-details",
+  "epub-reader",
+  "manga-reader",
+  "audiobook-reader",
+]
+
 const TARGETS: Target[] = [
   {
     name: "play-phone",
@@ -332,14 +341,30 @@ const TARGETS: Target[] = [
     outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
     // Google Play takes JPEG and 24-bit PNG screenshots only.
     imageFormat: "jpeg",
-    scenes: [
-      "home",
-      "library",
-      "book-details",
-      "epub-reader",
-      "manga-reader",
-      "audiobook-reader",
-    ],
+    scenes: PLAY_STORE_SCENES,
+  },
+  // Google Play's tablet screenshots are 16:9 or 9:16. Each side is between
+  // 320 px and 3,840 px for a 7-inch tablet, and between 1,080 px and
+  // 7,680 px for a 10-inch tablet.
+  {
+    name: "play-tablet-7-inch",
+    viewport: { width: 960, height: 540 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(APPS_DIR, "e2e/screenshots/play-tablet-7-inch/en"),
+    imageFormat: "jpeg",
+    scenes: PLAY_STORE_SCENES,
+  },
+  {
+    name: "play-tablet-10-inch",
+    viewport: { width: 1280, height: 720 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(APPS_DIR, "e2e/screenshots/play-tablet-10-inch/en"),
+    imageFormat: "jpeg",
+    scenes: PLAY_STORE_SCENES,
   },
   // Google Play's foldable screenshots need one image of the unfolded screen
   // in 1:1, one in 4:3, and one of the folded outer screen in 10:16 portrait,

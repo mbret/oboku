@@ -219,7 +219,7 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 
 ### Screenshots of the app come from the e2e harness
 
-- **Make every screenshot of the app with the `screenshots` Playwright project** in `apps/e2e`: the web manifest images, the landing images and the Play Store sets for phones and foldables. Never take one by hand or edit a captured one.
+- **Make every screenshot of the app with the `screenshots` Playwright project** in `apps/e2e`: the web manifest images, the landing images and the Play Store sets for phones, tablets and foldables. Never take one by hand or edit a captured one.
 - **To update the screenshots, start the stack and run `pnpm screenshots`, or run the `e2e` workflow by hand**, whose `screenshots` job uploads them as artifacts. Then commit the images that changed, except those whose only change is one the docs list as different on every run. The targets write the committed images in place. The Play Store sets go to `apps/e2e/screenshots`, which is not committed.
 - **Save each target in the smallest format its destination takes**: WebP where it is supported, JPEG where only PNG and JPEG are, as on Google Play and in Chrome's install dialog. The docs table lists each target's format.
 - **A screenshot that no target captures gets a scene and a target** in `apps/e2e/tests/screenshots/scenes.spec.ts`.
