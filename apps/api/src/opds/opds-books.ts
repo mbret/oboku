@@ -5,12 +5,14 @@ import {
   computeCollectionMetadata,
   directives,
   getMetadataFromBook,
+  getMimeTypeEssence,
   hasReaderAcceptedExtension,
   isBookProtected,
   type LinkDocType,
   type LinkDocTypeForSource,
   OPDS_SERVED_CONNECTOR_TYPES,
   type OpdsServedConnectorType,
+  READER_ACCEPTED_MIME_TYPES,
   sortByTitleComparator,
 } from "@oboku/shared"
 import { extension } from "mime-types"
@@ -167,8 +169,10 @@ export const toServedTitle = (
 /**
  * The name and media type a reading app saves the book's file under: the
  * file's name on its source without oboku's directives, else the book's
- * title, else its id, given the extension of a known media type when it has
- * none.
+ * title, else its id, given the extension of its media type when it has
+ * none. The media type is the book's stored type when the reader accepts it,
+ * else `application/octet-stream`: a source states the stored type, and the
+ * file goes out from the API's origin.
  */
 export const toServedFile = (
   book: Pick<BookDocType, "_id" | "metadata" | "metadataSourcePriority">,
@@ -182,13 +186,16 @@ export const toServedFile = (
       .removeDirectiveFromString(String(providerFileName ?? metadata.title))
       .replaceAll(PATH_SEPARATORS, "-")
       .trim() || book._id
-  const knownContentType = metadata.contentType || undefined
-  const typeExtension = knownContentType && extension(knownContentType)
+  const storedContentType = getMimeTypeEssence(metadata.contentType ?? "")
+  const bookContentType = READER_ACCEPTED_MIME_TYPES.find(
+    (type) => type === storedContentType,
+  )
+  const typeExtension = bookContentType && extension(bookContentType)
   const hasBookExtension = hasReaderAcceptedExtension(baseName)
   const name =
     hasBookExtension || !typeExtension
       ? baseName
       : `${baseName}.${typeExtension}`
 
-  return { name, contentType: knownContentType ?? UNKNOWN_CONTENT_TYPE }
+  return { name, contentType: bookContentType ?? UNKNOWN_CONTENT_TYPE }
 }

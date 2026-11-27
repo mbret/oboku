@@ -86,6 +86,29 @@ describe("toServedFile", () => {
     )
   })
 
+  it("serves a stored type the reader does not accept as bytes, without its extension", () => {
+    expect(
+      toServedFile({
+        _id: "book-dune",
+        metadata: [
+          { type: "link", title: "Dune" },
+          { ...epubEntry, contentType: "text/html" },
+        ],
+      }),
+    ).toEqual({ name: "Dune", contentType: "application/octet-stream" })
+  })
+
+  it("serves the bare book type of a stored type with parameters", () => {
+    expect(
+      toServedFile({
+        _id: "book-dune",
+        metadata: [
+          { ...epubEntry, contentType: "Application/EPUB+zip; charset=utf-8" },
+        ],
+      }).contentType,
+    ).toBe("application/epub+zip")
+  })
+
   it("falls back to the book's id and a generic media type", () => {
     expect(toServedFile({ _id: "book-unknown", metadata: [] })).toEqual({
       name: "book-unknown",
