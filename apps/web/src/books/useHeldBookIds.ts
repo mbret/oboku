@@ -1,24 +1,33 @@
-import { keepPreviousData } from "@tanstack/react-query"
+import { isShallowEqual } from "@oboku/shared"
+import { useLiveQuery$ } from "reactjrx"
 import type { DeepReadonlyArray } from "rxdb"
-import { useBooks } from "./states"
+import { distinctUntilChanged, map, switchMap } from "rxjs"
+import {
+  createRxdbQueryDefaultOptions,
+  RXDB_QUERY_KEY_PREFIX,
+} from "../queries/queryClient"
+import { latestDatabase$ } from "../rxdb/RxDbProvider"
+
+const heldBookIds$ = latestDatabase$.pipe(
+  switchMap((database) => database.book.find({}).$),
+  map((books) => books.map(({ _id }) => _id)),
+  distinctUntilChanged(isShallowEqual),
+  map((ids) => new Set(ids)),
+)
 
 /**
- * The ids among `ids` of the books this device holds, in the order of `ids`.
- * An id of a deleted book, or of a book the device has not received yet, is
- * left out. Protected and not interested books count. The data is `undefined`
- * until `ids` is known, and keeps its last value while `ids` changes.
+ * The ids in `ids` of the books this device holds, in the order of `ids`.
+ * `ids` can hold ids of deleted books, or of books the device has not received
+ * yet. Protected and not interested books stay in the result.
  */
-export const useExistingBookIds = (
-  ids: DeepReadonlyArray<string> | undefined,
-) =>
-  useBooks({
-    ids,
-    includeProtected: true,
-    enabled: ids !== undefined,
-    placeholderData: keepPreviousData,
-    select: function selectExistingBookIds(books) {
-      const heldBookIds = new Set(books.map((book) => book._id))
-
-      return ids?.filter((id) => heldBookIds.has(id)) ?? []
-    },
+export const useHeldBookIds = (ids: DeepReadonlyArray<string> | undefined) => {
+  const { data: heldBookIds } = useLiveQuery$({
+    ...createRxdbQueryDefaultOptions(),
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "heldBookIds"],
+    queryFn: () => heldBookIds$,
   })
+
+  if (ids === undefined || heldBookIds === undefined) return undefined
+
+  return ids.filter((id) => heldBookIds.has(id))
+}

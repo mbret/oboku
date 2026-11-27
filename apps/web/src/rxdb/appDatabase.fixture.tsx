@@ -9,10 +9,10 @@ import { RXDB_DATABASE_NAME } from "./constants.shared"
 import { getLatestDatabase, useReCreateDb } from "./RxDbProvider"
 
 /**
- * Creates an empty app database for the current test, and removes it when the
- * test finishes. `wrapper` provides the `QueryClient` the database hooks use.
+ * Opens an empty app database, the one the app's hooks read, for the running
+ * test, and removes it when the test finishes.
  */
-export async function createDatabaseForTest() {
+export async function openAppTestDatabase() {
   await removeRxDatabase(RXDB_DATABASE_NAME, getRxStorageDexie())
 
   const queryClient = new QueryClient()
