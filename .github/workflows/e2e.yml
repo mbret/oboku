@@ -61,8 +61,8 @@ jobs:
         run: pnpm screenshots
       - uses: actions/upload-artifact@v7
         with:
-          name: play-phone-screenshots
-          path: apps/e2e/screenshots/play-phone
+          name: play-screenshots
+          path: apps/e2e/screenshots
           if-no-files-found: error
       - uses: actions/upload-artifact@v7
         with:
