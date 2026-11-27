@@ -12,13 +12,14 @@ const isLiveDocumentRow = (row: FetchRevsRow) =>
   "value" in row && !isDeletedDocumentRow(row)
 
 /**
- * Sorts `ids` by what CouchDB holds for each: a live document, or a deleted
- * one, whose tombstone CouchDB keeps. An id in neither set is one CouchDB has
- * never received, such as a document a device has not pushed yet.
+ * Resolves with the ids of `ids` that CouchDB holds as live documents
+ * (`liveIds`) and as deleted ones (`deletedIds`). An id in neither set is one
+ * CouchDB has never received, such as a document a device has not pushed yet.
  *
- * Ids are never reused, but a deleted document can come back: rxdb 17's
- * CouchDB replication pushes a device's edit to a document it finds deleted as
- * a new document. A cleanup that acts on `deletedIds` must accept that.
+ * Ids are never reused, but a deleted document can come back. When a device
+ * edits a document that CouchDB holds as deleted, rxdb 17's CouchDB
+ * replication pushes the edit as a new document. A cleanup that acts on
+ * `deletedIds` must accept that.
  */
 export const fetchDocumentStates = async (
   db: Pick<createNano.DocumentScope<unknown>, "fetchRevs">,

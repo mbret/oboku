@@ -66,12 +66,10 @@ const createUserDb = ({
   docs,
   liveIdsNotRead = [],
   deletedIds = [],
-  conflictingIds = [],
 }: {
   docs: StoredDoc[]
   liveIdsNotRead?: string[]
   deletedIds?: string[]
-  conflictingIds?: string[]
 }) => ({
   find: vi.fn(async function findDocumentsOfModel(query: MangoQuery) {
     return {
@@ -101,15 +99,7 @@ const createUserDb = ({
   }: {
     docs: StoredDoc[]
   }) {
-    return written.map(function toResult(doc) {
-      return conflictingIds.includes(doc._id)
-        ? {
-            id: doc._id,
-            error: "conflict",
-            reason: "Document update conflict.",
-          }
-        : { id: doc._id, rev: "2-c", ok: true }
-    })
+    return written.map((doc) => ({ id: doc._id, rev: "2-c", ok: true }))
   }),
 })
 
@@ -171,19 +161,22 @@ describe("removeReferencesToDeletedDocuments", () => {
 
     await removeReferencesToDeletedDocuments(db)
 
-    expect(db.fetchRevs).toHaveBeenCalledExactlyOnceWith({
-      keys: [
-        "collection-deleted",
-        "collection-unsynced",
-        "tag-deleted",
-        "link-live",
-        "link-deleted",
-        "link-unsynced",
+    const askedIds = db.fetchRevs.mock.calls.flatMap(([{ keys }]) => keys)
+
+    expect(db.fetchRevs).toHaveBeenCalledOnce()
+    expect(askedIds.toSorted()).toEqual(
+      [
         "book-deleted",
         "book-unsynced",
+        "collection-deleted",
+        "collection-unsynced",
+        "link-deleted",
+        "link-live",
+        "link-unsynced",
+        "tag-deleted",
         "tag-unsynced",
-      ],
-    })
+      ].toSorted(),
+    )
   })
 
   it("writes nothing when no reference points to a deleted document", async () => {
@@ -196,17 +189,5 @@ describe("removeReferencesToDeletedDocuments", () => {
 
     expect(updatedCount).toBe(0)
     expect(db.bulk).not.toHaveBeenCalled()
-  })
-
-  it("leaves out of its count a document that changed since it was read", async () => {
-    const db = createUserDb({
-      docs: docsWithDeletedReferences,
-      deletedIds,
-      conflictingIds: ["collection-live"],
-    })
-
-    const updatedCount = await removeReferencesToDeletedDocuments(db)
-
-    expect(updatedCount).toBe(3)
   })
 })

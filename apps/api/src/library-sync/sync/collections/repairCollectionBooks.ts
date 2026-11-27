@@ -1,4 +1,5 @@
 import { Logger } from "@nestjs/common"
+import type nano from "nano"
 import { difference } from "@oboku/shared"
 import type { Context } from "../types.js"
 import { atomicUpdate, find, findOne } from "../../../couch/dbHelpers.js"
@@ -12,7 +13,7 @@ const logger = new Logger("sync/repairCollectionBooks")
  * @important
  * We don't do the repair on client side automatically since these issues can
  * appear during partial / incomplete / errored sync. We cannot reliably detect when
- * we can do the repairs ourselves. The repairs can be safely done on sync.
+ * we can do the repairs ourselves. The sync can do these repairs safely.
  *
  * @scenario 1
  * The collection lists a book that CouchDB holds as deleted. We remove it from
@@ -27,7 +28,12 @@ export const repairCollectionBooks = async ({
   ctx,
   collectionId,
 }: {
-  ctx: Pick<Context, "db" | "syncReport">
+  ctx: Pick<Context, "syncReport"> & {
+    db: Pick<
+      nano.DocumentScope<unknown>,
+      "find" | "get" | "insert" | "fetchRevs"
+    >
+  }
   collectionId: string
 }) => {
   const collection = await findOne(
@@ -59,11 +65,11 @@ export const repairCollectionBooks = async ({
       collection.books,
     )
 
-    const danglingBooks = collection.books.filter((id) => deletedIds.has(id))
+    const deletedBookIds = collection.books.filter((id) => deletedIds.has(id))
 
-    if (missingsBooksInCollection.length > 0 || danglingBooks.length > 0) {
+    if (missingsBooksInCollection.length > 0 || deletedBookIds.length > 0) {
       logger.log(
-        `${collectionId} has ${missingsBooksInCollection.join(`,`)} missed books and ${danglingBooks.join(`,`)} dangling books`,
+        `${collectionId} has ${missingsBooksInCollection.join(`,`)} missed books and ${deletedBookIds.join(`,`)} deleted books`,
       )
 
       await atomicUpdate(ctx.db, "obokucollection", collection._id, (old) => ({
@@ -71,15 +77,15 @@ export const repairCollectionBooks = async ({
         books: [
           ...new Set([
             ...missingsBooksInCollection,
-            ...old.books.filter((id) => !danglingBooks.includes(id)),
+            ...old.books.filter((id) => !deletedBookIds.includes(id)),
           ]),
         ],
       }))
 
-      if (danglingBooks.length > 0) {
+      if (deletedBookIds.length > 0) {
         ctx.syncReport.removeBooksFromCollection({
           collection,
-          books: danglingBooks.map((_id) => ({ _id })),
+          books: deletedBookIds.map((_id) => ({ _id })),
         })
       }
 

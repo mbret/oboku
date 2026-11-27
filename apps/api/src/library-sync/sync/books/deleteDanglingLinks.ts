@@ -6,13 +6,12 @@ import { fetchDocumentStates } from "../../../couch/fetchDocumentStates.js"
 import type { LinkCandidate } from "../../../plugins/types.js"
 
 /**
- * Deletes the links of a resource whose book CouchDB holds as deleted, records
- * each in the sync report, and resolves with the links whose book is live: the
- * ones the sync may use. The caller chooses which one to use for the current
- * sync (e.g. prefer same connector for metadata refresh).
+ * Deletes each link whose book CouchDB holds as deleted, records each deleted
+ * link in the sync report, and resolves with the links whose book is live.
  *
- * A link without a book, or whose book CouchDB has never seen, stays in CouchDB
- * and is not returned: a device may not have pushed that book yet.
+ * A link whose book CouchDB has never seen stays and is not returned: a device
+ * may not have pushed that book yet. A link without a book stays too and is
+ * not returned. No cleanup deletes it.
  */
 export const deleteDanglingLinks = async (
   {

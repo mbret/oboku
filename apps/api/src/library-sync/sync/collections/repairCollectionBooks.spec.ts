@@ -30,10 +30,12 @@ const collectionWith = (books: string[]): CollectionDocType => ({
 const createSyncContext = ({
   collection,
   booksListingCollection,
+  liveIds,
   deletedIds,
 }: {
   collection: CollectionDocType
   booksListingCollection: BookDocType[]
+  liveIds: string[]
   deletedIds: string[]
 }) => {
   const insert = vi.fn(async function writeCollection(doc: { _id: string }) {
@@ -41,8 +43,6 @@ const createSyncContext = ({
   })
 
   return {
-    // findOne, find, atomicUpdate and fetchDocumentStates only call these
-    // methods, so the fake leaves out the rest of nano's DocumentScope.
     db: {
       find: async function findDocumentsOfModel(query: createNano.MangoQuery) {
         const docs =
@@ -57,9 +57,15 @@ const createSyncContext = ({
           offset: 0,
           total_rows: keys.length,
           rows: keys.map(function toRow(key) {
-            return deletedIds.includes(key)
-              ? { id: key, key, value: { rev: "2-b", deleted: true } }
-              : { key, error: "not_found" }
+            if (deletedIds.includes(key)) {
+              return { id: key, key, value: { rev: "2-b", deleted: true } }
+            }
+
+            if (liveIds.includes(key)) {
+              return { id: key, key, value: { rev: "1-a" } }
+            }
+
+            return { key, error: "not_found" }
           }),
         }
       },
@@ -67,7 +73,7 @@ const createSyncContext = ({
         return structuredClone(collection)
       },
       insert,
-    } as unknown as createNano.DocumentScope<unknown>,
+    },
     insert,
     syncReport: new SyncReport("library-sync", "user"),
   }
@@ -85,6 +91,7 @@ describe("repairCollectionBooks", () => {
         bookListingCollection("book-live"),
         bookListingCollection("book-not-listed"),
       ],
+      liveIds: ["book-live"],
       deletedIds: ["book-deleted"],
     })
     const removeBooksFromCollection = vi.spyOn(
@@ -108,6 +115,7 @@ describe("repairCollectionBooks", () => {
     const ctx = createSyncContext({
       collection: collectionWith(["book-live", "book-unsynced"]),
       booksListingCollection: [bookListingCollection("book-live")],
+      liveIds: ["book-live"],
       deletedIds: [],
     })
 

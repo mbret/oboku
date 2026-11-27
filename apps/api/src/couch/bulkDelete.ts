@@ -1,4 +1,5 @@
-import { bulkUpdate, type BulkWritableDb } from "./bulkUpdate.js"
+import type nano from "nano"
+import { bulkUpdate } from "./bulkUpdate.js"
 
 /**
  * Deletes `docs` in one bulk write, and resolves with the ids CouchDB deleted.
@@ -6,7 +7,7 @@ import { bulkUpdate, type BulkWritableDb } from "./bulkUpdate.js"
  * since it was read stays, and its id is left out.
  */
 export const bulkDelete = <Doc extends { _id: string; _rev: string }>(
-  db: BulkWritableDb,
+  db: Pick<nano.DocumentScope<unknown>, "bulk">,
   docs: readonly Doc[],
 ) =>
   bulkUpdate(

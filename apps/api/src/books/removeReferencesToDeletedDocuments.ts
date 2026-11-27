@@ -1,5 +1,5 @@
 import type createNano from "nano"
-import { bulkUpdate, type BulkWritableDb } from "../couch/bulkUpdate.js"
+import { bulkUpdate } from "../couch/bulkUpdate.js"
 import { find } from "../couch/dbHelpers.js"
 import { fetchDocumentStates } from "../couch/fetchDocumentStates.js"
 
@@ -11,8 +11,7 @@ import { fetchDocumentStates } from "../couch/fetchDocumentStates.js"
  * device may not have pushed that document yet.
  */
 export const removeReferencesToDeletedDocuments = async (
-  db: Pick<createNano.DocumentScope<unknown>, "find" | "fetchRevs"> &
-    BulkWritableDb,
+  db: Pick<createNano.DocumentScope<unknown>, "find" | "fetchRevs" | "bulk">,
 ) => {
   const [books, collections, tags, librarySyncs] = await Promise.all([
     find(db, "book", {}),
@@ -44,27 +43,34 @@ export const removeReferencesToDeletedDocuments = async (
   const withoutDeleted = (ids: readonly string[]) =>
     ids.filter((id) => !isDeleted(id))
 
-  const updatedBooks = books
-    .filter(function hasDeletedReference(book) {
-      return [book.collections, book.tags, book.links].some((ids) =>
-        ids.some(isDeleted),
-      )
-    })
-    .map((book) => ({
-      ...book,
-      collections: withoutDeleted(book.collections),
-      tags: withoutDeleted(book.tags),
-      links: withoutDeleted(book.links),
-    }))
-  const updatedCollections = collections
-    .filter((collection) => collection.books.some(isDeleted))
-    .map((collection) => ({
-      ...collection,
-      books: withoutDeleted(collection.books),
-    }))
-  const updatedTags = tags
-    .filter((tag) => tag.books.some(isDeleted))
-    .map((tag) => ({ ...tag, books: withoutDeleted(tag.books) }))
+  const updatedBooks = books.flatMap(function withoutDeletedReferences(book) {
+    const hasDeletedReference = [book.collections, book.tags, book.links].some(
+      (ids) => ids.some(isDeleted),
+    )
+
+    return hasDeletedReference
+      ? [
+          {
+            ...book,
+            collections: withoutDeleted(book.collections),
+            tags: withoutDeleted(book.tags),
+            links: withoutDeleted(book.links),
+          },
+        ]
+      : []
+  })
+  const updatedCollections = collections.flatMap(
+    function withoutDeletedBooks(collection) {
+      return collection.books.some(isDeleted)
+        ? [{ ...collection, books: withoutDeleted(collection.books) }]
+        : []
+    },
+  )
+  const updatedTags = tags.flatMap(function withoutDeletedBooks(tag) {
+    return tag.books.some(isDeleted)
+      ? [{ ...tag, books: withoutDeleted(tag.books) }]
+      : []
+  })
   const updatedLibrarySyncs = librarySyncs.flatMap(
     function withoutDeletedTags(librarySync) {
       const librarySyncTags = librarySync.tags ?? []
