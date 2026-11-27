@@ -110,7 +110,10 @@ describe("DownloadBook (WebDAV)", () => {
     })
     const api = vi.fn<typeof fetch>(async function serveBookFile() {
       return new Response(BOOK_BYTES, {
-        headers: { "Content-Type": "application/octet-stream" },
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "Content-Disposition": 'attachment; filename="Dune.epub"',
+        },
       })
     })
 
@@ -133,6 +136,22 @@ describe("DownloadBook (WebDAV)", () => {
     expect(onError).not.toHaveBeenCalled()
   })
 
+  it("names the book after its path when oboku's server names no file", async () => {
+    mocks.extractConnectorData.mockResolvedValue({
+      data: proxiedKoofrConnectorData,
+    })
+    const api = vi.fn<typeof fetch>(async function serveUnnamedBookFile() {
+      return new Response(BOOK_BYTES, {
+        headers: { "Content-Type": "application/octet-stream" },
+      })
+    })
+
+    const { onResolve } = renderDownloadBook(api)
+
+    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
+    expect(onResolve.mock.lastCall?.[0]?.fileName).toBe("Dune.epub")
+  })
+
   it("reports the progress of a download through oboku's server", async () => {
     mocks.extractConnectorData.mockResolvedValue({
       data: proxiedKoofrConnectorData,
@@ -149,6 +168,7 @@ describe("DownloadBook (WebDAV)", () => {
       return new Response(body, {
         headers: {
           "Content-Type": "application/octet-stream",
+          "Content-Disposition": 'attachment; filename="Dune.epub"',
           "Content-Length": String(BOOK_BYTES.length),
         },
       })
@@ -168,7 +188,10 @@ describe("DownloadBook (WebDAV)", () => {
     const api = vi.fn<typeof fetch>(
       async function serveBookFileOfUnknownSize() {
         return new Response(BOOK_BYTES, {
-          headers: { "Content-Type": "application/octet-stream" },
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Content-Disposition": 'attachment; filename="Dune.epub"',
+          },
         })
       },
     )

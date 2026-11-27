@@ -1,7 +1,6 @@
 import { memo } from "react"
 import {
   from,
-  map,
   merge,
   mergeMap,
   takeUntil,
@@ -12,7 +11,7 @@ import { useLiveRef, useMutation$ } from "reactjrx"
 import type { DownloadBookComponentProps } from "../../plugins/types"
 import { ObokuErrorCode } from "@oboku/shared"
 import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
-import { downloadThroughServerProxy } from "../../../connectors/downloadThroughServerProxy"
+import { downloadThroughServerProxy } from "../../../download/downloadThroughServerProxy"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
 import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
@@ -52,6 +51,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
     { meta: { suppressGlobalErrorToast: true } },
   )
   const httpClientApi = useHttpClientApi()
+  const fileName = filePath.split("/").pop() ?? filePath
   const onErrorRef = useLiveRef(onError)
   const { mutate: download } = useMutation$({
     mutationFn: function downloadWithConnector({
@@ -69,6 +69,7 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
                   httpClientApi,
                   linkId: link._id,
                   password: data.password,
+                  fallbackFileName: fileName,
                   onDownloadProgress,
                   signal: downloadSignal,
                 })
@@ -78,14 +79,10 @@ export const WebdavDownloadBook = memo(function WebdavDownloadBook({
                   password: data.password,
                   filePath,
                   signal: downloadSignal,
+                }).then(function nameAfterFilePath(file) {
+                  return { data: file, fileName }
                 })
           })
-        }),
-        map(function toDownloadResult(file) {
-          return {
-            data: file,
-            fileName: filePath.split("/").pop() ?? filePath,
-          }
         }),
         takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
         throwIfEmpty(() => new CancelError()),
