@@ -130,14 +130,6 @@ export class SyncReport {
     }
   }
 
-  deleteLink(id: string) {
-    const item = this.getOrCreateEntry("link", { id })
-
-    if (!item.added && !item.updated) {
-      item.deleted = true
-    }
-  }
-
   addTag(tag: Partial<TagsDocType> & { _id: string }) {
     this.addItem("tag", { id: tag._id, label: tag.name || undefined })
   }
@@ -279,33 +271,6 @@ export class SyncReport {
     books.forEach((book) => {
       if (!item.linkedTo?.find(({ id }) => id === book._id)) {
         item.linkedTo?.push({
-          id: book._id,
-          label: this.getBookLabel(book),
-          rx_model: "book",
-        })
-
-        this.updateCollection(collection._id)
-      }
-    })
-  }
-
-  removeBooksFromCollection({
-    collection,
-    books,
-  }: {
-    books: (Partial<BookDocType> & { _id: string })[]
-    collection: Partial<CollectionDocType> & { _id: string }
-  }) {
-    const item = this.getOrCreateEntry("obokucollection", {
-      id: collection._id,
-      label: this.getCollectionLabel(collection),
-    })
-
-    item.unlinkedTo = item.unlinkedTo ?? []
-
-    books.forEach((book) => {
-      if (!item.unlinkedTo?.find(({ id }) => id === book._id)) {
-        item.unlinkedTo?.push({
           id: book._id,
           label: this.getBookLabel(book),
           rx_model: "book",
