@@ -4,8 +4,6 @@ import {
   parseLegacyResourceIdForMigration,
   type SettingsConnectorDocType,
   type SettingsDocType,
-  type SynologyDriveConnectorDocType,
-  type WebdavConnectorDocType,
 } from "@oboku/shared"
 import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
@@ -37,13 +35,21 @@ import type {
 
 const logger = new Logger("MigrationService")
 
-const isSchemelessUrl = (url: string) =>
-  url.trim() !== "" && !hasUrlScheme(url.trim())
+/** The connector's URL with `https://` added, or undefined when it needs none. */
+const toHttpsUrl = (connector: SettingsConnectorDocType) => {
+  const isWebdavOrSynologyDrive =
+    connector.type === "webdav" || connector.type === "synology-drive"
 
-const isWebdavOrSynologyDriveConnector = (
-  connector: SettingsConnectorDocType,
-): connector is WebdavConnectorDocType | SynologyDriveConnectorDocType =>
-  connector.type === "webdav" || connector.type === "synology-drive"
+  if (!isWebdavOrSynologyDrive) return undefined
+
+  const url = connector.url.trim()
+  const isSchemeless = url !== "" && !hasUrlScheme(url)
+
+  return isSchemeless ? `https://${url}` : undefined
+}
+
+const needsHttpsScheme = (connector: SettingsConnectorDocType) =>
+  toHttpsUrl(connector) !== undefined
 
 const addHttpsToSchemelessConnectorUrls = async (
   userDb: createNano.DocumentScope<SettingsDocType>,
@@ -58,17 +64,15 @@ const addHttpsToSchemelessConnectorUrls = async (
   if (!settings) return 0
 
   const connectors = settings.connectors ?? []
-  const migratedConnectors = connectors.map((connector) =>
-    isWebdavOrSynologyDriveConnector(connector) &&
-    isSchemelessUrl(connector.url)
-      ? { ...connector, url: `https://${connector.url.trim()}` }
-      : connector,
-  )
-  const updatedConnectorsCount = migratedConnectors.filter(
-    (connector, index) => connector !== connectors[index],
-  ).length
+  const updatedConnectorsCount = connectors.filter(needsHttpsScheme).length
 
   if (updatedConnectorsCount === 0) return 0
+
+  const migratedConnectors = connectors.map(function addHttpsScheme(connector) {
+    const httpsUrl = toHttpsUrl(connector)
+
+    return httpsUrl === undefined ? connector : { ...connector, url: httpsUrl }
+  })
 
   await userDb.insert({ ...settings, connectors: migratedConnectors })
 
@@ -435,10 +439,15 @@ export class MigrationService implements OnApplicationBootstrap {
 
     for (const [index, { dbName, email }] of userDbs.entries()) {
       const progress = `[${index + 1}/${userDbs.length}]`
-      const userConnectorsUpdated = await tolerateMissingUserDb(email, () =>
-        retryFn(() =>
-          addHttpsToSchemelessConnectorUrls(db.use<SettingsDocType>(dbName)),
-        ),
+      const userConnectorsUpdated = await tolerateMissingUserDb(
+        email,
+        function migrateUserSettings() {
+          return retryFn(function addHttpsToUserConnectorUrls() {
+            return addHttpsToSchemelessConnectorUrls(
+              db.use<SettingsDocType>(dbName),
+            )
+          })
+        },
       )
 
       if (!userConnectorsUpdated) continue
