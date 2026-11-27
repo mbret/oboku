@@ -76,11 +76,11 @@ pnpm screenshots
 
 | Target         | Size                            | Scenes                                         | Format                                       | Saved to                                            |
 | -------------- | ------------------------------- | ---------------------------------------------- | -------------------------------------------- | --------------------------------------------------- |
-| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | PNG                                          | `apps/e2e/screenshots/play-phone/en/`               |
+| `play-phone`   | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | JPEG, quality 85                             | `apps/e2e/screenshots/play-phone/en/`               |
 | `web-manifest` | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | JPEG, quality 85                             | `apps/web/public/manifest-screenshots/`             |
 | `landing`      | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | WebP, the smaller of lossless and quality 90 | `apps/landing/src/features/common/app-screenshots/` |
 
-Each committed image is in the smallest format its destination takes, and the uncommitted Play Store set stays lossless:
+Each image is in the smallest format its destination takes:
 
 - Google Play takes JPEG or 24-bit PNG.
 - Chrome's install dialog takes PNG and JPEG screenshots only.

@@ -302,7 +302,6 @@ async function encodeSmallerWebp(image: Sharp) {
 }
 
 const IMAGE_FORMATS = {
-  png: { extension: "png", encode: (image: Sharp) => image.png().toBuffer() },
   jpeg: {
     extension: "jpg",
     encode: (image: Sharp) =>
@@ -331,8 +330,8 @@ const TARGETS: Target[] = [
     colorScheme: "light",
     locale: "en-US",
     outputDir: path.join(APPS_DIR, "e2e/screenshots/play-phone/en"),
-    // Not committed, so lossless. Google Play takes 24-bit PNG.
-    imageFormat: "png",
+    // Google Play takes JPEG and 24-bit PNG screenshots only.
+    imageFormat: "jpeg",
     scenes: [
       "home",
       "library",
