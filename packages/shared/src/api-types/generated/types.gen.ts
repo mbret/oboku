@@ -467,7 +467,10 @@ export type ConnectorCredentialsDto = {
 
 export type DownloadLinkDto = {
     linkId: string;
-    providerCredentials: ConnectorCredentialsDto;
+    /**
+     * The connector's password, for a WebDAV or OPDS link.
+     */
+    providerCredentials?: ConnectorCredentialsDto;
 };
 
 export type ListWebdavDirectoryDto = {

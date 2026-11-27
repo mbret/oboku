@@ -1,12 +1,12 @@
 import { getFileNameFromUrl } from "@oboku/shared"
 import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { findCandidates } from "../helpers.js"
-import axios from "axios"
-import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
+import { getFromWebAddress } from "./client.js"
 
 const URI_TYPE = "URI"
 
-const extractNameFromUrl = (url: string) => getFileNameFromUrl(url) ?? "unknown"
+export const extractNameFromUrl = (url: string) =>
+  getFileNameFromUrl(url) ?? "unknown"
 
 function resolveUrl(link: { data: { url: string } }): string {
   const { url } = link.data
@@ -50,14 +50,9 @@ export const sourcePlugin: SourcePlugin<"URI"> = {
     const url = resolveUrl(link)
     const { allowSelfSigned } = link.data
 
-    const response = await axios.get(url, {
-      responseType: "stream",
-      ...getUserAddressRequestOptions({ allowSelfSigned }),
-    })
+    const { stream } = await getFromWebAddress({ url, allowSelfSigned })
 
-    return {
-      stream: response.data,
-    }
+    return { stream }
   },
   sync: async () => ({ items: [], name: "" }),
 }

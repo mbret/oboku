@@ -502,7 +502,7 @@ export const zConnectorCredentialsDto = z.object({
 
 export const zDownloadLinkDto = z.object({
     linkId: z.string(),
-    providerCredentials: zConnectorCredentialsDto
+    providerCredentials: zConnectorCredentialsDto.optional()
 });
 
 export const zListWebdavDirectoryDto = z.object({

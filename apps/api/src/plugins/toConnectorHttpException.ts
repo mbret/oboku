@@ -57,3 +57,16 @@ const toConnectorHttpException = (error: unknown) => {
 export const throwConnectorHttpException = (error: unknown): never => {
   throw toConnectorHttpException(error)
 }
+
+/** A web address takes no login, so a refusal answers as any other error of its server. */
+export const throwWebAddressHttpException = (error: unknown): never => {
+  if (isSignInRefused(error)) {
+    throw new BadGatewayException(
+      toObokuErrorBody(
+        ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+      ),
+    )
+  }
+
+  return throwConnectorHttpException(error)
+}
