@@ -133,8 +133,6 @@ export type ConnectorFormConfig = {
   showUrl?: boolean
   /** Shows the "Use oboku's server as a proxy" checkbox and saves its value. */
   showProxyThroughServer?: boolean
-  /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
-  validateUrl?: (url: string) => true | string
   urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
@@ -150,7 +148,6 @@ export const ConnectorForm = memo(function ConnectorForm({
   children,
   showUrl = true,
   showProxyThroughServer = false,
-  validateUrl,
   urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
@@ -237,10 +234,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 rules={{
                   required: true,
                   pattern: URL_PATTERN,
-                  validate: {
-                    hasHttpScheme: validateHttpScheme,
-                    ...(validateUrl && { connectorUrl: validateUrl }),
-                  },
+                  validate: validateHttpScheme,
                 }}
               />
             )}

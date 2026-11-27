@@ -9,6 +9,7 @@ import {
 } from "@oboku/shared"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
+import { isHttpUrl } from "../../../common/network/isHttpUrl"
 import { useConnectors } from "../../../connectors/useConnectors"
 import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {
@@ -49,10 +50,9 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     { connectorId }: Pick<OpdsFormData, "connectorId">,
   ) => {
     const trimmedFeedUrl = feedUrl.trim()
-    const isHttpUrl = getOpdsUrlOrigin(trimmedFeedUrl) !== undefined
     const connectorUrl = connectors?.find(({ id }) => id === connectorId)?.url
 
-    if (!isHttpUrl) {
+    if (!isHttpUrl(trimmedFeedUrl)) {
       return "Enter the full address of the feed, starting with http:// or https://"
     }
 
