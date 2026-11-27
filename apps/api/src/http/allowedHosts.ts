@@ -1,13 +1,11 @@
 import { isIP } from "node:net"
-import { parseUrl } from "./url.js"
+import { hasUrlScheme, parseUrl } from "./url.js"
 
 /** A host the address check lets through: on every port, or on `port` only. */
 export type AllowedHost = {
   hostname: string
   port?: number
 }
-
-const URL_SCHEME_PATTERN = /^[a-z][a-z\d+.-]*:\/\//i
 
 const DEFAULT_PORTS: Record<string, number> = {
   "http:": 80,
@@ -27,7 +25,7 @@ export function toComparableHostname(hostname: string) {
  */
 export function parseAllowedHost(entry: string): AllowedHost | undefined {
   const trimmedEntry = entry.trim()
-  const isUrl = URL_SCHEME_PATTERN.test(trimmedEntry)
+  const isUrl = hasUrlScheme(trimmedEntry)
   const isBareIpv6 = isIP(trimmedEntry) === 6
   const url = parseUrl(
     isUrl

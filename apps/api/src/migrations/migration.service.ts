@@ -13,12 +13,8 @@ import { Repository } from "typeorm"
 import type createNano from "nano"
 import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
-import {
-  findAll,
-  getSettings,
-  isCouchNotFound,
-  retryFn,
-} from "../couch/dbHelpers.js"
+import { findAll, isCouchNotFound, retryFn } from "../couch/dbHelpers.js"
+import { hasUrlScheme } from "../http/url.js"
 import { listUserDatabases } from "../couch/listUserDatabases.js"
 import { tolerateMissingUserDb } from "../couch/tolerateMissingUserDb.js"
 import { CoversService } from "../covers/covers.service.js"
@@ -41,42 +37,42 @@ import type {
 
 const logger = new Logger("MigrationService")
 
-const URL_SCHEME_PREFIX = /^[a-z][a-z\d+.-]*:\/\//i
+const isSchemelessUrl = (url: string) =>
+  url.trim() !== "" && !hasUrlScheme(url.trim())
 
-const isSchemelessUrl = (url: unknown): url is string =>
-  typeof url === "string" &&
-  url.trim() !== "" &&
-  !URL_SCHEME_PREFIX.test(url.trim())
-
-const hasSchemelessUrl = (
+const isWebdavOrSynologyDriveConnector = (
   connector: SettingsConnectorDocType,
 ): connector is WebdavConnectorDocType | SynologyDriveConnectorDocType =>
-  (connector.type === "webdav" || connector.type === "synology-drive") &&
-  isSchemelessUrl(connector.url)
+  connector.type === "webdav" || connector.type === "synology-drive"
 
 const addHttpsToSchemelessConnectorUrls = async (
-  userDb: createNano.DocumentScope<unknown>,
+  userDb: createNano.DocumentScope<SettingsDocType>,
 ) => {
-  const settings = await getSettings(userDb)
-  const connectors = settings?.connectors ?? []
-  const schemelessConnectorsCount = connectors.filter(hasSchemelessUrl).length
+  const settings = await userDb
+    .get("settings")
+    .catch(function readMissingSettingsAsNull(error: unknown) {
+      if (isCouchNotFound(error)) return null
+      throw error
+    })
 
-  if (!settings || schemelessConnectorsCount === 0) return 0
+  if (!settings) return 0
 
-  const migratedSettings: SettingsDocType = {
-    ...settings,
-    connectors: connectors.map((connector) =>
-      hasSchemelessUrl(connector)
-        ? { ...connector, url: `https://${connector.url.trim()}` }
-        : connector,
-    ),
-  }
+  const connectors = settings.connectors ?? []
+  const migratedConnectors = connectors.map((connector) =>
+    isWebdavOrSynologyDriveConnector(connector) &&
+    isSchemelessUrl(connector.url)
+      ? { ...connector, url: `https://${connector.url.trim()}` }
+      : connector,
+  )
+  const updatedConnectorsCount = migratedConnectors.filter(
+    (connector, index) => connector !== connectors[index],
+  ).length
 
-  // `settings` still carries the `_rev` it was read with, so a device write in
-  // between fails with a conflict instead of being overwritten.
-  await userDb.insert(migratedSettings)
+  if (updatedConnectorsCount === 0) return 0
 
-  return schemelessConnectorsCount
+  await userDb.insert({ ...settings, connectors: migratedConnectors })
+
+  return updatedConnectorsCount
 }
 
 type WebdavConnectorLegacy = {
@@ -408,9 +404,8 @@ export class MigrationService {
   }
 
   /**
-   * Gives `https://` to every WebDAV and Synology Drive connector URL saved
-   * without a scheme, such as `nas.local:5005/dav`. Every request on such a
-   * connector fails. Only `url` changes. Safe to run more than once.
+   * Prefixes `https://` to every WebDAV and Synology Drive connector URL saved
+   * without a scheme, such as `nas.local:5005/dav`, on which every request fails.
    */
   async migrateConnectorUrlSchemes(): Promise<ConnectorUrlSchemesMigrationResponseDto> {
     const db = await this.couchService.createAdminNanoInstance()
@@ -426,7 +421,9 @@ export class MigrationService {
     for (const [index, { dbName, email }] of userDbs.entries()) {
       const progress = `[${index + 1}/${userDbs.length}]`
       const userConnectorsUpdated = await tolerateMissingUserDb(email, () =>
-        retryFn(() => addHttpsToSchemelessConnectorUrls(db.use(dbName))),
+        retryFn(() =>
+          addHttpsToSchemelessConnectorUrls(db.use<SettingsDocType>(dbName)),
+        ),
       )
 
       if (!userConnectorsUpdated) continue

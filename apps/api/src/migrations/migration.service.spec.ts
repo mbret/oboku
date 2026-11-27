@@ -29,7 +29,7 @@ const SETTINGS: SettingsDocType & { _rev: string } = {
     {
       id: "nas-drive",
       type: "synology-drive",
-      url: "nas.local:5000",
+      url: "  nas.local:5000 ",
       username: "reader",
       passwordAsSecretId: "nas-secret",
     },
@@ -50,7 +50,7 @@ const SETTINGS: SettingsDocType & { _rev: string } = {
     {
       id: "catalog",
       type: "opds",
-      url: "https://catalog.example.com/opds",
+      url: "catalog.example.com/opds",
       username: "reader",
       passwordAsSecretId: "catalog-secret",
     },
