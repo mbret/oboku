@@ -77,13 +77,10 @@ describe("DownloadBook (web address)", () => {
     vi.clearAllMocks()
   })
 
-  it("downloads the book through oboku's server, with no credentials, named as the server names it, when the book uses the proxy", async () => {
+  it("downloads the book through oboku's server, with no credentials, keeping its type, when the book uses the proxy", async () => {
     const api = vi.fn<typeof fetch>(async function serveBookFile() {
       return new Response(BOOK_BYTES, {
-        headers: {
-          "Content-Type": "application/epub+zip",
-          "Content-Disposition": 'attachment; filename="45646578.epub"',
-        },
+        headers: { "Content-Type": "application/epub+zip" },
       })
     })
     const link = createWebLink({ url: BOOK_URL, proxyThroughServer: true })
@@ -92,7 +89,8 @@ describe("DownloadBook (web address)", () => {
 
     await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
     const result = onResolve.mock.lastCall?.[0]
-    expect(result?.fileName).toBe("45646578.epub")
+    expect(result?.fileName).toBe("45646578")
+    expect(result?.data.type).toBe("application/epub+zip")
     expect(await result?.data.text()).toBe(BOOK_BYTES)
     const apiRequest = api.mock.lastCall?.[0]
     expect(apiRequest).toBeInstanceOf(Request)
@@ -101,20 +99,6 @@ describe("DownloadBook (web address)", () => {
     expect(await apiRequest.json()).toEqual({ linkId: link._id })
     expect(mocks.download).not.toHaveBeenCalled()
     expect(onError).not.toHaveBeenCalled()
-  })
-
-  it("names the book after its address when oboku's server names no file", async () => {
-    const api = vi.fn<typeof fetch>(async function serveUnnamedBookFile() {
-      return new Response(BOOK_BYTES)
-    })
-
-    const { onResolve } = renderDownloadBook({
-      link: createWebLink({ url: BOOK_URL, proxyThroughServer: true }),
-      api,
-    })
-
-    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
-    expect(onResolve.mock.lastCall?.[0]?.fileName).toBe("45646578")
   })
 
   it("downloads the book from its address without the setting", async () => {

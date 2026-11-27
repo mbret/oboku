@@ -36,9 +36,10 @@ export const DownloadBook = memo(function DownloadBook({
           ? downloadThroughServerProxy({
               httpClientApi,
               linkId: link._id,
-              fallbackFileName: toUrlFileName(url),
               onDownloadProgress,
               signal: downloadSignal,
+            }).then(function nameAfterUrl(file) {
+              return { data: file, fileName: toUrlFileName(url) }
             })
           : downloadFromWebAddress({
               url,

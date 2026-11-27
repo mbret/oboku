@@ -3,7 +3,6 @@ import {
   getMimeTypeEssence,
   isFileSupported,
   isPotentialZipFile,
-  withReaderFileExtension,
 } from "./contentType"
 
 describe("getMimeTypeEssence", () => {
@@ -101,35 +100,5 @@ describe("isFileSupported", () => {
     expect(isFileSupported({ name: "no-extension" })).toBe(false)
     expect(isFileSupported({ name: "epub" })).toBe(false)
     expect(isFileSupported({})).toBe(false)
-  })
-})
-
-describe("withReaderFileExtension", () => {
-  it("adds the extension the type names", () => {
-    expect(withReaderFileExtension("45646578", "application/epub+zip")).toBe(
-      "45646578.epub",
-    )
-    expect(withReaderFileExtension("Dune", "application/x-cbz")).toBe(
-      "Dune.cbz",
-    )
-  })
-
-  it("reads the type whatever its parameters and case", () => {
-    expect(withReaderFileExtension("Dune", "Application/PDF; q=1")).toBe(
-      "Dune.pdf",
-    )
-  })
-
-  it("keeps a name that has an extension the reader accepts", () => {
-    expect(withReaderFileExtension("Dune.epub", "application/pdf")).toBe(
-      "Dune.epub",
-    )
-  })
-
-  it("keeps the name for a type the reader does not accept, or no type", () => {
-    expect(withReaderFileExtension("Dune", "application/octet-stream")).toBe(
-      "Dune",
-    )
-    expect(withReaderFileExtension("Dune", undefined)).toBe("Dune")
   })
 })

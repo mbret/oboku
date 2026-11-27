@@ -1,4 +1,4 @@
-import { getFileNameFromContentDisposition, linksDownload } from "@oboku/shared"
+import { linksDownload } from "@oboku/shared"
 import type { HttpApiClientWeb } from "../http"
 
 const createProgressReporter = ({
@@ -34,29 +34,20 @@ const readBlobReportingProgress = ({
       )
     : response.body
 
-  // The reader takes a blob's type as the book's format, and goes by the file's
-  // name without one. oboku's server names the file with the extension of its
-  // type, so the type is left out and the name decides.
-  return new Response(body).blob()
+  return new Response(body, { headers: response.headers }).blob()
 }
 
-/**
- * @param password the connector's, for a WebDAV or OPDS link.
- * @param fallbackFileName the name when oboku's server gives none, as a server
- * older than the app does.
- */
+/** @param password the connector's, for a WebDAV or OPDS link. */
 export const downloadThroughServerProxy = async ({
   httpClientApi,
   linkId,
   password,
-  fallbackFileName,
   onDownloadProgress,
   signal,
 }: {
   httpClientApi: HttpApiClientWeb
   linkId: string
   password?: string
-  fallbackFileName: string
   onDownloadProgress: (progress: number) => void
   signal: AbortSignal
 }) => {
@@ -69,13 +60,6 @@ export const downloadThroughServerProxy = async ({
     parseAs: "stream",
     signal,
   })
-  const fileName =
-    getFileNameFromContentDisposition(
-      response.headers.get("Content-Disposition") ?? undefined,
-    ) ?? fallbackFileName
 
-  return {
-    data: await readBlobReportingProgress({ response, onDownloadProgress }),
-    fileName,
-  }
+  return readBlobReportingProgress({ response, onDownloadProgress })
 }

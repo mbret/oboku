@@ -8,7 +8,6 @@ import {
   type LinkDocTypeForSource,
   ObokuErrorCode,
   type OpdsBookLinkData,
-  withReaderFileExtension,
 } from "@oboku/shared"
 import type createNano from "nano"
 import type { ConnectorCredentialsDto } from "../connectors/connector-credentials.dto.js"
@@ -47,14 +46,8 @@ const requireConnectorPassword = (
   return providerCredentials.password
 }
 
-/** The app takes a proxied book's format from its file name. */
-const toProxiedFile = ({
-  name,
-  contentType,
-  ...file
-}: SourceFile): ProxiedFile => ({
+const toProxiedFile = ({ contentType, ...file }: SourceFile): ProxiedFile => ({
   ...file,
-  name: withReaderFileExtension(name, contentType),
   contentType: contentType || UNKNOWN_CONTENT_TYPE,
 })
 
@@ -105,8 +98,7 @@ export class LinksService {
   /**
    * Streams the file of a WebDAV link, an OPDS book or a web address in the
    * library of the user `email` names. The stream fails past the size the
-   * server states, which could be less than it sends. The file's name ends
-   * with the extension of its type.
+   * server states, which could be less than it sends.
    *
    * @throws a 400 for a link of another type or an OPDS link to a folder, a
    * WebDAV or OPDS link without `providerCredentials`, a link that names no

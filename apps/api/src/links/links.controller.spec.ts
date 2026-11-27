@@ -280,9 +280,6 @@ describe("LinksController", () => {
         response.headers["content-disposition"],
       ),
     ).toBe("Dune.epub")
-    expect(response.headers["access-control-expose-headers"]).toBe(
-      "Content-Disposition",
-    )
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
@@ -553,7 +550,7 @@ describe("LinksController", () => {
         getFileNameFromContentDisposition(
           response.headers["content-disposition"],
         ),
-      ).toBe("Dune.epub")
+      ).toBe("Dune")
       expect(catalog.onRequest.mock.calls).toEqual([
         [{ path: OPDS_FILE_PATH, authorization: basicAuthorization }],
       ])
@@ -695,31 +692,6 @@ describe("LinksController", () => {
       expect(catalog.onRequest).not.toHaveBeenCalled()
     })
 
-    it.each(["application/octet-stream", "application/force-download"])(
-      "names the file with the feed's type when the catalog answers %s",
-      async (catalogType) => {
-        const { link } = await serveCatalog({
-          fileRoute: {
-            headers: { "content-type": catalogType },
-            body: BOOK_BYTES,
-          },
-          length: BOOK_BYTES.length,
-        })
-
-        const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
-
-        expect(response.status).toBe(200)
-        expect(
-          getFileNameFromContentDisposition(
-            response.headers["content-disposition"],
-          ),
-        ).toBe("Dune.epub")
-        expect(response.headers["access-control-expose-headers"]).toBe(
-          "Content-Disposition",
-        )
-      },
-    )
-
     it("names the file as the catalog's Content-Disposition does", async () => {
       const { link } = await serveCatalog({
         fileRoute: {
@@ -799,7 +771,7 @@ describe("LinksController", () => {
       return { server, link }
     }
 
-    it("streams the file with no credentials, asking for it uncompressed, and names it with the extension of its type", async () => {
+    it("streams the file as the server sends it, with no credentials, asking for it uncompressed", async () => {
       const { server, link } = await serveBook({
         fileRoute: {
           headers: {
@@ -816,14 +788,14 @@ describe("LinksController", () => {
 
       expect(response.status).toBe(200)
       expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(response.headers["content-type"]).toBe(
+        EPUB_HEADERS["content-type"],
+      )
       expect(
         getFileNameFromContentDisposition(
           response.headers["content-disposition"],
         ),
-      ).toBe("45646578.epub")
-      expect(response.headers["access-control-expose-headers"]).toBe(
-        "Content-Disposition",
-      )
+      ).toBe("45646578")
       expect(server.onRequest.mock.calls).toEqual([
         [{ path: BOOK_PATH, authorization: undefined }],
       ])

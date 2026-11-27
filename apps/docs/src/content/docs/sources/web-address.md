@@ -18,7 +18,7 @@ Your browser downloads the book from its address, so the server that hosts it ha
 
 Some servers refuse downloads from the browser, and you cannot change their CORS answers. For such a server, check **Use oboku's server as a proxy** when you add the book.
 
-oboku's server then downloads the book from its address and passes it on to you. It only downloads a file whose size the server states, and stops at that size. It names the file with the extension of its type, so an address without one, such as `https://my-nas.example.com/file/45646578`, still opens. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users.
+oboku's server then downloads the book from its address and passes it on to you. It only downloads a file whose size the server states, and stops at that size. It passes the file on as the server sends it, with the type the server states. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users.
 
 Without the setting, your browser downloads the book from its address, and the download does not count towards the quota.
 

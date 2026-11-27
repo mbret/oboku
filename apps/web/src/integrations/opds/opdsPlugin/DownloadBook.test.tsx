@@ -110,10 +110,7 @@ describe("DownloadBook (OPDS)", () => {
     })
     const api = vi.fn<typeof fetch>(async function serveBookFile() {
       return new Response(BOOK_BYTES, {
-        headers: {
-          "Content-Type": "application/epub+zip",
-          "Content-Disposition": 'attachment; filename="Dune.epub"',
-        },
+        headers: { "Content-Type": "application/epub+zip" },
       })
     })
 
@@ -133,20 +130,6 @@ describe("DownloadBook (OPDS)", () => {
     })
     expect(mocks.download).not.toHaveBeenCalled()
     expect(onError).not.toHaveBeenCalled()
-  })
-
-  it("names the book after its title and type when oboku's server names no file", async () => {
-    mocks.extractConnectorData.mockResolvedValue({
-      data: { ...komgaConnector, proxyThroughServer: true, password: PASSWORD },
-    })
-    const api = vi.fn<typeof fetch>(async function serveUnnamedBookFile() {
-      return new Response(BOOK_BYTES)
-    })
-
-    const { onResolve } = renderDownloadBook(api)
-
-    await expect.poll(() => onResolve.mock.calls).toHaveLength(1)
-    expect(onResolve.mock.lastCall?.[0]?.fileName).toBe("Dune.epub")
   })
 
   it("downloads the book from the catalog without the setting", async () => {
