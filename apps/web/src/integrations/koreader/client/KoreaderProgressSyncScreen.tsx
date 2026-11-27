@@ -19,6 +19,7 @@ import { Page } from "../../../common/Page"
 import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
+import { isHttpUrl } from "../../../common/network/isHttpUrl"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { ErrorAlert } from "../../../errors/ErrorMessage"
 import { useConfig } from "../../../config/useConfig"
@@ -40,9 +41,6 @@ type ConnectionFormValues = {
   username: string
   password: string
 }
-
-const isHttpUrl = (value: string) =>
-  URL.canParse(value) && ["http:", "https:"].includes(new URL(value).protocol)
 
 const ObokuSyncServerShortcut = memo(function ObokuSyncServerShortcut({
   onUse,
