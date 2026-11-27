@@ -79,7 +79,8 @@ export const LibrarySyncForm = memo(function LibrarySyncForm({
     >
       <Alert severity="warning">
         Books download from your browser, straight from your catalog, which has
-        to allow it. Make sure to{" "}
+        to allow it, unless its connector uses oboku's server as a proxy. Make
+        sure to{" "}
         <Link href={links.documentationOpds} target="_blank">
           read this
         </Link>{" "}

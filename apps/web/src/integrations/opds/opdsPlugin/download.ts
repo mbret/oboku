@@ -5,6 +5,8 @@ import {
   READER_ACCEPTED_FILE_TYPES,
   type SettingsResolvedConnectorData,
 } from "@oboku/shared"
+import { downloadThroughServerProxy } from "../../../connectors/downloadThroughServerProxy"
+import type { HttpApiClientWeb } from "../../../http"
 import type { Download } from "../../../http/useDownload"
 
 type ReaderAcceptedType = keyof typeof READER_ACCEPTED_FILE_TYPES
@@ -24,6 +26,12 @@ const toFileExtension = (type: string) => {
     ""
   )
 }
+
+const toTitleFileName = ({
+  title,
+  acquisition,
+}: Pick<OpdsBookLinkData, "title" | "acquisition">) =>
+  `${title}${toFileExtension(acquisition.type)}`
 
 export const downloadOpdsBook = async ({
   acquisition,
@@ -59,6 +67,34 @@ export const downloadOpdsBook = async ({
     fileName:
       getFileNameFromContentDisposition(
         response.headers["content-disposition"],
-      ) ?? `${title}${toFileExtension(acquisition.type)}`,
+      ) ?? toTitleFileName({ title, acquisition }),
   }
 }
+
+/** Names the file after the book's title: CORS keeps the browser from reading the `Content-Disposition` of oboku's answer. */
+export const downloadOpdsBookThroughServer = async ({
+  httpClientApi,
+  linkId,
+  password,
+  acquisition,
+  title,
+  onDownloadProgress,
+  signal,
+}: {
+  httpClientApi: HttpApiClientWeb
+  linkId: string
+  password: string
+  acquisition: OpdsBookLinkData["acquisition"]
+  title: string
+  onDownloadProgress: (progress: number) => void
+  signal: AbortSignal
+}) => ({
+  data: await downloadThroughServerProxy({
+    httpClientApi,
+    linkId,
+    password,
+    onDownloadProgress,
+    signal,
+  }),
+  fileName: toTitleFileName({ title, acquisition }),
+})

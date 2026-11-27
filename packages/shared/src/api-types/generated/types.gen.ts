@@ -461,13 +461,13 @@ export type RefreshBookMetadataDto = {
     };
 };
 
-export type WebdavCredentialsDto = {
+export type ConnectorCredentialsDto = {
     password: string;
 };
 
 export type DownloadLinkDto = {
     linkId: string;
-    providerCredentials: WebdavCredentialsDto;
+    providerCredentials: ConnectorCredentialsDto;
 };
 
 export type ListWebdavDirectoryDto = {
@@ -476,7 +476,7 @@ export type ListWebdavDirectoryDto = {
      */
     url: string;
     username: string;
-    providerCredentials: WebdavCredentialsDto;
+    providerCredentials: ConnectorCredentialsDto;
     allowSelfSigned?: boolean;
     /**
      * Relative to `url`, like `/Books`.

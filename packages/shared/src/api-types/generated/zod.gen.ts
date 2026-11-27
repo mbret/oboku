@@ -496,19 +496,19 @@ export const zRefreshBookMetadataDto = z.object({
     providerCredentials: z.record(z.string(), z.unknown())
 });
 
-export const zWebdavCredentialsDto = z.object({
+export const zConnectorCredentialsDto = z.object({
     password: z.string()
 });
 
 export const zDownloadLinkDto = z.object({
     linkId: z.string(),
-    providerCredentials: zWebdavCredentialsDto
+    providerCredentials: zConnectorCredentialsDto
 });
 
 export const zListWebdavDirectoryDto = z.object({
     url: z.string().regex(/^https?:\/\//),
     username: z.string(),
-    providerCredentials: zWebdavCredentialsDto,
+    providerCredentials: zConnectorCredentialsDto,
     allowSelfSigned: z.boolean().optional(),
     path: z.string()
 });

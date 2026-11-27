@@ -131,8 +131,8 @@ export type ConnectorFormConfig = {
   children?: ReactNode
   /** When false the URL field and "Allow self-signed certificate" checkbox are hidden. Defaults to true. */
   showUrl?: boolean
-  /** Shows the "Use oboku's server as a proxy" checkbox and saves its value. */
-  showProxyThroughServer?: boolean
+  /** Shows the "Use oboku's server as a proxy" checkbox with this caption, and saves its value. */
+  proxyThroughServerCaption?: string
   urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
@@ -147,7 +147,7 @@ export const ConnectorForm = memo(function ConnectorForm({
   onSubmitSuccess,
   children,
   showUrl = true,
-  showProxyThroughServer = false,
+  proxyThroughServerCaption,
   urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
@@ -163,6 +163,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     type: connectorType,
   })
   const isEditing = !!connectorId
+  const isProxyThroughServerShown = proxyThroughServerCaption !== undefined
   const {
     control,
     formState: { isValid, disabled, errors },
@@ -201,7 +202,7 @@ export const ConnectorForm = memo(function ConnectorForm({
           url: data.urlValue,
           allowSelfSigned: data.allowSelfSigned,
         }),
-        ...(showProxyThroughServer && {
+        ...(isProxyThroughServerShown && {
           proxyThroughServer: data.proxyThroughServer,
         }),
       }
@@ -260,12 +261,12 @@ export const ConnectorForm = memo(function ConnectorForm({
                 caption="Used by API sync, metadata, and download requests. Browser connection tests may still require trusting the certificate in your browser."
               />
             )}
-            {showProxyThroughServer && (
+            {isProxyThroughServerShown && (
               <ControlledCheckboxField
                 control={control}
                 name="proxyThroughServer"
                 label="Use oboku's server as a proxy"
-                caption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection and downloads your books, then passes them on to you. The downloads count towards your monthly download quota."
+                caption={proxyThroughServerCaption}
               />
             )}
             {!!errors.root && <ErrorAlert error={errors.root.message} />}
