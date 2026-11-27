@@ -1,25 +1,7 @@
-import { isShallowEqual } from "@oboku/shared"
-import { useLiveQuery$ } from "reactjrx"
 import type { DeepReadonlyArray } from "rxdb"
-import { distinctUntilChanged, map, switchMap } from "rxjs"
-import {
-  createRxdbQueryDefaultOptions,
-  RXDB_QUERY_KEY_PREFIX,
-} from "../queries/queryClient"
-import { latestDatabase$ } from "../rxdb/RxDbProvider"
+import { useBookIds } from "./states"
 
-const heldBookIds$ = latestDatabase$.pipe(
-  switchMap(function observeAllBooks(database) {
-    return database.book.find({}).$
-  }),
-  map(function toBookIds(books) {
-    return books.map(({ _id }) => _id)
-  }),
-  distinctUntilChanged(isShallowEqual),
-  map(function toBookIdSet(ids) {
-    return new Set(ids)
-  }),
-)
+const selectBookIdSet = (bookIds: string[]) => new Set(bookIds)
 
 /**
  * The ids in `ids` of the books this device holds, in the order of `ids`.
@@ -27,13 +9,9 @@ const heldBookIds$ = latestDatabase$.pipe(
  * yet. Protected and not interested books stay in the result.
  */
 export const useHeldBookIds = (ids: DeepReadonlyArray<string> | undefined) => {
-  const { data: heldBookIds } = useLiveQuery$({
-    ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "heldBookIds"],
-    queryFn: () => heldBookIds$,
-  })
+  const { data: heldBookIdSet } = useBookIds({ select: selectBookIdSet })
 
-  if (ids === undefined || heldBookIds === undefined) return undefined
+  if (ids === undefined || heldBookIdSet === undefined) return undefined
 
-  return ids.filter((id) => heldBookIds.has(id))
+  return ids.filter((id) => heldBookIdSet.has(id))
 }
