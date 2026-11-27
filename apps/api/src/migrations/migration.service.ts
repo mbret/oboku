@@ -2,13 +2,23 @@ import {
   type CollectionDocType,
   getCollectionCoverKey,
   parseLegacyResourceIdForMigration,
+  type SettingsConnectorDocType,
+  type SettingsDocType,
+  type SynologyDriveConnectorDocType,
+  type WebdavConnectorDocType,
 } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
+import type createNano from "nano"
 import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
-import { findAll } from "../couch/dbHelpers.js"
+import {
+  findAll,
+  getSettings,
+  isCouchNotFound,
+  retryFn,
+} from "../couch/dbHelpers.js"
 import { listUserDatabases } from "../couch/listUserDatabases.js"
 import { tolerateMissingUserDb } from "../couch/tolerateMissingUserDb.js"
 import { CoversService } from "../covers/covers.service.js"
@@ -23,12 +33,51 @@ import fs from "node:fs"
 import path from "node:path"
 import type {
   CollectionCoverKeysMigrationResponseDto,
+  ConnectorUrlSchemesMigrationResponseDto,
   RefreshTokenCreatedAtResetResponseDto,
   ResourceIdMigrationResponseDto,
   WebdavConnectorsMigrationResponseDto,
 } from "./migration.dto.js"
 
 const logger = new Logger("MigrationService")
+
+const URL_SCHEME_PREFIX = /^[a-z][a-z\d+.-]*:\/\//i
+
+const isSchemelessUrl = (url: unknown): url is string =>
+  typeof url === "string" &&
+  url.trim() !== "" &&
+  !URL_SCHEME_PREFIX.test(url.trim())
+
+const hasSchemelessUrl = (
+  connector: SettingsConnectorDocType,
+): connector is WebdavConnectorDocType | SynologyDriveConnectorDocType =>
+  (connector.type === "webdav" || connector.type === "synology-drive") &&
+  isSchemelessUrl(connector.url)
+
+const addHttpsToSchemelessConnectorUrls = async (
+  userDb: createNano.DocumentScope<unknown>,
+) => {
+  const settings = await getSettings(userDb)
+  const connectors = settings?.connectors ?? []
+  const schemelessConnectorsCount = connectors.filter(hasSchemelessUrl).length
+
+  if (!settings || schemelessConnectorsCount === 0) return 0
+
+  const migratedSettings: SettingsDocType = {
+    ...settings,
+    connectors: connectors.map((connector) =>
+      hasSchemelessUrl(connector)
+        ? { ...connector, url: `https://${connector.url.trim()}` }
+        : connector,
+    ),
+  }
+
+  // `settings` still carries the `_rev` it was read with, so a device write in
+  // between fails with a conflict instead of being overwritten.
+  await userDb.insert(migratedSettings)
+
+  return schemelessConnectorsCount
+}
 
 type WebdavConnectorLegacy = {
   id?: string
@@ -283,12 +332,7 @@ export class MigrationService {
         try {
           settings = await userDbInstance.get("settings")
         } catch (err: unknown) {
-          if (
-            typeof err === "object" &&
-            err !== null &&
-            "statusCode" in err &&
-            (err as { statusCode: number }).statusCode === 404
-          ) {
+          if (isCouchNotFound(err)) {
             logger.log(`${progress} ${email}: skipped (no settings doc)`)
             return
           }
@@ -361,6 +405,44 @@ export class MigrationService {
     )
 
     return { usersMigrated, connectorsCreated }
+  }
+
+  /**
+   * Gives `https://` to every WebDAV and Synology Drive connector URL saved
+   * without a scheme, such as `nas.local:5005/dav`. Every request on such a
+   * connector fails. Only `url` changes. Safe to run more than once.
+   */
+  async migrateConnectorUrlSchemes(): Promise<ConnectorUrlSchemesMigrationResponseDto> {
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
+
+    logger.log(
+      `Adding https:// to connector URLs without a scheme for ${userDbs.length} user databases`,
+    )
+
+    let usersMigrated = 0
+    let connectorsUpdated = 0
+
+    for (const [index, { dbName, email }] of userDbs.entries()) {
+      const progress = `[${index + 1}/${userDbs.length}]`
+      const userConnectorsUpdated = await tolerateMissingUserDb(email, () =>
+        retryFn(() => addHttpsToSchemelessConnectorUrls(db.use(dbName))),
+      )
+
+      if (!userConnectorsUpdated) continue
+
+      usersMigrated++
+      connectorsUpdated += userConnectorsUpdated
+      logger.log(
+        `${progress} ${email}: added https:// to ${userConnectorsUpdated} connector URL(s)`,
+      )
+    }
+
+    logger.log(
+      `Added https:// to connector URLs: ${usersMigrated} users, ${connectorsUpdated} connectors updated`,
+    )
+
+    return { usersMigrated, connectorsUpdated }
   }
 
   async migrateWebdavResourceIds(): Promise<ResourceIdMigrationResponseDto> {
