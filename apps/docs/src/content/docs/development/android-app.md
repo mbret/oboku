@@ -33,7 +33,7 @@ The `sign` job runs in the `android-release` environment. Create it in the repos
 
 ## Create the upload key
 
-With Play App Signing, Google signs the store build with its own key. The key in the workflow is the upload key: Google Play accepts a bundle only when this key signed it.
+With Play App Signing, Google signs the store build with its own keys. The key in the workflow is the upload key: Google Play accepts a bundle only when this key signed it.
 
 1. Create the keystore with `keytool`, in a private folder outside the repository. It asks for a password of at least 6 characters, then for the certificate fields:
 
