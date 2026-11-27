@@ -55,14 +55,17 @@ export const downloadThroughServerProxy = async ({
 }: {
   httpClientApi: HttpApiClientWeb
   linkId: string
-  password: string
+  password?: string
   fallbackFileName: string
   onDownloadProgress: (progress: number) => void
   signal: AbortSignal
 }) => {
   const { response } = await linksDownload({
     client: httpClientApi.sdkClient,
-    body: { linkId, providerCredentials: { password } },
+    body: {
+      linkId,
+      ...(password !== undefined && { providerCredentials: { password } }),
+    },
     parseAs: "stream",
     signal,
   })
