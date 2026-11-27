@@ -63,7 +63,7 @@ Wait on what the screen shows, never on a fixed delay. A book added from the dev
 
 ## Screenshots
 
-The `screenshots` Playwright project captures every screenshot of the app from the same stack: the Play Store sets for phones and foldables, the web manifest images and the landing images.
+The `screenshots` Playwright project captures every screenshot of the app from the same stack: the Play Store sets for phones, tablets and foldables, the web manifest images and the landing images.
 
 ```bash
 pnpm screenshots
@@ -74,14 +74,16 @@ pnpm screenshots
 - **The scenes:** each has the steps that show one screen, and is named after it. Every target captures them in the order the table declares them: `home`, `library`, `book-details`, `manage-storage`, `library-syncs`, `add-library-sync`, `profile`, `optimize-content`, `optimize-metadata`, `koreader-sync-server`, `koreader-progress-sync`, `epub-reader`, `manga-reader`, `audiobook-reader` and `library-e-ink`. A reader scene closes the reader in the app, because a reader left open makes the next page load offer to go back to it, over the screen. It still leaves its book in progress, so the reader scenes come after the scenes that show reading progress. `library-e-ink` leaves the app in e-ink, so it comes last, after the reader scenes: where their books are in view, it shows them in progress. `epub-reader` and `audiobook-reader` show the reader's menu, and `manga-reader` shows the page alone. Use `epub-reader` wherever one image shows the reader. `koreader-sync-server` turns on the KOReader sync server, and `koreader-progress-sync` offers it to oboku's reader, so a target that captures `koreader-progress-sync` captures both.
 - **The targets:** each sets a viewport, a scale, a theme, a locale and an image format, and lists the scenes it captures. It saves each scene as `<scene>` and the extension of its format, in its own folder, listed in the table below. The run fails if the folder holds another file, other than a hidden one.
 
-| Target                             | Size                            | Scenes                                         | Format                                       | Saved to                                                    |
-| ---------------------------------- | ------------------------------- | ---------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
-| `play-phone`                       | 360 × 640 at 3×, so 1080 × 1920 | home, library, book details, the three readers | JPEG, quality 85                             | `apps/e2e/screenshots/play-phone/en/`                       |
-| `play-foldable-unfolded-square`    | 720 × 720 at 2×, so 1440 × 1440 | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-unfolded-square/en/`    |
-| `play-foldable-unfolded-landscape` | 960 × 720 at 2×, so 1920 × 1440 | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-unfolded-landscape/en/` |
-| `play-foldable-folded`             | 360 × 576 at 3×, so 1080 × 1728 | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-folded/en/`             |
-| `web-manifest`                     | 320 × 568 at 2×, so 640 × 1136  | home, library, EPUB reader                     | JPEG, quality 85                             | `apps/web/public/manifest-screenshots/`                     |
-| `landing`                          | 375 × 667 at 2×, so 750 × 1334  | all of them                                    | WebP, the smaller of lossless and quality 90 | `apps/landing/src/features/common/app-screenshots/`         |
+| Target                             | Size                             | Scenes                                         | Format                                       | Saved to                                                    |
+| ---------------------------------- | -------------------------------- | ---------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| `play-phone`                       | 360 × 640 at 3×, so 1080 × 1920  | home, library, book details, the three readers | JPEG, quality 85                             | `apps/e2e/screenshots/play-phone/en/`                       |
+| `play-tablet-7-inch`               | 960 × 540 at 2×, so 1920 × 1080  | home, library, book details, the three readers | JPEG, quality 85                             | `apps/e2e/screenshots/play-tablet-7-inch/en/`               |
+| `play-tablet-10-inch`              | 1280 × 720 at 2×, so 2560 × 1440 | home, library, book details, the three readers | JPEG, quality 85                             | `apps/e2e/screenshots/play-tablet-10-inch/en/`              |
+| `play-foldable-unfolded-square`    | 720 × 720 at 2×, so 1440 × 1440  | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-unfolded-square/en/`    |
+| `play-foldable-unfolded-landscape` | 960 × 720 at 2×, so 1920 × 1440  | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-unfolded-landscape/en/` |
+| `play-foldable-folded`             | 360 × 576 at 3×, so 1080 × 1728  | library, EPUB reader                           | JPEG, quality 85                             | `apps/e2e/screenshots/play-foldable-folded/en/`             |
+| `web-manifest`                     | 320 × 568 at 2×, so 640 × 1136   | home, library, EPUB reader                     | JPEG, quality 85                             | `apps/web/public/manifest-screenshots/`                     |
+| `landing`                          | 375 × 667 at 2×, so 750 × 1334   | all of them                                    | WebP, the smaller of lossless and quality 90 | `apps/landing/src/features/common/app-screenshots/`         |
 
 Each image is in the smallest format its destination takes:
 
@@ -94,7 +96,13 @@ To update the screenshots, capture them in one of two ways:
 - **In CI.** In GitHub, open **Actions**, select **e2e**, then **Run workflow**. The `screenshots` job uploads two artifacts: `play-screenshots`, the Play Store sets with one folder per target, and `app-screenshots`, the web manifest and landing images under their paths from `apps/`.
 - **On your computer.** Run `stack:up` to rebuild the stack from the checkout, then `pnpm screenshots`.
 
-Then commit the web manifest and landing images that changed. Leave out an image whose only change is one of those listed below. The Play Store sets are not committed: upload them in the Play Console, from the artifact or from `apps/e2e/screenshots`. Play asks for foldable screenshots in three shapes: the unfolded screen in 1:1 and in 4:3, and the folded outer screen in 10:16 portrait. Each `play-foldable-*` target captures one shape.
+Then commit the web manifest and landing images that changed. Leave out an image whose only change is one of those listed below.
+
+The Play Store sets are not committed: upload them in the Play Console, from the artifact or from `apps/e2e/screenshots`. Each set fills one section of the Play Console:
+
+- **Phone:** `play-phone`.
+- **Tablets:** `play-tablet-7-inch` and `play-tablet-10-inch`. Play takes 16:9 or 9:16, and the targets capture landscape, where the app shows its side navigation.
+- **Foldables:** one `play-foldable-*` target for each shape Play asks for: the unfolded screen in 1:1 and in 4:3, and the folded outer screen in 10:16 portrait.
 
 Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The Optimize screen shows the image compression of _Little Nemo_ and the identifiers of _Treasure Island_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
