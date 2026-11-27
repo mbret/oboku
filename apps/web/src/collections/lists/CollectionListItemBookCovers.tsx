@@ -2,6 +2,7 @@ import { memo } from "react"
 import { Box, useTheme } from "@mui/material"
 import { Cover } from "../../books/Cover"
 import { useCollection } from "../useCollection"
+import { useExistingBookIds } from "../../books/useExistingBookIds"
 
 export const CollectionListItemBookCovers = memo(
   function CollectionListItemBookCovers({ id }: { id: string }) {
@@ -9,7 +10,8 @@ export const CollectionListItemBookCovers = memo(
     const { data: item } = useCollection({
       id,
     })
-    const items = item?.books?.slice(0, 3)
+    const { data: existingBookIds } = useExistingBookIds(item?.books)
+    const items = existingBookIds?.slice(0, 3)
     const size = items?.length || 0
 
     return (
