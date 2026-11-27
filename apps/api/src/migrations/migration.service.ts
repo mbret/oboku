@@ -2,13 +2,19 @@ import {
   type CollectionDocType,
   getCollectionCoverKey,
   parseLegacyResourceIdForMigration,
+  type SettingsConnectorDocType,
+  type SettingsDocType,
+  type SynologyDriveConnectorDocType,
+  type WebdavConnectorDocType,
 } from "@oboku/shared"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
+import type createNano from "nano"
 import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
-import { findAll } from "../couch/dbHelpers.js"
+import { findAll, isCouchNotFound, retryFn } from "../couch/dbHelpers.js"
+import { hasUrlScheme } from "../http/url.js"
 import { listUserDatabases } from "../couch/listUserDatabases.js"
 import { tolerateMissingUserDb } from "../couch/tolerateMissingUserDb.js"
 import { CoversService } from "../covers/covers.service.js"
@@ -23,12 +29,51 @@ import fs from "node:fs"
 import path from "node:path"
 import type {
   CollectionCoverKeysMigrationResponseDto,
+  ConnectorUrlSchemesMigrationResponseDto,
   RefreshTokenCreatedAtResetResponseDto,
   ResourceIdMigrationResponseDto,
   WebdavConnectorsMigrationResponseDto,
 } from "./migration.dto.js"
 
 const logger = new Logger("MigrationService")
+
+const isSchemelessUrl = (url: string) =>
+  url.trim() !== "" && !hasUrlScheme(url.trim())
+
+const isWebdavOrSynologyDriveConnector = (
+  connector: SettingsConnectorDocType,
+): connector is WebdavConnectorDocType | SynologyDriveConnectorDocType =>
+  connector.type === "webdav" || connector.type === "synology-drive"
+
+const addHttpsToSchemelessConnectorUrls = async (
+  userDb: createNano.DocumentScope<SettingsDocType>,
+) => {
+  const settings = await userDb
+    .get("settings")
+    .catch(function readMissingSettingsAsNull(error: unknown) {
+      if (isCouchNotFound(error)) return null
+      throw error
+    })
+
+  if (!settings) return 0
+
+  const connectors = settings.connectors ?? []
+  const migratedConnectors = connectors.map((connector) =>
+    isWebdavOrSynologyDriveConnector(connector) &&
+    isSchemelessUrl(connector.url)
+      ? { ...connector, url: `https://${connector.url.trim()}` }
+      : connector,
+  )
+  const updatedConnectorsCount = migratedConnectors.filter(
+    (connector, index) => connector !== connectors[index],
+  ).length
+
+  if (updatedConnectorsCount === 0) return 0
+
+  await userDb.insert({ ...settings, connectors: migratedConnectors })
+
+  return updatedConnectorsCount
+}
 
 type WebdavConnectorLegacy = {
   id?: string
@@ -174,16 +219,31 @@ function mergeLegacyResourceIdIntoData(
  *
  * Each migration is idempotent and can be re-run safely. Migrations are
  * exposed via admin endpoints and are intended to be run during deployments
- * when their corresponding runtime change ships.
+ * when their corresponding runtime change ships. `migrateConnectorUrlSchemes`
+ * also runs at every start.
  */
 @Injectable()
-export class MigrationService {
+export class MigrationService implements OnApplicationBootstrap {
   constructor(
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
     @InjectRepository(RefreshTokenPostgresEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
+
+  /**
+   * Older app versions can still save a connector URL without a scheme, so
+   * the API gives them one at every start.
+   */
+  onApplicationBootstrap() {
+    this.migrateConnectorUrlSchemes().catch(
+      this.logConnectorUrlSchemesStartupFailure,
+    )
+  }
+
+  private logConnectorUrlSchemesStartupFailure = (error: unknown) => {
+    logger.error("Unable to add https:// to connector URLs at startup", error)
+  }
 
   async resetRefreshTokenCreatedAt(): Promise<RefreshTokenCreatedAtResetResponseDto> {
     /**
@@ -283,12 +343,7 @@ export class MigrationService {
         try {
           settings = await userDbInstance.get("settings")
         } catch (err: unknown) {
-          if (
-            typeof err === "object" &&
-            err !== null &&
-            "statusCode" in err &&
-            (err as { statusCode: number }).statusCode === 404
-          ) {
+          if (isCouchNotFound(err)) {
             logger.log(`${progress} ${email}: skipped (no settings doc)`)
             return
           }
@@ -361,6 +416,45 @@ export class MigrationService {
     )
 
     return { usersMigrated, connectorsCreated }
+  }
+
+  /**
+   * Prefixes `https://` to every WebDAV and Synology Drive connector URL saved
+   * without a scheme, such as `nas.local:5005/dav`, on which every request fails.
+   */
+  async migrateConnectorUrlSchemes(): Promise<ConnectorUrlSchemesMigrationResponseDto> {
+    const db = await this.couchService.createAdminNanoInstance()
+    const userDbs = await listUserDatabases(db)
+
+    logger.log(
+      `Adding https:// to connector URLs without a scheme for ${userDbs.length} user databases`,
+    )
+
+    let usersMigrated = 0
+    let connectorsUpdated = 0
+
+    for (const [index, { dbName, email }] of userDbs.entries()) {
+      const progress = `[${index + 1}/${userDbs.length}]`
+      const userConnectorsUpdated = await tolerateMissingUserDb(email, () =>
+        retryFn(() =>
+          addHttpsToSchemelessConnectorUrls(db.use<SettingsDocType>(dbName)),
+        ),
+      )
+
+      if (!userConnectorsUpdated) continue
+
+      usersMigrated++
+      connectorsUpdated += userConnectorsUpdated
+      logger.log(
+        `${progress} ${email}: added https:// to ${userConnectorsUpdated} connector URL(s)`,
+      )
+    }
+
+    logger.log(
+      `Added https:// to connector URLs: ${usersMigrated} users, ${connectorsUpdated} connectors updated`,
+    )
+
+    return { usersMigrated, connectorsUpdated }
   }
 
   async migrateWebdavResourceIds(): Promise<ResourceIdMigrationResponseDto> {

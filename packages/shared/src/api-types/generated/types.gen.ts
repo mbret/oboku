@@ -127,6 +127,11 @@ export type WebdavConnectorsMigrationResponseDto = {
     connectorsCreated: number;
 };
 
+export type ConnectorUrlSchemesMigrationResponseDto = {
+    usersMigrated: number;
+    connectorsUpdated: number;
+};
+
 export type ResourceIdMigrationResponseDto = {
     usersMigrated: number;
     linksUpdated: number;
@@ -1082,6 +1087,28 @@ export type AdminMigrateWebdavConnectorsResponses = {
 };
 
 export type AdminMigrateWebdavConnectorsResponse = AdminMigrateWebdavConnectorsResponses[keyof AdminMigrateWebdavConnectorsResponses];
+
+export type AdminMigrateConnectorUrlSchemesData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/admin/migrate-connector-url-schemes';
+};
+
+export type AdminMigrateConnectorUrlSchemesErrors = {
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type AdminMigrateConnectorUrlSchemesError = AdminMigrateConnectorUrlSchemesErrors[keyof AdminMigrateConnectorUrlSchemesErrors];
+
+export type AdminMigrateConnectorUrlSchemesResponses = {
+    201: ConnectorUrlSchemesMigrationResponseDto;
+};
+
+export type AdminMigrateConnectorUrlSchemesResponse = AdminMigrateConnectorUrlSchemesResponses[keyof AdminMigrateConnectorUrlSchemesResponses];
 
 export type AdminMigrateWebdavResourceIdsData = {
     body?: never;

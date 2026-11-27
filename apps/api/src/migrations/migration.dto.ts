@@ -3,6 +3,11 @@ export class WebdavConnectorsMigrationResponseDto {
   connectorsCreated!: number
 }
 
+export class ConnectorUrlSchemesMigrationResponseDto {
+  usersMigrated!: number
+  connectorsUpdated!: number
+}
+
 export class ResourceIdMigrationResponseDto {
   usersMigrated!: number
   linksUpdated!: number

@@ -144,6 +144,11 @@ export const zWebdavConnectorsMigrationResponseDto = z.object({
     connectorsCreated: z.number()
 });
 
+export const zConnectorUrlSchemesMigrationResponseDto = z.object({
+    usersMigrated: z.number(),
+    connectorsUpdated: z.number()
+});
+
 export const zResourceIdMigrationResponseDto = z.object({
     usersMigrated: z.number(),
     linksUpdated: z.number(),
@@ -696,6 +701,8 @@ export const zAdminRefreshTokenBody = zAdminRefreshTokenDto;
 export const zAdminRefreshTokenResponse = zAdminTokensResponseDto;
 
 export const zAdminMigrateWebdavConnectorsResponse = zWebdavConnectorsMigrationResponseDto;
+
+export const zAdminMigrateConnectorUrlSchemesResponse = zConnectorUrlSchemesMigrationResponseDto;
 
 export const zAdminMigrateWebdavResourceIdsResponse = zResourceIdMigrationResponseDto;
 

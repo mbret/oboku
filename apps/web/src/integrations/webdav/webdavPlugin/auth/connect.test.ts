@@ -87,6 +87,19 @@ const answerAsServerThatRefusesThePassword = (server: FakeServer) =>
     return answerUnauthorized(server)
   })
 
+describe("WebDAV client", () => {
+  it("refuses an address without http:// or https:// before it sends a request", () => {
+    expect(() =>
+      createWebdavClient({
+        url: "192.168.1.10/dav",
+        username: USERNAME,
+        password: PASSWORD,
+      }),
+    ).toThrow("The WebDAV address has to start with http:// or https://")
+    expect(mocks.fetch).not.toHaveBeenCalled()
+  })
+})
+
 describe.each([basicServer, digestServer])(
   "WebDAV client, on a server that only accepts $scheme auth",
   (server) => {

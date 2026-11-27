@@ -17,6 +17,7 @@ import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
+import { isHttpUrl } from "../common/network/isHttpUrl"
 import { notify } from "../notifications/toasts"
 import type {
   SettingsConnectorDocType,
@@ -75,6 +76,9 @@ const URL_PATTERN = {
   message: "Invalid URL",
 }
 
+const validateHttpScheme = (url: string) =>
+  isHttpUrl(url) || "Enter the full address, starting with http:// or https://"
+
 export type FormData = {
   urlValue: string
   username: string
@@ -129,8 +133,6 @@ export type ConnectorFormConfig = {
   showUrl?: boolean
   /** Shows the "Use oboku's server as a proxy" checkbox with this caption, and saves its value. */
   proxyThroughServerCaption?: string
-  /** Validates the URL beyond the pattern every connector shares: `true`, or the error to show. */
-  validateUrl?: (url: string) => true | string
   urlHelperText?: ReactNode
   topAlert: ReactNode
   passwordFieldLabel?: string
@@ -146,7 +148,6 @@ export const ConnectorForm = memo(function ConnectorForm({
   children,
   showUrl = true,
   proxyThroughServerCaption,
-  validateUrl,
   urlHelperText,
   topAlert,
   passwordFieldLabel = "Password secret",
@@ -234,7 +235,7 @@ export const ConnectorForm = memo(function ConnectorForm({
                 rules={{
                   required: true,
                   pattern: URL_PATTERN,
-                  validate: validateUrl,
+                  validate: validateHttpScheme,
                 }}
               />
             )}
