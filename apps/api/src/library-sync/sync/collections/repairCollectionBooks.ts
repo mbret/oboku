@@ -2,6 +2,7 @@ import { Logger } from "@nestjs/common"
 import { difference } from "@oboku/shared"
 import type { Context } from "../types.js"
 import { atomicUpdate, find, findOne } from "../../../couch/dbHelpers.js"
+import { fetchDocumentStates } from "../../../couch/fetchDocumentStates.js"
 
 const logger = new Logger("sync/repairCollectionBooks")
 
@@ -11,12 +12,12 @@ const logger = new Logger("sync/repairCollectionBooks")
  * @important
  * We don't do the repair on client side automatically since these issues can
  * appear during partial / incomplete / errored sync. We cannot reliably detect when
- * we can do the repairs ourselves. The repairs can be safely done on sync or on repair
- * page on the web app.
+ * we can do the repairs ourselves. The repairs can be safely done on sync.
  *
  * @scenario 1
- * The book does not exist anymore or is not attached to the collection but the collection
- * still have the book attached. We need to remove it from the collection.
+ * The collection lists a book that CouchDB holds as deleted. We remove it from
+ * the collection. A book CouchDB has never seen stays: a device may not have
+ * pushed it yet.
  *
  * @scenario 2
  * The book has the collection attached but not the collection. We need to reattach it to the
@@ -26,7 +27,7 @@ export const repairCollectionBooks = async ({
   ctx,
   collectionId,
 }: {
-  ctx: Context
+  ctx: Pick<Context, "db" | "syncReport">
   collectionId: string
 }) => {
   const collection = await findOne(
@@ -40,31 +41,25 @@ export const repairCollectionBooks = async ({
   )
 
   if (collection) {
-    const [booksHavingCollectionAttached, booksFromCollectionList] =
-      await Promise.all([
-        find(ctx.db, `book`, {
-          selector: {
-            collections: {
-              $elemMatch: {
-                $eq: collection._id,
-              },
+    const [booksHavingCollectionAttached, { deletedIds }] = await Promise.all([
+      find(ctx.db, `book`, {
+        selector: {
+          collections: {
+            $elemMatch: {
+              $eq: collection._id,
             },
           },
-        }),
-        find(ctx.db, `book`, {
-          selector: { _id: { $in: collection?.books || [] } },
-        }),
-      ])
+        },
+      }),
+      fetchDocumentStates(ctx.db, collection.books),
+    ])
 
     const missingsBooksInCollection = difference(
       booksHavingCollectionAttached.map(({ _id }) => _id),
       collection.books,
     )
 
-    const danglingBooks = difference(
-      collection.books,
-      booksFromCollectionList.map(({ _id }) => _id),
-    )
+    const danglingBooks = collection.books.filter((id) => deletedIds.has(id))
 
     if (missingsBooksInCollection.length > 0 || danglingBooks.length > 0) {
       logger.log(
