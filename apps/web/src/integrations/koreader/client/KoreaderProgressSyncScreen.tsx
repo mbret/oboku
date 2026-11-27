@@ -10,7 +10,7 @@ import {
   styled,
   Typography,
 } from "@mui/material"
-import type { KoreaderSyncConnectionDto } from "@oboku/shared"
+import { isHttpUrl, type KoreaderSyncConnectionDto } from "@oboku/shared"
 import { useForm } from "react-hook-form"
 import { Link as RouterLink } from "react-router"
 import { TopBarNavigation } from "../../../navigation/TopBarNavigation"
@@ -19,7 +19,6 @@ import { Page } from "../../../common/Page"
 import { PageContainer } from "../../../common/PageContainer"
 import { PageSection } from "../../../common/PageSection"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import { isHttpUrl } from "../../../common/network/isHttpUrl"
 import { showConfirmDialog } from "../../../common/dialogs/presets"
 import { ErrorAlert } from "../../../errors/ErrorMessage"
 import { useConfig } from "../../../config/useConfig"

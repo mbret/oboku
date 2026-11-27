@@ -1,5 +1,5 @@
 import { AuthType, createClient } from "webdav"
-import { isHttpUrl } from "../../../../common/network/isHttpUrl"
+import { isHttpUrl } from "@oboku/shared"
 
 export const resolveWebdavUrl = ({
   connectorUrl,

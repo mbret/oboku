@@ -1,7 +1,7 @@
 import { PassThrough, type Readable } from "node:stream"
 import {
   getOpdsCredentialHeaders,
-  getOpdsUrlOrigin,
+  isHttpUrl,
   isOpdsConnectorOrigin,
   ObokuErrorCode,
   ObokuSharedError,
@@ -88,7 +88,7 @@ export async function getFromCatalog(
   let url = requestedUrl
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    if (getOpdsUrlOrigin(url.href) === undefined) {
+    if (!isHttpUrl(url.href)) {
       throw new Error(`OPDS URLs must be http(s), not ${url.protocol}`)
     }
 

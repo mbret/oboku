@@ -17,11 +17,11 @@ import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
-import { isHttpUrl } from "../common/network/isHttpUrl"
 import { notify } from "../notifications/toasts"
-import type {
-  SettingsConnectorDocType,
-  SettingsConnectorType,
+import {
+  isHttpUrl,
+  type SettingsConnectorDocType,
+  type SettingsConnectorType,
 } from "@oboku/shared"
 import { TestConnection, type TestConnectionFn } from "./TestConnection"
 import { useAddConnector } from "./useAddConnector"
