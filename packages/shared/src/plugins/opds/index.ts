@@ -1,5 +1,6 @@
 import { z } from "zod"
 import type { BaseLibrarySyncDocType } from "../../db/docTypes"
+import { isHttpUrl } from "../../utils/isHttpUrl"
 
 export const PLUGIN_OPDS_TYPE = "opds"
 
@@ -76,16 +77,9 @@ export const isOpdsFolderLinkData = (
   data: OpdsLinkData,
 ): data is OpdsFolderLinkData => "feedUrl" in data
 
-const HTTP_PROTOCOLS = ["http:", "https:"]
-
 /** The origin of an absolute http(s) URL, undefined for anything else. */
-export const getOpdsUrlOrigin = (url: string) => {
-  if (!URL.canParse(url)) return undefined
-
-  const { origin, protocol } = new URL(url)
-
-  return HTTP_PROTOCOLS.includes(protocol) ? origin : undefined
-}
+export const getOpdsUrlOrigin = (url: string) =>
+  isHttpUrl(url) ? new URL(url).origin : undefined
 
 /**
  * Whether a request to `url` may carry the credentials of the connector at

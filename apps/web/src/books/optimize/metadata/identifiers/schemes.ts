@@ -7,7 +7,7 @@ import {
   normalizeIsbn,
   parseUrn,
 } from "@prose-reader/archive-reader"
-import { isHttpUrl } from "../../../../common/network/isHttpUrl"
+import { isHttpUrl } from "@oboku/shared"
 
 export const CUSTOM_SCHEME_OPTION = "custom"
 

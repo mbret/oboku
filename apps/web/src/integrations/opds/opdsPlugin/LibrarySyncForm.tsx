@@ -3,13 +3,13 @@ import { Alert, Link } from "@mui/material"
 import { useForm } from "react-hook-form"
 import {
   getOpdsUrlOrigin,
+  isHttpUrl,
   isOpdsConnectorOrigin,
   links,
   type OpdsLibrarySyncDocType,
 } from "@oboku/shared"
 import { ControlledConnectorSelector } from "../../../common/forms/ControlledConnectorSelector"
 import { ControlledTextField } from "../../../common/forms/ControlledTextField"
-import { isHttpUrl } from "../../../common/network/isHttpUrl"
 import { useConnectors } from "../../../connectors/useConnectors"
 import { LibrarySyncFormLayout } from "../../plugins/common/LibrarySyncFormLayout"
 import {

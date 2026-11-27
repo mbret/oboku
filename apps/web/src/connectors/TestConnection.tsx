@@ -7,8 +7,7 @@ import {
   useUnlockMasterKey,
 } from "../secrets/useUnlockMasterKey"
 import { useDebouncedValue } from "../common/useDebouncedValue"
-import { isHttpUrl } from "../common/network/isHttpUrl"
-import type { SettingsConnectorType } from "@oboku/shared"
+import { isHttpUrl, type SettingsConnectorType } from "@oboku/shared"
 import { Alert, AlertTitle } from "@mui/material"
 
 export type ConnectionStatusQueryResult = {
