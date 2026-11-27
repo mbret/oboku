@@ -21,8 +21,6 @@ import { throwConnectorHttpException } from "../plugins/toConnectorHttpException
 import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
-const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
-
 type UserDb = createNano.DocumentScope<unknown>
 
 const createResourceNotFound = () =>
@@ -44,17 +42,15 @@ const streamWebdavLinkFile = async ({
     connectorId: link.data.connectorId,
     type: "webdav",
   })
-  const { stream, name, contentType, size, expectedSize } =
-    await streamWebdavFile({
-      connector,
-      password,
-      filePath: link.data.filePath,
-    })
+  const { stream, name, size, expectedSize } = await streamWebdavFile({
+    connector,
+    password,
+    filePath: link.data.filePath,
+  })
 
   return {
     stream,
     name: name ?? link.data.filePath.split("/").pop() ?? link._id,
-    contentType: contentType || UNKNOWN_CONTENT_TYPE,
     size,
     expectedSize,
   }

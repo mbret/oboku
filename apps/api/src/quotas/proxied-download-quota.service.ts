@@ -43,6 +43,8 @@ class ByteCountingStream extends Transform {
   }
 }
 
+const UNTYPED_FILE_CONTENT_TYPE = "application/octet-stream"
+
 /** The UTC month `date` falls in, as its counter's key, and when the next one starts. */
 const toUsagePeriod = (date: Date) => ({
   month: `${date.toISOString().slice(0, 7)}-01`,
@@ -72,8 +74,12 @@ export type ProxiedFile = {
   stream: NodeJS.ReadableStream
   /** The file name the answer gives, which also types it by its extension. */
   name: string
-  /** The media type the answer gives, which replaces the one of the name. */
-  contentType: string
+  /**
+   * The media type the answer gives, which replaces the one of the name, else
+   * `application/octet-stream`. The API chooses it, never the source: the
+   * answer comes from the API's origin.
+   */
+  contentType?: string
   /** The number of bytes `stream` yields, when the source states it. */
   size?: number
   /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
@@ -256,7 +262,10 @@ export class ProxiedDownloadQuotaService {
       )
     }
 
-    response.attachment(file.name).type(file.contentType)
+    response
+      .attachment(file.name)
+      .type(file.contentType ?? UNTYPED_FILE_CONTENT_TYPE)
+      .set("X-Content-Type-Options", "nosniff")
 
     const streamableFile = new StreamableFile(meteredFile.stream, {
       length: file.size,

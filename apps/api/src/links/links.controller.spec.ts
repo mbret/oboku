@@ -307,6 +307,20 @@ describe("LinksController", () => {
     )
   })
 
+  it("answers the file as bytes the browser must not sniff, whatever type the WebDAV server states", async () => {
+    getFileMetadata.mockResolvedValue({
+      modifiedAt: "2026-11-16T08:00:00.000Z",
+      contentType: "text/html",
+      bookMetadata: { size: String(WEBDAV_STAT_SIZE) },
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
+
+    expect(response.status).toBe(200)
+    expect(response.headers["content-type"]).toBe("application/octet-stream")
+    expect(response.headers["x-content-type-options"]).toBe("nosniff")
+  })
+
   it("answers 404 for a link the reader's library does not hold", async () => {
     const response = await downloadLink("link-of-someone-else")
 
@@ -537,6 +551,25 @@ describe("LinksController", () => {
           bytes: BOOK_BYTES.length,
         }),
       )
+    })
+
+    it("answers the file as bytes the browser must not sniff, whatever type the catalog states", async () => {
+      const { link } = await serveCatalog({
+        fileRoute: {
+          headers: { "content-type": "text/html" },
+          body: BOOK_BYTES,
+        },
+        length: BOOK_BYTES.length,
+      })
+
+      const response = await downloadLink(
+        link._id,
+        CATALOG_CREDENTIALS,
+      ).responseType("blob")
+
+      expect(response.status).toBe(200)
+      expect(response.headers["content-type"]).toBe("application/octet-stream")
+      expect(response.headers["x-content-type-options"]).toBe("nosniff")
     })
 
     it("reserves the length the feed states when the catalog's answer states none", async () => {

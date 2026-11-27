@@ -1229,6 +1229,7 @@ describe("OpdsCatalogController", () => {
 
       expect(response.status).toBe(200)
       expect(response.headers["content-type"]).toBe("application/epub+zip")
+      expect(response.headers["x-content-type-options"]).toBe("nosniff")
       expect(response.headers["content-disposition"]).toBe(
         "attachment; filename=Dune.epub",
       )

@@ -29,7 +29,7 @@ export const streamWebdavFile = async ({
   filePath: string
 }) => {
   const client = createWebdavClient({ ...connector, password })
-  const { name, contentType, bookMetadata } = await getFileMetadataFromWebdav(
+  const { name, bookMetadata } = await getFileMetadataFromWebdav(
     client,
     filePath,
   )
@@ -48,7 +48,6 @@ export const streamWebdavFile = async ({
       function leaveErrorsToTheMeteredStream() {},
     ),
     name,
-    contentType,
     size,
     expectedSize,
   }

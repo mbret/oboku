@@ -57,7 +57,6 @@ export const streamOpdsFile = async ({
       function leaveErrorsToTheMeteredStream() {},
     ),
     name: title,
-    contentType: toHeaderText(headers["content-type"]) || acquisition.type,
     size,
     expectedSize,
   }
