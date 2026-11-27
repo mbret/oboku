@@ -1,12 +1,12 @@
 import { createBookDefaults } from "@oboku/shared"
 import { renderHook } from "@testing-library/react"
-import { describe, expect, it, vi } from "vitest"
-import { createDatabaseForTest } from "../rxdb/createDatabaseForTest"
+import { describe, expect, it, onTestFinished, vi } from "vitest"
+import { openAppTestDatabase } from "../rxdb/appDatabase.fixture"
 import { useCollections } from "./useCollections"
 
 describe("useCollections", () => {
   it("hides a collection whose only held book is not interested, even when it lists the id of a missing book", async () => {
-    const { database, wrapper } = await createDatabaseForTest()
+    const { database, wrapper } = await openAppTestDatabase()
     const notInterestedBook = await database.book.post({
       ...createBookDefaults(),
       isNotInterested: true,
@@ -23,12 +23,13 @@ describe("useCollections", () => {
       modifiedAt: null,
     })
 
-    const { result } = renderHook(
+    const { result, unmount } = renderHook(
       function renderUseCollections() {
         return useCollections({ isNotInterested: "none" })
       },
       { wrapper },
     )
+    onTestFinished(unmount)
 
     await vi.waitFor(function expectOnlyTheInterestedCollection() {
       expect(result.current.data?.map(({ _id }) => _id)).toEqual([

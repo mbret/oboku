@@ -17,7 +17,8 @@ import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 import { useConfig } from "../../config/useConfig"
 import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../../navigation/routes"
-import { useExistingBookIds } from "../../books/useExistingBookIds"
+import { useHeldBookIds } from "../../books/useHeldBookIds"
+import { formatBookCount } from "../../books/formatBookCount"
 
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -51,7 +52,7 @@ export const CollectionListItem = memo(function CollectionListItem({
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const title = useCollectionDisplayTitle(metadata.title)
   const isEmptyCollection = id === config?.COLLECTION_EMPTY_ID
-  const { data: existingBookIds } = useExistingBookIds(item?.books)
+  const heldBookIds = useHeldBookIds(item?.books)
 
   return (
     <ListItem
@@ -89,9 +90,7 @@ export const CollectionListItem = memo(function CollectionListItem({
         >
           <ListItemText
             primary={title ?? `\u00a0`}
-            secondary={
-              existingBookIds ? `${existingBookIds.length} book(s)` : `\u00a0`
-            }
+            secondary={formatBookCount(heldBookIds?.length)}
             slotProps={{
               primary: {
                 sx: {
