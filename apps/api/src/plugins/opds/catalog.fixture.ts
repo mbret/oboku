@@ -1,5 +1,5 @@
 import { once } from "node:events"
-import { createServer } from "node:http"
+import { createServer, type IncomingHttpHeaders } from "node:http"
 import type { AddressInfo } from "node:net"
 import type { OpdsConnectorDocType } from "@oboku/shared"
 import type createNano from "nano"
@@ -109,12 +109,14 @@ const isPortAddress = (
 
 export async function startServer(routes: Record<string, Route>) {
   const onRequest = vi.fn<(request: ReceivedRequest) => void>()
+  const onRequestHeaders = vi.fn<(headers: IncomingHttpHeaders) => void>()
   const onAnswerClosed = vi.fn<(path: string | undefined) => void>()
   const server = createServer(function answerFromRoutes(request, response) {
     onRequest({
       path: request.url,
       authorization: request.headers.authorization,
     })
+    onRequestHeaders(request.headers)
 
     const route = routes[request.url ?? ""]
 
@@ -156,7 +158,13 @@ export async function startServer(routes: Record<string, Route>) {
 
   const host = `127.0.0.1:${address.port}`
 
-  return { host, origin: `http://${host}`, onRequest, onAnswerClosed }
+  return {
+    host,
+    origin: `http://${host}`,
+    onRequest,
+    onRequestHeaders,
+    onAnswerClosed,
+  }
 }
 
 export const allowServers = (...servers: { host: string }[]) =>

@@ -30,10 +30,10 @@ export class LinksController {
   ) {}
 
   /**
-   * The file of a WebDAV link, read from its server by the API, for a server
-   * that refuses requests from the browser. It counts towards the monthly
-   * proxied download quotas, and answers 429 until the next month once it
-   * would pass one.
+   * The file of a WebDAV link or of an OPDS book, read from its connector's
+   * server by the API, for a server that refuses requests from the browser.
+   * It counts towards the monthly proxied download quotas, and answers 429
+   * until the next month once it would pass one.
    */
   @Post("download")
   @HttpCode(HttpStatus.OK)

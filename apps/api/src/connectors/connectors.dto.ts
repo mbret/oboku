@@ -8,7 +8,7 @@ import {
   Matches,
   ValidateNested,
 } from "class-validator"
-import { WebdavCredentialsDto } from "../plugins/webdav/webdav-credentials.dto.js"
+import { ConnectorCredentialsDto } from "./connector-credentials.dto.js"
 
 export const WEBDAV_DIRECTORY_ITEM_TYPES = ["file", "directory"] as const
 
@@ -26,8 +26,8 @@ export class ListWebdavDirectoryDto {
 
   @IsObject()
   @ValidateNested()
-  @Type(() => WebdavCredentialsDto)
-  providerCredentials!: WebdavCredentialsDto
+  @Type(() => ConnectorCredentialsDto)
+  providerCredentials!: ConnectorCredentialsDto
 
   @IsOptional()
   @IsBoolean()

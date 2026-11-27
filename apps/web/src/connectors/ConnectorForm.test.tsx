@@ -79,7 +79,7 @@ const synologyConnector: SynologyDriveConnectorDocType = {
 const renderConnectorForm = (
   props: Pick<
     Parameters<typeof ConnectorForm>[0],
-    "connectorType" | "showProxyThroughServer"
+    "connectorType" | "proxyThroughServerCaption"
   >,
 ) =>
   render(
@@ -105,7 +105,7 @@ describe("ConnectorForm", () => {
     mocks.updateConnector.mockResolvedValue(undefined)
     renderConnectorForm({
       connectorType: "webdav",
-      showProxyThroughServer: true,
+      proxyThroughServerCaption: "For a server that refuses the browser.",
     })
     const proxyCheckbox = await screen.findByRole("checkbox", {
       name: "Use oboku's server as a proxy",
