@@ -13,8 +13,7 @@ import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
 import { findAll, isCouchNotFound, retryFn } from "../couch/dbHelpers.js"
 import { hasUrlScheme } from "../http/url.js"
-import { listUserDatabases } from "../couch/listUserDatabases.js"
-import { tolerateMissingUserDb } from "../couch/tolerateMissingUserDb.js"
+import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
 import { CoversService } from "../covers/covers.service.js"
 import {
   CopyObjectCommand,
@@ -34,6 +33,30 @@ import type {
 } from "./migration.dto.js"
 
 const logger = new Logger("MigrationService")
+
+const sum = (values: readonly number[]) =>
+  values.reduce((total, value) => total + value, 0)
+
+const sumResourceIdUpdates = (
+  updatesPerUser: readonly {
+    linksUpdated: number
+    collectionsUpdated: number
+  }[],
+): ResourceIdMigrationResponseDto => ({
+  usersMigrated: updatesPerUser.filter(
+    (updates) => updates.linksUpdated + updates.collectionsUpdated > 0,
+  ).length,
+  linksUpdated: sum(updatesPerUser.map((updates) => updates.linksUpdated)),
+  collectionsUpdated: sum(
+    updatesPerUser.map((updates) => updates.collectionsUpdated),
+  ),
+})
+
+const NO_COVER_RENAMES = {
+  renamed: 0,
+  skippedDestinationExists: 0,
+  skippedSourceMissing: 0,
+}
 
 /** The connector's URL with `https://` added, or undefined when it needs none. */
 const toHttpsUrl = (connector: SettingsConnectorDocType) => {
@@ -324,22 +347,15 @@ export class MigrationService implements OnApplicationBootstrap {
      *   `settings.connectors`.
      */
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    logger.log(
-      `Migrating webdavConnectors to connectors for ${userDbs.length} user databases`,
-    )
+    logger.log("Migrating webdavConnectors to connectors")
 
-    let usersMigrated = 0
-    let connectorsCreated = 0
-
-    for (let i = 0; i < userDbs.length; i++) {
-      const userEntry = userDbs[i]
-      if (!userEntry) continue
-      const { dbName: userDbName, email } = userEntry
-      const progress = `[${i + 1}/${userDbs.length}]`
-
-      await tolerateMissingUserDb(email, async () => {
+    const connectorsCreatedPerUser = await forEachUserDatabase(
+      db,
+      async function migrateUserWebdavConnectors(
+        { dbName: userDbName, email },
+        progress,
+      ) {
         const userDbInstance = db.use<SettingsDoc>(userDbName)
 
         // Step 2: Load the user's settings document (skip if missing)
@@ -349,7 +365,7 @@ export class MigrationService implements OnApplicationBootstrap {
         } catch (err: unknown) {
           if (isCouchNotFound(err)) {
             logger.log(`${progress} ${email}: skipped (no settings doc)`)
-            return
+            return 0
           }
           throw err
         }
@@ -362,7 +378,7 @@ export class MigrationService implements OnApplicationBootstrap {
           webdavConnectors.length === 0
         ) {
           logger.log(`${progress} ${email}: skipped (no webdavConnectors)`)
-          return
+          return 0
         }
 
         // Step 4: Build new connector entries from webdavConnectors that have an id (skip
@@ -395,7 +411,7 @@ export class MigrationService implements OnApplicationBootstrap {
           logger.log(
             `${progress} ${email}: skipped (all webdavConnectors already migrated)`,
           )
-          return
+          return 0
         }
 
         // Step 5: Merge new connectors into settings and remove deprecated webdavConnectors
@@ -407,13 +423,17 @@ export class MigrationService implements OnApplicationBootstrap {
 
         // Step 6: Write back in a single update (CouchDB update via insert with _rev)
         await userDbInstance.insert(updated)
-        usersMigrated++
-        connectorsCreated += newConnectors.length
         logger.log(
           `${progress} ${email}: migrated ${newConnectors.length} webdav connector(s)`,
         )
-      })
-    }
+
+        return newConnectors.length
+      },
+    )
+    const usersMigrated = connectorsCreatedPerUser.filter(
+      (count) => count > 0,
+    ).length
+    const connectorsCreated = sum(connectorsCreatedPerUser)
 
     logger.log(
       `Migrated webdavConnectors to connectors: ${usersMigrated} users, ${connectorsCreated} connectors created`,
@@ -428,36 +448,33 @@ export class MigrationService implements OnApplicationBootstrap {
    */
   async migrateConnectorUrlSchemes(): Promise<ConnectorUrlSchemesMigrationResponseDto> {
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    logger.log(
-      `Adding https:// to connector URLs without a scheme for ${userDbs.length} user databases`,
-    )
+    logger.log("Adding https:// to connector URLs without a scheme")
 
-    let usersMigrated = 0
-    let connectorsUpdated = 0
-
-    for (const [index, { dbName, email }] of userDbs.entries()) {
-      const progress = `[${index + 1}/${userDbs.length}]`
-      const userConnectorsUpdated = await tolerateMissingUserDb(
-        email,
-        function migrateUserSettings() {
-          return retryFn(function addHttpsToUserConnectorUrls() {
+    const connectorsUpdatedPerUser = await forEachUserDatabase(
+      db,
+      async function addHttpsToUserConnectorUrls({ dbName, email }, progress) {
+        const userConnectorsUpdated = await retryFn(
+          function addHttpsToSchemelessUserConnectorUrls() {
             return addHttpsToSchemelessConnectorUrls(
               db.use<SettingsDocType>(dbName),
             )
-          })
-        },
-      )
+          },
+        )
 
-      if (!userConnectorsUpdated) continue
+        if (userConnectorsUpdated > 0) {
+          logger.log(
+            `${progress} ${email}: added https:// to ${userConnectorsUpdated} connector URL(s)`,
+          )
+        }
 
-      usersMigrated++
-      connectorsUpdated += userConnectorsUpdated
-      logger.log(
-        `${progress} ${email}: added https:// to ${userConnectorsUpdated} connector URL(s)`,
-      )
-    }
+        return userConnectorsUpdated
+      },
+    )
+    const usersMigrated = connectorsUpdatedPerUser.filter(
+      (count) => count > 0,
+    ).length
+    const connectorsUpdated = sum(connectorsUpdatedPerUser)
 
     logger.log(
       `Added https:// to connector URLs: ${usersMigrated} users, ${connectorsUpdated} connectors updated`,
@@ -511,21 +528,15 @@ export class MigrationService implements OnApplicationBootstrap {
      *   handling can be removed with much lower risk.
      */
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    logger.log(
-      `Migrating legacy WebDAV resource IDs for ${userDbs.length} user databases`,
-    )
+    logger.log("Migrating legacy WebDAV resource IDs")
 
-    let usersMigrated = 0
-    let linksUpdated = 0
-    let collectionsUpdated = 0
-
-    for (let i = 0; i < userDbs.length; i++) {
-      const userEntry = userDbs[i]
-      if (!userEntry) continue
-      const { dbName: userDbName, email } = userEntry
-      await tolerateMissingUserDb(email, async () => {
+    const updatesPerUser = await forEachUserDatabase(
+      db,
+      async function migrateUserWebdavResourceIds(
+        { dbName: userDbName, email },
+        progress,
+      ) {
         const userDbInstance = db.use<LinkDoc | CollectionDoc>(userDbName)
         const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
         let userLinksUpdated = 0
@@ -590,22 +601,23 @@ export class MigrationService implements OnApplicationBootstrap {
           userCollectionsUpdated += 1
         }
 
-        linksUpdated += userLinksUpdated
-        collectionsUpdated += userCollectionsUpdated
-
         if (docsToUpdate.length > 0) {
           await userDbInstance.bulk({ docs: docsToUpdate })
-          usersMigrated += 1
           logger.log(
-            `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+            `${progress} ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
           )
         } else {
-          logger.log(
-            `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
-          )
+          logger.log(`${progress} ${email}: skipped (nothing to migrate)`)
         }
-      })
-    }
+
+        return {
+          linksUpdated: userLinksUpdated,
+          collectionsUpdated: userCollectionsUpdated,
+        }
+      },
+    )
+    const { usersMigrated, linksUpdated, collectionsUpdated } =
+      sumResourceIdUpdates(updatesPerUser)
 
     logger.log(
       `Migrated legacy WebDAV resource IDs: ${usersMigrated} users, ${linksUpdated} links, ${collectionsUpdated} collections`,
@@ -640,21 +652,15 @@ export class MigrationService implements OnApplicationBootstrap {
      *   are skipped (the extracted value would match what's already there).
      */
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    logger.log(
-      `Migrating resourceId to link data for ${userDbs.length} user databases`,
-    )
+    logger.log("Migrating resourceId to link data")
 
-    let usersMigrated = 0
-    let linksUpdated = 0
-    let collectionsUpdated = 0
-
-    for (let i = 0; i < userDbs.length; i++) {
-      const userEntry = userDbs[i]
-      if (!userEntry) continue
-      const { dbName: userDbName, email } = userEntry
-      await tolerateMissingUserDb(email, async () => {
+    const updatesPerUser = await forEachUserDatabase(
+      db,
+      async function migrateUserResourceIdToLinkData(
+        { dbName: userDbName, email },
+        progress,
+      ) {
         const userDb = db.use<LinkDoc | CollectionDoc>(userDbName)
         const docsToUpdate: (LinkDoc | CollectionDoc)[] = []
         let userLinksUpdated = 0
@@ -715,22 +721,23 @@ export class MigrationService implements OnApplicationBootstrap {
           userCollectionsUpdated += 1
         }
 
-        linksUpdated += userLinksUpdated
-        collectionsUpdated += userCollectionsUpdated
-
         if (docsToUpdate.length > 0) {
           await userDb.bulk({ docs: docsToUpdate })
-          usersMigrated += 1
           logger.log(
-            `[${i + 1}/${userDbs.length}] ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
+            `${progress} ${email}: ${userLinksUpdated} links, ${userCollectionsUpdated} collections`,
           )
         } else {
-          logger.log(
-            `[${i + 1}/${userDbs.length}] ${email}: skipped (nothing to migrate)`,
-          )
+          logger.log(`${progress} ${email}: skipped (nothing to migrate)`)
         }
-      })
-    }
+
+        return {
+          linksUpdated: userLinksUpdated,
+          collectionsUpdated: userCollectionsUpdated,
+        }
+      },
+    )
+    const { usersMigrated, linksUpdated, collectionsUpdated } =
+      sumResourceIdUpdates(updatesPerUser)
 
     logger.log(
       `Migrated resourceId to link data: ${usersMigrated} users, ${linksUpdated} links, ${collectionsUpdated} collections`,
@@ -777,10 +784,9 @@ export class MigrationService implements OnApplicationBootstrap {
     )
 
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
     logger.log(
-      `Renaming legacy collection covers for ${userDbs.length} user databases (storage: ${storageStrategy})`,
+      `Renaming legacy collection covers (storage: ${storageStrategy})`,
     )
 
     // Build a single rename function so the per-collection loop below is
@@ -790,16 +796,9 @@ export class MigrationService implements OnApplicationBootstrap {
         ? this.buildS3LegacyCoverRenamer()
         : this.buildFsLegacyCoverRenamer()
 
-    let renamed = 0
-    let skippedDestinationExists = 0
-    let skippedSourceMissing = 0
-
-    for (let i = 0; i < userDbs.length; i++) {
-      const userDb = userDbs[i]
-      if (!userDb) continue
-      const progress = `[${i + 1}/${userDbs.length}]`
-
-      await tolerateMissingUserDb(userDb.email, async () => {
+    const renamesPerUser = await forEachUserDatabase(
+      db,
+      async function renameUserLegacyCovers(userDb, progress) {
         const userDbInstance = db.use<Pick<CollectionDocType, "_id">>(
           userDb.dbName,
         )
@@ -811,7 +810,7 @@ export class MigrationService implements OnApplicationBootstrap {
 
         if (collections.length === 0) {
           logger.log(`${progress} ${userDb.email}: skipped (no collections)`)
-          return
+          return NO_COVER_RENAMES
         }
 
         let userRenamed = 0
@@ -836,23 +835,32 @@ export class MigrationService implements OnApplicationBootstrap {
           }
         }
 
-        renamed += userRenamed
-        skippedDestinationExists += userSkippedDestinationExists
-        skippedSourceMissing += userSkippedSourceMissing
-
         logger.log(
           `${progress} ${userDb.email}: ${collections.length} collection(s), renamed=${userRenamed}, destinationExists=${userSkippedDestinationExists}, sourceMissing=${userSkippedSourceMissing}`,
         )
-      })
-    }
+
+        return {
+          renamed: userRenamed,
+          skippedDestinationExists: userSkippedDestinationExists,
+          skippedSourceMissing: userSkippedSourceMissing,
+        }
+      },
+    )
+    const renamed = sum(renamesPerUser.map((user) => user.renamed))
+    const skippedDestinationExists = sum(
+      renamesPerUser.map((user) => user.skippedDestinationExists),
+    )
+    const skippedSourceMissing = sum(
+      renamesPerUser.map((user) => user.skippedSourceMissing),
+    )
 
     logger.log(
-      `Legacy collection cover key migration done: storage=${storageStrategy}, users=${userDbs.length}, renamed=${renamed}, destinationExists=${skippedDestinationExists}, sourceMissing=${skippedSourceMissing}`,
+      `Legacy collection cover key migration done: storage=${storageStrategy}, users=${renamesPerUser.length}, renamed=${renamed}, destinationExists=${skippedDestinationExists}, sourceMissing=${skippedSourceMissing}`,
     )
 
     return {
       storageStrategy,
-      ranOnUsers: userDbs.length,
+      ranOnUsers: renamesPerUser.length,
       renamed,
       skippedDestinationExists,
       skippedSourceMissing,

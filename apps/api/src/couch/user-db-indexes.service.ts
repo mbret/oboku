@@ -1,6 +1,6 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
-import { listUserDatabases } from "./listUserDatabases.js"
-import { tolerateMissingUserDb } from "./tolerateMissingUserDb.js"
+import { forEachUserDatabase } from "./forEachUserDatabase.js"
+import type { UserDatabase } from "./listUserDatabases.js"
 import { ensureUserDbIndexes } from "./userDbIndexes.js"
 import { CouchService } from "./couch.service.js"
 
@@ -26,34 +26,33 @@ export class UserDbIndexesService implements OnApplicationBootstrap {
 
   async ensureOnAllUserDatabases() {
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    this.logger.log(`Ensuring indexes on ${userDbs.length} user databases`)
+    this.logger.log("Ensuring indexes on the user databases")
 
-    let ranOnUsers = 0
-    let indexesCreated = 0
-    let indexesExisting = 0
+    const ensureUserIndexes = async (
+      { dbName, email }: UserDatabase,
+      progress: string,
+    ) => {
+      const result = await ensureUserDbIndexes(db.use(dbName))
 
-    for (let i = 0; i < userDbs.length; i++) {
-      const userEntry = userDbs[i]
-      if (!userEntry) continue
-      const { dbName, email } = userEntry
-      const progress = `[${i + 1}/${userDbs.length}]`
+      if (result.created.length > 0) {
+        this.logger.log(
+          `${progress} ${email}: ${result.created.length} index(es) created`,
+        )
+      }
 
-      await tolerateMissingUserDb(email, async () => {
-        const result = await ensureUserDbIndexes(db.use(dbName))
-
-        ranOnUsers++
-        indexesCreated += result.created.length
-        indexesExisting += result.existing.length
-
-        if (result.created.length > 0) {
-          this.logger.log(
-            `${progress} ${email}: ${result.created.length} index(es) created`,
-          )
-        }
-      })
+      return result
     }
+    const results = await forEachUserDatabase(db, ensureUserIndexes)
+    const ranOnUsers = results.length
+    const indexesCreated = results.reduce(
+      (total, result) => total + result.created.length,
+      0,
+    )
+    const indexesExisting = results.reduce(
+      (total, result) => total + result.existing.length,
+      0,
+    )
 
     this.logger.log(
       `Ensured user db indexes: ${ranOnUsers} users, ${indexesCreated} created, ${indexesExisting} already present`,

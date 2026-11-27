@@ -2,7 +2,8 @@ import type { AnnotationDocType, LinkDocType } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { CouchService } from "../couch/couch.service.js"
-import { listUserDatabases } from "../couch/listUserDatabases.js"
+import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
+import type { UserDatabase } from "../couch/listUserDatabases.js"
 import { deleteDocumentsOfDeletedBooks } from "./deleteDocumentsOfDeletedBooks.js"
 
 @Injectable()
@@ -14,9 +15,8 @@ export class DeletedBooksCleanupService {
   @Cron("0 4 * * *")
   async cleanupDocumentsOfDeletedBooks() {
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
 
-    for (const userDb of userDbs) {
+    const deleteUserDocumentsOfDeletedBooks = async (userDb: UserDatabase) => {
       try {
         const deletedAnnotationCount = await deleteDocumentsOfDeletedBooks(
           db.use<AnnotationDocType>(userDb.dbName),
@@ -39,5 +39,7 @@ export class DeletedBooksCleanupService {
         )
       }
     }
+
+    await forEachUserDatabase(db, deleteUserDocumentsOfDeletedBooks)
   }
 }

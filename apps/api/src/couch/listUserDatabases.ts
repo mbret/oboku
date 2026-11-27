@@ -6,7 +6,15 @@ import { findAll } from "./dbHelpers.js"
 
 const logger = new Logger("listUserDatabases")
 
-export const listUserDatabases = async (db: createNano.ServerScope) => {
+export type UserDatabase = {
+  email: string
+  userNameHex: string
+  dbName: string
+}
+
+export const listUserDatabases = async (
+  db: createNano.ServerScope,
+): Promise<UserDatabase[]> => {
   logger.log("Listing user databases (querying _users + db list)...")
 
   const usersDb = db.use<UserCouchEntity>("_users")

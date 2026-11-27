@@ -8,7 +8,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { CouchService } from "../couch/couch.service.js"
 import { findAll } from "../couch/dbHelpers.js"
-import { listUserDatabases } from "../couch/listUserDatabases.js"
+import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
 import { formatDuration } from "../storage/formatDuration.js"
 import { CoversService } from "./covers.service.js"
 
@@ -31,49 +31,46 @@ export class CoversCleanupService {
    */
   private async listKeepableCoverKeys() {
     const db = await this.couchService.createAdminNanoInstance()
-    const userDbs = await listUserDatabases(db)
-    const keepableCoverKeys = new Set<string>()
+    const keepableCoverKeysPerUser = await forEachUserDatabase(
+      db,
+      async function listUserKeepableCoverKeys(userDb) {
+        const userDbInstance = db.use<
+          Pick<BookDocType, "_id" | "rx_model"> &
+            Pick<CollectionDocType, "metadata">
+        >(userDb.dbName)
 
-    for (const userDb of userDbs) {
-      const userDbInstance = db.use<
-        Pick<BookDocType, "_id" | "rx_model"> &
-          Pick<CollectionDocType, "metadata">
-      >(userDb.dbName)
+        const books = await findAll(userDbInstance, {
+          selector: {
+            rx_model: "book",
+          },
+          fields: ["_id"],
+        })
 
-      const books = await findAll(userDbInstance, {
-        selector: {
-          rx_model: "book",
-        },
-        fields: ["_id"],
-      })
+        const collections = await findAll(userDbInstance, {
+          selector: {
+            rx_model: "obokucollection",
+          },
+          fields: ["_id", "metadata"],
+        })
 
-      for (const book of books) {
-        keepableCoverKeys.add(getBookCoverKey(userDb.userNameHex, book._id))
-      }
-
-      const collections = await findAll(userDbInstance, {
-        selector: {
-          rx_model: "obokucollection",
-        },
-        fields: ["_id", "metadata"],
-      })
-
-      for (const collection of collections) {
-        const hasDedicatedCover = !!collection.metadata?.some(
-          (metadata) => metadata.cover?.uri,
+        const collectionsWithDedicatedCover = collections.filter(
+          function hasDedicatedCover(collection) {
+            return !!collection.metadata?.some(
+              (metadata) => metadata.cover?.uri,
+            )
+          },
         )
 
-        if (!hasDedicatedCover) {
-          continue
-        }
+        return [
+          ...books.map((book) => getBookCoverKey(userDb.userNameHex, book._id)),
+          ...collectionsWithDedicatedCover.map((collection) =>
+            getCollectionCoverKey(userDb.userNameHex, collection._id),
+          ),
+        ]
+      },
+    )
 
-        keepableCoverKeys.add(
-          getCollectionCoverKey(userDb.userNameHex, collection._id),
-        )
-      }
-    }
-
-    return keepableCoverKeys
+    return new Set(keepableCoverKeysPerUser.flat())
   }
 
   @Cron("0 3 * * *")
