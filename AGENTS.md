@@ -105,6 +105,12 @@ Use one word for each concept, in code, in the UI and in the docs. Stored names 
 - Call an API route through its generated function, with the app's client: `notificationsList({ client: httpClientApi.sdkClient })` in the web app, `adminListUsers({ client: apiClient })` in the admin app. A request that cannot use the functions, like the web app's token refresh, types its request and response with the route's generated types (`AuthRefreshTokenResponse`), so it follows the route when its DTOs change.
 - `apps/docs/src/content/docs/development/api-types.md` covers the workflow and the decorators a route needs when the plugin cannot infer its schema.
 
+### API: one process
+
+- The API runs as one process, never as replicas. The self-hosting docs require it ("Run the API as a single instance" in `apps/docs/src/content/docs/self-hosting/installation.md`).
+- Several of its parts keep state in that process's memory: the key that encrypts a refresh token's successor (`RefreshTokensService`), the refresh proofs already seen (`RefreshProofService`), and the task queues (`InMemoryTaskQueueService`).
+- Design for one process. Keep in memory the state that a restart may lose, with no shared store, and put the state that must survive a restart in Postgres or CouchDB. Never list "another API process" as a gap, a risk or a case to handle.
+
 ### Web app routes
 
 - `ROUTES` in `apps/web/src/navigation/routes.ts` holds the pattern of every route the web app defines. A new route gets its entry there.
