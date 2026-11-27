@@ -2,14 +2,16 @@ import type { CollectionDocType } from "@oboku/shared"
 import type { DeepReadonlyObject } from "rxdb"
 import { useBookCoverUrl } from "../books/useBookCover"
 import { useConfig } from "../config/useConfig"
-import { useHeldBookIds } from "../books/useHeldBookIds"
+import { selectHeldIds, useBookIds } from "../books/states"
 
 export const useCollectionCoverUri = (
   collection?: DeepReadonlyObject<CollectionDocType> | null,
 ) => {
   const { data: config } = useConfig()
   const assetHash = collection?.lastMetadataUpdatedAt?.toString()
-  const heldBookIds = useHeldBookIds(collection?.books)
+  const { data: heldBookIds } = useBookIds({
+    select: selectHeldIds(collection?.books),
+  })
   const { coverSrc: firstBookCoverSrc, hasCoverMetadata } = useBookCoverUrl({
     bookId: heldBookIds?.[0],
   })

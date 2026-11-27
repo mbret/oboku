@@ -101,6 +101,20 @@ export const useBookIds = <TData = string[]>(
     ...options,
   })
 
+/**
+ * A `useBookIds` selector: the ids in `ids` of the books this device holds, in
+ * the order of `ids`, or `undefined` while `ids` is. `ids` can hold ids of
+ * deleted books, or of books the device has not received yet.
+ */
+export const selectHeldIds =
+  (ids: DeepReadonlyArray<string> | undefined) => (bookIds: string[]) => {
+    if (ids === undefined) return undefined
+
+    const heldBookIds = new Set(bookIds)
+
+    return ids.filter((id) => heldBookIds.has(id))
+  }
+
 type BookQueryOptions = ReturnType<typeof createRxdbQueryDefaultOptions> & {
   queryKey: (string | { id: string | undefined })[]
   queryFn:

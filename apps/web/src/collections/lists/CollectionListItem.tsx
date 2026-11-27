@@ -17,7 +17,7 @@ import { useCollectionDisplayTitle } from "../useCollectionDisplayTitle"
 import { useConfig } from "../../config/useConfig"
 import { generatePath, useNavigate } from "react-router"
 import { ROUTES } from "../../navigation/routes"
-import { useHeldBookIds } from "../../books/useHeldBookIds"
+import { selectHeldIds, useBookIds } from "../../books/states"
 import { formatBookCount } from "../../books/formatBookCount"
 
 const ListItemButton = styled(MuiListItemButton)(({ theme }) => ({
@@ -52,7 +52,9 @@ export const CollectionListItem = memo(function CollectionListItem({
   const { open: openActionDrawer } = useCollectionActionsDrawer(id)
   const title = useCollectionDisplayTitle(metadata.title)
   const isEmptyCollection = id === config?.COLLECTION_EMPTY_ID
-  const heldBookIds = useHeldBookIds(item?.books)
+  const { data: heldBookIds } = useBookIds({
+    select: selectHeldIds(item?.books),
+  })
 
   return (
     <ListItem

@@ -3,9 +3,9 @@ import { renderHook } from "@testing-library/react"
 import type { DeepReadonlyArray } from "rxdb"
 import { describe, expect, it, onTestFinished, vi } from "vitest"
 import { openAppTestDatabase } from "../rxdb/appDatabase.fixture"
-import { useHeldBookIds } from "./useHeldBookIds"
+import { selectHeldIds, useBookIds } from "./states"
 
-describe("useHeldBookIds", () => {
+describe("useBookIds with selectHeldIds", () => {
   it("returns the ids of the books the device holds, in the order of the ids, and leaves out the id of a missing book", async () => {
     const { database, wrapper } = await openAppTestDatabase()
     const firstBook = await database.book.post(createBookDefaults())
@@ -13,8 +13,8 @@ describe("useHeldBookIds", () => {
     const ids = [secondBook._id, "deleted-book", firstBook._id]
 
     const { result, unmount } = renderHook(
-      function renderUseHeldBookIds() {
-        return useHeldBookIds(ids)
+      function renderUseBookIds() {
+        return useBookIds({ select: selectHeldIds(ids) }).data
       },
       { wrapper },
     )
@@ -41,8 +41,8 @@ describe("useHeldBookIds", () => {
     const ids = [protectedBook._id]
 
     const { result, unmount } = renderHook(
-      function renderUseHeldBookIds() {
-        return useHeldBookIds(ids)
+      function renderUseBookIds() {
+        return useBookIds({ select: selectHeldIds(ids) }).data
       },
       { wrapper },
     )
@@ -62,8 +62,8 @@ describe("useHeldBookIds", () => {
       string[] | undefined,
       { ids: DeepReadonlyArray<string> | undefined }
     >(
-      function renderUseHeldBookIds({ ids }) {
-        return useHeldBookIds(ids)
+      function renderUseBookIds({ ids }) {
+        return useBookIds({ select: selectHeldIds(ids) }).data
       },
       { wrapper, initialProps: { ids: [firstBook._id] } },
     )

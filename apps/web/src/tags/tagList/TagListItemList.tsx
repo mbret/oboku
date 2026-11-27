@@ -7,7 +7,7 @@ import {
 } from "@mui/icons-material"
 import { useSignalValue } from "reactjrx"
 import { useTag } from "../helpers"
-import { useHeldBookIds } from "../../books/useHeldBookIds"
+import { selectHeldIds, useBookIds } from "../../books/states"
 import { formatBookCount } from "../../books/formatBookCount"
 import {
   libraryStateSignal,
@@ -29,7 +29,9 @@ export const TagListItemList = memo(function TagListItemList({
   )
 
   const isHidden = !!tag?.isProtected && !isLibraryUnlocked
-  const heldBookIds = useHeldBookIds(tag?.books)
+  const { data: heldBookIds } = useBookIds({
+    select: selectHeldIds(tag?.books),
+  })
 
   return (
     <ListItemButton onClick={() => tag && onItemClick?.(tag)} {...rest}>
