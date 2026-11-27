@@ -107,4 +107,29 @@ describe("TestConnection", () => {
       expect(password).toBe(passwordsByUrl[url])
     }
   })
+
+  it("tests only an address that starts with http:// or https://", async () => {
+    const testConnection = vi.fn<TestConnectionFn>(async function connect() {
+      return true
+    })
+
+    render(
+      <QueryClientProvider client={new QueryClient()}>
+        <TestConnection
+          connectionData={{ ...NAS_CONNECTION, url: "192.168.1.10/dav" }}
+          connectorType="webdav"
+          testConnection={testConnection}
+        />
+        <TestConnection
+          connectionData={{ ...NAS_CONNECTION, url: "http://192.168.1.10/dav" }}
+          connectorType="webdav"
+          testConnection={testConnection}
+        />
+      </QueryClientProvider>,
+    )
+
+    await expect
+      .poll(() => testConnection.mock.calls.map(([{ url }]) => url))
+      .toEqual(["http://192.168.1.10/dav"])
+  })
 })

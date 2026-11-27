@@ -17,6 +17,7 @@ import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
+import { isHttpUrl } from "../common/network/isHttpUrl"
 import { notify } from "../notifications/toasts"
 import type {
   SettingsConnectorDocType,
@@ -74,6 +75,9 @@ const URL_PATTERN = {
   value: /^(https?:\/\/)?([\w-]+\.)*[\w-]+(:\d{1,5})?(\/[\w- ./?%&=]*)?$/,
   message: "Invalid URL",
 }
+
+const validateHttpScheme = (url: string) =>
+  isHttpUrl(url) || "Enter the full address, starting with http:// or https://"
 
 export type FormData = {
   urlValue: string
@@ -233,7 +237,10 @@ export const ConnectorForm = memo(function ConnectorForm({
                 rules={{
                   required: true,
                   pattern: URL_PATTERN,
-                  validate: validateUrl,
+                  validate: {
+                    hasHttpScheme: validateHttpScheme,
+                    ...(validateUrl && { connectorUrl: validateUrl }),
+                  },
                 }}
               />
             )}

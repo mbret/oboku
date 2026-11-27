@@ -136,6 +136,34 @@ describe("ConnectorForm", () => {
       .toEqual([[expect.objectContaining({ proxyThroughServer: false })]])
   })
 
+  it("asks for http:// or https://, and saves the address once it has one", async () => {
+    mocks.connector.mockReturnValue(synologyConnector)
+    mocks.updateConnector.mockResolvedValue(undefined)
+    renderConnectorForm({ connectorType: "synology-drive" })
+    const urlField = await screen.findByRole("textbox", { name: "URL" })
+    const confirmButton = screen.getByRole("button", { name: "Confirm" })
+
+    await userEvent.fill(urlField, "nas.local:5005/dav")
+
+    await expect
+      .element(
+        screen.getByText(
+          "Enter the full address, starting with http:// or https://",
+        ),
+      )
+      .toBeVisible()
+    await expect.element(confirmButton).toBeDisabled()
+
+    await userEvent.fill(urlField, "http://nas.local:5005/dav")
+    await userEvent.click(confirmButton)
+
+    await expect
+      .poll(() => mocks.updateConnector.mock.calls)
+      .toEqual([
+        [expect.objectContaining({ url: "http://nas.local:5005/dav" })],
+      ])
+  })
+
   it("leaves the setting out of a form that does not show it", async () => {
     mocks.connector.mockReturnValue(synologyConnector)
     mocks.updateConnector.mockResolvedValue(undefined)

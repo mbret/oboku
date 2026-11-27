@@ -7,6 +7,7 @@ import {
   useUnlockMasterKey,
 } from "../secrets/useUnlockMasterKey"
 import { useDebouncedValue } from "../common/useDebouncedValue"
+import { isHttpUrl } from "../common/network/isHttpUrl"
 import type { SettingsConnectorType } from "@oboku/shared"
 import { Alert, AlertTitle } from "@mui/material"
 
@@ -149,7 +150,8 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
     proxyThroughServer,
     ...extra,
   }
-  const hasCredentials = !!params.url && !!params.username && !!params.password
+  const isTestable =
+    isHttpUrl(params.url) && !!params.username && !!params.password
 
   const {
     mutate,
@@ -170,7 +172,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
 
       if (!isSettled) return
 
-      if (!hasCredentials) {
+      if (!isTestable) {
         reset()
         return
       }
@@ -179,7 +181,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
     },
     [
       connectorType,
-      hasCredentials,
+      isTestable,
       isSettled,
       mutate,
       reset,
@@ -189,7 +191,7 @@ export function TestConnection<D extends ConnectionParams = ConnectionParams>({
   )
 
   const connectionStatus: ConnectionStatusQueryResult["status"] =
-    !hasCredentials || status === "idle" || status === "pending"
+    !isTestable || status === "idle" || status === "pending"
       ? "pending"
       : status === "error" || success === false
         ? "error"
