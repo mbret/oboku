@@ -63,6 +63,10 @@ const toDriveRefusal = (error: unknown) => {
   return { status, reason: typeof reason === "string" ? reason : undefined }
 }
 
+/** Drive's answer to an access token that is no longer valid, such as one revoked. */
+const isAccessTokenRefusal = (error: unknown) =>
+  toDriveRefusal(error).status === 401
+
 /**
  * What a reading app gets for a file its source would not send. A 401
  * would read as wrong catalog credentials, so a source's refusals never
@@ -514,19 +518,13 @@ export class OpdsBooksService {
     link: LinkDocTypeForSource<"DRIVE">
   }) {
     const bookId = book._id
-    const providerCredentials = {
-      access_token: await this.mintDriveAccessToken(owner.id),
-    }
     const { pluginsService } = this
-
-    // Drive's answer about the file tells a file the token cannot read from a
-    // limit, which a refused download cannot: see `toDriveFailure`.
-    const { bookMetadata } = await this.askDrive(
-      { bookId, isFileReadable: false },
-      function checkFileReadable() {
-        return pluginsService.getFileMetadata({ link, providerCredentials })
-      },
-    )
+    const { accessToken, bookMetadata } = await this.checkDriveFileReadable({
+      userId: owner.id,
+      bookId,
+      link,
+    })
+    const providerCredentials = { access_token: accessToken }
 
     const { stream, size } = await this.askDrive(
       { bookId, isFileReadable: true },
@@ -542,6 +540,52 @@ export class OpdsBooksService {
       size,
       expectedSize: size ?? metadataSize,
     }
+  }
+
+  /**
+   * Drive's answer about the file, with the access token Drive accepted. It
+   * tells a file the token cannot read from a limit, which a refused download
+   * cannot: see `toDriveFailure`. A token Drive refuses, such as one revoked
+   * from the Google Account, is replaced once.
+   */
+  private async checkDriveFileReadable({
+    userId,
+    bookId,
+    link,
+  }: {
+    userId: number
+    bookId: string
+    link: LinkDocTypeForSource<"DRIVE">
+  }) {
+    const readFileMetadata = async (accessToken: string) => {
+      const { bookMetadata } = await this.pluginsService.getFileMetadata({
+        link,
+        providerCredentials: { access_token: accessToken },
+      })
+
+      return { accessToken, bookMetadata }
+    }
+    const mintedAccessToken = await this.mintDriveAccessToken({ userId })
+    const firstAttempt = readFileMetadata(mintedAccessToken)
+    const [firstOutcome] = await Promise.allSettled([firstAttempt])
+    const isMintedAccessTokenRefused =
+      firstOutcome.status === "rejected" &&
+      isAccessTokenRefusal(firstOutcome.reason)
+    const lastAttempt = isMintedAccessTokenRefused
+      ? readFileMetadata(
+          await this.mintDriveAccessToken({
+            userId,
+            refusedAccessToken: mintedAccessToken,
+          }),
+        )
+      : firstAttempt
+
+    return this.askDrive(
+      { bookId, isFileReadable: false },
+      function checkFileReadable() {
+        return lastAttempt
+      },
+    )
   }
 
   /**
@@ -608,10 +652,18 @@ export class OpdsBooksService {
   }
 
   /** An owner without a usable connection gets no Drive books, as from a catalog that does not serve them. */
-  private async mintDriveAccessToken(userId: number) {
+  private async mintDriveAccessToken({
+    userId,
+    refusedAccessToken,
+  }: {
+    userId: number
+    refusedAccessToken?: string
+  }) {
     try {
       const { accessToken } =
-        await this.googleConnectionService.mintAccessToken(userId)
+        await this.googleConnectionService.mintAccessToken(userId, {
+          refusedAccessToken,
+        })
 
       return accessToken
     } catch (error) {
