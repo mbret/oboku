@@ -8,7 +8,7 @@ import {
   PLUGIN_OPDS_TYPE,
 } from "@oboku/shared"
 import type createNano from "nano"
-import { getConnectorById } from "../connectorHelpers.js"
+import { findConnector } from "../connectorHelpers.js"
 import { findConnectorCandidates } from "../helpers.js"
 import { type SourcePlugin, MODIFIED_AT_UNSUPPORTED } from "../types.js"
 import { getFromCatalog, type OpdsConnector } from "./client.js"
@@ -30,7 +30,12 @@ const toFolderLinkData = (linkData: OpdsLinkData): OpdsFolderLinkData => {
   return linkData
 }
 
-async function resolveConnector({
+/**
+ * The connector `connectorId` names, with its password.
+ *
+ * @throws the errors of `findConnector`.
+ */
+export async function resolveOpdsConnector({
   connectorId,
   password,
   db,
@@ -39,16 +44,15 @@ async function resolveConnector({
   password: string | undefined
   db: createNano.DocumentScope<unknown> | undefined
 }): Promise<OpdsConnector> {
-  if (!connectorId || !password || !db) {
-    throw new Error("OPDS credentials (password) and connector are required")
+  if (!password || !db) {
+    throw new Error("OPDS credentials (password) are required")
   }
 
-  const connector = await getConnectorById(db, connectorId, "opds")
-
-  if (!connector) {
-    throw new Error("OPDS connector not found")
-  }
-
+  const connector = await findConnector({
+    db,
+    connectorId,
+    type: PLUGIN_OPDS_TYPE,
+  })
   const { passwordAsSecretId: _, ...connectorFields } = connector
 
   return { ...connectorFields, password }
@@ -95,7 +99,7 @@ export const sourcePlugin: SourcePlugin<"opds"> = {
   getFolderMetadata: async ({ link }) => ({ name: link.data.title }),
   download: async (link, providerCredentials, db) => {
     const { connectorId, acquisition } = toBookLinkData(link.data)
-    const connector = await resolveConnector({
+    const connector = await resolveOpdsConnector({
       connectorId,
       password: providerCredentials?.password,
       db,
@@ -115,7 +119,7 @@ export const sourcePlugin: SourcePlugin<"opds"> = {
       throw new Error("library sync not found or invalid")
     }
 
-    const connector = await resolveConnector({
+    const connector = await resolveOpdsConnector({
       connectorId,
       password: providerCredentials?.password,
       db,

@@ -13,6 +13,13 @@ import { SecretsService } from "../config/SecretsService.js"
 import { CouchService } from "../couch/couch.service.js"
 import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxied-download-usage-postgres.service.js"
 import { NonPublicAddressError } from "../http/publicAddress.js"
+import {
+  allowServers,
+  basicAuthorization,
+  forgetAllowedServers,
+  password as catalogPassword,
+  startServer,
+} from "../plugins/opds/catalog.fixture.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
 import { LinksController } from "./links.controller.js"
 import { LinksService } from "./links.service.js"
@@ -77,6 +84,42 @@ const URI_LINK = {
 }
 
 const PROVIDER_CREDENTIALS = { password: "koofr-app-password" }
+
+const OPDS_FILE_PATH = "/opds/books/dune/file"
+
+const createOpdsConnector = (catalogOrigin: string) => ({
+  id: "komga",
+  type: "opds",
+  url: `${catalogOrigin}/opds`,
+  username: "reader",
+  passwordAsSecretId: "secret-komga",
+  proxyThroughServer: true,
+})
+
+const createOpdsBookLink = ({
+  catalogOrigin,
+  length,
+  connectorId = "komga",
+}: {
+  catalogOrigin: string
+  length?: number
+  connectorId?: string
+}) => ({
+  _id: "link-opds-dune",
+  rx_model: "link",
+  type: "opds",
+  book: "book-dune",
+  data: {
+    connectorId,
+    entryId: "urn:book:dune",
+    title: "Dune",
+    acquisition: {
+      href: `${catalogOrigin}${OPDS_FILE_PATH}`,
+      type: "application/epub+zip",
+      length,
+    },
+  },
+})
 
 const KOOFR_CONNECTOR = {
   id: "koofr",
@@ -146,11 +189,14 @@ describe("LinksController", () => {
   const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
 
-  const downloadLink = (linkId: string) =>
+  const downloadLink = (
+    linkId: string,
+    providerCredentials = PROVIDER_CREDENTIALS,
+  ) =>
     request(app.getHttpServer())
       .post("/links/download")
       .set("Authorization", `Bearer ${READER_SESSION}`)
-      .send({ linkId, providerCredentials: PROVIDER_CREDENTIALS })
+      .send({ linkId, providerCredentials })
 
   beforeEach(async () => {
     createNanoInstanceForUser.mockResolvedValue(
@@ -426,5 +472,216 @@ describe("LinksController", () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+
+  describe("an OPDS book", () => {
+    const CATALOG_CREDENTIALS = { password: catalogPassword }
+    const EPUB_HEADERS = { "content-type": "application/epub+zip" }
+
+    afterEach(forgetAllowedServers)
+
+    const serveCatalog = async ({
+      fileRoute,
+      length,
+      connectorId,
+      isAllowed = true,
+    }: {
+      fileRoute: Parameters<typeof startServer>[0][string]
+      length?: number
+      connectorId?: string
+      isAllowed?: boolean
+    }) => {
+      const catalog = await startServer({ [OPDS_FILE_PATH]: fileRoute })
+      const link = createOpdsBookLink({
+        catalogOrigin: catalog.origin,
+        length,
+        connectorId,
+      })
+      createNanoInstanceForUser.mockResolvedValue(
+        createLibraryDb([link], [createOpdsConnector(catalog.origin)]),
+      )
+      if (isAllowed) allowServers(catalog)
+
+      return { catalog, link }
+    }
+
+    it("streams the file from the catalog with the connector's credentials, asking for it uncompressed, and reserves the length the catalog's answer states", async () => {
+      const { catalog, link } = await serveCatalog({
+        fileRoute: {
+          headers: {
+            ...EPUB_HEADERS,
+            "content-length": String(BOOK_BYTES.length),
+          },
+          body: BOOK_BYTES,
+        },
+        length: 1,
+      })
+
+      const response = await downloadLink(
+        link._id,
+        CATALOG_CREDENTIALS,
+      ).responseType("blob")
+
+      expect(response.status).toBe(200)
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+      expect(catalog.onRequest.mock.calls).toEqual([
+        [{ path: OPDS_FILE_PATH, authorization: basicAuthorization }],
+      ])
+      expect(catalog.onRequestHeaders).toHaveBeenCalledWith(
+        expect.objectContaining({ "accept-encoding": "identity" }),
+      )
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({
+          userId: readerTokenPayload.userId,
+          bytes: BOOK_BYTES.length,
+        }),
+      )
+    })
+
+    it("reserves the length the feed states when the catalog's answer states none", async () => {
+      const { link } = await serveCatalog({
+        fileRoute: { headers: EPUB_HEADERS, body: BOOK_BYTES },
+        length: BOOK_BYTES.length,
+      })
+
+      const response = await downloadLink(
+        link._id,
+        CATALOG_CREDENTIALS,
+      ).responseType("blob")
+
+      expect(response.status).toBe(200)
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({ bytes: BOOK_BYTES.length }),
+      )
+    })
+
+    it("fails the download, and closes the catalog's answer, once the catalog sends more than the length the feed states", async () => {
+      const { catalog, link } = await serveCatalog({
+        fileRoute: {
+          headers: EPUB_HEADERS,
+          body: BOOK_BYTES,
+          keepsAnswerOpen: true,
+        },
+        length: 4,
+      })
+
+      const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+      expect(response.status).toBe(502)
+      await expect
+        .poll(() => catalog.onAnswerClosed.mock.calls)
+        .toEqual([[OPDS_FILE_PATH]])
+    })
+
+    it.each([
+      [
+        "neither the catalog's answer nor the feed states a size",
+        {},
+        undefined,
+      ],
+      [
+        "the catalog's answer states a length of 0",
+        { "content-length": "0" },
+        BOOK_BYTES.length,
+      ],
+    ])(
+      "answers 502, and closes the catalog's answer, when %s",
+      async (_, sizeHeaders, length) => {
+        const { catalog, link } = await serveCatalog({
+          fileRoute: {
+            headers: { ...EPUB_HEADERS, ...sizeHeaders },
+            keepsAnswerOpen: true,
+          },
+          length,
+        })
+
+        const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+        expect(response.status).toBe(502)
+        expect(response.body).toEqual({
+          errors: [
+            { code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN },
+          ],
+        })
+        await expect
+          .poll(() => catalog.onAnswerClosed.mock.calls)
+          .toEqual([[OPDS_FILE_PATH]])
+        expect(reserveWithinQuotas).not.toHaveBeenCalled()
+      },
+    )
+
+    it.each([
+      [404, 404, ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND],
+      [401, 502, ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED],
+      [403, 502, ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED],
+      [500, 502, ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE],
+    ])(
+      "answers a catalog's %i with %i and its code",
+      async (catalogStatus, routeStatus, code) => {
+        const { link } = await serveCatalog({
+          fileRoute: { status: catalogStatus },
+          length: BOOK_BYTES.length,
+        })
+
+        const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+        expect(response.status).toBe(routeStatus)
+        expect(response.body).toEqual({ errors: [{ code }] })
+        expect(reserveWithinQuotas).not.toHaveBeenCalled()
+      },
+    )
+
+    it("answers 400 for a catalog on an address the instance does not reach, reaching no server", async () => {
+      const { catalog, link } = await serveCatalog({
+        fileRoute: { headers: EPUB_HEADERS, body: BOOK_BYTES },
+        length: BOOK_BYTES.length,
+        isAllowed: false,
+      })
+
+      const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual({
+        errors: [{ code: ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED }],
+      })
+      expect(catalog.onRequest).not.toHaveBeenCalled()
+    })
+
+    it("answers 400 for a link that names no connector, reaching no server", async () => {
+      const { catalog, link } = await serveCatalog({
+        fileRoute: { headers: EPUB_HEADERS, body: BOOK_BYTES },
+        length: BOOK_BYTES.length,
+        connectorId: "",
+      })
+
+      const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual({
+        errors: [{ code: ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED }],
+      })
+      expect(catalog.onRequest).not.toHaveBeenCalled()
+    })
+
+    it("answers 400 for the link of an OPDS folder", async () => {
+      const folderLink = {
+        _id: "link-opds-series",
+        rx_model: "link",
+        type: "opds",
+        book: "book-dune",
+        data: {
+          connectorId: "komga",
+          feedUrl: "https://komga.example.com/opds/series/1",
+          title: "Dune",
+        },
+      }
+      createNanoInstanceForUser.mockResolvedValue(createLibraryDb([folderLink]))
+
+      const response = await downloadLink(folderLink._id, CATALOG_CREDENTIALS)
+
+      expect(response.status).toBe(400)
+    })
   })
 })

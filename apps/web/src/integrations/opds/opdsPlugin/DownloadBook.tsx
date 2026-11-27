@@ -15,14 +15,16 @@ import {
   type OpdsBookLinkData,
 } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../../plugins/types"
+import { isProxiedThroughServer } from "../../../connectors/connectorDetails"
 import { useExtractConnectorData } from "../../../connectors/useExtractConnectorData"
+import { useHttpClientApi } from "../../../http"
 import { CancelError } from "../../../errors/errors.shared"
 import { isXMLHttpResponseError } from "../../../http/httpClient.web"
 import { useDownload } from "../../../http/useDownload"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
-import { downloadOpdsBook } from "./download"
+import { downloadOpdsBook, downloadOpdsBookThroughServer } from "./download"
 
 const isRefusedLogin = (error: unknown) =>
   isXMLHttpResponseError(error) &&
@@ -42,6 +44,7 @@ export const DownloadBook = memo(function DownloadBook({
   const { mutateAsync: downloadBlob } = useDownload({
     meta: { suppressGlobalErrorToast: true },
   })
+  const httpClientApi = useHttpClientApi()
   const onErrorRef = useLiveRef(onError)
   const { connectorId } = link.data
   const bookLinkData = isOpdsBookLinkData(link.data) ? link.data : undefined
@@ -66,6 +69,18 @@ export const DownloadBook = memo(function DownloadBook({
 
       return from(extractConnectorData({ connectorId: connectorIdParam })).pipe(
         mergeMap(function downloadFromCatalog({ data: connector }) {
+          if (isProxiedThroughServer(connector)) {
+            return downloadOpdsBookThroughServer({
+              httpClientApi,
+              linkId: link._id,
+              password: connector.password,
+              acquisition,
+              title,
+              onDownloadProgress,
+              signal: abortController.signal,
+            })
+          }
+
           return downloadOpdsBook({
             acquisition,
             title,

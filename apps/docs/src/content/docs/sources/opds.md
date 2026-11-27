@@ -21,6 +21,7 @@ An OPDS library sync needs a connector, which holds:
 - **URL**: the address of your catalog server, starting with `http://` or `https://`.
 - **Username** and **password**: your login on the catalog, the password kept in a [secret](/guides/secrets). oboku sends them with HTTP Basic authentication, and only with requests to the connector's address: its scheme, host and port. A catalog decides where its links and redirects lead, and Basic authentication does not encrypt the password, so any server that receives it can read it. Limiting it to the connector's address keeps it from a CDN, a mirror, or any other host a catalog links to. If your server redirects `http://` to `https://`, enter its `https://` address.
 - **Allow self-signed certificate**: for a server using a self-signed certificate. oboku accepts it from the connector's address only. Since books download from your browser, open your server's address once in it to trust the certificate as well.
+- **Use oboku's server as a proxy**: for a catalog that refuses downloads from the browser. See [Use oboku's server as a proxy](#use-obokus-server-as-a-proxy).
 
 Kavita does not ask OPDS readers to log in: the OPDS URL it gives you carries your key. Enter your username and any password.
 
@@ -40,7 +41,7 @@ oboku reads every page of a feed. To keep a sync from running forever, it stops 
 
 ## CORS
 
-Books download from your browser, straight from the catalog, so the catalog has to allow it. Its answers to file downloads, redirects included, must:
+Books download from your browser, straight from the catalog, so the catalog has to allow it, unless the connector [uses oboku's server as a proxy](#use-obokus-server-as-a-proxy). Its answers to file downloads, redirects included, must:
 
 - allow oboku's origin in `Access-Control-Allow-Origin`: `https://app.oboku.me` on the cloud version, or the address you open oboku at when you self-host it,
 - list `Authorization` in `Access-Control-Allow-Headers`, which a `*` does not cover,
@@ -52,11 +53,19 @@ A host the catalog redirects a download to receives no credentials, and has to a
 
 Komga does all of this once its `komga.cors.allowed-origins` setting, or the `KOMGA_CORS_ALLOWED_ORIGINS` environment variable, lists oboku's origin. If your server has no CORS settings, you can put a reverse proxy in front of it to add these headers.
 
-Feeds need none of this, since oboku's server fetches them. Downloading through oboku's server, for catalogs that cannot allow CORS at all, is tracked in [#859](https://github.com/mbret/oboku/issues/859).
+Feeds need none of this, since oboku's server fetches them.
+
+## Use oboku's server as a proxy
+
+Some catalogs refuse downloads from the browser, and you cannot change their CORS answers, for instance when their files are on another server. For such a catalog, check **Use oboku's server as a proxy** on the connector.
+
+oboku's server then downloads your books from the catalog and passes them on to you. It sends your password to the connector's address only, as it does for syncs. It only downloads a file whose size the catalog states, in its answer or in the feed, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month.
+
+Without the setting, your browser downloads books from the catalog, and they do not count towards the quota.
 
 ## Servers on your local network
 
-oboku's server connects to your catalog to read its feeds during syncs and to download books to read their metadata, and it only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
+oboku's server connects to your catalog to read its feeds during syncs, to download books to read their metadata, and to download your books when it is the connector's proxy. It only reaches servers on the public internet unless its instance allows private networks. A server on the machine oboku runs on counts as private too. On a self-hosted instance, an admin can allow your server, or private networks as a whole, from the [admin panel](/self-hosting/admin#private-networks) to use a server on your local network or on that machine.
 
 ## Limitations
 

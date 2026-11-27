@@ -21,7 +21,7 @@ export const ConnectorForm = memo(function ConnectorForm({
     <GenericConnectorForm
       connectorId={connectorId}
       connectorType="webdav"
-      showProxyThroughServer
+      proxyThroughServerCaption="For a server that refuses requests from the browser (CORS), such as Koofr. oboku's server lists your folders, tests the connection and downloads your books, then passes them on to you. The downloads count towards your monthly download quota."
       onSubmitSuccess={onSubmitSuccess}
       testConnection={testConnection}
       renderExtraActions={() => (

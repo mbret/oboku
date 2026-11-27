@@ -15,6 +15,11 @@ export type OpdsConnectorDocType = {
   username: string
   passwordAsSecretId: string
   allowSelfSigned?: boolean
+  /**
+   * oboku's server downloads the books, for a catalog that refuses downloads
+   * from the browser (CORS).
+   */
+  proxyThroughServer?: boolean
   type: "opds"
 }
 

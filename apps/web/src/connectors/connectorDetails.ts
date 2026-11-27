@@ -44,4 +44,6 @@ export const isSettingsConnectorType = (
 
 export const isProxiedThroughServer = (
   connector: SettingsConnectorDocType | undefined,
-) => connector?.type === "webdav" && !!connector.proxyThroughServer
+) =>
+  (connector?.type === "webdav" || connector?.type === "opds") &&
+  !!connector.proxyThroughServer
