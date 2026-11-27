@@ -40,3 +40,43 @@ jobs:
           name: playwright-report
           path: apps/e2e/playwright-report
           retention-days: 7
+
+  screenshots:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "pnpm"
+      - name: Install
+        run: |
+          pnpm install --frozen-lockfile
+          pnpm --filter @oboku/e2e exec playwright install --with-deps --only-shell chromium
+      - name: Start the stack
+        run: pnpm --filter @oboku/e2e stack:up
+      - name: Capture the screenshots
+        run: pnpm screenshots
+      - uses: actions/upload-artifact@v7
+        with:
+          name: play-phone-screenshots
+          path: apps/e2e/screenshots/play-phone
+          if-no-files-found: error
+      - uses: actions/upload-artifact@v7
+        with:
+          name: app-screenshots
+          path: |
+            apps/web/public/manifest-screenshots
+            apps/landing/src/features/common/app-screenshots
+          if-no-files-found: error
+      - name: Print the stack logs
+        if: failure()
+        run: docker compose -f apps/e2e/docker-compose.yml logs
+      - uses: actions/upload-artifact@v7
+        if: failure()
+        with:
+          name: screenshots-playwright-report
+          path: apps/e2e/playwright-report
+          retention-days: 7
