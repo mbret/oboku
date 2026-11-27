@@ -9,10 +9,16 @@ import {
 import { latestDatabase$ } from "../rxdb/RxDbProvider"
 
 const heldBookIds$ = latestDatabase$.pipe(
-  switchMap((database) => database.book.find({}).$),
-  map((books) => books.map(({ _id }) => _id)),
+  switchMap(function observeAllBooks(database) {
+    return database.book.find({}).$
+  }),
+  map(function toBookIds(books) {
+    return books.map(({ _id }) => _id)
+  }),
   distinctUntilChanged(isShallowEqual),
-  map((ids) => new Set(ids)),
+  map(function toBookIdSet(ids) {
+    return new Set(ids)
+  }),
 )
 
 /**
