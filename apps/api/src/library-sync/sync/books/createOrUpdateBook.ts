@@ -16,7 +16,7 @@ import {
 import type { Context } from "../types.js"
 import type { CoversService } from "../../../covers/covers.service.js"
 import { firstValueFrom } from "rxjs"
-import { deleteDanglingLinks } from "./deleteDanglingLinks.js"
+import { findLinksOfLiveBooks } from "./findLinksOfLiveBooks.js"
 import { updateLinkData } from "../linkData.js"
 import { logger } from "./logger.js"
 import type { LinkCandidate } from "../../../plugins/types.js"
@@ -77,11 +77,8 @@ export const createOrUpdateBook = async ({
       ctx,
     )
 
-    const remainingLinks =
-      linkCandidates.length > 0
-        ? await deleteDanglingLinks(ctx, linkCandidates)
-        : []
-    const linkMatchingItem = getBestLinkCandidate(remainingLinks)
+    const linksOfLiveBooks = await findLinksOfLiveBooks(db, linkCandidates)
+    const linkMatchingItem = getBestLinkCandidate(linksOfLiveBooks)
 
     if (!linkMatchingItem) {
       logger.log(`No link found for ${item.name}`)

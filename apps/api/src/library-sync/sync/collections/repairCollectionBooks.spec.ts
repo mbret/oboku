@@ -30,13 +30,9 @@ const collectionWith = (books: string[]): CollectionDocType => ({
 const createSyncContext = ({
   collection,
   booksListingCollection,
-  liveIds,
-  deletedIds,
 }: {
   collection: CollectionDocType
   booksListingCollection: BookDocType[]
-  liveIds: string[]
-  deletedIds: string[]
 }) => {
   const insert = vi.fn(async function writeCollection(doc: { _id: string }) {
     return { ok: true, id: doc._id, rev: "2-c" }
@@ -52,23 +48,6 @@ const createSyncContext = ({
 
         return { docs, bookmark: "last-page" }
       },
-      fetchRevs: async function fetchRevisions({ keys }: { keys: string[] }) {
-        return {
-          offset: 0,
-          total_rows: keys.length,
-          rows: keys.map(function toRow(key) {
-            if (deletedIds.includes(key)) {
-              return { id: key, key, value: { rev: "2-b", deleted: true } }
-            }
-
-            if (liveIds.includes(key)) {
-              return { id: key, key, value: { rev: "1-a" } }
-            }
-
-            return { key, error: "not_found" }
-          }),
-        }
-      },
       get: async function readCollection() {
         return structuredClone(collection)
       },
@@ -80,43 +59,35 @@ const createSyncContext = ({
 }
 
 describe("repairCollectionBooks", () => {
-  it("removes a book CouchDB holds as deleted, keeps a book CouchDB has never seen, and adds a book that lists the collection", async () => {
+  it("adds a book that lists the collection, and keeps every id the collection lists", async () => {
     const ctx = createSyncContext({
-      collection: collectionWith([
-        "book-live",
-        "book-deleted",
-        "book-unsynced",
-      ]),
+      collection: collectionWith(["book-live", "book-deleted"]),
       booksListingCollection: [
         bookListingCollection("book-live"),
         bookListingCollection("book-not-listed"),
       ],
-      liveIds: ["book-live"],
-      deletedIds: ["book-deleted"],
     })
-    const removeBooksFromCollection = vi.spyOn(
+    const addBooksToCollection = vi.spyOn(
       ctx.syncReport,
-      "removeBooksFromCollection",
+      "addBooksToCollection",
     )
 
     await repairCollectionBooks({ ctx, collectionId: "collection" })
 
     expect(ctx.insert).toHaveBeenCalledExactlyOnceWith(
       expect.objectContaining({
-        books: ["book-not-listed", "book-live", "book-unsynced"],
+        books: ["book-not-listed", "book-live", "book-deleted"],
       }),
     )
-    expect(removeBooksFromCollection).toHaveBeenCalledExactlyOnceWith(
-      expect.objectContaining({ books: [{ _id: "book-deleted" }] }),
+    expect(addBooksToCollection).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({ books: [{ _id: "book-not-listed" }] }),
     )
   })
 
-  it("writes nothing when the collection lists no deleted book and misses no book", async () => {
+  it("writes nothing when the collection lists every book that lists it", async () => {
     const ctx = createSyncContext({
-      collection: collectionWith(["book-live", "book-unsynced"]),
+      collection: collectionWith(["book-live", "book-deleted"]),
       booksListingCollection: [bookListingCollection("book-live")],
-      liveIds: ["book-live"],
-      deletedIds: [],
     })
 
     await repairCollectionBooks({ ctx, collectionId: "collection" })
