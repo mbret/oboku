@@ -81,6 +81,37 @@ export const hasReaderAcceptedExtension = (fileName: string) =>
     `.${getUriExtension(fileName).toLowerCase()}`,
   )
 
+type ReaderAcceptedType = keyof typeof READER_ACCEPTED_FILE_TYPES
+
+const isReaderAcceptedType = (type: string): type is ReaderAcceptedType =>
+  Object.hasOwn(READER_ACCEPTED_FILE_TYPES, type)
+
+/**
+ * The extension named in `mimeType` (`.epub` for application/epub+zip), or
+ * else its first, and "" for a type the reader does not accept.
+ */
+const toReaderFileExtension = (mimeType: string) => {
+  const essence = getMimeTypeEssence(mimeType)
+
+  if (!isReaderAcceptedType(essence)) return ""
+
+  const extensions = READER_ACCEPTED_FILE_TYPES[essence]
+
+  return (
+    extensions.find((extension) => essence.includes(extension.slice(1))) ??
+    extensions[0] ??
+    ""
+  )
+}
+
+export const withReaderFileExtension = (
+  fileName: string,
+  mimeType: string | undefined,
+) =>
+  hasReaderAcceptedExtension(fileName)
+    ? fileName
+    : `${fileName}${toReaderFileExtension(mimeType ?? "")}`
+
 export const isFileSupported = ({
   mimeType,
   name,

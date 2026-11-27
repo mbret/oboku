@@ -3,7 +3,10 @@ import type { INestApplication } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
-import { ObokuErrorCode } from "@oboku/shared"
+import {
+  getFileNameFromContentDisposition,
+  ObokuErrorCode,
+} from "@oboku/shared"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -75,12 +78,12 @@ const WEBDAV_LINK = {
   data: { connectorId: "koofr", filePath: "/Books/Dune.epub" },
 }
 
-const URI_LINK = {
-  _id: "link-uri",
+const DRIVE_LINK = {
+  _id: "link-drive",
   rx_model: "link",
-  type: "URI",
-  book: "book-uri",
-  data: { url: "https://books.example.com/Dune.epub" },
+  type: "DRIVE",
+  book: "book-drive",
+  data: { fileId: "drive-file-id" },
 }
 
 const PROVIDER_CREDENTIALS = { password: "koofr-app-password" }
@@ -130,6 +133,7 @@ const KOOFR_CONNECTOR = {
   proxyThroughServer: true,
 }
 const BOOK_BYTES = "epub bytes"
+const EPUB_HEADERS = { "content-type": "application/epub+zip" }
 const WEBDAV_STAT_SIZE = 12
 
 const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
@@ -200,7 +204,7 @@ describe("LinksController", () => {
 
   beforeEach(async () => {
     createNanoInstanceForUser.mockResolvedValue(
-      createLibraryDb([WEBDAV_LINK, URI_LINK]),
+      createLibraryDb([WEBDAV_LINK, DRIVE_LINK]),
     )
     getFileMetadata.mockResolvedValue({
       modifiedAt: "2026-11-16T08:00:00.000Z",
@@ -265,6 +269,14 @@ describe("LinksController", () => {
 
     expect(response.status).toBe(200)
     expect(response.body.toString()).toBe(BOOK_BYTES)
+    expect(
+      getFileNameFromContentDisposition(
+        response.headers["content-disposition"],
+      ),
+    ).toBe("Dune.epub")
+    expect(response.headers["access-control-expose-headers"]).toBe(
+      "Content-Disposition",
+    )
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
@@ -319,7 +331,7 @@ describe("LinksController", () => {
 
   it("answers 400 for a link whose connector the settings do not hold, reaching no server", async () => {
     createNanoInstanceForUser.mockResolvedValue(
-      createLibraryDb([WEBDAV_LINK, URI_LINK], []),
+      createLibraryDb([WEBDAV_LINK, DRIVE_LINK], []),
     )
 
     const response = await downloadLink(WEBDAV_LINK._id)
@@ -353,7 +365,7 @@ describe("LinksController", () => {
   })
 
   it("answers 400 for a link of a source the route does not serve", async () => {
-    const response = await downloadLink(URI_LINK._id)
+    const response = await downloadLink(DRIVE_LINK._id)
 
     expect(response.status).toBe(400)
     expect(getFileMetadata).not.toHaveBeenCalled()
@@ -476,7 +488,6 @@ describe("LinksController", () => {
 
   describe("an OPDS book", () => {
     const CATALOG_CREDENTIALS = { password: catalogPassword }
-    const EPUB_HEADERS = { "content-type": "application/epub+zip" }
 
     afterEach(forgetAllowedServers)
 
@@ -525,6 +536,11 @@ describe("LinksController", () => {
       expect(response.status).toBe(200)
       expect(response.body.toString()).toBe(BOOK_BYTES)
       expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
+      expect(
+        getFileNameFromContentDisposition(
+          response.headers["content-disposition"],
+        ),
+      ).toBe("Dune.epub")
       expect(catalog.onRequest.mock.calls).toEqual([
         [{ path: OPDS_FILE_PATH, authorization: basicAuthorization }],
       ])
@@ -664,6 +680,52 @@ describe("LinksController", () => {
         errors: [{ code: ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED }],
       })
       expect(catalog.onRequest).not.toHaveBeenCalled()
+    })
+
+    it.each(["application/octet-stream", "application/force-download"])(
+      "names the file with the feed's type when the catalog answers %s",
+      async (catalogType) => {
+        const { link } = await serveCatalog({
+          fileRoute: {
+            headers: { "content-type": catalogType },
+            body: BOOK_BYTES,
+          },
+          length: BOOK_BYTES.length,
+        })
+
+        const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+        expect(response.status).toBe(200)
+        expect(
+          getFileNameFromContentDisposition(
+            response.headers["content-disposition"],
+          ),
+        ).toBe("Dune.epub")
+        expect(response.headers["access-control-expose-headers"]).toBe(
+          "Content-Disposition",
+        )
+      },
+    )
+
+    it("names the file as the catalog's Content-Disposition does", async () => {
+      const { link } = await serveCatalog({
+        fileRoute: {
+          headers: {
+            ...EPUB_HEADERS,
+            "content-disposition": 'attachment; filename="Dune (1965).epub"',
+          },
+          body: BOOK_BYTES,
+        },
+        length: BOOK_BYTES.length,
+      })
+
+      const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
+
+      expect(
+        getFileNameFromContentDisposition(
+          response.headers["content-disposition"],
+        ),
+      ).toBe("Dune (1965).epub")
     })
 
     it("answers 400 for the link of an OPDS folder", async () => {

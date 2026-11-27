@@ -22,6 +22,8 @@ import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.se
 import { DownloadLinkDto } from "./links.dto.js"
 import { LinksService } from "./links.service.js"
 
+const PROXIED_FILE_NAME_HEADER = "Content-Disposition"
+
 @Controller("links")
 export class LinksController {
   constructor(
@@ -32,6 +34,7 @@ export class LinksController {
   /**
    * The file of a WebDAV link or of an OPDS book, read from its connector's
    * server by the API, for a server that refuses requests from the browser.
+   * Its `Content-Disposition` names the file, with the extension of its type.
    * It counts towards the monthly proxied download quotas, and answers 429
    * until the next month once it would pass one.
    */
@@ -53,6 +56,11 @@ export class LinksController {
       linkId,
       providerCredentials,
     })
+
+    response.setHeader(
+      "Access-Control-Expose-Headers",
+      PROXIED_FILE_NAME_HEADER,
+    )
 
     return this.proxiedDownloadQuotaService.deliver({
       userId: user.userId,

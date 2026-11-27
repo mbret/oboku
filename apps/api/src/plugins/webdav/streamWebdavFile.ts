@@ -1,10 +1,10 @@
-import { pipeline } from "node:stream"
 import type { WebdavConnectorDocType } from "@oboku/shared"
 import { toByteCount } from "../../http/contentLength.js"
 import {
-  createByteLimitTransform,
   FileSizeUnstatedError,
-} from "../plugins.service.js"
+  isSizeStated,
+  limitToExpectedSize,
+} from "../sourceFile.js"
 import { createWebdavClient } from "./index.js"
 import { downloadFromWebdav, getFileMetadataFromWebdav } from "./operations.js"
 
@@ -34,22 +34,14 @@ export const streamWebdavFile = async ({
     filePath,
   )
   const statedSize = toByteCount(bookMetadata.size)
-  const isSizeStated = statedSize !== undefined && statedSize > 0
 
-  if (!isSizeStated) throw new FileSizeUnstatedError()
+  if (!isSizeStated(statedSize)) throw new FileSizeUnstatedError()
 
   const { stream, size } = await downloadFromWebdav(client, filePath)
-  const expectedSize = size ?? statedSize
 
   return {
-    stream: pipeline(
-      stream,
-      createByteLimitTransform(expectedSize),
-      function leaveErrorsToTheMeteredStream() {},
-    ),
+    ...limitToExpectedSize({ stream, size, statedSize }),
     name,
     contentType,
-    size,
-    expectedSize,
   }
 }

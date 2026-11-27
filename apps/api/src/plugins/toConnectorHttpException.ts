@@ -10,7 +10,7 @@ import {
   ConnectorNotConfiguredError,
   ConnectorNotFoundError,
 } from "./connectorHelpers.js"
-import { FileSizeUnstatedError } from "./plugins.service.js"
+import { FileSizeUnstatedError } from "./sourceFile.js"
 
 const toConnectorHttpException = (error: unknown) => {
   if (error instanceof ConnectorNotConfiguredError) {
