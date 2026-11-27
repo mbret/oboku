@@ -306,7 +306,7 @@ export async function findAll<D>(
 }
 
 export const find = async <M extends DocType["rx_model"], D extends ModelOf<M>>(
-  db: createNano.DocumentScope<unknown>,
+  db: Pick<createNano.DocumentScope<unknown>, "find">,
   rxModel: M,
   query: SafeMangoQuery<D>,
 ) => {
