@@ -86,7 +86,12 @@ Each committed image is in the smallest format its destination takes, and the un
 - Chrome's install dialog takes PNG and JPEG screenshots only.
 - The landing serves its images through `next/image`, which takes WebP and re-encodes each image for each screen size. Its Open Graph image converts the library screenshot to PNG, because `next/og` draws no WebP image.
 
-No workflow captures the screenshots. To update them, run `stack:up` to rebuild the stack from the checkout, run `pnpm screenshots`, then commit the images that changed. Leave out an image whose only change is one of those listed below. `apps/e2e/screenshots` is not committed: upload the Play Store set from it in the Play Console.
+To update the screenshots, capture them in one of two ways:
+
+- **In CI.** In GitHub, open **Actions**, select **e2e**, then **Run workflow**. The `screenshots` job uploads two artifacts: `play-phone-screenshots`, the Play Store set, and `app-screenshots`, the web manifest and landing images under their paths from `apps/`.
+- **On your computer.** Run `stack:up` to rebuild the stack from the checkout, then `pnpm screenshots`.
+
+Then commit the web manifest and landing images that changed. Leave out an image whose only change is one of those listed below. The Play Store set is not committed: upload it in the Play Console, from the artifact or from `apps/e2e/screenshots`.
 
 Each target signs up a new account, syncs and downloads the server library, reads the first chapter of _The Time Machine_ and opens the _Little Nemo_ comic, so Home shows both as books in progress. The manga reader opens _人の一生_, and the audiobook reader opens the LibriVox recording of _The Time Machine_. The Optimize screen shows the image compression of _Little Nemo_ and the identifiers of _Treasure Island_. The screens are English only: the French catalog covers the settings screen alone. A French target becomes one more row once the main screens are translated.
 
@@ -105,4 +110,4 @@ To keep the rest the same:
 
 ## In CI
 
-The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown, the agent skills, or the admin, Android, docs or landing apps. On a failure, it prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
+The `e2e` workflow runs the smoke tests on every pull request, except one that changes only Markdown, the agent skills, or the admin, Android, docs or landing apps. A manual run also captures the screenshots, in the `screenshots` job. On a failure, each job prints the stack's logs and uploads the Playwright report, with a trace of the failed test.
