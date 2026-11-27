@@ -1,5 +1,6 @@
 import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
-import { forEachUserDatabase } from "./forEachUserDatabase.js"
+import { sum } from "@oboku/shared"
+import { mapUserDatabases } from "./mapUserDatabases.js"
 import type { UserDatabase } from "./listUserDatabases.js"
 import { ensureUserDbIndexes } from "./userDbIndexes.js"
 import { CouchService } from "./couch.service.js"
@@ -43,16 +44,10 @@ export class UserDbIndexesService implements OnApplicationBootstrap {
 
       return result
     }
-    const results = await forEachUserDatabase(db, ensureUserIndexes)
+    const results = await mapUserDatabases(db, ensureUserIndexes)
     const ranOnUsers = results.length
-    const indexesCreated = results.reduce(
-      (total, result) => total + result.created.length,
-      0,
-    )
-    const indexesExisting = results.reduce(
-      (total, result) => total + result.existing.length,
-      0,
-    )
+    const indexesCreated = sum(results.map((result) => result.created.length))
+    const indexesExisting = sum(results.map((result) => result.existing.length))
 
     this.logger.log(
       `Ensured user db indexes: ${ranOnUsers} users, ${indexesCreated} created, ${indexesExisting} already present`,

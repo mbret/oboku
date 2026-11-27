@@ -2,6 +2,7 @@ import {
   type CollectionDocType,
   getCollectionCoverKey,
   parseLegacyResourceIdForMigration,
+  sum,
   type SettingsConnectorDocType,
   type SettingsDocType,
 } from "@oboku/shared"
@@ -13,7 +14,7 @@ import { RefreshTokenPostgresEntity } from "../features/postgres/entities.js"
 import { CouchService } from "../couch/couch.service.js"
 import { findAll, isCouchNotFound, retryFn } from "../couch/dbHelpers.js"
 import { hasUrlScheme } from "../http/url.js"
-import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
+import { mapUserDatabases } from "../couch/mapUserDatabases.js"
 import { CoversService } from "../covers/covers.service.js"
 import {
   CopyObjectCommand,
@@ -34,9 +35,6 @@ import type {
 
 const logger = new Logger("MigrationService")
 
-const sum = (values: readonly number[]) =>
-  values.reduce((total, value) => total + value, 0)
-
 const sumResourceIdUpdates = (
   updatesPerUser: readonly {
     linksUpdated: number
@@ -52,14 +50,7 @@ const sumResourceIdUpdates = (
   ),
 })
 
-const NO_COVER_RENAMES = {
-  renamed: 0,
-  skippedDestinationExists: 0,
-  skippedSourceMissing: 0,
-}
-
-/** The connector's URL with `https://` added, or undefined when it needs none. */
-const toHttpsUrl = (connector: SettingsConnectorDocType) => {
+const getHttpsUrlIfSchemeless = (connector: SettingsConnectorDocType) => {
   const isWebdavOrSynologyDrive =
     connector.type === "webdav" || connector.type === "synology-drive"
 
@@ -72,7 +63,7 @@ const toHttpsUrl = (connector: SettingsConnectorDocType) => {
 }
 
 const needsHttpsScheme = (connector: SettingsConnectorDocType) =>
-  toHttpsUrl(connector) !== undefined
+  getHttpsUrlIfSchemeless(connector) !== undefined
 
 const addHttpsToSchemelessConnectorUrls = async (
   userDb: createNano.DocumentScope<SettingsDocType>,
@@ -92,7 +83,7 @@ const addHttpsToSchemelessConnectorUrls = async (
   if (updatedConnectorsCount === 0) return 0
 
   const migratedConnectors = connectors.map(function addHttpsScheme(connector) {
-    const httpsUrl = toHttpsUrl(connector)
+    const httpsUrl = getHttpsUrlIfSchemeless(connector)
 
     return httpsUrl === undefined ? connector : { ...connector, url: httpsUrl }
   })
@@ -350,7 +341,7 @@ export class MigrationService implements OnApplicationBootstrap {
 
     logger.log("Migrating webdavConnectors to connectors")
 
-    const connectorsCreatedPerUser = await forEachUserDatabase(
+    const connectorsCreatedPerUser = await mapUserDatabases(
       db,
       async function migrateUserWebdavConnectors(
         { dbName: userDbName, email },
@@ -451,7 +442,7 @@ export class MigrationService implements OnApplicationBootstrap {
 
     logger.log("Adding https:// to connector URLs without a scheme")
 
-    const connectorsUpdatedPerUser = await forEachUserDatabase(
+    const connectorsUpdatedPerUser = await mapUserDatabases(
       db,
       async function addHttpsToUserConnectorUrls({ dbName, email }, progress) {
         const userConnectorsUpdated = await retryFn(
@@ -531,7 +522,7 @@ export class MigrationService implements OnApplicationBootstrap {
 
     logger.log("Migrating legacy WebDAV resource IDs")
 
-    const updatesPerUser = await forEachUserDatabase(
+    const updatesPerUser = await mapUserDatabases(
       db,
       async function migrateUserWebdavResourceIds(
         { dbName: userDbName, email },
@@ -655,7 +646,7 @@ export class MigrationService implements OnApplicationBootstrap {
 
     logger.log("Migrating resourceId to link data")
 
-    const updatesPerUser = await forEachUserDatabase(
+    const updatesPerUser = await mapUserDatabases(
       db,
       async function migrateUserResourceIdToLinkData(
         { dbName: userDbName, email },
@@ -785,10 +776,6 @@ export class MigrationService implements OnApplicationBootstrap {
 
     const db = await this.couchService.createAdminNanoInstance()
 
-    logger.log(
-      `Renaming legacy collection covers (storage: ${storageStrategy})`,
-    )
-
     // Build a single rename function so the per-collection loop below is
     // identical regardless of storage backend.
     const renameLegacyCover =
@@ -796,7 +783,7 @@ export class MigrationService implements OnApplicationBootstrap {
         ? this.buildS3LegacyCoverRenamer()
         : this.buildFsLegacyCoverRenamer()
 
-    const renamesPerUser = await forEachUserDatabase(
+    const renamesPerUser = await mapUserDatabases(
       db,
       async function renameUserLegacyCovers(userDb, progress) {
         const userDbInstance = db.use<Pick<CollectionDocType, "_id">>(
@@ -807,11 +794,6 @@ export class MigrationService implements OnApplicationBootstrap {
           selector: { rx_model: "obokucollection" },
           fields: ["_id"],
         })
-
-        if (collections.length === 0) {
-          logger.log(`${progress} ${userDb.email}: skipped (no collections)`)
-          return NO_COVER_RENAMES
-        }
 
         let userRenamed = 0
         let userSkippedDestinationExists = 0

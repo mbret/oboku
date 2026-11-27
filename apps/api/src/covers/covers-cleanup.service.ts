@@ -8,7 +8,7 @@ import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { CouchService } from "../couch/couch.service.js"
 import { findAll } from "../couch/dbHelpers.js"
-import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
+import { mapUserDatabases } from "../couch/mapUserDatabases.js"
 import { formatDuration } from "../storage/formatDuration.js"
 import { CoversService } from "./covers.service.js"
 
@@ -31,7 +31,7 @@ export class CoversCleanupService {
    */
   private async listKeepableCoverKeys() {
     const db = await this.couchService.createAdminNanoInstance()
-    const keepableCoverKeysPerUser = await forEachUserDatabase(
+    const keepableCoverKeysPerUser = await mapUserDatabases(
       db,
       async function listUserKeepableCoverKeys(userDb) {
         const userDbInstance = db.use<

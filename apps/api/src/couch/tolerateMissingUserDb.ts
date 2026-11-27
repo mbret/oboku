@@ -4,7 +4,7 @@ import { isCouchMissingDatabase } from "./dbHelpers.js"
 const logger = new Logger("tolerateMissingUserDb")
 
 /**
- * Per-user-DB defensive wrapper for loops that iterate over `_users`.
+ * Runs one step of `mapUserDatabases`, skipping a user database deleted after it was listed.
  *
  * Why this exists:
  * - `_users` can contain entries whose corresponding `userdb-*` database has

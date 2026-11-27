@@ -1,5 +1,9 @@
 import { useEffect } from "react"
-import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY, links } from "@oboku/shared"
+import {
+  DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
+  isHttpUrl,
+  links,
+} from "@oboku/shared"
 import {
   Button,
   Code,
@@ -35,15 +39,13 @@ export const AdminMicrosoftSection = () => {
           return null
         }
 
-        try {
-          const url = new URL(normalizedValue)
-
-          return url.protocol === "http:" || url.protocol === "https:"
-            ? null
-            : "Authority must be a valid http:// or https:// URL"
-        } catch {
+        if (!URL.canParse(normalizedValue)) {
           return "Authority must be a valid URL"
         }
+
+        return isHttpUrl(normalizedValue)
+          ? null
+          : "Authority must be a valid http:// or https:// URL"
       },
     },
   })

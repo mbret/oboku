@@ -2,7 +2,7 @@ import type { AnnotationDocType, LinkDocType } from "@oboku/shared"
 import { Injectable, Logger } from "@nestjs/common"
 import { Cron } from "@nestjs/schedule"
 import { CouchService } from "../couch/couch.service.js"
-import { forEachUserDatabase } from "../couch/forEachUserDatabase.js"
+import { mapUserDatabases } from "../couch/mapUserDatabases.js"
 import type { UserDatabase } from "../couch/listUserDatabases.js"
 import { deleteDocumentsOfDeletedBooks } from "./deleteDocumentsOfDeletedBooks.js"
 
@@ -27,19 +27,25 @@ export class DeletedBooksCleanupService {
           { model: "link", getBookId: (link) => link.book },
         )
 
-        if (deletedAnnotationCount + deletedLinkCount > 0) {
+        const deletedDocumentCount = deletedAnnotationCount + deletedLinkCount
+
+        if (deletedDocumentCount > 0) {
           this.logger.log(
             `Deleted ${deletedAnnotationCount} annotation(s) and ${deletedLinkCount} link(s) of deleted books in ${userDb.dbName}`,
           )
         }
+
+        return deletedDocumentCount
       } catch (error) {
         this.logger.error(
           `Failed to delete the documents of deleted books in ${userDb.dbName}`,
           error,
         )
+
+        return 0
       }
     }
 
-    await forEachUserDatabase(db, deleteUserDocumentsOfDeletedBooks)
+    await mapUserDatabases(db, deleteUserDocumentsOfDeletedBooks)
   }
 }

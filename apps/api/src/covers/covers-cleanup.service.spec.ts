@@ -8,11 +8,20 @@ import { CoversService } from "./covers.service.js"
 const USER_EMAIL = "reader@example.com"
 const USER_NAME_HEX = Buffer.from(USER_EMAIL).toString("hex")
 const USER_DB_NAME = `userdb-${USER_NAME_HEX}`
+const GONE_EMAIL = "gone@example.com"
+const GONE_NAME_HEX = Buffer.from(GONE_EMAIL).toString("hex")
+const GONE_DB_NAME = `userdb-${GONE_NAME_HEX}`
 
 const BOOK_COVER = getBookCoverKey(USER_NAME_HEX, "book-1")
 const COLLECTION_COVER = getCollectionCoverKey(USER_NAME_HEX, "series-1")
 const COLLECTION_WITHOUT_COVER = getCollectionCoverKey(USER_NAME_HEX, "shelf-1")
 const DELETED_BOOK_COVER = getBookCoverKey(USER_NAME_HEX, "deleted-book")
+const GONE_USER_BOOK_COVER = getBookCoverKey(GONE_NAME_HEX, "book-1")
+
+const missingDb = Object.assign(new Error("not found"), {
+  statusCode: 404,
+  reason: "Database does not exist.",
+})
 
 const storedCover = (key: string) => ({
   key,
@@ -40,14 +49,20 @@ describe("CoversCleanupService.cleanupDanglingCovers", () => {
             ],
     }))
     const adminNano = {
-      use: vi.fn((dbName: string) =>
-        dbName === "_users"
-          ? {
-              find: vi.fn().mockResolvedValue({ docs: [{ name: USER_EMAIL }] }),
-            }
-          : { find: findInUserDb },
-      ),
-      db: { list: vi.fn().mockResolvedValue([USER_DB_NAME]) },
+      use: vi.fn((dbName: string) => {
+        if (dbName === "_users") {
+          return {
+            find: vi.fn().mockResolvedValue({
+              docs: [{ name: USER_EMAIL }, { name: GONE_EMAIL }],
+            }),
+          }
+        }
+
+        return dbName === GONE_DB_NAME
+          ? { find: vi.fn().mockRejectedValue(missingDb) }
+          : { find: findInUserDb }
+      }),
+      db: { list: vi.fn().mockResolvedValue([USER_DB_NAME, GONE_DB_NAME]) },
     }
 
     const module: TestingModule = await Test.createTestingModule({
@@ -74,6 +89,7 @@ describe("CoversCleanupService.cleanupDanglingCovers", () => {
                   COLLECTION_COVER,
                   COLLECTION_WITHOUT_COVER,
                   DELETED_BOOK_COVER,
+                  GONE_USER_BOOK_COVER,
                 ].map(storedCover),
               ),
             deleteCovers,
@@ -85,11 +101,11 @@ describe("CoversCleanupService.cleanupDanglingCovers", () => {
     service = module.get(CoversCleanupService)
   })
 
-  it("deletes only the covers that no book or collection of a user keeps", async () => {
+  it("deletes the covers that no book or collection keeps, including those of a database deleted during the run", async () => {
     await service.cleanupDanglingCovers()
 
     expect(deleteCovers.mock.calls).toEqual([
-      [[COLLECTION_WITHOUT_COVER, DELETED_BOOK_COVER]],
+      [[COLLECTION_WITHOUT_COVER, DELETED_BOOK_COVER, GONE_USER_BOOK_COVER]],
     ])
   })
 })

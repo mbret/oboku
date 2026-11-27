@@ -7,7 +7,7 @@ import { tolerateMissingUserDb } from "./tolerateMissingUserDb.js"
  * result of each step. A database that disappears during the run gives no
  * result. `progress` reads `[3/12]`, for the step's logs.
  */
-export const forEachUserDatabase = async <T>(
+export const mapUserDatabases = async <T extends NonNullable<unknown>>(
   db: createNano.ServerScope,
   step: (userDatabase: UserDatabase, progress: string) => Promise<T>,
 ) => {

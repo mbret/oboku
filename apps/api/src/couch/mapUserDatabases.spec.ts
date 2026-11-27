@@ -1,6 +1,6 @@
 import type { Mock } from "vitest"
 import type createNano from "nano"
-import { forEachUserDatabase } from "./forEachUserDatabase.js"
+import { mapUserDatabases } from "./mapUserDatabases.js"
 import type { UserDatabase } from "./listUserDatabases.js"
 
 type Step = (userDatabase: UserDatabase, progress: string) => Promise<number>
@@ -13,7 +13,7 @@ const missingDb = Object.assign(new Error("not found"), {
   reason: "Database does not exist.",
 })
 
-describe("forEachUserDatabase", () => {
+describe("mapUserDatabases", () => {
   let findUsers: Mock
   let listDatabases: Mock
   let db: createNano.ServerScope
@@ -45,7 +45,7 @@ describe("forEachUserDatabase", () => {
       return email.length
     })
 
-    const results = await forEachUserDatabase(db, step)
+    const results = await mapUserDatabases(db, step)
 
     expect(results).toEqual(["a@example.com".length, "b@example.com".length])
     expect(
@@ -62,7 +62,7 @@ describe("forEachUserDatabase", () => {
       throw new Error("couch is down")
     })
 
-    await expect(forEachUserDatabase(db, step)).rejects.toThrow("couch is down")
+    await expect(mapUserDatabases(db, step)).rejects.toThrow("couch is down")
     expect(step).toHaveBeenCalledTimes(1)
   })
 })

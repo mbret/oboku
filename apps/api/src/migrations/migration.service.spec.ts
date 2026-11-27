@@ -63,22 +63,31 @@ const MIGRATED_CONNECTORS = [
   ...(SETTINGS.connectors?.slice(2) ?? []),
 ]
 
-describe("MigrationService.migrateConnectorUrlSchemes", () => {
+describe("MigrationService", () => {
   let service: MigrationService
   let findUsers: Mock
   let getUserDoc: Mock
   let insertUserDoc: Mock
+  let findUserDocs: Mock
+  let bulkUserDocs: Mock
 
   beforeEach(async () => {
     findUsers = vi.fn().mockResolvedValue({ docs: [{ name: USER_EMAIL }] })
     getUserDoc = vi.fn()
     insertUserDoc = vi.fn().mockResolvedValue({ ok: true })
+    findUserDocs = vi.fn().mockResolvedValue({ docs: [] })
+    bulkUserDocs = vi.fn().mockResolvedValue([])
 
     const adminNano = {
       use: vi.fn((dbName: string) =>
         dbName === "_users"
           ? { find: findUsers }
-          : { get: getUserDoc, insert: insertUserDoc },
+          : {
+              get: getUserDoc,
+              insert: insertUserDoc,
+              find: findUserDocs,
+              bulk: bulkUserDocs,
+            },
       ),
       db: { list: vi.fn().mockResolvedValue([USER_DB_NAME]) },
     }
@@ -163,5 +172,83 @@ describe("MigrationService.migrateConnectorUrlSchemes", () => {
 
     expect(() => service.onApplicationBootstrap()).not.toThrow()
     await new Promise(process.nextTick)
+  })
+
+  it("moves the legacy WebDAV connectors that have an id into connectors", async () => {
+    const legacyConnector = {
+      id: "legacy",
+      url: "https://nas.local/dav",
+      username: "reader",
+      passwordAsSecretId: "nas-secret",
+    }
+    getUserDoc.mockResolvedValue({
+      _id: "settings",
+      _rev: "1-a",
+      connectors: [],
+      webdavConnectors: [
+        legacyConnector,
+        { ...legacyConnector, id: undefined, url: "https://other.local/dav" },
+      ],
+    })
+
+    const result = await service.migrateWebdavConnectorsToConnectors()
+
+    expect(result).toEqual({ usersMigrated: 1, connectorsCreated: 1 })
+    expect(insertUserDoc.mock.calls).toEqual([
+      [
+        {
+          _id: "settings",
+          _rev: "1-a",
+          connectors: [{ ...legacyConnector, type: "webdav" }],
+        },
+      ],
+    ])
+  })
+
+  it("rewrites the legacy WebDAV resource ids of links and collections", async () => {
+    const legacyLink = {
+      _id: "link-1",
+      rx_model: "link",
+      type: "webdav",
+      resourceId: "webdav://nas.local:%2Fbooks%2Fa.epub",
+    }
+    const canonicalLink = {
+      _id: "link-2",
+      rx_model: "link",
+      type: "webdav",
+      resourceId: "webdav://%2Fbooks%2Fb.epub",
+    }
+    const legacyCollection = {
+      _id: "collection-1",
+      rx_model: "obokucollection",
+      linkType: "webdav",
+      linkResourceId: "webdav://_:%2Fbooks",
+    }
+    findUserDocs.mockImplementation(async function findByModel({ selector }) {
+      return {
+        docs:
+          selector.rx_model === "link"
+            ? [legacyLink, canonicalLink]
+            : [legacyCollection],
+      }
+    })
+
+    const result = await service.migrateWebdavResourceIds()
+
+    expect(result).toEqual({
+      usersMigrated: 1,
+      linksUpdated: 1,
+      collectionsUpdated: 1,
+    })
+    expect(bulkUserDocs.mock.calls).toEqual([
+      [
+        {
+          docs: [
+            { ...legacyLink, resourceId: "webdav://%2Fbooks%2Fa.epub" },
+            { ...legacyCollection, linkResourceId: "webdav://%2Fbooks" },
+          ],
+        },
+      ],
+    ])
   })
 })
