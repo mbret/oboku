@@ -7,7 +7,7 @@ import {
   type SynologyDriveConnectorDocType,
   type WebdavConnectorDocType,
 } from "@oboku/shared"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, type OnApplicationBootstrap } from "@nestjs/common"
 import { InjectRepository } from "@nestjs/typeorm"
 import { Repository } from "typeorm"
 import type createNano from "nano"
@@ -219,16 +219,31 @@ function mergeLegacyResourceIdIntoData(
  *
  * Each migration is idempotent and can be re-run safely. Migrations are
  * exposed via admin endpoints and are intended to be run during deployments
- * when their corresponding runtime change ships.
+ * when their corresponding runtime change ships. `migrateConnectorUrlSchemes`
+ * also runs at every start.
  */
 @Injectable()
-export class MigrationService {
+export class MigrationService implements OnApplicationBootstrap {
   constructor(
     private readonly couchService: CouchService,
     private readonly coversService: CoversService,
     @InjectRepository(RefreshTokenPostgresEntity)
     private readonly refreshTokenRepository: Repository<RefreshTokenPostgresEntity>,
   ) {}
+
+  /**
+   * Older app versions can still save a connector URL without a scheme, so
+   * the API gives them one at every start.
+   */
+  onApplicationBootstrap() {
+    this.migrateConnectorUrlSchemes().catch(
+      this.logConnectorUrlSchemesStartupFailure,
+    )
+  }
+
+  private logConnectorUrlSchemesStartupFailure = (error: unknown) => {
+    logger.error("Unable to add https:// to connector URLs at startup", error)
+  }
 
   async resetRefreshTokenCreatedAt(): Promise<RefreshTokenCreatedAtResetResponseDto> {
     /**

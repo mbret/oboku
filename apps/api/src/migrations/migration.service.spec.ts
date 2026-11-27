@@ -65,19 +65,19 @@ const MIGRATED_CONNECTORS = [
 
 describe("MigrationService.migrateConnectorUrlSchemes", () => {
   let service: MigrationService
+  let findUsers: Mock
   let getUserDoc: Mock
   let insertUserDoc: Mock
 
   beforeEach(async () => {
+    findUsers = vi.fn().mockResolvedValue({ docs: [{ name: USER_EMAIL }] })
     getUserDoc = vi.fn()
     insertUserDoc = vi.fn().mockResolvedValue({ ok: true })
 
     const adminNano = {
       use: vi.fn((dbName: string) =>
         dbName === "_users"
-          ? {
-              find: vi.fn().mockResolvedValue({ docs: [{ name: USER_EMAIL }] }),
-            }
+          ? { find: findUsers }
           : { get: getUserDoc, insert: insertUserDoc },
       ),
       db: { list: vi.fn().mockResolvedValue([USER_DB_NAME]) },
@@ -146,5 +146,22 @@ describe("MigrationService.migrateConnectorUrlSchemes", () => {
     expect(insertUserDoc.mock.lastCall).toEqual([
       { ...settingsChangedByDevice, connectors: MIGRATED_CONNECTORS },
     ])
+  })
+
+  it("adds https:// to the connector URLs at startup", async () => {
+    getUserDoc.mockResolvedValue(SETTINGS)
+
+    service.onApplicationBootstrap()
+
+    await expect
+      .poll(() => insertUserDoc.mock.calls)
+      .toEqual([[{ ...SETTINGS, connectors: MIGRATED_CONNECTORS }]])
+  })
+
+  it("does not let a failing startup run crash the API", async () => {
+    findUsers.mockRejectedValue(new Error("couch is down"))
+
+    expect(() => service.onApplicationBootstrap()).not.toThrow()
+    await new Promise(process.nextTick)
   })
 })
