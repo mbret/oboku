@@ -53,9 +53,9 @@ The workflow uses the keystore password as the key password too. A PKCS12 keysto
 
 ## Fingerprints
 
-`sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json` lists the fingerprints. Two keys need one:
+`sha256_cert_fingerprints` in `apps/web/public/.well-known/assetlinks.json` lists the fingerprints. Each key that signs the app on a phone needs one:
 
-- **The app signing key**, for the app installed from Google Play. Copy its SHA-256 fingerprint from the Play Console, on the **App signing** page of **App integrity**.
+- **The app signing keys**, for the app installed from Google Play. The app uses quantum-ready hybrid signing, which has three app signing keys, and the file lists all three. In the Play Console, open **Protected with Play**, expand **Play Store protection** and select **Manage Play app signing**. Then copy the SHA-256 fingerprints with **Copy all certificate fingerprints**. The **Digital Asset Links JSON** on that page shows only one of them.
 - **The upload key**, for the APK from the workflow installed by hand. Print its fingerprint with `keytool -list -v -keystore android.keystore -alias android`.
 
 A fingerprint change reaches phones with the next web release. It needs no Android release, because the package does not hold the fingerprints.
