@@ -1,48 +1,46 @@
-import { exists } from "../../../couch/exists.js"
+import type nano from "nano"
 import { logger } from "./logger.js"
-import { Context } from "../types.js"
+import type { Context } from "../types.js"
 import { bulkDelete } from "../../../couch/bulkDelete.js"
+import { fetchDocumentStates } from "../../../couch/fetchDocumentStates.js"
 import type { LinkCandidate } from "../../../plugins/types.js"
 
 /**
- * Deletes dangling links for a resource: links that have no book or whose book
- * no longer exists in the DB (phantom book). Links that have a valid book are
- * never touched, so the user keeps all valid access paths.
+ * Deletes the links of a resource whose book CouchDB holds as deleted, records
+ * each in the sync report, and resolves with the links whose book is live: the
+ * ones the sync may use. The caller chooses which one to use for the current
+ * sync (e.g. prefer same connector for metadata refresh).
  *
- * Steps:
- * 1. For each link, if it has no book or the book does not exist in the DB,
- *    mark it for deletion.
- * 2. Log and record in the sync report each link to delete, then bulk-delete
- *    them from the DB.
- * 3. Return the links that were not deleted (all have a valid book). The
- *    caller is responsible for choosing which one to use for the current sync
- *    (e.g. prefer same connector for metadata refresh).
+ * A link without a book, or whose book CouchDB has never seen, stays in CouchDB
+ * and is not returned: a device may not have pushed that book yet.
  */
 export const deleteDanglingLinks = async (
-  ctx: Context,
+  {
+    db,
+    syncReport,
+  }: Pick<Context, "syncReport"> & {
+    db: Pick<nano.DocumentScope<unknown>, "fetchRevs" | "bulk">
+  },
   links: LinkCandidate[],
 ): Promise<LinkCandidate[]> => {
-  const toDelete: LinkCandidate[] = []
-
-  for (const link of links) {
-    if (!link.book) {
-      toDelete.push(link)
-      continue
+  const { liveIds, deletedIds } = await fetchDocumentStates(
+    db,
+    links.flatMap((link) => (link.book === null ? [] : [link.book])),
+  )
+  const isLinkOfBookIn = (bookIds: Set<string>) =>
+    function isLinkOfBook(link: LinkCandidate) {
+      return link.book !== null && bookIds.has(link.book)
     }
-    const bookExists = await exists(ctx.db, link.book)
-    if (!bookExists) {
-      toDelete.push(link)
-    }
-  }
+  const linksOfDeletedBooks = links.filter(isLinkOfBookIn(deletedIds))
 
-  if (toDelete.length) {
+  if (linksOfDeletedBooks.length > 0) {
     logger.log(
-      `Deleting ${toDelete.length} dangling links for type ${toDelete[0]?.type}`,
+      `Deleting ${linksOfDeletedBooks.length} dangling links for type ${linksOfDeletedBooks[0]?.type}`,
     )
 
     const deletedLinkIds = await bulkDelete(
-      ctx.db,
-      toDelete.map(function toLinkDocument({
+      db,
+      linksOfDeletedBooks.map(function toLinkDocument({
         isUsingSameSourceCredentials: _,
         ...link
       }) {
@@ -51,15 +49,15 @@ export const deleteDanglingLinks = async (
     )
 
     deletedLinkIds.forEach((linkId) => {
-      ctx.syncReport.deleteLink(linkId)
+      syncReport.deleteLink(linkId)
     })
 
-    const failedCount = toDelete.length - deletedLinkIds.length
+    const failedCount = linksOfDeletedBooks.length - deletedLinkIds.length
 
     if (failedCount > 0) {
       logger.warn(`CouchDB refused to delete ${failedCount} dangling links`)
     }
   }
 
-  return links.filter((link) => !toDelete.includes(link))
+  return links.filter(isLinkOfBookIn(liveIds))
 }
