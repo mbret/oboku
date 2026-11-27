@@ -341,6 +341,45 @@ const TARGETS: Target[] = [
       "audiobook-reader",
     ],
   },
+  // Google Play's foldable screenshots need one image of the unfolded screen
+  // in 1:1, one in 4:3, and one of the folded outer screen in 10:16 portrait,
+  // each side between 960 px and 3,840 px.
+  {
+    name: "play-foldable-unfolded-square",
+    viewport: { width: 720, height: 720 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(
+      APPS_DIR,
+      "e2e/screenshots/play-foldable-unfolded-square/en",
+    ),
+    imageFormat: "jpeg",
+    scenes: ["library", "epub-reader"],
+  },
+  {
+    name: "play-foldable-unfolded-landscape",
+    viewport: { width: 960, height: 720 },
+    deviceScaleFactor: 2,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(
+      APPS_DIR,
+      "e2e/screenshots/play-foldable-unfolded-landscape/en",
+    ),
+    imageFormat: "jpeg",
+    scenes: ["library", "epub-reader"],
+  },
+  {
+    name: "play-foldable-folded",
+    viewport: { width: 360, height: 576 },
+    deviceScaleFactor: 3,
+    colorScheme: "light",
+    locale: "en-US",
+    outputDir: path.join(APPS_DIR, "e2e/screenshots/play-foldable-folded/en"),
+    imageFormat: "jpeg",
+    scenes: ["library", "epub-reader"],
+  },
   {
     name: "web-manifest",
     viewport: { width: 320, height: 568 },
