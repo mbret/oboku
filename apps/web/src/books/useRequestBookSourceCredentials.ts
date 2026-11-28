@@ -5,13 +5,13 @@ import { getBookById } from "./dbHelpers"
 
 /**
  * Asks the source of a book's file for the credentials oboku's server reads
- * that file with. The source opens its sign-in when it needs one, and a
- * connector asks for the master password.
+ * that file with. The source opens a prompt when it needs one: its sign-in,
+ * or the master password for a connector.
  *
  * @returns a function that resolves with the credentials, or with none when
  * the database holds no file for the book. It rejects while no database is
  * open, and with what the source rejects with: a `CancelError` when the user
- * closes the source's prompt.
+ * closes that prompt.
  */
 export const useRequestBookSourceCredentials = (
   options?: Pick<UseMutationOptions, "meta">,
