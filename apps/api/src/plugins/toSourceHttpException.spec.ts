@@ -67,6 +67,13 @@ const SOURCE_FAILURES: ReadonlyArray<
     ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED,
   ],
   [
+    "a web address that refuses the request with 502",
+    "URI",
+    Object.assign(new Error("Invalid response: 403"), { status: 403 }),
+    502,
+    ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE,
+  ],
+  [
     "any other failure of an account's source with 502",
     "dropbox",
     new Error("socket hang up"),
