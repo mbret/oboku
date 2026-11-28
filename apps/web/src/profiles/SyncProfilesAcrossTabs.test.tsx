@@ -203,7 +203,7 @@ describe("SyncProfilesAcrossTabs", () => {
 
     const { result } = renderSession()
 
-    await waitFor(() => {
+    await waitFor(function expectReaderProfile() {
       expect(result.current.active.data).toEqual(createProfile())
     })
     expect(reopenDatabase).not.toHaveBeenCalled()
@@ -219,7 +219,7 @@ describe("SyncProfilesAcrossTabs", () => {
 
     notifyProfilesChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function expectOtherProfile() {
       expect(result.current.active.data).toEqual(otherProfile)
     })
     expect(reopenDatabase).toHaveBeenCalledTimes(1)
@@ -238,7 +238,7 @@ describe("SyncProfilesAcrossTabs", () => {
 
     const { result } = renderSession()
 
-    await waitFor(() => {
+    await waitFor(function expectReaderProfile() {
       expect(result.current.active.data).toEqual(createProfile())
     })
 
@@ -246,7 +246,7 @@ describe("SyncProfilesAcrossTabs", () => {
 
     notifyProfilesChangedFromAnotherTab()
 
-    await waitFor(() => {
+    await waitFor(function expectReload() {
       expect(reloadPage).toHaveBeenCalledOnce()
     })
   })

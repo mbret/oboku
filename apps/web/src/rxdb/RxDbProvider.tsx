@@ -62,7 +62,7 @@ const addToPendingReplacements = (difference: 1 | -1) => {
   })
 }
 
-const openDatabase = async () => {
+const openAndTrackDatabase = async () => {
   const database = await firstValueFrom(createDatabase({}))
 
   database.onClose.push(function forgetDatabaseWhenItCloses() {
@@ -85,23 +85,23 @@ const openDatabase = async () => {
  * with the other calls of this tab, disposes of the open database and opens a
  * new instance. If a step fails, the tab stays without a database.
  */
-const replaceDatabase = (
+const replaceDatabase = async (
   disposeOf: (staleDatabase: Database | undefined) => Promise<unknown>,
 ) => {
   addToPendingReplacements(1)
 
-  return withDatabaseLifecycleLock(async function disposeThenOpen() {
-    try {
+  try {
+    return await withDatabaseLifecycleLock(async function disposeThenOpen() {
       const { openDatabase: staleDatabase } = databaseStateSignal.getValue()
 
       setOpenDatabase(undefined)
       await disposeOf(staleDatabase)
 
-      return await openDatabase()
-    } finally {
-      addToPendingReplacements(-1)
-    }
-  })
+      return openAndTrackDatabase()
+    })
+  } finally {
+    addToPendingReplacements(-1)
+  }
 }
 
 const wipeDatabase = () =>
@@ -113,7 +113,7 @@ const wipeDatabase = () =>
 
 const openDatabaseIfClosed = () =>
   withDatabaseLifecycleLock(async function openUnlessOpen() {
-    return databaseStateSignal.getValue().openDatabase ?? openDatabase()
+    return databaseStateSignal.getValue().openDatabase ?? openAndTrackDatabase()
   })
 
 /**
