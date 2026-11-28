@@ -33,9 +33,9 @@ const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
 }
 
 /**
- * A library sync must not fail while its steps still run: the queue then starts
- * the user's next library sync, and the running steps would create documents at
- * the same time as it.
+ * A library sync must not fail while its steps that create documents still
+ * run: the queue then starts the user's next library sync, and these steps
+ * would create documents at the same time as it.
  */
 const waitForAll = async (steps: readonly Promise<unknown>[]) => {
   const outcomes = await Promise.allSettled(steps)
