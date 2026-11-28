@@ -68,12 +68,16 @@ export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
 
+/** The headers of an answer that describe its file. */
+export type FileHeaders = {
+  "Content-Type"?: string
+  "Content-Disposition"?: string
+}
+
 export type ProxiedFile = {
   stream: NodeJS.ReadableStream
-  /** The file name the answer gives, which also types it by its extension. */
-  name: string
-  /** The media type the answer gives, which replaces the one of the name. */
-  contentType: string
+  /** Written to the answer as they are. */
+  headers: FileHeaders
   /** The number of bytes `stream` yields, when the source states it. */
   size?: number
   /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
@@ -256,7 +260,9 @@ export class ProxiedDownloadQuotaService {
       )
     }
 
-    response.attachment(file.name).type(file.contentType)
+    for (const [name, value] of Object.entries(file.headers)) {
+      if (value !== undefined) response.setHeader(name, value)
+    }
 
     const streamableFile = new StreamableFile(meteredFile.stream, {
       length: file.size,

@@ -5,8 +5,7 @@ import { getFromWebAddress } from "./client.js"
 
 const URI_TYPE = "URI"
 
-export const extractNameFromUrl = (url: string) =>
-  getFileNameFromUrl(url) ?? "unknown"
+const extractNameFromUrl = (url: string) => getFileNameFromUrl(url) ?? "unknown"
 
 function resolveUrl(link: { data: { url: string } }): string {
   const { url } = link.data

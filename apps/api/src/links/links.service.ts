@@ -25,13 +25,7 @@ import { streamUriFile } from "../plugins/uri/streamUriFile.js"
 import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
-const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
-
 type UserDb = createNano.DocumentScope<unknown>
-
-type SourceFile = Omit<ProxiedFile, "contentType"> & {
-  contentType: string | undefined
-}
 
 const createResourceNotFound = () =>
   new NotFoundException(
@@ -46,11 +40,6 @@ const requireConnectorPassword = (
   return providerCredentials.password
 }
 
-const toProxiedFile = ({ contentType, ...file }: SourceFile): ProxiedFile => ({
-  ...file,
-  contentType: contentType || UNKNOWN_CONTENT_TYPE,
-})
-
 const streamWebdavLinkFile = async ({
   db,
   link,
@@ -59,27 +48,23 @@ const streamWebdavLinkFile = async ({
   db: UserDb
   link: LinkDocTypeForSource<"webdav">
   password: string
-}): Promise<SourceFile> => {
+}) => {
   const connector = await findConnector({
     db,
     connectorId: link.data.connectorId,
     type: "webdav",
   })
-  const { name, ...file } = await streamWebdavFile({
+
+  return streamWebdavFile({
     connector,
     password,
     filePath: link.data.filePath,
   })
-
-  return {
-    ...file,
-    name: name ?? link.data.filePath.split("/").pop() ?? link._id,
-  }
 }
 
 const streamOpdsLinkFile = async ({
   db,
-  bookLinkData: { connectorId, acquisition, title },
+  bookLinkData: { connectorId, acquisition },
   password,
 }: {
   db: UserDb
@@ -88,7 +73,7 @@ const streamOpdsLinkFile = async ({
 }) => {
   const connector = await resolveOpdsConnector({ connectorId, password, db })
 
-  return streamOpdsFile({ connector, acquisition, title })
+  return streamOpdsFile({ connector, acquisition })
 }
 
 @Injectable()
@@ -97,8 +82,9 @@ export class LinksService {
 
   /**
    * Streams the file of a WebDAV link, an OPDS book or a web address in the
-   * library of the user `email` names. The stream fails past the size the
-   * server states, which could be less than it sends.
+   * library of the user `email` names, with the server's headers that
+   * describe it. The stream fails past the size the server states, which
+   * could be less than it sends.
    *
    * @throws a 400 for a link of another type or an OPDS link to a folder, a
    * WebDAV or OPDS link without `providerCredentials`, a link that names no
@@ -127,7 +113,7 @@ export class LinksService {
           db,
           link,
           password: requireConnectorPassword(providerCredentials),
-        }).then(toProxiedFile, throwConnectorHttpException)
+        }).catch(throwConnectorHttpException)
       case "opds":
         if (!isOpdsBookLinkData(link.data)) throw new BadRequestException()
 
@@ -135,12 +121,9 @@ export class LinksService {
           db,
           bookLinkData: link.data,
           password: requireConnectorPassword(providerCredentials),
-        }).then(toProxiedFile, throwConnectorHttpException)
+        }).catch(throwConnectorHttpException)
       case "URI":
-        return streamUriFile(link.data).then(
-          toProxiedFile,
-          throwWebAddressHttpException,
-        )
+        return streamUriFile(link.data).catch(throwWebAddressHttpException)
       default:
         throw new BadRequestException()
     }
