@@ -31,6 +31,7 @@ import { PluginsModule } from "./plugins/plugins.module.js"
 import { KoreaderSyncServerModule } from "./koreader/sync-server/koreader-sync-server.module.js"
 import { KoreaderSyncConnectionModule } from "./koreader/sync-connection/koreader-sync-connection.module.js"
 import { OpdsModule } from "./opds/opds.module.js"
+import { KindleModule } from "./kindle/kindle.module.js"
 import { SourceConnectionsModule } from "./source-connections/source-connections.module.js"
 
 @Module({
@@ -100,6 +101,7 @@ import { SourceConnectionsModule } from "./source-connections/source-connections
         EMAIL_FROM: Joi.string().email().optional(),
         EMAIL_FROM_NAME: Joi.string().optional(),
         EMAIL_SMTP_MAX_SEND_RATE: Joi.number().positive().optional(),
+        SEND_TO_KINDLE_MAX_FILE_SIZE_MB: Joi.number().positive().optional(),
       })
         .or("JWT_PRIVATE_KEY_FILE", "JWT_PRIVATE_KEY")
         .or("JWT_PUBLIC_KEY_FILE", "JWT_PUBLIC_KEY"),
@@ -127,6 +129,7 @@ import { SourceConnectionsModule } from "./source-connections/source-connections
     KoreaderSyncServerModule,
     KoreaderSyncConnectionModule,
     OpdsModule,
+    KindleModule,
     SourceConnectionsModule,
   ],
   providers: [AppService, SyncReportPostgresService],

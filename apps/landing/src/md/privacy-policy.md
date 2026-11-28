@@ -29,6 +29,11 @@ be able to recover and hand over your data to any third party.
 
 We don't share anything with anyone. Others collect already too much. Yes it's free and No you are not the product.
 
+Two things leave our servers because the service needs them:
+
+- **Emails:** Our email provider delivers the emails we send you, so it sees your email address.
+- **Send to Kindle:** When you send a book to your Kindle, we email that book to your Kindle address, through our email provider, to Amazon. We do it only when you ask, and we keep no copy of the book.
+
 ## Your Rights
 
 You have the following rights with respect to your personal information:

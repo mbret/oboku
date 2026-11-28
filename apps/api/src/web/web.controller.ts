@@ -3,6 +3,7 @@ import { DEFAULT_MICROSOFT_APPLICATION_AUTHORITY } from "@oboku/shared"
 import { AppConfigService } from "../config/AppConfigService.js"
 import { Public } from "../auth/auth.guard.js"
 import { InstanceConfigService } from "../admin/instance-config/instance-config.service.js"
+import { toSendToKindleConfig } from "../kindle/kindle-config.js"
 import { isGoogleConnectionConfigured } from "../source-connections/google/google-connection.service.js"
 import { PublicServerSourceDto, WebConfigResponseDto } from "./web.dto.js"
 
@@ -28,6 +29,7 @@ export class WebController {
         DEFAULT_MICROSOFT_APPLICATION_AUTHORITY,
       FEATURE_SERVER_SYNC_ENABLED: config.serverSync.enabled,
       FEATURE_GOOGLE_CONNECTION_ENABLED: isGoogleConnectionConfigured(config),
+      SEND_TO_KINDLE: toSendToKindleConfig(this.appConfigService),
       SHOW_DISABLED_PLUGINS: config.showDisabledPlugins,
     }
   }

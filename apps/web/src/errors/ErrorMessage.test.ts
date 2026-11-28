@@ -49,6 +49,16 @@ describe("errorToMessage", () => {
     )
   })
 
+  it("tells where to save the Kindle address a send needs", () => {
+    const error = createApiError(400, {
+      errors: [{ code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_ADDRESS_INVALID }],
+    })
+
+    expect(errorToMessage(error)).toBe(
+      "Save your Send to Kindle address first, in Integrations > Send to Kindle. It ends with @kindle.com.",
+    )
+  })
+
   it("says the connector's server refused the connector's password", () => {
     const error = createApiError(502, {
       errors: [

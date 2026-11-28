@@ -65,8 +65,20 @@ EMAIL_FROM_NAME=oboku
 # provider's maximum send rate (eg: Amazon SES "Maximum send rate") so large
 # admin broadcasts stay under it. Left unset, sends are not rate limited.
 EMAIL_SMTP_MAX_SEND_RATE=14
+# Optional. The largest book file, in megabytes, that Send to Kindle emails.
+# Defaults to 25.
+SEND_TO_KINDLE_MAX_FILE_SIZE_MB=25
 ```
 
 > Providers also enforce a daily sending quota (eg: Amazon SES allows 50,000
 > emails / 24h by default). A single broadcast larger than your quota will have
 > its overflow rejected by the provider; request a quota increase if needed.
+
+### Send to Kindle
+
+With an email provider set, your users can [send a book to their Kindle](/guides/send-to-kindle). Without one, the app does not show the feature.
+
+- **Do not change `EMAIL_FROM` once users rely on it.** Each user approves this address in their Amazon account. After a change, Amazon ignores the books of every user until they approve the new address.
+- **Set the size limit from your provider's message limit.** An attachment grows by about a third inside an email, so keep `SEND_TO_KINDLE_MAX_FILE_SIZE_MB` under three quarters of the message size your provider accepts. Amazon SES accepts 40 MB for a message. Amazon accepts 50 MB for a Kindle.
+- **The books use the SMTP account of the sign-in emails.** The API sends two books at a time, and each user sends 10 books a day.
+- **A book counts on the [proxied download quota](/self-hosting/admin#proxied-download-quota)**, because the API reads it from its source.

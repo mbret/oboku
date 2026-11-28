@@ -7,7 +7,20 @@ const mocks = vi.hoisted(function createReadingAppsSectionMocks() {
   return {
     useKoreaderSyncServer: vi.fn(),
     useKoreaderSyncConnection: vi.fn(),
+    useConfig: vi.fn(),
+    useSettings: vi.fn(),
   }
+})
+
+vi.mock("../../config/useConfig", async function mockConfig(importOriginal) {
+  return {
+    ...(await importOriginal<typeof import("../../config/useConfig")>()),
+    useConfig: mocks.useConfig,
+  }
+})
+
+vi.mock("../../settings/useSettings", function mockSettings() {
+  return { useSettings: mocks.useSettings }
 })
 
 vi.mock(
@@ -34,6 +47,9 @@ vi.mock(
   },
 )
 
+import { i18n } from "@lingui/core"
+import { I18nProvider } from "@lingui/react"
+import { activateLocale } from "../../i18n/activateLocale"
 import { ReadingAppsSection } from "./ReadingAppsSection"
 
 const KOREADER_SYNC_SERVER_PURPOSE =
@@ -43,9 +59,11 @@ const KOREADER_PROGRESS_SYNC_PURPOSE =
 
 function renderReadingAppsSection() {
   render(
-    <MemoryRouter>
-      <ReadingAppsSection />
-    </MemoryRouter>,
+    <I18nProvider i18n={i18n}>
+      <MemoryRouter>
+        <ReadingAppsSection />
+      </MemoryRouter>
+    </I18nProvider>,
   )
 }
 
@@ -54,9 +72,14 @@ function getLinkText(name: string) {
 }
 
 describe("ReadingAppsSection", () => {
-  beforeEach(() => {
+  beforeEach(async () => {
     mocks.useKoreaderSyncServer.mockReturnValue({ data: undefined })
     mocks.useKoreaderSyncConnection.mockReturnValue({ data: undefined })
+    mocks.useConfig.mockReturnValue({
+      data: { FEATURE_SEND_TO_KINDLE_ENABLED: false },
+    })
+    mocks.useSettings.mockReturnValue({ data: { _id: "settings" } })
+    await activateLocale("en")
   })
 
   afterEach(() => {
@@ -133,6 +156,44 @@ describe("ReadingAppsSection", () => {
       expect(getLinkText("KOReader progress sync")).toBe(
         `KOReader progress sync${description}`,
       )
+    },
+  )
+
+  it("has no Send to Kindle link on an instance that cannot send emails", () => {
+    renderReadingAppsSection()
+
+    expect(screen.queryByRole("link", { name: /^Send to Kindle/ })).toBeNull()
+  })
+
+  it.each([
+    [
+      "no address is saved",
+      undefined,
+      "Email a book of your library to your Kindle",
+    ],
+    [
+      "an address is saved",
+      "reader@kindle.com",
+      "Sending to reader@kindle.com",
+    ],
+  ])(
+    "links to Send to Kindle when %s, on an instance that sends emails",
+    (_state, kindleEmail, description) => {
+      mocks.useConfig.mockReturnValue({
+        data: { FEATURE_SEND_TO_KINDLE_ENABLED: true },
+      })
+      mocks.useSettings.mockReturnValue({
+        data: { _id: "settings", kindleEmail },
+      })
+
+      renderReadingAppsSection()
+
+      expect(
+        screen
+          .getByRole("link", { name: /^Send to Kindle/ })
+          .getAttribute("href"),
+      ).toBe(ROUTES.SEND_TO_KINDLE)
+      expect(getLinkText("Send to Kindle")).toBe(`Send to Kindle${description}`)
     },
   )
 })

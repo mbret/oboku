@@ -22,11 +22,21 @@ const CONFIG: InstanceConfig = {
   proxiedDownloadUserQuota: { type: "percentage", percent: 5 },
 }
 
-const createController = async (config: InstanceConfig) => {
+const EMAIL_DELIVERY_SETTINGS = {
+  EMAIL_SMTP_HOST: "smtp.oboku.example",
+  EMAIL_FROM: "books@oboku.example",
+  SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES: 25_000_000,
+  SEND_TO_KINDLE_MAX_SENDS_PER_DAY: 10,
+}
+
+const createController = async (
+  config: InstanceConfig,
+  environment: Partial<typeof EMAIL_DELIVERY_SETTINGS> = {},
+) => {
   const module = await Test.createTestingModule({
     controllers: [WebController],
     providers: [
-      { provide: AppConfigService, useValue: {} },
+      { provide: AppConfigService, useValue: environment },
       {
         provide: InstanceConfigService,
         useValue: { getConfig: () => new BehaviorSubject(config) },
@@ -61,4 +71,35 @@ describe("WebController", () => {
     expect(withoutClientId.FEATURE_GOOGLE_CONNECTION_ENABLED).toBe(false)
     expect(withoutSecret.FEATURE_GOOGLE_CONNECTION_ENABLED).toBe(false)
   })
+
+  it("gives the web app the sender address and the limits of Send to Kindle on an instance that sends emails", async () => {
+    const config = (
+      await createController(CONFIG, EMAIL_DELIVERY_SETTINGS)
+    ).getConfig()
+
+    expect(config.SEND_TO_KINDLE).toEqual({
+      senderAddress: EMAIL_DELIVERY_SETTINGS.EMAIL_FROM,
+      maxFileSizeBytes:
+        EMAIL_DELIVERY_SETTINGS.SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES,
+      maxSendsPerDay: EMAIL_DELIVERY_SETTINGS.SEND_TO_KINDLE_MAX_SENDS_PER_DAY,
+    })
+  })
+
+  it.each([
+    [
+      "no SMTP host",
+      { ...EMAIL_DELIVERY_SETTINGS, EMAIL_SMTP_HOST: undefined },
+    ],
+    [
+      "no sender address",
+      { ...EMAIL_DELIVERY_SETTINGS, EMAIL_FROM: undefined },
+    ],
+  ])(
+    "gives no Send to Kindle settings on an instance with %s",
+    async (_case, environment) => {
+      const config = (await createController(CONFIG, environment)).getConfig()
+
+      expect(config.SEND_TO_KINDLE).toBeUndefined()
+    },
+  )
 })

@@ -30,7 +30,9 @@ import {
   LockRounded,
   PasswordRounded,
   RssFeedRounded,
+  ScheduleSendRounded,
   SearchRounded,
+  SendRounded,
   ShareRounded,
   ShieldRounded,
   StorageRounded,
@@ -474,6 +476,42 @@ export const featureGroups: FeatureGroup[] = [
         title: "Any KOReader sync server",
         description:
           "oboku's reader syncs through oboku's own server, KOReader's public one, or one you host, as long as oboku can reach it.",
+      },
+    ],
+  },
+  {
+    id: "kindle",
+    Icon: SendRounded,
+    navLabel: "Kindle",
+    overline: "Send to Kindle",
+    title: "Send a book to your Kindle",
+    description:
+      "A Kindle opens no OPDS catalog and runs no web app, so oboku emails your books to it, with Amazon's Send to Kindle. oboku's server reads the book from where you store it: nothing to download, and nothing to upload.",
+    chips: [{ label: "EPUB" }, { label: "PDF" }, { label: "TXT" }],
+    features: [
+      {
+        Icon: SendRounded,
+        title: "One tap from a book",
+        description:
+          "Open the actions of a book and select Send to Kindle. Amazon delivers it to your Kindle, most often in a few minutes.",
+      },
+      {
+        Icon: CloudRounded,
+        title: "From the place you store it",
+        description:
+          "Google Drive, Dropbox, OneDrive, WebDAV, Synology Drive or an OPDS catalog: oboku's server reads the book from its source.",
+      },
+      {
+        Icon: TaskAltRounded,
+        title: "Set up once",
+        description:
+          "Approve oboku's address in your Amazon account, then save your Kindle address in Integrations. It syncs to your other devices.",
+      },
+      {
+        Icon: ScheduleSendRounded,
+        title: "Fair limits",
+        description:
+          "Books of up to 25 MB, 10 a day on the cloud version. A self-hosted instance sends through its own email provider.",
       },
     ],
   },

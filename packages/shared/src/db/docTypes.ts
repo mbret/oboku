@@ -335,6 +335,8 @@ export type SettingsDocType = {
   readerTabletFontScale?: number | null
   readerDesktopFontScale?: number | null
   catalogs?: SettingsCatalogDocType[]
+  /** Stored as a device wrote it: check it with `isKindleEmail` before emailing it. */
+  kindleEmail?: string | null
 }
 
 type MangoSelectorOperator<T> = {

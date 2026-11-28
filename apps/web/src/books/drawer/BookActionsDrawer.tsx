@@ -35,6 +35,8 @@ import { ROUTES } from "../../navigation/routes"
 import { useMarkBooksAsFinished, useMarkBooksAsUnread } from "../useMarkBookAs"
 import { MarkAsReadIcon, UnreadIcon } from "../../common/icon"
 import { useResolvedMetadataFetchEnabled } from "../../metadata/useResolvedMetadataFetchEnabled"
+import { useConfig } from "../../config/useConfig"
+import { SendBookToKindleListItemButton } from "../../integrations/kindle/SendBookToKindleListItemButton"
 
 type SignalState = {
   openedWith: undefined | string
@@ -96,6 +98,7 @@ export const BookActionsDrawer = memo(function BookActionsDrawer() {
     book,
   })
   const metadataFetchDisabled = metadataFetchResolved === false
+  const { data: config } = useConfig()
 
   const { close: handleClose } = useDismissibleOverlay({
     open: !!bookId,
@@ -291,6 +294,13 @@ export const BookActionsDrawer = memo(function BookActionsDrawer() {
                 }
               />
             </ListItemButton>
+            {!actions && config?.FEATURE_SEND_TO_KINDLE_ENABLED && (
+              <SendBookToKindleListItemButton
+                bookId={book._id}
+                linkType={link?.type}
+                onClose={handleClose}
+              />
+            )}
             {(actions?.includes("removeDownload") || !actions) &&
               downloadState?.downloadState === "downloaded" &&
               !isLocal && (
