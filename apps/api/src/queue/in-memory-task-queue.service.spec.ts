@@ -5,7 +5,14 @@ import {
   InMemoryTaskQueueService,
   TaskRejectionError,
 } from "./in-memory-task-queue.service.js"
-import { defer, firstValueFrom, lastValueFrom, throwError, timer } from "rxjs"
+import {
+  defer,
+  firstValueFrom,
+  lastValueFrom,
+  Subject,
+  throwError,
+  timer,
+} from "rxjs"
 import { finalize, map } from "rxjs/operators"
 
 let service: InMemoryTaskQueueService
@@ -357,6 +364,194 @@ describe("sequential tasks with same ID", () => {
         "task4-end",
       ]),
     )
+  })
+})
+
+describe("sequential key", () => {
+  const queueName = "test-sequential-key"
+
+  /**
+   * A task that stays active until the test finishes it or fails it.
+   */
+  const createHeldTask = (
+    name: string,
+    recordStart: (name: string) => void,
+  ) => {
+    const work = new Subject<string>()
+
+    return {
+      factory: () =>
+        defer(function startWork() {
+          recordStart(name)
+
+          return work
+        }),
+      finish: () => {
+        work.next(name)
+        work.complete()
+      },
+      fail: (error: Error) => {
+        work.error(error)
+      },
+    }
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("runs the tasks of one key one after the other, below the concurrency limit", () => {
+    service.createQueue({ name: queueName, maxConcurrent: 3 })
+    const recordStart = vi.fn<(name: string) => void>()
+    const first = createHeldTask("first", recordStart)
+    const second = createHeldTask("second", recordStart)
+
+    service.enqueue(queueName, first.factory, {
+      id: "library-sync-a",
+      sequentialKey: "reader",
+    })
+    service.enqueue(queueName, second.factory, {
+      id: "library-sync-b",
+      sequentialKey: "reader",
+    })
+
+    expect(recordStart.mock.calls).toEqual([["first"]])
+
+    first.finish()
+
+    expect(recordStart.mock.calls).toEqual([["first"], ["second"]])
+  })
+
+  it("runs the tasks of different keys at the same time", () => {
+    service.createQueue({ name: queueName, maxConcurrent: 3 })
+    const recordStart = vi.fn<(name: string) => void>()
+
+    service.enqueue(queueName, createHeldTask("reader", recordStart).factory, {
+      id: "library-sync-a",
+      sequentialKey: "reader",
+    })
+    service.enqueue(
+      queueName,
+      createHeldTask("other reader", recordStart).factory,
+      { id: "library-sync-c", sequentialKey: "other-reader" },
+    )
+
+    expect(recordStart.mock.calls).toEqual([["reader"], ["other reader"]])
+  })
+
+  it("starts a task of another key while an earlier task waits for its key", () => {
+    service.createQueue({ name: queueName, maxConcurrent: 3 })
+    const recordStart = vi.fn<(name: string) => void>()
+    const first = createHeldTask("first", recordStart)
+
+    service.enqueue(queueName, first.factory, {
+      id: "library-sync-a",
+      sequentialKey: "reader",
+    })
+    service.enqueue(queueName, createHeldTask("second", recordStart).factory, {
+      id: "library-sync-b",
+      sequentialKey: "reader",
+    })
+    service.enqueue(
+      queueName,
+      createHeldTask("other reader", recordStart).factory,
+      { id: "library-sync-c", sequentialKey: "other-reader" },
+    )
+
+    expect(recordStart.mock.calls).toEqual([["first"], ["other reader"]])
+
+    first.finish()
+
+    expect(recordStart.mock.calls).toEqual([
+      ["first"],
+      ["other reader"],
+      ["second"],
+    ])
+  })
+
+  it("starts the next task of a key when the active one fails", () => {
+    vi.spyOn(Logger.prototype, "error").mockImplementation(() => undefined)
+    service.createQueue({ name: queueName, maxConcurrent: 3 })
+    const recordStart = vi.fn<(name: string) => void>()
+    const first = createHeldTask("first", recordStart)
+
+    service.enqueue(queueName, first.factory, {
+      id: "library-sync-a",
+      sequentialKey: "reader",
+    })
+    service.enqueue(queueName, createHeldTask("second", recordStart).factory, {
+      id: "library-sync-b",
+      sequentialKey: "reader",
+    })
+
+    first.fail(new Error("sync failed"))
+
+    expect(recordStart.mock.calls).toEqual([["first"], ["second"]])
+  })
+
+  describe("in a queue that deduplicates", () => {
+    it("keeps the waiting tasks of a key that have different ids", () => {
+      service.createQueue({
+        name: queueName,
+        maxConcurrent: 3,
+        deduplicate: true,
+      })
+      const recordStart = vi.fn<(name: string) => void>()
+      const first = createHeldTask("first", recordStart)
+      const second = createHeldTask("second", recordStart)
+
+      service.enqueue(queueName, first.factory, {
+        id: "library-sync-a",
+        sequentialKey: "reader",
+      })
+      service.enqueue(queueName, second.factory, {
+        id: "library-sync-b",
+        sequentialKey: "reader",
+      })
+      service.enqueue(queueName, createHeldTask("third", recordStart).factory, {
+        id: "library-sync-c",
+        sequentialKey: "reader",
+      })
+
+      first.finish()
+      second.finish()
+
+      expect(recordStart.mock.calls).toEqual([["first"], ["second"], ["third"]])
+    })
+
+    it("replaces a waiting task when its id arrives again", () => {
+      service.createQueue({
+        name: queueName,
+        maxConcurrent: 3,
+        deduplicate: true,
+      })
+      const recordStart = vi.fn<(name: string) => void>()
+      const recordRejection = vi.fn<(error: unknown) => void>()
+      const first = createHeldTask("first", recordStart)
+
+      service.enqueue(queueName, first.factory, {
+        id: "library-sync-a",
+        sequentialKey: "reader",
+      })
+      service
+        .enqueue(queueName, createHeldTask("second", recordStart).factory, {
+          id: "library-sync-b",
+          sequentialKey: "reader",
+        })
+        .subscribe({ error: recordRejection })
+      service.enqueue(
+        queueName,
+        createHeldTask("second again", recordStart).factory,
+        { id: "library-sync-b", sequentialKey: "reader" },
+      )
+
+      first.finish()
+
+      expect(recordRejection).toHaveBeenCalledWith(
+        expect.any(TaskRejectionError),
+      )
+      expect(recordStart.mock.calls).toEqual([["first"], ["second again"]])
+    })
   })
 })
 
