@@ -1,4 +1,4 @@
-import { directives } from "@oboku/shared"
+import { directives, waitForAll } from "@oboku/shared"
 import { syncCollection } from "./collections/syncCollection.js"
 import { createOrUpdateBook } from "./books/createOrUpdateBook.js"
 import type { Context } from "./types.js"
@@ -119,7 +119,7 @@ const syncTags = async ({
 
   logger.log(`found ${tagNames.length} tags`)
 
-  await Promise.all(
+  await waitForAll(
     tagNames.map(async (tag) => {
       const { created, id } = await getOrCreateTagFromName(ctx.db, tag)
 
@@ -166,7 +166,7 @@ const syncItem = async ({
     return
   }
 
-  await Promise.all(
+  await waitForAll(
     metadataForFolder.tags.map((name) => getOrCreateTagFromName(ctx.db, name)),
   )
 
@@ -175,7 +175,7 @@ const syncItem = async ({
   }
 
   if (isFolder(item)) {
-    await Promise.all(
+    await waitForAll(
       (item.items || []).map(async (subItem) => {
         if (isFile(subItem)) {
           await createOrUpdateBook({

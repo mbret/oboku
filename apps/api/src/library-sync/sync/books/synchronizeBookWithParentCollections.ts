@@ -4,7 +4,7 @@ import type {
   SynchronizeAbleItem,
 } from "../../../plugins/types.js"
 import { atomicUpdate, findOne } from "../../../couch/dbHelpers.js"
-import type { BookDocType } from "@oboku/shared"
+import { type BookDocType, waitForAll } from "@oboku/shared"
 import type { Context } from "../types.js"
 
 const logger = new Logger("synchronizeBookWithParentCollections")
@@ -28,7 +28,7 @@ export const synchronizeBookWithParentCollections = async (
     `[synchronizeBookWithParentCollections] ${book._id} with ${parents.length} parents`,
   )
 
-  const collectionResults = await Promise.all(
+  const collectionResults = await waitForAll(
     parents.map((parent) =>
       context.plugin.getCollectionCandidatesForItem(parent, context),
     ),
@@ -61,7 +61,7 @@ export const synchronizeBookWithParentCollections = async (
       `synchronizeBookWithParentCollections ${collectionsThatHaveNotThisBookAsReferenceYet.length} collections do not have ${book._id} attached to them yet`,
     )
 
-    await Promise.all(
+    await waitForAll(
       collectionsThatHaveNotThisBookAsReferenceYet.map(async (collection) => {
         await atomicUpdate(
           context.db,

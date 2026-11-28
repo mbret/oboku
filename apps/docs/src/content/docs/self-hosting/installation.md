@@ -23,7 +23,7 @@ The oboku Android app opens `https://app.oboku.me` only. On an Android phone, op
 
 - Refresh-token rotation keeps a short-lived in-memory key to converge concurrent and retried refreshes onto a single token. With two instances, the same session could end up with two valid tokens and clients may be unexpectedly signed out.
 - The API remembers each refresh proof it accepts, so that a captured proof cannot be used again. A second instance would accept a proof the first one already used.
-- Library syncs, metadata refreshes and cover deliveries run in in-memory queues that limit how many run at once. Each instance would apply its own limit.
+- Library syncs, metadata refreshes and cover deliveries run in in-memory queues that limit how many run at once. A queue also makes the library syncs of one user write to the user's database one after the other. Each instance would apply its own limit and its own order: two library syncs of a user that cover the same folder could then write at the same time, and each would create the same collection and the same books.
 
 Scale vertically (a bigger server) instead. CouchDB and Postgres can be scaled independently.
 :::

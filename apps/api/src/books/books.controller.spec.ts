@@ -53,7 +53,7 @@ describe("BooksController", () => {
     await app.close()
   })
 
-  it("queues the metadata refresh of a valid request", async () => {
+  it("queues the metadata refresh of a valid request behind the book's other refreshes", async () => {
     await request(app.getHttpServer())
       .post("/books/metadata/refresh")
       .send({ bookId: "book-1", providerCredentials: {}, force: true })
@@ -62,7 +62,7 @@ describe("BooksController", () => {
     expect(taskQueueService.enqueue).toHaveBeenCalledWith(
       "books.metadata.refresh",
       expect.any(Function),
-      { id: "book-1" },
+      { id: "book-1", sequentialKey: "book-1" },
     )
   })
 

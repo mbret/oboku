@@ -9,6 +9,7 @@ import {
   type SecretDocType,
   type SettingsDocType,
   isShallowEqual,
+  waitForAll,
 } from "@oboku/shared"
 import { emailToCouchUserDocId, emailToUserDbName } from "./couch.service.js"
 import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
@@ -371,7 +372,7 @@ export const addTagsToBookIfNotExist = async (
 ) => {
   if (tagIds.length === 0) return [null, null] as const
 
-  const [bookUpdate, tagUpdate] = await Promise.all([
+  const [bookUpdate, tagUpdate] = await waitForAll([
     atomicUpdate(db, "book", bookId, (old) => {
       const tags = tagIds.every((tagId) => old.tags.includes(tagId))
         ? old.tags
@@ -382,7 +383,7 @@ export const addTagsToBookIfNotExist = async (
         tags,
       }
     }),
-    Promise.all(
+    waitForAll(
       tagIds.map((tagId) =>
         atomicUpdate(db, "tag", tagId, (old) => {
           const books = old.books.find((id) => id === bookId)
@@ -432,7 +433,7 @@ export const addLinkToBookIfNotExist = async (
   bookId: string,
   linkId: string,
 ) => {
-  const [bookUpdate, linkUpdate] = await Promise.all([
+  const [bookUpdate, linkUpdate] = await waitForAll([
     atomicUpdate(db, "book", bookId, (old) => {
       const links = old.links.find((id) => id === linkId)
         ? old.links

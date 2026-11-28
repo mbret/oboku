@@ -59,7 +59,7 @@ describe("LibrarySyncsController", () => {
     await app.close()
   })
 
-  it("queues the sync of a valid request", async () => {
+  it("queues the sync of a valid request behind the earlier runs of the library sync", async () => {
     await request(app.getHttpServer())
       .post("/datasources/sync")
       .send({ dataSourceId: "data-source-1", providerCredentials: {} })
@@ -68,7 +68,7 @@ describe("LibrarySyncsController", () => {
     expect(taskQueueService.enqueue).toHaveBeenCalledWith(
       "datasources.sync",
       expect.any(Function),
-      { id: "data-source-1" },
+      { id: "data-source-1", sequentialKey: "data-source-1" },
     )
   })
 
