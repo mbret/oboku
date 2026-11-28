@@ -62,7 +62,7 @@ describe("BooksController", () => {
     expect(taskQueueService.enqueue).toHaveBeenCalledWith(
       "books.metadata.refresh",
       expect.any(Function),
-      { id: "book-1" },
+      { id: "book-1", sequentialKey: "book-1" },
     )
   })
 

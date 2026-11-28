@@ -25,7 +25,6 @@ export class CollectionsController implements OnModuleInit {
       maxConcurrent:
         this.appConfig.QUEUE_COLLECTIONS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
-      sequentialTasksWithSameId: true,
     })
   }
 
@@ -48,6 +47,7 @@ export class CollectionsController implements OnModuleInit {
         }),
       {
         id: collectionId,
+        sequentialKey: collectionId,
       },
     )
 
@@ -69,6 +69,7 @@ export class CollectionsController implements OnModuleInit {
         }),
       {
         id: event.data.collectionId,
+        sequentialKey: event.data.collectionId,
       },
     )
   }

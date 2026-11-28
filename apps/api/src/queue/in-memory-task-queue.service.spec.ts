@@ -9,6 +9,7 @@ import {
   defer,
   firstValueFrom,
   lastValueFrom,
+  NEVER,
   Subject,
   throwError,
   timer,
@@ -293,265 +294,151 @@ describe("deduplication", () => {
   })
 })
 
-describe("sequential tasks with same ID", () => {
-  it("should run tasks with the same ID sequentially while allowing other tasks to run in parallel", async () => {
-    // Create a queue with sequentialTasksWithSameId enabled and maxConcurrent=3
-    const queueName = "test-sequential-same-id"
-    service.createQueue({
-      name: queueName,
-      maxConcurrent: 3, // Allow up to 3 concurrent tasks
-      sequentialTasksWithSameId: true, // Enable sequential execution for same IDs
-    })
-
-    const executionOrder: string[] = []
-
-    // Create a task that records when it starts and completes
-    const createTask = (id: string, _taskId: string, duration: number) => {
-      return () =>
-        defer(() => {
-          executionOrder.push(`${id}-start`)
-
-          return timer(duration).pipe(
-            map(() => id),
-            finalize(() => {
-              executionOrder.push(`${id}-end`)
-            }),
-          )
-        })
-    }
-
-    // Enqueue tasks with different durations and IDs
-    // task1 and task2 have the same ID "A"
-    // task3 has ID "B"
-    // task4 has ID "A" again
-    const task1$ = service.enqueue(queueName, createTask("task1", "A", 100), {
-      id: "A",
-    })
-    const task2$ = service.enqueue(queueName, createTask("task2", "A", 50), {
-      id: "A",
-    })
-    const task3$ = service.enqueue(queueName, createTask("task3", "B", 75), {
-      id: "B",
-    })
-    const task4$ = service.enqueue(queueName, createTask("task4", "A", 60), {
-      id: "A",
-    })
-
-    // Wait for all tasks to complete
-    const [result1, result2, result3, result4] = await Promise.all([
-      lastValueFrom(task1$),
-      lastValueFrom(task2$),
-      lastValueFrom(task3$),
-      lastValueFrom(task4$),
-    ])
-
-    // Verify individual results
-    expect(result1).toBe("task1")
-    expect(result2).toBe("task2")
-    expect(result3).toBe("task3")
-    expect(result4).toBe("task4")
-
-    // Check the complete execution order
-    expect(executionOrder).toEqual(
-      expect.arrayContaining([
-        "task1-start",
-        "task3-start",
-        "task1-end",
-        "task2-start",
-        "task3-end",
-        "task2-end",
-        "task4-start",
-        "task4-end",
-      ]),
-    )
-  })
-})
-
 describe("sequential key", () => {
   const queueName = "test-sequential-key"
+  const runUntilTheTestEnds = () => NEVER
 
-  /**
-   * A task that stays active until the test finishes it or fails it.
-   */
-  const createHeldTask = (
-    name: string,
-    recordStart: (name: string) => void,
-  ) => {
-    const work = new Subject<string>()
-
-    return {
-      factory: () =>
-        defer(function startWork() {
-          recordStart(name)
-
-          return work
-        }),
-      finish: () => {
-        work.next(name)
-        work.complete()
-      },
-      fail: (error: Error) => {
-        work.error(error)
-      },
-    }
-  }
+  beforeEach(() => {
+    service.createQueue({
+      name: queueName,
+      maxConcurrent: 3,
+      deduplicate: true,
+    })
+  })
 
   afterEach(() => {
     vi.restoreAllMocks()
   })
 
-  it("runs the tasks of one key one after the other, below the concurrency limit", () => {
-    service.createQueue({ name: queueName, maxConcurrent: 3 })
-    const recordStart = vi.fn<(name: string) => void>()
-    const first = createHeldTask("first", recordStart)
-    const second = createHeldTask("second", recordStart)
+  it("runs the tasks of one key one after the other when maxConcurrent allows more", () => {
+    const first = new Subject<never>()
+    const startSecond = vi.fn(runUntilTheTestEnds)
 
-    service.enqueue(queueName, first.factory, {
-      id: "library-sync-a",
-      sequentialKey: "reader",
-    })
-    service.enqueue(queueName, second.factory, {
+    service.enqueue(
+      queueName,
+      function startFirst() {
+        return first
+      },
+      { id: "library-sync-a", sequentialKey: "reader" },
+    )
+    service.enqueue(queueName, startSecond, {
       id: "library-sync-b",
       sequentialKey: "reader",
     })
 
-    expect(recordStart.mock.calls).toEqual([["first"]])
+    expect(startSecond).not.toHaveBeenCalled()
 
-    first.finish()
+    first.complete()
 
-    expect(recordStart.mock.calls).toEqual([["first"], ["second"]])
-  })
-
-  it("runs the tasks of different keys at the same time", () => {
-    service.createQueue({ name: queueName, maxConcurrent: 3 })
-    const recordStart = vi.fn<(name: string) => void>()
-
-    service.enqueue(queueName, createHeldTask("reader", recordStart).factory, {
-      id: "library-sync-a",
-      sequentialKey: "reader",
-    })
-    service.enqueue(
-      queueName,
-      createHeldTask("other reader", recordStart).factory,
-      { id: "library-sync-c", sequentialKey: "other-reader" },
-    )
-
-    expect(recordStart.mock.calls).toEqual([["reader"], ["other reader"]])
+    expect(startSecond).toHaveBeenCalledOnce()
   })
 
   it("starts a task of another key while an earlier task waits for its key", () => {
-    service.createQueue({ name: queueName, maxConcurrent: 3 })
-    const recordStart = vi.fn<(name: string) => void>()
-    const first = createHeldTask("first", recordStart)
+    const startSecond = vi.fn(runUntilTheTestEnds)
+    const startOtherReader = vi.fn(runUntilTheTestEnds)
 
-    service.enqueue(queueName, first.factory, {
+    service.enqueue(queueName, runUntilTheTestEnds, {
       id: "library-sync-a",
       sequentialKey: "reader",
     })
-    service.enqueue(queueName, createHeldTask("second", recordStart).factory, {
+    service.enqueue(queueName, startSecond, {
       id: "library-sync-b",
       sequentialKey: "reader",
     })
-    service.enqueue(
-      queueName,
-      createHeldTask("other reader", recordStart).factory,
-      { id: "library-sync-c", sequentialKey: "other-reader" },
-    )
+    service.enqueue(queueName, startOtherReader, {
+      id: "library-sync-c",
+      sequentialKey: "other-reader",
+    })
 
-    expect(recordStart.mock.calls).toEqual([["first"], ["other reader"]])
-
-    first.finish()
-
-    expect(recordStart.mock.calls).toEqual([
-      ["first"],
-      ["other reader"],
-      ["second"],
-    ])
+    expect(startSecond).not.toHaveBeenCalled()
+    expect(startOtherReader).toHaveBeenCalledOnce()
   })
 
   it("starts the next task of a key when the active one fails", () => {
     vi.spyOn(Logger.prototype, "error").mockImplementation(() => undefined)
-    service.createQueue({ name: queueName, maxConcurrent: 3 })
-    const recordStart = vi.fn<(name: string) => void>()
-    const first = createHeldTask("first", recordStart)
+    const first = new Subject<never>()
+    const startSecond = vi.fn(runUntilTheTestEnds)
 
-    service.enqueue(queueName, first.factory, {
-      id: "library-sync-a",
-      sequentialKey: "reader",
-    })
-    service.enqueue(queueName, createHeldTask("second", recordStart).factory, {
+    service.enqueue(
+      queueName,
+      function startFirst() {
+        return first
+      },
+      { id: "library-sync-a", sequentialKey: "reader" },
+    )
+    service.enqueue(queueName, startSecond, {
       id: "library-sync-b",
       sequentialKey: "reader",
     })
 
-    first.fail(new Error("sync failed"))
+    first.error(new Error("The sync failed"))
 
-    expect(recordStart.mock.calls).toEqual([["first"], ["second"]])
+    expect(startSecond).toHaveBeenCalledOnce()
   })
 
-  describe("in a queue that deduplicates", () => {
-    it("keeps the waiting tasks of a key that have different ids", () => {
-      service.createQueue({
-        name: queueName,
-        maxConcurrent: 3,
-        deduplicate: true,
-      })
-      const recordStart = vi.fn<(name: string) => void>()
-      const first = createHeldTask("first", recordStart)
-      const second = createHeldTask("second", recordStart)
+  it("keeps the pending tasks of one key when their ids differ", () => {
+    const first = new Subject<never>()
+    const second = new Subject<never>()
+    const startSecond = vi.fn(function startSecond() {
+      return second
+    })
+    const startThird = vi.fn(runUntilTheTestEnds)
 
-      service.enqueue(queueName, first.factory, {
-        id: "library-sync-a",
-        sequentialKey: "reader",
-      })
-      service.enqueue(queueName, second.factory, {
+    service.enqueue(
+      queueName,
+      function startFirst() {
+        return first
+      },
+      { id: "library-sync-a", sequentialKey: "reader" },
+    )
+    service.enqueue(queueName, startSecond, {
+      id: "library-sync-b",
+      sequentialKey: "reader",
+    })
+    service.enqueue(queueName, startThird, {
+      id: "library-sync-c",
+      sequentialKey: "reader",
+    })
+
+    first.complete()
+
+    expect(startSecond).toHaveBeenCalledOnce()
+    expect(startThird).not.toHaveBeenCalled()
+
+    second.complete()
+
+    expect(startThird).toHaveBeenCalledOnce()
+  })
+
+  it("replaces a pending task when a task with the same id is added", () => {
+    const first = new Subject<never>()
+    const startReplacedTask = vi.fn(runUntilTheTestEnds)
+    const startNewerTask = vi.fn(runUntilTheTestEnds)
+    const recordRejection = vi.fn<(error: unknown) => void>()
+
+    service.enqueue(
+      queueName,
+      function startFirst() {
+        return first
+      },
+      { id: "library-sync-a", sequentialKey: "reader" },
+    )
+    service
+      .enqueue(queueName, startReplacedTask, {
         id: "library-sync-b",
         sequentialKey: "reader",
       })
-      service.enqueue(queueName, createHeldTask("third", recordStart).factory, {
-        id: "library-sync-c",
-        sequentialKey: "reader",
-      })
-
-      first.finish()
-      second.finish()
-
-      expect(recordStart.mock.calls).toEqual([["first"], ["second"], ["third"]])
+      .subscribe({ error: recordRejection })
+    service.enqueue(queueName, startNewerTask, {
+      id: "library-sync-b",
+      sequentialKey: "reader",
     })
 
-    it("replaces a waiting task when its id arrives again", () => {
-      service.createQueue({
-        name: queueName,
-        maxConcurrent: 3,
-        deduplicate: true,
-      })
-      const recordStart = vi.fn<(name: string) => void>()
-      const recordRejection = vi.fn<(error: unknown) => void>()
-      const first = createHeldTask("first", recordStart)
+    first.complete()
 
-      service.enqueue(queueName, first.factory, {
-        id: "library-sync-a",
-        sequentialKey: "reader",
-      })
-      service
-        .enqueue(queueName, createHeldTask("second", recordStart).factory, {
-          id: "library-sync-b",
-          sequentialKey: "reader",
-        })
-        .subscribe({ error: recordRejection })
-      service.enqueue(
-        queueName,
-        createHeldTask("second again", recordStart).factory,
-        { id: "library-sync-b", sequentialKey: "reader" },
-      )
-
-      first.finish()
-
-      expect(recordRejection).toHaveBeenCalledWith(
-        expect.any(TaskRejectionError),
-      )
-      expect(recordStart.mock.calls).toEqual([["first"], ["second again"]])
-    })
+    expect(recordRejection).toHaveBeenCalledWith(expect.any(TaskRejectionError))
+    expect(startReplacedTask).not.toHaveBeenCalled()
+    expect(startNewerTask).toHaveBeenCalledOnce()
   })
 })
 

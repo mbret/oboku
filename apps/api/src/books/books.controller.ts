@@ -25,7 +25,6 @@ export class BooksController implements OnModuleInit {
       name: this.BOOKS_METADATA_REFRESH_QUEUE,
       maxConcurrent: this.appConfig.QUEUE_BOOKS_METADATA_REFRESH_MAX_CONCURRENT,
       deduplicate: true,
-      sequentialTasksWithSameId: true,
     })
   }
 
@@ -48,6 +47,7 @@ export class BooksController implements OnModuleInit {
         ),
       {
         id: bookId,
+        sequentialKey: bookId,
       },
     )
 
@@ -72,6 +72,7 @@ export class BooksController implements OnModuleInit {
         ),
       {
         id: event.data.bookId,
+        sequentialKey: event.data.bookId,
       },
     )
   }

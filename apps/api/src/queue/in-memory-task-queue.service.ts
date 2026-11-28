@@ -26,13 +26,6 @@ export interface QueueOptions {
    * If true, when a new task with the same id is added, the old one is removed
    */
   deduplicate?: boolean
-
-  /**
-   * Whether tasks with the same ID should run sequentially
-   * If true, the ID of a task is its `sequentialKey`, unless the task gives
-   * one
-   */
-  sequentialTasksWithSameId?: boolean
 }
 
 export interface TaskOptions {
@@ -44,15 +37,13 @@ export interface TaskOptions {
 
   /**
    * The tasks of a queue that share a sequential key run one after the other,
-   * in the order they were added, whatever `maxConcurrent` is. A task without
-   * a key, or with an empty one, waits for no other task.
+   * in the order they were added, whatever `maxConcurrent` is. A task with no
+   * key is limited by `maxConcurrent` only.
    */
   sequentialKey?: string
 }
 
-interface QueuedTask<R> {
-  id?: string
-  sequentialKey?: string
+interface QueuedTask<R> extends TaskOptions {
   taskFactory: () => Observable<R>
   subject: Subject<R>
   startTime?: number
@@ -114,17 +105,13 @@ export class InMemoryTaskQueueService {
 
     const { id } = options
     const { options: queueOptions, pending } = queue
-    const sequentialKeyFromId = queueOptions.sequentialTasksWithSameId
-      ? id
-      : undefined
 
     // Create a subject that will emit the task result
     const subject = new Subject<R>()
 
     // Create the task object
     const queuedTask: QueuedTask<R> = {
-      id,
-      sequentialKey: options.sequentialKey ?? sequentialKeyFromId,
+      ...options,
       taskFactory,
       subject,
     }
@@ -328,10 +315,6 @@ export class InMemoryTaskQueueService {
     }
   }
 
-  /**
-   * Finds the index of the first pending task that waits for no active task:
-   * it has no sequential key, or no active task has its key.
-   */
   private findNextTaskIndex({
     active,
     pending,
@@ -339,13 +322,10 @@ export class InMemoryTaskQueueService {
     active: QueuedTask<any>[]
     pending: QueuedTask<any>[]
   }): number {
-    const activeSequentialKeys = new Set(
-      active.map((task) => task.sequentialKey),
-    )
-
-    return pending.findIndex(function waitsForNoActiveTask(task) {
+    return pending.findIndex(function waitsForNoActiveTask({ sequentialKey }) {
       const isSequentialKeyActive =
-        !!task.sequentialKey && activeSequentialKeys.has(task.sequentialKey)
+        sequentialKey !== undefined &&
+        active.some((task) => task.sequentialKey === sequentialKey)
 
       return !isSequentialKeyActive
     })
