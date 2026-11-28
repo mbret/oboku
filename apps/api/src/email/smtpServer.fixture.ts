@@ -14,8 +14,8 @@ const DATA_END = `${LINE_END}.${LINE_END}`
 const toAddress = (line: string) => line.slice(line.indexOf("<") + 1, -1)
 
 /**
- * The bytes of the one attachment of an email that nodemailer wrote, whose
- * attachments are base64 parts.
+ * The headers and the bytes of the one attachment of an email that nodemailer
+ * wrote: it sends attachments as base64 parts.
  */
 export const readAttachment = ({ data }: ReceivedEmail) => {
   const boundary = /boundary="([^"]+)"/.exec(data)?.[1]

@@ -64,6 +64,13 @@ const toUserQuotaBytes = ({
   }
 }
 
+/** What a route answers once a download would pass a proxied download quota. */
+export const createProxiedDownloadQuotaReached = () =>
+  new HttpException(
+    toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
+    HttpStatus.TOO_MANY_REQUESTS,
+  )
+
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
@@ -250,10 +257,7 @@ export class ProxiedDownloadQuotaService {
     if (meteredFile.status === "quota-reached") {
       response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
 
-      throw new HttpException(
-        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
-        HttpStatus.TOO_MANY_REQUESTS,
-      )
+      throw createProxiedDownloadQuotaReached()
     }
 
     response.attachment(file.name).type(file.contentType)

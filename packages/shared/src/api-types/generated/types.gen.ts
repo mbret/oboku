@@ -26,7 +26,7 @@ export type SendToKindleConfigDto = {
      */
     maxFileSizeBytes: number;
     /**
-     * How many books a user sends in one UTC day.
+     * How many books a user can send in one UTC day.
      */
     maxSendsPerDay: number;
 };

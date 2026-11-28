@@ -201,6 +201,11 @@ export class AppConfigService {
     return megabytes * 1000 * 1000
   }
 
+  /** How many books a user can send to a Kindle in one UTC day. */
+  get SEND_TO_KINDLE_MAX_SENDS_PER_DAY() {
+    return 10
+  }
+
   /**
    * ------------------------------------------------------------
    * QUEUES
@@ -233,11 +238,21 @@ export class AppConfigService {
   }
 
   /**
-   * How long a send may run once it leaves the queue. A source that stalls,
-   * or sends a file very slowly, would otherwise keep its place in the queue.
+   * How long a source has to send its whole file once a send starts. One that
+   * sends very slowly would otherwise keep one of the places
+   * `QUEUE_KINDLE_SENDS_MAX_CONCURRENT` allows.
    */
   get QUEUE_KINDLE_SENDS_MAX_DURATION_MS() {
     return 5 * 60 * 1000
+  }
+
+  /**
+   * How long a source may take to send the next part of a file. Shorter than
+   * the SMTP socket timeout (`EMAIL_SOCKET_TIMEOUT_MS`), which would
+   * otherwise end the send of a source that stopped as an SMTP failure.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_SOURCE_IDLE_MS() {
+    return 15_000
   }
 
   /**

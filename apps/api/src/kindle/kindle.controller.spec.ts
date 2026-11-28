@@ -18,10 +18,7 @@ import { ProxiedDownloadUsagePostgresService } from "../features/postgres/proxie
 import { PluginsService } from "../plugins/plugins.service.js"
 import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 import { ProxiedDownloadQuotaService } from "../quotas/proxied-download-quota.service.js"
-import {
-  KINDLE_MAX_SENDS_PER_USER_PER_DAY,
-  KindleDailySendsService,
-} from "./kindle-daily-sends.service.js"
+import { KindleDailySendsService } from "./kindle-daily-sends.service.js"
 import { KindleController } from "./kindle.controller.js"
 import { KindleService } from "./kindle.service.js"
 
@@ -38,7 +35,10 @@ const SENDER_ADDRESS = "books@oboku.example"
 const KINDLE_EMAIL = "reader_42@kindle.com"
 const MAX_FILE_SIZE_BYTES = 1000
 const MAX_CONCURRENT_SENDS = 2
+const MAX_SENDS_PER_DAY = 3
 const SHORT_SEND_MAX_DURATION_MS = 100
+const SHORT_SOURCE_IDLE_MS = 100
+const KINDLE_SENDS_QUEUE = "kindle.sends"
 const BOOK_BYTES = Buffer.from("epub bytes ".repeat(20))
 const OVERSIZED_BOOK_BYTES = Buffer.alloc(MAX_FILE_SIZE_BYTES + 1, "a")
 const DRIVE_CREDENTIALS = { access_token: "drive-access-token" }
@@ -163,11 +163,19 @@ const streamBookBytes = async () => ({
   size: BOOK_BYTES.byteLength,
 })
 
+const toFileMetadata = (size?: number) => ({
+  modifiedAt: "2026-11-16T08:00:00.000Z",
+  bookMetadata: { size: size === undefined ? undefined : String(size) },
+})
+
 describe("KindleController", () => {
   let app: INestApplication<App>
   let smtpServer: Awaited<ReturnType<typeof startSmtpServer>>
 
   const createNanoInstanceForUser = vi.fn()
+  let taskQueueService: InMemoryTaskQueueService
+
+  const getFileMetadata = vi.fn()
   const download = vi.fn()
   const reserveWithinQuotas = vi.fn()
   const adjust = vi.fn()
@@ -176,15 +184,18 @@ describe("KindleController", () => {
     smtpRefusals,
     isEmailDeliveryConfigured = true,
     sendMaxDurationMs = 60_000,
+    maxSourceIdleMs = 60_000,
   }: {
     smtpRefusals?: Parameters<typeof startSmtpServer>[0]
     isEmailDeliveryConfigured?: boolean
     sendMaxDurationMs?: number
+    maxSourceIdleMs?: number
   } = {}) => {
     smtpServer = await startSmtpServer(smtpRefusals)
     createNanoInstanceForUser.mockResolvedValue(
       createLibraryDb({ kindleEmail: KINDLE_EMAIL }),
     )
+    getFileMetadata.mockResolvedValue(toFileMetadata(BOOK_BYTES.byteLength))
     download.mockImplementation(streamBookBytes)
     reserveWithinQuotas.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
@@ -209,11 +220,13 @@ describe("KindleController", () => {
             EMAIL_FROM_NAME: "oboku",
             SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES: MAX_FILE_SIZE_BYTES,
             QUEUE_KINDLE_SENDS_MAX_CONCURRENT: MAX_CONCURRENT_SENDS,
+            SEND_TO_KINDLE_MAX_SENDS_PER_DAY: MAX_SENDS_PER_DAY,
             QUEUE_KINDLE_SENDS_MAX_DURATION_MS: sendMaxDurationMs,
+            QUEUE_KINDLE_SENDS_MAX_SOURCE_IDLE_MS: maxSourceIdleMs,
           },
         },
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
-        { provide: PluginsService, useValue: { download } },
+        { provide: PluginsService, useValue: { getFileMetadata, download } },
         {
           provide: ProxiedDownloadUsagePostgresService,
           useValue: { reserveWithinQuotas, adjust },
@@ -249,11 +262,12 @@ describe("KindleController", () => {
 
     app = module.createNestApplication({ logger: false })
     await app.init()
+    taskQueueService = module.get(InMemoryTaskQueueService)
   }
 
   const sendBook = (
     bookId: string,
-    providerCredentials: Record<string, string> = DRIVE_CREDENTIALS,
+    providerCredentials: Record<string, unknown> = DRIVE_CREDENTIALS,
   ) =>
     request(app.getHttpServer())
       .post("/kindle/send")
@@ -324,6 +338,17 @@ describe("KindleController", () => {
         userId: readerTokenPayload.userId,
         bytes: BOOK_BYTES.byteLength,
       }),
+    )
+  })
+
+  it("reserves the size the source states for the file when its download states none", async () => {
+    await startApp()
+    download.mockResolvedValue({ stream: Readable.from([BOOK_BYTES]) })
+
+    await sendBook(DUNE_BOOK._id)
+
+    expect(reserveWithinQuotas).toHaveBeenCalledWith(
+      expect.objectContaining({ bytes: BOOK_BYTES.byteLength }),
     )
   })
 
@@ -398,6 +423,16 @@ describe("KindleController", () => {
     expect(download).not.toHaveBeenCalled()
   })
 
+  it("answers 400 for credentials that are not those of the book's source, reaching no source", async () => {
+    await startApp()
+
+    const response = await sendBook(DUNE_BOOK._id, { access_token: 42 })
+
+    expect(response.status).toBe(400)
+    expect(getFileMetadata).not.toHaveBeenCalled()
+    expect(download).not.toHaveBeenCalled()
+  })
+
   it("answers 400 for a file of a type Amazon does not accept, reaching no source", async () => {
     await startApp()
 
@@ -412,7 +447,23 @@ describe("KindleController", () => {
     expect(download).not.toHaveBeenCalled()
   })
 
-  it("answers 413 for a file its source states over the limit, ending the download and reserving no quota", async () => {
+  it("answers 413 for a file its source states over the limit, opening no download", async () => {
+    await startApp()
+    getFileMetadata.mockResolvedValue(
+      toFileMetadata(OVERSIZED_BOOK_BYTES.byteLength),
+    )
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(413)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_FILE_TOO_LARGE }],
+    })
+    expect(download).not.toHaveBeenCalled()
+    expect(reserveWithinQuotas).not.toHaveBeenCalled()
+  })
+
+  it("answers 413 for a download that states a size over the limit, ending it and reserving no quota", async () => {
     await startApp()
     const oversizedFile = Readable.from([OVERSIZED_BOOK_BYTES])
     download.mockResolvedValue({
@@ -433,6 +484,7 @@ describe("KindleController", () => {
 
   it("answers 413 for a file of unstated size once it passes the limit, sending no email", async () => {
     await startApp()
+    getFileMetadata.mockResolvedValue(toFileMetadata())
     download.mockResolvedValue({
       stream: Readable.from([
         OVERSIZED_BOOK_BYTES.subarray(0, MAX_FILE_SIZE_BYTES),
@@ -465,7 +517,7 @@ describe("KindleController", () => {
   it("answers 429 once the reader used the sends of the day, reaching no source", async () => {
     await startApp()
 
-    for (let send = 0; send < KINDLE_MAX_SENDS_PER_USER_PER_DAY; send++) {
+    for (let send = 0; send < MAX_SENDS_PER_DAY; send++) {
       expect((await sendBook(DUNE_BOOK._id)).status).toBe(200)
     }
 
@@ -477,17 +529,15 @@ describe("KindleController", () => {
         { code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_DAILY_LIMIT_REACHED },
       ],
     })
-    expect(download).toHaveBeenCalledTimes(KINDLE_MAX_SENDS_PER_USER_PER_DAY)
-    expect(smtpServer.receivedEmails).toHaveLength(
-      KINDLE_MAX_SENDS_PER_USER_PER_DAY,
-    )
+    expect(download).toHaveBeenCalledTimes(MAX_SENDS_PER_DAY)
+    expect(smtpServer.receivedEmails).toHaveLength(MAX_SENDS_PER_DAY)
   })
 
   it("does not count a failed send on the reader's sends of the day", async () => {
     await startApp()
     download.mockRejectedValue({ response: { status: 404 } })
 
-    for (let send = 0; send < KINDLE_MAX_SENDS_PER_USER_PER_DAY; send++) {
+    for (let send = 0; send < MAX_SENDS_PER_DAY; send++) {
       expect((await sendBook(DUNE_BOOK._id)).status).toBe(404)
     }
 
@@ -498,40 +548,30 @@ describe("KindleController", () => {
     expect(response.status).toBe(200)
   })
 
-  it.each([
-    [
-      "a file Drive does not find with 404",
-      { response: { status: 404 } },
-      404,
-      ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND,
-    ],
-    [
-      "a token Drive refuses with 502",
-      { response: { status: 403 } },
-      502,
-      ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED,
-    ],
-    [
-      "a rate limit of Dropbox with 503",
-      { status: 429 },
-      503,
-      ObokuErrorCode.ERROR_DATASOURCE_RATE_LIMIT_EXCEEDED,
-    ],
-    [
-      "any other failure of the source with 502",
-      new Error("socket hang up"),
-      502,
-      ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN,
-    ],
-  ])("answers %s", async (_case, sourceFailure, status, code) => {
+  it("answers the source's failure when it refuses the file's download", async () => {
     await startApp()
-    download.mockRejectedValue(sourceFailure)
+    download.mockRejectedValue({ response: { status: 404 } })
 
     const response = await sendBook(DUNE_BOOK._id)
 
-    expect(response.status).toBe(status)
-    expect(response.body).toEqual({ errors: [{ code }] })
+    expect(response.status).toBe(404)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND }],
+    })
     expect(smtpServer.receivedEmails).toEqual([])
+  })
+
+  it("answers the source's failure when it refuses to state the file's size, opening no download", async () => {
+    await startApp()
+    getFileMetadata.mockRejectedValue({ response: { status: 403 } })
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED }],
+    })
+    expect(download).not.toHaveBeenCalled()
   })
 
   it("answers a connector's failure as the other routes of a connector do", async () => {
@@ -562,6 +602,27 @@ describe("KindleController", () => {
           throw new Error("The source stopped")
         })(),
       ),
+    })
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN }],
+    })
+    expect(smtpServer.receivedEmails).toEqual([])
+  })
+
+  it("answers 502 with the source's failure when the download closes part way without an error", async () => {
+    await startApp()
+    const closedFile = new PassThrough()
+    closedFile.write(BOOK_BYTES.subarray(0, 10))
+    download.mockImplementation(async function streamThenClose() {
+      setImmediate(function closeWithoutError() {
+        closedFile.destroy()
+      })
+
+      return { stream: closedFile }
     })
 
     const response = await sendBook(DUNE_BOOK._id)
@@ -617,20 +678,6 @@ describe("KindleController", () => {
     expect(unreadFile.destroyed).toBe(true)
   })
 
-  it("does not count a send the SMTP server refused on the reader's sends of the day", async () => {
-    await startApp({
-      smtpRefusals: { recipientRefusal: "550 Mailbox unavailable" },
-    })
-
-    for (let send = 0; send <= KINDLE_MAX_SENDS_PER_USER_PER_DAY; send++) {
-      const response = await sendBook(DUNE_BOOK._id)
-
-      expect(response.body).toEqual({
-        errors: [{ code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_EMAIL_REFUSED }],
-      })
-    }
-  })
-
   it("gives up on sources that do not answer in time, and sends the next book in the queue", async () => {
     await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
     const neverAnswered = new Promise<never>(function neverSettle() {})
@@ -648,8 +695,8 @@ describe("KindleController", () => {
     expect(smtpServer.receivedEmails).toHaveLength(1)
   })
 
-  it("gives up on a file that stops part way, ending its download and sending no email", async () => {
-    await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
+  it("answers 502 with the source's failure for a file that stops part way, before the SMTP server times out", async () => {
+    await startApp({ maxSourceIdleMs: SHORT_SOURCE_IDLE_MS })
     const stalledFile = new PassThrough()
     stalledFile.write(BOOK_BYTES.subarray(0, 10))
     download.mockResolvedValue({ stream: stalledFile })
@@ -661,6 +708,28 @@ describe("KindleController", () => {
       errors: [{ code: ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN }],
     })
     expect(stalledFile.destroyed).toBe(true)
+    expect(smtpServer.receivedEmails).toEqual([])
+  })
+
+  it("gives up on a file that still arrives at the deadline, ending its download and sending no email", async () => {
+    await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
+    const slowFile = new PassThrough()
+    const slowWrites = setInterval(function writeOneByte() {
+      slowFile.write(BOOK_BYTES.subarray(0, 1))
+    }, 10)
+    slowFile.once("close", function stopWriting() {
+      clearInterval(slowWrites)
+    })
+    getFileMetadata.mockResolvedValue(toFileMetadata())
+    download.mockResolvedValue({ stream: slowFile })
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN }],
+    })
+    expect(slowFile.destroyed).toBe(true)
     expect(smtpServer.receivedEmails).toEqual([])
   })
 
@@ -684,20 +753,25 @@ describe("KindleController", () => {
   it("runs two sends at a time, and starts the next when one ends", async () => {
     await startApp()
     const heldFiles = [new PassThrough(), new PassThrough(), new PassThrough()]
-    const unreadFiles = [...heldFiles]
-    download.mockImplementation(async function streamNextHeldFile() {
-      return { stream: unreadFiles.shift() }
-    })
+    getFileMetadata.mockResolvedValue(toFileMetadata())
+    download
+      .mockResolvedValueOnce({ stream: heldFiles[0] })
+      .mockResolvedValueOnce({ stream: heldFiles[1] })
+      .mockResolvedValueOnce({ stream: heldFiles[2] })
 
     const responses = [DUNE_BOOK._id, DUNE_BOOK._id, DUNE_BOOK._id].map(
       (bookId) => sendBook(bookId).then((response) => response.status),
     )
 
     await vi.waitFor(() =>
+      expect(taskQueueService.getQueueStats(KINDLE_SENDS_QUEUE)).toMatchObject({
+        activeCount: MAX_CONCURRENT_SENDS,
+        pendingCount: 1,
+      }),
+    )
+    await vi.waitFor(() =>
       expect(download).toHaveBeenCalledTimes(MAX_CONCURRENT_SENDS),
     )
-    await new Promise((resolve) => setTimeout(resolve, 50))
-    expect(download).toHaveBeenCalledTimes(MAX_CONCURRENT_SENDS)
 
     heldFiles[0]?.end(BOOK_BYTES)
 

@@ -30,7 +30,11 @@ export const getEmailSenderAddress = (
 export type EmailAttachment = {
   filename: string
   contentType: string
-  /** A stream that fails makes the send fail, and the message is not sent. */
+  /**
+   * A stream that fails makes the send fail, and the message is not sent.
+   * nodemailer reads a stream once, so it cannot send the message again when
+   * the SMTP server dropped the pooled connection: that send fails too.
+   */
   content: Readable
 }
 

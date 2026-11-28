@@ -5,7 +5,6 @@ import {
   InstanceConfigService,
 } from "../admin/instance-config/instance-config.service.js"
 import { AppConfigService } from "../config/AppConfigService.js"
-import { KINDLE_MAX_SENDS_PER_USER_PER_DAY } from "../kindle/kindle-daily-sends.service.js"
 import { WebController } from "./web.controller.js"
 
 const CONFIG: InstanceConfig = {
@@ -27,6 +26,7 @@ const EMAIL_DELIVERY_SETTINGS = {
   EMAIL_SMTP_HOST: "smtp.oboku.example",
   EMAIL_FROM: "books@oboku.example",
   SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES: 25_000_000,
+  SEND_TO_KINDLE_MAX_SENDS_PER_DAY: 10,
 }
 
 const createController = async (
@@ -81,7 +81,7 @@ describe("WebController", () => {
       senderAddress: EMAIL_DELIVERY_SETTINGS.EMAIL_FROM,
       maxFileSizeBytes:
         EMAIL_DELIVERY_SETTINGS.SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES,
-      maxSendsPerDay: KINDLE_MAX_SENDS_PER_USER_PER_DAY,
+      maxSendsPerDay: EMAIL_DELIVERY_SETTINGS.SEND_TO_KINDLE_MAX_SENDS_PER_DAY,
     })
   })
 
