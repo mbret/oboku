@@ -1,4 +1,4 @@
-import { createBookDefaults, ObokuErrorCode } from "@oboku/shared"
+import { ObokuErrorCode } from "@oboku/shared"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
@@ -7,8 +7,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 const mocks = vi.hoisted(function createUseSendBookToKindleMocks() {
   return {
     useDatabase: vi.fn(),
-    usePluginRefreshMetadata: vi.fn(),
-    requestSourceCredentials: vi.fn(),
+    useRequestBookSourceCredentials: vi.fn(),
+    requestBookSourceCredentials: vi.fn(),
     notify: vi.fn(),
     useNetworkState: vi.fn(),
     awaitDocumentsPushed: vi.fn(),
@@ -35,9 +35,14 @@ vi.mock("../../rxdb", async function mockRxdb() {
   return { useDatabase: mocks.useDatabase, ensureDatabase }
 })
 
-vi.mock("../plugins/usePluginRefreshMetadata", function mockCredentials() {
-  return { usePluginRefreshMetadata: mocks.usePluginRefreshMetadata }
-})
+vi.mock(
+  "../../books/useRequestBookSourceCredentials",
+  function mockCredentials() {
+    return {
+      useRequestBookSourceCredentials: mocks.useRequestBookSourceCredentials,
+    }
+  },
+)
 
 vi.mock("../../notifications/toasts", function mockToasts() {
   return { notify: mocks.notify }
@@ -50,7 +55,7 @@ import { activateLocale } from "../../i18n/activateLocale"
 import { openTestDatabase } from "../../rxdb/databases.fixture"
 import { useSendBookToKindle } from "./useSendBookToKindle"
 
-const DRIVE_LINK_DATA = { fileId: "drive-file-dune" }
+const BOOK_ID = "book-dune"
 const DRIVE_CREDENTIALS = { access_token: "drive-access-token" }
 
 const renderUseSendBookToKindle = async (
@@ -75,65 +80,39 @@ const renderUseSendBookToKindle = async (
     },
   })
 
-  return { database, post, queryClient, result, unmount }
-}
-
-const storeDriveBook = async (
-  database: Awaited<ReturnType<typeof openTestDatabase>>,
-) => {
-  const link = await database.link.safeInsert({
-    type: "DRIVE",
-    data: DRIVE_LINK_DATA,
-    book: null,
-    createdAt: new Date().toISOString(),
-    modifiedAt: null,
-  })
-  const book = await database.book.post({
-    ...createBookDefaults(),
-    links: [link._id],
-  })
-
-  return { book, link }
+  return { post, queryClient, result, unmount }
 }
 
 describe("useSendBookToKindle", () => {
   beforeEach(async () => {
     vi.clearAllMocks()
-    mocks.usePluginRefreshMetadata.mockReturnValue(
-      mocks.requestSourceCredentials,
+    mocks.useRequestBookSourceCredentials.mockReturnValue(
+      mocks.requestBookSourceCredentials,
     )
-    mocks.requestSourceCredentials.mockResolvedValue({
-      providerCredentials: DRIVE_CREDENTIALS,
-    })
+    mocks.requestBookSourceCredentials.mockResolvedValue(DRIVE_CREDENTIALS)
     mocks.useNetworkState.mockReturnValue({ online: true })
     mocks.awaitDocumentsPushed.mockResolvedValue(undefined)
     await activateLocale("en")
   })
 
   it("asks the server to send the book, with the credentials of the source of its file", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book, link } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
 
-    await result.current.mutateAsync({ bookId: book._id })
+    await result.current.mutateAsync({ bookId: BOOK_ID })
 
-    expect(mocks.requestSourceCredentials).toHaveBeenCalledWith({
-      linkId: link._id,
-      linkType: "DRIVE",
-      linkData: DRIVE_LINK_DATA,
-    })
+    expect(mocks.requestBookSourceCredentials).toHaveBeenCalledWith(BOOK_ID)
     expect(post).toHaveBeenCalledWith(
       expect.objectContaining({
         url: "/kindle/send",
-        body: { bookId: book._id, providerCredentials: DRIVE_CREDENTIALS },
+        body: { bookId: BOOK_ID, providerCredentials: DRIVE_CREDENTIALS },
       }),
     )
   })
 
   it("tells the user when the send starts, then that the book is on its way", async () => {
-    const { database, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { result } = await renderUseSendBookToKindle()
 
-    await result.current.mutateAsync({ bookId: book._id })
+    await result.current.mutateAsync({ bookId: BOOK_ID })
 
     expect(mocks.notify.mock.calls).toEqual([
       [expect.objectContaining({ severity: "info" })],
@@ -148,12 +127,11 @@ describe("useSendBookToKindle", () => {
   })
 
   it("sends nothing, and does not say the book is on its way, when the source gives no credentials", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
     const signInFailure = new Error("The sign-in was closed")
-    mocks.requestSourceCredentials.mockRejectedValue(signInFailure)
+    mocks.requestBookSourceCredentials.mockRejectedValue(signInFailure)
 
-    await expect(result.current.mutateAsync({ bookId: book._id })).rejects.toBe(
+    await expect(result.current.mutateAsync({ bookId: BOOK_ID })).rejects.toBe(
       signInFailure,
     )
 
@@ -162,12 +140,11 @@ describe("useSendBookToKindle", () => {
   })
 
   it("does not say the book is on its way when the server refuses the send", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
     const refusal = new Error("413")
     post.mockRejectedValue(refusal)
 
-    await expect(result.current.mutateAsync({ bookId: book._id })).rejects.toBe(
+    await expect(result.current.mutateAsync({ bookId: BOOK_ID })).rejects.toBe(
       refusal,
     )
 
@@ -177,13 +154,11 @@ describe("useSendBookToKindle", () => {
   })
 
   it("still tells that the book is on its way when its caller unmounted during the send", async () => {
-    const { database, post, result, unmount } =
-      await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result, unmount } = await renderUseSendBookToKindle()
     const heldSend = Promise.withResolvers<{ data: object }>()
     post.mockReturnValue(heldSend.promise)
 
-    result.current.mutate({ bookId: book._id })
+    result.current.mutate({ bookId: BOOK_ID })
     await vi.waitFor(() => expect(post).toHaveBeenCalled())
     unmount()
     heldSend.resolve({ data: {} })
@@ -196,12 +171,11 @@ describe("useSendBookToKindle", () => {
   })
 
   it("asks for the send only once the settings, which hold the Kindle address, reached the server", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
     const settingsPush = Promise.withResolvers<void>()
     mocks.awaitDocumentsPushed.mockReturnValue(settingsPush.promise)
 
-    const send = result.current.mutateAsync({ bookId: book._id })
+    const send = result.current.mutateAsync({ bookId: BOOK_ID })
     await vi.waitFor(() =>
       expect(mocks.awaitDocumentsPushed).toHaveBeenCalled(),
     )
@@ -219,12 +193,11 @@ describe("useSendBookToKindle", () => {
   })
 
   it("sends nothing, and says why, when the settings do not reach the server", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
     mocks.awaitDocumentsPushed.mockRejectedValue(new Error("timeout"))
 
     await expect(
-      result.current.mutateAsync({ bookId: book._id }),
+      result.current.mutateAsync({ bookId: BOOK_ID }),
     ).rejects.toThrow(
       "Your Kindle address has not reached oboku's server yet. Check your connection, then send again.",
     )
@@ -235,39 +208,35 @@ describe("useSendBookToKindle", () => {
 
   it("fails while the device is offline, asking no credentials and sending nothing", async () => {
     mocks.useNetworkState.mockReturnValue({ online: false })
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
+    const { post, result } = await renderUseSendBookToKindle()
 
     await expect(
-      result.current.mutateAsync({ bookId: book._id }),
+      result.current.mutateAsync({ bookId: BOOK_ID }),
     ).rejects.toBeInstanceOf(OfflineError)
 
-    expect(mocks.requestSourceCredentials).not.toHaveBeenCalled()
+    expect(mocks.requestBookSourceCredentials).not.toHaveBeenCalled()
     expect(post).not.toHaveBeenCalled()
   })
 
-  it("fails for a book with no file, asking no credentials", async () => {
-    const { database, post, result } = await renderUseSendBookToKindle()
-    const book = await database.book.post(createBookDefaults())
+  it("fails for a book whose file is not in the database, sending nothing", async () => {
+    const { post, result } = await renderUseSendBookToKindle()
+    mocks.requestBookSourceCredentials.mockResolvedValue(undefined)
 
     await expect(
-      result.current.mutateAsync({ bookId: book._id }),
+      result.current.mutateAsync({ bookId: BOOK_ID }),
     ).rejects.toMatchObject({ code: ObokuErrorCode.ERROR_NO_LINK })
 
-    expect(mocks.requestSourceCredentials).not.toHaveBeenCalled()
     expect(post).not.toHaveBeenCalled()
+    expect(mocks.notify).not.toHaveBeenCalled()
   })
 
   it("keeps the global error toast for its caller to decide, and takes the source's errors as its own", async () => {
     const meta = { suppressGlobalErrorToast: true }
-    const { queryClient, database, result } = await renderUseSendBookToKindle({
-      meta,
-    })
-    const { book } = await storeDriveBook(database)
+    const { queryClient, result } = await renderUseSendBookToKindle({ meta })
 
-    await result.current.mutateAsync({ bookId: book._id })
+    await result.current.mutateAsync({ bookId: BOOK_ID })
 
-    expect(mocks.usePluginRefreshMetadata).toHaveBeenCalledWith({
+    expect(mocks.useRequestBookSourceCredentials).toHaveBeenCalledWith({
       meta: { suppressGlobalErrorToast: true },
     })
     expect(queryClient.getMutationCache().getAll()[0]?.options.meta).toBe(meta)

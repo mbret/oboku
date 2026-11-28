@@ -42,13 +42,12 @@ export const useSendBookToKindle = (
     }: SendBookToKindleVariables) {
       if (!network.online) throw new OfflineError()
 
-      const sourceCredentials = await requestBookSourceCredentials(bookId)
+      const providerCredentials = await requestBookSourceCredentials(bookId)
+      const isBookFileKnown = providerCredentials !== undefined
 
-      if (!sourceCredentials) {
+      if (!isBookFileKnown) {
         throw new ObokuSharedError(ObokuErrorCode.ERROR_NO_LINK)
       }
-
-      const { providerCredentials } = sourceCredentials
 
       // The server reads the Kindle address from the settings it holds: an
       // address this device saved a moment ago must reach it first.

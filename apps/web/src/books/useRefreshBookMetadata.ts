@@ -37,15 +37,14 @@ export const useRefreshBookMetadata = () => {
 
       if (!database) return
 
-      const sourceCredentials = await requestBookSourceCredentials(bookId)
+      const providerCredentials = await requestBookSourceCredentials(bookId)
+      const isBookFileKnown = providerCredentials !== undefined
 
-      if (!sourceCredentials) {
+      if (!isBookFileKnown) {
         Logger.error(`No link found ${bookId}`)
 
         return
       }
-
-      const { providerCredentials } = sourceCredentials
 
       await incrementalPatchBook({
         doc: bookId,
