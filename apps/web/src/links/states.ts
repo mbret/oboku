@@ -9,19 +9,6 @@ import { map, switchMap } from "rxjs"
 import type { Database } from "../rxdb"
 import { isRemovableFromSource } from "./isRemovableFromSource"
 
-export const useLinks = () => {
-  return useLiveQuery$({
-    ...createRxdbQueryDefaultOptions(),
-    queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "many", "link/list"],
-    queryFn: () => {
-      return latestDatabase$.pipe(
-        switchMap((db) => db.collections.link.find({}).$),
-        map((entries) => entries.map((item) => item.toJSON())),
-      )
-    },
-  })
-}
-
 export const createLinkQueryOptions = ({ id }: { id?: string }) => ({
   ...createRxdbQueryDefaultOptions(),
   queryKey: [RXDB_QUERY_KEY_PREFIX, "get", "single", "link", id],
