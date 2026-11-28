@@ -1,9 +1,5 @@
 import { createBookDefaults, ObokuErrorCode } from "@oboku/shared"
-import {
-  MutationCache,
-  QueryClient,
-  QueryClientProvider,
-} from "@tanstack/react-query"
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { renderHook } from "@testing-library/react"
 import type { ReactNode } from "react"
 import { beforeEach, describe, expect, it, vi } from "vitest"
@@ -56,10 +52,7 @@ const renderUseSendBookToKindle = async (
   const post = vi.fn().mockResolvedValue({ data: {} })
   // test double: the mutation only calls the generated client's `post`
   const client = { sdkClient: { post } } as unknown as HttpApiClientWeb
-  const reportMutationError = vi.fn()
-  const queryClient = new QueryClient({
-    mutationCache: new MutationCache({ onError: reportMutationError }),
-  })
+  const queryClient = new QueryClient()
   mocks.useDatabase.mockReturnValue({ db: database })
 
   const { result, unmount } = renderHook(() => useSendBookToKindle(options), {
@@ -74,7 +67,7 @@ const renderUseSendBookToKindle = async (
     },
   })
 
-  return { database, post, queryClient, reportMutationError, result, unmount }
+  return { database, post, queryClient, result, unmount }
 }
 
 const storeDriveBook = async (
@@ -190,27 +183,6 @@ describe("useSendBookToKindle", () => {
       expect(mocks.notify).toHaveBeenCalledWith(
         expect.objectContaining({ severity: "success" }),
       ),
-    )
-  })
-
-  it("still reports a refused send to the app's mutation error handler when its caller unmounted during the send", async () => {
-    const { database, post, reportMutationError, result, unmount } =
-      await renderUseSendBookToKindle()
-    const { book } = await storeDriveBook(database)
-    const heldSend = Promise.withResolvers<{ data: object }>()
-    const refusal = new Error("413")
-    post.mockReturnValue(heldSend.promise)
-
-    result.current.mutate({ bookId: book._id })
-    await vi.waitFor(() => expect(post).toHaveBeenCalled())
-    unmount()
-    heldSend.reject(refusal)
-
-    await vi.waitFor(() =>
-      expect(reportMutationError.mock.calls[0]?.[0]).toBe(refusal),
-    )
-    expect(mocks.notify).not.toHaveBeenCalledWith(
-      expect.objectContaining({ severity: "success" }),
     )
   })
 

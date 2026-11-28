@@ -20,6 +20,7 @@ const createConfig = (
   | "EMAIL_FROM"
   | "EMAIL_FROM_NAME"
   | "EMAIL_SMTP_MAX_SEND_RATE"
+  | "EMAIL_SMTP_SOCKET_TIMEOUT_MS"
   | "APP_PUBLIC_URL"
 > => ({
   NODE_ENV: "production",
@@ -30,6 +31,7 @@ const createConfig = (
   EMAIL_FROM: SENDER_ADDRESS,
   EMAIL_FROM_NAME: "oboku",
   EMAIL_SMTP_MAX_SEND_RATE: undefined,
+  EMAIL_SMTP_SOCKET_TIMEOUT_MS: 20_000,
   APP_PUBLIC_URL: "https://app.oboku.example",
 })
 

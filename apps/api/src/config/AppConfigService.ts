@@ -190,6 +190,14 @@ export class AppConfigService {
   }
 
   /**
+   * How long the SMTP socket may stay idle. Far under nodemailer's default,
+   * so an SMTP host that stops answering fails a send quickly.
+   */
+  get EMAIL_SMTP_SOCKET_TIMEOUT_MS() {
+    return 20_000
+  }
+
+  /**
    * The largest book file Send to Kindle emails. An attachment grows by a
    * third inside an email, so 25 MB stays under the 40 MB a message can be on
    * Amazon SES, and under the 50 MB Amazon accepts for a Kindle.
@@ -248,11 +256,11 @@ export class AppConfigService {
 
   /**
    * How long a source may take to send the next part of a file. Shorter than
-   * the SMTP socket timeout (`EMAIL_SOCKET_TIMEOUT_MS`), which would
-   * otherwise end the send of a source that stopped as an SMTP failure.
+   * the SMTP socket timeout, which would otherwise end the send of a source
+   * that stopped as an SMTP failure.
    */
   get QUEUE_KINDLE_SENDS_MAX_SOURCE_IDLE_MS() {
-    return 15_000
+    return this.EMAIL_SMTP_SOCKET_TIMEOUT_MS - 5_000
   }
 
   /**

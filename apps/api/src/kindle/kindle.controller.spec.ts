@@ -1,5 +1,5 @@
 import { PassThrough, Readable } from "node:stream"
-import type { INestApplication } from "@nestjs/common"
+import { type INestApplication, Logger } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
@@ -218,6 +218,7 @@ describe("KindleController", () => {
             EMAIL_SMTP_PORT: smtpServer.port,
             EMAIL_FROM: SENDER_ADDRESS,
             EMAIL_FROM_NAME: "oboku",
+            EMAIL_SMTP_SOCKET_TIMEOUT_MS: 20_000,
             SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES: MAX_FILE_SIZE_BYTES,
             QUEUE_KINDLE_SENDS_MAX_CONCURRENT: MAX_CONCURRENT_SENDS,
             SEND_TO_KINDLE_MAX_SENDS_PER_DAY: MAX_SENDS_PER_DAY,
@@ -661,6 +662,24 @@ describe("KindleController", () => {
       errors: [{ code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_EMAIL_REFUSED }],
     })
     expect(unreadFile.destroyed).toBe(true)
+  })
+
+  it("logs the SMTP server's refusal by its codes, without the reply that repeats the Kindle address", async () => {
+    await startApp({
+      smtpRefusals: {
+        recipientRefusal: `550 Mailbox ${KINDLE_EMAIL} unavailable`,
+      },
+    })
+    const warn = vi.spyOn(Logger.prototype, "warn")
+
+    await sendBook(DUNE_BOOK._id)
+
+    const loggedLines = warn.mock.calls.map(([line]) => String(line))
+
+    expect(loggedLines).toEqual([
+      `The SMTP server refused book ${DUNE_BOOK._id}: code EENVELOPE, SMTP reply 550`,
+    ])
+    expect(loggedLines.join()).not.toContain(KINDLE_EMAIL)
   })
 
   it("answers 502 when the SMTP server cannot be reached, ending the download it never read", async () => {

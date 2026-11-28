@@ -17,7 +17,6 @@ const EMAIL_MAX_MESSAGES_PER_CONNECTION = 100
 // unreachable SMTP host surfaces a clear error quickly.
 const EMAIL_CONNECTION_TIMEOUT_MS = 10_000
 const EMAIL_GREETING_TIMEOUT_MS = 10_000
-const EMAIL_SOCKET_TIMEOUT_MS = 20_000
 
 /**
  * The address the instance sends its emails from, none while email delivery
@@ -63,7 +62,7 @@ export class EmailService implements OnModuleDestroy {
         maxMessages: EMAIL_MAX_MESSAGES_PER_CONNECTION,
         connectionTimeout: EMAIL_CONNECTION_TIMEOUT_MS,
         greetingTimeout: EMAIL_GREETING_TIMEOUT_MS,
-        socketTimeout: EMAIL_SOCKET_TIMEOUT_MS,
+        socketTimeout: this.appConfigService.EMAIL_SMTP_SOCKET_TIMEOUT_MS,
         ...(maxSendRate ? { rateDelta: 1000, rateLimit: maxSendRate } : {}),
         auth:
           this.appConfigService.EMAIL_SMTP_USER &&

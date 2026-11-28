@@ -37,7 +37,7 @@ export class KindleDailySendsService {
 
     this.sendsByUserId.set(userId, sends + 1)
 
-    return () => {
+    const giveBackSend = () => {
       const isReservedDayStillCounted =
         this.startCountingToday() === reservedDay
 
@@ -47,6 +47,8 @@ export class KindleDailySendsService {
 
       this.sendsByUserId.set(userId, sendsWithReserved - 1)
     }
+
+    return giveBackSend
   }
 
   /** Forgets the counts of a day that ended, and returns the day now counted. */

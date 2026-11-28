@@ -35,6 +35,7 @@ import {
   toObokuErrorBody,
 } from "../http/obokuBadRequest.js"
 import { toServedFile } from "../opds/opds-books.js"
+import { failOnceSourceStalls } from "../plugins/failOnceSourceStalls.js"
 import {
   createByteLimitTransform,
   FileDownloadSizeLimitExceededError,
@@ -80,39 +81,23 @@ const areSourceCredentialsValid = (
 const toReadable = (stream: NodeJS.ReadableStream) =>
   stream instanceof Readable ? stream : Readable.from(stream)
 
-const rejectOnceAborted = (signal: AbortSignal) =>
-  new Promise<never>(function waitForAbort(_resolve, reject) {
-    signal.addEventListener(
-      "abort",
-      function rejectWithAbortReason() {
-        reject(signal.reason)
-      },
-      { once: true },
-    )
-  })
-
 /**
- * Passes a file on, and fails once its source takes more than `maxIdleMs` to
- * give the next part it is asked for. The time a slow reader takes to ask
- * does not count.
+ * Settles as `pending` does, unless `signal` aborts first: it then rejects
+ * with the signal's reason. It stops listening to the signal once `pending`
+ * settles, so the signal does not keep what `pending` resolved with.
  */
-async function* failOnceSourceStalls(
-  file: AsyncIterable<Buffer>,
-  maxIdleMs: number,
-) {
-  const parts = file[Symbol.asyncIterator]()
+const settleUnlessAborted = <TValue>(
+  pending: Promise<TValue>,
+  signal: AbortSignal,
+) =>
+  new Promise<TValue>(function raceWithAbort(resolve, reject) {
+    const rejectWithAbortReason = () => reject(signal.reason)
 
-  while (true) {
-    const part = await Promise.race([
-      parts.next(),
-      rejectOnceAborted(AbortSignal.timeout(maxIdleMs)),
-    ])
-
-    if (part.done) return
-
-    yield part.value
-  }
-}
+    signal.addEventListener("abort", rejectWithAbortReason, { once: true })
+    pending.then(resolve, reject).finally(function stopListeningToAbort() {
+      signal.removeEventListener("abort", rejectWithAbortReason)
+    })
+  })
 
 const createFileTooLarge = () =>
   new PayloadTooLargeException(
@@ -349,14 +334,13 @@ export class KindleService implements OnModuleInit {
     { db, link, providerCredentials, maxFileSizeBytes }: LinkFile,
     deadline: AbortSignal,
   ) {
-    const deadlinePassed = rejectOnceAborted(deadline)
     const throwSourceFailure = (error: unknown) =>
       throwSourceHttpException(link.type, error)
 
-    const { bookMetadata } = await Promise.race([
+    const { bookMetadata } = await settleUnlessAborted(
       this.pluginsService.getFileMetadata({ link, providerCredentials, db }),
-      deadlinePassed,
-    ]).catch(throwSourceFailure)
+      deadline,
+    ).catch(throwSourceFailure)
     const statedSize = toByteCount(bookMetadata?.size)
     const isStatedSizeOverLimit =
       statedSize !== undefined && statedSize > maxFileSizeBytes
@@ -368,19 +352,18 @@ export class KindleService implements OnModuleInit {
       providerCredentials,
       db,
     })
-    const download = await Promise.race([
-      pendingDownload,
-      deadlinePassed,
-    ]).catch(function endLateDownload(error: unknown) {
-      pendingDownload.then(
-        function endDownloadOpenedPastDeadline({ stream }) {
-          toReadable(stream).destroy()
-        },
-        function ignoreFailedDownload() {},
-      )
+    const download = await settleUnlessAborted(pendingDownload, deadline).catch(
+      function endLateDownload(error: unknown) {
+        pendingDownload.then(
+          function endDownloadOpenedPastDeadline({ stream }) {
+            toReadable(stream).destroy()
+          },
+          function ignoreFailedDownload() {},
+        )
 
-      return throwSourceFailure(error)
-    })
+        return throwSourceFailure(error)
+      },
+    )
     const stream = toReadable(download.stream)
     const isDownloadSizeOverLimit =
       download.size !== undefined && download.size > maxFileSizeBytes
