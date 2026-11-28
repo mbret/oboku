@@ -33,7 +33,6 @@ export class LibrarySyncsController implements OnModuleInit {
       name: this.SYNC_QUEUE_NAME,
       maxConcurrent: this.appConfig.QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT,
       deduplicate: true,
-      sequentialTasksWithSameId: true,
     })
   }
 
@@ -65,6 +64,7 @@ export class LibrarySyncsController implements OnModuleInit {
         ),
       {
         id: dataSourceId,
+        sequentialKey: user.email,
       },
     )
 
