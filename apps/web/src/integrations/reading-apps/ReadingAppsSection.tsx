@@ -5,7 +5,9 @@ import type {
 } from "@oboku/shared"
 import { ListItemLink } from "../../common/lists"
 import { PageSection } from "../../common/PageSection"
+import { useConfig } from "../../config/useConfig"
 import { ROUTES } from "../../navigation/routes"
+import { SendToKindleListItem } from "../kindle/SendToKindleListItem"
 import { useKoreaderSyncConnection } from "../koreader/client/useKoreaderSyncConnection"
 import { useKoreaderSyncServer } from "../koreader/server/useKoreaderSyncServer"
 
@@ -35,6 +37,7 @@ const describeKoreaderSyncConnection = (
 export function ReadingAppsSection() {
   const { data: koreaderSyncServer } = useKoreaderSyncServer()
   const { data: koreaderSyncConnection } = useKoreaderSyncConnection()
+  const { data: config } = useConfig()
 
   return (
     <PageSection title="Reading apps">
@@ -56,6 +59,7 @@ export function ReadingAppsSection() {
         primary="KOReader progress sync"
         secondary={describeKoreaderSyncConnection(koreaderSyncConnection)}
       />
+      {config?.FEATURE_SEND_TO_KINDLE_ENABLED && <SendToKindleListItem />}
     </PageSection>
   )
 }

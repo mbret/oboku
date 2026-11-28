@@ -31,7 +31,7 @@ export const settingsSchema: RxJsonSchema<
     contentPassword?: string | null
   }
 > = {
-  version: 3,
+  version: 4,
   type: "object",
   primaryKey: `_id`,
   properties: {
@@ -95,6 +95,7 @@ export const settingsSchema: RxJsonSchema<
         required: ["id", "isEnabled"],
       },
     },
+    kindleEmail: { type: ["string", "null"] },
     ...getReplicationProperties(`settings`),
   },
 }
@@ -109,6 +110,7 @@ export const settingsSchemaMigrationStrategies: MigrationStrategies = {
   1: (oldDoc: Record<string, unknown>) => oldDoc,
   2: (oldDoc: Record<string, unknown>) => oldDoc,
   3: (oldDoc: Record<string, unknown>) => oldDoc,
+  4: (oldDoc: Record<string, unknown>) => oldDoc,
 }
 
 export const settingsCollectionMethods: SettingsCollectionMethods = {

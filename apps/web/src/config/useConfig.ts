@@ -48,6 +48,7 @@ type DerivedConfig = {
   FEATURE_GOOGLE_BOOKS_ENABLED: boolean
   FEATURE_DROPBOX_ENABLED: boolean
   FEATURE_ONE_DRIVE_ENABLED: boolean
+  FEATURE_SEND_TO_KINDLE_ENABLED: boolean
 }
 
 export type Config = typeof staticConfig & WebGetConfigResponse & DerivedConfig
@@ -70,6 +71,7 @@ export const buildConfig = (server: WebGetConfigResponse): Config => {
     FEATURE_GOOGLE_BOOKS_ENABLED: !!server.GOOGLE_API_KEY?.trim(),
     FEATURE_DROPBOX_ENABLED: !!server.DROPBOX_CLIENT_ID,
     FEATURE_ONE_DRIVE_ENABLED: !!server.MICROSOFT_APPLICATION_CLIENT_ID,
+    FEATURE_SEND_TO_KINDLE_ENABLED: !!server.SEND_TO_KINDLE,
   }
 }
 

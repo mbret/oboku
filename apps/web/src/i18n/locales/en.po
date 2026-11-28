@@ -7,13 +7,41 @@ msgstr ""
 "X-Generator: @lingui/cli\n"
 "Language: en\n"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "{maxSendsPerDay} books a day"
+msgstr "{maxSendsPerDay} books a day"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "1. Approve oboku in your Amazon account"
+msgstr "1. Approve oboku in your Amazon account"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "2. Save your Kindle address"
+msgstr "2. Save your Kindle address"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "3. Send a book"
+msgstr "3. Send a book"
+
+#: src/integrations/kindle/SendBookToKindleListItemButton.tsx
+msgid "A book added from this device cannot be sent"
+msgstr "A book added from this device cannot be sent"
+
 #: src/pages/profile/InstallAppListItem.tsx
 msgid "Add oboku to your home screen or desktop"
 msgstr "Add oboku to your home screen or desktop"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Address to approve"
+msgstr "Address to approve"
+
 #: src/settings/ReadingSettings.tsx
 msgid "Always"
 msgstr "Always"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Amazon accepts no comic archive by email, and oboku converts nothing."
+msgstr "Amazon accepts no comic archive by email, and oboku converts nothing."
 
 #: src/settings/ReadingSettings.tsx
 msgid "Automatic (based on device)"
@@ -31,6 +59,10 @@ msgstr "Automatically switch to fullscreen upon opening"
 msgid "Color mode"
 msgstr "Color mode"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Danger zone"
+msgstr "Danger zone"
+
 #: src/theme/themeOptions.ts
 msgid "Dark"
 msgstr "Dark"
@@ -46,6 +78,18 @@ msgstr "Display the current time on overlay of the book (not in comics)"
 #: src/theme/themeOptions.ts
 msgid "E-ink"
 msgstr "E-ink"
+
+#: src/integrations/kindle/SendToKindleListItem.tsx
+msgid "Email a book of your library to your Kindle"
+msgstr "Email a book of your library to your Kindle"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Enter an address that ends with @kindle.com"
+msgstr "Enter an address that ends with @kindle.com"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "EPUB, PDF and text files"
+msgstr "EPUB, PDF and text files"
 
 #: src/pages/SettingsScreen.tsx
 msgid "General"
@@ -67,13 +111,49 @@ msgstr "Language"
 msgid "Light"
 msgstr "Light"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Limits"
+msgstr "Limits"
+
 #: src/settings/ReadingSettings.tsx
 msgid "Never"
 msgstr "Never"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Not for a book added from a device"
+msgstr "Not for a book added from a device"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "oboku can email a book of your library to your Kindle. oboku's server reads the book from its source, then sends it with Amazon's Send to Kindle."
+msgstr "oboku can email a book of your library to your Kindle. oboku's server reads the book from its source, then sends it with Amazon's Send to Kindle."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "oboku stops sending books to this Kindle"
+msgstr "oboku stops sending books to this Kindle"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "oboku stops sending books to this Kindle. The address stays approved in your Amazon account."
+msgstr "oboku stops sending books to this Kindle. The address stays approved in your Amazon account."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "oboku tells you when the email left. Amazon then delivers the book, most often in a few minutes. If a book does not arrive, check that the address above is approved."
+msgstr "oboku tells you when the email left. Amazon then delivers the book, most often in a few minutes. If a book does not arrive, check that the address above is approved."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "oboku's server cannot reach a file that is only on your device."
+msgstr "oboku's server cannot reach a file that is only on your device."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "On Amazon's website, open \"Manage Your Content and Devices\", then \"Preferences\", then \"Personal Document Settings\". Add this address to the \"Approved Personal Document E-mail List\". Amazon ignores the emails of any other sender."
+msgstr "On Amazon's website, open \"Manage Your Content and Devices\", then \"Preferences\", then \"Personal Document Settings\". Add this address to the \"Approved Personal Document E-mail List\". Amazon ignores the emails of any other sender."
+
 #: src/pages/SettingsScreen.tsx
 msgid "Only when unlocked (safe)"
 msgstr "Only when unlocked (safe)"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Open the actions of a book, then tap \"Send to Kindle\"."
+msgstr "Open the actions of a book, then tap \"Send to Kindle\"."
 
 #: src/settings/ReadingSettings.tsx
 msgid "Prevent the device screen from turning off while reading"
@@ -92,9 +172,44 @@ msgstr "Reading"
 msgid "Reload book"
 msgstr "Reload book"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Remove"
+msgstr "Remove"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Remove your Kindle address"
+msgstr "Remove your Kindle address"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Remove your Kindle address?"
+msgstr "Remove your Kindle address?"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Save"
+msgstr "Save"
+
 #: src/common/MultipleChoiceDrawer.tsx
 msgid "selected"
 msgstr "selected"
+
+#: src/integrations/kindle/SendBookToKindleListItemButton.tsx
+#: src/integrations/kindle/SendToKindleListItem.tsx
+#: src/integrations/kindle/SendToKindleScreen.tsx
+#: src/integrations/kindle/useSendBookToKindle.ts
+msgid "Send to Kindle"
+msgstr "Send to Kindle"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Send to Kindle address"
+msgstr "Send to Kindle address"
+
+#: src/integrations/kindle/useSendBookToKindle.ts
+msgid "Sending the book to your Kindle…"
+msgstr "Sending the book to your Kindle…"
+
+#: src/integrations/kindle/SendToKindleListItem.tsx
+msgid "Sending to {kindleEmail}"
+msgstr "Sending to {kindleEmail}"
 
 #: src/pages/SettingsScreen.tsx
 msgid "Settings"
@@ -116,13 +231,33 @@ msgstr "Show current time"
 msgid "System"
 msgstr "System"
 
+#: src/integrations/kindle/useSendBookToKindle.ts
+msgid "The book is on its way. Amazon delivers it to your Kindle in a few minutes."
+msgstr "The book is on its way. Amazon delivers it to your Kindle in a few minutes."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "The file goes through oboku's server, so it counts on your download quota."
+msgstr "The file goes through oboku's server, so it counts on your download quota."
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "The same Amazon page shows the address of each Kindle, under \"Send-to-Kindle E-Mail Settings\"."
+msgstr "The same Amazon page shows the address of each Kindle, under \"Send-to-Kindle E-Mail Settings\"."
+
 #: src/pages/SettingsScreen.tsx
 msgid "Theming"
 msgstr "Theming"
 
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "This oboku server is not set up to send emails, so it cannot send a book to a Kindle."
+msgstr "This oboku server is not set up to send emails, so it cannot send a book to a Kindle."
+
 #: src/pages/SettingsScreen.tsx
 msgid "Unblur cover when protected content is visible"
 msgstr "Unblur cover when protected content is visible"
+
+#: src/integrations/kindle/SendToKindleScreen.tsx
+msgid "Up to {maxFileSize} for a book"
+msgstr "Up to {maxFileSize} for a book"
 
 #: src/pages/SettingsScreen.tsx
 msgid "Will display a collection named \"My collection [oboku~foo]\" as \"My collection\""

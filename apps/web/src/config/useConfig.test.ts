@@ -106,6 +106,22 @@ describe("buildConfig", () => {
     expect(config.FEATURE_DROPBOX_ENABLED).toBe(true)
     expect(config.FEATURE_ONE_DRIVE_ENABLED).toBe(true)
   })
+
+  it("turns Send to Kindle on only when the server gives its settings", () => {
+    expect(buildConfig(baseServerConfig).FEATURE_SEND_TO_KINDLE_ENABLED).toBe(
+      false,
+    )
+    expect(
+      buildConfig({
+        ...baseServerConfig,
+        SEND_TO_KINDLE: {
+          senderAddress: "books@oboku.example",
+          maxFileSizeBytes: 25_000_000,
+          maxSendsPerDay: 10,
+        },
+      }).FEATURE_SEND_TO_KINDLE_ENABLED,
+    ).toBe(true)
+  })
 })
 
 describe("fetchConfig", () => {

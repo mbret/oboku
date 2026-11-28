@@ -29,6 +29,7 @@ export const ROUTES = {
   KOREADER_PROGRESS_SYNC: "/integrations/koreader/progress-sync",
   OPDS_SERVERS: "/integrations/opds/servers",
   OPDS_CATALOGS: "/integrations/opds/catalogs",
+  SEND_TO_KINDLE: "/integrations/kindle",
   SYNC: "/sync",
   SYNC_LIBRARY_SYNCS: "/sync/library-syncs",
   SYNC_NEW_LIBRARY_SYNC: "/sync/new-library-sync/:type",
