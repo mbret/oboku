@@ -3,6 +3,6 @@ import { createDatabase as createWebDatabase } from "./databases.shared"
 import { withDatabaseLifecycleLock } from "./databaseLifecycleLock.shared"
 
 export const createSwDatabase = () =>
-  withDatabaseLifecycleLock(function openDatabase() {
+  withDatabaseLifecycleLock(function openServiceWorkerDatabase() {
     return firstValueFrom(createWebDatabase({}))
   })

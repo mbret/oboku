@@ -1,4 +1,9 @@
-import { addRxPlugin, createRxDatabase, type RxDatabase } from "rxdb"
+import {
+  addRxPlugin,
+  createRxDatabase,
+  removeRxDatabase,
+  type RxDatabase,
+} from "rxdb"
 import {
   type CollectionCollection,
   collectionCollectionMethods,
@@ -185,3 +190,10 @@ export const createDatabase = (
     }),
   )
 }
+
+/**
+ * Removes the data that `createDatabase` stored. No instance of the database
+ * must be open in the caller's tab.
+ */
+export const removeStoredDatabase = () =>
+  removeRxDatabase(RXDB_DATABASE_NAME, getRxStorageDexie())
