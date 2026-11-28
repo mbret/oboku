@@ -371,6 +371,8 @@ describe("sequential key", () => {
       sequentialKey: "reader",
     })
 
+    expect(startSecond).not.toHaveBeenCalled()
+
     first.error(new Error("The sync failed"))
 
     expect(startSecond).toHaveBeenCalledOnce()
