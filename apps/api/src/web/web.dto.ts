@@ -1,3 +1,5 @@
+import { SendToKindleConfigDto } from "../kindle/kindle.dto.js"
+
 export class WebConfigResponseDto {
   GOOGLE_CLIENT_ID?: string
   GOOGLE_API_KEY?: string
@@ -11,6 +13,11 @@ export class WebConfigResponseDto {
    * validates when the app starts offline.
    */
   FEATURE_GOOGLE_CONNECTION_ENABLED?: boolean
+  /**
+   * What the instance applies to Send to Kindle. None while it cannot send
+   * emails: the feature is then off.
+   */
+  SEND_TO_KINDLE?: SendToKindleConfigDto
   SHOW_DISABLED_PLUGINS!: boolean
 }
 

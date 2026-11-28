@@ -190,6 +190,18 @@ export class AppConfigService {
   }
 
   /**
+   * The largest book file Send to Kindle emails. An attachment grows by a
+   * third inside an email, so 25 MB stays under the 40 MB a message can be on
+   * Amazon SES, and under the 50 MB Amazon accepts for a Kindle.
+   */
+  get SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES() {
+    const megabytes =
+      this.config.get("SEND_TO_KINDLE_MAX_FILE_SIZE_MB", { infer: true }) ?? 25
+
+    return megabytes * 1000 * 1000
+  }
+
+  /**
    * ------------------------------------------------------------
    * QUEUES
    * ------------------------------------------------------------
@@ -209,6 +221,15 @@ export class AppConfigService {
 
   get QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT() {
     return 3
+  }
+
+  /**
+   * Each send holds one of the SMTP pool's connections (`EMAIL_MAX_CONNECTIONS`)
+   * for as long as its file takes to upload: the others stay free for the
+   * sign-in emails.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_CONCURRENT() {
+    return 2
   }
 
   /**

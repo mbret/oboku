@@ -16,6 +16,21 @@ export type HttpErrorResponseDto = {
     error?: string;
 };
 
+export type SendToKindleConfigDto = {
+    /**
+     * The address that emails the books, which a user approves in their Amazon account.
+     */
+    senderAddress: string;
+    /**
+     * The largest book file a send accepts.
+     */
+    maxFileSizeBytes: number;
+    /**
+     * How many books a user sends in one UTC day.
+     */
+    maxSendsPerDay: number;
+};
+
 export type WebConfigResponseDto = {
     GOOGLE_CLIENT_ID?: string;
     GOOGLE_API_KEY?: string;
@@ -29,6 +44,11 @@ export type WebConfigResponseDto = {
      * validates when the app starts offline.
      */
     FEATURE_GOOGLE_CONNECTION_ENABLED?: boolean;
+    /**
+     * What the instance applies to Send to Kindle. None while it cannot send
+     * emails: the feature is then off.
+     */
+    SEND_TO_KINDLE?: SendToKindleConfigDto;
     SHOW_DISABLED_PLUGINS: boolean;
 };
 
@@ -38,7 +58,7 @@ export type PublicServerSourceDto = {
 };
 
 export type ObokuErrorDto = {
-    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001';
+    code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001' | '13000' | '13001' | '13002' | '13003' | '13004' | '13005';
 };
 
 export type ObokuErrorResponseDto = {
@@ -431,7 +451,7 @@ export type SyncReportDto = {
     /**
      * Why the sync failed. `null` when it succeeded, and for reports saved before the code was stored.
      */
-    error_code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001' | null;
+    error_code: '0' | '2000' | '3000' | '3001' | '3002' | '3003' | '3004' | '3005' | '3006' | '4000' | '4001' | '4002' | '4003' | '4004' | '5000' | '6000' | '6001' | '7000' | '8000' | '8001' | '9000' | '10000' | '11000' | '11001' | '11002' | '11003' | '11004' | '11005' | '11006' | '11007' | '11008' | '12000' | '12001' | '13000' | '13001' | '13002' | '13003' | '13004' | '13005' | null;
     report: Array<SyncReportEntryDto>;
     datasource_id: string;
     user_name: string;
@@ -691,6 +711,16 @@ export type ConnectConnectorDto = {
 
 export type ConnectorConnectionResponseDto = {
     connection: ConnectorConnectionDto;
+};
+
+export type SendBookToKindleDto = {
+    bookId: string;
+    /**
+     * The credentials of the book's source, which the API reads the file with.
+     */
+    providerCredentials: {
+        [key: string]: unknown;
+    };
 };
 
 export type AppGetHelloData = {
@@ -2376,3 +2406,31 @@ export type ConnectorConnectionConnectResponses = {
 };
 
 export type ConnectorConnectionConnectResponse = ConnectorConnectionConnectResponses[keyof ConnectorConnectionConnectResponses];
+
+export type KindleSendData = {
+    body: SendBookToKindleDto;
+    path?: never;
+    query?: never;
+    url: '/kindle/send';
+};
+
+export type KindleSendErrors = {
+    400: ObokuErrorResponseDto | HttpErrorResponseDto;
+    404: ObokuErrorResponseDto;
+    413: ObokuErrorResponseDto;
+    429: ObokuErrorResponseDto;
+    502: ObokuErrorResponseDto;
+    503: ObokuErrorResponseDto;
+    /**
+     * The request failed
+     */
+    default: HttpErrorResponseDto;
+};
+
+export type KindleSendError = KindleSendErrors[keyof KindleSendErrors];
+
+export type KindleSendResponses = {
+    200: EmptyResponseDto;
+};
+
+export type KindleSendResponse = KindleSendResponses[keyof KindleSendResponses];

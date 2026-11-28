@@ -5,6 +5,7 @@ import {
   type OnModuleDestroy,
 } from "@nestjs/common"
 import { renderMagicLinkEmail, renderSignUpEmail } from "@oboku/shared"
+import type { Readable } from "node:stream"
 import nodemailer, { type Transporter } from "nodemailer"
 import { AppConfigService } from "../config/AppConfigService.js"
 
@@ -17,6 +18,21 @@ const EMAIL_MAX_MESSAGES_PER_CONNECTION = 100
 const EMAIL_CONNECTION_TIMEOUT_MS = 10_000
 const EMAIL_GREETING_TIMEOUT_MS = 10_000
 const EMAIL_SOCKET_TIMEOUT_MS = 20_000
+
+/**
+ * The address the instance sends its emails from, none while email delivery
+ * is not configured.
+ */
+export const getEmailSenderAddress = (
+  config: Pick<AppConfigService, "EMAIL_SMTP_HOST" | "EMAIL_FROM">,
+) => (config.EMAIL_SMTP_HOST ? config.EMAIL_FROM : undefined)
+
+export type EmailAttachment = {
+  filename: string
+  contentType: string
+  /** A stream that fails makes the send fail, and the message is not sent. */
+  content: Readable
+}
 
 @Injectable()
 export class EmailService implements OnModuleDestroy {
@@ -64,15 +80,17 @@ export class EmailService implements OnModuleDestroy {
     subject,
     text,
     html,
+    attachments,
   }: {
     to: string
     subject: string
     text: string
     html?: string
+    attachments?: EmailAttachment[]
   }) {
-    const fromAddress = this.appConfigService.EMAIL_FROM
+    const fromAddress = getEmailSenderAddress(this.appConfigService)
 
-    if (!this.appConfigService.EMAIL_SMTP_HOST || !fromAddress) {
+    if (!fromAddress) {
       if (this.appConfigService.NODE_ENV === "development") {
         this.logger.log(`Email to ${to} (${subject}):\n${text}`)
         return
@@ -90,14 +108,12 @@ export class EmailService implements OnModuleDestroy {
       subject,
       text,
       html,
+      attachments,
     })
   }
 
   async verifyTransport() {
-    if (
-      !this.appConfigService.EMAIL_SMTP_HOST ||
-      !this.appConfigService.EMAIL_FROM
-    ) {
+    if (!getEmailSenderAddress(this.appConfigService)) {
       if (this.appConfigService.NODE_ENV === "development") {
         return
       }

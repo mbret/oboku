@@ -11,6 +11,12 @@ export const zHttpErrorResponseDto = z.object({
     error: z.string().optional()
 });
 
+export const zSendToKindleConfigDto = z.object({
+    senderAddress: z.string(),
+    maxFileSizeBytes: z.number(),
+    maxSendsPerDay: z.number()
+});
+
 export const zWebConfigResponseDto = z.object({
     GOOGLE_CLIENT_ID: z.string().optional(),
     GOOGLE_API_KEY: z.string().optional(),
@@ -19,6 +25,7 @@ export const zWebConfigResponseDto = z.object({
     MICROSOFT_APPLICATION_AUTHORITY: z.string(),
     FEATURE_SERVER_SYNC_ENABLED: z.boolean(),
     FEATURE_GOOGLE_CONNECTION_ENABLED: z.boolean().optional(),
+    SEND_TO_KINDLE: zSendToKindleConfigDto.optional(),
     SHOW_DISABLED_PLUGINS: z.boolean()
 });
 
@@ -61,7 +68,13 @@ export const zObokuErrorDto = z.object({
         '11007',
         '11008',
         '12000',
-        '12001'
+        '12001',
+        '13000',
+        '13001',
+        '13002',
+        '13003',
+        '13004',
+        '13005'
     ])
 });
 
@@ -477,7 +490,13 @@ export const zSyncReportDto = z.object({
         '11007',
         '11008',
         '12000',
-        '12001'
+        '12001',
+        '13000',
+        '13001',
+        '13002',
+        '13003',
+        '13004',
+        '13005'
     ]).nullable(),
     report: z.array(zSyncReportEntryDto),
     datasource_id: z.string(),
@@ -628,6 +647,11 @@ export const zConnectConnectorDto = z.object({
 
 export const zConnectorConnectionResponseDto = z.object({
     connection: zConnectorConnectionDto
+});
+
+export const zSendBookToKindleDto = z.object({
+    bookId: z.string(),
+    providerCredentials: z.record(z.string(), z.unknown())
 });
 
 export const zAppGetHelloResponse = z.string();
@@ -893,3 +917,7 @@ export const zConnectorConnectionConnectPath = z.object({
 });
 
 export const zConnectorConnectionConnectResponse = zConnectorConnectionResponseDto;
+
+export const zKindleSendBody = zSendBookToKindleDto;
+
+export const zKindleSendResponse = zEmptyResponseDto;
