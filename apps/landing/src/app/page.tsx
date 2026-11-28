@@ -51,6 +51,7 @@ export default function Home() {
           "OPDS server",
           "KOReader sync server",
           "KOReader progress sync",
+          "Send to Kindle",
           "Self-hosting",
         ],
       },

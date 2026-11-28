@@ -14,7 +14,6 @@ import { LibrarySyncsListScreen } from "../pages/sync/LibrarySyncsListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
 import { StatisticsScreen } from "../pages/StatisticsScreen"
-import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../pages/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../pages/library/LibraryTagsScreen"
@@ -33,6 +32,7 @@ import { LibrarySyncsReportsScreen } from "../librarySyncs/reports/LibrarySyncsR
 import { SecurityScreen } from "../pages/profile/SecurityScreen"
 import { KoreaderSyncServerScreen } from "../integrations/koreader/server/KoreaderSyncServerScreen"
 import { KoreaderProgressSyncScreen } from "../integrations/koreader/client/KoreaderProgressSyncScreen"
+import { SendToKindleScreen } from "../integrations/kindle/SendToKindleScreen"
 import { IntegrationsScreen } from "../integrations/IntegrationsScreen"
 import { DropboxIntegrationScreen } from "../integrations/dropbox/DropboxIntegrationScreen"
 import { GoogleIntegrationScreen } from "../integrations/google/GoogleIntegrationScreen"
@@ -109,10 +109,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
             <Route path={ROUTES.READER} element={<ReaderScreen />} />
             <Route path="*" element={<AppShellRouteWrapper />}>
               <Route
-                path={`${ROUTES.PROBLEMS.slice(1)}`}
-                element={<ProblemsScreen />}
-              />
-              <Route
                 path={ROUTES.BOOK_DETAILS.slice(1)}
                 element={<BookDetailsScreen />}
               />
@@ -187,6 +183,10 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
               <Route
                 path={ROUTES.OPDS_CATALOGS.slice(1)}
                 element={<OpdsCatalogsScreen />}
+              />
+              <Route
+                path={ROUTES.SEND_TO_KINDLE.slice(1)}
+                element={<SendToKindleScreen />}
               />
               <Route
                 path={ROUTES.SETTINGS.slice(1)}

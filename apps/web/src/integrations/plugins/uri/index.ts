@@ -2,6 +2,7 @@ import { HttpRounded } from "@mui/icons-material"
 import { useUnsupportedRemoveResource } from "../common/useUnsupportedRemoveResource"
 import { TYPE } from "./constants"
 import type { SourcePlugin } from "../types"
+import { SelectItem } from "./SelectItem"
 import { UploadBookComponent } from "./UploadBookComponent"
 import { DownloadBook } from "./DownloadBook"
 import { useRefreshMetadata } from "./useRefreshMetadata"
@@ -16,6 +17,7 @@ const plugin: SourcePlugin<"URI"> = {
   canSynchronize: false,
   Icon: HttpRounded,
   UploadBookComponent,
+  SelectItemComponent: SelectItem,
   DownloadBookComponent: DownloadBook,
   useLinkInfo,
   useLibrarySyncInfo,

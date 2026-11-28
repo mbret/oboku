@@ -9,6 +9,8 @@ export type URILibrarySyncDocType = BaseLibrarySyncDocType & {
 export const uriLinkDataSchema = z.object({
   url: z.string(),
   allowSelfSigned: z.boolean().optional(),
+  /** oboku's server downloads the book, for a server that refuses the browser (CORS). */
+  proxyThroughServer: z.boolean().optional(),
 })
 
 export type UriLinkData = z.infer<typeof uriLinkDataSchema>

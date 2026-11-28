@@ -81,13 +81,25 @@ const fromObokuErrorCode = (error: ObokuErrorCode) => {
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SIGN_IN_REFUSED:
       return "The connector's server refused this username and password, or denied them access. Check the connector."
     case ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE:
-      return "oboku's server could not reach the connector's server, or that server answered with an error. Check the address. On oboku's cloud version, the connector's server must be reachable from the internet."
+      return "oboku's server could not reach the server, or the server answered with an error. Check the address. On oboku's cloud version, the server must be reachable from the internet."
     case ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED:
       return "The oboku server does not connect to this address: it is on a private network or belongs to the server itself. On a self-hosted instance, an admin can allow it."
     case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN:
-      return "The connector's server does not state the size of this file, so oboku's server cannot download it for you."
+      return "The server does not state the size of this file, so oboku's server cannot download it for you."
     case ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED:
       return "This download would pass your monthly download quota, or the quota of all users. Downloads through oboku's server start again next month. Profile > Quotas shows your usage."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_NOT_AVAILABLE:
+      return "This oboku server is not set up to send emails, so it cannot send a book to a Kindle."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_ADDRESS_INVALID:
+      return "Save your Send to Kindle address first, in Integrations > Send to Kindle. It ends with @kindle.com."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_FILE_TYPE_NOT_ACCEPTED:
+      return "Amazon accepts EPUB, PDF and text files by email. This book is of another type, or oboku does not know its type."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_FILE_TOO_LARGE:
+      return "This book is too large to send by email. Integrations > Send to Kindle shows the limit."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_DAILY_LIMIT_REACHED:
+      return "You sent as many books as this oboku server allows in one day. Send again tomorrow."
+    case ObokuErrorCode.ERROR_SEND_TO_KINDLE_EMAIL_REFUSED:
+      return "The email server did not accept the book. Try again later."
     default:
       return `Something went wrong. Error code: ${error}`
   }

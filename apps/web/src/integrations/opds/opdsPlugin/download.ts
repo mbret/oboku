@@ -5,7 +5,7 @@ import {
   READER_ACCEPTED_FILE_TYPES,
   type SettingsResolvedConnectorData,
 } from "@oboku/shared"
-import { downloadThroughServerProxy } from "../../../connectors/downloadThroughServerProxy"
+import { downloadThroughServerProxy } from "../../../download/downloadThroughServerProxy"
 import type { HttpApiClientWeb } from "../../../http"
 import type { Download } from "../../../http/useDownload"
 

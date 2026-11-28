@@ -26,6 +26,7 @@ oboku is a free and open-source ebook and comic reader that runs in your browser
 - Offline-first progressive web app for phones, tablets, desktops and e-ink devices
 - Collections, tags and reading progress, plus password-protected content for books you want to keep hidden
 - E-ink mode with higher contrast and no animations
+- Sends EPUB, PDF and text books to a Kindle by email, with Amazon's Send to Kindle
 - Free, ad-free and open source
 
 ## Community

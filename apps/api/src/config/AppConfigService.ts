@@ -190,6 +190,31 @@ export class AppConfigService {
   }
 
   /**
+   * How long the SMTP socket may stay idle. Far under nodemailer's default,
+   * so an SMTP host that stops answering fails a send quickly.
+   */
+  get EMAIL_SMTP_SOCKET_TIMEOUT_MS() {
+    return 20_000
+  }
+
+  /**
+   * The largest book file Send to Kindle emails. An attachment grows by a
+   * third inside an email, so 25 MB stays under the 40 MB a message can be on
+   * Amazon SES, and under the 50 MB Amazon accepts for a Kindle.
+   */
+  get SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES() {
+    const megabytes =
+      this.config.get("SEND_TO_KINDLE_MAX_FILE_SIZE_MB", { infer: true }) ?? 25
+
+    return megabytes * 1000 * 1000
+  }
+
+  /** How many books a user can send to a Kindle in one UTC day. */
+  get SEND_TO_KINDLE_MAX_SENDS_PER_DAY() {
+    return 10
+  }
+
+  /**
    * ------------------------------------------------------------
    * QUEUES
    * ------------------------------------------------------------
@@ -209,6 +234,33 @@ export class AppConfigService {
 
   get QUEUE_DATASOURCES_SYNC_MAX_CONCURRENT() {
     return 3
+  }
+
+  /**
+   * Each send holds one of the SMTP pool's connections (`EMAIL_MAX_CONNECTIONS`)
+   * for as long as its file takes to upload: the others stay free for the
+   * sign-in emails.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_CONCURRENT() {
+    return 2
+  }
+
+  /**
+   * How long a source has to send its whole file once a send starts. One that
+   * sends very slowly would otherwise keep one of the places
+   * `QUEUE_KINDLE_SENDS_MAX_CONCURRENT` allows.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_DURATION_MS() {
+    return 5 * 60 * 1000
+  }
+
+  /**
+   * How long a source may take to send the next part of a file. Shorter than
+   * the SMTP socket timeout, which would otherwise end the send of a source
+   * that stopped as an SMTP failure.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_SOURCE_IDLE_MS() {
+    return this.EMAIL_SMTP_SOCKET_TIMEOUT_MS - 5_000
   }
 
   /**

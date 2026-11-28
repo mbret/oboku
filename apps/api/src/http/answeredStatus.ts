@@ -1,6 +1,6 @@
 import { isRecord } from "./isRecord.js"
 
-/** The status a server answered with, which the errors of the WebDAV client and of `getFromCatalog` carry. */
+/** The status a server answered with, which the errors of the WebDAV client and of `requestUserAddress`'s callers carry. */
 export const toAnsweredStatus = (error: unknown) =>
   isRecord(error) && typeof error.status === "number" ? error.status : null
 

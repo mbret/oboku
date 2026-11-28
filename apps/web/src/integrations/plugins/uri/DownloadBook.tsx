@@ -1,21 +1,16 @@
 import { memo } from "react"
-import {
-  from,
-  map,
-  merge,
-  takeUntil,
-  tap,
-  throwIfEmpty,
-  type Observable,
-} from "rxjs"
+import { merge, takeUntil, throwIfEmpty, type Observable } from "rxjs"
 import { useMutation$ } from "reactjrx"
-import { resolveDownloadFileName } from "@oboku/shared"
 import type { DownloadBookComponentProps } from "../types"
+import { downloadThroughServerProxy } from "../../../download/downloadThroughServerProxy"
 import { CancelError } from "../../../errors/errors.shared"
+import { useHttpClientApi } from "../../../http"
 import { useDownload } from "../../../http/useDownload"
+import { fromAbortable } from "../../../common/rxjs/fromAbortable"
 import { fromAbortSignal } from "../../../common/rxjs/fromAbortSignal"
 import { useEffectWithUnmount$ } from "../../../common/rxjs/useEffectWithUnmount$"
 import { scheduleDelayedEffect } from "../../../common/useDelayEffect"
+import { downloadFromWebAddress, toUrlFileName } from "./download"
 
 export const DownloadBook = memo(function DownloadBook({
   link,
@@ -27,39 +22,36 @@ export const DownloadBook = memo(function DownloadBook({
   const { mutateAsync: downloadBlob } = useDownload({
     meta: { suppressGlobalErrorToast: true },
   })
+  const httpClientApi = useHttpClientApi()
   const { mutate: download } = useMutation$({
-    mutationFn: ({ onUnmount$ }: { onUnmount$: Observable<void> }) => {
-      const abortController = new AbortController()
+    mutationFn: function downloadBookFile({
+      onUnmount$,
+    }: {
+      onUnmount$: Observable<void>
+    }) {
+      const { url, proxyThroughServer } = link.data
 
-      const cancel$ = merge(fromAbortSignal(signal), onUnmount$).pipe(
-        tap(() => abortController.abort()),
-      )
-
-      const downloadLink = link.data.url
-
-      return from(
-        downloadBlob({
-          responseType: "blob",
-          signal: abortController.signal,
-          url: downloadLink,
-          onDownloadProgress: (event) => {
-            onDownloadProgress(event.loaded / (event.total ?? 1))
-          },
+      return fromAbortable(function downloadUntilCancelled(downloadSignal) {
+        return proxyThroughServer
+          ? downloadThroughServerProxy({
+              httpClientApi,
+              linkId: link._id,
+              onDownloadProgress,
+              signal: downloadSignal,
+            }).then(function nameAfterUrl(file) {
+              return { data: file, fileName: toUrlFileName(url) }
+            })
+          : downloadFromWebAddress({
+              url,
+              download: downloadBlob,
+              onDownloadProgress,
+              signal: downloadSignal,
+            })
+      }).pipe(
+        takeUntil(merge(fromAbortSignal(signal), onUnmount$)),
+        throwIfEmpty(function toCancelError() {
+          return new CancelError()
         }),
-      ).pipe(
-        map((mediaResponse) => {
-          return {
-            data: mediaResponse.data,
-            fileName:
-              resolveDownloadFileName({
-                contentDisposition:
-                  mediaResponse.headers["content-disposition"],
-                url: downloadLink,
-              }) || bookIdFromUrl(downloadLink),
-          }
-        }),
-        takeUntil(cancel$),
-        throwIfEmpty(() => new CancelError()),
       )
     },
     onSuccess: onResolve,
@@ -68,17 +60,13 @@ export const DownloadBook = memo(function DownloadBook({
   })
 
   useEffectWithUnmount$(
-    (onUnmount$) => scheduleDelayedEffect(() => download({ onUnmount$ }), 1),
+    function downloadOnceMounted(onUnmount$) {
+      return scheduleDelayedEffect(function startDownload() {
+        download({ onUnmount$ })
+      }, 1)
+    },
     [download],
   )
 
   return null
 })
-
-const bookIdFromUrl = (url: string) => {
-  try {
-    return new URL(url).pathname.split("/").filter(Boolean).pop() || url
-  } catch {
-    return url
-  }
-}

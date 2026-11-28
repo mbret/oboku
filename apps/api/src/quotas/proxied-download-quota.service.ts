@@ -64,16 +64,33 @@ const toUserQuotaBytes = ({
   }
 }
 
+/** What a route answers once a download would pass a proxied download quota. */
+export const createProxiedDownloadQuotaReached = () =>
+  new HttpException(
+    toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
+    HttpStatus.TOO_MANY_REQUESTS,
+  )
+
 export type MeteredStream =
   | { status: "metered"; stream: Readable }
   | { status: "quota-reached"; resetsAt: Date }
 
+/** The headers of an answer that describe its file. */
+export type FileHeaders = {
+  "Content-Type"?: string
+  "Content-Disposition"?: string
+}
+
+/** Keeps a browser that shows a file from running it on the API's origin. */
+const UNTRUSTED_FILE_HEADERS = {
+  "Content-Security-Policy": "sandbox",
+  "X-Content-Type-Options": "nosniff",
+}
+
 export type ProxiedFile = {
   stream: NodeJS.ReadableStream
-  /** The file name the answer gives, which also types it by its extension. */
-  name: string
-  /** The media type the answer gives, which replaces the one of the name. */
-  contentType: string
+  /** Written to the answer as they are. */
+  headers: FileHeaders
   /** The number of bytes `stream` yields, when the source states it. */
   size?: number
   /** The bytes to reserve on the quotas: `size`, or else the size the file's metadata states. */
@@ -250,13 +267,14 @@ export class ProxiedDownloadQuotaService {
     if (meteredFile.status === "quota-reached") {
       response.setHeader("Retry-After", meteredFile.resetsAt.toUTCString())
 
-      throw new HttpException(
-        toObokuErrorBody(ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_QUOTA_REACHED),
-        HttpStatus.TOO_MANY_REQUESTS,
-      )
+      throw createProxiedDownloadQuotaReached()
     }
 
-    response.attachment(file.name).type(file.contentType)
+    const answerHeaders = { ...file.headers, ...UNTRUSTED_FILE_HEADERS }
+
+    for (const [name, value] of Object.entries(answerHeaders)) {
+      if (value !== undefined) response.setHeader(name, value)
+    }
 
     const streamableFile = new StreamableFile(meteredFile.stream, {
       length: file.size,

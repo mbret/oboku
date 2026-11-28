@@ -33,4 +33,5 @@ export interface EnvironmentVariables {
   EMAIL_FROM?: string
   EMAIL_FROM_NAME?: string
   EMAIL_SMTP_MAX_SEND_RATE?: number
+  SEND_TO_KINDLE_MAX_FILE_SIZE_MB?: number
 }

@@ -226,7 +226,7 @@ describe("getFromCatalog", () => {
         url: `${catalog.origin}/opds`,
         connectorUrl: catalog.origin,
       }),
-    ).rejects.toThrow("OPDS URLs must be http(s), not ftp:")
+    ).rejects.toThrow("ftp: is not http(s)")
   })
 
   it("refuses a catalog on a private network the instance does not allow", async () => {

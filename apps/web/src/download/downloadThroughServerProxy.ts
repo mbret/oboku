@@ -34,12 +34,10 @@ const readBlobReportingProgress = ({
       )
     : response.body
 
-  // The reader takes a blob's type as the book's format, and goes by the file's
-  // name without one. oboku's server answers application/octet-stream when the
-  // source states no type, so the type is left out and the name decides.
-  return new Response(body).blob()
+  return new Response(body, { headers: response.headers }).blob()
 }
 
+/** @param password the connector's, for a WebDAV or OPDS link. */
 export const downloadThroughServerProxy = async ({
   httpClientApi,
   linkId,
@@ -49,13 +47,16 @@ export const downloadThroughServerProxy = async ({
 }: {
   httpClientApi: HttpApiClientWeb
   linkId: string
-  password: string
+  password?: string
   onDownloadProgress: (progress: number) => void
   signal: AbortSignal
 }) => {
   const { response } = await linksDownload({
     client: httpClientApi.sdkClient,
-    body: { linkId, providerCredentials: { password } },
+    body: {
+      linkId,
+      ...(password !== undefined && { providerCredentials: { password } }),
+    },
     parseAs: "stream",
     signal,
   })

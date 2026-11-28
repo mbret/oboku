@@ -1,15 +1,15 @@
-import { PassThrough, type Readable } from "node:stream"
 import {
   getOpdsCredentialHeaders,
-  isHttpUrl,
   isOpdsConnectorOrigin,
   ObokuErrorCode,
   ObokuSharedError,
   type SettingsResolvedConnectorData,
 } from "@oboku/shared"
-import axios from "axios"
-import { toRequestFailure } from "../../http/requestFailure.js"
-import { getUserAddressRequestOptions } from "../../http/userAddressAgents.js"
+import {
+  createAnsweredStatusError,
+  isSuccessStatus,
+  requestUserAddress,
+} from "../../http/userAddressRequest.js"
 
 export type OpdsConnector = SettingsResolvedConnectorData<"opds">
 
@@ -20,55 +20,6 @@ type CatalogRequestOptions = {
 
 const REDIRECT_STATUSES = [301, 302, 303, 307, 308]
 const MAX_REDIRECTS = 5
-const RESPONSE_TIMEOUT_MS = 60_000
-
-const acceptEveryStatus = () => true
-
-const toCatalogRequestFailure = <Failure>(url: URL, error: Failure) =>
-  axios.isAxiosError(error)
-    ? toRequestFailure(`OPDS request to ${url.origin} failed`, error)
-    : error
-
-/**
- * axios reports an abort that comes after the headers on the answer stream,
- * with an error that holds the request's headers.
- */
-function withCatalogRequestFailures(url: URL, answer: Readable) {
-  const stream = new PassThrough()
-
-  answer.on("error", function failWithCatalogRequestFailure(error) {
-    stream.destroy(toCatalogRequestFailure(url, error))
-  })
-  stream.on("close", function stopReadingAnswer() {
-    answer.destroy()
-  })
-
-  return answer.pipe(stream)
-}
-
-const requestFromCatalog = (
-  connector: OpdsConnector,
-  url: URL,
-  { headers = {}, signal }: CatalogRequestOptions,
-) => {
-  const isConnectorOrigin = isOpdsConnectorOrigin(url.href, connector.url)
-
-  return axios
-    .get<Readable>(url.href, {
-      headers: { ...headers, ...getOpdsCredentialHeaders(url.href, connector) },
-      maxRedirects: 0,
-      responseType: "stream",
-      signal,
-      timeout: RESPONSE_TIMEOUT_MS,
-      validateStatus: acceptEveryStatus,
-      ...getUserAddressRequestOptions({
-        allowSelfSigned: connector.allowSelfSigned && isConnectorOrigin,
-      }),
-    })
-    .catch(function throwCatalogRequestFailure(error: unknown) {
-      throw toCatalogRequestFailure(url, error)
-    })
-}
 
 /**
  * Redirects are followed here rather than by axios, so that only requests to
@@ -76,62 +27,51 @@ const requestFromCatalog = (
  * certificate.
  *
  * @returns `url`, the address that answered after the redirects.
- * @throws an error with the `status` the catalog answered with when it
- * answered neither a success nor a redirect: an `ObokuSharedError` with
- * `ERROR_DATASOURCE_UNAUTHORIZED` for a 401.
+ * @throws the errors of `requestUserAddress`, and an error with the `status`
+ * the catalog answered with when it answered neither a success nor a
+ * redirect: an `ObokuSharedError` with `ERROR_DATASOURCE_UNAUTHORIZED` for a
+ * 401.
  */
 export async function getFromCatalog(
   connector: OpdsConnector,
   requestedUrl: URL,
-  options: CatalogRequestOptions = {},
+  { headers = {}, signal }: CatalogRequestOptions = {},
 ) {
   let url = requestedUrl
 
   for (let redirectCount = 0; redirectCount <= MAX_REDIRECTS; redirectCount++) {
-    if (!isHttpUrl(url.href)) {
-      throw new Error(`OPDS URLs must be http(s), not ${url.protocol}`)
+    const request = `OPDS request to ${url.origin}`
+    const isConnectorOrigin = isOpdsConnectorOrigin(url.href, connector.url)
+    const answer = await requestUserAddress({
+      url,
+      request,
+      headers: { ...headers, ...getOpdsCredentialHeaders(url.href, connector) },
+      maxRedirects: 0,
+      allowSelfSigned: connector.allowSelfSigned && isConnectorOrigin,
+      signal,
+    })
+
+    if (isSuccessStatus(answer.status)) {
+      return { stream: answer.stream, url, headers: answer.headers }
     }
 
-    const response = await requestFromCatalog(connector, url, options)
-    const isSuccess = response.status >= 200 && response.status < 300
+    answer.stream.destroy()
 
-    if (isSuccess) {
-      return {
-        stream: withCatalogRequestFailures(url, response.data),
-        url,
-        headers: response.headers,
-      }
-    }
-
-    response.data.destroy()
-
-    const answeredStatus = { status: response.status }
-
-    if (response.status === 401) {
+    if (answer.status === 401) {
       throw Object.assign(
         new ObokuSharedError(ObokuErrorCode.ERROR_DATASOURCE_UNAUTHORIZED),
-        answeredStatus,
+        { status: answer.status },
       )
     }
 
-    const { location } = response.headers
+    const { location } = answer.headers
     const isRedirect =
-      REDIRECT_STATUSES.includes(response.status) &&
-      typeof location === "string"
+      REDIRECT_STATUSES.includes(answer.status) && typeof location === "string"
 
-    if (!isRedirect) {
-      throw Object.assign(
-        new Error(
-          `OPDS request to ${url.origin} failed with status ${response.status}`,
-        ),
-        answeredStatus,
-      )
-    }
+    if (!isRedirect) throw createAnsweredStatusError(request, answer.status)
 
     if (!URL.canParse(location, url)) {
-      throw new Error(
-        `OPDS request to ${url.origin} was redirected to an invalid address`,
-      )
+      throw new Error(`${request} was redirected to an invalid address`)
     }
 
     url = new URL(location, url)

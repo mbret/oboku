@@ -59,7 +59,7 @@ Feeds need none of this, since oboku's server fetches them.
 
 Some catalogs refuse downloads from the browser, and you cannot change their CORS answers, for instance when their files are on another server. For such a catalog, check **Use oboku's server as a proxy** on the connector.
 
-oboku's server then downloads your books from the catalog and passes them on to you. It sends your password to the connector's address only, as it does for syncs. It only downloads a file whose size the catalog states, in its answer or in the feed, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month.
+oboku's server then downloads your books from the catalog and passes them on to you as the catalog sends them. It sends your password to the connector's address only, as it does for syncs. It only downloads a file whose size the catalog states, in its answer or in the feed, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month.
 
 Without the setting, your browser downloads books from the catalog, and they do not count towards the quota.
 
