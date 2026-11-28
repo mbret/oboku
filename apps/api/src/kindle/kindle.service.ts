@@ -1,3 +1,4 @@
+import { extname } from "node:path"
 import { Readable } from "node:stream"
 import { pipeline } from "node:stream/promises"
 import {
@@ -48,19 +49,36 @@ import { KindleDailySendsService } from "./kindle-daily-sends.service.js"
 
 const KINDLE_SENDS_QUEUE = "kindle.sends"
 
-/** The types Amazon accepts by email, among those oboku reads. */
-const KINDLE_ACCEPTED_FILE_EXTENSIONS = [".epub", ".pdf", ".txt"]
+/**
+ * The types Amazon accepts by email, among those oboku reads, with the media
+ * type a file of each is emailed as.
+ */
+const KINDLE_CONTENT_TYPE_BY_EXTENSION: ReadonlyMap<string, string> = new Map([
+  [".epub", "application/epub+zip"],
+  [".pdf", "application/pdf"],
+  [".txt", "text/plain"],
+])
 
 const KINDLE_EMAIL_SUBJECT = "A book from oboku"
 const KINDLE_EMAIL_TEXT = "oboku sent the attached book to this Kindle."
 
-const isKindleAcceptedFileName = (name: string) => {
-  const lowerCaseName = name.toLowerCase()
+/** The media type to email a file as, none when Amazon does not accept its type. */
+const toKindleContentType = (fileName: string) =>
+  KINDLE_CONTENT_TYPE_BY_EXTENSION.get(extname(fileName).toLowerCase())
 
-  return KINDLE_ACCEPTED_FILE_EXTENSIONS.some((extension) =>
-    lowerCaseName.endsWith(extension),
-  )
-}
+const toReadable = (stream: NodeJS.ReadableStream) =>
+  stream instanceof Readable ? stream : Readable.from(stream)
+
+const rejectOnceAborted = (signal: AbortSignal) =>
+  new Promise<never>(function waitForAbort(_resolve, reject) {
+    signal.addEventListener(
+      "abort",
+      function rejectWithAbortReason() {
+        reject(signal.reason)
+      },
+      { once: true },
+    )
+  })
 
 const createFileTooLarge = () =>
   new PayloadTooLargeException(
@@ -132,7 +150,7 @@ type BookFileToEmail = {
   db: createNano.DocumentScope<unknown>
   link: LinkDocType
   providerCredentials: SourceApiCredentials<SourceType>
-  file: ReturnType<typeof toServedFile>
+  file: { name: string; contentType: string }
   kindleEmail: string
   maxFileSizeBytes: number
 }
@@ -174,7 +192,8 @@ export class KindleService implements OnModuleInit {
    * book or its source no such file; a 413 for a file over the instance's
    * limit; a 429 once the user used the day's sends, or when the file would
    * pass a download quota; a 502 or 503 when the source or the SMTP server
-   * refuses.
+   * refuses, or when the source has not sent the whole file within
+   * `QUEUE_KINDLE_SENDS_MAX_DURATION_MS`.
    */
   async sendBook({
     user,
@@ -222,9 +241,10 @@ export class KindleService implements OnModuleInit {
 
     if (isDeviceFile) throw new BadRequestException()
 
-    const file = toServedFile(book)
+    const { name: fileName } = toServedFile(book)
+    const contentType = toKindleContentType(fileName)
 
-    if (!isKindleAcceptedFileName(file.name)) {
+    if (!contentType) {
       throw createObokuBadRequest(
         ObokuErrorCode.ERROR_SEND_TO_KINDLE_FILE_TYPE_NOT_ACCEPTED,
       )
@@ -247,7 +267,7 @@ export class KindleService implements OnModuleInit {
           db,
           link,
           providerCredentials,
-          file,
+          file: { name: fileName, contentType },
           kindleEmail,
           maxFileSizeBytes: config.maxFileSizeBytes,
         }),
@@ -272,15 +292,28 @@ export class KindleService implements OnModuleInit {
     kindleEmail,
     maxFileSizeBytes,
   }: BookFileToEmail) {
-    const download = await this.pluginsService
-      .download({ link, providerCredentials, db })
-      .catch(function answerSourceFailure(error: unknown) {
-        return throwSourceFailure(link.type, error)
-      })
-    const source =
-      download.stream instanceof Readable
-        ? download.stream
-        : Readable.from(download.stream)
+    const deadline = AbortSignal.timeout(
+      this.appConfigService.QUEUE_KINDLE_SENDS_MAX_DURATION_MS,
+    )
+    const pendingDownload = this.pluginsService.download({
+      link,
+      providerCredentials,
+      db,
+    })
+    const download = await Promise.race([
+      pendingDownload,
+      rejectOnceAborted(deadline),
+    ]).catch(function answerSourceFailure(error: unknown) {
+      pendingDownload.then(
+        function endDownloadAnsweredPastDeadline({ stream }) {
+          toReadable(stream).destroy()
+        },
+        function ignoreFailedDownload() {},
+      )
+
+      return throwSourceFailure(link.type, error)
+    })
+    const source = toReadable(download.stream)
     const isStatedSizeOverLimit =
       download.size !== undefined && download.size > maxFileSizeBytes
 
@@ -304,7 +337,9 @@ export class KindleService implements OnModuleInit {
     }
 
     const attachment = createByteLimitTransform(maxFileSizeBytes)
-    const fileFailure = pipeline(meteredFile.stream, attachment).then(
+    const fileFailure = pipeline(meteredFile.stream, attachment, {
+      signal: deadline,
+    }).then(
       function reportNoFailure() {
         return null
       },

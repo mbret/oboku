@@ -233,6 +233,14 @@ export class AppConfigService {
   }
 
   /**
+   * How long a send may run once it leaves the queue. A source that stalls,
+   * or sends a file very slowly, would otherwise keep its place in the queue.
+   */
+  get QUEUE_KINDLE_SENDS_MAX_DURATION_MS() {
+    return 5 * 60 * 1000
+  }
+
+  /**
    * ------------------------------------------------------------
    * SECURITY
    * ------------------------------------------------------------

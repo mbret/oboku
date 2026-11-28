@@ -38,6 +38,7 @@ const SENDER_ADDRESS = "books@oboku.example"
 const KINDLE_EMAIL = "reader_42@kindle.com"
 const MAX_FILE_SIZE_BYTES = 1000
 const MAX_CONCURRENT_SENDS = 2
+const SHORT_SEND_MAX_DURATION_MS = 100
 const BOOK_BYTES = Buffer.from("epub bytes ".repeat(20))
 const OVERSIZED_BOOK_BYTES = Buffer.alloc(MAX_FILE_SIZE_BYTES + 1, "a")
 const DRIVE_CREDENTIALS = { access_token: "drive-access-token" }
@@ -102,6 +103,27 @@ const DEVICE_LINK = {
   data: {},
 }
 
+const BOOK_WITH_MISLEADING_METADATA = {
+  _id: "book-misleading",
+  rx_model: "book",
+  links: ["link-misleading"],
+  metadata: [
+    {
+      type: "link",
+      title: "Notes\r\nBcc: other@example.org.txt",
+      contentType: "text/html\r\nBcc: other@example.org",
+    },
+  ],
+}
+
+const MISLEADING_LINK = {
+  _id: "link-misleading",
+  rx_model: "link",
+  type: "DRIVE",
+  book: "book-misleading",
+  data: { fileId: "drive-file-notes" },
+}
+
 const BOOK_WITHOUT_LINK = {
   _id: "book-without-link",
   rx_model: "book",
@@ -118,6 +140,8 @@ const LIBRARY = [
   COMIC_LINK,
   DEVICE_BOOK,
   DEVICE_LINK,
+  BOOK_WITH_MISLEADING_METADATA,
+  MISLEADING_LINK,
   BOOK_WITHOUT_LINK,
 ]
 
@@ -151,9 +175,11 @@ describe("KindleController", () => {
   const startApp = async ({
     smtpRefusals,
     isEmailDeliveryConfigured = true,
+    sendMaxDurationMs = 60_000,
   }: {
     smtpRefusals?: Parameters<typeof startSmtpServer>[0]
     isEmailDeliveryConfigured?: boolean
+    sendMaxDurationMs?: number
   } = {}) => {
     smtpServer = await startSmtpServer(smtpRefusals)
     createNanoInstanceForUser.mockResolvedValue(
@@ -183,6 +209,7 @@ describe("KindleController", () => {
             EMAIL_FROM_NAME: "oboku",
             SEND_TO_KINDLE_MAX_FILE_SIZE_BYTES: MAX_FILE_SIZE_BYTES,
             QUEUE_KINDLE_SENDS_MAX_CONCURRENT: MAX_CONCURRENT_SENDS,
+            QUEUE_KINDLE_SENDS_MAX_DURATION_MS: sendMaxDurationMs,
           },
         },
         { provide: CouchService, useValue: { createNanoInstanceForUser } },
@@ -267,6 +294,24 @@ describe("KindleController", () => {
     expect(email.recipients).toEqual([KINDLE_EMAIL])
     expect(attachment.headers).toContain("filename=Dune.epub")
     expect(attachment.content.equals(BOOK_BYTES)).toBe(true)
+  })
+
+  it("emails the file as the type of its extension, whatever type and name its metadata states, to the one recipient", async () => {
+    await startApp()
+
+    const response = await sendBook(BOOK_WITH_MISLEADING_METADATA._id)
+
+    const [email] = smtpServer.receivedEmails
+
+    if (!email) throw new Error("The SMTP server received no email")
+
+    const attachment = readAttachment(email)
+
+    expect(response.status).toBe(200)
+    expect(email.recipients).toEqual([KINDLE_EMAIL])
+    expect(attachment.headers).toContain("Content-Type: text/plain")
+    expect(email.data).not.toMatch(/^Bcc:/m)
+    expect(email.data).not.toContain("text/html")
   })
 
   it("reserves the size the source states on the reader's download quota", async () => {
@@ -584,6 +629,56 @@ describe("KindleController", () => {
         errors: [{ code: ObokuErrorCode.ERROR_SEND_TO_KINDLE_EMAIL_REFUSED }],
       })
     }
+  })
+
+  it("gives up on sources that do not answer in time, and sends the next book in the queue", async () => {
+    await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
+    const neverAnswered = new Promise<never>(function neverSettle() {})
+    download
+      .mockReturnValueOnce(neverAnswered)
+      .mockReturnValueOnce(neverAnswered)
+
+    const statuses = await Promise.all(
+      [DUNE_BOOK._id, DUNE_BOOK._id, DUNE_BOOK._id].map((bookId) =>
+        sendBook(bookId).then((response) => response.status),
+      ),
+    )
+
+    expect(statuses).toEqual([502, 502, 200])
+    expect(smtpServer.receivedEmails).toHaveLength(1)
+  })
+
+  it("gives up on a file that stops part way, ending its download and sending no email", async () => {
+    await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
+    const stalledFile = new PassThrough()
+    stalledFile.write(BOOK_BYTES.subarray(0, 10))
+    download.mockResolvedValue({ stream: stalledFile })
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(502)
+    expect(response.body).toEqual({
+      errors: [{ code: ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN }],
+    })
+    expect(stalledFile.destroyed).toBe(true)
+    expect(smtpServer.receivedEmails).toEqual([])
+  })
+
+  it("ends a download that answers after the send gave up on it", async () => {
+    await startApp({ sendMaxDurationMs: SHORT_SEND_MAX_DURATION_MS })
+    const lateFile = new PassThrough()
+    download.mockImplementation(async function answerPastDeadline() {
+      await new Promise((resolve) =>
+        setTimeout(resolve, SHORT_SEND_MAX_DURATION_MS * 3),
+      )
+
+      return { stream: lateFile }
+    })
+
+    const response = await sendBook(DUNE_BOOK._id)
+
+    expect(response.status).toBe(502)
+    await vi.waitFor(() => expect(lateFile.destroyed).toBe(true))
   })
 
   it("runs two sends at a time, and starts the next when one ends", async () => {
