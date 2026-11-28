@@ -7,6 +7,7 @@ import type {
   SynchronizeAbleItem,
 } from "../../plugins/types.js"
 import { getOrCreateTagFromName } from "../../couch/dbHelpers.js"
+import { waitForAll } from "../../couch/waitForAll.js"
 import { Logger } from "@nestjs/common"
 import { CoversService } from "../../covers/covers.service.js"
 
@@ -29,19 +30,6 @@ const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
   return {
     add: (id) => ids.add(id),
     flush: () => Array.from(ids),
-  }
-}
-
-/**
- * A library sync must not fail while its steps that create documents still
- * run: the queue then starts the user's next library sync, and these steps
- * would create documents at the same time as it.
- */
-const waitForAll = async (steps: readonly Promise<unknown>[]) => {
-  const outcomes = await Promise.allSettled(steps)
-
-  for (const outcome of outcomes) {
-    if (outcome.status === "rejected") throw outcome.reason
   }
 }
 
