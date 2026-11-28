@@ -35,21 +35,12 @@ export class BooksController implements OnModuleInit {
   ): Promise<EmptyResponseDto> {
     this.logger.log("metadataRefresh", bookId, { force })
 
-    this.taskQueueService.enqueue(
-      this.BOOKS_METADATA_REFRESH_QUEUE,
-      () =>
-        from(
-          this.booksMetadataService.refreshMetadata(
-            { bookId, force },
-            providerCredentials,
-            user.email,
-          ),
-        ),
-      {
-        id: bookId,
-        sequentialKey: bookId,
-      },
-    )
+    this.queueMetadataRefresh({
+      bookId,
+      force,
+      providerCredentials,
+      email: user.email,
+    })
 
     return {}
   }
@@ -58,22 +49,33 @@ export class BooksController implements OnModuleInit {
   async handleBooksMetadataRefresh(event: BooksMetadataRefreshEvent) {
     this.logger.log("handleBooksMetadataRefresh", event.data.bookId)
 
-    this.taskQueueService.enqueue(
-      this.BOOKS_METADATA_REFRESH_QUEUE,
-      () =>
-        from(
-          this.booksMetadataService.refreshMetadata(
-            {
-              bookId: event.data.bookId,
-            },
-            event.data.providerCredentials,
-            event.data.email,
-          ),
+    this.queueMetadataRefresh(event.data)
+  }
+
+  private queueMetadataRefresh({
+    bookId,
+    force,
+    providerCredentials,
+    email,
+  }: Pick<
+    RefreshBookMetadataDto,
+    "bookId" | "force" | "providerCredentials"
+  > & {
+    email: string
+  }) {
+    const refreshMetadata = () =>
+      from(
+        this.booksMetadataService.refreshMetadata(
+          { bookId, force },
+          providerCredentials,
+          email,
         ),
-      {
-        id: event.data.bookId,
-        sequentialKey: event.data.bookId,
-      },
+      )
+
+    return this.taskQueueService.enqueue(
+      this.BOOKS_METADATA_REFRESH_QUEUE,
+      refreshMetadata,
+      { id: bookId, sequentialKey: bookId },
     )
   }
 }

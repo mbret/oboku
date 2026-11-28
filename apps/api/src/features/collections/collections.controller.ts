@@ -36,20 +36,12 @@ export class CollectionsController implements OnModuleInit {
   ): Promise<EmptyResponseDto> {
     this.logger.log(`metadataRefresh ${collectionId}`)
 
-    this.taskQueueService.enqueue(
-      this.QUEUE_NAME,
-      () =>
-        this.collectionMetadataService.refreshMetadata({
-          collectionId: collectionId,
-          providerCredentials: providerCredentials,
-          soft,
-          email: user.email,
-        }),
-      {
-        id: collectionId,
-        sequentialKey: collectionId,
-      },
-    )
+    this.queueMetadataRefresh({
+      collectionId,
+      providerCredentials,
+      soft,
+      email: user.email,
+    })
 
     return {}
   }
@@ -58,19 +50,18 @@ export class CollectionsController implements OnModuleInit {
   async handleMetadataRefresh(event: CollectionMetadataRefreshEvent) {
     this.logger.log(`handleMetadataRefresh ${event.data.collectionId}`)
 
-    return this.taskQueueService.enqueue(
-      this.QUEUE_NAME,
-      () =>
-        this.collectionMetadataService.refreshMetadata({
-          collectionId: event.data.collectionId,
-          providerCredentials: event.data.providerCredentials,
-          soft: event.data.soft,
-          email: event.data.email,
-        }),
-      {
-        id: event.data.collectionId,
-        sequentialKey: event.data.collectionId,
-      },
-    )
+    return this.queueMetadataRefresh(event.data)
+  }
+
+  private queueMetadataRefresh(
+    refresh: Parameters<CollectionMetadataService["refreshMetadata"]>[0],
+  ) {
+    const refreshMetadata = () =>
+      this.collectionMetadataService.refreshMetadata(refresh)
+
+    return this.taskQueueService.enqueue(this.QUEUE_NAME, refreshMetadata, {
+      id: refresh.collectionId,
+      sequentialKey: refresh.collectionId,
+    })
   }
 }
