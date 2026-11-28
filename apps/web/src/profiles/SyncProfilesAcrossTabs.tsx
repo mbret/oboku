@@ -3,6 +3,7 @@ import { memo, useEffect, useEffectEvent } from "react"
 import { useForgetAccountSessions } from "../auth/useForgetAccountSessions"
 import { Logger } from "../debug/logger.shared"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
+import { reopenDatabase } from "../rxdb/RxDbProvider"
 import { syncActiveProfileIdFromStorage } from "./active/activeProfileId"
 import { profilesBroadcast } from "./profilesBroadcast"
 import { profilesQueryKey } from "./useProfiles"
@@ -17,6 +18,7 @@ export const SyncProfilesAcrossTabs = memo(function SyncProfilesAcrossTabs() {
 
       if (hasActiveProfileChanged) {
         forgetAccountSessions()
+        reopenDatabase().catch(Logger.error)
         // Reset before the profiles refetch can start a revocation sweep
         // (see `useSignOut`).
         resetSessionQueries(queryClient).catch(Logger.error)

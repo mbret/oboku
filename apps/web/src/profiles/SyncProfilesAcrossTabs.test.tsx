@@ -4,10 +4,13 @@ import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "./types"
 
-const { profilesStore, forgetAccountSessions } = vi.hoisted(() => ({
-  profilesStore: new Map<string, Profile>(),
-  forgetAccountSessions: vi.fn(),
-}))
+const { profilesStore, forgetAccountSessions, reopenDatabase } = vi.hoisted(
+  () => ({
+    profilesStore: new Map<string, Profile>(),
+    forgetAccountSessions: vi.fn(),
+    reopenDatabase: vi.fn(async () => {}),
+  }),
+)
 
 vi.mock("../rxdb/dexie", () => ({
   dexieDb: {
@@ -20,6 +23,22 @@ vi.mock("../rxdb/dexie", () => ({
 vi.mock("../auth/useForgetAccountSessions", () => ({
   useForgetAccountSessions: () => forgetAccountSessions,
 }))
+
+vi.mock("../rxdb/RxDbProvider", async function mockRxDbProvider() {
+  const { NEVER } = await import("rxjs")
+
+  return {
+    latestDatabase$: NEVER,
+    getLatestDatabase: () => NEVER,
+    reopenDatabase,
+    useReCreateDb: () => undefined,
+    useDatabase: () => ({ db: undefined }),
+    ensureDatabase: () => {
+      throw new Error("The database is not open")
+    },
+    RxDbProvider: () => null,
+  }
+})
 
 vi.mock("../queries/persister", () => ({
   persistBuster: "test",
@@ -59,7 +78,13 @@ const notifyProfilesChangedFromAnotherTab = () => {
 }
 
 const recordRender =
-  vi.fn<(renderedProfileId: string | undefined, forgetCount: number) => void>()
+  vi.fn<
+    (
+      renderedProfileId: string | undefined,
+      forgetCount: number,
+      reopenCount: number,
+    ) => void
+  >()
 
 const renderSession = (queryClient = new QueryClient()) =>
   renderHook(
@@ -67,6 +92,7 @@ const renderSession = (queryClient = new QueryClient()) =>
       recordRender(
         useActiveProfileId(),
         forgetAccountSessions.mock.calls.length,
+        reopenDatabase.mock.calls.length,
       )
 
       return {
@@ -94,6 +120,7 @@ describe("SyncProfilesAcrossTabs", () => {
     profilesStore.clear()
     clearActiveProfileId()
     forgetAccountSessions.mockClear()
+    reopenDatabase.mockClear()
     recordRender.mockClear()
   })
 
@@ -158,7 +185,44 @@ describe("SyncProfilesAcrossTabs", () => {
     })
     expect(queryClient.getQueryData(notificationsQueryKey)).toBeUndefined()
     expect(forgetAccountSessions).toHaveBeenCalledTimes(1)
-    expect(recordRender).not.toHaveBeenCalledWith(undefined, 0)
+    expect(recordRender).not.toHaveBeenCalledWith(
+      undefined,
+      0,
+      expect.any(Number),
+    )
+  })
+
+  it("reopens the database before it renders for the account another tab switched to", async () => {
+    profilesStore.set("reader", createProfile())
+    setActiveProfileId("reader")
+
+    const { result } = renderSession()
+
+    await waitFor(() => {
+      expect(result.current.active.data).toEqual(createProfile())
+    })
+    expect(reopenDatabase).not.toHaveBeenCalled()
+
+    const otherProfile = createProfile({
+      id: "other-reader",
+      email: "other-reader@example.com",
+      nameHex: "other-reader",
+      dbName: "other-reader-db",
+    })
+    profilesStore.set("other-reader", otherProfile)
+    localStorage.setItem(STORAGE_PROFILE_KEY, "other-reader")
+
+    notifyProfilesChangedFromAnotherTab()
+
+    await waitFor(() => {
+      expect(result.current.active.data).toEqual(otherProfile)
+    })
+    expect(reopenDatabase).toHaveBeenCalledTimes(1)
+    expect(recordRender).not.toHaveBeenCalledWith(
+      "other-reader",
+      expect.any(Number),
+      0,
+    )
   })
 
   it("keeps the sessions and the session data when another tab only updates the active profile", async () => {
@@ -183,6 +247,7 @@ describe("SyncProfilesAcrossTabs", () => {
     })
     expect(queryClient.getQueryData(notificationsQueryKey)).toEqual([])
     expect(forgetAccountSessions).not.toHaveBeenCalled()
+    expect(reopenDatabase).not.toHaveBeenCalled()
   })
 
   it("reflects a session expiry (needsRelogin) flagged in another tab", async () => {
