@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query"
 import { memo, useEffect, useEffectEvent } from "react"
 import { useForgetAccountSessions } from "../auth/useForgetAccountSessions"
+import { reloadPage } from "../common/browser"
 import { Logger } from "../debug/logger.shared"
 import { resetSessionQueries } from "../queries/resetSessionQueries"
 import { reopenDatabase } from "../rxdb/RxDbProvider"
@@ -18,7 +19,12 @@ export const SyncProfilesAcrossTabs = memo(function SyncProfilesAcrossTabs() {
 
       if (hasActiveProfileChanged) {
         forgetAccountSessions()
-        reopenDatabase().catch(Logger.error)
+        reopenDatabase().catch(function reloadTabLeftWithoutDatabase(
+          error: unknown,
+        ) {
+          Logger.error(error)
+          reloadPage()
+        })
         // Reset before the profiles refetch can start a revocation sweep
         // (see `useSignOut`).
         resetSessionQueries(queryClient).catch(Logger.error)

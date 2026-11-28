@@ -4,13 +4,13 @@ import type { ReactNode } from "react"
 import { afterEach, describe, expect, it, vi } from "vitest"
 import type { Profile } from "./types"
 
-const { profilesStore, forgetAccountSessions, reopenDatabase } = vi.hoisted(
-  () => ({
+const { profilesStore, forgetAccountSessions, reopenDatabase, reloadPage } =
+  vi.hoisted(() => ({
     profilesStore: new Map<string, Profile>(),
     forgetAccountSessions: vi.fn(),
     reopenDatabase: vi.fn(async () => {}),
-  }),
-)
+    reloadPage: vi.fn(),
+  }))
 
 vi.mock("../rxdb/dexie", () => ({
   dexieDb: {
@@ -38,6 +38,10 @@ vi.mock("../rxdb/RxDbProvider", async function mockRxDbProvider() {
     },
     RxDbProvider: () => null,
   }
+})
+
+vi.mock("../common/browser/reloadPage", function mockReloadPage() {
+  return { reloadPage }
 })
 
 vi.mock("../queries/persister", () => ({
@@ -121,6 +125,7 @@ describe("SyncProfilesAcrossTabs", () => {
     clearActiveProfileId()
     forgetAccountSessions.mockClear()
     reopenDatabase.mockClear()
+    reloadPage.mockClear()
     recordRender.mockClear()
   })
 
@@ -223,6 +228,27 @@ describe("SyncProfilesAcrossTabs", () => {
       expect.any(Number),
       0,
     )
+    expect(reloadPage).not.toHaveBeenCalled()
+  })
+
+  it("reloads the tab when its database does not reopen after another tab changed the account", async () => {
+    reopenDatabase.mockRejectedValueOnce(new Error("The database did not open"))
+    profilesStore.set("reader", createProfile())
+    setActiveProfileId("reader")
+
+    const { result } = renderSession()
+
+    await waitFor(() => {
+      expect(result.current.active.data).toEqual(createProfile())
+    })
+
+    localStorage.removeItem(STORAGE_PROFILE_KEY)
+
+    notifyProfilesChangedFromAnotherTab()
+
+    await waitFor(() => {
+      expect(reloadPage).toHaveBeenCalledOnce()
+    })
   })
 
   it("keeps the sessions and the session data when another tab only updates the active profile", async () => {
