@@ -29,7 +29,7 @@ const folderOfTwoBooks: SynchronizeAbleLibrarySync = {
 }
 
 describe("synchronizeFromLibrarySync", () => {
-  it("fails only when every item is done, when one of them fails", async () => {
+  it("waits for every item to finish before it fails", async () => {
     const lookupFailure = new Error("The lookup failed")
     const slowLookup = new Subject<never>()
     const getLinkCandidatesForItem = vi.fn(function lookUpLinks(

@@ -33,10 +33,9 @@ const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
 }
 
 /**
- * Waits for every step to settle, then throws the first failure. With
- * `Promise.all`, a sync would fail while its other steps still look for
- * documents and create them, and the queue would start the user's next library
- * sync at the same time as them.
+ * A library sync must not fail while its steps still run: the queue then starts
+ * the user's next library sync, and the running steps would create documents at
+ * the same time as it.
  */
 const waitForAll = async (steps: readonly Promise<unknown>[]) => {
   const outcomes = await Promise.allSettled(steps)
