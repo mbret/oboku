@@ -55,6 +55,16 @@ export type DownloadBookResult = {
   fileName: string
 }
 
+export type SelectItemComponentProps<T extends SourceType = SourceType> = {
+  open: boolean
+  currentLinkData: LinkDataForSource<T>
+  requestPopup: () => Promise<boolean>
+  onClose: (
+    error?: SelectionError | undefined,
+    item?: { data: LinkDataForSource<T> } | undefined,
+  ) => void
+}
+
 export type DownloadBookComponentProps<T extends SourceType = SourceType> = {
   link: LinkDocTypeForSource<T>
   onDownloadProgress: (progress: number) => void
@@ -188,14 +198,7 @@ type ObokuPluginBase<T extends SourceType = SourceType> = {
   LibrarySyncForm?: ComponentType<
     LibrarySyncFormInternalProps<LibrarySyncDocTypeFor<T>>
   >
-  SelectItemComponent?: ComponentType<{
-    open: boolean
-    requestPopup: () => Promise<boolean>
-    onClose: (
-      error?: SelectionError | undefined,
-      item?: { data: LinkData } | undefined,
-    ) => void
-  }>
+  SelectItemComponent?: ComponentType<SelectItemComponentProps<T>>
   DownloadBookComponent: ComponentType<DownloadBookComponentProps<T>>
   Provider?: ComponentType<{ children: ReactNode }>
   // The members below are hooks on purpose, even when no plugin calls a React

@@ -6,6 +6,11 @@ const decodeFileName = (value: string) => {
   }
 }
 
+/** RFC 6266 §4.1: a quoted-string may hold `;`, and escapes `"` and `\` with `\`. */
+const QUOTED_FILE_NAME = /filename\s*=\s*"((?:\\.|[^"\\])*)"/i
+const QUOTED_PAIR = /\\(.)/g
+const TOKEN_FILE_NAME = /filename\s*=\s*([^";]+)/i
+
 export const getFileNameFromContentDisposition = (
   contentDisposition?: string,
 ) => {
@@ -19,10 +24,17 @@ export const getFileNameFromContentDisposition = (
     return decodeFileName(utf8Match[1].trim())
   }
 
-  const fileNameMatch = contentDisposition.match(/filename\s*=\s*"?([^";]+)"?/i)
+  const quotedMatch = contentDisposition.match(QUOTED_FILE_NAME)
+  const quotedFileName = quotedMatch?.[1]?.replace(QUOTED_PAIR, "$1").trim()
 
-  if (fileNameMatch?.[1]) {
-    return decodeFileName(fileNameMatch[1].trim())
+  if (quotedFileName) {
+    return decodeFileName(quotedFileName)
+  }
+
+  const tokenMatch = contentDisposition.match(TOKEN_FILE_NAME)
+
+  if (tokenMatch?.[1]) {
+    return decodeFileName(tokenMatch[1].trim())
   }
 
   return undefined

@@ -139,5 +139,9 @@ export async function downloadFromWebdav(
     )
   }
 
-  return { stream: body, size: toDecodedContentLength(response.headers) }
+  return {
+    stream: body,
+    size: toDecodedContentLength(response.headers),
+    headers: response.headers,
+  }
 }

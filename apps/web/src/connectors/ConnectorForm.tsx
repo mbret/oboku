@@ -1,12 +1,5 @@
 import { memo, type ReactNode } from "react"
-import {
-  Button,
-  Checkbox,
-  FormControlLabel,
-  Stack,
-  styled,
-  Typography,
-} from "@mui/material"
+import { Button, Stack, styled } from "@mui/material"
 import {
   type Control,
   Controller,
@@ -15,6 +8,7 @@ import {
 } from "react-hook-form"
 import { useMutation$ } from "reactjrx"
 import { from } from "rxjs"
+import { CheckboxField } from "../common/forms/CheckboxField"
 import { ControlledSecretSelect } from "../common/forms/ControlledSecretSelect"
 import { ControlledTextField } from "../common/forms/ControlledTextField"
 import { notify } from "../notifications/toasts"
@@ -46,22 +40,6 @@ const FormActionsStack = styled(Stack)(function styleFormActionsStack({
   return {
     gap: theme.spacing(1),
     padding: theme.spacing(0, 2, 2),
-  }
-})
-
-const CheckboxFieldStack = styled(Stack)(function styleCheckboxFieldStack({
-  theme,
-}) {
-  return {
-    gap: theme.spacing(0.5),
-  }
-})
-
-const CaptionTypography = styled(Typography)(function styleCaptionTypography({
-  theme,
-}) {
-  return {
-    color: theme.palette.text.secondary,
   }
 })
 
@@ -108,15 +86,12 @@ function ControlledCheckboxField({
       name={name}
       render={function renderCheckboxField({ field }) {
         return (
-          <CheckboxFieldStack>
-            <FormControlLabel
-              control={
-                <Checkbox checked={field.value} onChange={field.onChange} />
-              }
-              label={label}
-            />
-            <CaptionTypography variant="caption">{caption}</CaptionTypography>
-          </CheckboxFieldStack>
+          <CheckboxField
+            checked={field.value}
+            onChange={field.onChange}
+            label={label}
+            caption={caption}
+          />
         )
       }}
     />

@@ -3,7 +3,7 @@ import { catchError, of, tap } from "rxjs"
 import { useEffect } from "react"
 import type { SourcePlugin } from "../../plugins/types"
 
-export const SelectItem: SourcePlugin[`SelectItemComponent`] = ({
+export const SelectItem: SourcePlugin<"DRIVE">["SelectItemComponent"] = ({
   onClose,
   open,
   requestPopup,
