@@ -14,7 +14,6 @@ import { LibrarySyncsListScreen } from "../pages/sync/LibrarySyncsListScreen"
 import { SearchScreen } from "../pages/SearchScreen"
 import { SettingsScreen } from "../pages/SettingsScreen"
 import { StatisticsScreen } from "../pages/StatisticsScreen"
-import { ProblemsScreen } from "../problems/ProblemsScreen"
 import { LibraryBooksScreen } from "../library/books/LibraryBooksScreen"
 import { LibraryCollectionScreen } from "../pages/LibraryCollectionScreen"
 import { LibraryTagsScreen } from "../pages/library/LibraryTagsScreen"
@@ -108,10 +107,6 @@ export const AppBrowserRouter = ({ children }: { children: ReactNode }) => {
           <>
             <Route path={ROUTES.READER} element={<ReaderScreen />} />
             <Route path="*" element={<AppShellRouteWrapper />}>
-              <Route
-                path={`${ROUTES.PROBLEMS.slice(1)}`}
-                element={<ProblemsScreen />}
-              />
               <Route
                 path={ROUTES.BOOK_DETAILS.slice(1)}
                 element={<BookDetailsScreen />}

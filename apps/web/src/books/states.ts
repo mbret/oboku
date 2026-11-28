@@ -76,6 +76,45 @@ export const useBooks = <TData = DeepReadonlyObject<BookDocType>[]>({
   })
 }
 
+/**
+ * The ids of every book this device holds, protected or not. Takes the options
+ * of a live query, such as a `select`.
+ */
+export const useBookIds = <TData = string[]>(
+  options: Omit<
+    UseLiveQuery$Options<string[], unknown, TData>,
+    "queryKey" | "queryFn"
+  > = {},
+) =>
+  useLiveQuery$<string[], unknown, TData>({
+    ...createRxdbQueryDefaultOptions(),
+    queryKey: [RXDB_QUERY_KEY_PREFIX, "bookIds"],
+    queryFn: () =>
+      latestDatabase$.pipe(
+        switchMap(function observeAllBooks(database) {
+          return database.book.find({}).$
+        }),
+        map(function toBookIds(books) {
+          return books.map(({ _id }) => _id)
+        }),
+      ),
+    ...options,
+  })
+
+/**
+ * A `useBookIds` selector: the ids in `ids` of the books this device holds, in
+ * the order of `ids`, or `undefined` while `ids` is. `ids` can hold ids of
+ * deleted books, or of books the device has not received yet.
+ */
+export const selectHeldIds =
+  (ids: DeepReadonlyArray<string> | undefined) => (bookIds: string[]) => {
+    if (ids === undefined) return undefined
+
+    const heldBookIds = new Set(bookIds)
+
+    return ids.filter((id) => heldBookIds.has(id))
+  }
+
 type BookQueryOptions = ReturnType<typeof createRxdbQueryDefaultOptions> & {
   queryKey: (string | { id: string | undefined })[]
   queryFn:

@@ -48,5 +48,4 @@ export const ROUTES = {
   READER: "/reader/:id",
   SEARCH: "/search",
   SEARCH_RESULTS: "/search/:search/:type",
-  PROBLEMS: "/problems",
 } as const
