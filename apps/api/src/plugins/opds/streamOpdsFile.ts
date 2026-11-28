@@ -13,11 +13,9 @@ import { getFromCatalog, type OpdsConnector } from "./client.js"
 export const streamOpdsFile = async ({
   connector,
   acquisition,
-  title,
 }: {
   connector: OpdsConnector
   acquisition: OpdsBookLinkData["acquisition"]
-  title: string
 }) => {
   const { stream, headers } = await getFromCatalog(
     connector,
@@ -29,7 +27,5 @@ export const streamOpdsFile = async ({
     stream,
     headers,
     statedSize: acquisition.length,
-    fallbackName: title,
-    fallbackType: acquisition.type,
   })
 }

@@ -1,7 +1,7 @@
 import { pipeline, type Readable } from "node:stream"
-import { getFileNameFromContentDisposition } from "@oboku/shared"
 import { toByteCount } from "../http/contentLength.js"
 import { type AnswerHeaders, toHeaderText } from "../http/userAddressRequest.js"
+import type { FileHeaders } from "../quotas/proxied-download-quota.service.js"
 import { createByteLimitTransform } from "./plugins.service.js"
 
 export class FileSizeUnstatedError extends Error {
@@ -49,9 +49,21 @@ export const limitToExpectedSize = ({
 }
 
 /**
+ * The headers of a source's answer that describe its file, which the proxy
+ * passes on as they are. `readHeader` reads one by its lowercase name.
+ */
+export const toFileHeaders = (
+  readHeader: (
+    name: "content-type" | "content-disposition",
+  ) => string | undefined,
+): FileHeaders => ({
+  "Content-Type": readHeader("content-type"),
+  "Content-Disposition": readHeader("content-disposition"),
+})
+
+/**
  * The file an answer holds, failing past the length it states or else
- * `statedSize`. Named as its `Content-Disposition` names it, else
- * `fallbackName`, and typed with its type, else `fallbackType`.
+ * `statedSize`, with the answer's headers that describe it.
  *
  * @throws the errors of `limitToExpectedSize`.
  */
@@ -59,25 +71,17 @@ export const toAnswerFile = ({
   stream,
   headers,
   statedSize,
-  fallbackName,
-  fallbackType,
 }: {
   stream: Readable
   headers: AnswerHeaders
   statedSize?: number
-  fallbackName: string
-  fallbackType?: string
-}) => {
-  return {
-    ...limitToExpectedSize({
-      stream,
-      size: toByteCount(toHeaderText(headers["content-length"])),
-      statedSize,
-    }),
-    name:
-      getFileNameFromContentDisposition(
-        toHeaderText(headers["content-disposition"]),
-      ) ?? fallbackName,
-    contentType: toHeaderText(headers["content-type"]) || fallbackType,
-  }
-}
+}) => ({
+  ...limitToExpectedSize({
+    stream,
+    size: toByteCount(toHeaderText(headers["content-length"])),
+    statedSize,
+  }),
+  headers: toFileHeaders(function readAnswerHeader(name) {
+    return toHeaderText(headers[name])
+  }),
+})

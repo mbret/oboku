@@ -3,10 +3,7 @@ import type { INestApplication } from "@nestjs/common"
 import { APP_GUARD } from "@nestjs/core"
 import { JwtService } from "@nestjs/jwt"
 import { Test } from "@nestjs/testing"
-import {
-  getFileNameFromContentDisposition,
-  ObokuErrorCode,
-} from "@oboku/shared"
+import { ObokuErrorCode } from "@oboku/shared"
 import request from "supertest"
 import type { App } from "supertest/types.js"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
@@ -134,6 +131,10 @@ const KOOFR_CONNECTOR = {
 }
 const BOOK_BYTES = "epub bytes"
 const EPUB_HEADERS = { "content-type": "application/epub+zip" }
+const SERVER_FILE_HEADERS = {
+  ...EPUB_HEADERS,
+  "content-disposition": 'inline; filename="Dune (1965).epub"',
+}
 const WEBDAV_STAT_SIZE = 12
 
 const SERVER_FAILURES: ReadonlyArray<[string, Error, number, ObokuErrorCode]> =
@@ -211,7 +212,10 @@ describe("LinksController", () => {
       bookMetadata: { size: String(WEBDAV_STAT_SIZE) },
     })
     download.mockImplementation(async function streamBook() {
-      return { stream: Readable.from([Buffer.from(BOOK_BYTES)]) }
+      return {
+        stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+        headers: new Headers(SERVER_FILE_HEADERS),
+      }
     })
     reserveWithinQuotas.mockResolvedValue("reserved")
     adjust.mockResolvedValue(undefined)
@@ -264,16 +268,17 @@ describe("LinksController", () => {
     vi.clearAllMocks()
   })
 
-  it("streams the file of a WebDAV link in the reader's library, reserving the size its server states on the reader's quota", async () => {
+  it("streams the file of a WebDAV link in the reader's library with the headers of the server's download as they are, reserving the size its server states on the reader's quota", async () => {
     const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
 
     expect(response.status).toBe(200)
     expect(response.body.toString()).toBe(BOOK_BYTES)
-    expect(
-      getFileNameFromContentDisposition(
-        response.headers["content-disposition"],
-      ),
-    ).toBe("Dune.epub")
+    expect(response.headers["content-type"]).toBe(
+      SERVER_FILE_HEADERS["content-type"],
+    )
+    expect(response.headers["content-disposition"]).toBe(
+      SERVER_FILE_HEADERS["content-disposition"],
+    )
     expect(createNanoInstanceForUser).toHaveBeenCalledWith({
       email: readerTokenPayload.name,
     })
@@ -305,6 +310,7 @@ describe("LinksController", () => {
     download.mockResolvedValue({
       stream: Readable.from([Buffer.from(BOOK_BYTES)]),
       size: BOOK_BYTES.length,
+      headers: new Headers(),
     })
 
     const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
@@ -314,6 +320,19 @@ describe("LinksController", () => {
     expect(reserveWithinQuotas).toHaveBeenCalledWith(
       expect.objectContaining({ bytes: BOOK_BYTES.length }),
     )
+  })
+
+  it("adds no name and no type that the server's download does not state", async () => {
+    download.mockResolvedValue({
+      stream: Readable.from([Buffer.from(BOOK_BYTES)]),
+      headers: new Headers(),
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id).responseType("blob")
+
+    expect(response.status).toBe(200)
+    expect(response.headers["content-disposition"]).toBeUndefined()
+    expect(response.headers["content-type"]).toBe("application/octet-stream")
   })
 
   it("answers 404 for a link the reader's library does not hold", async () => {
@@ -425,6 +444,7 @@ describe("LinksController", () => {
           )
         },
       }),
+      headers: new Headers(),
     })
 
     const response = await downloadLink(WEBDAV_LINK._id)
@@ -447,7 +467,10 @@ describe("LinksController", () => {
       Buffer.from("epu"),
       Buffer.from("b bytes"),
     ])
-    download.mockResolvedValue({ stream: providerStream })
+    download.mockResolvedValue({
+      stream: providerStream,
+      headers: new Headers(),
+    })
 
     await expect(
       downloadLink(WEBDAV_LINK._id).responseType("blob"),
@@ -465,7 +488,10 @@ describe("LinksController", () => {
     vi.setSystemTime(new Date("2026-12-31T23:30:00.000Z"))
     reserveWithinQuotas.mockResolvedValue("quota-reached")
     const providerStream = Readable.from([Buffer.from(BOOK_BYTES)])
-    download.mockResolvedValue({ stream: providerStream })
+    download.mockResolvedValue({
+      stream: providerStream,
+      headers: new Headers(),
+    })
 
     try {
       const response = await downloadLink(WEBDAV_LINK._id)
@@ -533,11 +559,10 @@ describe("LinksController", () => {
       expect(response.status).toBe(200)
       expect(response.body.toString()).toBe(BOOK_BYTES)
       expect(response.headers["content-length"]).toBe(String(BOOK_BYTES.length))
-      expect(
-        getFileNameFromContentDisposition(
-          response.headers["content-disposition"],
-        ),
-      ).toBe("Dune")
+      expect(response.headers["content-type"]).toBe(
+        EPUB_HEADERS["content-type"],
+      )
+      expect(response.headers["content-disposition"]).toBeUndefined()
       expect(catalog.onRequest.mock.calls).toEqual([
         [{ path: OPDS_FILE_PATH, authorization: basicAuthorization }],
       ])
@@ -679,12 +704,12 @@ describe("LinksController", () => {
       expect(catalog.onRequest).not.toHaveBeenCalled()
     })
 
-    it("names the file as the catalog's Content-Disposition does", async () => {
+    it("passes the catalog's Content-Disposition on as it is", async () => {
       const { link } = await serveCatalog({
         fileRoute: {
           headers: {
             ...EPUB_HEADERS,
-            "content-disposition": 'attachment; filename="Dune (1965).epub"',
+            "content-disposition": SERVER_FILE_HEADERS["content-disposition"],
           },
           body: BOOK_BYTES,
         },
@@ -693,11 +718,9 @@ describe("LinksController", () => {
 
       const response = await downloadLink(link._id, CATALOG_CREDENTIALS)
 
-      expect(
-        getFileNameFromContentDisposition(
-          response.headers["content-disposition"],
-        ),
-      ).toBe("Dune (1965).epub")
+      expect(response.headers["content-disposition"]).toBe(
+        SERVER_FILE_HEADERS["content-disposition"],
+      )
     })
 
     it("answers 400 for the link of an OPDS folder", async () => {
