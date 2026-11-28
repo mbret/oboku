@@ -11,8 +11,16 @@ const mocks = vi.hoisted(function createUseSendBookToKindleMocks() {
     requestSourceCredentials: vi.fn(),
     notify: vi.fn(),
     useNetworkState: vi.fn(),
+    awaitDocumentsPushed: vi.fn(),
   }
 })
+
+vi.mock(
+  "../../rxdb/replication/awaitDocumentsPushed",
+  function mockDocumentsPush() {
+    return { awaitDocumentsPushed: mocks.awaitDocumentsPushed }
+  },
+)
 
 vi.mock("react-use", async function mockNetworkState(importOriginal) {
   return {
@@ -98,6 +106,7 @@ describe("useSendBookToKindle", () => {
       providerCredentials: DRIVE_CREDENTIALS,
     })
     mocks.useNetworkState.mockReturnValue({ online: true })
+    mocks.awaitDocumentsPushed.mockResolvedValue(undefined)
     await activateLocale("en")
   })
 
@@ -184,6 +193,44 @@ describe("useSendBookToKindle", () => {
         expect.objectContaining({ severity: "success" }),
       ),
     )
+  })
+
+  it("asks for the send only once the settings, which hold the Kindle address, reached the server", async () => {
+    const { database, post, result } = await renderUseSendBookToKindle()
+    const { book } = await storeDriveBook(database)
+    const settingsPush = Promise.withResolvers<void>()
+    mocks.awaitDocumentsPushed.mockReturnValue(settingsPush.promise)
+
+    const send = result.current.mutateAsync({ bookId: book._id })
+    await vi.waitFor(() =>
+      expect(mocks.awaitDocumentsPushed).toHaveBeenCalled(),
+    )
+
+    const pushedDocuments = mocks.awaitDocumentsPushed.mock.calls[0]?.[0]
+
+    expect(pushedDocuments).toHaveLength(1)
+    expect(pushedDocuments?.[0]?.primary).toBe("settings")
+    expect(post).not.toHaveBeenCalled()
+
+    settingsPush.resolve()
+    await send
+
+    expect(post).toHaveBeenCalledTimes(1)
+  })
+
+  it("sends nothing, and says why, when the settings do not reach the server", async () => {
+    const { database, post, result } = await renderUseSendBookToKindle()
+    const { book } = await storeDriveBook(database)
+    mocks.awaitDocumentsPushed.mockRejectedValue(new Error("timeout"))
+
+    await expect(
+      result.current.mutateAsync({ bookId: book._id }),
+    ).rejects.toThrow(
+      "Your Kindle address has not reached oboku's server yet. Check your connection, then send again.",
+    )
+
+    expect(post).not.toHaveBeenCalled()
+    expect(mocks.notify).not.toHaveBeenCalled()
   })
 
   it("fails while the device is offline, asking no credentials and sending nothing", async () => {

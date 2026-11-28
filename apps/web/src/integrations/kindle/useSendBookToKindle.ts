@@ -10,6 +10,7 @@ import { OfflineError } from "../../errors/errors.shared"
 import { useHttpClientApi } from "../../http"
 import { notify } from "../../notifications/toasts"
 import { ensureDatabase, useDatabase } from "../../rxdb"
+import { awaitDocumentsPushed } from "../../rxdb/replication/awaitDocumentsPushed"
 import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 
 type SendBookToKindleVariables = { bookId: string }
@@ -57,6 +58,19 @@ export const useSendBookToKindle = (
         linkType: firstLink.type,
         linkData: firstLink.data,
       })
+
+      // The server reads the Kindle address from the settings it holds: an
+      // address this device saved a moment ago must reach it first.
+      const settings = await database.settings.findOne("settings").exec()
+
+      await awaitDocumentsPushed(settings ? [settings] : []).catch(
+        function failAsAddressNotOnServer(error: unknown) {
+          throw new Error(
+            t`Your Kindle address has not reached oboku's server yet. Check your connection, then send again.`,
+            { cause: error },
+          )
+        },
+      )
 
       notify({
         title: t`Send to Kindle`,

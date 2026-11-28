@@ -270,3 +270,7 @@ msgstr "Oui (non sûr)"
 #: src/reader/settings/SettingsList.tsx
 msgid "You may try to reload the book if you encounter weird behavior or crash"
 msgstr "Rechargez le livre s'il se comporte de façon étrange ou s'il plante"
+
+#: src/integrations/kindle/useSendBookToKindle.ts
+msgid "Your Kindle address has not reached oboku's server yet. Check your connection, then send again."
+msgstr "L'adresse de votre Kindle n'a pas encore atteint le serveur d'oboku. Vérifiez votre connexion, puis renvoyez le livre."
