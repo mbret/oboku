@@ -21,8 +21,6 @@ import { throwConnectorHttpException } from "../plugins/toConnectorHttpException
 import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
-const UNKNOWN_CONTENT_TYPE = "application/octet-stream"
-
 type UserDb = createNano.DocumentScope<unknown>
 
 const createResourceNotFound = () =>
@@ -38,40 +36,32 @@ const streamWebdavLinkFile = async ({
   db: UserDb
   link: LinkDocTypeForSource<"webdav">
   password: string
-}): Promise<ProxiedFile> => {
+}) => {
   const connector = await findConnector({
     db,
     connectorId: link.data.connectorId,
     type: "webdav",
   })
-  const { stream, name, contentType, size, expectedSize } =
-    await streamWebdavFile({
-      connector,
-      password,
-      filePath: link.data.filePath,
-    })
 
-  return {
-    stream,
-    name: name ?? link.data.filePath.split("/").pop() ?? link._id,
-    contentType: contentType || UNKNOWN_CONTENT_TYPE,
-    size,
-    expectedSize,
-  }
+  return streamWebdavFile({
+    connector,
+    password,
+    filePath: link.data.filePath,
+  })
 }
 
 const streamOpdsLinkFile = async ({
   db,
-  bookLinkData: { connectorId, acquisition, title },
+  bookLinkData: { connectorId, acquisition },
   password,
 }: {
   db: UserDb
   bookLinkData: OpdsBookLinkData
   password: string
-}): Promise<ProxiedFile> => {
+}) => {
   const connector = await resolveOpdsConnector({ connectorId, password, db })
 
-  return streamOpdsFile({ connector, acquisition, title })
+  return streamOpdsFile({ connector, acquisition })
 }
 
 @Injectable()
@@ -79,17 +69,15 @@ export class LinksService {
   constructor(private readonly couchService: CouchService) {}
 
   /**
-   * Streams the file of a WebDAV link, or of an OPDS book, in the library of
-   * the user `email` names, from its connector's server. The stream fails
-   * past the size the server states: the server is the user's, and could
-   * state less than it sends.
+   * Streams the file of a WebDAV link or of an OPDS book in the library of the
+   * user `email` names, with the server's headers that describe it. The stream
+   * fails past the size the server states, which could be less than it sends.
    *
    * @throws a 400 for a link of another type or an OPDS link to a folder, a
-   * link that names no connector or one the user's settings do not hold, or
-   * an address the instance does not reach, a 404 when the library has no
-   * such link or the server no such file, and a 502 when the server refuses
-   * the password or the file, cannot be reached, or states no size for the
-   * file.
+   * link that names no connector or one the user's settings do not hold, or an
+   * address the instance does not reach, a 404 when the library has no such
+   * link or the server no such file, and a 502 when the server refuses the
+   * password or the file, cannot be reached, or states no size for the file.
    */
   async streamLinkFile({
     email,

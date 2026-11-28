@@ -40,7 +40,7 @@ import {
   type ServedConnections,
   type ServedLink,
   toCatalogPage,
-  toServedFile,
+  toServedFileHeaders,
   toServedShelfBookIds,
   toServedTitle,
   toShelfTitle,
@@ -535,7 +535,7 @@ export class OpdsBooksService {
     const metadataSize = toByteCount(bookMetadata?.size)
 
     return {
-      ...toServedFile(book),
+      headers: toServedFileHeaders(book),
       stream,
       size,
       expectedSize: size ?? metadataSize,
@@ -626,7 +626,7 @@ export class OpdsBooksService {
     if (!file) throw new NotFoundException()
 
     return {
-      ...toServedFile(book),
+      headers: toServedFileHeaders(book),
       stream: file.stream,
       size: file.size,
       expectedSize: file.expectedSize,

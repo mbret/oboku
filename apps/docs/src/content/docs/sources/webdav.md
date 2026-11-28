@@ -18,7 +18,7 @@ You can configure a reverse proxy in front of your WebDAV server and intercept O
 
 Some WebDAV servers refuse requests from the browser, and you cannot change their CORS or OPTIONS answers. Koofr (`https://app.koofr.net/dav/Koofr`, with an app password) is one of them. For such a server, check **Use oboku's server as a proxy** on the connector.
 
-oboku's server then lists the WebDAV server's folders when you add a book or test the connection, and downloads your books from it and passes them on to you. It only downloads a file whose size the WebDAV server states, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month.
+oboku's server then lists the WebDAV server's folders when you add a book or test the connection, and downloads your books from it and passes them on to you as the server sends them. It only downloads a file whose size the WebDAV server states, and stops at that size. These downloads count towards your [monthly download quota](/guides/opds-servers#monthly-download-quota) and towards the quota of all users. **Profile > Quotas** shows how much of each is used this month.
 
 Without the setting, your browser downloads books from the WebDAV server, and they do not count towards the quota.
 

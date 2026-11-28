@@ -13,8 +13,10 @@ import {
   type OpdsServedConnectorType,
   sortByTitleComparator,
 } from "@oboku/shared"
-import { extension } from "mime-types"
+import { create as createContentDisposition } from "content-disposition"
+import { contentType, extension } from "mime-types"
 import { BOOK_TITLE_FORMAT } from "../features/metadata/bookTitleFormat.js"
+import type { FileHeaders } from "../quotas/proxied-download-quota.service.js"
 
 /** The owner's connections the catalogs check. */
 export type ServedConnections = {
@@ -191,4 +193,17 @@ export const toServedFile = (
       : `${baseName}.${typeExtension}`
 
   return { name, contentType: knownContentType ?? UNKNOWN_CONTENT_TYPE }
+}
+
+/** The headers that name and type the file of a served book for reading apps. */
+export const toServedFileHeaders = (
+  book: Pick<BookDocType, "_id" | "metadata" | "metadataSourcePriority">,
+): FileHeaders => {
+  const { name, contentType: mediaType } = toServedFile(book)
+  const mediaTypeWithCharset = contentType(mediaType) || mediaType
+
+  return {
+    "Content-Type": mediaTypeWithCharset,
+    "Content-Disposition": createContentDisposition(name),
+  }
 }
