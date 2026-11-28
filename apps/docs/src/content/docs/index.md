@@ -25,6 +25,7 @@ If a feature you need is missing, request it. oboku is driven by its community.
 - Track what you read, and search, sort and filter your library.
 - Sync your reading position with KOReader and the other apps that support KOReader sync. oboku can be their [sync server](/guides/koreader-sync-server), and its reader can [sync with them](/guides/koreader-progress-sync).
 - Browse your Google Drive and WebDAV books from KOReader and other reading apps through an [OPDS server](/guides/opds-servers).
+- Email a book to your Kindle with [Send to Kindle](/guides/send-to-kindle).
 - Hide [sensitive books](/guides/privacy-and-parental-secure-control) until you unlock them, and blur their covers.
 - Compress the images of heavy comics and fix the identifiers of a book, then save it back to its source.
 - Switch to e-ink mode for higher contrast and no animations.
