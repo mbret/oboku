@@ -1,12 +1,12 @@
 import { booksRefreshMetadata } from "@oboku/shared"
 import { useNetworkState } from "react-use"
 import { useHttpClientApi } from "../http"
-import { usePluginRefreshMetadata } from "../integrations/plugins/usePluginRefreshMetadata"
 import { useDatabase } from "../rxdb"
 import { Logger } from "../debug/logger.shared"
 import { showDialog } from "../common/dialogs/createDialog"
 import { createOfflineDialogOptions } from "../common/dialogs/presets"
 import { useIncrementalBookPatch } from "./useIncrementalBookPatch"
+import { useRequestBookSourceCredentials } from "./useRequestBookSourceCredentials"
 import { CancelError } from "../errors/errors.shared"
 import { notifyError } from "../notifications/toasts"
 
@@ -23,7 +23,7 @@ export const useRefreshBookMetadata = () => {
     withoutGlobalErrorToast,
   )
   const network = useNetworkState()
-  const refreshPluginMetadata = usePluginRefreshMetadata(
+  const requestBookSourceCredentials = useRequestBookSourceCredentials(
     withoutGlobalErrorToast,
   )
 
@@ -37,25 +37,15 @@ export const useRefreshBookMetadata = () => {
 
       if (!database) return
 
-      const book = await database.book
-        .findOne({ selector: { _id: bookId } })
-        .exec()
+      const sourceCredentials = await requestBookSourceCredentials(bookId)
 
-      const firstLink = await database.link
-        .findOne({ selector: { _id: book?.links[0] } })
-        .exec()
-
-      if (!firstLink) {
+      if (!sourceCredentials) {
         Logger.error(`No link found ${bookId}`)
 
         return
       }
 
-      const { providerCredentials } = await refreshPluginMetadata({
-        linkId: firstLink._id,
-        linkType: firstLink.type,
-        linkData: firstLink.data,
-      })
+      const { providerCredentials } = sourceCredentials
 
       await incrementalPatchBook({
         doc: bookId,
