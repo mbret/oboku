@@ -6,12 +6,12 @@ import {
   useMutation,
 } from "@tanstack/react-query"
 import { useNetworkState } from "react-use"
+import { useRequestBookSourceCredentials } from "../../books/useRequestBookSourceCredentials"
 import { OfflineError } from "../../errors/errors.shared"
 import { useHttpClientApi } from "../../http"
 import { notify } from "../../notifications/toasts"
 import { ensureDatabase, useDatabase } from "../../rxdb"
 import { awaitDocumentsPushed } from "../../rxdb/replication/awaitDocumentsPushed"
-import { usePluginRefreshMetadata } from "../plugins/usePluginRefreshMetadata"
 
 type SendBookToKindleVariables = { bookId: string }
 
@@ -31,7 +31,7 @@ export const useSendBookToKindle = (
   const httpClientApi = useHttpClientApi()
   const { db } = useDatabase()
   const network = useNetworkState()
-  const requestSourceCredentials = usePluginRefreshMetadata(
+  const requestBookSourceCredentials = useRequestBookSourceCredentials(
     withoutGlobalErrorToast,
   )
 
@@ -42,26 +42,18 @@ export const useSendBookToKindle = (
     }: SendBookToKindleVariables) {
       if (!network.online) throw new OfflineError()
 
-      const database = ensureDatabase(db)
-      const book = await database.book
-        .findOne({ selector: { _id: bookId } })
-        .exec()
-      const firstLinkId = book?.links[0]
-      const firstLink = firstLinkId
-        ? await database.link.findOne(firstLinkId).exec()
-        : null
+      const providerCredentials = await requestBookSourceCredentials(bookId)
+      const isBookFileKnown = providerCredentials !== undefined
 
-      if (!firstLink) throw new ObokuSharedError(ObokuErrorCode.ERROR_NO_LINK)
-
-      const { providerCredentials } = await requestSourceCredentials({
-        linkId: firstLink._id,
-        linkType: firstLink.type,
-        linkData: firstLink.data,
-      })
+      if (!isBookFileKnown) {
+        throw new ObokuSharedError(ObokuErrorCode.ERROR_NO_LINK)
+      }
 
       // The server reads the Kindle address from the settings it holds: an
       // address this device saved a moment ago must reach it first.
-      const settings = await database.settings.findOne("settings").exec()
+      const settings = await ensureDatabase(db)
+        .settings.findOne("settings")
+        .exec()
 
       await awaitDocumentsPushed(settings ? [settings] : []).catch(
         function failAsAddressNotOnServer(error: unknown) {

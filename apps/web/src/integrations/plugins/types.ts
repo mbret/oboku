@@ -74,7 +74,6 @@ export type DownloadBookComponentProps<T extends SourceType = SourceType> = {
 }
 
 export type UseRefreshMetadataVariables<T extends SourceType = SourceType> = {
-  linkId?: string
   linkType: T
   linkData?: LinkDataForSource<T> | null
 }
