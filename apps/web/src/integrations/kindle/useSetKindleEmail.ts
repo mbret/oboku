@@ -1,7 +1,6 @@
 import { useMutation } from "@tanstack/react-query"
 import { ensureDatabase, useDatabase } from "../../rxdb"
 
-/** Saves the user's Send to Kindle address in their settings, or removes it with `null`. */
 export const useSetKindleEmail = () => {
   const { db } = useDatabase()
 

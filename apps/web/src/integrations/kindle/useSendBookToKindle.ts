@@ -17,12 +17,9 @@ type SendBookToKindleVariables = { bookId: string }
 const withoutGlobalErrorToast = { meta: { suppressGlobalErrorToast: true } }
 
 /**
- * Asks oboku's server to email a book to the user's Kindle, with the
- * credentials of the book's source, which the server reads the file with.
- * The source's sign-in opens when it needs one.
- *
- * It tells the user when the send starts and when the email left. Both show
- * after the caller unmounts, as the book actions drawer does on a tap.
+ * Tells the user when the send starts and when the email left, from the
+ * mutation itself: its caller, the book actions drawer, unmounts on the tap.
+ * The source's sign-in opens when the source needs one.
  */
 export const useSendBookToKindle = (
   options?: Pick<

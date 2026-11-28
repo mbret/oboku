@@ -335,7 +335,7 @@ export type SettingsDocType = {
   readerTabletFontScale?: number | null
   readerDesktopFontScale?: number | null
   catalogs?: SettingsCatalogDocType[]
-  /** The user's Send to Kindle address, which `isKindleEmail` accepts. */
+  /** Stored as a device wrote it: check it with `isKindleEmail` before emailing it. */
   kindleEmail?: string | null
 }
 
