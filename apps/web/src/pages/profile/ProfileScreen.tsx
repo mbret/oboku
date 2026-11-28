@@ -243,12 +243,6 @@ export const ProfileScreen = () => {
           </ListItemButton>
         </PageSection>
         <PageSection title="Danger zone" tone="danger">
-          <ListItemButton onClick={() => navigate(ROUTES.PROBLEMS)}>
-            <ListItemText
-              primary="Repair my account / anomalies"
-              secondary="If you start noticing problems with your data (missing items, sync, ...) you may try to repair your account using one this section"
-            />
-          </ListItemButton>
           <ListItemButton
             onClick={() => {
               removeAllContents()

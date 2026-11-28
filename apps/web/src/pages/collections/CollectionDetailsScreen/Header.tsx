@@ -7,6 +7,8 @@ import coverPlaceholder from "../../../assets/cover-placeholder.jpg"
 import CollectionBgSvg from "../../../assets/series-bg.svg"
 import { StatusChip } from "../../../collections/series/StatusChip"
 import { useCollectionComputedMetadata } from "../../../collections/useCollectionComputedMetadata"
+import { selectHeldIds, useBookIds } from "../../../books/states"
+import { formatBookCount } from "../../../books/formatBookCount"
 
 export const Header = memo(function Header({ id }: { id: string | undefined }) {
   const theme = useTheme()
@@ -17,6 +19,9 @@ export const Header = memo(function Header({ id }: { id: string | undefined }) {
   })
   const { uri: coverUri, hasCover } = useCollectionCoverUri(collection)
   const metadata = useCollectionComputedMetadata(collection)
+  const { data: heldBookIds } = useBookIds({
+    select: selectHeldIds(collection?.books),
+  })
   const headerPt = [
     `calc(${theme.spacing(1)} + ${50}px)`,
     `calc(${theme.spacing(1)} + ${60}px)`,
@@ -110,7 +115,7 @@ export const Header = memo(function Header({ id }: { id: string | undefined }) {
             }}
             gutterBottom
           >
-            {`${collection?.books?.length || 0} book(s)`}
+            {formatBookCount(heldBookIds?.length)}
           </Typography>
           {collection?.type === "series" && (
             <Stack

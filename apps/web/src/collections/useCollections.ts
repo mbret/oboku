@@ -49,7 +49,6 @@ export const useCollections = ({
   ids,
   isNotInterested,
   readingState = "any",
-  includeProtected: _includeProtected,
   ...options
 }: {
   queryObj?: MangoQuery<CollectionDocType>
@@ -63,7 +62,6 @@ export const useCollections = ({
   isNotInterested?: "with" | "none" | "only" | undefined
   readingState?: CollectionReadingState | "any"
   ids?: DeepReadonlyArray<string>
-  includeProtected?: boolean
 } = {}) => {
   const serializedBookIds = JSON.stringify(bookIds)
   const serializedIds = JSON.stringify(ids)
@@ -72,7 +70,7 @@ export const useCollections = ({
     selectIsLibraryUnlocked,
   )
   const { showCollectionWithProtectedContent } = useLocalSettings()
-  const includeProtected = _includeProtected || isLibraryUnlocked
+  const includeProtected = isLibraryUnlocked
 
   return useLiveQuery$({
     ...createRxdbQueryDefaultOptions(),
@@ -112,6 +110,10 @@ export const useCollections = ({
           return combineLatest([protectedBooks$, visibleBooks$]).pipe(
             switchMap(([protectedBooks, visibleBooks]) => {
               const protectedBookIds = protectedBooks.map(({ _id }) => _id)
+              const heldBookIds = new Set([
+                ...protectedBookIds,
+                ...visibleBooks.map(({ _id }) => _id),
+              ])
               const notInterestedBookIds = visibleBooks
                 .filter(({ isNotInterested }) => !!isNotInterested)
                 .map(({ _id }) => _id)
@@ -171,7 +173,9 @@ export const useCollections = ({
                      */
                     .filter((collection) =>
                       collectionPassesNotInterestedFilter({
-                        collectionBooks: collection.books,
+                        collectionBooks: collection.books.filter((id) =>
+                          heldBookIds.has(id),
+                        ),
                         isNotInterested,
                         notInterestedBookIds,
                       }),
