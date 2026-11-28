@@ -88,6 +88,10 @@ Revoking by `sessionId` is why the single cookie jar is not a problem: the sweep
 
 An account switch recreates the local database but keeps the downloaded files: purging them would also destroy the device-local (`file` plugin) books, and only sign-out warns about that.
 
+A tab that adopts another tab's change of account also closes its database and opens it again (`reopenDatabase`), without removing the stored data. Its open instance still holds the previous account's documents in memory, and a write through one of them would store that document in the next account's database. The tab has no database until the new instance is open. If the database does not reopen, the tab reloads.
+
+Opening the database, removing it and reopening it run one at a time across the tabs and the service worker (`withDatabaseLifecycleLock`). Two of them at the same time make RxDB fail with a conflict.
+
 ## Refresh-session storage
 
 Sessions live in Postgres (`refresh_tokens`): one row per issued token, hashed (SHA-256), chained per `(user_id, installation_id)`. Relevant columns:
