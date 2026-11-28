@@ -273,7 +273,7 @@ export const booksRefreshMetadata = <ThrowOnError extends boolean = true>(option
 });
 
 /**
- * The file of a WebDAV link or of an OPDS book, read from its connector's
+ * The file of a WebDAV link, an OPDS book or a web address, read from its
  * server by the API, for a server that refuses requests from the browser.
  * It counts towards the monthly proxied download quotas, and answers 429
  * until the next month once it would pass one.

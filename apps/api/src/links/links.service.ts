@@ -17,7 +17,11 @@ import { toObokuErrorBody } from "../http/obokuBadRequest.js"
 import { findConnector } from "../plugins/connectorHelpers.js"
 import { resolveOpdsConnector } from "../plugins/opds/index.js"
 import { streamOpdsFile } from "../plugins/opds/streamOpdsFile.js"
-import { throwConnectorHttpException } from "../plugins/toConnectorHttpException.js"
+import {
+  throwConnectorHttpException,
+  throwWebAddressHttpException,
+} from "../plugins/toConnectorHttpException.js"
+import { streamUriFile } from "../plugins/uri/streamUriFile.js"
 import { streamWebdavFile } from "../plugins/webdav/streamWebdavFile.js"
 import type { ProxiedFile } from "../quotas/proxied-download-quota.service.js"
 
@@ -27,6 +31,14 @@ const createResourceNotFound = () =>
   new NotFoundException(
     toObokuErrorBody(ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND),
   )
+
+const requireConnectorPassword = (
+  providerCredentials: ConnectorCredentialsDto | undefined,
+) => {
+  if (!providerCredentials) throw new BadRequestException()
+
+  return providerCredentials.password
+}
 
 const streamWebdavLinkFile = async ({
   db,
@@ -69,24 +81,26 @@ export class LinksService {
   constructor(private readonly couchService: CouchService) {}
 
   /**
-   * Streams the file of a WebDAV link or of an OPDS book in the library of the
-   * user `email` names, with the server's headers that describe it. The stream
-   * fails past the size the server states, which could be less than it sends.
+   * Streams the file of a WebDAV link, an OPDS book or a web address in the
+   * library of the user `email` names, with the server's headers that
+   * describe it. The stream fails past the size the server states, which
+   * could be less than it sends.
    *
    * @throws a 400 for a link of another type or an OPDS link to a folder, a
-   * link that names no connector or one the user's settings do not hold, or an
-   * address the instance does not reach, a 404 when the library has no such
-   * link or the server no such file, and a 502 when the server refuses the
-   * password or the file, cannot be reached, or states no size for the file.
+   * WebDAV or OPDS link without `providerCredentials`, a link that names no
+   * connector or one the user's settings do not hold, or an address the
+   * instance does not reach, a 404 when the library has no such link or the
+   * server no such file, and a 502 when the server refuses the password or
+   * the file, cannot be reached, or states no size for the file.
    */
   async streamLinkFile({
     email,
     linkId,
-    providerCredentials: { password },
+    providerCredentials,
   }: {
     email: string
     linkId: string
-    providerCredentials: ConnectorCredentialsDto
+    providerCredentials: ConnectorCredentialsDto | undefined
   }): Promise<ProxiedFile> {
     const db = await this.couchService.createNanoInstanceForUser({ email })
     const link = await findOne("link", { selector: { _id: linkId } }, { db })
@@ -95,17 +109,21 @@ export class LinksService {
 
     switch (link.type) {
       case "webdav":
-        return streamWebdavLinkFile({ db, link, password }).catch(
-          throwConnectorHttpException,
-        )
+        return streamWebdavLinkFile({
+          db,
+          link,
+          password: requireConnectorPassword(providerCredentials),
+        }).catch(throwConnectorHttpException)
       case "opds":
         if (!isOpdsBookLinkData(link.data)) throw new BadRequestException()
 
         return streamOpdsLinkFile({
           db,
           bookLinkData: link.data,
-          password,
+          password: requireConnectorPassword(providerCredentials),
         }).catch(throwConnectorHttpException)
+      case "URI":
+        return streamUriFile(link.data).catch(throwWebAddressHttpException)
       default:
         throw new BadRequestException()
     }

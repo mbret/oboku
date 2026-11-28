@@ -203,6 +203,12 @@ describe("LinksController", () => {
       .set("Authorization", `Bearer ${READER_SESSION}`)
       .send({ linkId, providerCredentials })
 
+  const downloadLinkWithoutCredentials = (linkId: string) =>
+    request(app.getHttpServer())
+      .post("/links/download")
+      .set("Authorization", `Bearer ${READER_SESSION}`)
+      .send({ linkId })
+
   beforeEach(async () => {
     createNanoInstanceForUser.mockResolvedValue(
       createLibraryDb([WEBDAV_LINK, DRIVE_LINK]),
@@ -397,6 +403,13 @@ describe("LinksController", () => {
     expect(response.body).toEqual({
       errors: [{ code: ObokuErrorCode.ERROR_CONNECTOR_NOT_CONFIGURED }],
     })
+    expect(createWebdavClient).not.toHaveBeenCalled()
+  })
+
+  it("answers 400 for a WebDAV link without the connector's password, reaching no server", async () => {
+    const response = await downloadLinkWithoutCredentials(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(400)
     expect(createWebdavClient).not.toHaveBeenCalled()
   })
 
@@ -743,6 +756,18 @@ describe("LinksController", () => {
       )
     })
 
+    it("answers 400 without the connector's password, reaching no server", async () => {
+      const { catalog, link } = await serveCatalog({
+        fileRoute: { headers: EPUB_HEADERS, body: BOOK_BYTES },
+        length: BOOK_BYTES.length,
+      })
+
+      const response = await downloadLinkWithoutCredentials(link._id)
+
+      expect(response.status).toBe(400)
+      expect(catalog.onRequest).not.toHaveBeenCalled()
+    })
+
     it("answers 400 for the link of an OPDS folder", async () => {
       const folderLink = {
         _id: "link-opds-series",
@@ -760,6 +785,152 @@ describe("LinksController", () => {
       const response = await downloadLink(folderLink._id, CATALOG_CREDENTIALS)
 
       expect(response.status).toBe(400)
+    })
+  })
+
+  describe("a web address", () => {
+    const BOOK_PATH = "/books/45646578"
+
+    afterEach(forgetAllowedServers)
+
+    const serveBook = async ({
+      fileRoute,
+      isAllowed = true,
+    }: {
+      fileRoute: Parameters<typeof startServer>[0][string]
+      isAllowed?: boolean
+    }) => {
+      const server = await startServer({ [BOOK_PATH]: fileRoute })
+      const link = {
+        _id: "link-web-dune",
+        rx_model: "link",
+        type: "URI",
+        book: "book-dune",
+        data: { url: `${server.origin}${BOOK_PATH}`, proxyThroughServer: true },
+      }
+      createNanoInstanceForUser.mockResolvedValue(createLibraryDb([link]))
+      if (isAllowed) allowServers(server)
+
+      return { server, link }
+    }
+
+    it("streams the file as the server sends it, with no credentials, asking for it uncompressed", async () => {
+      const { server, link } = await serveBook({
+        fileRoute: {
+          headers: {
+            ...EPUB_HEADERS,
+            "content-length": String(BOOK_BYTES.length),
+          },
+          body: BOOK_BYTES,
+        },
+      })
+
+      const response = await downloadLinkWithoutCredentials(
+        link._id,
+      ).responseType("blob")
+
+      expect(response.status).toBe(200)
+      expect(response.body.toString()).toBe(BOOK_BYTES)
+      expect(response.headers["content-type"]).toBe(
+        EPUB_HEADERS["content-type"],
+      )
+      expect(response.headers["content-disposition"]).toBeUndefined()
+      expect(server.onRequest.mock.calls).toEqual([
+        [{ path: BOOK_PATH, authorization: undefined }],
+      ])
+      expect(server.onRequestHeaders).toHaveBeenCalledWith(
+        expect.objectContaining({ "accept-encoding": "identity" }),
+      )
+      expect(reserveWithinQuotas).toHaveBeenCalledWith(
+        expect.objectContaining({ bytes: BOOK_BYTES.length }),
+      )
+    })
+
+    it("passes the server's Content-Disposition on as it is", async () => {
+      const { link } = await serveBook({
+        fileRoute: {
+          headers: {
+            ...SERVER_FILE_HEADERS,
+            "content-length": String(BOOK_BYTES.length),
+          },
+          body: BOOK_BYTES,
+        },
+      })
+
+      const response = await downloadLinkWithoutCredentials(link._id)
+
+      expect(response.headers["content-disposition"]).toBe(
+        SERVER_FILE_HEADERS["content-disposition"],
+      )
+    })
+
+    it("answers 502, and closes the server's answer, when the answer states no size", async () => {
+      const { server, link } = await serveBook({
+        fileRoute: { headers: EPUB_HEADERS, keepsAnswerOpen: true },
+      })
+
+      const response = await downloadLinkWithoutCredentials(link._id)
+
+      expect(response.status).toBe(502)
+      expect(response.body).toEqual({
+        errors: [{ code: ObokuErrorCode.ERROR_PROXIED_DOWNLOAD_SIZE_UNKNOWN }],
+      })
+      await expect
+        .poll(() => server.onAnswerClosed.mock.calls)
+        .toEqual([[BOOK_PATH]])
+      expect(reserveWithinQuotas).not.toHaveBeenCalled()
+    })
+
+    it.each([
+      [404, 404, ObokuErrorCode.ERROR_RESOURCE_NOT_FOUND],
+      [401, 502, ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE],
+      [403, 502, ObokuErrorCode.ERROR_PROVIDER_CONNECTION_SERVER_UNREACHABLE],
+    ])(
+      "answers a server's %i with %i and its code, and closes the answer",
+      async (serverStatus, routeStatus, code) => {
+        const { server, link } = await serveBook({
+          fileRoute: { status: serverStatus, keepsAnswerOpen: true },
+        })
+
+        const response = await downloadLinkWithoutCredentials(link._id)
+
+        expect(response.status).toBe(routeStatus)
+        expect(response.body).toEqual({ errors: [{ code }] })
+        await expect
+          .poll(() => server.onAnswerClosed.mock.calls)
+          .toEqual([[BOOK_PATH]])
+      },
+    )
+
+    it("answers 502 for an address that is not http(s)", async () => {
+      const fileLink = {
+        _id: "link-web-file",
+        rx_model: "link",
+        type: "URI",
+        book: "book-dune",
+        data: { url: "file:///etc/passwd", proxyThroughServer: true },
+      }
+      createNanoInstanceForUser.mockResolvedValue(createLibraryDb([fileLink]))
+
+      const response = await downloadLinkWithoutCredentials(fileLink._id)
+
+      expect(response.status).toBe(502)
+      expect(reserveWithinQuotas).not.toHaveBeenCalled()
+    })
+
+    it("answers 400 for an address the instance does not reach, reaching no server", async () => {
+      const { server, link } = await serveBook({
+        fileRoute: { headers: EPUB_HEADERS, body: BOOK_BYTES },
+        isAllowed: false,
+      })
+
+      const response = await downloadLinkWithoutCredentials(link._id)
+
+      expect(response.status).toBe(400)
+      expect(response.body).toEqual({
+        errors: [{ code: ObokuErrorCode.ERROR_ADDRESS_NOT_ALLOWED }],
+      })
+      expect(server.onRequest).not.toHaveBeenCalled()
     })
   })
 })
