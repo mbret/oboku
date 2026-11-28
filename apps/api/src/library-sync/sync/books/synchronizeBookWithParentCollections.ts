@@ -4,8 +4,7 @@ import type {
   SynchronizeAbleItem,
 } from "../../../plugins/types.js"
 import { atomicUpdate, findOne } from "../../../couch/dbHelpers.js"
-import { waitForAll } from "../../../couch/waitForAll.js"
-import type { BookDocType } from "@oboku/shared"
+import { type BookDocType, waitForAll } from "@oboku/shared"
 import type { Context } from "../types.js"
 
 const logger = new Logger("synchronizeBookWithParentCollections")

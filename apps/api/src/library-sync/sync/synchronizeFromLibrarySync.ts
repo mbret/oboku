@@ -1,4 +1,4 @@
-import { directives } from "@oboku/shared"
+import { directives, waitForAll } from "@oboku/shared"
 import { syncCollection } from "./collections/syncCollection.js"
 import { createOrUpdateBook } from "./books/createOrUpdateBook.js"
 import type { Context } from "./types.js"
@@ -7,7 +7,6 @@ import type {
   SynchronizeAbleItem,
 } from "../../plugins/types.js"
 import { getOrCreateTagFromName } from "../../couch/dbHelpers.js"
-import { waitForAll } from "../../couch/waitForAll.js"
 import { Logger } from "@nestjs/common"
 import { CoversService } from "../../covers/covers.service.js"
 

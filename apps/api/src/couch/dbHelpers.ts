@@ -9,6 +9,7 @@ import {
   type SecretDocType,
   type SettingsDocType,
   isShallowEqual,
+  waitForAll,
 } from "@oboku/shared"
 import { emailToCouchUserDocId, emailToUserDbName } from "./couch.service.js"
 import { normalizeEmail } from "../features/postgres/user-postgres.service.js"
@@ -16,7 +17,6 @@ import { User } from "./couchDbEntities.js"
 import { generatePassword } from "./generatePassword.js"
 import { findOne } from "./findOne.js"
 import { isRecord } from "../http/isRecord.js"
-import { waitForAll } from "./waitForAll.js"
 
 const waitForRandomTime = (min: number, max: number) =>
   new Promise((resolve) =>

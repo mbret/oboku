@@ -1,6 +1,5 @@
-import { firstValueFrom, Subject } from "rxjs"
 import { describe, expect, it, vi } from "vitest"
-import { waitForAll } from "./waitForAll.js"
+import { waitForAll } from "./waitForAll"
 
 describe("waitForAll", () => {
   it("resolves with the values of the steps, in their order", async () => {
@@ -11,18 +10,18 @@ describe("waitForAll", () => {
 
   it("rejects only when every step is settled", async () => {
     const failure = new Error("The first step failed")
-    const slowStep = new Subject<string>()
+    const slowStep = Promise.withResolvers<string>()
     const recordFailure = vi.fn<(error: unknown) => void>()
 
     const waiting = waitForAll([
       Promise.reject(failure),
-      firstValueFrom(slowStep),
+      slowStep.promise,
     ]).catch(recordFailure)
-    await new Promise(setImmediate)
+    await new Promise((resolve) => setTimeout(resolve, 0))
 
     expect(recordFailure).not.toHaveBeenCalled()
 
-    slowStep.next("done")
+    slowStep.resolve("done")
     await waiting
 
     expect(recordFailure).toHaveBeenCalledExactlyOnceWith(failure)
@@ -30,13 +29,13 @@ describe("waitForAll", () => {
 
   it("rejects with the failure of the first failed step, in the order of the steps", async () => {
     const firstFailure = new Error("The first step failed")
-    const slowFirstStep = new Subject<never>()
+    const slowFirstStep = Promise.withResolvers<never>()
 
     const waiting = waitForAll([
-      firstValueFrom(slowFirstStep),
+      slowFirstStep.promise,
       Promise.reject(new Error("The second step failed")),
     ])
-    slowFirstStep.error(firstFailure)
+    slowFirstStep.reject(firstFailure)
 
     await expect(waiting).rejects.toBe(firstFailure)
   })

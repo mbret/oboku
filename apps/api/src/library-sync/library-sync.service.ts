@@ -68,6 +68,9 @@ export class LibrarySyncService implements OnModuleInit {
    * documents they do not find, so the library syncs of a user write one after
    * the other. Reading the source stays outside: a library sync that waits
    * before it reads can outlive the credentials of its request.
+   *
+   * `write` must settle only when all its steps are done. This is why the
+   * parallel steps of a sync use `waitForAll`, never `Promise.all`.
    */
   private writeOneUserAtATime<Written>(
     email: string,
