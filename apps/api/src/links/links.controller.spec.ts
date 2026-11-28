@@ -328,6 +328,26 @@ describe("LinksController", () => {
     )
   })
 
+  it("keeps a browser that opens the answer from running it, whatever type the server states", async () => {
+    const page = "<script>alert(1)</script>"
+    download.mockResolvedValue({
+      stream: Readable.from([Buffer.from(page)]),
+      size: page.length,
+      headers: new Headers({
+        "content-type": "text/html",
+        "content-disposition": "inline",
+      }),
+    })
+
+    const response = await downloadLink(WEBDAV_LINK._id)
+
+    expect(response.status).toBe(200)
+    expect(response.headers["content-type"]).toBe("text/html")
+    expect(response.headers["content-disposition"]).toBe("inline")
+    expect(response.headers["content-security-policy"]).toBe("sandbox")
+    expect(response.headers["x-content-type-options"]).toBe("nosniff")
+  })
+
   it("adds no name and no type that the server's download does not state", async () => {
     download.mockResolvedValue({
       stream: Readable.from([Buffer.from(BOOK_BYTES)]),
