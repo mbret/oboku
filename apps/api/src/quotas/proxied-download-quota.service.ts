@@ -74,6 +74,12 @@ export type FileHeaders = {
   "Content-Disposition"?: string
 }
 
+/** Keeps a browser that shows a file from running it on the API's origin. */
+const UNTRUSTED_FILE_HEADERS = {
+  "Content-Security-Policy": "sandbox",
+  "X-Content-Type-Options": "nosniff",
+}
+
 export type ProxiedFile = {
   stream: NodeJS.ReadableStream
   /** Written to the answer as they are. */
@@ -260,7 +266,9 @@ export class ProxiedDownloadQuotaService {
       )
     }
 
-    for (const [name, value] of Object.entries(file.headers)) {
+    const answerHeaders = { ...file.headers, ...UNTRUSTED_FILE_HEADERS }
+
+    for (const [name, value] of Object.entries(answerHeaders)) {
       if (value !== undefined) response.setHeader(name, value)
     }
 
