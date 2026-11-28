@@ -5,8 +5,9 @@ import {
   type SourceApiCredentials,
   parseSourceApiCredentials,
 } from "@oboku/shared"
-import { Injectable, Logger } from "@nestjs/common"
+import { Injectable, Logger, type OnModuleInit } from "@nestjs/common"
 import { EventEmitter2 } from "@nestjs/event-emitter"
+import { from, lastValueFrom } from "rxjs"
 import type { AuthUser } from "../auth/auth.guard.js"
 import { CouchService, emailToNameHex } from "../couch/couch.service.js"
 import { atomicUpdate, findOne } from "../couch/dbHelpers.js"
@@ -20,6 +21,7 @@ import { SyncReportPostgresService } from "../features/postgres/SyncReportPostgr
 import { isNonPublicAddressError } from "../http/publicAddress.js"
 import { NotificationsService } from "../notifications/notifications.service.js"
 import { getPlugin } from "../plugins/plugins.js"
+import { InMemoryTaskQueueService } from "../queue/in-memory-task-queue.service.js"
 import type {
   SynchronizeAbleLibrarySync,
   SynchronizeAbleItem,
@@ -39,8 +41,10 @@ function toSyncErrorCode(error: unknown) {
   return ObokuErrorCode.ERROR_DATASOURCE_UNKNOWN
 }
 
+const WRITE_QUEUE_NAME = "datasources.sync.write"
+
 @Injectable()
-export class LibrarySyncService {
+export class LibrarySyncService implements OnModuleInit {
   private readonly logger = new Logger(LibrarySyncService.name)
 
   constructor(
@@ -49,7 +53,34 @@ export class LibrarySyncService {
     private readonly notificationService: NotificationsService,
     private readonly eventEmitter: EventEmitter2,
     private readonly couchService: CouchService,
+    private readonly taskQueueService: InMemoryTaskQueueService,
   ) {}
+
+  onModuleInit() {
+    this.taskQueueService.createQueue({
+      name: WRITE_QUEUE_NAME,
+      maxConcurrent: Number.POSITIVE_INFINITY,
+    })
+  }
+
+  /**
+   * Two library syncs of one user that write at the same time each create the
+   * documents they do not find, so the library syncs of a user write one after
+   * the other. Reading the source stays outside: a library sync that waits
+   * before it reads can outlive the credentials of its request.
+   */
+  private writeOneUserAtATime<Written>(
+    email: string,
+    write: () => Promise<Written>,
+  ) {
+    const startWriting = () => from(write())
+
+    return lastValueFrom(
+      this.taskQueueService.enqueue(WRITE_QUEUE_NAME, startWriting, {
+        sequentialKey: email,
+      }),
+    )
+  }
 
   async sync({
     dataSourceId,
@@ -140,10 +171,15 @@ export class LibrarySyncService {
         `Execute sync process with ${plugin.type} plugin for ${synchronizeAbleLibrarySyncWithTags.items.length} items`,
       )
 
-      const collectionIdsToRefresh = await synchronizeFromLibrarySync(
-        synchronizeAbleLibrarySyncWithTags,
-        ctx,
-        this.coversService,
+      const writeLibrary = () =>
+        synchronizeFromLibrarySync(
+          synchronizeAbleLibrarySyncWithTags,
+          ctx,
+          this.coversService,
+        )
+      const collectionIdsToRefresh = await this.writeOneUserAtATime(
+        email,
+        writeLibrary,
       )
 
       for (const collectionId of collectionIdsToRefresh) {

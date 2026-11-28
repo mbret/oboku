@@ -64,7 +64,7 @@ export class LibrarySyncsController implements OnModuleInit {
         ),
       {
         id: dataSourceId,
-        sequentialKey: user.email,
+        sequentialKey: dataSourceId,
       },
     )
 

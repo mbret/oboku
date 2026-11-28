@@ -5,9 +5,7 @@ description: Keep your library up to date with the books of your sources
 
 A library sync keeps one or more locations of a source in your library: your whole Google Drive, or two folders on your NAS. Each time it runs, oboku adds the books it finds, keeps them up to date, and turns their folders into collections.
 
-Your library syncs run one after the other. When you start several, each one waits for the one before it to finish.
-
-A library sync starts with the access to its source that it had when you started it. If it waits for a long time, that access can expire, on Google Drive for example, and the library sync fails. Start it again.
+When you start several library syncs, oboku reads their sources at the same time. It then adds what it found to your library one library sync after the other.
 
 The whole idea of oboku is to synchronize your contents automatically from various sources.
 
