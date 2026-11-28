@@ -32,6 +32,20 @@ const createCollectionRefreshQueue = (): CollectionRefreshQueue => {
   }
 }
 
+/**
+ * Waits for every step to settle, then throws the first failure. With
+ * `Promise.all`, a sync would fail while its other steps still look for
+ * documents and create them, and the queue would start the user's next library
+ * sync at the same time as them.
+ */
+const waitForAll = async (steps: readonly Promise<unknown>[]) => {
+  const outcomes = await Promise.allSettled(steps)
+
+  for (const outcome of outcomes) {
+    if (outcome.status === "rejected") throw outcome.reason
+  }
+}
+
 function isFolder(
   item: SynchronizeAbleLibrarySync | SynchronizeAbleItem,
 ): item is SynchronizeAbleItem {
@@ -119,7 +133,7 @@ const syncTags = async ({
 
   logger.log(`found ${tagNames.length} tags`)
 
-  await Promise.all(
+  await waitForAll(
     tagNames.map(async (tag) => {
       const { created, id } = await getOrCreateTagFromName(ctx.db, tag)
 
@@ -166,7 +180,7 @@ const syncItem = async ({
     return
   }
 
-  await Promise.all(
+  await waitForAll(
     metadataForFolder.tags.map((name) => getOrCreateTagFromName(ctx.db, name)),
   )
 
@@ -175,7 +189,7 @@ const syncItem = async ({
   }
 
   if (isFolder(item)) {
-    await Promise.all(
+    await waitForAll(
       (item.items || []).map(async (subItem) => {
         if (isFile(subItem)) {
           await createOrUpdateBook({
